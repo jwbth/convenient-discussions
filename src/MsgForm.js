@@ -749,7 +749,10 @@ export default class MsgForm {
 				.fail((errorType, data) => {
 					switch (errorType) {
 						case 'parse':
-							this.abort(data, null, null, retryLoad);
+							this.abort({
+								message: data,
+								retryFunction: retryLoad,
+							});
 							break;
 						case 'api':
 							var text;
@@ -761,11 +764,19 @@ export default class MsgForm {
 									text = 'Неизвестная ошибка API: ' + data + '.';
 									break;
 							}
-							this.abort('Не удалось загрузить сообщение. ' + text, data, null, retryLoad);
+							this.abort({
+								message: 'Не удалось загрузить сообщение. ' + text,
+								logMessage: data, 
+								retryFunction: retryLoad,
+							});
 							break;
 						case 'network':
 						default:
-							this.abort('Не удалось загрузить сообщение (сетевая ошибка).', data, null, retryLoad);
+							this.abort({
+								message: 'Не удалось загрузить сообщение (сетевая ошибка).',
+								logMessage: data,
+								retryFunction: retryLoad,
+							});
 							break;
 					}
 				});
@@ -789,7 +800,10 @@ export default class MsgForm {
 				.fail((errorType, data) => {
 					switch (errorType) {
 						case 'parse':
-							this.abort(data, null, null, retryLoad);
+							this.abort({
+								message: data,
+								retryFunction: retryLoad,
+							});
 							break;
 						case 'api':
 							var text;
@@ -801,11 +815,19 @@ export default class MsgForm {
 									text = 'Неизвестная ошибка API: ' + data + '.';
 									break;
 							}
-							this.abort('Не удалось загрузить сообщение. ' + text, data, null, retryLoad);
+							this.abort({
+								message: 'Не удалось загрузить сообщение. ' + text,
+								logMessage: data, 
+								retryFunction: retryLoad,
+							});
 							break;
 						case 'network':
 						default:
-							this.abort('Не удалось загрузить сообщение (сетевая ошибка).', data, null, retryLoad);
+							this.abort({
+								message: 'Не удалось загрузить сообщение (сетевая ошибка).',
+								logMessage: data,
+								retryFunction: retryLoad,
+							});
 							break;
 					}
 				});
@@ -937,14 +959,8 @@ export default class MsgForm {
 			this.textarea.popPending();
 			this.summaryInput.popPending();
 		}
-		if (!action) {
-			this.submitButton.setDisabled(status);
-		}
-		if (this.viewChangesButton && (!action || action === 'viewChanges')) {
-			this.viewChangesButton.setDisabled(status);
-		}
-		if (!action || action === 'preview') {
-			this.previewButton.setDisabled(status);
+		if (this[action + 'Button']) {
+			this[action + 'Button'].setDisabled(status);
 		}
 	}
 	
@@ -978,7 +994,13 @@ export default class MsgForm {
 		this.hideInfo(class_);
 	}
 	
-	abort(message, logMsg, action, retryFunction) {
+	abort(options) {
+		if (typeof options === 'Object') {
+			var [message, logMessage, action, retryFunction] = options;
+		} else {
+			var message = options;
+		}
+
 		// Presence of retryFunction now implies the deletion of form elements.
 		
 		if (this.textarea.$element[0].parentElement) {
@@ -986,8 +1008,8 @@ export default class MsgForm {
 		}
 		this.$previewArea.empty();
 		this.showWarning(message);
-		if (logMsg) {
-			console.warn(logMsg);
+		if (logMessage) {
+			console.warn(logMessage);
 		}
 		
 		if (retryFunction) {
@@ -1400,7 +1422,10 @@ export default class MsgForm {
 						text = error.code + ': ' + error.info;
 						break;
 				}
-				this.abort('Не удалось предпросмотреть сообщение. ' + text, data, 'preview');
+				this.abort({
+					message: 'Не удалось предпросмотреть сообщение. ' + text,
+					logMessage: data,
+				});
 				return;
 			}
 			
@@ -1435,7 +1460,10 @@ export default class MsgForm {
 			}
 			this.setPending(false, 'preview');
 		} catch (e) {
-			this.abort('Не удалось предпросмотреть сообщение.', e, 'preview');
+			this.abort({
+				message: 'Не удалось предпросмотреть сообщение.',
+				logMessage: e,
+			});
 		}
 			
 		if (callback) {
@@ -1454,9 +1482,12 @@ export default class MsgForm {
 				newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
 			} catch (e) {
 				if (e instanceof cd.env.Exception) {
-					this.abort(e.message, null, 'viewChanges');
+					this.abort(e.message);
 				} else {
-					this.abort('Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).', e.stack || e.message, 'viewChanges');
+					this.abort({
+						message: 'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
+						logMessage: e.stack || e.message,
+					});
 				}
 				return;
 			}
@@ -1479,7 +1510,10 @@ export default class MsgForm {
 							text = error.code + ': ' + error.info;
 							break;
 					}
-					this.abort('Не удалось загрузить изменения. ' + text, data, 'viewChanges');
+					this.abort({
+						message: 'Не удалось загрузить изменения. ' + text,
+						logMessage: data,
+					});
 					return;
 				}
 				
@@ -1513,7 +1547,10 @@ export default class MsgForm {
 				}
 				this.setPending(false, 'viewChanges');
 			} catch (e) {
-				this.abort('Не удалось загрузить изменения.', e, 'viewChanges');
+				this.abort({
+					message: 'Не удалось загрузить изменения.',
+					logMessage: e,
+				});
 			}
 		} catch (e) {
 			var [errorType, data] = e;
@@ -1528,11 +1565,17 @@ export default class MsgForm {
 							text = 'Ошибка API: ' + data + '.';
 							break;
 					}
-					this.abort('Не удалось получить код страницы. ' + text, data);
+					this.abort({
+						message: 'Не удалось получить код страницы. ' + text,
+						logMessage: data,
+					});
 					break;
 				case 'network':
 				default:
-					this.abort('Не удалось получить код страницы (сетевая ошибка).', data);
+					this.abort({
+						message: 'Не удалось получить код страницы (сетевая ошибка).',
+						logMessage: data,
+					});
 					break;
 			}
 		}
@@ -1563,9 +1606,13 @@ export default class MsgForm {
 						break;
 				}
 				
-				this.abort(text, data, null, function () {
-					this.reloadPageAfterSubmit(anchor);
-				}.bind(this));
+				this.abort({
+					message: text,
+					logMessage: data,
+					retryFunction: () => {
+						this.reloadPageAfterSubmit(anchor);
+					}
+				});
 			}.bind(this));
 	}
 	
@@ -1602,9 +1649,16 @@ export default class MsgForm {
 				newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
 			} catch (e) {
 				if (e instanceof cd.env.Exception) {
-					this.abort(e.message, null, 'submit');
+					this.abort({
+						message: e.message,
+						action: 'submit'
+					});
 				} else {
-					this.abort('Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).', e.stack || e.message, 'submit');
+					this.abort({
+						message: 'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
+						logMessage: e.stack || e.message,
+						action: 'submit'
+					});
 				}
 				return;
 			}
@@ -1692,10 +1746,10 @@ export default class MsgForm {
 					return;
 				}
 
-				this.abort(
-					'Не получен ответ сервера. Возможно, не удалось отредактировать страницу.',
-					[jqXHR, textStatus, errorThrown]
-				);
+				this.abort({
+					message: 'Не получен ответ сервера. Возможно, не удалось отредактировать страницу.',
+					logMessage: [jqXHR, textStatus, errorThrown],
+				});
 			}
 		} catch (e) {
 			[errorType, data] = e;
@@ -1710,11 +1764,17 @@ export default class MsgForm {
 							text = 'Ошибка API: ' + data + '.';
 							break;
 					}
-					this.abort('Не удалось получить код страницы. ' + text, data);
+					this.abort({
+						message: 'Не удалось получить код страницы. ' + text,
+						logMessage: data
+					});
 					break;
 				case 'network':
 				default:
-					this.abort('Не удалось получить код страницы (сетевая ошибка).', data);
+					this.abort({
+						message: 'Не удалось получить код страницы (сетевая ошибка).',
+						logMessage: data,
+					});
 					break;
 			}
 		}
