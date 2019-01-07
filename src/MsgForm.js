@@ -114,7 +114,7 @@ export default class MsgForm {
 							usprop: 'gender',
 							formatversion: 2,
 						})
-							.done(function (data) {
+							.done(data => {
 								var gender = data &&
 									data.query &&
 									data.query.users &&
@@ -128,7 +128,7 @@ export default class MsgForm {
 									}
 								}
 							})
-							.fail(function (jqXHR, textStatus, errorThrown) {
+							.fail((jqXHR, textStatus, errorThrown) => {
 								console.error('Не удалось узнать пол участника(-цы) ' + this.targetMsg.author);
 								console.log(jqXHR, textStatus, errorThrown);
 							});
@@ -746,7 +746,7 @@ export default class MsgForm {
 			}
 			
 			this.target.loadCode()
-				.fail(function (errorType, data) {
+				.fail((errorType, data) => {
 					switch (errorType) {
 						case 'parse':
 							this.abort(data, null, null, retryLoad);
@@ -764,15 +764,16 @@ export default class MsgForm {
 							this.abort('Не удалось загрузить сообщение. ' + text, data, null, retryLoad);
 							break;
 						case 'network':
+						default:
 							this.abort('Не удалось загрузить сообщение (сетевая ошибка).', data, null, retryLoad);
 							break;
 					}
-				}.bind(this));
+				});
 		} else {
 			this.setPending(true);
 			
 			this.target.loadCode()
-				.done(function (msgText, headingText) {
+				.done((msgText, headingText) => {
 					this.setPending(false);
 					this.textarea.setValue(msgText);
 					if (this.smallCheckbox) {
@@ -784,8 +785,8 @@ export default class MsgForm {
 						this.originalHeadingText = headingText;
 					}
 					this.textarea.focus();
-				}.bind(this))
-				.fail(function (errorType, data) {
+				})
+				.fail((errorType, data) => {
 					switch (errorType) {
 						case 'parse':
 							this.abort(data, null, null, retryLoad);
@@ -803,10 +804,11 @@ export default class MsgForm {
 							this.abort('Не удалось загрузить сообщение. ' + text, data, null, retryLoad);
 							break;
 						case 'network':
+						default:
 							this.abort('Не удалось загрузить сообщение (сетевая ошибка).', data, null, retryLoad);
 							break;
 					}
-				}.bind(this));
+				});
 		}
 		
 		mw.hook('cd.msgFormCreated').fire(this);
@@ -1372,23 +1374,103 @@ export default class MsgForm {
 		return newPageCode;
 	}
 	
-	preview(callback) {
+	async preview(callback) {
 		this.$infoArea.cdEmpty(this.getTargetMsg(true));
 		this.setPending(true, 'preview');
 		
 		var msgCode = this.msgTextToCode('preview');
 		
-		new mw.Api().post({
-			action: 'parse',
-			text: msgCode,
-			title: cd.env.CURRENT_PAGE,
-			summary: cd.env.formSummary(this.summaryInput.getValue().trim()),
-			prop: 'text',
-			pst: '',
-			disablelimitreport: '',
-			formatversion: 2,
-		})
-			.done(function (data) {
+		try {
+			var data = await new mw.Api().post({
+				action: 'parse',
+				text: msgCode,
+				title: cd.env.CURRENT_PAGE,
+				summary: cd.env.formSummary(this.summaryInput.getValue().trim()),
+				prop: 'text',
+				pst: '',
+				disablelimitreport: '',
+				formatversion: 2,
+			});
+
+			var error = data.error;
+			if (error) {
+				var text;
+				switch (error.code) {
+					default:
+						text = error.code + ': ' + error.info;
+						break;
+				}
+				this.abort('Не удалось предпросмотреть сообщение. ' + text, data, 'preview');
+				return;
+			}
+			
+			var html = data &&
+				data.parse &&
+				data.parse.text;
+			
+			if (html) {
+				var msg = this.getTargetMsg(true, true);
+				if (msg) {
+					msg.prepareUnderlayersInViewport(true);
+				}
+				
+				this.$previewArea
+					.html(html)
+					.cdAddCloseButton('предпросмотр', this.getTargetMsg(true));
+				
+				var $parsedsummary = data.parse.parsedsummary && cd.env.toJquerySpan(data.parse.parsedsummary);
+				if ($parsedsummary.length) {
+					$parsedsummary.find('a').attr('tabindex', '-1');
+					this.$element.find('.cd-summaryPreview').html(
+						'Предпросмотр описания изменения: <span class="comment">' + $parsedsummary.html() +
+							'</span>'
+					);
+				}
+				if (msg) {
+					msg.updateUnderlayersInViewport(true);
+				}
+			}
+			if (!this.$previewArea.cdIsInViewport()) {
+				this.$previewArea.cdScrollTo('top');
+			}
+			this.setPending(false, 'preview');
+		} catch (e) {
+			this.abort('Не удалось предпросмотреть сообщение.', e, 'preview');
+		}
+			
+		if (callback) {
+			callback();
+		}
+	}
+	
+	async viewChanges() {
+		this.$infoArea.cdEmpty(this.getTargetMsg(true));
+		this.setPending(true, 'viewChanges');
+		
+		try {
+			var result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
+			var newPageCode;
+			try {
+				newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
+			} catch (e) {
+				if (e instanceof cd.env.Exception) {
+					this.abort(e.message, null, 'viewChanges');
+				} else {
+					this.abort('Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).', e.stack || e.message, 'viewChanges');
+				}
+				return;
+			}
+			
+			mw.loader.load('mediawiki.diff.styles');
+			
+			try {
+				var data = await new mw.Api().post({
+					action: 'query',
+					rvdifftotext: newPageCode,
+					titles: cd.env.CURRENT_PAGE,
+					prop: 'revisions',
+					formatversion: 2,
+				});
 				var error = data.error;
 				if (error) {
 					var text;
@@ -1397,144 +1479,63 @@ export default class MsgForm {
 							text = error.code + ': ' + error.info;
 							break;
 					}
-					this.abort('Не удалось предпросмотреть сообщение. ' + text, data, 'preview');
+					this.abort('Не удалось загрузить изменения. ' + text, data, 'viewChanges');
 					return;
 				}
 				
 				var html = data &&
-					data.parse &&
-					data.parse.text;
+					data.query &&
+					data.query.pages &&
+					data.query.pages[0] &&
+					data.query.pages[0].revisions &&
+					data.query.pages[0].revisions[0] &&
+					data.query.pages[0].revisions[0].diff &&
+					data.query.pages[0].revisions[0].diff.body;
 				
 				if (html) {
-					var msg = this.getTargetMsg(true, true);
-					if (msg) {
-						msg.prepareUnderlayersInViewport(true);
-					}
+					html = '<table class="diff">' +
+						'<col class="diff-marker"><col class="diff-content">' +
+						'<col class="diff-marker"><col class="diff-content">' +
+						html +
+						'</table>';
 					
 					this.$previewArea
-						.html(html)
-						.cdAddCloseButton('предпросмотр', this.getTargetMsg(true));
-					
-					var $parsedsummary = data.parse.parsedsummary && cd.env.toJquerySpan(data.parse.parsedsummary);
-					if ($parsedsummary.length) {
-						$parsedsummary.find('a').attr('tabindex', '-1');
-						this.$element.find('.cd-summaryPreview').html(
-							'Предпросмотр описания изменения: <span class="comment">' + $parsedsummary.html() +
-								'</span>'
-						);
-					}
-					if (msg) {
-						msg.updateUnderlayersInViewport(true);
+						.cdHtml(html, this.getTargetMsg(true))
+						.cdAddCloseButton('просмотр изменений', this.getTargetMsg(true));
+				} else {
+					this.$previewArea.empty();
+					if (html !== undefined) {
+						this.showInfo('Изменений нет.');
 					}
 				}
 				if (!this.$previewArea.cdIsInViewport()) {
 					this.$previewArea.cdScrollTo('top');
 				}
-				this.setPending(false, 'preview');
-			}.bind(this))
-			.fail(function (data) {
-				this.abort('Не удалось предпросмотреть сообщение.', data, 'preview');
-			}.bind(this))
-			.always(function () {
-				if (callback) {
-					callback();
-				}
-			});
-	}
-	
-	viewChanges() {
-		this.$infoArea.cdEmpty(this.getTargetMsg(true));
-		this.setPending(true, 'viewChanges');
-		
-		cd.env.loadPageCode(cd.env.CURRENT_PAGE)
-			.done(function (result) {
-				var newPageCode;
-				try {
-					newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
-				} catch (e) {
-					if (e instanceof cd.env.Exception) {
-						this.abort(e.message, null, 'viewChanges');
-					} else {
-						this.abort('Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).', e.stack || e.message, 'viewChanges');
+				this.setPending(false, 'viewChanges');
+			} catch (e) {
+				this.abort('Не удалось загрузить изменения.', e, 'viewChanges');
+			}
+		} catch (e) {
+			var [errorType, data] = e;
+			switch (errorType) {
+				case 'parse':
+					this.abort(data);
+					break;
+				case 'api':
+					var text;
+					switch (data) {
+						default:
+							text = 'Ошибка API: ' + data + '.';
+							break;
 					}
-					return;
-				}
-				
-				mw.loader.load('mediawiki.diff.styles');
-				
-				return new mw.Api().post({
-					action: 'query',
-					rvdifftotext: newPageCode,
-					titles: cd.env.CURRENT_PAGE,
-					prop: 'revisions',
-					formatversion: 2,
-				})
-					.done(function (data) {
-						var error = data.error;
-						if (error) {
-							var text;
-							switch (error.code) {
-								default:
-									text = error.code + ': ' + error.info;
-									break;
-							}
-							this.abort('Не удалось загрузить изменения. ' + text, data, 'viewChanges');
-							return;
-						}
-						
-						var html = data &&
-							data.query &&
-							data.query.pages &&
-							data.query.pages[0] &&
-							data.query.pages[0].revisions &&
-							data.query.pages[0].revisions[0] &&
-							data.query.pages[0].revisions[0].diff &&
-							data.query.pages[0].revisions[0].diff.body;
-						
-						if (html) {
-							html = '<table class="diff">' +
-								'<col class="diff-marker"><col class="diff-content">' +
-								'<col class="diff-marker"><col class="diff-content">' +
-								html +
-								'</table>';
-							
-							this.$previewArea
-								.cdHtml(html, this.getTargetMsg(true))
-								.cdAddCloseButton('просмотр изменений', this.getTargetMsg(true));
-						} else {
-							this.$previewArea.empty();
-							if (html !== undefined) {
-								this.showInfo('Изменений нет.');
-							}
-						}
-						if (!this.$previewArea.cdIsInViewport()) {
-							this.$previewArea.cdScrollTo('top');
-						}
-						this.setPending(false, 'viewChanges');
-					}.bind(this))
-					.fail(function (data) {
-						this.abort('Не удалось загрузить изменения.', data, 'viewChanges');
-					}.bind(this));
-			}.bind(this))
-			.fail(function (errorType, data) {
-				switch (errorType) {
-					case 'parse':
-						this.abort(data);
-						break;
-					case 'api':
-						var text;
-						switch (data) {
-							default:
-								text = 'Ошибка API: ' + data + '.';
-								break;
-						}
-						this.abort('Не удалось получить код страницы. ' + text, data);
-						break;
-					case 'network':
-						this.abort('Не удалось получить код страницы (сетевая ошибка).', data);
-						break;
-				}
-			}.bind(this));
+					this.abort('Не удалось получить код страницы. ' + text, data);
+					break;
+				case 'network':
+				default:
+					this.abort('Не удалось получить код страницы (сетевая ошибка).', data);
+					break;
+			}
+		}
 	}
 	
 	reloadPageAfterSubmit(anchor) {
@@ -1557,6 +1558,7 @@ export default class MsgForm {
 						text = 'Не удалось обновить страницу. ' + text;
 						break;
 					case 'network':
+					default:
 						text = 'Не удалось обновить страницу (сетевая ошибка).';
 						break;
 				}
@@ -1567,7 +1569,7 @@ export default class MsgForm {
 			}.bind(this));
 	}
 	
-	submit() {
+	async submit() {
 		var isDelete = false;
 		if (this.headingInput &&
 			this.headingInput.getValue() === '' &&
@@ -1593,21 +1595,22 @@ export default class MsgForm {
 		this.$infoArea.cdEmpty(this.getTargetMsg(true));
 		this.setPending(true);
 		
-		cd.env.loadPageCode(cd.env.CURRENT_PAGE)
-			.done(function (result) {
-				var newPageCode;
-				try {
-					newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
-				} catch (e) {
-					if (e instanceof cd.env.Exception) {
-						this.abort(e.message, null, 'submit');
-					} else {
-						this.abort('Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).', e.stack || e.message, 'submit');
-					}
-					return;
+		try {
+			var result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
+			var newPageCode;
+			try {
+				newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
+			} catch (e) {
+				if (e instanceof cd.env.Exception) {
+					this.abort(e.message, null, 'submit');
+				} else {
+					this.abort('Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).', e.stack || e.message, 'submit');
 				}
-				
-				new mw.Api().postWithToken('csrf', {
+				return;
+			}
+			
+			try {
+				var data = await new mw.Api().postWithToken('csrf', {
 					action: 'edit',
 					title: cd.env.CURRENT_PAGE,
 					summary: cd.env.formSummary(this.summaryInput.getValue().trim()),
@@ -1617,104 +1620,104 @@ export default class MsgForm {
 					minor: this.minorCheckbox && this.minorCheckbox.isSelected(),
 					watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
 					formatversion: 2,
-				})
-					.done(function (data) {
-						// error can't be here?
-						var error = data.error;
-						if (error) {
-							var text;
-							switch (error.code) {
-								default:
-									text = error.code + ': ' + error.info;
-									break;
-							}
-							this.abort(text);
-							return;
-						}
-						
-						var verb = 'отправлено';
-						if (this.mode === 'edit') {
-							if (!isDelete) {
-								verb = 'сохранено';
-							} else {
-								verb = 'удалено';
-							}
-						}
-						this.showInfo('Сообщение успешно ' + verb);
-						this.setPending(false);
-						
-						var anchor;
-						if (this.mode !== 'edit') {
-							var now = new Date();
-							anchor = cd.env.generateMsgAnchor(
-								now.getUTCFullYear(),
-								now.getUTCMonth(),
-								now.getUTCDate(),
-								now.getUTCHours(),
-								now.getUTCMinutes(),
-								cd.env.CURRENT_USER
-							);
-						} else {
-							anchor = this.target.anchor;
-						}
-						
-						cd.msgForms[cd.msgForms.indexOf(this)].submitted = true;
-						if (cd.getLastActiveAlteredMsgForm()) {
-							this.preview(function () {
-								var $info = cd.env.toJquerySpan('Сообщение было отправлено, но на странице также имеются другие открытые формы. Отправьте их для перезагрузки страницы или <a href="javascript:">перезагрузите страницу</a> всё равно.');
-								$info.find('a').click(function () {
-									this.reloadPageAfterSubmit(anchor);
-								});
-								this.showInfo($info);
-								this.destroy(true, true);
-							});
-						} else {
-							this.reloadPageAfterSubmit(anchor);
-						}
-					})
-					.fail(function (jqXHR, textStatus, errorThrown) {
-						// Something strange about the parameters, they are volatile.
-						var error = textStatus && textStatus.error;
-						if (error) {
-							var text;
-							switch (error.code) {
-								case 'editconflict':
-									text = 'Конфликт редактирования. Просто нажмите «' + this.submitButton.getLabel() + 
-										'» ещё раз.';
-									break;
-								default:
-									text = 'Ответ сервера не распознан. Не удалось отредактировать страницу.';
-									break;
-							}
-							this.abort(text);
-							return;
-						}
-
-						this.abort(
-							'Не получен ответ сервера. Возможно, не удалось отредактировать страницу.',
-							[jqXHR, textStatus, errorThrown]
-						);
-					});
-			}.bind(this))
-			.fail(function (errorType, data) {
-				switch (errorType) {
-					case 'parse':
-						this.abort(data);
-						break;
-					case 'api':
-						var text;
-						switch (data) {
-							default:
-								text = 'Ошибка API: ' + data + '.';
-								break;
-						}
-						this.abort('Не удалось получить код страницы. ' + text, data);
-						break;
-					case 'network':
-						this.abort('Не удалось получить код страницы (сетевая ошибка).', data);
-						break;
+				});
+				// error can't be here?
+				var error = data.error;
+				if (error) {
+					var text;
+					switch (error.code) {
+						default:
+							text = error.code + ': ' + error.info;
+							break;
+					}
+					this.abort(text);
+					return;
 				}
-			}.bind(this));
+				
+				var verb = 'отправлено';
+				if (this.mode === 'edit') {
+					if (!isDelete) {
+						verb = 'сохранено';
+					} else {
+						verb = 'удалено';
+					}
+				}
+				this.showInfo('Сообщение успешно ' + verb);
+				this.setPending(false);
+				
+				var anchor;
+				if (this.mode !== 'edit') {
+					var now = new Date();
+					anchor = cd.env.generateMsgAnchor(
+						now.getUTCFullYear(),
+						now.getUTCMonth(),
+						now.getUTCDate(),
+						now.getUTCHours(),
+						now.getUTCMinutes(),
+						cd.env.CURRENT_USER
+					);
+				} else {
+					anchor = this.target.anchor;
+				}
+				
+				cd.msgForms[cd.msgForms.indexOf(this)].submitted = true;
+				if (cd.getLastActiveAlteredMsgForm()) {
+					this.preview(function () {
+						var $info = cd.env.toJquerySpan('Сообщение было отправлено, но на странице также имеются другие открытые формы. Отправьте их для перезагрузки страницы или <a href="javascript:">перезагрузите страницу</a> всё равно.');
+						$info.find('a').click(function () {
+							this.reloadPageAfterSubmit(anchor);
+						});
+						this.showInfo($info);
+						this.destroy(true, true);
+					});
+				} else {
+					this.reloadPageAfterSubmit(anchor);
+				}
+			} catch (e) {
+				[jqXHR, textStatus, errorThrown] = e;
+				// Something strange about the parameters, they are volatile.
+				var error = textStatus && textStatus.error;
+				if (error) {
+					var text;
+					switch (error.code) {
+						case 'editconflict':
+							text = 'Конфликт редактирования. Просто нажмите «' + this.submitButton.getLabel() + 
+								'» ещё раз.';
+							break;
+						default:
+							text = 'Ответ сервера не распознан. Не удалось отредактировать страницу.';
+							break;
+					}
+					this.abort(text);
+					return;
+				}
+
+				this.abort(
+					'Не получен ответ сервера. Возможно, не удалось отредактировать страницу.',
+					[jqXHR, textStatus, errorThrown]
+				);
+			}
+		} catch (e) {
+			[errorType, data] = e;
+			switch (errorType) {
+				case 'parse':
+					this.abort(data);
+					break;
+				case 'api':
+					var text;
+					switch (data) {
+						default:
+							text = 'Ошибка API: ' + data + '.';
+							break;
+					}
+					this.abort('Не удалось получить код страницы. ' + text, data);
+					break;
+				case 'network':
+				default:
+					this.abort('Не удалось получить код страницы (сетевая ошибка).', data);
+					break;
+			}
+		}
 	}
 	
 	cancel(leaveInfo) {

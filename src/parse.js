@@ -667,20 +667,20 @@ export default function parse(msgAnchorToScrollTo) {
 							data.error.info &&
 							data.error.code + ': ' + data.error.info;
 						if (error) {
-							return $.Deferred().reject('api', error).promise();
+							return $.Deferred().reject(['api', error]).promise();
 						}
 						
 						var text = data &&
 							data.parse &&
 							data.parse.text;
 						if (!text) {
-							return $.Deferred().reject('api', 'no data').promise();
+							return $.Deferred().reject(['api', 'no data']).promise();
 						}
 						
 						return text;
 					},
 					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject('network', [jqXHR, textStatus, errorThrown]).promise();
+						return $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise();
 					}
 				);
 			
@@ -711,12 +711,12 @@ export default function parse(msgAnchorToScrollTo) {
 							data.error.info &&
 							data.error.code + ': ' + data.error.info;
 						if (error) {
-							return $.Deferred().reject('api', error).promise();
+							return $.Deferred().reject(['api', error]).promise();
 						}
 						
 						var query = data.query;
 						if (!query) {
-							return $.Deferred().reject('api', 'no data').promise();
+							return $.Deferred().reject(['api', 'no data']).promise();
 						}
 						
 						var page = query &&
@@ -727,11 +727,11 @@ export default function parse(msgAnchorToScrollTo) {
 							page.revisions[0];
 						
 						if (page.missing) {
-							return $.Deferred().reject('api', 'missing').promise();
+							return $.Deferred().reject(['api', 'missing']).promise();
 						}
 						
 						if (page.invalid) {
-							return $.Deferred().reject('api', 'invalid').promise();
+							return $.Deferred().reject(['api', 'invalid']).promise();
 						}
 						
 						var code = revision && revision.content;
@@ -749,7 +749,7 @@ export default function parse(msgAnchorToScrollTo) {
 						};
 					},
 					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject('network', [jqXHR, textStatus, errorThrown]).promise();
+						return $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise();
 					}
 				);
 		},
@@ -795,6 +795,32 @@ export default function parse(msgAnchorToScrollTo) {
 				
 				cd.env.updateNextButton();
 			}, 100);
+		},
+
+		genericErrorHandler: function (errorType, data) {
+			switch (errorType) {
+				case 'parse':
+					this.abort(data, null, null, retryLoad);
+					break;
+				case 'api':
+					var text;
+					switch (data) {
+						case 'missing':
+							text = 'Текущая страница была удалена.';
+							break;
+						default:
+							text = 'Неизвестная ошибка API: ' + data + '.';
+							break;
+					}
+					this.abort('Не удалось загрузить сообщение. ' + text, data, null, retryLoad);
+					break;
+				case 'network':
+					this.abort('Не удалось загрузить сообщение (сетевая ошибка).', data, null, retryLoad);
+					break;
+				default:
+					this.abort('Не удалось загрузить сообщение (неизвестная ошибка).', data, null, retryLoad);
+					break;
+			}
 		},
 
 		Exception: function (message) {

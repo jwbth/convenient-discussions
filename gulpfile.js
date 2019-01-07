@@ -29,7 +29,12 @@ gulp.task('default', function () {
 		.transform('babelify', {
 			presets: ['@babel/preset-env'],
 			// plugin-proposal-function-bind responsible for private::methods
-			plugins: ['@babel/plugin-proposal-class-properties', '@babel/plugin-proposal-function-bind'],
+			plugins: [
+				'@babel/plugin-proposal-class-properties',
+				'@babel/plugin-proposal-function-bind',
+				'@babel/plugin-transform-runtime',
+				'@babel/plugin-transform-async-to-generator',
+			],
 		})
 		.transform('node-lessify', {
 			textMode: true,
