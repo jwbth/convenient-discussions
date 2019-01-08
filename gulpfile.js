@@ -41,11 +41,7 @@ gulp.task('default', function () {
 		})
 		.on('update', () => bundle(b))
 		.on('time', time => {
-			var duration = (time / 1000).toFixed(1);
-			if (duration === '0.0') {
-				notify().write('0.0 seconds?');
-			}
-			console.log(now() + ' - Done in ' + duration + ' seconds');
+			console.log(now() + ' - Done in ' + (time / 1000).toFixed(1) + ' seconds');
 		});
 
 	return bundle(b);

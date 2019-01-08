@@ -5,13 +5,13 @@ import debug from './debug';
 import parse from './parse';
 import msgLinks from './msgLinks';
 import talkPageCss from './talkpage.less';
-import logPagesCss from './logpages.less'
+import logPagesCss from './logpages.less';
+import config from './config';
+import strings from './strings';
 
 (function () {
 
 function main() {
-	/* "Global" functions */
-	
 	function addCSS(css) {
 		var styleElem = document.createElement('style');
 		styleElem.appendChild(document.createTextNode(css));
@@ -64,7 +64,7 @@ function main() {
 	debug.initTimers();
 	
 	debug.startTimer('начало');
-	
+
 	window.convenientDiscussions = window.convenientDiscussions || window.cd || {};
 	if (typeof window.convenientDiscussions !== 'object') {
 		window.convenientDiscussions = {};
@@ -87,75 +87,64 @@ function main() {
 	
 	/* Config values */
 
-	cd.config = {};
-
-	cd.config.debug = true;
-
-	cd.config.LOCAL_HELP_LINK = 'U:JWBTH/CD';
-
-	// List of classes blocks with which can't be message date containers.
-	cd.config.BLOCKS_TO_EXCLUDE_CLASSES = ['botMessage', 'ruwiki-movedTemplate', 'ambox', 'NavFrame'];
-	cd.config.TEMPLATES_TO_EXCLUDE = ['перенесено с', 'moved from', 'перенесено на', 'moved to', 'перенесено из раздела',
-		'перенесено в раздел', 'копия с', 'скопировано на'];
-
-	cd.config.MONTH_NAMES_GENITIVE = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа',
-		'сентября', 'октября', 'ноября', 'декабря'];
-	
-	cd.config.DISCUSSION_PAGE_REGEXP = new RegExp(
-		// Википедия:
-		'^(?:Википедия:(?:Форум[/ ]|Голосования/|Опросы/|Обсуждение правил/|Заявки на |Запросы|Кандидаты в .*/|' +
-		'К (?:удалению|объединению|переименованию|разделению|улучшению|оценке источников|посредничеству)/|' +
-		'Оспаривание|Рецензирование/|Проверка участников/|Фильтр правок/Срабатывания|.* запросы)|' +
-		// Проект:
-		'Проект:(?:Инкубатор/(?:Мини-рецензирование|Форум)|Социальная ответственность/Форум|Водные объекты|' +
-		'Библиотека/(?:Требуются книги|Вопросы|Горячие темы|Технические вопросы)|' +
-		'Графическая мастерская/Заявки|Добротные статьи/К лишению статуса|Грамотность/Запросы))'
-	);
-	
-	// ' is in the end alone so that normal markup in the end of a message does not get removed.
-	cd.config.SIG_PREFIX_REGEXP = /(?:\s*С уважением,)?(?:\s+>+)?[-–—\s~→]*'*$/;
-
-	// User name is case-sensitive, namespaces and special pages names are not, that's why it is like this.
-	cd.config.USER_NAME_PATTERN =
-		'\\s*\\[\\[[ _]*:?\\w*:?\\w*:?(?:(?:[Уу][Чч][Аа][Сс][Тт][Нн][Ии](?:[Кк]|[Цц][Аа])|[Уу]|[Uu][Ss][Ee][Rr]|[Uu]|' +
-		'[Оо][Бб][Сс][Уу][Жж][Дд][Ее][Нн][Ии][Ее][ _]*[Уу][Чч][Аа][Сс][Тт][Нн][Ии](?:[Кк][Аа]|[Цц][Ыы])|' +
-		'[Оо][Уу]|[Uu][Ss][Ee][Rr][ _]*[Tt][Aa][Ll][Kk]|[Uu][Tt])[ _]*:[ _]*|' +
-		'(?:[Ss][Pp][Ee][Cc][Ii][Aa][Ll][ _]*:[ _]*[Cc][Oo][Nn][Tt][Rr][Ii][Bb][Uu][Tt][Ii][Oo][Nn][Ss]|' +
-		'[Сс][Лл][Уу][Жж][Ее][Бб][Нн][Аа][Яя][ _]*:[ _]*[Вв][Кк][Лл][Аа][Дд])\\/[ _]*)';
-	
-	cd.config.USER_NAME_REGEXPS = [
-		new RegExp(
-			'\\[\\[[ _]*(?:(?:(?:Участни(?:к|ца))|У|User|U|Обсуждение[ _]*участни(?:ка|цы)|ОУ|' +
-			'User[ _]*talk|UT)[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|Служебная[ _]*:[ _]*Вклад)\\/[ _]*)' +
-			'([^|\\]#\/]+)',
-			'ig'
+	cd.config = $.extend(cd.config, config, {
+		debug: true,
+		
+		LOCAL_HELP_LINK: 'U:JWBTH/CD',
+		
+		// List of classes, blocks with which can't be message date containers.
+		BLOCKS_TO_EXCLUDE_CLASSES: ['botMessage', 'ruwiki-movedTemplate', 'ambox', 'NavFrame'],
+		TEMPLATES_TO_EXCLUDE: ['перенесено с', 'moved from', 'перенесено на', 'moved to', 'перенесено из раздела',
+			'перенесено в раздел', 'копия с', 'скопировано на'],
+		
+		DISCUSSION_PAGE_REGEXP: new RegExp(
+			// Википедия:
+			'^(?:Википедия:(?:Форум[/ ]|Голосования/|Опросы/|Обсуждение правил/|Заявки на |Запросы|Кандидаты в .*/|' +
+			'К (?:удалению|объединению|переименованию|разделению|улучшению|оценке источников|посредничеству)/|' +
+			'Оспаривание|Рецензирование/|Проверка участников/|Фильтр правок/Срабатывания|.* запросы)|' +
+			// Проект:
+			'Проект:(?:Инкубатор/(?:Мини-рецензирование|Форум)|Социальная ответственность/Форум|Водные объекты|' +
+			'Библиотека/(?:Требуются книги|Вопросы|Горячие темы|Технические вопросы)|' +
+			'Графическая мастерская/Заявки|Добротные статьи/К лишению статуса|Грамотность/Запросы))'
 		),
-		// Caution: invisible character in [ ‎].
-		new RegExp('\\{\\{ *(?:[uU]nsigned(?:IP)?|[нН]е подписано) *\\|[ ‎]*([^}|]+?) *(?:\\| *[^}]+?[ ‎]*)?\\}\\}', 'g'),
-		new RegExp('\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *[^}|]+?[ ‎]*\\|[ ‎]*([^}]+?) *\\}\\}', 'g'),
-		// Cases like [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]
-		new RegExp('\\[\\[[^|]+\\|([^\\]]+)\\]\\]', 'g'),
-	];
-	
-	cd.config.SIG_PATTERN =
-		'(?:(\\b\\d?\\d:\\d\\d, \\d\\d? [а-я]+ \\d\\d\\d\\d \\(UTC\\))|' +
-		'\\{\\{ *(?:[uU]nsigned(?:IP)?|[нН]е подписано) *\\|[ ‎]*([^}|]+?) *(?:\\| *([^}]+?)[ ‎]*)?\\}\\}|' +
-		'\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *([^}|]+?)[ ‎]*(?:\\|[ ‎]*([^}]+?) *)?\\}\\})';
-	
-	cd.config.AUTHOR_SELECTOR =
-		'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
-		'a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
-		'a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4"], ' +
-		'a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"]';
-	// (?:Участни(?:к|ца):([^#\/]+)|Обсуждение_участни(?:ка|цы):([^#]+)|Служебная:Вклад\/([^#]+)|User:)
-	cd.config.AUTHOR_LINK_REGEXP = /(?:%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8(?:%D0%BA|%D1%86%D0%B0):([^#\/]+)|%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8(?:%D0%BA%D0%B0|%D1%86%D1%8B):([^#\/]+)|%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4\/([^#\/]+)|User:([^#\/]+))/;
+		
+		// ' is in the end alone so that normal markup in the end of a message does not get removed.
+		SIG_PREFIX_REGEXP: /(?:\s*С уважением,)?(?:\s+>+)?[-–—\s~→]*'*$/,
+
+		// User name is case-sensitive, namespaces and special pages names are not, that's why it is like this.
+		USER_NAME_PATTERN:
+			'\\s*\\[\\[[ _]*:?\\w*:?\\w*:?(?:(?:[Уу][Чч][Аа][Сс][Тт][Нн][Ии](?:[Кк]|[Цц][Аа])|[Уу]|[Uu][Ss][Ee][Rr]|[Uu]|' +
+			'[Оо][Бб][Сс][Уу][Жж][Дд][Ее][Нн][Ии][Ее][ _]*[Уу][Чч][Аа][Сс][Тт][Нн][Ии](?:[Кк][Аа]|[Цц][Ыы])|' +
+			'[Оо][Уу]|[Uu][Ss][Ee][Rr][ _]*[Tt][Aa][Ll][Kk]|[Uu][Tt])[ _]*:[ _]*|' +
+			'(?:[Ss][Pp][Ee][Cc][Ii][Aa][Ll][ _]*:[ _]*[Cc][Oo][Nn][Tt][Rr][Ii][Bb][Uu][Tt][Ii][Oo][Nn][Ss]|' +
+			'[Сс][Лл][Уу][Жж][Ее][Бб][Нн][Аа][Яя][ _]*:[ _]*[Вв][Кк][Лл][Аа][Дд])\\/[ _]*)',
+		
+		USER_NAME_REGEXPS: [
+			new RegExp(
+				'\\[\\[[ _]*(?:(?:(?:Участни(?:к|ца))|У|User|U|Обсуждение[ _]*участни(?:ка|цы)|ОУ|' +
+				'User[ _]*talk|UT)[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|Служебная[ _]*:[ _]*Вклад)\\/[ _]*)' +
+				'([^|\\]#\/]+)',
+				'ig'
+			),
+			// Caution: invisible character in [ ‎].
+			new RegExp('\\{\\{ *(?:[uU]nsigned(?:IP)?|[нН]е подписано) *\\|[ ‎]*([^}|]+?) *(?:\\| *[^}]+?[ ‎]*)?\\}\\}', 'g'),
+			new RegExp('\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *[^}|]+?[ ‎]*\\|[ ‎]*([^}]+?) *\\}\\}', 'g'),
+			// Cases like [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]
+			new RegExp('\\[\\[[^|]+\\|([^\\]]+)\\]\\]', 'g'),
+		],
+		
+		AUTHOR_SELECTOR:
+			'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
+			'a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
+			'a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4"], ' +
+			'a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"]',
+		// (?:Участни(?:к|ца):([^#\/]+)|Обсуждение_участни(?:ка|цы):([^#]+)|Служебная:Вклад\/([^#]+)|User:)
+		AUTHOR_LINK_REGEXP: /(?:%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8(?:%D0%BA|%D1%86%D0%B0):([^#\/]+)|%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8(?:%D0%BA%D0%B0|%D1%86%D1%8B):([^#\/]+)|%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4\/([^#\/]+)|User:([^#\/]+))/,
+	});
 
 	/* Messages */
 
-	cd.strings = {
-		couldntLocateMsgInCode: 'Не удалось определить местоположение сообщения в коде. Сообщение могло быть удалено или сильно отредактировано. Проблема также может быть связана со сложностью кода сообщения или недоработкой скрипта.',
-		couldntLocateSectionInCode: 'Не удалось определить местоположение раздела в коде. Раздел мог быть удалён. Проблема также может быть связана со сложностью кода первого сообщения раздела или недоработкой скрипта.',
-	};
+	cd.strings = strings;
 	
 	/* "Environment" of the script. This is deemed not eligible for adjustment, although such demand may appear */
 
@@ -200,7 +189,7 @@ function main() {
 		recalculateUnderlayersTimeout: false,
 		pageOverlaysOn: false,
 
-		getTransparentColor: function (color) {
+		getTransparentColor(color) {
 			var dummyElement = document.createElement('span');
 			dummyElement.style.color = color;
 			
@@ -216,13 +205,13 @@ function main() {
 			return color;
 		},
 		
-		getMonthNumber: function (mesyats) {
-			var month = cd.config.MONTH_NAMES_GENITIVE.indexOf(mesyats);
+		getMonthNumber(mesyats) {
+			var month = cd.strings.monthNamesGenitive.indexOf(mesyats);
 			if (month === -1) return;
 			return month;
 		},
 		
-		getTimestampFromDate: function (date, timezoneOffset) {
+		getTimestampFromDate(date, timezoneOffset) {
 			var matches = date.match(/(\b\d?\d):(\d\d), (\d\d?) ([а-я]+) (\d\d\d\d)/);
 			if (!matches) return;
 			
@@ -245,10 +234,8 @@ function main() {
 				(timezoneOffset ? timezoneOffset * cd.env.MILLISECONDS_IN_A_MINUTE : 0);
 		},
 		
-		generateMsgAnchor: function (year, month, day, hours, minutes, author) {
-			function zeroPad(n, p) {
-				return ('0000' + n).slice(-p);
-			}
+		generateMsgAnchor(year, month, day, hours, minutes, author) {
+			var zeroPad = (n, p) => ('0000' + n).slice(-p);
 
 			if (year === undefined ||
 				month === undefined ||
@@ -269,7 +256,7 @@ function main() {
 			);
 		},
 		
-		generateCaseInsensitiveFirstCharPattern: function (s) {
+		generateCaseInsensitiveFirstCharPattern(s) {
 			var pattern = '';
 			
 			var firstChar = s[0];
@@ -287,11 +274,11 @@ function main() {
 		},
 		
 		// Talk pages and pages of "Project" ("Википедия"), "WikiProject" ("Проект") namespaces.
-		isDiscussionNamespace: function (nsNumber) {
+		isDiscussionNamespace(nsNumber) {
 			return nsNumber % 2 === 1 || nsNumber === 4 || nsNumber === 104;
 		},
 		
-		highlightFocused: function (e) {
+		highlightFocused(e) {
 			if (cd.env.scrollHandleTimeout || cd.env.pageOverlaysOn) return;
 			
 			var underlayer, top, left, width, height, i;
@@ -328,7 +315,7 @@ function main() {
 			}
 		},
 		
-		updateUnderlayersCorrection: function () {
+		updateUnderlayersCorrection() {
 			if (cd.env.CURRENT_SKIN !== 'vector') {
 				cd.env.underlayersXCorrection = -cd.env.underlayersContainer.offsetParent.offsetLeft;
 				cd.env.underlayersYCorrection = -cd.env.underlayersContainer.offsetParent.offsetTop;
@@ -344,7 +331,7 @@ function main() {
 			}
 		},
 		
-		windowResizeHandler: function () {
+		windowResizeHandler() {
 			cd.env.updateUnderlayersCorrection();
 			
 			// To prevent horizontal scrollbar from appearing because of invisible layers.
@@ -355,11 +342,11 @@ function main() {
 			}
 		},
 		
-		beforeUnloadHandler: function (e) {
+		beforeUnloadHandler(e) {
 			if (cd.getLastActiveAlteredMsgForm() || (cd.env.alwaysConfirmLeavingPage && cd.getLastActiveMsgForm())) {
 				// Most browsers ignore this message, displaying pre-defined one.
 				var message = 'На странице есть неотправленные сообщения. Всё равно хотите уйти со страницы?';
-				setTimeout(function () {
+				setTimeout(() => {
 					var lastActiveAlteredMsgForm = cd.getLastActiveMsgForm();
 					if (lastActiveAlteredMsgForm) {
 						lastActiveAlteredMsgForm.textarea.focus();
@@ -370,7 +357,7 @@ function main() {
 			}
 		},
 		
-		findMsgInViewport: function (findClosestDirection) {
+		findMsgInViewport(findClosestDirection) {
 			var viewportHeight = window.innerHeight;
 			var viewportTop = window.pageYOffset;
 			var viewportBottom = viewportTop + viewportHeight;
@@ -480,7 +467,7 @@ function main() {
 			return cd.msgs[foundMsgId];
 		},
 		
-		goToPrevNewMsg: function () {
+		goToPrevNewMsg() {
 			if (cd.env.$prevButton.css('display') === 'none') return;
 			
 			var foundMsg = cd.env.findMsgInViewport('forward');
@@ -513,13 +500,13 @@ function main() {
 			}
 		},
 		
-		goToNextNewMsg: function () {
+		goToNextNewMsg() {
 			if (cd.env.newestCount) {
 				var msg;
 				for (var i = cd.env.lastNewestSeen || 0; i < cd.msgs.length; i++) {
 					msg = cd.msgs[i];
 					if (msg.newness === 'newest' && !msg.seen) {
-						msg.$elements.cdScrollTo('middle', function () {
+						msg.$elements.cdScrollTo('middle', () => {
 							msg.registerSeen('forward', true);
 							cd.env.updateNextButton();
 						});
@@ -562,7 +549,7 @@ function main() {
 			}
 		},
 		
-		globalKeyDownHandler: function (e) {
+		globalKeyDownHandler(e) {
 			if (cd.env.pageOverlaysOn) return;
 			
 			if (// Ctrl+Alt+Q
@@ -625,7 +612,7 @@ function main() {
 			}
 		},
 		
-		recalculateUnderlayers: function (newOnly) {
+		recalculateUnderlayers(newOnly) {
 			// It is assumed that if we need to recount not only new (highlighted) underlayers, others need to be
 			// removed ("removeNotNew" parameter was removed as redundant), otherwise there's no point to recalculate.
 			
@@ -693,7 +680,7 @@ function main() {
 			}
 		},
 		
-		updateNextButton: function () {
+		updateNextButton() {
 			if (cd.env.newestCount) {
 				if (!cd.env.$nextButton.hasClass('cd-updatePanel-nextButton-digit')) {
 					cd.env.$nextButton
@@ -711,7 +698,7 @@ function main() {
 			}
 		},
 		
-		setLoadingOverlay: function () {
+		setLoadingOverlay() {
 			if (!cd.env.$loadingOverlay || !cd.env.$loadingOverlay.length) {
 				cd.env.$loadingOverlay = $('<div>').addClass('cd-loadingOverlay');
 				var $loadingPopup = $('<div>')
@@ -730,7 +717,7 @@ function main() {
 			cd.env.pageOverlaysOn = true;
 		},
 		
-		removeLoadingOverlay: function () {
+		removeLoadingOverlay() {
 			if (cd.env.$loadingOverlay && cd.env.$loadingOverlay.length) {
 				cd.env.$loadingOverlay.hide();
 				
@@ -738,45 +725,44 @@ function main() {
 			}
 		},
 		
-		createWindowManager: function () {
+		createWindowManager() {
 			cd.env.windowManager = new OO.ui.WindowManager();
-			cd.env.windowManager.on('opening', function () {
+			cd.env.windowManager.on('opening', () => {
 				cd.env.pageOverlaysOn = true;
 			});
-			cd.env.windowManager.on('closing', function () {
+			cd.env.windowManager.on('closing', () => {
 				cd.env.pageOverlaysOn = false;
 			});
 		},
 		
-		removeDuplicates: function (array) {
+		removeDuplicates(array) {
 			if (typeof array !== 'object') return;
 			
-			return array.filter(function (value, index) {
-				return array.indexOf(value) === index;
-			});
+			return array.filter((value, index) => array.indexOf(value) === index);
 		},
 		
-		toJquerySpan: function (html) {
+		toJquerySpan(html) {
 			return $($.parseHTML(html))
 				.wrapAll('<span>')
 				.parent();
 		},
 
-		requestOptions: function () {
+		requestOptions() {
 			cd.env.optionsRequest = new mw.Api().get({
 				action: 'query',
 				meta: 'userinfo',
 				uiprop: 'options',
 				formatversion: 2,
 			})
+				// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 				.then(
-					function (data) {
+					data => {
 						var options = data &&
 							data.query &&
 							data.query.userinfo &&
 							data.query.userinfo.options;
 						if (!options) {
-							return $.Deferred().reject('api', 'no data').promise();
+							return $.Deferred().reject(['api', 'no data']).promise();
 						}
 						
 						var visitsCompressed = options['userjs-' + cd.env.VISITS_OPTION_NAME];
@@ -796,17 +782,14 @@ function main() {
 							watchedTopics: watchedTopics,
 						};
 					},
-					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject('network', [jqXHR, textStatus, errorThrown]).promise();
-					}
+					(jqXHR, textStatus, errorThrown) =>
+						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 		},
 		
-		getVisits: function () {
+		getVisits() {
 			if (cd.env.optionsRequest) {
-				return cd.env.optionsRequest.then(function (options) {
-					return options.visits;
-				});
+				return cd.env.optionsRequest.then(options => options.visits);
 			} else if (mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) !== null) {
 				var visits = unpackVisits(
 					lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME))
@@ -820,11 +803,11 @@ function main() {
 			}
 		},
 		
-		setVisits: function (visits) {
+		setVisits(visits) {
 			var visitsString = packVisits(visits);
 			var visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
 			if (visitsStringCompressed.length > 65535) {
-				return $.Deferred().reject('internal', 'sizelimit');
+				return $.Deferred().reject(['internal', 'sizelimit']);
 			}
 			
 			return new mw.Api().postWithToken('csrf', {
@@ -832,23 +815,21 @@ function main() {
 				optionname: 'userjs-' + cd.env.VISITS_OPTION_NAME,
 				optionvalue: visitsStringCompressed,
 			})
+				// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 				.then(
-					function (data) {
+					data => {
 						if (!data || data.options !== 'success') {
-							return $.Deferred().reject('api', 'no success').promise();
+							return $.Deferred().reject(['api', 'no success']).promise();
 						}
 					},
-					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject('network', [jqXHR, textStatus, errorThrown]).promise();
-					}
+					(jqXHR, textStatus, errorThrown) =>
+						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 		},
 		
-		getWatchedTopics: function () {
+		getWatchedTopics() {
 			if (cd.env.optionsRequest) {
-				return cd.env.optionsRequest.then(function (options) {
-					return options.watchedTopics;
-				});
+				return cd.env.optionsRequest.then(options => options.watchedTopics);
 			} else if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
 				var watchedTopics = unpackWatchedTopics(
 					lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME))
@@ -860,11 +841,11 @@ function main() {
 			}
 		},
 		
-		setWatchedTopics: function (watchedTopics) {
+		setWatchedTopics(watchedTopics) {
 			var watchedTopicsString = packWatchedTopics(watchedTopics);
 			var watchedTopicsStringCompressed = lzString.compressToEncodedURIComponent(watchedTopicsString);
 			if (watchedTopicsStringCompressed.length > 65535) {
-				return $.Deferred().reject('internal', 'sizelimit');
+				return $.Deferred().reject(['internal', 'sizelimit']);
 			}
 			
 			return new mw.Api().postWithToken('csrf', {
@@ -872,19 +853,19 @@ function main() {
 				optionname: 'userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME,
 				optionvalue: watchedTopicsStringCompressed,
 			})
+				// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 				.then(
-					function (data) {
+					data => {
 						if (!data || data.options !== 'success') {
-							return $.Deferred().reject('api', 'no success').promise();
+							return $.Deferred().reject(['api', 'no success']).promise();
 						}
 					},
-					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject('network', [jqXHR, textStatus, errorThrown]).promise();
-					}
+					(jqXHR, textStatus, errorThrown) =>
+						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 		},
 
-		editWatchedTopics: function () {
+		editWatchedTopics() {
 			cd.env.requestOptions();
 			$.when(
 				mw.loader.using([
@@ -895,13 +876,13 @@ function main() {
 					'user.options',
 				]),
 				cd.env.getWatchedTopics()
-			).done(function (data1, data2) {
+			).done((data1, data2) => {
 				var watchedTopics = data2;
 				var pageIds, pageTitles;
 				var pageIdToTitle, pagesIdAndTitle, pageTitleToId;
 				var topics;
 				
-				function queryPageProperties(property, pageidOrTitleSet) {
+				var queryPageProperties = (property, pageidOrTitleSet) => {
 					var queryOptions = {
 						action: 'query',
 						formatversion: 2,
@@ -910,7 +891,7 @@ function main() {
 					var doneCallback;
 					if (property === 'titles') {
 						queryOptions.pageids = pageidOrTitleSet;
-						doneCallback = function (query) {
+						doneCallback = query => {
 							var pages = query.pages;
 							
 							for (var i = 0; i < pages.length; i++) {
@@ -922,7 +903,7 @@ function main() {
 							if (nextPageIds.length) {
 								queryPageProperties('titles', nextPageIds);
 							} else {
-								pagesIdAndTitle.sort(function (a, b) {
+								pagesIdAndTitle.sort((a, b) => {
 									if (a[1] > b[1]) {
 										return 1;
 									} else {
@@ -950,7 +931,7 @@ function main() {
 					} else {
 						queryOptions.titles = pageidOrTitleSet;
 						queryOptions.redirects = true;
-						doneCallback = function (query) {
+						doneCallback = query => {
 							var normalized = query.normalized || [];
 							var redirects = query.redirects || [];
 							var pages = query.pages;
@@ -991,11 +972,11 @@ function main() {
 								}
 								
 								setWatchedTopics(newWatchedTopics)
-									.done(function () {
+									.done(() => {
 										editWatchedTopicsDialog.popPending();
 										editWatchedTopicsDialog.close();
 									})
-									.fail(function (errorType, data) {
+									.fail((errorType, data) => {
 										if (errorType === 'internal' && data === 'sizelimit') {
 											editWatchedTopicsDialog.showErrors(new OO.ui.Error(
 												'Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Уменьшьте размер списка, чтобы это исправить.',
@@ -1016,27 +997,26 @@ function main() {
 					
 					new mw.Api().post(queryOptions)
 						.then(
-							function (data) {
+							data => {
 								var error = data.error &&
 									data.error.code &&
 									data.error.info &&
 									data.error.code + ': ' + data.error.info;
 								if (error) {
-									return $.Deferred().reject('api', error).promise();
+									return $.Deferred().reject(['api', error]).promise();
 								}
 								
 								if (!data || !data.query || !data.query.pages) {
-									return $.Deferred().reject('api', 'no data').promise();
+									return $.Deferred().reject(['api', 'no data']).promise();
 								}
 								
 								return data.query;
 							},
-							function (jqXHR, textStatus, errorThrown) {
-								return $.Deferred().reject('network', [jqXHR, textStatus, errorThrown]).promise();
-							}
+							(jqXHR, textStatus, errorThrown) =>
+								$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 						)
 						.done(doneCallback)
-						.fail(function (errorType, data) {
+						.fail((errorType, data) => {
 							editWatchedTopicsDialog.showErrors(new OO.ui.Error(
 								'Возникли проблемы при обработке списка тем: ' + errorType + '/' + data,
 								true
@@ -1044,7 +1024,7 @@ function main() {
 							console.log(errorType, data);
 							editWatchedTopicsDialog.popPending();
 						});
-				}
+				};
 				
 				function EditWatchedTopicsDialog() {
 					EditWatchedTopicsDialog.parent.call(this);
@@ -1092,9 +1072,9 @@ function main() {
 				EditWatchedTopicsDialog.prototype.getActionProcess = function (action) {
 					var dialog = this;
 					
-					function abort(text, recoverable) {
+					var abort = (text, recoverable) => {
 						dialog.showErrors(new OO.ui.Error(text, recoverable));
-					}
+					};
 					
 					if (action === 'save') {
 						return new OO.ui.Process(function () {
@@ -1140,7 +1120,7 @@ function main() {
 				cd.env.windowManager.addWindows([editWatchedTopicsDialog]);
 				
 				var editWatchedTopicsWindow = cd.env.windowManager.openWindow(editWatchedTopicsDialog);
-				editWatchedTopicsWindow.opened.then(function () {
+				editWatchedTopicsWindow.opened.then(() => {
 					editWatchedTopicsDialog.textarea.focus();
 				});
 			});

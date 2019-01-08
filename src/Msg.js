@@ -72,7 +72,7 @@ export default class Msg {
 			throw new cd.env.Exception();
 		}
 
-		var recursiveGetLastNotInlineChildren = function recursiveGetLastNotInlineChildren($el) {
+		var recursiveGetLastNotInlineChildren = $el => {
 			var $temp = $el.children().last();
 			while ($temp.length && !cd.env.isInline($temp[0])) {
 				$el = $temp;
@@ -235,11 +235,8 @@ export default class Msg {
 			// * current.tagName === 'DIV' is needed for cases like
 			//   [[Википедия:Форум/Технический#We need your feedback to improve Lua functions]] where a part of
 			//   a message is in an additional <div> tag.
-			// * Comparing of "(UTC)" indexes is a workaround needed for cases like NBS' reply at
-			//   [[Википедия:Форум/Викиданные#Порядок наград]]
 			} else if ((!steppedUpFromNotInline ||
-					current.tagName === 'DIV' ||
-					(date && currentText.indexOf(date) + date.length === currentText.lastIndexOf('(UTC)') + 5)
+					current.tagName === 'DIV'
 				) &&
 				!steppedBack &&
 				hasForeignDateLaterCounter <= 1
@@ -344,9 +341,9 @@ export default class Msg {
 			throw new cd.env.Exception();
 		}
 		
-		var sortElements = function sortElements() {
+		var sortElements = () => {
 			// Sort elements according to their position in the DOM.
-			elements.sort(function (a, b) {
+			elements.sort((a, b) => {
 				if (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) {
 					// b earlier than a
 					return 1;
@@ -422,7 +419,7 @@ export default class Msg {
 			this.frozen = false;
 		}
 
-		var getParent = function getParent() {
+		var getParent = () => {
 			// This would work only if messages in cd.msgs are in order of their presence on the page.
 			
 			var level = this.level;
@@ -469,9 +466,9 @@ export default class Msg {
 			}
 			
 			return null;  // Not undefined, so that the variable would be considered filled.
-		}.bind(this);
+		};
 
-		var getSection = function getSection() {
+		var getSection = () => {
 			if (!cd.sections) {
 				return null;  // Not undefined, so that the variable would be considered filled.
 			}
@@ -486,13 +483,11 @@ export default class Msg {
 			}
 			
 			return null;  // Not undefined, so that the variable would be considered filled.
-		}.bind(this);
+		};
 		
-		var getAuthorRegistered = function getAuthorRegistered() {
-			return !/((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/.test(this.author);
-		}.bind(this);
+		var getAuthorRegistered = () => !/((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/.test(this.author);
 		
-		var getText = function getText() {
+		var getText = () => {
 			// Get message text without a signature.
 			var $msgWithNoSig = $();
 			if (this.$elements.length > 1) {
@@ -562,21 +557,21 @@ export default class Msg {
 				.replace(/Эта реплика добавлена (?:участником|с IP).{1,50}$/, '')
 				.replace('(обс.)$', '')
 				.replace(cd.config.SIG_PREFIX_REGEXP, '');
-		}.bind(this);
+		};
 		
 		var $elements, msgText, parentMsg, section, isAuthorRegistered;
 		// Using a getter allows to save a little time on running $().
 		Object.defineProperty(this, '$elements', {
-			get: function () {
+			get: () => {
 				if (typeof $elements === 'undefined') {
 					$elements = $(this.elements);
 				}
 				return $elements;
-			}.bind(this)
+			},
 		});
 		
 		Object.defineProperty(this, 'text', {
-			get: function () {
+			get: () => {
 				if (typeof msgText === 'undefined') {
 					msgText = getText();
 				}
@@ -585,7 +580,7 @@ export default class Msg {
 		});
 		
 		Object.defineProperty(this, 'parent', {
-			get: function () {
+			get: () => {
 				if (typeof parentMsg === 'undefined') {
 					parentMsg = getParent();
 				}
@@ -594,7 +589,7 @@ export default class Msg {
 		});
 		
 		Object.defineProperty(this, 'section', {
-			get: function () {
+			get: () => {
 				if (typeof section === 'undefined') {
 					section = getSection();
 				}
@@ -603,7 +598,7 @@ export default class Msg {
 		});
 		
 		Object.defineProperty(this, 'isAuthorRegistered', {
-			get: function () {
+			get: () => {
 				if (typeof isAuthorRegistered === 'undefined') {
 					isAuthorRegistered = getAuthorRegistered();
 				}
@@ -642,7 +637,7 @@ export default class Msg {
 			elements[elements.length - 1].className += ' cd-msgPart-last';
 		}
 		
-		var setMsgLevels = function setMsgLevels(initialElement, isTop) {
+		var setMsgLevels = (initialElement, isTop) => {
 			var msgsToTopLevel = [];
 			var topLevel = 0;
 			var topLevelMatches;
@@ -685,7 +680,7 @@ export default class Msg {
 					this.level = topLevel;
 				}
 			}
-		}.bind(this);
+		};
 		
 		// msgBottomLevel is used to prevent the message from being considered to be at a lower level (and thus
 		// draw a line to the left of its top) if only its top is on it (more precisely, if the top is on the zero
@@ -882,11 +877,11 @@ export default class Msg {
 			if (!this.frozen) {
 				if (this.author === cd.env.CURRENT_USER || cd.settings.allowEditOthersMsgs) {
 					var editButton = cd.env.MSG_EDIT_BUTTON_PROTOTYPE.cloneNode(true);
-					editButton.firstChild.onclick = function () {
+					editButton.firstChild.onclick = () => {
 						this.#underlayer.classList.remove('cd-underlayer-focused');
 						this.#linksUnderlayer.classList.remove('cd-linksUnderlayer-focused');
 						this.edit();
-					}.bind(this);
+					};
 					this.#linksUnderlayer_text.appendChild(editButton);
 				}
 				
@@ -897,7 +892,7 @@ export default class Msg {
 				var currentElement = elements[elements.length - 1];
 				while (currentElement && currentElement !== cd.env.contentElement) {
 					currentElement = currentElement.parentElement;
-					bgcolor = currentElement.style.backgroundColor;
+					var bgcolor = currentElement.style.backgroundColor;
 					if (bgcolor.includes('rgb(')) {
 						this.bgcolor = bgcolor;
 						break;
@@ -991,6 +986,7 @@ export default class Msg {
 		this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
 	}
 	
+	// Highlight even in zones where DOM thinks the message is not (between paragraphs and such).
 	highlightFocused() {
 		if (cd.env.recalculateUnderlayersTimeout) return;
 		
@@ -999,6 +995,8 @@ export default class Msg {
 		if (!misplaced) {
 			this.#underlayer.classList.add('cd-underlayer-focused');
 			this.#linksUnderlayer.classList.add('cd-linksUnderlayer-focused');
+			
+			// Settings of the nice gradient to the left from the links underlayer
 			if (this.bgcolor) {
 				this.#linksUnderlayer_text.style.backgroundColor = this.bgcolor;
 				var transparentColor = cd.env.getTransparentColor(this.bgcolor);
@@ -1017,6 +1015,7 @@ export default class Msg {
 		
 		this.#underlayer.classList.remove('cd-underlayer-focused');
 		this.#linksUnderlayer.classList.remove('cd-linksUnderlayer-focused');
+
 		// Just in case
 		if (this.bgcolor) {
 			this.#linksUnderlayer_text.style.backgroundColor = null;
@@ -1024,6 +1023,7 @@ export default class Msg {
 		}
 	}
 	
+	// Highlight a message opened by a link or just posted.
 	highlightTarget() {
 		this.configureUnderlayer();
 		
@@ -1190,27 +1190,26 @@ export default class Msg {
 				],
 				size: 'large',
 			});
-			var closeOnCtrlC = function (e) {
+			var closeOnCtrlC = e => {
 				if (e.ctrlKey && e.keyCode === 67) {  // Ctrl+C
-					setTimeout(function () {
+					setTimeout(() => {
 						messageDialog.close();
 					}, 100);
 				}
 			};
-			copyLinkWindow.opened.then(function () {
+			copyLinkWindow.opened.then(() => {
 				(cd.settings.defaultCopyLinkType === 'wikilink' ? textInputUrl : textInputWikilink)
-					.focus().select();
+					.focus()
+					.select();
 				$(document).keydown(closeOnCtrlC);
 			});
-			copyLinkWindow.closed.then(function () {
+			copyLinkWindow.closed.then(() => {
 				$(document).off('keydown', closeOnCtrlC);
 			});
 		}
 	}
 	
 	locateInCode(pageCode, timestamp) {
-		var msg = this;
-
 		if (pageCode == null) {
 			console.error('В первый параметр не передан код страницы. Используйте Msg.loadCode для получения местоположения сообщения в коде (оно появится в свойстве Msg.inCode).');
 			return;
@@ -1220,10 +1219,10 @@ export default class Msg {
 		var authorAndDateMatches = authorAndDateRegExp.exec(pageCode);
 		if (!authorAndDateMatches) return;
 
-		function correctMsgBeginning() {
+		var correctMsgBeginning = () => {
 			headingMatch = msgCode.match(headingRegExp);
 			if (headingMatch) {
-				if (!msg.isOpeningSection) {
+				if (!this.isOpeningSection) {
 					console.warn('Найден заголовок раздела перед сообщением, которое не отмечено как открывающее раздел.');
 					
 					msgStartPos += headingMatch[0].length;
@@ -1237,35 +1236,34 @@ export default class Msg {
 					msgCode = msgCode.slice(headingMatch[0].length);
 				}
 			}
-			if (!headingMatch && msg.isOpeningSection) {
+			if (!headingMatch && this.isOpeningSection) {
 				console.error('Не найдено заголовка раздела перед сообщением, которое отмечено как открывающее раздел.');
 			}
 			
-			commentMatch = msgCode.match(commentRegExp);
+			var commentMatch = msgCode.match(commentRegExp);
 			if (commentMatch) {
 				msgStartPos += commentMatch[0].length;
 				msgCode = msgCode.slice(commentMatch[0].length);
 			}
 			
-			horizontalLineMatch = msgCode.match(horizontalLineRegExp);
+			var horizontalLineMatch = msgCode.match(horizontalLineRegExp);
 			if (horizontalLineMatch) {
 				msgStartPos += horizontalLineMatch[0].length;
 				msgCode = msgCode.slice(horizontalLineMatch[0].length);
 			}
 			
 			return true;
-		}
+		};
 		
-		var msgCode, msgStartPos, msgEndPos, precedingText, temp, dateInCode, authorInCode, prevMsgInCodeMatch,
-			headingMatch, headingCode, headingStartPos, headingLevel, horizontalLineMatch, commentMatch,
-			msgCodeToCompare, overlap, prevMsgMatched, headingMatched;
+		var msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
 		var headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
 		var commentRegExp = /^<!--[^]*?-->\n*/;
 		var horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
 		var bestMatchData = {};
 		
 		var prevMsgs = [];
-		var numberOfPrevDatesToCheck = 2;  // For the reserve method; the main method uses one date.
+		// For the reserve method; the main method uses one date.
+		var numberOfPrevDatesToCheck = 2;
 		
 		for (var i = 1;
 			prevMsgs.length < numberOfPrevDatesToCheck && this.id - i >= 0;
@@ -1276,26 +1274,25 @@ export default class Msg {
 			}
 		}
 		
-		// Main method: by current & previous author & date & message heading & message text overlap. Necessary
-		// is current author & date & message text overlap.
+		// Main method: by the current & previous author & date & message heading & message text overlap. Necessary
+		// is the current author & date & message text overlap.
 		do {
 			msgStartPos = 0;
 			msgEndPos = authorAndDateMatches.index;
 			msgCode = pageCode.slice(0, msgEndPos);
 			
-			prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
+			var prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
 			
-			authorInCode = dateInCode = undefined;
+			var authorInCode = undefined;
+			var dateInCode = undefined;
 			if (prevMsgInCodeMatch) {
 				msgStartPos = prevMsgInCodeMatch[0].length;
 				msgCode = msgCode.slice(msgStartPos);
 				
-				temp = cd.env.collectAuthorAndDate(prevMsgInCodeMatch, 'prev');
-				authorInCode = temp.author;
-				dateInCode = temp.date;
+				var [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
 			}
 			
-			prevMsgMatched = false;
+			var prevMsgMatched = false;
 			if (prevMsgs[0]) {
 				if (prevMsgs[0].date === dateInCode && prevMsgs[0].author === authorInCode) {
 					prevMsgMatched = true;
@@ -1308,11 +1305,12 @@ export default class Msg {
 			
 			correctMsgBeginning();
 			
-			headingMatched = false;
+			var headingMatched = false;
 			if (this.isOpeningSection) {
 				if (headingMatch) {
 					if (this.section && this.section.heading &&
-						cd.env.encodeWikiMarkup(cd.env.cleanSectionHeading(headingCode)) === cd.env.encodeWikiMarkup(this.section.heading)
+						cd.env.encodeWikiMarkup(cd.env.cleanSectionHeading(headingCode)) ===
+							cd.env.encodeWikiMarkup(this.section.heading)
 					) {
 						headingMatched = true;
 					}
@@ -1323,14 +1321,18 @@ export default class Msg {
 				}
 			}
 			
-			msgCodeToCompare = msgCode
+			var msgCodeToCompare = msgCode
 				.replace(/<!--[^]*?-->/g, '')
-				.replace(/\[\[:?(?:[^|\]]+\|)?(.+?)\]\]/g, '$1')  // Extract displayed text from [[wikilinks]]
-				.replace(/\[https?:\/\/[^\]\[\n\r<>" ]+/, '')     // Remove URL part from [links]
-				.replace(/<\w+( [\w ]+?=[^<>]+?| ?\/?)>/g, ' ')   // Remove opening tags
-				.replace(/<\/\w+ ?>/g, ' ');                      // Remove closing tags
+				// Extract displayed text from [[wikilinks]]
+				.replace(/\[\[:?(?:[^|\]]+\|)?(.+?)\]\]/g, '$1')
+				// Remove URL part from [links]
+				.replace(/\[https?:\/\/[^\]\[\n\r<>" ]+/, '')
+				// Remove opening tags
+				.replace(/<\w+( [\w ]+?=[^<>]+?| ?\/?)>/g, ' ')
+				// Remove closing tags
+				.replace(/<\/\w+ ?>/g, ' ');
 			
-			overlap = cd.env.calculateWordsOverlap(this.text, msgCodeToCompare);
+			var overlap = cd.env.calculateWordsOverlap(this.text, msgCodeToCompare);
 			if (overlap > 0.67 &&
 				((!bestMatchData.overlap || overlap > bestMatchData.overlap) ||
 					(!bestMatchData.headingMatched && headingMatched) ||
@@ -1340,12 +1342,12 @@ export default class Msg {
 				)
 			) {
 				bestMatchData = {
-					overlap: overlap,
-					msgStartPos: msgStartPos,
-					msgEndPos: msgEndPos,
+					overlap,
+					msgStartPos,
+					msgEndPos,
 					sigLastPart: authorAndDateMatches[0],
-					prevMsgMatched: prevMsgMatched,
-					headingMatched: headingMatched,
+					prevMsgMatched,
+					headingMatched,
 				};
 				if (headingMatch) {
 					bestMatchData.headingStartPos = headingStartPos;
@@ -1357,31 +1359,29 @@ export default class Msg {
 		
 		// Reserve method: by this & previous two dates + authors.
 		if (!bestMatchData.msgStartPos) {
-			var pageCodeToMsgEnd, nextEndPos, fail, date, author;
-			// Should always find something (otherwise it wouldn't have found anything the previous time and
-			// would've exited), so we don't specify exit the second time.
+			// Should always find something (otherwise it wouldn't have found anything the previous time and would've
+			// exited), so we don't specify exit the second time.
 			while (authorAndDateMatches = authorAndDateRegExp.exec(pageCode)) {
-				msgStartPos = 0;
-				msgEndPos = authorAndDateMatches.index;
-				msgCode = pageCodeToMsgEnd = pageCode.slice(0, msgEndPos);
+				var msgStartPos = 0;
+				var msgEndPos = authorAndDateMatches.index;
+				var msgCode = pageCode.slice(0, msgEndPos);
+				var pageCodeToMsgEnd = msgCode;
 				
-				fail = true;
+				var fail = true;
 				for (i = 0; i < prevMsgs.length; i++) {
-					prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
+					var prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
 					if (!prevMsgInCodeMatch) break;
 					
-					nextEndPos = prevMsgInCodeMatch[0].length - prevMsgInCodeMatch[1].length;
-					// We could optimize here – we determine the message start two times: here and when running
-					// the first method.
+					var nextEndPos = prevMsgInCodeMatch[0].length - prevMsgInCodeMatch[1].length;
+					// We could optimize here if we wanted – we determine the message start two times: here and when
+					// running the first method.
 					if (i === 0) {
 						msgStartPos = prevMsgInCodeMatch[0].length;
 						msgCode = pageCodeToMsgEnd.slice(msgStartPos);
 					}
 					pageCodeToMsgEnd = pageCodeToMsgEnd.slice(0, nextEndPos);
 					
-					temp = cd.env.collectAuthorAndDate(prevMsgInCodeMatch, 'prev');
-					dateInCode = temp.date;
-					authorInCode = temp.author;
+					var [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
 					
 					if (dateInCode !== prevMsgs[i].date || authorInCode !== prevMsgs[i].author) {
 						fail = true;
@@ -1396,8 +1396,8 @@ export default class Msg {
 					
 					bestMatchData = {
 						prevAuthorsAndDatesMatchCount: i,
-						msgStartPos: msgStartPos,
-						msgEndPos: msgEndPos,
+						msgStartPos,
+						msgEndPos,
 						sigLastPart: authorAndDateMatches[0],
 					};
 					if (headingMatch) {
@@ -1418,7 +1418,7 @@ export default class Msg {
 		var msgCodeLengthReduction = 0;
 		var lineStartPos = bestMatchData.msgStartPos;
 		
-		function movePartToSig(s) {
+		var movePartToSig = s => {
 			msgCodeLengthReduction += s.length;
 			bestMatchData.sigLastPart = s + bestMatchData.sigLastPart;
 			return '';
@@ -1439,7 +1439,7 @@ export default class Msg {
 		msgCode = msgCode
 			.replace(
 				/^\n*(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:\*#]*)[ \t]*/,
-				function (s, m1) {
+				(s, m1) => {
 					if (this.level === 0 ||  // FIXME: This should be done more elegantly.
 						!s.trim()) {
 						return s;
@@ -1447,9 +1447,9 @@ export default class Msg {
 					indentationCharacters = m1;
 					bestMatchData.msgStartPos += s.length;
 					return '';
-				}.bind(this)
+				}
 			)
-			.replace(/^(?:\{\{block-small\|1=|<small>)/, function () {
+			.replace(/^(?:\{\{block-small\|1=|<small>)/, () => {
 				inSmallTag = true;
 				return '';
 			});
@@ -1478,15 +1478,15 @@ export default class Msg {
 		replyIndentationCharacters += '*';
 		
 		this.inCode = {
-			lineStartPos: lineStartPos,
+			lineStartPos,
 			startPos: bestMatchData.msgStartPos,
 			endPos: bestMatchData.msgEndPos,
 			code: msgCode,
-			inSmallTag: inSmallTag,
-			indentationCharacters: indentationCharacters,
-			replyIndentationCharacters: replyIndentationCharacters,
+			inSmallTag,
+			indentationCharacters,
+			replyIndentationCharacters,
 			sig: bestMatchData.sigLastPart,
-			timestamp: timestamp,
+			timestamp,
 		};
 		if (bestMatchData.headingStartPos !== undefined) {
 			this.inCode.headingStartPos = bestMatchData.headingStartPos;
@@ -1510,10 +1510,10 @@ export default class Msg {
 			} else {
 				this.prepareUnderlayersInViewport(true);
 				this.replyForm.$previewArea.empty();
-				this.replyForm.$element[cd.settings.slideEffects ? 'slideUp' : 'fadeOut']('fast', function () {
+				this.replyForm.$element[cd.settings.slideEffects ? 'slideUp' : 'fadeOut']('fast', () => {
 					this.replyForm.$element.addClass('cd-msgForm-hidden');
 					this.updateUnderlayersInViewport(true);
-				}.bind(this));
+				});
 			}
 		}
 	}
@@ -1553,16 +1553,16 @@ export default class Msg {
 		var text = code.trim();
 		
 		var hidden = [];
-		function hide(re) {
+		var hide = re => {
 			text = text.replace(re, function (s) {
 				return '\x01' + hidden.push(s) + '\x02';
 			});
-		}
-		function hideTags() {
+		};
+		var hideTags = function () {
 			for (var i = 0; i < arguments.length; i++) {
 				hide(new RegExp('<' + arguments[i] + '( [^>]+)?>[\\s\\S]+?<\\/' + arguments[i] + '>', 'gi'));
 			}
-		}
+		};
 		// Simple function for hiding templates which have no nested ones.
 		hide(/\{\{([^{]\{?)+?\}\}/g);
 		// Hide tables
@@ -1570,10 +1570,11 @@ export default class Msg {
 		hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
 		
 		text = text
-			.replace(/^(?![:\*#]).*<br[ \n]?\/?>\n?/gmi, function (s) {
-				return s.replace(/<br[ \n]?\/?>\n?/gmi, '\n');
-			})
-			.replace(/^([:\*#]*[:\*])([ \t]*)/gm, function (s, m1, m2) {
+			.replace(
+				/^(?![:\*#]).*<br[ \n]?\/?>\n?/gmi,
+				s => s.replace(/<br[ \n]?\/?>\n?/gmi, '\n')
+			)
+			.replace(/^([:\*#]*[:\*])([ \t]*)/gm, (s, m1, m2) => {
 				if (m1.length >= indentationCharacters.length) {
 					return m1.slice(indentationCharacters.length) +
 						(m1.length > indentationCharacters.length ? m2 : '');
@@ -1586,22 +1587,19 @@ export default class Msg {
 			// Random line breaks that do not affect text rendering but will transform into <br> when posting.
 			// We do it very discreetly, connecting only text consisting of alphabet characters and
 			// punctuation, but we could act more like in case
-			// ".replace(/^(.*[^\n])\n(?![\n:\*# ]|<\/\w+ ?>)/gm, function (s, m1) {" below.
-			text = text.replace(/^(.*[A-Za-z0-9А-Яа-яЁё,\.;\?!:»"\)] *)\n(?=[A-Za-z0-9А-Яа-яЁё])/gm,
-				function (s, m1) {
-					return m1 +
+			// ".replace(/^(.*[^\n])\n(?![\n:\*# ]|<\/\w+ ?>)/gm, (s, m1) => {" below.
+			text = text.replace(
+				/^(.*[A-Za-z0-9А-Яа-яЁё,\.;\?!:»"\)] *)\n(?=[A-Za-z0-9А-Яа-яЁё])/gm,
+				(s, m1) => m1 +
 						(!/^[:\*# ]/.test(m1) &&
 								!/(?:\x02|<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>|<\/\w+ ?>)$/.test(m1) ?
 							' ' :
 							'\n'
-						);
-				}
+						)
 			);
 		}
 		
-		function unhide(s, num) {
-			return hidden[num - 1];
-		}
+		var unhide = (s, num) => hidden[num - 1];
 		while (text.match(/\x01\d+\x02/)) {
 			text = text.replace(/\x01(\d+)\x02/g, unhide);
 		}
@@ -1613,17 +1611,19 @@ export default class Msg {
 	
 	loadCode() {
 		return cd.env.loadPageCode(cd.env.CURRENT_PAGE)
+			// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 			.then(
-				function (result) {
+				result => {
 					this.locateInCode(result.code, result.queryTimestamp);
 					if (!this.inCode) {
-						return $.Deferred().reject('parse', cd.strings.couldntLocateMsgInCode).promise();
+						return $.Deferred().reject(['parse', cd.strings.couldntLocateMsgInCode]).promise();
 					}
 					
 					return $.Deferred().resolve(this.codeToText(), this.inCode.headingCode).promise();
-				}.bind(this),
-				function (errorType, data) {
-					return $.Deferred().reject(errorType, data).promise();
+				},
+				e => {
+					var [errorType, data] = e;
+					return $.Deferred().reject([errorType, data]).promise();
 				}
 			);
 	}
@@ -1693,9 +1693,10 @@ export default class Msg {
 		
 		this.#highlightedMsgsInViewportBelow = this.findHighlightedMsgsInViewportBelow(msgsBelowViewportCount);
 		if (hide) {
-			this.#$underlayersInViewportBelow = $($.map(this.#highlightedMsgsInViewportBelow, function (value) {
-				return value.$underlayer && value.$underlayer[0];
-			}));
+			this.#$underlayersInViewportBelow = $($.map(
+				this.#highlightedMsgsInViewportBelow,
+				value => value.$underlayer && value.$underlayer[0]
+			));
 			this.#$underlayersInViewportBelow.hide();
 		}
 	}

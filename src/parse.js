@@ -31,6 +31,15 @@ export default function parse(msgAnchorToScrollTo) {
 	cd.sections = [];
 	cd.msgForms = [];
 	
+	// Settings in variables like cdAlowEditOthersMsgs
+	['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects', 'showLoadingOverlay']
+		.forEach(name => {
+			var settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
+			if (settingName in window) {
+				cd.settings[name] = window[settingName];
+			}
+		});
+
 	// We fill the settings after the modules are loaded so that user settings had more chance to load.
 	cd.defaultSettings = {
 		allowEditOthersMsgs: false,
@@ -144,11 +153,13 @@ export default function parse(msgAnchorToScrollTo) {
 			);
 		}
 		if (cd.config.TEMPLATES_TO_EXCLUDE) {
-			msgAntipatternPatternParts.push('\\{\\{ *(?:' + cd.config.TEMPLATES_TO_EXCLUDE.map(function (template) {
+			msgAntipatternPatternParts.push('\\{\\{ *(?:' + cd.config.TEMPLATES_TO_EXCLUDE.map(template => {
 				return cd.env.generateCaseInsensitiveFirstCharPattern(template);
 			}).join('|') + ') *(?:\\||\\}\\})');
 		}
-		msgAntipatternPatternParts.push('-- ?\\[\\[Участник:DimaBot\\|DimaBot\\]\\]');
+		cd.config.MSG_ANTIPATTERNS.forEach(antiPattern => {
+			msgAntipatternPatternParts.push(antiPattern);
+		});
 		cd.env.MSG_ANTIPATTERN_REGEXP = new RegExp('(?:' + msgAntipatternPatternParts.join('|') + ').*\\n$');
 	}
 	
@@ -187,10 +198,8 @@ export default function parse(msgAnchorToScrollTo) {
 	
 	/* Process the fragment (hash) for topic titles */
 	
-	function processFragment(fragment) {
-		function dotToPercent(code) {
-			return code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
-		}
+	var processFragment = fragment => {
+		var dotToPercent = code => code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
 		
 		// Some ancient links with dots, you never know
 		fragment = fragment
@@ -198,7 +207,7 @@ export default function parse(msgAnchorToScrollTo) {
 			.replace(/\.F[0-4]\.[89AB][\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
 			.replace(/\.E[\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
 			.replace(/\.[CD][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
-			.replace(/\.[2-7][0-9A-F]/g, function (code) {
+			.replace(/\.[2-7][0-9A-F]/g, code => {
 				var ch = decodeURIComponent(dotToPercent(code));
 				if ('!"#$%&\'()*+,/;<=>?@\\^`~'.includes(ch)) {
 					return dotToPercent(code);
@@ -217,9 +226,9 @@ export default function parse(msgAnchorToScrollTo) {
 		}
 		
 		return fragment.trim();
-	}
+	};
 	
-	function proceedToArchiveDialog() {
+	var proceedToArchiveDialog = () => {
 		var messageDialog = new OO.ui.MessageDialog();
 		$('body').append(cd.env.windowManager.$element);
 		cd.env.windowManager.addWindows([messageDialog]);
@@ -234,7 +243,7 @@ export default function parse(msgAnchorToScrollTo) {
 				{ label: 'Нет', action: 'no' },
 			],
 		});
-		proceedToArchiveWindow.closed.then(function (data) {
+		proceedToArchiveWindow.closed.then(data => {
 			if (data && data.action === 'yes') {
 				var heading = processFragment(fragment).replace(/"/g, '');
 				var archivePrefix;
@@ -258,7 +267,7 @@ export default function parse(msgAnchorToScrollTo) {
 				location.assign(mw.config.get('wgServer') + url);
 			}
 		});
-	}
+	};
 	
 	var fragment = location.hash.slice(1);
 	var decodedFragment;
@@ -298,47 +307,49 @@ export default function parse(msgAnchorToScrollTo) {
 	/* Functions */
 	
 	// Methods of the main object
-	
-	cd.getMsgByAnchor = function (anchor) {
-		if (!cd.msgs || !anchor) {
-			return;
-		}
+
+	$.extend(cd, {
+		getMsgByAnchor(anchor) {
+			if (!cd.msgs || !anchor) {
+				return;
+			}
+			
+			for (var i = 0; i < cd.msgs.length; i++) {
+				if (cd.msgs[i].anchor === anchor) {
+					return cd.msgs[i];
+				}
+			}
+		},
+
+		getLastActiveMsgForm() {
+			if (cd.env.lastActiveMsgForm && cd.env.lastActiveMsgForm.isActive()) {
+				return cd.env.lastActiveMsgForm;
+			} else {
+				for (var i = cd.msgForms.length - 1; i >= 0; i--) {
+					if (cd.msgForms[i].isActive()) {
+						return cd.msgForms[i];
+					}
+				}
+			}
+		},
 		
-		for (var i = 0; i < cd.msgs.length; i++) {
-			if (cd.msgs[i].anchor === anchor) {
-				return cd.msgs[i];
-			}
-		}
-	};
-	
-	cd.getLastActiveMsgForm = function () {
-		if (cd.env.lastActiveMsgForm && cd.env.lastActiveMsgForm.isActive()) {
-			return cd.env.lastActiveMsgForm;
-		} else {
-			for (var i = cd.msgForms.length - 1; i >= 0; i--) {
-				if (cd.msgForms[i].isActive()) {
-					return cd.msgForms[i];
+		getLastActiveAlteredMsgForm() {
+			if (cd.env.lastActiveMsgForm && cd.env.lastActiveMsgForm.isActiveAndAltered()) {
+				return cd.env.lastActiveMsgForm;
+			} else {
+				for (var i = cd.msgForms.length - 1; i >= 0; i--) {
+					if (cd.msgForms[i].isActiveAndAltered()) {
+						return cd.msgForms[i];
+					}
 				}
 			}
-		}
-	};
+		},
+	});
 	
-	cd.getLastActiveAlteredMsgForm = function () {
-		if (cd.env.lastActiveMsgForm && cd.env.lastActiveMsgForm.isActiveAndAltered()) {
-			return cd.env.lastActiveMsgForm;
-		} else {
-			for (var i = cd.msgForms.length - 1; i >= 0; i--) {
-				if (cd.msgForms[i].isActiveAndAltered()) {
-					return cd.msgForms[i];
-				}
-			}
-		}
-	};
-	
-	// Functions
+	// Extensions of the cd.env object
 
 	$.extend(cd.env, {
-		getLastGlobalCapture: function (s, regexp) {
+		getLastGlobalCapture(s, regexp) {
 			var matches, lastCapture;
 			while (matches = regexp.exec(s)) {
 				lastCapture = matches[1];
@@ -346,7 +357,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return lastCapture;
 		},
 		
-		findPrevMsg: function (code) {
+		findPrevMsg(code) {
 			var regexp = new RegExp('^[^]*(?:^|\\n)((.*)' + cd.config.SIG_PATTERN + '.*\\n)');
 			var match = code.match(regexp);
 			while (match && cd.env.MSG_ANTIPATTERN_REGEXP && cd.env.MSG_ANTIPATTERN_REGEXP.test(match[0])) {
@@ -356,7 +367,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return match;
 		},
 		
-		findFirstMsg: function (code) {
+		findFirstMsg(code) {
 			code = code + '\n';
 			var regexp = new RegExp('^[^]*?(?:^|\\n)((.*)' + cd.config.SIG_PATTERN + '.*\\n)');
 			var match = code.match(regexp);
@@ -374,7 +385,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return [match, initialPos];
 		},
 		
-		collectAuthorAndDate: function (match, mode) {
+		collectAuthorAndDate(match) {
 			var text = match[1];
 			var date, author;
 			if (match[3]) {
@@ -401,15 +412,11 @@ export default function parse(msgAnchorToScrollTo) {
 				}
 			}
 			
-			return {
-				author: author,
-				date: date,
-			};
+			return [author, date];
 		},
 		
-		findFirstDate: function (code) {
-			var temp = cd.env.findFirstMsg(code);
-			var firstMsgMatch = temp[0];
+		findFirstDate(code) {
+			var [firstMsgMatch] = cd.env.findFirstMsg(code);
 			
 			if (firstMsgMatch) {
 				if (firstMsgMatch[3]) {
@@ -422,7 +429,7 @@ export default function parse(msgAnchorToScrollTo) {
 			}
 		},
 		
-		isInline: function (el) {
+		isInline(el) {
 			if (POPULAR_INLINE_ELEMENTS.includes(el.tagName)) {
 				return true;
 			} else if (POPULAR_NOT_INLINE_ELEMENTS.includes(el.tagName)) {
@@ -433,7 +440,7 @@ export default function parse(msgAnchorToScrollTo) {
 			}
 		},
 		
-		getLastMatch: function (s, regexp) {
+		getLastMatch(s, regexp) {
 			if (!regexp.global) {
 				console.error('Функция работает только с регулярными выражениями с флагом global.');
 				return;
@@ -445,7 +452,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return lastMatch;
 		},
 		
-		encodeWikiMarkup: function (text) {
+		encodeWikiMarkup(text) {
 			var map = {
 				'<': '&lt;',
 				'>': '&gt;',
@@ -457,12 +464,10 @@ export default function parse(msgAnchorToScrollTo) {
 				' ': ' ',
 			};
 			
-			return text.replace(/[<>[\]{|} ]/g, function(ch) {
-				return map[ch];
-			});
+			return text.replace(/[<>[\]{|} ]/g, ch => map[ch]);
 		},
 		
-		cleanSectionHeading: function (heading) {
+		cleanSectionHeading(heading) {
 			return heading
 				.replace(/\[\[:?(?:[^|]*\|)?([^\]]*)\]\]/g, '$1')  // Extract displayed text from wikilinks
 				.replace(/'''(.+?)'''/g, '$1')                     // Remove bold
@@ -474,11 +479,11 @@ export default function parse(msgAnchorToScrollTo) {
 				.trim();
 		},
 		
-		formSummary: function (text) {
+		formSummary(text) {
 			return text + cd.env.SUMMARY_POSTFIX;
 		},
 		
-		createTextWithIcon: function (html, iconName) {
+		createTextWithIcon(html, iconName) {
 			var icon = new OO.ui.IconWidget({
 				icon: iconName,
 			});
@@ -489,7 +494,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return $('<div>').append(icon.$element, iconLabel.$element);
 		},
 		
-		calculateWordsOverlap: function (s1, s2) {
+		calculateWordsOverlap(s1, s2) {
 			// Compare Latin & Cyrillic words starting with 3 characters.
 			var words1 = cd.env.removeDuplicates(s1.match(/[A-Za-zА-Яа-яЁё]{3,}/g));
 			var words2 = cd.env.removeDuplicates(s2.match(/[A-Za-zА-Яа-яЁё]{3,}/g));
@@ -498,9 +503,9 @@ export default function parse(msgAnchorToScrollTo) {
 			var total = words2.length;
 			var overlap = 0;
 			var isOverlap;
-			words1.forEach(function (word1) {
+			words1.forEach(word1 => {
 				isOverlap = false;
-				words2.forEach(function (word2) {
+				words2.forEach(word2 => {
 					if (word2 === word1) {
 						isOverlap = true;
 						return;
@@ -516,7 +521,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return total > 0 ? overlap / total : 0;
 		},
 		
-		generateAuthorAndDateRegExp: function (author, date) {
+		generateAuthorAndDateRegExp(author, date) {
 			// These HTML entities are collected via a query like
 			// "insource:/\[\[[УуUu](ser|частни)?:[^|\]]*\&/ prefix:ВП:" on Russian and English Wikipedias (cases are
 			// collected from the results by ".*&.{10}", junk is removed by "^[^;]*$" (lines without ;) and
@@ -576,7 +581,7 @@ export default function parse(msgAnchorToScrollTo) {
 			}
 		},
 		
-		generateAuthorSelector: function (author) {
+		generateAuthorSelector(author) {
 			var authorEncoded = $.escapeSelector(encodeURIComponent(author.replace(/ /g, '_')));
 			return (
 				'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '"]:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '/"]), ' +
@@ -590,11 +595,11 @@ export default function parse(msgAnchorToScrollTo) {
 			);
 		},
 		
-		elementsToText: function (elements, classesToFilter) {
+		elementsToText(elements, classesToFilter) {
 			classesToFilter = classesToFilter || [];
 			
 			return elements
-				.map(function (el, index) {
+				.map((el, index) => {
 					if (el.nodeType === Node.ELEMENT_NODE) {
 						for (var i = 0; i < el.classList.length; i++) {
 							if (classesToFilter.includes(el.classList[i])) return '';
@@ -620,7 +625,7 @@ export default function parse(msgAnchorToScrollTo) {
 				.trim();
 		},
 		
-		updatePageContent: function (html, anchor) {
+		updatePageContent(html, anchor) {
 			cd.env.underlayersContainer.innerHTML = '';
 			cd.env.linksUnderlayersContainer.innerHTML = '';
 			cd.env.underlayers = [];
@@ -634,34 +639,32 @@ export default function parse(msgAnchorToScrollTo) {
 			parse(typeof anchor === 'string' && anchor);
 		},
 		
-		reloadPage: function (anchor) {
+		reloadPage(anchor) {
 			debug.initTimers();
 			
 			debug.startTimer('общее время');
 			
 			debug.startTimer('получение HTML');
 			
-			requestOptions();
+			cd.env.requestOptions();
 			
 			if (cd.settings.showLoadingOverlay !== false) {
 				cd.env.setLoadingOverlay();
 			}
 			
-			return cd.env.parseCurrentPage()
-				.done(function (html) {
-					cd.env.updatePageContent(html, anchor);
-				});
+			return cd.env.parseCurrentPage().done(html => cd.env.updatePageContent(html, anchor));
 		},
 		
-		parseCurrentPage: function () {
+		parseCurrentPage() {
 			var request = new mw.Api().get({
 				action: 'parse',
 				page: cd.env.CURRENT_PAGE,
 				prop: 'text',
 				formatversion: 2,
 			})
+				// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 				.then(
-					function (data) {
+					data => {
 						var error = data.error &&
 							data.error.code &&
 							data.error.info &&
@@ -679,9 +682,8 @@ export default function parse(msgAnchorToScrollTo) {
 						
 						return text;
 					},
-					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise();
-					}
+					(jqXHR, textStatus, errorThrown) =>
+						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 			
 			// To make the page marked as read in the watchlist.
@@ -690,7 +692,7 @@ export default function parse(msgAnchorToScrollTo) {
 			return request;
 		},
 		
-		loadPageCode: function (title) {
+		loadPageCode(title) {
 			if (title instanceof mw.Title) {
 				title = title.toString();
 			}
@@ -705,7 +707,7 @@ export default function parse(msgAnchorToScrollTo) {
 				formatversion: 2,
 			})
 				.then(
-					function (data) {
+					data => {
 						var error = data.error &&
 							data.error.code &&
 							data.error.info &&
@@ -741,26 +743,20 @@ export default function parse(msgAnchorToScrollTo) {
 							query.redirects[0] &&
 							query.redirects[0].to;
 						
-						return {
-							code: code,
-							timestamp: timestamp,
-							redirectTarget: redirectTarget,
-							queryTimestamp: queryTimestamp,
-						};
+						return { code, timestamp, redirectTarget, queryTimestamp };
 					},
-					function (jqXHR, textStatus, errorThrown) {
-						return $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise();
-					}
+					(jqXHR, textStatus, errorThrown) =>
+						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 		},
 		
-		registerSeenMsgs: function () {
+		registerSeenMsgs() {
 			// Don't run the handler of an event more than once in 100ms, otherwise the scrolling may be slowed down.
 			if (!cd.env.newestCount || cd.env.scrollHandleTimeout) return;
 			
 			cd.env.scrollHandleTimeout = true;
 			// 100 seems to a reasonable value.
-			setTimeout(function () {
+			setTimeout(() => {
 				cd.env.scrollHandleTimeout = false;
 				
 				var foundMsg = cd.env.findMsgInViewport();
@@ -797,33 +793,40 @@ export default function parse(msgAnchorToScrollTo) {
 			}, 100);
 		},
 
-		genericErrorHandler: function (errorType, data) {
-			switch (errorType) {
-				case 'parse':
-					this.abort(data, null, null, retryLoad);
-					break;
-				case 'api':
-					var text;
-					switch (data) {
-						case 'missing':
-							text = 'Текущая страница была удалена.';
-							break;
-						default:
-							text = 'Неизвестная ошибка API: ' + data + '.';
-							break;
-					}
-					this.abort('Не удалось загрузить сообщение. ' + text, data, null, retryLoad);
-					break;
-				case 'network':
-					this.abort('Не удалось загрузить сообщение (сетевая ошибка).', data, null, retryLoad);
-					break;
-				default:
-					this.abort('Не удалось загрузить сообщение (неизвестная ошибка).', data, null, retryLoad);
-					break;
+		genericErrorHandler(options) {
+			if (options.errorType === 'parse') {
+				this.abort({
+					message: options.data,
+					retryFunc: options.retryFunc,
+				});
+			} else if (options.errorType === 'api') {
+				var text;
+				if (options.data === 'missing') {
+					text = 'Текущая страница была удалена.';
+				} else {
+					text = 'Ошибка API: ' + options.data + '.';
+				}
+				this.abort({
+					message: options.message + '. ' + text,
+					logMessage: options.data, 
+					retryFunc: options.retryFunc,
+				});
+			} else if (options.errorType === 'network') {
+				this.abort({
+					message: options.message + ' (сетевая ошибка).',
+					logMessage: options.data,
+					retryFunc: options.retryFunc,
+				});
+			} else {
+				this.abort({
+					message: options.message + ' (неизвестная ошибка).',
+					logMessage: options.data,
+					retryFunc: options.retryFunc,
+				});
 			}
 		},
 
-		Exception: function (message) {
+		Exception(message) {
 			this.name = 'Exception';
 			this.message = message;
 			this.stack = (new Error()).stack;
@@ -833,302 +836,304 @@ export default function parse(msgAnchorToScrollTo) {
 	
 	// jQuery extensions
 	
-	$.fn.cdRemoveNonTagNodes = function () {
-		return $(this).filter(function () {
-			return this.nodeType === Node.ELEMENT_NODE;
-		});
-	};
+	$.fn.extend({
+		cdRemoveNonTagNodes() {
+			return $(this).filter(function () {
+				return this.nodeType === Node.ELEMENT_NODE;
+			});
+		},
 	
-	$.fn.cdScrollTo = function (positionOnScreen, callback, nonSmooth, yCorrection) {
-		cd.env.scrollHandleTimeout = true;
-		yCorrection = yCorrection || 0;
-		
-		var $el = $(this).cdRemoveNonTagNodes();
-		if (!$el.is(':visible')) {
-			// If the message that we need to scroll to is being edited.
-			if ($el.prev().hasClass('cd-msgForm')) {
-				$el = $el.prev();
-			}
-		}
-		positionOnScreen = positionOnScreen || 'top';
-		
-		var offset;
-		if (positionOnScreen === 'middle') {
-			offset = Math.min(
-				$el.first().offset().top,
-				$el.first().offset().top +
-					((($el.last().offset().top + $el.last().height()) - $el.first().offset().top) * 0.5) -
-					$(window).height() * 0.5 +  // 0.4
-					yCorrection
-			);
-		} else if (positionOnScreen === 'bottom') {
-			offset = $el.last().offset().top + $el.last().height() + yCorrection;
-		} else {
-			offset = $el.first().offset().top + yCorrection;
-		}
-		
-		if (!nonSmooth) {
-			$('body, html').animate({
-				scrollTop: offset
-			}, {
-				complete: function () {
-					cd.env.scrollHandleTimeout = false;
-					if (callback) {
-						callback();
-					}
+		cdScrollTo(positionOnScreen, callback, nonSmooth, yCorrection) {
+			cd.env.scrollHandleTimeout = true;
+			yCorrection = yCorrection || 0;
+			
+			var $el = $(this).cdRemoveNonTagNodes();
+			if (!$el.is(':visible')) {
+				// If the message that we need to scroll to is being edited.
+				if ($el.prev().hasClass('cd-msgForm')) {
+					$el = $el.prev();
 				}
-			});
-		} else {
-			window.scrollTo(0, offset);
-			cd.env.scrollHandleTimeout = false;
-		}
-	};
-	
-	$.fn.cdIsInViewport = function (partly) {
-		var $elements = $(this).cdRemoveNonTagNodes();
-		
-		// Workaround
-		var wasHidden = false;
-		if ($elements.length === 1 && $elements.css('display') === 'none') {
-			wasHidden = true;
-			$elements.show();
-		}
-		
-		var elementTop = $elements.first().offset().top;
-		var elementBottom = $elements.last().offset().top + $elements.last().height();
-		
-		if (wasHidden) {
-			$elements.hide();
-		}
-		
-		var viewportTop = $(window).scrollTop();
-		var viewportBottom = viewportTop + $(window).height();
-		
-		if (!partly) {
-			return elementBottom < viewportBottom && elementTop > viewportTop;
-		} else {
-			return elementTop < viewportBottom && elementBottom > viewportTop;
-		}
-	};
-	
-	$.fn.cdAddCloseButton = function (blockName, msg) {
-		var $obj = $(this);
-		
-		var $closeButton = $('<a>')
-			.attr('title', 'Закрыть ' + blockName)
-			.addClass('cd-closeButton')
-			.css('display', 'none')
-			.click(function () {
-				$obj.children('.mw-parser-output, table.diff').cdFadeOut('fast', function () {
-					$obj.empty();
-				}, msg);
-			});
-		$obj
-			.prepend($closeButton)
-			.mouseenter(function () {
-				$closeButton.fadeIn('fast');
-			})
-			.mouseleave(function () {
-				$closeButton.fadeOut('fast');
-			});
-		
-		return $(this);
-	};
-	
-	// Our own animation functions, taking the redrawal of underlayers into account.
-	$.fn.cdHide = function (msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		
-		$(this).hide();
-		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-			msg.updateUnderlayersInViewport(false);
-		}
-		
-		return $(this);
-	};
-	
-	$.fn.cdShow = function (msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-		}
-		
-		$(this).show();
-		
-		if (msg) {
-			msg.updateUnderlayersInViewport(false);
-		}
-		
-		return $(this);
-	};
-	
-	$.fn.cdSlideDown = function (duration, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		if (msg) {
-			msg.prepareUnderlayersInViewport(true);
-		}
-		
-		$(this).slideDown(duration, function () {
-			if (msg) {
-				msg.updateUnderlayersInViewport(true);
 			}
-		});
-		
-		return $(this);
-	};
-	
-	$.fn.cdSlideUp = function (duration, callback, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		if (msg) {
-			msg.prepareUnderlayersInViewport(true, 0);
-		}
-		
-		$(this).slideUp(duration, function () {
-			if (callback) {
-				callback();
+			positionOnScreen = positionOnScreen || 'top';
+			
+			var offset;
+			if (positionOnScreen === 'middle') {
+				offset = Math.min(
+					$el.first().offset().top,
+					$el.first().offset().top +
+						((($el.last().offset().top + $el.last().height()) - $el.first().offset().top) * 0.5) -
+						$(window).height() * 0.5 +  // 0.4
+						yCorrection
+				);
+			} else if (positionOnScreen === 'bottom') {
+				offset = $el.last().offset().top + $el.last().height() + yCorrection;
+			} else {
+				offset = $el.first().offset().top + yCorrection;
 			}
-			if (msg) {
-				// So that the messages that weren't in the viewport before were included.
-				msg.prepareUnderlayersInViewport(false);
-				
-				msg.updateUnderlayersInViewport(true);
+			
+			if (!nonSmooth) {
+				$('body, html').animate({
+					scrollTop: offset
+				}, {
+					complete: () => {
+						cd.env.scrollHandleTimeout = false;
+						if (callback) {
+							callback();
+						}
+					}
+				});
+			} else {
+				window.scrollTo(0, offset);
+				cd.env.scrollHandleTimeout = false;
 			}
-		});
-		
-		return $(this);
-	};
+		},
 	
-	$.fn.cdFadeIn = function (duration, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-		}
-		
-		$(this).fadeIn(duration);
-		
-		if (msg) {
-			msg.updateUnderlayersInViewport(false);
-		}
-		
-		return $(this);
-	};
-	
-	$.fn.cdFadeOut = function (duration, callback, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		
-		$(this).fadeOut(duration, function () {
-			if (callback) {
-				callback();
+		cdIsInViewport(partly) {
+			var $elements = $(this).cdRemoveNonTagNodes();
+			
+			// Workaround
+			var wasHidden = false;
+			if ($elements.length === 1 && $elements.css('display') === 'none') {
+				wasHidden = true;
+				$elements.show();
 			}
+			
+			var elementTop = $elements.first().offset().top;
+			var elementBottom = $elements.last().offset().top + $elements.last().height();
+			
+			if (wasHidden) {
+				$elements.hide();
+			}
+			
+			var viewportTop = $(window).scrollTop();
+			var viewportBottom = viewportTop + $(window).height();
+			
+			if (!partly) {
+				return elementBottom < viewportBottom && elementTop > viewportTop;
+			} else {
+				return elementTop < viewportBottom && elementBottom > viewportTop;
+			}
+		},
+
+		cdAddCloseButton(blockName, msg) {
+			var $obj = $(this);
+			
+			var $closeButton = $('<a>')
+				.attr('title', 'Закрыть ' + blockName)
+				.addClass('cd-closeButton')
+				.css('display', 'none')
+				.click(() => {
+					$obj.children('.mw-parser-output, table.diff').cdFadeOut('fast', () => {
+						$obj.empty();
+					}, msg);
+				});
+			$obj
+				.prepend($closeButton)
+				.mouseenter(() => {
+					$closeButton.fadeIn('fast');
+				})
+				.mouseleave(() => {
+					$closeButton.fadeOut('fast');
+				});
+			
+			return $(this);
+		},
+
+		// Our own animation functions, taking the redrawal of underlayers into account.
+		cdHide(msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			$(this).hide();
+			
 			if (msg) {
 				msg.prepareUnderlayersInViewport(false);
 				msg.updateUnderlayersInViewport(false);
 			}
-		});
+			
+			return $(this);
+		},
 		
-		return $(this);
-	};
-	
-	$.fn.cdHtml = function (html, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
+		cdShow(msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+			}
+			
+			$(this).show();
+			
+			if (msg) {
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
 		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-		}
+		cdSlideDown(duration, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			if (msg) {
+				msg.prepareUnderlayersInViewport(true);
+			}
+			
+			$(this).slideDown(duration, () => {
+				if (msg) {
+					msg.updateUnderlayersInViewport(true);
+				}
+			});
+			
+			return $(this);
+		},
 		
-		$(this).html(html);
+		cdSlideUp(duration, callback, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			if (msg) {
+				msg.prepareUnderlayersInViewport(true, 0);
+			}
+			
+			$(this).slideUp(duration, () => {
+				if (callback) {
+					callback();
+				}
+				if (msg) {
+					// So that the messages that weren't in the viewport before were included.
+					msg.prepareUnderlayersInViewport(false);
+					
+					msg.updateUnderlayersInViewport(true);
+				}
+			});
+			
+			return $(this);
+		},
 		
-		if (msg) {
-			msg.updateUnderlayersInViewport(false);
-		}
+		cdFadeIn(duration, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+			}
+			
+			$(this).fadeIn(duration);
+			
+			if (msg) {
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
 		
-		return $(this);
-	};
-	
-	$.fn.cdAppend = function (content, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
+		cdFadeOut(duration, callback, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			$(this).fadeOut(duration, () => {
+				if (callback) {
+					callback();
+				}
+				if (msg) {
+					msg.prepareUnderlayersInViewport(false);
+					msg.updateUnderlayersInViewport(false);
+				}
+			});
+			
+			return $(this);
+		},
 		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-		}
+		cdHtml(html, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+			}
+			
+			$(this).html(html);
+			
+			if (msg) {
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
 		
-		$(this).append(content);
+		cdAppend(content, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+			}
+			
+			$(this).append(content);
+			
+			if (msg) {
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
 		
-		if (msg) {
-			msg.updateUnderlayersInViewport(false);
-		}
+		cdAppendTo(content, msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+			}
+			
+			$(this).appendTo(content);
+			
+			if (msg) {
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
 		
-		return $(this);
-	};
-	
-	$.fn.cdAppendTo = function (content, msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
+		cdRemove(msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			
+			$(this).remove();
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
 		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-		}
-		
-		$(this).appendTo(content);
-		
-		if (msg) {
-			msg.updateUnderlayersInViewport(false);
-		}
-		
-		return $(this);
-	};
-	
-	$.fn.cdRemove = function (msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		
-		$(this).remove();
-		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-			msg.updateUnderlayersInViewport(false);
-		}
-		
-		return $(this);
-	};
-	
-	$.fn.cdEmpty = function (msg) {
-		if (!msg) {
-			msg = cd.env.findMsgInViewport();
-		}
-		if (!msg) return;
-		
-		$(this).empty();
-		
-		if (msg) {
-			msg.prepareUnderlayersInViewport(false);
-			msg.updateUnderlayersInViewport(false);
-		}
-		
-		return $(this);
-	};
+		cdEmpty(msg) {
+			if (!msg) {
+				msg = cd.env.findMsgInViewport();
+			}
+			if (!msg) return;
+			
+			$(this).empty();
+			
+			if (msg) {
+				msg.prepareUnderlayersInViewport(false);
+				msg.updateUnderlayersInViewport(false);
+			}
+			
+			return $(this);
+		},
+	});
 
 	cd.env.Exception.prototype = new Error();
 	
@@ -1146,9 +1151,7 @@ export default function parse(msgAnchorToScrollTo) {
 	cd.parse.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
 	cd.parse.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 	
-	var blocksToExcludeSelector = 'blockquote, ' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES.map(function (s) {
-		return '.' + s;
-	}).join(', ');
+	var blocksToExcludeSelector = 'blockquote, ' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES.map(s => '.' + s).join(', ');
 	var blocksToExclude = cd.env.$content.find(blocksToExcludeSelector).get();
 	
 	var potentialDateContainers = cd.env.contentElement.querySelectorAll('li, dd, p, div');
@@ -1215,11 +1218,11 @@ export default function parse(msgAnchorToScrollTo) {
 		}
 	}
 	
-	function collapseAdjacentMsgLevels(levels) {
+	var collapseAdjacentMsgLevels = levels => {
 		if (!levels || !levels[0]) return;
 		debug.startTimer('collapse');
 		
-		function changeElementType(element, newType) {
+		var changeElementType = (element, newType) => {
 			var newElement = document.createElement(newType);
 			
 			while (element.firstChild) {
@@ -1253,7 +1256,7 @@ export default function parse(msgAnchorToScrollTo) {
 			}
 			
 			return newElement;
-		}
+		};
 		
 		var bottomElement, topElement, currentTopElement, currentBottomElement, topTag, bottomInnerTags, child,
 			newChild, firstMoved;
@@ -1320,7 +1323,7 @@ export default function parse(msgAnchorToScrollTo) {
 			);
 		}
 		debug.endTimer('collapse');
-	}
+	};
 
 	collapseAdjacentMsgLevels(cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)'));
 	collapseAdjacentMsgLevels(cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)'));
@@ -1348,14 +1351,14 @@ export default function parse(msgAnchorToScrollTo) {
 	
 	var ARTICLE_ID = mw.config.get('wgArticleId');
 	cd.env.watchedTopicsPromise = cd.env.getWatchedTopics()
-		.done(function (gotWatchedTopics) {
+		.done(gotWatchedTopics => {
 			cd.env.watchedTopics = gotWatchedTopics;
 			cd.env.thisPageWatchedTopics = cd.env.watchedTopics && cd.env.watchedTopics[ARTICLE_ID] || [];
 			if (!cd.env.thisPageWatchedTopics.length) {
 				cd.env.watchedTopics[ARTICLE_ID] = cd.env.thisPageWatchedTopics;
 			}
 		})
-		.fail(function () {
+		.fail(() => {
 			console.error('Не удалось загрузить настройки с сервера');
 		});
 	
@@ -1489,7 +1492,7 @@ export default function parse(msgAnchorToScrollTo) {
 			msg = cd.getMsgByAnchor(msgAnchor);
 			if (msg) {
 				// setTimeout is for Firefox – otherwise, it positions the underlayer incorrectly.
-				setTimeout(function (msg) {
+				setTimeout(msg => {
 					msg.scrollToAndHighlightTarget();
 				}, 0, msg);
 			}
@@ -1501,22 +1504,22 @@ export default function parse(msgAnchorToScrollTo) {
 		if (cd.env.firstRun) {
 			cd.env.$updatePanel = $('<div>')
 				.attr('id', 'cd-updatePanel')
-				.mouseenter(function () {
+				.mouseenter(() => {
 					cd.env.mouseOverUpdatePanel = true;
 				})
-				.mouseleave(function () {
+				.mouseleave(() => {
 					cd.env.mouseOverUpdatePanel = false;
 				});
 			cd.env.$refreshButton = $('<div>')
 				.attr('id', 'cd-updatePanel-refreshButton')
 				.attr('title', 'Обновить страницу')
 				.appendTo(cd.env.$updatePanel)
-				.click(function () {
+				.click(() => {
 					if (!cd.getLastActiveAlteredMsgForm()) {
-						reloadPage();
+						cd.env.reloadPage();
 					} else {
 						if (confirm('На странице имеются неотправленные формы. Перезагрузить страницу всё равно?')) {
-							reloadPage();
+							cd.env.reloadPage();
 						} else {
 							var lastActiveAlteredMsgForm = cd.getLastActiveAlteredMsgForm();
 							if (lastActiveAlteredMsgForm) {
@@ -1547,7 +1550,7 @@ export default function parse(msgAnchorToScrollTo) {
 		}
 		
 		cd.env.getVisits()
-			.done(function (visits) {
+			.done(visits => {
 				cd.env.newestCount = 0;
 				cd.env.newCount = 0;
 				
@@ -1622,7 +1625,8 @@ export default function parse(msgAnchorToScrollTo) {
 				thisPageVisits.push(currentUnixTime);
 				
 				cd.env.setVisits(visits)
-					.fail(function (errorType, data) {
+					.fail(e => {
+						var [errorType, data] = e;
 						if (errorType === 'internal' && data === 'sizelimit') {
 							// Cleanup: remove oldest 1/3 of visits.
 							var timestamps = [];
@@ -1631,7 +1635,7 @@ export default function parse(msgAnchorToScrollTo) {
 									timestamps.push(visits[key][i]);
 							    }
 							}
-							timestamps.sort(function (a, b) {
+							timestamps.sort((a, b) => {
 								if (a > b) {
 									return 1;
 								} else {
@@ -1668,7 +1672,7 @@ export default function parse(msgAnchorToScrollTo) {
 					cd.env.registerSeenMsgs();
 				}
 			})
-			.fail(function () {
+			.fail(() => {
 				console.error('Не удалось загрузить настройки с сервера');
 			});
 	}
@@ -1687,7 +1691,7 @@ export default function parse(msgAnchorToScrollTo) {
 		if (!cd.env.EVERYTHING_MUST_BE_FROZEN) {
 			$(document).on('scroll resize orientationchange', cd.env.registerSeenMsgs);
 			
-			setInterval(function () {
+			setInterval(() => {
 				cd.env.recalculateUnderlayers(true);
 			}, 500);
 		}
@@ -1709,9 +1713,8 @@ export default function parse(msgAnchorToScrollTo) {
 		};
 	}
 	
-	function generateEditCommonJsLink() {
-		return mw.util.getUrl('User:' + cd.env.CURRENT_USER + '/common.js', { action: 'edit' });
-	}
+	var generateEditCommonJsLink = () =>
+		mw.util.getUrl('User:' + cd.env.CURRENT_USER + '/common.js', { action: 'edit' });
 
 	if (highlightLastMessagesEnabled && !mw.cookie.get('cd-hlmConflict')) {
 		// Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
@@ -1753,14 +1756,14 @@ export default function parse(msgAnchorToScrollTo) {
 	
 	cd.env.alwaysConfirmLeavingPage = false;
 	if (mw.user.options.get('editondblclick')) {
-		mw.loader.using('mediawiki.action.view.dblClickEdit').done(function () {
+		mw.loader.using('mediawiki.action.view.dblClickEdit').done(() => {
 			$('#ca-edit').off('click');
 			cd.env.alwaysConfirmLeavingPage = true;
 		});
 	}
 	
 	if (mw.user.options.get('editsectiononrightclick')) {
-		mw.loader.using('mediawiki.action.view.rightClickEdit').done(function () {
+		mw.loader.using('mediawiki.action.view.rightClickEdit').done(() => {
 			$('.mw-editsection a').off('click');
 			cd.env.alwaysConfirmLeavingPage = true;
 		});

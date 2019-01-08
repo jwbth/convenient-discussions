@@ -77,10 +77,10 @@ export default class MsgForm {
 			.appendTo(this.$element);
 		
 		this.$form = $('<form>')
-			.submit(function (e) {
+			.submit(e => {
 				e.preventDefault();
 				this.submit();
-			}.bind(this))
+			})
 			.appendTo(this.$wrapper);
 		
 		this.$infoArea = $('<div>')
@@ -98,7 +98,7 @@ export default class MsgForm {
 			section: sectionHeading ? '/* ' + sectionHeading + ' */ ' : '',
 		};
 		
-		var formUserName = function formUserName(msg, genitive) {
+		var formUserName = (msg, genitive) => {
 			var to;
 			switch (msg.authorGender) {
 				case undefined:
@@ -143,9 +143,9 @@ export default class MsgForm {
 			}
 			
 			return to + ' ' + msg.author;
-		}.bind(this);
+		};
 		
-		var generateDefaultSummaryDescription = function generateDefaultSummaryDescription() {
+		var generateDefaultSummaryDescription = () => {
 			if (this.mode === 'edit' && this.target.isOpeningSection) {
 				defaultSummaryComponents.section = '/* ' + this.headingInput.getValue() + ' */ ';
 			}
@@ -244,9 +244,9 @@ export default class MsgForm {
 					defaultSummaryComponents.description = 'новый подраздел';
 					break;
 			}
-		}.bind(this);
+		};
 		
-		var updateDefaultSummary = function updateDefaultSummary(generateDescription) {
+		var updateDefaultSummary = generateDescription => {
 			if (this.summaryAltered) return;
 			
 			if (generateDescription) {
@@ -281,7 +281,7 @@ export default class MsgForm {
 			}
 			
 			this.summaryInput.setValue(newSummary);
-		}.bind(this);
+		};
 		
 		this.#couldBeCloserClosing = /^Википедия:К удалению/.test(cd.env.CURRENT_PAGE) &&
 			this.mode === 'addSubsection' &&
@@ -299,7 +299,7 @@ export default class MsgForm {
 				classes: ['cd-headingInput'],
 			});
 			this.headingInput.$element.appendTo(this.$form);
-			this.headingInput.on('change', function (headingInputText) {
+			this.headingInput.on('change', headingInputText => {
 				updateDefaultSummary(this.mode === 'edit');
 				
 				if (headingInputText.includes('{{')) {
@@ -307,32 +307,32 @@ export default class MsgForm {
 				} else {
 					this.hideWarning('dontUseTemplatesInHeadings');
 				}
-			}.bind(this));
+			});
 		}
 		
 		// Array elements: text pattern, reaction, icon, class, additional condition.
 		var textReactions = [
-			[
-				/~~\~/,
-				'Вводить <kbd>~~\~~</kbd> не нужно — подпись подставится автоматически.',
-				'notice',
-				'sigNotNeeded'
-			],
-			[
-				/<pre/,
-				'Теги <code>&lt;pre&gt;</code> ломают разметку обсуждений — используйте <code>&lt;source&gt;</code>.',
-				'alert',
-				'dontUsePre'
-			],
-			[
-				/\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
-				'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
-				'notice',
-				'closerTemplateNotNeeded',
-				function () {
+			{
+				pattern: /~~\~/,
+				message: 'Вводить <kbd>~~\~~</kbd> не нужно — подпись подставится автоматически.',
+				icon: 'notice',
+				class: 'sigNotNeeded',
+			},
+			{
+				pattern: /<pre/,
+				message: 'Теги <code>&lt;pre&gt;</code> ломают разметку обсуждений — используйте <code>&lt;source&gt;</code>.',
+				icon: 'alert',
+				class: 'dontUsePre'
+			},
+			{
+				pattern: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
+				messagee: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
+				icon: 'notice',
+				class: 'closerTemplateNotNeeded',
+				checkFunc: () => {
 					return this.#couldBeCloserClosing && headingInput.getValue().trim() === 'Итог';
 				}
-			],
+			},
 		];
 		
 		this.textarea = new OO.ui.MultilineTextInputWidget({
@@ -343,22 +343,19 @@ export default class MsgForm {
 			classes: ['cd-textarea'],
 		});
 		this.textarea.cdMsgForm = this;
-		this.textarea.on('change', function (textareaText) {
+		this.textarea.on('change', textareaText => {
 			updateDefaultSummary();
 			
 			for (var i = 0; i < textReactions.length; i++) {
-				if (textReactions[i][0].test(textareaText) &&
-					(typeof textReactions[i][4] !== 'function' || textReactions[i][4]())
+				if (textReactions[i].pattern.test(textareaText) &&
+					(typeof textReactions[i].checkFunc !== 'function' || textReactions[i].checkFunc())
 				) {
-					this.showInfo(textReactions[i][1], textReactions[i][2], textReactions[i][3]);
-					if (typeof textReactions[i][5] === 'function') {
-						textReactions[i][5]();
-					}
+					this.showInfo(textReactions[i].message, textReactions[i].icon, textReactions[i].class);
 				} else {
-					this.hideInfo(textReactions[i][3]);
+					this.hideInfo(textReactions[i].class);
 				}
 			}
-		}.bind(this));
+		});
 		this.textarea.$element.appendTo(this.$form);
 		
 		this.$settings = $('<div>')
@@ -370,9 +367,9 @@ export default class MsgForm {
 			placeholder: 'Описание изменений',
 			classes: ['cd-summaryInput'],
 		});
-		this.summaryInput.$element.keypress(function (summaryInputContent) {
+		this.summaryInput.$element.keypress(summaryInputContent => {
 			this.summaryAltered = true;
-		}.bind(this)).appendTo(this.$settings);
+		}).appendTo(this.$settings);
 		
 		this.summaryInput.$input.codePointLimit(cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT);
 		mw.widgets.visibleCodePointLimit(this.summaryInput, cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT);
@@ -404,7 +401,7 @@ export default class MsgForm {
 		
 		this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
 			value: 'watchTopic',
-			selected: this.targetMsg.section.isWatched || this.mode !== 'edit',
+			selected: this.mode !== 'edit' || this.targetMsg.section.isWatched,
 		});
 		this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
 			label: 'Следить за темой',
@@ -420,7 +417,7 @@ export default class MsgForm {
 			});
 		}
 		
-		var updatePingCheckbox = function updatePingCheckbox() {
+		var updatePingCheckbox = () => {
 			if (this.targetMsg.isAuthorRegistered) {
 				if (this.targetMsg.author !== cd.env.CURRENT_USER) {
 					this.pingCheckbox.setDisabled(false);
@@ -451,7 +448,7 @@ export default class MsgForm {
 					this.pingCheckboxField.setTitle('Не удалось определить автора темы');
 				}
 			}
-		}.bind(this);
+		};
 		
 		if (this.mode !== 'addSubsection' &&
 			!(this.mode === 'edit' && this.target.isOpeningSection)
@@ -470,7 +467,7 @@ export default class MsgForm {
 			this.noIndentationCheckbox = new OO.ui.CheckboxInputWidget({
 				value: 'noIndentation',
 			});
-			this.noIndentationCheckbox.on('change', function (selected) {
+			this.noIndentationCheckbox.on('change', selected => {
 				if (selected) {
 					this.$element.addClass('cd-msgForm-noIndentation');
 				} else {
@@ -481,7 +478,7 @@ export default class MsgForm {
 					updatePingCheckbox();
 				}
 				updateDefaultSummary(true);
-			}.bind(this));
+			});
 			
 			this.noIndentationCheckboxField = new OO.ui.FieldLayout(this.noIndentationCheckbox, {
 				label: 'Без отступа',
@@ -513,7 +510,7 @@ export default class MsgForm {
 					value: 'delete',
 				});
 				var initialMinorSelected;
-				this.deleteCheckbox.on('change', function (selected) {
+				this.deleteCheckbox.on('change', selected => {
 					updateDefaultSummary(true);
 					if (selected) {
 						initialMinorSelected = this.minorCheckbox.isSelected();
@@ -537,7 +534,7 @@ export default class MsgForm {
 							this.smallCheckbox.setDisabled(false);
 						}
 					}
-				}.bind(this));
+				});
 				
 				this.deleteCheckboxField = new OO.ui.FieldLayout(this.deleteCheckbox, {
 					label: 'Удалить',
@@ -705,7 +702,7 @@ export default class MsgForm {
 		}
 		
 		// Keyboard shortcuts
-		this.$form.keydown(function (e) {
+		this.$form.keydown(e => {
 			if (e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 13) {  // Ctrl+Enter
 				e.preventDefault();
 				
@@ -715,9 +712,9 @@ export default class MsgForm {
 			if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {  // Ctrl+Alt+W
 				e.preventDefault();
 				
-				mw.loader.using('ext.gadget.wikificator').done(function () {
+				mw.loader.using('ext.gadget.wikificator').done(() => {
 					Wikify(this.textarea.$input[0]);
-				}.bind(this));
+				});
 			}
 			if (e.keyCode === 27) { // Esc
 				e.preventDefault();
@@ -725,60 +722,36 @@ export default class MsgForm {
 				this.cancelButton.$button.focus();  // Blur text inputs in Firefox
 				this.cancel();
 			}
-		}.bind(this));
+		});
 		
 		// "focusin" is "focus" which bubbles, i.e. propagates up the node tree.
-		this.$form.focusin(function () {
+		this.$form.focusin(() => {
 			cd.env.lastActiveMsgForm = this;
-		}.bind(this));
+		});
 		
-		var retryLoad = function retryLoad() {
-			this.$element[this.mode === 'edit' ? 'cdFadeOut' : 'cdSlideUp']('fast', function () {
-				this.destroy(false, false);
+		var retryLoad = () => {
+			this.$element[this.mode === 'edit' ? 'cdFadeOut' : 'cdSlideUp']('fast', () => {
+				this.destroy();
 				this.target[this::modeToProperty(this.mode)]();
-			}.bind(this), this.getTargetMsg(true));
-		}.bind(this);
+			}, this.getTargetMsg(true));
+		};
 		
-		if (mode !== 'edit') {
+		if (mode !== 'edit') {  // 'reply', 'replyInSection' or 'addSubsection'
 			this.originalText = '';
 			if (this.headingInput) {
 				this.originalHeadingText = '';
 			}
 			
+			// This is for test if the message exists.
 			this.target.loadCode()
-				.fail((errorType, data) => {
-					switch (errorType) {
-						case 'parse':
-							this.abort({
-								message: data,
-								retryFunction: retryLoad,
-							});
-							break;
-						case 'api':
-							var text;
-							switch (data) {
-								case 'missing':
-									text = 'Текущая страница была удалена.';
-									break;
-								default:
-									text = 'Неизвестная ошибка API: ' + data + '.';
-									break;
-							}
-							this.abort({
-								message: 'Не удалось загрузить сообщение. ' + text,
-								logMessage: data, 
-								retryFunction: retryLoad,
-							});
-							break;
-						case 'network':
-						default:
-							this.abort({
-								message: 'Не удалось загрузить сообщение (сетевая ошибка).',
-								logMessage: data,
-								retryFunction: retryLoad,
-							});
-							break;
-					}
+				.fail(e => {
+					var [errorType, data] = e;
+					cd.env.genericErrorHandler.call(this, {
+						errorType,
+						data,
+						retryFunc: retryLoad,
+						message: 'Не удалось загрузить сообщение',
+					});
 				});
 		} else {
 			this.setPending(true);
@@ -797,39 +770,14 @@ export default class MsgForm {
 					}
 					this.textarea.focus();
 				})
-				.fail((errorType, data) => {
-					switch (errorType) {
-						case 'parse':
-							this.abort({
-								message: data,
-								retryFunction: retryLoad,
-							});
-							break;
-						case 'api':
-							var text;
-							switch (data) {
-								case 'missing':
-									text = 'Текущая страница была удалена.';
-									break;
-								default:
-									text = 'Неизвестная ошибка API: ' + data + '.';
-									break;
-							}
-							this.abort({
-								message: 'Не удалось загрузить сообщение. ' + text,
-								logMessage: data, 
-								retryFunction: retryLoad,
-							});
-							break;
-						case 'network':
-						default:
-							this.abort({
-								message: 'Не удалось загрузить сообщение (сетевая ошибка).',
-								logMessage: data,
-								retryFunction: retryLoad,
-							});
-							break;
-					}
+				.fail(e => {
+					var [errorType, data] = e;
+					cd.env.genericErrorHandler.call(this, {
+						errorType,
+						data,
+						retryFunc: retryLoad,
+						message: 'Не удалось загрузить сообщение',
+					});
 				});
 		}
 		
@@ -959,8 +907,8 @@ export default class MsgForm {
 			this.textarea.popPending();
 			this.summaryInput.popPending();
 		}
-		if (this[action + 'Button']) {
-			this[action + 'Button'].setDisabled(status);
+		if (action === 'submit') {
+			this['submitButton'].setDisabled(status);
 		}
 	}
 	
@@ -995,39 +943,39 @@ export default class MsgForm {
 	}
 	
 	abort(options) {
-		if (typeof options === 'Object') {
-			var [message, logMessage, action, retryFunction] = options;
-		} else {
+		if (typeof options === 'String') {
 			var message = options;
+			options = {};
+			options.message = message;
 		}
 
-		// Presence of retryFunction now implies the deletion of form elements.
+		// Presence of retryFunc now implies the deletion of form elements.
 		
 		if (this.textarea.$element[0].parentElement) {
-			this.setPending(false, action);
+			this.setPending(false, options.action);
 		}
 		this.$previewArea.empty();
-		this.showWarning(message);
-		if (logMessage) {
-			console.warn(logMessage);
+		this.showWarning(options.message);
+		if (options.logMessage) {
+			console.warn(options.logMessage);
 		}
 		
-		if (retryFunction) {
+		if (options.retryFunc) {
 			this.$wrapper.children(':not(.cd-infoArea)').remove();
 			
 			var cancelLink = new OO.ui.ButtonWidget({
 				label: 'Отмена',
 				framed: false,
 			});
-			cancelLink.on('click', function () {
+			cancelLink.on('click', () => {
 				this.cancel(true);
-			}.bind(this));
+			});
 			
 			var retryLink = new OO.ui.ButtonWidget({
 				label: 'Попробовать ещё раз',
 				framed: false,
 			});
-			retryLink.on('click', retryFunction);
+			retryLink.on('click', options.retryFunc);
 			
 			$('<div>')
 				.append(cancelLink.$element, retryLink.$element)
@@ -1077,7 +1025,7 @@ export default class MsgForm {
 		var code = text
 			.replace(/^[\s\uFEFF\xA0]+/g, '')  // trimLeft
 			// Remove ending spaces from empty lines, only if they are not a part of a syntax creating <pre>.
-			.replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, function (s) {
+			.replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, s => {
 				if (/ [^\s\uFEFF\xA0]$/.test(s)) {
 					return s;
 				} else {
@@ -1089,19 +1037,19 @@ export default class MsgForm {
 		
 		var hidden = [];
 		var makeAllIntoColons = false;
-		function hide(re, isTable) {
-			code = code.replace(re, function (s) {
+		var hide = (re, isTable) => {
+			code = code.replace(re, s => {
 				if (isTable && !isZeroLevel) {
 					makeAllIntoColons = true;
 				}
 				return (!isTable ? '\x01' : '\x03') + hidden.push(s) + (!isTable ? '\x02' : '\x04');
 			});
-		}
-		function hideTags() {
+		};
+		var hideTags = function () {
 			for (var i = 0; i < arguments.length; i++) {
 				hide(new RegExp('<' + arguments[i] + '( [^>]+)?>[\\s\\S]+?<\\/' + arguments[i] + '>', 'gi'));
 			}
-		}
+		};
 		// Simple function for hiding templates which have no nested ones.
 		hide(/\{\{([^{]\{?)+?\}\}/g);
 		// Hide tables
@@ -1131,26 +1079,26 @@ export default class MsgForm {
 		
 		this.cantParse = false;
 		if (!isZeroLevel) {
-			code = code.replace(/\n([:\*#]+)/g, function (s, m1) {
+			code = code.replace(/\n([:\*#]+)/g, (s, m1) => {
 				makeAllIntoColons = true;
 				// **** → ::::, if the message contains a list or internal indentations.
 				return '\n' + indentationCharacters.replace(/\*/g, ':') + m1;
 			});
 			if (makeAllIntoColons && indentationCharacters) {
-				code = code.replace(/\n(?![:\#\x03])/g, function (s, m1) {
+				code = code.replace(/\n(?![:\#\x03])/g, (s, m1) => {
 					var newIndentationCharacters = indentationCharacters.replace(/\*/g, ':');
 					if (newIndentationCharacters === '#') {
 						this.cantParse = true;
 					}
 					return '\n' + newIndentationCharacters + ' ';
-				}.bind(this));
+				});
 			}
 			code = code.replace(/\n\n(?![:\*#])/g, '{{pb}}');
 		}
 		
 		var tagRegExp = new RegExp('(?:<\\/\\w+ ?>|<' + cd.env.PNIE_PATTERN + ')$', 'i');
 		code = code
-			.replace(/^(.*[^\n])\n(?![\n:\*# \x03])(?=(.*))/gm, function (s, m1, m2) {
+			.replace(/^(.*[^\n])\n(?![\n:\*# \x03])(?=(.*))/gm, (s, m1, m2) => {
 				return m1 +
 					(!/^[:\*# ]/.test(m1) &&
 							!/(?:\x02|\x04|<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>|<\/\w+ ?>)$/.test(m1) &&
@@ -1233,7 +1181,7 @@ export default class MsgForm {
 			}
 		}
 		
-		function unhide(s, num) {
+		var unhide = (s, num) => {
 			return hidden[num - 1];
 		}
 		while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
@@ -1344,7 +1292,7 @@ export default class MsgForm {
 						var repliesRegExp = new RegExp(
 							'^.+\\n+[:\\*#]{' + (targetInCode.indentationCharacters.length + 1) + ',}'
 						);
-						repliesMatches = repliesRegExp.exec(succeedingText);
+						var repliesMatches = repliesRegExp.exec(succeedingText);
 						
 						if (repliesMatches) {
 							throw new cd.env.Exception('Нельзя удалить сообщение, так как на него уже есть ответы.');
@@ -1360,12 +1308,10 @@ export default class MsgForm {
 						}
 						
 						var tempSectionCode = sectionCode;
-						var firstMsgMatch, temp;
 						for (var msgCount = 0; msgCount < 2; msgCount++) {
-							temp = cd.env.findFirstMsg(tempSectionCode);
-							firstMsgMatch = temp[0];
+							var [firstMsgMatch, firstMsgInitialPos] = cd.env.findFirstMsg(tempSectionCode);
 							if (!firstMsgMatch) break;
-							tempSectionCode = tempSectionCode.slice(temp[1] + firstMsgMatch[0].length);
+							tempSectionCode = tempSectionCode.slice(firstMsgInitialPos + firstMsgMatch[0].length);
 						}
 						if (msgCount > 1) {
 							throw new cd.env.Exception('Нельзя удалить тему, так как в ней уже есть ответы.');
@@ -1416,12 +1362,7 @@ export default class MsgForm {
 
 			var error = data.error;
 			if (error) {
-				var text;
-				switch (error.code) {
-					default:
-						text = error.code + ': ' + error.info;
-						break;
-				}
+				var text = error.code + ': ' + error.info;
 				this.abort({
 					message: 'Не удалось предпросмотреть сообщение. ' + text,
 					logMessage: data,
@@ -1554,66 +1495,32 @@ export default class MsgForm {
 			}
 		} catch (e) {
 			var [errorType, data] = e;
-			switch (errorType) {
-				case 'parse':
-					this.abort(data);
-					break;
-				case 'api':
-					var text;
-					switch (data) {
-						default:
-							text = 'Ошибка API: ' + data + '.';
-							break;
-					}
-					this.abort({
-						message: 'Не удалось получить код страницы. ' + text,
-						logMessage: data,
-					});
-					break;
-				case 'network':
-				default:
-					this.abort({
-						message: 'Не удалось получить код страницы (сетевая ошибка).',
-						logMessage: data,
-					});
-					break;
-			}
+			cd.env.genericErrorHandler.call(this, {
+				errorType,
+				data,
+				message: 'Не удалось получить код страницы',
+			});
 		}
 	}
 	
 	reloadPageAfterSubmit(anchor) {
-		this.destroy(true, false);
+		this.destroy(['leaveInfo']);
 		
-		reloadPage(anchor)
-			.fail(function (errorType, data) {
-				if (cd.settings.showLoadingOverlay !== false) {
-					cd.env.removeLoadingOverlay();
-				}
-				
-				var text;
-				switch (errorType) {
-					case 'api':
-						switch (data) {
-							default:
-								text = 'Ошибка API: ' + data + '.';
-								break;
-						}
-						text = 'Не удалось обновить страницу. ' + text;
-						break;
-					case 'network':
-					default:
-						text = 'Не удалось обновить страницу (сетевая ошибка).';
-						break;
-				}
-				
-				this.abort({
-					message: text,
-					logMessage: data,
-					retryFunction: () => {
-						this.reloadPageAfterSubmit(anchor);
-					}
-				});
-			}.bind(this));
+		cd.env.reloadPage(anchor).fail(e => {
+			var [errorType, data] = e;
+			if (cd.settings.showLoadingOverlay !== false) {
+				cd.env.removeLoadingOverlay();
+			}
+
+			cd.env.genericErrorHandler.call(this, {
+				errorType,
+				data,
+				retryFunc: () => {
+					this.reloadPageAfterSubmit(anchor);
+				},
+				message: 'Не удалось обновить страницу',
+			});
+		});
 	}
 	
 	async submit() {
@@ -1651,13 +1558,13 @@ export default class MsgForm {
 				if (e instanceof cd.env.Exception) {
 					this.abort({
 						message: e.message,
-						action: 'submit'
+						action: 'submit',
 					});
 				} else {
 					this.abort({
 						message: 'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
 						logMessage: e.stack || e.message,
-						action: 'submit'
+						action: 'submit',
 					});
 				}
 				return;
@@ -1716,13 +1623,13 @@ export default class MsgForm {
 				
 				cd.msgForms[cd.msgForms.indexOf(this)].submitted = true;
 				if (cd.getLastActiveAlteredMsgForm()) {
-					this.preview(function () {
+					this.preview(() => {
 						var $info = cd.env.toJquerySpan('Сообщение было отправлено, но на странице также имеются другие открытые формы. Отправьте их для перезагрузки страницы или <a href="javascript:">перезагрузите страницу</a> всё равно.');
-						$info.find('a').click(function () {
+						$info.find('a').click(() => {
 							this.reloadPageAfterSubmit(anchor);
 						});
 						this.showInfo($info);
-						this.destroy(true, true);
+						this.destroy(['leaveInfo', 'leavePreview']);
 					});
 				} else {
 					this.reloadPageAfterSubmit(anchor);
@@ -1735,8 +1642,8 @@ export default class MsgForm {
 					var text;
 					switch (error.code) {
 						case 'editconflict':
-							text = 'Конфликт редактирования. Просто нажмите «' + this.submitButton.getLabel() + 
-								'» ещё раз.';
+							text = 'Конфликт редактирования. Пробуем ещё раз…';
+							this.submit();
 							break;
 						default:
 							text = 'Ответ сервера не распознан. Не удалось отредактировать страницу.';
@@ -1753,30 +1660,11 @@ export default class MsgForm {
 			}
 		} catch (e) {
 			[errorType, data] = e;
-			switch (errorType) {
-				case 'parse':
-					this.abort(data);
-					break;
-				case 'api':
-					var text;
-					switch (data) {
-						default:
-							text = 'Ошибка API: ' + data + '.';
-							break;
-					}
-					this.abort({
-						message: 'Не удалось получить код страницы. ' + text,
-						logMessage: data
-					});
-					break;
-				case 'network':
-				default:
-					this.abort({
-						message: 'Не удалось получить код страницы (сетевая ошибка).',
-						logMessage: data,
-					});
-					break;
-			}
+			cd.env.genericErrorHandler.call(this, {
+				errorType,
+				data,
+				message: 'Не удалось получить код страницы',
+			});
 		}
 	}
 	
@@ -1787,14 +1675,14 @@ export default class MsgForm {
 		this.$previewArea.empty();
 		
 		if (this.mode !== 'edit') {
-			this.$element[cd.settings.slideEffects ? 'cdSlideUp' : 'cdFadeOut']('fast', function () {
+			this.$element[cd.settings.slideEffects ? 'cdSlideUp' : 'cdFadeOut']('fast', () => {
 				this.$element.addClass('cd-msgForm-hidden');
 				if (this.mode === 'replyInSection') {
 					this.target.$replyButtonContainer.show();
 				}
-			}.bind(this), this.getTargetMsg(true));
+			}, this.getTargetMsg(true));
 		} else {
-			this.$element.cdFadeOut('fast', function () {
+			this.$element.cdFadeOut('fast', () => {
 				this.$element.addClass('cd-msgForm-hidden');
 				this.target.$elements.show();
 				if (!this.target.isOpeningSection) {
@@ -1808,7 +1696,7 @@ export default class MsgForm {
 					}
 				}
 				this.target.configureUnderlayer();
-			}.bind(this), this.getTargetMsg(true));
+			}, this.getTargetMsg(true));
 		}
 		
 		if (this.mode === 'reply') {
@@ -1840,7 +1728,12 @@ export default class MsgForm {
 		}
 	}
 	
-	destroy(leaveInfo, leavePreview) {
+	destroy(options) {
+		var leaveInfo, leavePreview;
+		if ($.isArray(options)) {
+			leaveInfo = options.includes('leaveInfo');
+			leavePreview = options.includes('leavePreview');
+		}
 		this.$wrapper
 			.children(
 				(leaveInfo ? ':not(.cd-infoArea)' : '') +

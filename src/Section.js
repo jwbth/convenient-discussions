@@ -164,13 +164,13 @@ export default class Section {
 		// Using a getter allows to save a little time on running $().
 		var $elements;
 		Object.defineProperty(this, '$elements', {
-			get: function () {
+			get: () => {
 				if (typeof $elements === 'undefined') {
 					$elements = $(elements);
 				}
 				return $elements;
 			},
-			set: function (value) {
+			set: value => {
 				$elements = value;
 			},
 		});
@@ -238,27 +238,27 @@ export default class Section {
 				
 				this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
 				
-				var deferAddSubsectionButtonHide = function () {
+				var deferAddSubsectionButtonHide = () => {
 					if (!this.hideAddSubsectionButtonTimeout) {
-						this.hideAddSubsectionButtonTimeout = setTimeout(function () {
+						this.hideAddSubsectionButtonTimeout = setTimeout(() => {
 							this.$addSubsectionButtonContainer.cdFadeOut(
 								'fast',
 								null,
 								this.msgsInFirstSubdivision[this.msgsInFirstSubdivision.length - 1]
 							);
-						}.bind(this), 1000);
+						}, 1000);
 					}
-				}.bind(this);
+				};
 				
-				addSubsectionButton.firstChild.onmouseenter = function () {
+				addSubsectionButton.firstChild.onmouseenter = () => {
 					clearTimeout(this.hideAddSubsectionButtonTimeout);
 					this.hideAddSubsectionButtonTimeout = null;
-				}.bind(this);
-				addSubsectionButton.firstChild.onmouseleave = function () {
+				};
+				addSubsectionButton.firstChild.onmouseleave = () => {
 					deferAddSubsectionButtonHide();
 				};
 				
-				this.replyButtonHoverHandler = function () {
+				this.replyButtonHoverHandler = () => {
 					if (this.addSubsectionForm &&
 						!this.addSubsectionForm.$element.hasClass('cd-msgForm-hidden')
 					) {
@@ -269,16 +269,16 @@ export default class Section {
 					this.hideAddSubsectionButtonTimeout = null;
 					
 					if (!this.showAddSubsectionButtonTimeout) {
-						this.showAddSubsectionButtonTimeout = setTimeout(function () {
+						this.showAddSubsectionButtonTimeout = setTimeout(() => {
 							this.$addSubsectionButtonContainer.cdFadeIn(
 								'fast',
 								this.msgsInFirstSubdivision[this.msgsInFirstSubdivision.length - 1]
 							);
-						}.bind(this), 1000);
+						}, 1000);
 					}
-				}.bind(this);
+				};
 				
-				this.replyButtonUnhoverHandler = function () {
+				this.replyButtonUnhoverHandler = () => {
 					if (this.addSubsectionForm &&
 						!this.addSubsectionForm.$element.hasClass('cd-msgForm-hidden')
 					) {
@@ -289,7 +289,7 @@ export default class Section {
 					this.showAddSubsectionButtonTimeout = null;
 					
 					deferAddSubsectionButtonHide();
-				}.bind(this);
+				};
 			}
 			
 			if (this.msgs[0] && this.msgs[0].isOpeningSection &&
@@ -316,7 +316,7 @@ export default class Section {
 				});
 			}
 			
-			cd.env.watchedTopicsPromise.done(function () {
+			cd.env.watchedTopicsPromise.done(() => {
 				if (!cd.env.thisPageWatchedTopics.includes(this.heading)) {
 					this.isWatched = false;
 					this.addMenuItem({
@@ -332,16 +332,17 @@ export default class Section {
 						class: 'unwatchSectionLink',
 					});
 				}
-			}.bind(this));
+
+				// We put it here to make it appear always after the "watch" item.
+				this.addMenuItem({
+					label: '#',
+					func: this.copyLink.bind(this),
+					class: 'copySectionLink',
+					tooltip: 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.',
+					href: mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.heading,
+				});
+			});
 		}
-		
-		this.addMenuItem({
-			label: '#',
-			func: this.copyLink.bind(this),
-			class: 'copySectionLink',
-			tooltip: 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.',
-			href: mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.heading,
-		});
 	}
 
 	addReply() {
@@ -387,14 +388,12 @@ export default class Section {
 	}
 	
 	move() {
-		var section = this;
-
 		$.when(
 			cd.env.loadPageCode(cd.env.CURRENT_PAGE),
 			mw.loader.using('mediawiki.widgets')
-		).done(function (result) {
-			section.locateInCode(result.code, result.queryTimestamp);
-			var sectionCode = section.inCode && section.inCode.code;
+		).done(result => {
+			this.locateInCode(result.code, result.queryTimestamp);
+			var sectionCode = this.inCode && this.inCode.code;
 			if (!sectionCode) {
 				mw.notify(cd.strings.couldntLocateSectionInCode, { type: 'error', autoHide: false });
 				return;
@@ -404,7 +403,7 @@ export default class Section {
 				MoveSectionDialog.parent.call(this);
 			}
 			OO.inheritClass(MoveSectionDialog, OO.ui.ProcessDialog);
-			
+
 			MoveSectionDialog.static.name = 'moveSectionDialog';
 			MoveSectionDialog.static.title = 'Перенести тему';
 			MoveSectionDialog.static.actions = [
@@ -502,20 +501,22 @@ export default class Section {
 						this.actions.setMode('move');
 					}, this);
 			};
+
+			var section = this;
 			
 			MoveSectionDialog.prototype.getActionProcess = function (action) {
 				var sectionInSourcePageCode, sourcePageCode, sourcePageTimestamp, sourceWikilink, targetTitle,
 					targetPageCode, targetWikilink, newSourcePageCode, newTargetPageCode;
 				var dialog = this;
 				
-				function abort(text, recoverable) {
+				var abort = (text, recoverable) => {
 					dialog.popPending();
 					dialog.showErrors(new OO.ui.Error(text, recoverable));
 					dialog.actions.setAbilities({ move: recoverable });
-				}
+				};
 				
 				if (action === 'move') {
-					var loadSourcePageDoneCallback = function (result) {
+					var loadSourcePageDoneCallback = result => {
 						sourcePageCode = result.code;
 						sourcePageTimestamp = result.queryTimestamp;
 						sectionInSourcePageCode = sourcePageCode &&
@@ -539,30 +540,25 @@ export default class Section {
 							.done(loadTargetPageDoneCallback)
 							.fail(loadTargetPageFailCallback);
 					};
-					var loadSourcePageFailCallback = function (errorType, data) {
+
+					var loadSourcePageFailCallback = (errorType, data) => {
 						var text, recoverable;
-						switch (errorType) {
-							case 'api':
-								switch (data) {
-									case 'missing':
-										text = 'Текущая страница была удалена.';
-										recoverable = true;
-										break;
-									default:
-										text = 'Неизвестная ошибка API: ' + data + '.';
-										recoverable = true;
-										break;
-								}
-								break;
-							case 'network':
-								text = 'Сетевая ошибка.';
+						if (errorType === 'api') {
+							if (data === 'missing') {
+								text = 'Текущая страница была удалена.';
 								recoverable = true;
-								break;
+							} else {
+								text = 'Ошибка API: ' + data + '.';
+								recoverable = true;
+							}
+						} else if (errorType === 'network') {
+							text = 'Сетевая ошибка.';
+							recoverable = true;
 						}
 						abort(text, recoverable);
 					};
 					
-					var loadTargetPageDoneCallback = function (result) {
+					var loadTargetPageDoneCallback = result => {
 						targetPageCode = result.code;
 						if (result.redirectTarget) {
 							targetTitle = result.redirectTarget;
@@ -583,7 +579,7 @@ export default class Section {
 						
 						var firstSectionPos;
 						// Determine the topic order: newest first or newest last
-						var sectionHeadingsRegExp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
+						sectionHeadingsRegExp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
 						var sectionHeadingsMatches;
 						
 						var codeStartingWithThisSection, date, prevTimestamp, timestamp;
@@ -662,45 +658,36 @@ export default class Section {
 							.done(editTargetPageDoneCallback)
 							.fail(editTargetPageFailCallback);
 					};
-					var loadTargetPageFailCallback = function (errorType, data) {
+
+					var loadTargetPageFailCallback = (errorType, data) => {
 						var text, recoverable;
-						switch (errorType) {
-							case 'api':
-								switch (data) {
-									case 'missing':
-										text = 'Целевая страница не существует.';
-										recoverable = true;
-										break;
-									case 'invalid':  // Must be filtered before submit.
-										text = 'Указано невозможное название страницы';
-										recoverable = false;
-										break;
-									default:
-										text = 'Неизвестная ошибка API: ' + data + '.';
-										recoverable = true;
-										break;
-								}
-								break;
-							case 'network':
-								text = 'Сетевая ошибка.';
+						if (errorType === 'api') {
+							if (data === 'missing') {
+								text = 'Целевая страница не существует.';
 								recoverable = true;
-								break;
+							} else if (data === 'invalid') {  // Must be filtered before submit.
+								text = 'Указано невозможное название страницы';
+								recoverable = false;
+							} else {
+								text = 'Неизвестная ошибка API: ' + data + '.';
+								recoverable = true;
+							}
+						} else if (errorType === 'network') {
+							text = 'Сетевая ошибка.';
+							recoverable = true;
 						}
 						abort(text, recoverable);
 					};
 					
-					var editTargetPageDoneCallback = function (data) {
+					var editTargetPageDoneCallback = data => {
 						var error = data.error;
 						if (error) {
-							switch (error.code) {
-								case 'editconflict':
-									text = 'Конфликт редактирования. Просто нажмите «' +  OO.ui.msg('ooui-dialog-process-retry') + '».';
-									recoverable = true;
-									break;
-								default:
-									text = error.code + ': ' + error.info;
-									recoverable = true;
-									break;
+							if (error.code === 'editconflict') {
+								text = 'Конфликт редактирования. Просто нажмите «' +  OO.ui.msg('ooui-dialog-process-retry') + '».';
+								recoverable = true;
+							} else {
+								text = error.code + ': ' + error.info;
+								recoverable = true;
 							}
 							abort(text, recoverable);
 						}
@@ -718,11 +705,12 @@ export default class Section {
 							.done(editSourcePageDoneCallback)
 							.fail(editSourcePageFailCallback);
 					};
-					var editTargetPageFailCallback = function () {
+
+					var editTargetPageFailCallback = () => {
 						abort('Сетевая ошибка при редактировании целевой страницы.', true);
 					};
 					
-					var editSourcePageDoneCallback = function () {
+					var editSourcePageDoneCallback = () => {
 						var url = mw.util.getUrl(targetWikilink);
 						dialog.panelReload.$element.html('<p>Тема успешно перенесена. Вы можете обновить страницу или перейти на <a href="' + url + '">страницу, куда была перенесена тема</a>.</p>');
 						
@@ -730,7 +718,8 @@ export default class Section {
 						dialog.stackLayout.setItem(dialog.panelReload);
 						dialog.actions.setMode('reload');
 					};
-					var editSourcePageFailCallback = function () {
+
+					var editSourcePageFailCallback = () => {
 						abort('Сетевая ошибка при редактировании исходной страницы. Вам придётся вручную совершить правку исходной страницы или отменить правку целевой страницы.', false);
 					};
 					
@@ -746,7 +735,7 @@ export default class Section {
 				} else if (action === 'reload') {
 					return new OO.ui.Process(function () {
 						dialog.close({ action: action });
-						reloadPage();
+						cd.env.reloadPage();
 					});
 				}
 				return MoveSectionDialog.parent.prototype.getActionProcess.call(dialog, action);
@@ -762,7 +751,7 @@ export default class Section {
 			cd.env.windowManager.addWindows([moveSectionDialog]);
 			
 			var moveSectionWindow = cd.env.windowManager.openWindow(moveSectionDialog);
-			moveSectionWindow.opened.then(function () {
+			moveSectionWindow.opened.then(() => {
 				moveSectionDialog.titleInput.focus();
 			});
 		});
@@ -771,12 +760,13 @@ export default class Section {
 	watch() {
 		cd.env.thisPageWatchedTopics.push(this.heading);
 		cd.env.setWatchedTopics(cd.env.watchedTopics)
-			.done(function () {
+			.done(() => {
 				mw.notify(cd.env.toJquerySpan(
 					'Иконка у сообщений в разделе «' + this.heading + '» в списке наблюдения теперь будет синей.'
 				));
-			}.bind(this))
-			.fail(function (errorType, data) {
+			})
+			.fail(e => {
+				var [errorType, data] = e;
 				if (errorType === 'internal' && data === 'sizelimit') {
 					mw.notify('Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Отредактируйте список тем, чтобы это исправить.');
 				} else {
@@ -796,12 +786,12 @@ export default class Section {
 	unwatch() {
 		cd.env.thisPageWatchedTopics.splice(cd.env.thisPageWatchedTopics.indexOf(this.heading), 1);
 		cd.env.setWatchedTopics(cd.env.watchedTopics)
-			.done(function () {
+			.done(() => {
 				mw.notify(cd.env.toJquerySpan(
 					'Иконка у сообщений в разделе «' + this.heading + '» в списке наблюдения теперь будет серой.'
 				));
-			}.bind(this))
-			.fail(function () {
+			})
+			.fail(() => {
 				mw.notify('Не удалось обновить настройки.');
 			});
 		
@@ -903,20 +893,20 @@ export default class Section {
 				],
 				size: 'large',
 			});
-			var closeOnCtrlC = function (e) {
+			var closeOnCtrlC = e => {
 				if (e.ctrlKey && e.keyCode === 67) {  // Ctrl+C
-					setTimeout(function () {
+					setTimeout(() => {
 						messageDialog.close();
 					}, 100);
 				}
 			};
-			copyLinkWindow.opened.then(function () {
+			copyLinkWindow.opened.then(() => {
 				(cd.settings.defaultCopyLinkType === 'wikilink' ? textInputUrl : textInputWikilink)
 					.focus()
 					.select();
 				$(document).keydown(closeOnCtrlC);
 			});
-			copyLinkWindow.closed.then(function () {
+			copyLinkWindow.closed.then(() => {
 				$(document).off('keydown', closeOnCtrlC);
 			});
 		}
@@ -939,28 +929,26 @@ export default class Section {
 		
 		// To ignore the comment contents (there could be section presets there) but get the right positions
 		// and code at the output.
-		var adjustedPageCode = pageCode.replace(/(<!--)([^]*?)(-->)/g, function (s, m1, m2, m3) {
+		var adjustedPageCode = pageCode.replace(/(<!--)([^]*?)(-->)/g, (s, m1, m2, m3) => {
 			return m1 + ' '.repeat(m2.length) + m3;
 		});
 		
-		var searchForSection = function searchForSection(checkHeading, checkFirstMsg) {
-			var sectionHeadingsMatches, fullMatch, equalSigns, match, thisHeading, equalSignsPattern,
-				codeFromSection, adjustedCodeFromSection, sectionMatches, sectionSubdivisionMatches,
-				firstMsgInCodeMatch, dateInCode, authorInCode, tempSectionCode, antipatternMatch, temp;
+		var searchForSection = (checkHeading, checkFirstMsg) => {
+			var sectionHeadingsMatches;
 			while (sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedPageCode)) {
-				thisHeading = sectionHeadingsMatches[3];
+				var thisHeading = sectionHeadingsMatches[3];
 				thisHeading = thisHeading && cd.env.encodeWikiMarkup(cd.env.cleanSectionHeading(thisHeading));
 				
 				if (!checkHeading || thisHeading === headingToFind) {
-					fullMatch = sectionHeadingsMatches[1];
-					equalSigns = sectionHeadingsMatches[2];
+					var fullMatch = sectionHeadingsMatches[1];
+					var equalSigns = sectionHeadingsMatches[2];
 					
 					// Get the section content.
-					equalSignsPattern = '={1,' + equalSigns.length + '}';
+					var equalSignsPattern = '={1,' + equalSigns.length + '}';
 					
-					codeFromSection = pageCode.slice(sectionHeadingsMatches.index);
-					adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingsMatches.index);
-					sectionMatches = adjustedCodeFromSection.match(
+					var codeFromSection = pageCode.slice(sectionHeadingsMatches.index);
+					var adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingsMatches.index);
+					var sectionMatches = adjustedCodeFromSection.match(
 						// Will fail at "===" or the like.
 						'(' +
 						mw.RegExp.escape(fullMatch) +
@@ -975,7 +963,7 @@ export default class Section {
 					
 					// To simplify the operation of the replyInSection mode we don't consider the terminating
 					// line breaks to be a part of the section subdivision before the first heading.
-					sectionSubdivisionMatches = adjustedCodeFromSection.match(
+					var sectionSubdivisionMatches = adjustedCodeFromSection.match(
 						// Will fail at "===" or the like.
 						'(' +
 						mw.RegExp.escape(fullMatch) +
@@ -987,7 +975,7 @@ export default class Section {
 						mw.RegExp.escape(fullMatch) +
 						'[^]*$)'
 					);
-					sectionCode = sectionMatches &&
+					var sectionCode = sectionMatches &&
 						codeFromSection.substr(sectionMatches.index, sectionMatches[1].length);
 					sectionSubdivisionCode = sectionSubdivisionMatches &&
 						codeFromSection.substr(
@@ -1001,13 +989,10 @@ export default class Section {
 					}
 					
 					if (checkFirstMsg) {
-						temp = cd.env.findFirstMsg(sectionCode);
-						firstMsgInCodeMatch = temp[0];
+						var [firstMsgInCodeMatch] = cd.env.findFirstMsg(sectionCode);
 						
 						if (firstMsgInCodeMatch) {
-							temp = cd.env.collectAuthorAndDate(firstMsgInCodeMatch, 'first');
-							dateInCode = temp.date;
-							authorInCode = temp.author;
+							var [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(firstMsgInCodeMatch);
 							
 							if (// Found date, but it's not a message.
 								(!firstMsgDate && !firstMsgAuthor && !checkHeading) ||
@@ -1040,7 +1025,7 @@ export default class Section {
 					break;
 				}
 			}
-		}.bind(this);
+		};
 		
 		searchForSection(true, true);
 		
@@ -1076,16 +1061,17 @@ export default class Section {
 	
 	loadCode() {
 		return cd.env.loadPageCode(cd.env.CURRENT_PAGE)
+			// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 			.then(
-				function (result) {
+				result => {
 					this.locateInCode(result.code, result.queryTimestamp);
 					if (!this.inCode) {
 						return $.Deferred().reject('parse', cd.strings.couldntLocateSectionInCode).promise();
 					}
 					
 					return $.Deferred().resolve().promise();
-				}.bind(this),
-				function (errorType, data) {
+				},
+				(errorType, data) => {
 					return $.Deferred().reject(errorType, data).promise();
 				}
 			);
