@@ -4,8 +4,8 @@ import lzString from 'lz-string';
 import debug from './debug';
 import parse from './parse';
 import msgLinks from './msgLinks';
-import talkPageCss from './talkpage.less';
-import logPagesCss from './logpages.less';
+import talkPageCss from './talkPage.less';
+import logPagesCss from './logPages.less';
 import config from './config';
 import strings from './strings';
 
@@ -13,42 +13,42 @@ import strings from './strings';
 
 function main() {
 	function addCSS(css) {
-		var styleElem = document.createElement('style');
+		let styleElem = document.createElement('style');
 		styleElem.appendChild(document.createTextNode(css));
 		document.getElementsByTagName('head')[0].appendChild(styleElem);
 	}
-	
+
 	function packVisits(visits) {
-		var visitsString = '';
-		for (var key in visits) {
+		let visitsString = '';
+		for (let key in visits) {
 			visitsString += key + ',' + visits[key].join(',') + '\n';
 		}
 		return visitsString.trim();
 	}
-	
+
 	function unpackVisits(visitsString) {
-		var visits = {};
-		var regexp = /^(\d+),(.+)$/gm;
-		var matches;
+		let visits = {};
+		let regexp = /^(\d+),(.+)$/gm;
+		let matches;
 		while (matches = regexp.exec(visitsString)) {
 			visits[matches[1]] = matches[2].split(',');
 		}
 		return visits;
 	}
-	
+
 	function packWatchedTopics(watchedTopics) {
-		var watchedTopicsString = '';
-		for (var key in watchedTopics) {
+		let watchedTopicsString = '';
+		for (let key in watchedTopics) {
 			watchedTopicsString += ' ' + key + ' ' + watchedTopics[key].join('\n') + '\n';
 		}
 		return watchedTopicsString.trim();
 	}
-	
+
 	function unpackWatchedTopics(watchedTopicsString) {
-		var watchedTopics = {};
-		var pages = watchedTopicsString.split(/(?:^|\n )(\d+) /).slice(1);
-		var pageId;
-		for (var i = 0, isPageId = true; i < pages.length; i++, isPageId = !isPageId) {
+		let watchedTopics = {};
+		let pages = watchedTopicsString.split(/(?:^|\n )(\d+) /).slice(1);
+		let pageId;
+		for (let i = 0, isPageId = true; i < pages.length; i++, isPageId = !isPageId) {
 			if (isPageId) {
 				pageId = pages[i];
 			} else {
@@ -57,12 +57,12 @@ function main() {
 		}
 		return watchedTopics;
 	}
-	
-	
+
+
 	/* Main code */
-	
+
 	debug.initTimers();
-	
+
 	debug.startTimer('начало');
 
 	window.convenientDiscussions = window.convenientDiscussions || window.cd || {};
@@ -70,33 +70,33 @@ function main() {
 		window.convenientDiscussions = {};
 	}
 	window.cd = window.convenientDiscussions;
-	
+
 	// In Firefox, there's a native function cd() that is overriding our object.
 	cd = window.cd;
-	
+
 	if (cd.hasRun) {
 		console.warn('Один экземпляр скрипта «Удобные дискуссии» уже запущен.');
 		return;
 	}
 	cd.hasRun = true;
-	
+
 	mw.hook('cd.launched').fire(cd);
-	
+
 	debug.startTimer('общее время');
-	
-	
+
+
 	/* Config values */
 
 	cd.config = $.extend(cd.config, config, {
 		debug: true,
-		
+
 		LOCAL_HELP_LINK: 'U:JWBTH/CD',
-		
+
 		// List of classes, blocks with which can't be message date containers.
 		BLOCKS_TO_EXCLUDE_CLASSES: ['botMessage', 'ruwiki-movedTemplate', 'ambox', 'NavFrame'],
 		TEMPLATES_TO_EXCLUDE: ['перенесено с', 'moved from', 'перенесено на', 'moved to', 'перенесено из раздела',
 			'перенесено в раздел', 'копия с', 'скопировано на'],
-		
+
 		DISCUSSION_PAGE_REGEXP: new RegExp(
 			// Википедия:
 			'^(?:Википедия:(?:Форум[/ ]|Голосования/|Опросы/|Обсуждение правил/|Заявки на |Запросы|Кандидаты в .*/|' +
@@ -107,7 +107,7 @@ function main() {
 			'Библиотека/(?:Требуются книги|Вопросы|Горячие темы|Технические вопросы)|' +
 			'Графическая мастерская/Заявки|Добротные статьи/К лишению статуса|Грамотность/Запросы))'
 		),
-		
+
 		// ' is in the end alone so that normal markup in the end of a message does not get removed.
 		SIG_PREFIX_REGEXP: /(?:\s*С уважением,)?(?:\s+>+)?[-–—\s~→]*'*$/,
 
@@ -118,7 +118,7 @@ function main() {
 			'[Оо][Уу]|[Uu][Ss][Ee][Rr][ _]*[Tt][Aa][Ll][Kk]|[Uu][Tt])[ _]*:[ _]*|' +
 			'(?:[Ss][Pp][Ee][Cc][Ii][Aa][Ll][ _]*:[ _]*[Cc][Oo][Nn][Tt][Rr][Ii][Bb][Uu][Tt][Ii][Oo][Nn][Ss]|' +
 			'[Сс][Лл][Уу][Жж][Ее][Бб][Нн][Аа][Яя][ _]*:[ _]*[Вв][Кк][Лл][Аа][Дд])\\/[ _]*)',
-		
+
 		USER_NAME_REGEXPS: [
 			new RegExp(
 				'\\[\\[[ _]*(?:(?:(?:Участни(?:к|ца))|У|User|U|Обсуждение[ _]*участни(?:ка|цы)|ОУ|' +
@@ -132,7 +132,7 @@ function main() {
 			// Cases like [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]
 			new RegExp('\\[\\[[^|]+\\|([^\\]]+)\\]\\]', 'g'),
 		],
-		
+
 		AUTHOR_SELECTOR:
 			'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
 			'a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
@@ -145,7 +145,7 @@ function main() {
 	/* Messages */
 
 	cd.strings = strings;
-	
+
 	/* "Environment" of the script. This is deemed not eligible for adjustment, although such demand may appear */
 
 	cd.env = {
@@ -154,24 +154,24 @@ function main() {
 		UNDERLAYER_TARGET_BGCOLOR: '#fff1c7',
 		UNDERLAYER_NEWEST_BGCOLOR: '#edffdb',
 		UNDERLAYER_SIDE_MARGIN: 5,
-		
+
 		// Summary-related
 		SUMMARY_LENGTH_LIMIT: mw.config.get('wgCommentCodePointLimit'),
 		SUMMARY_FULL_MSG_TEXT_LENGTH_LIMIT: 50,
 		HELP_LINK: cd.config.LOCAL_HELP_LINK ? 'U:JWBTH/CD' : 'w:ru:U:JWBTH/CD',
-		
+
 		// Unseen messages–related
 		VISITS_OPTION_NAME: 'cd-visits',
 		WATCHED_TOPICS_OPTION_NAME: 'cd-watchedTopics',
 		HIGHLIGHT_NEW_INTERVAL: 15,
-		
+
 		// Config values
 		NAMESPACE_NUMBER: mw.config.get('wgNamespaceNumber'),
 		IS_DIFF_PAGE: mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search),
 		CURRENT_PAGE: mw.config.get('wgPageName').replace(/_/g, ' '),
 		CURRENT_USER: mw.config.get('wgUserName'),
 		CURRENT_SKIN: mw.config.get('skin'),
-		
+
 		// Convenience constants
 		SECONDS_IN_A_DAY: 60 * 60 * 24,
 		MILLISECONDS_IN_A_MINUTE: 1000 * 60,
@@ -182,7 +182,7 @@ function main() {
 
 		underlayers: [],
 		floatingRects: [],
-		
+
 		// Dynamic values
 		mouseOverUpdatePanel: false,
 		scrollHandleTimeout: false,
@@ -190,9 +190,9 @@ function main() {
 		pageOverlaysOn: false,
 
 		getTransparentColor(color) {
-			var dummyElement = document.createElement('span');
+			let dummyElement = document.createElement('span');
 			dummyElement.style.color = color;
-			
+
 			color = dummyElement.style.color;
 			if (color.includes('rgba')) {
 				color = color.replace(/\d+(?=\))/, '0');
@@ -201,41 +201,25 @@ function main() {
 					.replace(/rgb/, 'rgba')
 					.replace(/\)/, ', 0)');
 			}
-			
+
 			return color;
 		},
-		
+
 		getMonthNumber(mesyats) {
-			var month = cd.strings.monthNamesGenitive.indexOf(mesyats);
+			let month = cd.strings.monthNamesGenitive.indexOf(mesyats);
 			if (month === -1) return;
 			return month;
 		},
-		
+
 		getTimestampFromDate(date, timezoneOffset) {
-			var matches = date.match(/(\b\d?\d):(\d\d), (\d\d?) ([а-я]+) (\d\d\d\d)/);
+			let matches = date.match(/(\b\d?\d):(\d\d), (\d\d?) ([а-я]+) (\d\d\d\d)/);
 			if (!matches) return;
-			
-			var hours = Number(matches[1]);
-			var minutes = Number(matches[2]);
-			var day = Number(matches[3]);
-			var month = cd.env.getMonthNumber(matches[4]);
-			var year = Number(matches[5]);
-			
-			if (year === undefined ||
-				month === undefined ||
-				day === undefined ||
-				hours === undefined ||
-				minutes === undefined
-			) {
-				return;
-			}
-			
-			return Date.UTC(year, month, day, hours, minutes) -
-				(timezoneOffset ? timezoneOffset * cd.env.MILLISECONDS_IN_A_MINUTE : 0);
-		},
-		
-		generateMsgAnchor(year, month, day, hours, minutes, author) {
-			var zeroPad = (n, p) => ('0000' + n).slice(-p);
+
+			let hours = Number(matches[1]);
+			let minutes = Number(matches[2]);
+			let day = Number(matches[3]);
+			let month = cd.env.getMonthNumber(matches[4]);
+			let year = Number(matches[5]);
 
 			if (year === undefined ||
 				month === undefined ||
@@ -245,7 +229,23 @@ function main() {
 			) {
 				return;
 			}
-			
+
+			return Date.UTC(year, month, day, hours, minutes) -
+				(timezoneOffset ? timezoneOffset * cd.env.MILLISECONDS_IN_A_MINUTE : 0);
+		},
+
+		generateMsgAnchor(year, month, day, hours, minutes, author) {
+			let zeroPad = (n, p) => ('0000' + n).slice(-p);
+
+			if (year === undefined ||
+				month === undefined ||
+				day === undefined ||
+				hours === undefined ||
+				minutes === undefined
+			) {
+				return;
+			}
+
 			return (
 				zeroPad(year, 4) +
 				zeroPad(month + 1, 2) +
@@ -255,11 +255,11 @@ function main() {
 				(author ? '_' + author.replace(/ /g, '_') : '')
 			);
 		},
-		
+
 		generateCaseInsensitiveFirstCharPattern(s) {
-			var pattern = '';
-			
-			var firstChar = s[0];
+			let pattern = '';
+
+			let firstChar = s[0];
 			if (mw.RegExp.escape(firstChar) === firstChar &&
 				firstChar.toUpperCase() !== firstChar.toLowerCase()
 			) {
@@ -267,24 +267,24 @@ function main() {
 			} else {
 				pattern += firstChar;
 			}
-			
+
 			pattern += mw.RegExp.escape(s.slice(1));
-			
+
 			return pattern;
 		},
-		
+
 		// Talk pages and pages of "Project" ("Википедия"), "WikiProject" ("Проект") namespaces.
 		isDiscussionNamespace(nsNumber) {
 			return nsNumber % 2 === 1 || nsNumber === 4 || nsNumber === 104;
 		},
-		
+
 		highlightFocused(e) {
 			if (cd.env.scrollHandleTimeout || cd.env.pageOverlaysOn) return;
-			
-			var underlayer, top, left, width, height, i;
-			var contentLeft = cd.env.contentElement.getBoundingClientRect().left;
+
+			let underlayer, top, left, width, height, i;
+			let contentLeft = cd.env.contentElement.getBoundingClientRect().left;
 			if (e.pageX < contentLeft - cd.env.UNDERLAYER_SIDE_MARGIN) {
-				for (i = 0; i < cd.env.underlayers.length; i++) {
+				for (let i = 0; i < cd.env.underlayers.length; i++) {
 					underlayer = cd.env.underlayers[i];
 					if (underlayer.classList.contains('cd-underlayer-focused')) {
 						underlayer.cdTarget.unhighlightFocused();
@@ -292,16 +292,16 @@ function main() {
 				}
 				return;
 			}
-			
-			for (i = 0; i < cd.env.underlayers.length; i++) {
+
+			for (let i = 0; i < cd.env.underlayers.length; i++) {
 				underlayer = cd.env.underlayers[i];
 				if (!underlayer.classList.contains('cd-underlayer')) continue;
-				
+
 				top = Number(underlayer.style.top.replace('px', ''));
 				left = Number(underlayer.style.left.replace('px', ''));
 				width = Number(underlayer.style.width.replace('px', ''));
 				height = Number(underlayer.style.height.replace('px', ''));
-				
+
 				if (!cd.env.mouseOverUpdatePanel &&
 					e.pageY >= -cd.env.underlayersYCorrection + top && e.pageY <= -cd.env.underlayersYCorrection + top + height &&
 					e.pageX >= -cd.env.underlayersXCorrection + left && e.pageX <= -cd.env.underlayersXCorrection + left + width
@@ -314,7 +314,7 @@ function main() {
 				}
 			}
 		},
-		
+
 		updateUnderlayersCorrection() {
 			if (cd.env.CURRENT_SKIN !== 'vector') {
 				cd.env.underlayersXCorrection = -cd.env.underlayersContainer.offsetParent.offsetLeft;
@@ -322,7 +322,7 @@ function main() {
 			} else {
 				cd.env.underlayersYCorrection = cd.env.underlayersXCorrection = 0;
 			}
-			
+
 			// A dirty hack because I was too lazy to find where this pixel comes from and why there's no such in Vector.
 			// Maybe it's just a Chrome artifact.
 			if (cd.env.CURRENT_SKIN === 'monobook' || cd.env.CURRENT_SKIN === 'timeless') {
@@ -330,24 +330,24 @@ function main() {
 				cd.env.underlayersXCorrection -= 1;
 			}
 		},
-		
+
 		windowResizeHandler() {
 			cd.env.updateUnderlayersCorrection();
-			
+
 			// To prevent horizontal scrollbar from appearing because of invisible layers.
 			cd.env.recalculateUnderlayers(false);
-			
-			for (var i = 0; i < cd.msgForms.length; i++) {
+
+			for (let i = 0; i < cd.msgForms.length; i++) {
 				cd.msgForms[i].correctLabels();
 			}
 		},
-		
+
 		beforeUnloadHandler(e) {
 			if (cd.getLastActiveAlteredMsgForm() || (cd.env.alwaysConfirmLeavingPage && cd.getLastActiveMsgForm())) {
 				// Most browsers ignore this message, displaying pre-defined one.
-				var message = 'На странице есть неотправленные сообщения. Всё равно хотите уйти со страницы?';
+				let message = 'На странице есть неотправленные сообщения. Всё равно хотите уйти со страницы?';
 				setTimeout(() => {
-					var lastActiveAlteredMsgForm = cd.getLastActiveMsgForm();
+					let lastActiveAlteredMsgForm = cd.getLastActiveMsgForm();
 					if (lastActiveAlteredMsgForm) {
 						lastActiveAlteredMsgForm.textarea.focus();
 					};
@@ -356,31 +356,31 @@ function main() {
 				return message;
 			}
 		},
-		
+
 		findMsgInViewport(findClosestDirection) {
-			var viewportHeight = window.innerHeight;
-			var viewportTop = window.pageYOffset;
-			var viewportBottom = viewportTop + viewportHeight;
-			
-			var currentMsgId = 0;
-			var msg, positions, prevMsgTop, prevMsgBottom, higherTop, higherBottom, lowerTop, lowerBottom,
+			let viewportHeight = window.innerHeight;
+			let viewportTop = window.pageYOffset;
+			let viewportBottom = viewportTop + viewportHeight;
+
+			let currentMsgId = 0;
+			let msg, positions, prevMsgTop, prevMsgBottom, higherTop, higherBottom, lowerTop, lowerBottom,
 				changedDirection, keepedMsgTop, keepedMsgBottom, prevMsgId, foundMsgId, nextMsgId, keepedMsgId,
 				proportion;
-			
+
 			// Search for one message in the viewport, intellectually narrowing the search region (getting a proportion
 			// of the distance between far away messages and the viewport and calculating the ID of the next message based
 			// on it; then, the position of this next message is checked, and so on).
 			// cd.msgs.length value (could be not theoretically possible) is with a large margin, ideally the cycle should
 			// finish after a couple of steps. It's more of a protection against an endless cycle.
-			for (var i = 0; i < cd.msgs.length; i++) {
+			for (let i = 0; i < cd.msgs.length; i++) {
 				msg = cd.msgs[currentMsgId];
 				if (!msg) {
 					console.error('Не найдено сообщение с ID ' + currentMsgId);
 					return;
 				}
-				
+
 				msg.getPositions();
-				
+
 				if (// First message below the bottom edge of the viewport.
 					(currentMsgId === 0 && msg.positions.downplayedBottom > viewportBottom) ||
 					// Last message above the top edge of the viewport.
@@ -393,12 +393,12 @@ function main() {
 					}
 					break;
 				}
-				
+
 				if (msg.isInViewport(false)) {
 					foundMsgId = currentMsgId;
 					break;
 				}
-				
+
 				if (prevMsgId !== undefined) {
 					if ((msg.positions.top < viewportTop && prevMsgTop < viewportTop) ||
 						(msg.positions.downplayedBottom > viewportBottom && prevMsgBottom > viewportBottom)
@@ -413,7 +413,7 @@ function main() {
 					} else {
 						changedDirection = true;
 					}
-					
+
 					// There's not a single message in the viewport.
 					if (Math.abs(currentMsgId - prevMsgId) === 1) {
 						if (findClosestDirection === 'forward') {
@@ -423,7 +423,7 @@ function main() {
 						}
 						break;
 					}
-					
+
 					// Determine the ID of the next message.
 					if (msg.positions.top > prevMsgTop) {
 						higherTop = prevMsgTop;
@@ -457,24 +457,24 @@ function main() {
 				} else {
 					nextMsgId = cd.msgs.length - 1;
 				}
-				
+
 				prevMsgId = currentMsgId;
 				currentMsgId = nextMsgId;
 				prevMsgTop = msg.positions.top;
 				prevMsgBottom = msg.positions.downplayedBottom;
 			}
-			
+
 			return cd.msgs[foundMsgId];
 		},
-		
+
 		goToPrevNewMsg() {
 			if (cd.env.$prevButton.css('display') === 'none') return;
-			
-			var foundMsg = cd.env.findMsgInViewport('forward');
+
+			let foundMsg = cd.env.findMsgInViewport('forward');
 			if (foundMsg === undefined) return;
-			
-			var msg;
-			for (var i = foundMsg.id; i >= 0; i--) {
+
+			let msg;
+			for (let i = foundMsg.id; i >= 0; i--) {
 				msg = cd.msgs[i];
 				if (!msg) {
 					console.error('Не найдено сообщение с ID ' + foundMsg.id);
@@ -486,7 +486,7 @@ function main() {
 					}
 				}
 			}
-			for (i = cd.msgs.length - 1; i >= foundMsg.id; i--) {
+			for (let i = cd.msgs.length - 1; i >= foundMsg.id; i--) {
 				msg = cd.msgs[i];
 				if (!msg) {
 					console.error('Не найдено сообщение с ID ' + foundMsg.id);
@@ -499,11 +499,11 @@ function main() {
 				}
 			}
 		},
-		
+
 		goToNextNewMsg() {
 			if (cd.env.newestCount) {
-				var msg;
-				for (var i = cd.env.lastNewestSeen || 0; i < cd.msgs.length; i++) {
+				let msg;
+				for (let i = cd.env.lastNewestSeen || 0; i < cd.msgs.length; i++) {
 					msg = cd.msgs[i];
 					if (msg.newness === 'newest' && !msg.seen) {
 						msg.$elements.cdScrollTo('middle', () => {
@@ -518,11 +518,11 @@ function main() {
 					cd.env.$prevButton.show();
 				}
 			} else {
-				var foundMsg = cd.env.findMsgInViewport('backward');
+				let foundMsg = cd.env.findMsgInViewport('backward');
 				if (foundMsg === undefined) return;
-				
-				var msg;
-				for (var i = foundMsg.id; i < cd.msgs.length; i++) {
+
+				let msg;
+				for (let i = foundMsg.id; i < cd.msgs.length; i++) {
 					msg = cd.msgs[i];
 					if (!msg) {
 						console.error('Не найдено сообщение с ID ' + foundMsg.id);
@@ -534,7 +534,7 @@ function main() {
 						}
 					}
 				}
-				for (i = 0; i < foundMsg.id; i++) {
+				for (let i = 0; i < foundMsg.id; i++) {
 					msg = cd.msgs[i];
 					if (!msg) {
 						console.error('Не найдено сообщение с ID ' + foundMsg.id);
@@ -548,10 +548,10 @@ function main() {
 				}
 			}
 		},
-		
+
 		globalKeyDownHandler(e) {
 			if (cd.env.pageOverlaysOn) return;
-			
+
 			if (// Ctrl+Alt+Q
 				(e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 81) ||
 				// Q
@@ -561,40 +561,40 @@ function main() {
 				)
 			) {
 				e.preventDefault();
-				
-				var msgForm = cd.env.lastActiveMsgForm;
+
+				let msgForm = cd.env.lastActiveMsgForm;
 				if (!msgForm) return;
-				
-				var selectionText = window.getSelection().toString();
+
+				let selectionText = window.getSelection().toString();
 				// With just "Q" hotkey, empty selection doesn't count.
 				if (selectionText || (e.ctrlKey && !e.shiftKey && e.altKey)) {
-					var quotePre = "> ''";
-					var quotePost = "''\n";
-					
+					let quotePre = "> ''";
+					let quotePost = "''\n";
+
 					if (!msgForm.textarea.$input.is(':focus')) {
-						var textarea = msgForm.textarea.$input[0];
+						let textarea = msgForm.textarea.$input[0];
 						// We don't use the native insertContent() function here in order to prevent harm from replacing
 						// the selected text, nor encapsulateContent() function to insert exactly at the cursor position,
 						// which can be in the beginning or in the end of the selection depending on where it started.
-						var cursorPos = textarea.selectionDirection === 'backward' ?
+						let cursorPos = textarea.selectionDirection === 'backward' ?
 							textarea.selectionStart :
 							textarea.selectionEnd;
-						var value = textarea.value;
-						var citationCode = quotePre + selectionText.trim() + quotePost;
-						var newCursorPos = cursorPos + citationCode.length;
-						var newValue = value.slice(0, cursorPos) + citationCode + value.slice(cursorPos);
+						let value = textarea.value;
+						let citationCode = quotePre + selectionText.trim() + quotePost;
+						let newCursorPos = cursorPos + citationCode.length;
+						let newValue = value.slice(0, cursorPos) + citationCode + value.slice(cursorPos);
 						msgForm.textarea.setValue(newValue);
 						msgForm.textarea.selectRange(newCursorPos);
 					} else {
 						msgForm.textarea.encapsulateContent(quotePre, quotePost);
 						if (selectionText) {
-							var cursorPos = msgForm.textarea.$input[0].selectionEnd;
+							let cursorPos = msgForm.textarea.$input[0].selectionEnd;
 							msgForm.textarea.selectRange(cursorPos + quotePost.length);
 						}
 					}
 				}
 			}
-			
+
 			// W
 			if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 87 &&
 				!$(':focus:input').length &&
@@ -602,7 +602,7 @@ function main() {
 			) {
 				cd.env.goToPrevNewMsg();
 			}
-			
+
 			// S
 			if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 83 &&
 				!$(':focus:input').length &&
@@ -611,17 +611,30 @@ function main() {
 				cd.env.goToNextNewMsg();
 			}
 		},
-		
+
 		recalculateUnderlayers(newOnly) {
 			// It is assumed that if we need to recount not only new (highlighted) underlayers, others need to be
 			// removed ("removeNotNew" parameter was removed as redundant), otherwise there's no point to recalculate.
-			
-			function recalculate(msg) {
+
+			if (!cd.env.underlayers.length) return;
+			if (cd.env.recalculateUnderlayersTimeout || cd.env.scrollHandleTimeout) return;
+
+			let firstNew;
+			if (newOnly) {
+				cd.env.recalculateUnderlayersTimeout = true;
+			}
+
+			// In order not to count for every element when bypassing.
+			for (let i = 0; i < cd.env.floatingElements.length; i++) {
+				cd.env.floatingRects[i] = cd.env.floatingElements[i].getBoundingClientRect();
+			}
+
+			let recalculate = msg => {
 				if (!msg.newness && !newOnly && msg.$underlayer && msg.$underlayer.length) {
 					msg.removeUnderlayer();
 				} else if (msg.newness) {
 					positions = msg.configureUnderlayer(true);
-					
+
 					if (positions) {
 						allKeys.push(i);
 					} else {
@@ -630,48 +643,35 @@ function main() {
 					}
 				}
 				return true;
-			}
-			
-			if (!cd.env.underlayers.length) return;
-			if (cd.env.recalculateUnderlayersTimeout || cd.env.scrollHandleTimeout) return;
-			
-			var firstNew;
-			if (newOnly) {
-				cd.env.recalculateUnderlayersTimeout = true;
-			}
-			
-			// In order not to count for every element when bypassing.
-			for (var i = 0; i < cd.env.floatingElements.length; i++) {
-				cd.env.floatingRects[i] = cd.env.floatingElements[i].getBoundingClientRect();
-			}
-			
-			var msg, positions;
-			var lastI = 0;
-			var allKeys = [];
+			};
+
+			let msg, positions, i;
+			let lastI = 0;
+			let allKeys = [];
 			// Go from two sides: from the end and from the beginning, and stop at the first message in which nothing has
 			// changed.
-			for (i = cd.msgs.length - 1; i >= 0; i--) {
+			for (let i = cd.msgs.length - 1; i >= 0; i--) {
 				msg = cd.msgs[i];
 				if (!msg) {
 					console.error('Не найдено сообщение с ID ' + foundMsgId);
 				}
-				
+
 				if (!recalculate(msg)) break;
 			}
-			
-			for (i = 0; i < lastI; i++) {
+
+			for (let i = 0; i < lastI; i++) {
 				msg = cd.msgs[i];
 				if (!msg) {
 					console.error('Не найдено сообщение с ID ' + foundMsgId);
 				}
-				
+
 				if (!recalculate(msg)) break;
 			}
-			
+
 			cd.env.floatingRects = [];
-			
+
 			if (allKeys.length) {
-				for (i = 0; i < allKeys.length; i++) {
+				for (let i = 0; i < allKeys.length; i++) {
 					cd.msgs[allKeys[i]].updateUnderlayerPositions();
 				}
 			}
@@ -679,14 +679,14 @@ function main() {
 				cd.env.recalculateUnderlayersTimeout = false;
 			}
 		},
-		
+
 		updateNextButton() {
 			if (cd.env.newestCount) {
 				if (!cd.env.$nextButton.hasClass('cd-updatePanel-nextButton-digit')) {
 					cd.env.$nextButton
 						.addClass('cd-updatePanel-nextButton-digit')
 						.attr('title', 'Перейти к первому сообщению, которое вы ещё не видели');
-					
+
 				}
 				cd.env.$nextButton.text(cd.env.newestCount);
 			} else if (cd.env.$nextButton.hasClass('cd-updatePanel-nextButton-digit')) {
@@ -697,34 +697,34 @@ function main() {
 				cd.env.$prevButton.show();
 			}
 		},
-		
+
 		setLoadingOverlay() {
 			if (!cd.env.$loadingOverlay || !cd.env.$loadingOverlay.length) {
 				cd.env.$loadingOverlay = $('<div>').addClass('cd-loadingOverlay');
-				var $loadingPopup = $('<div>')
+				let $loadingPopup = $('<div>')
 					.addClass('cd-loadingPopup')
 					.appendTo(cd.env.$loadingOverlay);
-				var $logo = $('<img>')
+				let $logo = $('<img>')
 					.addClass('cd-loadingPopup-logo')
 					.attr('src', 'data:image/png;base64,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')
 					.appendTo($loadingPopup);
-				
+
 				$('body').append(cd.env.$loadingOverlay);
 			} else {
 				cd.env.$loadingOverlay.show();
 			}
-			
+
 			cd.env.pageOverlaysOn = true;
 		},
-		
+
 		removeLoadingOverlay() {
 			if (cd.env.$loadingOverlay && cd.env.$loadingOverlay.length) {
 				cd.env.$loadingOverlay.hide();
-				
+
 				cd.env.pageOverlaysOn = false;
 			}
 		},
-		
+
 		createWindowManager() {
 			cd.env.windowManager = new OO.ui.WindowManager();
 			cd.env.windowManager.on('opening', () => {
@@ -734,13 +734,13 @@ function main() {
 				cd.env.pageOverlaysOn = false;
 			});
 		},
-		
+
 		removeDuplicates(array) {
 			if (typeof array !== 'object') return;
-			
+
 			return array.filter((value, index) => array.indexOf(value) === index);
 		},
-		
+
 		toJquerySpan(html) {
 			return $($.parseHTML(html))
 				.wrapAll('<span>')
@@ -757,26 +757,26 @@ function main() {
 				// This is returned to a handler with ".done", so the use of ".then" is deliberate.
 				.then(
 					data => {
-						var options = data &&
+						let options = data &&
 							data.query &&
 							data.query.userinfo &&
 							data.query.userinfo.options;
 						if (!options) {
 							return $.Deferred().reject(['api', 'no data']).promise();
 						}
-						
-						var visitsCompressed = options['userjs-' + cd.env.VISITS_OPTION_NAME];
-						var visitsString = visitsCompressed ?
+
+						let visitsCompressed = options['userjs-' + cd.env.VISITS_OPTION_NAME];
+						let visitsString = visitsCompressed ?
 							lzString.decompressFromEncodedURIComponent(visitsCompressed) :
 							'';
-						var visits = unpackVisits(visitsString);
-						
-						var watchedTopicsCompressed = options['userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME];
-						var watchedTopicsString = watchedTopicsCompressed ?
+						let visits = unpackVisits(visitsString);
+
+						let watchedTopicsCompressed = options['userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME];
+						let watchedTopicsString = watchedTopicsCompressed ?
 							lzString.decompressFromEncodedURIComponent(watchedTopicsCompressed) :
 							'';
-						var watchedTopics = unpackWatchedTopics(watchedTopicsString);
-						
+						let watchedTopics = unpackWatchedTopics(watchedTopicsString);
+
 						return {
 							visits: visits,
 							watchedTopics: watchedTopics,
@@ -786,15 +786,15 @@ function main() {
 						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 		},
-		
+
 		getVisits() {
 			if (cd.env.optionsRequest) {
 				return cd.env.optionsRequest.then(options => options.visits);
 			} else if (mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) !== null) {
-				var visits = unpackVisits(
+				let visits = unpackVisits(
 					lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME))
 				);
-				
+
 				return $.Deferred().resolve(visits).promise();
 			} else {
 				return $.Deferred().resolve(
@@ -802,14 +802,14 @@ function main() {
 				).promise();
 			}
 		},
-		
+
 		setVisits(visits) {
-			var visitsString = packVisits(visits);
-			var visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
+			let visitsString = packVisits(visits);
+			let visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
 			if (visitsStringCompressed.length > 65535) {
 				return $.Deferred().reject(['internal', 'sizelimit']);
 			}
-			
+
 			return new mw.Api().postWithToken('csrf', {
 				action: 'options',
 				optionname: 'userjs-' + cd.env.VISITS_OPTION_NAME,
@@ -826,28 +826,28 @@ function main() {
 						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
 				);
 		},
-		
+
 		getWatchedTopics() {
 			if (cd.env.optionsRequest) {
 				return cd.env.optionsRequest.then(options => options.watchedTopics);
 			} else if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
-				var watchedTopics = unpackWatchedTopics(
+				let watchedTopics = unpackWatchedTopics(
 					lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME))
 				);
-				
+
 				return $.Deferred().resolve(watchedTopics).promise();
 			} else {
 				return $.Deferred().resolve({}).promise();
 			}
 		},
-		
+
 		setWatchedTopics(watchedTopics) {
-			var watchedTopicsString = packWatchedTopics(watchedTopics);
-			var watchedTopicsStringCompressed = lzString.compressToEncodedURIComponent(watchedTopicsString);
+			let watchedTopicsString = packWatchedTopics(watchedTopics);
+			let watchedTopicsStringCompressed = lzString.compressToEncodedURIComponent(watchedTopicsString);
 			if (watchedTopicsStringCompressed.length > 65535) {
 				return $.Deferred().reject(['internal', 'sizelimit']);
 			}
-			
+
 			return new mw.Api().postWithToken('csrf', {
 				action: 'options',
 				optionname: 'userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME,
@@ -877,29 +877,29 @@ function main() {
 				]),
 				cd.env.getWatchedTopics()
 			).done((data1, data2) => {
-				var watchedTopics = data2;
-				var pageIds, pageTitles;
-				var pageIdToTitle, pagesIdAndTitle, pageTitleToId;
-				var topics;
-				
-				var queryPageProperties = (property, pageidOrTitleSet) => {
-					var queryOptions = {
+				let watchedTopics = data2;
+				let pageIds, pageTitles;
+				let pageIdToTitle, pagesIdAndTitle, pageTitleToId;
+				let topics;
+
+				let queryPageProperties = (property, pageidOrTitleSet) => {
+					let queryOptions = {
 						action: 'query',
 						formatversion: 2,
 					}
-					
-					var doneCallback;
+
+					let doneCallback;
 					if (property === 'titles') {
 						queryOptions.pageids = pageidOrTitleSet;
 						doneCallback = query => {
-							var pages = query.pages;
-							
-							for (var i = 0; i < pages.length; i++) {
+							let pages = query.pages;
+
+							for (let i = 0; i < pages.length; i++) {
 								pagesIdAndTitle.push([pages[i].pageid, pages[i].title]);
 								pageIdToTitle[pages[i].pageid] = pages[i].title;
 							}
-							
-							var nextPageIds = pageIds.splice(0, 50).join('|');
+
+							let nextPageIds = pageIds.splice(0, 50).join('|');
 							if (nextPageIds.length) {
 								queryPageProperties('titles', nextPageIds);
 							} else {
@@ -910,20 +910,20 @@ function main() {
 										return -1;
 									}
 								});
-								
-								var sortedWatchedTopics = [];
-								for (var i = 0; i < pagesIdAndTitle.length; i++) {
+
+								let sortedWatchedTopics = [];
+								for (let i = 0; i < pagesIdAndTitle.length; i++) {
 									sortedWatchedTopics.push([pagesIdAndTitle[i][0], watchedTopics[pagesIdAndTitle[i][0]]]);
 								}
-								
-								var value = '';
-								for (var i = 0; i < sortedWatchedTopics.length; i++) {
-									for (var j = 0; j < sortedWatchedTopics[i][1].length; j++) {
+
+								let value = '';
+								for (let i = 0; i < sortedWatchedTopics.length; i++) {
+									for (let j = 0; j < sortedWatchedTopics[i][1].length; j++) {
 										value += pageIdToTitle[sortedWatchedTopics[i][0]] + '#' +
 											sortedWatchedTopics[i][1][j] + '\n';
 									}
 								}
-								
+
 								editWatchedTopicsDialog.textarea.setValue(value.trim());
 								editWatchedTopicsDialog.popPending();
 							}
@@ -932,18 +932,18 @@ function main() {
 						queryOptions.titles = pageidOrTitleSet;
 						queryOptions.redirects = true;
 						doneCallback = query => {
-							var normalized = query.normalized || [];
-							var redirects = query.redirects || [];
-							var pages = query.pages;
-							
-							for (var i = 0; i < normalized.length; i++) {
+							let normalized = query.normalized || [];
+							let redirects = query.redirects || [];
+							let pages = query.pages;
+
+							for (let i = 0; i < normalized.length; i++) {
 								if (topics[normalized[i].from]) {
 									topics[normalized[i].to] = topics[normalized[i].from];
 									delete topics[normalized[i].from];
 								}
 							}
-							
-							for (var i = 0; i < redirects.length; i++) {
+
+							for (let i = 0; i < redirects.length; i++) {
 								if (topics[redirects[i].from]) {
 									if (topics[redirects[i].to]) {
 										topics[redirects[i].to] = topics[redirects[i].to].concat(topics[redirects[i].from]);
@@ -953,24 +953,24 @@ function main() {
 									delete topics[redirects[i].from];
 								}
 							}
-							
-							for (var i = 0; i < pages.length; i++) {
+
+							for (let i = 0; i < pages.length; i++) {
 								if (pages[i].pageid) {
 									pageTitleToId[pages[i].title] = pages[i].pageid;
 								}
 							}
-							
-							var nextTitles = pageTitles.splice(0, 50).join('|');
+
+							let nextTitles = pageTitles.splice(0, 50).join('|');
 							if (nextTitles.length) {
 								queryPageProperties('pageids', nextTitles);
 							} else {
-								var newWatchedTopics = {};
-								for (var key in topics) {
+								let newWatchedTopics = {};
+								for (let key in topics) {
 									if (pageTitleToId[key]) {
 										newWatchedTopics[pageTitleToId[key]] = cd.env.removeDuplicates(topics[key]);
 									}
 								}
-								
+
 								setWatchedTopics(newWatchedTopics)
 									.done(() => {
 										editWatchedTopicsDialog.popPending();
@@ -994,22 +994,22 @@ function main() {
 							}
 						};
 					}
-					
+
 					new mw.Api().post(queryOptions)
 						.then(
 							data => {
-								var error = data.error &&
+								let error = data.error &&
 									data.error.code &&
 									data.error.info &&
 									data.error.code + ': ' + data.error.info;
 								if (error) {
 									return $.Deferred().reject(['api', error]).promise();
 								}
-								
+
 								if (!data || !data.query || !data.query.pages) {
 									return $.Deferred().reject(['api', 'no data']).promise();
 								}
-								
+
 								return data.query;
 							},
 							(jqXHR, textStatus, errorThrown) =>
@@ -1025,12 +1025,12 @@ function main() {
 							editWatchedTopicsDialog.popPending();
 						});
 				};
-				
+
 				function EditWatchedTopicsDialog() {
 					EditWatchedTopicsDialog.parent.call(this);
 				}
 				OO.inheritClass(EditWatchedTopicsDialog, OO.ui.ProcessDialog);
-				
+
 				EditWatchedTopicsDialog.static.name = 'editWatchedTopicsDialog';
 				EditWatchedTopicsDialog.static.title = 'Править список тем';
 				EditWatchedTopicsDialog.static.actions = [
@@ -1044,47 +1044,47 @@ function main() {
 						flags: 'safe',
 					}
 				];
-				
+
 				EditWatchedTopicsDialog.prototype.initialize = function () {
 					EditWatchedTopicsDialog.parent.prototype.initialize.apply(this, arguments);
-					
+
 					this.pushPending();
-					
+
 					this.textarea = new OO.ui.MultilineTextInputWidget({
 						value: '',
 						rows: 30,
 					});
-					
+
 					this.$body.append(this.textarea.$element);
-					
+
 					pageIds = Object.keys(watchedTopics);
 					pageIdToTitle = {};
 					pagesIdAndTitle = [];
-					
-					var nextPageIds = pageIds.splice(0, 50).join('|');
+
+					let nextPageIds = pageIds.splice(0, 50).join('|');
 					if (nextPageIds !== '') {
 						queryPageProperties('titles', nextPageIds);
 					} else {
 						this.popPending();
 					}
 				};
-				
+
 				EditWatchedTopicsDialog.prototype.getActionProcess = function (action) {
-					var dialog = this;
-					
-					var abort = (text, recoverable) => {
+					let dialog = this;
+
+					let abort = (text, recoverable) => {
 						dialog.showErrors(new OO.ui.Error(text, recoverable));
 					};
-					
+
 					if (action === 'save') {
 						return new OO.ui.Process(function () {
 							dialog.pushPending();
-							
-							var rawTopics = dialog.textarea.getValue().split('\n');
+
+							let rawTopics = dialog.textarea.getValue().split('\n');
 							topics = {};
 							pageTitles = [];
-							for (var i = 0; i < rawTopics.length; i++) {
-								var matches = rawTopics[i].split('#');
+							for (let i = 0; i < rawTopics.length; i++) {
+								let matches = rawTopics[i].split('#');
 								if (!matches[0] || !matches[1]) {
 									continue;
 								} else {
@@ -1097,10 +1097,10 @@ function main() {
 									topics[matches[0]].push(matches[1]);
 								}
 							}
-							
+
 							pageTitleToId = {};
-							
-							var nextTitles = pageTitles.splice(0, 50).join('|');
+
+							let nextTitles = pageTitles.splice(0, 50).join('|');
 							if (nextTitles !== '') {
 								queryPageProperties('pageids', nextTitles);
 							} else {
@@ -1110,16 +1110,16 @@ function main() {
 					}
 					return EditWatchedTopicsDialog.parent.prototype.getActionProcess.call(dialog, action);
 				};
-				
-				var editWatchedTopicsDialog = new EditWatchedTopicsDialog();
-				
+
+				let editWatchedTopicsDialog = new EditWatchedTopicsDialog();
+
 				if (!cd.env.windowManager) {
 					cd.env.createWindowManager();
 				}
 				$('body').append(cd.env.windowManager.$element);
 				cd.env.windowManager.addWindows([editWatchedTopicsDialog]);
-				
-				var editWatchedTopicsWindow = cd.env.windowManager.openWindow(editWatchedTopicsDialog);
+
+				let editWatchedTopicsWindow = cd.env.windowManager.openWindow(editWatchedTopicsDialog);
 				editWatchedTopicsWindow.opened.then(() => {
 					editWatchedTopicsDialog.textarea.focus();
 				});
@@ -1139,14 +1139,14 @@ function main() {
 	window.ewt0 = cd.env.editWatchedTopics;
 	window.ewt = function(){cd.env.editWatchedTopics()};
 
-	
+
 	if (!location.host.endsWith('.m.wikipedia.org') &&
 		cd.env.isDiscussionNamespace(cd.env.NAMESPACE_NUMBER) &&
 		mw.config.get('wgIsArticle') &&
 		cd.env.$content.is(':contains("(UTC)")')
 	) {
-		var bodyBgcolor;
-		var underlayerFocusedGradientToColor = cd.env.getTransparentColor(cd.env.UNDERLAYER_FOCUSED_BGCOLOR);
+		let bodyBgcolor;
+		let underlayerFocusedGradientToColor = cd.env.getTransparentColor(cd.env.UNDERLAYER_FOCUSED_BGCOLOR);
 		switch (cd.env.CURRENT_SKIN) {
 			case 'timeless':
 				bodyBgcolor = window.getComputedStyle($('#mw-content')[0]).backgroundColor;
@@ -1155,7 +1155,7 @@ function main() {
 				bodyBgcolor = window.getComputedStyle($('.mw-body')[0]).backgroundColor;
 				break;
 		}
-		
+
 		addCSS(talkPageCss);
 
 		if (cd.env.UNDERLAYER_FOCUSED_BGCOLOR !== 'white' &&
@@ -1171,23 +1171,23 @@ function main() {
 
 		addCSS(`
 			.cd-linksUnderlayer-gradient {
-				background-image: linear-gradient(to left, ${cd.env.UNDERLAYER_FOCUSED_BGCOLOR}, 
+				background-image: linear-gradient(to left, ${cd.env.UNDERLAYER_FOCUSED_BGCOLOR},
 				${underlayerFocusedGradientToColor} + ');
 			}
-			
+
 			.cd-closeButton {
 				background-color: ${bodyBgcolor};
 			}
 		`);
-		
+
 		if (!cd.settings || cd.settings.showLoadingOverlay !== false) {
 			cd.env.setLoadingOverlay();
 		}
-		
+
 		debug.endTimer('начало');
-		
+
 		debug.startTimer('загрузка модулей');
-		
+
 		mw.loader.using([
 			'jquery.color',
 			'jquery.client',
@@ -1203,7 +1203,7 @@ function main() {
 			'user.options',
 		]).done(parse);
 	}
-	
+
 	if (mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' ||
 		mw.config.get('wgCanonicalSpecialPageName') === 'Contributions' ||
 		(mw.config.get('wgAction') === 'history' &&
@@ -1212,7 +1212,7 @@ function main() {
 		cd.env.IS_DIFF_PAGE
 	) {
 		addCSS(logPagesCss);
-		
+
 		mw.loader.using(['user.options', 'mediawiki.util', 'mediawiki.RegExp']).done(msgLinks);
 	}
 }

@@ -18,14 +18,14 @@ export default class Msg {
 
 	constructor(dateContainer) {
 		// The most expensive part. We avoid using jQuery here and try to implement everything at the lowest level.
-		
+
 		// Extract the date data, sometimes the author too. We take the last date on the first line where
 		// there are dates (farther, there would be dates of the replies to this message).
-		var dateContainerText = dateContainer.textContent;
-		var dateContainerTextLine, author, date, year, month, day, hours, minutes;
+		let dateContainerText = dateContainer.textContent;
+		let dateContainerTextLine, author, date, year, month, day, hours, minutes;
 		// Taking into account the second call below, it's a long but cost-effective analogue of this expression:
 		// /(.*)(((\b\d?\d):(\d\d), (\d\d?) ([а-я]+) (\d\d\d\d)) \(UTC\))/
-		var dateMatches = /\b\d?\d:\d\d, \d\d? [а-я]+ \d\d\d\d \(UTC\)|Эта реплика добавлена (?:участником|с IP) .+[  ]\(о(?: · в)?\)|\(обс\.\)/
+		let dateMatches = /\b\d?\d:\d\d, \d\d? [а-я]+ \d\d\d\d \(UTC\)|Эта реплика добавлена (?:участником|с IP) .+[  ]\(о(?: · в)?\)|\(обс\.\)/
 			.exec(dateContainerText);
 		if (dateMatches) {
 			// Workaround / FIXME
@@ -47,10 +47,10 @@ export default class Msg {
 			if (!dateMatches) {  // Logically, this should never happen.
 				throw new cd.env.Exception();
 			}
-			
+
 			if (dateMatches[1]) {
 				date = dateMatches[1];
-				
+
 				hours = Number(dateMatches[2]);
 				minutes = Number(dateMatches[3]);
 				day = Number(dateMatches[4]);
@@ -72,30 +72,30 @@ export default class Msg {
 			throw new cd.env.Exception();
 		}
 
-		var recursiveGetLastNotInlineChildren = $el => {
-			var $temp = $el.children().last();
+		let recursiveGetLastNotInlineChildren = $el => {
+			let $temp = $el.children().last();
 			while ($temp.length && !cd.env.isInline($temp[0])) {
 				$el = $temp;
 				$temp = $el.children().last();
 			}
 			return $el;
 		};
-		
+
 		// Start the traversal.
-		var current = dateContainer;
-		var currentText, authorLink, foreignDate, foreignDateMatch, isBlockToExclude, $textNodesWithDate;
-		var closestPartWithDate = current;
-		var parts = [];
-		var closestBeforeGoingParent = current;
-		var steppedUpFromNotInline = false;
-		var steppedUpFromNotInlineOnce = false;
-		var steppedBack = false;
-		var hasForeignDateLaterCounter = 0;
-		var dateOrAuthor = date || author;
+		let current = dateContainer;
+		let currentText, authorLink, foreignDate, foreignDateMatch, isBlockToExclude, $textNodesWithDate;
+		let closestPartWithDate = current;
+		let parts = [];
+		let closestBeforeGoingParent = current;
+		let steppedUpFromNotInline = false;
+		let steppedUpFromNotInlineOnce = false;
+		let steppedBack = false;
+		let hasForeignDateLaterCounter = 0;
+		let dateOrAuthor = date || author;
 
 		// 300 seems to be a pretty safe value.
-		for (var i = 0; i < 300; i++) {
-			var prev = current.previousElementSibling;
+		for (let i = 0; i < 300; i++) {
+			let prev = current.previousElementSibling;
 			// Go back.
 			if (prev) {
 				steppedBack = true;
@@ -121,7 +121,7 @@ export default class Msg {
 			if (cd.env.isInline(current)) {
 				continue;
 			}
-			
+
 			currentText = current.textContent;
 			if (// {{outdent}} template
 				currentText.includes('┌───') ||
@@ -136,15 +136,15 @@ export default class Msg {
 			) {
 				break;
 			}
-			
+
 			if (currentText.includes('(UTC)')) {
 				isBlockToExclude = false;
 				if (current.tagName === 'BLOCKQUOTE') {
 					isBlockToExclude = true;
 				}
 				if (!isBlockToExclude && current.className && cd.config.BLOCKS_TO_EXCLUDE_CLASSES.length) {
-					for (var j = 0; j < current.classList.length; j++) {
-						for (var k = 0; k < cd.config.BLOCKS_TO_EXCLUDE_CLASSES.length; k++) {
+					for (let j = 0; j < current.classList.length; j++) {
+						for (let k = 0; k < cd.config.BLOCKS_TO_EXCLUDE_CLASSES.length; k++) {
 							if (current.classList[j] === cd.config.BLOCKS_TO_EXCLUDE_CLASSES[k]) {
 								isBlockToExclude = true;
 								break;
@@ -153,7 +153,7 @@ export default class Msg {
 						if (isBlockToExclude) break;
 					}
 				}
-				
+
 				if (!isBlockToExclude &&
 					!currentText.includes('-- DimaBot') &&
 					!currentText.includes('--DimaBot')
@@ -180,14 +180,14 @@ export default class Msg {
 							if (/\(UTC\)\s*$/.test(currentText)) {
 								break;
 							}
-							
+
 							$textNodesWithDate = $(current).contents().filter(function () {
 								return this.nodeType === Node.TEXT_NODE && this.textContent.includes('(UTC)');
 							});
 							if ($textNodesWithDate.length) {
 								break;
 							}
-							
+
 							current = recursiveGetLastNotInlineChildren($(current))[0];
 							currentText = current.textContent;
 							if (currentText.includes('(UTC)') || current.className.includes('outdent-template')) {
@@ -244,13 +244,13 @@ export default class Msg {
 				closestPartWithDate = current;
 			}
 		}
-		
+
 		// Extract only this answer, exluding replies to it.
-		var metReply = false, waitForNotInline = false;
-		var partsToAddIfHasAnswers = [];
-		var cpwdChildNodes = closestPartWithDate.childNodes;
-		var cpwdChildNode, cpwdChildNodeText;
-		for (i = 0; i < cpwdChildNodes.length; i++) {
+		let metReply = false, waitForNotInline = false;
+		let partsToAddIfHasAnswers = [];
+		let cpwdChildNodes = closestPartWithDate.childNodes;
+		let cpwdChildNode, cpwdChildNodeText;
+		for (let i = 0; i < cpwdChildNodes.length; i++) {
 			cpwdChildNode = cpwdChildNodes[i];
 			cpwdChildNodeText = cpwdChildNode.textContent;
 			if (cpwdChildNode.nodeType === Node.TEXT_NODE || cd.env.isInline(cpwdChildNode)) {
@@ -267,7 +267,7 @@ export default class Msg {
 				metReply = true;
 				break;
 			}
-			
+
 			// If it contains a date, but doesn't contain our date, it's a reply.
 			metReply = cpwdChildNodeText.includes('(UTC)') && !cpwdChildNodeText.includes(date);
 			if (metReply) {
@@ -277,33 +277,33 @@ export default class Msg {
 				continue;
 			}
 		}
-		
-		var elements = metReply ? partsToAddIfHasAnswers : [closestPartWithDate];
+
+		let elements = metReply ? partsToAddIfHasAnswers : [closestPartWithDate];
 		if (elements.length > 1 || elements[0].nodeType === Node.TEXT_NODE) {
-			var wrapper = document.createElement('div');
-			var parent = elements[0].parentElement;
-			for (i = 0; i < elements.length; i++) {
+			let wrapper = document.createElement('div');
+			let parent = elements[0].parentElement;
+			for (let i = 0; i < elements.length; i++) {
 				wrapper.appendChild(elements[i]);
 			}
 			parent.insertBefore(wrapper, parent.firstChild);
 			elements = [wrapper];
 		}
-		
+
 		if (!author) {
 			// Extract the author. Take the last link to the corresponding page.
 			// Участни, Обсуждение_участни, Служебная:Вклад (in cd.config.AUTHOR_SELECTOR); the rest (users from other WMF
 			// projects). TODO: encompass cases like
 			// [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]). It should also be done in other
 			// places where various author selectors are used.
-			var authorLinks = elements[elements.length - 1].querySelectorAll(cd.config.AUTHOR_SELECTOR);
+			let authorLinks = elements[elements.length - 1].querySelectorAll(cd.config.AUTHOR_SELECTOR);
 			if (!authorLinks.length) {
 				authorLinks = elements[elements.length - 1].querySelectorAll('a[href*="/wiki/User:"]');
 			}
 			if (!authorLinks.length) {
 				throw new cd.env.Exception();
 			}
-			
-			var authorMatches = cd.config.AUTHOR_LINK_REGEXP.exec(authorLinks[authorLinks.length - 1].getAttribute('href'));
+
+			let authorMatches = cd.config.AUTHOR_LINK_REGEXP.exec(authorLinks[authorLinks.length - 1].getAttribute('href'));
 			author = authorMatches && decodeURIComponent(authorMatches[1] || authorMatches[2] ||
 				 authorMatches[3] || authorMatches[4]);
 			author = author && author
@@ -313,11 +313,11 @@ export default class Msg {
 				throw new cd.env.Exception();
 			}
 		}
-		
-		var anchor = cd.env.generateMsgAnchor(year, month, day, hours, minutes, author);
-		
-		var part, class_;
-		for (i = parts.length - 1; i >= 0; i--) {
+
+		let anchor = cd.env.generateMsgAnchor(year, month, day, hours, minutes, author);
+
+		let part, class_;
+		for (let i = parts.length - 1; i >= 0; i--) {
 			part = parts[i];
 			class_ = part.className;
 			if (part.tagName === 'STYLE' ||
@@ -336,12 +336,12 @@ export default class Msg {
 		if (parts.length) {
 			elements = elements.concat(parts);
 		}
-		
+
 		if (!elements.length) {
 			throw new cd.env.Exception();
 		}
-		
-		var sortElements = () => {
+
+		let sortElements = () => {
 			// Sort elements according to their position in the DOM.
 			elements.sort((a, b) => {
 				if (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) {
@@ -352,14 +352,14 @@ export default class Msg {
 				}
 			});
 		};
-		
+
 		sortElements();
-		
-		var broken;
-		for (i = elements.length - 1; i >= 0; i--) {
+
+		let broken;
+		for (let i = elements.length - 1; i >= 0; i--) {
 			broken = false;
 			// Remove duplicates and elements contained by others.
-			for (var j = 0; j < i; j++) {
+			for (let j = 0; j < i; j++) {
 				if (elements[i] === elements[j] ||
 					elements[j].compareDocumentPosition(elements[i]) & Node.DOCUMENT_POSITION_CONTAINED_BY
 				) {
@@ -373,12 +373,12 @@ export default class Msg {
 				elements.splice(i, 1);
 			}
 		}
-		
+
 		// dd, li instead of dl, ul, ol in collections.
-		var changed = false;
+		let changed = false;
 		if (steppedUpFromNotInlineOnce) {
-			var children;
-			for (i = elements.length - 1; i >= 0; i--) {
+			let children;
+			for (let i = elements.length - 1; i >= 0; i--) {
 				if (['UL', 'DL', 'OL'].includes(elements[i].tagName)) {
 					// Transform into a simple array.
 					children = Array.prototype.slice.call(elements[i].children);
@@ -393,22 +393,22 @@ export default class Msg {
 					) {
 						children = Array.prototype.slice.call(children[0].children);
 					}
-					
+
 					elements = elements.concat(children);
 					elements.splice(i, 1);
 					changed = true;
 				}
 			}
 		}
-		
+
 		if (changed) {
 			sortElements();
 		}
-		
+
 		if (cd.env.EVERYTHING_MUST_BE_FROZEN) {
 			this.frozen = true;
 		} else if (cd.parse.closedDiscussions.length) {
-			for (i = 0; i < cd.parse.closedDiscussions.length; i++) {
+			for (let i = 0; i < cd.parse.closedDiscussions.length; i++) {
 				if (cd.parse.closedDiscussions[i].contains(elements[0])) {
 					this.frozen = true;
 					break;
@@ -419,17 +419,17 @@ export default class Msg {
 			this.frozen = false;
 		}
 
-		var getParent = () => {
+		let getParent = () => {
 			// This would work only if messages in cd.msgs are in order of their presence on the page.
-			
-			var level = this.level;
+
+			let level = this.level;
 			if (this.$elements[0].classList.contains('ruwiki-msgIndentation-minus1level')) {
 				level -= 1;
 			}
-			
+
 			if (cd.parse.pageHasOutdents) {
-				var currentElement = this.elements[0];
-				var outdented = false;
+				let currentElement = this.elements[0];
+				let outdented = false;
 				while (currentElement && currentElement !== cd.env.contentElement) {
 					if (currentElement.previousElementSibling) {
 						currentElement = currentElement.previousElementSibling;
@@ -449,13 +449,13 @@ export default class Msg {
 					return cd.msgs[this.id - 1];
 				}
 			}
-			
+
 			if (level <= 0) {
 				return null;
 			}
-			
-			var currentMsg;
-			for (var i = this.id - 1; i >= 0; i--) {
+
+			let currentMsg;
+			for (let i = this.id - 1; i >= 0; i--) {
 				currentMsg = cd.msgs[i];
 				if (currentMsg.level !== undefined && currentMsg.level < level) {
 					if (currentMsg.section === this.section) {
@@ -464,50 +464,50 @@ export default class Msg {
 					}
 				}
 			}
-			
+
 			return null;  // Not undefined, so that the variable would be considered filled.
 		};
 
-		var getSection = () => {
+		let getSection = () => {
 			if (!cd.sections) {
 				return null;  // Not undefined, so that the variable would be considered filled.
 			}
-			
-			var currentSection;
-			for (var i = cd.sections.length - 1; i >= 0; i--) {
+
+			let currentSection;
+			for (let i = cd.sections.length - 1; i >= 0; i--) {
 				currentSection = cd.sections[i];
 				if (currentSection.msgs.includes(this)) {
 					section = currentSection;
 					return section;
 				}
 			}
-			
+
 			return null;  // Not undefined, so that the variable would be considered filled.
 		};
-		
-		var getAuthorRegistered = () => !/((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/.test(this.author);
-		
-		var getText = () => {
+
+		let getAuthorRegistered = () => !/((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/.test(this.author);
+
+		let getText = () => {
 			// Get message text without a signature.
-			var $msgWithNoSig = $();
+			let $msgWithNoSig = $();
 			if (this.$elements.length > 1) {
 				$msgWithNoSig = $msgWithNoSig.add(this.$elements.slice(0, -1));
 			}
-			var currentAuthorSelector = cd.env.generateAuthorSelector(this.author);
-			var $parentOfDate = this.$elements
+			let currentAuthorSelector = cd.env.generateAuthorSelector(this.author);
+			let $parentOfDate = this.$elements
 				.last()
 				.find(currentAuthorSelector)
 				.last()
 				// Not "(UTC" to make scripts altering timezone not break.
 				.closest(':contains("(UTC"), :contains("Эта реплика добавлена"), :contains("(обс.)")');
-			
+
 			// $parentOfDate might be empty if scripts altering date are used.
 			if ($parentOfDate.length) {
-				var lastElement = this.$elements.last()[0];
+				let lastElement = this.$elements.last()[0];
 				if ($parentOfDate[0] !== lastElement &&
 					!($parentOfDate[0].compareDocumentPosition(lastElement) & Node.DOCUMENT_POSITION_CONTAINED_BY)
 				) {
-					var currentElement = $parentOfDate[0];
+					let currentElement = $parentOfDate[0];
 					while (true) {
 						if (currentElement.previousSibling) {
 							currentElement = currentElement.previousSibling;
@@ -519,7 +519,7 @@ export default class Msg {
 								currentElement = currentElement.parentElement;
 							}
 							if (!currentElement || currentElement === lastElement) break;
-							
+
 							currentElement = currentElement.previousSibling;
 						}
 						if (currentElement && currentElement !== lastElement) {
@@ -529,7 +529,7 @@ export default class Msg {
 						}
 					}
 				}
-				var foundAuthorNode = false;
+				let foundAuthorNode = false;
 				$msgWithNoSig = $msgWithNoSig.add(
 					$parentOfDate
 						.contents()
@@ -551,15 +551,15 @@ export default class Msg {
 				// Actually, it will have a signature :(
 				$msgWithNoSig = $msgWithNoSig.add(this.$elements.last());
 			}
-			
+
 			return cd.env.elementsToText($msgWithNoSig.get())
 				.replace(/Эта реплика добавлена (?:участником|с IP)$/, '')
 				.replace(/Эта реплика добавлена (?:участником|с IP).{1,50}$/, '')
 				.replace('(обс.)$', '')
 				.replace(cd.config.SIG_PREFIX_REGEXP, '');
 		};
-		
-		var $elements, msgText, parentMsg, section, isAuthorRegistered;
+
+		let $elements, msgText, parentMsg, section, isAuthorRegistered;
 		// Using a getter allows to save a little time on running $().
 		Object.defineProperty(this, '$elements', {
 			get: () => {
@@ -569,7 +569,7 @@ export default class Msg {
 				return $elements;
 			},
 		});
-		
+
 		Object.defineProperty(this, 'text', {
 			get: () => {
 				if (typeof msgText === 'undefined') {
@@ -578,7 +578,7 @@ export default class Msg {
 				return msgText;
 			},
 		});
-		
+
 		Object.defineProperty(this, 'parent', {
 			get: () => {
 				if (typeof parentMsg === 'undefined') {
@@ -587,7 +587,7 @@ export default class Msg {
 				return parentMsg;
 			},
 		});
-		
+
 		Object.defineProperty(this, 'section', {
 			get: () => {
 				if (typeof section === 'undefined') {
@@ -596,7 +596,7 @@ export default class Msg {
 				return section;
 			},
 		});
-		
+
 		Object.defineProperty(this, 'isAuthorRegistered', {
 			get: () => {
 				if (typeof isAuthorRegistered === 'undefined') {
@@ -605,7 +605,7 @@ export default class Msg {
 				return isAuthorRegistered;
 			},
 		});
-		
+
 		this.id = cd.parse.currentMsgId;
 		this.author = author;
 		if (anchor) {
@@ -614,12 +614,12 @@ export default class Msg {
 		this.date = date;
 		this.timestamp = Date.UTC(year, month, day, hours, minutes);
 		this.elements = elements;
-		
+
 		if (anchor && !elements[0].id) {
 			elements[0].id = anchor;
 		}
-		var element;
-		for (i = 0; i < elements.length; i++) {
+		let element;
+		for (let i = 0; i < elements.length; i++) {
 			element = elements[i];
 			if (elements.length > 1) {
 				element.className += ' cd-msgPart';
@@ -636,12 +636,12 @@ export default class Msg {
 			elements[0].className += ' cd-msgPart-first';
 			elements[elements.length - 1].className += ' cd-msgPart-last';
 		}
-		
-		var setMsgLevels = (initialElement, isTop) => {
-			var msgsToTopLevel = [];
-			var topLevel = 0;
-			var topLevelMatches;
-			for (var currentElement = initialElement;
+
+		let setMsgLevels = (initialElement, isTop) => {
+			let msgsToTopLevel = [];
+			let topLevel = 0;
+			let topLevelMatches;
+			for (let currentElement = initialElement;
 				currentElement && currentElement !== cd.env.contentElement;
 				currentElement = currentElement.parentElement
 			) {
@@ -661,10 +661,10 @@ export default class Msg {
 					}
 				}
 			}
-			
+
 			if (msgsToTopLevel.length) {
-				var currentLevel = topLevel;
-				for (var i = 0; i < msgsToTopLevel.length; i++) {
+				let currentLevel = topLevel;
+				for (let i = 0; i < msgsToTopLevel.length; i++) {
 					currentLevel++;
 					msgsToTopLevel[i].className += ' cd-msgLevel-' + currentLevel;
 				}
@@ -681,37 +681,37 @@ export default class Msg {
 				}
 			}
 		};
-		
+
 		// msgBottomLevel is used to prevent the message from being considered to be at a lower level (and thus
 		// draw a line to the left of its top) if only its top is on it (more precisely, if the top is on the zero
 		// level).
-		var msgBottomLevel;
+		let msgBottomLevel;
 		if (elements.length > 1) {
 			setMsgLevels(elements[elements.length - 1], false);
 		}
 		setMsgLevels(elements[0], true);
 	}
-	
+
 	getPositions(considerFloating, firstElementRect, lastElementRect) {
-		var viewportTop = window.pageYOffset;
-		var viewportHeight = window.innerHeight;
-		
-		var rectTop = firstElementRect || this::getFirstElementRect();
-		var rectBottom = this.elements.length === 1 ?
+		let viewportTop = window.pageYOffset;
+		let viewportHeight = window.innerHeight;
+
+		let rectTop = firstElementRect || this::getFirstElementRect();
+		let rectBottom = this.elements.length === 1 ?
 			rectTop :
 			lastElementRect || this.elements[this.elements.length - 1].getBoundingClientRect();
-		
-		var msgTop = viewportTop + rectTop.top;
-		var msgBottom = viewportTop + rectBottom.bottom;
-		
-		var msgLeft, msgRight;
+
+		let msgTop = viewportTop + rectTop.top;
+		let msgBottom = viewportTop + rectBottom.bottom;
+
+		let msgLeft, msgRight;
 		if (!considerFloating) {
 			msgLeft = window.pageXOffset + Math.min(rectTop.left, rectBottom.left);
 			msgRight = window.pageXOffset + Math.min(rectTop.right, rectBottom.right);
 		} else {
-			var intersectsFloating = false;
-			var rect, floatingTop, floatingBottom;
-			for (var i = 0; i < cd.env.floatingElements.length; i++) {
+			let intersectsFloating = false;
+			let rect, floatingTop, floatingBottom;
+			for (let i = 0; i < cd.env.floatingElements.length; i++) {
 				rect = cd.env.floatingRects[i] || cd.env.floatingElements[i].getBoundingClientRect();
 				floatingTop = viewportTop + rect.top;
 				floatingBottom = viewportTop + rect.bottom;
@@ -719,54 +719,54 @@ export default class Msg {
 					msgTop > floatingTop && msgTop < floatingBottom && msgBottom <= floatingBottom + 35 ||
 					msgBottom > floatingTop && msgBottom < floatingBottom
 				) {
-					
+
 					intersectsFloating = true;
 					break;
 				}
 			}
-			
-			var defaultOverflows = [];
+
+			let defaultOverflows = [];
 			// We count left and right separately – in that case, we need to change overflow to get the desired
 			// value, otherwise floating elements are not taken into account.
 			if (intersectsFloating) {
-				for (i = 0; i < this.elements.length; i++) {
+				for (let i = 0; i < this.elements.length; i++) {
 					defaultOverflows.push(this.elements[i].style.overflow);
 					this.elements[i].style.overflow = 'hidden';
 				}
 			}
-			var elementLeft, elementRight;
-			var rects = [];
-			for (i = 0; i < this.elements.length; i++) {
+			let elementLeft, elementRight;
+			let rects = [];
+			for (let i = 0; i < this.elements.length; i++) {
 				rects[i] = this.elements[i].getBoundingClientRect();
 			}
-			for (i = 0; i < rects.length; i++) {
+			for (let i = 0; i < rects.length; i++) {
 				elementLeft = window.pageXOffset + rects[i].left;
 				if (!msgLeft || elementLeft < msgLeft) {
 					msgLeft = elementLeft;
 				}
 			}
-			for (i = 0; i < rects.length; i++) {
+			for (let i = 0; i < rects.length; i++) {
 				elementRight = msgLeft + this.elements[i].offsetWidth;
 				if (!msgRight || elementRight > msgRight) {
 					msgRight = elementRight;
 				}
 			}
 			if (intersectsFloating) {
-				for (i = 0; i < this.elements.length; i++) {
+				for (let i = 0; i < this.elements.length; i++) {
 					this.elements[i].style.overflow = defaultOverflows[i];
 				}
 			}
 		}
-		
+
 		// A solution for messages the height of which is bigger than the viewport height. In Chrome,
 		// a scrolling step is 40 pixels.
-		var downplayedBottom;
+		let downplayedBottom;
 		if (msgBottom - msgTop > (viewportHeight - 200)) {
 			downplayedBottom = msgTop + (viewportHeight - 200);
 		} else {
 			downplayedBottom = msgBottom;
 		}
-		
+
 		this.positions = {
 			top: msgTop,
 			bottom: msgBottom,
@@ -776,24 +776,24 @@ export default class Msg {
 		};
 		return this.positions;
 	}
-	
+
 	calculateUnderlayerPositions(firstElementRect, lastElementRect) {
 		// getBoundingClientRect() calculation is a little costly, so we take the value that is already
 		// calculated.
-		
+
 		this.getPositions(true, firstElementRect, lastElementRect);
-		
+
 		// This is for the comparison to determine if the element has shifted.
 		this.#firstWidth = this.elements[0].offsetWidth;
-		
-		var underlayerTop = cd.env.underlayersYCorrection + this.positions.top;
-		var underlayerLeft = cd.env.underlayersXCorrection + this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
-		var underlayerWidth = this.positions.right - this.positions.left + cd.env.UNDERLAYER_SIDE_MARGIN * 2;
-		var underlayerHeight = this.positions.bottom - this.positions.top;
-		
-		var linksUnderlayerTop = this.positions.top;
-		var linksUnderlayerLeft = this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
-		
+
+		let underlayerTop = cd.env.underlayersYCorrection + this.positions.top;
+		let underlayerLeft = cd.env.underlayersXCorrection + this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
+		let underlayerWidth = this.positions.right - this.positions.left + cd.env.UNDERLAYER_SIDE_MARGIN * 2;
+		let underlayerHeight = this.positions.bottom - this.positions.top;
+
+		let linksUnderlayerTop = this.positions.top;
+		let linksUnderlayerLeft = this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
+
 		return {
 			underlayerTop: underlayerTop,
 			underlayerLeft: underlayerLeft,
@@ -803,59 +803,59 @@ export default class Msg {
 			linksUnderlayerLeft: linksUnderlayerLeft,
 		};
 	}
-	
+
 	configureUnderlayer(returnResult) {
-		var elements = this.elements;
-		var rectTop = this::getFirstElementRect();
-		var rectBottom = elements.length === 1 ?
+		let elements = this.elements;
+		let rectTop = this::getFirstElementRect();
+		let rectBottom = elements.length === 1 ?
 			rectTop :
 			elements[elements.length - 1].getBoundingClientRect();
-		var underlayerMisplaced = this.#underlayer && this.#underlayer.parentElement && (
+		let underlayerMisplaced = this.#underlayer && this.#underlayer.parentElement && (
 			rectTop.top + window.pageYOffset + cd.env.underlayersYCorrection !== this.#underlayerTop ||
 			rectBottom.bottom - rectTop.top !== this.#underlayerHeight ||
 			elements[0].offsetWidth !== this.#firstWidth
 		);
-		
+
 		if (!this.#underlayer || !this.#underlayer.parentElement) {
 			// Prepare the underlayer nodes.
-			var positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
-			
+			let positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
+
 			this.#underlayerTop = positions.underlayerTop;
 			this.#underlayerLeft = positions.underlayerLeft;
 			this.#underlayerWidth = positions.underlayerWidth;
 			this.#underlayerHeight = positions.underlayerHeight;
 			this.#linksUnderlayerTop = positions.linksUnderlayerTop;
 			this.#linksUnderlayerLeft = positions.linksUnderlayerLeft;
-			
+
 			this.#underlayer = cd.env.UNDERLAYER_PROTOTYPE.cloneNode(true);
 			if (this.newness === 'newest') {
 				this.#underlayer.className += ' cd-underlayer-newest';
 			} else if (this.newness === 'new') {
 				this.#underlayer.className += ' cd-underlayer-new';
 			}
-			
+
 			this.#underlayer.style.top = this.#underlayerTop + 'px';
 			this.#underlayer.style.left = this.#underlayerLeft + 'px';
 			this.#underlayer.style.width = this.#underlayerWidth + 'px';
 			this.#underlayer.style.height = this.#underlayerHeight + 'px';
-			
+
 			this.#underlayer.cdTarget = this;
 			cd.env.underlayers.push(this.#underlayer);
-			
+
 			this.#linksUnderlayer = cd.env.LINKS_UNDERLAYER_PROTOTYPE.cloneNode(true);
-			
+
 			this.#linksUnderlayer.style.top = this.#linksUnderlayerTop + 'px';
 			this.#linksUnderlayer.style.left = this.#linksUnderlayerLeft + 'px';
 			this.#linksUnderlayer.style.width = this.#underlayerWidth + 'px';
 			this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
-			
-			var linksUnderlayer_wrapper = this.#linksUnderlayer.firstChild;
+
+			let linksUnderlayer_wrapper = this.#linksUnderlayer.firstChild;
 			// These variables are "more global", we need to access them from the outside.
 			this.#linksUnderlayer_gradient = linksUnderlayer_wrapper.firstChild;
 			this.#linksUnderlayer_text = linksUnderlayer_wrapper.lastChild;
-			
+
 			if (this.parent) {
-				var upButton = cd.env.MSG_UP_BUTTON_PROTOTYPE.cloneNode(true);
+				let upButton = cd.env.MSG_UP_BUTTON_PROTOTYPE.cloneNode(true);
 				if (this.parent.anchor) {
 					upButton.firstChild.href = '#' + this.parent.anchor;
 				} else {
@@ -864,19 +864,19 @@ export default class Msg {
 				upButton.onclick = this.scrollToParent.bind(this);
 				this.#linksUnderlayer_text.appendChild(upButton);
 			}
-			
+
 			if (this.anchor) {
-				var linkButton = cd.env.MSG_LINK_BUTTON_PROTOTYPE.cloneNode(true);
+				let linkButton = cd.env.MSG_LINK_BUTTON_PROTOTYPE.cloneNode(true);
 				this.#linksUnderlayer_text.appendChild(linkButton);
-				var linkButtonLink = linkButton.firstChild;
+				let linkButtonLink = linkButton.firstChild;
 				linkButtonLink.href = mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.anchor;
 				linkButtonLink.title = 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.';
 				linkButtonLink.onclick = this.copyLink.bind(this);
 			}
-			
+
 			if (!this.frozen) {
 				if (this.author === cd.env.CURRENT_USER || cd.settings.allowEditOthersMsgs) {
-					var editButton = cd.env.MSG_EDIT_BUTTON_PROTOTYPE.cloneNode(true);
+					let editButton = cd.env.MSG_EDIT_BUTTON_PROTOTYPE.cloneNode(true);
 					editButton.firstChild.onclick = () => {
 						this.#underlayer.classList.remove('cd-underlayer-focused');
 						this.#linksUnderlayer.classList.remove('cd-linksUnderlayer-focused');
@@ -884,27 +884,27 @@ export default class Msg {
 					};
 					this.#linksUnderlayer_text.appendChild(editButton);
 				}
-				
-				var replyButton = cd.env.MSG_REPLY_BUTTON_PROTOTYPE.cloneNode(true);
+
+				let replyButton = cd.env.MSG_REPLY_BUTTON_PROTOTYPE.cloneNode(true);
 				replyButton.firstChild.onclick = this.reply.bind(this);
 				this.#linksUnderlayer_text.appendChild(replyButton);
 			} else {
-				var currentElement = elements[elements.length - 1];
+				let currentElement = elements[elements.length - 1];
 				while (currentElement && currentElement !== cd.env.contentElement) {
 					currentElement = currentElement.parentElement;
-					var bgcolor = currentElement.style.backgroundColor;
+					let bgcolor = currentElement.style.backgroundColor;
 					if (bgcolor.includes('rgb(')) {
 						this.bgcolor = bgcolor;
 						break;
 					}
 				}
 			}
-			
-			var returnValue;
+
+			let returnValue;
 			if (!returnResult) {
 				cd.env.underlayersContainer.appendChild(this.#underlayer);
 				cd.env.linksUnderlayersContainer.appendChild(this.#linksUnderlayer);
-				
+
 				// To eliminate flickering when hovering 1 pixel above the linksUnderlayer.
 				if (cd.env.CURRENT_SKIN === 'monobook') {
 					this.#linksUnderlayer.onmouseenter = this.highlightFocused.bind(this);
@@ -916,41 +916,41 @@ export default class Msg {
 					linksUnderlayer: this.#linksUnderlayer,
 				};
 			}
-			
+
 			this.$underlayer = $(this.#underlayer);
 			this.$linksUnderlayer = $(this.#linksUnderlayer);
 			this.$linksUnderlayer_text = $(this.#linksUnderlayer_text);
 			this.$linksUnderlayer_gradient = $(this.#linksUnderlayer_gradient);
-			
+
 			return returnValue || false;
 		} else if (underlayerMisplaced) {
 			debug.startTimer('underlayer misplaced');
-			var positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
-			
+			let positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
+
 			this.#underlayerTop = positions.underlayerTop;
 			this.#underlayerLeft = positions.underlayerLeft;
 			this.#underlayerWidth = positions.underlayerWidth;
 			this.#underlayerHeight = positions.underlayerHeight;
 			this.#linksUnderlayerTop = positions.linksUnderlayerTop;
 			this.#linksUnderlayerLeft = positions.linksUnderlayerLeft;
-			
+
 			if (!returnResult) {
 				this.#underlayer.style.top = this.#underlayerTop + 'px';
 				this.#underlayer.style.left = this.#underlayerLeft + 'px';
 				this.#underlayer.style.width = this.#underlayerWidth + 'px';
 				this.#underlayer.style.height = this.#underlayerHeight + 'px';
-				
+
 				this.#linksUnderlayer.style.top = this.#linksUnderlayerTop + 'px';
 				this.#linksUnderlayer.style.left = this.#linksUnderlayerLeft + 'px';
 				this.#linksUnderlayer.style.width = this.#underlayerWidth + 'px';
 				this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
-				
+
 				debug.resetTimer('underlayer misplaced');
-				
+
 				return true;
 			} else {
 				debug.resetTimer('underlayer misplaced');
-				
+
 				// This wasn't used anywhere.
 				return {
 					underlayer: {
@@ -967,52 +967,52 @@ export default class Msg {
 					},
 				};
 			}
-			
+
 			return true;
 		} else {
 			return false;
 		}
 	}
-	
+
 	updateUnderlayerPositions() {
 		this.#underlayer.style.top = this.#underlayerTop + 'px';
 		this.#underlayer.style.left = this.#underlayerLeft + 'px';
 		this.#underlayer.style.width = this.#underlayerWidth + 'px';
 		this.#underlayer.style.height = this.#underlayerHeight + 'px';
-		
+
 		this.#linksUnderlayer.style.top = this.#linksUnderlayerTop + 'px';
 		this.#linksUnderlayer.style.left = this.#linksUnderlayerLeft + 'px';
 		this.#linksUnderlayer.style.width = this.#underlayerWidth + 'px';
 		this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
 	}
-	
+
 	// Highlight even in zones where DOM thinks the message is not (between paragraphs and such).
 	highlightFocused() {
 		if (cd.env.recalculateUnderlayersTimeout) return;
-		
-		var misplaced = !!this.configureUnderlayer();
-		
+
+		let misplaced = !!this.configureUnderlayer();
+
 		if (!misplaced) {
 			this.#underlayer.classList.add('cd-underlayer-focused');
 			this.#linksUnderlayer.classList.add('cd-linksUnderlayer-focused');
-			
+
 			// Settings of the nice gradient to the left from the links underlayer
 			if (this.bgcolor) {
 				this.#linksUnderlayer_text.style.backgroundColor = this.bgcolor;
-				var transparentColor = cd.env.getTransparentColor(this.bgcolor);
+				let transparentColor = cd.env.getTransparentColor(this.bgcolor);
 				this.#linksUnderlayer_gradient.style.backgroundImage = 'linear-gradient(to left, ' +
 					this.bgcolor + ', ' + transparentColor + ')';
 			}
 		}
 	}
-	
+
 	unhighlightFocused() {
 		if (!this.#underlayer || !this.#underlayer.parentElement ||
 			!this.#linksUnderlayer || !this.#linksUnderlayer.parentElement
 		) {
 			return;
 		}
-		
+
 		this.#underlayer.classList.remove('cd-underlayer-focused');
 		this.#linksUnderlayer.classList.remove('cd-linksUnderlayer-focused');
 
@@ -1022,17 +1022,17 @@ export default class Msg {
 			this.#linksUnderlayer_gradient.style.backgroundImage = null;
 		}
 	}
-	
+
 	// Highlight a message opened by a link or just posted.
 	highlightTarget() {
 		this.configureUnderlayer();
-		
-		var $elementsToAnimate = this.$underlayer
+
+		let $elementsToAnimate = this.$underlayer
 			.add(this.$linksUnderlayer_text)
 			.add(this.$linksUnderlayer_gradient);
-		
-		var initialBgcolor = window.getComputedStyle(this.$underlayer[0]).backgroundColor;
-		
+
+		let initialBgcolor = window.getComputedStyle(this.$underlayer[0]).backgroundColor;
+
 		$elementsToAnimate
 			.css('background-image', 'none')
 			.css('background-color', cd.env.UNDERLAYER_TARGET_BGCOLOR)
@@ -1043,7 +1043,7 @@ export default class Msg {
 					.css('background-color', '');
 			});
 	}
-	
+
 	scrollToAndHighlightTarget(smooth) {
 		this.highlightTarget();
 		if (!this.isOpeningSection) {
@@ -1052,7 +1052,7 @@ export default class Msg {
 			this.section.$heading.cdScrollTo('top', null, !smooth);
 		}
 	}
-	
+
 	scrollToParent(e) {
 		if (e) {
 			e.preventDefault();
@@ -1061,21 +1061,21 @@ export default class Msg {
 			console.error('У этого сообщения нет родительского.');
 			return;
 		}
-		
+
 		if (!this.parent.isOpeningSection) {
 			this.parent.$elements.cdScrollTo('top');
 		} else {
 			this.parent.section.$heading.cdScrollTo('top');
 		}
-		
-		var downButton = new OO.ui.ButtonWidget({
+
+		let downButton = new OO.ui.ButtonWidget({
 			label: '↓',
 			framed: false,
 			href: this.anchor ? '#' + this.anchor : 'javascript:',
 			classes: ['cd-msgButton'],
 		});
 		downButton.on('click', this.parent.scrollToChild);
-		
+
 		if (!this.parent.$underlayer || !this.parent.$underlayer.length) {
 			this.parent.configureUnderlayer();
 		}
@@ -1088,7 +1088,7 @@ export default class Msg {
 		this.parent.downButton = downButton;
 		this.parent.childToScrollBack = this;
 	}
-	
+
 	scrollToChild(e) {
 		if (e) {
 			e.preventDefault();
@@ -1097,13 +1097,13 @@ export default class Msg {
 			console.error('У этого сообщения нет дочернего, от которого перешли ранее.');
 			return;
 		}
-		
+
 		this.childToScrollBack.$elements.cdScrollTo('top');
 	}
-	
+
 	copyLink(e) {
-		var url;
-		var wikilink = '[[' + cd.env.CURRENT_PAGE + '#' + this.anchor + ']]';
+		let url;
+		let wikilink = '[[' + cd.env.CURRENT_PAGE + '#' + this.anchor + ']]';
 		try {
 			url = 'https:' + mw.config.get('wgServer') + decodeURI(mw.util.getUrl(cd.env.CURRENT_PAGE)) + '#' +
 				this.anchor;
@@ -1111,9 +1111,9 @@ export default class Msg {
 			console.error(e.stack);
 			return;
 		}
-		
+
 		if (!e.ctrlKey) {
-			var link, subject;
+			let link, subject;
 			switch (cd.settings.defaultCopyLinkType) {
 				default:
 				case 'wikilink':
@@ -1129,58 +1129,58 @@ export default class Msg {
 					subject = 'Discord-ссылка';
 					break;
 			}
-			
-			var $textarea = $('<textarea>')
+
+			let $textarea = $('<textarea>')
 				.val(link)
 				.appendTo($('body'))
 				.select();
-			var successful = document.execCommand('copy');
+			let successful = document.execCommand('copy');
 			$textarea.remove();
-			
+
 			if (successful) {
 				e.preventDefault();
 				mw.notify(subject + ' на сообщение скопирована в буфер обмена.');
 			}
 		} else {
 			e.preventDefault();
-			
-			var messageDialog = new OO.ui.MessageDialog();
+
+			let messageDialog = new OO.ui.MessageDialog();
 			$('body').append(cd.env.windowManager.$element);
 			cd.env.windowManager.addWindows([messageDialog]);
-			
-			var textInputWikilink = new OO.ui.TextInputWidget({
+
+			let textInputWikilink = new OO.ui.TextInputWidget({
 				value: wikilink,
 			});
-			var textFieldWikilink = new OO.ui.FieldLayout(textInputWikilink, {
+			let textFieldWikilink = new OO.ui.FieldLayout(textInputWikilink, {
 				align: 'top',
 				label: 'Вики-ссылка',
 			});
-			
-			var textInputAnchorWikilink = new OO.ui.TextInputWidget({
+
+			let textInputAnchorWikilink = new OO.ui.TextInputWidget({
 				value: '[[#' + this.anchor + ']]'
 			});
-			var textFieldAnchorWikilink = new OO.ui.FieldLayout(textInputAnchorWikilink, {
+			let textFieldAnchorWikilink = new OO.ui.FieldLayout(textInputAnchorWikilink, {
 				align: 'top',
 				label: 'Вики-ссылка с этой же страницы',
 			});
-			
-			var textInputUrl = new OO.ui.TextInputWidget({
+
+			let textInputUrl = new OO.ui.TextInputWidget({
 				value: url,
 			});
-			var textFieldUrl = new OO.ui.FieldLayout(textInputUrl, {
+			let textFieldUrl = new OO.ui.FieldLayout(textInputUrl, {
 				align: 'top',
 				label: 'Обычная ссылка',
 			});
-			
-			var textInputDiscord = new OO.ui.TextInputWidget({
+
+			let textInputDiscord = new OO.ui.TextInputWidget({
 				value: '<' + url + '>',
 			});
-			var textFieldDiscord = new OO.ui.FieldLayout(textInputDiscord, {
+			let textFieldDiscord = new OO.ui.FieldLayout(textInputDiscord, {
 				align: 'top',
 				label: 'Ссылка для Discord',
 			});
-			
-			var copyLinkWindow = cd.env.windowManager.openWindow(messageDialog, {
+
+			let copyLinkWindow = cd.env.windowManager.openWindow(messageDialog, {
 				message: textFieldWikilink.$element
 					.add(textFieldAnchorWikilink.$element)
 					.add(textFieldUrl.$element)
@@ -1190,7 +1190,7 @@ export default class Msg {
 				],
 				size: 'large',
 			});
-			var closeOnCtrlC = e => {
+			let closeOnCtrlC = e => {
 				if (e.ctrlKey && e.keyCode === 67) {  // Ctrl+C
 					setTimeout(() => {
 						messageDialog.close();
@@ -1208,30 +1208,30 @@ export default class Msg {
 			});
 		}
 	}
-	
+
 	locateInCode(pageCode, timestamp) {
 		if (pageCode == null) {
 			console.error('В первый параметр не передан код страницы. Используйте Msg.loadCode для получения местоположения сообщения в коде (оно появится в свойстве Msg.inCode).');
 			return;
 		}
-		
-		var authorAndDateRegExp = cd.env.generateAuthorAndDateRegExp(this.author, this.date);
-		var authorAndDateMatches = authorAndDateRegExp.exec(pageCode);
+
+		let authorAndDateRegExp = cd.env.generateAuthorAndDateRegExp(this.author, this.date);
+		let authorAndDateMatches = authorAndDateRegExp.exec(pageCode);
 		if (!authorAndDateMatches) return;
 
-		var correctMsgBeginning = () => {
+		let correctMsgBeginning = () => {
 			headingMatch = msgCode.match(headingRegExp);
 			if (headingMatch) {
 				if (!this.isOpeningSection) {
 					console.warn('Найден заголовок раздела перед сообщением, которое не отмечено как открывающее раздел.');
-					
+
 					msgStartPos += headingMatch[0].length;
 					msgCode = msgCode.slice(headingMatch[0].length);
 				} else {
 					headingStartPos = msgStartPos + headingMatch[1].length;
 					headingLevel = headingMatch[2].length;
 					headingCode = headingMatch[3].trim();
-					
+
 					msgStartPos += headingMatch[0].length;
 					msgCode = msgCode.slice(headingMatch[0].length);
 				}
@@ -1239,33 +1239,33 @@ export default class Msg {
 			if (!headingMatch && this.isOpeningSection) {
 				console.error('Не найдено заголовка раздела перед сообщением, которое отмечено как открывающее раздел.');
 			}
-			
-			var commentMatch = msgCode.match(commentRegExp);
+
+			let commentMatch = msgCode.match(commentRegExp);
 			if (commentMatch) {
 				msgStartPos += commentMatch[0].length;
 				msgCode = msgCode.slice(commentMatch[0].length);
 			}
-			
-			var horizontalLineMatch = msgCode.match(horizontalLineRegExp);
+
+			let horizontalLineMatch = msgCode.match(horizontalLineRegExp);
 			if (horizontalLineMatch) {
 				msgStartPos += horizontalLineMatch[0].length;
 				msgCode = msgCode.slice(horizontalLineMatch[0].length);
 			}
-			
+
 			return true;
 		};
-		
-		var msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
-		var headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
-		var commentRegExp = /^<!--[^]*?-->\n*/;
-		var horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
-		var bestMatchData = {};
-		
-		var prevMsgs = [];
+
+		let msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
+		let headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
+		let commentRegExp = /^<!--[^]*?-->\n*/;
+		let horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
+		let bestMatchData = {};
+
+		let prevMsgs = [];
 		// For the reserve method; the main method uses one date.
-		var numberOfPrevDatesToCheck = 2;
-		
-		for (var i = 1;
+		let numberOfPrevDatesToCheck = 2;
+
+		for (let i = 1;
 			prevMsgs.length < numberOfPrevDatesToCheck && this.id - i >= 0;
 			i++
 		) {
@@ -1273,26 +1273,26 @@ export default class Msg {
 				prevMsgs.push(cd.msgs[this.id - i]);
 			}
 		}
-		
+
 		// Main method: by the current & previous author & date & message heading & message text overlap. Necessary
 		// is the current author & date & message text overlap.
 		do {
 			msgStartPos = 0;
 			msgEndPos = authorAndDateMatches.index;
 			msgCode = pageCode.slice(0, msgEndPos);
-			
-			var prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
-			
-			var authorInCode = undefined;
-			var dateInCode = undefined;
+
+			let prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
+
+			let authorInCode = undefined;
+			let dateInCode = undefined;
 			if (prevMsgInCodeMatch) {
 				msgStartPos = prevMsgInCodeMatch[0].length;
 				msgCode = msgCode.slice(msgStartPos);
-				
-				var [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
+
+				let [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
 			}
-			
-			var prevMsgMatched = false;
+
+			let prevMsgMatched = false;
 			if (prevMsgs[0]) {
 				if (prevMsgs[0].date === dateInCode && prevMsgs[0].author === authorInCode) {
 					prevMsgMatched = true;
@@ -1302,10 +1302,10 @@ export default class Msg {
 					prevMsgMatched = true;
 				}
 			}
-			
+
 			correctMsgBeginning();
-			
-			var headingMatched = false;
+
+			let headingMatched = false;
 			if (this.isOpeningSection) {
 				if (headingMatch) {
 					if (this.section && this.section.heading &&
@@ -1320,8 +1320,8 @@ export default class Msg {
 					headingMatched = true;
 				}
 			}
-			
-			var msgCodeToCompare = msgCode
+
+			let msgCodeToCompare = msgCode
 				.replace(/<!--[^]*?-->/g, '')
 				// Extract displayed text from [[wikilinks]]
 				.replace(/\[\[:?(?:[^|\]]+\|)?(.+?)\]\]/g, '$1')
@@ -1331,8 +1331,8 @@ export default class Msg {
 				.replace(/<\w+( [\w ]+?=[^<>]+?| ?\/?)>/g, ' ')
 				// Remove closing tags
 				.replace(/<\/\w+ ?>/g, ' ');
-			
-			var overlap = cd.env.calculateWordsOverlap(this.text, msgCodeToCompare);
+
+			let overlap = cd.env.calculateWordsOverlap(this.text, msgCodeToCompare);
 			if (overlap > 0.67 &&
 				((!bestMatchData.overlap || overlap > bestMatchData.overlap) ||
 					(!bestMatchData.headingMatched && headingMatched) ||
@@ -1356,23 +1356,23 @@ export default class Msg {
 				}
 			}
 		} while (authorAndDateMatches = authorAndDateRegExp.exec(pageCode));
-		
+
 		// Reserve method: by this & previous two dates + authors.
 		if (!bestMatchData.msgStartPos) {
 			// Should always find something (otherwise it wouldn't have found anything the previous time and would've
 			// exited), so we don't specify exit the second time.
 			while (authorAndDateMatches = authorAndDateRegExp.exec(pageCode)) {
-				var msgStartPos = 0;
-				var msgEndPos = authorAndDateMatches.index;
-				var msgCode = pageCode.slice(0, msgEndPos);
-				var pageCodeToMsgEnd = msgCode;
-				
-				var fail = true;
-				for (i = 0; i < prevMsgs.length; i++) {
-					var prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
+				let msgStartPos = 0;
+				let msgEndPos = authorAndDateMatches.index;
+				let msgCode = pageCode.slice(0, msgEndPos);
+				let pageCodeToMsgEnd = msgCode;
+
+				let fail = true;
+				for (let i = 0; i < prevMsgs.length; i++) {
+					let prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
 					if (!prevMsgInCodeMatch) break;
-					
-					var nextEndPos = prevMsgInCodeMatch[0].length - prevMsgInCodeMatch[1].length;
+
+					let nextEndPos = prevMsgInCodeMatch[0].length - prevMsgInCodeMatch[1].length;
 					// We could optimize here if we wanted – we determine the message start two times: here and when
 					// running the first method.
 					if (i === 0) {
@@ -1380,20 +1380,20 @@ export default class Msg {
 						msgCode = pageCodeToMsgEnd.slice(msgStartPos);
 					}
 					pageCodeToMsgEnd = pageCodeToMsgEnd.slice(0, nextEndPos);
-					
-					var [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
-					
+
+					let [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
+
 					if (dateInCode !== prevMsgs[i].date || authorInCode !== prevMsgs[i].author) {
 						fail = true;
 						break;
 					}
-					
+
 					// At least one coincided message is enough, if the second is unavailable.
 					fail = false;
 				}
 				if (!fail) {
 					correctMsgBeginning();
-					
+
 					bestMatchData = {
 						prevAuthorsAndDatesMatchCount: i,
 						msgStartPos,
@@ -1408,22 +1408,22 @@ export default class Msg {
 					break;
 				}
 			}
-			
+
 			if (fail) {
 				return;
 			}
 		}
-		
+
 		msgCode = pageCode.slice(bestMatchData.msgStartPos, bestMatchData.msgEndPos);
-		var msgCodeLengthReduction = 0;
-		var lineStartPos = bestMatchData.msgStartPos;
-		
-		var movePartToSig = s => {
+		let msgCodeLengthReduction = 0;
+		let lineStartPos = bestMatchData.msgStartPos;
+
+		let movePartToSig = s => {
 			msgCodeLengthReduction += s.length;
 			bestMatchData.sigLastPart = s + bestMatchData.sigLastPart;
 			return '';
 		}
-		
+
 		if (this.author === cd.env.CURRENT_USER && cd.env.CURRENT_USER_SIG_PREFIX_REGEXP) {
 			msgCode = msgCode.replace(cd.env.CURRENT_USER_SIG_PREFIX_REGEXP, movePartToSig);
 		}
@@ -1433,9 +1433,9 @@ export default class Msg {
 			.replace(/<(?:small|span|sup|sub)(?: [\w ]+?=[^<>]+?)?>$/i, movePartToSig)
 			.replace(cd.config.SIG_PREFIX_REGEXP, movePartToSig);
 		bestMatchData.msgEndPos -= msgCodeLengthReduction;
-		
-		var indentationCharacters = '';
-		var inSmallTag = false;
+
+		let indentationCharacters = '';
+		let inSmallTag = false;
 		msgCode = msgCode
 			.replace(
 				/^\n*(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:\*#]*)[ \t]*/,
@@ -1453,19 +1453,19 @@ export default class Msg {
 				inSmallTag = true;
 				return '';
 			});
-		
+
 		// The message contains several indentation character sets – then use different sets depending on
 		// the mode.
-		var replyIndentationCharacters = indentationCharacters;
+		let replyIndentationCharacters = indentationCharacters;
 		if (!this.isOpeningSection) {
-			var otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
+			let otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
 			if (otherIndentationCharactersMatch) {
 				if (otherIndentationCharactersMatch[1].length <= indentationCharacters.length) {
-					var replyMustUseAsterisk;
+					let replyMustUseAsterisk;
 					if (/\*$/.test(indentationCharacters)) {
 						replyMustUseAsterisk = true;
 					}
-					
+
 					indentationCharacters = otherIndentationCharactersMatch[1];
 					if (replyMustUseAsterisk) {
 						indentationCharacters = indentationCharacters.replace(/:$/, '*');
@@ -1476,7 +1476,7 @@ export default class Msg {
 			}
 		}
 		replyIndentationCharacters += '*';
-		
+
 		this.inCode = {
 			lineStartPos,
 			startPos: bestMatchData.msgStartPos,
@@ -1493,10 +1493,10 @@ export default class Msg {
 			this.inCode.headingLevel = bestMatchData.headingLevel;
 			this.inCode.headingCode = bestMatchData.headingCode;
 		}
-		
+
 		return this.inCode;
 	}
-	
+
 	reply() {
 		if (!this.replyForm || this.replyForm.submitted) {
 			this.replyForm = new MsgForm('reply', this);
@@ -1517,9 +1517,9 @@ export default class Msg {
 			}
 		}
 	}
-	
+
 	edit() {
-		var formExists = this.editForm && !this.editForm.submitted;
+		let formExists = this.editForm && !this.editForm.submitted;
 		if (!formExists) {
 			this.editForm = new MsgForm('edit', this);
 			cd.msgForms.push(this.editForm);
@@ -1530,36 +1530,36 @@ export default class Msg {
 		}
 		this.removeUnderlayer();
 		this.editForm.show('fadeIn');
-		
+
 		if (formExists) {
 			this.editForm.textarea.focus();
 		}
 	}
-		
+
 	codeToText() {
-		var inCode = this.inCode;
-		
+		let inCode = this.inCode;
+
 		if (!inCode) {
 			console.error('Первый параметр должен содержать объект с характеристиками кода сообщения.');
 			return;
 		}
-		var code = inCode && inCode.code;
-		var indentationCharacters = inCode && inCode.indentationCharacters;
+		let code = inCode && inCode.code;
+		let indentationCharacters = inCode && inCode.indentationCharacters;
 		if (code === undefined || indentationCharacters === undefined) {
 			console.error('Отсутствует свойство code или indentationCharacters.');
 			return;
 		}
-		
-		var text = code.trim();
-		
-		var hidden = [];
-		var hide = re => {
+
+		let text = code.trim();
+
+		let hidden = [];
+		let hide = re => {
 			text = text.replace(re, function (s) {
 				return '\x01' + hidden.push(s) + '\x02';
 			});
 		};
-		var hideTags = function () {
-			for (var i = 0; i < arguments.length; i++) {
+		let hideTags = function () {
+			for (let i = 0; i < arguments.length; i++) {
 				hide(new RegExp('<' + arguments[i] + '( [^>]+)?>[\\s\\S]+?<\\/' + arguments[i] + '>', 'gi'));
 			}
 		};
@@ -1568,7 +1568,7 @@ export default class Msg {
 		// Hide tables
 		hide(/^\{\|[^]*?\n\|\}/gm);
 		hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
-		
+
 		text = text
 			.replace(
 				/^(?![:\*#]).*<br[ \n]?\/?>\n?/gmi,
@@ -1582,7 +1582,7 @@ export default class Msg {
 					return m1 + m2;
 				}
 			});
-		
+
 		if (this.level === 0) {
 			// Random line breaks that do not affect text rendering but will transform into <br> when posting.
 			// We do it very discreetly, connecting only text consisting of alphabet characters and
@@ -1598,17 +1598,17 @@ export default class Msg {
 						)
 			);
 		}
-		
-		var unhide = (s, num) => hidden[num - 1];
+
+		let unhide = (s, num) => hidden[num - 1];
 		while (text.match(/\x01\d+\x02/)) {
 			text = text.replace(/\x01(\d+)\x02/g, unhide);
 		}
-		
+
 		text = text.replace(/\{\{(?:pb|абзац)\}\}/g, '\n\n');
-		
+
 		return text;
 	}
-	
+
 	loadCode() {
 		return cd.env.loadPageCode(cd.env.CURRENT_PAGE)
 			// This is returned to a handler with ".done", so the use of ".then" is deliberate.
@@ -1618,16 +1618,16 @@ export default class Msg {
 					if (!this.inCode) {
 						return $.Deferred().reject(['parse', cd.strings.couldntLocateMsgInCode]).promise();
 					}
-					
+
 					return $.Deferred().resolve(this.codeToText(), this.inCode.headingCode).promise();
 				},
 				e => {
-					var [errorType, data] = e;
+					let [errorType, data] = e;
 					return $.Deferred().reject([errorType, data]).promise();
 				}
 			);
 	}
-	
+
 	registerSeen(registerAllInDirection, highlight) {
 		if (this.newness === 'newest' && !this.seen) {
 			this.seen = true;
@@ -1636,38 +1636,38 @@ export default class Msg {
 				this.highlightTarget();
 			}
 		}
-		
+
 		if (registerAllInDirection && cd.env.newestCount) {
-			var nextMsg = cd.msgs[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
+			let nextMsg = cd.msgs[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
 			if (nextMsg && nextMsg.isInViewport(true)) {
 				nextMsg.registerSeen(registerAllInDirection, highlight);  // We have a recursive call here.
 			}
 		}
 	}
-	
+
 	// Determination of the message visibility for the refresh panel operations
 	isInViewport(updatePositions, partly) {
-		var viewportTop = window.pageYOffset;
-		var viewportBottom = viewportTop + window.innerHeight;
-		
+		let viewportTop = window.pageYOffset;
+		let viewportBottom = viewportTop + window.innerHeight;
+
 		if (updatePositions || !this.positions) {
 			this.getPositions();
 		}
-		
+
 		if (!partly) {
 			return this.positions.top > viewportTop && this.positions.downplayedBottom < viewportBottom;
 		} else {
 			return this.positions.downplayedBottom > viewportTop && this.positions.top < viewportBottom;
 		}
 	}
-	
+
 	findHighlightedMsgsInViewportBelow(msgsBelowViewportCount) {
 		msgsBelowViewportCount = msgsBelowViewportCount !== undefined ? msgsBelowViewportCount : 5;
-		
-		var currentMsg;
-		var highlightedMsgsInViewportBelow = [];
-		var thisMsgsBelowViewportCount = 0;
-		for (var i = this.id + 1; i < cd.msgs.length; i++) {
+
+		let currentMsg;
+		let highlightedMsgsInViewportBelow = [];
+		let thisMsgsBelowViewportCount = 0;
+		for (let i = this.id + 1; i < cd.msgs.length; i++) {
 			currentMsg = cd.msgs[i];
 			if (!currentMsg) {
 				console.error('Не найдено сообщение с ID ' + foundMsgId);
@@ -1690,7 +1690,7 @@ export default class Msg {
 
 	prepareUnderlayersInViewport(hide, msgsBelowViewportCount) {
 		cd.env.recalculateUnderlayersTimeout = true;
-		
+
 		this.#highlightedMsgsInViewportBelow = this.findHighlightedMsgsInViewportBelow(msgsBelowViewportCount);
 		if (hide) {
 			this.#$underlayersInViewportBelow = $($.map(
@@ -1700,40 +1700,40 @@ export default class Msg {
 			this.#$underlayersInViewportBelow.hide();
 		}
 	}
-		
+
 	updateUnderlayersInViewport(unhide) {
-		for (var i = 0; i < this.#highlightedMsgsInViewportBelow.length; i++) {
+		for (let i = 0; i < this.#highlightedMsgsInViewportBelow.length; i++) {
 			this.#highlightedMsgsInViewportBelow[i].configureUnderlayer();
 		}
 		if (unhide) {
 			this.#$underlayersInViewportBelow.show();
 		}
-		
+
 		cd.env.recalculateUnderlayersTimeout = false;
 	}
-		
+
 	removeUnderlayer() {
 		if (!this.#underlayer || !this.#underlayer.parentElement) {
 			return false;
 		}
-		
+
 		this.#underlayer.parentElement.removeChild(this.#underlayer);
 		this.#linksUnderlayer.parentElement.removeChild(this.#linksUnderlayer);
 		cd.env.underlayers.splice(cd.env.underlayers.indexOf(this.#underlayer), 1);
 		this.$underlayer = null;
 		this.$linksUnderlayer = null;
-		
+
 		return true;
 	}
 }
 
 function getFirstElementRect() {
 	// Makes elements with "ruwiki-movedTemplate" class excluded from the highlight zone.
-	for (var i = 0; i < this.elements.length; i++) {
+	for (let i = 0; i < this.elements.length; i++) {
 		if (!this.elements[i].className.includes('ruwiki-movedTemplate')) {
 			return this.elements[i].getBoundingClientRect();
 		}
 	}
-	
+
 	return this.elements[0].getBoundingClientRect();
 }

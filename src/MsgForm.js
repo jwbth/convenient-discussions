@@ -8,52 +8,42 @@ export default class MsgForm {
 		this.mode = mode;
 		this.target = target;
 
-		var sectionHeading;
+		let sectionHeading;
 		if (this.target instanceof Section) {
 			sectionHeading = this.target.heading;
 		} else {
 			sectionHeading = this.target.section && this.target.section.heading;
 		}
-		
-		var tag, addOlClass;
-		switch (this.mode) {
-			case 'replyInSection':
-				switch (this.target.$replyButtonContainer.parent().prop('tagName')) {
-					case 'OL':
-						addOlClass = true;
-					case 'UL':
-						tag = 'li';
-						break;
-					case 'DL':
-						tag = 'dd';
-						break;
-					default:
-						tag = 'div';
-						break;
-				}
-				break;
-			case 'addSubsection':
+
+		let tag, addOlClass;
+		if (this.mode === 'replyInSection') {
+			var parentTag = this.target.$replyButtonContainer.parent().prop('tagName');
+			if (parentTag === 'OL') {
+				addOlClass = true;
+				tag = 'li';
+			} else if (parentTag === 'UL') {
+				tag = 'li';
+			} else if (parentTag === 'DL') {
+				tag = 'dd';
+			} else {
 				tag = 'div';
-				break;
-			default:
-				var $lastTagOfTarget = this.target.$elements.cdRemoveNonTagNodes().last();
-				
-				switch ($lastTagOfTarget.prop('tagName')) {
-					case 'LI':
-						if (!$lastTagOfTarget.parent().is('ol') || this.mode === 'edit') {
-							tag = 'li';
-						} else {
-							tag = 'div';
-						}
-						break;
-					case 'DD':
-						tag = 'dd';
-						break;
-					default:
-						tag = 'div';
-						break;
+			}
+		} else if (this.mode === 'addSubsection') {
+			tag = 'div';
+		} else {
+			let $lastTagOfTarget = this.target.$elements.cdRemoveNonTagNodes().last();
+			let lastTagOfTargetName = $lastTagOfTarget.prop('tagName');
+			if (lastTagOfTargetName === 'LI') {
+				if (!$lastTagOfTarget.parent().is('ol') || this.mode === 'edit') {
+					tag = 'li';
+				} else {
+					tag = 'div';
 				}
-				break;
+			} else if (lastTagOfTargetName === 'DD') {
+				tag = 'dd';
+			} else {
+				tag = 'div';
+			}
 		}
 		this.$element = $(document.createElement(tag))
 			.addClass('cd-msgForm')
@@ -71,88 +61,156 @@ export default class MsgForm {
 		if (this.mode === 'addSubsection') {
 			this.$element.addClass('cd-msgForm-addSubsection-' + this.target.level);
 		}
-		
+
 		this.$wrapper = $('<div>')
 			.addClass('cd-msgForm-wrapper')
 			.appendTo(this.$element);
-		
+
 		this.$form = $('<form>')
 			.submit(e => {
 				e.preventDefault();
 				this.submit();
 			})
 			.appendTo(this.$wrapper);
-		
+
 		this.$infoArea = $('<div>')
 			.addClass('cd-infoArea')
 			.prependTo(this.$wrapper);
-		
+
 		this.$previewArea = $('<div>')
 			.addClass('cd-previewArea')
 			.prependTo(this.$wrapper);
-		
+
 		this.targetMsg = this.getTargetMsg();
-		
+
 		this.summaryAltered = false;
-		var defaultSummaryComponents = {
+		let defaultSummaryComponents = {
 			section: sectionHeading ? '/* ' + sectionHeading + ' */ ' : '',
 		};
-		
-		var formUserName = (msg, genitive) => {
-			var to;
-			switch (msg.authorGender) {
-				case undefined:
-					to = !genitive ? 'участнику' : 'участника';
-					if (msg.isAuthorRegistered) {
-						// Idea to avoid making requests every time: store most active users' genders in a variable.
-						// Make a SQL query to retrieve them from time to time: see
-						// https://quarry.wmflabs.org/query/24299.
-						new mw.Api().get({
-							action: 'query',
-							list: 'users',
-							ususers: msg.author,
-							usprop: 'gender',
-							formatversion: 2,
-						})
-							.done(data => {
-								var gender = data &&
-									data.query &&
-									data.query.users &&
-									data.query.users[0] &&
-									data.query.users[0].gender;
-								
-								if (gender) {
-									msg.authorGender = gender;
-									if (gender === 'female') {
-										updateDefaultSummary(true);
-									}
+
+		let formUserName = (msg, genitive) => {
+			let to;
+			if (msg.authorGender === undefined) {
+				to = !genitive ? 'участнику' : 'участника';
+				if (msg.isAuthorRegistered) {
+					// Idea to avoid making requests every time: store most active users' genders in a variable.
+					// Make a SQL query to retrieve them from time to time: see
+					// https://quarry.wmflabs.org/query/24299.
+					new mw.Api().get({
+						action: 'query',
+						list: 'users',
+						ususers: msg.author,
+						usprop: 'gender',
+						formatversion: 2,
+					})
+						.done(data => {
+							let gender = data &&
+								data.query &&
+								data.query.users &&
+								data.query.users[0] &&
+								data.query.users[0].gender;
+
+							if (gender) {
+								msg.authorGender = gender;
+								if (gender === 'female') {
+									updateDefaultSummary(true);
 								}
-							})
-							.fail((jqXHR, textStatus, errorThrown) => {
-								console.error('Не удалось узнать пол участника(-цы) ' + this.targetMsg.author);
-								console.log(jqXHR, textStatus, errorThrown);
-							});
-					}
-					break;
-				case 'female':
-					to = !genitive ? 'участнице' : 'участницы';
-					break;
-				default:
-					to = !genitive ? 'участнику' : 'участника';
-					break;
+							}
+						})
+						.fail((jqXHR, textStatus, errorThrown) => {
+							console.error('Не удалось узнать пол участника(-цы) ' + this.targetMsg.author);
+							console.log(jqXHR, textStatus, errorThrown);
+						});
+				}
+			} else if (msg.authorGender === 'female') {
+				to = !genitive ? 'участнице' : 'участницы';
+			} else {
+				to = !genitive ? 'участнику' : 'участника';
 			}
-			
+
 			return to + ' ' + msg.author;
 		};
-		
-		var generateDefaultSummaryDescription = () => {
+
+		let generateDefaultSummaryDescription = () => {
 			if (this.mode === 'edit' && this.target.isOpeningSection) {
 				defaultSummaryComponents.section = '/* ' + this.headingInput.getValue() + ' */ ';
 			}
-			
-			switch (this.mode) {
-				case 'reply':
-					if (this.target.isOpeningSection) {
+
+			if (this.mode === 'reply') {
+				if (this.target.isOpeningSection) {
+					defaultSummaryComponents.description = 'ответ';
+				} else {
+					if (this.target.author !== cd.env.CURRENT_USER) {
+						defaultSummaryComponents.description = 'ответ ' + formUserName(this.targetMsg);
+					} else {
+						defaultSummaryComponents.description = 'дополнение';
+					}
+				}
+			} else if (this.mode === 'edit') {
+				if (!this.deleteCheckbox || !this.deleteCheckbox.isSelected()) {
+					if (this.target.author === cd.env.CURRENT_USER) {
+						if (this.target.parent) {
+							if (this.target.parent.author === cd.env.CURRENT_USER) {
+								defaultSummaryComponents.description = 'редактирование дополнения';
+							} else {
+								if (this.target.parent.isOpeningSection) {
+									defaultSummaryComponents.description = 'редактирование ответа';
+								} else {
+									defaultSummaryComponents.description = 'редактирование ответа ' +
+										formUserName(this.target.parent);
+								}
+							}
+						} else if (this.target.isOpeningSection) {
+							defaultSummaryComponents.description = 'редактирование описания ';
+							defaultSummaryComponents.description += this.target.section.level <= 2 ?
+								'темы' : 'подраздела';
+						} else {
+							defaultSummaryComponents.description = 'редактирование сообщения';
+						}
+					} else {
+						if (this.target.isOpeningSection) {
+							defaultSummaryComponents.description = 'редактирование описания ';
+							defaultSummaryComponents.description += this.target.section.level <= 2 ?
+								'темы' : 'подраздела';
+						} else {
+							defaultSummaryComponents.description = 'редактирование сообщения ' +
+								formUserName(this.target, true);
+						}
+					}
+				} else {
+					if (this.target.author === cd.env.CURRENT_USER) {
+						if (this.target.parent) {
+							if (this.target.parent.author === cd.env.CURRENT_USER) {
+								defaultSummaryComponents.description = 'удаление дополнения';
+							} else {
+								if (this.target.parent.isOpeningSection) {
+									defaultSummaryComponents.description = 'удаление ответа';
+								} else {
+									defaultSummaryComponents.description = 'удаление ответа ' +
+										formUserName(this.target.parent);
+								}
+							}
+						} else if (this.target.isOpeningSection) {
+							defaultSummaryComponents.description = 'удаление ';
+							defaultSummaryComponents.description += this.target.section.level <= 2 ?
+								'темы' : 'подраздела';
+						} else {
+							defaultSummaryComponents.description = 'удаление сообщения';
+						}
+					} else {
+						if (this.target.isOpeningSection) {
+							defaultSummaryComponents.description = 'удаление ';
+							defaultSummaryComponents.description += this.target.section.level <= 2 ?
+								'темы' : 'подраздела';
+						} else {
+							defaultSummaryComponents.description = 'удаление сообщения ' +
+								formUserName(this.target, true);
+						}
+					}
+				}
+			} else if (this.mode === 'replyInSection') {
+				if (!this.noIndentationCheckbox || !this.noIndentationCheckbox.isSelected()) {
+					if (!this.targetMsg || this.targetMsg.isOpeningSection) {
 						defaultSummaryComponents.description = 'ответ';
 					} else {
 						if (this.target.author !== cd.env.CURRENT_USER) {
@@ -161,116 +219,39 @@ export default class MsgForm {
 							defaultSummaryComponents.description = 'дополнение';
 						}
 					}
-					break;
-				case 'edit':
-					if (!this.deleteCheckbox || !this.deleteCheckbox.isSelected()) {
-						if (this.target.author === cd.env.CURRENT_USER) {
-							if (this.target.parent) {
-								if (this.target.parent.author === cd.env.CURRENT_USER) {
-									defaultSummaryComponents.description = 'редактирование дополнения';
-								} else {
-									if (this.target.parent.isOpeningSection) {
-										defaultSummaryComponents.description = 'редактирование ответа';
-									} else {
-										defaultSummaryComponents.description = 'редактирование ответа ' +
-											formUserName(this.target.parent);
-									}
-								}
-							} else if (this.target.isOpeningSection) {
-								defaultSummaryComponents.description = 'редактирование описания ';
-								defaultSummaryComponents.description += this.target.section.level <= 2 ?
-									'темы' : 'подраздела';
-							} else {
-								defaultSummaryComponents.description = 'редактирование сообщения';
-							}
-						} else {
-							if (this.target.isOpeningSection) {
-								defaultSummaryComponents.description = 'редактирование описания ';
-								defaultSummaryComponents.description += this.target.section.level <= 2 ?
-									'темы' : 'подраздела';
-							} else {
-								defaultSummaryComponents.description = 'редактирование сообщения ' +
-									formUserName(this.target, true);
-							}
-						}
-					} else {
-						if (this.target.author === cd.env.CURRENT_USER) {
-							if (this.target.parent) {
-								if (this.target.parent.author === cd.env.CURRENT_USER) {
-									defaultSummaryComponents.description = 'удаление дополнения';
-								} else {
-									if (this.target.parent.isOpeningSection) {
-										defaultSummaryComponents.description = 'удаление ответа';
-									} else {
-										defaultSummaryComponents.description = 'удаление ответа ' +
-											formUserName(this.target.parent);
-									}
-								}
-							} else if (this.target.isOpeningSection) {
-								defaultSummaryComponents.description = 'удаление ';
-								defaultSummaryComponents.description += this.target.section.level <= 2 ?
-									'темы' : 'подраздела';
-							} else {
-								defaultSummaryComponents.description = 'удаление сообщения';
-							}
-						} else {
-							if (this.target.isOpeningSection) {
-								defaultSummaryComponents.description = 'удаление ';
-								defaultSummaryComponents.description += this.target.section.level <= 2 ?
-									'темы' : 'подраздела';
-							} else {
-								defaultSummaryComponents.description = 'удаление сообщения ' +
-									formUserName(this.target, true);
-							}
-						}
-					}
-					break;
-				case 'replyInSection':
-					if (!this.noIndentationCheckbox || !this.noIndentationCheckbox.isSelected()) {
-						if (!this.targetMsg || this.targetMsg.isOpeningSection) {
-							defaultSummaryComponents.description = 'ответ';
-						} else {
-							if (this.target.author !== cd.env.CURRENT_USER) {
-								defaultSummaryComponents.description = 'ответ ' + formUserName(this.targetMsg);
-							} else {
-								defaultSummaryComponents.description = 'дополнение';
-							}
-						}
-					} else {
-						defaultSummaryComponents.description = 'дополнение';
-					}
-					break;
-				case 'addSubsection':
-					defaultSummaryComponents.description = 'новый подраздел';
-					break;
+				} else {
+					defaultSummaryComponents.description = 'дополнение';
+				}
+			} else if (this.mode === 'addSubsection') {
+				defaultSummaryComponents.description = 'новый подраздел';
 			}
 		};
-		
-		var updateDefaultSummary = generateDescription => {
+
+		let updateDefaultSummary = generateDescription => {
 			if (this.summaryAltered) return;
-			
+
 			if (generateDescription) {
 				generateDefaultSummaryDescription();
 			}
-			
+
 			this.defaultSummary = defaultSummaryComponents.section + defaultSummaryComponents.description;
-			
-			var newSummary = this.defaultSummary;
+
+			let newSummary = this.defaultSummary;
 			if ((this.mode === 'reply' || this.mode === 'replyInSection')) {
-				var summaryFullMsgText = this.textarea.getValue().trim().replace(/\s+/g, ' ');
-				
+				let summaryFullMsgText = this.textarea.getValue().trim().replace(/\s+/g, ' ');
+
 				if (summaryFullMsgText && summaryFullMsgText.length <= cd.env.SUMMARY_FULL_MSG_TEXT_LENGTH_LIMIT) {
-					var projectedSummary = this.defaultSummary + ': ' + summaryFullMsgText + ' (-)';
-					
+					let projectedSummary = this.defaultSummary + ': ' + summaryFullMsgText + ' (-)';
+
 					if (projectedSummary.length <= cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT) {
 						newSummary = projectedSummary;
 					}
 				}
 			} else if (this.mode === 'addSubsection') {
-				var summaryHeadingText = this.headingInput.getValue().trim();
-				
+				let summaryHeadingText = this.headingInput.getValue().trim();
+
 				if (summaryHeadingText) {
-					var projectedSummary = (this.defaultSummary + ': /* ' + summaryHeadingText + ' */')
+					let projectedSummary = (this.defaultSummary + ': /* ' + summaryHeadingText + ' */')
 						.replace('новый подраздел: /* Итог */', 'итог')
 						.replace('новый подраздел: /* Предварительный итог */', 'предварительный итог')
 						.replace('новый подраздел: /* Предытог */', 'предытог');
@@ -279,21 +260,21 @@ export default class MsgForm {
 					}
 				}
 			}
-			
+
 			this.summaryInput.setValue(newSummary);
 		};
-		
+
 		this.#couldBeCloserClosing = /^Википедия:К удалению/.test(cd.env.CURRENT_PAGE) &&
 			this.mode === 'addSubsection' &&
 			mw.config.get('wgUserGroups').includes('closer');
-		
+
 		if (this.mode === 'addSubsection' || (this.mode === 'edit' && this.target.isOpeningSection)) {
 			if (this.mode === 'addSubsection' || this.target.section.level > 2) {
 				this.headingInputPurpose = 'Название подраздела';
 			} else {
 				this.headingInputPurpose = 'Название темы';
 			}
-			
+
 			this.headingInput = new OO.ui.TextInputWidget({
 				placeholder: this.headingInputPurpose,
 				classes: ['cd-headingInput'],
@@ -301,7 +282,7 @@ export default class MsgForm {
 			this.headingInput.$element.appendTo(this.$form);
 			this.headingInput.on('change', headingInputText => {
 				updateDefaultSummary(this.mode === 'edit');
-				
+
 				if (headingInputText.includes('{{')) {
 					this.showWarning('Не используйте шаблоны в заголовках — это ломает ссылки на разделы.', 'dontUseTemplatesInHeadings');
 				} else {
@@ -309,9 +290,9 @@ export default class MsgForm {
 				}
 			});
 		}
-		
+
 		// Array elements: text pattern, reaction, icon, class, additional condition.
-		var textReactions = [
+		let textReactions = [
 			{
 				pattern: /~~\~/,
 				message: 'Вводить <kbd>~~\~~</kbd> не нужно — подпись подставится автоматически.',
@@ -334,7 +315,7 @@ export default class MsgForm {
 				}
 			},
 		];
-		
+
 		this.textarea = new OO.ui.MultilineTextInputWidget({
 			value: '',
 			autosize: true,
@@ -345,8 +326,8 @@ export default class MsgForm {
 		this.textarea.cdMsgForm = this;
 		this.textarea.on('change', textareaText => {
 			updateDefaultSummary();
-			
-			for (var i = 0; i < textReactions.length; i++) {
+
+			for (let i = 0; i < textReactions.length; i++) {
 				if (textReactions[i].pattern.test(textareaText) &&
 					(typeof textReactions[i].checkFunc !== 'function' || textReactions[i].checkFunc())
 				) {
@@ -357,11 +338,11 @@ export default class MsgForm {
 			}
 		});
 		this.textarea.$element.appendTo(this.$form);
-		
+
 		this.$settings = $('<div>')
 			.addClass('cd-msgFormSettings')
 			.appendTo(this.$form);
-		
+
 		this.summaryInput = new OO.ui.TextInputWidget({
 			maxLength: cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT,
 			placeholder: 'Описание изменений',
@@ -370,15 +351,15 @@ export default class MsgForm {
 		this.summaryInput.$element.keypress(summaryInputContent => {
 			this.summaryAltered = true;
 		}).appendTo(this.$settings);
-		
+
 		this.summaryInput.$input.codePointLimit(cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT);
 		mw.widgets.visibleCodePointLimit(this.summaryInput, cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT);
 		updateDefaultSummary(true);
-		
+
 		this.$summaryPreview = $('<div>')
 			.addClass('cd-summaryPreview')
 			.appendTo(this.$settings);
-		
+
 		if (this.mode === 'edit') {
 			this.minorCheckbox = new OO.ui.CheckboxInputWidget({
 				value: 'minor',
@@ -389,7 +370,7 @@ export default class MsgForm {
 				align: 'inline',
 			});
 		}
-		
+
 		this.watchCheckbox = new OO.ui.CheckboxInputWidget({
 			value: 'watch',
 			selected: !!mw.user.options.get('watchdefault') || !!$('#ca-unwatch').length,
@@ -398,7 +379,7 @@ export default class MsgForm {
 			label: 'В список наблюдения',
 			align: 'inline',
 		});
-		
+
 		this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
 			value: 'watchTopic',
 			selected: this.mode !== 'edit' || this.targetMsg.section.isWatched,
@@ -407,7 +388,7 @@ export default class MsgForm {
 			label: 'Следить за темой',
 			align: 'inline',
 		});
-		
+
 		if (this.mode !== 'edit' && this.targetMsg) {
 			this.pingCheckbox = new OO.ui.CheckboxInputWidget({
 				value: 'ping',
@@ -416,8 +397,8 @@ export default class MsgForm {
 				align: 'inline',
 			});
 		}
-		
-		var updatePingCheckbox = () => {
+
+		let updatePingCheckbox = () => {
 			if (this.targetMsg.isAuthorRegistered) {
 				if (this.targetMsg.author !== cd.env.CURRENT_USER) {
 					this.pingCheckbox.setDisabled(false);
@@ -433,7 +414,7 @@ export default class MsgForm {
 				this.pingCheckbox.setTitle('Невозможно послать уведомление незарегистрированному участнику');
 				this.pingCheckboxField.setTitle('Невозможно послать уведомление незарегистрированному участнику');
 			}
-			
+
 			if (!this.noIndentationCheckbox || !this.noIndentationCheckbox.isSelected()) {
 				this.pingCheckboxField.setLabel(
 					this.targetMsg.isOpeningSection ? 'Уведомить автора темы' : 'Уведомить адресата'
@@ -449,20 +430,20 @@ export default class MsgForm {
 				}
 			}
 		};
-		
+
 		if (this.mode !== 'addSubsection' &&
 			!(this.mode === 'edit' && this.target.isOpeningSection)
 		) {
 			this.smallCheckbox = new OO.ui.CheckboxInputWidget({
 				value: 'small',
 			});
-			
+
 			this.smallCheckboxField = new OO.ui.FieldLayout(this.smallCheckbox, {
 				label: 'Мелким шрифтом',
 				align: 'inline',
 			});
 		}
-		
+
 		if (this.mode === 'replyInSection') {
 			this.noIndentationCheckbox = new OO.ui.CheckboxInputWidget({
 				value: 'noIndentation',
@@ -479,7 +460,7 @@ export default class MsgForm {
 				}
 				updateDefaultSummary(true);
 			});
-			
+
 			this.noIndentationCheckboxField = new OO.ui.FieldLayout(this.noIndentationCheckbox, {
 				label: 'Без отступа',
 				align: 'inline',
@@ -488,15 +469,15 @@ export default class MsgForm {
 		if (this.pingCheckbox) {
 			updatePingCheckbox();
 		}
-		
+
 		if (this.mode === 'edit' &&
 			(!this.target.isOpeningSection ||
 				(this.target.section && this.target.section.msgs.length <= 1)
 			)
 		) {
 			if (!this.target.isOpeningSection && this.target.replies === undefined) {
-				var replies = [];
-				for (var i = this.target.id + 1; i < cd.msgs.length; i++) {
+				let replies = [];
+				for (let i = this.target.id + 1; i < cd.msgs.length; i++) {
 					if (cd.msgs[i].parent === this.target) {
 						replies.push(cd.msgs[i]);
 					}
@@ -509,7 +490,7 @@ export default class MsgForm {
 				this.deleteCheckbox = new OO.ui.CheckboxInputWidget({
 					value: 'delete',
 				});
-				var initialMinorSelected;
+				let initialMinorSelected;
 				this.deleteCheckbox.on('change', selected => {
 					updateDefaultSummary(true);
 					if (selected) {
@@ -535,14 +516,14 @@ export default class MsgForm {
 						}
 					}
 				});
-				
+
 				this.deleteCheckboxField = new OO.ui.FieldLayout(this.deleteCheckbox, {
 					label: 'Удалить',
 					align: 'inline',
 				});
 			}
 		}
-		
+
 		this.horizontalLayout = new OO.ui.HorizontalLayout({
 			classes: ['cd-checkboxesContainer'],
 		});
@@ -562,54 +543,50 @@ export default class MsgForm {
 		if (this.deleteCheckboxField) {
 			this.horizontalLayout.addItems([this.deleteCheckboxField]);
 		}
-		
+
 		this.horizontalLayout.$element.appendTo(this.$settings);
-		
+
 		if (this.mode !== 'edit' && !cd.settings.alwaysExpandSettings) {
 			this.$settings.hide();
 		}
-		
+
 		this.$buttonsContainer = $('<div>')
 			.addClass('cd-buttonsContainer')
 			.appendTo(this.$form);
-		
+
 		this.$leftButtonsContainer = $('<div>')
 			.addClass('cd-leftButtonsContainer')
 			.appendTo(this.$buttonsContainer);
-		
+
 		this.$rightButtonsContainer = $('<div>')
 			.addClass('cd-rightButtonsContainer')
 			.appendTo(this.$buttonsContainer);
-		
-		var standardSubmitButtonLabel, shortSubmitButtonLabel;
-		switch (this.mode) {
-			default:
-				standardSubmitButtonLabel = 'Ответить';
-				shortSubmitButtonLabel = 'Ответ';
-				break;
-			case 'edit':
-				standardSubmitButtonLabel = 'Сохранить';
-				shortSubmitButtonLabel = 'Сохранить';
-				break;
-			case 'addSubsection':
-				standardSubmitButtonLabel = 'Добавить подраздел';
-				shortSubmitButtonLabel = 'Добавить';
-				break;
+
+		let standardSubmitButtonLabel, shortSubmitButtonLabel;
+		if (this.mode === 'edit') {
+			standardSubmitButtonLabel = 'Сохранить';
+			shortSubmitButtonLabel = 'Сохранить';
+		} else if (this.mode === 'addSubsection') {
+			standardSubmitButtonLabel = 'Добавить подраздел';
+			shortSubmitButtonLabel = 'Добавить';
+		} else {
+			standardSubmitButtonLabel = 'Ответить';
+			shortSubmitButtonLabel = 'Ответ';
 		}
-		
+
 		this.submitButton = new OO.ui.ButtonInputWidget({
 			type: 'submit',
 			label: standardSubmitButtonLabel,
 			flags: ['progressive', 'primary'],
 			classes: ['cd-submitButton'],
 		});
-		
+
 		this.previewButton = new OO.ui.ButtonWidget({
 			label: 'Предпросмотреть',
 			classes: ['cd-previewButton'],
 		});
 		this.previewButton.on('click', this.preview.bind(this));
-		
+
 		if (this.mode === 'edit' || cd.config.debug) {
 			this.viewChangesButton = new OO.ui.ButtonWidget({
 				label: 'Просмотреть изменения',
@@ -617,20 +594,20 @@ export default class MsgForm {
 			});
 			this.viewChangesButton.on('click', this.viewChanges.bind(this));
 		}
-		
+
 		this.settingsButton = new OO.ui.ButtonWidget({
 			label: 'Настройки',
 			framed: false,
 			classes: ['cd-settingsButton'],
 		});
 		this.settingsButton.on('click', this.toggleSettings.bind(this));
-		
+
 		if (!cd.env.$popupsOverlay) {
 			cd.env.$popupsOverlay = $('<div>')
 				.addClass('cd-popupsOverlay')
 				.appendTo($('body'));
 		}
-		
+
 		this.helpPopupButton = new OO.ui.PopupButtonWidget({
 			label: '?',
 			framed: false,
@@ -650,7 +627,7 @@ export default class MsgForm {
 			},
 			$overlay: cd.env.$popupsOverlay,
 		});
-		
+
 		this.cancelButton = new OO.ui.ButtonWidget({
 			label: 'Отменить',
 			flags: 'destructive',
@@ -658,94 +635,89 @@ export default class MsgForm {
 			classes: ['cd-cancelButton'],
 		});
 		this.cancelButton.on('click', this.cancel.bind(this));
-		
+
 		this.settingsButton.$element.appendTo(this.$leftButtonsContainer);
 		this.helpPopupButton.$element.appendTo(this.$leftButtonsContainer);
-		
+
 		this.cancelButton.$element.appendTo(this.$rightButtonsContainer);
 		if (this.viewChangesButton) {
 			this.viewChangesButton.$element.appendTo(this.$rightButtonsContainer);
 		}
 		this.previewButton.$element.appendTo(this.$rightButtonsContainer);
 		this.submitButton.$element.appendTo(this.$rightButtonsContainer);
-		
-		switch (this.mode) {
-			case 'reply':
-				var $last = this.target.$elements.last();
-				if ($last.next().hasClass('cd-msgForm-edit')) {
-					$last = $last.next();
-				}
-				this.$element.insertAfter($last);
-				break;
-			case 'edit':
-				// We insert the form before so that if the message end on the wrong level, the form was
-				// on the right one.
-				this.$element.insertBefore(this.target.$elements.first());
-				break;
-			case 'replyInSection':
-				this.$element.insertAfter(this.target.$replyButtonContainer);
-				break;
-			case 'addSubsection':
-				var $last = this.target.$elements.last();
-				var headingLevelRegExp = new RegExp('\\bcd-msgForm-addSubsection-[' + this.target.level + '-6]\\b');
-				var $nextToLast = $last.next();
-				while ($nextToLast.hasClass('cd-replyButtonContainerContainer') ||
-					$nextToLast.hasClass('cd-addSubsectionButtonContainer') ||
-					($nextToLast.hasClass('cd-msgForm') && !$nextToLast.hasClass('cd-msgForm-addSubsection')) ||
-					($nextToLast[0] && $nextToLast[0].className.match(headingLevelRegExp))
-				) {
-					$last = $nextToLast;
-					$nextToLast = $last.next();
-				}
-				this.$element.insertAfter($last);
-				break;
+
+		if (this.mode === 'reply') {
+			let $last = this.target.$elements.last();
+			if ($last.next().hasClass('cd-msgForm-edit')) {
+				$last = $last.next();
+			}
+			this.$element.insertAfter($last);
+		} else if (this.mode === 'edit') {
+			// We insert the form before so that if the message end on the wrong level, the form was
+			// on the right one.
+			this.$element.insertBefore(this.target.$elements.first());
+		} else if (this.mode === 'replyInSection') {
+			this.$element.insertAfter(this.target.$replyButtonContainer);
+		} else if (this.mode === 'addSubsection') {
+			let $last = this.target.$elements.last();
+			let headingLevelRegExp = new RegExp('\\bcd-msgForm-addSubsection-[' + this.target.level + '-6]\\b');
+			let $nextToLast = $last.next();
+			while ($nextToLast.hasClass('cd-replyButtonContainerContainer') ||
+				$nextToLast.hasClass('cd-addSubsectionButtonContainer') ||
+				($nextToLast.hasClass('cd-msgForm') && !$nextToLast.hasClass('cd-msgForm-addSubsection')) ||
+				($nextToLast[0] && $nextToLast[0].className.match(headingLevelRegExp))
+			) {
+				$last = $nextToLast;
+				$nextToLast = $last.next();
+			}
+			this.$element.insertAfter($last);
 		}
-		
+
 		// Keyboard shortcuts
 		this.$form.keydown(e => {
 			if (e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 13) {  // Ctrl+Enter
 				e.preventDefault();
-				
+
 				this.submitButton.$button.focus();  // Blur text inputs in Firefox
 				this.submit();
 			}
 			if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {  // Ctrl+Alt+W
 				e.preventDefault();
-				
+
 				mw.loader.using('ext.gadget.wikificator').done(() => {
 					Wikify(this.textarea.$input[0]);
 				});
 			}
 			if (e.keyCode === 27) { // Esc
 				e.preventDefault();
-				
+
 				this.cancelButton.$button.focus();  // Blur text inputs in Firefox
 				this.cancel();
 			}
 		});
-		
+
 		// "focusin" is "focus" which bubbles, i.e. propagates up the node tree.
 		this.$form.focusin(() => {
 			cd.env.lastActiveMsgForm = this;
 		});
-		
-		var retryLoad = () => {
+
+		let retryLoad = () => {
 			this.$element[this.mode === 'edit' ? 'cdFadeOut' : 'cdSlideUp']('fast', () => {
 				this.destroy();
 				this.target[this::modeToProperty(this.mode)]();
 			}, this.getTargetMsg(true));
 		};
-		
+
 		if (mode !== 'edit') {  // 'reply', 'replyInSection' or 'addSubsection'
 			this.originalText = '';
 			if (this.headingInput) {
 				this.originalHeadingText = '';
 			}
-			
+
 			// This is for test if the message exists.
 			this.target.loadCode()
 				.fail(e => {
-					var [errorType, data] = e;
+					let [errorType, data] = e;
 					cd.env.genericErrorHandler.call(this, {
 						errorType,
 						data,
@@ -755,7 +727,7 @@ export default class MsgForm {
 				});
 		} else {
 			this.setPending(true);
-			
+
 			this.target.loadCode()
 				.done((msgText, headingText) => {
 					this.setPending(false);
@@ -771,7 +743,7 @@ export default class MsgForm {
 					this.textarea.focus();
 				})
 				.fail(e => {
-					var [errorType, data] = e;
+					let [errorType, data] = e;
 					cd.env.genericErrorHandler.call(this, {
 						errorType,
 						data,
@@ -780,7 +752,7 @@ export default class MsgForm {
 					});
 				});
 		}
-		
+
 		mw.hook('cd.msgFormCreated').fire(this);
 	}
 
@@ -789,25 +761,25 @@ export default class MsgForm {
 		// to true, returns either the last message in the first section subdivision (i.e. the part of the
 		// section up to the first heading) or the last message in the section, depending on MsgForm.mode. It is useful
 		// for getting/updating underlayer positions before and after animations.
-		
-		var target = this.target;
+
+		let target = this.target;
 		if (target instanceof Msg) {
 			return target;
 		} else if (target instanceof Section) {
 			if (!last) {
 				if (!this.noIndentationCheckbox || !this.noIndentationCheckbox.isSelected()) {
-					for (var i = target.msgsInFirstSubdivision.length - 1; i >= 0; i--) {
+					for (let i = target.msgsInFirstSubdivision.length - 1; i >= 0; i--) {
 						if (target.msgsInFirstSubdivision[i].level === 0) {
 							return target.msgsInFirstSubdivision[i];
 						}
 					}
 				}
-				
+
 				if (target.msgsInFirstSubdivision[0] && target.msgsInFirstSubdivision[0].isOpeningSection) {
 					return target.msgsInFirstSubdivision[0];
 				}
 			} else {
-				var msg;
+				let msg;
 				if (this.mode === 'replyInSection') {
 					msg = target.msgsInFirstSubdivision[target.msgsInFirstSubdivision.length - 1];
 				} else if (this.mode === 'addSubsection') {
@@ -819,8 +791,8 @@ export default class MsgForm {
 			}
 			// This is meaningful when the section has no messages in it.
 			if (returnNextInViewport) {
-				var firstMsg;
-				for (var i = target.id + 1; i < cd.sections.length; i++) {
+				let firstMsg;
+				for (let i = target.id + 1; i < cd.sections.length; i++) {
 					firstMsg = cd.sections[i].msgs[0];
 					if (firstMsg) {
 						if (firstMsg.$elements.cdIsInViewport(true)) {
@@ -833,7 +805,7 @@ export default class MsgForm {
 			}
 		}
 	}
-	
+
 	show(fashion) {
 		this.$element.removeClass('cd-msgForm-hidden');
 		if (!fashion) {
@@ -843,18 +815,18 @@ export default class MsgForm {
 		} else if (fashion === 'fadeIn') {
 			this.$element.cdFadeIn('fast', this.getTargetMsg(true));
 		}
-		
+
 		this.standardButtonsTotalWidth = this.submitButton.$element.outerWidth(true) +
 			this.previewButton.$element.outerWidth(true) +
 			(this.viewChangesButton ? this.viewChangesButton.$element.outerWidth(true) : 0) +
 			this.settingsButton.$element.outerWidth(true) +
 			this.helpPopupButton.$element.outerWidth(true) +
 			this.cancelButton.$element.outerWidth(true);
-		
+
 		this.correctLabels();
 		this.summaryInput.emit('labelChange');  // Characters left count overlapping fix
 	}
-	
+
 	toggleSettings() {
 		if (this.$settings.css('display') === 'none') {
 			this.$settings[cd.settings.slideEffects ? 'cdSlideDown' : 'cdFadeIn']('fast',
@@ -864,10 +836,10 @@ export default class MsgForm {
 				this.getTargetMsg(true));
 		}
 	}
-	
+
 	correctLabels() {
-		var formWidth = this.$wrapper.width();
-		
+		let formWidth = this.$wrapper.width();
+
 		if (formWidth < this.standardButtonsTotalWidth + 7 &&
 			!this.$element.hasClass('cd-msgForm-short')
 		) {
@@ -891,7 +863,7 @@ export default class MsgForm {
 			this.cancelButton.setLabel('Отменить');
 		}
 	}
-	
+
 	setPending(status, action) {
 		if (this.headingInput) {
 			if (status) {
@@ -911,46 +883,46 @@ export default class MsgForm {
 			this['submitButton'].setDisabled(status);
 		}
 	}
-	
+
 	showInfo(html, icon, class_) {
 		icon = icon || 'info';
-		
+
 		if (!this.$infoArea.children('.cd-info-' + class_).length) {
-			var $textWithIcon = cd.env.createTextWithIcon(html, icon)
+			let $textWithIcon = cd.env.createTextWithIcon(html, icon)
 				.addClass('cd-info')
 				.addClass('cd-info-' + icon);
 			if (class_) {
 				$textWithIcon.addClass('cd-info-' + class_);
 			}
-			
+
 			this.$infoArea.cdAppend($textWithIcon, this.getTargetMsg(true));
 		}
 	}
-	
+
 	hideInfo(class_) {
-		var $info = this.$infoArea.children('.cd-info-' + class_);
+		let $info = this.$infoArea.children('.cd-info-' + class_);
 		if ($info.length) {
 			$info.cdRemove(this.getTargetMsg(true));
 		}
 	}
-	
+
 	showWarning(html, class_) {
 		this.showInfo(html, 'alert', class_);
 	}
-	
+
 	hideWarning(class_) {
 		this.hideInfo(class_);
 	}
-	
+
 	abort(options) {
 		if (typeof options === 'String') {
-			var message = options;
+			let message = options;
 			options = {};
 			options.message = message;
 		}
 
 		// Presence of retryFunc now implies the deletion of form elements.
-		
+
 		if (this.textarea.$element[0].parentElement) {
 			this.setPending(false, options.action);
 		}
@@ -959,40 +931,40 @@ export default class MsgForm {
 		if (options.logMessage) {
 			console.warn(options.logMessage);
 		}
-		
+
 		if (options.retryFunc) {
 			this.$wrapper.children(':not(.cd-infoArea)').remove();
-			
-			var cancelLink = new OO.ui.ButtonWidget({
+
+			let cancelLink = new OO.ui.ButtonWidget({
 				label: 'Отмена',
 				framed: false,
 			});
 			cancelLink.on('click', () => {
 				this.cancel(true);
 			});
-			
-			var retryLink = new OO.ui.ButtonWidget({
+
+			let retryLink = new OO.ui.ButtonWidget({
 				label: 'Попробовать ещё раз',
 				framed: false,
 			});
 			retryLink.on('click', options.retryFunc);
-			
+
 			$('<div>')
 				.append(cancelLink.$element, retryLink.$element)
 				.cdAppendTo(this.$infoArea, this.getTargetMsg(true));
 		}
-		
+
 		if (!this.$infoArea.cdIsInViewport()) {
 			this.$infoArea.cdScrollTo('top');
 		}
 	}
-	
+
 	msgTextToCode(action) {
-		var text = this.textarea.getValue();
+		let text = this.textarea.getValue();
 		if (text === undefined) return;
-		
+
 		// Prepare indentation characters
-		var indentationCharacters, replyIndentationCharacters;
+		let indentationCharacters, replyIndentationCharacters;
 		// If this is a preview, there's no point to look into the code.
 		if (action !== 'preview' && this.targetMsg) {
 			indentationCharacters = this.targetMsg.inCode && this.targetMsg.inCode.indentationCharacters;
@@ -1002,15 +974,15 @@ export default class MsgForm {
 		if (!indentationCharacters) {
 			indentationCharacters = '';
 		}
-		var isZeroLevel = this.mode === 'addSubsection' ||
+		let isZeroLevel = this.mode === 'addSubsection' ||
 			this.noIndentationCheckbox && this.noIndentationCheckbox.isSelected() ||
 			(this.mode === 'edit' && !indentationCharacters) ||
 			action === 'preview';
-		
+
 		if (this.mode === 'reply' && action === 'submit') {
 			indentationCharacters = replyIndentationCharacters;
 		}
-		
+
 		if (this.mode === 'replyInSection') {
 			if (this.target.inCode.lastMsgIndentationFirstCharacter) {
 				indentationCharacters = this.target.inCode.lastMsgIndentationFirstCharacter;
@@ -1020,9 +992,9 @@ export default class MsgForm {
 				indentationCharacters = '*';
 			}
 		}
-		
+
 		// Work with code
-		var code = text
+		let code = text
 			.replace(/^[\s\uFEFF\xA0]+/g, '')  // trimLeft
 			// Remove ending spaces from empty lines, only if they are not a part of a syntax creating <pre>.
 			.replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, s => {
@@ -1032,12 +1004,12 @@ export default class MsgForm {
 					return s.replace(/^ +/gm, '');
 				}
 			});
-		
-		var hasCloserTemplate = /\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code);
-		
-		var hidden = [];
-		var makeAllIntoColons = false;
-		var hide = (re, isTable) => {
+
+		let hasCloserTemplate = /\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code);
+
+		let hidden = [];
+		let makeAllIntoColons = false;
+		let hide = (re, isTable) => {
 			code = code.replace(re, s => {
 				if (isTable && !isZeroLevel) {
 					makeAllIntoColons = true;
@@ -1045,8 +1017,8 @@ export default class MsgForm {
 				return (!isTable ? '\x01' : '\x03') + hidden.push(s) + (!isTable ? '\x02' : '\x04');
 			});
 		};
-		var hideTags = function () {
-			for (var i = 0; i < arguments.length; i++) {
+		let hideTags = function () {
+			for (let i = 0; i < arguments.length; i++) {
 				hide(new RegExp('<' + arguments[i] + '( [^>]+)?>[\\s\\S]+?<\\/' + arguments[i] + '>', 'gi'));
 			}
 		};
@@ -1055,12 +1027,12 @@ export default class MsgForm {
 		// Hide tables
 		hide(/^\{\|[^]*?\n\|\}/gm, true);
 		hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
-		
-		var sig;
+
+		let sig;
 		if (this.mode === 'edit') {
 			sig = this.targetMsg.inCode.sig;
 		}
-		
+
 		// So that the signature doesn't turn out to be at the end of the last item of the list, if the message
 		// contains one.
 		if ((this.mode !== 'edit' ||
@@ -1069,14 +1041,14 @@ export default class MsgForm {
 			/\n[:\*#].*$/.test(code)
 		) {
 			code += '\n';
-			
+
 			if (this.mode === 'edit') {
 				if (/^\s*/.test(sig)) {
 					sig = sig.replace(/^\s*/, '');
 				}
 			}
 		}
-		
+
 		this.cantParse = false;
 		if (!isZeroLevel) {
 			code = code.replace(/\n([:\*#]+)/g, (s, m1) => {
@@ -1086,7 +1058,7 @@ export default class MsgForm {
 			});
 			if (makeAllIntoColons && indentationCharacters) {
 				code = code.replace(/\n(?![:\#\x03])/g, (s, m1) => {
-					var newIndentationCharacters = indentationCharacters.replace(/\*/g, ':');
+					let newIndentationCharacters = indentationCharacters.replace(/\*/g, ':');
 					if (newIndentationCharacters === '#') {
 						this.cantParse = true;
 					}
@@ -1095,8 +1067,8 @@ export default class MsgForm {
 			}
 			code = code.replace(/\n\n(?![:\*#])/g, '{{pb}}');
 		}
-		
-		var tagRegExp = new RegExp('(?:<\\/\\w+ ?>|<' + cd.env.PNIE_PATTERN + ')$', 'i');
+
+		let tagRegExp = new RegExp('(?:<\\/\\w+ ?>|<' + cd.env.PNIE_PATTERN + ')$', 'i');
 		code = code
 			.replace(/^(.*[^\n])\n(?![\n:\*# \x03])(?=(.*))/gm, (s, m1, m2) => {
 				return m1 +
@@ -1109,19 +1081,19 @@ export default class MsgForm {
 					(!isZeroLevel ? '' : '\n');
 			})
 			.replace(/\s*~{3,}$/, '');
-			
+
 		// Add ping template
 		if (this.pingCheckbox && this.pingCheckbox.isSelected()) {
 			code = '{{re|' + this.targetMsg.author + (code ? '' : '|p=.') + '}} ' + code;
 		}
-		
+
 		// Add heading
 		if (this.headingInput) {
-			var level = this.mode === 'addSubsection' ?
+			let level = this.mode === 'addSubsection' ?
 				this.target.level + 1 :
 				this.target.inCode.headingLevel;
-			var equalSigns = '='.repeat(level);
-			
+			let equalSigns = '='.repeat(level);
+
 			if (this.mode === 'edit' &&
 				this.targetMsg.isOpeningSection &&
 				/^\n/.test(this.targetMsg.inCode.code)
@@ -1131,19 +1103,19 @@ export default class MsgForm {
 			}
 			code = equalSigns + ' ' + this.headingInput.getValue().trim() + ' ' + equalSigns + '\n' + code;
 		}
-		
+
 		// Add signature
 		if (this.mode !== 'edit') {
 			code += (code && !/\s$/.test(code) ? ' ' : '') + cd.settings.mySig;
 		} else {
 			code += sig;
 		}
-		
+
 		// Add closer template
 		if (this.#couldBeCloserClosing && this.headingInput.getValue().trim() === 'Итог' && !hasCloserTemplate) {
 			code += '\n' + cd.settings.closerTemplate;
 		}
-		
+
 		// Process small font wrappers
 		if (this.smallCheckbox) {
 			if (this.mode !== 'edit' || !this.targetMsg.inCode.inSmallTag) {
@@ -1166,11 +1138,11 @@ export default class MsgForm {
 				}
 			}
 		}
-		
+
 		if (this.mode !== 'edit') {
 			code += '\n';
 		}
-		
+
 		// Add indentation characters
 		if (action === 'submit') {
 			if (this.mode === 'reply' || this.mode === 'replyInSection') {
@@ -1180,38 +1152,38 @@ export default class MsgForm {
 				code += '\n';
 			}
 		}
-		
-		var unhide = (s, num) => {
+
+		let unhide = (s, num) => {
 			return hidden[num - 1];
 		}
 		while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
 			code = code.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, unhide);
 		}
-		
+
 		// Remove unnecessary <br>'s
 		code = code
 			.replace(new RegExp('(<' + cd.env.PNIE_PATTERN + '(?: [\w ]+?=[^<>]+?| ?\/?)>)<br>', 'gi'), '$1')
 			.replace(new RegExp('(<' + '\/' + cd.env.PNIE_PATTERN + ' ?>)<br>', 'gi'), '$1')
 			.replace(/<br>(\s*\{\{[кК]онец цитаты[^}]*\}\})/g, '$1');
-		
+
 		return code;
 	}
-	
+
 	prepareNewPageCode(pageCode, timestamp) {
 		pageCode += '\n';
-		
-		var targetInCode = this.target.locateInCode(pageCode, timestamp);
+
+		let targetInCode = this.target.locateInCode(pageCode, timestamp);
 		if (!targetInCode) {
 			throw new cd.env.Exception(this.target instanceof Msg ? cd.strings.couldntLocateMsgInCode :
 				cd.strings.couldntLocateSectionInCode);
 		}
-		
-		var currentIndex;
+
+		let currentIndex;
 		if (this.mode === 'reply') {
 			currentIndex = targetInCode.endPos;
-			var succeedingText = pageCode.slice(currentIndex);
-			
-			var properPlaceRegExp = new RegExp(
+			let succeedingText = pageCode.slice(currentIndex);
+
+			let properPlaceRegExp = new RegExp(
 				'^([^]*?(?:' + mw.RegExp.escape(this.target.inCode.sig) +
 				'|\\b\\d?\\d:\\d\\d, \\d\\d? [а-я]+ \\d\\d\\d\\d \\(UTC\\).*' + ')\\n)\\n*' +
 				(targetInCode.indentationCharacters.length > 0 ?
@@ -1220,15 +1192,15 @@ export default class MsgForm {
 				) +
 				'(?![:\\*#\\n])'
 			);
-			var properPlaceMatches = properPlaceRegExp.exec(succeedingText);
+			let properPlaceMatches = properPlaceRegExp.exec(succeedingText);
 			if (!properPlaceMatches) {
 				throw new cd.env.Exception('Не удалось найти место в коде для вставки сообщения.');
 			}
-			
+
 			// If the message is to be put after a message with different indent characters, use these.
-			var textBeforeInsertion = properPlaceMatches[1];
-			var changedIndentationCharactersMatches = textBeforeInsertion.match(/\n([:\*#]{2,}).*\n$/);
-			var changedIndentationCharacters = changedIndentationCharactersMatches &&
+			let textBeforeInsertion = properPlaceMatches[1];
+			let changedIndentationCharactersMatches = textBeforeInsertion.match(/\n([:\*#]{2,}).*\n$/);
+			let changedIndentationCharacters = changedIndentationCharactersMatches &&
 				changedIndentationCharactersMatches[1];
 			if (changedIndentationCharacters) {
 				if (changedIndentationCharacters.length > targetInCode.indentationCharacters.length) {
@@ -1241,115 +1213,110 @@ export default class MsgForm {
 						.replace(/:$/, '*');
 				}
 			}
-			
-			var textBeforeInsertionForTest = textBeforeInsertion.replace(/<!--[^]*?-->/g, '');
+
+			let textBeforeInsertionForTest = textBeforeInsertion.replace(/<!--[^]*?-->/g, '');
 			if (/\n(=+).*?\1[ \t]*\n/.test(textBeforeInsertionForTest)) {
 				throw new cd.env.Exception('Не удалось найти место в коде для вставки сообщения (неожиданный заголовок).');
 			}
 			currentIndex += textBeforeInsertion.length;
 		}
-		
+
 		if (this.mode === 'replyInSection' &&
 			// So far we use this workaround to make sure "#" is not a part of a numbered list
 			// in the target message (in contrast to messages organized in a numbered list).
 			this.$element.parent()[0].tagName === 'OL'
 		) {
-			var lastMsgIndentationFirstCharacterMatches = targetInCode.subdivisionCode.match(/\n#.*\n+$/);
+			let lastMsgIndentationFirstCharacterMatches = targetInCode.subdivisionCode.match(/\n#.*\n+$/);
 			if (lastMsgIndentationFirstCharacterMatches) {
 				this.target.inCode.lastMsgIndentationFirstCharacter = '#';
 			}
 		}
-		
-		var msgCode;
-		var isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
+
+		let msgCode;
+		let isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
 		if (!isDelete) {
 			msgCode = this.msgTextToCode('submit');
 		}
-		
+
 		if (this.cantParse) {
 			throw new cd.env.Exception('Невозможно корректно сформировать сообщение, не исказив разметку нумерованного списка. Уберите списки из сообщения.');
 		}
-		
-		var newPageCode;
-		switch (this.mode) {
-			case 'reply':
-				newPageCode = pageCode.slice(0, currentIndex) + msgCode + pageCode.slice(currentIndex);
-				break;
-			case 'edit':
-				var startPos;
-				var endPos = targetInCode.endPos + targetInCode.sig.length + 1;
-				if (!isDelete) {
-					startPos = targetInCode.headingStartPos === undefined ?
-						targetInCode.startPos :
-						targetInCode.headingStartPos;
-					newPageCode = pageCode.slice(0, startPos) + msgCode + pageCode.slice(targetInCode.endPos +
-						targetInCode.sig.length
+
+		let newPageCode;
+		if (this.mode === 'reply') {
+			newPageCode = pageCode.slice(0, currentIndex) + msgCode + pageCode.slice(currentIndex);
+		} else if (this.mode === 'edit') {
+			let startPos;
+			let endPos = targetInCode.endPos + targetInCode.sig.length + 1;
+			if (!isDelete) {
+				startPos = targetInCode.headingStartPos === undefined ?
+					targetInCode.startPos :
+					targetInCode.headingStartPos;
+				newPageCode = pageCode.slice(0, startPos) + msgCode + pageCode.slice(targetInCode.endPos +
+					targetInCode.sig.length
+				);
+			} else {
+				if (targetInCode.headingStartPos === undefined) {
+					let succeedingText = pageCode.slice(targetInCode.endPos);
+
+					let repliesRegExp = new RegExp(
+						'^.+\\n+[:\\*#]{' + (targetInCode.indentationCharacters.length + 1) + ',}'
 					);
-				} else {
-					if (targetInCode.headingStartPos === undefined) {
-						var succeedingText = pageCode.slice(targetInCode.endPos);
-					
-						var repliesRegExp = new RegExp(
-							'^.+\\n+[:\\*#]{' + (targetInCode.indentationCharacters.length + 1) + ',}'
-						);
-						var repliesMatches = repliesRegExp.exec(succeedingText);
-						
-						if (repliesMatches) {
-							throw new cd.env.Exception('Нельзя удалить сообщение, так как на него уже есть ответы.');
-						} else {
-							startPos = targetInCode.lineStartPos;
-						}
+					let repliesMatches = repliesRegExp.exec(succeedingText);
+
+					if (repliesMatches) {
+						throw new cd.env.Exception('Нельзя удалить сообщение, так как на него уже есть ответы.');
 					} else {
-						var sectionInCode = this.target.section.locateInCode(pageCode, timestamp);
-						var sectionCode = sectionInCode && sectionInCode.code;
-						
-						if (!sectionCode) {
-							throw new cd.env.Exception('Не удалось удалить тему: не получилось определить местоположение раздела в коде.');
-						}
-						
-						var tempSectionCode = sectionCode;
-						for (var msgCount = 0; msgCount < 2; msgCount++) {
-							var [firstMsgMatch, firstMsgInitialPos] = cd.env.findFirstMsg(tempSectionCode);
-							if (!firstMsgMatch) break;
-							tempSectionCode = tempSectionCode.slice(firstMsgInitialPos + firstMsgMatch[0].length);
-						}
-						if (msgCount > 1) {
-							throw new cd.env.Exception('Нельзя удалить тему, так как в ней уже есть ответы.');
-						} else {
-							startPos = targetInCode.headingStartPos;
-							if (pageCode[endPos] === '\n') {
-								endPos++;
-							}
+						startPos = targetInCode.lineStartPos;
+					}
+				} else {
+					let sectionInCode = this.target.section.locateInCode(pageCode, timestamp);
+					let sectionCode = sectionInCode && sectionInCode.code;
+
+					if (!sectionCode) {
+						throw new cd.env.Exception('Не удалось удалить тему: не получилось определить местоположение раздела в коде.');
+					}
+
+					let tempSectionCode = sectionCode;
+					for (let msgCount = 0; msgCount < 2; msgCount++) {
+						let [firstMsgMatch, firstMsgInitialPos] = cd.env.findFirstMsg(tempSectionCode);
+						if (!firstMsgMatch) break;
+						tempSectionCode = tempSectionCode.slice(firstMsgInitialPos + firstMsgMatch[0].length);
+					}
+					if (msgCount > 1) {
+						throw new cd.env.Exception('Нельзя удалить тему, так как в ней уже есть ответы.');
+					} else {
+						startPos = targetInCode.headingStartPos;
+						if (pageCode[endPos] === '\n') {
+							endPos++;
 						}
 					}
-					
-					newPageCode = pageCode.slice(0, startPos) + pageCode.slice(endPos);
 				}
-				break;
-			case 'addSubsection':
-				newPageCode = pageCode.slice(0, targetInCode.endPos).replace(/([^\n])\n$/, '$1\n\n') + msgCode +
-					pageCode.slice(targetInCode.endPos);
-				break;
-			case 'replyInSection':
-				if (!targetInCode.subdivisionEndPos) {
-					throw new cd.env.Exception('Не удалось найти место в коде для вставки сообщения.');
-				}
-				newPageCode = pageCode.slice(0, targetInCode.subdivisionEndPos) + msgCode +
-					pageCode.slice(targetInCode.subdivisionEndPos);
-				break;
+
+				newPageCode = pageCode.slice(0, startPos) + pageCode.slice(endPos);
+			}
+		} else if (this.mode === 'addSubsection') {
+			newPageCode = pageCode.slice(0, targetInCode.endPos).replace(/([^\n])\n$/, '$1\n\n') + msgCode +
+				pageCode.slice(targetInCode.endPos);
+		} else if (this.mode === 'replyInSection') {
+			if (!targetInCode.subdivisionEndPos) {
+				throw new cd.env.Exception('Не удалось найти место в коде для вставки сообщения.');
+			}
+			newPageCode = pageCode.slice(0, targetInCode.subdivisionEndPos) + msgCode +
+				pageCode.slice(targetInCode.subdivisionEndPos);
 		}
-		
+
 		return newPageCode;
 	}
-	
+
 	async preview(callback) {
 		this.$infoArea.cdEmpty(this.getTargetMsg(true));
 		this.setPending(true, 'preview');
-		
-		var msgCode = this.msgTextToCode('preview');
-		
+
+		let msgCode = this.msgTextToCode('preview');
+
 		try {
-			var data = await new mw.Api().post({
+			let data = await new mw.Api().post({
 				action: 'parse',
 				text: msgCode,
 				title: cd.env.CURRENT_PAGE,
@@ -1360,31 +1327,31 @@ export default class MsgForm {
 				formatversion: 2,
 			});
 
-			var error = data.error;
+			let error = data.error;
 			if (error) {
-				var text = error.code + ': ' + error.info;
+				let text = error.code + ': ' + error.info;
 				this.abort({
 					message: 'Не удалось предпросмотреть сообщение. ' + text,
 					logMessage: data,
 				});
 				return;
 			}
-			
-			var html = data &&
+
+			let html = data &&
 				data.parse &&
 				data.parse.text;
-			
+
 			if (html) {
-				var msg = this.getTargetMsg(true, true);
+				let msg = this.getTargetMsg(true, true);
 				if (msg) {
 					msg.prepareUnderlayersInViewport(true);
 				}
-				
+
 				this.$previewArea
 					.html(html)
 					.cdAddCloseButton('предпросмотр', this.getTargetMsg(true));
-				
-				var $parsedsummary = data.parse.parsedsummary && cd.env.toJquerySpan(data.parse.parsedsummary);
+
+				let $parsedsummary = data.parse.parsedsummary && cd.env.toJquerySpan(data.parse.parsedsummary);
 				if ($parsedsummary.length) {
 					$parsedsummary.find('a').attr('tabindex', '-1');
 					this.$element.find('.cd-summaryPreview').html(
@@ -1406,19 +1373,19 @@ export default class MsgForm {
 				logMessage: e,
 			});
 		}
-			
+
 		if (callback) {
 			callback();
 		}
 	}
-	
+
 	async viewChanges() {
 		this.$infoArea.cdEmpty(this.getTargetMsg(true));
 		this.setPending(true, 'viewChanges');
-		
+
 		try {
-			var result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
-			var newPageCode;
+			let result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
+			let newPageCode;
 			try {
 				newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
 			} catch (e) {
@@ -1432,20 +1399,20 @@ export default class MsgForm {
 				}
 				return;
 			}
-			
+
 			mw.loader.load('mediawiki.diff.styles');
-			
+
 			try {
-				var data = await new mw.Api().post({
+				let data = await new mw.Api().post({
 					action: 'query',
 					rvdifftotext: newPageCode,
 					titles: cd.env.CURRENT_PAGE,
 					prop: 'revisions',
 					formatversion: 2,
 				});
-				var error = data.error;
+				let error = data.error;
 				if (error) {
-					var text;
+					let text;
 					switch (error.code) {
 						default:
 							text = error.code + ': ' + error.info;
@@ -1457,8 +1424,8 @@ export default class MsgForm {
 					});
 					return;
 				}
-				
-				var html = data &&
+
+				let html = data &&
 					data.query &&
 					data.query.pages &&
 					data.query.pages[0] &&
@@ -1466,14 +1433,14 @@ export default class MsgForm {
 					data.query.pages[0].revisions[0] &&
 					data.query.pages[0].revisions[0].diff &&
 					data.query.pages[0].revisions[0].diff.body;
-				
+
 				if (html) {
 					html = '<table class="diff">' +
 						'<col class="diff-marker"><col class="diff-content">' +
 						'<col class="diff-marker"><col class="diff-content">' +
 						html +
 						'</table>';
-					
+
 					this.$previewArea
 						.cdHtml(html, this.getTargetMsg(true))
 						.cdAddCloseButton('просмотр изменений', this.getTargetMsg(true));
@@ -1494,7 +1461,7 @@ export default class MsgForm {
 				});
 			}
 		} catch (e) {
-			var [errorType, data] = e;
+			let [errorType, data] = e;
 			cd.env.genericErrorHandler.call(this, {
 				errorType,
 				data,
@@ -1502,12 +1469,12 @@ export default class MsgForm {
 			});
 		}
 	}
-	
+
 	reloadPageAfterSubmit(anchor) {
 		this.destroy(['leaveInfo']);
-		
+
 		cd.env.reloadPage(anchor).fail(e => {
-			var [errorType, data] = e;
+			let [errorType, data] = e;
 			if (cd.settings.showLoadingOverlay !== false) {
 				cd.env.removeLoadingOverlay();
 			}
@@ -1522,9 +1489,9 @@ export default class MsgForm {
 			});
 		});
 	}
-	
+
 	async submit() {
-		var isDelete = false;
+		let isDelete = false;
 		if (this.headingInput &&
 			this.headingInput.getValue() === '' &&
 			!confirm('Вы не ввели ' + this.headingInputPurpose.toLowerCase() + '. Всё равно отправить форму?')
@@ -1545,13 +1512,13 @@ export default class MsgForm {
 			if (!confirm('Вы действительно хотите удалить сообщение?')) return;
 			isDelete = true;
 		}
-		
+
 		this.$infoArea.cdEmpty(this.getTargetMsg(true));
 		this.setPending(true);
-		
+
 		try {
-			var result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
-			var newPageCode;
+			let result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
+			let newPageCode;
 			try {
 				newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
 			} catch (e) {
@@ -1569,9 +1536,9 @@ export default class MsgForm {
 				}
 				return;
 			}
-			
+
 			try {
-				var data = await new mw.Api().postWithToken('csrf', {
+				let data = await new mw.Api().postWithToken('csrf', {
 					action: 'edit',
 					title: cd.env.CURRENT_PAGE,
 					summary: cd.env.formSummary(this.summaryInput.getValue().trim()),
@@ -1583,9 +1550,9 @@ export default class MsgForm {
 					formatversion: 2,
 				});
 				// error can't be here?
-				var error = data.error;
+				let error = data.error;
 				if (error) {
-					var text;
+					let text;
 					switch (error.code) {
 						default:
 							text = error.code + ': ' + error.info;
@@ -1594,8 +1561,8 @@ export default class MsgForm {
 					this.abort(text);
 					return;
 				}
-				
-				var verb = 'отправлено';
+
+				let verb = 'отправлено';
 				if (this.mode === 'edit') {
 					if (!isDelete) {
 						verb = 'сохранено';
@@ -1605,10 +1572,10 @@ export default class MsgForm {
 				}
 				this.showInfo('Сообщение успешно ' + verb);
 				this.setPending(false);
-				
-				var anchor;
+
+				let anchor;
 				if (this.mode !== 'edit') {
-					var now = new Date();
+					let now = new Date();
 					anchor = cd.env.generateMsgAnchor(
 						now.getUTCFullYear(),
 						now.getUTCMonth(),
@@ -1620,11 +1587,11 @@ export default class MsgForm {
 				} else {
 					anchor = this.target.anchor;
 				}
-				
+
 				cd.msgForms[cd.msgForms.indexOf(this)].submitted = true;
 				if (cd.getLastActiveAlteredMsgForm()) {
 					this.preview(() => {
-						var $info = cd.env.toJquerySpan('Сообщение было отправлено, но на странице также имеются другие открытые формы. Отправьте их для перезагрузки страницы или <a href="javascript:">перезагрузите страницу</a> всё равно.');
+						let $info = cd.env.toJquerySpan('Сообщение было отправлено, но на странице также имеются другие открытые формы. Отправьте их для перезагрузки страницы или <a href="javascript:">перезагрузите страницу</a> всё равно.');
 						$info.find('a').click(() => {
 							this.reloadPageAfterSubmit(anchor);
 						});
@@ -1637,17 +1604,14 @@ export default class MsgForm {
 			} catch (e) {
 				[jqXHR, textStatus, errorThrown] = e;
 				// Something strange about the parameters, they are volatile.
-				var error = textStatus && textStatus.error;
+				let error = textStatus && textStatus.error;
 				if (error) {
-					var text;
-					switch (error.code) {
-						case 'editconflict':
-							text = 'Конфликт редактирования. Пробуем ещё раз…';
-							this.submit();
-							break;
-						default:
-							text = 'Ответ сервера не распознан. Не удалось отредактировать страницу.';
-							break;
+					let text;
+					if (error.code === 'editconflict') {
+						text = 'Конфликт редактирования. Пробуем ещё раз…';
+						this.submit();
+					} else {
+						text = 'Ответ сервера не распознан. Не удалось отредактировать страницу.';
 					}
 					this.abort(text);
 					return;
@@ -1667,13 +1631,13 @@ export default class MsgForm {
 			});
 		}
 	}
-	
+
 	cancel(leaveInfo) {
 		if (!leaveInfo) {
 			this.$infoArea.empty();
 		}
 		this.$previewArea.empty();
-		
+
 		if (this.mode !== 'edit') {
 			this.$element[cd.settings.slideEffects ? 'cdSlideUp' : 'cdFadeOut']('fast', () => {
 				this.$element.addClass('cd-msgForm-hidden');
@@ -1698,9 +1662,9 @@ export default class MsgForm {
 				this.target.configureUnderlayer();
 			}, this.getTargetMsg(true));
 		}
-		
+
 		if (this.mode === 'reply') {
-			var $elements;
+			let $elements;
 			if (!this.target.isOpeningSection) {
 				$elements = this.target.$elements;
 			} else {
@@ -1710,9 +1674,9 @@ export default class MsgForm {
 				$elements.cdScrollTo('top');
 			}
 		} else if (this.mode === 'replyInSection' || this.mode === 'addSubsection') {
-			var $lastVisible;
+			let $lastVisible;
 			if (this.mode === 'replyInSection') {
-				var $prev = this.target.$replyButtonContainer.prev();
+				let $prev = this.target.$replyButtonContainer.prev();
 				if ($prev.length) {
 					$lastVisible = $prev;
 				} else {
@@ -1721,15 +1685,15 @@ export default class MsgForm {
 			} else if (this.mode === 'addSubsection') {
 				$lastVisible = this.target.$elements.filter(':visible').last();
 			}
-			
+
 			if (!$lastVisible.cdIsInViewport(true)) {
 				$lastVisible.cdScrollTo('bottom');
 			}
 		}
 	}
-	
+
 	destroy(options) {
-		var leaveInfo, leavePreview;
+		let leaveInfo, leavePreview;
 		if ($.isArray(options)) {
 			leaveInfo = options.includes('leaveInfo');
 			leavePreview = options.includes('leavePreview');
@@ -1748,11 +1712,11 @@ export default class MsgForm {
 		cd.msgForms.splice(cd.msgForms.indexOf(this), 1);
 		delete this.target[this::modeToProperty(this.mode) + 'Form'];
 	}
-	
+
 	isActive() {
 		return !this.submitted && !this.$element.hasClass('cd-msgForm-hidden');
 	}
-	
+
 	isActiveAndAltered() {
 		return this.isActive() &&
 			(this.originalText !== this.textarea.getValue() ||
@@ -1763,14 +1727,11 @@ export default class MsgForm {
 }
 
 function modeToProperty(mode) {
-	var property;
-	switch (mode) {
-		case 'replyInSection':
-			property = 'addReply';
-			break;
-		default:
-			property = mode;
-			break;
+	let property;
+	if (mode === 'replyInSection') {
+		property = 'addReply';
+	} else {
+		property = mode;
 	}
 	return property;
 }
