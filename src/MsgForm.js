@@ -1414,12 +1414,7 @@ export default class MsgForm {
 				});
 				let error = data.error;
 				if (error) {
-					let text;
-					switch (error.code) {
-						default:
-							text = error.code + ': ' + error.info;
-							break;
-					}
+					let text = error.code + ': ' + error.info;
 					this.abort({
 						message: 'Не удалось загрузить изменения. ' + text,
 						logMessage: data,
@@ -1554,12 +1549,7 @@ export default class MsgForm {
 				// error can't be here?
 				let error = data.error;
 				if (error) {
-					let text;
-					switch (error.code) {
-						default:
-							text = error.code + ': ' + error.info;
-							break;
-					}
+					let text = error.code + ': ' + error.info;
 					this.abort(text);
 					return;
 				}

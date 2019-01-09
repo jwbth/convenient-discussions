@@ -590,7 +590,7 @@ export default class Msg {
 			bottom: msgBottom,
 			left: msgLeft,
 			right: msgRight,
-			downplayedBottom: downplayedBottom,
+			downplayedBottom,
 		};
 		return this.positions;
 	}
@@ -613,12 +613,12 @@ export default class Msg {
 		let linksUnderlayerLeft = this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
 
 		return {
-			underlayerTop: underlayerTop,
-			underlayerLeft: underlayerLeft,
-			underlayerWidth: underlayerWidth,
-			underlayerHeight: underlayerHeight,
-			linksUnderlayerTop: linksUnderlayerTop,
-			linksUnderlayerLeft: linksUnderlayerLeft,
+			underlayerTop,
+			underlayerLeft,
+			underlayerWidth,
+			underlayerHeight,
+			linksUnderlayerTop,
+			linksUnderlayerLeft,
 		};
 	}
 
@@ -628,13 +628,14 @@ export default class Msg {
 		let rectBottom = elements.length === 1 ?
 			rectTop :
 			elements[elements.length - 1].getBoundingClientRect();
-		let underlayerMisplaced = this.#underlayer && this.#underlayer.parentElement && (
+		let underlayerMisplaced = this.#underlayer && (
 			rectTop.top + window.pageYOffset + cd.env.underlayersYCorrection !== this.#underlayerTop ||
 			rectBottom.bottom - rectTop.top !== this.#underlayerHeight ||
 			elements[0].offsetWidth !== this.#firstWidth
 		);
 
-		if (!this.#underlayer || !this.#underlayer.parentElement) {
+		// We configure underlayer only if it was unexistent or the message position changed to save time.
+		if (!this.#underlayer) {
 			// Prepare the underlayer nodes.
 			let positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
 
@@ -824,9 +825,7 @@ export default class Msg {
 	}
 
 	unhighlightFocused() {
-		if (!this.#underlayer || !this.#underlayer.parentElement ||
-			!this.#linksUnderlayer || !this.#linksUnderlayer.parentElement
-		) {
+		if (!this.#underlayer || !this.#linksUnderlayer) {
 			return;
 		}
 
@@ -1495,7 +1494,7 @@ export default class Msg {
 					highlightedMsgsInViewportBelow.push(currentMsg);
 				}
 			} else {
-				// Get also not more than 5 messages below the viewport.
+				// Also get not more than 5 messages below the viewport.
 				thisMsgsBelowViewportCount++;
 				if (thisMsgsBelowViewportCount >= msgsBelowViewportCount) break;
 				if (currentMsg.newness) {
@@ -1531,9 +1530,7 @@ export default class Msg {
 	}
 
 	removeUnderlayer() {
-		if (!this.#underlayer || !this.#underlayer.parentElement) {
-			return false;
-		}
+		if (!this.#underlayer) return false;
 
 		this.#underlayer.parentElement.removeChild(this.#underlayer);
 		this.#linksUnderlayer.parentElement.removeChild(this.#linksUnderlayer);

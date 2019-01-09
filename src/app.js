@@ -777,10 +777,7 @@ function main() {
 							'';
 						let watchedTopics = unpackWatchedTopics(watchedTopicsString);
 
-						return {
-							visits: visits,
-							watchedTopics: watchedTopics,
-						};
+						return { visits, watchedTopics };
 					},
 					(jqXHR, textStatus, errorThrown) =>
 						$.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()

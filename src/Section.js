@@ -1042,7 +1042,7 @@ export default class Section {
 			code: sectionCode,
 			subdivisionEndPos: sectionSubdivisionEndPos,
 			subdivisionCode: sectionSubdivisionCode,
-			timestamp: timestamp,
+			timestamp,
 		};
 
 		return this.inCode;
