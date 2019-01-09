@@ -3,6 +3,8 @@ import MsgForm from './MsgForm';
 export default class Section {
 	#closingBracketElement;
 	#editsectionElement;
+	#elements;
+	#cached$elements;
 
 	constructor(headingElement, isLastSection) {
 		let headlineElement = headingElement.querySelector('.mw-headline');
@@ -157,23 +159,10 @@ export default class Section {
 		this.level = headingLevel;
 		this.heading = headingText;
 		this.isLastSection = isLastSection;
+		this.#elements = elements;
 		this.$heading = $(headingElement);
 		this.msgs = msgsInSection;
 		this.msgsInFirstSubdivision = hasSubsections ? msgsInFirstSubdivision : msgsInSection;
-
-		// Using a getter allows to save a little time on running $().
-		let $elements;
-		Object.defineProperty(this, '$elements', {
-			get: () => {
-				if (typeof $elements === 'undefined') {
-					$elements = $(elements);
-				}
-				return $elements;
-			},
-			set: value => {
-				$elements = value;
-			},
-		});
 
 		if (!this.frozen) {
 			// Add "Reply" button under the subdivision of the section before the first heading.
@@ -1094,5 +1083,17 @@ export default class Section {
 			this.#editsectionElement.insertBefore(divider, this.#closingBracketElement);
 			this.#editsectionElement.insertBefore(a, this.#closingBracketElement);
 		}
+	}
+
+	// Using a getter allows to save a little time on running $().
+	get $elements() {
+		if (this.#cached$elements === undefined) {
+			this.#cached$elements = $(this.#elements);
+		}
+		return this.#cached$elements;
+	}
+
+	set $elements(value) {
+		this.#cached$elements = value;
 	}
 }

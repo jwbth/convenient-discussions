@@ -3,6 +3,9 @@ import Section from './Section';
 
 export default class MsgForm {
 	#couldBeCloserClosing;
+	#standardButtonsTotalWidth;
+	#standardSubmitButtonLabel;
+	#shortSubmitButtonLabel;
 
 	constructor(mode, target) {
 		this.mode = mode;
@@ -562,21 +565,20 @@ export default class MsgForm {
 			.addClass('cd-rightButtonsContainer')
 			.appendTo(this.$buttonsContainer);
 
-		let standardSubmitButtonLabel, shortSubmitButtonLabel;
 		if (this.mode === 'edit') {
-			standardSubmitButtonLabel = 'Сохранить';
-			shortSubmitButtonLabel = 'Сохранить';
+			this.#standardSubmitButtonLabel = 'Сохранить';
+			this.#shortSubmitButtonLabel = 'Сохранить';
 		} else if (this.mode === 'addSubsection') {
-			standardSubmitButtonLabel = 'Добавить подраздел';
-			shortSubmitButtonLabel = 'Добавить';
+			this.#standardSubmitButtonLabel = 'Добавить подраздел';
+			this.#shortSubmitButtonLabel = 'Добавить';
 		} else {
-			standardSubmitButtonLabel = 'Ответить';
-			shortSubmitButtonLabel = 'Ответ';
+			this.#standardSubmitButtonLabel = 'Ответить';
+			this.#shortSubmitButtonLabel = 'Ответ';
 		}
 
 		this.submitButton = new OO.ui.ButtonInputWidget({
 			type: 'submit',
-			label: standardSubmitButtonLabel,
+			label: this.#standardSubmitButtonLabel,
 			flags: ['progressive', 'primary'],
 			classes: ['cd-submitButton'],
 		});
@@ -816,7 +818,7 @@ export default class MsgForm {
 			this.$element.cdFadeIn('fast', this.getTargetMsg(true));
 		}
 
-		this.standardButtonsTotalWidth = this.submitButton.$element.outerWidth(true) +
+		this.#standardButtonsTotalWidth = this.submitButton.$element.outerWidth(true) +
 			this.previewButton.$element.outerWidth(true) +
 			(this.viewChangesButton ? this.viewChangesButton.$element.outerWidth(true) : 0) +
 			this.settingsButton.$element.outerWidth(true) +
@@ -840,22 +842,22 @@ export default class MsgForm {
 	correctLabels() {
 		let formWidth = this.$wrapper.width();
 
-		if (formWidth < this.standardButtonsTotalWidth + 7 &&
+		if (formWidth < this.#standardButtonsTotalWidth + 7 &&
 			!this.$element.hasClass('cd-msgForm-short')
 		) {
 			this.$element.addClass('cd-msgForm-short');
-			this.submitButton.setLabel(shortSubmitButtonLabel);
+			this.submitButton.setLabel(this.#shortSubmitButtonLabel);
 			this.previewButton.setLabel('Просмотр');
 			if (this.viewChangesButton) {
 				this.viewChangesButton.setLabel('Изменения');
 			}
 			this.cancelButton.setLabel('Отмена');
 		}
-		if (formWidth >= this.standardButtonsTotalWidth + 7 &&
+		if (formWidth >= this.#standardButtonsTotalWidth + 7 &&
 			this.$element.hasClass('cd-msgForm-short')
 		) {
 			this.$element.removeClass('cd-msgForm-short');
-			this.submitButton.setLabel(standardSubmitButtonLabel);
+			this.submitButton.setLabel(this.#standardSubmitButtonLabel);
 			this.previewButton.setLabel('Предпросмотреть');
 			if (this.viewChangesButton) {
 				this.viewChangesButton.setLabel('Просмотреть изменения');

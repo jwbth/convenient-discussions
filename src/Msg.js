@@ -15,6 +15,11 @@ export default class Msg {
 	#linksUnderlayer_gradient;
 	#highlightedMsgsInViewportBelow;
 	#$underlayersInViewportBelow;
+	#cached$elements;
+	#cachedMsgText;
+	#cachedParent;
+	#cachedSection;
+	#cachedIsAuthorRegistered;
 
 	constructor(dateContainer) {
 		// The most expensive part. We avoid using jQuery here and try to implement everything at the lowest level.
@@ -419,193 +424,6 @@ export default class Msg {
 			this.frozen = false;
 		}
 
-		let getParent = () => {
-			// This would work only if messages in cd.msgs are in order of their presence on the page.
-
-			let level = this.level;
-			if (this.$elements[0].classList.contains('ruwiki-msgIndentation-minus1level')) {
-				level -= 1;
-			}
-
-			if (cd.parse.pageHasOutdents) {
-				let currentElement = this.elements[0];
-				let outdented = false;
-				while (currentElement && currentElement !== cd.env.contentElement) {
-					if (currentElement.previousElementSibling) {
-						currentElement = currentElement.previousElementSibling;
-						if (currentElement.className.includes('outdent-template') ||
-							(currentElement.querySelector('.outdent-template') &&
-								!currentElement.querySelector('.cd-msgPart')
-							)
-						) {
-							outdented = true;
-						}
-						break;
-					} else {
-						currentElement = currentElement.parentElement;
-					}
-				}
-				if (outdented && cd.msgs[this.id - 1]) {
-					return cd.msgs[this.id - 1];
-				}
-			}
-
-			if (level <= 0) {
-				return null;
-			}
-
-			let currentMsg;
-			for (let i = this.id - 1; i >= 0; i--) {
-				currentMsg = cd.msgs[i];
-				if (currentMsg.level !== undefined && currentMsg.level < level) {
-					if (currentMsg.section === this.section) {
-						parentMsg = currentMsg;
-						return parentMsg;
-					}
-				}
-			}
-
-			return null;  // Not undefined, so that the variable would be considered filled.
-		};
-
-		let getSection = () => {
-			if (!cd.sections) {
-				return null;  // Not undefined, so that the variable would be considered filled.
-			}
-
-			let currentSection;
-			for (let i = cd.sections.length - 1; i >= 0; i--) {
-				currentSection = cd.sections[i];
-				if (currentSection.msgs.includes(this)) {
-					section = currentSection;
-					return section;
-				}
-			}
-
-			return null;  // Not undefined, so that the variable would be considered filled.
-		};
-
-		let getAuthorRegistered = () => !/((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/.test(this.author);
-
-		let getText = () => {
-			// Get message text without a signature.
-			let $msgWithNoSig = $();
-			if (this.$elements.length > 1) {
-				$msgWithNoSig = $msgWithNoSig.add(this.$elements.slice(0, -1));
-			}
-			let currentAuthorSelector = cd.env.generateAuthorSelector(this.author);
-			let $parentOfDate = this.$elements
-				.last()
-				.find(currentAuthorSelector)
-				.last()
-				// Not "(UTC" to make scripts altering timezone not break.
-				.closest(':contains("(UTC"), :contains("Эта реплика добавлена"), :contains("(обс.)")');
-
-			// $parentOfDate might be empty if scripts altering date are used.
-			if ($parentOfDate.length) {
-				let lastElement = this.$elements.last()[0];
-				if ($parentOfDate[0] !== lastElement &&
-					!($parentOfDate[0].compareDocumentPosition(lastElement) & Node.DOCUMENT_POSITION_CONTAINED_BY)
-				) {
-					let currentElement = $parentOfDate[0];
-					while (true) {
-						if (currentElement.previousSibling) {
-							currentElement = currentElement.previousSibling;
-						} else {
-							while (currentElement &&
-								currentElement !== lastElement &&
-								!currentElement.previousSibling
-							) {
-								currentElement = currentElement.parentElement;
-							}
-							if (!currentElement || currentElement === lastElement) break;
-
-							currentElement = currentElement.previousSibling;
-						}
-						if (currentElement && currentElement !== lastElement) {
-							$msgWithNoSig = $msgWithNoSig.add(currentElement);
-						} else {
-							break;
-						}
-					}
-				}
-				let foundAuthorNode = false;
-				$msgWithNoSig = $msgWithNoSig.add(
-					$parentOfDate
-						.contents()
-						.filter(function () {
-							if (foundAuthorNode) {
-								return false;
-							}
-							if ((this.nodeType === Node.ELEMENT_NODE) &&
-								($(this).is(currentAuthorSelector) || $(this).has(currentAuthorSelector).length)
-							) {
-								foundAuthorNode = true;
-								return false;
-							} else {
-								return true;
-							}
-						})
-				);
-			} else {
-				// Actually, it will have a signature :(
-				$msgWithNoSig = $msgWithNoSig.add(this.$elements.last());
-			}
-
-			return cd.env.elementsToText($msgWithNoSig.get())
-				.replace(/Эта реплика добавлена (?:участником|с IP)$/, '')
-				.replace(/Эта реплика добавлена (?:участником|с IP).{1,50}$/, '')
-				.replace('(обс.)$', '')
-				.replace(cd.config.SIG_PREFIX_REGEXP, '');
-		};
-
-		let $elements, msgText, parentMsg, section, isAuthorRegistered;
-		// Using a getter allows to save a little time on running $().
-		Object.defineProperty(this, '$elements', {
-			get: () => {
-				if (typeof $elements === 'undefined') {
-					$elements = $(this.elements);
-				}
-				return $elements;
-			},
-		});
-
-		Object.defineProperty(this, 'text', {
-			get: () => {
-				if (typeof msgText === 'undefined') {
-					msgText = getText();
-				}
-				return msgText;
-			},
-		});
-
-		Object.defineProperty(this, 'parent', {
-			get: () => {
-				if (typeof parentMsg === 'undefined') {
-					parentMsg = getParent();
-				}
-				return parentMsg;
-			},
-		});
-
-		Object.defineProperty(this, 'section', {
-			get: () => {
-				if (typeof section === 'undefined') {
-					section = getSection();
-				}
-				return section;
-			},
-		});
-
-		Object.defineProperty(this, 'isAuthorRegistered', {
-			get: () => {
-				if (typeof isAuthorRegistered === 'undefined') {
-					isAuthorRegistered = getAuthorRegistered();
-				}
-				return isAuthorRegistered;
-			},
-		});
-
 		this.id = cd.parse.currentMsgId;
 		this.author = author;
 		if (anchor) {
@@ -870,7 +688,6 @@ export default class Msg {
 				this.#linksUnderlayer_text.appendChild(linkButton);
 				let linkButtonLink = linkButton.firstChild;
 				linkButtonLink.href = mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.anchor;
-				linkButtonLink.title = 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.';
 				linkButtonLink.onclick = this.copyLink.bind(this);
 			}
 
@@ -1069,12 +886,13 @@ export default class Msg {
 		}
 
 		let downButton = new OO.ui.ButtonWidget({
-			label: '↓',
+			label: '▼',
+			title: 'Вернуться к дочернему сообщению',
 			framed: false,
 			href: this.anchor ? '#' + this.anchor : 'javascript:',
 			classes: ['cd-msgButton'],
 		});
-		downButton.on('click', this.parent.scrollToChild);
+		downButton.on('click', this.parent.scrollToChild.bind(this.parent));
 
 		if (!this.parent.$underlayer || !this.parent.$underlayer.length) {
 			this.parent.configureUnderlayer();
@@ -1725,6 +1543,42 @@ export default class Msg {
 
 		return true;
 	}
+
+	// Using a getter allows to save a little time on running $().
+	get $elements() {
+		if (this.#cached$elements === undefined) {
+			this.#cached$elements = $(this.elements);
+		}
+		return this.#cached$elements;
+	}
+
+	get text() {
+		if (this.#cachedMsgText === undefined) {
+			this.#cachedMsgText = this::getText();
+		}
+		return this.#cachedMsgText;
+	}
+
+	get parent() {
+		if (this.#cachedParent === undefined) {
+			this.#cachedParent = this::getParent();
+		}
+		return this.#cachedParent;
+	}
+
+	get section() {
+		if (this.#cachedSection === undefined) {
+			this.#cachedSection = this::getSection();
+		}
+		return this.#cachedSection;
+	}
+
+	get isAuthorRegistered() {
+		if (this.#cachedIsAuthorRegistered === undefined) {
+			this.#cachedIsAuthorRegistered = this::getAuthorRegistered();
+		}
+		return this.#cachedIsAuthorRegistered;
+	}
 }
 
 function getFirstElementRect() {
@@ -1736,4 +1590,146 @@ function getFirstElementRect() {
 	}
 
 	return this.elements[0].getBoundingClientRect();
+}
+
+function getParent() {
+	// This would work only if messages in cd.msgs are in order of their presence on the page.
+
+	let level = this.level;
+	if (this.$elements[0].classList.contains('ruwiki-msgIndentation-minus1level')) {
+		level -= 1;
+	}
+
+	if (cd.parse.pageHasOutdents) {
+		let currentElement = this.elements[0];
+		let outdented = false;
+		while (currentElement && currentElement !== cd.env.contentElement) {
+			if (currentElement.previousElementSibling) {
+				currentElement = currentElement.previousElementSibling;
+				if (currentElement.className.includes('outdent-template') ||
+					(currentElement.querySelector('.outdent-template') &&
+						!currentElement.querySelector('.cd-msgPart')
+					)
+				) {
+					outdented = true;
+				}
+				break;
+			} else {
+				currentElement = currentElement.parentElement;
+			}
+		}
+		if (outdented && cd.msgs[this.id - 1]) {
+			return cd.msgs[this.id - 1];
+		}
+	}
+
+	if (level <= 0) {
+		return null;
+	}
+
+	let currentMsg, parentMsg;
+	for (let i = this.id - 1; i >= 0; i--) {
+		currentMsg = cd.msgs[i];
+		if (currentMsg.level !== undefined && currentMsg.level < level) {
+			if (currentMsg.section === this.section) {
+				parentMsg = currentMsg;
+				return parentMsg;
+			}
+		}
+	}
+
+	return null;  // Not undefined, so that the variable would be considered filled.
+}
+
+function getSection() {
+	if (!cd.sections) {
+		return null;  // Not undefined, so that the variable would be considered filled.
+	}
+
+	let currentSection, section;
+	for (let i = cd.sections.length - 1; i >= 0; i--) {
+		currentSection = cd.sections[i];
+		if (currentSection.msgs.includes(this)) {
+			section = currentSection;
+			return section;
+		}
+	}
+
+	return null;  // Not undefined, so that the variable would be considered filled.
+}
+
+function getAuthorRegistered() {
+	return !/((^\s*((([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5]))\s*$)|(^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$))/.test(this.author);
+}
+
+function getText() {
+	// Get message text without a signature.
+	let $msgWithNoSig = $();
+	if (this.$elements.length > 1) {
+		$msgWithNoSig = $msgWithNoSig.add(this.$elements.slice(0, -1));
+	}
+	let currentAuthorSelector = cd.env.generateAuthorSelector(this.author);
+	let $parentOfDate = this.$elements
+		.last()
+		.find(currentAuthorSelector)
+		.last()
+		// Not "(UTC" to make scripts altering timezone not break.
+		.closest(':contains("(UTC"), :contains("Эта реплика добавлена"), :contains("(обс.)")');
+
+	// $parentOfDate might be empty if scripts altering date are used.
+	if ($parentOfDate.length) {
+		let lastElement = this.$elements.last()[0];
+		if ($parentOfDate[0] !== lastElement &&
+			!($parentOfDate[0].compareDocumentPosition(lastElement) & Node.DOCUMENT_POSITION_CONTAINED_BY)
+		) {
+			let currentElement = $parentOfDate[0];
+			while (true) {
+				if (currentElement.previousSibling) {
+					currentElement = currentElement.previousSibling;
+				} else {
+					while (currentElement &&
+						currentElement !== lastElement &&
+						!currentElement.previousSibling
+					) {
+						currentElement = currentElement.parentElement;
+					}
+					if (!currentElement || currentElement === lastElement) break;
+
+					currentElement = currentElement.previousSibling;
+				}
+				if (currentElement && currentElement !== lastElement) {
+					$msgWithNoSig = $msgWithNoSig.add(currentElement);
+				} else {
+					break;
+				}
+			}
+		}
+		let foundAuthorNode = false;
+		$msgWithNoSig = $msgWithNoSig.add(
+			$parentOfDate
+				.contents()
+				.filter(function () {
+					if (foundAuthorNode) {
+						return false;
+					}
+					if ((this.nodeType === Node.ELEMENT_NODE) &&
+						($(this).is(currentAuthorSelector) || $(this).has(currentAuthorSelector).length)
+					) {
+						foundAuthorNode = true;
+						return false;
+					} else {
+						return true;
+					}
+				})
+		);
+	} else {
+		// Actually, it will have a signature :(
+		$msgWithNoSig = $msgWithNoSig.add(this.$elements.last());
+	}
+
+	return cd.env.elementsToText($msgWithNoSig.get())
+		.replace(/Эта реплика добавлена (?:участником|с IP)$/, '')
+		.replace(/Эта реплика добавлена (?:участником|с IP).{1,50}$/, '')
+		.replace('(обс.)$', '')
+		.replace(cd.config.SIG_PREFIX_REGEXP, '');
 }

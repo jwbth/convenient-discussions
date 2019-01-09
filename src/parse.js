@@ -65,7 +65,8 @@ export default function parse(msgAnchorToScrollTo) {
 
 	if (!cd.env.MSG_REPLY_BUTTON_PROTOTYPE) {  // Saves a little time.
 		cd.env.MSG_UP_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
-			label: '↑',
+			label: '▲',
+			title: 'Перейти к родительскому сообщению',
 			framed: false,
 			classes: ['cd-msgButton'],
 		}).$element[0];
@@ -81,6 +82,7 @@ export default function parse(msgAnchorToScrollTo) {
 		}).$element[0];
 		cd.env.MSG_LINK_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
 			label: '#',
+			title: 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.',
 			framed: false,
 			classes: ['cd-msgButton'],
 		}).$element[0];
