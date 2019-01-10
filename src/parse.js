@@ -19,7 +19,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   /* Preparation */
 
-  let $parserOutput = cd.env.$content.children('.mw-parser-output');
+  const $parserOutput = cd.env.$content.children('.mw-parser-output');
   if ($parserOutput.length) {
     cd.env.$content = $parserOutput;
     cd.env.contentElement = $parserOutput[0];
@@ -34,7 +34,7 @@ export default function parse(msgAnchorToScrollTo) {
   // Settings in variables like cdAlowEditOthersMsgs
   ['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects', 'showLoadingOverlay']
     .forEach(name => {
-      let settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
+      const settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
       if (settingName in window) {
         cd.settings[name] = window[settingName];
       }
@@ -54,7 +54,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   cd.settings = $.extend({}, cd.defaultSettings, cd.settings || {});
 
-  let highlightLastMessagesEnabled = typeof highlightMessagesAfterLastVisit !== 'undefined';
+  const highlightLastMessagesEnabled = typeof highlightMessagesAfterLastVisit !== 'undefined';
   if (cd.settings.highlightNew && highlightLastMessagesEnabled) {
     // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
     highlightMessagesAfterLastVisit = false;
@@ -103,23 +103,23 @@ export default function parse(msgAnchorToScrollTo) {
     cd.env.LINKS_UNDERLAYER_PROTOTYPE = document.createElement('div');
     cd.env.LINKS_UNDERLAYER_PROTOTYPE.className = 'cd-linksUnderlayer';
 
-    let LINKS_UNDERLAYER_WRAPPER = document.createElement('div');
+    const LINKS_UNDERLAYER_WRAPPER = document.createElement('div');
     LINKS_UNDERLAYER_WRAPPER.className = 'cd-linksUnderlayer-wrapper';
     cd.env.LINKS_UNDERLAYER_PROTOTYPE.appendChild(LINKS_UNDERLAYER_WRAPPER);
 
-    let LINKS_UNDERLAYER_GRADIENT = document.createElement('div');
+    const LINKS_UNDERLAYER_GRADIENT = document.createElement('div');
     LINKS_UNDERLAYER_GRADIENT.textContent = ' ';
     LINKS_UNDERLAYER_GRADIENT.className = 'cd-linksUnderlayer-gradient';
     LINKS_UNDERLAYER_WRAPPER.appendChild(LINKS_UNDERLAYER_GRADIENT);
 
-    let LINKS_UNDERLAYER_TEXT = document.createElement('div');
+    const LINKS_UNDERLAYER_TEXT = document.createElement('div');
     LINKS_UNDERLAYER_TEXT.className = 'cd-linksUnderlayer-text';
     LINKS_UNDERLAYER_WRAPPER.appendChild(LINKS_UNDERLAYER_TEXT);
   }
 
   cd.env.CURRENT_USER_SIG = mw.user.options.get('nickname');
 
-  let authorInSigMatches = cd.env.CURRENT_USER_SIG.match(new RegExp(cd.config.USER_NAME_PATTERN));
+  const authorInSigMatches = cd.env.CURRENT_USER_SIG.match(new RegExp(cd.config.USER_NAME_PATTERN));
   if (authorInSigMatches) {
     // Signature contents before the user name – in order to cut it out from the message endings when editing.
     cd.env.CURRENT_USER_SIG_PREFIX_REGEXP = new RegExp(
@@ -131,9 +131,9 @@ export default function parse(msgAnchorToScrollTo) {
     );
   }
 
-  let POPULAR_NOT_INLINE_ELEMENTS = ['P', 'OL', 'UL', 'LI', 'PRE', 'BLOCKQUOTE', 'DL', 'DD', 'DIV', 'HR', 'H2',
+  const POPULAR_NOT_INLINE_ELEMENTS = ['P', 'OL', 'UL', 'LI', 'PRE', 'BLOCKQUOTE', 'DL', 'DD', 'DIV', 'HR', 'H2',
   'H3', 'H4', 'H5', 'H6', 'TABLE', 'INPUT', 'FORM'];
-  let POPULAR_INLINE_ELEMENTS = ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE', 'TT', 'KBD',
+  const POPULAR_INLINE_ELEMENTS = ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE', 'TT', 'KBD',
     'BR', 'IMG', 'SUP', 'SUB', 'ABBR', 'CITE'];
   cd.env.PNIE_PATTERN = '(?:' + POPULAR_NOT_INLINE_ELEMENTS.join('|') + ')';
 
@@ -146,7 +146,7 @@ export default function parse(msgAnchorToScrollTo) {
     )
   );
 
-  let msgAntipatternPatternParts = [];
+  const msgAntipatternPatternParts = [];
   // true relates to '-- ?\\[\\[Участник:DimaBot\\|DimaBot\\]\\]'
   if (cd.config.BLOCKS_TO_EXCLUDE_CLASSES || cd.config.TEMPLATES_TO_EXCLUDE || true) {
     if (cd.config.BLOCKS_TO_EXCLUDE_CLASSES) {
@@ -172,17 +172,16 @@ export default function parse(msgAnchorToScrollTo) {
   if (cd.env.firstRun) {
     if (window.pageYOffset !== 0 && cd.env.contentElement.getBoundingClientRect().top <= 0) {
       let currentElement = cd.env.contentElement.firstElementChild;
-      let rect, child;
       while (currentElement) {
         if (POPULAR_NOT_INLINE_ELEMENTS.includes(currentElement.tagName)) {
-          rect = currentElement.getBoundingClientRect();
+          const rect = currentElement.getBoundingClientRect();
           if (rect.bottom >= 0 &&
             rect.height !== 0
           ) {
             firstVisibleElement = currentElement;
             firstVisibleElementTopOffset = rect.top;
 
-            child = currentElement.firstElementChild;
+            const child = currentElement.firstElementChild;
             if (child) {
               currentElement = child;
               continue;
@@ -200,8 +199,8 @@ export default function parse(msgAnchorToScrollTo) {
 
   /* Process the fragment (hash) for topic titles */
 
-  let processFragment = fragment => {
-    let dotToPercent = code => code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
+  const processFragment = fragment => {
+    const dotToPercent = code => code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
 
     // Some ancient links with dots, you never know
     fragment = fragment
@@ -210,7 +209,7 @@ export default function parse(msgAnchorToScrollTo) {
       .replace(/\.E[\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
       .replace(/\.[CD][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
       .replace(/\.[2-7][0-9A-F]/g, code => {
-        let ch = decodeURIComponent(dotToPercent(code));
+        const ch = decodeURIComponent(dotToPercent(code));
         if ('!"#$%&\'()*+,/;<=>?@\\^`~'.includes(ch)) {
           return dotToPercent(code);
         } else {
@@ -230,12 +229,12 @@ export default function parse(msgAnchorToScrollTo) {
     return fragment.trim();
   };
 
-  let proceedToArchiveDialog = () => {
-    let messageDialog = new OO.ui.MessageDialog();
+  const proceedToArchiveDialog = () => {
+    const messageDialog = new OO.ui.MessageDialog();
     $('body').append(cd.env.windowManager.$element);
     cd.env.windowManager.addWindows([messageDialog]);
 
-    let proceedToArchiveWindow = cd.env.windowManager.openWindow(messageDialog, {
+    const proceedToArchiveWindow = cd.env.windowManager.openWindow(messageDialog, {
       message: $('<div style="text-align:center;"><p style="margin-top:0;"><span style="color:#c61313;">' +
         'Тема не найдена.</span>  Она могла быть переименована или уйти в архив.</p>' +
         '<p style="font-size:125%;">Поискать в архиве?</p></div>'
@@ -247,9 +246,9 @@ export default function parse(msgAnchorToScrollTo) {
     });
     proceedToArchiveWindow.closed.then(data => {
       if (data && data.action === 'yes') {
-        let heading = processFragment(fragment).replace(/"/g, '');
+        const heading = processFragment(fragment).replace(/"/g, '');
+        const PAGE_TITLE = mw.config.get('wgTitle');
         let archivePrefix;
-        let PAGE_TITLE = mw.config.get('wgTitle');
         if (PAGE_TITLE.indexOf('Форум/') === 0) {
           if (PAGE_TITLE.indexOf('Форум/Географический') === 0) {
             archivePrefix = 'Форум/Географический/Архивы';
@@ -258,10 +257,10 @@ export default function parse(msgAnchorToScrollTo) {
           }
         } else {
           archivePrefix = PAGE_TITLE;
-        }
-        let searchQuery = '"' + heading + '" prefix:' +
+        };
+        const searchQuery = '"' + heading + '" prefix:' +
           mw.config.get('wgFormattedNamespaces')[cd.env.NAMESPACE_NUMBER] + ':' + archivePrefix;
-        let url = mw.util.getUrl('Служебная:Поиск', {
+        const url = mw.util.getUrl('Служебная:Поиск', {
           profile: 'default',
           fulltext: 'Search',
           search: searchQuery,
@@ -271,16 +270,16 @@ export default function parse(msgAnchorToScrollTo) {
     });
   };
 
-  let fragment = location.hash.slice(1);
+  const fragment = location.hash.slice(1);
   let decodedFragment;
   try {
     decodedFragment = decodeURIComponent(fragment);
   } catch (e) {
     console.error(e.stack);
   }
-  let escapedFragment = $.escapeSelector(fragment);
-  let escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-  let isMsgFragment = /^\d{12}_.+$/.test(fragment);
+  const escapedFragment = $.escapeSelector(fragment);
+  const escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
+  const isMsgFragment = /^\d{12}_.+$/.test(fragment);
 
   // Except for nomination pages that have no archives
   if (!window.proceedToArchiveHasRun &&  // So that there weren't two copies
@@ -360,9 +359,13 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     findPrevMsg(code) {
-      let regexp = new RegExp('^[^]*(?:^|\\n)((.*)' + cd.config.SIG_PATTERN + '.*\\n)');
+      // We use .* in front of cd.env.SIG_PATTERN to search for the last signature in the code.
+      const regexp = new RegExp('^[^]*(?:^|\\n)(.*' + cd.env.SIG_PATTERN + '.*\\n)');
       let match = code.match(regexp);
-      while (match && cd.env.MSG_ANTIPATTERN_REGEXP && cd.env.MSG_ANTIPATTERN_REGEXP.test(match[0])) {
+      while (match &&
+        cd.env.MSG_ANTIPATTERN_REGEXP &&
+        cd.env.MSG_ANTIPATTERN_REGEXP.test(match[0])
+      ) {
         code = code.replace(/(?:^|\n).*$/, '');
         match = code.match(regexp);
       }
@@ -370,15 +373,16 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     findFirstMsg(code) {
-      code = code + '\n';
-      let regexp = new RegExp('^[^]*?(?:^|\\n)((.*)' + cd.config.SIG_PATTERN + '.*\\n)');
+      code += '\n';
+      // We use .* in front of cd.env.SIG_PATTERN to search for the last signature in the code.
+      // Note ^[^]*? to search for the _first_ message.
+      const regexp = new RegExp('^[^]*?(?:^|\\n)(.*' + cd.env.SIG_PATTERN + '.*\\n)');
       let match = code.match(regexp);
       let initialPos = 0;
-      let increase;
       if (cd.env.MSG_ANTIPATTERN_REGEXP) {
         let antipatternMatch;
         while (antipatternMatch = match && match[0].match(cd.env.MSG_ANTIPATTERN_REGEXP)) {
-          increase = antipatternMatch.index + antipatternMatch[0].length;
+          const increase = antipatternMatch.index + antipatternMatch[0].length;
           code = code.substr(increase);
           initialPos += increase;
           match = code.match(regexp);
@@ -388,27 +392,27 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     collectAuthorAndDate(match) {
-      let text = match[1];
+      const text = match[1];
       let date, author;
-      if (match[3]) {
-        date = match[3];
+      if (match[2]) {
+        date = match[2];
 
-        for (let i = 0; i < cd.config.USER_NAME_REGEXPS.length; i++) {
-          author = cd.env.getLastGlobalCapture(text, cd.config.USER_NAME_REGEXPS[i]);
+        for (let i = 0; i < cd.env.USER_NAME_REGEXPS.length; i++) {
+          author = cd.env.getLastGlobalCapture(text, cd.env.USER_NAME_REGEXPS[i]);
           if (author) break;
         }
         if (author) {
           author = (author[0].toUpperCase() + author.slice(1)).replace(/[ _]+/g, ' ');
         }
-      } else if (match[4]) {
-        author = match[4];
-        date = match[5] || null;
+      } else if (match[3]) {
+        author = match[3];
+        date = match[4] || null;
         if (date && !date.includes('(UTC)')) {
           date += ' (UTC)';
         }
-      } else if (match[6]) {
-        author = match[7];
-        date = match[6];
+      } else if (match[5]) {
+        author = match[6];
+        date = match[5];
         if (!date && date.includes('(UTC)')) {
           date += ' (UTC)';
         }
@@ -455,18 +459,15 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     encodeWikiMarkup(text) {
-      let map = {
-        '<': '&lt;',
-        '>': '&gt;',
-        '[': '&#91;',
-        ']': '&#93;',
-        '{': '&#123;',
-        '|': '&#124;',
-        '}': '&#125;',
-        ' ': ' ',
-      };
-
-      return text.replace(/[<>[\]{|} ]/g, ch => map[ch]);
+      return text
+        .replace('<', '&lt;')
+        .replace('>', '&gt;')
+        .replace('[', '&#91;')
+        .replace(']', '&#93;')
+        .replace('{', '&#123;')
+        .replace('|', '&#124;')
+        .replace('}', '&#125;')
+        .replace(' ', ' ');  // Non-breaking space
     },
 
     cleanSectionHeading(heading) {
@@ -486,10 +487,10 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     createTextWithIcon(html, iconName) {
-      let icon = new OO.ui.IconWidget({
+      const icon = new OO.ui.IconWidget({
         icon: iconName,
       });
-      let iconLabel = new OO.ui.LabelWidget({
+      const iconLabel = new OO.ui.LabelWidget({
         label: html instanceof jQuery ? html : new OO.ui.HtmlSnippet(html),
       });
 
@@ -498,8 +499,8 @@ export default function parse(msgAnchorToScrollTo) {
 
     calculateWordsOverlap(s1, s2) {
       // Compare Latin & Cyrillic words starting with 3 characters.
-      let words1 = cd.env.removeDuplicates(s1.match(/[A-Za-zА-Яа-яЁё]{3,}/g));
-      let words2 = cd.env.removeDuplicates(s2.match(/[A-Za-zА-Яа-яЁё]{3,}/g));
+      const words1 = cd.env.removeDuplicates(s1.match(/[A-Za-zА-Яа-яЁё]{3,}/g));
+      const words2 = cd.env.removeDuplicates(s2.match(/[A-Za-zА-Яа-яЁё]{3,}/g));
       if (!words1 || !words2) return;
 
       let total = words2.length;
@@ -528,7 +529,7 @@ export default function parse(msgAnchorToScrollTo) {
       // "insource:/\[\[[УуUu](ser|частни)?:[^|\]]*\&/ prefix:ВП:" on Russian and English Wikipedias (cases are
       // collected from the results by ".*&.{10}", junk is removed by "^[^;]*$" (lines without ;) and
       // ";.+$" (text after ;), unique lines are kept.
-      let popularHTMLEntities = {
+      const popularHTMLEntities = {
         '"': ['&#34;', '&quot;'],
         '&': ['&#38;', '&amp;'],
         '\'': '&#39;',
@@ -560,7 +561,7 @@ export default function parse(msgAnchorToScrollTo) {
       }
 
       if (date !== null) {
-        let dateInUnsignedTemplatesPattern = mw.RegExp.escape(date)
+        const dateInUnsignedTemplatesPattern = mw.RegExp.escape(date)
           .replace(/ \\\(UTC\\\)$/, '(?: \\(UTC\\))?');
         return new RegExp(
           // Caution: invisible character in [ ‎].
@@ -584,7 +585,7 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     generateAuthorSelector(author) {
-      let authorEncoded = $.escapeSelector(encodeURIComponent(author.replace(/ /g, '_')));
+      const authorEncoded = $.escapeSelector(encodeURIComponent(author.replace(/ /g, '_')));
       return (
         'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '"]:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '/"]), ' +
         'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:' + authorEncoded + '"]:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:' + authorEncoded + '/"]), ' +
@@ -658,7 +659,7 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     parseCurrentPage() {
-      let request = new mw.Api().get({
+      const request = new mw.Api().get({
         action: 'parse',
         page: cd.env.CURRENT_PAGE,
         prop: 'text',
@@ -667,7 +668,7 @@ export default function parse(msgAnchorToScrollTo) {
         // This is returned to a handler with ".done", so the use of ".then" is deliberate.
         .then(
           data => {
-            let error = data.error &&
+            const error = data.error &&
               data.error.code &&
               data.error.info &&
               data.error.code + ': ' + data.error.info;
@@ -675,7 +676,7 @@ export default function parse(msgAnchorToScrollTo) {
               return $.Deferred().reject(['api', error]).promise();
             }
 
-            let text = data &&
+            const text = data &&
               data.parse &&
               data.parse.text;
             if (!text) {
@@ -698,7 +699,7 @@ export default function parse(msgAnchorToScrollTo) {
       if (title instanceof mw.Title) {
         title = title.toString();
       }
-      let queryTimestamp = $.now();
+      const queryTimestamp = $.now();
 
       return new mw.Api().get({
         action: 'query',
@@ -710,7 +711,7 @@ export default function parse(msgAnchorToScrollTo) {
       })
         .then(
           data => {
-            let error = data.error &&
+            const error = data.error &&
               data.error.code &&
               data.error.info &&
               data.error.code + ': ' + data.error.info;
@@ -718,15 +719,15 @@ export default function parse(msgAnchorToScrollTo) {
               return $.Deferred().reject(['api', error]).promise();
             }
 
-            let query = data.query;
+            const query = data.query;
             if (!query) {
               return $.Deferred().reject(['api', 'no data']).promise();
             }
 
-            let page = query &&
+            const page = query &&
               query.pages &&
               query.pages[0];
-            let revision = page &&
+            const revision = page &&
               page.revisions &&
               page.revisions[0];
 
@@ -738,9 +739,9 @@ export default function parse(msgAnchorToScrollTo) {
               return $.Deferred().reject(['api', 'invalid']).promise();
             }
 
-            let code = revision && revision.content;
-            let timestamp = revision && revision.timestamp;
-            let redirectTarget = query &&
+            const code = revision && revision.content;
+            const timestamp = revision && revision.timestamp;
+            const redirectTarget = query &&
               query.redirects &&
               query.redirects[0] &&
               query.redirects[0].to;
@@ -761,14 +762,13 @@ export default function parse(msgAnchorToScrollTo) {
       setTimeout(() => {
         cd.env.scrollHandleTimeout = false;
 
-        let foundMsg = cd.env.findMsgInViewport();
+        const foundMsg = cd.env.findMsgInViewport();
         if (!foundMsg) return;
-        let foundMsgId = foundMsg.id;
+        const foundMsgId = foundMsg.id;
 
-        let msg;
         // Back
         for (let i = foundMsgId - 1; i >= 0; i--) {
-          msg = cd.msgs[i];
+          const msg = cd.msgs[i];
           if (!msg) {
             console.error('Не найдено сообщение с ID ' + foundMsgId);
           }
@@ -780,7 +780,7 @@ export default function parse(msgAnchorToScrollTo) {
         }
         // Forward
         for (let i = foundMsgId; i < cd.msgs.length; i++) {
-          msg = cd.msgs[i];
+          const msg = cd.msgs[i];
           if (!msg) {
             console.error('Не найдено сообщение с ID ' + foundMsgId);
           }
@@ -891,7 +891,7 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     cdIsInViewport(partly) {
-      let $elements = $(this).cdRemoveNonTagNodes();
+      const $elements = $(this).cdRemoveNonTagNodes();
 
       // Workaround
       let wasHidden = false;
@@ -900,15 +900,15 @@ export default function parse(msgAnchorToScrollTo) {
         $elements.show();
       }
 
-      let elementTop = $elements.first().offset().top;
-      let elementBottom = $elements.last().offset().top + $elements.last().height();
+      const elementTop = $elements.first().offset().top;
+      const elementBottom = $elements.last().offset().top + $elements.last().height();
 
       if (wasHidden) {
         $elements.hide();
       }
 
-      let viewportTop = $(window).scrollTop();
-      let viewportBottom = viewportTop + $(window).height();
+      const viewportTop = $(window).scrollTop();
+      const viewportBottom = viewportTop + $(window).height();
 
       if (!partly) {
         return elementBottom < viewportBottom && elementTop > viewportTop;
@@ -918,9 +918,9 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     cdAddCloseButton(blockName, msg) {
-      let $obj = $(this);
+      const $obj = $(this);
 
-      let $closeButton = $('<a>')
+      const $closeButton = $('<a>')
         .attr('title', 'Закрыть ' + blockName)
         .addClass('cd-closeButton')
         .css('display', 'none')
@@ -1153,29 +1153,31 @@ export default function parse(msgAnchorToScrollTo) {
   cd.parse.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
   cd.parse.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 
-  let blocksToExcludeSelector = 'blockquote, ' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES.map(s => '.' + s).join(', ');
-  let blocksToExclude = cd.env.$content.find(blocksToExcludeSelector).get();
+  const blocksToExcludeSelector = 'blockquote, ' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES
+    .map(s => '.' + s).join(', ');
+  const blocksToExclude = cd.env.$content.find(blocksToExcludeSelector).get();
 
-  let potentialDateContainers = cd.env.contentElement.querySelectorAll('li, dd, p, div');
-  let dateContainers = [];
-  let potentialDateContainer, pmChildNodes, pmChildNode, pmChildNodeText, broken;
+  const potentialDateContainers = cd.env.contentElement.querySelectorAll('li, dd, p, div');
+  const dateContainers = [];
   for (let i = 0; i < potentialDateContainers.length; i++) {
-    potentialDateContainer = potentialDateContainers[i];
-    pmChildNodes = potentialDateContainer.childNodes;
+    const potentialDateContainer = potentialDateContainers[i];
+    const pmChildNodes = potentialDateContainer.childNodes;
 
     for (let j = pmChildNodes.length - 1; j >= 0; j--) {
-      pmChildNode = pmChildNodes[j];
-      pmChildNodeText = pmChildNode.textContent;
+      const pmChildNode = pmChildNodes[j];
+      const pmChildNodeText = pmChildNode.textContent;
       if ((pmChildNode.nodeType === Node.TEXT_NODE || cd.env.isInline(pmChildNode)) &&
         (pmChildNodeText.includes('(UTC)') ||
           pmChildNodeText.includes('Эта реплика добавлена') ||
           pmChildNodeText === 'обс.'
         )
       ) {
-        broken = false;
+        let broken = false;
         for (let k = 0; k < blocksToExclude.length; k++) {
           if (blocksToExclude[k].contains(potentialDateContainer) ||
-            (cd.env.EVERYTHING_MUST_BE_FROZEN && potentialDateContainer.className.includes('boilerplate'))
+            (cd.env.EVERYTHING_MUST_BE_FROZEN &&
+              potentialDateContainer.className.includes('boilerplate')
+            )
           ) {
             broken = true;
             break;
@@ -1190,7 +1192,7 @@ export default function parse(msgAnchorToScrollTo) {
   }
 
   if (cd.env.firstRun) {
-    let $underlayersContainer = $('<div>').attr('id', 'cd-underlayersContainer');
+    const $underlayersContainer = $('<div>').attr('id', 'cd-underlayersContainer');
     $('.mw-body').prepend($underlayersContainer);
     cd.env.underlayersContainer = $underlayersContainer[0];
 
@@ -1199,16 +1201,15 @@ export default function parse(msgAnchorToScrollTo) {
     // "#cd-linksUnderlayersContainer" element must be placed outside of all elements with z-index set.
     // In Vector, a common container for "underlayers" and "links underlayers" can be used, but in Monobook,
     // a separate container on the topmost level is needed.
-    let $linksUnderlayersContainer = $('<div>').attr('id', 'cd-linksUnderlayersContainer');
+    const $linksUnderlayersContainer = $('<div>').attr('id', 'cd-linksUnderlayersContainer');
     $('body').prepend($linksUnderlayersContainer);
     cd.env.linksUnderlayersContainer = $linksUnderlayersContainer[0];
   }
 
   cd.parse.currentMsgId = 0;
-  let msg;
   for (let i = 0; i < dateContainers.length; i++) {
     try {
-      msg = new Msg(dateContainers[i]);
+      const msg = new Msg(dateContainers[i]);
       if (msg.id !== undefined) {
         cd.msgs.push(msg);
         cd.parse.currentMsgId++;
@@ -1220,12 +1221,12 @@ export default function parse(msgAnchorToScrollTo) {
     }
   }
 
-  let collapseAdjacentMsgLevels = levels => {
+  const collapseAdjacentMsgLevels = levels => {
     if (!levels || !levels[0]) return;
     debug.startTimer('collapse');
 
-    let changeElementType = (element, newType) => {
-      let newElement = document.createElement(newType);
+    const changeElementType = (element, newType) => {
+      const newElement = document.createElement(newType);
 
       while (element.firstChild) {
         newElement.appendChild(element.firstChild);
@@ -1244,7 +1245,7 @@ export default function parse(msgAnchorToScrollTo) {
       element.parentNode.replaceChild(newElement, element);
 
       if (id) {
-        let msg = cd.msgs[id];
+        const msg = cd.msgs[id];
         for (let i = msg.elements.length - 1; i >= 0; i--) {
           if (msg.elements[i] === element) {
             msg.elements.splice(i, 1, newElement);
@@ -1260,20 +1261,18 @@ export default function parse(msgAnchorToScrollTo) {
       return newElement;
     };
 
-    let bottomElement, topElement, currentTopElement, currentBottomElement, topTag, bottomInnerTags, child,
-      newChild, firstMoved;
     for (let i = 0; i < levels.length; i++) {
-      bottomElement = levels[i];
-      topElement = bottomElement.previousElementSibling;
+      const bottomElement = levels[i];
+      const topElement = bottomElement.previousElementSibling;
       // If the previous element was removed in this cycle. (Or it could be absent for some other reason?
       // There was a case where the element was absent.)
       if (!topElement) continue;
-      currentTopElement = topElement;
-      currentBottomElement = bottomElement;
+      let currentTopElement = topElement;
+      let currentBottomElement = bottomElement;
 
       do {
-        topTag = currentTopElement.tagName;
-        bottomInnerTags = {};
+        const topTag = currentTopElement.tagName;
+        const bottomInnerTags = {};
         switch (topTag) {
           case 'UL':
             bottomInnerTags.DD = 'LI';
@@ -1283,12 +1282,12 @@ export default function parse(msgAnchorToScrollTo) {
             break;
         }
 
-        firstMoved = null;
+        let firstMoved = null;
         if ((currentTopElement.classList.contains('cd-msgLevel') && currentTopElement.tagName !== 'OL') ||
           currentTopElement.querySelector('.cd-msgLevel:not(ol)')
         ) {
           while (currentBottomElement.childNodes.length) {
-            child = currentBottomElement.firstChild;
+            let child = currentBottomElement.firstChild;
             if (child.tagName) {
               if (bottomInnerTags[child.tagName]) {
                 child = changeElementType(child, bottomInnerTags[child.tagName]);
@@ -1306,7 +1305,7 @@ export default function parse(msgAnchorToScrollTo) {
                 // precaution, since it doesn't fix the source of the problem: the fact that a bare
                 // text node is (probably) a part of the reply. It shouldn't be happening.
                 firstMoved = false;
-                newChild = document.createElement('span');
+                const newChild = document.createElement('span');
                 newChild.appendChild(child);
                 child = newChild;
               }
@@ -1333,12 +1332,19 @@ export default function parse(msgAnchorToScrollTo) {
     console.error('Остались соседства .cd-msgLevel.');
   }
 
-  let elements = document.getElementsByClassName('ruwiki-msgIndentation-minus1level');
-  let element, currentElement, bgcolor;
+  // A workaround; cover messages with "minus 1 level" indentation with their background colors.
+  const elements = document.getElementsByClassName('ruwiki-msgIndentation-minus1level');
+  let currentElement;
   for (let i = 0; i < elements.length; i++) {
-    element = elements[i];
-    currentElement = element;
-    while (currentElement && currentElement !== cd.env.contentElement && (!bgcolor || !bgcolor.includes('rgb('))) {
+    const element = elements[i];
+    let currentElement = element;
+    let bgcolor;
+    while (currentElement &&
+      currentElement !== cd.env.contentElement &&
+      (!bgcolor ||
+        !bgcolor.includes('rgb(')
+      )
+    ) {
       currentElement = currentElement.parentElement;
       bgcolor = currentElement.style.backgroundColor;
     }
@@ -1351,7 +1357,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   mw.hook('cd.msgsReady').fire(cd.msgs);
 
-  let ARTICLE_ID = mw.config.get('wgArticleId');
+  const ARTICLE_ID = mw.config.get('wgArticleId');
   cd.env.watchedTopicsPromise = cd.env.getWatchedTopics()
     .done(gotWatchedTopics => {
       cd.env.watchedTopics = gotWatchedTopics;
@@ -1365,20 +1371,18 @@ export default function parse(msgAnchorToScrollTo) {
     });
 
   cd.parse.currentSectionId = 0;
-  let preHeadings = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
-  let headings = [];
-  let preHeading;
-  for (let i = 0; i < preHeadings.length; i++) {
-    preHeading = preHeadings[i];
-    if (preHeading.querySelector('.mw-headline')) {
-      headings.push(preHeading);
+  const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
+  const headings = [];
+  for (let i = 0; i < headingCandidates.length; i++) {
+    const headingCandidate = headingCandidates[i];
+    if (headingCandidate.querySelector('.mw-headline')) {
+      headings.push(headingCandidate);
     }
   }
 
-  let section;
   for (let i = 0; i < headings.length; i++) {
     try {
-      section = new Section(headings[i], i === headings.length - 1);
+      const section = new Section(headings[i], i === headings.length - 1);
       if (section.id !== undefined) {
         cd.sections.push(section);
         cd.parse.currentSectionId++;
@@ -1397,10 +1401,9 @@ export default function parse(msgAnchorToScrollTo) {
   }
 
   let subsections;
-  let replyButtonA, sectionWithLastReplyButton;
   for (let i = 0; i < cd.sections.length; i++) {
     subsections = [];
-    section = cd.sections[i];
+    const section = cd.sections[i];
     for (let j = i + 1; j < cd.sections.length; j++) {
       if (cd.sections[j].level > section.level) {
         subsections.push(cd.sections[j]);
@@ -1415,12 +1418,13 @@ export default function parse(msgAnchorToScrollTo) {
     section.subsections = subsections;
 
     if (!section.frozen && section.level === 2) {
+      let sectionWithLastReplyButton;
       if (subsections.length && !subsections[subsections.length - 1].frozen) {
         sectionWithLastReplyButton = subsections[subsections.length - 1];
       } else {
         sectionWithLastReplyButton = section;
       }
-      replyButtonA = sectionWithLastReplyButton.$replyButtonContainer &&
+      const replyButtonA = sectionWithLastReplyButton.$replyButtonContainer &&
         sectionWithLastReplyButton.$replyButtonContainer[0].firstChild.firstChild;
       replyButtonA.onmouseenter = section.replyButtonHoverHandler;
       replyButtonA.onmouseleave = section.replyButtonUnhoverHandler;
@@ -1439,15 +1443,14 @@ export default function parse(msgAnchorToScrollTo) {
       firstVisibleElementTopOffset);
   }
 
-  // Describe all floating elements on page in order to calculate right border (temporarily setting
-  // overflow: hidden) for all messages that they intersect with.
-  let floatingElementsNodeList = cd.env.contentElement.querySelectorAll(
+  // Describe all floating elements on page in order to calculate the right border (temporarily
+  // setting overflow: hidden) for all messages that they intersect with.
+  const floatingElementsNodeList = cd.env.contentElement.querySelectorAll(
     '.tright, .floatright, .infobox, *[style*="float:right"], *[style*="float: right"]'
   );
-  let floatingElement;
   cd.env.floatingElements = [];
   for (let i = 0; i < floatingElementsNodeList.length; i++) {
-    floatingElement = floatingElementsNodeList[i];
+    const floatingElement = floatingElementsNodeList[i];
     // Hardcodely delete all known elements. They should probably be assigned a class, like "cd-ignoreFloating".
     if (!(floatingElement.tagName === 'SPAN' ||
       floatingElement.classList.contains('mw-collapsible-toggle') ||
@@ -1462,19 +1465,18 @@ export default function parse(msgAnchorToScrollTo) {
   if (msgAnchor) {
     let $targetMsg = $('[id="' + $.escapeSelector(msgAnchor) + '"]');
     if (cd.env.firstRun && !$targetMsg.length) {  // By a link from the watchlist
-      let msgDataMatches = msgAnchor.match(/^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)_(.+)$/);
-      let year = Number(msgDataMatches[1]);
-      let month = Number(msgDataMatches[2]) - 1;
-      let day = Number(msgDataMatches[3]);
-      let hours = Number(msgDataMatches[4]);
-      let minutes = Number(msgDataMatches[5]);
-      let author = msgDataMatches[6];
+      const msgDataMatches = msgAnchor.match(/^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)_(.+)$/);
+      const year = Number(msgDataMatches[1]);
+      const month = Number(msgDataMatches[2]) - 1;
+      const day = Number(msgDataMatches[3]);
+      const hours = Number(msgDataMatches[4]);
+      const minutes = Number(msgDataMatches[5]);
+      const author = msgDataMatches[6];
 
-      let date = new Date(year, month, day, hours, minutes);
+      const date = new Date(year, month, day, hours, minutes);
 
-      let dateToFind;
       for (let gap = 1; gap <= 5; gap++) {
-        dateToFind = new Date(date.getTime() - cd.env.MILLISECONDS_IN_A_MINUTE * gap);
+        let dateToFind = new Date(date.getTime() - cd.env.MILLISECONDS_IN_A_MINUTE * gap);
         msgAnchor = cd.env.generateMsgAnchor(
           dateToFind.getFullYear(),
           dateToFind.getMonth(),
@@ -1484,14 +1486,12 @@ export default function parse(msgAnchorToScrollTo) {
           author
         );
         $targetMsg = $('[id="' + $.escapeSelector(msgAnchor) + '"]');
-        if ($targetMsg.length) {
-          break;
-        }
+        if ($targetMsg.length) break;
       }
     }
 
     if ($targetMsg.length) {
-      msg = cd.getMsgByAnchor(msgAnchor);
+      const msg = cd.getMsgByAnchor(msgAnchor);
       if (msg) {
         // setTimeout is for Firefox – otherwise, it positions the underlayer incorrectly.
         setTimeout(msg => {
@@ -1556,10 +1556,10 @@ export default function parse(msgAnchorToScrollTo) {
         cd.env.newestCount = 0;
         cd.env.newCount = 0;
 
-        let thisPageVisits = visits && visits[ARTICLE_ID] || [];
+        const thisPageVisits = visits && visits[ARTICLE_ID] || [];
         let firstVisit;
 
-        let currentUnixTime = Math.floor($.now() / 1000);
+        const currentUnixTime = Math.floor($.now() / 1000);
 
         if (thisPageVisits.length) {
           firstVisit = false;
@@ -1580,16 +1580,15 @@ export default function parse(msgAnchorToScrollTo) {
             cd.env.floatingRects[i] = cd.env.floatingElements[i].getBoundingClientRect();
           }
 
-          let msgUnixTime, underlayerData;
-          let underlayersToAdd = [];
+          const underlayersToAdd = [];
           for (let i = 0; i < cd.msgs.length; i++) {
-            msg = cd.msgs[i];
+            const msg = cd.msgs[i];
 
             // + 60 to avoid situation when a message is considered read but it was added the same
             // minute with the last visit. This behaviour has a side effect: if you posted a message, it
             // will be marked as "new" the next time you visit until cd.env.HIGHLIGHT_NEW_INTERVAL
             // minutes pass.
-            msgUnixTime = Math.floor(msg.timestamp / 1000);
+            const msgUnixTime = Math.floor(msg.timestamp / 1000);
 
             if (thisPageVisits.length &&
               msgUnixTime > thisPageVisits[thisPageVisits.length - 1] &&
@@ -1597,7 +1596,7 @@ export default function parse(msgAnchorToScrollTo) {
             ) {
               msg.newness = 'newest';
               msg.seen = false;
-              underlayerData = msg.configureUnderlayer(true);
+              const underlayerData = msg.configureUnderlayer(true);
               if (underlayerData) {
                 underlayersToAdd.push(underlayerData);
               }
@@ -1607,7 +1606,7 @@ export default function parse(msgAnchorToScrollTo) {
             } else if (msgUnixTime > thisPageVisits[0]) {
               msg.newness = 'new';
               msg.seen = false;
-              underlayerData = msg.configureUnderlayer(true);
+              const underlayerData = msg.configureUnderlayer(true);
               if (underlayerData) {
                 underlayersToAdd.push(underlayerData);
               }
@@ -1628,10 +1627,10 @@ export default function parse(msgAnchorToScrollTo) {
 
         cd.env.setVisits(visits)
           .fail(e => {
-            let [errorType, data] = e;
+            const [errorType, data] = e;
             if (errorType === 'internal' && data === 'sizelimit') {
               // Cleanup: remove oldest 1/3 of visits.
-              let timestamps = [];
+              const timestamps = [];
               for (let key in visits) {
                 for (let i = 0; i < visits[key].length; i++) {
                   timestamps.push(visits[key][i]);
@@ -1644,17 +1643,17 @@ export default function parse(msgAnchorToScrollTo) {
                   return -1;
                 }
               });
-              let boundary = timestamps[Math.floor(timestamps.length / 3)];
+              const boundary = timestamps[Math.floor(timestamps.length / 3)];
 
               for (let key in visits) {
                 for (let i = visits[key].length - 1; i >= 0; i--) {
                   if (visits[key][i] < boundary) {
-                                      visits[key].splice(i, 1);
-                                    }
+                    visits[key].splice(i, 1);
                   }
+                }
                 if (!visits[key].length) {
                   delete visits[key];
-                                }
+                }
               }
 
               cd.env.setVisits(visits);
@@ -1698,7 +1697,7 @@ export default function parse(msgAnchorToScrollTo) {
       }, 500);
     }
 
-    let defaultAdjustSizePrototype = OO.ui.MultilineTextInputWidget.prototype.adjustSize;
+    const defaultAdjustSizePrototype = OO.ui.MultilineTextInputWidget.prototype.adjustSize;
     OO.ui.MultilineTextInputWidget.prototype.adjustSize = function () {
       let initialHeight;
       if (this.cdMsgForm) {
@@ -1715,15 +1714,15 @@ export default function parse(msgAnchorToScrollTo) {
     };
   }
 
-  let generateEditCommonJsLink = () =>
+  const generateEditCommonJsLink = () =>
     mw.util.getUrl('User:' + cd.env.CURRENT_USER + '/common.js', { action: 'edit' });
 
   if (highlightLastMessagesEnabled && !mw.cookie.get('cd-hlmConflict')) {
     // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
     if (typeof messagesHighlightColor !== 'undefined') {
-      let dummyElement = document.createElement('span');
+      const dummyElement = document.createElement('span');
       dummyElement.style.color = messagesHighlightColor;
-      let hlmStyledElements = cd.env.contentElement.querySelectorAll(
+      const hlmStyledElements = cd.env.contentElement.querySelectorAll(
         '.cd-msgPart[style="background-color: ' + dummyElement.style.color + ';"],' +
         '.cd-msgPart[style="background-color: ' + messagesHighlightColor + '"]'
       );
@@ -1779,18 +1778,18 @@ export default function parse(msgAnchorToScrollTo) {
 
   cd.env.firstRun = false;
 
-  // The next line is useful for calculating the time for rendering: it won't run until everything gets rendered.
-  // (getBoundingClientRect(), hovewer, could run a little earlier.)
+  // The next line is useful for calculating the time for rendering: it won't run until everything
+  // gets rendered. (getBoundingClientRect(), hovewer, could run a little earlier.)
   cd.env.contentElement.getBoundingClientRect();
 
   debug.endTimer('заключительный код и рендеринг');
 
   debug.endTimer('общее время');
 
-  let baseTime = debug.timers['основной код'] + debug.timers['заключительный код и рендеринг'];
-  let timePerMsg = baseTime / cd.msgs.length;
+  const baseTime = debug.timers['основной код'] + debug.timers['заключительный код и рендеринг'];
+  const timePerMsg = baseTime / cd.msgs.length;
 
-  let totalTime = debug.timers['общее время'];
+  const totalTime = debug.timers['общее время'];
 
   debug.logAndResetTimer('общее время');
   console.log('число сообщений: ' + cd.msgs.length);
@@ -1807,7 +1806,7 @@ export default function parse(msgAnchorToScrollTo) {
     console.log('глобальная переменная ' + i + ': ' + debug.abstractGlobalVars[i]);
   }
 
-  let comparativeValue = 4 / 1;  // ms / message
-  let currentValue = totalTime / cd.msgs.length;
+  const comparativeValue = 4 / 1;  // ms / message
+  const currentValue = totalTime / cd.msgs.length;
   console.log(Math.round((currentValue / comparativeValue) * 100) + '% от ориентировочного значения');
 }

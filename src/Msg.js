@@ -1046,7 +1046,27 @@ export default class Msg {
     let authorAndDateMatches = authorAndDateRegExp.exec(pageCode);
     if (!authorAndDateMatches) return;
 
-    let correctMsgBeginning = () => {
+    // We declare variables here for correctMsgBeginning() function to work.
+    let msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
+    let headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
+    let commentRegExp = /^<!--[^]*?-->\n*/;
+    let horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
+    let bestMatchData = {};
+
+    let prevMsgs = [];
+    // For the reserve method; the main method uses one date.
+    let numberOfPrevDatesToCheck = 2;
+
+    for (let i = 1;
+      prevMsgs.length < numberOfPrevDatesToCheck && this.id - i >= 0;
+      i++
+    ) {
+      if (!cd.msgs[this.id - i].ignoreInComparison) {
+        prevMsgs.push(cd.msgs[this.id - i]);
+      }
+    }
+
+    const correctMsgBeginning = () => {
       headingMatch = msgCode.match(headingRegExp);
       if (headingMatch) {
         if (!this.isOpeningSection) {
@@ -1081,25 +1101,6 @@ export default class Msg {
 
       return true;
     };
-
-    let msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
-    let headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
-    let commentRegExp = /^<!--[^]*?-->\n*/;
-    let horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
-    let bestMatchData = {};
-
-    let prevMsgs = [];
-    // For the reserve method; the main method uses one date.
-    let numberOfPrevDatesToCheck = 2;
-
-    for (let i = 1;
-      prevMsgs.length < numberOfPrevDatesToCheck && this.id - i >= 0;
-      i++
-    ) {
-      if (!cd.msgs[this.id - i].ignoreInComparison) {
-        prevMsgs.push(cd.msgs[this.id - i]);
-      }
-    }
 
     // Main method: by the current & previous author & date & message heading & message text
     // overlap. Necessary is the current author & date & message text overlap.
@@ -1200,7 +1201,7 @@ export default class Msg {
           if (!prevMsgInCodeMatch) break;
 
           let nextEndPos = prevMsgInCodeMatch[0].length - prevMsgInCodeMatch[1].length;
-          // We could optimize here if we wanted – we determine the message start two times: here
+          // We could optimize it if we wanted – we identify the message start two times: here
           // and when running the first method.
           if (i === 0) {
             msgStartPos = prevMsgInCodeMatch[0].length;

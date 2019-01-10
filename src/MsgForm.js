@@ -140,7 +140,7 @@ export default class MsgForm {
       }
 
       if (this.mode === 'reply') {
-        if (this.target.isOpeningSection) {
+        if (this.target.isOpeningSection || this.target.level === 0) {
           defaultSummaryComponents.description = 'ответ';
         } else {
           if (this.target.author !== cd.env.CURRENT_USER) {
