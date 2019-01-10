@@ -1546,10 +1546,14 @@ export default class Msg {
   removeUnderlayer() {
     if (!this.#underlayer) return false;
 
-    this.#underlayer.parentElement.removeChild(this.#underlayer);
-    this.#linksUnderlayer.parentElement.removeChild(this.#linksUnderlayer);
     cd.env.underlayers.splice(cd.env.underlayers.indexOf(this.#underlayer), 1);
+
+    this.#underlayer.parentElement.removeChild(this.#underlayer);
+    this.#underlayer = null;
     this.$underlayer = null;
+
+    this.#linksUnderlayer.parentElement.removeChild(this.#linksUnderlayer);
+    this.#linksUnderlayer = null;
     this.$linksUnderlayer = null;
 
     return true;

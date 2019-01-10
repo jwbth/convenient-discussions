@@ -12,10 +12,12 @@ export default {
       ['date']
     ],
     [
+      // Caution: invisible character in [ ‎].
       '\\{\\{ *(?:[uU]nsigned(?:IP)?|[нН]е подписано) *\\|[ ‎]*([^}|]+?) *(?:\\| *([^}]+?)[ ‎]*)?\\}\\}',
       ['author', 'date']
     ],
     [
+      // Caution: invisible character in [ ‎].
       '\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *([^}|]+?)[ ‎]*(?:\\|[ ‎]*([^}]+?) *)?\\}\\})',
       ['date', 'author']
     ],
