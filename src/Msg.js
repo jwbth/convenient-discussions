@@ -27,8 +27,8 @@ export default class Msg {
 
     // Extract the date data, sometimes the author too. We take the last date on the first line
     // where there are dates (farther, there would be dates of the replies to this message).
-    let dateContainerText = dateContainer.textContent;
-    let dateContainerTextLine, author, date, year, month, day, hours, minutes;
+    const dateContainerText = dateContainer.textContent;
+    let author, date, year, month, day, hours, minutes;
     // Taking into account the second call below, it's a long but cost-effective analogue of this
     // expression:
     // /(.*)(((\b\d?\d):(\d\d), (\d\d?) ([а-я]+) (\d\d\d\d)) \(UTC\))/
@@ -37,7 +37,7 @@ export default class Msg {
     if (dateMatches) {
       // Workaround / FIXME
       if (!dateContainerText.includes('-- DimaBot') && !dateContainerText.includes('--DimaBot')) {
-        dateContainerTextLine = dateContainerText.slice(
+        const dateContainerTextLine = dateContainerText.slice(
           dateMatches.index,
           dateMatches.index + 1 + (dateContainerText + '\n').slice(dateMatches.index).indexOf('\n')
         );
@@ -79,7 +79,18 @@ export default class Msg {
       throw new cd.env.Exception();
     }
 
-    let recursiveGetLastNotInlineChildren = $el => {
+    // Start the traversal.
+    const parts = [];
+    const dateOrAuthor = date || author;
+    let current = dateContainer;
+    let closestPartWithDate = current;
+    let closestBeforeGoingParent = current;
+    let steppedUpFromNotInline = false;
+    let steppedUpFromNotInlineOnce = false;
+    let steppedBack = false;
+    let hasForeignDateLaterCounter = 0;
+
+    const recursiveGetLastNotInlineChildren = ($el) => {
       let $temp = $el.children().last();
       while ($temp.length && !cd.env.isInline($temp[0])) {
         $el = $temp;
@@ -88,22 +99,9 @@ export default class Msg {
       return $el;
     };
 
-    // Start the traversal.
-    let current = dateContainer;
-    let currentText, authorLink, foreignDate, foreignDateMatch, isBlockToExclude,
-      $textNodesWithDate;
-    let closestPartWithDate = current;
-    let parts = [];
-    let closestBeforeGoingParent = current;
-    let steppedUpFromNotInline = false;
-    let steppedUpFromNotInlineOnce = false;
-    let steppedBack = false;
-    let hasForeignDateLaterCounter = 0;
-    let dateOrAuthor = date || author;
-
     // 300 seems to be a pretty safe value.
     for (let i = 0; i < 300; i++) {
-      let prev = current.previousElementSibling;
+      const prev = current.previousElementSibling;
       // Go back.
       if (prev) {
         steppedBack = true;
@@ -130,7 +128,7 @@ export default class Msg {
         continue;
       }
 
-      currentText = current.textContent;
+      const currentText = current.textContent;
       if (// {{outdent}} template
         currentText.includes('┌───') ||
         // The next is some blocker.
@@ -146,7 +144,7 @@ export default class Msg {
       }
 
       if (currentText.includes('(UTC)')) {
-        isBlockToExclude = false;
+        let isBlockToExclude = false;
         if (current.tagName === 'BLOCKQUOTE') {
           isBlockToExclude = true;
         }
@@ -166,7 +164,7 @@ export default class Msg {
           !currentText.includes('-- DimaBot') &&
           !currentText.includes('--DimaBot')
         ) {
-          authorLink = current.querySelector(cd.config.AUTHOR_SELECTOR) ||
+          const authorLink = current.querySelector(cd.config.AUTHOR_SELECTOR) ||
             current.querySelector('a[href*="/wiki/User:"]');
           // If there's no user links then it's most probably a quote.
           if (authorLink) {
@@ -189,7 +187,7 @@ export default class Msg {
                 break;
               }
 
-              $textNodesWithDate = $(current).contents().filter(function () {
+              const $textNodesWithDate = $(current).contents().filter(function () {
                 return this.nodeType === Node.TEXT_NODE && this.textContent.includes('(UTC)');
               });
               if ($textNodesWithDate.length) {
@@ -209,8 +207,10 @@ export default class Msg {
             // "Ещё один момент" message. There, "07:38, 24 октября 2016 (UTC)" as a quote is
             // repeated not only in the message but in the reply to it too.
             } else if (currentText.indexOf('(UTC)') < currentText.indexOf(dateOrAuthor)) {
-              foreignDateMatch = currentText.match(/\b\d?\d:\d\d, \d\d? [а-я]+ \d\d\d\d \(UTC\)/);
-              foreignDate = foreignDateMatch && foreignDateMatch[0];
+              const foreignDateMatch = currentText.match(
+                /\b\d?\d:\d\d, \d\d? [а-я]+ \d\d\d\d \(UTC\)/
+              );
+              const foreignDate = foreignDateMatch && foreignDateMatch[0];
               if (foreignDate) {
                 // Long but cost-saving analogue of a regular expression
                 // "'.+?' + mw.RegExp.escape(foreignDate) + '.+' + mw.RegExp.escape(dateOrAuthor)"
@@ -256,13 +256,12 @@ export default class Msg {
     }
 
     // Extract only this answer, exluding replies to it.
+    const partsToAddIfHasAnswers = [];
+    const cpwdChildNodes = closestPartWithDate.childNodes;
     let metReply = false, waitForNotInline = false;
-    let partsToAddIfHasAnswers = [];
-    let cpwdChildNodes = closestPartWithDate.childNodes;
-    let cpwdChildNode, cpwdChildNodeText;
     for (let i = 0; i < cpwdChildNodes.length; i++) {
-      cpwdChildNode = cpwdChildNodes[i];
-      cpwdChildNodeText = cpwdChildNode.textContent;
+      const cpwdChildNode = cpwdChildNodes[i];
+      const cpwdChildNodeText = cpwdChildNode.textContent;
       if (cpwdChildNode.nodeType === Node.TEXT_NODE || cd.env.isInline(cpwdChildNode)) {
         // Everything after our date will be not our message. Except that somebody has written
         // something to the end – we wait for the next not inline element and stop at it. (Example:
@@ -290,8 +289,8 @@ export default class Msg {
 
     let elements = metReply ? partsToAddIfHasAnswers : [closestPartWithDate];
     if (elements.length > 1 || elements[0].nodeType === Node.TEXT_NODE) {
-      let wrapper = document.createElement('div');
-      let parent = elements[0].parentElement;
+      const wrapper = document.createElement('div');
+      const parent = elements[0].parentElement;
       for (let i = 0; i < elements.length; i++) {
         wrapper.appendChild(elements[i]);
       }
@@ -313,7 +312,7 @@ export default class Msg {
         throw new cd.env.Exception();
       }
 
-      let authorMatches = cd.config.AUTHOR_LINK_REGEXP.exec(
+      const authorMatches = cd.config.AUTHOR_LINK_REGEXP.exec(
         authorLinks[authorLinks.length - 1].getAttribute('href')
       );
       author = authorMatches && decodeURIComponent(authorMatches[1] || authorMatches[2] ||
@@ -326,12 +325,11 @@ export default class Msg {
       }
     }
 
-    let anchor = cd.env.generateMsgAnchor(year, month, day, hours, minutes, author);
+    const anchor = cd.env.generateMsgAnchor(year, month, day, hours, minutes, author);
 
-    let part, class_;
     for (let i = parts.length - 1; i >= 0; i--) {
-      part = parts[i];
-      class_ = part.className;
+      const part = parts[i];
+      const class_ = part.className;
       if (part.tagName === 'STYLE' ||
         part.tagName === 'LINK' ||
         class_.includes('cd-msg') ||
@@ -353,7 +351,7 @@ export default class Msg {
       throw new cd.env.Exception();
     }
 
-    let sortElements = () => {
+    const sortElements = () => {
       // Sort elements according to their position in the DOM.
       elements.sort((a, b) => {
         if (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING) {
@@ -389,11 +387,10 @@ export default class Msg {
     // dd, li instead of dl, ul, ol in collections.
     let changed = false;
     if (steppedUpFromNotInlineOnce) {
-      let children;
       for (let i = elements.length - 1; i >= 0; i--) {
         if (['UL', 'DL', 'OL'].includes(elements[i].tagName)) {
           // Transform into a simple array.
-          children = Array.prototype.slice.call(elements[i].children);
+          let children = Array.prototype.slice.call(elements[i].children);
           while (
             children &&
             children[0] &&
@@ -443,29 +440,29 @@ export default class Msg {
     if (anchor && !elements[0].id) {
       elements[0].id = anchor;
     }
-    let element;
     for (let i = 0; i < elements.length; i++) {
-      element = elements[i];
-      if (elements.length > 1) {
-        element.className += ' cd-msgPart';
-      } else {
+      const element = elements[i];
+      if (elements.length === 1) {
         element.className += ' cd-msgPart cd-msgPart-first cd-msgPart-last';
+      } else {
+        if (i === 0) {
+          element.className += ' cd-msgPart cd-msgPart-first';
+        } else if (i === elements.length - 1) {
+          element.className += ' cd-msgPart cd-msgPart-last';
+        }
       }
+
       element.setAttribute('data-id', cd.parse.currentMsgId);
+
       if (!element.className.includes('ruwiki-movedTemplate')) {
         element.onmouseenter = this.highlightFocused.bind(this);
         element.onmouseleave = this.unhighlightFocused.bind(this);
       }
     }
-    if (elements.length > 1) {
-      elements[0].className += ' cd-msgPart-first';
-      elements[elements.length - 1].className += ' cd-msgPart-last';
-    }
 
-    let setMsgLevels = (initialElement, isTop) => {
-      let msgsToTopLevel = [];
+    const setMsgLevels = (initialElement, isTop) => {
+      const msgsToTopLevel = [];
       let topLevel = 0;
-      let topLevelMatches;
       for (let currentElement = initialElement;
         currentElement && currentElement !== cd.env.contentElement;
         currentElement = currentElement.parentElement
@@ -478,7 +475,7 @@ export default class Msg {
             currentElement.className += ' cd-msgLevel';
             msgsToTopLevel.unshift(currentElement);
           } else {
-            topLevelMatches = currentElement.className.match(/cd-msgLevel-(\d+)/);
+            const topLevelMatches = currentElement.className.match(/cd-msgLevel-(\d+)/);
             if (topLevelMatches) {
               topLevel = Number(topLevelMatches[1]);
             }
@@ -517,17 +514,18 @@ export default class Msg {
     setMsgLevels(elements[0], true);
   }
 
-  getPositions(considerFloating, firstElementRect, lastElementRect) {
-    let viewportTop = window.pageYOffset;
-    let viewportHeight = window.innerHeight;
-
-    let rectTop = firstElementRect || this::getFirstElementRect();
-    let rectBottom = this.elements.length === 1 ?
+  getPositions(considerFloating = false, rectTop, rectBottom) {
+    rectTop = rectTop || this::getFirstElementRect();
+    rectBottom = rectBottom || (this.elements.length === 1 ?
       rectTop :
-      lastElementRect || this.elements[this.elements.length - 1].getBoundingClientRect();
+      this.elements[this.elements.length - 1].getBoundingClientRect()
+    );
 
-    let msgTop = viewportTop + rectTop.top;
-    let msgBottom = viewportTop + rectBottom.bottom;
+    const viewportTop = window.pageYOffset;
+    const viewportHeight = window.innerHeight;
+
+    const msgTop = viewportTop + rectTop.top;
+    const msgBottom = viewportTop + rectBottom.bottom;
 
     let msgLeft, msgRight;
     if (!considerFloating) {
@@ -535,22 +533,20 @@ export default class Msg {
       msgRight = window.pageXOffset + Math.min(rectTop.right, rectBottom.right);
     } else {
       let intersectsFloating = false;
-      let rect, floatingTop, floatingBottom;
       for (let i = 0; i < cd.env.floatingElements.length; i++) {
-        rect = cd.env.floatingRects[i] || cd.env.floatingElements[i].getBoundingClientRect();
-        floatingTop = viewportTop + rect.top;
-        floatingBottom = viewportTop + rect.bottom;
+        const rect = cd.env.floatingRects[i] || cd.env.floatingElements[i].getBoundingClientRect();
+        const floatingTop = viewportTop + rect.top;
+        const floatingBottom = viewportTop + rect.bottom;
         if (// A precise value in Chrome is 37, but it's useful to leave a small reserve.
           msgTop > floatingTop && msgTop < floatingBottom && msgBottom <= floatingBottom + 35 ||
           msgBottom > floatingTop && msgBottom < floatingBottom
         ) {
-
           intersectsFloating = true;
           break;
         }
       }
 
-      let defaultOverflows = [];
+      const defaultOverflows = [];
       // We count left and right separately – in that case, we need to change overflow to get the
       // desired value, otherwise floating elements are not taken into account.
       if (intersectsFloating) {
@@ -559,19 +555,18 @@ export default class Msg {
           this.elements[i].style.overflow = 'hidden';
         }
       }
-      let elementLeft, elementRight;
-      let rects = [];
+      const rects = [];
       for (let i = 0; i < this.elements.length; i++) {
         rects[i] = this.elements[i].getBoundingClientRect();
       }
       for (let i = 0; i < rects.length; i++) {
-        elementLeft = window.pageXOffset + rects[i].left;
+        const elementLeft = window.pageXOffset + rects[i].left;
         if (!msgLeft || elementLeft < msgLeft) {
           msgLeft = elementLeft;
         }
       }
       for (let i = 0; i < rects.length; i++) {
-        elementRight = msgLeft + this.elements[i].offsetWidth;
+        const elementRight = msgLeft + this.elements[i].offsetWidth;
         if (!msgRight || elementRight > msgRight) {
           msgRight = elementRight;
         }
@@ -585,12 +580,9 @@ export default class Msg {
 
     // A solution for messages the height of which is bigger than the viewport height. In Chrome,
     // a scrolling step is 40 pixels.
-    let downplayedBottom;
-    if (msgBottom - msgTop > (viewportHeight - 200)) {
-      downplayedBottom = msgTop + (viewportHeight - 200);
-    } else {
-      downplayedBottom = msgBottom;
-    }
+    const downplayedBottom = msgBottom - msgTop > (viewportHeight - 200) ?
+      msgTop + (viewportHeight - 200) :
+      msgBottom;
 
     this.positions = {
       top: msgTop,
@@ -599,6 +591,7 @@ export default class Msg {
       right: msgRight,
       downplayedBottom,
     };
+
     return this.positions;
   }
 
@@ -611,15 +604,15 @@ export default class Msg {
     // This is for the comparison to determine if the element has shifted.
     this.#firstWidth = this.elements[0].offsetWidth;
 
-    let underlayerTop = cd.env.underlayersYCorrection + this.positions.top;
-    let underlayerLeft = cd.env.underlayersXCorrection + this.positions.left -
+    const underlayerTop = cd.env.underlayersYCorrection + this.positions.top;
+    const underlayerLeft = cd.env.underlayersXCorrection + this.positions.left -
       cd.env.UNDERLAYER_SIDE_MARGIN;
-    let underlayerWidth = this.positions.right - this.positions.left +
+    const underlayerWidth = this.positions.right - this.positions.left +
       cd.env.UNDERLAYER_SIDE_MARGIN * 2;
-    let underlayerHeight = this.positions.bottom - this.positions.top;
+    const underlayerHeight = this.positions.bottom - this.positions.top;
 
-    let linksUnderlayerTop = this.positions.top;
-    let linksUnderlayerLeft = this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
+    const linksUnderlayerTop = this.positions.top;
+    const linksUnderlayerLeft = this.positions.left - cd.env.UNDERLAYER_SIDE_MARGIN;
 
     return {
       underlayerTop,
@@ -631,13 +624,13 @@ export default class Msg {
     };
   }
 
-  configureUnderlayer(returnResult) {
-    let elements = this.elements;
-    let rectTop = this::getFirstElementRect();
-    let rectBottom = elements.length === 1 ?
+  configureUnderlayer(returnResult = false) {
+    const elements = this.elements;
+    const rectTop = this::getFirstElementRect();
+    const rectBottom = elements.length === 1 ?
       rectTop :
       elements[elements.length - 1].getBoundingClientRect();
-    let underlayerMisplaced = this.#underlayer && (
+    const underlayerMisplaced = this.#underlayer && (
       rectTop.top + window.pageYOffset + cd.env.underlayersYCorrection !== this.#underlayerTop ||
       rectBottom.bottom - rectTop.top !== this.#underlayerHeight ||
       elements[0].offsetWidth !== this.#firstWidth
@@ -647,7 +640,7 @@ export default class Msg {
     // time.
     if (!this.#underlayer) {
       // Prepare the underlayer nodes.
-      let positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
+      const positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
 
       this.#underlayerTop = positions.underlayerTop;
       this.#underlayerLeft = positions.underlayerLeft;
@@ -678,33 +671,31 @@ export default class Msg {
       this.#linksUnderlayer.style.width = this.#underlayerWidth + 'px';
       this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
 
-      let linksUnderlayer_wrapper = this.#linksUnderlayer.firstChild;
+      const linksUnderlayer_wrapper = this.#linksUnderlayer.firstChild;
       // These variables are "more global", we need to access them from the outside.
       this.#linksUnderlayer_gradient = linksUnderlayer_wrapper.firstChild;
       this.#linksUnderlayer_text = linksUnderlayer_wrapper.lastChild;
 
       if (this.parent) {
-        let upButton = cd.env.MSG_UP_BUTTON_PROTOTYPE.cloneNode(true);
-        if (this.parent.anchor) {
-          upButton.firstChild.href = '#' + this.parent.anchor;
-        } else {
-          upButton.firstChild.href = 'javascript:';
-        }
+        const upButton = cd.env.MSG_UP_BUTTON_PROTOTYPE.cloneNode(true);
+        upButton.firstChild.href = this.parent.anchor ?
+          '#' + this.parent.anchor :
+          'javascript:';
         upButton.onclick = this.scrollToParent.bind(this);
         this.#linksUnderlayer_text.appendChild(upButton);
       }
 
       if (this.anchor) {
-        let linkButton = cd.env.MSG_LINK_BUTTON_PROTOTYPE.cloneNode(true);
+        const  linkButton = cd.env.MSG_LINK_BUTTON_PROTOTYPE.cloneNode(true);
         this.#linksUnderlayer_text.appendChild(linkButton);
-        let linkButtonLink = linkButton.firstChild;
+        const linkButtonLink = linkButton.firstChild;
         linkButtonLink.href = mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.anchor;
         linkButtonLink.onclick = this.copyLink.bind(this);
       }
 
       if (!this.frozen) {
         if (this.author === cd.env.CURRENT_USER || cd.settings.allowEditOthersMsgs) {
-          let editButton = cd.env.MSG_EDIT_BUTTON_PROTOTYPE.cloneNode(true);
+          const editButton = cd.env.MSG_EDIT_BUTTON_PROTOTYPE.cloneNode(true);
           editButton.firstChild.onclick = () => {
             this.#underlayer.classList.remove('cd-underlayer-focused');
             this.#linksUnderlayer.classList.remove('cd-linksUnderlayer-focused');
@@ -713,7 +704,7 @@ export default class Msg {
           this.#linksUnderlayer_text.appendChild(editButton);
         }
 
-        let replyButton = cd.env.MSG_REPLY_BUTTON_PROTOTYPE.cloneNode(true);
+        const replyButton = cd.env.MSG_REPLY_BUTTON_PROTOTYPE.cloneNode(true);
         replyButton.firstChild.onclick = this.reply.bind(this);
         this.#linksUnderlayer_text.appendChild(replyButton);
       } else {
@@ -753,7 +744,7 @@ export default class Msg {
       return returnValue || false;
     } else if (underlayerMisplaced) {
       debug.startTimer('underlayer misplaced');
-      let positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
+      const positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
 
       this.#underlayerTop = positions.underlayerTop;
       this.#underlayerLeft = positions.underlayerLeft;
@@ -853,7 +844,7 @@ export default class Msg {
   highlightTarget() {
     this.configureUnderlayer();
 
-    let $elementsToAnimate = this.$underlayer
+    const $elementsToAnimate = this.$underlayer
       .add(this.$linksUnderlayer_text)
       .add(this.$linksUnderlayer_gradient);
 
@@ -870,12 +861,12 @@ export default class Msg {
       });
   }
 
-  scrollToAndHighlightTarget(smooth) {
+  scrollToAndHighlightTarget(smooth = false) {
     this.highlightTarget();
     if (!this.isOpeningSection) {
-      this.$elements.cdScrollTo('middle', null, !smooth);
+      this.$elements.cdScrollTo('middle', null, smooth);
     } else {
-      this.section.$heading.cdScrollTo('top', null, !smooth);
+      this.section.$heading.cdScrollTo('top', null, smooth);
     }
   }
 
@@ -894,7 +885,7 @@ export default class Msg {
       this.parent.section.$heading.cdScrollTo('top');
     }
 
-    let downButton = new OO.ui.ButtonWidget({
+    const downButton = new OO.ui.ButtonWidget({
       label: '▼',
       title: 'Вернуться к дочернему сообщению',
       framed: false,
@@ -930,7 +921,7 @@ export default class Msg {
 
   copyLink(e) {
     let url;
-    let wikilink = '[[' + cd.env.CURRENT_PAGE + '#' + this.anchor + ']]';
+    const wikilink = '[[' + cd.env.CURRENT_PAGE + '#' + this.anchor + ']]';
     try {
       url = 'https:' + mw.config.get('wgServer') + decodeURI(mw.util.getUrl(cd.env.CURRENT_PAGE)) +
         '#' + this.anchor;
@@ -957,11 +948,11 @@ export default class Msg {
           break;
       }
 
-      let $textarea = $('<textarea>')
+      const $textarea = $('<textarea>')
         .val(link)
         .appendTo($('body'))
         .select();
-      let successful = document.execCommand('copy');
+      const successful = document.execCommand('copy');
       $textarea.remove();
 
       if (successful) {
@@ -971,43 +962,43 @@ export default class Msg {
     } else {
       e.preventDefault();
 
-      let messageDialog = new OO.ui.MessageDialog();
+      const messageDialog = new OO.ui.MessageDialog();
       $('body').append(cd.env.windowManager.$element);
       cd.env.windowManager.addWindows([messageDialog]);
 
-      let textInputWikilink = new OO.ui.TextInputWidget({
+      const textInputWikilink = new OO.ui.TextInputWidget({
         value: wikilink,
       });
-      let textFieldWikilink = new OO.ui.FieldLayout(textInputWikilink, {
+      const textFieldWikilink = new OO.ui.FieldLayout(textInputWikilink, {
         align: 'top',
         label: 'Вики-ссылка',
       });
 
-      let textInputAnchorWikilink = new OO.ui.TextInputWidget({
+      const textInputAnchorWikilink = new OO.ui.TextInputWidget({
         value: '[[#' + this.anchor + ']]'
       });
-      let textFieldAnchorWikilink = new OO.ui.FieldLayout(textInputAnchorWikilink, {
+      const textFieldAnchorWikilink = new OO.ui.FieldLayout(textInputAnchorWikilink, {
         align: 'top',
         label: 'Вики-ссылка с этой же страницы',
       });
 
-      let textInputUrl = new OO.ui.TextInputWidget({
+      const textInputUrl = new OO.ui.TextInputWidget({
         value: url,
       });
-      let textFieldUrl = new OO.ui.FieldLayout(textInputUrl, {
+      const textFieldUrl = new OO.ui.FieldLayout(textInputUrl, {
         align: 'top',
         label: 'Обычная ссылка',
       });
 
-      let textInputDiscord = new OO.ui.TextInputWidget({
+      const textInputDiscord = new OO.ui.TextInputWidget({
         value: '<' + url + '>',
       });
-      let textFieldDiscord = new OO.ui.FieldLayout(textInputDiscord, {
+      const textFieldDiscord = new OO.ui.FieldLayout(textInputDiscord, {
         align: 'top',
         label: 'Ссылка для Discord',
       });
 
-      let copyLinkWindow = cd.env.windowManager.openWindow(messageDialog, {
+      const copyLinkWindow = cd.env.windowManager.openWindow(messageDialog, {
         message: textFieldWikilink.$element
           .add(textFieldAnchorWikilink.$element)
           .add(textFieldUrl.$element)
@@ -1017,7 +1008,7 @@ export default class Msg {
         ],
         size: 'large',
       });
-      let closeOnCtrlC = e => {
+      const closeOnCtrlC = (e) => {
         if (e.ctrlKey && e.keyCode === 67) {  // Ctrl+C
           setTimeout(() => {
             messageDialog.close();
@@ -1042,18 +1033,18 @@ export default class Msg {
       return;
     }
 
-    let authorAndDateRegExp = cd.env.generateAuthorAndDateRegExp(this.author, this.date);
+    const authorAndDateRegExp = cd.env.generateAuthorAndDateRegExp(this.author, this.date);
     let authorAndDateMatches = authorAndDateRegExp.exec(pageCode);
     if (!authorAndDateMatches) return;
 
     // We declare variables here for correctMsgBeginning() function to work.
-    let msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
-    let headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
-    let commentRegExp = /^<!--[^]*?-->\n*/;
-    let horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
+    const headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
+    const commentRegExp = /^<!--[^]*?-->\n*/;
+    const horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
     let bestMatchData = {};
+    let msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
 
-    let prevMsgs = [];
+    const prevMsgs = [];
     // For the reserve method; the main method uses one date.
     let numberOfPrevDatesToCheck = 2;
 
@@ -1087,13 +1078,13 @@ export default class Msg {
         console.error('Не найдено заголовка раздела перед сообщением, которое отмечено как открывающее раздел.');
       }
 
-      let commentMatch = msgCode.match(commentRegExp);
+      const commentMatch = msgCode.match(commentRegExp);
       if (commentMatch) {
         msgStartPos += commentMatch[0].length;
         msgCode = msgCode.slice(commentMatch[0].length);
       }
 
-      let horizontalLineMatch = msgCode.match(horizontalLineRegExp);
+      const horizontalLineMatch = msgCode.match(horizontalLineRegExp);
       if (horizontalLineMatch) {
         msgStartPos += horizontalLineMatch[0].length;
         msgCode = msgCode.slice(horizontalLineMatch[0].length);
@@ -1109,15 +1100,14 @@ export default class Msg {
       msgEndPos = authorAndDateMatches.index;
       msgCode = pageCode.slice(0, msgEndPos);
 
-      let prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
+      const prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
 
-      let authorInCode = undefined;
-      let dateInCode = undefined;
+      let authorInCode, dateInCode;
       if (prevMsgInCodeMatch) {
         msgStartPos = prevMsgInCodeMatch[0].length;
         msgCode = msgCode.slice(msgStartPos);
 
-        let [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
+        [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
       }
 
       let prevMsgMatched = false;
@@ -1149,7 +1139,7 @@ export default class Msg {
         }
       }
 
-      let msgCodeToCompare = msgCode
+      const msgCodeToCompare = msgCode
         .replace(/<!--[^]*?-->/g, '')
         // Extract displayed text from [[wikilinks]]
         .replace(/\[\[:?(?:[^|\]]+\|)?(.+?)\]\]/g, '$1')
@@ -1160,7 +1150,7 @@ export default class Msg {
         // Remove closing tags
         .replace(/<\/\w+ ?>/g, ' ');
 
-      let overlap = cd.env.calculateWordsOverlap(this.text, msgCodeToCompare);
+      const overlap = cd.env.calculateWordsOverlap(this.text, msgCodeToCompare);
       if (overlap > 0.67 &&
         ((!bestMatchData.overlap || overlap > bestMatchData.overlap) ||
           (!bestMatchData.headingMatched && headingMatched) ||
@@ -1190,14 +1180,14 @@ export default class Msg {
       // Should always find something (otherwise it wouldn't have found anything the previous time
       // and would've exited), so we don't specify exit the second time.
       while (authorAndDateMatches = authorAndDateRegExp.exec(pageCode)) {
-        let msgStartPos = 0;
-        let msgEndPos = authorAndDateMatches.index;
-        let msgCode = pageCode.slice(0, msgEndPos);
+        msgStartPos = 0;
+        msgEndPos = authorAndDateMatches.index;
+        msgCode = pageCode.slice(0, msgEndPos);
         let pageCodeToMsgEnd = msgCode;
 
         let fail = true;
         for (let i = 0; i < prevMsgs.length; i++) {
-          let prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
+          const prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
           if (!prevMsgInCodeMatch) break;
 
           let nextEndPos = prevMsgInCodeMatch[0].length - prevMsgInCodeMatch[1].length;
@@ -1209,7 +1199,7 @@ export default class Msg {
           }
           pageCodeToMsgEnd = pageCodeToMsgEnd.slice(0, nextEndPos);
 
-          let [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
+          const [authorInCode, dateInCode] = cd.env.collectAuthorAndDate(prevMsgInCodeMatch);
 
           if (dateInCode !== prevMsgs[i].date || authorInCode !== prevMsgs[i].author) {
             fail = true;
@@ -1244,9 +1234,9 @@ export default class Msg {
 
     msgCode = pageCode.slice(bestMatchData.msgStartPos, bestMatchData.msgEndPos);
     let msgCodeLengthReduction = 0;
-    let lineStartPos = bestMatchData.msgStartPos;
+    const lineStartPos = bestMatchData.msgStartPos;
 
-    let movePartToSig = s => {
+    const movePartToSig = (s) => {
       msgCodeLengthReduction += s.length;
       bestMatchData.sigLastPart = s + bestMatchData.sigLastPart;
       return '';
@@ -1286,10 +1276,10 @@ export default class Msg {
     // on the mode.
     let replyIndentationCharacters = indentationCharacters;
     if (!this.isOpeningSection) {
-      let otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
+      const otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
       if (otherIndentationCharactersMatch) {
         if (otherIndentationCharactersMatch[1].length <= indentationCharacters.length) {
-          let replyMustUseAsterisk;
+          let replyMustUseAsterisk = false;
           if (/\*$/.test(indentationCharacters)) {
             replyMustUseAsterisk = true;
           }
@@ -1365,14 +1355,11 @@ export default class Msg {
   }
 
   codeToText() {
-    let inCode = this.inCode;
-
-    if (!inCode) {
+    if (!this.inCode) {
       console.error('Первый параметр должен содержать объект с характеристиками кода сообщения.');
       return;
     }
-    let code = inCode && inCode.code;
-    let indentationCharacters = inCode && inCode.indentationCharacters;
+    const { code, indentationCharacters } = this.inCode;
     if (code === undefined || indentationCharacters === undefined) {
       console.error('Отсутствует свойство code или indentationCharacters.');
       return;
@@ -1380,13 +1367,11 @@ export default class Msg {
 
     let text = code.trim();
 
-    let hidden = [];
-    let hide = re => {
-      text = text.replace(re, function (s) {
-        return '\x01' + hidden.push(s) + '\x02';
-      });
+    const hidden = [];
+    const hide = (re) => {
+      text = text.replace(re, s => '\x01' + hidden.push(s) + '\x02');
     };
-    let hideTags = function () {
+    const hideTags = function hideTags() {
       for (let i = 0; i < arguments.length; i++) {
         hide(
           new RegExp('<' + arguments[i] + '( [^>]+)?>[\\s\\S]+?<\\/' + arguments[i] + '>', 'gi')
@@ -1429,9 +1414,8 @@ export default class Msg {
       );
     }
 
-    let unhide = (s, num) => hidden[num - 1];
     while (text.match(/\x01\d+\x02/)) {
-      text = text.replace(/\x01(\d+)\x02/g, unhide);
+      text = text.replace(/\x01(\d+)\x02/g, (s, num) => hidden[num - 1]);
     }
 
     text = text.replace(/\{\{(?:pb|абзац)\}\}/g, '\n\n');
@@ -1443,18 +1427,15 @@ export default class Msg {
     return cd.env.loadPageCode(cd.env.CURRENT_PAGE)
       // This is returned to a handler with ".done", so the use of ".then" is deliberate.
       .then(
-        result => {
-          this.locateInCode(result.code, result.queryTimestamp);
-          if (!this.inCode) {
+        (result) => {
+          const inCode = this.locateInCode(result.code, result.queryTimestamp);
+          if (!inCode) {
             return $.Deferred().reject(['parse', cd.strings.couldntLocateMsgInCode]).promise();
           }
 
           return $.Deferred().resolve(this.codeToText(), this.inCode.headingCode).promise();
         },
-        e => {
-          let [errorType, data] = e;
-          return $.Deferred().reject([errorType, data]).promise();
-        }
+        e => $.Deferred().reject(e).promise()
       );
   }
 
@@ -1468,7 +1449,7 @@ export default class Msg {
     }
 
     if (registerAllInDirection && cd.env.newestCount) {
-      let nextMsg = cd.msgs[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
+      const nextMsg = cd.msgs[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
       if (nextMsg && nextMsg.isInViewport(true)) {
         nextMsg.registerSeen(registerAllInDirection, highlight);  // We have a recursive call here.
       }
@@ -1477,8 +1458,8 @@ export default class Msg {
 
   // Determination of the message visibility for the refresh panel operations
   isInViewport(updatePositions, partly) {
-    let viewportTop = window.pageYOffset;
-    let viewportBottom = viewportTop + window.innerHeight;
+    const viewportTop = window.pageYOffset;
+    const viewportBottom = viewportTop + window.innerHeight;
 
     if (updatePositions || !this.positions) {
       this.getPositions();
@@ -1494,8 +1475,8 @@ export default class Msg {
   findHighlightedMsgsInViewportBelow(msgsBelowViewportCount) {
     msgsBelowViewportCount = msgsBelowViewportCount !== undefined ? msgsBelowViewportCount : 5;
 
+    const highlightedMsgsInViewportBelow = [];
     let currentMsg;
-    let highlightedMsgsInViewportBelow = [];
     let thisMsgsBelowViewportCount = 0;
     for (let i = this.id + 1; i < cd.msgs.length; i++) {
       currentMsg = cd.msgs[i];
@@ -1643,13 +1624,11 @@ function getParent() {
     return null;
   }
 
-  let currentMsg, parentMsg;
   for (let i = this.id - 1; i >= 0; i--) {
-    currentMsg = cd.msgs[i];
+    const currentMsg = cd.msgs[i];
     if (currentMsg.level !== undefined && currentMsg.level < level) {
       if (currentMsg.section === this.section) {
-        parentMsg = currentMsg;
-        return parentMsg;
+        return currentMsg;
       }
     }
   }
@@ -1662,12 +1641,10 @@ function getSection() {
     return null;  // Not undefined, so that the variable would be considered filled.
   }
 
-  let currentSection, section;
   for (let i = cd.sections.length - 1; i >= 0; i--) {
-    currentSection = cd.sections[i];
+    const currentSection = cd.sections[i];
     if (currentSection.msgs.includes(this)) {
-      section = currentSection;
-      return section;
+      return currentSection;
     }
   }
 
@@ -1680,12 +1657,12 @@ function getAuthorRegistered() {
 
 function getText() {
   // Get message text without a signature.
-  let $msgWithNoSig = $();
+  const $msgWithNoSig = $();
   if (this.$elements.length > 1) {
     $msgWithNoSig = $msgWithNoSig.add(this.$elements.slice(0, -1));
   }
-  let currentAuthorSelector = cd.env.generateAuthorSelector(this.author);
-  let $parentOfDate = this.$elements
+  const currentAuthorSelector = cd.env.generateAuthorSelector(this.author);
+  const $parentOfDate = this.$elements
     .last()
     .find(currentAuthorSelector)
     .last()
@@ -1694,7 +1671,7 @@ function getText() {
 
   // $parentOfDate might be empty if scripts altering date are used.
   if ($parentOfDate.length) {
-    let lastElement = this.$elements.last()[0];
+    const lastElement = this.$elements.last()[0];
     if ($parentOfDate[0] !== lastElement &&
       !($parentOfDate[0].compareDocumentPosition(lastElement) & Node.DOCUMENT_POSITION_CONTAINED_BY)
     ) {

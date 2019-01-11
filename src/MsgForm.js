@@ -70,7 +70,7 @@ export default class MsgForm {
       .appendTo(this.$element);
 
     this.$form = $('<form>')
-      .submit(e => {
+      .submit((e) => {
         e.preventDefault();
         this.submit();
       })
@@ -106,7 +106,7 @@ export default class MsgForm {
             usprop: 'gender',
             formatversion: 2,
           })
-            .done(data => {
+            .done((data) => {
               let gender = data &&
                 data.query &&
                 data.query.users &&
@@ -230,7 +230,7 @@ export default class MsgForm {
       }
     };
 
-    let updateDefaultSummary = generateDescription => {
+    let updateDefaultSummary = (generateDescription) => {
       if (this.summaryAltered) return;
 
       if (generateDescription) {
@@ -283,7 +283,7 @@ export default class MsgForm {
         classes: ['cd-headingInput'],
       });
       this.headingInput.$element.appendTo(this.$form);
-      this.headingInput.on('change', headingInputText => {
+      this.headingInput.on('change', (headingInputText) => {
         updateDefaultSummary(this.mode === 'edit');
 
         if (headingInputText.includes('{{')) {
@@ -327,7 +327,7 @@ export default class MsgForm {
       classes: ['cd-textarea'],
     });
     this.textarea.cdMsgForm = this;
-    this.textarea.on('change', textareaText => {
+    this.textarea.on('change', (textareaText) => {
       updateDefaultSummary();
 
       for (let i = 0; i < textReactions.length; i++) {
@@ -351,7 +351,7 @@ export default class MsgForm {
       placeholder: 'Описание изменений',
       classes: ['cd-summaryInput'],
     });
-    this.summaryInput.$element.keypress(summaryInputContent => {
+    this.summaryInput.$element.keypress((summaryInputContent) => {
       this.summaryAltered = true;
     }).appendTo(this.$settings);
 
@@ -451,7 +451,7 @@ export default class MsgForm {
       this.noIndentationCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'noIndentation',
       });
-      this.noIndentationCheckbox.on('change', selected => {
+      this.noIndentationCheckbox.on('change', (selected) => {
         if (selected) {
           this.$element.addClass('cd-msgForm-noIndentation');
         } else {
@@ -494,7 +494,7 @@ export default class MsgForm {
           value: 'delete',
         });
         let initialMinorSelected;
-        this.deleteCheckbox.on('change', selected => {
+        this.deleteCheckbox.on('change', (selected) => {
           updateDefaultSummary(true);
           if (selected) {
             initialMinorSelected = this.minorCheckbox.isSelected();
@@ -676,7 +676,7 @@ export default class MsgForm {
     }
 
     // Keyboard shortcuts
-    this.$form.keydown(e => {
+    this.$form.keydown((e) => {
       if (e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 13) {  // Ctrl+Enter
         e.preventDefault();
 
@@ -718,7 +718,7 @@ export default class MsgForm {
 
       // This is for test if the message exists.
       this.target.loadCode()
-        .fail(e => {
+        .fail((e) => {
           let [errorType, data] = e;
           cd.env.genericErrorHandler.call(this, {
             errorType,
@@ -728,11 +728,11 @@ export default class MsgForm {
           });
         });
     } else {
-      this.setPending(true);
+      this.setPending(true, true);
 
       this.target.loadCode()
         .done((msgText, headingText) => {
-          this.setPending(false);
+          this.setPending(false, true);
           this.textarea.setValue(msgText);
           if (this.smallCheckbox) {
             this.smallCheckbox.setSelected(this.target.inCode.inSmallTag);
@@ -744,7 +744,7 @@ export default class MsgForm {
           }
           this.textarea.focus();
         })
-        .fail(e => {
+        .fail((e) => {
           let [errorType, data] = e;
           cd.env.genericErrorHandler.call(this, {
             errorType,
@@ -758,7 +758,7 @@ export default class MsgForm {
     mw.hook('cd.msgFormCreated').fire(this);
   }
 
-  getTargetMsg(last, returnNextInViewport) {
+  getTargetMsg(last = false, returnNextInViewport = false) {
     // By default, for sections, returns the first message in the section. If "last" parameter is set
     // to true, returns either the last message in the first section subdivision (i.e. the part of the
     // section up to the first heading) or the last message in the section, depending on MsgForm.mode. It is useful
@@ -866,30 +866,28 @@ export default class MsgForm {
     }
   }
 
-  setPending(status, action) {
-    if (this.headingInput) {
-      if (status) {
-        this.headingInput.pushPending();
-      } else {
-        this.headingInput.popPending();
-      }
-    }
+  setPending(status = false, blockButtons = false) {
     if (status) {
       this.textarea.pushPending();
       this.summaryInput.pushPending();
+      if (this.headingInput) {
+        this.headingInput.pushPending();
+      }
     } else {
       this.textarea.popPending();
       this.summaryInput.popPending();
+      if (this.headingInput) {
+        this.headingInput.popPending();
+      }
     }
-    if (action === 'submit') {
-      this['submitButton'].setDisabled(status);
-    }
+
+    this.submitButton.setDisabled(status && blockButtons);
+    this.previewButton.setDisabled(status && blockButtons);
+    this.viewChangesButton.setDisabled(status && blockButtons);
   }
 
-  showInfo(html, icon, class_) {
-    icon = icon || 'info';
-
-    if (!this.$infoArea.children('.cd-info-' + class_).length) {
+  showInfo(html, icon = 'info', class_) {
+    if (!class_ || !this.$infoArea.children('.cd-info-' + class_).length) {
       let $textWithIcon = cd.env.createTextWithIcon(html, icon)
         .addClass('cd-info')
         .addClass('cd-info-' + icon);
@@ -916,25 +914,19 @@ export default class MsgForm {
     this.hideInfo(class_);
   }
 
-  abort(options) {
-    if (typeof options === 'String') {
-      let message = options;
-      options = {};
-      options.message = message;
-    }
-
+  abort(message, logMessage, retryFunc) {
     // Presence of retryFunc now implies the deletion of form elements.
 
     if (this.textarea.$element[0].parentElement) {
-      this.setPending(false, options.action);
+      this.setPending(false);
     }
     this.$previewArea.empty();
-    this.showWarning(options.message);
-    if (options.logMessage) {
-      console.warn(options.logMessage);
+    this.showWarning(message);
+    if (logMessage) {
+      console.warn(logMessage);
     }
 
-    if (options.retryFunc) {
+    if (retryFunc) {
       this.$wrapper.children(':not(.cd-infoArea)').remove();
 
       let cancelLink = new OO.ui.ButtonWidget({
@@ -942,14 +934,14 @@ export default class MsgForm {
         framed: false,
       });
       cancelLink.on('click', () => {
-        this.cancel(true);
+        this.cancel({ leaveInfo: true });
       });
 
       let retryLink = new OO.ui.ButtonWidget({
         label: 'Попробовать ещё раз',
         framed: false,
       });
-      retryLink.on('click', options.retryFunc);
+      retryLink.on('click', retryFunc);
 
       $('<div>')
         .append(cancelLink.$element, retryLink.$element)
@@ -999,7 +991,7 @@ export default class MsgForm {
     let code = text
       .replace(/^[\s\uFEFF\xA0]+/g, '')  // trimLeft
       // Remove ending spaces from empty lines, only if they are not a part of a syntax creating <pre>.
-      .replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, s => {
+      .replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, (s) => {
         if (/ [^\s\uFEFF\xA0]$/.test(s)) {
           return s;
         } else {
@@ -1012,7 +1004,7 @@ export default class MsgForm {
     let hidden = [];
     let makeAllIntoColons = false;
     let hide = (re, isTable) => {
-      code = code.replace(re, s => {
+      code = code.replace(re, (s) => {
         if (isTable && !isZeroLevel) {
           makeAllIntoColons = true;
         }
@@ -1313,7 +1305,7 @@ export default class MsgForm {
 
   async preview(callback) {
     this.$infoArea.cdEmpty(this.getTargetMsg(true));
-    this.setPending(true, 'preview');
+    this.setPending(true);
 
     let msgCode = this.msgTextToCode('preview');
 
@@ -1332,10 +1324,7 @@ export default class MsgForm {
       let error = data.error;
       if (error) {
         let text = error.code + ': ' + error.info;
-        this.abort({
-          message: 'Не удалось предпросмотреть сообщение. ' + text,
-          logMessage: data,
-        });
+        this.abort('Не удалось предпросмотреть сообщение. ' + text, data);
         return;
       }
 
@@ -1368,12 +1357,9 @@ export default class MsgForm {
       if (!this.$previewArea.cdIsInViewport()) {
         this.$previewArea.cdScrollTo('top');
       }
-      this.setPending(false, 'preview');
+      this.setPending(false);
     } catch (e) {
-      this.abort({
-        message: 'Не удалось предпросмотреть сообщение.',
-        logMessage: e,
-      });
+      this.abort('Не удалось предпросмотреть сообщение.', e);
     }
 
     if (callback) {
@@ -1383,7 +1369,7 @@ export default class MsgForm {
 
   async viewChanges() {
     this.$infoArea.cdEmpty(this.getTargetMsg(true));
-    this.setPending(true, 'viewChanges');
+    this.setPending(true);
 
     try {
       let result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
@@ -1394,10 +1380,10 @@ export default class MsgForm {
         if (e instanceof cd.env.Exception) {
           this.abort(e.message);
         } else {
-          this.abort({
-            message: 'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
-            logMessage: e.stack || e.message,
-          });
+          this.abort(
+            'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
+            e.stack || e.message,
+          );
         }
         return;
       }
@@ -1415,10 +1401,7 @@ export default class MsgForm {
         let error = data.error;
         if (error) {
           let text = error.code + ': ' + error.info;
-          this.abort({
-            message: 'Не удалось загрузить изменения. ' + text,
-            logMessage: data,
-          });
+          this.abort('Не удалось загрузить изменения. ' + text, data);
           return;
         }
 
@@ -1450,12 +1433,9 @@ export default class MsgForm {
         if (!this.$previewArea.cdIsInViewport()) {
           this.$previewArea.cdScrollTo('top');
         }
-        this.setPending(false, 'viewChanges');
+        this.setPending(false);
       } catch (e) {
-        this.abort({
-          message: 'Не удалось загрузить изменения.',
-          logMessage: e,
-        });
+        this.abort('Не удалось загрузить изменения.', e);
       }
     } catch (e) {
       let [errorType, data] = e;
@@ -1468,9 +1448,9 @@ export default class MsgForm {
   }
 
   reloadPageAfterSubmit(anchor) {
-    this.destroy(['leaveInfo']);
+    this.destroy({ leaveInfo: true });
 
-    cd.env.reloadPage(anchor).fail(e => {
+    cd.env.reloadPage(anchor).fail((e) => {
       let [errorType, data] = e;
       if (cd.settings.showLoadingOverlay !== false) {
         cd.env.removeLoadingOverlay();
@@ -1511,7 +1491,7 @@ export default class MsgForm {
     }
 
     this.$infoArea.cdEmpty(this.getTargetMsg(true));
-    this.setPending(true);
+    this.setPending(true, true);
 
     try {
       let result = await cd.env.loadPageCode(cd.env.CURRENT_PAGE);
@@ -1520,16 +1500,12 @@ export default class MsgForm {
         newPageCode = this.prepareNewPageCode(result.code, result.queryTimestamp);
       } catch (e) {
         if (e instanceof cd.env.Exception) {
-          this.abort({
-            message: e.message,
-            action: 'submit',
-          });
+          this.abort(e.message);
         } else {
-          this.abort({
-            message: 'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
-            logMessage: e.stack || e.message,
-            action: 'submit',
-          });
+          this.abort(
+            'Произошла ошибка JavaScript. Подробности см. в консоли JavaScript (F12 → Консоль).',
+            e.stack || e.message,
+          );
         }
         return;
       }
@@ -1563,7 +1539,7 @@ export default class MsgForm {
           }
         }
         this.showInfo('Сообщение успешно ' + verb);
-        this.setPending(false);
+        this.setPending(false, true);
 
         let anchor;
         if (this.mode !== 'edit') {
@@ -1588,7 +1564,7 @@ export default class MsgForm {
               this.reloadPageAfterSubmit(anchor);
             });
             this.showInfo($info);
-            this.destroy(['leaveInfo', 'leavePreview']);
+            this.destroy({ leaveInfo: true, leavePreview: true });
           });
         } else {
           this.reloadPageAfterSubmit(anchor);
@@ -1609,10 +1585,10 @@ export default class MsgForm {
           return;
         }
 
-        this.abort({
-          message: 'Не получен ответ сервера. Возможно, не удалось отредактировать страницу.',
-          logMessage: [jqXHR, textStatus, errorThrown],
-        });
+        this.abort(
+          'Не получен ответ сервера. Возможно, не удалось отредактировать страницу.',
+          [jqXHR, textStatus, errorThrown],
+        );
       }
     } catch (e) {
       [errorType, data] = e;
@@ -1624,7 +1600,9 @@ export default class MsgForm {
     }
   }
 
-  cancel(leaveInfo) {
+  cancel(options = {}) {
+    let leaveInfo = options.leaveInfo;
+
     if (!leaveInfo) {
       this.$infoArea.empty();
     }
@@ -1684,12 +1662,9 @@ export default class MsgForm {
     }
   }
 
-  destroy(options) {
-    let leaveInfo, leavePreview;
-    if ($.isArray(options)) {
-      leaveInfo = options.includes('leaveInfo');
-      leavePreview = options.includes('leavePreview');
-    }
+  destroy(options = {}) {
+    let { leaveInfo, leavePreview } = options;
+
     this.$wrapper
       .children(
         (leaveInfo ? ':not(.cd-infoArea)' : '') +

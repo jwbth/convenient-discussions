@@ -4,10 +4,6 @@ import Section from './Section';
 import MsgForm from './MsgForm';
 
 export default function parse(msgAnchorToScrollTo) {
-  if (typeof msgAnchorToScrollTo !== 'string') {
-    msgAnchorToScrollTo = null;
-  }
-
   if (cd.env.firstRun) {
     debug.endTimer('загрузка модулей');
   } else {
@@ -33,7 +29,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   // Settings in variables like cdAlowEditOthersMsgs
   ['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects', 'showLoadingOverlay']
-    .forEach(name => {
+    .forEach((name) => {
       const settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
       if (settingName in window) {
         cd.settings[name] = window[settingName];
@@ -151,18 +147,23 @@ export default function parse(msgAnchorToScrollTo) {
   if (cd.config.BLOCKS_TO_EXCLUDE_CLASSES || cd.config.TEMPLATES_TO_EXCLUDE || true) {
     if (cd.config.BLOCKS_TO_EXCLUDE_CLASSES) {
       msgAntipatternPatternParts.push(
-        'class=([\\\'"])[^\\1]*(?:\\b' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES.join('\\b|\\b') + '\\b)[^\\1]*\\1'
+        'class=([\\\'"])[^\\1]*(?:\\b' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES.join('\\b|\\b') +
+        '\\b)[^\\1]*\\1'
       );
     }
     if (cd.config.TEMPLATES_TO_EXCLUDE) {
-      msgAntipatternPatternParts.push('\\{\\{ *(?:' + cd.config.TEMPLATES_TO_EXCLUDE.map(template => {
-        return cd.env.generateCaseInsensitiveFirstCharPattern(template);
-      }).join('|') + ') *(?:\\||\\}\\})');
+      msgAntipatternPatternParts.push('\\{\\{ *(?:' +
+        cd.config.TEMPLATES_TO_EXCLUDE
+          .map(template => cd.env.generateCaseInsensitiveFirstCharPattern(template))
+          .join('|') +
+        ') *(?:\\||\\}\\})');
     }
-    cd.config.MSG_ANTIPATTERNS.forEach(antiPattern => {
+    cd.config.MSG_ANTIPATTERNS.forEach((antiPattern) => {
       msgAntipatternPatternParts.push(antiPattern);
     });
-    cd.env.MSG_ANTIPATTERN_REGEXP = new RegExp('(?:' + msgAntipatternPatternParts.join('|') + ').*\\n$');
+    cd.env.MSG_ANTIPATTERN_REGEXP = new RegExp(
+      '(?:' + msgAntipatternPatternParts.join('|') + ').*\\n$'
+    );
   }
 
 
@@ -199,7 +200,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   /* Process the fragment (hash) for topic titles */
 
-  const processFragment = fragment => {
+  const processFragment = (fragment) => {
     const dotToPercent = code => code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
 
     // Some ancient links with dots, you never know
@@ -208,7 +209,7 @@ export default function parse(msgAnchorToScrollTo) {
       .replace(/\.F[0-4]\.[89AB][\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
       .replace(/\.E[\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
       .replace(/\.[CD][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
-      .replace(/\.[2-7][0-9A-F]/g, code => {
+      .replace(/\.[2-7][0-9A-F]/g, (code) => {
         const ch = decodeURIComponent(dotToPercent(code));
         if ('!"#$%&\'()*+,/;<=>?@\\^`~'.includes(ch)) {
           return dotToPercent(code);
@@ -244,7 +245,7 @@ export default function parse(msgAnchorToScrollTo) {
         { label: 'Нет', action: 'no' },
       ],
     });
-    proceedToArchiveWindow.closed.then(data => {
+    proceedToArchiveWindow.closed.then((data) => {
       if (data && data.action === 'yes') {
         const heading = processFragment(fragment).replace(/"/g, '');
         const PAGE_TITLE = mw.config.get('wgTitle');
@@ -311,9 +312,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   $.extend(cd, {
     getMsgByAnchor(anchor) {
-      if (!cd.msgs || !anchor) {
-        return;
-      }
+      if (!cd.msgs || !anchor) return;
 
       for (let i = 0; i < cd.msgs.length; i++) {
         if (cd.msgs[i].anchor === anchor) {
@@ -506,9 +505,9 @@ export default function parse(msgAnchorToScrollTo) {
       let total = words2.length;
       let overlap = 0;
       let isOverlap;
-      words1.forEach(word1 => {
+      words1.forEach((word1) => {
         isOverlap = false;
-        words2.forEach(word2 => {
+        words2.forEach((word2) => {
           if (word2 === word1) {
             isOverlap = true;
             return;
@@ -565,9 +564,10 @@ export default function parse(msgAnchorToScrollTo) {
           .replace(/ \\\(UTC\\\)$/, '(?: \\(UTC\\))?');
         return new RegExp(
           // Caution: invisible character in [ ‎].
-          cd.config.USER_NAME_PATTERN + authorPattern + '[|\\]#].*' + mw.RegExp.escape(date) + '[  \t]*(?:\}\}|</small>)?[  \t]*|' +
-          '\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *' + dateInUnsignedTemplatesPattern +
-            '[ ‎]*\\|[ ‎]*' + authorPattern + ' *\\}\\}[  \t]*|' +
+          cd.config.USER_NAME_PATTERN + authorPattern + '[|\\]#].*' + mw.RegExp.escape(date) +
+            '[  \t]*(?:\}\}|</small>)?[  \t]*|' +
+          '\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *' +
+            dateInUnsignedTemplatesPattern + '[ ‎]*\\|[ ‎]*' + authorPattern + ' *\\}\\}[  \t]*|' +
           '\\{\\{ *(?:[uU]nsigned(?:IP)?|[нН]е подписано) *\\|[ ‎]*' + authorPattern +
             ' *(?:\\| *[^}]+[ ‎]*)?\\}\\}[  \t]*',
           'g'
@@ -598,9 +598,7 @@ export default function parse(msgAnchorToScrollTo) {
       );
     },
 
-    elementsToText(elements, classesToFilter) {
-      classesToFilter = classesToFilter || [];
-
+    elementsToText(elements, classesToFilter = []) {
       return elements
         .map((el, index) => {
           if (el.nodeType === Node.ELEMENT_NODE) {
@@ -639,7 +637,7 @@ export default function parse(msgAnchorToScrollTo) {
 
       cd.env.$content.html(html);
       mw.hook('wikipage.content').fire(cd.env.$content);
-      parse(typeof anchor === 'string' && anchor);
+      parse(anchor);
     },
 
     reloadPage(anchor) {
@@ -667,7 +665,7 @@ export default function parse(msgAnchorToScrollTo) {
       })
         // This is returned to a handler with ".done", so the use of ".then" is deliberate.
         .then(
-          data => {
+          (data) => {
             const error = data.error &&
               data.error.code &&
               data.error.info &&
@@ -710,7 +708,7 @@ export default function parse(msgAnchorToScrollTo) {
         formatversion: 2,
       })
         .then(
-          data => {
+          (data) => {
             const error = data.error &&
               data.error.code &&
               data.error.info &&
@@ -797,10 +795,7 @@ export default function parse(msgAnchorToScrollTo) {
 
     genericErrorHandler(options) {
       if (options.errorType === 'parse') {
-        this.abort({
-          message: options.data,
-          retryFunc: options.retryFunc,
-        });
+        this.abort(options.data, null, options.retryFunc);
       } else if (options.errorType === 'api') {
         let text;
         if (options.data === 'missing') {
@@ -808,23 +803,11 @@ export default function parse(msgAnchorToScrollTo) {
         } else {
           text = 'Ошибка API: ' + options.data + '.';
         }
-        this.abort({
-          message: options.message + '. ' + text,
-          logMessage: options.data,
-          retryFunc: options.retryFunc,
-        });
+        this.abort(options.message + '. ' + text, options.data, options.retryFunc);
       } else if (options.errorType === 'network') {
-        this.abort({
-          message: options.message + ' (сетевая ошибка).',
-          logMessage: options.data,
-          retryFunc: options.retryFunc,
-        });
+        this.abort(options.message + ' (сетевая ошибка).', options.data, options.retryFunc);
       } else {
-        this.abort({
-          message: options.message + ' (неизвестная ошибка).',
-          logMessage: options.data,
-          retryFunc: options.retryFunc,
-        });
+        this.abort(options.message + ' (неизвестная ошибка).', options.data, options.retryFunc);
       }
     },
 
@@ -845,9 +828,8 @@ export default function parse(msgAnchorToScrollTo) {
       });
     },
 
-    cdScrollTo(positionOnScreen, callback, nonSmooth, yCorrection) {
+    cdScrollTo(positionOnScreen = 'top', callback, smooth = true, yCorrection = 0) {
       cd.env.scrollHandleTimeout = true;
-      yCorrection = yCorrection || 0;
 
       let $el = $(this).cdRemoveNonTagNodes();
       if (!$el.is(':visible')) {
@@ -856,7 +838,6 @@ export default function parse(msgAnchorToScrollTo) {
           $el = $el.prev();
         }
       }
-      positionOnScreen = positionOnScreen || 'top';
 
       let offset;
       if (positionOnScreen === 'middle') {
@@ -873,7 +854,7 @@ export default function parse(msgAnchorToScrollTo) {
         offset = $el.first().offset().top + yCorrection;
       }
 
-      if (!nonSmooth) {
+      if (smooth) {
         $('body, html').animate({
           scrollTop: offset
         }, {
@@ -890,7 +871,7 @@ export default function parse(msgAnchorToScrollTo) {
       }
     },
 
-    cdIsInViewport(partly) {
+    cdIsInViewport(partly = false) {
       const $elements = $(this).cdRemoveNonTagNodes();
 
       // Workaround
@@ -957,11 +938,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdShow(msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdShow(msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(false);
       }
@@ -975,10 +952,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdSlideDown(duration, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
+    cdSlideDown(duration, msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(true);
       }
@@ -992,10 +966,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdSlideUp(duration, callback, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
+    cdSlideUp(duration, callback, msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(true, 0);
       }
@@ -1015,11 +986,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdFadeIn(duration, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdFadeIn(duration, msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(false);
       }
@@ -1033,11 +1000,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdFadeOut(duration, callback, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdFadeOut(duration, callback, msg = cd.env.findMsgInViewport()) {
       $(this).fadeOut(duration, () => {
         if (callback) {
           callback();
@@ -1051,11 +1014,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdHtml(html, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdHtml(html, msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(false);
       }
@@ -1069,11 +1028,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdAppend(content, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdAppend(content, msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(false);
       }
@@ -1087,11 +1042,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdAppendTo(content, msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdAppendTo(content, msg = cd.env.findMsgInViewport()) {
       if (msg) {
         msg.prepareUnderlayersInViewport(false);
       }
@@ -1105,11 +1056,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdRemove(msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
-
+    cdRemove(msg = cd.env.findMsgInViewport()) {
       $(this).remove();
 
       if (msg) {
@@ -1120,10 +1067,7 @@ export default function parse(msgAnchorToScrollTo) {
       return $(this);
     },
 
-    cdEmpty(msg) {
-      if (!msg) {
-        msg = cd.env.findMsgInViewport();
-      }
+    cdEmpty(msg = cd.env.findMsgInViewport()) {
       if (!msg) return;
 
       $(this).empty();
@@ -1221,7 +1165,7 @@ export default function parse(msgAnchorToScrollTo) {
     }
   }
 
-  const collapseAdjacentMsgLevels = levels => {
+  const collapseAdjacentMsgLevels = (levels) => {
     if (!levels || !levels[0]) return;
     debug.startTimer('collapse');
 
@@ -1359,7 +1303,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   const ARTICLE_ID = mw.config.get('wgArticleId');
   cd.env.watchedTopicsPromise = cd.env.getWatchedTopics()
-    .done(gotWatchedTopics => {
+    .done((gotWatchedTopics) => {
       cd.env.watchedTopics = gotWatchedTopics;
       cd.env.thisPageWatchedTopics = cd.env.watchedTopics && cd.env.watchedTopics[ARTICLE_ID] || [];
       if (!cd.env.thisPageWatchedTopics.length) {
@@ -1494,7 +1438,7 @@ export default function parse(msgAnchorToScrollTo) {
       const msg = cd.getMsgByAnchor(msgAnchor);
       if (msg) {
         // setTimeout is for Firefox – otherwise, it positions the underlayer incorrectly.
-        setTimeout(msg => {
+        setTimeout((msg) => {
           msg.scrollToAndHighlightTarget();
         }, 0, msg);
       }
@@ -1552,7 +1496,7 @@ export default function parse(msgAnchorToScrollTo) {
     }
 
     cd.env.getVisits()
-      .done(visits => {
+      .done((visits) => {
         cd.env.newestCount = 0;
         cd.env.newCount = 0;
 
@@ -1626,7 +1570,7 @@ export default function parse(msgAnchorToScrollTo) {
         thisPageVisits.push(currentUnixTime);
 
         cd.env.setVisits(visits)
-          .fail(e => {
+          .fail((e) => {
             const [errorType, data] = e;
             if (errorType === 'internal' && data === 'sizelimit') {
               // Cleanup: remove oldest 1/3 of visits.

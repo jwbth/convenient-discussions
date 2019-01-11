@@ -10,7 +10,7 @@ export default {
     [
       // We use "[^|] *" so that this pattern doesn't conflict with the patterns below when
       // the date is a part of them.
-      '(?:[^|] *(\\b\\d?\\d:\\d\\d, \\d\\d? [а-я]+ \\d\\d\\d\\d \\(UTC\\))',
+      '[^|] *(\\b\\d?\\d:\\d\\d, \\d\\d? [а-я]+ \\d\\d\\d\\d \\(UTC\\))',
       ['date']
     ],
     [

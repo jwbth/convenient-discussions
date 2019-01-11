@@ -222,14 +222,7 @@ function main() {
       const month = cd.env.getMonthNumber(matches[4]);
       const year = Number(matches[5]);
 
-      if (year === undefined ||
-        month === undefined ||
-        day === undefined ||
-        hours === undefined ||
-        minutes === undefined
-      ) {
-        return;
-      }
+      if (month === undefined) return;
 
       return Date.UTC(year, month, day, hours, minutes) -
         (timezoneOffset ? timezoneOffset * cd.env.MILLISECONDS_IN_A_MINUTE : 0);
@@ -369,9 +362,8 @@ function main() {
       const viewportBottom = viewportTop + viewportHeight;
 
       let currentMsgId = 0;
-      let msg, positions, prevMsgTop, prevMsgBottom, higherTop, higherBottom, lowerTop, lowerBottom,
-        changedDirection, keepedMsgTop, keepedMsgBottom, prevMsgId, foundMsgId, nextMsgId, keepedMsgId,
-        proportion;
+      let prevMsgTop, prevMsgBottom, higherTop, higherBottom, lowerTop, lowerBottom, keepedMsgTop,
+        keepedMsgBottom, prevMsgId, foundMsgId, keepedMsgId, proportion;
 
       // Search for any one message inside the viewport, intellectually narrowing the search region
       // (getting a proportion of the distance between far away messages and the viewport and
@@ -380,7 +372,7 @@ function main() {
       // a large margin, ideally the cycle should finish after a couple of steps. It's more of
       // a protection against an endless cycle.
       for (let i = 0; i < cd.msgs.length; i++) {
-        msg = cd.msgs[currentMsgId];
+        const msg = cd.msgs[currentMsgId];
         if (!msg) {
           console.error('Не найдено сообщение с ID ' + currentMsgId);
           return;
@@ -406,7 +398,9 @@ function main() {
           break;
         }
 
+        let nextMsgId;
         if (prevMsgId !== undefined) {
+          let changedDirection;
           if ((msg.positions.top < viewportTop && prevMsgTop < viewportTop) ||
             (msg.positions.downplayedBottom > viewportBottom && prevMsgBottom > viewportBottom)
           ) {
@@ -443,7 +437,7 @@ function main() {
             lowerTop = prevMsgTop;
             lowerBottom = prevMsgBottom;
           }
-          proportion = (viewportTop - higherTop) /
+          const proportion = (viewportTop - higherTop) /
             ((lowerBottom - viewportBottom !== 0 ? lowerBottom - viewportBottom : 0.0001) +
               (viewportTop - higherTop)
             );
@@ -615,7 +609,7 @@ function main() {
       }
     },
 
-    recalculateUnderlayers(newOnly) {
+    recalculateUnderlayers(newOnly = false) {
       // It is assumed that if we need to recount not only new (highlighted) underlayers, others need to be
       // removed ("removeNotNew" parameter was removed as redundant), otherwise there's no point to recalculate.
 
@@ -636,7 +630,7 @@ function main() {
       let lastI = 0;
       const allKeys = [];
 
-      const recalculate = msg => {
+      const recalculate = (msg) => {
         if (!msg.newness && !newOnly && msg.$underlayer && msg.$underlayer.length) {
           msg.removeUnderlayer();
         } else if (msg.newness) {
@@ -758,7 +752,7 @@ function main() {
       })
         // This is returned to a handler with ".done", so the use of ".then" is deliberate.
         .then(
-          data => {
+          (data) => {
             const options = data &&
               data.query &&
               data.query.userinfo &&
@@ -816,7 +810,7 @@ function main() {
       })
         // This is returned to a handler with ".done", so the use of ".then" is deliberate.
         .then(
-          data => {
+          (data) => {
             if (!data || data.options !== 'success') {
               return $.Deferred().reject(['api', 'no success']).promise();
             }
@@ -854,7 +848,7 @@ function main() {
       })
         // This is returned to a handler with ".done", so the use of ".then" is deliberate.
         .then(
-          data => {
+          (data) => {
             if (!data || data.options !== 'success') {
               return $.Deferred().reject(['api', 'no success']).promise();
             }
@@ -878,7 +872,7 @@ function main() {
       let pageIdToTitle, pagesIdAndTitle, pageTitleToId;
       let topics;
 
-      const queryPageProperties = async function(property, pageidOrTitleSet) {
+      const queryPageProperties = async function queryPageProperties(property, pageidOrTitleSet) {
         const queryOptions = {
           action: 'query',
           formatversion: 2,
@@ -889,7 +883,7 @@ function main() {
           $.extend(queryOptions, {
             pageids: pageidOrTitleSet,
           });
-          doneCallback = query => {
+          doneCallback = (query) => {
             const pages = query.pages;
 
             for (let i = 0; i < pages.length; i++) {
@@ -1159,9 +1153,11 @@ function main() {
   sigPattern += ')';
   cd.env.SIG_PATTERN = sigPattern;
 
-  const anyTypeOfSpace = s => s
-    .replace(/:/, ' : ')
-    .replace(/[ _]/, '[ _]*');
+  const anyTypeOfSpace = s => (
+    s
+      .replace(/:/, ' : ')
+      .replace(/[ _]/, '[ _]*')
+  );
 
   // Generating a regexp from a config value.
   let captureUserNameRegexp = '\\[\\[[ _]*(?:(?:';
@@ -1180,10 +1176,11 @@ function main() {
     new RegExp('\\[\\[[^|]+\\|([^\\]]+)\\]\\]', 'g'),
   ];
 
-  const generateAnyCasePattern = s => {
+  const generateAnyCasePattern = (s) => {
     let result = '';
     for (let i = 0; i < s.length; i++) {
-      if (s[i].toUpperCase() != s[i].toLowerCase()) {
+      // mw.RegExp.escape(s[i]) === s[i] &&
+      if (s[i].toUpperCase() !== s[i].toLowerCase()) {
         result += '[' + s[i].toUpperCase() + s[i].toLowerCase() + ']';
       }
     }
@@ -1267,7 +1264,9 @@ function main() {
       'oojs',
       'oojs-ui',
       'user.options',
-    ]).done(parse);
+    ]).done(() => {
+      parse();
+    });
   }
 
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' ||
