@@ -362,8 +362,17 @@ function main() {
       const viewportBottom = viewportTop + viewportHeight;
 
       let currentMsgId = 0;
-      let prevMsgTop, prevMsgBottom, higherTop, higherBottom, lowerTop, lowerBottom, keepedMsgTop,
-        keepedMsgBottom, prevMsgId, foundMsgId, keepedMsgId, proportion;
+      let prevMsgTop;
+      let prevMsgBottom;
+      let higherTop;
+      let higherBottom;
+      let lowerTop;
+      let lowerBottom;
+      let keepedMsgTop;
+      let keepedMsgBottom;
+      let prevMsgId;
+      let foundMsgId;
+      let keepedMsgId;
 
       // Search for any one message inside the viewport, intellectually narrowing the search region
       // (getting a proportion of the distance between far away messages and the viewport and
@@ -626,7 +635,9 @@ function main() {
       }
 
       // We declare variables here for recalculate() function to work.
-      let msg, positions, i;
+      let msg;
+      let positions;
+      let i;
       let lastI = 0;
       const allKeys = [];
 
@@ -868,8 +879,11 @@ function main() {
         'user.options',
       ]);
       const watchedTopics = await cd.env.getWatchedTopics();
-      let pageIds, pageTitles;
-      let pageIdToTitle, pagesIdAndTitle, pageTitleToId;
+      let pageIds;
+      let pageTitles;
+      let pageIdToTitle;
+      let pagesIdAndTitle;
+      let pageTitleToId;
       let topics;
 
       const queryPageProperties = async function queryPageProperties(property, pageidOrTitleSet) {

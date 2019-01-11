@@ -169,7 +169,8 @@ export default function parse(msgAnchorToScrollTo) {
 
   /* Save the viewport position */
 
-  let firstVisibleElement, firstVisibleElementTopOffset;
+  let firstVisibleElement;
+  let firstVisibleElementTopOffset;
   if (cd.env.firstRun) {
     if (window.pageYOffset !== 0 && cd.env.contentElement.getBoundingClientRect().top <= 0) {
       let currentElement = cd.env.contentElement.firstElementChild;
@@ -350,7 +351,8 @@ export default function parse(msgAnchorToScrollTo) {
 
   $.extend(cd.env, {
     getLastGlobalCapture(s, regexp) {
-      let matches, lastCapture;
+      let matches;
+      let lastCapture;
       while (matches = regexp.exec(s)) {
         lastCapture = matches[1];
       }
@@ -392,7 +394,8 @@ export default function parse(msgAnchorToScrollTo) {
 
     collectAuthorAndDate(match) {
       const text = match[1];
-      let date, author;
+      let date;
+      let author;
       if (match[2]) {
         date = match[2];
 
@@ -450,7 +453,8 @@ export default function parse(msgAnchorToScrollTo) {
         console.error('Функция работает только с регулярными выражениями с флагом global.');
         return;
       }
-      let matches, lastMatch;
+      let matches;
+      let lastMatch;
       while (matches = regexp.exec(s)) {
         lastMatch = matches;
       }
@@ -543,7 +547,8 @@ export default function parse(msgAnchorToScrollTo) {
         '—': '&mdash;',
       };
 
-      let authorPattern = cd.env.generateCaseInsensitiveFirstCharPattern(author).replace(/ /g, '[ _]');
+      let authorPattern = cd.env.generateCaseInsensitiveFirstCharPattern(author)
+        .replace(/ /g, '[ _]');
       let entitiesPattern;
       for (let key in popularHTMLEntities) {
         if (author.includes(key)) {
@@ -1501,9 +1506,8 @@ export default function parse(msgAnchorToScrollTo) {
         cd.env.newCount = 0;
 
         const thisPageVisits = visits && visits[ARTICLE_ID] || [];
-        let firstVisit;
-
         const currentUnixTime = Math.floor($.now() / 1000);
+        let firstVisit;
 
         if (thisPageVisits.length) {
           firstVisit = false;

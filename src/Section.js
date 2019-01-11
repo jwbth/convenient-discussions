@@ -168,7 +168,8 @@ export default class Section {
       const replyButton = cd.env.SECTION_REPLY_BUTTON_PROTOTYPE.cloneNode(true);
       replyButton.firstChild.onclick = this.addReply.bind(this);
 
-      let tag, createUl;
+      let tag;
+      let createUl;
       if (lastElementInFirstSubdivision.classList.contains('cd-msgLevel')) {
         const leifsTagName = lastElementInFirstSubdivision.tagName;
         if (leifsTagName === 'UL') {
@@ -499,8 +500,15 @@ export default class Section {
       };
 
       if (action === 'move') {
-        let sectionInSourcePageCode, sourcePageCode, sourcePageTimestamp, sourceWikilink,
-          targetTitle, targetPageCode, targetWikilink, newSourcePageCode, newTargetPageCode;
+        let sectionInSourcePageCode;
+        let sourcePageCode;
+        let sourcePageTimestamp;
+        let sourceWikilink;
+        let targetTitle;
+        let targetPageCode;
+        let targetWikilink;
+        let newSourcePageCode;
+        let newTargetPageCode;
 
         const loadSourcePageDoneCallback = (result) => {
           sourcePageCode = result.code;
@@ -528,7 +536,8 @@ export default class Section {
         };
 
         const loadSourcePageFailCallback = (errorType, data) => {
-          let text, recoverable;
+          let text;
+          let recoverable;
           if (errorType === 'api') {
             if (data === 'missing') {
               text = 'Текущая страница была удалена.';
@@ -563,7 +572,9 @@ export default class Section {
 
           // Determine the topic order: newest first or newest last
           const sectionHeadingsRegExp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
-          let firstSectionPos, sectionHeadingsMatches, prevTimestamp;
+          let firstSectionPos;
+          let sectionHeadingsMatches;
+          let prevTimestamp;
           let newerHigherCount = 0, newerLowerCount = 0;
           while ((sectionHeadingsMatches = sectionHeadingsRegExp.exec(targetPageCode)) &&
             (newTopicsOnTop === undefined ||
@@ -645,7 +656,8 @@ export default class Section {
         };
 
         const loadTargetPageFailCallback = (errorType, data) => {
-          let text, recoverable;
+          let text;
+          let recoverable;
           if (errorType === 'api') {
             if (data === 'missing') {
               text = 'Целевая страница не существует.';
@@ -704,7 +716,7 @@ export default class Section {
           dialog.actions.setMode('reload');
         };
 
-        let editSourcePageFailCallback = () => {
+        const editSourcePageFailCallback = () => {
           abort(
             'Сетевая ошибка при редактировании исходной страницы. Вам придётся вручную совершить правку исходной страницы или отменить правку целевой страницы.',
             false,
@@ -803,7 +815,8 @@ export default class Section {
     }
 
     if (!e.ctrlKey) {
-      let link, subject;
+      let link;
+      let subject;
       if (cd.settings.defaultCopyLinkType === 'link') {
         link = url;
         subject = 'Ссылка';
@@ -913,8 +926,12 @@ export default class Section {
       (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3
     );
 
-    let sectionCode, sectionStartPos, sectionEndPos, sectionContentStartPos,
-      sectionSubdivisionEndPos, sectionSubdivisionCode;
+    let sectionCode;
+    let sectionStartPos;
+    let sectionEndPos;
+    let sectionContentStartPos;
+    let sectionSubdivisionEndPos;
+    let sectionSubdivisionCode;
     let sectionFound = false;
 
     let searchForSection = ({ checkHeading, checkFirstMsg }) => {

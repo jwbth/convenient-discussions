@@ -28,7 +28,13 @@ export default class Msg {
     // Extract the date data, sometimes the author too. We take the last date on the first line
     // where there are dates (farther, there would be dates of the replies to this message).
     const dateContainerText = dateContainer.textContent;
-    let author, date, year, month, day, hours, minutes;
+    let author;
+    let date;
+    let year;
+    let month;
+    let day;
+    let hours;
+    let minutes;
     // Taking into account the second call below, it's a long but cost-effective analogue of this
     // expression:
     // /(.*)(((\b\d?\d):(\d\d), (\d\d?) ([а-я]+) (\d\d\d\d)) \(UTC\))/
@@ -527,7 +533,8 @@ export default class Msg {
     const msgTop = viewportTop + rectTop.top;
     const msgBottom = viewportTop + rectBottom.bottom;
 
-    let msgLeft, msgRight;
+    let msgLeft;
+    let msgRight;
     if (!considerFloating) {
       msgLeft = window.pageXOffset + Math.min(rectTop.left, rectBottom.left);
       msgRight = window.pageXOffset + Math.min(rectTop.right, rectBottom.right);
@@ -931,7 +938,8 @@ export default class Msg {
     }
 
     if (!e.ctrlKey) {
-      let link, subject;
+      let link;
+      let subject;
       switch (cd.settings.defaultCopyLinkType) {
         default:
         case 'wikilink':
@@ -1102,7 +1110,8 @@ export default class Msg {
 
       const prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
 
-      let authorInCode, dateInCode;
+      let authorInCode;
+      let dateInCode;
       if (prevMsgInCodeMatch) {
         msgStartPos = prevMsgInCodeMatch[0].length;
         msgCode = msgCode.slice(msgStartPos);
