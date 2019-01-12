@@ -826,8 +826,7 @@ export default class Msg {
       if (this.bgcolor) {
         this.#linksUnderlayer_text.style.backgroundColor = this.bgcolor;
         let transparentColor = cd.env.getTransparentColor(this.bgcolor);
-        this.#linksUnderlayer_gradient.style.backgroundImage = 'linear-gradient(to left, ' +
-          this.bgcolor + ', ' + transparentColor + ')';
+        this.#linksUnderlayer_gradient.style.backgroundImage = `linear-gradient(to left, ${this.bgcolor}, ${transparentColor})`;
       }
     }
   }
@@ -928,7 +927,7 @@ export default class Msg {
 
   copyLink(e) {
     let url;
-    const wikilink = '[[' + cd.env.CURRENT_PAGE + '#' + this.anchor + ']]';
+    const wikilink = `[[${cd.env.CURRENT_PAGE}#${this.anchor}]]`;
     try {
       url = 'https:' + mw.config.get('wgServer') + decodeURI(mw.util.getUrl(cd.env.CURRENT_PAGE)) +
         '#' + this.anchor;
@@ -951,7 +950,7 @@ export default class Msg {
           subject = 'Ссылка';
           break;
         case 'discord':
-          link = '<' + url + '>';
+          link = `<${url}>`;
           subject = 'Discord-ссылка';
           break;
       }
@@ -983,7 +982,7 @@ export default class Msg {
       });
 
       const textInputAnchorWikilink = new OO.ui.TextInputWidget({
-        value: '[[#' + this.anchor + ']]'
+        value: `[[#${this.anchor}]]`
       });
       const textFieldAnchorWikilink = new OO.ui.FieldLayout(textInputAnchorWikilink, {
         align: 'top',
@@ -999,7 +998,7 @@ export default class Msg {
       });
 
       const textInputDiscord = new OO.ui.TextInputWidget({
-        value: '<' + url + '>',
+        value: `<${url}>`,
       });
       const textFieldDiscord = new OO.ui.FieldLayout(textInputDiscord, {
         align: 'top',
@@ -1186,6 +1185,7 @@ export default class Msg {
 
     // Reserve method: by this & previous two dates + authors.
     if (!bestMatchData.msgStartPos) {
+      let fail;
       // Should always find something (otherwise it wouldn't have found anything the previous time
       // and would've exited), so we don't specify exit the second time.
       while (authorAndDateMatches = authorAndDateRegExp.exec(pageCode)) {
@@ -1194,8 +1194,9 @@ export default class Msg {
         msgCode = pageCode.slice(0, msgEndPos);
         let pageCodeToMsgEnd = msgCode;
 
-        let fail = true;
-        for (let i = 0; i < prevMsgs.length; i++) {
+        fail = true;
+        let i;  // Used after the cycle.
+        for (i = 0; i < prevMsgs.length; i++) {
           const prevMsgInCodeMatch = cd.env.findPrevMsg(pageCodeToMsgEnd);
           if (!prevMsgInCodeMatch) break;
 
@@ -1236,9 +1237,7 @@ export default class Msg {
         }
       }
 
-      if (fail) {
-        return;
-      }
+      if (fail) return;
     }
 
     msgCode = pageCode.slice(bestMatchData.msgStartPos, bestMatchData.msgEndPos);
@@ -1261,28 +1260,43 @@ export default class Msg {
       .replace(cd.config.SIG_PREFIX_REGEXP, movePartToSig);
     bestMatchData.msgEndPos -= msgCodeLengthReduction;
 
+    // Identifying indentation characters
     let indentationCharacters = '';
-    let inSmallTag = false;
     msgCode = msgCode
       .replace(
-        /^\n*(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:\*#]*)[ \t]*/,
+        /^\n*(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:*#]*) */,
         (s, m1) => {
-          if (this.level === 0 ||  // FIXME: This should be done more elegantly.
-            !s.trim()) {
+          // Don't remove newlines and leading spaces when the message is on the first level
+          if (!s.trim()) {
             return s;
           }
           indentationCharacters = m1;
           bestMatchData.msgStartPos += s.length;
           return '';
         }
-      )
-      .replace(/^(?:\{\{block-small\|1=|<small>)/, () => {
-        inSmallTag = true;
-        return '';
-      });
+      );
 
-    // The message contains several indentation character sets – then use different sets depending
-    // on the mode.
+    let inSmallTag = false;
+    // {{block-small}} template
+    if (/^(?:\{\{block-small\|1=)/.test(msgCode) &&
+      /\}\}[  \t]*$/.test(bestMatchData.sigLastPart)
+    ) {
+      inSmallTag = true;
+      msgCode = msgCode.replace(/^(?:\{\{block-small\|1=)/, '');
+      bestMatchData.newSigLastPart = bestMatchData.sigLastPart.replace(/\}\}[  \t]*$/, '');
+    }
+
+    // <small> tag
+    if (/^(?:<small>|)/.test(msgCode) &&
+      /<\/small>[  \t]*$/.test(bestMatchData.sigLastPart)
+    ) {
+      inSmallTag = true;
+      msgCode = msgCode.replace(/^<small>/, '');
+      bestMatchData.newSigLastPart = bestMatchData.sigLastPart.replace(/<\/small>[  \t]*$/, '');
+    }
+
+    // If the message contains several indentation character sets for different lines, then use
+    // different sets depending on the mode.
     let replyIndentationCharacters = indentationCharacters;
     if (!this.isOpeningSection) {
       const otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
@@ -1312,7 +1326,8 @@ export default class Msg {
       inSmallTag,
       indentationCharacters,
       replyIndentationCharacters,
-      sig: bestMatchData.sigLastPart,
+      oldSig: bestMatchData.sigLastPart,
+      sig: bestMatchData.newSigLastPart || bestMatchData.sigLastPart,
       timestamp,
     };
     if (bestMatchData.headingStartPos !== undefined) {
@@ -1378,12 +1393,12 @@ export default class Msg {
 
     const hidden = [];
     const hide = (re) => {
-      text = text.replace(re, s => '\x01' + hidden.push(s) + '\x02');
+      text = text.replace(re, s => `\x01${hidden.push(s)}\x02`);
     };
     const hideTags = function hideTags() {
       for (let i = 0; i < arguments.length; i++) {
         hide(
-          new RegExp('<' + arguments[i] + '( [^>]+)?>[\\s\\S]+?<\\/' + arguments[i] + '>', 'gi')
+          new RegExp(`<${arguments[i]}( [^>]+)?>[\\s\\S]+?<\\/${arguments[i]}>`, 'gi')
         );
       }
     };
@@ -1666,7 +1681,7 @@ function getAuthorRegistered() {
 
 function getText() {
   // Get message text without a signature.
-  const $msgWithNoSig = $();
+  let $msgWithNoSig = $();
   if (this.$elements.length > 1) {
     $msgWithNoSig = $msgWithNoSig.add(this.$elements.slice(0, -1));
   }

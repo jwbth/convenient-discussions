@@ -12,7 +12,8 @@ export default class Section {
     if (!headlineElement || !this.#editsectionElement) {
       throw new cd.env.Exception();
     }
-    this.#closingBracketElement = this.#editsectionElement && this.#editsectionElement.lastElementChild;
+    this.#closingBracketElement = this.#editsectionElement &&
+      this.#editsectionElement.lastElementChild;
     if (!this.#closingBracketElement ||
       !this.#closingBracketElement.classList ||
       !this.#closingBracketElement.classList.contains('mw-editsection-bracket')
@@ -27,12 +28,12 @@ export default class Section {
 
     const headingLevelMatches = headingElement.tagName.match(/^H([1-6])$/);
     const headingLevel = headingLevelMatches && Number(headingLevelMatches[1]);
-    const headingLevelRegExp = new RegExp('^H[1-' + headingLevel + ']$');
+    const headingLevelRegExp = new RegExp(`^H[1-${headingLevel}]$`);
 
     const elements = [headingElement];
     let element = headingElement.nextSibling;
-    // The last element before the next heading, which can be a part of the next section of the same level,
-    // or the subsection of this section.
+    // The last element before the next heading, which can be a part of the next section of the same
+    // level, or the subsection of this section.
     let lastElementInFirstSubdivision;
     let hasSubsections = false;
     while (element && (!element.tagName || !headingLevelRegExp.test(element.tagName))) {
@@ -50,7 +51,9 @@ export default class Section {
     }
     if (!lastElementInFirstSubdivision) {
       for (let i = elements.length - 1; i >= 0; i--) {
-        if (elements[i].tagName && !elements[i].classList.contains('cd-addSubsectionButtonContainer')) {
+        if (elements[i].tagName &&
+          !elements[i].classList.contains('cd-addSubsectionButtonContainer')
+        ) {
           lastElementInFirstSubdivision = elements[i];
           break;
         }
@@ -219,7 +222,8 @@ export default class Section {
         addSubsectionButtonContainer.appendChild(addSubsectionButton);
 
         const lastElement = elements[elements.length - 1];
-        lastElement.parentElement.insertBefore(addSubsectionButtonContainer, lastElement.nextSibling);
+        lastElement.parentElement
+          .insertBefore(addSubsectionButtonContainer, lastElement.nextSibling);
 
         this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
 
@@ -338,7 +342,9 @@ export default class Section {
     this.$replyButtonContainer.hide();
 
     const sectionWithAddSubsectionButton = this.level === 2 ? this : this.baseSection;
-    if (sectionWithAddSubsectionButton && sectionWithAddSubsectionButton.$addSubsectionButtonContainer) {
+    if (sectionWithAddSubsectionButton &&
+      sectionWithAddSubsectionButton.$addSubsectionButtonContainer
+    ) {
       sectionWithAddSubsectionButton.$addSubsectionButtonContainer.hide();
 
       clearTimeout(sectionWithAddSubsectionButton.showAddSubsectionButtonTimeout);
@@ -543,7 +549,7 @@ export default class Section {
               text = 'Текущая страница была удалена.';
               recoverable = true;
             } else {
-              text = 'Ошибка API: ' + data + '.';
+              text = `Ошибка API: ${data}.`;
               recoverable = true;
             }
           } else if (errorType === 'network') {
@@ -587,7 +593,7 @@ export default class Section {
             const codeStartingWithThisSection = targetPageCode.slice(sectionHeadingsMatches.index);
 
             const date = cd.env.findFirstDate(codeStartingWithThisSection);
-            const timestamp = date && getTimestampFromDate(date);
+            const timestamp = date && cd.env.getTimestampFromDate(date);
             if (prevTimestamp) {
               if (timestamp > prevTimestamp) {
                 newerLowerCount++;
@@ -616,13 +622,13 @@ export default class Section {
             0,
             sectionInSourcePageCode.contentStartPos - sectionInSourcePageCode.startPos
           ) +
-            '{{перенесено на|' + targetWikilink + '|' + cd.settings.mySig + '}}\n' +
-            '<small>Для бота: ' + date + '</small>\n\n';
+            `{{перенесено на|${targetWikilink}|${cd.settings.mySig}}}\n` +
+            `<small>Для бота: ${date}</small>\n\n`;
           const newSectionInTargetPageCode = sectionInSourcePageCode.code.slice(
             0,
             sectionInSourcePageCode.contentStartPos - sectionInSourcePageCode.startPos
           ) +
-            '{{перенесено с|' + sourceWikilink + '|' + cd.settings.mySig + '}}\n' +
+            `{{перенесено с|${sourceWikilink}|${cd.settings.mySig}}}\n` +
             sectionInSourcePageCode.code.slice(
               sectionInSourcePageCode.contentStartPos - sectionInSourcePageCode.startPos
             );
@@ -645,7 +651,9 @@ export default class Section {
             action: 'edit',
             title: targetTitle.toString(),
             // FIXME: adjust if it goes beyond the maximum length.
-            summary: cd.env.formSummary('/* ' + section.heading + ' *' + '/ перенесено с [[' + sourceWikilink + ']]'),
+            summary: cd.env.formSummary(
+              `/* ${section.heading} */ перенесено с [[${sourceWikilink}]]`
+            ),
             text: newTargetPageCode,
             //basetimestamp: result.queryTimestamp,
             starttimestamp: new Date(result.queryTimestamp).toISOString(),
@@ -666,7 +674,7 @@ export default class Section {
               text = 'Указано невозможное название страницы';
               recoverable = false;
             } else {
-              text = 'Неизвестная ошибка API: ' + data + '.';
+              text = `Неизвестная ошибка API: ${data}.`;
               recoverable = true;
             }
           } else if (errorType === 'network') {
@@ -680,7 +688,7 @@ export default class Section {
           const error = data.error;
           if (error) {
             if (error.code === 'editconflict') {
-              text = 'Конфликт редактирования. Просто нажмите «' +  OO.ui.msg('ooui-dialog-process-retry') + '».';
+              text = `Конфликт редактирования. Просто нажмите «${OO.ui.msg('ooui-dialog-process-retry')}».`;
               recoverable = true;
             } else {
               text = error.code + ': ' + error.info;
@@ -693,7 +701,7 @@ export default class Section {
             action: 'edit',
             title: cd.env.CURRENT_PAGE,
             // FIXME: adjust if it goes beyond the maximum length.
-            summary: cd.env.formSummary('/* ' + section.heading + ' *' + '/ перенесено на [[' + targetWikilink + ']]'),
+            summary: cd.env.formSummary(`/* ${section.heading} */ перенесено на [[${targetWikilink}]]`),
             text: newSourcePageCode,
             //basetimestamp: sourcePageTimestamp,
             starttimestamp: new Date(sourcePageTimestamp).toISOString(),
@@ -709,10 +717,10 @@ export default class Section {
 
         const editSourcePageDoneCallback = () => {
           const url = mw.util.getUrl(targetWikilink);
-          dialog.panelReload.$element.html('<p>Тема успешно перенесена. Вы можете обновить страницу или перейти на <a href="' + url + '">страницу, куда была перенесена тема</a>.</p>');
+          dialog.panelReload.$element.html(`<p>Тема успешно перенесена. Вы можете обновить страницу или перейти на <a href="${url}">страницу, куда была перенесена тема</a>.</p>`);
 
-          dialog.popPending();
           dialog.stackLayout.setItem(dialog.panelReload);
+          dialog.popPending();
           dialog.actions.setMode('reload');
         };
 
@@ -742,7 +750,7 @@ export default class Section {
     };
 
     MoveSectionDialog.prototype.getBodyHeight = function () {
-      return this.panelMove.$element.outerHeight(true);
+      return this.stackLayout.getCurrentItem().$element.outerHeight(true);
     };
 
     const moveSectionDialog = new MoveSectionDialog();
@@ -761,7 +769,7 @@ export default class Section {
     cd.env.setWatchedTopics(cd.env.watchedTopics)
       .done(() => {
         mw.notify(cd.env.toJquerySpan(
-          'Иконка у сообщений в разделе «' + this.heading + '» в списке наблюдения теперь будет синей.'
+          `Иконка у сообщений в разделе «${this.heading}» в списке наблюдения теперь будет синей.`
         ));
       })
       .fail((e) => {
@@ -787,7 +795,7 @@ export default class Section {
     cd.env.setWatchedTopics(cd.env.watchedTopics)
       .done(() => {
         mw.notify(cd.env.toJquerySpan(
-          'Иконка у сообщений в разделе «' + this.heading + '» в списке наблюдения теперь будет серой.'
+          `Иконка у сообщений в разделе «${this.heading}» в списке наблюдения теперь будет серой.`
         ));
       })
       .fail(() => {
@@ -805,10 +813,10 @@ export default class Section {
 
   copyLink(e) {
     let url;
-    const wikilink = '[[' + cd.env.CURRENT_PAGE + '#' + this.heading + ']]';
+    const wikilink = `[[${cd.env.CURRENT_PAGE}#${this.heading}]]`;
     try {
-      url = 'https:' + mw.config.get('wgServer') + decodeURI(mw.util.getUrl(cd.env.CURRENT_PAGE)) + '#' +
-        this.heading.replace(/ /g, '_');
+      url = 'https:' + mw.config.get('wgServer') + decodeURI(mw.util.getUrl(cd.env.CURRENT_PAGE)) +
+        '#' + this.heading.replace(/ /g, '_');
     } catch (e) {
       console.error(e.stack);
       return;
@@ -821,7 +829,7 @@ export default class Section {
         link = url;
         subject = 'Ссылка';
       } else if (cd.settings.defaultCopyLinkType === 'discord') {
-        link = '<' + url + '>';
+        link = `<${url}>`;
         subject = 'Discord-ссылка';
       } else {  // cd.settings.defaultCopyLinkType === 'wikilink'
         link = wikilink;
@@ -855,7 +863,7 @@ export default class Section {
       });
 
       const textInputAnchorWikilink = new OO.ui.TextInputWidget({
-        value: '[[#' + this.heading + ']]'
+        value: `[[#${this.heading}]]`
       });
       const textFieldAnchorWikilink = new OO.ui.FieldLayout(textInputAnchorWikilink, {
         align: 'top',
@@ -871,7 +879,7 @@ export default class Section {
       });
 
       const textInputDiscord = new OO.ui.TextInputWidget({
-        value: '<' + url + '>',
+        value: `<${url}>`,
       });
       const textFieldDiscord = new OO.ui.FieldLayout(textInputDiscord, {
         align: 'top',
@@ -919,8 +927,8 @@ export default class Section {
     const headingToFind = cd.env.encodeWikiMarkup(this.heading);
     const sectionHeadingsRegExp = /^((=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*)\n/gm;
 
-    // To ignore the comment contents (there could be section presets there) but get the right positions
-    // and code at the output.
+    // To ignore the comment contents (there could be section presets there) but get the right
+    // positions and code at the output.
     const adjustedPageCode = pageCode.replace(
       /(<!--)([^]*?)(-->)/g,
       (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3
@@ -946,7 +954,7 @@ export default class Section {
           const equalSigns = sectionHeadingsMatches[2];
 
           // Get the section content.
-          const equalSignsPattern = '={1,' + equalSigns.length + '}';
+          const equalSignsPattern = `={1,${equalSigns.length}}`;
 
           const codeFromSection = pageCode.slice(sectionHeadingsMatches.index);
           const adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingsMatches.index);
@@ -986,7 +994,7 @@ export default class Section {
             );
 
           if (!sectionCode || !sectionSubdivisionCode) {
-            console.log('Не удалось считать содержимое раздела «' + thisHeading + '».');
+            console.log(`Не удалось считать содержимое раздела «${thisHeading}».`);
             continue;
           }
 

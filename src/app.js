@@ -21,7 +21,7 @@ function main() {
   function packVisits(visits) {
     let visitsString = '';
     for (let key in visits) {
-      visitsString += key + ',' + visits[key].join(',') + '\n';
+      visitsString += `${key}, ${visits[key].join(',')}\n`;
     }
     return visitsString.trim();
   }
@@ -39,7 +39,7 @@ function main() {
   function packWatchedTopics(watchedTopics) {
     let watchedTopicsString = '';
     for (let key in watchedTopics) {
-      watchedTopicsString += ' ' + key + ' ' + watchedTopics[key].join('\n') + '\n';
+      watchedTopicsString += ` ${key} ${watchedTopics[key].join('\n')}\n`;
     }
     return watchedTopicsString.trim();
   }
@@ -835,9 +835,9 @@ function main() {
       if (cd.env.optionsRequest) {
         return cd.env.optionsRequest.then(options => options.watchedTopics);
       } else if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
-        const watchedTopics = unpackWatchedTopics(
-          lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME))
-        );
+        const watchedTopics = unpackWatchedTopics(lzString.decompressFromEncodedURIComponent(
+          mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME)
+        ));
 
         return $.Deferred().resolve(watchedTopics).promise();
       } else {
@@ -847,7 +847,9 @@ function main() {
 
     setWatchedTopics(watchedTopics) {
       const watchedTopicsString = packWatchedTopics(watchedTopics);
-      const watchedTopicsStringCompressed = lzString.compressToEncodedURIComponent(watchedTopicsString);
+      const watchedTopicsStringCompressed = (
+        lzString.compressToEncodedURIComponent(watchedTopicsString)
+      );
       if (watchedTopicsStringCompressed.length > 65535) {
         return $.Deferred().reject(['internal', 'sizelimit']);
       }
@@ -995,7 +997,7 @@ function main() {
                   ));
                 } else {
                   editWatchedTopicsDialog.showErrors(new OO.ui.Error(
-                    'Возникли проблемы при обработке списка тем: ' + errorType + '/' + data,
+                    `Возникли проблемы при обработке списка тем: ${errorType}/${data}`,
                     true
                   ));
                 }
@@ -1025,7 +1027,7 @@ function main() {
         } catch (e) {
           const [errorType, data] = e;
           editWatchedTopicsDialog.showErrors(new OO.ui.Error(
-            'Возникли проблемы при обработке списка тем: ' + errorType + '/' + data,
+            `Возникли проблемы при обработке списка тем: ${errorType}/${data}`,
             true
           ));
           console.log(errorType, data);
@@ -1139,7 +1141,7 @@ function main() {
   }
 
   cd.env.UNDERLAYER_NEW_BGCOLOR = cd.env.UNDERLAYER_NEWEST_BGCOLOR;
-  cd.env.SUMMARY_POSTFIX = ' ([[' + cd.env.HELP_LINK + '|CD]])';
+  cd.env.SUMMARY_POSTFIX = ` ([[${cd.env.HELP_LINK}|CD]])`;
   cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT = cd.env.SUMMARY_LENGTH_LIMIT - cd.env.SUMMARY_POSTFIX.length;
 
   /*  USER_NAME_PATTERN:
@@ -1184,6 +1186,7 @@ function main() {
   captureUserNameRegexp += ')[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|';
   captureUserNameRegexp += anyTypeOfSpace(cd.config.SPECIAL_CONTRIBUTIONS_PAGE);
   captureUserNameRegexp += ')\\/[ _]*)([^|\\]#\/]+)';
+  // The capture should have user name.
   cd.env.USER_NAME_REGEXPS = [
     new RegExp(captureUserNameRegexp, 'ig'),
     // Cases like [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]
@@ -1287,7 +1290,11 @@ function main() {
     mw.config.get('wgCanonicalSpecialPageName') === 'Contributions' ||
     (mw.config.get('wgAction') === 'history' &&
       cd.env.isDiscussionNamespace(cd.env.NAMESPACE_NUMBER) &&
-      (cd.env.NAMESPACE_NUMBER !== 4 || cd.env.NAMESPACE_NUMBER !== 104 || cd.config.DISCUSSION_PAGE_REGEXP.test(cd.env.CURRENT_PAGE))) ||
+      (cd.env.NAMESPACE_NUMBER !== 4 ||
+        cd.env.NAMESPACE_NUMBER !== 104 ||
+        cd.config.DISCUSSION_PAGE_REGEXP.test(cd.env.CURRENT_PAGE)
+      )
+    ) ||
     cd.env.IS_DIFF_PAGE
   ) {
     addCSS(logPagesCss);

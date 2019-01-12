@@ -28,7 +28,8 @@ export default function parse(msgAnchorToScrollTo) {
   cd.msgForms = [];
 
   // Settings in variables like cdAlowEditOthersMsgs
-  ['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects', 'showLoadingOverlay']
+  ['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects',
+    'showLoadingOverlay']
     .forEach((name) => {
       const settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
       if (settingName in window) {
@@ -36,7 +37,8 @@ export default function parse(msgAnchorToScrollTo) {
       }
     });
 
-  // We fill the settings after the modules are loaded so that user settings had more chance to load.
+  // We fill the settings after the modules are loaded so that user settings had more chance
+  // to load.
   cd.defaultSettings = {
     allowEditOthersMsgs: false,
     alwaysExpandSettings: false,
@@ -117,7 +119,8 @@ export default function parse(msgAnchorToScrollTo) {
 
   const authorInSigMatches = cd.env.CURRENT_USER_SIG.match(new RegExp(cd.config.USER_NAME_PATTERN));
   if (authorInSigMatches) {
-    // Signature contents before the user name – in order to cut it out from the message endings when editing.
+    // Signature contents before the user name – in order to cut it out from the message endings
+    // when editing.
     cd.env.CURRENT_USER_SIG_PREFIX_REGEXP = new RegExp(
       (cd.settings.mySig === cd.defaultSettings.mySig || !cd.settings.mySig.includes('~~\~') ?
         '' :
@@ -127,11 +130,11 @@ export default function parse(msgAnchorToScrollTo) {
     );
   }
 
-  const POPULAR_NOT_INLINE_ELEMENTS = ['P', 'OL', 'UL', 'LI', 'PRE', 'BLOCKQUOTE', 'DL', 'DD', 'DIV', 'HR', 'H2',
-  'H3', 'H4', 'H5', 'H6', 'TABLE', 'INPUT', 'FORM'];
-  const POPULAR_INLINE_ELEMENTS = ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE', 'TT', 'KBD',
-    'BR', 'IMG', 'SUP', 'SUB', 'ABBR', 'CITE'];
-  cd.env.PNIE_PATTERN = '(?:' + POPULAR_NOT_INLINE_ELEMENTS.join('|') + ')';
+  const POPULAR_NOT_INLINE_ELEMENTS = ['P', 'OL', 'UL', 'LI', 'PRE', 'BLOCKQUOTE', 'DL', 'DD',
+    'DIV', 'HR', 'H2', 'H3', 'H4', 'H5', 'H6', 'TABLE', 'INPUT', 'FORM'];
+  const POPULAR_INLINE_ELEMENTS = ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE',
+    'TT', 'KBD', 'BR', 'IMG', 'SUP', 'SUB', 'ABBR', 'CITE'];
+  cd.env.PNIE_PATTERN = `(?:${POPULAR_NOT_INLINE_ELEMENTS.join('|')})`;
 
   cd.env.EVERYTHING_MUST_BE_FROZEN = !!(
     cd.env.CURRENT_PAGE.includes('/Архив') ||
@@ -162,7 +165,7 @@ export default function parse(msgAnchorToScrollTo) {
       msgAntipatternPatternParts.push(antiPattern);
     });
     cd.env.MSG_ANTIPATTERN_REGEXP = new RegExp(
-      '(?:' + msgAntipatternPatternParts.join('|') + ').*\\n$'
+      `(?:${msgAntipatternPatternParts.join('|')}).*\\n$`
     );
   }
 
@@ -237,9 +240,10 @@ export default function parse(msgAnchorToScrollTo) {
     cd.env.windowManager.addWindows([messageDialog]);
 
     const proceedToArchiveWindow = cd.env.windowManager.openWindow(messageDialog, {
-      message: $('<div style="text-align:center;"><p style="margin-top:0;"><span style="color:#c61313;">' +
-        'Тема не найдена.</span>  Она могла быть переименована или уйти в архив.</p>' +
-        '<p style="font-size:125%;">Поискать в архиве?</p></div>'
+      message: $(
+        '<div style="text-align:center;"><p style="margin-top:0;">' +
+        '<span style="color:#c61313;">Тема не найдена.</span> Она могла быть переименована или уйти в архив.' +
+        '</p><p style="font-size:125%;">Поискать в архиве?</p></div>'
       ),
       actions: [
         { label: 'Да', action: 'yes' },
@@ -260,7 +264,7 @@ export default function parse(msgAnchorToScrollTo) {
         } else {
           archivePrefix = PAGE_TITLE;
         };
-        const searchQuery = '"' + heading + '" prefix:' +
+        const searchQuery = `"${heading}" prefix:` +
           mw.config.get('wgFormattedNamespaces')[cd.env.NAMESPACE_NUMBER] + ':' + archivePrefix;
         const url = mw.util.getUrl('Служебная:Поиск', {
           profile: 'default',
@@ -297,10 +301,10 @@ export default function parse(msgAnchorToScrollTo) {
     decodedFragment !== 'Преамбула' &&
     !fragment.startsWith('/media/') &&
     !$(':target').length &&
-    !$('a[name="' + escapedDecodedFragment + '"]').length &&
-    !$('*[id="' + escapedDecodedFragment + '"]').length &&
-    !$('a[name="' + escapedFragment + '"]').length &&
-    !$('*[id="' + escapedFragment + '"]').length
+    !$(`a[name="${escapedDecodedFragment}"]`).length &&
+    !$(`*[id="${escapedDecodedFragment}"]`).length &&
+    !$(`a[name="${escapedFragment}"]`).length &&
+    !$(`*[id="${escapedFragment}"]`).length
   ) {
     window.proceedToArchiveHasRun = true;
     proceedToArchiveDialog();
@@ -361,7 +365,7 @@ export default function parse(msgAnchorToScrollTo) {
 
     findPrevMsg(code) {
       // We use .* in front of cd.env.SIG_PATTERN to search for the last signature in the code.
-      const regexp = new RegExp('^[^]*(?:^|\\n)(.*' + cd.env.SIG_PATTERN + '.*\\n)');
+      const regexp = new RegExp(`^[^]*(?:^|\\n)(.*${cd.env.SIG_PATTERN}.*\\n)`);
       let match = code.match(regexp);
       while (match &&
         cd.env.MSG_ANTIPATTERN_REGEXP &&
@@ -377,7 +381,7 @@ export default function parse(msgAnchorToScrollTo) {
       code += '\n';
       // We use .* in front of cd.env.SIG_PATTERN to search for the last signature in the code.
       // Note ^[^]*? to search for the _first_ message.
-      const regexp = new RegExp('^[^]*?(?:^|\\n)(.*' + cd.env.SIG_PATTERN + '.*\\n)');
+      const regexp = new RegExp(`^[^]*?(?:^|\\n)(.*${cd.env.SIG_PATTERN}.*\\n)`);
       let match = code.match(regexp);
       let initialPos = 0;
       if (cd.env.MSG_ANTIPATTERN_REGEXP) {
@@ -394,45 +398,45 @@ export default function parse(msgAnchorToScrollTo) {
 
     collectAuthorAndDate(match) {
       const text = match[1];
-      let date;
-      let author;
-      if (match[2]) {
-        date = match[2];
+      let authorDate = [];
+      let nextMatchNumber = 2;
+      for (let i = 0; i < cd.config.SIG_PATTERNS.length; i++) {
+        const captureNames = cd.config.SIG_PATTERNS[i][1];
+        for (let j = 0; j < captureNames.length; j++, nextMatchNumber++) {
+          if (match[nextMatchNumber]) {
+            authorDate[captureNames[j]] = match[nextMatchNumber];
+          }
+        }
 
-        for (let i = 0; i < cd.env.USER_NAME_REGEXPS.length; i++) {
-          author = cd.env.getLastGlobalCapture(text, cd.env.USER_NAME_REGEXPS[i]);
-          if (author) break;
-        }
-        if (author) {
-          author = (author[0].toUpperCase() + author.slice(1)).replace(/[ _]+/g, ' ');
-        }
-      } else if (match[3]) {
-        author = match[3];
-        date = match[4] || null;
-        if (date && !date.includes('(UTC)')) {
-          date += ' (UTC)';
-        }
-      } else if (match[5]) {
-        author = match[6];
-        date = match[5];
-        if (!date && date.includes('(UTC)')) {
-          date += ' (UTC)';
+        if (!captureNames.includes('author')) {
+          for (let j = 0; j < cd.env.USER_NAME_REGEXPS.length; j++) {
+            authorDate['author'] = cd.env.getLastGlobalCapture(text, cd.env.USER_NAME_REGEXPS[j]);
+            if (authorDate['author']) break;
+          }
         }
       }
 
-      return [author, date];
+      if (authorDate['date'] && !authorDate['date'].includes('(UTC)')) {
+        authorDate['date'] += ' (UTC)';
+      }
+
+      if (authorDate['author']) {
+        authorDate['author'] = (authorDate['author'][0].toUpperCase() + authorDate['author'].slice(1)).replace(/[ _]+/g, ' ');
+      }
+
+      return [authorDate['author'], authorDate['date']];
     },
 
     findFirstDate(code) {
       let [firstMsgMatch] = cd.env.findFirstMsg(code);
 
       if (firstMsgMatch) {
-        if (firstMsgMatch[3]) {
-          return firstMsgMatch[3];
-        } else if (firstMsgMatch[4]) {
-          return firstMsgMatch[5] || firstMsgMatch[4];
-        } else if (firstMsgMatch[6]) {
-          return firstMsgMatch[6];
+        if (firstMsgMatch[2]) {
+          return firstMsgMatch[2];
+        } else if (firstMsgMatch[3]) {
+          return firstMsgMatch[4] || firstMsgMatch[3];
+        } else if (firstMsgMatch[5]) {
+          return firstMsgMatch[5];
         }
       }
     },
@@ -475,13 +479,18 @@ export default function parse(msgAnchorToScrollTo) {
 
     cleanSectionHeading(heading) {
       return heading
-        .replace(/\[\[:?(?:[^|]*\|)?([^\]]*)\]\]/g, '$1')  // Extract displayed text from wikilinks
-        .replace(/'''(.+?)'''/g, '$1')                     // Remove bold
-        .replace(/''(.+?)''/g, '$1')                       // Remove italics
-        .replace(/<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>/g, '')   // Remove opening tags (won't work with
-                                                           // <smth param=">">, but wikiparser fails too)
-        .replace(/<\/\w+ ?>/g, '')                         // Remove closing tags
-        .replace(/ {2,}/g, ' ')                            // Remove multiple spaces
+        // Extract displayed text from wikilinks
+        .replace(/\[\[:?(?:[^|]*\|)?([^\]]*)\]\]/g, '$1')
+        // Remove bold
+        .replace(/'''(.+?)'''/g, '$1')
+        // Remove italics
+        .replace(/''(.+?)''/g, '$1')
+        // Remove opening tags (won't work with <smth param=">">, but wikiparser fails too)
+        .replace(/<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>/g, '')
+        // Remove closing tags
+        .replace(/<\/\w+ ?>/g, '')
+        // Remove multiple spaces
+        .replace(/ {2,}/g, ' ')
         .trim();
     },
 
@@ -529,9 +538,9 @@ export default function parse(msgAnchorToScrollTo) {
 
     generateAuthorAndDateRegExp(author, date) {
       // These HTML entities are collected via a query like
-      // "insource:/\[\[[УуUu](ser|частни)?:[^|\]]*\&/ prefix:ВП:" on Russian and English Wikipedias (cases are
-      // collected from the results by ".*&.{10}", junk is removed by "^[^;]*$" (lines without ;) and
-      // ";.+$" (text after ;), unique lines are kept.
+      // "insource:/\[\[[УуUu](ser|частни)?:[^|\]]*\&/ prefix:ВП:" on Russian and English Wikipedias
+      // (cases are collected from the results by ".*&.{10}", junk is removed by "^[^;]*$"
+      // (lines without ;) and ";.+$" (text after ;), unique lines are kept.
       const popularHTMLEntities = {
         '"': ['&#34;', '&quot;'],
         '&': ['&#38;', '&amp;'],
@@ -559,7 +568,7 @@ export default function parse(msgAnchorToScrollTo) {
           }
           authorPattern = authorPattern.replace(
             mw.RegExp.escape(key),
-            '(?:' + mw.RegExp.escape(key) + '|' + entitiesPattern + ')'
+            `(?:${mw.RegExp.escape(key)}|${entitiesPattern})`
           );
         }
       }
@@ -568,7 +577,8 @@ export default function parse(msgAnchorToScrollTo) {
         const dateInUnsignedTemplatesPattern = mw.RegExp.escape(date)
           .replace(/ \\\(UTC\\\)$/, '(?: \\(UTC\\))?');
         return new RegExp(
-          // Caution: invisible character in [ ‎].
+          // Caution: invisible character in [ ‎]. [  \t]* in the end needed to remove messages
+          // properly.
           cd.config.USER_NAME_PATTERN + authorPattern + '[|\\]#].*' + mw.RegExp.escape(date) +
             '[  \t]*(?:\}\}|</small>)?[  \t]*|' +
           '\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *' +
@@ -592,14 +602,22 @@ export default function parse(msgAnchorToScrollTo) {
     generateAuthorSelector(author) {
       const authorEncoded = $.escapeSelector(encodeURIComponent(author.replace(/ /g, '_')));
       return (
-        'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '"]:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '/"]), ' +
-        'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:' + authorEncoded + '"]:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:' + authorEncoded + '/"]), ' +
-        'a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA%D0%B0:' + authorEncoded +'"]:not(a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA%D0%B0:' + authorEncoded +'/"]), ' +
-        'a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D1%8B:' + authorEncoded +'"]:not(a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D1%8B:' + authorEncoded +'/"]), ' +
-        'a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4/' + authorEncoded + '"]:not(a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4/' + authorEncoded + '/"]), ' +
-        'a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '"]:not(a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:' + authorEncoded + '/"]), ' +
-        'a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:' + authorEncoded + '"]:not(a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:' + authorEncoded + '/"]), ' +
-        'a[href*="/wiki/User:' + authorEncoded + '"]:not(a[href*="/wiki/User:' + authorEncoded + '/"])'
+        `a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:${authorEncoded}"]` +
+          `:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:${authorEncoded}/"]), ` +
+        `a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:${authorEncoded}"]` +
+          `:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:${authorEncoded}/"]), ` +
+        `a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA%D0%B0:' + authorEncoded +'"]` +
+          `:not(a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA%D0%B0:${authorEncoded}/"]), ` +
+        `a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D1%8B:${authorEncoded}"]` +
+          `:not(a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D1%8B:${authorEncoded}/"]), ` +
+        `a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4/${authorEncoded}"]` +
+          `:not(a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4/${authorEncoded}/"]), ` +
+        `a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:${authorEncoded}"]` +
+          `:not(a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:${authorEncoded}/"]), ` +
+        `a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:${authorEncoded}"]`
+          + `:not(a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:${authorEncoded}/"]), ` +
+        `a[href*="/wiki/User:${authorEncoded}"]` +
+          `:not(a[href*="/wiki/User:${authorEncoded}/"])`
       );
     },
 
@@ -757,7 +775,8 @@ export default function parse(msgAnchorToScrollTo) {
     },
 
     registerSeenMsgs() {
-      // Don't run the handler of an event more than once in 100ms, otherwise the scrolling may be slowed down.
+      // Don't run the handler of an event more than once in 100ms, otherwise the scrolling may be
+      // slowed down.
       if (!cd.env.newestCount || cd.env.scrollHandleTimeout) return;
 
       cd.env.scrollHandleTimeout = true;
@@ -806,7 +825,7 @@ export default function parse(msgAnchorToScrollTo) {
         if (options.data === 'missing') {
           text = 'Текущая страница была удалена.';
         } else {
-          text = 'Ошибка API: ' + options.data + '.';
+          text = `Ошибка API: ${options.data}.`;
         }
         this.abort(options.message + '. ' + text, options.data, options.retryFunc);
       } else if (options.errorType === 'network') {
@@ -1093,7 +1112,8 @@ export default function parse(msgAnchorToScrollTo) {
 
   /* Main code */
 
-  // Here and below vanilla JavaScript is used for recurring operations that together take up a lot of time.
+  // Here and below vanilla JavaScript is used for recurring operations that together take up a lot
+  // of time.
 
   debug.startTimer('основной код');
 
@@ -1102,8 +1122,8 @@ export default function parse(msgAnchorToScrollTo) {
   cd.parse.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
   cd.parse.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 
-  const blocksToExcludeSelector = 'blockquote, ' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES
-    .map(s => '.' + s).join(', ');
+  const blocksToExcludeSelector = 'blockquote, ' +
+    cd.config.BLOCKS_TO_EXCLUDE_CLASSES.map(s => '.' + s).join(', ');
   const blocksToExclude = cd.env.$content.find(blocksToExcludeSelector).get();
 
   const potentialDateContainers = cd.env.contentElement.querySelectorAll('li, dd, p, div');
@@ -1147,9 +1167,9 @@ export default function parse(msgAnchorToScrollTo) {
 
     cd.env.updateUnderlayersCorrection();
 
-    // "#cd-linksUnderlayersContainer" element must be placed outside of all elements with z-index set.
-    // In Vector, a common container for "underlayers" and "links underlayers" can be used, but in Monobook,
-    // a separate container on the topmost level is needed.
+    // "#cd-linksUnderlayersContainer" element must be placed outside of all elements with z-index
+    // set. In Vector, a common container for "underlayers" and "links underlayers" can be used,
+    // but in Monobook, a separate container on the topmost level is needed.
     const $linksUnderlayersContainer = $('<div>').attr('id', 'cd-linksUnderlayersContainer');
     $('body').prepend($linksUnderlayersContainer);
     cd.env.linksUnderlayersContainer = $linksUnderlayersContainer[0];
@@ -1213,8 +1233,8 @@ export default function parse(msgAnchorToScrollTo) {
     for (let i = 0; i < levels.length; i++) {
       const bottomElement = levels[i];
       const topElement = bottomElement.previousElementSibling;
-      // If the previous element was removed in this cycle. (Or it could be absent for some other reason?
-      // There was a case where the element was absent.)
+      // If the previous element was removed in this cycle. (Or it could be absent for some other
+      // reason? There was a case where the element was absent.)
       if (!topElement) continue;
       let currentTopElement = topElement;
       let currentBottomElement = bottomElement;
@@ -1232,7 +1252,9 @@ export default function parse(msgAnchorToScrollTo) {
         }
 
         let firstMoved = null;
-        if ((currentTopElement.classList.contains('cd-msgLevel') && currentTopElement.tagName !== 'OL') ||
+        if ((currentTopElement.classList.contains('cd-msgLevel') &&
+            currentTopElement.tagName !== 'OL'
+          ) ||
           currentTopElement.querySelector('.cd-msgLevel:not(ol)')
         ) {
           while (currentBottomElement.childNodes.length) {
@@ -1275,9 +1297,14 @@ export default function parse(msgAnchorToScrollTo) {
     debug.endTimer('collapse');
   };
 
-  collapseAdjacentMsgLevels(cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)'));
-  collapseAdjacentMsgLevels(cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)'));
-  if (cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)').length) {
+  collapseAdjacentMsgLevels(
+    cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)')
+  );
+  collapseAdjacentMsgLevels(
+    cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)')
+  );
+  if (cd.env.contentElement.querySelectorAll('.cd-msgLevel:not(ol) + .cd-msgLevel:not(ol)').length
+  ) {
     console.error('Остались соседства .cd-msgLevel.');
   }
 
@@ -1400,7 +1427,8 @@ export default function parse(msgAnchorToScrollTo) {
   cd.env.floatingElements = [];
   for (let i = 0; i < floatingElementsNodeList.length; i++) {
     const floatingElement = floatingElementsNodeList[i];
-    // Hardcodely delete all known elements. They should probably be assigned a class, like "cd-ignoreFloating".
+    // Hardcodely delete all known elements. They should probably be assigned a class, like
+    // "cd-ignoreFloating".
     if (!(floatingElement.tagName === 'SPAN' ||
       floatingElement.classList.contains('mw-collapsible-toggle') ||
       floatingElement.style.padding === '1em 21px 0.5em' ||
@@ -1412,7 +1440,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   let msgAnchor = cd.env.firstRun ? isMsgFragment && decodedFragment : msgAnchorToScrollTo;
   if (msgAnchor) {
-    let $targetMsg = $('[id="' + $.escapeSelector(msgAnchor) + '"]');
+    let $targetMsg = $(`[id="${$.escapeSelector(msgAnchor)}"]`);
     if (cd.env.firstRun && !$targetMsg.length) {  // By a link from the watchlist
       const msgDataMatches = msgAnchor.match(/^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)_(.+)$/);
       const year = Number(msgDataMatches[1]);
@@ -1434,7 +1462,7 @@ export default function parse(msgAnchorToScrollTo) {
           dateToFind.getMinutes(),
           author
         );
-        $targetMsg = $('[id="' + $.escapeSelector(msgAnchor) + '"]');
+        $targetMsg = $(`[id="${$.escapeSelector(msgAnchor)}"]`);
         if ($targetMsg.length) break;
       }
     }
@@ -1469,7 +1497,9 @@ export default function parse(msgAnchorToScrollTo) {
           if (!cd.getLastActiveAlteredMsgForm()) {
             cd.env.reloadPage();
           } else {
-            if (confirm('На странице имеются неотправленные формы. Перезагрузить страницу всё равно?')) {
+            if (confirm(
+              'На странице имеются неотправленные формы. Перезагрузить страницу всё равно?'
+            )) {
               cd.env.reloadPage();
             } else {
               let lastActiveAlteredMsgForm = cd.getLastActiveAlteredMsgForm();
@@ -1533,9 +1563,9 @@ export default function parse(msgAnchorToScrollTo) {
             const msg = cd.msgs[i];
 
             // + 60 to avoid situation when a message is considered read but it was added the same
-            // minute with the last visit. This behaviour has a side effect: if you posted a message, it
-            // will be marked as "new" the next time you visit until cd.env.HIGHLIGHT_NEW_INTERVAL
-            // minutes pass.
+            // minute with the last visit. This behaviour has a side effect: if you posted
+            // a message, it will be marked as "new" the next time you visit until
+            // cd.env.HIGHLIGHT_NEW_INTERVAL minutes pass.
             const msgUnixTime = Math.floor(msg.timestamp / 1000);
 
             if (thisPageVisits.length &&
@@ -1627,9 +1657,9 @@ export default function parse(msgAnchorToScrollTo) {
   }
 
   if (cd.env.firstRun) {
-    // mouseover allows to capture when the cursor is not moving but ends up above the element (for example,
-    // as a result of scrolling). The handlers are in outer scope so that they don't run twice after each
-    // refresh.
+    // mouseover allows to capture when the cursor is not moving but ends up above the element
+    // (for example, as a result of scrolling). The handlers are in outer scope so that they don't
+    // run twice after each refresh.
     $(document)
       .on('mousemove mouseover', cd.env.highlightFocused)
       .keydown(cd.env.globalKeyDownHandler);
@@ -1663,7 +1693,7 @@ export default function parse(msgAnchorToScrollTo) {
   }
 
   const generateEditCommonJsLink = () =>
-    mw.util.getUrl('User:' + cd.env.CURRENT_USER + '/common.js', { action: 'edit' });
+    mw.util.getUrl(`User:${cd.env.CURRENT_USER}/common.js`, { action: 'edit' });
 
   if (highlightLastMessagesEnabled && !mw.cookie.get('cd-hlmConflict')) {
     // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
@@ -1671,8 +1701,8 @@ export default function parse(msgAnchorToScrollTo) {
       const dummyElement = document.createElement('span');
       dummyElement.style.color = messagesHighlightColor;
       const hlmStyledElements = cd.env.contentElement.querySelectorAll(
-        '.cd-msgPart[style="background-color: ' + dummyElement.style.color + ';"],' +
-        '.cd-msgPart[style="background-color: ' + messagesHighlightColor + '"]'
+        `.cd-msgPart[style="background-color: ${dummyElement.style.color};"],` +
+        `.cd-msgPart[style="background-color: ${messagesHighlightColor}"]`
       );
       for (let i = 0; i < hlmStyledElements.length; i++) {
         hlmStyledElements[i].style.backgroundColor = null;
@@ -1680,7 +1710,7 @@ export default function parse(msgAnchorToScrollTo) {
     }
 
     mw.notify(
-      cd.env.toJquerySpan('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные дискуссии». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).'),
+      cd.env.toJquerySpan(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`),
       { autoHide: false }
     );
     mw.cookie.set('cd-hlmConflict', '1', { path: '/', expires: cd.env.SECONDS_IN_A_DAY * 30 });
@@ -1690,7 +1720,7 @@ export default function parse(msgAnchorToScrollTo) {
     !mw.cookie.get('cd-ptaConflict')
   ) {
     mw.notify(
-      cd.env.toJquerySpan('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).'),
+      cd.env.toJquerySpan(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`),
       { autoHide: false }
     );
     mw.cookie.set('cd-ptaConflict', '1', { path: '/', expires: cd.env.SECONDS_IN_A_DAY * 30 });
@@ -1698,7 +1728,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   if (document.querySelector('.localcomments[style="font-size: 95%; white-space: nowrap;"]')) {
     mw.notify(
-      cd.env.toJquerySpan('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.env.HELP_LINK) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.'),
+      cd.env.toJquerySpan(`Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="${mw.util.getUrl(cd.env.HELP_LINK)}#Совместимость">здесь</a>, чтобы обеспечить их совместимость.`),
       { autoHide: false }
     );
   }
@@ -1746,12 +1776,12 @@ export default function parse(msgAnchorToScrollTo) {
 
   for (let i = 0; i < debug.abstractCounters.length; i++) {
     if (debug.abstractCounters[i] !== null) {
-      console.log('счётчик ' + i + ': ' + debug.abstractCounters[i]);
+      console.log(`счётчик ${i}: ${debug.abstractCounters[i]}`);
     }
   }
 
   for (let i = 0; i < debug.abstractGlobalVars.length; i++) {
-    console.log('глобальная переменная ' + i + ': ' + debug.abstractGlobalVars[i]);
+    console.log(`глобальная переменная ${i}: ${debug.abstractGlobalVars[i]}`);
   }
 
   const comparativeValue = 4 / 1;  // ms / message
