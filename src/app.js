@@ -1,5 +1,3 @@
-// Documentation in Russian: [[Участник:Jack who built the house/Удобные дискуссии]]
-
 import lzString from 'lz-string';
 import debug from './debug';
 import parse from './parse';
@@ -13,61 +11,11 @@ import strings from './strings';
 (function () {
 
 function main() {
-  function addCSS(css) {
-    const styleElem = document.createElement('style');
-    styleElem.appendChild(document.createTextNode(css));
-    document.getElementsByTagName('head')[0].appendChild(styleElem);
-  }
-
-  function packVisits(visits) {
-    let visitsString = '';
-    for (let key in visits) {
-      visitsString += `${key}, ${visits[key].join(',')}\n`;
-    }
-    return visitsString.trim();
-  }
-
-  function unpackVisits(visitsString) {
-    const visits = {};
-    const regexp = /^(\d+),(.+)$/gm;
-    let matches;
-    while (matches = regexp.exec(visitsString)) {
-      visits[matches[1]] = matches[2].split(',');
-    }
-    return visits;
-  }
-
-  function packWatchedTopics(watchedTopics) {
-    let watchedTopicsString = '';
-    for (let key in watchedTopics) {
-      watchedTopicsString += ` ${key} ${watchedTopics[key].join('\n')}\n`;
-    }
-    return watchedTopicsString.trim();
-  }
-
-  function unpackWatchedTopics(watchedTopicsString) {
-    const watchedTopics = {};
-    const pages = watchedTopicsString.split(/(?:^|\n )(\d+) /).slice(1);
-    let pageId;
-    for (let i = 0, isPageId = true;
-      i < pages.length;
-      i++, isPageId = !isPageId
-    ) {
-      if (isPageId) {
-        pageId = pages[i];
-      } else {
-        watchedTopics[pageId] = pages[i].split('\n');
-      }
-    }
-    return watchedTopics;
-  }
-
-
-  /* Main code */
-
   debug.initTimers();
 
-  debug.startTimer('начало');
+  debug.startTimer(cd.strings.start);
+
+  if (location.host.endsWith('.m.wikipedia.org')) return;
 
   window.convenientDiscussions = window.convenientDiscussions || window.cd || {};
   if (typeof window.convenientDiscussions !== 'object') {
@@ -79,61 +27,20 @@ function main() {
   cd = window.cd;
 
   if (cd.hasRun) {
-    console.warn('Один экземпляр скрипта «Удобные дискуссии» уже запущен.');
+    console.warn(cd.strings.oneInstanceIsRunning);
     return;
   }
   cd.hasRun = true;
 
   mw.hook('cd.launched').fire(cd);
 
-  debug.startTimer('общее время');
+  debug.startTimer(cd.strings.totalTime);
 
 
   /* Config values */
 
   cd.config = $.extend(cd.config, config, {
     debug: true,
-
-    LOCAL_HELP_LINK: 'U:JWBTH/CD',
-
-    // List of classes, blocks with which can't be message date containers.
-    BLOCKS_TO_EXCLUDE_CLASSES: ['botMessage', 'ruwiki-movedTemplate', 'ambox', 'NavFrame'],
-    TEMPLATES_TO_EXCLUDE: ['перенесено с', 'moved from', 'перенесено на', 'moved to',
-      'перенесено из раздела', 'перенесено в раздел', 'копия с', 'скопировано на'],
-
-    DISCUSSION_PAGE_REGEXP: new RegExp(
-      // Википедия:
-      '^(?:Википедия:(?:Форум[/ ]|Голосования/|Опросы/|Обсуждение правил/|Заявки на |Запросы|' +
-      'Кандидаты в .*/|К (?:удалению|объединению|переименованию|разделению|улучшению|' +
-      'оценке источников|посредничеству)/|Оспаривание|Рецензирование/|Проверка участников/|' +
-      'Фильтр правок/Срабатывания|.* запросы)|' +
-      // Проект:
-      'Проект:(?:Инкубатор/(?:Мини-рецензирование|Форум)|Социальная ответственность/Форум|Водные ' +
-      'объекты|Библиотека/(?:Требуются книги|Вопросы|Горячие темы|Технические вопросы)|' +
-      'Графическая мастерская/Заявки|Добротные статьи/К лишению статуса|Грамотность/Запросы))'
-    ),
-
-    // ' is in the end alone so that normal markup in the end of a message does not get removed.
-    SIG_PREFIX_REGEXP: /(?:\s*С уважением,)?(?:\s+>+)?[-–—\s~→]*'*$/,
-
-    // User name is case-sensitive, namespaces and special pages names are not, that's why it is like this.
-    USER_NAME_PATTERN:
-      '\\s*\\[\\[[ _]*:?\\w*:?\\w*:?(?:(?:[Уу][Чч][Аа][Сс][Тт][Нн][Ии](?:[Кк]|[Цц][Аа])|[Уу]|[Uu][Ss][Ee][Rr]|[Uu]|' +
-      '[Оо][Бб][Сс][Уу][Жж][Дд][Ее][Нн][Ии][Ее][ _]*[Уу][Чч][Аа][Сс][Тт][Нн][Ии](?:[Кк][Аа]|[Цц][Ыы])|' +
-      '[Оо][Уу]|[Uu][Ss][Ee][Rr][ _]*[Tt][Aa][Ll][Kk]|[Uu][Tt])[ _]*:[ _]*|' +
-      '(?:[Ss][Pp][Ee][Cc][Ii][Aa][Ll][ _]*:[ _]*[Cc][Oo][Nn][Tt][Rr][Ii][Bb][Uu][Tt][Ii][Oo][Nn][Ss]|' +
-      '[Сс][Лл][Уу][Жж][Ее][Бб][Нн][Аа][Яя][ _]*:[ _]*[Вв][Кк][Лл][Аа][Дд])\\/[ _]*)',
-
-    USER_NAME_REGEXPS: [
-      new RegExp(
-        '\\[\\[[ _]*(?:(?:(?:Участни(?:к|ца))|У|User|U|Обсуждение[ _]*участни(?:ка|цы)|ОУ|' +
-        'User[ _]*talk|UT)[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|Служебная[ _]*:[ _]*Вклад)\\/[ _]*)' +
-        '([^|\\]#\/]+)',
-        'ig'
-      ),
-      // Cases like [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]
-      new RegExp('\\[\\[[^|]+\\|([^\\]]+)\\]\\]', 'g'),
-    ],
 
     AUTHOR_SELECTOR:
       'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
@@ -148,11 +55,11 @@ function main() {
   cd.strings = strings;
 
   // "Environment" of the script. This is deemed not eligible for adjustment, although such demand
-  // may appear
+  // may appear.
   cd.env = env;
 
   if (!cd.env.$content.length) {
-    console.error('Не найден элемент #mw-content-text.');
+    console.error(cd.strings.mwContentTextNotFound);
     return;
   }
 
@@ -160,7 +67,7 @@ function main() {
   cd.env.SUMMARY_POSTFIX = ` ([[${cd.env.HELP_LINK}|CD]])`;
   cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT = cd.env.SUMMARY_LENGTH_LIMIT - cd.env.SUMMARY_POSTFIX.length;
 
-  // Generating a signature pattern regexp from a config value.
+  // Generate a signature pattern regexp from a config value.
   let sigPattern = '(?:';
   for (let i = 0; i < cd.config.SIG_PATTERNS.length; i++) {
     if (i !== 0) {
@@ -177,7 +84,7 @@ function main() {
       .replace(/[ _]/, '[ _]*')
   );
 
-  // Generating a user name regexp from a config value.
+  // Generate a user name regexp from a config value.
   let captureUserNameRegexp = '\\[\\[[ _]*(?:(?:';
   for (let i = 0; i < cd.config.USER_NAMESPACES.length; i++) {
     if (i !== 0) {
@@ -206,7 +113,7 @@ function main() {
     return result;
   }
 
-  // Generating a part of the future user name regexp from a config value. Only the part generated
+  // Generate a part of the future user name regexp from a config value. Only the part generated
   // below is case-sensitive, this is why we generate it this way.
   let userNamePattern = '\\s*\\[\\[[ _]*:?\\w*:?\\w*:?(?:(?:';
   for (let i = 0; i < cd.config.USER_NAMESPACES.length; i++) {
@@ -215,20 +122,18 @@ function main() {
     }
     userNamePattern += anyTypeOfSpace(generateAnyCasePattern(cd.config.USER_NAMESPACES[i]));
   }
-  userNamePattern += ')[ _]*:[ _]*|(?:[Ss][Pp][Ee][Cc][Ii][Aa][Ll][ _]*:[ _]*[Cc][Oo][Nn][Tt][Rr]' +
-    '[Ii][Bb][Uu][Tt][Ii][Oo][Nn][Ss]|';
-  userNamePattern += anyTypeOfSpace(generateAnyCasePattern(cd.config.SPECIAL_CONTRIBUTIONS_PAGE));
-  userNamePattern += ')\\/[ _]*)';
+  userNamePattern += ')[ _]*:[ _]*|(?:' +
+    anyTypeOfSpace(generateAnyCasePattern('Special:Contributions')) + '|' +
+    anyTypeOfSpace(generateAnyCasePattern(cd.config.SPECIAL_CONTRIBUTIONS_PAGE)) + ')\\/[ _]*)';
   cd.config.USER_NAME_PATTERN = userNamePattern;
 
   // TEST. Delete when done.
   window.ewt = cd.env.editWatchedTopics;
 
   // Go
-  if (!location.host.endsWith('.m.wikipedia.org') &&
-    cd.env.isDiscussionNamespace(cd.env.NAMESPACE_NUMBER) &&
+  if (cd.env.isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER) &&
     mw.config.get('wgIsArticle') &&
-    cd.env.$content.is(':contains("(UTC)")')
+    cd.env.$content.is(`:contains("${(cd.config.MESSAGES_COMMON_STRING)}")`)
   ) {
     const bodyBgcolor = cd.env.CURRENT_SKIN === 'timeless' ?
       window.getComputedStyle($('#mw-content')[0]).backgroundColor :
@@ -237,20 +142,20 @@ function main() {
       cd.env.UNDERLAYER_FOCUSED_BGCOLOR
     );
 
-    addCSS(talkPageCss);
+    cd.env.addCSS(talkPageCss);
 
     if (cd.env.UNDERLAYER_FOCUSED_BGCOLOR !== 'white' &&
       cd.env.UNDERLAYER_FOCUSED_BGCOLOR.toLowerCase() !== '#fff' &&
       cd.env.UNDERLAYER_FOCUSED_BGCOLOR.toLowerCase() !== '#ffffff'
     ) {
-      addCSS(`
+      cd.env.addCSS(`
         .cd-underlayer-focused {
           background-color: ${cd.env.UNDERLAYER_FOCUSED_BGCOLOR};
         }
       `);
     }
 
-    addCSS(`
+    cd.env.addCSS(`
       .cd-linksUnderlayer-gradient {
         background-image: linear-gradient(to left, ${cd.env.UNDERLAYER_FOCUSED_BGCOLOR},
         ${underlayerFocusedGradientToColor} + ');
@@ -265,9 +170,9 @@ function main() {
       cd.env.setLoadingOverlay();
     }
 
-    debug.endTimer('начало');
+    debug.endTimer(cd.strings.start);
 
-    debug.startTimer('загрузка модулей');
+    debug.startTimer(cd.strings.loadingModules);
 
     mw.loader.using([
       'jquery.color',
@@ -290,15 +195,11 @@ function main() {
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' ||
     mw.config.get('wgCanonicalSpecialPageName') === 'Contributions' ||
     (mw.config.get('wgAction') === 'history' &&
-      cd.env.isDiscussionNamespace(cd.env.NAMESPACE_NUMBER) &&
-      (cd.env.NAMESPACE_NUMBER !== 4 ||
-        cd.env.NAMESPACE_NUMBER !== 104 ||
-        cd.config.DISCUSSION_PAGE_REGEXP.test(cd.env.CURRENT_PAGE)
-      )
+      cd.env.isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER)
     ) ||
     cd.env.IS_DIFF_PAGE
   ) {
-    addCSS(logPagesCss);
+    cd.env.addCSS(logPagesCss);
 
     mw.loader.using(['user.options', 'mediawiki.util', 'mediawiki.RegExp']).done(() => {
       msgLinks();

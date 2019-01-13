@@ -751,6 +751,7 @@ export default class Msg {
       return returnValue || false;
     } else if (underlayerMisplaced) {
       debug.startTimer('underlayer misplaced');
+
       const positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
 
       this.#underlayerTop = positions.underlayerTop;

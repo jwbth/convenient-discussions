@@ -5,12 +5,12 @@ import MsgForm from './MsgForm';
 
 export default function parse(msgAnchorToScrollTo) {
   if (cd.env.firstRun) {
-    debug.endTimer('загрузка модулей');
+    debug.endTimer(cd.strings.loadingModules);
   } else {
-    debug.endTimer('заливка HTML');
+    debug.endTimer(cd.strings.layingOutHtml);
   }
 
-  debug.startTimer('приготовления');
+  debug.startTimer(cd.strings.preparations);
 
 
   /* Preparation */
@@ -616,7 +616,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   cd.env.Exception.prototype = new Error();
 
-  debug.endTimer('приготовления');
+  debug.endTimer(cd.strings.preparations);
 
 
   /* Main code */
@@ -624,7 +624,7 @@ export default function parse(msgAnchorToScrollTo) {
   // Here and below vanilla JavaScript is used for recurring operations that together take up a lot
   // of time.
 
-  debug.startTimer('основной код');
+  debug.startTimer(cd.strings.mainCode);
 
   cd.parse = {};
 
@@ -918,9 +918,9 @@ export default function parse(msgAnchorToScrollTo) {
 
   mw.hook('cd.sectionsReady').fire(cd.sections);
 
-  debug.endTimer('основной код');
+  debug.endTimer(cd.strings.mainCode);
 
-  debug.startTimer('заключительный код и рендеринг');
+  debug.startTimer(cd.strings.finalCodeAndRendering);
 
   // Restore the initial viewport position.
   if (firstVisibleElement) {
@@ -1269,31 +1269,33 @@ export default function parse(msgAnchorToScrollTo) {
   // gets rendered. (getBoundingClientRect(), hovewer, could run a little earlier.)
   cd.env.contentElement.getBoundingClientRect();
 
-  debug.endTimer('заключительный код и рендеринг');
+  debug.endTimer(cd.strings.finalCodeAndRendering);
 
-  debug.endTimer('общее время');
+  debug.endTimer(cd.strings.totalTime);
 
-  const baseTime = debug.timers['основной код'] + debug.timers['заключительный код и рендеринг'];
+  const baseTime = debug.timers[cd.strings.mainCode] +
+    debug.timers[cd.strings.finalCodeAndRendering];
   const timePerMsg = baseTime / cd.msgs.length;
 
-  const totalTime = debug.timers['общее время'];
+  const totalTime = debug.timers[cd.strings.totalTime];
 
-  debug.logAndResetTimer('общее время');
-  console.log('число сообщений: ' + cd.msgs.length);
-  console.log('на одно сообщение: ' + timePerMsg.toFixed(1));
+  debug.logAndResetTimer(cd.strings.totalTime);
+  console.log(`${cd.strings.numberOfMessages}: ${cd.msgs.length}`);
+  console.log(`${cd.strings.perMessage}: ${timePerMsg.toFixed(1)}`);
   debug.logAndResetTimers();
 
   for (let i = 0; i < debug.abstractCounters.length; i++) {
     if (debug.abstractCounters[i] !== null) {
-      console.log(`счётчик ${i}: ${debug.abstractCounters[i]}`);
+      console.log(`${cd.strings.counter} ${i}: ${debug.abstractCounters[i]}`);
     }
   }
 
   for (let i = 0; i < debug.abstractGlobalVars.length; i++) {
-    console.log(`глобальная переменная ${i}: ${debug.abstractGlobalVars[i]}`);
+    console.log(`${cd.strings.globalVariable} ${i}: ${debug.abstractGlobalVars[i]}`);
   }
 
   const comparativeValue = 4 / 1;  // ms / message
   const currentValue = totalTime / cd.msgs.length;
-  console.log(Math.round((currentValue / comparativeValue) * 100) + '% от ориентировочного значения');
+  console.log(`${Math.round((currentValue / comparativeValue) * 100)}% ` +
+    cd.strings.ofReferenceValue);
 }

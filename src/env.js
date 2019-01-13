@@ -8,7 +8,12 @@ export default {
   // Summary-related
   SUMMARY_LENGTH_LIMIT: mw.config.get('wgCommentCodePointLimit'),
   SUMMARY_FULL_MSG_TEXT_LENGTH_LIMIT: 50,
-  HELP_LINK: cd.config.LOCAL_HELP_LINK ? 'U:JWBTH/CD' : 'w:ru:U:JWBTH/CD',
+  HELP_LINK: cd.config.HELP_LINK === cd.config.DEFAULT_HELP_LINK ?
+    (mw.config.get('wgServername') === 'ru.wikipedia.org' ?
+      cd.config.HELP_LINK :
+      'w:ru:' + cd.config.HELP_LINK
+    ) :
+    cd.config.HELP_LINK,
 
   // Unseen messages–related
   VISITS_OPTION_NAME: 'cd-visits',
@@ -38,6 +43,55 @@ export default {
   scrollHandleTimeout: false,
   recalculateUnderlayersTimeout: false,
   pageOverlaysOn: false,
+
+  addCSS(css) {
+    const styleElem = document.createElement('style');
+    styleElem.appendChild(document.createTextNode(css));
+    document.getElementsByTagName('head')[0].appendChild(styleElem);
+  },
+
+  packVisits(visits) {
+    let visitsString = '';
+    for (let key in visits) {
+      visitsString += `${key}, ${visits[key].join(',')}\n`;
+    }
+    return visitsString.trim();
+  },
+
+  unpackVisits(visitsString) {
+    const visits = {};
+    const regexp = /^(\d+),(.+)$/gm;
+    let matches;
+    while (matches = regexp.exec(visitsString)) {
+      visits[matches[1]] = matches[2].split(',');
+    }
+    return visits;
+  },
+
+  packWatchedTopics(watchedTopics) {
+    let watchedTopicsString = '';
+    for (let key in watchedTopics) {
+      watchedTopicsString += ` ${key} ${watchedTopics[key].join('\n')}\n`;
+    }
+    return watchedTopicsString.trim();
+  },
+
+  unpackWatchedTopics(watchedTopicsString) {
+    const watchedTopics = {};
+    const pages = watchedTopicsString.split(/(?:^|\n )(\d+) /).slice(1);
+    let pageId;
+    for (let i = 0, isPageId = true;
+      i < pages.length;
+      i++, isPageId = !isPageId
+    ) {
+      if (isPageId) {
+        pageId = pages[i];
+      } else {
+        watchedTopics[pageId] = pages[i].split('\n');
+      }
+    }
+    return watchedTopics;
+  },
 
   getTransparentColor(color) {
     const dummyElement = document.createElement('span');
@@ -119,6 +173,14 @@ export default {
   // Talk pages and pages of "Project" ("Википедия"), "WikiProject" ("Проект") namespaces.
   isDiscussionNamespace(nsNumber) {
     return nsNumber % 2 === 1 || nsNumber === 4 || nsNumber === 104;
+  },
+
+  isDiscussionPage(page, nsNumber) {
+    return cd.env.isDiscussionNamespace(cd.env.NAMESPACE_NUMBER) &&
+      (cd.env.NAMESPACE_NUMBER !== 4 ||
+        cd.env.NAMESPACE_NUMBER !== 104 ||
+        cd.config.DISCUSSION_PAGE_REGEXP.test(cd.env.CURRENT_PAGE)
+      )
   },
 
   highlightFocused(e) {
@@ -625,13 +687,13 @@ export default {
           const visitsString = visitsCompressed ?
             lzString.decompressFromEncodedURIComponent(visitsCompressed) :
             '';
-          const visits = unpackVisits(visitsString);
+          const visits = cd.env.unpackVisits(visitsString);
 
           const watchedTopicsCompressed = options['userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME];
           const watchedTopicsString = watchedTopicsCompressed ?
             lzString.decompressFromEncodedURIComponent(watchedTopicsCompressed) :
             '';
-          const watchedTopics = unpackWatchedTopics(watchedTopicsString);
+          const watchedTopics = cd.env.unpackWatchedTopics(watchedTopicsString);
 
           return { visits, watchedTopics };
         },
@@ -644,7 +706,7 @@ export default {
     if (cd.env.optionsRequest) {
       return cd.env.optionsRequest.then(options => options.visits);
     } else if (mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) !== null) {
-      const visits = unpackVisits(
+      const visits = cd.env.unpackVisits(
         lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME))
       );
 
@@ -657,7 +719,7 @@ export default {
   },
 
   setVisits(visits) {
-    const visitsString = packVisits(visits);
+    const visitsString = cd.env.packVisits(visits);
     const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
     if (visitsStringCompressed.length > 65535) {
       return $.Deferred().reject(['internal', 'sizelimit']);
@@ -684,7 +746,7 @@ export default {
     if (cd.env.optionsRequest) {
       return cd.env.optionsRequest.then(options => options.watchedTopics);
     } else if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
-      const watchedTopics = unpackWatchedTopics(lzString.decompressFromEncodedURIComponent(
+      const watchedTopics = cd.env.unpackWatchedTopics(lzString.decompressFromEncodedURIComponent(
         mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME)
       ));
 
@@ -695,7 +757,7 @@ export default {
   },
 
   setWatchedTopics(watchedTopics) {
-    const watchedTopicsString = packWatchedTopics(watchedTopics);
+    const watchedTopicsString = cd.env.packWatchedTopics(watchedTopics);
     const watchedTopicsStringCompressed = (
       lzString.compressToEncodedURIComponent(watchedTopicsString)
     );
@@ -1283,9 +1345,9 @@ export default {
     cd.env.linksUnderlayersContainer.innerHTML = '';
     cd.env.underlayers = [];
 
-    debug.endTimer('получение HTML');
+    debug.endTimer(cd.strings.gettingHtml);
 
-    debug.startTimer('заливка HTML');
+    debug.startTimer(cd.strings.layingOutHtml);
 
     cd.env.$content.html(html);
     mw.hook('wikipage.content').fire(cd.env.$content);
@@ -1295,9 +1357,9 @@ export default {
   reloadPage(anchor) {
     debug.initTimers();
 
-    debug.startTimer('общее время');
+    debug.startTimer(cd.strings.totalTime);
 
-    debug.startTimer('получение HTML');
+    debug.startTimer(cd.strings.gettingHtml);
 
     cd.env.requestOptions();
 
