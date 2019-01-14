@@ -657,7 +657,7 @@ export default {
   },
 
   removeDuplicates(array) {
-    if (typeof array !== 'object') return;
+    if (!array || typeof array !== 'object') return;
     return array.filter((value, index) => array.indexOf(value) === index);
   },
 
@@ -1272,7 +1272,7 @@ export default {
       return new RegExp(
         // Caution: invisible character in [ ‎]. [  \t]* in the end needed to remove messages
         // properly.
-        cd.config.USER_NAME_PATTERN + authorPattern + '[|\\]#].*' + mw.RegExp.escape(date) +
+        cd.env.USER_NAME_PATTERN + authorPattern + '[|\\]#].*' + mw.RegExp.escape(date) +
           '[  \t]*(?:\}\}|</small>)?[  \t]*|' +
         '\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *' +
           dateInUnsignedTemplatesPattern + '[ ‎]*\\|[ ‎]*' + authorPattern + ' *\\}\\}[  \t]*|' +

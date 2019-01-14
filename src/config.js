@@ -47,6 +47,10 @@ export default {
     ],
   ],
 
+      //'\\{\\{ *(?:[uU]nsigned(?:IP)?|[нН]е подписано) *\\|[ ‎]*%author *(?:\\| *[^}]+?[ ‎]*)?\\}\\}',
+      //'\\{\\{ *(?:[uU]nsigned(?:IP)?2|[нН]еподписано|[нН]пп) *\\| *%date[ ‎]*\\|[ ‎]*%author *\\}\\}'
+
+
   HELP_LINK: 'U:JWBTH/CD',
 
   // For ruwiki. If equals to HELP_LINK and the site is not ruwiki, then it forgot to set it.

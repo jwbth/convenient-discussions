@@ -118,7 +118,7 @@ export default function parse(msgAnchorToScrollTo) {
   cd.env.CURRENT_USER_SIG = mw.user.options.get('nickname');
 
   const authorInSigMatches = cd.env.CURRENT_USER_SIG.match(
-    new RegExp(cd.config.USER_NAME_PATTERN)
+    new RegExp(cd.env.USER_NAME_PATTERN)
   );
   if (authorInSigMatches) {
     // Signature contents before the user name – in order to cut it out from the message endings

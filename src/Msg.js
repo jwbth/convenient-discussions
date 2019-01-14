@@ -1097,8 +1097,6 @@ export default class Msg {
         msgStartPos += horizontalLineMatch[0].length;
         msgCode = msgCode.slice(horizontalLineMatch[0].length);
       }
-
-      return true;
     };
 
     // Main method: by the current & previous author & date & message heading & message text

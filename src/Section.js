@@ -468,8 +468,8 @@ export default class Section {
       });
       this.$body.append(this.stackLayout.$element);
 
-      this.titleInput.connect(this, { 'change': 'onTitleInputChange' });
-      this.titleInput.connect(this, { 'enter': (function () {
+      this.titleInput.connect(this, { change: 'onTitleInputChange' });
+      this.titleInput.connect(this, { enter: (function () {
         if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
           this.executeAction('move');
         }

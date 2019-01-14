@@ -85,8 +85,8 @@ function main() {
 
   // A user name regexp
   let captureUserNameRegexp = '\\[\\[[ _]*(?:(?:';
-  cd.config.USER_NAMESPACES.forEach((el, index) => {
-    if (index !== 0) {
+  cd.config.USER_NAMESPACES.forEach((el, i) => {
+    if (i !== 0) {
       captureUserNameRegexp += '|';
     }
     captureUserNameRegexp += anyTypeOfSpace(el);
@@ -124,19 +124,19 @@ function main() {
   userNamePattern += ')[ _]*:[ _]*|(?:' +
     anyTypeOfSpace(generateAnyCasePattern('Special:Contributions')) + '|' +
     anyTypeOfSpace(generateAnyCasePattern(cd.config.CONTRIBUTIONS_PAGE)) + ')\\/[ _]*)';
-  cd.config.USER_NAME_PATTERN = userNamePattern;
+  cd.env.USER_NAME_PATTERN = userNamePattern;
 
   let authorSelector = '';
   const authorSelectorNamespaces = [
     ...cd.config.CANONICAL_USER_NAMESPACES,
     cd.config.CONTRIBUTIONS_PAGE
   ];
-  authorSelectorNamespaces.forEach((el, index) => {
+  authorSelectorNamespaces.forEach((el) => {
     authorSelector += `a[href^="/wiki/${encodeURI(el)}"], `;
   });
-  cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.forEach((el, index) => {
+  cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.forEach((el, i) => {
     authorSelector += `a[href^="/w/index.php?title=${encodeURI(el)}"]`;
-    if (index !== cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.length - 1) {
+    if (i !== cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.length - 1) {
       authorSelector += ', ';
     }
   });
@@ -147,8 +147,8 @@ function main() {
     'User'
   ];
   let captureAuthorRegexp = '(?:';
-  captureAuthorNamespaces.forEach((el, index) => {
-    if (index !== 0) {
+  captureAuthorNamespaces.forEach((el, i) => {
+    if (i !== 0) {
       captureAuthorRegexp += '|';
     }
     captureAuthorRegexp += `${encodeURI(el)}:([^#\\/]+)`;
