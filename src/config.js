@@ -7,7 +7,10 @@ export default {
   CANONICAL_USER_NAMESPACES: ['Участник', 'Участница', 'Обсуждение участника',
     'Обсуждение участницы'],
 
-  SPECIAL_CONTRIBUTIONS_PAGE: 'Служебная:Вклад',
+  // Only those that appear in links. Standard + feminine form, if available.
+  CANONICAL_USER_NAMESPACES_WITHOUT_TALK: ['Участник', 'Участница'],
+
+  CONTRIBUTIONS_PAGE: 'Служебная:Вклад',
 
   // In namespaces other than talk
   DISCUSSION_PAGE_REGEXP: new RegExp(

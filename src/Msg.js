@@ -170,7 +170,7 @@ export default class Msg {
           !currentText.includes('-- DimaBot') &&
           !currentText.includes('--DimaBot')
         ) {
-          const authorLink = current.querySelector(cd.config.AUTHOR_SELECTOR) ||
+          const authorLink = current.querySelector(cd.env.AUTHOR_SELECTOR) ||
             current.querySelector('a[href*="/wiki/User:"]');
           // If there's no user links then it's most probably a quote.
           if (authorLink) {
@@ -306,11 +306,11 @@ export default class Msg {
 
     if (!author) {
       // Extract the author. Take the last link to the corresponding page.
-      // Участни, Обсуждение_участни, Служебная:Вклад (in cd.config.AUTHOR_SELECTOR); the rest
-      // (users from other WMF projects). TODO: encompass cases like
+      // Участни(к/ца), Обсуждение_участни(ка/цы), Служебная:Вклад (in cd.env.AUTHOR_SELECTOR);
+      // the rest (users from other WMF projects). TODO: encompass cases like
       // [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]). It should also be done in
       // other places where various author selectors are used.
-      let authorLinks = elements[elements.length - 1].querySelectorAll(cd.config.AUTHOR_SELECTOR);
+      let authorLinks = elements[elements.length - 1].querySelectorAll(cd.env.AUTHOR_SELECTOR);
       if (!authorLinks.length) {
         authorLinks = elements[elements.length - 1].querySelectorAll('a[href*="/wiki/User:"]');
       }
@@ -318,7 +318,7 @@ export default class Msg {
         throw new cd.env.Exception();
       }
 
-      const authorMatches = cd.config.AUTHOR_LINK_REGEXP.exec(
+      const authorMatches = cd.env.CAPTURE_AUTHOR_REGEXP.exec(
         authorLinks[authorLinks.length - 1].getAttribute('href')
       );
       author = authorMatches && decodeURIComponent(authorMatches[1] || authorMatches[2] ||

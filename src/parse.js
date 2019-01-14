@@ -117,7 +117,9 @@ export default function parse(msgAnchorToScrollTo) {
 
   cd.env.CURRENT_USER_SIG = mw.user.options.get('nickname');
 
-  const authorInSigMatches = cd.env.CURRENT_USER_SIG.match(new RegExp(cd.config.USER_NAME_PATTERN));
+  const authorInSigMatches = cd.env.CURRENT_USER_SIG.match(
+    new RegExp(cd.config.USER_NAME_PATTERN)
+  );
   if (authorInSigMatches) {
     // Signature contents before the user name – in order to cut it out from the message endings
     // when editing.
@@ -130,11 +132,7 @@ export default function parse(msgAnchorToScrollTo) {
     );
   }
 
-  const POPULAR_NOT_INLINE_ELEMENTS = ['P', 'OL', 'UL', 'LI', 'PRE', 'BLOCKQUOTE', 'DL', 'DD',
-    'DIV', 'HR', 'H2', 'H3', 'H4', 'H5', 'H6', 'TABLE', 'INPUT', 'FORM'];
-  const POPULAR_INLINE_ELEMENTS = ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE',
-    'TT', 'KBD', 'BR', 'IMG', 'SUP', 'SUB', 'ABBR', 'CITE'];
-  cd.env.PNIE_PATTERN = `(?:${POPULAR_NOT_INLINE_ELEMENTS.join('|')})`;
+  cd.env.PNIE_PATTERN = `(?:${cd.env.POPULAR_NOT_INLINE_ELEMENTS.join('|')})`;
 
   cd.env.EVERYTHING_MUST_BE_FROZEN = !!(
     cd.env.CURRENT_PAGE.includes('/Архив') ||
@@ -178,7 +176,7 @@ export default function parse(msgAnchorToScrollTo) {
     if (window.pageYOffset !== 0 && cd.env.contentElement.getBoundingClientRect().top <= 0) {
       let currentElement = cd.env.contentElement.firstElementChild;
       while (currentElement) {
-        if (POPULAR_NOT_INLINE_ELEMENTS.includes(currentElement.tagName)) {
+        if (cd.env.POPULAR_NOT_INLINE_ELEMENTS.includes(currentElement.tagName)) {
           const rect = currentElement.getBoundingClientRect();
           if (rect.bottom >= 0 &&
             rect.height !== 0

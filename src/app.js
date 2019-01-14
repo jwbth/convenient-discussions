@@ -1,4 +1,3 @@
-import lzString from 'lz-string';
 import debug from './debug';
 import parse from './parse';
 import env from './env';
@@ -11,10 +10,6 @@ import strings from './strings';
 (function () {
 
 function main() {
-  debug.initTimers();
-
-  debug.startTimer(cd.strings.start);
-
   if (location.host.endsWith('.m.wikipedia.org')) return;
 
   window.convenientDiscussions = window.convenientDiscussions || window.cd || {};
@@ -25,6 +20,13 @@ function main() {
 
   // In Firefox, there's a native function cd() that is overriding our object.
   cd = window.cd;
+
+  // Messages
+  cd.strings = strings;
+
+  debug.initTimers();
+
+  debug.startTimer(cd.strings.start);
 
   if (cd.hasRun) {
     console.warn(cd.strings.oneInstanceIsRunning);
@@ -37,22 +39,10 @@ function main() {
   debug.startTimer(cd.strings.totalTime);
 
 
-  /* Config values */
-
+  // Config values
   cd.config = $.extend(cd.config, config, {
     debug: true,
-
-    AUTHOR_SELECTOR:
-      'a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
-      'a[href^="/wiki/%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"], ' +
-      'a[href^="/wiki/%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4"], ' +
-      'a[href^="/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8"]',
-    // (?:Участни(?:к|ца):([^#\/]+)|Обсуждение_участни(?:ка|цы):([^#]+)|Служебная:Вклад\/([^#]+)|User:)
-    AUTHOR_LINK_REGEXP: /(?:%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8(?:%D0%BA|%D1%86%D0%B0):([^#\/]+)|%D0%9E%D0%B1%D1%81%D1%83%D0%B6%D0%B4%D0%B5%D0%BD%D0%B8%D0%B5_%D1%83%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8(?:%D0%BA%D0%B0|%D1%86%D1%8B):([^#\/]+)|%D0%A1%D0%BB%D1%83%D0%B6%D0%B5%D0%B1%D0%BD%D0%B0%D1%8F:%D0%92%D0%BA%D0%BB%D0%B0%D0%B4\/([^#\/]+)|User:([^#\/]+))/,
   });
-
-  // Messages
-  cd.strings = strings;
 
   // "Environment" of the script. This is deemed not eligible for adjustment, although such demand
   // may appear.
@@ -63,11 +53,20 @@ function main() {
     return;
   }
 
+  if (cd.config.HELP_LINK === cd.config.DEFAULT_HELP_LINK) {
+    cd.env.HELP_LINK = mw.config.get('wgServername') === 'ru.wikipedia.org' ?
+      cd.config.HELP_LINK :
+      'w:ru:' + cd.config.HELP_LINK;
+  } else {
+    cd.env.HELP_LINK = cd.config.HELP_LINK;
+  }
   cd.env.UNDERLAYER_NEW_BGCOLOR = cd.env.UNDERLAYER_NEWEST_BGCOLOR;
   cd.env.SUMMARY_POSTFIX = ` ([[${cd.env.HELP_LINK}|CD]])`;
   cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT = cd.env.SUMMARY_LENGTH_LIMIT - cd.env.SUMMARY_POSTFIX.length;
 
-  // Generate a signature pattern regexp from a config value.
+  /* Generate regexps, patterns, selectors from config values */
+
+  // A signature pattern regexp
   let sigPattern = '(?:';
   for (let i = 0; i < cd.config.SIG_PATTERNS.length; i++) {
     if (i !== 0) {
@@ -84,19 +83,19 @@ function main() {
       .replace(/[ _]/, '[ _]*')
   );
 
-  // Generate a user name regexp from a config value.
+  // A user name regexp
   let captureUserNameRegexp = '\\[\\[[ _]*(?:(?:';
-  for (let i = 0; i < cd.config.USER_NAMESPACES.length; i++) {
-    if (i !== 0) {
+  cd.config.USER_NAMESPACES.forEach((el, index) => {
+    if (index !== 0) {
       captureUserNameRegexp += '|';
     }
-    captureUserNameRegexp += anyTypeOfSpace(cd.config.USER_NAMESPACES[i]);
-  }
-  captureUserNameRegexp += ')[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|';
-  captureUserNameRegexp += anyTypeOfSpace(cd.config.SPECIAL_CONTRIBUTIONS_PAGE);
-  captureUserNameRegexp += ')\\/[ _]*)([^|\\]#\/]+)';
+    captureUserNameRegexp += anyTypeOfSpace(el);
+  });
+  captureUserNameRegexp += ')[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|' +
+    anyTypeOfSpace(cd.config.CONTRIBUTIONS_PAGE) +
+    ')\\/[ _]*)([^|\\]#\/]+)';
   // The capture should have user name.
-  cd.env.USER_NAME_REGEXPS = [
+  cd.env.CAPTURE_USER_NAME_REGEXPS = [
     new RegExp(captureUserNameRegexp, 'ig'),
     // Cases like [[w:en:Wikipedia:TWL/Coordinators|The Wikipedia Library Team]]
     new RegExp('\\[\\[[^|]+\\|([^\\]]+)\\]\\]', 'g'),
@@ -113,8 +112,8 @@ function main() {
     return result;
   }
 
-  // Generate a part of the future user name regexp from a config value. Only the part generated
-  // below is case-sensitive, this is why we generate it this way.
+  // A part of the future user name regexp. Only the part generated below is case-sensitive, this is
+  // why we generate it this way.
   let userNamePattern = '\\s*\\[\\[[ _]*:?\\w*:?\\w*:?(?:(?:';
   for (let i = 0; i < cd.config.USER_NAMESPACES.length; i++) {
     if (i !== 0) {
@@ -124,8 +123,38 @@ function main() {
   }
   userNamePattern += ')[ _]*:[ _]*|(?:' +
     anyTypeOfSpace(generateAnyCasePattern('Special:Contributions')) + '|' +
-    anyTypeOfSpace(generateAnyCasePattern(cd.config.SPECIAL_CONTRIBUTIONS_PAGE)) + ')\\/[ _]*)';
+    anyTypeOfSpace(generateAnyCasePattern(cd.config.CONTRIBUTIONS_PAGE)) + ')\\/[ _]*)';
   cd.config.USER_NAME_PATTERN = userNamePattern;
+
+  let authorSelector = '';
+  const authorSelectorNamespaces = [
+    ...cd.config.CANONICAL_USER_NAMESPACES,
+    cd.config.CONTRIBUTIONS_PAGE
+  ];
+  authorSelectorNamespaces.forEach((el, index) => {
+    authorSelector += `a[href^="/wiki/${encodeURI(el)}"], `;
+  });
+  cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.forEach((el, index) => {
+    authorSelector += `a[href^="/w/index.php?title=${encodeURI(el)}"]`;
+    if (index !== cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.length - 1) {
+      authorSelector += ', ';
+    }
+  });
+  cd.env.AUTHOR_SELECTOR = authorSelector;
+
+  const captureAuthorNamespaces = [
+    ...cd.config.CANONICAL_USER_NAMESPACES,
+    'User'
+  ];
+  let captureAuthorRegexp = '(?:';
+  captureAuthorNamespaces.forEach((el, index) => {
+    if (index !== 0) {
+      captureAuthorRegexp += '|';
+    }
+    captureAuthorRegexp += `${encodeURI(el)}:([^#\\/]+)`;
+  });
+  captureAuthorRegexp += `|${cd.config.CONTRIBUTIONS_PAGE}\\/([^#\\/]+))`;
+  cd.env.CAPTURE_AUTHOR_REGEXP = new RegExp(captureAuthorRegexp);
 
   // TEST. Delete when done.
   window.ewt = cd.env.editWatchedTopics;

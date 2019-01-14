@@ -1,3 +1,5 @@
+import lzString from 'lz-string';
+
 export default {
   // Underlayer-related
   UNDERLAYER_FOCUSED_BGCOLOR: '#eaf3ff',
@@ -8,12 +10,6 @@ export default {
   // Summary-related
   SUMMARY_LENGTH_LIMIT: mw.config.get('wgCommentCodePointLimit'),
   SUMMARY_FULL_MSG_TEXT_LENGTH_LIMIT: 50,
-  HELP_LINK: cd.config.HELP_LINK === cd.config.DEFAULT_HELP_LINK ?
-    (mw.config.get('wgServername') === 'ru.wikipedia.org' ?
-      cd.config.HELP_LINK :
-      'w:ru:' + cd.config.HELP_LINK
-    ) :
-    cd.config.HELP_LINK,
 
   // Unseen messages–related
   VISITS_OPTION_NAME: 'cd-visits',
@@ -30,6 +26,12 @@ export default {
   // Convenience constants
   SECONDS_IN_A_DAY: 60 * 60 * 24,
   MILLISECONDS_IN_A_MINUTE: 1000 * 60,
+
+  // Element names
+  POPULAR_NOT_INLINE_ELEMENTS: ['P', 'OL', 'UL', 'LI', 'PRE', 'BLOCKQUOTE', 'DL', 'DD',
+    'DIV', 'HR', 'H2', 'H3', 'H4', 'H5', 'H6', 'TABLE', 'INPUT', 'FORM'],
+  POPULAR_INLINE_ELEMENTS: ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE',
+    'TT', 'KBD', 'BR', 'IMG', 'SUP', 'SUB', 'ABBR', 'CITE'],
 
   firstRun: true,
 
@@ -1100,8 +1102,8 @@ export default {
       }
 
       if (!captureNames.includes('author')) {
-        for (let j = 0; j < cd.env.USER_NAME_REGEXPS.length; j++) {
-          authorDate['author'] = cd.env.getLastGlobalCapture(text, cd.env.USER_NAME_REGEXPS[j]);
+        for (let j = 0; j < cd.env.CAPTURE_USER_NAME_REGEXPS.length; j++) {
+          authorDate['author'] = cd.env.getLastGlobalCapture(text, cd.env.CAPTURE_USER_NAME_REGEXPS[j]);
           if (authorDate['author']) break;
         }
       }
@@ -1133,9 +1135,9 @@ export default {
   },
 
   isInline(el) {
-    if (POPULAR_INLINE_ELEMENTS.includes(el.tagName)) {
+    if (cd.env.POPULAR_INLINE_ELEMENTS.includes(el.tagName)) {
       return true;
-    } else if (POPULAR_NOT_INLINE_ELEMENTS.includes(el.tagName)) {
+    } else if (cd.env.POPULAR_NOT_INLINE_ELEMENTS.includes(el.tagName)) {
       return false;
     } else {
       // This is VERY resource-greedy. Avoid by any means.
@@ -1291,8 +1293,27 @@ export default {
   },
 
   generateAuthorSelector(author) {
-    const authorEncoded = $.escapeSelector(encodeURIComponent(author.replace(/ /g, '_')));
+    const authorEncoded = $.escapeSelector(encodeURI(author.replace(/ /g, '_')));
+    const namespaces = [
+      ...cd.config.CANONICAL_USER_NAMESPACES,
+      cd.config.CONTRIBUTIONS_PAGE,
+      'User'
+    ];
+    let authorSelector = '';
+    namespaces.forEach((el, index) => {
+      authorSelector += `a[href^="/wiki/${encodeURI(el)}:${authorEncoded}"]` +
+        `:not(a[href^="${encodeURI(el)}:${authorEncoded}"]), `;
+    });
+    cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.forEach((el, index) => {
+      authorSelector += `a[href^="/w/index.php?title=${encodeURI(el)}"]`;
+      if (index !== cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.length - 1) {
+        authorSelector += ', ';
+      }
+    });
+
     return (
+      // Участник, Участница, Обсуждение участника, Обсуждение участницы, Служебная:Вклад/,
+      // title=Участник, title=Участница, User:
       `a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:${authorEncoded}"]` +
         `:not(a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:${authorEncoded}/"]), ` +
       `a[href^="/wiki/%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D1%86%D0%B0:${authorEncoded}"]` +
