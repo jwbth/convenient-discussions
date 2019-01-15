@@ -3,14 +3,14 @@ import Msg from './Msg';
 import Section from './Section';
 import MsgForm from './MsgForm';
 
-export default function parse(msgAnchorToScrollTo) {
+export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
   if (cd.env.firstRun) {
-    debug.endTimer(cd.strings.loadingModules);
+    cd.debug.endTimer(cd.strings.loadingModules);
   } else {
-    debug.endTimer(cd.strings.layingOutHtml);
+    cd.debug.endTimer(cd.strings.layingOutHtml);
   }
 
-  debug.startTimer(cd.strings.preparations);
+  cd.debug.startTimer(cd.strings.preparations);
 
 
   /* Preparation */
@@ -26,6 +26,8 @@ export default function parse(msgAnchorToScrollTo) {
   cd.msgs = [];
   cd.sections = [];
   cd.msgForms = [];
+
+  cd.settings = cd.settings || {};
 
   // Settings in variables like cdAlowEditOthersMsgs
   ['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects',
@@ -50,7 +52,7 @@ export default function parse(msgAnchorToScrollTo) {
     storeDataOnServer: true,
   };
 
-  cd.settings = $.extend({}, cd.defaultSettings, cd.settings || {});
+  cd.settings = $.extend({}, cd.defaultSettings, cd.settings);
 
   const highlightLastMessagesEnabled = typeof highlightMessagesAfterLastVisit !== 'undefined';
   if (cd.settings.highlightNew && highlightLastMessagesEnabled) {
@@ -614,7 +616,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   cd.env.Exception.prototype = new Error();
 
-  debug.endTimer(cd.strings.preparations);
+  cd.debug.endTimer(cd.strings.preparations);
 
 
   /* Main code */
@@ -622,12 +624,10 @@ export default function parse(msgAnchorToScrollTo) {
   // Here and below vanilla JavaScript is used for recurring operations that together take up a lot
   // of time.
 
-  debug.startTimer(cd.strings.mainCode);
+  cd.debug.startTimer(cd.strings.mainCode);
 
-  cd.parse = {};
-
-  cd.parse.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
-  cd.parse.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
+  cd.env.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
+  cd.env.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 
   const blocksToExcludeSelector = 'blockquote, ' +
     cd.config.BLOCKS_TO_EXCLUDE_CLASSES.map(s => '.' + s).join(', ');
@@ -682,13 +682,13 @@ export default function parse(msgAnchorToScrollTo) {
     cd.env.linksUnderlayersContainer = $linksUnderlayersContainer[0];
   }
 
-  cd.parse.currentMsgId = 0;
+  cd.env.currentMsgId = 0;
   for (let i = 0; i < dateContainers.length; i++) {
     try {
       const msg = new Msg(dateContainers[i]);
       if (msg.id !== undefined) {
         cd.msgs.push(msg);
-        cd.parse.currentMsgId++;
+        cd.env.currentMsgId++;
       }
     } catch (e) {
       if (!(e instanceof cd.env.Exception)) {
@@ -699,7 +699,7 @@ export default function parse(msgAnchorToScrollTo) {
 
   const collapseAdjacentMsgLevels = (levels) => {
     if (!levels || !levels[0]) return;
-    debug.startTimer('collapse');
+    cd.debug.startTimer('collapse');
 
     const changeElementType = (element, newType) => {
       const newElement = document.createElement(newType);
@@ -801,7 +801,7 @@ export default function parse(msgAnchorToScrollTo) {
         )
       );
     }
-    debug.endTimer('collapse');
+    cd.debug.endTimer('collapse');
   };
 
   collapseAdjacentMsgLevels(
@@ -853,7 +853,7 @@ export default function parse(msgAnchorToScrollTo) {
       console.error('Не удалось загрузить настройки с сервера');
     });
 
-  cd.parse.currentSectionId = 0;
+  cd.env.currentSectionId = 0;
   const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
   const headings = [];
   for (let i = 0; i < headingCandidates.length; i++) {
@@ -868,7 +868,7 @@ export default function parse(msgAnchorToScrollTo) {
       const section = new Section(headings[i], i === headings.length - 1);
       if (section.id !== undefined) {
         cd.sections.push(section);
-        cd.parse.currentSectionId++;
+        cd.env.currentSectionId++;
       }
     } catch (e) {
       if (!(e instanceof cd.env.Exception)) {
@@ -916,9 +916,9 @@ export default function parse(msgAnchorToScrollTo) {
 
   mw.hook('cd.sectionsReady').fire(cd.sections);
 
-  debug.endTimer(cd.strings.mainCode);
+  cd.debug.endTimer(cd.strings.mainCode);
 
-  debug.startTimer(cd.strings.finalCodeAndRendering);
+  cd.debug.startTimer(cd.strings.finalCodeAndRendering);
 
   // Restore the initial viewport position.
   if (firstVisibleElement) {
@@ -1066,19 +1066,33 @@ export default function parse(msgAnchorToScrollTo) {
           }
 
           const underlayersToAdd = [];
-          for (let i = 0; i < cd.msgs.length; i++) {
-            const msg = cd.msgs[i];
-
-            // + 60 to avoid situation when a message is considered read but it was added the same
+          cd.msgs.forEach((msg) => {
+            // + 60 to avoid a situation when a message is considered read but it was added the same
             // minute with the last visit. This behaviour has a side effect: if you posted
             // a message, it will be marked as "new" the next time you visit until
             // cd.env.HIGHLIGHT_NEW_INTERVAL minutes pass.
             const msgUnixTime = Math.floor(msg.timestamp / 1000);
 
+            if (memorizedNewestMsgs) {
+              memorizedNewestMsgs.forEach((memorizedMsg) => {
+                if (memorizedMsg.timestamp === msg.timestamp &&
+                  memorizedMsg.author === msg.author
+                ) {
+                  msg.newness = 'newest';
+                  cd.env.newestCount++;
+                }
+              });
+            }
+
             if (thisPageVisits.length &&
               msgUnixTime > thisPageVisits[thisPageVisits.length - 1] &&
               msg.author !== cd.env.CURRENT_USER
             ) {
+              // Possible collision with the memorized messages.
+              if (msg.newness !== 'newest') {
+                cd.env.newestCount++;
+              }
+              cd.env.newCount++;
               msg.newness = 'newest';
               msg.seen = false;
               const underlayerData = msg.configureUnderlayer(true);
@@ -1086,19 +1100,20 @@ export default function parse(msgAnchorToScrollTo) {
                 underlayersToAdd.push(underlayerData);
               }
               msg.$underlayer[0].className += ' cd-underlayer-newest';
-              cd.env.newestCount++;
-              cd.env.newCount++;
             } else if (msgUnixTime > thisPageVisits[0]) {
-              msg.newness = 'new';
+              cd.env.newCount++;
+              // It can be "newest" from a state memorized at the last render.
+              if (!msg.newness) {
+                msg.newness = 'new';
+              }
               msg.seen = false;
               const underlayerData = msg.configureUnderlayer(true);
               if (underlayerData) {
                 underlayersToAdd.push(underlayerData);
               }
               msg.$underlayer[0].className += ' cd-underlayer-new';
-              cd.env.newCount++;
             }
-          }
+          });
 
           cd.env.floatingRects = [];
 
@@ -1199,8 +1214,9 @@ export default function parse(msgAnchorToScrollTo) {
     };
   }
 
-  const generateEditCommonJsLink = () =>
-    mw.util.getUrl(`User:${cd.env.CURRENT_USER}/common.js`, { action: 'edit' });
+  const generateEditCommonJsLink = () => (
+    mw.util.getUrl(`User:${cd.env.CURRENT_USER}/common.js`, { action: 'edit' })
+  );
 
   if (highlightLastMessagesEnabled && !mw.cookie.get('cd-hlmConflict')) {
     // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
@@ -1267,29 +1283,29 @@ export default function parse(msgAnchorToScrollTo) {
   // gets rendered. (getBoundingClientRect(), hovewer, could run a little earlier.)
   cd.env.contentElement.getBoundingClientRect();
 
-  debug.endTimer(cd.strings.finalCodeAndRendering);
+  cd.debug.endTimer(cd.strings.finalCodeAndRendering);
 
-  debug.endTimer(cd.strings.totalTime);
+  cd.debug.endTimer(cd.strings.totalTime);
 
-  const baseTime = debug.timers[cd.strings.mainCode] +
-    debug.timers[cd.strings.finalCodeAndRendering];
+  const baseTime = cd.debug.timers[cd.strings.mainCode] +
+    cd.debug.timers[cd.strings.finalCodeAndRendering];
   const timePerMsg = baseTime / cd.msgs.length;
 
-  const totalTime = debug.timers[cd.strings.totalTime];
+  const totalTime = cd.debug.timers[cd.strings.totalTime];
 
-  debug.logAndResetTimer(cd.strings.totalTime);
+  cd.debug.logAndResetTimer(cd.strings.totalTime);
   console.log(`${cd.strings.numberOfMessages}: ${cd.msgs.length}`);
   console.log(`${cd.strings.perMessage}: ${timePerMsg.toFixed(1)}`);
-  debug.logAndResetTimers();
+  cd.debug.logAndResetTimers();
 
-  for (let i = 0; i < debug.abstractCounters.length; i++) {
-    if (debug.abstractCounters[i] !== null) {
-      console.log(`${cd.strings.counter} ${i}: ${debug.abstractCounters[i]}`);
+  for (let i = 0; i < cd.debug.abstractCounters.length; i++) {
+    if (cd.debug.abstractCounters[i] !== null) {
+      console.log(`${cd.strings.counter} ${i}: ${cd.debug.abstractCounters[i]}`);
     }
   }
 
-  for (let i = 0; i < debug.abstractGlobalVars.length; i++) {
-    console.log(`${cd.strings.globalVariable} ${i}: ${debug.abstractGlobalVars[i]}`);
+  for (let i = 0; i < cd.debug.abstractGlobalVars.length; i++) {
+    console.log(`${cd.strings.globalVariable} ${i}: ${cd.debug.abstractGlobalVars[i]}`);
   }
 
   const comparativeValue = 4 / 1;  // ms / message

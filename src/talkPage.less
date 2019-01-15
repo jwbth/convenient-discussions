@@ -370,13 +370,15 @@ dd.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
+@logo-width: 304px;
+
 .cd-loadingPopup {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 1.7em;
   z-index: 111;  /* z-index окон в OOUI + 10 */
-  width: 255px;
+  width: @logo-width;
   margin: 0 auto;
   padding: 17px 17px 17px 14px;
   background-color: #fff;
@@ -385,6 +387,8 @@ dd.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
 }
 
 .cd-loadingPopup-logo {
+  width: @logo-width;
+  height: 43px;
   display: block;
   margin: 0 auto;
 }

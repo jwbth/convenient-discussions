@@ -422,9 +422,9 @@ export default class Msg {
 
     if (cd.env.EVERYTHING_MUST_BE_FROZEN) {
       this.frozen = true;
-    } else if (cd.parse.closedDiscussions.length) {
-      for (let i = 0; i < cd.parse.closedDiscussions.length; i++) {
-        if (cd.parse.closedDiscussions[i].contains(elements[0])) {
+    } else if (cd.env.closedDiscussions.length) {
+      for (let i = 0; i < cd.env.closedDiscussions.length; i++) {
+        if (cd.env.closedDiscussions[i].contains(elements[0])) {
           this.frozen = true;
           break;
         }
@@ -434,7 +434,7 @@ export default class Msg {
       this.frozen = false;
     }
 
-    this.id = cd.parse.currentMsgId;
+    this.id = cd.env.currentMsgId;
     this.author = author;
     if (anchor) {
       this.anchor = anchor;
@@ -458,7 +458,7 @@ export default class Msg {
         }
       }
 
-      element.setAttribute('data-id', cd.parse.currentMsgId);
+      element.setAttribute('data-id', cd.env.currentMsgId);
 
       if (!element.className.includes('ruwiki-movedTemplate')) {
         element.onmouseenter = this.highlightFocused.bind(this);
@@ -750,7 +750,7 @@ export default class Msg {
 
       return returnValue || false;
     } else if (underlayerMisplaced) {
-      debug.startTimer('underlayer misplaced');
+      cd.debug.startTimer('underlayer misplaced');
 
       const positions = this.calculateUnderlayerPositions(rectTop, rectBottom);
 
@@ -772,11 +772,11 @@ export default class Msg {
         this.#linksUnderlayer.style.width = this.#underlayerWidth + 'px';
         this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
 
-        debug.resetTimer('underlayer misplaced');
+        cd.debug.resetTimer('underlayer misplaced');
 
         return true;
       } else {
-        debug.resetTimer('underlayer misplaced');
+        cd.debug.resetTimer('underlayer misplaced');
 
         // This wasn't used anywhere.
         return {
@@ -1620,7 +1620,7 @@ function getParent() {
     level -= 1;
   }
 
-  if (cd.parse.pageHasOutdents) {
+  if (cd.env.pageHasOutdents) {
     let currentElement = this.elements[0];
     let outdented = false;
     while (currentElement && currentElement !== cd.env.contentElement) {

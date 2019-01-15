@@ -66,9 +66,9 @@ export default class Section {
 
     if (cd.env.EVERYTHING_MUST_BE_FROZEN) {
       this.frozen = true;
-    } else if (cd.parse.closedDiscussions.length) {
-      for (let i = 0; i < cd.parse.closedDiscussions.length; i++) {
-        if (cd.parse.closedDiscussions[i].contains(headingElement)) {
+    } else if (cd.env.closedDiscussions.length) {
+      for (let i = 0; i < cd.env.closedDiscussions.length; i++) {
+        if (cd.env.closedDiscussions[i].contains(headingElement)) {
           this.frozen = true;
           break;
         }
@@ -157,7 +157,7 @@ export default class Section {
       }
     }
 
-    this.id = cd.parse.currentSectionId;
+    this.id = cd.env.currentSectionId;
     this.level = headingLevel;
     this.heading = headingText;
     this.isLastSection = isLastSection;
@@ -1076,7 +1076,7 @@ export default class Section {
         (result) => {
           let inCode = this.locateInCode(result.code, result.queryTimestamp);
           if (!inCode) {
-            return $.Deferred().reject('parse', cd.strings.couldntLocateSectionInCode).promise();
+            return $.Deferred().reject(['parse', cd.strings.couldntLocateSectionInCode]).promise();
           }
 
           return $.Deferred().resolve().promise();

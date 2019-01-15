@@ -1349,26 +1349,41 @@ export default {
       .trim();
   },
 
+  // Memorize newest messages so that after replying in or updating on a page, the newest pages
+  // would still be there.
+  memorizeNewestMsgs() {
+    const newestMsgs = [];
+    cd.msgs.forEach((msg) => {
+      if (msg.newness === 'newest' && !msg.seen) {
+        newestMsgs.push({
+          timestamp: msg.timestamp,
+          author: msg.author,
+        });
+      }
+    });
+    return newestMsgs;
+  },
+
   updatePageContent(html, anchor) {
     cd.env.underlayersContainer.innerHTML = '';
     cd.env.linksUnderlayersContainer.innerHTML = '';
     cd.env.underlayers = [];
 
-    debug.endTimer(cd.strings.gettingHtml);
+    cd.debug.endTimer(cd.strings.gettingHtml);
 
-    debug.startTimer(cd.strings.layingOutHtml);
+    cd.debug.startTimer(cd.strings.layingOutHtml);
 
     cd.env.$content.html(html);
     mw.hook('wikipage.content').fire(cd.env.$content);
-    parse(anchor);
+    cd.env.parse(anchor, cd.env.memorizeNewestMsgs());
   },
 
   reloadPage(anchor) {
-    debug.initTimers();
+    cd.debug.initTimers();
 
-    debug.startTimer(cd.strings.totalTime);
+    cd.debug.startTimer(cd.strings.totalTime);
 
-    debug.startTimer(cd.strings.gettingHtml);
+    cd.debug.startTimer(cd.strings.gettingHtml);
 
     cd.env.requestOptions();
 

@@ -24,9 +24,11 @@ function main() {
   // Messages
   cd.strings = strings;
 
-  debug.initTimers();
+  cd.debug = debug;
 
-  debug.startTimer(cd.strings.start);
+  cd.debug.initTimers();
+
+  cd.debug.startTimer(cd.strings.start);
 
   if (cd.hasRun) {
     console.warn(cd.strings.oneInstanceIsRunning);
@@ -36,17 +38,20 @@ function main() {
 
   mw.hook('cd.launched').fire(cd);
 
-  debug.startTimer(cd.strings.totalTime);
+  cd.debug.startTimer(cd.strings.totalTime);
 
 
   // Config values
-  cd.config = $.extend(cd.config, config, {
+  cd.config = cd.config || {};
+  $.extend(cd.config, config, {
     debug: true,
   });
 
-  // "Environment" of the script. This is deemed not eligible for adjustment, although such demand
-  // may appear.
+  // "Environment" of the script, a unifided namespace for all modules. This is deemed not eligible
+  // for adjustment, although such demand may appear.
   cd.env = env;
+
+  cd.env.parse = parse;
 
   if (!cd.env.$content.length) {
     console.error(cd.strings.mwContentTextNotFound);
@@ -207,9 +212,9 @@ function main() {
       cd.env.setLoadingOverlay();
     }
 
-    debug.endTimer(cd.strings.start);
+    cd.debug.endTimer(cd.strings.start);
 
-    debug.startTimer(cd.strings.loadingModules);
+    cd.debug.startTimer(cd.strings.loadingModules);
 
     mw.loader.using([
       'jquery.color',
@@ -225,7 +230,7 @@ function main() {
       'oojs-ui',
       'user.options',
     ]).done(() => {
-      parse();
+      cd.env.parse();
     });
   }
 
