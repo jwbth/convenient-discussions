@@ -86,6 +86,13 @@ export default class MsgForm {
       .prependTo(this.$wrapper);
 
     this.targetMsg = this.getTargetMsg();
+    if (this.targetMsg &&
+      !this.targetMsg.author &&
+      (this.mode === 'reply' ||
+        this.mode === 'edit' )
+    ) {
+      return;
+    }
 
     this.summaryAltered = false;
     const defaultSummaryComponents = {

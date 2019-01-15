@@ -83,9 +83,17 @@ function main() {
       .replace(/[ _]/, '[ _]*')
   );
 
+  const namespaceIds = mw.config.get('wgNamespaceIds');
+  const userNamespaces = [];
+  for (key in namespaceIds) {
+    if (namespaceIds[key] === 2 || namespaceIds[key] === 3) {
+      userNamespaces.push(key);
+    }
+  }
+
   // A user name regexp
   let captureUserNameRegexp = '\\[\\[[ _]*(?:(?:';
-  cd.config.USER_NAMESPACES.forEach((el, i) => {
+  userNamespaces.forEach((el, i) => {
     if (i !== 0) {
       captureUserNameRegexp += '|';
     }
@@ -115,12 +123,12 @@ function main() {
   // A part of the future user name regexp. Only the part generated below is case-sensitive, this is
   // why we generate it this way.
   let userNamePattern = '\\s*\\[\\[[ _]*:?\\w*:?\\w*:?(?:(?:';
-  for (let i = 0; i < cd.config.USER_NAMESPACES.length; i++) {
+  userNamespaces.forEach((el, i) => {
     if (i !== 0) {
       userNamePattern += '|';
     }
-    userNamePattern += anyTypeOfSpace(generateAnyCasePattern(cd.config.USER_NAMESPACES[i]));
-  }
+    userNamePattern += anyTypeOfSpace(generateAnyCasePattern(el));
+  });
   userNamePattern += ')[ _]*:[ _]*|(?:' +
     anyTypeOfSpace(generateAnyCasePattern('Special:Contributions')) + '|' +
     anyTypeOfSpace(generateAnyCasePattern(cd.config.CONTRIBUTIONS_PAGE)) + ')\\/[ _]*)';
@@ -153,7 +161,7 @@ function main() {
     }
     captureAuthorRegexp += `${encodeURI(el)}:([^#\\/]+)`;
   });
-  captureAuthorRegexp += `|${cd.config.CONTRIBUTIONS_PAGE}\\/([^#\\/]+))`;
+  captureAuthorRegexp += `|${encodeURI(cd.config.CONTRIBUTIONS_PAGE)}\\/([^#\\/]+))`;
   cd.env.CAPTURE_AUTHOR_REGEXP = new RegExp(captureAuthorRegexp);
 
   // TEST. Delete when done.

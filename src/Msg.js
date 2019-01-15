@@ -700,7 +700,7 @@ export default class Msg {
         linkButtonLink.onclick = this.copyLink.bind(this);
       }
 
-      if (!this.frozen) {
+      if (!this.frozen && this.author) {
         if (this.author === cd.env.CURRENT_USER || cd.settings.allowEditOthersMsgs) {
           const editButton = cd.env.MSG_EDIT_BUTTON_PROTOTYPE.cloneNode(true);
           editButton.firstChild.onclick = () => {
@@ -1100,7 +1100,7 @@ export default class Msg {
     };
 
     // Main method: by the current & previous author & date & message heading & message text
-    // overlap. Necessary is the current author & date & message text overlap.
+    // overlap. Necessary are the current author & date & message text overlap.
     do {
       msgStartPos = 0;
       msgEndPos = authorAndDateMatches.index;

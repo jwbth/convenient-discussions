@@ -5,27 +5,41 @@ var browserify = require('browserify');
 var babelify = require('babelify');
 var watchify = require('watchify');
 var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
 var notify = require('gulp-notify');
 var moment = require('moment');
+var gulpif = require('gulp-if');
+var uglify = require('gulp-uglify');
+var argv = require('yargs').argv;
 
 function now() {
   return moment().format('HH:mm:ss');
 }
 
 function bundle(b) {
-  b
+  return b
     .bundle()
     .on('error', notify.onError())
     .pipe(source('cd.js'))
+    .pipe(buffer())
+    .pipe(gulpif(release, uglify()))
     .pipe(gulp.dest('dist'));
-
-  return b;
 }
 
+const release = !!argv.release;
+
 gulp.task('default', function () {
-  var b = watchify(browserify(Object.assign({
+  const obj = {
     entries: ['./src/app.js'],
-  }, watchify.args)))
+    ignoreWatch: ['**/node_modules/**'],
+    poll: true,
+  };
+  if (!release) {
+    Object.assign(obj, {
+      plugin: [watchify],
+    }, watchify.args);
+  }
+  const b = browserify(obj)
     .transform('babelify', {
       presets: ['@babel/preset-env'],
       // plugin-proposal-function-bind responsible for private::methods
