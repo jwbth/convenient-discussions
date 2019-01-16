@@ -180,7 +180,7 @@ export default class Section {
         } else if (leifsTagName === 'OL') {
           tag = 'div';
         } else if (leifsTagName === 'DL') {
-          tag = 'dl';
+          tag = 'dd';
         } else {
           tag = 'li';
           createUl = true;

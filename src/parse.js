@@ -1,7 +1,6 @@
 import debug from './debug';
 import Msg from './Msg';
 import Section from './Section';
-import MsgForm from './MsgForm';
 
 export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
   if (cd.env.firstRun) {
@@ -749,13 +748,10 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
       do {
         const topTag = currentTopElement.tagName;
         const bottomInnerTags = {};
-        switch (topTag) {
-          case 'UL':
-            bottomInnerTags.DD = 'LI';
-            break;
-          case 'DL':
-            bottomInnerTags.LI = 'DD';
-            break;
+        if (topTag === 'UL') {
+          bottomInnerTags.DD = 'LI';
+        } else if (topTag === 'DL') {
+          bottomInnerTags.LI = 'DD';
         }
 
         let firstMoved = null;
@@ -917,6 +913,8 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
   mw.hook('cd.sectionsReady').fire(cd.sections);
 
   cd.debug.endTimer(cd.strings.mainCode);
+
+  const newTopicsOnTop = !!$('.ruwiki-addTopicLink a[href*="section=0"]').length;
 
   cd.debug.startTimer(cd.strings.finalCodeAndRendering);
 

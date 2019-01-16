@@ -321,8 +321,12 @@ export default class Msg {
       const authorMatches = cd.env.CAPTURE_AUTHOR_REGEXP.exec(
         authorLinks[authorLinks.length - 1].getAttribute('href')
       );
-      author = authorMatches && decodeURIComponent(authorMatches[1] || authorMatches[2] ||
-         authorMatches[3] || authorMatches[4]);
+      for (let i = 1; i < authorMatches.length; i++) {
+        if (authorMatches[i]) {
+          author = decodeURIComponent(authorMatches[i]);
+          break;
+        }
+      }
       author = author && author
         .replace(/&action=edit.*/, '')
         .replace(/_/g, ' ');

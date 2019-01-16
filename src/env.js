@@ -1,4 +1,5 @@
 import lzString from 'lz-string';
+import parse from './parse';
 
 export default {
   // Underlayer-related
@@ -1102,10 +1103,13 @@ export default {
       }
 
       if (!captureNames.includes('author')) {
-        cd.env.CAPTURE_USER_NAME_REGEXPS.forEach((el) => {
-          authorDate['author'] = cd.env.getLastGlobalCapture(text, el);
-          if (authorDate['author']) return;
-        });
+        for (let i = 0; i < cd.env.CAPTURE_USER_NAME_REGEXPS.length; i++) {
+          authorDate['author'] = cd.env.getLastGlobalCapture(
+            text,
+            cd.env.CAPTURE_USER_NAME_REGEXPS[i]
+          );
+          if (authorDate['author']) break;
+        };
       }
     });
 
@@ -1375,7 +1379,7 @@ export default {
 
     cd.env.$content.html(html);
     mw.hook('wikipage.content').fire(cd.env.$content);
-    cd.env.parse(anchor, cd.env.memorizeNewestMsgs());
+    parse(anchor, cd.env.memorizeNewestMsgs());
   },
 
   reloadPage(anchor) {

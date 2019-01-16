@@ -47,7 +47,7 @@ function main() {
     debug: true,
   });
 
-  // "Environment" of the script, a unifided namespace for all modules. This is deemed not eligible
+  // "Environment" of the script, a unified namespace for all modules. This is deemed not eligible
   // for adjustment, although such demand may appear.
   cd.env = env;
 
@@ -84,8 +84,8 @@ function main() {
 
   const anyTypeOfSpace = s => (
     s
-      .replace(/:/, ' : ')
-      .replace(/[ _]/, '[ _]*')
+      .replace(/:/g, ' : ')
+      .replace(/[ _]/g, '[ _]*')
   );
 
   const namespaceIds = mw.config.get('wgNamespaceIds');
@@ -120,6 +120,8 @@ function main() {
       // mw.RegExp.escape(s[i]) === s[i] &&
       if (s[i].toUpperCase() !== s[i].toLowerCase()) {
         result += '[' + s[i].toUpperCase() + s[i].toLowerCase() + ']';
+      } else {
+        result += s[i];
       }
     }
     return result;
@@ -230,7 +232,7 @@ function main() {
       'oojs-ui',
       'user.options',
     ]).done(() => {
-      cd.env.parse();
+      parse();
     });
   }
 
