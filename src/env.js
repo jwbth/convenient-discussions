@@ -2,6 +2,8 @@ import lzString from 'lz-string';
 import parse from './parse';
 
 export default {
+  IS_RUWIKI: mw.config.get('wgServername') === 'ru.wikipedia.org',
+
   // Underlayer-related
   UNDERLAYER_FOCUSED_BGCOLOR: '#eaf3ff',
   UNDERLAYER_TARGET_BGCOLOR: '#fff1c7',
@@ -669,7 +671,7 @@ export default {
   },
 
   requestOptions() {
-    cd.env.optionsRequest = new mw.Api().get({
+    return new mw.Api().get({
       action: 'query',
       meta: 'userinfo',
       uiprop: 'options',
@@ -706,18 +708,25 @@ export default {
   },
 
   getVisits() {
-    if (cd.env.optionsRequest) {
-      return cd.env.optionsRequest.then(options => options.visits);
-    } else if (mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) !== null) {
-      const visits = cd.env.unpackVisits(
-        lzString.decompressFromEncodedURIComponent(mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME))
-      );
+    if (cd.env.firstRun) {
+      if (mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) !== null) {
+        const visits = cd.env.unpackVisits(lzString.decompressFromEncodedURIComponent(
+          mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME)
+        ));
 
-      return $.Deferred().resolve(visits).promise();
+        return $.Deferred().resolve(visits).promise();
+      } else {
+        return $.Deferred().resolve(
+          localStorage[cd.env.VISITS_OPTION_NAME] ?
+            JSON.parse(localStorage[cd.env.VISITS_OPTION_NAME]) :
+            {}
+        ).promise();
+      }
     } else {
-      return $.Deferred().resolve(
-        localStorage[cd.env.VISITS_OPTION_NAME] ? JSON.parse(localStorage[cd.env.VISITS_OPTION_NAME]) : {}
-      ).promise();
+      // cd.env.optionsRequest is used to keep the promise in order to load options only once when
+      // reloading page in reloadPage().
+      const optionsRequest = cd.env.optionsRequest || cd.env.requestOptions();
+      return optionsRequest.then(options => options.visits);
     }
   },
 
@@ -746,17 +755,36 @@ export default {
   },
 
   getWatchedTopics() {
-    if (cd.env.optionsRequest) {
-      return cd.env.optionsRequest.then(options => options.watchedTopics);
-    } else if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
-      const watchedTopics = cd.env.unpackWatchedTopics(lzString.decompressFromEncodedURIComponent(
-        mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME)
-      ));
+    let promise;
+    if (cd.env.firstRun) {
+      if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
+        const watchedTopics = cd.env.unpackWatchedTopics(lzString.decompressFromEncodedURIComponent(
+          mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME)
+        ));
 
-      return $.Deferred().resolve(watchedTopics).promise();
+        promise = $.Deferred().resolve(watchedTopics).promise();
+      } else {
+        promise = $.Deferred().resolve({}).promise();
+      }
     } else {
-      return $.Deferred().resolve({}).promise();
+      // cd.env.optionsRequest is used to keep the promise in order to load options only once when
+      // reloading page in reloadPage().
+      const optionsRequest = cd.env.optionsRequest || cd.env.requestOptions();
+      promise = optionsRequest
+        .then(options => options.watchedTopics);
     }
+    return promise
+      .done((watchedTopics) => {
+        cd.env.watchedTopics = watchedTopics;
+        cd.env.thisPageWatchedTopics = cd.env.watchedTopics &&
+          cd.env.watchedTopics[cd.env.ARTICLE_ID] || [];
+        if (!cd.env.thisPageWatchedTopics.length) {
+          cd.env.watchedTopics[cd.env.ARTICLE_ID] = cd.env.thisPageWatchedTopics;
+        }
+      })
+      .fail(() => {
+        console.error('Не удалось загрузить настройки с сервера');
+      });
   },
 
   setWatchedTopics(watchedTopics) {
@@ -1389,13 +1417,15 @@ export default {
 
     cd.debug.startTimer(cd.strings.gettingHtml);
 
-    cd.env.requestOptions();
+    cd.env.optionsRequest = cd.env.requestOptions();
 
     if (cd.settings.showLoadingOverlay !== false) {
       cd.env.setLoadingOverlay();
     }
 
-    return cd.env.parseCurrentPage().done(html => cd.env.updatePageContent(html, anchor));
+    return cd.env.parseCurrentPage().done((html) => {
+      cd.env.updatePageContent(html, anchor);
+    });
   },
 
   parseCurrentPage() {
@@ -1552,6 +1582,27 @@ export default {
     } else {
       this.abort(options.message + ' (неизвестная ошибка).', options.data, options.retryFunc);
     }
+  },
+
+  async watchTopic(heading, silent = false) {
+    await cd.env.getWatchedTopics();
+    cd.env.thisPageWatchedTopics.push(heading);
+    cd.env.setWatchedTopics(cd.env.watchedTopics)
+      .done(() => {
+        if (!silent) {
+          mw.notify(cd.env.toJquerySpan(
+            `Иконка у сообщений в разделе «${heading}» в списке наблюдения теперь будет синей.`
+          ));
+        }
+      })
+      .fail((e) => {
+        const [errorType, data] = e;
+        if (errorType === 'internal' && data === 'sizelimit') {
+          mw.notify('Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Отредактируйте список тем, чтобы это исправить.');
+        } else {
+          mw.notify('Не удалось обновить настройки.');
+        }
+      });
   },
 
   Exception(message) {

@@ -29,16 +29,6 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
 
   cd.settings = cd.settings || {};
 
-  // Settings in variables like cdAlowEditOthersMsgs
-  ['allowEditOthersMsgs', 'closerTemplate', 'defaultCopyLinkType', 'mySig', 'slideEffects',
-    'showLoadingOverlay']
-    .forEach((name) => {
-      const settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
-      if (settingName in window) {
-        cd.settings[name] = window[settingName];
-      }
-    });
-
   // We fill the settings after the modules are loaded so that user settings had more chance
   // to load.
   cd.defaultSettings = {
@@ -49,8 +39,16 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
     mySig: '~~\~~',
     slideEffects: true,
     showLoadingOverlay: true,
-    storeDataOnServer: true,
+    showToolbars: true,
   };
+
+  // Settings in variables like cdAlowEditOthersMsgs
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    const settingName = 'cd' + name[0].toUpperCase() + name.slice(1);
+    if (settingName in window) {
+      cd.settings[name] = window[settingName];
+    }
+  });
 
   cd.settings = $.extend({}, cd.defaultSettings, cd.settings);
 
@@ -832,23 +830,12 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
     if (element.classList.contains('cd-msgPart')) {
       element.style.margin = '0';
     }
-
   }
 
   mw.hook('cd.msgsReady').fire(cd.msgs);
 
-  const ARTICLE_ID = mw.config.get('wgArticleId');
-  cd.env.watchedTopicsPromise = cd.env.getWatchedTopics()
-    .done((gotWatchedTopics) => {
-      cd.env.watchedTopics = gotWatchedTopics;
-      cd.env.thisPageWatchedTopics = cd.env.watchedTopics && cd.env.watchedTopics[ARTICLE_ID] || [];
-      if (!cd.env.thisPageWatchedTopics.length) {
-        cd.env.watchedTopics[ARTICLE_ID] = cd.env.thisPageWatchedTopics;
-      }
-    })
-    .fail(() => {
-      console.error('Не удалось загрузить настройки с сервера');
-    });
+  cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
+  cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics();
 
   cd.env.currentSectionId = 0;
   const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
@@ -1057,10 +1044,7 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
 
     cd.env.getVisits()
       .done((visits) => {
-        cd.env.newestCount = 0;
-        cd.env.newCount = 0;
-
-        const thisPageVisits = visits && visits[ARTICLE_ID] || [];
+        const thisPageVisits = visits && visits[cd.env.ARTICLE_ID] || [];
         const currentUnixTime = Math.floor($.now() / 1000);
         let firstVisit;
 
@@ -1075,8 +1059,11 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
           }
         } else {
           firstVisit = true;
-          visits[ARTICLE_ID] = thisPageVisits;
+          visits[cd.env.ARTICLE_ID] = thisPageVisits;
         }
+
+        cd.env.newestCount = 0;
+        cd.env.newCount = 0;
 
         if (!firstVisit) {
           for (let i = 0; i < cd.env.floatingElements.length; i++) {
@@ -1199,6 +1186,8 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
         console.error('Не удалось загрузить настройки с сервера');
       });
   }
+
+  cd.env.optionsRequest = null;
 
   if (cd.env.firstRun) {
     // mouseover allows to capture when the cursor is not moving but ends up above the element

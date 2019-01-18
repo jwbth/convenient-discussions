@@ -59,9 +59,7 @@ function main() {
   }
 
   if (cd.config.HELP_LINK === cd.config.DEFAULT_HELP_LINK) {
-    cd.env.HELP_LINK = mw.config.get('wgServername') === 'ru.wikipedia.org' ?
-      cd.config.HELP_LINK :
-      'w:ru:' + cd.config.HELP_LINK;
+    cd.env.HELP_LINK = cd.env.IS_RUWIKI ? cd.config.HELP_LINK : 'w:ru:' + cd.config.HELP_LINK;
   } else {
     cd.env.HELP_LINK = cd.config.HELP_LINK;
   }

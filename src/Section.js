@@ -305,7 +305,7 @@ export default class Section {
         });
       }
 
-      cd.env.watchedTopicsPromise.done(() => {
+      cd.env.getWatchedTopicsPromise.done(() => {
         if (!cd.env.thisPageWatchedTopics.includes(this.heading)) {
           this.isWatched = false;
           this.addMenuItem({
@@ -762,39 +762,31 @@ export default class Section {
     });
   }
 
-  watch() {
-    cd.env.thisPageWatchedTopics.push(this.heading);
-    cd.env.setWatchedTopics(cd.env.watchedTopics)
-      .done(() => {
-        mw.notify(cd.env.toJquerySpan(
-          `Иконка у сообщений в разделе «${this.heading}» в списке наблюдения теперь будет синей.`
-        ));
-      })
-      .fail((e) => {
-        const [errorType, data] = e;
-        if (errorType === 'internal' && data === 'sizelimit') {
-          mw.notify('Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Отредактируйте список тем, чтобы это исправить.');
-        } else {
-          mw.notify('Не удалось обновить настройки.');
-        }
-      });
+  watch(silent = false) {
+    cd.env.watchTopic(this.heading, silent);
 
     const $watchSectionLink = this.$heading.find('.cd-watchSectionLink')
+      .text('не следить')
       .removeClass('cd-watchSectionLink')
       .addClass('cd-unwatchSectionLink')
       .off('click')
-      .click(this.unwatch.bind(this))
-      .text('не следить');
+      .click(() => {
+        this.unwatch.call(this);
+      });
     $watchSectionLink[0].onclick = null;
   }
 
-  unwatch() {
+  async unwatch(silent = false) {
+    // We can unwatch only existing topics, so we don't delegate this to a separate function.
+    await cd.env.getWatchedTopics();
     cd.env.thisPageWatchedTopics.splice(cd.env.thisPageWatchedTopics.indexOf(this.heading), 1);
     cd.env.setWatchedTopics(cd.env.watchedTopics)
       .done(() => {
-        mw.notify(cd.env.toJquerySpan(
-          `Иконка у сообщений в разделе «${this.heading}» в списке наблюдения теперь будет серой.`
-        ));
+        if (!silent) {
+          mw.notify(cd.env.toJquerySpan(
+            `Иконка у сообщений в разделе «${this.heading}» в списке наблюдения теперь будет серой.`
+          ));
+        }
       })
       .fail(() => {
         mw.notify('Не удалось обновить настройки.');
@@ -804,7 +796,9 @@ export default class Section {
       .removeClass('cd-unwatchSectionLink')
       .addClass('cd-watchSectionLink')
       .off('click')
-      .click(this.watch)
+      .click(() => {
+        this.watch.call(this);
+      })
       .text('следить');
     $unwatchSectionLink[0].onclick = null;
   }

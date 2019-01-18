@@ -300,6 +300,8 @@ export default class MsgForm {
       this.mode === 'addSubsection' &&
       mw.config.get('wgUserGroups').includes('closer');
 
+    this.id = cd.msgForms.indexOf(this);
+
     if (this.mode === 'addSection' ||
       this.mode === 'addSubsection' ||
       (this.mode === 'edit' &&
@@ -315,7 +317,7 @@ export default class MsgForm {
       this.headingInput = new OO.ui.TextInputWidget({
         placeholder: this.headingInputPurpose,
         classes: ['cd-headingInput'],
-        tabIndex: 11,
+        tabIndex: String(this.id) + '11',
       });
       this.headingInput.$element.appendTo(this.$form);
       this.headingInput.on('change', (headingInputText) => {
@@ -357,7 +359,7 @@ export default class MsgForm {
       },
     ];
 
-    let rowNumber = this.mode === 'addSection' ? 10 : 5;
+    let rowNumber = 5;
     if ($.client.profile().name === 'firefox') {
       rowNumber--;
     }
@@ -367,7 +369,7 @@ export default class MsgForm {
       rows: rowNumber,
       maxRows: 30,
       classes: ['cd-textarea'],
-      tabIndex: 12,
+      tabIndex: String(this.id) + '12',
     });
     this.textarea.cdMsgForm = this;
     this.textarea.on('change', (textareaText) => {
@@ -393,7 +395,7 @@ export default class MsgForm {
       maxLength: cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT,
       placeholder: 'Описание изменений',
       classes: ['cd-summaryInput'],
-      tabIndex: 13,
+      tabIndex: String(this.id) + '13',
     });
     this.summaryInput.$element.keypress((summaryInputContent) => {
       this.summaryAltered = true;
@@ -411,7 +413,7 @@ export default class MsgForm {
       this.minorCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'minor',
         selected: true,
-        tabIndex: 20,
+        tabIndex: String(this.id) + '20',
       });
       this.minorCheckboxField = new OO.ui.FieldLayout(this.minorCheckbox, {
         label: 'Малое изменение',
@@ -422,7 +424,7 @@ export default class MsgForm {
     this.watchCheckbox = new OO.ui.CheckboxInputWidget({
       value: 'watch',
       selected: !!mw.user.options.get('watchdefault') || !!$('#ca-unwatch').length,
-      tabIndex: 21,
+      tabIndex: String(this.id) + '21',
     });
     this.watchCheckboxField = new OO.ui.FieldLayout(this.watchCheckbox, {
       label: 'В список наблюдения',
@@ -432,7 +434,7 @@ export default class MsgForm {
     this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
       value: 'watchTopic',
       selected: this.mode !== 'edit' || this.targetMsg.section.isWatched,
-      tabIndex: 22,
+      tabIndex: String(this.id) + '22',
     });
     this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
       label: 'Следить за темой',
@@ -442,7 +444,7 @@ export default class MsgForm {
     if (this.mode !== 'edit' && this.targetMsg) {
       this.pingCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'ping',
-        tabIndex: 23,
+        tabIndex: String(this.id) + '23',
       });
       this.pingCheckboxField = new OO.ui.FieldLayout(this.pingCheckbox, {
         align: 'inline',
@@ -488,20 +490,20 @@ export default class MsgForm {
     ) {
       this.smallCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'small',
-        tabIndex: 24,
+        tabIndex: String(this.id) + '24',
       });
 
       this.smallCheckboxField = new OO.ui.FieldLayout(this.smallCheckbox, {
         label: 'Мелким шрифтом',
         align: 'inline',
-        tabIndex: 25,
+        tabIndex: String(this.id) + '25',
       });
     }
 
     if (this.mode === 'replyInSection') {
       this.noIndentationCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'noIndentation',
-        tabIndex: 26,
+        tabIndex: String(this.id) + '26',
       });
       this.noIndentationCheckbox.on('change', (selected) => {
         if (selected) {
@@ -544,7 +546,7 @@ export default class MsgForm {
       ) {
         this.deleteCheckbox = new OO.ui.CheckboxInputWidget({
           value: 'delete',
-          tabIndex: 27,
+          tabIndex: String(this.id) + '27',
         });
         let initialMinorSelected;
         this.deleteCheckbox.on('change', (selected) => {
@@ -587,6 +589,9 @@ export default class MsgForm {
       this.horizontalLayout.addItems([this.minorCheckboxField]);
     }
     this.horizontalLayout.addItems([this.watchCheckboxField]);
+    if (this.watchTopicCheckboxField) {
+      this.horizontalLayout.addItems([this.watchTopicCheckboxField]);
+    }
     if (this.pingCheckboxField) {
       this.horizontalLayout.addItems([this.pingCheckboxField]);
     }
@@ -637,13 +642,13 @@ export default class MsgForm {
       label: this.#standardSubmitButtonLabel,
       flags: ['progressive', 'primary'],
       classes: ['cd-submitButton'],
-      tabIndex: 35,
+      tabIndex: String(this.id) + '35',
     });
 
     this.previewButton = new OO.ui.ButtonWidget({
       label: 'Предпросмотреть',
       classes: ['cd-previewButton'],
-      tabIndex: 34,
+      tabIndex: String(this.id) + '34',
     });
     this.previewButton.on('click', this.preview.bind(this));
 
@@ -651,7 +656,7 @@ export default class MsgForm {
       this.viewChangesButton = new OO.ui.ButtonWidget({
         label: 'Просмотреть изменения',
         classes: ['cd-viewChangesButton'],
-      tabIndex: 33,
+      tabIndex: String(this.id) + '33',
       });
       this.viewChangesButton.on('click', this.viewChanges.bind(this));
     }
@@ -660,7 +665,7 @@ export default class MsgForm {
       label: 'Настройки',
       framed: false,
       classes: ['cd-settingsButton'],
-      tabIndex: 30,
+      tabIndex: String(this.id) + '30',
     });
     this.settingsButton.on('click', this.toggleSettings.bind(this));
 
@@ -688,7 +693,7 @@ export default class MsgForm {
         align: 'center',
       },
       $overlay: cd.env.$popupsOverlay,
-      tabIndex: 31,
+      tabIndex: String(this.id) + '31',
     });
 
     this.cancelButton = new OO.ui.ButtonWidget({
@@ -696,7 +701,7 @@ export default class MsgForm {
       flags: 'destructive',
       framed: false,
       classes: ['cd-cancelButton'],
-      tabIndex: 32,
+      tabIndex: String(this.id) + '32',
     });
     this.cancelButton.on('click', this.cancel.bind(this));
 
@@ -737,7 +742,10 @@ export default class MsgForm {
       let $nextToLast = $last.next();
       while ($nextToLast.hasClass('cd-replyButtonContainerContainer') ||
         $nextToLast.hasClass('cd-addSubsectionButtonContainer') ||
-        ($nextToLast.hasClass('cd-msgForm') && !$nextToLast.hasClass('cd-msgForm-addSubsection')) ||
+        ($nextToLast.hasClass('cd-msgForm') &&
+            !$nextToLast.hasClass('cd-msgForm-addSubsection') &&
+            !$nextToLast.hasClass('cd-msgForm-addSection')
+          ) ||
         ($nextToLast[0] && $nextToLast[0].className.match(headingLevelRegExp))
       ) {
         $last = $nextToLast;
@@ -747,7 +755,7 @@ export default class MsgForm {
     }
 
     if (this.mode === 'addSection' || cd.settings.showToolbars) {
-      mw.loader.using(['ext.wikiEditor', 'ext.gadget.wikificator']).done(() => {
+      mw.loader.using(['ext.wikiEditor', cd.env.IS_RUWIKI && 'ext.gadget.wikificator']).done(() => {
         this.textarea.$input.wikiEditor(
           'addModule',
           $.wikiEditor.modules.toolbar.config.getDefaultConfig()
@@ -755,56 +763,58 @@ export default class MsgForm {
 
         this.$element.find('.group-insert').remove();
 
-        this.textarea.$input.wikiEditor('addToToolbar', {
-          'section': 'main',
-          'groups': {
-            'gadgets': {}
+        if (cd.env.IS_RUWIKI) {
+          this.textarea.$input.wikiEditor('addToToolbar', {
+            'section': 'main',
+            'groups': {
+              'gadgets': {}
+            }
+          });
+          const $groupGadgets = this.$element.find('.group-gadgets');
+          const $groupFormat = this.$element.find('.group-format');
+          if ($groupGadgets.length && $groupFormat.length) {
+            $groupGadgets.insertBefore($groupFormat);
           }
-        });
-        const $groupGadgets = this.$element.find('.group-gadgets');
-        const $groupFormat = this.$element.find('.group-format');
-        if ($groupGadgets.length && $groupFormat.length) {
-          $groupGadgets.insertBefore($groupFormat);
-        }
 
-        this.textarea.$input.wikiEditor('addToToolbar', {
-          'section': 'main',
-          'group': 'gadgets',
-          'tools': {
-            'wikificator': {
-              label: 'Викификатор — автоматический обработчик текста',
-              type: 'button',
-              icon: '//upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
-              action: {
-                type: 'callback',
-                execute: () => {
-                  Wikify(this.textarea.$input[0]);
+          this.textarea.$input.wikiEditor('addToToolbar', {
+            'section': 'main',
+            'group': 'gadgets',
+            'tools': {
+              'wikificator': {
+                label: 'Викификатор — автоматический обработчик текста',
+                type: 'button',
+                icon: '//upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+                action: {
+                  type: 'callback',
+                  execute: () => {
+                    Wikify(this.textarea.$input[0]);
+                  }
                 }
               }
             }
-          }
-        });
+          });
 
-        if (mw.user.options.get('gadget-urldecoder')) {
-          mw.loader.using('ext.gadget.urldecoder').done(() => {
-            this.textarea.$input.wikiEditor('addToToolbar', {
-              'section': 'main',
-              'group': 'gadgets',
-              'tools': {
-                'urlDecoder': {
-                  label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
-                  type: 'button',
-                  icon: '//upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
-                  action: {
-                    type: 'callback',
-                    execute: () => {
-                      urlDecoderRun(this.textarea.$input[0]);
+          if (mw.user.options.get('gadget-urldecoder')) {
+            mw.loader.using('ext.gadget.urldecoder').done(() => {
+              this.textarea.$input.wikiEditor('addToToolbar', {
+                'section': 'main',
+                'group': 'gadgets',
+                'tools': {
+                  'urlDecoder': {
+                    label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+                    type: 'button',
+                    icon: '//upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+                    action: {
+                      type: 'callback',
+                      execute: () => {
+                        urlDecoderRun(this.textarea.$input[0]);
+                      },
                     },
                   },
                 },
-              },
+              });
             });
-          });
+          }
         }
       });
 
@@ -830,22 +840,17 @@ export default class MsgForm {
           .appendTo($insertButtons);
       };
 
-      addInsertButton('{{ping|+}}');
-      addInsertButton('{{u|+}}');
-      addInsertButton('{{tl|+}}');
-      addInsertButton('{{+}}');
-      addInsertButton('[[+]]');
-      addInsertButton('<>+</>', '</>');
-      addInsertButton('<code>+</code>', '<code />');
-      addInsertButton('<nowiki>+</nowiki>', '<nowiki />');
-      addInsertButton('<source lang="">+</source>', '<source />');
-      addInsertButton('<small>+</small>', '<small />');
-
-      if (cd.settings.additionalInsertButtons && $.isArray(cd.settings.additionalInsertButtons)) {
-        cd.settings.additionalInsertButtons.forEach((text, displayedText = text) => {
-          addInsertButton(text, displayedText);
-        });
-      }
+      $.extend({}, cd.config.insertButtons, cd.settings.additionalInsertButtons).forEach((el) => {
+        let text;
+        let displayedText;
+        if ($.isArray(el)) {
+          text = el[0];
+          displayedText = el[1];
+        } else {
+          text = el;
+        }
+        addInsertButton(text, displayedText);
+      });
     }
 
     // Keyboard shortcuts
@@ -980,6 +985,14 @@ export default class MsgForm {
           }
         }
       }
+    }
+  }
+
+  getTargetSection() {
+    if (this.target instanceof Section) {
+      return this.target;
+    } else if (this.target instanceof Msg) {
+      return this.target.section;
     }
   }
 
@@ -1716,6 +1729,21 @@ export default class MsgForm {
           );
         }
         return;
+      }
+
+      if (this.watchTopicCheckbox.isSelected()) {
+        const section = this.getTargetSection();
+        if (section && !section.isWatched) {
+          section.watch(true);
+        }
+        if (this.mode === 'addSection') {
+          const heading = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
+        }
+      } else {
+        const section = this.getTargetSection();
+        if (section && section.isWatched) {
+          section.unwatch(true);
+        }
       }
 
       try {
