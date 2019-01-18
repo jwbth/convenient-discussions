@@ -99,6 +99,7 @@
     padding-bottom: 1px;  /* To prevent the scrollbar from showing up */
   }
 
+  &.cd-msgForm-addSection,
   &.cd-msgForm-addSubsection,
   &.cd-msgForm-replyInSection:not(.cd-msgForm-inNumberedList),
   &.cd-msgForm-msgOpeningSection {
@@ -169,18 +170,69 @@
     padding-left: 0.5em;
     padding-bottom: 1px;
   }
+
+  &:not(.cd-msgForm-hidden) + .cd-msgLevel,
+  &:not(.cd-msgForm-hidden) + dd > .cd-msgLevel:first-child,
+  &:not(.cd-msgForm-hidden) + li > .cd-msgLevel:first-child {
+    /* Neutralize the hole which would otherwise be created by a margin-top of a nested message */
+    padding-top: 0.1px;
+  }
+
+  &:not(.cd-msgForm-hidden) + .cd-msgForm {
+    padding-top: 0.5em;
+  }
+
+  .wikiEditor-ui-toolbar {
+    background-image: none;
+    background-color: #eaecf0;
+
+    .sections .section {
+      background-color: #f8f9fa;
+    }
+
+    .booklet .index .current {
+      background-color: #eaecf0;
+    }
+
+    .group,
+    .sections .section {
+      border-color: #c8ccd1;
+    }
+  }
+
+  .wikiEditor-ui .wikiEditor-ui-view,
+  .wikiEditor-ui .wikiEditor-ui-top {
+    border-color: #c8ccd1;
+  }
+}
+
+dd.cd-msgForm.cd-msgLevel.cd-msgLevel {
+  margin-left: 2em;
+}
+
+.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
+  background-color: ' + bodyBgcolor + ';
+  padding-top: 1em;
+}
+
+li.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
+  margin: -0.5em 0 0 -2em;
+}
+
+dd.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
+  margin: -0.5em 0 0 -1em;
 }
 
 .cd-previewArea {
+  margin-bottom: 0.5em;
+
   > .mw-parser-output > *:first-child {
     margin-top: 0;
   }
 
-  margin-bottom: 0.5em;
-}
-
-.cd-previewArea:empty {
-  margin-bottom: 0;
+  &:empty {
+    margin-bottom: 0;
+  }
 }
 
 .cd-previewArea, .cd-infoArea {
@@ -210,10 +262,37 @@
   }
 }
 
+.cd-popupsOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  font-size: 14px;
+}
+
+.cd-insertButtons {
+  margin-left: -0.5em;
+
+  &-item {
+    font: bold 1.1em monospace;
+    color: #222;
+    padding: 0.15em .5em;
+
+    &:hover, &:focus {
+      text-decoration: none;
+      color: #222;
+    }
+
+    &:active {
+      background-color: #eaecf0;
+    }
+  }
+}
+
+
 .cd-msgLevel .paragraphbreak {
   margin-top: 0.25em !important;
 }
-
 
 .cd-msgPart-first {
   margin-top: 0.5em;
@@ -246,42 +325,6 @@ dl.cd-msgLevel.cd-msgLevel > dd {
   margin-left: 1em;
 }
 
-dd.cd-msgForm.cd-msgLevel.cd-msgLevel {
-  margin-left: 2em;
-}
-
-.cd-msgForm:not(.cd-msgForm-hidden) + .cd-msgLevel,
-.cd-msgForm:not(.cd-msgForm-hidden) + dd > .cd-msgLevel:first-child,
-.cd-msgForm:not(.cd-msgForm-hidden) + li > .cd-msgLevel:first-child {
-  /* Neutralize the hole which would otherwise be created by a margin-top of a nested message */
-  padding-top: 0.1px;
-}
-
-.cd-msgForm:not(.cd-msgForm-hidden) + .cd-msgForm {
-  padding-top: 0.5em;
-}
-
-.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
-  background-color: ' + bodyBgcolor + ';
-  padding-top: 1em;
-}
-
-li.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
-  margin: -0.5em 0 0 -2em;
-}
-
-dd.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
-  margin: -0.5em 0 0 -1em;
-}
-
-.cd-popupsOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
-  font-size: 14px;
-}
-
 .ruwiki-msgIndentation-minus1level {
   margin-left: -2em !important;
 }
@@ -302,61 +345,61 @@ dd.cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
-}
 
-#cd-updatePanel:hover {
-  opacity: 1;
-}
+  &:hover {
+    opacity: 1;
+  }
 
-#cd-updatePanel-refreshButton {
-  display: block;
-  padding: 4px;
-  width: 24px;
-  height: 24px;
-  background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 36 36\'%3E%3Cpath d=\'M0 0h36v36h-36z\' fill=\'none\'/%3E%3Cpath d=\'M26.47 9.53c-2.17-2.18-5.15-3.53-8.47-3.53-6.63 0-12 5.37-12 12s5.37 12 12 12c5.94 0 10.85-4.33 11.81-10h-3.04c-.91 4.01-4.49 7-8.77 7-4.97 0-9-4.03-9-9s4.03-9 9-9c2.49 0 4.71 1.03 6.34 2.66l-4.34 4.34h10v-10l-3.53 3.53z\'/%3E%3C/svg%3E") center center/24px 24px no-repeat;
-}
+  &-refreshButton {
+    display: block;
+    padding: 4px;
+    width: 24px;
+    height: 24px;
+    background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'36\' height=\'36\' viewBox=\'0 0 36 36\'%3E%3Cpath d=\'M0 0h36v36h-36z\' fill=\'none\'/%3E%3Cpath d=\'M26.47 9.53c-2.17-2.18-5.15-3.53-8.47-3.53-6.63 0-12 5.37-12 12s5.37 12 12 12c5.94 0 10.85-4.33 11.81-10h-3.04c-.91 4.01-4.49 7-8.77 7-4.97 0-9-4.03-9-9s4.03-9 9-9c2.49 0 4.71 1.03 6.34 2.66l-4.34 4.34h10v-10l-3.53 3.53z\'/%3E%3C/svg%3E") center center/24px 24px no-repeat;
+  }
 
-#cd-updatePanel-prevButton,
-#cd-updatePanel-nextButton {
-  position: relative;
-  display: block;
-  height: 29px;
-  margin-top: 1px;
-  color: #000;
-  text-align: center;
-  font-size: 13px;
-}
+  &-prevButton,
+  &-nextButton {
+    position: relative;
+    display: block;
+    height: 29px;
+    margin-top: 1px;
+    color: #000;
+    text-align: center;
+    font-size: 13px;
+  }
 
-#cd-updatePanel-prevButton {
-  background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 6.5l8.9 8.9c-.8.8-2 .8-2.8 0L12 9.3l-6.1 6c-.8.8-2 .8-2.8 0L12 6.5z\'/%3E%3C/svg%3E") center center/16px 16px no-repeat;
-}
+  &-prevButton {
+    background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 6.5l8.9 8.9c-.8.8-2 .8-2.8 0L12 9.3l-6.1 6c-.8.8-2 .8-2.8 0L12 6.5z\'/%3E%3C/svg%3E") center center/16px 16px no-repeat;
+  }
 
-#cd-updatePanel-nextButton {
-  background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 16l8.9-8.9c-.8-.8-2-.8-2.8 0L12 13.2l-6.1-6c-.8-.8-2-.8-2.8 0L12 16z\'/%3E%3C/svg%3E") center center/16px 16px no-repeat;
-}
+  &-nextButton {
+    background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'24\' height=\'24\' viewBox=\'0 0 24 24\'%3E%3Cpath d=\'M12 16l8.9-8.9c-.8-.8-2-.8-2.8 0L12 13.2l-6.1-6c-.8-.8-2-.8-2.8 0L12 16z\'/%3E%3C/svg%3E") center center/16px 16px no-repeat;
 
-#cd-updatePanel-nextButton.cd-updatePanel-nextButton-digit {
-  height: 15px;
-  padding: 7px 0;
-  background: none;
-}
+    &.cd-updatePanel-nextButton-digit {
+      height: 15px;
+      padding: 7px 0;
+      background: none;
+    }
+  }
 
-#cd-updatePanel-prevButton:before,
-#cd-updatePanel-nextButton:before {
-  position: absolute;
-  top: -1px;
-  left: 4px;
-  margin: 0 auto 1px;
-  width: 24px;
-  height: 0;
-  border-top: solid 1px #a2a9b1;
-  content: "";
-}
+  &-prevButton:before,
+  &-nextButton:before {
+    position: absolute;
+    top: -1px;
+    left: 4px;
+    margin: 0 auto 1px;
+    width: 24px;
+    height: 0;
+    border-top: solid 1px #a2a9b1;
+    content: "";
+  }
 
-#cd-updatePanel-refreshButton:hover,
-#cd-updatePanel-prevButton:hover,
-#cd-updatePanel-nextButton:hover {
-  background-color: #f3f4f5;
+  &-refreshButton:hover,
+  &-prevButton:hover,
+  &-nextButton:hover {
+    background-color: #f3f4f5;
+  }
 }
 
 

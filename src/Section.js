@@ -361,10 +361,9 @@ export default class Section {
     }
     if (!this.addSubsectionForm) {
       this.addSubsectionForm = new MsgForm('addSubsection', this);
-      cd.msgForms.push(this.addSubsectionForm);
     }
 
-    // Get the height before the animation has started, so the height it right.
+    // Get the height before the animation has started, so that the height is right.
     const height = this.addSubsectionForm.$element.height();
     const willBeInViewport = this.addSubsectionForm.$element.cdIsInViewport();
 
@@ -384,7 +383,7 @@ export default class Section {
       mw.loader.using('mediawiki.widgets')
     );
 
-    const inCode = this.locateInCode(result.code, result.queryTimestamp);
+    const inCode = this.locateInCode(result.code);
     const sectionCode = inCode && inCode.code;
     if (!sectionCode) {
       mw.notify(cd.strings.couldntLocateSectionInCode, { type: 'error', autoHide: false });
@@ -519,8 +518,7 @@ export default class Section {
         const loadSourcePageDoneCallback = (result) => {
           sourcePageCode = result.code;
           sourcePageTimestamp = result.queryTimestamp;
-          sectionInSourcePageCode = sourcePageCode &&
-            section.locateInCode(sourcePageCode, sourcePageTimestamp);
+          sectionInSourcePageCode = sourcePageCode && section.locateInCode(sourcePageCode);
           if (!sectionInSourcePageCode) {
             abort(cd.strings.couldntLocateSectionInCode, true);
             return;
@@ -915,7 +913,7 @@ export default class Section {
     }
   }
 
-  locateInCode(pageCode, timestamp) {
+  locateInCode(pageCode) {
     if (pageCode == null) {
       console.error('В первый параметр не передан код страницы. Используйте Section.loadCode для получения местоположения раздела в коде (оно появится в свойстве Section.inCode).');
       return;
@@ -927,8 +925,8 @@ export default class Section {
     const headingToFind = cd.env.encodeWikiMarkup(this.heading);
     const sectionHeadingsRegExp = /^((=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*)\n/gm;
 
-    // To ignore the comment contents (there could be section presets there) but get the right
-    // positions and code at the output.
+    // To ignore comment contents (there could be section presets there) but get the right positions
+    // and code at the output.
     const adjustedPageCode = pageCode.replace(
       /(<!--)([^]*?)(-->)/g,
       (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3
@@ -1063,7 +1061,6 @@ export default class Section {
       code: sectionCode,
       subdivisionEndPos: sectionSubdivisionEndPos,
       subdivisionCode: sectionSubdivisionCode,
-      timestamp,
     };
 
     return this.inCode;
@@ -1074,7 +1071,7 @@ export default class Section {
       // This is returned to a handler with ".done", so the use of ".then" is deliberate.
       .then(
         (result) => {
-          let inCode = this.locateInCode(result.code, result.queryTimestamp);
+          let inCode = this.locateInCode(result.code);
           if (!inCode) {
             return $.Deferred().reject(['parse', cd.strings.couldntLocateSectionInCode]).promise();
           }

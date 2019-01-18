@@ -1039,7 +1039,7 @@ export default class Msg {
     }
   }
 
-  locateInCode(pageCode, timestamp) {
+  locateInCode(pageCode) {
     if (pageCode == null) {
       console.error('В первый параметр не передан код страницы. Используйте Msg.loadCode для получения местоположения сообщения в коде (оно появится в свойстве Msg.inCode).');
       return;
@@ -1331,7 +1331,6 @@ export default class Msg {
       replyIndentationCharacters,
       oldSig: bestMatchData.sigLastPart,
       sig: bestMatchData.newSigLastPart || bestMatchData.sigLastPart,
-      timestamp,
     };
     if (bestMatchData.headingStartPos !== undefined) {
       this.inCode.headingStartPos = bestMatchData.headingStartPos;
@@ -1345,7 +1344,6 @@ export default class Msg {
   reply() {
     if (!this.replyForm || this.replyForm.submitted) {
       this.replyForm = new MsgForm('reply', this);
-      cd.msgForms.push(this.replyForm);
       this.replyForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
       this.replyForm.textarea.focus();
     } else {
@@ -1367,7 +1365,6 @@ export default class Msg {
     let formExists = this.editForm && !this.editForm.submitted;
     if (!formExists) {
       this.editForm = new MsgForm('edit', this);
-      cd.msgForms.push(this.editForm);
     }
     this.$elements.hide();
     if (this.isOpeningSection) {
@@ -1455,7 +1452,7 @@ export default class Msg {
       // This is returned to a handler with ".done", so the use of ".then" is deliberate.
       .then(
         (result) => {
-          const inCode = this.locateInCode(result.code, result.queryTimestamp);
+          const inCode = this.locateInCode(result.code);
           if (!inCode) {
             return $.Deferred().reject(['parse', cd.strings.couldntLocateMsgInCode]).promise();
           }

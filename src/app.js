@@ -90,7 +90,7 @@ function main() {
 
   const namespaceIds = mw.config.get('wgNamespaceIds');
   const userNamespaces = [];
-  for (key in namespaceIds) {
+  for (let key in namespaceIds) {
     if (namespaceIds[key] === 2 || namespaceIds[key] === 3) {
       userNamespaces.push(key);
     }

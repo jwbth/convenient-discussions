@@ -1,6 +1,7 @@
 import debug from './debug';
 import Msg from './Msg';
 import Section from './Section';
+import MsgForm from './MsgForm';
 
 export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
   if (cd.env.firstRun) {
@@ -914,7 +915,26 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
 
   cd.debug.endTimer(cd.strings.mainCode);
 
-  const newTopicsOnTop = !!$('.ruwiki-addTopicLink a[href*="section=0"]').length;
+  $('.ruwiki-addTopicLink a, #ca-addsection, .ruwiki-addSectionBottom').click(function (e) {
+    e.preventDefault();
+
+    if (!cd.env.addSectionForm) {
+      cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
+    }
+
+    // Get the height before the animation has started, so that the height is right.
+    const height = cd.env.addSectionForm.$element.height();
+    const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
+
+    if (cd.env.addSectionForm.$element.css('display') === 'none') {
+      cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
+    }
+    if (!willBeInViewport) {
+      cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
+    }
+
+    cd.env.addSectionForm.headingInput.focus();
+  });
 
   cd.debug.startTimer(cd.strings.finalCodeAndRendering);
 
@@ -1072,14 +1092,18 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
             const msgUnixTime = Math.floor(msg.timestamp / 1000);
 
             if (memorizedNewestMsgs) {
-              memorizedNewestMsgs.forEach((memorizedMsg) => {
+              for (let i = 0; i < memorizedNewestMsgs.length; i++) {
+                const memorizedMsg = memorizedNewestMsgs[i];
                 if (memorizedMsg.timestamp === msg.timestamp &&
                   memorizedMsg.author === msg.author
                 ) {
                   msg.newness = 'newest';
                   cd.env.newestCount++;
+                  // "break" helps to avoid a situation when there are two same memorized messages,
+                  // and they both cause the counter to increment.
+                  break;
                 }
-              });
+              }
             }
 
             if (thisPageVisits.length &&

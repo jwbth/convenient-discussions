@@ -7,15 +7,19 @@ export default class MsgForm {
   #standardSubmitButtonLabel;
   #shortSubmitButtonLabel;
 
-  constructor(mode, target) {
+  constructor(mode, target, $addSectionLink) {
     this.mode = mode;
     this.target = target;
 
+    if (this.mode === 'addSection' && !$addSectionLink) return;
+
+    cd.msgForms.push(this);
+
     let sectionHeading;
-    if (this.target instanceof Section) {
-      sectionHeading = this.target.heading;
-    } else {
+    if (this.target instanceof Msg) {
       sectionHeading = this.target.section && this.target.section.heading;
+    } else if (this.target instanceof Section) {
+      sectionHeading = this.target.heading;
     }
 
     let tag;
@@ -32,7 +36,7 @@ export default class MsgForm {
       } else {
         tag = 'div';
       }
-    } else if (this.mode === 'addSubsection') {
+    } else if (this.mode === 'addSection' || this.mode === 'addSubsection') {
       tag = 'div';
     } else {
       const $lastTagOfTarget = this.target.$elements.cdRemoveNonTagNodes().last();
@@ -49,6 +53,7 @@ export default class MsgForm {
         tag = 'div';
       }
     }
+
     this.$element = $(document.createElement(tag))
       .addClass('cd-msgForm')
       .addClass('cd-msgForm-' + this.mode)
@@ -233,6 +238,11 @@ export default class MsgForm {
         } else {
           defaultSummaryComponents.description = 'дополнение';
         }
+      } else if (this.mode === 'addSection') {
+        const uri = new mw.Uri($addSectionLink.attr('href'));
+        const summary = uri.query.summary;
+        const newTopicSummary = summary && summary.replace(/^.+?\*\/ */, '');
+        defaultSummaryComponents.description = newTopicSummary || 'новая тема';
       } else if (this.mode === 'addSubsection') {
         defaultSummaryComponents.description = 'новый подраздел';
       }
@@ -260,11 +270,20 @@ export default class MsgForm {
             newSummary = projectedSummary;
           }
         }
+      } else if (this.mode === 'addSection') {
+        const summaryHeadingText = this.headingInput.getValue().trim();
+
+        if (summaryHeadingText) {
+          const projectedSummary = (`/* ${summaryHeadingText} */ ${this.defaultSummary}`);
+          if (projectedSummary.length <= cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT) {
+            newSummary = projectedSummary;
+          }
+        }
       } else if (this.mode === 'addSubsection') {
         const summaryHeadingText = this.headingInput.getValue().trim();
 
         if (summaryHeadingText) {
-          const projectedSummary = (this.defaultSummary + ': /* ' + summaryHeadingText + ' */')
+          const projectedSummary = (`${this.defaultSummary}: /* ${summaryHeadingText} */`)
             .replace('новый подраздел: /* Итог */', 'итог')
             .replace('новый подраздел: /* Предварительный итог */', 'предварительный итог')
             .replace('новый подраздел: /* Предытог */', 'предытог');
@@ -281,8 +300,13 @@ export default class MsgForm {
       this.mode === 'addSubsection' &&
       mw.config.get('wgUserGroups').includes('closer');
 
-    if (this.mode === 'addSubsection' || (this.mode === 'edit' && this.target.isOpeningSection)) {
-      if (this.mode === 'addSubsection' || this.target.section.level > 2) {
+    if (this.mode === 'addSection' ||
+      this.mode === 'addSubsection' ||
+      (this.mode === 'edit' &&
+        this.target.isOpeningSection
+      )
+    ) {
+      if (this.mode === 'addSubsection' || (this.target && this.target.section.level > 2)) {
         this.headingInputPurpose = 'Название подраздела';
       } else {
         this.headingInputPurpose = 'Название темы';
@@ -291,6 +315,7 @@ export default class MsgForm {
       this.headingInput = new OO.ui.TextInputWidget({
         placeholder: this.headingInputPurpose,
         classes: ['cd-headingInput'],
+        tabIndex: 11,
       });
       this.headingInput.$element.appendTo(this.$form);
       this.headingInput.on('change', (headingInputText) => {
@@ -332,12 +357,17 @@ export default class MsgForm {
       },
     ];
 
+    let rowNumber = this.mode === 'addSection' ? 10 : 5;
+    if ($.client.profile().name === 'firefox') {
+      rowNumber--;
+    }
     this.textarea = new OO.ui.MultilineTextInputWidget({
       value: '',
       autosize: true,
-      rows: $.client.profile().name === 'firefox' ? 4 : 5,
+      rows: rowNumber,
       maxRows: 30,
       classes: ['cd-textarea'],
+      tabIndex: 12,
     });
     this.textarea.cdMsgForm = this;
     this.textarea.on('change', (textareaText) => {
@@ -363,6 +393,7 @@ export default class MsgForm {
       maxLength: cd.env.ACTUAL_SUMMARY_LENGTH_LIMIT,
       placeholder: 'Описание изменений',
       classes: ['cd-summaryInput'],
+      tabIndex: 13,
     });
     this.summaryInput.$element.keypress((summaryInputContent) => {
       this.summaryAltered = true;
@@ -380,6 +411,7 @@ export default class MsgForm {
       this.minorCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'minor',
         selected: true,
+        tabIndex: 20,
       });
       this.minorCheckboxField = new OO.ui.FieldLayout(this.minorCheckbox, {
         label: 'Малое изменение',
@@ -390,6 +422,7 @@ export default class MsgForm {
     this.watchCheckbox = new OO.ui.CheckboxInputWidget({
       value: 'watch',
       selected: !!mw.user.options.get('watchdefault') || !!$('#ca-unwatch').length,
+      tabIndex: 21,
     });
     this.watchCheckboxField = new OO.ui.FieldLayout(this.watchCheckbox, {
       label: 'В список наблюдения',
@@ -399,6 +432,7 @@ export default class MsgForm {
     this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
       value: 'watchTopic',
       selected: this.mode !== 'edit' || this.targetMsg.section.isWatched,
+      tabIndex: 22,
     });
     this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
       label: 'Следить за темой',
@@ -408,6 +442,7 @@ export default class MsgForm {
     if (this.mode !== 'edit' && this.targetMsg) {
       this.pingCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'ping',
+        tabIndex: 23,
       });
       this.pingCheckboxField = new OO.ui.FieldLayout(this.pingCheckbox, {
         align: 'inline',
@@ -447,22 +482,26 @@ export default class MsgForm {
       }
     };
 
-    if (this.mode !== 'addSubsection' &&
+    if (this.mode !== 'addSection' &&
+      this.mode !== 'addSubsection' &&
       !(this.mode === 'edit' && this.target.isOpeningSection)
     ) {
       this.smallCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'small',
+        tabIndex: 24,
       });
 
       this.smallCheckboxField = new OO.ui.FieldLayout(this.smallCheckbox, {
         label: 'Мелким шрифтом',
         align: 'inline',
+        tabIndex: 25,
       });
     }
 
     if (this.mode === 'replyInSection') {
       this.noIndentationCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'noIndentation',
+        tabIndex: 26,
       });
       this.noIndentationCheckbox.on('change', (selected) => {
         if (selected) {
@@ -505,6 +544,7 @@ export default class MsgForm {
       ) {
         this.deleteCheckbox = new OO.ui.CheckboxInputWidget({
           value: 'delete',
+          tabIndex: 27,
         });
         let initialMinorSelected;
         this.deleteCheckbox.on('change', (selected) => {
@@ -581,6 +621,9 @@ export default class MsgForm {
     if (this.mode === 'edit') {
       this.#standardSubmitButtonLabel = 'Сохранить';
       this.#shortSubmitButtonLabel = 'Сохранить';
+    } else if (this.mode === 'addSection') {
+      this.#standardSubmitButtonLabel = 'Добавить тему';
+      this.#shortSubmitButtonLabel = 'Добавить';
     } else if (this.mode === 'addSubsection') {
       this.#standardSubmitButtonLabel = 'Добавить подраздел';
       this.#shortSubmitButtonLabel = 'Добавить';
@@ -594,11 +637,13 @@ export default class MsgForm {
       label: this.#standardSubmitButtonLabel,
       flags: ['progressive', 'primary'],
       classes: ['cd-submitButton'],
+      tabIndex: 35,
     });
 
     this.previewButton = new OO.ui.ButtonWidget({
       label: 'Предпросмотреть',
       classes: ['cd-previewButton'],
+      tabIndex: 34,
     });
     this.previewButton.on('click', this.preview.bind(this));
 
@@ -606,6 +651,7 @@ export default class MsgForm {
       this.viewChangesButton = new OO.ui.ButtonWidget({
         label: 'Просмотреть изменения',
         classes: ['cd-viewChangesButton'],
+      tabIndex: 33,
       });
       this.viewChangesButton.on('click', this.viewChanges.bind(this));
     }
@@ -614,6 +660,7 @@ export default class MsgForm {
       label: 'Настройки',
       framed: false,
       classes: ['cd-settingsButton'],
+      tabIndex: 30,
     });
     this.settingsButton.on('click', this.toggleSettings.bind(this));
 
@@ -641,6 +688,7 @@ export default class MsgForm {
         align: 'center',
       },
       $overlay: cd.env.$popupsOverlay,
+      tabIndex: 31,
     });
 
     this.cancelButton = new OO.ui.ButtonWidget({
@@ -648,6 +696,7 @@ export default class MsgForm {
       flags: 'destructive',
       framed: false,
       classes: ['cd-cancelButton'],
+      tabIndex: 32,
     });
     this.cancelButton.on('click', this.cancel.bind(this));
 
@@ -673,6 +722,13 @@ export default class MsgForm {
       this.$element.insertBefore(this.target.$elements.first());
     } else if (this.mode === 'replyInSection') {
       this.$element.insertAfter(this.target.$replyButtonContainer);
+    } else if (this.mode === 'addSection') {
+      this.newTopicOnTop = $addSectionLink.is('[href*="section=0"]');
+      if (this.newTopicOnTop && cd.sections[0]) {
+        this.$element.insertBefore(cd.sections[0].$heading);
+      } else {
+        this.$element.appendTo(cd.env.$content);
+      }
     } else if (this.mode === 'addSubsection') {
       const headingLevelRegExp = new RegExp(
         `\\bcd-msgForm-addSubsection-[${this.target.level}-6]\\b`
@@ -688,6 +744,108 @@ export default class MsgForm {
         $nextToLast = $last.next();
       }
       this.$element.insertAfter($last);
+    }
+
+    if (this.mode === 'addSection' || cd.settings.showToolbars) {
+      mw.loader.using(['ext.wikiEditor', 'ext.gadget.wikificator']).done(() => {
+        this.textarea.$input.wikiEditor(
+          'addModule',
+          $.wikiEditor.modules.toolbar.config.getDefaultConfig()
+        );
+
+        this.$element.find('.group-insert').remove();
+
+        this.textarea.$input.wikiEditor('addToToolbar', {
+          'section': 'main',
+          'groups': {
+            'gadgets': {}
+          }
+        });
+        const $groupGadgets = this.$element.find('.group-gadgets');
+        const $groupFormat = this.$element.find('.group-format');
+        if ($groupGadgets.length && $groupFormat.length) {
+          $groupGadgets.insertBefore($groupFormat);
+        }
+
+        this.textarea.$input.wikiEditor('addToToolbar', {
+          'section': 'main',
+          'group': 'gadgets',
+          'tools': {
+            'wikificator': {
+              label: 'Викификатор — автоматический обработчик текста',
+              type: 'button',
+              icon: '//upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+              action: {
+                type: 'callback',
+                execute: () => {
+                  Wikify(this.textarea.$input[0]);
+                }
+              }
+            }
+          }
+        });
+
+        if (mw.user.options.get('gadget-urldecoder')) {
+          mw.loader.using('ext.gadget.urldecoder').done(() => {
+            this.textarea.$input.wikiEditor('addToToolbar', {
+              'section': 'main',
+              'group': 'gadgets',
+              'tools': {
+                'urlDecoder': {
+                  label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+                  type: 'button',
+                  icon: '//upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+                  action: {
+                    type: 'callback',
+                    execute: () => {
+                      urlDecoderRun(this.textarea.$input[0]);
+                    },
+                  },
+                },
+              },
+            });
+          });
+        }
+      });
+
+      const $insertButtons = $('<div>')
+        .addClass('cd-insertButtons')
+        .insertAfter(this.textarea.$element);
+
+      const addInsertButton = (text, displayedText = text) => {
+        $('<a>')
+          .attr('href', 'javascript:')
+          .text(displayedText.replace(/\+/, ''))
+          .addClass('cd-insertButtons-item')
+          .click((e) => {
+            e.preventDefault();
+            this.textarea.$input.textSelection(
+              'encapsulateSelection', {
+                pre: text.replace(/\+.+$/, ''),
+                peri: '',
+                post: text.replace(/^.+?\+/, ''),
+              }
+            );
+          })
+          .appendTo($insertButtons);
+      };
+
+      addInsertButton('{{ping|+}}');
+      addInsertButton('{{u|+}}');
+      addInsertButton('{{tl|+}}');
+      addInsertButton('{{+}}');
+      addInsertButton('[[+]]');
+      addInsertButton('<>+</>', '</>');
+      addInsertButton('<code>+</code>', '<code />');
+      addInsertButton('<nowiki>+</nowiki>', '<nowiki />');
+      addInsertButton('<source lang="">+</source>', '<source />');
+      addInsertButton('<small>+</small>', '<small />');
+
+      if (cd.settings.additionalInsertButtons && $.isArray(cd.settings.additionalInsertButtons)) {
+        cd.settings.additionalInsertButtons.forEach((text, displayedText = text) => {
+          addInsertButton(text, displayedText);
+        });
+      }
     }
 
     // Keyboard shortcuts
@@ -713,7 +871,7 @@ export default class MsgForm {
       }
     });
 
-    // "focusin" is "focus" which bubbles, i.e. propagates up the node tree.
+    // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
     this.$form.focusin(() => {
       cd.env.lastActiveMsgForm = this;
     });
@@ -725,7 +883,7 @@ export default class MsgForm {
       }, this.getTargetMsg(true));
     };
 
-    if (mode !== 'edit') {  // 'reply', 'replyInSection' or 'addSubsection'
+    if (mode !== 'edit' && this.target) {  // 'reply', 'replyInSection' or 'addSubsection'
       this.originalText = '';
       if (this.headingInput) {
         this.originalHeadingText = '';
@@ -743,7 +901,7 @@ export default class MsgForm {
             message: 'Не удалось загрузить сообщение',
           });
         });
-    } else {
+    } else if (mode === 'edit') {
       this.setPending(true, true);
 
       this.target.loadCode()
@@ -1106,9 +1264,14 @@ export default class MsgForm {
 
     // Add heading
     if (this.headingInput) {
-      const level = this.mode === 'addSubsection' ?
-        this.target.level + 1 :
-        this.target.inCode.headingLevel;
+      let level;
+      if (this.mode === 'addSection') {
+        level = 2;
+      } else if (this.mode === 'addSubsection') {
+        level = this.target.level + 1;
+      } else {
+        level = this.target.inCode.headingLevel;
+      }
       const equalSigns = '='.repeat(level);
 
       if (this.mode === 'edit' &&
@@ -1172,6 +1335,9 @@ export default class MsgForm {
       if (this.mode === 'addSubsection') {
         code += '\n';
       }
+      if (this.noIndentationCheckbox && this.noIndentationCheckbox.isSelected()) {
+        code = '\n' + code;
+      }
     }
 
     while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
@@ -1193,10 +1359,13 @@ export default class MsgForm {
   prepareNewPageCode(pageCode, timestamp) {
     pageCode += '\n';
 
-    const targetInCode = this.target.locateInCode(pageCode, timestamp);
-    if (!targetInCode) {
-      throw new cd.env.Exception(this.target instanceof Msg ? cd.strings.couldntLocateMsgInCode :
-        cd.strings.couldntLocateSectionInCode);
+    let targetInCode;
+    if (this.mode !== 'addSection') {
+      targetInCode = this.target.locateInCode(pageCode);
+      if (!targetInCode) {
+        throw new cd.env.Exception(this.target instanceof Msg ? cd.strings.couldntLocateMsgInCode :
+          cd.strings.couldntLocateSectionInCode);
+      }
     }
 
     let currentIndex;
@@ -1292,7 +1461,7 @@ export default class MsgForm {
             startPos = targetInCode.lineStartPos;
           }
         } else {
-          const sectionInCode = this.target.section.locateInCode(pageCode, timestamp);
+          const sectionInCode = this.target.section.locateInCode(pageCode);
           const sectionCode = sectionInCode && sectionInCode.code;
 
           if (!sectionCode) {
@@ -1317,15 +1486,27 @@ export default class MsgForm {
 
         newPageCode = pageCode.slice(0, startPos) + pageCode.slice(endPos);
       }
-    } else if (this.mode === 'addSubsection') {
-      newPageCode = pageCode.slice(0, targetInCode.endPos).replace(/([^\n])\n$/, '$1\n\n') +
-        msgCode + pageCode.slice(targetInCode.endPos);
     } else if (this.mode === 'replyInSection') {
       if (!targetInCode.subdivisionEndPos) {
         throw new cd.env.Exception('Не удалось найти место в коде для вставки сообщения.');
       }
       newPageCode = pageCode.slice(0, targetInCode.subdivisionEndPos) + msgCode +
         pageCode.slice(targetInCode.subdivisionEndPos);
+    } else if (this.mode === 'addSection') {
+      if (this.newTopicOnTop) {
+        const adjustedPageCode = pageCode.replace(
+          /(<!--)([^]*?)(-->)/g,
+          (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3
+        );
+        const firstSectionLocation = adjustedPageCode.search(/^(=+).*?\1/m);
+        newPageCode = pageCode.slice(0, firstSectionLocation) + msgCode + '\n' +
+          pageCode.slice(firstSectionLocation);
+      } else {
+        newPageCode = pageCode + '\n' + msgCode;
+      }
+    } else if (this.mode === 'addSubsection') {
+      newPageCode = pageCode.slice(0, targetInCode.endPos).replace(/([^\n])\n$/, '$1\n\n') +
+        msgCode + pageCode.slice(targetInCode.endPos);
     }
 
     return newPageCode;
@@ -1373,7 +1554,6 @@ export default class MsgForm {
         const $parsedsummary = data.parse.parsedsummary &&
           cd.env.toJquerySpan(data.parse.parsedsummary);
         if ($parsedsummary.length) {
-          $parsedsummary.find('a').attr('tabindex', '-1');
           this.$element.find('.cd-summaryPreview').html(
             `Предпросмотр описания изменения: <span class="comment">${$parsedsummary.html()}</span>`
           );
@@ -1558,15 +1738,21 @@ export default class MsgForm {
           return;
         }
 
-        let verb = 'отправлено';
-        if (this.mode === 'edit') {
+        let message;
+        if (this.mode === 'reply' || this.mode === 'replyInSection') {
+          message = 'Сообщение успешно отправлено';
+        } else if (this.mode === 'edit') {
           if (!isDelete) {
-            verb = 'сохранено';
+            message = 'Сообщение успешно сохранено';
           } else {
-            verb = 'удалено';
+            message = 'Сообщение успешно удалено';
           }
+        } else if (this.mode === 'addSection') {
+          message = 'Тема успешно добавлена'
+        } else if (this.mode === 'addSubsection') {
+          message = 'Подраздел успешно добавлен'
         }
-        this.showInfo('Сообщение успешно ' + verb);
+        this.showInfo(message);
         this.setPending(false, true);
 
         let anchor;
@@ -1704,8 +1890,13 @@ export default class MsgForm {
     ) {
       this.$element.remove();
     }
-    cd.msgForms.splice(cd.msgForms.indexOf(this), 1);
-    delete this.target[this::modeToProperty(this.mode) + 'Form'];
+    // Could be already deleted, since destroy can run twice.
+    if (cd.msgForms.includes(this)) {
+      cd.msgForms.splice(cd.msgForms.indexOf(this), 1);
+    }
+    if (this.target) {
+      delete this.target[this::modeToProperty(this.mode) + 'Form'];
+    }
   }
 
   isActive() {
