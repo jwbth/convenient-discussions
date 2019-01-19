@@ -154,10 +154,10 @@ export default class Msg {
         if (current.tagName === 'BLOCKQUOTE') {
           isBlockToExclude = true;
         }
-        if (!isBlockToExclude && current.className && cd.config.BLOCKS_TO_EXCLUDE_CLASSES.length) {
+        if (!isBlockToExclude && current.className && cd.config.blocksToExcludeClasses.length) {
           for (let j = 0; j < current.classList.length; j++) {
-            for (let k = 0; k < cd.config.BLOCKS_TO_EXCLUDE_CLASSES.length; k++) {
-              if (current.classList[j] === cd.config.BLOCKS_TO_EXCLUDE_CLASSES[k]) {
+            for (let k = 0; k < cd.config.blocksToExcludeClasses.length; k++) {
+              if (current.classList[j] === cd.config.blocksToExcludeClasses[k]) {
                 isBlockToExclude = true;
                 break;
               }
@@ -647,7 +647,7 @@ export default class Msg {
       elements[0].offsetWidth !== this.#firstWidth
     );
 
-    // We configure underlayer only if it was unexistent or the message position changed to save
+    // We configure underlayer only if it was unexistent or the message position changed, to save
     // time.
     if (!this.#underlayer) {
       // Prepare the underlayer nodes.
@@ -890,11 +890,9 @@ export default class Msg {
       return;
     }
 
-    if (!this.parent.isOpeningSection) {
-      this.parent.$elements.cdScrollTo('top');
-    } else {
-      this.parent.section.$heading.cdScrollTo('top');
-    }
+    (!this.parent.isOpeningSection ? this.parent.$elements : this.parent.section.$heading)
+      .cdScrollTo('top');
+    this.parent.highlightTarget();
 
     const downButton = new OO.ui.ButtonWidget({
       label: '▼',
@@ -908,12 +906,10 @@ export default class Msg {
     if (!this.parent.$underlayer || !this.parent.$underlayer.length) {
       this.parent.configureUnderlayer();
     }
-    if (!this.parent.downButton) {
-      this.parent.$linksUnderlayer_text.prepend(downButton.$element);
-    } else {
+    if (this.parent.downButton) {
       this.parent.downButton.$element.remove();
-      this.parent.$linksUnderlayer_text.prepend(downButton.$element);
     }
+    this.parent.$linksUnderlayer_text.prepend(downButton.$element);
     this.parent.downButton = downButton;
     this.parent.childToScrollBack = this;
   }
@@ -928,6 +924,7 @@ export default class Msg {
     }
 
     this.childToScrollBack.$elements.cdScrollTo('top');
+    this.childToScrollBack.highlightTarget();
   }
 
   copyLink(e) {
@@ -1258,9 +1255,9 @@ export default class Msg {
     }
     msgCode = msgCode
       .replace(/&nbsp;$/, movePartToSig)
-      .replace(cd.config.SIG_PREFIX_REGEXP, movePartToSig)
+      .replace(cd.config.sigPrefixRegexp, movePartToSig)
       .replace(/<(?:small|span|sup|sub)(?: [\w ]+?=[^<>]+?)?>$/i, movePartToSig)
-      .replace(cd.config.SIG_PREFIX_REGEXP, movePartToSig);
+      .replace(cd.config.sigPrefixRegexp, movePartToSig);
     bestMatchData.msgEndPos -= msgCodeLengthReduction;
 
     // Identifying indentation characters
@@ -1748,5 +1745,5 @@ function getText() {
     .replace(/Эта реплика добавлена (?:участником|с IP)$/, '')
     .replace(/Эта реплика добавлена (?:участником|с IP).{1,50}$/, '')
     .replace('(обс.)$', '')
-    .replace(cd.config.SIG_PREFIX_REGEXP, '');
+    .replace(cd.config.sigPrefixRegexp, '');
 }

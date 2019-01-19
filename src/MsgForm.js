@@ -300,7 +300,7 @@ export default class MsgForm {
       this.mode === 'addSubsection' &&
       mw.config.get('wgUserGroups').includes('closer');
 
-    this.id = cd.msgForms.indexOf(this);
+    this.id = cd.env.msgFormsCounter++;
 
     if (this.mode === 'addSection' ||
       this.mode === 'addSubsection' ||
@@ -755,7 +755,14 @@ export default class MsgForm {
     }
 
     if (this.mode === 'addSection' || cd.settings.showToolbars) {
-      mw.loader.using(['ext.wikiEditor', cd.env.IS_RUWIKI && 'ext.gadget.wikificator']).done(() => {
+      const modules = ['ext.wikiEditor'];
+      if (cd.env.IS_RUWIKI) {
+        modules.push('ext.gadget.wikificator');
+      }
+      if (cd.env.IS_RUWIKI && mw.user.options.get('gadget-urldecoder')) {
+        modules.push('ext.gadget.urldecoder');
+      }
+      mw.loader.using(modules).done(() => {
         this.textarea.$input.wikiEditor(
           'addModule',
           $.wikiEditor.modules.toolbar.config.getDefaultConfig()
@@ -768,7 +775,7 @@ export default class MsgForm {
             'section': 'main',
             'groups': {
               'gadgets': {}
-            }
+            },
           });
           const $groupGadgets = this.$element.find('.group-gadgets');
           const $groupFormat = this.$element.find('.group-format');
@@ -788,31 +795,29 @@ export default class MsgForm {
                   type: 'callback',
                   execute: () => {
                     Wikify(this.textarea.$input[0]);
-                  }
-                }
-              }
-            }
+                  },
+                },
+              },
+            },
           });
 
           if (mw.user.options.get('gadget-urldecoder')) {
-            mw.loader.using('ext.gadget.urldecoder').done(() => {
-              this.textarea.$input.wikiEditor('addToToolbar', {
-                'section': 'main',
-                'group': 'gadgets',
-                'tools': {
-                  'urlDecoder': {
-                    label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
-                    type: 'button',
-                    icon: '//upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
-                    action: {
-                      type: 'callback',
-                      execute: () => {
-                        urlDecoderRun(this.textarea.$input[0]);
-                      },
+            this.textarea.$input.wikiEditor('addToToolbar', {
+              'section': 'main',
+              'group': 'gadgets',
+              'tools': {
+                'urlDecoder': {
+                  label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+                  type: 'button',
+                  icon: '//upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+                  action: {
+                    type: 'callback',
+                    execute: () => {
+                      urlDecoderRun(this.textarea.$input[0]);
                     },
                   },
                 },
-              });
+              },
             });
           }
         }
@@ -840,7 +845,11 @@ export default class MsgForm {
           .appendTo($insertButtons);
       };
 
-      $.extend({}, cd.config.insertButtons, cd.settings.additionalInsertButtons).forEach((el) => {
+      let insertButtons = cd.config.insertButtons;
+      if ($.isArray(cd.settings.additionalInsertButtons)) {
+        insertButtons = insertButtons.concat(cd.settings.additionalInsertButtons);
+      }
+      insertButtons.forEach((el) => {
         let text;
         let displayedText;
         if ($.isArray(el)) {
@@ -897,8 +906,13 @@ export default class MsgForm {
       // This is for test if the message exists.
       this.target.loadCode()
         .fail((e) => {
-          console.error(e);
-          const [errorType, data] = e;
+          let errorType;
+          let data;
+          if ($.isArray(e)) {
+            [errorType, data] = e;
+          } else {
+            console.error(e);
+          }
           cd.env.genericErrorHandler.call(this, {
             errorType,
             data,
@@ -924,8 +938,13 @@ export default class MsgForm {
           this.textarea.focus();
         })
         .fail((e) => {
-          console.error(e);
-          const [errorType, data] = e;
+          let errorType;
+          let data;
+          if ($.isArray(e)) {
+            [errorType, data] = e;
+          } else {
+            console.error(e);
+          }
           cd.env.genericErrorHandler.call(this, {
             errorType,
             data,
@@ -1659,7 +1678,13 @@ export default class MsgForm {
         this.abort('Не удалось загрузить изменения.', e);
       }
     } catch (e) {
-      const [errorType, data] = e;
+      let errorType;
+      let data;
+      if ($.isArray(e)) {
+        [errorType, data] = e;
+      } else {
+        console.error(e);
+      }
       cd.env.genericErrorHandler.call(this, {
         errorType,
         data,
@@ -1668,11 +1693,17 @@ export default class MsgForm {
     }
   }
 
-  reloadPageAfterSubmit(anchor) {
+  reloadPageAfterSubmit(keepedData) {
     this.destroy({ leaveInfo: true });
 
-    cd.env.reloadPage(anchor).fail((e) => {
-      const [errorType, data] = e;
+    cd.env.reloadPage(keepedData).fail((e) => {
+      let errorType;
+      let data;
+      if ($.isArray(e)) {
+        [errorType, data] = e;
+      } else {
+        console.error(e);
+      }
       if (cd.settings.showLoadingOverlay !== false) {
         cd.env.removeLoadingOverlay();
       }
@@ -1681,7 +1712,7 @@ export default class MsgForm {
         errorType,
         data,
         retryFunc: () => {
-          this.reloadPageAfterSubmit(anchor);
+          this.reloadPageAfterSubmit(keepedData);
         },
         message: 'Не удалось обновить страницу',
       });
@@ -1731,20 +1762,30 @@ export default class MsgForm {
         return;
       }
 
+      let keepedData = {};
+      let justWatchedTopic;
+      let justUnwatchedTopic;
       if (this.watchTopicCheckbox.isSelected()) {
         const section = this.getTargetSection();
         if (section && !section.isWatched) {
           section.watch(true);
+          justWatchedTopic = section.heading;
         }
         if (this.mode === 'addSection') {
           const heading = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
+          cd.env.watchTopic(heading, true);
+          justWatchedTopic = heading;
         }
+
       } else {
         const section = this.getTargetSection();
         if (section && section.isWatched) {
           section.unwatch(true);
+          justUnwatchedTopic = section.heading;
         }
       }
+      keepedData.justWatchedTopic = justWatchedTopic;
+      keepedData.justUnwatchedTopic = justUnwatchedTopic;
 
       try {
         const data = await new mw.Api().postWithToken('csrf', {
@@ -1797,19 +1838,20 @@ export default class MsgForm {
         } else {
           anchor = this.target.anchor;
         }
+        keepedData.anchor = anchor;
 
         cd.msgForms[cd.msgForms.indexOf(this)].submitted = true;
         if (cd.getLastActiveAlteredMsgForm()) {
           this.preview(() => {
             const $info = cd.env.toJquerySpan('Сообщение было отправлено, но на странице также имеются другие открытые формы. Отправьте их для перезагрузки страницы или <a href="javascript:">перезагрузите страницу</a> всё равно.');
             $info.find('a').click(() => {
-              this.reloadPageAfterSubmit(anchor);
+              this.reloadPageAfterSubmit(keepedData);
             });
             this.showInfo($info);
             this.destroy({ leaveInfo: true, leavePreview: true });
           });
         } else {
-          this.reloadPageAfterSubmit(anchor);
+          this.reloadPageAfterSubmit(keepedData);
         }
       } catch (e) {
         [jqXHR, textStatus, errorThrown] = e;
@@ -1833,7 +1875,13 @@ export default class MsgForm {
         );
       }
     } catch (e) {
-      [errorType, data] = e;
+      let errorType;
+      let data;
+      if ($.isArray(e)) {
+        [errorType, data] = e;
+      } else {
+        console.error(e);
+      }
       cd.env.genericErrorHandler.call(this, {
         errorType,
         data,

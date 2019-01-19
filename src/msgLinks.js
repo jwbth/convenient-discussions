@@ -14,7 +14,12 @@ export default async function msgLinks() {
 
         const nsMatches = line.className.match(/mw-changeslist-ns(\d+)/);
         const nsNumber = nsMatches && Number(nsMatches[1]);
-        if (nsNumber === undefined || !cd.env.isDiscussionNamespace(nsNumber)) continue;
+        if (nsNumber === undefined) continue;
+
+        const linkElement = (!isNested ? line : line.parentElement)
+          .querySelector('.mw-changeslist-title');
+        const pageName = linkElement.textContent;
+        if (!isDiscussionPage(pageName, nsNumber)) continue;
 
         const minorMark = line.querySelector('.minoredit');
         if (minorMark) continue;
@@ -57,20 +62,12 @@ export default async function msgLinks() {
 
         const anchor = date + '_' + author.replace(/ /g, '_');
 
-        const linkElement = (!isNested ? line : line.parentElement)
-          .querySelector('.mw-changeslist-title');
-        const pageName = linkElement.textContent;
-        if ((nsNumber === 4 || nsNumber === 104) &&
-          !cd.config.DISCUSSION_PAGE_REGEXP.test(pageName)
-        ) {
-          continue;
-        }
         const link = linkElement && linkElement.href;
         if (!link) continue;
 
         let wrapper;
-        if (commentText && CURRENT_USER_REGEXP.test(' ' + commentText + ' ')) {
-          wrapper = $wrapperBluePrototype[0].cloneNode(true);
+        if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
+          wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
           wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
           blueIconsPresent = true;
         } else {
@@ -92,7 +89,7 @@ export default async function msgLinks() {
                   }
                 }
                 if (isWatched) {
-                  wrapper = $wrapperBluePrototype[0].cloneNode(true);
+                  wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
                   wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
                   blueIconsPresent = true;
                 }
@@ -100,7 +97,7 @@ export default async function msgLinks() {
             }
           }
           if (!isWatched) {
-            wrapper = $wrapperBlackPrototype[0].cloneNode(true);
+            wrapper = $wrapperRegularPrototype[0].cloneNode(true);
           }
         }
 
@@ -185,7 +182,7 @@ export default async function msgLinks() {
         const pageName = linkElement.textContent;
         if (!(pageName.startsWith('Обсуждение ') && pageName.includes(':') ||
           (pageName.startsWith('Википедия:') || pageName.startsWith('Проект:')) &&
-          cd.config.DISCUSSION_PAGE_REGEXP.test(pageName)
+          cd.config.discussionPageRegexp.test(pageName)
         )) {
           continue;
         }
@@ -232,37 +229,12 @@ export default async function msgLinks() {
           mw.config.get('wgRelevantUserName'));
 
         let wrapper;
-        if (commentText && CURRENT_USER_REGEXP.test(' ' + commentText + ' ')) {
-          wrapper = $wrapperBluePrototype[0].cloneNode(true);
+        if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
+          wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
           wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
         } else {
-          let isWatched = false;
-          if (commentText) {
-            const curLink = line.querySelector('.mw-changeslist-diff-cur');
-            const curIdMatches = curLink &&
-              curLink.href &&
-              curLink.href.match(/[&?]curid=(\d+)/);
-            const curId = curIdMatches && Number(curIdMatches[1]);
-            if (curId) {
-              const thisPageWatchedTopics = watchedTopics && watchedTopics[curId] || [];
-              if (thisPageWatchedTopics.length) {
-                for (let j = 0; j < thisPageWatchedTopics.length; j++) {
-                  // Caution: invisible character after →.
-                  if (commentText.includes('→‎' + thisPageWatchedTopics[j])) {
-                    isWatched = true;
-                    break;
-                  }
-                }
-                if (isWatched) {
-                  wrapper = $wrapperBluePrototype[0].cloneNode(true);
-                  wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
-                }
-              }
-            }
-          }
-          if (!isWatched) {
-            wrapper = $wrapperBlackPrototype[0].cloneNode(true);
-          }
+          // We have no place to extract article ID from :-(
+          wrapper = $wrapperRegularPrototype[0].cloneNode(true);
         }
 
         wrapper.lastChild.href = link + '#' + anchor;
@@ -275,7 +247,9 @@ export default async function msgLinks() {
       }
     }
 
-    if (mw.config.get('wgAction') === 'history') {
+    if (mw.config.get('wgAction') === 'history' &&
+      isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER)
+    ) {
       const timezone = mw.user.options.get('timecorrection');
       const timezoneParts = timezone && timezone.split('|');
       const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
@@ -333,8 +307,8 @@ export default async function msgLinks() {
         const anchor = cd.env.generateMsgAnchor(year, month, day, hour, minute, author);
 
         let wrapper;
-        if (commentText && CURRENT_USER_REGEXP.test(' ' + commentText + ' ')) {
-          wrapper = $wrapperBluePrototype[0].cloneNode(true);
+        if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
+          wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
           wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
         } else {
           let isWatched = false;
@@ -349,13 +323,13 @@ export default async function msgLinks() {
                 }
               }
               if (isWatched) {
-                wrapper = $wrapperBluePrototype[0].cloneNode(true);
+                wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
                 wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
               }
             }
           }
           if (!isWatched) {
-            wrapper = $wrapperBlackPrototype[0].cloneNode(true);
+            wrapper = $wrapperRegularPrototype[0].cloneNode(true);
           }
         }
 
@@ -371,25 +345,41 @@ export default async function msgLinks() {
     mw.hook('cd.msgLinksCreated').fire(cd);
   }
 
-  const $aBlackPrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-regular');
-  const $aBluePrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-interesting');
+  // Quite a rough check for mobile browsers, a mix of what is advised at
+  // https://stackoverflow.com/a/24600597 (sends to
+  // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent)
+  // and https://stackoverflow.com/a/14301832
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent) ||
+    typeof window.orientation !== 'undefined';
 
-  const $wrapperBlackPrototype = $('<span>')
+  const $aRegularPrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-regular');
+  const $aInterestingPrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-interesting');
+  const $wrapperRegularPrototype = $('<span>')
     .addClass('cd-rcMsgLink-wrapper')
-    .append($aBlackPrototype)
+    .append($aRegularPrototype)
     [cd.env.IS_DIFF_PAGE ? 'append' : 'prepend'](document.createTextNode(' '));
-  const $wrapperBluePrototype = $('<span>')
+  const $wrapperInterestingPrototype = $('<span>')
     .addClass('cd-rcMsgLink-wrapper')
-    .append($aBluePrototype)
+    .append($aInterestingPrototype)
     [cd.env.IS_DIFF_PAGE ? 'append' : 'prepend'](document.createTextNode(' '));
 
-  const CURRENT_USER_REGEXP = new RegExp(
+  if (!isMobile) {
+    $aRegularPrototype.addClass('cd-rcMsgLink-image');
+    $aInterestingPrototype.addClass('cd-rcMsgLink-image');
+    $wrapperRegularPrototype.addClass('cd-rcMsgLink-image-wrapper');
+    $wrapperInterestingPrototype.addClass('cd-rcMsgLink-image-wrapper');
+  } else {
+    $aRegularPrototype.text('сообщение');
+    $aInterestingPrototype.text('(!) сообщение');
+  }
+
+  const currentUserRegexp = new RegExp(
     '[^A-ZА-ЯЁa-zа-яё]' +
     cd.env.generateCaseInsensitiveFirstCharPattern(cd.env.CURRENT_USER).replace(/ /g, '[ _]') +
     '[^A-ZА-ЯЁa-zа-яё]'
   );
 
-  let watchedTopics = await cd.env.getWatchedTopics();
+  const watchedTopics = await cd.env.getWatchedTopics();
 
   // Hook on wikipage.content to make the code work with the watchlist auto-update feature.
   mw.hook('wikipage.content').add(addMsgLinks);
@@ -439,8 +429,8 @@ export default async function msgLinks() {
       const anchor = cd.env.generateMsgAnchor(year, month, day, hour, minute, author);
 
       let wrapper;
-      if (commentText && CURRENT_USER_REGEXP.test(' ' + commentText + ' ')) {
-        wrapper = $wrapperBluePrototype[0].cloneNode(true);
+      if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
+        wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
         wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
       } else {
         let isWatched = false;
@@ -456,13 +446,13 @@ export default async function msgLinks() {
               }
             }
             if (isWatched) {
-              wrapper = $wrapperBluePrototype[0].cloneNode(true);
+              wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
               wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
             }
           }
         }
         if (!isWatched) {
-          wrapper = $wrapperBlackPrototype[0].cloneNode(true);
+          wrapper = $wrapperRegularPrototype[0].cloneNode(true);
         }
       }
 

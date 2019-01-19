@@ -306,6 +306,27 @@ export default class Section {
       }
 
       cd.env.getWatchedTopicsPromise.done(() => {
+        // Manually add/remove the topic that was added/removed at the same moment when the page was
+        // reloaded the last time, so when we requested watched topics from server, this data wasn't
+        // yet there.
+        if (cd.env.justWatchedTopic) {
+          if (cd.env.justWatchedTopic === this.heading &&
+            !cd.env.thisPageWatchedTopics.includes(this.heading)
+          ) {
+            cd.env.thisPageWatchedTopics.push(cd.env.justWatchedTopic);
+          }
+        }
+        if (cd.env.justUnwatchedTopic) {
+          if (cd.env.justUnwatchedTopic === this.heading &&
+            cd.env.thisPageWatchedTopics.includes(this.heading)
+          ) {
+            cd.env.thisPageWatchedTopics.splice(
+              cd.env.thisPageWatchedTopics.indexOf(this.heading),
+              1
+            );
+          }
+        }
+
         if (!cd.env.thisPageWatchedTopics.includes(this.heading)) {
           this.isWatched = false;
           this.addMenuItem({
@@ -763,7 +784,9 @@ export default class Section {
   }
 
   watch(silent = false) {
-    cd.env.watchTopic(this.heading, silent);
+    cd.env.watchTopic(this.heading, silent, () => {
+      this.isWatched = true;
+    });
 
     const $watchSectionLink = this.$heading.find('.cd-watchSectionLink')
       .text('не следить')
@@ -791,6 +814,8 @@ export default class Section {
       .fail(() => {
         mw.notify('Не удалось обновить настройки.');
       });
+
+    this.isWatched = false;
 
     const $unwatchSectionLink = this.$heading.find('.cd-unwatchSectionLink')
       .removeClass('cd-unwatchSectionLink')

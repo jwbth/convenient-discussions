@@ -2,7 +2,7 @@ import lzString from 'lz-string';
 import parse from './parse';
 
 export default {
-  IS_RUWIKI: mw.config.get('wgServername') === 'ru.wikipedia.org',
+  IS_RUWIKI: mw.config.get('wgServerName') === 'ru.wikipedia.org',
 
   // Underlayer-related
   UNDERLAYER_FOCUSED_BGCOLOR: '#eaf3ff',
@@ -48,6 +48,7 @@ export default {
   scrollHandleTimeout: false,
   recalculateUnderlayersTimeout: false,
   pageOverlaysOn: false,
+  msgFormsCounter: 0,
 
   addCSS(css) {
     const styleElem = document.createElement('style');
@@ -181,11 +182,8 @@ export default {
   },
 
   isDiscussionPage(page, nsNumber) {
-    return cd.env.isDiscussionNamespace(cd.env.NAMESPACE_NUMBER) &&
-      (cd.env.NAMESPACE_NUMBER !== 4 ||
-        cd.env.NAMESPACE_NUMBER !== 104 ||
-        cd.config.DISCUSSION_PAGE_REGEXP.test(cd.env.CURRENT_PAGE)
-      )
+    return cd.env.isDiscussionNamespace(nsNumber) &&
+      (nsNumber !== 4 || nsNumber !== 104 || cd.config.discussionPageRegexp.test(page));
   },
 
   highlightFocused(e) {
@@ -630,7 +628,7 @@ export default {
         .appendTo(cd.env.$loadingOverlay);
       const $logo = $('<img>')
         .addClass('cd-loadingPopup-logo')
-        .attr('src', cd.config.LOGO_BASE64)
+        .attr('src', cd.config.logoBase64)
         .appendTo($loadingPopup);
 
       $('body').append(cd.env.$loadingOverlay);
@@ -1122,7 +1120,7 @@ export default {
     const text = match[1];
     let authorDate = [];
     let nextMatchNumber = 2;
-    cd.config.SIG_PATTERNS.forEach((el) => {
+    cd.config.sigPatterns.forEach((el) => {
       const captureNames = el[1];
       for (let i = 0; i < captureNames.length; i++, nextMatchNumber++) {
         if (match[nextMatchNumber]) {
@@ -1157,8 +1155,8 @@ export default {
 
     if (firstMsgMatch) {
       let nextMatchNumber = 2;
-      for (let i = 0; i < cd.config.SIG_PATTERNS; i++) {
-        const captureNames = cd.config.SIG_PATTERNS[i][1];
+      for (let i = 0; i < cd.config.sigPatterns; i++) {
+        const captureNames = cd.config.sigPatterns[i][1];
         for (let j = 0; j < captureNames.length; j++, nextMatchNumber++) {
           if (captureNames[j] === 'date') {
             return match[nextMatchNumber];
@@ -1308,8 +1306,8 @@ export default {
 
       extractPattern = cd.env.USER_NAME_PATTERN + authorPattern + '[|\\]#].*' +
           mw.RegExp.escape(date) + '[  \t]*(?:\}\}|</small>)?[  \t]*';
-      if (cd.config.EXTRACT_AUTHOR_DATE_PATTERNS) {
-        cd.config.EXTRACT_AUTHOR_DATE_PATTERNS.forEach((el, i) => {
+      if (cd.config.extractAuthorDatePatterns) {
+        cd.config.extractAuthorDatePatterns.forEach((el, i) => {
           extractPattern += '|' + el
               .replace('%author', authorPattern)
               .replace('%date', dateWithOptionalUTCPattern) +
@@ -1319,8 +1317,8 @@ export default {
       }
     } else {
       extractPattern = cd.env.USER_NAME_PATTERN + authorPattern + '[|\\]#]';
-      if (cd.config.EXTRACT_AUTHOR_PATTERNS) {
-        cd.config.EXTRACT_AUTHOR_PATTERNS.forEach((el, i) => {
+      if (cd.config.extractAuthorPatterns) {
+        cd.config.extractAuthorPatterns.forEach((el, i) => {
           extractPattern += '|' + el.replace('%author', authorPattern) +
             // [  \t]* in the end needed to remove messages properly.
             '[  \t]*';
@@ -1334,8 +1332,8 @@ export default {
   generateAuthorSelector(author) {
     const authorEncoded = $.escapeSelector(encodeURI(author.replace(/ /g, '_')));
     const namespaces = [
-      ...cd.config.CANONICAL_USER_NAMESPACES,
-      cd.config.CONTRIBUTIONS_PAGE,
+      ...cd.config.canonicalUserNamespaces,
+      cd.config.contributionsPage,
       'User'
     ];
     let authorSelector = '';
@@ -1343,9 +1341,9 @@ export default {
       authorSelector += `a[href^="/wiki/${encodeURI(el)}:${authorEncoded}"]` +
         `:not(a[href^="${encodeURI(el)}:${authorEncoded}"]), `;
     });
-    cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.forEach((el, index) => {
+    cd.config.canonicalUserNamespacesWithoutTalk.forEach((el, index) => {
       authorSelector += `a[href^="/w/index.php?title=${encodeURI(el)}"]`;
-      if (index !== cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.length - 1) {
+      if (index !== cd.config.canonicalUserNamespacesWithoutTalk.length - 1) {
         authorSelector += ', ';
       }
     });
@@ -1396,7 +1394,7 @@ export default {
     return newestMsgs;
   },
 
-  updatePageContent(html, anchor) {
+  updatePageContent(html, keepedData) {
     cd.env.underlayersContainer.innerHTML = '';
     cd.env.linksUnderlayersContainer.innerHTML = '';
     cd.env.underlayers = [];
@@ -1407,10 +1405,12 @@ export default {
 
     cd.env.$content.html(html);
     mw.hook('wikipage.content').fire(cd.env.$content);
-    parse(anchor, cd.env.memorizeNewestMsgs());
+    parse($.extend(keepedData, {
+      memorizedNewestMsgs: cd.env.memorizeNewestMsgs(),
+    }));
   },
 
-  reloadPage(anchor) {
+  reloadPage(keepedData) {
     cd.debug.initTimers();
 
     cd.debug.startTimer(cd.strings.totalTime);
@@ -1424,7 +1424,7 @@ export default {
     }
 
     return cd.env.parseCurrentPage().done((html) => {
-      cd.env.updatePageContent(html, anchor);
+      cd.env.updatePageContent(html, keepedData);
     });
   },
 
@@ -1584,7 +1584,7 @@ export default {
     }
   },
 
-  async watchTopic(heading, silent = false) {
+  async watchTopic(heading, silent = false, callback) {
     await cd.env.getWatchedTopics();
     cd.env.thisPageWatchedTopics.push(heading);
     cd.env.setWatchedTopics(cd.env.watchedTopics)
@@ -1593,6 +1593,9 @@ export default {
           mw.notify(cd.env.toJquerySpan(
             `Иконка у сообщений в разделе «${heading}» в списке наблюдения теперь будет синей.`
           ));
+        }
+        if (callback) {
+          callback();
         }
       })
       .fail((e) => {

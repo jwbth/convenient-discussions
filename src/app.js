@@ -58,10 +58,10 @@ function main() {
     return;
   }
 
-  if (cd.config.HELP_LINK === cd.config.DEFAULT_HELP_LINK) {
-    cd.env.HELP_LINK = cd.env.IS_RUWIKI ? cd.config.HELP_LINK : 'w:ru:' + cd.config.HELP_LINK;
+  if (cd.config.helpLink === cd.config.defaultHelpLink) {
+    cd.env.HELP_LINK = cd.env.IS_RUWIKI ? cd.config.helpLink : 'w:ru:' + cd.config.helpLink;
   } else {
-    cd.env.HELP_LINK = cd.config.HELP_LINK;
+    cd.env.HELP_LINK = cd.config.helpLink;
   }
   cd.env.UNDERLAYER_NEW_BGCOLOR = cd.env.UNDERLAYER_NEWEST_BGCOLOR;
   cd.env.SUMMARY_POSTFIX = ` ([[${cd.env.HELP_LINK}|CD]])`;
@@ -71,11 +71,11 @@ function main() {
 
   // A signature pattern regexp
   let sigPattern = '(?:';
-  for (let i = 0; i < cd.config.SIG_PATTERNS.length; i++) {
+  for (let i = 0; i < cd.config.sigPatterns.length; i++) {
     if (i !== 0) {
       sigPattern += '|';
     }
-    sigPattern += cd.config.SIG_PATTERNS[i][0];
+    sigPattern += cd.config.sigPatterns[i][0];
   }
   sigPattern += ')';
   cd.env.SIG_PATTERN = sigPattern;
@@ -103,7 +103,7 @@ function main() {
     captureUserNameRegexp += anyTypeOfSpace(el);
   });
   captureUserNameRegexp += ')[ _]*:[ _]*|(?:Special[ _]*:[ _]*Contributions|' +
-    anyTypeOfSpace(cd.config.CONTRIBUTIONS_PAGE) +
+    anyTypeOfSpace(cd.config.contributionsPage) +
     ')\\/[ _]*)([^|\\]#\/]+)';
   // The capture should have user name.
   cd.env.CAPTURE_USER_NAME_REGEXPS = [
@@ -136,27 +136,27 @@ function main() {
   });
   userNamePattern += ')[ _]*:[ _]*|(?:' +
     anyTypeOfSpace(generateAnyCasePattern('Special:Contributions')) + '|' +
-    anyTypeOfSpace(generateAnyCasePattern(cd.config.CONTRIBUTIONS_PAGE)) + ')\\/[ _]*)';
+    anyTypeOfSpace(generateAnyCasePattern(cd.config.contributionsPage)) + ')\\/[ _]*)';
   cd.env.USER_NAME_PATTERN = userNamePattern;
 
   let authorSelector = '';
   const authorSelectorNamespaces = [
-    ...cd.config.CANONICAL_USER_NAMESPACES,
-    cd.config.CONTRIBUTIONS_PAGE
+    ...cd.config.canonicalUserNamespaces,
+    cd.config.contributionsPage
   ];
   authorSelectorNamespaces.forEach((el) => {
     authorSelector += `a[href^="/wiki/${encodeURI(el)}"], `;
   });
-  cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.forEach((el, i) => {
+  cd.config.canonicalUserNamespacesWithoutTalk.forEach((el, i) => {
     authorSelector += `a[href^="/w/index.php?title=${encodeURI(el)}"]`;
-    if (i !== cd.config.CANONICAL_USER_NAMESPACES_WITHOUT_TALK.length - 1) {
+    if (i !== cd.config.canonicalUserNamespacesWithoutTalk.length - 1) {
       authorSelector += ', ';
     }
   });
   cd.env.AUTHOR_SELECTOR = authorSelector;
 
   const captureAuthorNamespaces = [
-    ...cd.config.CANONICAL_USER_NAMESPACES,
+    ...cd.config.canonicalUserNamespaces,
     'User'
   ];
   let captureAuthorRegexp = '(?:';
@@ -166,7 +166,7 @@ function main() {
     }
     captureAuthorRegexp += `${encodeURI(el)}:([^#\\/]+)`;
   });
-  captureAuthorRegexp += `|${encodeURI(cd.config.CONTRIBUTIONS_PAGE)}\\/([^#\\/]+))`;
+  captureAuthorRegexp += `|${encodeURI(cd.config.contributionsPage)}\\/([^#\\/]+))`;
   cd.env.CAPTURE_AUTHOR_REGEXP = new RegExp(captureAuthorRegexp);
 
   // TEST. Delete when done.
@@ -175,7 +175,7 @@ function main() {
   // Go
   if (cd.env.isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER) &&
     mw.config.get('wgIsArticle') &&
-    cd.env.$content.is(`:contains("${(cd.config.MESSAGES_COMMON_STRING)}")`)
+    cd.env.$content.is(`:contains("${(cd.config.messagesCommonString)}")`)
   ) {
     const bodyBgcolor = cd.env.CURRENT_SKIN === 'timeless' ?
       window.getComputedStyle($('#mw-content')[0]).backgroundColor :

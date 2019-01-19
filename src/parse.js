@@ -3,7 +3,7 @@ import Msg from './Msg';
 import Section from './Section';
 import MsgForm from './MsgForm';
 
-export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
+export default function parse(keepedData) {
   if (cd.env.firstRun) {
     cd.debug.endTimer(cd.strings.loadingModules);
   } else {
@@ -40,6 +40,7 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
     slideEffects: true,
     showLoadingOverlay: true,
     showToolbars: true,
+    additionalInsertButtons: [],
   };
 
   // Settings in variables like cdAlowEditOthersMsgs
@@ -145,21 +146,21 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
 
   const msgAntipatternPatternParts = [];
   // true relates to '-- ?\\[\\[Участник:DimaBot\\|DimaBot\\]\\]'
-  if (cd.config.BLOCKS_TO_EXCLUDE_CLASSES || cd.config.TEMPLATES_TO_EXCLUDE || true) {
-    if (cd.config.BLOCKS_TO_EXCLUDE_CLASSES) {
+  if (cd.config.blocksToExcludeClasses || cd.config.templatesToExclude || true) {
+    if (cd.config.blocksToExcludeClasses) {
       msgAntipatternPatternParts.push(
-        'class=([\\\'"])[^\\1]*(?:\\b' + cd.config.BLOCKS_TO_EXCLUDE_CLASSES.join('\\b|\\b') +
+        'class=([\\\'"])[^\\1]*(?:\\b' + cd.config.blocksToExcludeClasses.join('\\b|\\b') +
         '\\b)[^\\1]*\\1'
       );
     }
-    if (cd.config.TEMPLATES_TO_EXCLUDE) {
+    if (cd.config.templatesToExclude) {
       msgAntipatternPatternParts.push('\\{\\{ *(?:' +
-        cd.config.TEMPLATES_TO_EXCLUDE
+        cd.config.templatesToExclude
           .map(template => cd.env.generateCaseInsensitiveFirstCharPattern(template))
           .join('|') +
         ') *(?:\\||\\}\\})');
     }
-    cd.config.MSG_ANTIPATTERNS.forEach((antiPattern) => {
+    cd.config.msgAntipatterns.forEach((antiPattern) => {
       msgAntipatternPatternParts.push(antiPattern);
     });
     cd.env.MSG_ANTIPATTERN_REGEXP = new RegExp(
@@ -628,7 +629,7 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
   cd.env.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 
   const blocksToExcludeSelector = 'blockquote, ' +
-    cd.config.BLOCKS_TO_EXCLUDE_CLASSES.map(s => '.' + s).join(', ');
+    cd.config.blocksToExcludeClasses.map(s => '.' + s).join(', ');
   const blocksToExclude = cd.env.$content.find(blocksToExcludeSelector).get();
 
   const potentialDateContainers = cd.env.contentElement.querySelectorAll('li, dd, p, div');
@@ -835,7 +836,18 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
   mw.hook('cd.msgsReady').fire(cd.msgs);
 
   cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
+
+  // That's a hack when we pass in keepedData a name of the topic that was set to be
+  // watched/unwatched via a checkbox in a form previosly sent. The server doesn't manage to update
+  // the value so quickly, so it returns the old value, but we should display the new one.
+  cd.env.justWatchedTopic = keepedData && keepedData.justWatchedTopic;
+  cd.env.justUnwatchedTopic = keepedData && keepedData.justUnwatchedTopic;
+
   cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics();
+  cd.env.getWatchedTopicsPromise.then(() => {
+    cd.env.justWatchedTopic = null;
+    cd.env.justUnwatchedTopic = null;
+  });
 
   cd.env.currentSectionId = 0;
   const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
@@ -950,7 +962,9 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
     }
   }
 
-  let msgAnchor = cd.env.firstRun ? isMsgFragment && decodedFragment : msgAnchorToScrollTo;
+  let msgAnchor = cd.env.firstRun ?
+    isMsgFragment && decodedFragment :
+    keepedData && keepedData.anchor;
   if (msgAnchor) {
     let $targetMsg = $(`[id="${$.escapeSelector(msgAnchor)}"]`);
     if (cd.env.firstRun && !$targetMsg.length) {  // By a link from the watchlist
@@ -1078,9 +1092,9 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
             // cd.env.HIGHLIGHT_NEW_INTERVAL minutes pass.
             const msgUnixTime = Math.floor(msg.timestamp / 1000);
 
-            if (memorizedNewestMsgs) {
-              for (let i = 0; i < memorizedNewestMsgs.length; i++) {
-                const memorizedMsg = memorizedNewestMsgs[i];
+            if (keepedData && keepedData.memorizedNewestMsgs) {
+              for (let i = 0; i < keepedData.memorizedNewestMsgs.length; i++) {
+                const memorizedMsg = keepedData.memorizedNewestMsgs[i];
                 if (memorizedMsg.timestamp === msg.timestamp &&
                   memorizedMsg.author === msg.author
                 ) {
@@ -1138,12 +1152,12 @@ export default function parse(msgAnchorToScrollTo, memorizedNewestMsgs) {
           .fail((e) => {
             const [errorType, data] = e;
             if (errorType === 'internal' && data === 'sizelimit') {
-              // Cleanup: remove oldest 1/3 of visits.
+              // Cleanup: remove the oldest 1/3 of visits.
               const timestamps = [];
               for (let key in visits) {
                 for (let i = 0; i < visits[key].length; i++) {
                   timestamps.push(visits[key][i]);
-                  }
+                }
               }
               timestamps.sort((a, b) => {
                 if (a > b) {
