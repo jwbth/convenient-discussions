@@ -1141,7 +1141,7 @@ export default class MsgForm {
         framed: false,
       });
       cancelLink.on('click', () => {
-        this.cancel({ leaveInfo: true });
+        this.cancel();
       });
 
       const retryLink = new OO.ui.ButtonWidget({
@@ -1784,6 +1784,9 @@ export default class MsgForm {
           justUnwatchedTopic = section.heading;
         }
       }
+      // That's a hack used when we pass in keepedData a name of a topic that was set to be
+      // watched/unwatched via a checkbox in a form just sent. The server doesn't manage to update
+      // the value so quickly, so it returns the old value, but we must display the new one.
       keepedData.justWatchedTopic = justWatchedTopic;
       keepedData.justUnwatchedTopic = justUnwatchedTopic;
 
@@ -1890,24 +1893,26 @@ export default class MsgForm {
     }
   }
 
-  cancel(options = {}) {
-    const leaveInfo = options.leaveInfo;
-
-    if (!leaveInfo) {
-      this.$infoArea.empty();
+  cancel() {
+    let confirmation = true;
+    if (this.isAltered()) {
+      confirmation = confirm('Вы действительно хотите закрыть форму? Введённый текст будет потерян.');
     }
-    this.$previewArea.empty();
+    if (!confirmation) {
+      this.textarea.focus();
+      return;
+    }
 
     if (this.mode !== 'edit') {
       this.$element[cd.settings.slideEffects ? 'cdSlideUp' : 'cdFadeOut']('fast', () => {
-        this.$element.addClass('cd-msgForm-hidden');
+        this.destroy();
         if (this.mode === 'replyInSection') {
           this.target.$replyButtonContainer.show();
         }
       }, this.getTargetMsg(true));
     } else {
       this.$element.cdFadeOut('fast', () => {
-        this.$element.addClass('cd-msgForm-hidden');
+        this.destroy();
         this.target.$elements.show();
         if (!this.target.isOpeningSection) {
           if (!this.target.$elements.cdIsInViewport()) {
@@ -1979,12 +1984,11 @@ export default class MsgForm {
     return !this.submitted && !this.$element.hasClass('cd-msgForm-hidden');
   }
 
-  isActiveAndAltered() {
-    return this.isActive() &&
-      (this.originalText !== this.textarea.getValue() ||
-        this.defaultSummary !== this.summaryInput.getValue() ||
-        (this.headingInput && this.originalHeadingText !== this.headingInput.getValue())
-      );
+  isAltered() {
+    return (this.originalText !== this.textarea.getValue() ||
+      this.defaultSummary !== this.summaryInput.getValue() ||
+      (this.headingInput && this.originalHeadingText !== this.headingInput.getValue())
+    );
   }
 }
 

@@ -752,7 +752,7 @@ export default {
       );
   },
 
-  getWatchedTopics() {
+  getWatchedTopics(keepedData) {
     let promise;
     if (cd.env.firstRun) {
       if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
@@ -778,6 +778,25 @@ export default {
           cd.env.watchedTopics[cd.env.ARTICLE_ID] || [];
         if (!cd.env.thisPageWatchedTopics.length) {
           cd.env.watchedTopics[cd.env.ARTICLE_ID] = cd.env.thisPageWatchedTopics;
+        }
+
+        if (keepedData) {
+          // Manually add/remove the topic that was added/removed at the same moment when the page
+          // was reloaded the last time, so when we requested watched topics from server, this data
+          // wasn't yet there.
+          if (keepedData.justWatchedTopic) {
+            if (!cd.env.thisPageWatchedTopics.includes(keepedData.justWatchedTopic)) {
+              cd.env.thisPageWatchedTopics.push(keepedData.justWatchedTopic);
+            }
+          }
+          if (keepedData.justUnwatchedTopic) {
+            if (cd.env.thisPageWatchedTopics.includes(keepedData.justUnwatchedTopic)) {
+              cd.env.thisPageWatchedTopics.splice(
+                cd.env.thisPageWatchedTopics.indexOf(keepedData.justUnwatchedTopic),
+                1
+              );
+            }
+          }
         }
       })
       .fail(() => {

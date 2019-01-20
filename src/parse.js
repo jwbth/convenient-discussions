@@ -338,11 +338,14 @@ export default function parse(keepedData) {
     },
 
     getLastActiveAlteredMsgForm() {
-      if (cd.env.lastActiveMsgForm && cd.env.lastActiveMsgForm.isActiveAndAltered()) {
+      if (cd.env.lastActiveMsgForm &&
+        cd.env.lastActiveMsgForm.isActive() &&
+        cd.env.lastActiveMsgForm.isAltered()
+      ) {
         return cd.env.lastActiveMsgForm;
       } else {
         for (let i = cd.msgForms.length - 1; i >= 0; i--) {
-          if (cd.msgForms[i].isActiveAndAltered()) {
+          if (cd.msgForms[i].isActive() && cd.msgForms[i].isAltered()) {
             return cd.msgForms[i];
           }
         }
@@ -698,7 +701,6 @@ export default function parse(keepedData) {
 
   const collapseAdjacentMsgLevels = (levels) => {
     if (!levels || !levels[0]) return;
-    cd.debug.startTimer('collapse');
 
     const changeElementType = (element, newType) => {
       const newElement = document.createElement(newType);
@@ -797,7 +799,6 @@ export default function parse(keepedData) {
         )
       );
     }
-    cd.debug.endTimer('collapse');
   };
 
   collapseAdjacentMsgLevels(
@@ -837,17 +838,7 @@ export default function parse(keepedData) {
 
   cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
 
-  // That's a hack when we pass in keepedData a name of the topic that was set to be
-  // watched/unwatched via a checkbox in a form previosly sent. The server doesn't manage to update
-  // the value so quickly, so it returns the old value, but we should display the new one.
-  cd.env.justWatchedTopic = keepedData && keepedData.justWatchedTopic;
-  cd.env.justUnwatchedTopic = keepedData && keepedData.justUnwatchedTopic;
-
-  cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics();
-  cd.env.getWatchedTopicsPromise.then(() => {
-    cd.env.justWatchedTopic = null;
-    cd.env.justUnwatchedTopic = null;
-  });
+  cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics(keepedData);
 
   cd.env.currentSectionId = 0;
   const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
@@ -914,26 +905,29 @@ export default function parse(keepedData) {
 
   cd.debug.endTimer(cd.strings.mainCode);
 
-  $('.ruwiki-addTopicLink a, #ca-addsection, .ruwiki-addSectionBottom').click(function (e) {
-    e.preventDefault();
+  cd.env.addSectionForm = null;
+  if (cd.env.firstRun) {
+    $('.ruwiki-addTopicLink a, #ca-addsection, .ruwiki-addSectionBottom').click(function (e) {
+      e.preventDefault();
 
-    if (!cd.env.addSectionForm) {
-      cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
-    }
+      if (!cd.env.addSectionForm) {
+        cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
+      }
 
-    // Get the height before the animation has started, so that the height is right.
-    const height = cd.env.addSectionForm.$element.height();
-    const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
+      // Get the height before the animation has started, so that the height is right.
+      const height = cd.env.addSectionForm.$element.height();
+      const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
 
-    if (cd.env.addSectionForm.$element.css('display') === 'none') {
-      cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
-    }
-    if (!willBeInViewport) {
-      cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
-    }
+      if (cd.env.addSectionForm.$element.css('display') === 'none') {
+        cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
+      }
+      if (!willBeInViewport) {
+        cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
+      }
 
-    cd.env.addSectionForm.headingInput.focus();
-  });
+      cd.env.addSectionForm.headingInput.focus();
+    });
+  }
 
   cd.debug.startTimer(cd.strings.finalCodeAndRendering);
 
