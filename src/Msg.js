@@ -1344,25 +1344,19 @@ export default class Msg {
       this.replyForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
       this.replyForm.textarea.focus();
     } else {
-      if (this.replyForm.$element.css('display') === 'none') {
-        this.replyForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
-        this.replyForm.textarea.focus();
-      } else {
-        this.prepareUnderlayersInViewport(true);
-        this.replyForm.$previewArea.empty();
-        this.replyForm.$element[cd.settings.slideEffects ? 'slideUp' : 'fadeOut']('fast', () => {
-          this.replyForm.$element.addClass('cd-msgForm-hidden');
-          this.updateUnderlayersInViewport(true);
-        });
-      }
+      this.replyForm.cancel();
     }
   }
 
   edit() {
+    // formExists check in case editing is called from a script of some kind (there is no button
+    // to call it from CD).
     let formExists = this.editForm && !this.editForm.submitted;
     if (!formExists) {
       this.editForm = new MsgForm('edit', this);
     }
+
+    this.isEdited = true;
     this.$elements.hide();
     if (this.isOpeningSection) {
       this.section.$heading.hide();
@@ -1460,7 +1454,7 @@ export default class Msg {
       );
   }
 
-  registerSeen(registerAllInDirection, highlight) {
+  registerSeen(registerAllInDirection, highlight = false) {
     if (this.newness === 'newest' && !this.seen) {
       this.seen = true;
       cd.env.newestCount--;
@@ -1478,7 +1472,7 @@ export default class Msg {
   }
 
   // Determination of the message visibility for the refresh panel operations
-  isInViewport(updatePositions, partly) {
+  isInViewport(updatePositions = false, partly = false) {
     const viewportTop = window.pageYOffset;
     const viewportBottom = viewportTop + window.innerHeight;
 
@@ -1493,9 +1487,7 @@ export default class Msg {
     }
   }
 
-  findHighlightedMsgsInViewportBelow(msgsBelowViewportCount) {
-    msgsBelowViewportCount = msgsBelowViewportCount !== undefined ? msgsBelowViewportCount : 5;
-
+  findHighlightedMsgsInViewportBelow(msgsBelowViewportCount = 5) {
     const highlightedMsgsInViewportBelow = [];
     let currentMsg;
     let thisMsgsBelowViewportCount = 0;
@@ -1520,7 +1512,7 @@ export default class Msg {
     return highlightedMsgsInViewportBelow;
   }
 
-  prepareUnderlayersInViewport(hide, msgsBelowViewportCount) {
+  prepareUnderlayersInViewport(hide = false, msgsBelowViewportCount) {
     cd.env.recalculateUnderlayersTimeout = true;
 
     this.#highlightedMsgsInViewportBelow = this.findHighlightedMsgsInViewportBelow(
@@ -1535,7 +1527,7 @@ export default class Msg {
     }
   }
 
-  updateUnderlayersInViewport(unhide) {
+  updateUnderlayersInViewport(unhide = false) {
     for (let i = 0; i < this.#highlightedMsgsInViewportBelow.length; i++) {
       this.#highlightedMsgsInViewportBelow[i].configureUnderlayer();
     }

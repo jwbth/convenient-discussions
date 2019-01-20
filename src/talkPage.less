@@ -78,7 +78,7 @@
   margin-left: -1px;
 }
 
-.cd-msgForm:not(.cd-msgForm-hidden) + .cd-replyButtonContainer,
+.cd-msgForm + .cd-replyButtonContainer,
 .ruwiki-closedDiscussion + .cd-replyButtonContainerContainer {
   margin-top: 0.5em;
 }
@@ -171,14 +171,14 @@
     padding-bottom: 1px;
   }
 
-  &:not(.cd-msgForm-hidden) + .cd-msgLevel,
-  &:not(.cd-msgForm-hidden) + dd > .cd-msgLevel:first-child,
-  &:not(.cd-msgForm-hidden) + li > .cd-msgLevel:first-child {
-    /* Neutralize the hole which would otherwise be created by a margin-top of a nested message */
+  & + .cd-msgLevel,
+  & + dd > .cd-msgLevel:first-child,
+  & + li > .cd-msgLevel:first-child {
+    /* Neutralize the hole which would otherwise be created by the margin-top of a nested message */
     padding-top: 0.1px;
   }
 
-  &:not(.cd-msgForm-hidden) + .cd-msgForm {
+  & + .cd-msgForm {
     padding-top: 0.5em;
   }
 

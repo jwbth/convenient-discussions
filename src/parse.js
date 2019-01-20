@@ -702,6 +702,8 @@ export default function parse(keepedData) {
   const collapseAdjacentMsgLevels = (levels) => {
     if (!levels || !levels[0]) return;
 
+    cd.debug.startTimer('collapseAdjacentMsgLevels');
+
     const changeElementType = (element, newType) => {
       const newElement = document.createElement(newType);
 
@@ -799,6 +801,8 @@ export default function parse(keepedData) {
         )
       );
     }
+
+    cd.debug.endTimer('collapseAdjacentMsgLevels');
   };
 
   collapseAdjacentMsgLevels(

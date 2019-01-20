@@ -1016,7 +1016,6 @@ export default class MsgForm {
   }
 
   show(fashion) {
-    this.$element.removeClass('cd-msgForm-hidden');
     if (!fashion) {
       this.$element.cdShow(this.getTargetMsg(true));
     } else if (fashion === 'slideDown') {
@@ -1914,6 +1913,7 @@ export default class MsgForm {
       this.$element.cdFadeOut('fast', () => {
         this.destroy();
         this.target.$elements.show();
+        this.target.isEdited = false;
         if (!this.target.isOpeningSection) {
           if (!this.target.$elements.cdIsInViewport()) {
             this.target.$elements.cdScrollTo('top');
@@ -1981,7 +1981,7 @@ export default class MsgForm {
   }
 
   isActive() {
-    return !this.submitted && !this.$element.hasClass('cd-msgForm-hidden');
+    return !this.submitted;
   }
 
   isAltered() {

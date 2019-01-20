@@ -558,7 +558,7 @@ export default {
     const recalculate = (msg) => {
       if (!msg.newness && !newOnly && msg.$underlayer && msg.$underlayer.length) {
         msg.removeUnderlayer();
-      } else if (msg.newness) {
+      } else if (msg.newness && !msg.isEdited) {
         positions = msg.configureUnderlayer(true);
 
         if (positions) {

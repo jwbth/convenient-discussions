@@ -248,11 +248,7 @@ export default class Section {
         };
 
         this.replyButtonHoverHandler = () => {
-          if (this.addSubsectionForm &&
-            !this.addSubsectionForm.$element.hasClass('cd-msgForm-hidden')
-          ) {
-            return;
-          }
+          if (this.addSubsectionForm) return;
 
           clearTimeout(this.hideAddSubsectionButtonTimeout);
           this.hideAddSubsectionButtonTimeout = null;
@@ -268,11 +264,7 @@ export default class Section {
         };
 
         this.replyButtonUnhoverHandler = () => {
-          if (this.addSubsectionForm &&
-            !this.addSubsectionForm.$element.hasClass('cd-msgForm-hidden')
-          ) {
-            return;
-          }
+          if (this.addSubsectionForm) return;
 
           clearTimeout(this.showAddSubsectionButtonTimeout);
           this.showAddSubsectionButtonTimeout = null;
@@ -335,9 +327,10 @@ export default class Section {
   }
 
   addReply() {
+    // Check for existence in case replying is called from a script of some kind (there is no button
+    // to call it from CD).
     if (!this.addReplyForm) {
       this.addReplyForm = new MsgForm('replyInSection', this);
-      cd.msgForms.push(this.addReplyForm);
     }
     this.$replyButtonContainer.hide();
 
@@ -367,9 +360,7 @@ export default class Section {
     const height = this.addSubsectionForm.$element.height();
     const willBeInViewport = this.addSubsectionForm.$element.cdIsInViewport();
 
-    if (this.addSubsectionForm.$element.css('display') === 'none') {
-      this.addSubsectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
-    }
+    this.addSubsectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
     if (!willBeInViewport) {
       this.addSubsectionForm.$element.cdScrollTo('middle', null, true, height / 2);
     }
@@ -607,7 +598,7 @@ export default class Section {
           }
 
           if (newerHigherCount === newerLowerCount) {
-            newTopicsOnTop = !Boolean(targetTitle.namespace % 2);
+            newTopicsOnTop = !(targetTitle.namespace % 2);
           }
 
           // Generate the new codes of the pages
