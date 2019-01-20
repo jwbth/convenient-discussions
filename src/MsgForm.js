@@ -1175,7 +1175,7 @@ export default class MsgForm {
     if (!indentationCharacters) {
       indentationCharacters = '';
     }
-    const isZeroLevel = this.mode === 'addSubsection' ||
+    const isZeroLevel = this.mode === 'addSection' || this.mode === 'addSubsection' ||
       this.noIndentationCheckbox && this.noIndentationCheckbox.isSelected() ||
       (this.mode === 'edit' && !indentationCharacters) ||
       action === 'preview';

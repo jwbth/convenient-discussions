@@ -459,6 +459,8 @@ export default class Msg {
           element.className += ' cd-msgPart cd-msgPart-first';
         } else if (i === elements.length - 1) {
           element.className += ' cd-msgPart cd-msgPart-last';
+        } else {
+          element.className += ' cd-msgPart';
         }
       }
 
@@ -1296,24 +1298,19 @@ export default class Msg {
     }
 
     // If the message contains several indentation character sets for different lines, then use
-    // different sets depending on the mode.
+    // different sets depending on the mode (edit/reply).
     let replyIndentationCharacters = indentationCharacters;
     if (!this.isOpeningSection) {
       const otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
       if (otherIndentationCharactersMatch) {
         if (otherIndentationCharactersMatch[1].length <= indentationCharacters.length) {
-          let replyMustUseAsterisk = false;
-          if (/\*$/.test(indentationCharacters)) {
-            replyMustUseAsterisk = true;
-          }
-
+          const replyMustUseAsterisk = /\*$/.test(indentationCharacters);
           indentationCharacters = otherIndentationCharactersMatch[1];
           if (replyMustUseAsterisk) {
             indentationCharacters = indentationCharacters.replace(/:$/, '*');
           }
-        } else {
-          replyIndentationCharacters = otherIndentationCharactersMatch[1];
         }
+        replyIndentationCharacters = otherIndentationCharactersMatch[1];
       }
     }
     replyIndentationCharacters += '*';
