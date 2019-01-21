@@ -169,14 +169,13 @@ function main() {
   captureAuthorRegexp += `|${encodeURI(cd.config.contributionsPage)}\\/([^#\\/]+))`;
   cd.env.CAPTURE_AUTHOR_REGEXP = new RegExp(captureAuthorRegexp);
 
-  // TEST. Delete when done.
-  window.ewt = cd.env.editWatchedTopics;
-
   // Go
   if (cd.env.isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER) &&
     mw.config.get('wgIsArticle') &&
-    cd.env.$content.is(`:contains("${(cd.config.messagesCommonString)}")`)
+    cd.env.$content.is(`:contains("${cd.config.messagesCommonString}")`)
   ) {
+    cd.env.firstRun = true;
+
     const bodyBgcolor = cd.env.CURRENT_SKIN === 'timeless' ?
       window.getComputedStyle($('#mw-content')[0]).backgroundColor :
       window.getComputedStyle($('.mw-body')[0]).backgroundColor;

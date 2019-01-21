@@ -36,8 +36,6 @@ export default {
   POPULAR_INLINE_ELEMENTS: ['A', 'SMALL', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'SPAN', 'CODE',
     'TT', 'KBD', 'BR', 'IMG', 'SUP', 'SUB', 'ABBR', 'CITE'],
 
-  firstRun: true,
-
   $content: $('#mw-content-text'),  // Set immediately – it is used below.
 
   underlayers: [],
@@ -831,7 +829,8 @@ export default {
   },
 
   async editWatchedTopics() {
-    cd.env.requestOptions();
+    const watchedTopicsPromise = cd.env.getWatchedTopics();
+
     await mw.loader.using([
       'mediawiki.api',
       'mediawiki.notify',
@@ -839,7 +838,8 @@ export default {
       'oojs-ui',
       'user.options',
     ]);
-    const watchedTopics = await cd.env.getWatchedTopics();
+    const watchedTopics = await watchedTopicsPromise;
+
     let pageIds;
     let pageTitles;
     let pageIdToTitle;
@@ -883,9 +883,12 @@ export default {
 
             let topicList = '';
             for (let i = 0; i < sortedWatchedTopics.length; i++) {
-              for (let j = 0; j < sortedWatchedTopics[i][1].length; j++) {
-                topicList += pageIdToTitle[sortedWatchedTopics[i][0]] + '#' +
-                  sortedWatchedTopics[i][1][j] + '\n';
+              // Anti-bug precaution
+              if (sortedWatchedTopics[i][1]) {
+                for (let j = 0; j < sortedWatchedTopics[i][1].length; j++) {
+                  topicList += pageIdToTitle[sortedWatchedTopics[i][0]] + '#' +
+                    sortedWatchedTopics[i][1][j] + '\n';
+                }
               }
             }
 
@@ -944,11 +947,17 @@ export default {
             }
 
             try {
-              await setWatchedTopics(newWatchedTopics);
+              await cd.env.setWatchedTopics(newWatchedTopics);
               editWatchedTopicsDialog.popPending();
               editWatchedTopicsDialog.close();
             } catch (e) {
-              const [errorType, data] = e;
+              let errorType;
+              let data;
+              if ($.isArray(e)) {
+                [errorType, data] = e;
+              } else {
+                console.error(e);
+              }
               if (errorType === 'internal' && data === 'sizelimit') {
                 editWatchedTopicsDialog.showErrors(new OO.ui.Error(
                   'Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Уменьшите размер списка, чтобы это исправить.',
@@ -984,7 +993,13 @@ export default {
 
         doneCallback(data.query);
       } catch (e) {
-        const [errorType, data] = e;
+        let errorType;
+        let data;
+        if ($.isArray(e)) {
+          [errorType, data] = e;
+        } else {
+          console.error(e);
+        }
         editWatchedTopicsDialog.showErrors(new OO.ui.Error(
           `Возникли проблемы при обработке списка тем: ${errorType}/${data}`,
           true
@@ -1604,6 +1619,8 @@ export default {
   },
 
   async watchTopic(heading, silent = false, callback) {
+    if (!heading.trim()) return;
+
     await cd.env.getWatchedTopics();
     cd.env.thisPageWatchedTopics.push(heading);
     cd.env.setWatchedTopics(cd.env.watchedTopics)
@@ -1618,7 +1635,13 @@ export default {
         }
       })
       .fail((e) => {
-        const [errorType, data] = e;
+        let errorType;
+        let data;
+        if ($.isArray(e)) {
+          [errorType, data] = e;
+        } else {
+          console.error(e);
+        }
         if (errorType === 'internal' && data === 'sizelimit') {
           mw.notify('Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Отредактируйте список тем, чтобы это исправить.');
         } else {

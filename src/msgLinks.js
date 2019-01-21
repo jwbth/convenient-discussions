@@ -7,6 +7,11 @@ export default async function msgLinks() {
     if (!$content.parent().length) return;
 
     if (mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist') {
+      // Man, there are 8 different watchlist modes:
+      // * expanded and not
+      // * with item grouping and without
+      // * with enhanced fitlers and without
+
       const lines = $content[0].querySelectorAll('.mw-changeslist-line:not(.mw-collapsible)');
       let blueIconsPresent = false;
       for (let i = 0; i < lines.length; i++) {
@@ -16,10 +21,13 @@ export default async function msgLinks() {
         const nsNumber = nsMatches && Number(nsMatches[1]);
         if (nsNumber === undefined) continue;
 
+        const isNested = line.tagName === 'TR';
         const linkElement = (!isNested ? line : line.parentElement)
           .querySelector('.mw-changeslist-title');
+        if (!linkElement) continue;
+
         const pageName = linkElement.textContent;
-        if (!isDiscussionPage(pageName, nsNumber)) continue;
+        if (!cd.env.isDiscussionPage(pageName, nsNumber)) continue;
 
         const minorMark = line.querySelector('.minoredit');
         if (minorMark) continue;
@@ -37,8 +45,6 @@ export default async function msgLinks() {
         ) {
           continue;
         }
-
-        const isNested = line.tagName === 'TR';
 
         const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
         if (!bytesAddedElement) {
@@ -62,7 +68,7 @@ export default async function msgLinks() {
 
         const anchor = date + '_' + author.replace(/ /g, '_');
 
-        const link = linkElement && linkElement.href;
+        const link = linkElement.href;
         if (!link) continue;
 
         let wrapper;
@@ -73,7 +79,8 @@ export default async function msgLinks() {
         } else {
           let isWatched = false;
           if (commentText) {
-            const curLink = line.querySelector('.mw-changeslist-diff-cur');
+            const curLink = line.querySelector('.mw-changeslist-diff-cur') ||  // Expanded WL
+              line.querySelector('.mw-changeslist-history');  // Non-expanded WL
             const curIdMatches = curLink &&
               curLink.href &&
               curLink.href.match(/[&?]curid=(\d+)/);
@@ -110,22 +117,24 @@ export default async function msgLinks() {
         destination.parentElement.insertBefore(wrapper, destination.nextSibling);
       }
 
-      if (blueIconsPresent) {
-        const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
-        let interestingOnly = false;
-        if (!$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget .cd-switchInterestingLink')
-          .length
-        ) {
-          const $wlinfo = $content.find('.wlinfo');
-          const $switchInteresting = $('<a>').addClass('cd-switchInterestingLink');
-          $switchInteresting
+      let interestingOnly = false;
+      if (!$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget .cd-watchlistMenu')
+        .length
+      ) {
+        const $menu = $('<div>').addClass('cd-watchlistMenu');
+        if (blueIconsPresent) {
+          // Item grouping switched on
+          const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
+
+          $('<a>')
+            .addClass('cd-watchlistMenu-switchInteresting')
             .attr('title', 'Показать только сообщения в темах, за которыми я слежу, и адресованные мне')
             .click(function () {
               // This is for many watchlist types at once.
               const $collapsibles = $content
                 .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
               const $lines = $content.find('.mw-changeslist-line:not(.mw-collapsible)');
-              if (!interestingOnly) {
+              if (!interestingOnly) {  // Show interesting only
                 $collapsibles
                   .not('.mw-collapsed')
                   .find('.mw-enhancedchanges-arrow')
@@ -141,9 +150,8 @@ export default async function msgLinks() {
                 $lines
                   .not(':has(.cd-rcMsgLink-interesting)')
                   .hide();
-
-              } else {
-                if (!isEnhanced) {
+              } else {  // Show all
+                if (!isEnhanced || !mw.user.options.get('extendwatchlist')) {
                   $lines
                     .not(':has(.cd-rcMsgLink-interesting)')
                     .show();
@@ -158,11 +166,17 @@ export default async function msgLinks() {
                   .click();
               }
               interestingOnly = !interestingOnly;
-            });
-
-          //$wlinfo.append(switchInteresting);
-          $content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($switchInteresting);
+            })
+            .appendTo($menu);
         }
+        $('<a>')
+          .addClass('cd-watchlistMenu-editWatchedTopics')
+          .attr('title', 'Редактировать темы, за которыми я слежу')
+          .click(cd.env.editWatchedTopics)
+          .appendTo($menu);
+
+        $content.find('.wlinfo').append($menu);  // Old watchlist
+        $content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
       }
     }
 
@@ -179,6 +193,8 @@ export default async function msgLinks() {
         const line = lines[i];
 
         const linkElement = line.querySelector('.mw-contributions-title');
+        if (!linkElement) continue;
+
         const pageName = linkElement.textContent;
         if (!(pageName.startsWith('Обсуждение ') && pageName.includes(':') ||
           (pageName.startsWith('Википедия:') || pageName.startsWith('Проект:')) &&
@@ -186,7 +202,8 @@ export default async function msgLinks() {
         )) {
           continue;
         }
-        const link = linkElement && linkElement.href;
+
+        const link = linkElement.href;
         if (!link) continue;
 
         const minorMark = line.querySelector('.minoredit');
@@ -248,7 +265,7 @@ export default async function msgLinks() {
     }
 
     if (mw.config.get('wgAction') === 'history' &&
-      isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER)
+      cd.env.isDiscussionPage(cd.env.CURRENT_PAGE, cd.env.NAMESPACE_NUMBER)
     ) {
       const timezone = mw.user.options.get('timecorrection');
       const timezoneParts = timezone && timezone.split('|');

@@ -298,20 +298,26 @@ export default class Section {
       }
 
       cd.env.getWatchedTopicsPromise.done(() => {
-        if (!cd.env.thisPageWatchedTopics.includes(this.heading)) {
-          this.isWatched = false;
-          this.addMenuItem({
-            label: 'следить',
-            func: this.watch.bind(this),
-            class: 'watchSectionLink',
-          });
-        } else {
-          this.isWatched = true;
-          this.addMenuItem({
-            label: 'не следить',
-            func: this.unwatch.bind(this),
-            class: 'unwatchSectionLink',
-          });
+        if (this.heading.trim()) {
+          if (!cd.env.thisPageWatchedTopics.includes(this.heading)) {
+            this.isWatched = false;
+            this.addMenuItem({
+              label: 'следить',
+              func: () => {
+                this.watch.call(this);
+              },
+              class: 'watchSectionLink',
+            });
+          } else {
+            this.isWatched = true;
+            this.addMenuItem({
+              label: 'не следить',
+              func: () => {
+                this.unwatch.call(this);
+              },
+              class: 'unwatchSectionLink',
+            });
+          }
         }
 
         // We put it here to make it appear always after the "watch" item.
@@ -758,6 +764,7 @@ export default class Section {
       this.isWatched = true;
     });
 
+    // FIXME: also display all topics with the same name as watched.
     const $watchSectionLink = this.$heading.find('.cd-watchSectionLink')
       .text('не следить')
       .removeClass('cd-watchSectionLink')
@@ -770,9 +777,15 @@ export default class Section {
   }
 
   async unwatch(silent = false) {
+    if (!this.heading.trim()) return;
+
     // We can unwatch only existing topics, so we don't delegate this to a separate function.
     await cd.env.getWatchedTopics();
     cd.env.thisPageWatchedTopics.splice(cd.env.thisPageWatchedTopics.indexOf(this.heading), 1);
+    if (!cd.env.thisPageWatchedTopics.length) {
+      delete cd.env.watchedTopics[cd.env.ARTICLE_ID];
+    }
+
     cd.env.setWatchedTopics(cd.env.watchedTopics)
       .done(() => {
         if (!silent) {
@@ -787,6 +800,7 @@ export default class Section {
 
     this.isWatched = false;
 
+    // FIXME: also display all topics with the same name as unwatched.
     const $unwatchSectionLink = this.$heading.find('.cd-unwatchSectionLink')
       .removeClass('cd-unwatchSectionLink')
       .addClass('cd-watchSectionLink')

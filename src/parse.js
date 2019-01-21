@@ -842,6 +842,7 @@ export default function parse(keepedData) {
 
   cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
 
+  // This promise is used in Section constructor.
   cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics(keepedData);
 
   cd.env.currentSectionId = 0;

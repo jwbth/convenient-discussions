@@ -99,6 +99,12 @@ export default class MsgForm {
       return;
     }
 
+    if (this.target instanceof Section) {
+      this.targetSection = this.target;
+    } else if (this.target instanceof Msg) {
+      this.targetSection = this.target.section;
+    }
+
     this.summaryAltered = false;
     const defaultSummaryComponents = {
       section: sectionHeading ? `/* ${sectionHeading} */ ` : '',
@@ -431,13 +437,18 @@ export default class MsgForm {
       align: 'inline',
     });
 
+    const watchTopicCheckboxLabel = this.targetSection && this.targetSection.level <= 2 ||
+        this.mode === 'addSection' ?
+      'Следить за темой' :
+      'Следить за подразделом';
+
     this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
       value: 'watchTopic',
       selected: this.mode !== 'edit' || this.targetMsg.section.isWatched,
       tabIndex: String(this.id) + '22',
     });
     this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
-      label: 'Следить за темой',
+      label: watchTopicCheckboxLabel,
       align: 'inline',
     });
 
@@ -1004,14 +1015,6 @@ export default class MsgForm {
           }
         }
       }
-    }
-  }
-
-  getTargetSection() {
-    if (this.target instanceof Section) {
-      return this.target;
-    } else if (this.target instanceof Msg) {
-      return this.target.section;
     }
   }
 
@@ -1765,7 +1768,7 @@ export default class MsgForm {
       let justWatchedTopic;
       let justUnwatchedTopic;
       if (this.watchTopicCheckbox.isSelected()) {
-        const section = this.getTargetSection();
+        const section = this.targetSection;
         if (section && !section.isWatched) {
           section.watch(true);
           justWatchedTopic = section.heading;
@@ -1777,7 +1780,7 @@ export default class MsgForm {
         }
 
       } else {
-        const section = this.getTargetSection();
+        const section = this.targetSection;
         if (section && section.isWatched) {
           section.unwatch(true);
           justUnwatchedTopic = section.heading;
@@ -1895,7 +1898,7 @@ export default class MsgForm {
   cancel() {
     let confirmation = true;
     if (this.isAltered()) {
-      confirmation = confirm('Вы действительно хотите закрыть форму? Введённый текст будет потерян.');
+      confirmation = confirm('Вы действительно хотите закрыть форму? Внесённые изменения будет потеряны.');
     }
     if (!confirmation) {
       this.textarea.focus();
