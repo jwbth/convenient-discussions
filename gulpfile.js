@@ -25,7 +25,7 @@ function bundle(b) {
     .pipe(gulpif(release, uglify({
       mangle: false,
       output: {
-        ascii_only: true,
+        ascii_only: true,  // Messes with \x01 \x02 \x03 \x04
       },
     })))
     .pipe(gulp.dest('dist'));

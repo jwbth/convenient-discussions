@@ -119,67 +119,69 @@ export default async function msgLinks() {
         destination.parentElement.insertBefore(wrapper, destination.nextSibling);
       }
 
-      let interestingOnly = false;
-      if (!$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget .cd-watchlistMenu')
-        .length
-      ) {
-        const $menu = $('<div>').addClass('cd-watchlistMenu');
-        if (blueIconsPresent) {
-          // Item grouping switched on
-          const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
+      mw.hook('structuredChangeFilters.ui.initialized').add(() => {
+        let interestingOnly = false;
+        if (!$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget .cd-watchlistMenu')
+          .length
+        ) {
+          const $menu = $('<div>').addClass('cd-watchlistMenu');
+          if (blueIconsPresent) {
+            // Item grouping switched on
+            const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
 
-          $('<a>')
-            .addClass('cd-watchlistMenu-switchInteresting')
-            .attr('title', 'Показать только сообщения в темах, за которыми я слежу, и адресованные мне')
-            .click(function () {
-              // This is for many watchlist types at once.
-              const $collapsibles = $content
-                .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
-              const $lines = $content.find('.mw-changeslist-line:not(.mw-collapsible)');
-              if (!interestingOnly) {  // Show interesting only
-                $collapsibles
-                  .not('.mw-collapsed')
-                  .find('.mw-enhancedchanges-arrow')
-                  .click();
-                $collapsibles
-                  .has('.cd-rcMsgLink-interesting')
-                  .find('.mw-enhancedchanges-arrow')
-                  .click()
-                $collapsibles
-                  .not(':has(.cd-rcMsgLink-interesting)')
-                  .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
-                  .hide();
-                $lines
-                  .not(':has(.cd-rcMsgLink-interesting)')
-                  .hide();
-              } else {  // Show all
-                if (!isEnhanced || !mw.user.options.get('extendwatchlist')) {
+            $('<a>')
+              .addClass('cd-watchlistMenu-switchInteresting')
+              .attr('title', 'Показать только сообщения в темах, за которыми я слежу, и адресованные мне')
+              .click(function () {
+                // This is for many watchlist types at once.
+                const $collapsibles = $content
+                  .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
+                const $lines = $content.find('.mw-changeslist-line:not(.mw-collapsible)');
+                if (!interestingOnly) {  // Show interesting only
+                  $collapsibles
+                    .not('.mw-collapsed')
+                    .find('.mw-enhancedchanges-arrow')
+                    .click();
+                  $collapsibles
+                    .has('.cd-rcMsgLink-interesting')
+                    .find('.mw-enhancedchanges-arrow')
+                    .click()
+                  $collapsibles
+                    .not(':has(.cd-rcMsgLink-interesting)')
+                    .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
+                    .hide();
                   $lines
                     .not(':has(.cd-rcMsgLink-interesting)')
+                    .hide();
+                } else {  // Show all
+                  if (!isEnhanced || !mw.user.options.get('extendwatchlist')) {
+                    $lines
+                      .not(':has(.cd-rcMsgLink-interesting)')
+                      .show();
+                  }
+                  $collapsibles
+                    .not(':has(.cd-rcMsgLink-interesting)')
+                    .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
                     .show();
+                  $collapsibles
+                    .not('.mw-collapsed')
+                    .find('.mw-enhancedchanges-arrow')
+                    .click();
                 }
-                $collapsibles
-                  .not(':has(.cd-rcMsgLink-interesting)')
-                  .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
-                  .show();
-                $collapsibles
-                  .not('.mw-collapsed')
-                  .find('.mw-enhancedchanges-arrow')
-                  .click();
-              }
-              interestingOnly = !interestingOnly;
-            })
+                interestingOnly = !interestingOnly;
+              })
+              .appendTo($menu);
+          }
+          $('<a>')
+            .addClass('cd-watchlistMenu-editWatchedTopics')
+            .attr('title', 'Редактировать темы, за которыми я слежу')
+            .click(cd.env.editWatchedTopics)
             .appendTo($menu);
-        }
-        $('<a>')
-          .addClass('cd-watchlistMenu-editWatchedTopics')
-          .attr('title', 'Редактировать темы, за которыми я слежу')
-          .click(cd.env.editWatchedTopics)
-          .appendTo($menu);
 
-        $content.find('.wlinfo').append($menu);  // Old watchlist
-        $content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
-      }
+          $content.find('.wlinfo').append($menu);  // Old watchlist
+          $content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
+        }
+      });
     }
 
     if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {

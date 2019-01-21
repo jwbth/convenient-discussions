@@ -847,6 +847,35 @@ export default {
     let pageTitleToId;
     let topics;
 
+    const setWatchedTopicsAndClose = async function setWatchedTopicsAndClose(watchedTopics) {
+      try {
+        await cd.env.setWatchedTopics(watchedTopics);
+        editWatchedTopicsDialog.popPending();
+        editWatchedTopicsDialog.close();
+      } catch (e) {
+        let errorType;
+        let data;
+        if ($.isArray(e)) {
+          [errorType, data] = e;
+        } else {
+          console.error(e);
+        }
+        if (errorType === 'internal' && data === 'sizelimit') {
+          editWatchedTopicsDialog.showErrors(new OO.ui.Error(
+            'Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Уменьшите размер списка, чтобы это исправить.',
+            true
+          ));
+        } else {
+          editWatchedTopicsDialog.showErrors(new OO.ui.Error(
+            `Возникли проблемы при обработке списка тем: ${errorType}/${data}`,
+            true
+          ));
+        }
+        console.log(errorType, data);
+        editWatchedTopicsDialog.popPending();
+      }
+    };
+
     const queryPageProperties = async function queryPageProperties(property, pageidOrTitleSet) {
       const queryOptions = {
         action: 'query',
@@ -946,32 +975,7 @@ export default {
               }
             }
 
-            try {
-              await cd.env.setWatchedTopics(newWatchedTopics);
-              editWatchedTopicsDialog.popPending();
-              editWatchedTopicsDialog.close();
-            } catch (e) {
-              let errorType;
-              let data;
-              if ($.isArray(e)) {
-                [errorType, data] = e;
-              } else {
-                console.error(e);
-              }
-              if (errorType === 'internal' && data === 'sizelimit') {
-                editWatchedTopicsDialog.showErrors(new OO.ui.Error(
-                  'Не удалось обновить настройки: размер списка отслеживаемых тем превышает максимально допустимый. Уменьшите размер списка, чтобы это исправить.',
-                  true
-                ));
-              } else {
-                editWatchedTopicsDialog.showErrors(new OO.ui.Error(
-                  `Возникли проблемы при обработке списка тем: ${errorType}/${data}`,
-                  true
-                ));
-              }
-              console.log(errorType, data);
-              editWatchedTopicsDialog.popPending();
-            }
+            setWatchedTopicsAndClose(newWatchedTopics);
           }
         };
       }
@@ -1087,7 +1091,7 @@ export default {
           if (nextTitles !== '') {
             queryPageProperties('pageids', nextTitles);
           } else {
-            dialog.popPending();
+            setWatchedTopicsAndClose({});
           }
         });
       }
