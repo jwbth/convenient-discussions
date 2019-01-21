@@ -24,6 +24,9 @@ function bundle(b) {
     .pipe(buffer())
     .pipe(gulpif(release, uglify({
       mangle: false,
+      output: {
+        ascii_only: true,
+      },
     })))
     .pipe(gulp.dest('dist'));
 }

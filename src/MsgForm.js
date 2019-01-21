@@ -851,7 +851,7 @@ export default class MsgForm {
               {
                 pre: text.replace(/\+.+$/, ''),
                 peri: '',
-                post: displayedText.includes('+') ? text.replace(/^.+?\+/, '') : '',
+                post: text.includes('+') ? text.replace(/^.+?\+/, '') : '',
               }
             );
           })
