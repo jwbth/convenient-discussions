@@ -479,7 +479,7 @@ export default {
     ) {
       e.preventDefault();
 
-      const msgForm = cd.env.lastActiveMsgForm;
+      const msgForm = cd.lastActiveMsgForm;
       if (!msgForm) return;
 
       const selectionText = window.getSelection().toString();

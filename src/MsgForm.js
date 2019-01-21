@@ -344,7 +344,8 @@ export default class MsgForm {
     const textReactions = [
       {
         pattern: /~~\~/,
-        message: 'Вводить <kbd>~~\~~</kbd> не нужно — подпись подставится автоматически.',
+        // Minifier eats "~~\~~" and "'~~' + '~~'"!
+        message: 'Вводить <kbd>~~'.concat('~~</kbd> не нужно — подпись подставится автоматически.'),
         icon: 'notice',
         class: 'sigNotNeeded',
       },
@@ -365,7 +366,7 @@ export default class MsgForm {
       },
     ];
 
-    let rowNumber = 5;
+    let rowNumber = this.mode === 'addSection' ? 8 : 5;
     if ($.client.profile().name === 'firefox') {
       rowNumber--;
     }
@@ -846,10 +847,11 @@ export default class MsgForm {
           .click((e) => {
             e.preventDefault();
             this.textarea.$input.textSelection(
-              'encapsulateSelection', {
+              'encapsulateSelection',
+              {
                 pre: text.replace(/\+.+$/, ''),
                 peri: '',
-                post: text.replace(/^.+?\+/, ''),
+                post: displayedText.includes('+') ? text.replace(/^.+?\+/, '') : '',
               }
             );
           })
@@ -908,29 +910,31 @@ export default class MsgForm {
       }, this.getTargetMsg(true));
     };
 
-    if (mode !== 'edit' && this.target) {  // 'reply', 'replyInSection' or 'addSubsection'
+    if (mode !== 'edit') {  // 'reply', 'replyInSection' or 'addSubsection'
       this.originalText = '';
       if (this.headingInput) {
         this.originalHeadingText = '';
       }
 
-      // This is for test if the message exists.
-      this.target.loadCode()
-        .fail((e) => {
-          let errorType;
-          let data;
-          if ($.isArray(e)) {
-            [errorType, data] = e;
-          } else {
-            console.error(e);
-          }
-          cd.env.genericErrorHandler.call(this, {
-            errorType,
-            data,
-            retryFunc: retryLoad,
-            message: 'Не удалось загрузить сообщение',
+      if (this.target) {
+        // This is for test if the message exists.
+        this.target.loadCode()
+          .fail((e) => {
+            let errorType;
+            let data;
+            if ($.isArray(e)) {
+              [errorType, data] = e;
+            } else {
+              console.error(e);
+            }
+            cd.env.genericErrorHandler.call(this, {
+              errorType,
+              data,
+              retryFunc: retryLoad,
+              message: 'Не удалось загрузить сообщение',
+            });
           });
-        });
+      }
     } else if (mode === 'edit') {
       this.setPending(true, true);
 
@@ -1980,6 +1984,12 @@ export default class MsgForm {
     }
     if (this.target) {
       delete this.target[this::modeToProperty(this.mode) + 'Form'];
+    }
+    if (cd.lastActiveMsgForm === this) {
+      cd.lastActiveMsgForm = null;
+    }
+    if (this.mode === 'addSection') {
+      cd.env.addSectionForm = null;
     }
   }
 

@@ -1,4 +1,4 @@
-export default function msgLinks() {
+export default async function msgLinks() {
   async function addMsgLinks($content) {
     // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
     // wikipage.content for the second time with an element that is not in the DOM,
@@ -402,6 +402,8 @@ export default function msgLinks() {
   mw.hook('wikipage.content').add(addMsgLinks);
 
   if (mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search)) {
+    const watchedTopics = await cd.env.getWatchedTopics();
+
     mw.hook('cd.pageReady').add(function () {
       const timezone = mw.user.options.get('timecorrection');
       const timezoneParts = timezone && timezone.split('|');

@@ -32,15 +32,16 @@ export default function parse(keepedData) {
   // We fill the settings after the modules are loaded so that user settings had more chance
   // to load.
   cd.defaultSettings = {
+    additionalInsertButtons: [],
     allowEditOthersMsgs: false,
     alwaysExpandSettings: false,
     closerTemplate: '{{\subst:ПИ}}',
     defaultCopyLinkType: 'wikilink',  // 'wikilink', 'link', 'discord'
-    mySig: '~~\~~',
+    // Minifier eats "~~\~~" and "'~~' + '~~'"!
+    mySig: '~~'.concat('~~'),
     slideEffects: true,
     showLoadingOverlay: true,
     showToolbars: true,
-    additionalInsertButtons: [],
   };
 
   // Settings in variables like cdAlowEditOthersMsgs
@@ -125,9 +126,12 @@ export default function parse(keepedData) {
     // Signature contents before the user name – in order to cut it out from the message endings
     // when editing.
     cd.env.CURRENT_USER_SIG_PREFIX_REGEXP = new RegExp(
-      (cd.settings.mySig === cd.defaultSettings.mySig || !cd.settings.mySig.includes('~~\~') ?
+      (cd.settings.mySig === cd.defaultSettings.mySig ||
+          // Minifier eats "~~\~~" and "'~~' + '~~'"!
+          !cd.settings.mySig.includes('~~'.concat('~')) ?
         '' :
-        mw.RegExp.escape(cd.settings.mySig.slice(0, cd.settings.mySig.indexOf('~~\~')))
+        // Minifier eats "~~\~~" and "'~~' + '~~'"!
+        mw.RegExp.escape(cd.settings.mySig.slice(0, cd.settings.mySig.indexOf('~~'.concat('~'))))
       ) +
       mw.RegExp.escape(cd.env.CURRENT_USER_SIG.slice(0, authorInSigMatches.index)) + '$'
     );
@@ -326,8 +330,8 @@ export default function parse(keepedData) {
     },
 
     getLastActiveMsgForm() {
-      if (cd.env.lastActiveMsgForm && cd.env.lastActiveMsgForm.isActive()) {
-        return cd.env.lastActiveMsgForm;
+      if (cd.lastActiveMsgForm && cd.lastActiveMsgForm.isActive()) {
+        return cd.lastActiveMsgForm;
       } else {
         for (let i = cd.msgForms.length - 1; i >= 0; i--) {
           if (cd.msgForms[i].isActive()) {
@@ -338,11 +342,11 @@ export default function parse(keepedData) {
     },
 
     getLastActiveAlteredMsgForm() {
-      if (cd.env.lastActiveMsgForm &&
-        cd.env.lastActiveMsgForm.isActive() &&
-        cd.env.lastActiveMsgForm.isAltered()
+      if (cd.lastActiveMsgForm &&
+        cd.lastActiveMsgForm.isActive() &&
+        cd.lastActiveMsgForm.isAltered()
       ) {
-        return cd.env.lastActiveMsgForm;
+        return cd.lastActiveMsgForm;
       } else {
         for (let i = cd.msgForms.length - 1; i >= 0; i--) {
           if (cd.msgForms[i].isActive() && cd.msgForms[i].isAltered()) {
@@ -911,28 +915,30 @@ export default function parse(keepedData) {
   cd.debug.endTimer(cd.strings.mainCode);
 
   cd.env.addSectionForm = null;
+  let addTopicSelectors = '.ruwiki-addTopicLink a, .ruwiki-addSectionBottom';
   if (cd.env.firstRun) {
-    $('.ruwiki-addTopicLink a, #ca-addsection, .ruwiki-addSectionBottom').click(function (e) {
-      e.preventDefault();
-
-      if (!cd.env.addSectionForm) {
-        cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
-      }
-
-      // Get the height before the animation has started, so that the height is right.
-      const height = cd.env.addSectionForm.$element.height();
-      const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
-
-      if (cd.env.addSectionForm.$element.css('display') === 'none') {
-        cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
-      }
-      if (!willBeInViewport) {
-        cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
-      }
-
-      cd.env.addSectionForm.headingInput.focus();
-    });
+    addTopicSelectors += ', #ca-addsection';
   }
+  $(addTopicSelectors).click(function (e) {
+    e.preventDefault();
+
+    if (!cd.env.addSectionForm) {
+      cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
+    }
+
+    // Get the height before the animation has started, so that the height is right.
+    const height = cd.env.addSectionForm.$element.height();
+    const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
+
+    if (cd.env.addSectionForm.$element.css('display') === 'none') {
+      cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
+    }
+    if (!willBeInViewport) {
+      cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
+    }
+
+    cd.env.addSectionForm.headingInput.focus();
+  });
 
   cd.debug.startTimer(cd.strings.finalCodeAndRendering);
 
@@ -1022,9 +1028,7 @@ export default function parse(keepedData) {
           if (!cd.getLastActiveAlteredMsgForm()) {
             cd.env.reloadPage();
           } else {
-            if (confirm(
-              'На странице имеются неотправленные формы. Перезагрузить страницу всё равно?'
-            )) {
+            if (confirm('На странице имеются неотправленные формы. Перезагрузить страницу всё равно?')) {
               cd.env.reloadPage();
             } else {
               let lastActiveAlteredMsgForm = cd.getLastActiveAlteredMsgForm();

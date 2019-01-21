@@ -22,7 +22,9 @@ function bundle(b) {
     .on('error', notify.onError())
     .pipe(source('cd.js'))
     .pipe(buffer())
-    .pipe(gulpif(release, uglify()))
+    .pipe(gulpif(release, uglify({
+      mangle: false,
+    })))
     .pipe(gulp.dest('dist'));
 }
 
