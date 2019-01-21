@@ -1,10 +1,12 @@
-export default async function msgLinks() {
-  function addMsgLinks($content) {
+export default function msgLinks() {
+  async function addMsgLinks($content) {
     // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
     // wikipage.content for the second time with an element that is not in the DOM,
     // fieldset#mw-watchlist-options
     // (in mw.rcfilters.ui.FormWrapperWidget.prototype.onChangesModelUpdate() function).
     if (!$content.parent().length) return;
+
+    const watchedTopics = await cd.env.getWatchedTopics();
 
     if (mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist') {
       // Man, there are 8 different watchlist modes:
@@ -395,8 +397,6 @@ export default async function msgLinks() {
     cd.env.generateCaseInsensitiveFirstCharPattern(cd.env.CURRENT_USER).replace(/ /g, '[ _]') +
     '[^A-ZА-ЯЁa-zа-яё]'
   );
-
-  const watchedTopics = await cd.env.getWatchedTopics();
 
   // Hook on wikipage.content to make the code work with the watchlist auto-update feature.
   mw.hook('wikipage.content').add(addMsgLinks);
