@@ -1065,7 +1065,11 @@ export default function parse(keepedData) {
       .done((visits) => {
         const thisPageVisits = visits && visits[cd.env.ARTICLE_ID] || [];
         const currentUnixTime = Math.floor($.now() / 1000);
+
+        // TEST. Delete when done
+        cd.env.visits = visits;
         cd.env.thisPageVisits = thisPageVisits;
+
         let firstVisit;
 
         if (thisPageVisits.length) {

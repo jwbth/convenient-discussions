@@ -903,7 +903,7 @@ export default class MsgForm {
 
     // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
     this.$form.focusin(() => {
-      cd.env.lastActiveMsgForm = this;
+      cd.lastActiveMsgForm = this;
     });
 
     const retryLoad = () => {
