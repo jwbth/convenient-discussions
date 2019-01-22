@@ -944,6 +944,26 @@ export default class Section {
     let sectionFound = false;
 
     let searchForSection = ({ checkHeading, checkFirstMsg }) => {
+      if (!checkHeading && !checkFirstMsg) return;
+
+      // The following method is the most risky, so we first make sure there is only one section
+      // with such heading on the page.
+      if (checkHeading && !checkFirstMsg) {
+        let thisHeadingCount = 0;
+        let sectionHeadingsMatches;
+        while (sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedPageCode)) {
+          let thisHeading = sectionHeadingsMatches[3];
+          thisHeading = thisHeading &&
+            cd.env.encodeWikiMarkup(cd.env.cleanSectionHeading(thisHeading));
+
+          if (thisHeading === headingToFind) {
+            thisHeadingCount++;
+            if (thisHeadingCount > 1) return;
+          }
+        }
+        if (!thisHeadingCount) return;
+      }
+
       let sectionHeadingsMatches;
       while (sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedPageCode)) {
         let thisHeading = sectionHeadingsMatches[3];
@@ -1045,16 +1065,12 @@ export default class Section {
       searchForSection({ checkFirstMsg: true });
     }
 
-    /*
     // Second reserve method – by heading only.
     if (!sectionFound) {
       searchForSection({ checkHeading: true });
     }
-    */
 
-    if (!sectionFound) {
-      return;
-    }
+    if (!sectionFound) return;
 
     sectionCode = pageCode.slice(sectionStartPos, sectionEndPos);
     this.inCode = {
