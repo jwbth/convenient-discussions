@@ -946,25 +946,22 @@ export default class Section {
     let searchForSection = ({ checkHeading, checkFirstMsg }) => {
       if (!checkHeading && !checkFirstMsg) return;
 
-      // The following method is the most risky, so we first make sure there is only one section
-      // with such heading on the page.
-      if (checkHeading && !checkFirstMsg) {
-        let thisHeadingCount = 0;
-        let sectionHeadingsMatches;
-        while (sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedPageCode)) {
-          let thisHeading = sectionHeadingsMatches[3];
-          thisHeading = thisHeading &&
-            cd.env.encodeWikiMarkup(cd.env.cleanSectionHeading(thisHeading));
-
-          if (thisHeading === headingToFind) {
-            thisHeadingCount++;
-            if (thisHeadingCount > 1) return;
-          }
-        }
-        if (!thisHeadingCount) return;
-      }
-
+      // The "checkHeading, checkFirstMsg" method is the most risky, so we first make sure there is
+      // only one section with such heading on the page.
+      let thisHeadingCount = 0;
       let sectionHeadingsMatches;
+      while (sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedPageCode)) {
+        let thisHeading = sectionHeadingsMatches[3];
+        thisHeading = thisHeading &&
+          cd.env.encodeWikiMarkup(cd.env.cleanSectionHeading(thisHeading));
+
+        if (thisHeading === headingToFind) {
+          thisHeadingCount++;
+          if (thisHeadingCount > 1) return;
+        }
+      }
+      if (checkHeading && !checkFirstMsg && !thisHeadingCount) return;
+
       while (sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedPageCode)) {
         let thisHeading = sectionHeadingsMatches[3];
         thisHeading = thisHeading &&
@@ -1038,11 +1035,11 @@ export default class Section {
                 continue;
               }
             } else {
-              if (this.msgs && this.msgs[0] || !checkHeading) {
+              if (this.msgs && this.msgs[0] || !checkHeading || thisHeadingCount > 1) {
                 continue;
               } else {
                 // There's no messages neither in the code nor on the webpage, and we checked
-                // heading match, hence, this is it.
+                // heading match and even heading count, hence, this is it.
               }
             }
           }
@@ -1058,7 +1055,10 @@ export default class Section {
       }
     };
 
-    searchForSection({ checkHeading: true, checkFirstMsg: true });
+    searchForSection({
+      checkHeading: true,
+      checkFirstMsg: true,
+    });
 
     // Reserve method – by first message.
     if (!sectionFound) {
