@@ -145,10 +145,10 @@ function main() {
     cd.config.contributionsPage
   ];
   authorSelectorNamespaces.forEach((el) => {
-    authorSelector += `a[href^="/wiki/${encodeURI(el)}"], `;
+    authorSelector += `a[href^="/wiki/${encodeURI(el.replace(/ /g, '_'))}:"], `;
   });
   cd.config.canonicalUserNamespacesWithoutTalk.forEach((el, i) => {
-    authorSelector += `a[href^="/w/index.php?title=${encodeURI(el)}"]`;
+    authorSelector += `a[href^="/w/index.php?title=${encodeURI(el.replace(/ /g, '_'))}:"]`;
     if (i !== cd.config.canonicalUserNamespacesWithoutTalk.length - 1) {
       authorSelector += ', ';
     }
@@ -164,9 +164,10 @@ function main() {
     if (i !== 0) {
       captureAuthorRegexp += '|';
     }
-    captureAuthorRegexp += `${encodeURI(el)}:([^#\\/]+)`;
+    captureAuthorRegexp += `${encodeURI(el.replace(/ /g, '_'))}:([^#\\/]+)`;
   });
-  captureAuthorRegexp += `|${encodeURI(cd.config.contributionsPage)}\\/([^#\\/]+))`;
+  captureAuthorRegexp += `|${encodeURI(cd.config.contributionsPage.replace(/ /g, '_'))}` +
+    `\\/([^#\\/]+))`;
   cd.env.CAPTURE_AUTHOR_REGEXP = new RegExp(captureAuthorRegexp);
 
   // Go
