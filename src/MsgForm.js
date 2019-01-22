@@ -438,20 +438,22 @@ export default class MsgForm {
       align: 'inline',
     });
 
-    const watchTopicCheckboxLabel = this.targetSection && this.targetSection.level <= 2 ||
-        this.mode === 'addSection' ?
-      'Следить за темой' :
-      'Следить за подразделом';
+    if (this.targetSection || this.mode === 'addSection') {
+      const watchTopicCheckboxLabel = this.targetSection && this.targetSection.level <= 2 ||
+          this.mode === 'addSection' ?
+        'Следить за темой' :
+        'Следить за подразделом';
 
-    this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
-      value: 'watchTopic',
-      selected: this.mode !== 'edit' || this.targetMsg.section.isWatched,
-      tabIndex: String(this.id) + '22',
-    });
-    this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
-      label: watchTopicCheckboxLabel,
-      align: 'inline',
-    });
+      this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
+        value: 'watchTopic',
+        selected: this.mode !== 'edit' || this.targetSection.isWatched,
+        tabIndex: String(this.id) + '22',
+      });
+      this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
+        label: watchTopicCheckboxLabel,
+        align: 'inline',
+      });
+    }
 
     if (this.mode !== 'edit' && this.targetMsg) {
       this.pingCheckbox = new OO.ui.CheckboxInputWidget({
@@ -1782,7 +1784,6 @@ export default class MsgForm {
           cd.env.watchTopic(heading, true);
           justWatchedTopic = heading;
         }
-
       } else {
         const section = this.targetSection;
         if (section && section.isWatched) {
