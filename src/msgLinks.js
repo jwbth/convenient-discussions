@@ -119,8 +119,12 @@ export default async function msgLinks() {
         destination.parentElement.insertBefore(wrapper, destination.nextSibling);
       }
 
-      mw.hook('structuredChangeFilters.ui.initialized').add(() => {
+      const addWatchlistMenu = () => {
         let interestingOnly = false;
+        mw.hook('wikipage.content').add(() => {
+          interestingOnly = false;
+        });
+
         if (!$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget .cd-watchlistMenu')
           .length
         ) {
@@ -154,6 +158,7 @@ export default async function msgLinks() {
                     .not(':has(.cd-rcMsgLink-interesting)')
                     .hide();
                 } else {  // Show all
+                  // FIXME: old watchlist (no JS) + ?enhanced=1&urlversion=2
                   if (!isEnhanced || !mw.user.options.get('extendwatchlist')) {
                     $lines
                       .not(':has(.cd-rcMsgLink-interesting)')
@@ -181,7 +186,13 @@ export default async function msgLinks() {
           $content.find('.wlinfo').append($menu);  // Old watchlist
           $content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
         }
-      });
+      };
+
+      if (!mw.user.options.get('wlenhancedfilters-disable')) {
+        mw.hook('structuredChangeFilters.ui.initialized').add(addWatchlistMenu);
+      } else {
+        addWatchlistMenu();
+      }
     }
 
     if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
