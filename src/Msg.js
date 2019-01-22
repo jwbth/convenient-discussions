@@ -1186,7 +1186,7 @@ export default class Msg {
     } while (authorAndDateMatches = authorAndDateRegExp.exec(pageCode));
 
     // Reserve method: by this & previous two dates + authors.
-    if (!bestMatchData.msgStartPos) {
+    if (bestMatchData.msgStartPos === undefined) {
       let fail;
       // Should always find something (otherwise it wouldn't have found anything the previous time
       // and would've exited), so we don't specify exit the second time.
