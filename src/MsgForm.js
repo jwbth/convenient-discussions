@@ -277,7 +277,7 @@ export default class MsgForm {
           }
         }
       } else if (this.mode === 'addSection') {
-        const summaryHeadingText = this.headingInput.getValue().trim();
+        const summaryHeadingText = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
 
         if (summaryHeadingText) {
           const projectedSummary = (`/* ${summaryHeadingText} */ ${this.defaultSummary}`);
@@ -286,7 +286,7 @@ export default class MsgForm {
           }
         }
       } else if (this.mode === 'addSubsection') {
-        const summaryHeadingText = this.headingInput.getValue().trim();
+        const summaryHeadingText = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
 
         if (summaryHeadingText) {
           const projectedSummary = (`${this.defaultSummary}: /* ${summaryHeadingText} */`)
@@ -1564,7 +1564,7 @@ export default class MsgForm {
         action: 'parse',
         text: msgCode,
         title: cd.env.CURRENT_PAGE,
-        summary: cd.env.formSummary(this.summaryInput.getValue().trim()),
+        summary: cd.env.formSummary(this.summaryInput.getValue()),
         prop: 'text',
         pst: '',
         disablelimitreport: '',
@@ -1800,7 +1800,7 @@ export default class MsgForm {
         const data = await new mw.Api().postWithToken('csrf', {
           action: 'edit',
           title: cd.env.CURRENT_PAGE,
-          summary: cd.env.formSummary(this.summaryInput.getValue().trim()),
+          summary: cd.env.formSummary(this.summaryInput.getValue()),
           text: newPageCode,
           basetimestamp: new Date(result.timestamp).toISOString(),
           starttimestamp: new Date(result.queryTimestamp).toISOString(),
@@ -1998,9 +1998,16 @@ export default class MsgForm {
   }
 
   isAltered() {
-    return (this.originalText !== this.textarea.getValue() ||
+    // Some properties would be undefined in case of the message being edited and its code not
+    // found.
+    return ((this.originalText !== undefined &&
+        this.originalText !== this.textarea.getValue()
+    ) ||
       this.defaultSummary !== this.summaryInput.getValue() ||
-      (this.headingInput && this.originalHeadingText !== this.headingInput.getValue())
+      (this.headingInput &&
+        this.originalHeadingText !== undefined &&
+        this.originalHeadingText !== this.headingInput.getValue()
+      )
     );
   }
 }

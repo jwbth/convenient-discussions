@@ -626,7 +626,7 @@ export default {
         .appendTo(cd.env.$loadingOverlay);
       const $logo = $('<img>')
         .addClass('cd-loadingPopup-logo')
-        .attr('src', cd.config.logoBase64)
+        .attr('src', cd.config.logoDataUrl)
         .appendTo($loadingPopup);
 
       $('body').append(cd.env.$loadingOverlay);
@@ -1258,7 +1258,7 @@ export default {
   },
 
   formSummary(text) {
-    return text + cd.env.SUMMARY_POSTFIX;
+    return text.trim() + cd.env.SUMMARY_POSTFIX;
   },
 
   createTextWithIcon(html, iconName) {

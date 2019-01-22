@@ -1,16 +1,16 @@
 'use strict';
 
-var gulp = require('gulp');
-var browserify = require('browserify');
-var babelify = require('babelify');
-var watchify = require('watchify');
-var source = require('vinyl-source-stream');
-var buffer = require('vinyl-buffer');
-var notify = require('gulp-notify');
-var moment = require('moment');
-var gulpif = require('gulp-if');
-var uglify = require('gulp-uglify');
-var argv = require('yargs').argv;
+const gulp = require('gulp');
+const browserify = require('browserify');
+const babelify = require('babelify');
+const watchify = require('watchify');
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
+const notify = require('gulp-notify');
+const moment = require('moment');
+const gulpif = require('gulp-if');
+const uglify = require('gulp-uglify');
+const argv = require('yargs').argv;
 
 function now() {
   return moment().format('HH:mm:ss');
