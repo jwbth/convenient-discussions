@@ -783,6 +783,7 @@ export default class MsgForm {
         );
 
         this.$element.find('.group-insert').remove();
+        this.$element.find('.option[rel="heading-2"]').remove();
 
         if (cd.env.IS_RUWIKI) {
           this.textarea.$input.wikiEditor('addToToolbar', {

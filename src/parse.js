@@ -920,6 +920,8 @@ export default function parse(keepedData) {
     addTopicSelectors += ', #ca-addsection';
   }
   $(addTopicSelectors).click(function (e) {
+    if (/[?&]preload=/.test($(this).attr('href'))) return;
+
     e.preventDefault();
 
     if (!cd.env.addSectionForm) {
