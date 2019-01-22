@@ -768,7 +768,7 @@ export default class MsgForm {
       this.$element.insertAfter($last);
     }
 
-    if (this.mode === 'addSection' || cd.settings.showToolbars) {
+    if (cd.settings.showToolbars) {
       const modules = ['ext.wikiEditor'];
       if (cd.env.IS_RUWIKI) {
         modules.push('ext.gadget.wikificator');
@@ -1770,32 +1770,30 @@ export default class MsgForm {
         return;
       }
 
-      let keepedData = {};
-      let justWatchedTopic;
-      let justUnwatchedTopic;
-      if (this.watchTopicCheckbox.isSelected()) {
-        const section = this.targetSection;
-        if (section && !section.isWatched) {
-          section.watch(true);
-          justWatchedTopic = section.heading;
-        }
-        if (this.mode === 'addSection') {
-          const heading = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
-          cd.env.watchTopic(heading, true);
-          justWatchedTopic = heading;
-        }
-      } else {
-        const section = this.targetSection;
-        if (section && section.isWatched) {
-          section.unwatch(true);
-          justUnwatchedTopic = section.heading;
-        }
-      }
       // That's a hack used when we pass in keepedData a name of a topic that was set to be
       // watched/unwatched via a checkbox in a form just sent. The server doesn't manage to update
       // the value so quickly, so it returns the old value, but we must display the new one.
-      keepedData.justWatchedTopic = justWatchedTopic;
-      keepedData.justUnwatchedTopic = justUnwatchedTopic;
+      let keepedData = {};
+      if (this.watchTopicCheckbox) {
+        if (this.watchTopicCheckbox.isSelected()) {
+          const section = this.targetSection;
+          if (section && !section.isWatched) {
+            section.watch(true);
+            keepedData.justWatchedTopic = section.heading;
+          }
+          if (this.mode === 'addSection') {
+            const heading = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
+            cd.env.watchTopic(heading, true);
+            keepedData.justWatchedTopic = heading;
+          }
+        } else {
+          const section = this.targetSection;
+          if (section && section.isWatched) {
+            section.unwatch(true);
+            keepedData.justUnwatchedTopic = section.heading;
+          }
+        }
+      }
 
       try {
         const data = await new mw.Api().postWithToken('csrf', {
