@@ -57,14 +57,15 @@ export default {
   packVisits(visits) {
     let visitsString = '';
     for (let key in visits) {
-      visitsString += `${key}, ${visits[key].join(',')}\n`;
+      visitsString += `${key},${visits[key].join(',')}\n`;
     }
     return visitsString.trim();
   },
 
   unpackVisits(visitsString) {
     const visits = {};
-    const regexp = /^(\d+),(.+)$/gm;
+    // " *" fixes a error previously made. Not needed for new sites.
+    const regexp = /^(\d+), *(.+)$/gm;
     let matches;
     while (matches = regexp.exec(visitsString)) {
       visits[matches[1]] = matches[2].split(',');
