@@ -373,7 +373,9 @@ export default async function msgLinks() {
   const isMobile = /Mobi|Android/i.test(navigator.userAgent) ||
     typeof window.orientation !== 'undefined';
 
-  const $aRegularPrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-regular');
+  const $aRegularPrototype = $('<a>')
+    .addClass('cd-rcMsgLink cd-rcMsgLink-regular')
+    .attr('title', 'Ссылка на сообщение');
   const $aInterestingPrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-interesting');
   const $wrapperRegularPrototype = $('<span>')
     .addClass('cd-rcMsgLink-wrapper')
