@@ -474,6 +474,7 @@ export default class Msg {
       if (!element.className.includes('ruwiki-movedTemplate')) {
         element.onmouseenter = this.highlightFocused.bind(this);
         element.onmouseleave = this.unhighlightFocused.bind(this);
+        element.ontouchstart = this.highlightFocused.bind(this);
       }
     }
 
@@ -746,6 +747,7 @@ export default class Msg {
         if (cd.env.CURRENT_SKIN === 'monobook') {
           this.#linksUnderlayer.onmouseenter = this.highlightFocused.bind(this);
           this.#linksUnderlayer.onmouseleave = this.unhighlightFocused.bind(this);
+          this.#linksUnderlayer.ontouchstart = this.highlightFocused.bind(this);
         }
       } else {
         returnValue = {
