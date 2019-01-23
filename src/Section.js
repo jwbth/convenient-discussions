@@ -957,7 +957,7 @@ export default class Section {
 
         if (thisHeading === headingToFind) {
           thisHeadingCount++;
-          if (thisHeadingCount > 1) return;
+          if (!checkFirstMsg && thisHeadingCount > 1) return;
         }
       }
       if (checkHeading && !checkFirstMsg && !thisHeadingCount) return;
