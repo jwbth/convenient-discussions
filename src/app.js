@@ -145,10 +145,10 @@ function main() {
     cd.config.contributionsPage
   ];
   authorSelectorNamespaces.forEach((el) => {
-    authorSelector += `a[href^="/wiki/${encodeURI(el.replace(/ /g, '_'))}:"], `;
+    authorSelector += `a[href^="/wiki/${encodeURI(el.replace(/ /g, '_'))}"], `;
   });
   cd.config.canonicalUserNamespacesWithoutTalk.forEach((el, i) => {
-    authorSelector += `a[href^="/w/index.php?title=${encodeURI(el.replace(/ /g, '_'))}:"]`;
+    authorSelector += `a[href^="/w/index.php?title=${encodeURI(el.replace(/ /g, '_'))}"]`;
     if (i !== cd.config.canonicalUserNamespacesWithoutTalk.length - 1) {
       authorSelector += ', ';
     }
