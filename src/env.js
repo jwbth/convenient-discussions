@@ -606,7 +606,7 @@ export default {
       if (!cd.env.$nextButton.hasClass('cd-updatePanel-nextButton-digit')) {
         cd.env.$nextButton
           .addClass('cd-updatePanel-nextButton-digit')
-          .attr('title', 'Перейти к первому сообщению, которое вы ещё не видели');
+          .attr('title', 'Перейти к первому непросмотренному сообщению');
 
       }
       cd.env.$nextButton.text(cd.env.newestCount);

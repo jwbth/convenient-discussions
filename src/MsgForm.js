@@ -441,7 +441,7 @@ export default class MsgForm {
     });
 
     if (this.targetSection || this.mode === 'addSection') {
-      const watchTopicCheckboxLabel = this.mode !== 'addSubection' &&
+      const watchTopicCheckboxLabel = this.mode !== 'addSubsection' &&
           (this.targetSection && this.targetSection.level <= 2 ||
             this.mode === 'addSection'
           ) ?
