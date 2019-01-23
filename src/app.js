@@ -200,7 +200,11 @@ function main() {
     cd.env.addCSS(`
       .cd-linksUnderlayer-gradient {
         background-image: linear-gradient(to left, ${cd.env.UNDERLAYER_FOCUSED_BGCOLOR},
-        ${underlayerFocusedGradientToColor} + ');
+        ${underlayerFocusedGradientToColor});
+      }
+
+      .cd-msgForm-noIndentation.cd-msgForm-noIndentation.cd-msgForm-noIndentation {
+        background-color: ${bodyBgcolor};
       }
 
       .cd-closeButton {

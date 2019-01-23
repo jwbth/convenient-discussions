@@ -155,7 +155,9 @@ export default class MsgForm {
 
     const generateDefaultSummaryDescription = () => {
       if (this.mode === 'edit' && this.target.isOpeningSection) {
-        defaultSummaryComponents.section = `/* ${this.headingInput.getValue()} */ `;
+        defaultSummaryComponents.section = (
+          `/* ${cd.env.cleanSectionHeading(this.headingInput.getValue())} */ `
+        );
       }
 
       if (this.mode === 'reply') {
@@ -277,7 +279,7 @@ export default class MsgForm {
           }
         }
       } else if (this.mode === 'addSection') {
-        const summaryHeadingText = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
+        const summaryHeadingText = cd.env.cleanSectionHeading(this.headingInput.getValue());
 
         if (summaryHeadingText) {
           const projectedSummary = (`/* ${summaryHeadingText} */ ${this.defaultSummary}`);
@@ -286,7 +288,7 @@ export default class MsgForm {
           }
         }
       } else if (this.mode === 'addSubsection') {
-        const summaryHeadingText = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
+        const summaryHeadingText = cd.env.cleanSectionHeading(this.headingInput.getValue());
 
         if (summaryHeadingText) {
           const projectedSummary = (`${this.defaultSummary}: /* ${summaryHeadingText} */`)
@@ -439,8 +441,10 @@ export default class MsgForm {
     });
 
     if (this.targetSection || this.mode === 'addSection') {
-      const watchTopicCheckboxLabel = this.targetSection && this.targetSection.level <= 2 ||
-          this.mode === 'addSection' ?
+      const watchTopicCheckboxLabel = this.mode !== 'addSubection' &&
+          (this.targetSection && this.targetSection.level <= 2 ||
+            this.mode === 'addSection'
+          ) ?
         'Следить за темой' :
         'Следить за подразделом';
 
@@ -1510,7 +1514,8 @@ export default class MsgForm {
           }
 
           let tempSectionCode = sectionCode;
-          for (let msgCount = 0; msgCount < 2; msgCount++) {
+          let msgCount;
+          for (msgCount = 0; msgCount < 2; msgCount++) {
             const [firstMsgMatch, firstMsgInitialPos] = cd.env.findFirstMsg(tempSectionCode);
             if (!firstMsgMatch) break;
             tempSectionCode = tempSectionCode.slice(firstMsgInitialPos + firstMsgMatch[0].length);
