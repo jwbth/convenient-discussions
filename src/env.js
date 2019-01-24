@@ -705,20 +705,12 @@ export default {
   },
 
   getVisits() {
-    if (cd.env.firstRun) {
-      if (mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) !== null) {
-        const visits = cd.env.unpackVisits(lzString.decompressFromEncodedURIComponent(
-          mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME)
-        ));
-
-        return $.Deferred().resolve(visits).promise();
-      } else {
-        return $.Deferred().resolve(
-          localStorage[cd.env.VISITS_OPTION_NAME] ?
-            JSON.parse(localStorage[cd.env.VISITS_OPTION_NAME]) :
-            {}
-        ).promise();
-      }
+    if (cd.env.firstRun && mw.user.options.get('userjs-' + cd.env.VISITS_OPTION_NAME) === null) {
+      return $.Deferred().resolve(
+        localStorage[cd.env.VISITS_OPTION_NAME] ?
+          JSON.parse(localStorage[cd.env.VISITS_OPTION_NAME]) :
+          {}
+      ).promise();
     } else {
       // cd.env.optionsRequest is used to keep the promise in order to load options only once when
       // reloading page in reloadPage().
@@ -753,16 +745,10 @@ export default {
 
   getWatchedTopics(keepedData) {
     let promise;
-    if (cd.env.firstRun) {
-      if (mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) !== null) {
-        const watchedTopics = cd.env.unpackWatchedTopics(lzString.decompressFromEncodedURIComponent(
-          mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME)
-        ));
-
-        promise = $.Deferred().resolve(watchedTopics).promise();
-      } else {
-        promise = $.Deferred().resolve({}).promise();
-      }
+    if (cd.env.firstRun &&
+      mw.user.options.get('userjs-' + cd.env.WATCHED_TOPICS_OPTION_NAME) === null
+    ) {
+      promise = $.Deferred().resolve({}).promise();
     } else {
       // cd.env.optionsRequest is used to keep the promise in order to load options only once when
       // reloading page in reloadPage().

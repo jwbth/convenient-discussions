@@ -632,6 +632,17 @@ export default function parse(keepedData) {
 
   cd.debug.startTimer(cd.strings.mainCode);
 
+  cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
+
+  // This promise is used in Section constructor.
+  cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics(keepedData);
+
+  // This promise is used below.
+  let getVisitsPromise;
+  if (!cd.env.EVERYTHING_MUST_BE_FROZEN && !mw.util.getParamValue('diff')) {
+    getVisitsPromise = cd.env.getVisits();
+  }
+
   cd.env.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
   cd.env.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 
@@ -843,11 +854,6 @@ export default function parse(keepedData) {
   }
 
   mw.hook('cd.msgsReady').fire(cd.msgs);
-
-  cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
-
-  // This promise is used in Section constructor.
-  cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics(keepedData);
 
   cd.env.currentSectionId = 0;
   const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
@@ -1061,7 +1067,7 @@ export default function parse(keepedData) {
       cd.env.$prevButton.hide();
     }
 
-    cd.env.getVisits()
+    getVisitsPromise
       .done((visits) => {
         const thisPageVisits = visits && visits[cd.env.ARTICLE_ID] || [];
         const currentUnixTime = Math.floor($.now() / 1000);
