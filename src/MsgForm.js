@@ -847,7 +847,7 @@ export default class MsgForm {
         .insertAfter(this.textarea.$element);
 
       const addInsertButton = (text, displayedText = text) => {
-        $('<a>')
+        const $a = $('<a>')
           .attr('href', 'javascript:')
           .text(displayedText.replace(/\+/, ''))
           .addClass('cd-insertButtons-item')
@@ -862,7 +862,7 @@ export default class MsgForm {
               }
             );
           })
-          .appendTo($insertButtons);
+        $insertButtons.append($a, ' ');
       };
 
       let insertButtons = cd.config.insertButtons;

@@ -246,7 +246,7 @@ export default class Msg {
       if (!currentText.includes(dateOrAuthor)) {
         parts.push(current);
       // Move on.
-      // * !steppedBack is needed so that the second reply in a row with the same date wasn't
+      // * !steppedBack is needed so that the second reply in a row with the same date isn't
       //   considered the same reply.
       // * current.tagName === 'DIV' is needed for cases like
       //   [[Википедия:Форум/Технический#We need your feedback to improve Lua functions]] where
@@ -643,7 +643,11 @@ export default class Msg {
     };
   }
 
-  configureUnderlayer(returnResult = false) {
+  // doSet — add underlayer (in case it was unexistent) or change underlayer parameters (in case it
+  //   it misplaced)
+  // returnWhat (undefined, 'isMisplaced', 'underlayers') — return nothing, if the underlayer was
+  //   misplaced, or underlayers
+  configureUnderlayer(doSet = true, returnWhat) {
     const elements = this.elements;
     const rectTop = this::getFirstElementRect();
     const rectBottom = elements.length === 1 ?
@@ -738,8 +742,7 @@ export default class Msg {
         }
       }
 
-      let returnValue;
-      if (!returnResult) {
+      if (doSet) {
         cd.env.underlayersContainer.appendChild(this.#underlayer);
         cd.env.linksUnderlayersContainer.appendChild(this.#linksUnderlayer);
 
@@ -749,11 +752,6 @@ export default class Msg {
           this.#linksUnderlayer.onmouseleave = this.unhighlightFocused.bind(this);
           this.#linksUnderlayer.ontouchstart = this.highlightFocused.bind(this);
         }
-      } else {
-        returnValue = {
-          underlayer: this.#underlayer,
-          linksUnderlayer: this.#linksUnderlayer,
-        };
       }
 
       this.$underlayer = $(this.#underlayer);
@@ -761,7 +759,14 @@ export default class Msg {
       this.$linksUnderlayer_text = $(this.#linksUnderlayer_text);
       this.$linksUnderlayer_gradient = $(this.#linksUnderlayer_gradient);
 
-      return returnValue || false;
+      if (returnWhat === 'underlayers') {
+        return {
+          underlayer: this.#underlayer,
+          linksUnderlayer: this.#linksUnderlayer,
+        };
+      } else if (returnWhat === 'isMisplaced') {
+        return false;
+      }
     } else if (underlayerMisplaced) {
       cd.debug.startTimer('underlayer misplaced');
 
@@ -774,7 +779,7 @@ export default class Msg {
       this.#linksUnderlayerTop = positions.linksUnderlayerTop;
       this.#linksUnderlayerLeft = positions.linksUnderlayerLeft;
 
-      if (!returnResult) {
+      if (doSet) {
         this.#underlayer.style.top = this.#underlayerTop + 'px';
         this.#underlayer.style.left = this.#underlayerLeft + 'px';
         this.#underlayer.style.width = this.#underlayerWidth + 'px';
@@ -784,33 +789,28 @@ export default class Msg {
         this.#linksUnderlayer.style.left = this.#linksUnderlayerLeft + 'px';
         this.#linksUnderlayer.style.width = this.#underlayerWidth + 'px';
         this.#linksUnderlayer.style.height = this.#underlayerHeight + 'px';
-
-        cd.debug.resetTimer('underlayer misplaced');
-
-        return true;
-      } else {
-        cd.debug.resetTimer('underlayer misplaced');
-
-        // This wasn't used anywhere.
-        return {
-          underlayer: {
-            top: this.#underlayerTop,
-            left: this.#underlayerLeft,
-            width: this.#underlayerWidth,
-            height: this.#underlayerHeight,
-          },
-          linksUnderlayer: {
-            top: this.#linksUnderlayerTop,
-            left: this.#linksUnderlayerLeft,
-            width: this.#underlayerWidth,
-            height: this.#underlayerHeight,
-          },
-        };
       }
 
-      return true;
+      cd.debug.resetTimer('underlayer misplaced');
+
+      if (returnWhat === 'underlayers') {
+        // This wasn't used anywhere.
+        return {
+          underlayer: this.#underlayer,
+          linksUnderlayer: this.#linksUnderlayer,
+        };
+      } else if (returnWhat === 'isMisplaced') {
+        return true;
+      }
     } else {
-      return false;
+      if (returnWhat === 'underlayers') {
+        return {
+          underlayer: this.#underlayer,
+          linksUnderlayer: this.#linksUnderlayer,
+        };
+      } else if (returnWhat === 'isMisplaced') {
+        return false;
+      }
     }
   }
 
@@ -830,9 +830,9 @@ export default class Msg {
   highlightFocused() {
     if (cd.env.recalculateUnderlayersTimeout) return;
 
-    let misplaced = !!this.configureUnderlayer();
+    const isMisplaced = !!this.configureUnderlayer(true, 'isMisplaced');
 
-    if (!misplaced) {
+    if (!isMisplaced) {
       this.#underlayer.classList.add('cd-underlayer-focused');
       this.#linksUnderlayer.classList.add('cd-linksUnderlayer-focused');
 
@@ -1304,20 +1304,21 @@ export default class Msg {
       bestMatchData.newSigLastPart = bestMatchData.sigLastPart.replace(/<\/small>[  \t]*$/, '');
     }
 
-    // If the message contains several indentation character sets for different lines, then use
+    // If a message contains several indentation character sets for different lines, then use
     // different sets depending on the mode (edit/reply).
     let replyIndentationCharacters = indentationCharacters;
     if (!this.isOpeningSection) {
-      const otherIndentationCharactersMatch = msgCode.match(/\n([:\*#]*[:\*]).*$/);
-      if (otherIndentationCharactersMatch) {
-        if (otherIndentationCharactersMatch[1].length <= indentationCharacters.length) {
+      const lastIndentationCharactersMatch = msgCode.match(/\n([:*#]*[:*]).*$/);
+      if (lastIndentationCharactersMatch) {
+        replyIndentationCharacters = lastIndentationCharactersMatch[1];
+
+        if (lastIndentationCharactersMatch[1].length <= indentationCharacters.length) {
           const replyMustUseAsterisk = /\*$/.test(indentationCharacters);
-          indentationCharacters = otherIndentationCharactersMatch[1];
+          indentationCharacters = lastIndentationCharactersMatch[1];
           if (replyMustUseAsterisk) {
             indentationCharacters = indentationCharacters.replace(/:$/, '*');
           }
         }
-        replyIndentationCharacters = otherIndentationCharactersMatch[1];
       }
     }
     replyIndentationCharacters += '*';

@@ -627,22 +627,26 @@ export default function parse(keepedData) {
 
   /* Main code */
 
-  // Here and below vanilla JavaScript is used for recurring operations that together take up a lot
-  // of time.
-
   cd.debug.startTimer(cd.strings.mainCode);
 
   cd.env.ARTICLE_ID = mw.config.get('wgArticleId');
 
+  if (!cd.env.optionsRequest) {
+    cd.env.optionsRequest = cd.env.requestOptions();
+  }
+
   // This promise is used in Section constructor.
   cd.env.getWatchedTopicsPromise = cd.env.getWatchedTopics(keepedData);
 
-  // This promise is used below.
   let getVisitsPromise;
   if (!cd.env.EVERYTHING_MUST_BE_FROZEN && !mw.util.getParamValue('diff')) {
     getVisitsPromise = cd.env.getVisits();
   }
 
+  cd.env.optionsRequest = null;
+
+  // Here and below vanilla JavaScript is used for recurring operations that together take up a lot
+  // of time.
   cd.env.closedDiscussions = cd.env.$content.find('.ruwiki-closedDiscussion').get();
   cd.env.pageHasOutdents = !!cd.env.$content.find('.outdent-template').length;
 
@@ -1009,10 +1013,11 @@ export default function parse(keepedData) {
     if ($targetMsg.length) {
       const msg = cd.getMsgByAnchor(msgAnchor);
       if (msg) {
-        // setTimeout is for Firefox – otherwise, it positions the underlayer incorrectly.
-        setTimeout((msg) => {
+        // setTimeout for Firefox – for some reason, without it it positions the underlayer
+        // incorrectly.
+        setTimeout(() => {
           msg.scrollToAndHighlightTarget();
-        }, 0, msg);
+        }, 0);
       }
     }
   }
@@ -1116,8 +1121,8 @@ export default function parse(keepedData) {
                 ) {
                   msg.newness = 'newest';
                   cd.env.newestCount++;
-                  // "break" helps to avoid a situation when there are two same memorized messages,
-                  // and they both cause the counter to increment.
+                  // "break" helps to avoid the situation when there are two same memorized
+                  // messages, and they both cause the counter to increment.
                   break;
                 }
               }
@@ -1127,14 +1132,14 @@ export default function parse(keepedData) {
               msgUnixTime > thisPageVisits[thisPageVisits.length - 1] &&
               msg.author !== cd.env.CURRENT_USER
             ) {
-              // Possible collision with the memorized messages.
+              // Possible collision with memorized messages.
               if (msg.newness !== 'newest') {
                 cd.env.newestCount++;
               }
               cd.env.newCount++;
               msg.newness = 'newest';
               msg.seen = false;
-              const underlayerData = msg.configureUnderlayer(true);
+              const underlayerData = msg.configureUnderlayer(true, 'underlayers');
               if (underlayerData) {
                 underlayersToAdd.push(underlayerData);
               }
@@ -1146,7 +1151,7 @@ export default function parse(keepedData) {
                 msg.newness = 'new';
               }
               msg.seen = false;
-              const underlayerData = msg.configureUnderlayer(true);
+              const underlayerData = msg.configureUnderlayer(true, 'underlayers');
               if (underlayerData) {
                 underlayersToAdd.push(underlayerData);
               }
@@ -1216,8 +1221,6 @@ export default function parse(keepedData) {
         console.error('Не удалось загрузить настройки с сервера');
       });
   }
-
-  cd.env.optionsRequest = null;
 
   if (cd.env.firstRun) {
     // mouseover allows to capture when the cursor is not moving but ends up above the element

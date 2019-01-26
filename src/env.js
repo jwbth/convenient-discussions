@@ -547,9 +547,8 @@ export default {
       cd.env.floatingRects[i] = cd.env.floatingElements[i].getBoundingClientRect();
     }
 
-    // We declare variables here for recalculate() function to work.
+    // We declare variables here for the recalculate() function to work.
     let msg;
-    let positions;
     let i;
     let lastI = 0;
     const allKeys = [];
@@ -558,9 +557,9 @@ export default {
       if (!msg.newness && !newOnly && msg.$underlayer && msg.$underlayer.length) {
         msg.removeUnderlayer();
       } else if (msg.newness && !msg.isEdited) {
-        positions = msg.configureUnderlayer(true);
+        const isMisplaced = msg.configureUnderlayer(false, 'isMisplaced');
 
-        if (positions) {
+        if (isMisplaced) {
           allKeys.push(i);
         } else {
           lastI = i;
@@ -699,8 +698,9 @@ export default {
 
           return { visits, watchedTopics };
         },
-        (jqXHR, textStatus, errorThrown) =>
+        (jqXHR, textStatus, errorThrown) => (
           $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
+        )
       );
   },
 
@@ -738,8 +738,9 @@ export default {
             return $.Deferred().reject(['api', 'no success']).promise();
           }
         },
-        (jqXHR, textStatus, errorThrown) =>
+        (jqXHR, textStatus, errorThrown) => (
           $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
+        )
       );
   },
 
@@ -810,8 +811,9 @@ export default {
             return $.Deferred().reject(['api', 'no success']).promise();
           }
         },
-        (jqXHR, textStatus, errorThrown) =>
+        (jqXHR, textStatus, errorThrown) => (
           $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
+        )
       );
   },
 
@@ -1180,11 +1182,11 @@ export default {
 
     if (firstMsgMatch) {
       let nextMatchNumber = 2;
-      for (let i = 0; i < cd.config.sigPatterns; i++) {
+      for (let i = 0; i < cd.config.sigPatterns.length; i++) {
         const captureNames = cd.config.sigPatterns[i][1];
         for (let j = 0; j < captureNames.length; j++, nextMatchNumber++) {
           if (captureNames[j] === 'date') {
-            return match[nextMatchNumber];
+            return firstMsgMatch[nextMatchNumber];
           }
         }
       }
@@ -1480,8 +1482,9 @@ export default {
 
           return text;
         },
-        (jqXHR, textStatus, errorThrown) =>
+        (jqXHR, textStatus, errorThrown) => (
           $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
+        )
       );
 
     // To make the page marked as read in the watchlist.
@@ -1543,8 +1546,9 @@ export default {
 
           return { code, timestamp, redirectTarget, queryTimestamp };
         },
-        (jqXHR, textStatus, errorThrown) =>
+        (jqXHR, textStatus, errorThrown) => (
           $.Deferred().reject(['network', [jqXHR, textStatus, errorThrown]]).promise()
+        )
       );
   },
 
