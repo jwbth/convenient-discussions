@@ -859,6 +859,14 @@ export default function parse(keepedData) {
 
   mw.hook('cd.msgsReady').fire(cd.msgs);
 
+  // If there is no messages, it's probably not a talk page.
+  if (!cd.msgs[0] && cd.env.NAMESPACE_NUMBER % 2 !== 1) {
+    if (cd.settings.showLoadingOverlay !== false) {
+      cd.env.removeLoadingOverlay();
+    }
+    return;
+  }
+
   cd.env.currentSectionId = 0;
   const headingCandidates = cd.env.contentElement.querySelectorAll('h2, h3, h4, h5, h6');
   const headings = [];

@@ -1116,7 +1116,12 @@ export default class Msg {
       msgEndPos = authorAndDateMatches.index;
       msgCode = pageCode.slice(0, msgEndPos);
 
-      const prevMsgInCodeMatch = cd.env.findPrevMsg(msgCode);
+      // Hide contents of quotes
+      const adjustedMsgCode = msgCode.replace(
+        /(<blockquote>|\{\{начало цитаты)([^]*?)(<\/blockquote>|\{\{конец цитаты)/ig,
+        (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3
+      );
+      const prevMsgInCodeMatch = cd.env.findPrevMsg(adjustedMsgCode);
 
       let authorInCode;
       let dateInCode;
@@ -1304,7 +1309,7 @@ export default class Msg {
       bestMatchData.newSigLastPart = bestMatchData.sigLastPart.replace(/<\/small>[  \t]*$/, '');
     }
 
-    // If a message contains several indentation character sets for different lines, then use
+    // If the message contains several indentation character sets for different lines, then use
     // different sets depending on the mode (edit/reply).
     let replyIndentationCharacters = indentationCharacters;
     if (!this.isOpeningSection) {
@@ -1545,6 +1550,8 @@ export default class Msg {
 
   removeUnderlayer() {
     if (!this.#underlayer) return false;
+
+    this.$underlayer.stop(true);
 
     cd.env.underlayers.splice(cd.env.underlayers.indexOf(this.#underlayer), 1);
 
