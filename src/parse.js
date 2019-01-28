@@ -42,6 +42,7 @@ export default function parse(keepedData) {
     slideEffects: true,
     showLoadingOverlay: true,
     showToolbars: true,
+    watchTopicsOnReply: true,
   };
 
   // Settings in variables like cdAlowEditOthersMsgs
@@ -202,115 +203,6 @@ export default function parse(keepedData) {
         currentElement = currentElement.nextElementSibling;
       }
     }
-  }
-
-
-  /* Process the fragment (hash) for topic titles */
-
-  const processFragment = (fragment) => {
-    const dotToPercent = code => code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
-
-    // Some ancient links with dots, you never know
-    fragment = fragment
-      .replace(/(^|[^0-9A-F\.])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/g, '$1$2,$3,$4,$5')  // Hide IP
-      .replace(/\.F[0-4]\.[89AB][\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
-      .replace(/\.E[\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
-      .replace(/\.[CD][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
-      .replace(/\.[2-7][0-9A-F]/g, (code) => {
-        const ch = decodeURIComponent(dotToPercent(code));
-        if ('!"#$%&\'()*+,/;<=>?@\\^`~'.includes(ch)) {
-          return dotToPercent(code);
-        } else {
-          return code;
-        }
-      })
-      .replace(/(^|[^0-9A-F\.])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/g, '$1$2.$3.$4.$5')  // Restore IP
-      .replace(/_/g, ' ');
-
-    try {
-      fragment = decodeURIComponent(fragment);
-    } catch (e) {
-      console.error(e.stack);
-      return;
-    }
-
-    return fragment.trim();
-  };
-
-  const proceedToArchiveDialog = () => {
-    const messageDialog = new OO.ui.MessageDialog();
-    $('body').append(cd.env.windowManager.$element);
-    cd.env.windowManager.addWindows([messageDialog]);
-
-    const proceedToArchiveWindow = cd.env.windowManager.openWindow(messageDialog, {
-      message: $(
-        '<div style="text-align:center;"><p style="margin-top:0;">' +
-        '<span style="color:#c61313;">Тема не найдена.</span> Она могла быть переименована или уйти в архив.' +
-        '</p><p style="font-size:125%;">Поискать в архиве?</p></div>'
-      ),
-      actions: [
-        { label: 'Да', action: 'yes' },
-        { label: 'Нет', action: 'no' },
-      ],
-    });
-    proceedToArchiveWindow.closed.then((data) => {
-      if (data && data.action === 'yes') {
-        const heading = processFragment(fragment).replace(/"/g, '');
-        const PAGE_TITLE = mw.config.get('wgTitle');
-        let archivePrefix;
-        if (PAGE_TITLE.indexOf('Форум/') === 0) {
-          if (PAGE_TITLE.indexOf('Форум/Географический') === 0) {
-            archivePrefix = 'Форум/Географический/Архивы';
-          } else {
-            archivePrefix = 'Форум/Архив/' + PAGE_TITLE.slice(6);
-          }
-        } else {
-          archivePrefix = PAGE_TITLE;
-        };
-        const searchQuery = `"${heading}" prefix:` +
-          mw.config.get('wgFormattedNamespaces')[cd.env.NAMESPACE_NUMBER] + ':' + archivePrefix;
-        const url = mw.util.getUrl('Служебная:Поиск', {
-          profile: 'default',
-          fulltext: 'Search',
-          search: searchQuery,
-        });
-        location.assign(mw.config.get('wgServer') + url);
-      }
-    });
-  };
-
-  const fragment = location.hash.slice(1);
-  let decodedFragment;
-  try {
-    decodedFragment = decodeURIComponent(fragment);
-  } catch (e) {
-    console.error(e.stack);
-  }
-  const escapedFragment = $.escapeSelector(fragment);
-  const escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-  const isMsgFragment = /^\d{12}_.+$/.test(fragment);
-
-  // Except for nomination pages that have no archives
-  if (!window.proceedToArchiveHasRun &&  // So that there weren't two copies
-    fragment &&
-    decodedFragment &&
-    !isMsgFragment &&
-    !cd.env.CURRENT_PAGE.includes('/Архив') &&
-    !/^Википедия:(К удалению|К восстановлению|К переименованию|К объединению|К разделению|К улучшению)\//
-      .test(cd.env.CURRENT_PAGE) &&
-    !mw.util.getParamValue('oldid') &&
-    !mw.util.getParamValue('diff') &&
-    fragment !== 'Преамбула' &&
-    decodedFragment !== 'Преамбула' &&
-    !fragment.startsWith('/media/') &&
-    !$(':target').length &&
-    !$(`a[name="${escapedDecodedFragment}"]`).length &&
-    !$(`*[id="${escapedDecodedFragment}"]`).length &&
-    !$(`a[name="${escapedFragment}"]`).length &&
-    !$(`*[id="${escapedFragment}"]`).length
-  ) {
-    window.proceedToArchiveHasRun = true;
-    proceedToArchiveDialog();
   }
 
 
@@ -987,25 +879,30 @@ export default function parse(keepedData) {
     }
   }
 
+  const fragment = location.hash.slice(1);
+  let decodedFragment;
+  try {
+    decodedFragment = decodeURIComponent(fragment);
+  } catch (e) {
+    console.error(e.stack);
+  }
+  const escapedFragment = $.escapeSelector(fragment);
+  const escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
+  const isMsgFragment = /^\d{12}_.+$/.test(fragment);
+
   let msgAnchor = cd.env.firstRun ?
     isMsgFragment && decodedFragment :
     keepedData && keepedData.anchor;
+  let $targetMsg;
   if (msgAnchor) {
-    let $targetMsg = $(`[id="${$.escapeSelector(msgAnchor)}"]`);
+    $targetMsg = $(`[id="${$.escapeSelector(msgAnchor)}"]`);
+    let correctedMsgAnchor;
     if (cd.env.firstRun && !$targetMsg.length) {  // By a link from the watchlist
-      const msgDataMatches = msgAnchor.match(/^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)_(.+)$/);
-      const year = Number(msgDataMatches[1]);
-      const month = Number(msgDataMatches[2]) - 1;
-      const day = Number(msgDataMatches[3]);
-      const hours = Number(msgDataMatches[4]);
-      const minutes = Number(msgDataMatches[5]);
-      const author = msgDataMatches[6];
-
-      const date = new Date(year, month, day, hours, minutes);
+      const [date, author] = cd.env.getDateAndAuthorFromMsgAnchor(msgAnchor);
 
       for (let gap = 1; gap <= 5; gap++) {
         let dateToFind = new Date(date.getTime() - cd.env.MILLISECONDS_IN_A_MINUTE * gap);
-        msgAnchor = cd.env.generateMsgAnchor(
+        correctedMsgAnchor = cd.env.generateMsgAnchor(
           dateToFind.getFullYear(),
           dateToFind.getMonth(),
           dateToFind.getDate(),
@@ -1013,13 +910,13 @@ export default function parse(keepedData) {
           dateToFind.getMinutes(),
           author
         );
-        $targetMsg = $(`[id="${$.escapeSelector(msgAnchor)}"]`);
+        $targetMsg = $(`[id="${$.escapeSelector(correctedMsgAnchor)}"]`);
         if ($targetMsg.length) break;
       }
     }
 
     if ($targetMsg.length) {
-      const msg = cd.getMsgByAnchor(msgAnchor);
+      const msg = cd.getMsgByAnchor(correctedMsgAnchor || msgAnchor);
       if (msg) {
         // setTimeout for Firefox – for some reason, without it it positions the underlayer
         // incorrectly.
@@ -1030,6 +927,122 @@ export default function parse(keepedData) {
     }
   }
 
+
+  // Process the fragment (hash) for topic titles
+  const processFragment = (fragment) => {
+    const dotToPercent = code => code.replace(/\.([0-9A-F][0-9A-F])/g, '%$1');
+
+    // Some ancient links with dots, you never know
+    fragment = fragment
+      .replace(/(^|[^0-9A-F\.])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/g, '$1$2,$3,$4,$5')  // Hide IP
+      .replace(/\.F[0-4]\.[89AB][\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
+      .replace(/\.E[\dA-F]\.[89AB][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
+      .replace(/\.[CD][\dA-F]\.[89AB][\dA-F]/g, dotToPercent)
+      .replace(/\.[2-7][0-9A-F]/g, (code) => {
+        const ch = decodeURIComponent(dotToPercent(code));
+        if ('!"#$%&\'()*+,/;<=>?@\\^`~'.includes(ch)) {
+          return dotToPercent(code);
+        } else {
+          return code;
+        }
+      })
+      .replace(/(^|[^0-9A-F\.])(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?),(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/g, '$1$2.$3.$4.$5')  // Restore IP
+      .replace(/_/g, ' ');
+
+    try {
+      fragment = decodeURIComponent(fragment);
+    } catch (e) {
+      console.error(e.stack);
+      return;
+    }
+
+    return fragment.trim();
+  };
+
+  const proceedToArchiveDialog = () => {
+    const messageDialog = new OO.ui.MessageDialog();
+    $('body').append(cd.env.windowManager.$element);
+    cd.env.windowManager.addWindows([messageDialog]);
+
+    const notFound = !isMsgFragment ?
+      '<span style="color:#c61313;">Тема не найдена.</span> Она могла быть переименована или уйти в архив.' :
+      '<span style="color:#c61313;">Сообщение не найдено.</span> Оно могло уйти в архив.';
+    const proceedToArchiveWindow = cd.env.windowManager.openWindow(messageDialog, {
+      message: $(
+        '<div style="text-align:center;"><p style="margin-top:0;">' + notFound + '</p>' +
+        '<p style="font-size:125%;">Поискать в архиве?</p></div>'
+      ),
+      actions: [
+        { label: 'Да', action: 'yes' },
+        { label: 'Нет', action: 'no' },
+      ],
+    });
+    proceedToArchiveWindow.closed.then((data) => {
+      if (data && data.action === 'yes') {
+        let text;
+        if (!isMsgFragment) {
+          text = processFragment(fragment).replace(/"/g, '');
+        } else {
+          const [date] = cd.env.getDateAndAuthorFromMsgAnchor(msgAnchor);
+
+          text = cd.env.zeroPad(date.getHours(), 2) + ':' +
+            date.getMinutes() + ', ' +
+            date.getDate() + ' ' +
+            cd.strings.monthNamesGenitive[date.getMonth()] + ' ' +
+            date.getFullYear()
+        }
+        const pageTitle = mw.config.get('wgTitle');
+        let archivePrefix;
+
+        if (pageTitle.indexOf('Форум/') === 0) {
+          if (pageTitle.indexOf('Форум/Географический') === 0) {
+            archivePrefix = 'Форум/Географический/Архивы';
+          } else {
+            archivePrefix = 'Форум/Архив/' + pageTitle.slice(6);
+          }
+        } else {
+          archivePrefix = pageTitle;
+        };
+
+        const searchQuery = `"${text}" prefix:` +
+          mw.config.get('wgFormattedNamespaces')[cd.env.NAMESPACE_NUMBER] + ':' + archivePrefix;
+        const url = mw.util.getUrl('Special:Search', {
+          profile: 'default',
+          fulltext: 'Search',
+          search: searchQuery,
+        });
+        location.assign(mw.config.get('wgServer') + url);
+      }
+    });
+  };
+
+  // Except for nomination pages that have no archives
+  if (!window.proceedToArchiveHasRun &&  // So that there weren't two copies
+    fragment &&
+    decodedFragment &&
+    (!isMsgFragment ||
+      $targetMsg &&
+      !$targetMsg.length
+    ) &&
+    !cd.env.CURRENT_PAGE.includes('/Архив') &&
+    !/^Википедия:(К удалению|К восстановлению|К переименованию|К объединению|К разделению|К улучшению)\//
+      .test(cd.env.CURRENT_PAGE) &&
+    !mw.util.getParamValue('oldid') &&
+    !mw.util.getParamValue('diff') &&
+    fragment !== 'Преамбула' &&
+    decodedFragment !== 'Преамбула' &&
+    !fragment.startsWith('/media/') &&
+    !$(':target').length &&
+    !$(`a[name="${escapedDecodedFragment}"]`).length &&
+    !$(`*[id="${escapedDecodedFragment}"]`).length &&
+    !$(`a[name="${escapedFragment}"]`).length &&
+    !$(`*[id="${escapedFragment}"]`).length
+  ) {
+    window.proceedToArchiveHasRun = true;
+    proceedToArchiveDialog();
+  }
+
+  // New messages highlighting and navigation
   cd.env.lastNewestSeen = 0;
   if (!cd.env.EVERYTHING_MUST_BE_FROZEN && !mw.util.getParamValue('diff')) {
     if (cd.env.firstRun) {

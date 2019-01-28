@@ -368,7 +368,7 @@ export default class MsgForm {
       },
     ];
 
-    let rowNumber = this.mode === 'addSection' ? 8 : 5;
+    let rowNumber = 5;
     if ($.client.profile().name === 'firefox') {
       rowNumber--;
     }
@@ -450,7 +450,9 @@ export default class MsgForm {
 
       this.watchTopicCheckbox = new OO.ui.CheckboxInputWidget({
         value: 'watchTopic',
-        selected: this.mode !== 'edit' || this.targetSection.isWatched,
+        selected: (this.mode !== 'edit' &&
+            cd.settings.watchTopicsOnReply
+          ) || this.targetSection.isWatched,
         tabIndex: String(this.id) + '22',
       });
       this.watchTopicCheckboxField = new OO.ui.FieldLayout(this.watchTopicCheckbox, {
@@ -1232,6 +1234,7 @@ export default class MsgForm {
         if (isTable && !isZeroLevel) {
           makeAllIntoColons = true;
         }
+        // We handle tables separately.
         return (!isTable ? '\x01' : '\x03') + hidden.push(s) + (!isTable ? '\x02' : '\x04');
       });
     };
@@ -1293,7 +1296,7 @@ export default class MsgForm {
       .replace(/^(.*[^\n])\n(?![\n:\*# \x03])(?=(.*))/gm, (s, m1, m2) => {
         return m1 +
           (!/^[:\*# ]/.test(m1) &&
-              !/(?:\x02|\x04|<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>|<\/\w+ ?>)$/.test(m1) &&
+              !/(?:\x02|\x04|<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>|<\/\w+ ?>|=|\])$/.test(m1) &&
               !tagRegExp.test(m2) ?
             '<br>' :
             ''

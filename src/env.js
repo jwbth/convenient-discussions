@@ -136,9 +136,11 @@ export default {
       (timezoneOffset ? timezoneOffset * cd.env.MILLISECONDS_IN_A_MINUTE : 0);
   },
 
-  generateMsgAnchor(year, month, day, hours, minutes, author) {
-    const zeroPad = (n, p) => ('0000' + n).slice(-p);
+  zeroPad(n, p) {
+    return ('0000' + n).slice(-p);
+  },
 
+  generateMsgAnchor(year, month, day, hours, minutes, author) {
     if (year === undefined ||
       month === undefined ||
       day === undefined ||
@@ -149,13 +151,26 @@ export default {
     }
 
     return (
-      zeroPad(year, 4) +
-      zeroPad(month + 1, 2) +
-      zeroPad(day, 2) +
-      zeroPad(hours, 2) +
-      zeroPad(minutes, 2) +
+      cd.env.zeroPad(year, 4) +
+      cd.env.zeroPad(month + 1, 2) +
+      cd.env.zeroPad(day, 2) +
+      cd.env.zeroPad(hours, 2) +
+      cd.env.zeroPad(minutes, 2) +
       (author ? '_' + author.replace(/ /g, '_') : '')
     );
+  },
+
+  getDateAndAuthorFromMsgAnchor(msgAnchor) {
+    const msgDataMatches = msgAnchor.match(/^(\d\d\d\d)(\d\d)(\d\d)(\d\d)(\d\d)_(.+)$/);
+
+    const year = Number(msgDataMatches[1]);
+    const month = Number(msgDataMatches[2]) - 1;
+    const day = Number(msgDataMatches[3]);
+    const hours = Number(msgDataMatches[4]);
+    const minutes = Number(msgDataMatches[5]);
+    const author = msgDataMatches[6];
+
+    return [new Date(year, month, day, hours, minutes), author];
   },
 
   generateCaseInsensitiveFirstCharPattern(s) {

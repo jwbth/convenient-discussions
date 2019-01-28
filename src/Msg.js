@@ -1056,9 +1056,6 @@ export default class Msg {
     if (!authorAndDateMatches) return;
 
     // We declare variables here for correctMsgBeginning() function to work.
-    const headingRegExp = /(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/;
-    const commentRegExp = /^<!--[^]*?-->\n*/;
-    const horizontalLineRegExp = /^(?:----+|<hr>)\n*/;
     let bestMatchData = {};
     let msgCode, msgStartPos, msgEndPos, headingMatch, headingCode, headingStartPos, headingLevel;
 
@@ -1076,7 +1073,7 @@ export default class Msg {
     }
 
     const correctMsgBeginning = () => {
-      headingMatch = msgCode.match(headingRegExp);
+      headingMatch = msgCode.match(/(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/);
       if (headingMatch) {
         if (!this.isOpeningSection) {
           console.warn('Найден заголовок раздела перед сообщением, которое не отмечено как открывающее раздел.');
@@ -1096,17 +1093,18 @@ export default class Msg {
         console.error('Не найдено заголовка раздела перед сообщением, которое отмечено как открывающее раздел.');
       }
 
-      const commentMatch = msgCode.match(commentRegExp);
-      if (commentMatch) {
-        msgStartPos += commentMatch[0].length;
-        msgCode = msgCode.slice(commentMatch[0].length);
-      }
-
-      const horizontalLineMatch = msgCode.match(horizontalLineRegExp);
-      if (horizontalLineMatch) {
-        msgStartPos += horizontalLineMatch[0].length;
-        msgCode = msgCode.slice(horizontalLineMatch[0].length);
-      }
+      [
+        /^<!--[^]*?--> *\n*/,
+        /^(?:----+|<hr>) *\n*/,
+        /^\[\[(?:File:|Файл:).*\n*(?=[*:#])/,
+        /^\{\|.*?\|\}\n*(?=[*:#])/,
+      ].forEach((pattern) => {
+        const match = msgCode.match(pattern);
+        if (match) {
+          msgStartPos += match[0].length;
+          msgCode = msgCode.slice(match[0].length);
+        }
+      });
     };
 
     // Main method: by the current & previous author & date & message heading & message text
