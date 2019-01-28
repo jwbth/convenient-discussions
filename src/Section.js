@@ -82,6 +82,7 @@ export default class Section {
     const msgsInFirstSubdivision = [];
     // The first and the last part will probably be enough for us.
     const msgParts = [];
+
     for (let i = 0; i < elements.length; i++) {
       element = elements[i];
       if (element.nodeType !== Node.ELEMENT_NODE) continue;
@@ -91,12 +92,13 @@ export default class Section {
         msgParts.push(element);
         break;
       }
-      let part = element.querySelector('.cd-msgPart');
+      const part = element.querySelector('.cd-msgPart');
       if (part) {
         msgParts.push(part);
         break;
       }
     }
+
     for (let i = elements.length - 1; i >= 0; i--) {
       element = elements[i];
       if (element.nodeType !== Node.ELEMENT_NODE) continue;
@@ -112,6 +114,7 @@ export default class Section {
         break;
       }
     }
+
     if (msgParts.length) {
       const firstMsgPart = msgParts[0];
       const lastMsgPart = msgParts[msgParts.length - 1];
@@ -126,11 +129,18 @@ export default class Section {
           cd.msgs[lastMsgPartId].id === lastMsgPartId
         ) {
           const firstMsg = cd.msgs[firstMsgPartId];
-          if (firstMsg.level === 0 &&
-            firstMsgPart.previousElementSibling &&
-            /^H[1-6]$/.test(firstMsgPart.previousElementSibling.tagName)
-          ) {
+
+          let openingSectionOfLevel;
+          if (firstMsgPart.previousElementSibling) {
+            const matches = firstMsgPart.previousElementSibling.tagName.match(/^H([1-6])$/);
+            if (matches) {
+              openingSectionOfLevel = Number(matches[1]);
+            }
+          }
+
+          if (firstMsg.level === 0 && openingSectionOfLevel) {
             firstMsg.isOpeningSection = true;
+            firstMsg.openingSectionOfLevel = openingSectionOfLevel;
             const firstMsgAnchor = firstMsgPart.id;
             firstMsgPart.removeAttribute('id');
             headingElement.id = firstMsgAnchor;
@@ -273,7 +283,9 @@ export default class Section {
         };
       }
 
-      if (this.msgs[0] && this.msgs[0].isOpeningSection &&
+      if (this.msgs[0] &&
+        this.msgs[0].isOpeningSection &&
+        this.msgs[0].openingSectionOfLevel === this.level &&
         (this.msgs[0].author === cd.env.CURRENT_USER || cd.settings.allowEditOthersMsgs)
       ) {
         this.addMenuItem({
@@ -561,7 +573,7 @@ export default class Section {
           }
 
           let newTopicsOnTop;
-          if (/\{\{?:[нН]овые сверху/.test(targetPageCode)) {
+          if (/\{\{[нН]овые сверху/.test(targetPageCode)) {
             newTopicsOnTop = true;
           } else if (/^(?:Форум[/ ]|Оспаривание |Запросы|.* запросы)/.test(targetTitle.toText())) {
             newTopicsOnTop = true;
@@ -571,20 +583,31 @@ export default class Section {
             newTopicsOnTop = false;
           }
 
-          // Determine the topic order: newest first or newest last
+          // To ignore comment contents (there could be section presets there) but get the right
+          // position in the result.
+          const adjustedTargetPageCode = targetPageCode.replace(
+            /(<!--)([^]*?)(-->)/g,
+            (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3
+          );
+
+          // Determine a topic order: newest first or newest last. At the same time, search for
+          // the first section position.
           const sectionHeadingsRegExp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
           let firstSectionPos;
           let sectionHeadingsMatches;
           let prevTimestamp;
-          let newerHigherCount = 0, newerLowerCount = 0;
-          while ((sectionHeadingsMatches = sectionHeadingsRegExp.exec(targetPageCode)) &&
+          let newerHigherCount = 0;
+          let newerLowerCount = 0;
+          while ((sectionHeadingsMatches = sectionHeadingsRegExp.exec(adjustedTargetPageCode)) &&
             (newTopicsOnTop === undefined ||
-              !firstSectionPos
+              newTopicsOnTop !== false && firstSectionPos === undefined
             )
           ) {
             if (firstSectionPos === undefined) {
               firstSectionPos = sectionHeadingsMatches.index;
             }
+            if (newTopicsOnTop !== undefined) break;
+
             const codeStartingWithThisSection = targetPageCode.slice(sectionHeadingsMatches.index);
 
             const date = cd.env.findFirstDate(codeStartingWithThisSection);
@@ -603,8 +626,12 @@ export default class Section {
             }
           }
 
-          if (newerHigherCount === newerLowerCount) {
-            newTopicsOnTop = !(targetTitle.namespace % 2);
+          if (newTopicsOnTop === undefined) {
+            if (newerHigherCount === newerLowerCount) {
+              newTopicsOnTop = !(targetTitle.namespace % 2 === 1);
+            } else {
+              newTopicsOnTop = newerHigherCount > newerLowerCount;
+            }
           }
 
           // Generate the new codes of the pages
@@ -721,7 +748,7 @@ export default class Section {
 
         const editSourcePageFailCallback = () => {
           abort(
-            'Сетевая ошибка при редактировании исходной страницы. Вам придётся вручную совершить правку исходной страницы или отменить правку целевой страницы.',
+            'Ошибка при редактировании исходной страницы. Вам придётся вручную совершить её правку.',
             false,
           );
         };
@@ -929,7 +956,7 @@ export default class Section {
     const sectionHeadingsRegExp = /^((=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*)\n/gm;
 
     // To ignore comment contents (there could be section presets there) but get the right positions
-    // and code at the output.
+    // and code in the result.
     const adjustedPageCode = pageCode.replace(
       /(<!--)([^]*?)(-->)/g,
       (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3

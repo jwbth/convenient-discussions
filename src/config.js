@@ -28,7 +28,7 @@ export default {
   sigPatterns: [
     [
       // We use "[^|] *" so that this pattern doesn't conflict with the patterns below when
-      // the date is a part of them.
+      // a date is a part of them.
       '[^|] *(\\b\\d?\\d:\\d\\d, \\d\\d? [а-я]+ \\d\\d\\d\\d \\(UTC\\))',
       ['date']
     ],
@@ -75,11 +75,11 @@ export default {
   messagesCommonString: '(UTC)',
 
   insertButtons: [
-    '{{ping|+}}',
-    '{{u|+}}',
-    '{{tl|+}}',
-    '{{+}}',
-    '[[+]]',
+    ['{{ping|+}}'],
+    ['{{u|+}}'],
+    ['{{tl|+}}'],
+    ['{{+}}'],
+    ['[[+]]'],
     ['<>+</>', '</>'],
     ['<code>+</code>', '<code />'],
     ['<nowiki>+</nowiki>', '<nowiki />'],

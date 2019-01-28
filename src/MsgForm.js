@@ -174,14 +174,14 @@ export default class MsgForm {
         if (!this.deleteCheckbox || !this.deleteCheckbox.isSelected()) {
           if (this.target.author === cd.env.CURRENT_USER) {
             if (this.target.parent) {
-              if (this.target.parent.author === cd.env.CURRENT_USER) {
-                defaultSummaryComponents.description = 'редактирование дополнения';
+              if (this.target.parent.isOpeningSection || this.target.parent.level === 0) {
+                defaultSummaryComponents.description = 'редактирование ответа';
               } else {
-                if (this.target.parent.isOpeningSection) {
-                  defaultSummaryComponents.description = 'редактирование ответа';
-                } else {
+                if (this.target.parent.author !== cd.env.CURRENT_USER) {
                   defaultSummaryComponents.description = 'редактирование ответа ' +
                     formUserName(this.target.parent);
+                } else {
+                  defaultSummaryComponents.description = 'редактирование дополнения';
                 }
               }
             } else if (this.target.isOpeningSection) {
