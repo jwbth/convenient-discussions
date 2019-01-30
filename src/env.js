@@ -727,6 +727,7 @@ export default {
           {}
       ).promise();
     } else {
+      // mw.user.options is not used because it turns out cached sometimes (?).
       // cd.env.optionsRequest is used to keep the promise in order to load options only once when
       // reloading page in reloadPage().
       const optionsRequest = cd.env.optionsRequest || cd.env.requestOptions();
@@ -766,6 +767,7 @@ export default {
     ) {
       promise = $.Deferred().resolve({}).promise();
     } else {
+      // mw.user.options is not used because it turns out cached sometimes (?).
       // cd.env.optionsRequest is used to keep the promise in order to load options only once when
       // reloading page in reloadPage().
       const optionsRequest = cd.env.optionsRequest || cd.env.requestOptions();

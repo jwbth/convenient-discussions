@@ -1108,32 +1108,32 @@ export default class MsgForm {
     this.viewChangesButton.setDisabled(status && blockButtons);
   }
 
-  showInfo(html, icon = 'info', class_) {
-    if (!class_ || !this.$infoArea.children('.cd-info-' + class_).length) {
+  showInfo(html, icon = 'info', className) {
+    if (!className || !this.$infoArea.children('.cd-info-' + className).length) {
       const $textWithIcon = cd.env.createTextWithIcon(html, icon)
         .addClass('cd-info')
         .addClass('cd-info-' + icon);
-      if (class_) {
-        $textWithIcon.addClass('cd-info-' + class_);
+      if (className) {
+        $textWithIcon.addClass('cd-info-' + className);
       }
 
       this.$infoArea.cdAppend($textWithIcon, this.getTargetMsg(true));
     }
   }
 
-  hideInfo(class_) {
-    const $info = this.$infoArea.children(`.cd-info-${class_}`);
+  hideInfo(className) {
+    const $info = this.$infoArea.children(`.cd-info-${className}`);
     if ($info.length) {
       $info.cdRemove(this.getTargetMsg(true));
     }
   }
 
-  showWarning(html, class_) {
-    this.showInfo(html, 'alert', class_);
+  showWarning(html, className) {
+    this.showInfo(html, 'alert', className);
   }
 
-  hideWarning(class_) {
-    this.hideInfo(class_);
+  hideWarning(className) {
+    this.hideInfo(className);
   }
 
   abort(message, logMessage, retryFunc) {
@@ -1790,7 +1790,7 @@ export default class MsgForm {
             section.watch(true);
             keepedData.justWatchedTopic = section.heading;
           }
-          if (this.mode === 'addSection') {
+          if (this.mode === 'addSection' || this.mode === 'addSubsection') {
             const heading = cd.env.cleanSectionHeading(this.headingInput.getValue().trim());
             cd.env.watchTopic(heading, true);
             keepedData.justWatchedTopic = heading;
