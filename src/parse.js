@@ -33,6 +33,7 @@ export default function parse(keepedData) {
   // to load.
   cd.defaultSettings = {
     additionalInsertButtons: [],
+    addTopic: true,
     allowEditOthersMsgs: false,
     alwaysExpandSettings: false,
     closerTemplate: '{{\subst:ПИ}}',
@@ -824,33 +825,35 @@ export default function parse(keepedData) {
 
   cd.debug.endTimer(cd.strings.mainCode);
 
-  cd.env.addSectionForm = null;
-  let addTopicSelectors = '.ruwiki-addTopicLink a, .ruwiki-addSectionBottom';
-  if (cd.env.firstRun) {
-    addTopicSelectors += ', #ca-addsection';
+  if (cd.settings.addTopic) {
+    cd.env.addSectionForm = null;
+    let addTopicSelectors = '.ruwiki-addTopicLink a, .ruwiki-addSectionBottom';
+    if (cd.env.firstRun) {
+      addTopicSelectors += ', #ca-addsection';
+    }
+    $(addTopicSelectors).click(function (e) {
+      if (/[?&]preload=/.test($(this).attr('href'))) return;
+
+      e.preventDefault();
+
+      if (!cd.env.addSectionForm) {
+        cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
+      }
+
+      // Get the height before the animation has started, so that the height is right.
+      const height = cd.env.addSectionForm.$element.height();
+      const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
+
+      if (cd.env.addSectionForm.$element.css('display') === 'none') {
+        cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
+      }
+      if (!willBeInViewport) {
+        cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
+      }
+
+      cd.env.addSectionForm.headingInput.focus();
+    });
   }
-  $(addTopicSelectors).click(function (e) {
-    if (/[?&]preload=/.test($(this).attr('href'))) return;
-
-    e.preventDefault();
-
-    if (!cd.env.addSectionForm) {
-      cd.env.addSectionForm = new MsgForm('addSection', null, $(this));
-    }
-
-    // Get the height before the animation has started, so that the height is right.
-    const height = cd.env.addSectionForm.$element.height();
-    const willBeInViewport = cd.env.addSectionForm.$element.cdIsInViewport();
-
-    if (cd.env.addSectionForm.$element.css('display') === 'none') {
-      cd.env.addSectionForm.show(cd.settings.slideEffects ? 'slideDown' : 'fadeIn');
-    }
-    if (!willBeInViewport) {
-      cd.env.addSectionForm.$element.cdScrollTo('middle', null, true, height / 2);
-    }
-
-    cd.env.addSectionForm.headingInput.focus();
-  });
 
   cd.debug.startTimer(cd.strings.finalCodeAndRendering);
 

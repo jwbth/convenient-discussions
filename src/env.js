@@ -1250,6 +1250,8 @@ export default {
     return heading
       // Extract displayed text from wikilinks
       .replace(/\[\[:?(?:[^|]*\|)?([^\]]*)\]\]/g, '$1')
+      // Extract displayed text from links
+      .replace(/\[https?:\/\/[^\]\[<>" ]+ *([^\]]*)\]/g, '$1')
       // Remove bold
       .replace(/'''(.+?)'''/g, '$1')
       // Remove italics
