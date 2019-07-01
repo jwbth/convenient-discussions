@@ -105,7 +105,7 @@ export default class Msg {
       return $el;
     };
 
-    // 300 seems to be a pretty safe value.
+    // 300 seems to be a safe enough value.
     for (let i = 0; i < 300; i++) {
       const prev = current.previousElementSibling;
       // Go back.
@@ -644,8 +644,8 @@ export default class Msg {
   }
 
   // doSet — add underlayer (in case it was unexistent) or change underlayer parameters (in case it
-  //   it misplaced)
-  // returnWhat (undefined, 'isMisplaced', 'underlayers') — return nothing, if the underlayer was
+  //   is misplaced)
+  // returnWhat (undefined, 'isMisplaced', 'underlayers') — return nothing if the underlayer was
   //   misplaced, or underlayers
   configureUnderlayer(doSet = true, returnWhat) {
     const elements = this.elements;
@@ -1613,7 +1613,7 @@ function getFirstElementRect() {
 }
 
 function getParent() {
-  // This would work only if messages in cd.msgs are in order of their presence on the page.
+  // This would work only if messages in cd.msgs are in the order of their presence on the page.
 
   let level = this.level;
   if (this.$elements[0].classList.contains('ruwiki-msgIndentation-minus1level')) {
@@ -1656,12 +1656,12 @@ function getParent() {
     }
   }
 
-  return null;  // Not undefined, so that the variable would be considered filled.
+  return null;  // Not undefined, so that the variable will be considered filled.
 }
 
 function getSection() {
   if (!cd.sections) {
-    return null;  // Not undefined, so that the variable would be considered filled.
+    return null;  // Not undefined, so that the variable will be considered filled.
   }
 
   for (let i = cd.sections.length - 1; i >= 0; i--) {
@@ -1671,7 +1671,7 @@ function getSection() {
     }
   }
 
-  return null;  // Not undefined, so that the variable would be considered filled.
+  return null;  // Not undefined, so that the variable will be considered filled.
 }
 
 function getAuthorRegistered() {
@@ -1739,7 +1739,7 @@ function getText() {
         })
     );
   } else {
-    // Actually, it will have a signature :(
+    // Actually, it would have a signature :(
     $msgWithNoSig = $msgWithNoSig.add(this.$elements.last());
   }
 

@@ -1,10 +1,9 @@
 export default {
-  // Only those namespaces that appear in links. Standard + feminine form, if available, and talk
-  // pages.
+  // Only namespaces that appear in links. Standard + feminine form if available, and talk pages.
   canonicalUserNamespaces: ['Участник', 'Участница', 'Обсуждение участника',
     'Обсуждение участницы'],
 
-  // Only those that appear in links. Standard + feminine form, if available.
+  // Only namespaces that appear in links. Standard + feminine form if available.
   canonicalUserNamespacesWithoutTalk: ['Участник', 'Участница'],
 
   contributionsPage: 'Служебная:Вклад',
@@ -58,7 +57,7 @@ export default {
 
   helpLink: 'U:JWBTH/CD',
 
-  // For ruwiki. If equals to HELP_LINK and the site is not ruwiki, then it forgot to set it.
+  // For ruwiki. If equals to HELP_LINK and the site is not ruwiki, then the site forgot to set it.
   defaultHelpLink: 'U:JWBTH/CD',
 
   // List of classes, blocks with which can't be message date containers.
