@@ -555,7 +555,9 @@ export default function parse(keepedData) {
     for (let j = pmChildNodes.length - 1; j >= 0; j--) {
       const pmChildNode = pmChildNodes[j];
       const pmChildNodeText = pmChildNode.textContent;
-      if ((pmChildNode.nodeType === Node.TEXT_NODE || cd.env.isInline(pmChildNode)) &&
+      if ((pmChildNode.nodeType === Node.TEXT_NODE ||
+        pmChildNode.nodeType === Node.ELEMENT_NODE &&
+        cd.env.isInline(pmChildNode)) &&
         (pmChildNodeText.includes('(UTC)') ||
           pmChildNodeText.includes('Эта реплика добавлена') ||
           pmChildNodeText === 'обс.'

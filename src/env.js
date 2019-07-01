@@ -1211,6 +1211,9 @@ export default {
   },
 
   isInline(el) {
+    // Precaution
+    if (el.nodeType !== Node.ELEMENT_NODE) return;
+
     if (cd.env.POPULAR_INLINE_ELEMENTS.includes(el.tagName)) {
       return true;
     } else if (cd.env.POPULAR_NOT_INLINE_ELEMENTS.includes(el.tagName)) {
