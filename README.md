@@ -2,4 +2,4 @@
 
 Documentation in Russian: https://ru.wikipedia.org/wiki/U:JWBTH/CD.
 
-Please file issues on Wikimedia Phabricator under [tag "Convenient-Discussions"](https://phabricator.wikimedia.org/tag/convenient-discussions/).
+Please file issues on Wikimedia Phabricator under [the tag "Convenient-Discussions"](https://phabricator.wikimedia.org/tag/convenient-discussions/).
