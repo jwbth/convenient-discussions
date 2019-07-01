@@ -338,7 +338,7 @@ export default class Section {
           func: this.copyLink.bind(this),
           class: 'copySectionLink',
           tooltip: 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.',
-          href: mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.heading,
+          href: mw.util.getUrl(cd.env.CURRENT_PAGE) + '#' + this.heading.replace(/ /g, '_'),
         });
       });
     }
