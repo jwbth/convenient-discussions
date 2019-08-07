@@ -674,9 +674,6 @@ export default class Section {
             newTargetPageCode = targetPageCode + '\n\n' + newSectionInTargetPageCode;
           }
 
-          console.log(newTargetPageCode);
-          return;
-
           new mw.Api().postWithToken('csrf', {
             action: 'edit',
             title: targetTitle.toString(),
@@ -726,8 +723,6 @@ export default class Section {
             }
             abort(text, recoverable);
           }
-
-          return;
 
           new mw.Api().postWithToken('csrf', {
             action: 'edit',
