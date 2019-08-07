@@ -76,7 +76,7 @@ export default async function msgLinks() {
         let wrapper;
         if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
           wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-          wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
+          wrapper.lastChild.title = 'Перейти к сообщению (сообщение адресовано вам)';
           blueIconsPresent = true;
         } else {
           let isWatched = false;
@@ -99,7 +99,7 @@ export default async function msgLinks() {
                 }
                 if (isWatched) {
                   wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-                  wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
+                  wrapper.lastChild.title = 'Перейти к сообщению (вы следите за этой темой)';
                   blueIconsPresent = true;
                 }
               }
@@ -263,7 +263,7 @@ export default async function msgLinks() {
         let wrapper;
         if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
           wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-          wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
+          wrapper.lastChild.title = 'Перейти к сообщению (сообщение адресовано вам)';
         } else {
           // We have no place to extract article ID from :-(
           wrapper = $wrapperRegularPrototype[0].cloneNode(true);
@@ -341,7 +341,7 @@ export default async function msgLinks() {
         let wrapper;
         if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
           wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-          wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
+          wrapper.lastChild.title = 'Перейти к сообщению (сообщение адресовано вам)';
         } else {
           let isWatched = false;
           if (commentText) {
@@ -356,7 +356,7 @@ export default async function msgLinks() {
               }
               if (isWatched) {
                 wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-                wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
+                wrapper.lastChild.title = 'Перейти к сообщению (вы следите за этой темой)';
               }
             }
           }
@@ -386,7 +386,7 @@ export default async function msgLinks() {
 
   const $aRegularPrototype = $('<a>')
     .addClass('cd-rcMsgLink cd-rcMsgLink-regular')
-    .attr('title', 'Ссылка на сообщение');
+    .attr('title', 'Перейти к сообщению');
   const $aInterestingPrototype = $('<a>').addClass('cd-rcMsgLink cd-rcMsgLink-interesting');
   const $wrapperRegularPrototype = $('<span>')
     .addClass('cd-rcMsgLink-wrapper')
@@ -465,7 +465,7 @@ export default async function msgLinks() {
       let wrapper;
       if (commentText && currentUserRegexp.test(' ' + commentText + ' ')) {
         wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-        wrapper.lastChild.title = 'Ссылка на сообщение (сообщение адресовано вам)';
+        wrapper.lastChild.title = 'Перейти к сообщению (сообщение адресовано вам)';
       } else {
         let isWatched = false;
         if (commentText) {
@@ -481,7 +481,7 @@ export default async function msgLinks() {
             }
             if (isWatched) {
               wrapper = $wrapperInterestingPrototype[0].cloneNode(true);
-              wrapper.lastChild.title = 'Ссылка на сообщение (вы следите за этой темой)';
+              wrapper.lastChild.title = 'Перейти к сообщению (вы следите за этой темой)';
             }
           }
         }

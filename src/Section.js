@@ -640,13 +640,17 @@ export default class Section {
           sourceWikilink = cd.env.CURRENT_PAGE + '#' + section.heading;
           targetWikilink = targetTitle.toText() + '#' + section.heading;
 
+          const addTwoNewLines = (code) => code
+            .replace(/([^\n])$/, '$1\n')
+            .replace(/([^\n]\n)$/, '$1\n');
+
           const newSectionInSourcePageCode = sectionInSourcePageCode.code.slice(
             0,
             sectionInSourcePageCode.contentStartPos - sectionInSourcePageCode.startPos
           ) +
             `{{перенесено на|${targetWikilink}|${cd.settings.mySig}}}\n` +
             `<small>Для бота: ${date}</small>\n\n`;
-          const newSectionInTargetPageCode = sectionInSourcePageCode.code.slice(
+          let newSectionInTargetPageCode = sectionInSourcePageCode.code.slice(
             0,
             sectionInSourcePageCode.contentStartPos - sectionInSourcePageCode.startPos
           ) +
@@ -654,6 +658,7 @@ export default class Section {
             sectionInSourcePageCode.code.slice(
               sectionInSourcePageCode.contentStartPos - sectionInSourcePageCode.startPos
             );
+          newSectionInTargetPageCode = addTwoNewLines(newSectionInTargetPageCode);
 
           newSourcePageCode = sourcePageCode.slice(0, sectionInSourcePageCode.startPos) +
             newSectionInSourcePageCode + sourcePageCode.slice(sectionInSourcePageCode.endPos);
@@ -663,11 +668,14 @@ export default class Section {
             if (firstSectionPos === undefined) {
               firstSectionPos = targetPageCode.length;
             }
-            newTargetPageCode = targetPageCode.slice(0, firstSectionPos) +
+            newTargetPageCode = addTwoNewLines(targetPageCode.slice(0, firstSectionPos)) +
               newSectionInTargetPageCode + targetPageCode.slice(firstSectionPos);
           } else {
             newTargetPageCode = targetPageCode + '\n\n' + newSectionInTargetPageCode;
           }
+
+          console.log(newTargetPageCode);
+          return;
 
           new mw.Api().postWithToken('csrf', {
             action: 'edit',
@@ -718,6 +726,8 @@ export default class Section {
             }
             abort(text, recoverable);
           }
+
+          return;
 
           new mw.Api().postWithToken('csrf', {
             action: 'edit',
