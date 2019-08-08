@@ -914,7 +914,7 @@ export default class Msg {
       title: 'Вернуться к дочернему сообщению',
       framed: false,
       href: this.anchor ? '#' + this.anchor : 'javascript:',
-      classes: ['cd-msgButton'],
+      classes: ['cd-button', 'cd-msgButton'],
     });
     downButton.on('click', this.parent.scrollToChild.bind(this.parent));
 

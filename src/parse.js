@@ -69,33 +69,33 @@ export default function parse(keepedData) {
       label: '▲',
       title: 'Перейти к родительскому сообщению',
       framed: false,
-      classes: ['cd-msgButton'],
+      classes: ['cd-button', 'cd-msgButton'],
     }).$element[0];
     cd.env.MSG_EDIT_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
       label: 'Редактировать',
       framed: false,
-      classes: ['cd-msgButton'],
+      classes: ['cd-button', 'cd-msgButton'],
     }).$element[0];
     cd.env.MSG_REPLY_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
       label: 'Ответить',
       framed: false,
-      classes: ['cd-msgButton'],
+      classes: ['cd-button', 'cd-msgButton'],
     }).$element[0];
     cd.env.MSG_LINK_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
       label: '#',
       title: 'Нажмите, чтобы скопировать вики-ссылку. Нажмите с зажатым Ctrl, чтобы выбрать другой вид ссылки.',
       framed: false,
-      classes: ['cd-msgButton'],
+      classes: ['cd-button', 'cd-msgButton'],
     }).$element[0];
     cd.env.SECTION_REPLY_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
       label: 'Ответить',
       framed: false,
-      classes: ['cd-sectionButton'],
+      classes: ['cd-button', 'cd-sectionButton'],
     }).$element[0];
     cd.env.SECTION_ADDSUBSECTION_BUTTON_PROTOTYPE = new OO.ui.ButtonWidget({
       label: 'Добавить подраздел',
       framed: false,
-      classes: ['cd-sectionButton'],
+      classes: ['cd-button', 'cd-sectionButton'],
     }).$element[0];
 
     cd.env.UNDERLAYER_PROTOTYPE = document.createElement('div');

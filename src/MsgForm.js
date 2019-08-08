@@ -684,7 +684,7 @@ export default class MsgForm {
     this.settingsButton = new OO.ui.ButtonWidget({
       label: 'Настройки',
       framed: false,
-      classes: ['cd-settingsButton'],
+      classes: ['cd-button', 'cd-settingsButton'],
       tabIndex: String(this.id) + '30',
     });
     this.settingsButton.on('click', this.toggleSettings.bind(this));
@@ -698,6 +698,7 @@ export default class MsgForm {
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: '?',
       framed: false,
+      classes: ['cd-button'],
       popup: {
         head: true,
         label: 'Сочетания клавиш',
@@ -720,7 +721,7 @@ export default class MsgForm {
       label: 'Отменить',
       flags: 'destructive',
       framed: false,
-      classes: ['cd-cancelButton'],
+      classes: ['cd-button', 'cd-cancelButton'],
       tabIndex: String(this.id) + '32',
     });
     this.cancelButton.on('click', this.cancel.bind(this));
