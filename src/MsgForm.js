@@ -1816,10 +1816,14 @@ export default class MsgForm {
           watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
           formatversion: 2,
         });
-        // error can't be here?
-        const error = data.error;
-        if (error) {
-          const text = error.code + ': ' + error.info;
+        if (!data.edit || !data.edit.result || data.edit.result !== 'Success') {
+          let text;
+          if (data.edit.spamblacklist) {
+            text = 'Ошибка: адрес ' + data.edit.spamblacklist + ' находится в чёрном списке. Сообщение не отправлено.'
+          } else {
+            text = 'Неизвестная ошибка. Сообщение не отправлено. Подробности см. в консоли JavaScript (F12 → Консоль).';
+            console.error('Содержимое объекта data.edit во время ошибки: ', data.edit);
+          }
           this.abort(text);
           return;
         }

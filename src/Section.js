@@ -213,7 +213,7 @@ export default class Section {
 
         lastElementInFirstSubdivision.parentElement.insertBefore(
           replyButtonUl,
-          lastElementInFirstSubdivision.nextSibling
+          lastElementInFirstSubdivision.nextElementSibling
         );
       }
 

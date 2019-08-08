@@ -394,9 +394,6 @@ export default class Msg {
         }
       }
       if (broken) continue;
-      if (elements[i].className.includes('mw-empty-elt')) {
-        elements.splice(i, 1);
-      }
     }
 
     // dd, li instead of dl, ul, ol in collections.
@@ -422,6 +419,15 @@ export default class Msg {
           elements.splice(i, 1);
           changed = true;
         }
+      }
+    }
+
+    for (let i = elements.length - 1; i >= 0; i--) {
+      // We check it here and not higher, where other classes are checked for the "parts" array,
+      // because some "mw-empty-elt" elements could have been obtained only in the procedure right
+      // above.
+      if (elements[i].className.includes('mw-empty-elt')) {
+        elements.splice(i, 1);
       }
     }
 
