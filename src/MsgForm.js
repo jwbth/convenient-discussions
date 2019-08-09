@@ -1137,14 +1137,18 @@ export default class MsgForm {
     this.hideInfo(className);
   }
 
-  abort(message, logMessage, retryFunc) {
+  abort(message, logMessage, retryFunc, noIcon) {
     // Presence of retryFunc now implies the deletion of form elements.
 
     if (this.textarea.$element[0].parentElement) {
       this.setPending(false);
     }
     this.$previewArea.empty();
-    this.showWarning(message);
+    if (noIcon) {
+      this.$infoArea.cdAppend(message, this.getTargetMsg(true));
+    } else {
+      this.showWarning(message);
+    }
     if (logMessage) {
       console.warn(logMessage);
     }
@@ -1819,13 +1823,17 @@ export default class MsgForm {
         });
         if (!data.edit || !data.edit.result || data.edit.result !== 'Success') {
           let text;
+          let noIcon = false;
           if (data.edit.spamblacklist) {
-            text = 'Ошибка: адрес ' + data.edit.spamblacklist + ' находится в чёрном списке. Сообщение не отправлено.'
+            text = `Ошибка: адрес ${data.edit.spamblacklist} находится в чёрном списке. Сообщение не отправлено.`;
+          } if (data.edit.abusefilter) {
+            text = data.edit.warning;
+            noIcon = true;
           } else {
             text = 'Неизвестная ошибка. Сообщение не отправлено. Подробности см. в консоли JavaScript (F12 → Консоль).';
             console.error('Содержимое объекта data.edit во время ошибки: ', data.edit);
           }
-          this.abort(text);
+          this.abort(text, null, null, noIcon);
           return;
         }
 
