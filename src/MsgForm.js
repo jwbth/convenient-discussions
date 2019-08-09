@@ -783,7 +783,7 @@ export default class MsgForm {
       if (cd.env.IS_RUWIKI && mw.user.options.get('gadget-urldecoder')) {
         modules.push('ext.gadget.urldecoder');
       }
-      mw.loader.using(modules).done(() => {
+      mw.loader.using(modules).then(() => {
         this.textarea.$input.wikiEditor(
           'addModule',
           mw.loader.moduleRegistry['ext.wikiEditor'].packageExports['jquery.wikiEditor.toolbar.config.js']
