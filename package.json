@@ -1,0 +1,57 @@
+{
+  "name": "convenient-discussions",
+  "version": "0.1.0",
+  "description": "A JavaScript shell for wiki talk pages.",
+  "scripts": {
+    "build": "webpack --progress",
+    "local": "webpack --env.MODE=local --progress",
+    "release": "webpack --env.MODE=production --progress",
+    "config": "node configBuilder",
+    "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
+    "all": "npm run config & npm run release & npm run docs"
+  },
+  "browser": "src/app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jwbth/convenient-discussions.git"
+  },
+  "author": "Jack who built the house",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://phabricator.wikimedia.org/tag/convenient-discussions/"
+  },
+  "homepage": "https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions",
+  "dependencies": {
+    "htmlparser2": "^4.1.0",
+    "locutus": "^2.0.11",
+    "lz-string": "^1.4.4",
+    "nano-css": "^5.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-private-methods": "^7.8.3",
+    "@babel/plugin-transform-async-to-generator": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "@babel/runtime": "^7.9.6",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.1.0",
+    "css-loader": "^3.5.3",
+    "docdash": "^1.2.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jsdoc": "^22.2.0",
+    "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
+    "less-loader": "^5.0.0",
+    "node-lessify": "^0.1.5",
+    "rimraf": "^3.0.2",
+    "style-loader": "^1.2.1",
+    "terser-webpack-plugin": "^2.3.6",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11",
+    "worker-loader": "^2.0.0"
+  },
+  "sideEffects": [
+    "*.less"
+  ]
+}

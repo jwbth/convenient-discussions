@@ -1,0 +1,91 @@
+#cd-navPanel {
+  position: fixed;
+  top: 44%;
+  left: 0;
+  z-index: 5;
+  width: 32px;
+  background-color: #fff;
+  border: 1px solid #a2a9b1;
+  border-left: 0;
+  // Enough to make it pass AA level for contrast ratio on Vector.
+  opacity: 0.53;
+  font-size: 13px;
+  line-height: 1.2;
+  color: #000;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &-refreshButton {
+    padding: 4px;
+    width: 24px;
+    height: 24px;
+    background-image: url(https://upload.wikimedia.org/wikipedia/commons/1/17/OOjs_UI_icon_reload.svg);
+    background-size: 20px 20px;
+
+    &:not(:empty) {
+      background-image: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+    }
+  }
+
+  &-previousButton {
+    background-image: url(https://upload.wikimedia.org/wikipedia/commons/1/10/OOjs_UI_icon_collapse.svg);
+    background-size: 14px 14px;
+  }
+
+  &-nextButton {
+    background-image: url(https://upload.wikimedia.org/wikipedia/commons/9/90/OOjs_UI_icon_expand.svg);
+    background-size: 14px 14px;
+  }
+
+  &-firstUnseenButton {
+    height: 15px;
+    padding: 7px 0;
+  }
+
+  &-commentFormButton {
+    background-image: url(https://upload.wikimedia.org/wikipedia/commons/b/b3/OOjs_UI_icon_ellipsis.svg);
+    background-size: 20px 20px;
+  }
+}
+
+.cd-navPanel-button {
+  display: block;
+  text-align: center;
+  background-position: center center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f3f4f5;
+  }
+
+  &:not(:first-child) {
+    position: relative;
+    height: 29px;
+    margin-top: 1px;
+
+    &::before {
+      position: absolute;
+      top: -1px;
+      left: 4px;
+      margin: 0 auto 1px;
+      width: 24px;
+      height: 0;
+      border-top: 1px solid #a2a9b1;
+      content: "";
+    }
+  }
+}
+
+.cd-navPanel-refreshButton-interesting {
+  color: #7d00cc;
+}

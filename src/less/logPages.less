@@ -1,0 +1,46 @@
+.cd-commentLink-innerWrapper {
+  &::before {
+    content: '(';
+  }
+
+  &::after {
+    content: ')';
+  }
+}
+
+.cd-commentLink-interesting a {
+  font-weight: bold;
+}
+
+.cd-watchlistMenu {
+  display: inline-block;
+  border: 1px solid #a2a9b1;
+  border-radius: 2px;
+  padding: 0 0.5em 0.5em;
+  vertical-align: top;
+  margin: -10px 1em 0 0.5em;
+}
+
+#mw-watchlist-options .cd-watchlistMenu {
+  float: right;
+}
+
+.cd-watchlistMenu-legend {
+  padding: 0 0.5em;
+}
+
+.cd-watchlistMenu-button {
+  margin-right: 0;
+
+  &-switchInteresting {
+    margin-bottom: -2px;
+  }
+}
+
+.cd-editWatchedSections-input {
+  margin: 1px 0;
+
+  textarea {
+    resize: none;
+  }
+}

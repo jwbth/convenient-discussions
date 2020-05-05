@@ -1,0 +1,54 @@
+.cd-commentButton.oo-ui-buttonElement-frameless.oo-ui-labelElement,
+.cd-sectionButton.oo-ui-buttonElement-frameless.oo-ui-labelElement {
+  > .oo-ui-buttonElement-button {
+    padding: 0;
+  }
+
+  &:first-child {
+    margin-left: 0;
+  }
+}
+
+.cd-button.oo-ui-buttonElement > .oo-ui-buttonElement-button {
+  min-height: unset;
+}
+
+// #cd-notExistingClass is used to override other possibly set "display" properties.
+.action-view .cd-hidden:not(#cd-notExistingClass) {
+  display: none;
+}
+
+p.cd-shown {
+  display: block !important;
+}
+
+.cd-destructiveText {
+  color: #d33;
+}
+
+.cd-loadingPopup {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 1.5em;
+  // z-index of OOUI windows + 10
+  z-index: 111;
+  margin: 0 auto;
+  padding: 17px 17px 11px 17px;
+  background-color: #fff;
+  border: 1px solid #c8ccd1;
+}
+
+.cd-loadingPopup-logo {
+  display: block;
+  margin: 0 auto;
+}
+
+.cd-spaceBeforeSectionMenu {
+  height: 0;
+  float: right;
+}
+
+.cd-previewArea .mw-editsection {
+  display: none;
+}

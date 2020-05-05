@@ -1,0 +1,28 @@
+.cd-commentPart-first {
+  margin-top: 0.5em;
+}
+
+.cd-commentPart-last {
+  margin-bottom: 0.5em;
+}
+
+ol > li.cd-commentPart-first {
+  margin-top: 0;
+}
+
+ol > li.cd-commentPart-last {
+  margin-bottom: 0.1em;
+}
+
+// We need to override native styles and .cd-commentForm.cd-commentForm
+.cd-commentLevel.cd-commentLevel:not(ol) {
+  list-style-type: none;
+  list-style-image: none;
+  padding-left: 1em;
+  margin: 0 0 0 1em;
+  border-left: 1px solid #c8ccd1;
+}
+
+dl.cd-commentLevel > dd {
+  margin-left: 0;
+}

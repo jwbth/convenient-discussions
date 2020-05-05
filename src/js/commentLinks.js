@@ -1,0 +1,649 @@
+/**
+ * Module loaded on pages where we need to add comment links to history entries (at minimum).
+ *
+ * @module commentLinks
+ */
+
+import Comment from './Comment';
+import cd from './cd';
+import {
+  caseInsensitiveFirstCharPattern,
+  isCommentEdit,
+  isProbablyTalkPage,
+  isUndo,
+  notNull,
+  spacesToUnderlines,
+} from './util';
+import { editWatchedSections, settingsDialog } from './modal';
+import { generateCommentAnchor, parseTimestamp } from './timestamp';
+import { getWatchedSections } from './options';
+import { initSettings } from './boot';
+import { initTimestampParsingTools, loadMessages } from './dateFormat';
+
+import '../less/logPages.less';
+
+let colonMoved;
+let goToCommentToYou;
+let goToCommentWatchedSection;
+let currentUserRegexp;
+let $wrapperRegularPrototype;
+let $wrapperInterestingPrototype;
+let watchedSections;
+let thisPageWatchedSections;
+let switchInterestingButton;
+
+let processDiffFirstRun = true;
+
+/**
+ * Prepare variables.
+ *
+ * @private
+ */
+async function prepare() {
+  // Would work only if cd.s('es-moved') is in the beginning of cd.s('es-moved-from') (cd.s('es-moved-to')), but
+  // other use cases could have many false positives.
+  colonMoved = `:  ${cd.s('es-moved')}`;
+
+  goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-toyou'))}`;
+  goToCommentWatchedSection = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-watchedsection'))}`;
+
+  const $aRegularPrototype = $('<a>')
+    .text(cd.s('lp-comment'))
+    .attr('title', cd.s('lp-comment-tooltip'));
+  const $spanRegularPrototype = $('<span>')
+    .addClass('cd-commentLink-innerWrapper')
+    .append($aRegularPrototype);
+  $wrapperRegularPrototype = $('<span>')
+    .addClass('cd-commentLink')
+    .append($spanRegularPrototype)[cd.g.IS_DIFF_PAGE ? 'append' : 'prepend'](
+      document.createTextNode(' ')
+    );
+  $wrapperInterestingPrototype = $wrapperRegularPrototype
+    .clone()
+    .addClass('cd-commentLink-interesting');
+
+  currentUserRegexp = new RegExp(
+    `(?:^|[^${cd.g.LETTER_PATTERN}])` +
+    caseInsensitiveFirstCharPattern(cd.g.CURRENT_USER_NAME).replace(/ /g, '[ _]') +
+    `(?![${cd.g.LETTER_PATTERN}])`
+  );
+
+  cd.g.api = cd.g.api || new mw.Api();
+
+  // Loading watched sections is not critical, as opposed to messages.
+  const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
+    console.warn('Couldn\'t load the settings from the server.', e);
+  });
+  const messagesRequest = cd.g.messagesRequest || loadMessages();
+  try {
+    const [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
+    ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
+  } catch (e) {
+    console.error('Couldn\'t load the messages required for the script.', e);
+    return;
+  }
+
+  initTimestampParsingTools();
+}
+
+/**
+ * Show/hide interesting edits.
+ *
+ * @private
+ */
+function switchInteresting() {
+  // Item grouping switched on
+  const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
+
+  // This is for many watchlist types at once.
+  const $collapsibles = cd.g.$content
+    .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
+  const $lines = cd.g.$content.find('.mw-changeslist-line:not(.mw-collapsible)');
+
+  if (switchInterestingButton.hasFlag('progressive')) {
+    // Show all
+    // FIXME: old watchlist (no JS) + ?enhanced=1&urlversion=2
+    if (!isEnhanced || !mw.user.options.get('extendwatchlist')) {
+      $lines
+        .not(':has(.cd-commentLink-interesting)')
+        .show();
+    }
+    $collapsibles
+      .not(':has(.cd-commentLink-interesting)')
+      .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
+      .show();
+    $collapsibles
+      .not('.mw-collapsed')
+      .find('.mw-enhancedchanges-arrow')
+      .click();
+  } else {
+    // Show interesting only
+    $collapsibles
+      .not('.mw-collapsed')
+      .find('.mw-enhancedchanges-arrow')
+      .click();
+    $collapsibles
+      .has('.cd-commentLink-interesting')
+      .find('.mw-enhancedchanges-arrow')
+      .click()
+    $collapsibles
+      .not(':has(.cd-commentLink-interesting)')
+      .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
+      .hide();
+    $lines
+      .not(':has(.cd-commentLink-interesting)')
+      .hide();
+  }
+  switchInterestingButton
+    .setFlags({ progressive: !switchInterestingButton.hasFlag('progressive') });
+}
+
+/**
+ * Add watchlist menu (a fieldset with buttons).
+ *
+ * @private
+ */
+function addWatchlistMenu() {
+  // For auto-updating watchlists
+  mw.hook('wikipage.content').add(() => {
+    if (switchInterestingButton) {
+      switchInterestingButton.setFlags({ progressive: false });
+    }
+  });
+
+  const $menu = $('<fieldset>').addClass('cd-watchlistMenu');
+  const $legend = $('<legend>')
+    .addClass('cd-watchlistMenu-legend')
+    .appendTo($menu);
+  $('<a>')
+    .attr('href', mw.util.getUrl(cd.config.helpWikilink))
+    .html(cd.s('script-name-short'))
+    .appendTo($legend);
+
+  switchInterestingButton = new OO.ui.ButtonWidget({
+    framed: false,
+    icon: 'speechBubble',
+    label: cd.s('wl-button-switchinteresting-tooltip'),
+    invisibleLabel: true,
+    title: cd.s('wl-button-switchinteresting-tooltip'),
+    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchInteresting'],
+  });
+  switchInterestingButton.on('click', () => {
+    switchInteresting();
+  });
+  switchInterestingButton.$element.appendTo($menu);
+
+  const editWatchedSectionsButton = new OO.ui.ButtonWidget({
+    framed: false,
+    icon: 'listBullet',
+    label: cd.s('wl-button-editwatchedsections-tooltip'),
+    invisibleLabel: true,
+    title: cd.s('wl-button-editwatchedsections-tooltip'),
+    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editWatchedSections'],
+  });
+  editWatchedSectionsButton.on('click', editWatchedSections);
+  editWatchedSectionsButton.$element.appendTo($menu);
+
+  const scriptSettingsButton = new OO.ui.ButtonWidget({
+    framed: false,
+    icon: 'settings',
+    label: cd.s('wl-button-scriptsettings-tooltip'),
+    invisibleLabel: true,
+    title: cd.s('wl-button-scriptsettings-tooltip'),
+    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-scriptSettings'],
+  });
+  scriptSettingsButton.on('click', () => {
+    settingsDialog();
+  });
+  scriptSettingsButton.$element.appendTo($menu);
+
+  // New watchlist, old watchlist
+  cd.g.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
+  cd.g.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
+}
+
+/**
+ * Extract an author given a revision line.
+ *
+ * @param {Element} line
+ * @returns {?string}
+ * @private
+ */
+function extractAuthor(line) {
+  const authorElement = line.querySelector('.mw-userlink');
+  if (!authorElement) {
+    return null;
+  }
+  let author = authorElement.textContent;
+  if (author === 'MediaWiki message delivery') {
+    return null;
+  }
+  if (mw.util.isIPv6Address(author)) {
+    author = author.toUpperCase();
+  }
+  return author;
+}
+
+/**
+ * Add comment links to a watchlist or a recent changes page. Add a watchlist menu to the watchlist.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function processWatchlist($content) {
+  if (
+    mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' &&
+    !cd.g.$content.find('.cd-watchlistMenu').length
+  ) {
+    initSettings();
+
+    if (mw.user.options.get('wlenhancedfilters-disable')) {
+      addWatchlistMenu();
+    } else {
+      mw.hook('structuredChangeFilters.ui.initialized').add(() => {
+        addWatchlistMenu();
+      });
+    }
+
+    $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
+      try {
+        ({ watchedSections } = await getWatchedSections());
+      } catch (e) {
+        console.warn('Couldn\'t load the settings from the server.', e);
+      }
+    });
+  }
+
+  // There are 2 ^ 3 = 8 (!) different watchlist modes:
+  // * expanded and not
+  // * with item grouping and without
+  // * with enhanced fitlers and without
+
+  const lines = $content.get(0).querySelectorAll('.mw-changeslist-line:not(.mw-collapsible)');
+  lines.forEach((line) => {
+    const nsMatch = line.className.match(/mw-changeslist-ns(\d+)/);
+    const nsNumber = nsMatch && Number(nsMatch[1]);
+    if (nsNumber === null) return;
+
+    const isNested = line.tagName === 'TR';
+    const linkElement = (isNested ? line.parentElement : line)
+      .querySelector('.mw-changeslist-title');
+    if (!linkElement) return;
+
+    const pageName = linkElement.textContent;
+    if (!isProbablyTalkPage(pageName, nsNumber)) return;
+
+    const minorMark = line.querySelector('.minoredit');
+    if (minorMark) return;
+
+    const summaryElement = line.querySelector('.comment');
+    const summary = summaryElement && summaryElement.textContent;
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || summary.includes(colonMoved))) {
+      return;
+    }
+
+    const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
+    if (!bytesAddedElement) {
+      return;
+    }
+    if (bytesAddedElement.tagName !== 'STRONG') {
+      const bytesAddedMatch = bytesAddedElement.textContent.match(/\d+/);
+      const bytesAdded = bytesAddedMatch && Number(bytesAddedMatch[0]);
+      if (!bytesAdded || bytesAdded < cd.config.bytesToDeemComment) return;
+    }
+
+    let timestamp = line.getAttribute('data-mw-ts');
+    timestamp = timestamp && timestamp.slice(0, 12);
+    if (!timestamp) return;
+
+    const author = extractAuthor(line);
+    if (!author) return;
+
+    const anchor = timestamp + '_' + spacesToUnderlines(author);
+
+    const link = linkElement.href;
+    if (!link) return;
+
+    let wrapper;
+    if (summary && currentUserRegexp.test(` ${summary} `)) {
+      wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+      wrapper.lastChild.lastChild.title = goToCommentToYou;
+    } else {
+      let isWatched = false;
+      if (summary) {
+        const curLink = (
+          // Expanded watchlist
+          line.querySelector('.mw-changeslist-diff-cur') ||
+          // Non-expanded watchlist
+          line.querySelector('.mw-changeslist-history')
+        );
+        const curIdMatch = curLink && curLink.href && curLink.href.match(/[&?]curid=(\d+)/);
+        const curId = curIdMatch && Number(curIdMatch[1]);
+        if (curId) {
+          const thisPageWatchedSections = watchedSections && watchedSections[curId] || [];
+          if (thisPageWatchedSections.length) {
+            for (let j = 0; j < thisPageWatchedSections.length; j++) {
+              // \u200E is the left-to-right mark.
+              if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+                isWatched = true;
+                break;
+              }
+            }
+            if (isWatched) {
+              wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+              wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
+            }
+          }
+        }
+      }
+      if (!isWatched) {
+        wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
+      }
+    }
+
+    wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
+
+    const destination = line.querySelector('.mw-usertoollinks');
+    if (!destination) return;
+    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
+  });
+}
+
+/**
+ * Add comment links to a contributions page.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function processContributions($content) {
+  const timezone = mw.user.options.get('timecorrection');
+  const timezoneParts = timezone && timezone.split('|');
+  const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
+  if (timezoneOffset == null || isNaN(timezoneOffset)) return;
+
+  const list = $content.get(0).querySelector('.mw-contributions-list');
+  const lines = Array.from(list.children);
+
+  lines.forEach((line) => {
+    const linkElement = line.querySelector('.mw-contributions-title');
+    if (!linkElement) return;
+
+    const pageName = linkElement.textContent;
+    if (!isProbablyTalkPage(pageName)) return;
+
+    const link = linkElement.href;
+    if (!link) return;
+
+    const minorMark = line.querySelector('.minoredit');
+    if (minorMark) return;
+
+    const summaryElement = line.querySelector('.comment');
+    const summary = summaryElement && summaryElement.textContent;
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || summary.includes(colonMoved))) {
+      return;
+    }
+
+    const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
+    if (!bytesAddedElement) return;
+    if (bytesAddedElement.tagName !== 'STRONG') {
+      const bytesAddedMatch = bytesAddedElement.textContent.match(/\d+/);
+      const bytesAdded = bytesAddedMatch && Number(bytesAddedMatch[0]);
+      if (!bytesAdded || bytesAdded < cd.config.bytesToDeemComment) return;
+    }
+
+    const dateElement = line.querySelector('.mw-changeslist-date');
+    if (!dateElement) return;
+    const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+    if (!date) return;
+
+    const anchor = generateCommentAnchor(date, mw.config.get('wgRelevantUserName'));
+
+    let wrapper;
+    if (summary && currentUserRegexp.test(` ${summary} `)) {
+      wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+      wrapper.lastChild.lastChild.title = goToCommentToYou;
+    } else {
+      // We have no place to extract the article ID from :-(
+      wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
+    }
+
+    wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
+
+    if (linkElement.nextSibling) {
+      linkElement.nextSibling.textContent = (
+        linkElement.nextSibling.textContent.replace(/^\s/, '')
+      );
+    }
+    linkElement.parentElement.insertBefore(wrapper, linkElement.nextSibling);
+  });
+}
+
+/**
+ * Add comment links to a history page.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function processHistory($content) {
+  const timezone = mw.user.options.get('timecorrection');
+  const timezoneParts = timezone && timezone.split('|');
+  const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
+  if (timezoneOffset == null || isNaN(timezoneOffset)) return;
+
+  const list = $content.get(0).querySelector('#pagehistory');
+  const lines = Array.from(list.children);
+  const link = mw.util.getUrl(cd.g.CURRENT_PAGE);
+
+  lines.forEach((line) => {
+    const minorMark = line.querySelector('.minoredit');
+    if (minorMark) return;
+
+    const summaryElement = line.querySelector('.comment');
+    const summary = summaryElement && summaryElement.textContent;
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || summary.includes(colonMoved))) {
+      return;
+    }
+
+    const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
+    if (!bytesAddedElement) return;
+    if (bytesAddedElement.tagName !== 'STRONG') {
+      const bytesAddedMatch = bytesAddedElement.textContent.match(/\d+/);
+      const bytesAdded = bytesAddedMatch && Number(bytesAddedMatch[0]);
+      if (!bytesAdded || bytesAdded < cd.config.bytesToDeemComment) return;
+    }
+
+    const dateElement = line.querySelector('.mw-changeslist-date');
+    if (!dateElement) return;
+    const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+    if (!date) return;
+
+    const author = extractAuthor(line);
+    if (!author) return;
+
+    const anchor = generateCommentAnchor(date, author);
+
+    let wrapper;
+    if (summary && currentUserRegexp.test(` ${summary} `)) {
+      wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+      wrapper.lastChild.lastChild.title = goToCommentToYou;
+    } else {
+      let isWatched = false;
+      if (summary) {
+        const thisPageWatchedSections = (
+          (watchedSections && watchedSections[mw.config.get('wgArticleId')]) || []
+        );
+        if (thisPageWatchedSections.length) {
+          for (let j = 0; j < thisPageWatchedSections.length; j++) {
+            // \u200E is the left-to-right mark.
+            if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+              isWatched = true;
+              break;
+            }
+          }
+          if (isWatched) {
+            wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+            wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
+          }
+        }
+      }
+      if (!isWatched) {
+        wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
+      }
+    }
+
+    wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
+
+    const separators = line.querySelectorAll('.mw-changeslist-separator');
+    const destination = separators && separators[separators.length - 1];
+    if (!destination) return;
+    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
+  });
+}
+
+/**
+ * Add comment link to a diff page.
+ *
+ * @private
+ * @fires commentLinksCreated
+ */
+async function processDiff() {
+  if (!processDiffFirstRun) return;
+
+  const timezone = mw.user.options.get('timecorrection');
+  const timezoneParts = timezone && timezone.split('|');
+  const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
+  if (timezoneOffset == null || isNaN(timezoneOffset)) return;
+
+  const areas = [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
+    .filter(notNull);
+
+  areas.forEach((area) => {
+    const minorMark = area.querySelector('.minoredit');
+    if (minorMark) return;
+
+    const summaryElement = area.querySelector('.comment');
+    const summary = summaryElement && summaryElement.textContent;
+    if (
+      summary &&
+      // BotDR's archivation can't be captured by looking at bytes added here.
+      (
+        isCommentEdit(summary) ||
+        isUndo(summary) ||
+        summary.includes(colonMoved) ||
+        summary.includes('Archiving')
+      )
+    ) {
+      return;
+    }
+
+    const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
+    if (!dateElement) return;
+    const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+    if (!date) return;
+
+    const author = extractAuthor(area);
+    if (!author) return;
+
+    const anchor = generateCommentAnchor(date, author);
+
+    let comment = Comment.getCommentByAnchor(anchor);
+    if (!comment) {
+      let commentAnchorToCheck;
+      // There can be a time difference between the time we know (taken from the watchlist or
+      // generated in the script) and the time on the page. We take it to be not higher than 5
+      // minutes for the watchlist time and not higher than 1 minute for the script-generated time.
+      for (let gap = 1; !comment && gap <= 5; gap++) {
+        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
+        commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
+        comment = Comment.getCommentByAnchor(commentAnchorToCheck);
+      }
+    }
+
+    if (comment) {
+      let wrapper;
+      if (summary && currentUserRegexp.test(` ${summary} `)) {
+        wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+        wrapper.firstChild.lastChild.title = goToCommentToYou;
+      } else {
+        let isWatched = false;
+        if (summary && thisPageWatchedSections.length) {
+          for (let j = 0; j < thisPageWatchedSections.length; j++) {
+            // \u200E is the left-to-right mark.
+            if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+              isWatched = true;
+              break;
+            }
+          }
+          if (isWatched) {
+            wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+            wrapper.firstChild.lastChild.title = goToCommentWatchedSection;
+          }
+        }
+        if (!isWatched) {
+          wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
+        }
+      }
+
+      wrapper.firstChild.lastChild.href = `#${anchor}`;
+      wrapper.onclick = function (e) {
+        e.preventDefault();
+        comment.scrollToAndHighlightTarget(false);
+      };
+
+      const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
+      if (!destination) return;
+      destination.insertBefore(wrapper, destination.firstChild);
+    }
+  });
+
+  /**
+   * Comments links have been created.
+   *
+   * @event commentLinksCreated
+   * @type {cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
+
+  processDiffFirstRun = false;
+}
+
+/**
+ * Add comment links to the page.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+async function addCommentLinks($content) {
+  // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
+  // wikipage.content for the second time with an element that is not in the DOM,
+  // fieldset#mw-watchlist-options (in the
+  // mw.rcfilters.ui.FormWrapperWidget.prototype.onChangesModelUpdate() function).
+  if (!$content.parent().length) return;
+
+  if (['Recentchanges', 'Watchlist'].includes(mw.config.get('wgCanonicalSpecialPageName'))) {
+    processWatchlist($content);
+  } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
+    processContributions($content);
+  } else if (
+    mw.config.get('wgAction') === 'history' &&
+    isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER)
+  ) {
+    processHistory($content);
+  }
+
+  mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
+}
+
+/**
+ * The entry function for the comment links adding mechanism.
+ */
+export default async function commentLinks() {
+  await prepare();
+
+  if (cd.g.IS_DIFF_PAGE) {
+    mw.hook('convenientDiscussions.pageReady').add(processDiff);
+  } else {
+    // Hook on wikipage.content to make the code work with the watchlist auto-update feature.
+    mw.hook('wikipage.content').add(addCommentLinks);
+  }
+}

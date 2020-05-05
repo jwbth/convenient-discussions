@@ -1,0 +1,74 @@
+.cd-commentUnderlay {
+  position: absolute;
+  z-index: -1;
+
+  &-new {
+    background-color: var(--cd-comment-underlay-new-color);
+  }
+
+  &-own {
+    background-color: var(--cd-comment-underlay-own-color);
+  }
+
+  &-focused {
+    background-color: var(--cd-comment-underlay-focused-color);
+  }
+}
+
+.cd-commentOverlay {
+  position: absolute;
+  display: none;
+  pointer-events: none;
+
+  &-focused {
+    display: block;
+  }
+
+  &-innerWrapper {
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    right: 0;
+    font-size: 14px;
+    // At least, for the Timeless skin.
+    line-height: normal;
+    pointer-events: all;
+  }
+
+  &-gradient {
+    width: 1.4em;
+    display: inline-block;
+    // 1px is a compensation for 1px button borders.
+    padding: 1px 1px 3px;
+    // As in OOUI buttons
+    line-height: 1.28571429em;
+    vertical-align: middle;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  &-content {
+    display: inline-block;
+    padding: 0 0.5em 2px 1em;
+    background-color: var(--cd-comment-underlay-focused-color);
+
+    .oo-ui-buttonWidget {
+      margin-right: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-left: 1em;
+    }
+  }
+
+  .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
+  .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:active {
+    background-color: transparent;
+  }
+}
+
+.cd-layersContainerParent {
+  position: relative;
+  z-index: 0;
+}

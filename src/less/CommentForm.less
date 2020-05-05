@@ -1,0 +1,307 @@
+.cd-commentForm {
+  &.cd-commentForm {
+    display: flow-root;
+    // Hack for Edge
+    -ms-display: grid;
+
+    margin: 0.5em 0;
+
+    // Need to override .cd-commentLevel.cd-commentLevel:not(ol).
+    &.cd-commentLevel {
+      margin-top: 0.5em;
+    }
+  }
+
+  &.cd-commentForm-addSection,
+  &.cd-commentForm-addSubsection,
+  &.cd-commentForm-replyInSection:not(.cd-commentForm-inNumberedList),
+  &.cd-commentForm-sectionOpeningComment {
+    margin-top: 1em;
+  }
+
+  .cd-headlineInput {
+    margin-bottom: 0.25em;
+  }
+
+  .oo-ui-textInputWidget {
+    max-width: none;
+  }
+
+  .cd-summaryInput {
+    margin-top: 0.25em;
+  }
+
+  .cd-checkboxesContainer {
+    margin-top: 0.5em;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-right: 1em;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .cd-buttonsContainer {
+    margin-top: 0.5em;
+    display: flow-root;
+    // Hack for Edge
+    -ms-display: grid;
+  }
+
+  .cd-leftButtonsContainer {
+    float: left;
+  }
+
+  .cd-rightButtonsContainer {
+    float: right;
+  }
+
+  .cd-rightButtonsContainer > .oo-ui-buttonWidget:last-child {
+    margin-right: -0.3125em;
+  }
+
+  .oo-ui-buttonElement-framed > .oo-ui-buttonElement-button {
+    vertical-align: middle;
+  }
+
+  .cd-scriptSettingsButton {
+    margin: -1em 0 0;
+  }
+
+  table.diff {
+    margin-bottom: 0.5em;
+  }
+
+  & + .cd-commentLevel,
+  & + dd > .cd-commentLevel:first-child,
+  & + li > .cd-commentLevel:first-child {
+    // Neutralize the hole which would otherwise be created by the margin-top of a nested comment.
+    padding-top: 0.1px;
+  }
+
+  & + .cd-commentForm {
+    padding-top: 0.5em;
+  }
+
+  .wikiEditor-ui-left {
+    // Makes a number in <ol> lists appear in front of the textarea, not below it.
+    float: none;
+  }
+
+  .wikiEditor-ui-toolbar {
+    .group .tool-select .options {
+      z-index: 1;
+    }
+  }
+
+  &-innerWrapper {
+    margin-bottom: 0;
+
+    // Modern replacement of clearfix
+    display: flow-root;
+    // Hack for Edge
+    -ms-display: grid;
+  }
+
+  &-signature {
+    opacity: 0.67;
+  }
+
+  &-dummyElement {
+    height: 0;
+  }
+}
+
+// flow-root removes the number in numbered lists which is too bad when editing a numbered comment
+// :-/
+ol > li.cd-commentForm.cd-commentForm {
+  display: list-item;
+  -ms-display: list-item;
+}
+
+.cd-replyWrapper,
+.cd-sectionButtonContainer .cd-commentForm.cd-commentForm {
+  margin-top: 0.5em;
+}
+
+.cd-commentInput {
+  // Compensation for "margin: -1px" below
+  margin-top: 1px;
+
+  border: 1px solid #a2a9b1;
+
+  .wikiEditor-ui .wikiEditor-ui-top {
+    border-color: #a2a9b1;
+  }
+
+  .wikiEditor-ui .wikiEditor-ui-view {
+    border: 0;
+  }
+}
+
+.cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+  width: calc(~"100% + 2px");
+  margin: -1px;
+  position: relative;
+}
+
+body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+  border: 1px solid #a2a9b1;
+  box-shadow: none;
+
+  &:focus {
+    outline: 2px solid #36c;
+    outline-offset: -2px;
+  }
+}
+
+.cd-previewArea {
+  margin-top: 0.5em;
+  padding: 0.5em 0.75em;
+  background-color: #f8f9fa;
+
+  > .mw-parser-output > *:first-child {
+    margin-top: 0;
+  }
+
+  > .mw-parser-output > *:last-child {
+    margin-bottom: 0;
+  }
+
+  &:empty {
+    margin: 0;
+    padding: 0;
+  }
+
+  &-above {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    width: calc(~"100% - 1.5em");
+  }
+
+  &-indentedComment > .mw-parser-output > dl:first-child {
+    margin-bottom: 0;
+
+    > dd {
+      margin-left: 0;
+      margin-bottom: 0;
+    }
+
+    + p {
+      margin-top: 0;
+    }
+  }
+}
+
+.cd-messageArea {
+  width: 100%;
+}
+
+.cd-previewArea,
+.cd-messageArea {
+  // To position .cd-closeButton absolutely
+  position: relative;
+
+  clear: both;
+
+  .cd-closeButton {
+    background-color: #f8f9fa;
+  }
+
+  &:hover .cd-closeButton {
+    opacity: 1;
+  }
+}
+
+.cd-previewArea-above,
+.cd-messageArea {
+  // In Chrome, in the form is in a numbered list, this and "+ *" rule make the number to appear
+  // before the textarea, not before the message.
+  float: left;
+
+  + * {
+    clear: both;
+  }
+}
+
+.cd-commentForm-blockLabel {
+  color: #72777d;
+  margin-bottom: 0.5em;
+}
+
+.cd-closeButton {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/1/18/OOjs_UI_icon_close-ltr.svg);
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
+
+.cd-message {
+  margin-bottom: 0.5em;
+}
+
+.cd-popupsOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  font-size: 14px;
+}
+
+.cd-insertButtons {
+  background-color: #f8f9fa;
+  border-color: #a2a9b1;
+  border-width: 0 1px 1px;
+  border-style: solid;
+  font-size: 0.928571em;
+  line-height: 1.384616em;
+
+  &::after {
+    display: block;
+    content: "";
+    clear: both;
+  }
+
+  &:empty {
+    border: 0;
+  }
+
+  &-item {
+    color: #222;
+    padding: 2px 0.5em 3px;
+    white-space: nowrap;
+    display: block;
+    float: left;
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+      color: #222;
+      // As with toolbar buttons
+      background-color: rgba(0, 23, 70, 0.086);
+    }
+  }
+}
+
+.cd-toolbarPlaceholder {
+  background-color: #f8f9fa;
+  border-color: #a2a9b1;
+  border-width: 1px 1px 0;
+  border-style: solid;
+  height: 32px;
+  margin: 1px 0 -1px;
+}
+
+.cd-commentForm-disabled .wikiEditor-ui-top,
+.cd-commentForm-disabled .cd-insertButtons {
+  pointer-events: none;
+}
