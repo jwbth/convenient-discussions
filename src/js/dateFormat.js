@@ -4,9 +4,9 @@
  * The code is based on {@link
  * https://gerrit.wikimedia.org/r/#/c/mediawiki/core/+/539305/3/signaturedetector.js}.
  *
+ * @module dateFormat
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @license GPL v2
- * @module dateFormat
  */
 
 import cd from './cd';
