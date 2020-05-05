@@ -281,7 +281,7 @@ Object.defineProperty(Element.prototype, 'classList', {
             this._classList.moveFromClassAttr(classAttr);
           }
           // This can run tens of thousand times, so we microoptimize it (don't use template strings
-          // and String.includes).
+          // and String.prototype.includes).
           const returnValue = (
             Boolean(this._classList.list.length) && this._classList.list.indexOf(name) !== -1
           );

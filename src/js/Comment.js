@@ -1017,12 +1017,12 @@ export default class Comment extends CommentSkeleton {
    */
   codeToText() {
     if (!this.inCode) {
-      console.error('The Comment.inCode property should contain an object with the comment code data.');
+      console.error('The Comment.prototype.inCode property should contain an object with the comment code data.');
       return;
     }
     let { code, indentationChars } = this.inCode;
     if (code === undefined || indentationChars === undefined) {
-      console.error('No "code" or "indentationChars" property is set for Comment.inCode.');
+      console.error('No "code" or "indentationChars" property is set for Comment.prototype.inCode.');
       return;
     }
 

@@ -2596,11 +2596,14 @@ export default class CommentForm {
   }
 
   /**
-   * Submit the form.
+   * Run checks before submitting the form.
+   *
+   * @param {object} options
+   * @param {boolean} options.isDelete
+   * @returns {boolean}
+   * @private
    */
-  async submit() {
-    const isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
-
+  async runChecks({ isDelete }) {
     const checks = [
       {
         condition: this.headlineInput && this.headlineInput.getValue() === '',
@@ -2640,58 +2643,23 @@ export default class CommentForm {
     for (const check of checks) {
       if (check.condition && !(await check.confirmation())) {
         this.commentInput.focus();
-        return;
+        return false;
       }
     }
 
-    const currentOperation = { type: 'submit' };
-    this.registerOperation(currentOperation);
+    return true;
+  }
 
-    const { page, newPageCode } = await this.tryPrepareNewPageCode('submit') || {};
-    if (newPageCode === undefined) {
-      this.closeOperation(currentOperation);
-      return;
-    }
-
-    // That's a hack used when we pass in keptData a name of a section that was set to be
-    // watched/unwatched via a checkbox in a form just sent. The server doesn't manage to update
-    // the value so quickly, so it returns the old value, but we must display the new one.
-    let keptData = {};
-    let watchSectionAfterGettingArticleId;
-    if (this.watchSectionCheckbox) {
-      if (this.watchSectionCheckbox.isSelected()) {
-        const isHeadlineAltered = (
-          this.#editingSectionOpeningComment &&
-          this.headlineInput.getValue() !== this.originalHeadline
-        );
-        if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
-          const headline = removeWikiMarkup(this.headlineInput.getValue());
-          if (mw.config.get('wgArticleId')) {
-            Section.watchSection(headline, true);
-            if (isHeadlineAltered) {
-              const originalHeadline = removeWikiMarkup(this.originalHeadline);
-              Section.unwatchSection(originalHeadline, true);
-            }
-          } else {
-            watchSectionAfterGettingArticleId = headline;
-          }
-          keptData.justWatchedSection = headline;
-        } else {
-          const section = this.targetSection;
-          if (section && !section.isWatched) {
-            section.watch(true);
-            keptData.justWatchedSection = section.headline;
-          }
-        }
-      } else {
-        const section = this.targetSection;
-        if (section && section.isWatched) {
-          section.unwatch(true);
-          keptData.justUnwatchedSection = section.headline;
-        }
-      }
-    }
-
+  /**
+   * Send a post request with the comment and handle errors.
+   *
+   * @param {object} page
+   * @param {string} newPageCode
+   * @param {Operation} currentOperation
+   * @returns {?object}
+   * @private
+   */
+  async tryPostComment(page, newPageCode, currentOperation) {
     let resp;
     try {
       resp = await cd.g.api.postWithToken('csrf', {
@@ -2709,7 +2677,6 @@ export default class CommentForm {
     } catch (e) {
       if (e instanceof CdError) {
         const { type, apiData } = e.data;
-
         if (type === 'network') {
           this.handleError({
             type,
@@ -2783,8 +2750,70 @@ export default class CommentForm {
           currentOperation,
         });
       }
+      return null;
+    }
+
+    return resp;
+  }
+
+  /**
+   * Submit the form.
+   */
+  async submit() {
+    const isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
+
+    if (!(await this.runChecks({ isDelete }))) return;
+
+    const currentOperation = { type: 'submit' };
+    this.registerOperation(currentOperation);
+
+    const { page, newPageCode } = await this.tryPrepareNewPageCode('submit') || {};
+    if (newPageCode === undefined) {
+      this.closeOperation(currentOperation);
       return;
     }
+
+    // That's a hack used where we pass, in keptData, the name of the section that was set to be
+    // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
+    // the value so quickly, so it returns the old value, but we must display the new one.
+    let keptData = {};
+    let watchSectionAfterGettingArticleId;
+    if (this.watchSectionCheckbox) {
+      if (this.watchSectionCheckbox.isSelected()) {
+        const isHeadlineAltered = (
+          this.#editingSectionOpeningComment &&
+          this.headlineInput.getValue() !== this.originalHeadline
+        );
+        if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
+          const headline = removeWikiMarkup(this.headlineInput.getValue());
+          if (mw.config.get('wgArticleId')) {
+            Section.watchSection(headline, true);
+            if (isHeadlineAltered) {
+              const originalHeadline = removeWikiMarkup(this.originalHeadline);
+              Section.unwatchSection(originalHeadline, true);
+            }
+          } else {
+            watchSectionAfterGettingArticleId = headline;
+          }
+          keptData.justWatchedSection = headline;
+        } else {
+          const section = this.targetSection;
+          if (section && !section.isWatched) {
+            section.watch(true);
+            keptData.justWatchedSection = section.headline;
+          }
+        }
+      } else {
+        const section = this.targetSection;
+        if (section && section.isWatched) {
+          section.unwatch(true);
+          keptData.justUnwatchedSection = section.headline;
+        }
+      }
+    }
+
+    const resp = await this.tryPostComment(page, newPageCode, currentOperation);
+    if (!resp) return;
 
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {
       $('#ca-watch').attr('id', 'cd-unwatch');
