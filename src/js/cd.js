@@ -2,7 +2,7 @@
  * @module cd
  */
 
-// Worker context
+// Window or worker context
 const context = typeof window === 'undefined' ? self : window;
 
 /**

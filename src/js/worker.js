@@ -216,7 +216,9 @@ function onMessageFromWindow(e) {
     cd.g.rootElement = new Document(dom);
     context.document = cd.g.rootElement;
     cd.g.specialElements = {
-      pageHasOutdents: Boolean(cd.g.rootElement.getElementsByClassName('outdent-template', 1).length),
+      pageHasOutdents: Boolean(
+        cd.g.rootElement.getElementsByClassName('outdent-template', 1).length
+      ),
     };
 
     parse();
