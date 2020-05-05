@@ -430,7 +430,11 @@ let $loadingPopup;
 function isShowLoadingOverlaySettingOff() {
   return (
     (cd.settings && cd.settings.showLoadingOverlay === false) ||
-    (!cd.settings && typeof cdShowLoadingOverlay !== 'undefined' && cdShowLoadingOverlay === false)
+    (
+      !cd.settings &&
+      window.cdShowLoadingOverlay !== undefined &&
+      window.cdShowLoadingOverlay === false
+    )
   );
 }
 

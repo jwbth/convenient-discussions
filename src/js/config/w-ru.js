@@ -259,20 +259,20 @@ export default {
           mw.util.getUrl(`User:${cd.g.CURRENT_USER_NAME}/common.js`, { action: 'edit' })
         );
 
-        const isHlmEnabled = typeof highlightMessagesAfterLastVisit !== 'undefined';
+        const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
         if (cd.settings.highlightNew && isHlmEnabled) {
           // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
-          highlightMessagesAfterLastVisit = false;
-          highlightMessages = 0;
+          window.highlightMessagesAfterLastVisit = false;
+          window.highlightMessages = 0;
         }
         if (isHlmEnabled && !mw.cookie.get('cd-hlmConflict')) {
           // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
-          if (typeof messagesHighlightColor !== 'undefined') {
+          if (window.messagesHighlightColor !== undefined) {
             const dummyElement = document.createElement('span');
-            dummyElement.style.color = messagesHighlightColor;
+            dummyElement.style.color = window.messagesHighlightColor;
             const hlmStyledElements = cd.g.rootElement.querySelectorAll(
               `.cd-commentPart[style="background-color: ${dummyElement.style.color};"],` +
-              `.cd-commentPart[style="background-color: ${messagesHighlightColor}"]`
+              `.cd-commentPart[style="background-color: ${window.messagesHighlightColor}"]`
             );
             hlmStyledElements.forEach((el) => {
               el.style.backgroundColor = null;
@@ -333,7 +333,7 @@ export default {
                 action: {
                   type: 'callback',
                   execute: () => {
-                    Wikify(commentForm.commentInput.$input[0]);
+                    window.Wikify(commentForm.commentInput.$input[0]);
                   },
                 },
               },
@@ -352,7 +352,7 @@ export default {
                   action: {
                     type: 'callback',
                     execute: () => {
-                      urlDecoderRun(commentForm.commentInput.$input[0]);
+                      window.urlDecoderRun(commentForm.commentInput.$input[0]);
                     },
                   },
                 },
