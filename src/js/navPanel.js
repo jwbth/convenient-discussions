@@ -576,6 +576,7 @@ const navPanel = {
    *
    * @param {Promise} visitsRequest
    * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
+   * @fires newCommentsMarked
    */
   async processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
     let visits;
@@ -643,6 +644,13 @@ const navPanel = {
 
     this.fill();
     this.registerSeenComments();
+
+    /**
+     * New comments have been marked.
+     *
+     * @event newCommentsMarked
+     */
+    mw.hook('convenientDiscussions.newCommentsMarked').fire();
   },
 
   /**

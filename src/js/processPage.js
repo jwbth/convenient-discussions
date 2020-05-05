@@ -460,9 +460,9 @@ function debugLog() {
  *    enough time for it to be saved on the server.
  * @param {string} [keptData.justUnwatchedSection] Section just unwatched so that there could be not
  *    enough time for it to be saved on the server.
- * @fires pageReady
  * @fires commentsReady
  * @fires sectionsReady
+ * @fires pageReady
  */
 export default async function processPage(keptData = {}) {
   cd.debug.stopTimer(cd.g.firstRun ? 'loading modules' : 'laying out HTML');
