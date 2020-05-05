@@ -75,7 +75,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  HIGHLIGHT_NEW_INTERVAL: 15,
+  HIGHLIGHT_NEW_COMMENTS_INTERVAL: 15,
 
   /**
    * Number of seconds between new comments checks when the tab is not hidden.
