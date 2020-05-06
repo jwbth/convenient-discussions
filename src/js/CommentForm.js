@@ -1211,7 +1211,7 @@ export default class CommentForm {
         pattern: /<pre/,
         message: cd.s('cf-reaction-pre'),
         class: 'dontUsePre',
-        type: 'alert',
+        type: 'warning',
       },
     ].concat(cd.config.customTextReactions);
 

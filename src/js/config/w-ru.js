@@ -219,7 +219,7 @@ export default {
   },
 
   customCodeTransformations(code, commentForm) {
-    // Add closer template
+    // Add a closer template
     if (
       commentForm.couldBeCloserClosing &&
       commentForm.headlineInput.getValue().trim() === 'Итог' &&
