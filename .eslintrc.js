@@ -19,6 +19,7 @@ module.exports = {
     "Parser": "readonly",
     "Section": "readonly",
     "User": "readonly",
+    "convenientDiscussions": "readonly",
     "mw": "readonly",
     "require": "readonly",
   },
