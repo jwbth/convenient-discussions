@@ -491,11 +491,14 @@ const navPanel = {
    * Property indicating that the mouse is over the navigation panel.
    *
    * @type {boolean}
+   * @memberof module:navPanel
    */
   mouseOverNavPanel: false,
 
   /**
    * Render the navigation panel. This is done when the page is first loaded or created.
+   *
+   * @memberof module:navPanel
    */
   async mount() {
     $navPanel = $('<div>')
@@ -565,6 +568,7 @@ const navPanel = {
    * the `!convenientDiscussions.g.pageIsInactive` check.
    *
    * @returns {boolean}
+   * @memberof module:navPanel
    */
   isMounted() {
     return Boolean($navPanel);
@@ -577,6 +581,7 @@ const navPanel = {
    * @param {Promise} visitsRequest
    * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
    * @fires newCommentsMarked
+   * @memberof module:navPanel
    */
   async processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
     let visits;
@@ -649,13 +654,16 @@ const navPanel = {
      * New comments have been marked.
      *
      * @event newCommentsMarked
+     * @type {module:cd~convenientDiscussions}
      */
-    mw.hook('convenientDiscussions.newCommentsMarked').fire();
+    mw.hook('convenientDiscussions.newCommentsMarked').fire(cd);
   },
 
   /**
    * Reset the navigation panel to the initial state. This is done after page refreshes. (Comment
    * forms are expected to be restored already.)
+   *
+   * @memberof module:navPanel
    */
   reset() {
     lastFirstTimeSeenCommentId = null;
@@ -680,6 +688,8 @@ const navPanel = {
 
   /**
    * Count new and unseen comments on the page, and update the navigation panel to reflect that.
+   *
+   * @memberof module:navPanel
    */
   fill() {
     newCount = cd.comments.filter((comment) => comment.newness).length;
@@ -698,6 +708,7 @@ const navPanel = {
    * Check if all comments on the page have been seen.
    *
    * @returns {boolean}
+   * @memberof module:navPanel
    */
   areAllCommentsSeen() {
     return unseenCount === 0;
@@ -705,6 +716,8 @@ const navPanel = {
 
   /**
    * Update the unseen comments count without recounting.
+   *
+   * @memberof module:navPanel
    */
   decrementUnseenCommentCount() {
     unseenCount--;
@@ -712,6 +725,8 @@ const navPanel = {
 
   /**
    * Update the state of the "Go to the first unseen comment" button.
+   *
+   * @memberof module:navPanel
    */
   updateFirstUnseenButton() {
     if (unseenCount) {
@@ -723,6 +738,8 @@ const navPanel = {
 
   /**
    * Perform routines at the refresh button click.
+   *
+   * @memberof module:navPanel
    */
   refreshClick() {
     // There was reload confirmation here, but after session restore was introduced, the
@@ -732,6 +749,8 @@ const navPanel = {
 
   /**
    * Close all new comment notifications immediately.
+   *
+   * @memberof module:navPanel
    */
   closeAllNotifications() {
     notifications.forEach((notification) => {
@@ -743,6 +762,8 @@ const navPanel = {
 
   /**
    * Scroll to the previous new comment.
+   *
+   * @memberof module:navPanel
    */
   goToPreviousNewComment() {
     if (cd.g.autoScrollInProgress) return;
@@ -762,6 +783,8 @@ const navPanel = {
 
   /**
    * Scroll to the next new comment.
+   *
+   * @memberof module:navPanel
    */
   goToNextNewComment() {
     if (cd.g.autoScrollInProgress) return;
@@ -781,6 +804,8 @@ const navPanel = {
 
   /**
    * Scroll to the first unseen comment.
+   *
+   * @memberof module:navPanel
    */
   goToFirstUnseenComment() {
     if (cd.g.autoScrollInProgress) return;
@@ -801,6 +826,8 @@ const navPanel = {
 
   /**
    * Go to the next comment form out of sight.
+   *
+   * @memberof module:navPanel
    */
   goToCommentForm() {
     const commentForm = cd.commentForms
@@ -824,6 +851,8 @@ const navPanel = {
 
   /**
    * Mark comments that are currently in the viewport as read.
+   *
+   * @memberof module:navPanel
    */
   registerSeenComments() {
     // Don't run this more than once in some period, otherwise the scrolling may be slowed down.
@@ -868,6 +897,8 @@ const navPanel = {
 
   /**
    * Update the "Go to the next comment form out of sight" button visibility.
+   *
+   * @memberof module:navPanel
    */
   updateCommentFormButton() {
     if (cd.g.autoScrollInProgress) return;

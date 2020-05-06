@@ -602,7 +602,7 @@ async function processDiff() {
    * Comments links have been created.
    *
    * @event commentLinksCreated
-   * @type {cd~convenientDiscussions}
+   * @type {module:cd~convenientDiscussions}
    */
   mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
 
