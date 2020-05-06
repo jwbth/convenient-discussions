@@ -2651,7 +2651,7 @@ export default class CommentForm {
   }
 
   /**
-   * Send a post request with the comment and handle errors.
+   * Send a post request to edit the page and handle errors.
    *
    * @param {object} page
    * @param {string} newPageCode
@@ -2659,7 +2659,7 @@ export default class CommentForm {
    * @returns {?object}
    * @private
    */
-  async tryPostComment(page, newPageCode, currentOperation) {
+  async tryEditPage(page, newPageCode, currentOperation) {
     let resp;
     try {
       resp = await cd.g.api.postWithToken('csrf', {
@@ -2812,7 +2812,7 @@ export default class CommentForm {
       }
     }
 
-    const resp = await this.tryPostComment(page, newPageCode, currentOperation);
+    const resp = await this.tryEditPage(page, newPageCode, currentOperation);
     if (!resp) return;
 
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {
