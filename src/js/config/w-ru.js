@@ -211,7 +211,7 @@ export default {
     }
   },
 
-  summaryTransformer(summary) {
+  transformSummary(summary) {
     return summary
       .replace(`${cd.s('newSubsection')}: /* Итог */`, 'итог')
       .replace(`${cd.s('newSubsection')}: /* Предварительный итог */`, 'предварительный итог')

@@ -56,8 +56,8 @@ export default {
     if (options.optionalText) {
       let projectedText = text + options.optionalText;
 
-      if (cd.config.summaryTransformer) {
-        projectedText = cd.config.summaryTransformer(projectedText);
+      if (cd.config.transformSummary) {
+        projectedText = cd.config.transformSummary(projectedText);
       }
 
       if (projectedText.length <= cd.g.SUMMARY_LENGTH_LIMIT) {
@@ -67,8 +67,8 @@ export default {
     }
 
     if (!wasOptionalTextAdded) {
-      if (cd.config.summaryTransformer) {
-        text = cd.config.summaryTransformer(text);
+      if (cd.config.transformSummary) {
+        text = cd.config.transformSummary(text);
       }
 
       if (text.length > cd.g.SUMMARY_LENGTH_LIMIT) {

@@ -527,7 +527,7 @@ export default {
    * @type {?function(string): string}
    * @default null
    */
-  summaryTransformer: null,
+  transformSummary: null,
 
   /**
    * Function that makes alterations to the comment code before it is sent. (An example would be
