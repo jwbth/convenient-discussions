@@ -25,17 +25,17 @@ export default {
   'sd-alloweditotherscomments': 'Show a link to edit other users\' comments',
   'sd-alwaysexpandsettings': 'Expand the comment settings when replying',
   'sd-autopreview': 'Preview the comment as I type',
-  'sd-notifications': 'Regular notifications',
+  'sd-notifications': 'Ordinary notifications',
   'sd-notifications-radio-all': 'Notify me about replies to my comments and comments in sections that I watch',
   'sd-notifications-radio-tome': 'Notify me about replies to my comments only',
   'sd-notifications-radio-none': 'Don\'t notify me',
   'sd-notifications-help': 'Notifications are small popups in the top right corner of a page.',
-  'sd-browsernotifications': 'Browser notifications',
+  'sd-browsernotifications': 'Desktop notifications',
   'sd-browsernotifications-radio-all': 'Notify me about replies to my comments and comments in sections that I watch',
   'sd-browsernotifications-radio-tome': 'Notify me about replies to my comments only',
   'sd-browsernotifications-radio-none': 'Don\'t notify me',
   // $1 is a domain.
-  'sd-browsernotifications-help': 'Browser notifications inform about events on pages that are open but hidden. To receive them, you must grant a premission to $1.',
+  'sd-browsernotifications-help': 'Desktop notifications inform about events on pages that are open but hidden. To receive them, you must grant a premission to $1.',
   'sd-highlightowncomments': 'Highlight my comments',
   'sd-insertbuttons': 'Text insert buttons',
   'sd-insertbuttons-multiselect-placeholder': 'Add a button',
@@ -72,11 +72,11 @@ export default {
   'sd-error-removedata': 'Couldn\'t remove the data on the server: $1/$2',
 
   // Browser notifications dialogs
-  'confirm-browsernotifications': 'Do you want Convenient Discussions to send you browser notifications about new comments on currently open pages if they are addressed to you or posted in sections that you watch? You can disable this feature in the settings.',
+  'confirm-browsernotifications': 'Do you want Convenient Discussions to send you desktop notifications about new comments on currently open pages if they are addressed to you or posted in sections that you watch? You can disable this feature in the settings.',
   'confirm-browsernotifications-yes': 'Yes',
   'confirm-browsernotifications-no': 'No',
   'alert-grantpermission': 'Grant a permission to the site.',
-  'alert-grantpermission-again': 'You have browser notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications, or deny to prevent this message from showing up again.',
+  'alert-grantpermission-again': 'You have desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications, or deny to prevent this message from showing up again.',
 
   // Comment menu
   'cm-gotoparent': '▲',
