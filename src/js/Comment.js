@@ -532,33 +532,39 @@ export default class Comment extends CommentSkeleton {
     this.configureLayers();
     if (!this.$underlay) return;
 
-    const $elementsToAnimate = this.$underlay
-      .add(this.$overlayContent)
-      .add(this.$overlayGradient);
-    const style = window.getComputedStyle(this.$underlay[0]);
-    let initialBackgroundColor = style.backgroundColor;
-    if (initialBackgroundColor === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
-      initialBackgroundColor = this.backgroundColor;
+    let initialColor = window.getComputedStyle(this.$underlay[0]).backgroundColor;
+    if (initialColor === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
+      initialColor = this.backgroundColor;
     }
-    if (!initialBackgroundColor) {
+    if (!initialColor) {
       console.error(
         'Error while getting the "backgroundColor" property. this.$underlay[0]:',
         this.$underlay[0]
       );
       return;
     }
-    $elementsToAnimate
+
+    this.$underlay.addClass('cd-commentUnderlay-target');
+    // We don't take the color from cd.g.COMMENT_UNDERLAY_TARGET_COLOR as it may be overriden by the
+    // user in their personal CSS.
+    const targetColor = window.getComputedStyle(this.$underlay[0]);
+    this.$underlay.removeClass('cd-commentUnderlay-target');
+
+    const $elementsToAnimate = this.$underlay
+      .add(this.$overlayContent)
+      .add(this.$overlayGradient)
       .stop()
       .css('background-image', 'none')
-      .css('background-color', cd.g.COMMENT_UNDERLAY_TARGET_COLOR);
+      .css('background-color', targetColor);
+
     clearTimeout(this.#unhighlightTimeout);
     this.#unhighlightTimeout = setTimeout(() => {
       // We may not know from the beginning if the comment is new.
       if (this.newness) {
-        initialBackgroundColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
+        initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
       }
       $elementsToAnimate.animate(
-        { backgroundColor: initialBackgroundColor },
+        { backgroundColor: initialColor },
         400,
         'swing',
         function () {

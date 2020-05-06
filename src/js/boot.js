@@ -122,12 +122,13 @@ function initCss() {
     window.getComputedStyle($('#content').get(0)).backgroundColor :
     'white';
   cd.g.nanoCss.put(':root', {
-    '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
-    '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
     '--cd-comment-underlay-focused-color': cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR,
     '--cd-comment-underlay-focused-transparent-color': (
       transparentize(cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
     ),
+    '--cd-comment-underlay-target-color': cd.g.COMMENT_UNDERLAY_TARGET_COLOR,
+    '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
+    '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
   });
   cd.g.nanoCss.put('.cd-commentOverlay-gradient', {
     backgroundImage: `linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))`,
