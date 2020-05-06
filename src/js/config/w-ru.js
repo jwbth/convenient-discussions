@@ -333,7 +333,7 @@ export default {
                 action: {
                   type: 'callback',
                   execute: () => {
-                    window.Wikify(commentForm.commentInput.$input[0]);
+                    window.Wikify(commentForm.commentInput.$input.get(0));
                   },
                 },
               },
@@ -352,7 +352,7 @@ export default {
                   action: {
                     type: 'callback',
                     execute: () => {
-                      window.urlDecoderRun(commentForm.commentInput.$input[0]);
+                      window.urlDecoderRun(commentForm.commentInput.$input.get(0));
                     },
                   },
                 },

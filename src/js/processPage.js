@@ -610,7 +610,7 @@ export default async function processPage(keptData = {}) {
         }
         commentLayers.redrawIfNecessary();
       });
-      observer.observe(cd.g.$content[0], {
+      observer.observe(cd.g.$content.get(0), {
         attributes: true,
         childList: true,
         subtree: true,
