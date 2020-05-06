@@ -140,22 +140,12 @@ function initCss() {
  * at the first run.
  */
 export async function init() {
-  initCss();
-
   cd.g.api = cd.g.api || new mw.Api();
 
   await cd.g.messagesRequest || loadMessages();
-
+  initCss();
   initSettings();
-
-  /**
-   * Collection of all comment forms on the page in the order of their creation.
-   *
-   * @name commentForms
-   * @type {CommentForm[]}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.commentForms = [];
+  initTimestampParsingTools();
 
   if (cd.config.tagName) {
     cd.g.SUMMARY_POSTFIX = '';
@@ -167,30 +157,32 @@ export async function init() {
     );
   }
 
+  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
+  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
+  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
+
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
 
-  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp('^' + cd.g.CONTRIBS_PAGE + '/');
+  /**
+   * Collection of all comment forms on the page in the order of their creation.
+   *
+   * @name commentForms
+   * @type {CommentForm[]}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.commentForms = [];
 
-  initTimestampParsingTools();
-
-  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
-
-  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   /* Generate regexps, patterns (strings to be parts of regexps), selectors from config values */
-
-  const anySpace = (s) => (
-    s
-      .replace(/:/g, ' : ')
-      .replace(/[ _]/g, '[ _]*')
-  );
 
   const namespaceIds = mw.config.get('wgNamespaceIds');
   const userNamespaces = Object.keys(namespaceIds)
     .filter((key) => [2, 3].includes(namespaceIds[key]));
   const userNamespacesPattern = underlinesToSpaces(userNamespaces.join('|'));
   cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesPattern}):(.+)`, 'i');
+
+  const anySpace = (s) => s.replace(/:/g, ' : ').replace(/[ _]/g, '[ _]*');
 
   const userNamespacesPatternAnySpace = anySpace(userNamespaces.join('|'));
   const contributionsPageAnySpace = anySpace(cd.g.CONTRIBS_PAGE);

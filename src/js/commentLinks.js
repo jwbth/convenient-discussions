@@ -40,8 +40,27 @@ let processDiffFirstRun = true;
  * @private
  */
 async function prepare() {
-  // Would work only if cd.s('es-moved') is in the beginning of cd.s('es-moved-from') (cd.s('es-moved-to')), but
-  // other use cases could have many false positives.
+  cd.g.api = cd.g.api || new mw.Api();
+
+  initTimestampParsingTools();
+
+  // Loading watched sections is not critical, as opposed to messages.
+  const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
+    console.warn('Couldn\'t load the settings from the server.', e);
+  });
+  const messagesRequest = cd.g.messagesRequest || loadMessages();
+  try {
+    const [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
+    ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
+  } catch (e) {
+    console.error('Couldn\'t load the messages required for the script.', e);
+    return;
+  }
+
+  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
+
+  // Would work only if cd.s('es-moved') is in the beginning of cd.s('es-moved-from') and
+  // cd.s('es-moved-to'), but other use cases could have many false positives.
   colonMoved = `:  ${cd.s('es-moved')}`;
 
   goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-toyou'))}`;
@@ -62,28 +81,11 @@ async function prepare() {
     .clone()
     .addClass('cd-commentLink-interesting');
 
+  const currentUserNamePattern = caseInsensitiveFirstCharPattern(cd.g.CURRENT_USER_NAME)
+    .replace(/ /g, '[ _]');
   currentUserRegexp = new RegExp(
-    `(?:^|[^${cd.g.LETTER_PATTERN}])` +
-    caseInsensitiveFirstCharPattern(cd.g.CURRENT_USER_NAME).replace(/ /g, '[ _]') +
-    `(?![${cd.g.LETTER_PATTERN}])`
+    `(?:^|[^${cd.g.LETTER_PATTERN}])${currentUserNamePattern}(?![${cd.g.LETTER_PATTERN}])`
   );
-
-  cd.g.api = cd.g.api || new mw.Api();
-
-  // Loading watched sections is not critical, as opposed to messages.
-  const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
-    console.warn('Couldn\'t load the settings from the server.', e);
-  });
-  const messagesRequest = cd.g.messagesRequest || loadMessages();
-  try {
-    const [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
-    ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
-  } catch (e) {
-    console.error('Couldn\'t load the messages required for the script.', e);
-    return;
-  }
-
-  initTimestampParsingTools();
 }
 
 /**
