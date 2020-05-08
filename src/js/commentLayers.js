@@ -32,7 +32,7 @@ export default {
     if (!this.underlays.length || document.hidden) return;
 
     const comments = [];
-    const rootBottom = cd.g.$root.get().getBoundingClientRect().bottom + window.pageYOffset;
+    const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.pageYOffset;
     let notMovedCount = 0;
     let floatingRects;
 
