@@ -532,31 +532,26 @@ export default class Comment extends CommentSkeleton {
     this.configureLayers();
     if (!this.$underlay) return;
 
+    const $elementsToAnimate = this.$underlay
+      .add(this.$overlayContent)
+      .add(this.$overlayGradient)
+      .css('background-image', 'none')
+      .css('background-color', '');
+
     let initialColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
     if (initialColor === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
       initialColor = this.backgroundColor;
-    }
-    if (!initialColor) {
-      console.error(
-        'Error while getting the "backgroundColor" property. this.$underlay.get(0):',
-        this.$underlay.get(0)
-      );
-      return;
     }
 
     this.$underlay.addClass('cd-commentUnderlay-target');
     // We don't take the color from cd.g.COMMENT_UNDERLAY_TARGET_COLOR as it may be overriden by the
     // user in their personal CSS.
-    const targetColor = window.getComputedStyle(this.$underlay.get(0));
+    const targetColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
     this.$underlay.removeClass('cd-commentUnderlay-target');
 
-    const $elementsToAnimate = this.$underlay
-      .add(this.$overlayContent)
-      .add(this.$overlayGradient)
+    $elementsToAnimate
       .stop()
-      .css('background-image', 'none')
       .css('background-color', targetColor);
-
     clearTimeout(this.#unhighlightTimeout);
     this.#unhighlightTimeout = setTimeout(() => {
       // We may not know from the beginning if the comment is new.

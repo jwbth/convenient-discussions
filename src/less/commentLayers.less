@@ -2,11 +2,12 @@
   position: absolute;
   z-index: -1;
 
-  &-focused {
+  // Note that the specificity for focused and target underlays is higher than for new and own.
+  &-focused.cd-commentUnderlay-focused {
     background-color: var(--cd-comment-underlay-focused-color);
   }
 
-  &-target {
+  &-target.cd-commentUnderlay-target {
     background-color: var(--cd-comment-underlay-target-color);
   }
 
