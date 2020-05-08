@@ -108,7 +108,7 @@ export default class Section extends SectionSkeleton {
           }
         }
       } else {
-        console.error('Edit link not found.');
+        console.error('Edit link not found.', this);
       }
 
       /**
@@ -255,27 +255,25 @@ export default class Section extends SectionSkeleton {
         if (watchedSectionsRequest) {
            watchedSectionsRequest.then(({ thisPageWatchedSections }) => {
             if (this.headline) {
-              if (thisPageWatchedSections.includes(this.headline)) {
-                this.isWatched = true;
-                this.addMenuItem({
-                  label: cd.s('sm-unwatch'),
-                  tooltip: cd.s('sm-unwatch-tooltip'),
-                  func: () => {
-                    this.unwatch();
-                  },
-                  class: 'cd-sectionLink-unwatch',
-                });
-              } else {
-                this.isWatched = false;
-                this.addMenuItem({
-                  label: cd.s('sm-watch'),
-                  tooltip: cd.s('sm-watch-tooltip'),
-                  func: () => {
-                    this.watch();
-                  },
-                  class: 'cd-sectionLink-watch',
-                });
-              }
+              this.isWatched = thisPageWatchedSections.includes(this.headline);
+              this.addMenuItem({
+                label: cd.s('sm-unwatch'),
+                tooltip: cd.s('sm-unwatch-tooltip'),
+                func: () => {
+                  this.unwatch();
+                },
+                class: 'cd-sectionLink-unwatch',
+                visible: this.isWatched,
+              });
+              this.addMenuItem({
+                label: cd.s('sm-watch'),
+                tooltip: cd.s('sm-watch-tooltip'),
+                func: () => {
+                  this.watch();
+                },
+                class: 'cd-sectionLink-watch',
+                visible: !this.isWatched,
+              });
             }
 
             const targetString = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
@@ -917,25 +915,38 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Update the watch/unwatch section links visibility.
+   *
+   * @private
+   */
+  updateWatchMenuItems() {
+    if (this.isWatched) {
+      this.$heading.find('.cd-sectionLink-unwatch').parent().show();
+      this.$heading.find('.cd-sectionLink-watch').parent().hide();
+    } else {
+      this.$heading.find('.cd-sectionLink-watch').parent().show();
+      this.$heading.find('.cd-sectionLink-unwatch').parent().hide();
+    }
+  }
+
+  /**
    * Add the section to the watched sections list.
    *
    * @param {boolean} [silent=false] Don't show a notification about the addition.
    */
   watch(silent = false) {
+    const $link = this.$heading.find('.cd-sectionLink-watch');
+    if ($link.hasClass('cd-sectionLink-pending')) {
+      return;
+    } else {
+      $link.addClass('cd-sectionLink-pending');
+    }
     Section.watchSection(this.headline, silent, () => {
       this.isWatched = true;
-    });
-
-    Section.getSectionsByHeadline(this.headline).forEach((section) => {
-      const $watchSectionLink = section.$heading.find('.cd-sectionLink-watch')
-        .text(cd.s('sm-unwatch'))
-        .removeClass('cd-sectionLink-watch')
-        .addClass('cd-sectionLink-unwatch')
-        .off('click')
-        .on('click', () => {
-          section.unwatch();
-        });
-      $watchSectionLink.get(0).onclick = null;
+      $link.removeClass('cd-sectionLink-pending');
+      Section.getSectionsByHeadline(this.headline).forEach((section) => {
+        section.updateWatchMenuItems();
+      });
     });
   }
 
@@ -944,28 +955,26 @@ export default class Section extends SectionSkeleton {
    *
    * @param {boolean} [silent=false] Don't show a notification about the removal.
    */
-  async unwatch(silent = false) {
+  unwatch(silent = false) {
+    const $link = this.$heading.find('.cd-sectionLink-unwatch');
+    if ($link.hasClass('cd-sectionLink-pending')) {
+      return;
+    } else {
+      $link.addClass('cd-sectionLink-pending');
+    }
     const watchedAncestor = this.getWatchedAncestor();
     Section.unwatchSection(
       this.headline,
       silent,
       () => {
         this.isWatched = false;
+        $link.removeClass('cd-sectionLink-pending');
+        Section.getSectionsByHeadline(this.headline).forEach((section) => {
+          section.updateWatchMenuItems();
+        });
       },
       watchedAncestor && watchedAncestor.headline
     );
-
-    Section.getSectionsByHeadline(this.headline).forEach((section) => {
-      const $unwatchSectionLink = section.$heading.find('.cd-sectionLink-unwatch')
-        .removeClass('cd-sectionLink-unwatch')
-        .addClass('cd-sectionLink-watch')
-        .off('click')
-        .on('click', () => {
-          section.watch();
-        })
-        .text(cd.s('sm-watch'));
-      $unwatchSectionLink.get(0).onclick = null;
-    });
   }
 
   /**
@@ -1060,27 +1069,34 @@ export default class Section extends SectionSkeleton {
    * @param {Function} [item.func] Function to execute on click.
    * @param {string} [item.class] Link class name.
    * @param {string} [item.tooltip] Tooltip text.
+   * @param {boolean} [item.visible=true] Should the item be visible.
    */
-  addMenuItem(item) {
+  addMenuItem({ label, href, func, class: className, tooltip, visible = true }) {
     if (this.#closingBracketElement) {
-      const a = document.createElement('a');
-      a.textContent = item.label;
-      if (item.href) {
-        a.href = item.href;
-      }
-      if (item.func) {
-        a.onclick = item.func;
-      }
-      a.className = item.class;
-      if (item.tooltip) {
-        a.title = item.tooltip;
+      const wrapper = document.createElement('span');
+      wrapper.className = 'cd-sectionLinkWrapper';
+      if (!visible) {
+        wrapper.style.display = 'none';
       }
 
-      const divider = document.createElement('span');
-      divider.className = 'cd-sectionLinksDivider';
-      divider.textContent = ' | ';
-      this.#editSectionElement.insertBefore(divider, this.#closingBracketElement);
-      this.#editSectionElement.insertBefore(a, this.#closingBracketElement);
+      const a = document.createElement('a');
+      a.textContent = label;
+      if (href) {
+        a.href = href;
+      }
+      if (func) {
+        a.onclick = func;
+      }
+      a.className = 'cd-sectionLink';
+      if (className) {
+        a.className += ' ' + className;
+      }
+      if (tooltip) {
+        a.title = tooltip;
+      }
+
+      wrapper.appendChild(a);
+      this.#editSectionElement.insertBefore(wrapper, this.#closingBracketElement);
     }
   }
 
@@ -1321,7 +1337,7 @@ export default class Section extends SectionSkeleton {
           mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
         }
       } else {
-        console.error(e);
+        mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
       }
     }
   }
@@ -1368,7 +1384,6 @@ export default class Section extends SectionSkeleton {
       }
     } catch (e) {
       mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
-      return;
     }
   }
 

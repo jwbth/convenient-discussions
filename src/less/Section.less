@@ -1,5 +1,11 @@
-.cd-sectionLinksDivider {
+.cd-sectionLinkWrapper::before {
+  content: " | ";
   color: #54595d;
+}
+
+.cd-sectionLink-pending.cd-sectionLink-pending {
+  opacity: 0.6;
+  cursor: wait;
 }
 
 .cd-sectionButtonContainer {
