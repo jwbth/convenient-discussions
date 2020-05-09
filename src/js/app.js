@@ -222,8 +222,9 @@ function main() {
     setLoadingOverlay();
 
     cd.debug.stopTimer('start');
-    cd.debug.startTimer('load worker');
     cd.debug.startTimer('loading modules');
+
+    cd.g.worker = new Worker();
 
     // Load messages in advance if the API module is ready in order not to make 2 requests
     // sequentially.
@@ -231,8 +232,6 @@ function main() {
       cd.g.api = new mw.Api();
       cd.g.messagesRequest = loadMessages();
     }
-
-    cd.g.worker = new Worker();
 
     // We use a jQuery promise as there is no way to know the state of native promises.
     const modulesRequest = $.when(...[
@@ -290,6 +289,16 @@ function main() {
     ) ||
     cd.g.IS_DIFF_PAGE
   ) {
+    cd.g.nanoCss = nanoCssCreate();
+    cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
+      '::before': {
+        content: `"${mw.msg('parentheses-start')}"`,
+      },
+      '::after': {
+        content: `"${mw.msg('parentheses-end')}"`,
+      },
+    });
+
     // Load messages in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {

@@ -63,9 +63,9 @@ export function isInline(node, countTextNodesAsInline) {
   } else {
     // This can be called from a worker.
     if (typeof window !== 'undefined') {
-      console.warn('Greedy operation: isInline() called for the element:', node);
+      console.warn('Expensive operation: isInline() called for the element:', node);
 
-      // This is VERY resource-greedy. Avoid by any means.
+      // This is very expensive. Avoid by any means.
       return window.getComputedStyle(node).display === 'inline';
     } else {
       return null;
