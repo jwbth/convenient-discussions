@@ -55,11 +55,9 @@ export function initSettings() {
     defaultCommentLinkType: cd.config.defaultCommentLinkType || 'diff',
     defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,
-
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
     insertButtonsChanged: false,
-
     insertButtons: cd.config.defaultInsertButtons || [],
     // Minifier translates "~~\~~" and "'~~' + '~~'" into "~~~~".
     mySignature: '~~'.concat('~~'),

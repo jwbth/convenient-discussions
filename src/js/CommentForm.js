@@ -1772,13 +1772,7 @@ export default class CommentForm {
     const newLineIndentationChars = indentationChars.replace(/\*/g, ':');
 
     // Work with code
-    let code = text
-      .trim()
-      // Remove ending spaces from empty lines except when they are a part of the syntax creating
-      // <pre>.
-      .replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, (s) => (
-        / [^\s\uFEFF\xA0]$/.test(s) ? s : s.replace(/^ +/gm, '')
-      ));
+    let code = text.trim();
 
     let useColonsForNewlines = false;
     let hasTable = false;
@@ -1789,6 +1783,20 @@ export default class CommentForm {
         hasTable = true;
       }
     }));
+
+    code = code
+      // If the user wrapped the comment in <small></small>, select the relevant checkbox and remove
+      // the tags. This will include the signature into the tags and possibly ensure the right line
+      // spacing.
+      .replace(/^<small>([^]+)<\/small>$/i, (s, m1) => {
+        this.smallCheckbox.setSelected(true);
+        return m1;
+      })
+      // Remove ending spaces from empty lines except when they are a part of the syntax creating
+      // <pre>.
+      .replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, (s) => (
+        / [^\s\uFEFF\xA0]$/.test(s) ? s : s.replace(/^ +/gm, '')
+      ));
 
     let signature;
     if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
@@ -1845,8 +1853,14 @@ export default class CommentForm {
     }
 
     // Process newlines by adding or not adding <br> and keeping or not keeping the newline.
-    const thisLinePnieRegexp = new RegExp(`(?:\\x04|<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>)$`, 'i');
-    const nextLinePnieRegexp = new RegExp(`^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN})`, 'i');
+    const thisLinePnieRegexp = new RegExp(
+      `(?:\\x04|<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>)$`,
+      'i'
+    );
+    const nextLinePnieRegexp = new RegExp(
+      `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN})`,
+      'i'
+    );
     code = code.replace(/^(.*[^\n])\n(?![\n:*# \x03])(?=(.*))/gm, (s, m1, m2) => {
       const br = (
         /^[:*# ]/.test(m1) ||
