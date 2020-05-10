@@ -496,7 +496,7 @@ export async function reloadPage(keptData = {}) {
 
   let pageData;
   try {
-    pageData = await getCurrentPageData();
+    pageData = await getCurrentPageData(true);
   } catch (e) {
     removeLoadingOverlay();
     if (keptData.commentAnchor) {
