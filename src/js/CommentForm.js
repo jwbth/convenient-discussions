@@ -554,7 +554,10 @@ export default class CommentForm {
         this.mode === 'replyInSection' ||
         (this.mode === 'reply' && this.target.isOpeningSection)
       ) {
-        commentInputPlaceholder = cd.s('cf-comment-placeholder-replytosection', this.targetSection.headline);
+        commentInputPlaceholder = cd.s(
+          'cf-comment-placeholder-replytosection',
+          this.targetSection.headline
+        );
       } else if (this.mode === 'reply') {
         // If there is a need to make a request to get the user gender, we don't show any
         // placeholder text at the beginning to avoid drawing user's attention to the changing of
