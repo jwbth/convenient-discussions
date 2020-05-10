@@ -186,7 +186,7 @@ async function checkForNewComments() {
 }
 
 /**
- * Send ordinary and browser notifications to the user.
+ * Send ordinary and desktop notifications to the user.
  *
  * @param {Comment[]} interestingNewComments
  */
@@ -195,11 +195,11 @@ async function sendNotifications(interestingNewComments) {
     !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
   ));
 
-  let notifyAboutBrowser = [];
-  if (cd.settings.browserNotifications === 'all') {
-    notifyAboutBrowser = notifyAbout;
-  } else if (cd.settings.browserNotifications === 'toMe') {
-    notifyAboutBrowser = notifyAbout.filter((comment) => comment.toMe);
+  let notifyAboutDesktop = [];
+  if (cd.settings.desktopNotifications === 'all') {
+    notifyAboutDesktop = notifyAbout;
+  } else if (cd.settings.desktopNotifications === 'toMe') {
+    notifyAboutDesktop = notifyAbout.filter((comment) => comment.toMe);
   }
 
   let notifyAboutOrdinary = [];
@@ -221,7 +221,7 @@ async function sendNotifications(interestingNewComments) {
     });
   }
 
-  const authors = removeDuplicates(notifyAboutOrdinary.concat(notifyAboutBrowser))
+  const authors = removeDuplicates(notifyAboutOrdinary.concat(notifyAboutDesktop))
     .map((comment) => comment.author)
     .filter(defined);
   await getUserGenders(authors, true);
@@ -302,21 +302,21 @@ async function sendNotifications(interestingNewComments) {
   if (
     !document.hasFocus() &&
     Notification.permission === 'granted' &&
-    notifyAboutBrowser.length
+    notifyAboutDesktop.length
   ) {
     let body;
     // We use a tag so that there aren't duplicate notifications when the same page is opened in
     // two tabs.
     let tag = 'convenient-discussions-';
-    const comment = notifyAboutBrowser[0];
-    if (notifyAboutBrowser.length === 1) {
+    const comment = notifyAboutDesktop[0];
+    if (notifyAboutDesktop.length === 1) {
       tag += comment.anchor;
       if (comment.toMe) {
         const where = comment.sectionHeadline ?
           ' ' + cd.s('notification-part-insection', comment.sectionHeadline) :
           '';
         body = cd.s(
-          'notification-toyou-browser',
+          'notification-toyou-desktop',
           comment.author.name,
           comment.author,
           where,
@@ -324,7 +324,7 @@ async function sendNotifications(interestingNewComments) {
         );
       } else {
         body = cd.s(
-          'notification-insection-browser',
+          'notification-insection-desktop',
           comment.author.name,
           comment.author,
           comment.sectionHeadline,
@@ -338,12 +338,12 @@ async function sendNotifications(interestingNewComments) {
         ' ' + cd.s('notification-part-insection', notifyAbout[0].sectionHeadline) :
         '';
       body = cd.s(
-        'notification-newcomments-browser',
+        'notification-newcomments-desktop',
         notifyAbout.length,
         where,
         cd.g.CURRENT_PAGE
       );
-      tag += notifyAboutBrowser[notifyAboutBrowser.length - 1].anchor;
+      tag += notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor;
     }
 
     const notification = new Notification(mw.config.get('wgSiteName'), { body, tag });

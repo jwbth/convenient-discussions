@@ -30,12 +30,12 @@ export default {
   'sd-notifications-radio-tome': 'Notify me about replies to my comments only',
   'sd-notifications-radio-none': 'Don\'t notify me',
   'sd-notifications-help': 'Notifications are small popups in the top right corner of a page.',
-  'sd-browsernotifications': 'Desktop notifications',
-  'sd-browsernotifications-radio-all': 'Notify me about replies to my comments and comments in sections that I watch',
-  'sd-browsernotifications-radio-tome': 'Notify me about replies to my comments only',
-  'sd-browsernotifications-radio-none': 'Don\'t notify me',
+  'sd-desktopnotifications': 'Desktop notifications',
+  'sd-desktopnotifications-radio-all': 'Notify me about replies to my comments and comments in sections that I watch',
+  'sd-desktopnotifications-radio-tome': 'Notify me about replies to my comments only',
+  'sd-desktopnotifications-radio-none': 'Don\'t notify me',
   // $1 is a domain.
-  'sd-browsernotifications-help': 'Desktop notifications inform about events on pages that are open but hidden. To receive them, you must grant a premission to $1.',
+  'sd-desktopnotifications-help': 'Desktop notifications inform about events on pages that are open but hidden. To receive them, you must grant a premission to $1.',
   'sd-highlightowncomments': 'Highlight my comments',
   'sd-insertbuttons': 'Text insert buttons',
   'sd-insertbuttons-multiselect-placeholder': 'Add a button',
@@ -71,10 +71,10 @@ export default {
   'sd-error-save': 'Couldn\'t update the settings: $1/$2',
   'sd-error-removedata': 'Couldn\'t remove the data on the server: $1/$2',
 
-  // Browser notifications dialogs
-  'confirm-browsernotifications': 'Do you want Convenient Discussions to send you desktop notifications about new comments on currently open pages if they are addressed to you or posted in sections that you watch? You can disable this feature in the settings.',
-  'confirm-browsernotifications-yes': 'Yes',
-  'confirm-browsernotifications-no': 'No',
+  // Desktop notifications dialogs
+  'confirm-desktopnotifications': 'Do you want Convenient Discussions to send you desktop notifications about new comments on currently open pages if they are addressed to you or posted in sections that you watch? You can disable this feature in the settings.',
+  'confirm-desktopnotifications-yes': 'Yes',
+  'confirm-desktopnotifications-no': 'No',
   'alert-grantpermission': 'Grant a permission to the site.',
   'alert-grantpermission-again': 'You have desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications, or deny to prevent this message from showing up again.',
 
@@ -337,11 +337,11 @@ export default {
 
   // Notification texts
   'notification-toyou': '$1 replied to your comment$3. <a href="$4" class="cd-notification-reloadPage">Reload the page</a>$5.',
-  'notification-toyou-browser': '$1 replied to your comment$3 on page "$4".',
+  'notification-toyou-desktop': '$1 replied to your comment$3 on page "$4".',
   'notification-insection': '$1 replied in section "$3". <a href="$4" class="cd-notification-reloadPage">Reload the page</a>$5.',
-  'notification-insection-browser': '$1 replied in section "$3" on page "$4".',
+  'notification-insection-desktop': '$1 replied in section "$3" on page "$4".',
   'notification-newcomments': '$1 new {{plural:$1|comment|comments|comments}}$2 that may be interesting to you. <a href="$3" class="cd-notification-reloadPage">Reload the page</a>$4.',
-  'notification-newcomments-browser': '$1 new {{plural:$1|comment|comments|comments}}$2 on page "$3" that may be interesting to you.',
+  'notification-newcomments-desktop': '$1 new {{plural:$1|comment|comments|comments}}$2 on page "$3" that may be interesting to you.',
   'notification-formdata': 'form data will not be lost',
   'notification-part-insection': 'in section "$1"',
   'notification-part-onthispage': 'on this page',

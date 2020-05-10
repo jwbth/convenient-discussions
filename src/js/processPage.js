@@ -378,27 +378,27 @@ function highlightOwnComments() {
 }
 
 /**
- * Ask the user if he wants to receive browser notifications on first run and ask for a permission
- * if it is default but the user has browser notifications enabled (for example, if he/she is using
+ * Ask the user if he wants to receive desktop notifications on first run and ask for a permission
+ * if it is default but the user has desktop notifications enabled (for example, if he/she is using
  * a browser different from where he/she has previously used).
  */
-async function confirmBrowserNotifications() {
-  if (cd.settings.browserNotifications === 'unknown' && Notification.permission !== 'denied') {
+async function confirmDesktopNotifications() {
+  if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
     // Sometimes the setting value is cached.
     getSettings(true).then((settings) => {
-      if (settings.browserNotifications === 'unknown') {
+      if (settings.desktopNotifications === 'unknown') {
         const actions = [
           {
-            label: cd.s('confirm-browsernotifications-yes'),
+            label: cd.s('confirm-desktopnotifications-yes'),
             action: 'accept',
             flags: 'primary',
           },
           {
-            label: cd.s('confirm-browsernotifications-no'),
+            label: cd.s('confirm-desktopnotifications-no'),
             action: 'reject',
           },
         ];
-        confirmDialog(cd.s('confirm-browsernotifications'), {
+        confirmDialog(cd.s('confirm-desktopnotifications'), {
           size: 'medium',
           actions,
         }).then((action) => {
@@ -407,19 +407,19 @@ async function confirmBrowserNotifications() {
               OO.ui.alert(cd.s('alert-grantpermission'));
               Notification.requestPermission((permission) => {
                 if (permission === 'granted') {
-                  cd.settings.browserNotifications = settings.browserNotifications = 'all';
+                  cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
                   setSettings(settings);
                 } else if (permission === 'denied') {
-                  cd.settings.browserNotifications = settings.browserNotifications = 'none';
+                  cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
                   setSettings(settings);
                 }
               });
             } else if (Notification.permission === 'granted') {
-              cd.settings.browserNotifications = settings.browserNotifications = 'all';
+              cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
               setSettings(settings);
             }
           } else if (action === 'reject') {
-            cd.settings.browserNotifications = settings.browserNotifications = 'none';
+            cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
             setSettings(settings);
           }
         });
@@ -427,7 +427,7 @@ async function confirmBrowserNotifications() {
     });
   }
 
-  if (cd.settings.browserNotifications !== 'unknown' && Notification.permission === 'default') {
+  if (cd.settings.desktopNotifications !== 'unknown' && Notification.permission === 'default') {
     await OO.ui.alert(cd.s('alert-grantpermission-again'), { title: cd.s('script-name') });
     Notification.requestPermission();
   }
@@ -639,7 +639,7 @@ export default async function processPage(keptData = {}) {
   }
 
   if (cd.g.firstRun) {
-    confirmBrowserNotifications();
+    confirmDesktopNotifications();
   }
 
   /**

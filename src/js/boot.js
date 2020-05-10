@@ -51,7 +51,7 @@ export function initSettings() {
     allowEditOthersComments: false,
     alwaysExpandSettings: false,
     autopreview: true,
-    browserNotifications: 'unknown',
+    desktopNotifications: 'unknown',
     defaultCommentLinkType: cd.config.defaultCommentLinkType || 'diff',
     defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,

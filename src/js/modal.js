@@ -223,8 +223,8 @@ export async function settingsDialog() {
         settings.allowEditOthersComments = this.allowEditOthersCommentsCheckbox.isSelected();
         settings.alwaysExpandSettings = this.alwaysExpandSettingsCheckbox.isSelected();
         settings.autopreview = this.autopreviewCheckbox.isSelected();
-        settings.browserNotifications = (
-          getSelectedItemData(this.browserNotificationsSelect) || 'unknown'
+        settings.desktopNotifications = (
+          getSelectedItemData(this.desktopNotificationsSelect) || 'unknown'
         );
         settings.defaultCommentLinkType = getSelectedItemData(this.defaultCommentLinkTypeSelect);
         settings.defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
@@ -286,29 +286,29 @@ export async function settingsDialog() {
     });
 
     [
-      this.browserNotificationsField,
-      this.browserNotificationsSelect,
-      this.browserNotificationsRadioAll,
-      this.browserNotificationsRadioNone,
-      this.browserNotificationsRadioToMe,
+      this.desktopNotificationsField,
+      this.desktopNotificationsSelect,
+      this.desktopNotificationsRadioAll,
+      this.desktopNotificationsRadioNone,
+      this.desktopNotificationsRadioToMe,
     ] = radioField({
       options: [
         {
-          label: cd.s('sd-browsernotifications-radio-all'),
+          label: cd.s('sd-desktopnotifications-radio-all'),
           data: 'all',
         },
         {
-          label: cd.s('sd-browsernotifications-radio-tome'),
+          label: cd.s('sd-desktopnotifications-radio-tome'),
           data: 'toMe',
         },
         {
-          label: cd.s('sd-browsernotifications-radio-none'),
+          label: cd.s('sd-desktopnotifications-radio-none'),
           data: 'none',
         },
       ],
-      selected: settings.browserNotifications,
-      label: cd.s('sd-browsernotifications'),
-      help: cd.s('sd-browsernotifications-help', location.host),
+      selected: settings.desktopNotifications,
+      label: cd.s('sd-desktopnotifications'),
+      help: cd.s('sd-desktopnotifications-help', location.host),
     });
 
     let defaultCommentLinkTypeHelp = cd.s('sd-defaultcommentlinktype-help');
@@ -461,7 +461,7 @@ export async function settingsDialog() {
     );
     this.notificationsFieldset.addItems([
       this.notificationsField,
-      this.browserNotificationsField,
+      this.desktopNotificationsField,
       this.notificationsBlacklistField,
     ]);
 
@@ -481,11 +481,11 @@ export async function settingsDialog() {
     this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.alwaysExpandSettingsCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.autopreviewCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.browserNotificationsSelect.connect(
+    this.desktopNotificationsSelect.connect(
       this,
       {
         select: 'updateActionsAvailability',
-        choose: 'changeBrowserNotifications',
+        choose: 'changeDesktopNotifications',
       }
     );
     this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
@@ -549,7 +549,7 @@ export async function settingsDialog() {
     );
     this.notificationsBlacklistMultiselect.toggleValid(notificationsBlacklistJson.length <= 10000);
 
-    const browserNotifications = getSelectedItemData(this.browserNotificationsSelect) || 'unknown';
+    const desktopNotifications = getSelectedItemData(this.desktopNotificationsSelect) || 'unknown';
     const defaultCommentLinkType = getSelectedItemData(this.defaultCommentLinkTypeSelect);
     const defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
     const notifications = getSelectedItemData(this.notificationsSelect);
@@ -559,7 +559,7 @@ export async function settingsDialog() {
       this.allowEditOthersCommentsCheckbox.isSelected() !== this.settings.allowEditOthersComments ||
       this.alwaysExpandSettingsCheckbox.isSelected() !== this.settings.alwaysExpandSettings ||
       this.autopreviewCheckbox.isSelected() !== this.settings.autopreview ||
-      browserNotifications !== this.settings.browserNotifications ||
+      desktopNotifications !== this.settings.desktopNotifications ||
       defaultCommentLinkType !== this.settings.defaultCommentLinkType ||
       defaultSectionLinkType !== this.settings.defaultSectionLinkType ||
       this.highlightOwnCommentsCheckbox.isSelected() !== this.settings.highlightOwnComments ||
@@ -584,7 +584,7 @@ export async function settingsDialog() {
       ) ||
       this.alwaysExpandSettingsCheckbox.isSelected() !== cd.defaultSettings.alwaysExpandSettings ||
       this.autopreviewCheckbox.isSelected() !== cd.defaultSettings.autopreview ||
-      browserNotifications !== cd.defaultSettings.browserNotifications ||
+      desktopNotifications !== cd.defaultSettings.desktopNotifications ||
       defaultCommentLinkType !== cd.defaultSettings.defaultCommentLinkType ||
       defaultSectionLinkType !== cd.defaultSettings.defaultSectionLinkType ||
       this.highlightOwnCommentsCheckbox.isSelected() !== cd.defaultSettings.highlightOwnComments ||
@@ -598,12 +598,12 @@ export async function settingsDialog() {
     this.resetSettingsButton.setDisabled(!enableReset);
   };
 
-  SettingsDialog.prototype.changeBrowserNotifications = function (option) {
+  SettingsDialog.prototype.changeDesktopNotifications = function (option) {
     if (option.data !== 'none' && Notification.permission !== 'granted') {
       OO.ui.alert(cd.s('alert-grantpermission'));
       Notification.requestPermission((permission) => {
         if (permission !== 'granted') {
-          this.browserNotificationsSelect.selectItemByData('none');
+          this.desktopNotificationsSelect.selectItemByData('none');
         }
       });
     }

@@ -30,12 +30,12 @@ export default {
   'sd-notifications-radio-tome': 'Только об ответах на мои сообщения',
   'sd-notifications-radio-none': 'Никаких',
   'sd-notifications-help': 'Уведомления — маленькие окошки в правом верхнем углу страницы.',
-  'sd-browsernotifications': 'Браузерные уведомления',
-  'sd-browsernotifications-radio-all': 'Об ответах на мои сообщения и о сообщениях в разделах, за которыми я слежу',
-  'sd-browsernotifications-radio-tome': 'Только об ответах на мои сообщения',
-  'sd-browsernotifications-radio-none': 'Никаких',
+  'sd-desktopnotifications': 'Браузерные уведомления',
+  'sd-desktopnotifications-radio-all': 'Об ответах на мои сообщения и о сообщениях в разделах, за которыми я слежу',
+  'sd-desktopnotifications-radio-tome': 'Только об ответах на мои сообщения',
+  'sd-desktopnotifications-radio-none': 'Никаких',
   // $1 is a domain.
-  'sd-browsernotifications-help': 'Браузерные уведомления сообщают о событиях на открытых, но скрытых из виду страницах. Чтобы их получать, вы должны разрешить отправку уведомлений для $1.',
+  'sd-desktopnotifications-help': 'Браузерные уведомления сообщают о событиях на открытых, но скрытых из виду страницах. Чтобы их получать, вы должны разрешить отправку уведомлений для $1.',
   'sd-highlightowncomments': 'Подсвечивать мои сообщения',
   'sd-insertbuttons': 'Кнопки для панели быстрой вставки',
   'sd-insertbuttons-multiselect-placeholder': 'Добавить кнопку',
@@ -71,10 +71,10 @@ export default {
   'sd-error-save': 'Не удалось сохранить настройки на сервер: $1/$2',
   'sd-error-removedata': 'Не удалось удалить данные на сервере: $1/$2',
 
-  // Browser notifications dialogs
-  'confirm-browsernotifications': 'Хотите ли вы, чтобы «Удобные дискуссии» отправляли вам браузерные уведомления о новых сообщениях на открытых в данный момент страницах, адресованных вам и написанных в темах, за которыми вы следите? Вы можете отключить эту функцию в настройках.',
-  'confirm-browsernotifications-yes': 'Да',
-  'confirm-browsernotifications-no': 'Нет',
+  // Desktop notifications dialogs
+  'confirm-desktopnotifications': 'Хотите ли вы, чтобы «Удобные дискуссии» отправляли вам браузерные уведомления о новых сообщениях на открытых в данный момент страницах, адресованных вам и написанных в темах, за которыми вы следите? Вы можете отключить эту функцию в настройках.',
+  'confirm-desktopnotifications-yes': 'Да',
+  'confirm-desktopnotifications-no': 'Нет',
   'alert-grantpermission': 'Разрешите сайту отправку уведомлений.',
   'alert-grantpermission-again': 'У вас включены браузерные уведомления, но сайту не разрешено их посылать. Разрешите сайту отправку уведомлений, чтобы их получать, или запретите, чтобы это сообщение не появлялось снова.',
 
@@ -337,11 +337,11 @@ export default {
 
   // Notification texts
   'notification-toyou': '$1 {{gender:$2|ответил|ответила}} на ваше сообщение$3. <a href="$4" class="cd-notification-reloadPage">Обновить страницу</a>$5.',
-  'notification-toyou-browser': '$1 {{gender:$2|ответил|ответила}} на ваше сообщение$3 на странице «$4».',
+  'notification-toyou-desktop': '$1 {{gender:$2|ответил|ответила}} на ваше сообщение$3 на странице «$4».',
   'notification-insection': '$1 {{gender:$2|ответил|ответила}} в разделе «$3». <a href="$4" class="cd-notification-reloadPage">Обновить страницу</a>$5.',
-  'notification-insection-browser': '$1 {{gender:$2|ответил|ответила}} в разделе «$3» на странице «$4».',
+  'notification-insection-desktop': '$1 {{gender:$2|ответил|ответила}} в разделе «$3» на странице «$4».',
   'notification-newcomments': '$1 {{plural:$1|новое сообщение|новых сообщения|новых сообщений}}$2, которые могут вас заинтересовать. <a href="$3" class="cd-notification-reloadPage">Обновить страницу</a>$4.',
-  'notification-newcomments-browser': '$1 {{plural:$1|новое сообщение|новых сообщения|новых сообщений}}$2 на странице «$3», которые могут вас заинтересовать.',
+  'notification-newcomments-desktop': '$1 {{plural:$1|новое сообщение|новых сообщения|новых сообщений}}$2 на странице «$3», которые могут вас заинтересовать.',
   'notification-formdata': 'данные форм не потеряются',
   'notification-part-insection': 'в разделе «$1»',
   'notification-part-onthispage': 'на этой странице',
