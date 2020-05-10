@@ -39,9 +39,12 @@ import '../less/talkPage.less';
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
  *
+ * @param {object} [data] Data passed from the main module.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadMessages}.
  * @private
  */
-async function prepare() {
+async function prepare({ messagesRequest }) {
   cd.g.$root = cd.g.$content.children('.mw-parser-output');
   if (!cd.g.$root.length) {
     cd.g.$root = cd.g.$content;
@@ -67,7 +70,7 @@ async function prepare() {
   cd.sections = [];
 
   if (cd.g.firstRun) {
-    await init();
+    await init({ messagesRequest });
   } else {
     resetCommentAnchors();
     commentLayers.reset();
@@ -450,7 +453,7 @@ function debugLog() {
 /**
  * Process the page.
  *
- * @param {object} [keptData={}] Data passed from the previous page state.
+ * @param {object} [keptData={}] Data passed from the previous page state or the main module.
  * @param {string} [keptData.commentAnchor] Comment anchor to scroll to.
  * @param {string} [keptData.sectionAnchor] Section anchor to scroll to.
  * @param {boolean} [keptData.createdPage] The page was created while it was in the previous state.
@@ -460,15 +463,17 @@ function debugLog() {
  *    enough time for it to be saved on the server.
  * @param {string} [keptData.justUnwatchedSection] Section just unwatched so that there could be not
  *    enough time for it to be saved on the server.
+ * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadMessages}.
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
  */
 export default async function processPage(keptData = {}) {
-  cd.debug.stopTimer(cd.g.firstRun ? 'loading modules' : 'laying out HTML');
+  cd.debug.stopTimer(cd.g.firstRun ? 'loading data' : 'laying out HTML');
   cd.debug.startTimer('preparations');
 
-  await prepare();
+  await prepare(keptData);
 
   const firstVisibleElementData = cd.g.firstRun ? getFirstVisibleElementData() : {};
 
@@ -491,7 +496,7 @@ export default async function processPage(keptData = {}) {
     )
   );
 
-  // TODO: test. Remove when done.
+  // For testing
   cd.g.editWatchedSections = editWatchedSections;
   cd.g.settingsDialog = settingsDialog;
 

@@ -19,6 +19,7 @@ import processPage from './processPage';
 import util from './globalUtil';
 import { defined, isProbablyTalkPage, underlinesToSpaces } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
+import { getUserInfo } from './apiWrappers';
 import { loadMessages } from './dateFormat';
 import { removeLoadingOverlay, setLoadingOverlay } from './boot';
 import { setVisits } from './options';
@@ -166,8 +167,8 @@ function main() {
   cd.util.setVisits = setVisits;
 
   cd.debug.init();
-  cd.debug.startTimer('start');
   cd.debug.startTimer('total time');
+  cd.debug.startTimer('start');
 
   /**
    * The script has launched.
@@ -205,6 +206,10 @@ function main() {
     mw.config.get('wgIsArticle') &&
     (
       isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER) ||
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // the list of supported namespaces and page white/black list in the configuration. With this
+      // method, there won't be "comment" links for edits on pages that list revisions such as the
+      // watchlist.
       cd.g.$content.find('.cd-talkPage').length
     )
   ) {
@@ -222,15 +227,17 @@ function main() {
     setLoadingOverlay();
 
     cd.debug.stopTimer('start');
-    cd.debug.startTimer('loading modules');
+    cd.debug.startTimer('loading data');
 
     cd.g.worker = new Worker();
 
-    // Load messages in advance if the API module is ready in order not to make 2 requests
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
+    let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       cd.g.api = new mw.Api();
-      cd.g.messagesRequest = loadMessages();
+      messagesRequest = loadMessages();
+      getUserInfo();
     }
 
     // We use a jQuery promise as there is no way to know the state of native promises.
@@ -253,11 +260,11 @@ function main() {
         'oojs-ui.styles.icons-interactions',
         'user.options',
       ]),
-      cd.g.messagesRequest,
+      messagesRequest,
     ].filter(defined)).then(
       () => {
         try {
-          processPage();
+          processPage({ messagesRequest });
         } catch (e) {
           mw.notify(cd.s('error-processpage'), { type: 'error' });
           removeLoadingOverlay();
@@ -299,11 +306,13 @@ function main() {
       },
     });
 
-    // Load messages in advance if the API module is ready in order not to make 2 requests
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
+    let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       cd.g.api = new mw.Api();
-      cd.g.messagesRequest = loadMessages();
+      messagesRequest = loadMessages();
+      getUserInfo();
     }
 
     mw.loader.using([
@@ -320,7 +329,7 @@ function main() {
       'oojs-ui.styles.icons-alerts',
     ]).then(
       () => {
-        commentLinks();
+        commentLinks({ messagesRequest });
       },
       (e) => {
         console.warn(e);

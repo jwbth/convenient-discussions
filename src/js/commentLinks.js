@@ -37,25 +37,33 @@ let processDiffFirstRun = true;
 /**
  * Prepare variables.
  *
+ * @param {object} [data] Data passed from the main module.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadMessages}.
  * @private
  */
-async function prepare() {
+async function prepare({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
 
   initTimestampParsingTools();
 
-  // Loading watched sections is not critical, as opposed to messages.
-  const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
+  // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
+  // error, not letting it be caught by the try/catch block.
+  const watchedSectionsRequest = getWatchedSections(true);
+  watchedSectionsRequest.catch((e) => {
     console.warn('Couldn\'t load the settings from the server.', e);
   });
-  const messagesRequest = cd.g.messagesRequest || loadMessages();
+  messagesRequest = messagesRequest || loadMessages();
+
+  let watchedSectionsResult;
   try {
-    const [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
-    ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
+    [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
   } catch (e) {
     console.error('Couldn\'t load the messages required for the script.', e);
     return;
   }
+
+  ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
@@ -638,9 +646,11 @@ async function addCommentLinks($content) {
 
 /**
  * The entry function for the comment links adding mechanism.
+ *
+ * @param {object} [data] Data passed from the main module.
  */
-export default async function commentLinks() {
-  await prepare();
+export default async function commentLinks({ messagesRequest }) {
+  await prepare({ messagesRequest });
 
   if (cd.g.IS_DIFF_PAGE) {
     mw.hook('convenientDiscussions.pageReady').add(processDiff);

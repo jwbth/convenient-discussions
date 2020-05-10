@@ -137,13 +137,17 @@ function initCss() {
 }
 
 /**
- * Initiate various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed
- * at the first run.
+ * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
+ * the first run.
+ *
+ * @param {object} [data] Data passed from the main module.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadMessages}.
  */
-export async function init() {
+export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
 
-  await cd.g.messagesRequest || loadMessages();
+  await messagesRequest || loadMessages();
   initCss();
   initSettings();
   initTimestampParsingTools();
