@@ -1100,6 +1100,11 @@ export default class Section extends SectionSkeleton {
     }
   }
 
+  /**
+   * Section elements as a jQuery object.
+   *
+   * @type {JQuery}
+   */
   // Using a getter allows to save a little time on running $().
   get $elements() {
     if (this.#cached$elements === undefined) {
