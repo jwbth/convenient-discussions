@@ -20,8 +20,8 @@ import util from './globalUtil';
 import { defined, isProbablyTalkPage, underlinesToSpaces } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
+import { initCss, removeLoadingOverlay, setLoadingOverlay } from './boot';
 import { loadMessages } from './dateFormat';
-import { removeLoadingOverlay, setLoadingOverlay } from './boot';
 import { setVisits } from './options';
 
 import '../less/global.less';
@@ -285,6 +285,15 @@ function main() {
         console.warn('The promise is in the "pending" state for 10 seconds; removing the loading overlay.');
       }
     }, 10000);
+
+    // We do some expensive operations now, not after the requests are fulfilled, to save time.
+    cd.debug.startTimer('line height');
+    // This line should be before the line with setProperty in initCss() to avoid reflow (which
+    // could cost ~100ms depending on the machine).
+    cd.g.REGULAR_LINE_HEIGHT = parseFloat(window.getComputedStyle(cd.g.$content.get(0)).lineHeight);
+    cd.debug.stopTimer('line height');
+
+    initCss();
   }
 
   if (

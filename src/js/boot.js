@@ -117,7 +117,7 @@ export function initSettings() {
  *
  * @private
  */
-function initCss() {
+export function initCss() {
   // Vector, Monobook, Minerva
   const bodyBackgroundColor = $('#content').length ?
     window.getComputedStyle($('#content').get(0)).backgroundColor :
@@ -158,7 +158,6 @@ export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
 
   await messagesRequest || loadMessages();
-  initCss();
   initSettings();
   initTimestampParsingTools();
 
@@ -375,10 +374,6 @@ export async function init({ messagesRequest }) {
   cd.g.ADD_TOPIC_SELECTORS = ['#ca-addsection a']
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
-
-  cd.debug.startTimer('line height');
-  cd.g.REGULAR_LINE_HEIGHT = parseFloat(window.getComputedStyle(cd.g.rootElement).lineHeight);
-  cd.debug.stopTimer('line height');
 
 
   /* Extensions */
