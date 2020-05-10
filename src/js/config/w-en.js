@@ -52,6 +52,7 @@ export default {
     'december-gen': 'December',
     'timezone-utc': 'UTC',
     'parentheses': '($1)',
+    'file-anchor-link': 'File',
   },
 
   contribsPage: 'Special:Contributions',
