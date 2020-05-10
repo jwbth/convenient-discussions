@@ -141,9 +141,11 @@ export function initCss() {
   cd.debug.stopTimer('focusedColor');
 
   cd.g.nanoCss.put('.cd-commentOverlay-gradient', {
-    backgroundImage: `linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))`,
+    backgroundImage: 'linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
-  cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', { backgroundColor: bodyBackgroundColor });
+  cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
+    backgroundColor: bodyBackgroundColor,
+  });
 }
 
 /**
