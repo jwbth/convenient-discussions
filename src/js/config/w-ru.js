@@ -52,6 +52,8 @@ export default {
     'december-gen': 'декабря',
     'timezone-utc': 'UTC',
     'parentheses': '($1)',
+    'parentheses-start': '(',
+    'parentheses-end': ')',
     'file-anchor-link': 'Файл',
   },
 

@@ -528,7 +528,7 @@ export function loadMessages() {
     'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen', 'july-gen',
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
-    'parentheses', 'file-anchor-link',
+    'parentheses', 'parentheses-start', 'parentheses-end', 'file-anchor-link',
   ];
 
   // I hope we won't be scolded too much for making two message requests in parallel...
