@@ -132,7 +132,7 @@ export function initCss() {
   cd.debug.startTimer('focusedColor');
   // Set the transparent color for the "focused" color. Note that the user may override the CSS
   // variable value in his personal styles.
-  const focusedColor = getComputedStyle(document.documentElement)
+  const focusedColor = window.getComputedStyle(document.documentElement)
     .getPropertyValue('--cd-comment-underlay-focused-color');
   document.documentElement.style.setProperty(
     '--cd-comment-underlay-focused-transparent-color',
