@@ -71,6 +71,10 @@ export function initSettings() {
     watchSectionOnReply: true,
   };
 
+  const aliases = {
+    desktopNotifications: ['browserNotifications'],
+  };
+
   let nativeSettings;
   try {
     nativeSettings = JSON.parse(mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME)) || {};
@@ -92,6 +96,16 @@ export function initSettings() {
     ) {
       cd.settings[name] = nativeSettings[name];
     }
+
+    // Seamless transition when changing a setting name.
+    (aliases[name] || []).forEach((alias) => {
+      if (
+        nativeSettings[alias] !== undefined &&
+        typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        cd.settings[name] = nativeSettings[alias];
+      }
+    });
   });
 
   if (
