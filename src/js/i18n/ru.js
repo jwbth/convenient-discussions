@@ -222,7 +222,7 @@ export default {
   'cf-headline-subsection': 'Название подраздела раздела «$1»',
   'cf-headline-topic-lowercase': 'название темы',
   'cf-headline-subsection-lowercase': 'название подраздела',
-  'cf-comment-placeholder-replytosection': 'Ответ в тему «$1»',
+  'cf-comment-placeholder-replytosection': 'Ответ в раздел «$1»',
   'cf-comment-placeholder-replytocomment': 'Ответ $1',
   'cf-comment-placeholder-addsection': 'Текст сообщения',
   'cf-comment-placeholder-addsubsection': 'Текст сообщения',
