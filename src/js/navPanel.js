@@ -186,6 +186,305 @@ async function checkForNewComments() {
 }
 
 /**
+ * Send ordinary and browser notifications to the user.
+ *
+ * @param {Comment[]} interestingNewComments
+ */
+async function sendNotifications(interestingNewComments) {
+  const notifyAbout = interestingNewComments.filter((comment) => (
+    !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
+  ));
+
+  let notifyAboutBrowser = [];
+  if (cd.settings.browserNotifications === 'all') {
+    notifyAboutBrowser = notifyAbout;
+  } else if (cd.settings.browserNotifications === 'toMe') {
+    notifyAboutBrowser = notifyAbout.filter((comment) => comment.toMe);
+  }
+
+  let notifyAboutOrdinary = [];
+  if (cd.settings.notifications === 'all') {
+    notifyAboutOrdinary = notifyAbout;
+  } else if (cd.settings.notifications === 'toMe') {
+    notifyAboutOrdinary = notifyAbout.filter((comment) => comment.toMe);
+  }
+  if (cd.settings.notifications !== 'none' && notifyAboutOrdinary.length) {
+    // Combine with content of notifications that were displayed but are still open (i.e., the
+    // user most likely didn't see them because the tab is in the background).
+    notifications.slice().reverse().some((notification) => {
+      if (notification.notification.isOpen) {
+        notifyAboutOrdinary.push(...notification.comments);
+        return false;
+      } else {
+        return true;
+      }
+    });
+  }
+
+  const authors = removeDuplicates(notifyAboutOrdinary.concat(notifyAboutBrowser))
+    .map((comment) => comment.author)
+    .filter(defined);
+  await getUserGenders(authors, true);
+
+  if (notifyAboutOrdinary.length) {
+    let html;
+    let href;
+    if (notifyAboutOrdinary.length === 1) {
+      const comment = notifyAboutOrdinary[0];
+      href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${comment.anchor ? `#${comment.anchor}` : ''}`);
+      if (comment.toMe) {
+        const formsDataWillNotBeLost = (
+          cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+          ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
+          ''
+        );
+        const where = comment.watchedSectionHeadline ?
+          ' ' + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
+          ' ' + cd.s('notification-part-onthispage');
+        html = cd.s(
+          'notification-toyou',
+          comment.author.name,
+          comment.author,
+          where,
+          href,
+          formsDataWillNotBeLost
+        );
+      } else {
+        const formsDataWillNotBeLost = (
+          cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+          ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
+          ''
+        );
+        html = cd.s(
+          'notification-insection',
+          comment.author.name,
+          comment.author,
+          comment.watchedSectionHeadline,
+          href,
+          formsDataWillNotBeLost
+        );
+      }
+    } else {
+      const isCommonSection = notifyAboutOrdinary
+        .every((comment) => comment.sectionAnchor === notifyAboutOrdinary[0].sectionAnchor);
+      const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : null;
+      href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${section ? `#${section}` : ''}`);
+      const where = section ?
+        ' ' + cd.s('notification-part-insection', section) :
+        ' ' + cd.s('notification-part-onthispage');
+      const formsDataWillNotBeLost = (
+        cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+        ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
+        ''
+      );
+      html = cd.s(
+        'notification-newcomments',
+        notifyAboutOrdinary.length,
+        where,
+        href,
+        formsDataWillNotBeLost
+      );
+    }
+
+    navPanel.closeAllNotifications();
+    const $body = animateLink(html, 'cd-notification-reloadPage', (e) => {
+      e.preventDefault();
+      reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
+      notification.close();
+    });
+    const notification = mw.notification.notify($body);
+    notifications.push({
+      notification,
+      comments: notifyAboutOrdinary,
+    });
+  }
+
+  if (
+    !document.hasFocus() &&
+    Notification.permission === 'granted' &&
+    notifyAboutBrowser.length
+  ) {
+    let body;
+    // We use a tag so that there aren't duplicate notifications when the same page is opened in
+    // two tabs.
+    let tag = 'convenient-discussions-';
+    const comment = notifyAboutBrowser[0];
+    if (notifyAboutBrowser.length === 1) {
+      tag += comment.anchor;
+      if (comment.toMe) {
+        const where = comment.sectionHeadline ?
+          ' ' + cd.s('notification-part-insection', comment.sectionHeadline) :
+          '';
+        body = cd.s(
+          'notification-toyou-browser',
+          comment.author.name,
+          comment.author,
+          where,
+          cd.g.CURRENT_PAGE
+        );
+      } else {
+        body = cd.s(
+          'notification-insection-browser',
+          comment.author.name,
+          comment.author,
+          comment.sectionHeadline,
+          cd.g.CURRENT_PAGE
+        );
+      }
+    } else {
+      const isCommonSection = notifyAbout
+        .every((comment) => comment.sectionAnchor === notifyAbout[0].sectionAnchor);
+      const where = isCommonSection ?
+        ' ' + cd.s('notification-part-insection', notifyAbout[0].sectionHeadline) :
+        '';
+      body = cd.s(
+        'notification-newcomments-browser',
+        notifyAbout.length,
+        where,
+        cd.g.CURRENT_PAGE
+      );
+      tag += notifyAboutBrowser[notifyAboutBrowser.length - 1].anchor;
+    }
+
+    const notification = new Notification(mw.config.get('wgSiteName'), { body, tag });
+    notification.onclick = () => {
+      parent.focus();
+      // Just in case, old browsers. TODO: delete?
+      window.focus();
+      reloadPage({ commentAnchor: comment.anchor });
+    };
+  }
+
+  notifiedAbout.push(...notifyAbout);
+}
+
+/**
+ * Process the comments retrieved by a web worker.
+ *
+ * @param {CommentSkeleton[]} comments
+ * @private
+ */
+async function processComments(comments) {
+  // Get this pages' watched sections without making a request.
+  let thisPageWatchedSections;
+  try {
+    ({ thisPageWatchedSections } = await getWatchedSections(true) || {});
+  } catch (e) {
+    console.warn('Couldn\'t load the settings from the server.');
+  }
+
+  comments.forEach((comment) => {
+    comment.author = userRegistry.getUser(comment.authorName);
+    delete comment.authorName;
+  });
+
+  // Extract "interesting" comments (that would make the new comments counter purple and might
+  // invoke notifications). Keep in mind that we should account for the case where comments have
+  // been removed. For example, the counter could be "+1" but then go back to displaying the refresh
+  // icon which means 0 new comments.
+  const newComments = comments
+    .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
+  const interestingNewComments = newComments.filter((comment) => {
+    if (
+      comment.own ||
+      cd.settings.notificationsBlacklist.includes(comment.author.name) ||
+      !thisPageWatchedSections
+    ) {
+      return false;
+    }
+    if (comment.toMe) {
+      return true;
+    }
+
+    // Is this section watched by means of an upper level section?
+    const sections = Section.getSectionsByHeadline(comment.sectionHeadline);
+    for (const section of sections) {
+      const watchedAncestor = section.getWatchedAncestor(true);
+      if (watchedAncestor) {
+        comment.watchedSectionHeadline = watchedAncestor.headline;
+        return true;
+      }
+    }
+  });
+
+  if (interestingNewComments[0]) {
+    relevantNewCommentAnchor = interestingNewComments[0].anchor;
+  } else if (newComments[0]) {
+    relevantNewCommentAnchor = newComments[0].anchor;
+  }
+
+  const newCommentsBySection = {};
+  newComments.forEach((comment) => {
+    if (!newCommentsBySection[comment.sectionAnchor]) {
+      newCommentsBySection[comment.sectionAnchor] = [];
+    }
+    newCommentsBySection[comment.sectionAnchor].push(comment);
+  });
+
+  let tooltipText;
+  if (newComments.length) {
+    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} (R)`;
+    Object.keys(newCommentsBySection).forEach((anchor) => {
+      const headline = newCommentsBySection[anchor][0].sectionHeadline ?
+        cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
+        mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
+      tooltipText += `\n\n${headline}`;
+      newCommentsBySection[anchor].forEach((comment) => {
+        tooltipText += `\n`;
+        if (comment.toMe) {
+          tooltipText += `${cd.s('navpanel-newcomments-toyou')} `;
+        }
+        const author = comment.author.name || cd.s('navpanel-newcomments-unknownauthor');
+        const date = comment.date ?
+          cd.util.formatDate(comment.date) :
+          cd.s('navpanel-newcomments-unknowndate');
+        tooltipText += `${author}, ${date}`;
+      });
+    });
+  } else {
+    tooltipText = `${cd.s('navpanel-refresh')} (R)`;
+  }
+
+  $refreshButton
+    .text(newComments.length ? `+${newComments.length}` : ``)
+    .attr('title', tooltipText);
+  if (interestingNewComments.length) {
+    $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
+  } else {
+    $refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
+  }
+
+  // Add new comments notifications to the end of each updated section.
+  $('.cd-refreshButtonContainer').remove();
+  const sectionAnchors = removeDuplicates(newComments.map((comment) => comment.sectionAnchor));
+  sectionAnchors.forEach((anchor) => {
+    const section = Section.getSectionByAnchor(anchor);
+    if (!section) return;
+
+    const button = new OO.ui.ButtonWidget({
+      label: `${cd.s('section-newcomments')}. ${cd.s('navpanel-refresh-tooltip')}.`,
+      framed: false,
+      classes: ['cd-button', 'cd-sectionButton'],
+    });
+    button.on('click', () => {
+      const commentAnchor = newComments.find((comment) => comment.sectionAnchor === anchor).anchor;
+      reloadPage({ commentAnchor });
+    });
+
+    const $lastElement = section.$replyButton ?
+      section.$replyButton.closest('ul, ol') :
+      section.$elements[section.$elements.length - 1];
+    $('<div>')
+      .addClass('cd-refreshButtonContainer')
+      .addClass('cd-sectionButtonContainer')
+      .append(button.$element)
+      .insertAfter($lastElement);
+  });
+
+  sendNotifications(interestingNewComments);
+}
+
+/**
  * Callback for messages from the worker.
  *
  * @param {Event} e
@@ -200,289 +499,7 @@ async function onMessageFromWorker(e) {
 
   if (message.type === 'parse') {
     const { comments } = message;
-
-    let thisPageWatchedSections;
-    try {
-      ({ thisPageWatchedSections } = await getWatchedSections(true) || {});
-    } catch (e) {
-      console.warn('Couldn\'t load the settings from the server.');
-    }
-
-    comments.forEach((comment) => {
-      comment.author = userRegistry.getUser(comment.authorName);
-      delete comment.authorName;
-    });
-
-    // Keep in mind that we should account for the case when comments have been removed. For
-    // example, the counter could be "+1" but then go back to displaying the refresh icon which
-    // means 0 new comments.
-    const newComments = comments
-      .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
-    const interestingNewComments = newComments.filter((comment) => {
-      if (comment.own) {
-        return false;
-      }
-      if (cd.settings.notificationsBlacklist.includes(comment.author.name)) {
-        return false;
-      }
-      if (comment.toMe) {
-        return true;
-      }
-      if (!thisPageWatchedSections) {
-        return false;
-      }
-
-      // Is this section watched by means of an upper level section?
-      const sections = Section.getSectionsByHeadline(comment.sectionHeadline);
-      for (const section of sections) {
-        const watchedAncestor = section.getWatchedAncestor(true);
-        if (watchedAncestor) {
-          comment.watchedSectionHeadline = watchedAncestor.headline;
-          return true;
-        }
-      }
-    });
-
-    if (interestingNewComments[0]) {
-      relevantNewCommentAnchor = interestingNewComments[0].anchor;
-    } else if (newComments[0]) {
-      relevantNewCommentAnchor = newComments[0].anchor;
-    }
-
-    const newCommentsBySection = {};
-    newComments.forEach((comment) => {
-      if (!newCommentsBySection[comment.sectionAnchor]) {
-        newCommentsBySection[comment.sectionAnchor] = [];
-      }
-      newCommentsBySection[comment.sectionAnchor].push(comment);
-    });
-
-    let tooltipText;
-    if (newComments.length) {
-      tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} (R)`;
-      Object.keys(newCommentsBySection).forEach((anchor) => {
-        const headline = newCommentsBySection[anchor][0].sectionHeadline ?
-          cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
-          mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
-        tooltipText += `\n\n${headline}`;
-        newCommentsBySection[anchor].forEach((comment) => {
-          tooltipText += `\n`;
-          if (comment.toMe) {
-            tooltipText += `${cd.s('navpanel-newcomments-toyou')} `;
-          }
-          const author = comment.author.name || cd.s('navpanel-newcomments-unknownauthor');
-          const date = comment.date ?
-            cd.util.formatDate(comment.date) :
-            cd.s('navpanel-newcomments-unknowndate');
-          tooltipText += `${author}, ${date}`;
-        });
-      });
-    } else {
-      tooltipText = `${cd.s('navpanel-refresh')} (R)`;
-    }
-
-    $refreshButton
-      .text(newComments.length ? `+${newComments.length}` : ``)
-      .attr('title', tooltipText);
-    if (interestingNewComments.length) {
-      $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
-    } else {
-      $refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
-    }
-
-    // Add new comment notifications to the end of each updated section.
-    $('.cd-refreshButtonContainer').remove();
-    const sectionAnchors = removeDuplicates(newComments.map((comment) => comment.sectionAnchor));
-    sectionAnchors.forEach((anchor) => {
-      const section = Section.getSectionByAnchor(anchor);
-      if (!section) return;
-
-      const button = new OO.ui.ButtonWidget({
-        label: `${cd.s('section-newcomments')}. ${cd.s('navpanel-refresh-tooltip')}.`,
-        framed: false,
-        classes: ['cd-button', 'cd-sectionButton'],
-      });
-      button.on('click', () => {
-        const commentAnchor = newComments.find((comment) => comment.sectionAnchor === anchor)
-          .anchor;
-        reloadPage({ commentAnchor });
-      });
-
-      const $lastElement = section.$replyButton ?
-        section.$replyButton.closest('ul, ol') :
-        section.$elements[section.$elements.length - 1];
-      $('<div>')
-        .addClass('cd-refreshButtonContainer')
-        .addClass('cd-sectionButtonContainer')
-        .append(button.$element)
-        .insertAfter($lastElement);
-    });
-
-    const notifyAbout = interestingNewComments.filter((comment) => (
-      !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
-    ));
-
-    let notifyAboutBrowser = [];
-    if (cd.settings.browserNotifications === 'all') {
-      notifyAboutBrowser = notifyAbout;
-    } else if (cd.settings.browserNotifications === 'toMe') {
-      notifyAboutBrowser = notifyAbout.filter((comment) => comment.toMe);
-    }
-
-    let notifyAboutRegular = [];
-    if (cd.settings.notifications === 'all') {
-      notifyAboutRegular = notifyAbout;
-    } else if (cd.settings.notifications === 'toMe') {
-      notifyAboutRegular = notifyAbout.filter((comment) => comment.toMe);
-    }
-    if (cd.settings.notifications !== 'none' && notifyAboutRegular.length) {
-      // Combine with content of notifications that were displayed but are still open (i.e., the
-      // user most likely didn't see them because the tab is in the background).
-      notifications.slice().reverse().some((notification) => {
-        if (notification.notification.isOpen) {
-          notifyAboutRegular.push(...notification.comments);
-          return false;
-        } else {
-          return true;
-        }
-      });
-    }
-
-    const authors = removeDuplicates(notifyAboutRegular.concat(notifyAboutBrowser))
-      .map((comment) => comment.author)
-      .filter(defined);
-    await getUserGenders(authors, true);
-
-    if (notifyAboutRegular.length) {
-      let html;
-      let href;
-      if (notifyAboutRegular.length === 1) {
-        const comment = notifyAboutRegular[0];
-        href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${comment.anchor ? `#${comment.anchor}` : ''}`);
-        if (comment.toMe) {
-          const formsDataWillNotBeLost = (
-            cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-            ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-            ''
-          );
-          const where = comment.watchedSectionHeadline ?
-            ' ' + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
-            ' ' + cd.s('notification-part-onthispage');
-          html = cd.s(
-            'notification-toyou',
-            comment.author.name,
-            comment.author,
-            where,
-            href,
-            formsDataWillNotBeLost
-          );
-        } else {
-          const formsDataWillNotBeLost = (
-            cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-            ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-            ''
-          );
-          html = cd.s(
-            'notification-insection',
-            comment.author.name,
-            comment.author,
-            comment.watchedSectionHeadline,
-            href,
-            formsDataWillNotBeLost
-          );
-        }
-      } else {
-        const isCommonSection = notifyAboutRegular
-          .every((comment) => comment.sectionAnchor === notifyAboutRegular[0].sectionAnchor);
-        const section = isCommonSection ? notifyAboutRegular[0].watchedSectionHeadline : null;
-        href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${section ? `#${section}` : ''}`);
-        const where = section ?
-          ' ' + cd.s('notification-part-insection', section) :
-          ' ' + cd.s('notification-part-onthispage');
-        const formsDataWillNotBeLost = (
-          cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-          ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-          ''
-        );
-        html = cd.s(
-          'notification-newcomments',
-          notifyAboutRegular.length,
-          where,
-          href,
-          formsDataWillNotBeLost
-        );
-      }
-
-      navPanel.closeAllNotifications();
-      const $body = animateLink(html, 'cd-notification-reloadPage', (e) => {
-        e.preventDefault();
-        reloadPage({ commentAnchor: notifyAboutRegular[0].anchor });
-        notification.close();
-      });
-      const notification = mw.notification.notify($body);
-      notifications.push({
-        notification,
-        comments: notifyAboutRegular,
-      });
-    }
-
-    if (
-      !document.hasFocus() &&
-      Notification.permission === 'granted' &&
-      notifyAboutBrowser.length
-    ) {
-      let body;
-      // We use a tag so that there aren't duplicate notifications when the same page is opened in
-      // two tabs.
-      let tag = 'convenient-discussions-';
-      const comment = notifyAboutBrowser[0];
-      if (notifyAboutBrowser.length === 1) {
-        tag += comment.anchor;
-        if (comment.toMe) {
-          const where = comment.sectionHeadline ?
-            ' ' + cd.s('notification-part-insection', comment.sectionHeadline) :
-            '';
-          body = cd.s(
-            'notification-toyou-browser',
-            comment.author.name,
-            comment.author,
-            where,
-            cd.g.CURRENT_PAGE
-          );
-        } else {
-          body = cd.s(
-            'notification-insection-browser',
-            comment.author.name,
-            comment.author,
-            comment.sectionHeadline,
-            cd.g.CURRENT_PAGE
-          );
-        }
-      } else {
-        const isCommonSection = notifyAbout
-          .every((comment) => comment.sectionAnchor === notifyAbout[0].sectionAnchor);
-        const where = isCommonSection ?
-          ' ' + cd.s('notification-part-insection', notifyAbout[0].sectionHeadline) :
-          '';
-        body = cd.s(
-          'notification-newcomments-browser',
-          notifyAbout.length,
-          where,
-          cd.g.CURRENT_PAGE
-        );
-        tag += notifyAboutBrowser[notifyAboutBrowser.length - 1].anchor;
-      }
-
-      const notification = new Notification(mw.config.get('wgSiteName'), { body, tag });
-      notification.onclick = () => {
-        parent.focus();
-        // Just in case, old browsers. TODO: delete?
-        window.focus();
-        reloadPage({ commentAnchor: comment.anchor });
-      };
-    }
-
-    notifiedAbout.push(...notifyAbout);
+    processComments(comments);
   }
 }
 
