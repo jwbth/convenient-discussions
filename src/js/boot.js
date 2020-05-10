@@ -118,18 +118,28 @@ export function initSettings() {
  * @private
  */
 function initCss() {
+  // Vector, Monobook, Minerva
   const bodyBackgroundColor = $('#content').length ?
     window.getComputedStyle($('#content').get(0)).backgroundColor :
     'white';
   cd.g.nanoCss.put(':root', {
     '--cd-comment-underlay-focused-color': cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR,
-    '--cd-comment-underlay-focused-transparent-color': (
-      transparentize(cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
-    ),
     '--cd-comment-underlay-target-color': cd.g.COMMENT_UNDERLAY_TARGET_COLOR,
     '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
     '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
   });
+
+  cd.debug.startTimer('focusedColor');
+  // Set the transparent color for the "focused" color. Note that the user may override the CSS
+  // variable value in his personal styles.
+  const focusedColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--cd-comment-underlay-focused-color');
+  document.documentElement.style.setProperty(
+    '--cd-comment-underlay-focused-transparent-color',
+    transparentize(focusedColor)
+  );
+  cd.debug.stopTimer('focusedColor');
+
   cd.g.nanoCss.put('.cd-commentOverlay-gradient', {
     backgroundImage: `linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))`,
   });
@@ -366,7 +376,9 @@ export async function init({ messagesRequest }) {
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
 
+  cd.debug.startTimer('line height');
   cd.g.REGULAR_LINE_HEIGHT = parseFloat(window.getComputedStyle(cd.g.rootElement).lineHeight);
+  cd.debug.stopTimer('line height');
 
 
   /* Extensions */
