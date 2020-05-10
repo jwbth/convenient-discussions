@@ -117,7 +117,7 @@ export function initSettings() {
  *
  * @private
  */
-export function initCss() {
+export function initTalkPageCss() {
   // Vector, Monobook, Minerva
   const bodyBackgroundColor = $('#content').length ?
     window.getComputedStyle($('#content').get(0)).backgroundColor :
