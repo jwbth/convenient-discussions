@@ -4,6 +4,8 @@
  * @module commentLinks
  */
 
+import { create as nanoCssCreate } from 'nano-css';
+
 import Comment from './Comment';
 import cd from './cd';
 import {
@@ -44,6 +46,16 @@ let processDiffFirstRun = true;
  */
 async function prepare({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
+
+  cd.g.nanoCss = nanoCssCreate();
+  cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
+    '::before': {
+      content: `"${mw.msg('parentheses-start')}"`,
+    },
+    '::after': {
+      content: `"${mw.msg('parentheses-end')}"`,
+    },
+  });
 
   initTimestampParsingTools();
 

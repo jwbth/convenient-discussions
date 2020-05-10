@@ -305,16 +305,6 @@ function main() {
     ) ||
     cd.g.IS_DIFF_PAGE
   ) {
-    cd.g.nanoCss = nanoCssCreate();
-    cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
-      '::before': {
-        content: `"${mw.msg('parentheses-start')}"`,
-      },
-      '::after': {
-        content: `"${mw.msg('parentheses-end')}"`,
-      },
-    });
-
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     let messagesRequest;
