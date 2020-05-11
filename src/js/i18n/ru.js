@@ -340,7 +340,7 @@ export default {
   'notification-toyou-desktop': '$1 {{gender:$2|ответил|ответила}} на ваше сообщение$3 на странице «$4».',
   'notification-insection': '$1 {{gender:$2|ответил|ответила}} в разделе «$3». <a href="$4" class="cd-notification-reloadPage">Обновить страницу</a>$5.',
   'notification-insection-desktop': '$1 {{gender:$2|ответил|ответила}} в разделе «$3» на странице «$4».',
-  'notification-newcomments': '$1 {{plural:$1|новое сообщение|новых сообщения|новых сообщений}}$2$3. <a href="$3" class="cd-notification-reloadPage">Обновить страницу</a>$4.',
+  'notification-newcomments': '$1 {{plural:$1|новое сообщение|новых сообщения|новых сообщений}}$2$3. <a href="$4" class="cd-notification-reloadPage">Обновить страницу</a>$5.',
   'notification-newcomments-desktop': '$1 {{plural:$1|новое сообщение|новых сообщения|новых сообщений}}$2 на странице «$3»$4.',
   'notification-newcomments-maybeinteresting': ', которые могут вас заинтересовать',
   'notification-formdata': 'данные форм не потеряются',
