@@ -22,8 +22,6 @@ import { getWatchedSections } from './options';
 import { initSettings } from './boot';
 import { initTimestampParsingTools, loadMessages } from './dateFormat';
 
-import '../less/logPages.less';
-
 let colonMoved;
 let goToCommentToYou;
 let goToCommentWatchedSection;

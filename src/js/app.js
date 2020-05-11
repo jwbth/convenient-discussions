@@ -24,8 +24,6 @@ import { initTalkPageCss, removeLoadingOverlay, setLoadingOverlay } from './boot
 import { loadMessages } from './dateFormat';
 import { setVisits } from './options';
 
-import '../less/global.less';
-
 let config;
 let strings;
 if (IS_LOCAL) {
@@ -286,19 +284,24 @@ function main() {
       }
     }, 10000);
 
-    // initTalkPageCss() causes a reflow which delays operations dependent on rendering, so we run
-    // it now, not after the requests are fulfilled, to save time. The overall order is like this:
+    // Additions of CSS cause a reflow which delays operations dependent on rendering, so we run it
+    // now, not after the requests are fulfilled, to save time. The overall order is like this:
     // 1. Make API requests (above).
     // 2. Run operations dependent on rendering, such as window.getComputedStyle().
     // 3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the API
     // requests are already running, we don't lose time.
-    cd.debug.startTimer('line height');
-    // This line should be before the line with setProperty in initTalkPageCss() to avoid reflow
-    // (which could cost ~100ms depending on the machine).
     cd.g.REGULAR_LINE_HEIGHT = parseFloat(window.getComputedStyle(cd.g.$content.get(0)).lineHeight);
-    cd.debug.stopTimer('line height');
 
     initTalkPageCss();
+
+    require('../less/global.less');
+    require('../less/Comment.less');
+    require('../less/CommentForm.less');
+    require('../less/Section.less');
+    require('../less/commentLayers.less');
+    require('../less/navPanel.less');
+    require('../less/skin.less');
+    require('../less/talkPage.less');
   }
 
   if (
@@ -334,6 +337,10 @@ function main() {
     ]).then(
       () => {
         commentLinks({ messagesRequest });
+
+        // See the comment above: "Additions of CSS...".
+        require('../less/global.less');
+        require('../less/logPages.less');
       },
       (e) => {
         console.warn(e);

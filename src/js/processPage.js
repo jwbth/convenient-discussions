@@ -27,14 +27,6 @@ import { init, removeLoadingOverlay, restoreCommentForms } from './boot';
 import { isInline } from './util';
 import { setSettings } from './options';
 
-import '../less/Comment.less';
-import '../less/CommentForm.less';
-import '../less/Section.less';
-import '../less/commentLayers.less';
-import '../less/navPanel.less';
-import '../less/skin.less';
-import '../less/talkPage.less';
-
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.

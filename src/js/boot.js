@@ -130,26 +130,20 @@ export function initSettings() {
  * @private
  */
 export function initTalkPageCss() {
-  cd.debug.startTimer('focusedColor get');
   // Set the transparent color for the "focused" color. The user may override the CSS variable value
   // in his personal styles, so we get the existing value first.
   const focusedColor = window.getComputedStyle(document.documentElement)
     .getPropertyValue('--cd-comment-underlay-focused-color');
-  cd.debug.stopTimer('focusedColor get');
 
-  cd.debug.startTimer('bodyBackgroundColor');
   // Vector, Monobook, Minerva
   const bodyBackgroundColor = $('#content').length ?
     window.getComputedStyle($('#content').get(0)).backgroundColor :
     'white';
-  cd.debug.stopTimer('bodyBackgroundColor');
 
-  cd.debug.startTimer('focusedColor set');
   document.documentElement.style.setProperty(
     '--cd-comment-underlay-focused-transparent-color',
     transparentize(focusedColor || cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
   );
-  cd.debug.stopTimer('focusedColor set');
 
   cd.g.nanoCss.put(':root', {
     '--cd-comment-underlay-focused-color': cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR,
