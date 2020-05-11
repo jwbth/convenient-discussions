@@ -286,7 +286,12 @@ function main() {
       }
     }, 10000);
 
-    // We do some expensive operations now, not after the requests are fulfilled, to save time.
+    // initTalkPageCss() causes a reflow which delays operations dependent on rendering, so we run
+    // it now, not after the requests are fulfilled, to save time. The overall order is like this:
+    // 1. Make API requests (above).
+    // 2. Run operations dependent on rendering, such as window.getComputedStyle().
+    // 3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the API
+    // requests are already running, we don't lose time.
     cd.debug.startTimer('line height');
     // This line should be before the line with setProperty in initTalkPageCss() to avoid reflow
     // (which could cost ~100ms depending on the machine).
