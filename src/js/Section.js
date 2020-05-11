@@ -92,13 +92,14 @@ export default class Section extends SectionSkeleton {
       }
 
       /**
-       * Wiki page that has the source code of the section (may be different from the current page if
-       * the section is transcluded from another page).
+       * Wiki page that has the source code of the section (may be different from the current page
+       * if the section is transcluded from another page).
        *
        * @type {string}
        */
       this.sourcePage = cd.g.CURRENT_PAGE;
-      const editLink = this.#editSectionElement.querySelector('a[href*="&action=edit"]');
+      const editLink = this.#editSectionElement
+        .querySelector('a[href*="&action=edit"], a[href*="&veaction=editsource"]');
       if (editLink) {
         const editLinkUrl = new URL(editLink.href);
         if (editLinkUrl) {
