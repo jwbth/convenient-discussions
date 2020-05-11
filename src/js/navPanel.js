@@ -188,10 +188,11 @@ async function checkForNewComments() {
 /**
  * Send ordinary and desktop notifications to the user.
  *
- * @param {Comment[]} interestingNewComments
+ * @param {CommentSkeleton[]} comments
+ * @param {string[]} thisPageWatchedSections
  */
-async function sendNotifications(interestingNewComments) {
-  const notifyAbout = interestingNewComments.filter((comment) => (
+async function sendNotifications(comments, thisPageWatchedSections) {
+  const notifyAbout = comments.filter((comment) => (
     !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
   ));
 
@@ -265,13 +266,25 @@ async function sendNotifications(interestingNewComments) {
         );
       }
     } else {
-      const isCommonSection = notifyAboutOrdinary
-        .every((comment) => comment.sectionAnchor === notifyAboutOrdinary[0].sectionAnchor);
-      const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : null;
+      const isCommonSection = notifyAboutOrdinary.every((comment) => (
+        comment.watchedSectionHeadline === notifyAboutOrdinary[0].watchedSectionHeadline
+      ));
+      const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : undefined;
       href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${section ? `#${section}` : ''}`);
       const where = section ?
         ' ' + cd.s('notification-part-insection', section) :
         ' ' + cd.s('notification-part-onthispage');
+      let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
+      if (!mayBeInterestingString.startsWith(',')) {
+        mayBeInterestingString = ' ' + mayBeInterestingString;
+      }
+
+      // "that may be interesting to you" text is not needed when the section is watched and the
+      // user can clearly understand why they are notified.
+      const mayBeInteresting = section && thisPageWatchedSections.includes(section) ?
+        '' :
+        mayBeInterestingString;
+
       const formsDataWillNotBeLost = (
         cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
         ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
@@ -281,6 +294,7 @@ async function sendNotifications(interestingNewComments) {
         'notification-newcomments',
         notifyAboutOrdinary.length,
         where,
+        mayBeInteresting,
         href,
         formsDataWillNotBeLost
       );
@@ -332,16 +346,28 @@ async function sendNotifications(interestingNewComments) {
         );
       }
     } else {
-      const isCommonSection = notifyAbout
-        .every((comment) => comment.sectionAnchor === notifyAbout[0].sectionAnchor);
-      const where = isCommonSection ?
-        ' ' + cd.s('notification-part-insection', notifyAbout[0].sectionHeadline) :
-        '';
+      const isCommonSection = notifyAboutDesktop.every((comment) => (
+        comment.watchedSectionHeadline === notifyAboutDesktop[0].watchedSectionHeadline
+      ));
+      const section = isCommonSection ? notifyAboutDesktop[0].watchedSectionHeadline : undefined;
+      const where = section ? ' ' + cd.s('notification-part-insection', section) : '';
+      let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
+      if (!mayBeInterestingString.startsWith(',')) {
+        mayBeInterestingString = ' ' + mayBeInterestingString;
+      }
+
+      // "that may be interesting to you" text is not needed when the section is watched and the
+      // user can clearly understand why they are notified.
+      const mayBeInteresting = section && thisPageWatchedSections.includes(section) ?
+        '' :
+        mayBeInterestingString;
+
       body = cd.s(
         'notification-newcomments-desktop',
-        notifyAbout.length,
+        notifyAboutDesktop.length,
         where,
-        cd.g.CURRENT_PAGE
+        cd.g.CURRENT_PAGE,
+        mayBeInteresting
       );
       tag += notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor;
     }
@@ -481,7 +507,7 @@ async function processComments(comments) {
       .insertAfter($lastElement);
   });
 
-  sendNotifications(interestingNewComments);
+  sendNotifications(interestingNewComments, thisPageWatchedSections);
 }
 
 /**
@@ -632,8 +658,7 @@ const navPanel = {
           return false;
         }
 
-        const isUnseen = memorizedUnseenCommentAnchors
-          .some((anchor) => anchor === comment.anchor);
+        const isUnseen = memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor);
         const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
         if (commentUnixTime > thisPageVisits[0]) {
           comment.newness = (
