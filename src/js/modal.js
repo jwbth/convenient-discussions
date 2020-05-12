@@ -137,7 +137,18 @@ export async function settingsDialog() {
       label: cd.s('sd-reload'),
       flags: ['primary', 'progressive'],
     },
+    {
+      modes: ['settings'],
+      action: 'reset',
+      label: cd.s('sd-reset'),
+      flags: ['destructive'],
+    },
   ];
+  SettingsDialog.static.size = 'large';
+
+  SettingsDialog.prototype.getBodyHeight = function () {
+    return 600;
+  };
 
   SettingsDialog.prototype.initialize = async function () {
     SettingsDialog.parent.prototype.initialize.apply(this, arguments);
@@ -153,8 +164,8 @@ export async function settingsDialog() {
     this.panelLoading.$element.append($loading);
 
     this.panelSettings = new OO.ui.PanelLayout({
-      padded: true,
-      expanded: false,
+      padded: false,
+      expanded: true,
     });
 
     const $settingsSaved = $('<p>').html(cd.s('sd-saved'));
@@ -205,6 +216,7 @@ export async function settingsDialog() {
       this.renderForm(this.settings);
 
       this.stackLayout.setItem(this.panelSettings);
+      this.bookletLayout.setPage('general');
       this.actions.setMode('settings');
 
       cd.g.windowManager.updateWindowSize(this);
@@ -261,6 +273,12 @@ export async function settingsDialog() {
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
         confirmCloseDialog(this, 'sd');
+      });
+    } else if (action === 'reset') {
+      return new OO.ui.Process(async () => {
+        if (await OO.ui.confirm(cd.s('sd-reset-confirm'))) {
+          this.renderForm(cd.defaultSettings);
+        }
       });
     }
     return SettingsDialog.parent.prototype.getActionProcess.call(this, action);
@@ -448,46 +466,14 @@ export async function settingsDialog() {
       label: cd.s('sd-watchsectiononreply'),
     });
 
-    this.mainFieldset = new OO.ui.FieldsetLayout();
-    this.mainFieldset.addItems([
-      this.highlightOwnCommentsField,
-      this.allowEditOthersCommentsField,
-      this.defaultCommentLinkTypeField,
-      this.defaultSectionLinkTypeField,
-    ]);
-
-    this.notificationsFieldset = new OO.ui.FieldsetLayout(
-      { label: cd.s('sd-fieldset-notifications') }
-    );
-    this.notificationsFieldset.addItems([
-      this.notificationsField,
-      this.desktopNotificationsField,
-      this.notificationsBlacklistField,
-    ]);
-
-    this.commentFormFieldset = new OO.ui.FieldsetLayout({
-      label: cd.s('sd-fieldset-commentform')
-    });
-    this.commentFormFieldset.addItems([
-      this.autopreviewField,
-      this.watchSectionOnReplyField,
-      this.showToolbarField,
-      this.alwaysExpandSettingsField,
-      this.insertButtonsField,
-      this.mySignatureField,
-    ]);
-
     this.insertButtonsMultiselect.connect(this, { change: 'updateActionsAvailability' });
     this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.alwaysExpandSettingsCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.autopreviewCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.desktopNotificationsSelect.connect(
-      this,
-      {
-        select: 'updateActionsAvailability',
-        choose: 'changeDesktopNotifications',
-      }
-    );
+    this.desktopNotificationsSelect.connect(this, {
+      select: 'updateActionsAvailability',
+      choose: 'changeDesktopNotifications',
+    });
     this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
     this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
     this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
@@ -497,34 +483,79 @@ export async function settingsDialog() {
     this.showToolbarCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
 
-    this.resetSettingsButton = new OO.ui.ButtonInputWidget({
-      label: cd.s('sd-reset'),
-      flags: ['destructive'],
-    });
-    this.resetSettingsButton.connect(this, { click: 'resetSettings' });
-
-    this.resetSettingsField = new OO.ui.FieldLayout(this.resetSettingsButton, {
-      classes: ['cd-settings-resetSettings'],
-    });
-
     this.removeDataButton = new OO.ui.ButtonInputWidget({
       label: cd.s('sd-removedata'),
       flags: ['destructive'],
     });
     this.removeDataButton.connect(this, { click: 'removeData' });
 
-    this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
-      classes: ['cd-settings-removeData'],
+    this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton);
+
+    function GeneralPageLayout(name, config) {
+      GeneralPageLayout.super.call(this, name, config);
+      this.$element.append(
+        dialog.highlightOwnCommentsField.$element,
+        dialog.allowEditOthersCommentsField.$element,
+        dialog.defaultCommentLinkTypeField.$element,
+        dialog.defaultSectionLinkTypeField.$element,
+      );
+    }
+    OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
+    GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      GeneralPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+      this.outlineItem.setLabel(cd.s('sd-page-general'));
+    };
+
+    function NotificationsPageLayout(name, config) {
+      NotificationsPageLayout.super.call(this, name, config);
+      this.$element.append(
+        dialog.notificationsField.$element,
+        dialog.desktopNotificationsField.$element,
+        dialog.notificationsBlacklistField.$element,
+      );
+    }
+    OO.inheritClass(NotificationsPageLayout, OO.ui.PageLayout);
+    NotificationsPageLayout.prototype.setupOutlineItem = function () {
+      this.outlineItem.setLabel(cd.s('sd-page-notifications'));
+    };
+
+    function CommentFormPageLayout(name, config) {
+      CommentFormPageLayout.super.call(this, name, config);
+      this.$element.append(
+        dialog.autopreviewField.$element,
+        dialog.watchSectionOnReplyField.$element,
+        dialog.showToolbarField.$element,
+        dialog.alwaysExpandSettingsField.$element,
+        dialog.insertButtonsField.$element,
+        dialog.mySignatureField.$element,
+      );
+    }
+    OO.inheritClass(CommentFormPageLayout, OO.ui.PageLayout);
+    CommentFormPageLayout.prototype.setupOutlineItem = function () {
+      this.outlineItem.setLabel(cd.s('sd-page-commentform'));
+    };
+
+    function RemoveDataPageLayout(name, config) {
+      RemoveDataPageLayout.super.call(this, name, config);
+      this.$element.append(dialog.removeDataField.$element);
+    }
+    OO.inheritClass(RemoveDataPageLayout, OO.ui.PageLayout);
+    RemoveDataPageLayout.prototype.setupOutlineItem = function () {
+      this.outlineItem.setLabel(cd.s('sd-page-removedata'));
+    };
+
+    const generalPage = new GeneralPageLayout('general');
+    const notificationsPage = new NotificationsPageLayout('notifications');
+    const commentFormPage = new CommentFormPageLayout('commentForm');
+    const removeDataPage = new RemoveDataPageLayout('removeData');
+
+    this.bookletLayout = new OO.ui.BookletLayout({
+      outlined: true,
     });
+    this.bookletLayout.addPages([generalPage, notificationsPage, commentFormPage, removeDataPage]);
 
     this.panelSettings.$element.empty();
-    this.panelSettings.$element.append(
-      this.mainFieldset.$element,
-      this.notificationsFieldset.$element,
-      this.commentFormFieldset.$element,
-      this.resetSettingsField.$element,
-      this.removeDataField.$element
-    );
+    this.panelSettings.$element.append(this.bookletLayout.$element);
 
     this.updateActionsAvailability();
   };
@@ -575,9 +606,8 @@ export async function settingsDialog() {
     } catch (e) {
       save = false;
     }
-    this.actions.setAbilities({ save });
 
-    const enableReset = (
+    const reset = (
       (
         this.allowEditOthersCommentsCheckbox.isSelected() !==
         cd.defaultSettings.allowEditOthersComments
@@ -595,7 +625,8 @@ export async function settingsDialog() {
       this.showToolbarCheckbox.isSelected() !== cd.defaultSettings.showToolbar ||
       this.watchSectionOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchSectionOnReply
     );
-    this.resetSettingsButton.setDisabled(!enableReset);
+
+    this.actions.setAbilities({ save, reset });
   };
 
   SettingsDialog.prototype.changeDesktopNotifications = function (option) {
@@ -609,14 +640,8 @@ export async function settingsDialog() {
     }
   };
 
-  SettingsDialog.prototype.resetSettings = async function () {
-    if (await OO.ui.confirm(cd.s('sd-reset-confirm'))) {
-      this.renderForm(cd.defaultSettings);
-    }
-  };
-
   SettingsDialog.prototype.removeData = async function () {
-    if (await confirmDestructive('sd-removedata-confirm')) {
+    if (await confirmDestructive('sd-removedata-confirm', { size: 'medium' })) {
       try {
         this.pushPending();
 
@@ -1170,9 +1195,10 @@ export async function confirmDialog(message, options = {}) {
  * Show a confirmation message dialog with a destructive action.
  *
  * @param {string} messageName
+ * @param {object} [options={}]
  * @returns {Promise}
  */
-export function confirmDestructive(messageName) {
+export function confirmDestructive(messageName, options = {}) {
   const actions = [
     {
       label: cd.s(`${messageName}-yes`),
@@ -1185,7 +1211,8 @@ export function confirmDestructive(messageName) {
       flags: 'safe',
     },
   ];
-  return OO.ui.confirm(cd.s(messageName), { actions });
+  const defaultOptions = { actions };
+  return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
 }
 
 /**
