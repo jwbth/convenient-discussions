@@ -506,19 +506,6 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-general'));
     };
 
-    function NotificationsPageLayout(name, config) {
-      NotificationsPageLayout.super.call(this, name, config);
-      this.$element.append(
-        dialog.notificationsField.$element,
-        dialog.desktopNotificationsField.$element,
-        dialog.notificationsBlacklistField.$element,
-      );
-    }
-    OO.inheritClass(NotificationsPageLayout, OO.ui.PageLayout);
-    NotificationsPageLayout.prototype.setupOutlineItem = function () {
-      this.outlineItem.setLabel(cd.s('sd-page-notifications'));
-    };
-
     function CommentFormPageLayout(name, config) {
       CommentFormPageLayout.super.call(this, name, config);
       this.$element.append(
@@ -535,6 +522,19 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-commentform'));
     };
 
+    function NotificationsPageLayout(name, config) {
+      NotificationsPageLayout.super.call(this, name, config);
+      this.$element.append(
+        dialog.notificationsField.$element,
+        dialog.desktopNotificationsField.$element,
+        dialog.notificationsBlacklistField.$element,
+      );
+    }
+    OO.inheritClass(NotificationsPageLayout, OO.ui.PageLayout);
+    NotificationsPageLayout.prototype.setupOutlineItem = function () {
+      this.outlineItem.setLabel(cd.s('sd-page-notifications'));
+    };
+
     function RemoveDataPageLayout(name, config) {
       RemoveDataPageLayout.super.call(this, name, config);
       this.$element.append(dialog.removeDataField.$element);
@@ -545,14 +545,14 @@ export async function settingsDialog() {
     };
 
     const generalPage = new GeneralPageLayout('general');
-    const notificationsPage = new NotificationsPageLayout('notifications');
     const commentFormPage = new CommentFormPageLayout('commentForm');
+    const notificationsPage = new NotificationsPageLayout('notifications');
     const removeDataPage = new RemoveDataPageLayout('removeData');
 
     this.bookletLayout = new OO.ui.BookletLayout({
       outlined: true,
     });
-    this.bookletLayout.addPages([generalPage, notificationsPage, commentFormPage, removeDataPage]);
+    this.bookletLayout.addPages([generalPage, commentFormPage, notificationsPage, removeDataPage]);
 
     this.panelSettings.$element.empty();
     this.panelSettings.$element.append(this.bookletLayout.$element);
