@@ -491,6 +491,14 @@ export async function settingsDialog() {
 
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton);
 
+    /**
+     * @class Subclass of {@link
+     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
+     *   to create a "General" booklet page.
+     * @param {string} name
+     * @param {object} [config]
+     * @private
+     */
     function GeneralPageLayout(name, config) {
       GeneralPageLayout.super.call(this, name, config);
       this.$element.append(
@@ -506,6 +514,14 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-general'));
     };
 
+    /**
+     * @class Subclass of {@link
+     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
+     *   to create a "Comment form" booklet page.
+     * @private
+     * @param {string} name
+     * @param {object} [config]
+     */
     function CommentFormPageLayout(name, config) {
       CommentFormPageLayout.super.call(this, name, config);
       this.$element.append(
@@ -522,6 +538,14 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-commentform'));
     };
 
+    /**
+     * @class Subclass of {@link
+     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
+     *   to create a "Notifications" booklet page.
+     * @param {string} name
+     * @param {object} [config]
+     * @private
+     */
     function NotificationsPageLayout(name, config) {
       NotificationsPageLayout.super.call(this, name, config);
       this.$element.append(
@@ -535,6 +559,14 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-notifications'));
     };
 
+    /**
+     * @class Subclass of {@link
+     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
+     *   to create a "Remove data" booklet page.
+     * @param {string} name
+     * @param {object} [config]
+     * @private
+     */
     function RemoveDataPageLayout(name, config) {
       RemoveDataPageLayout.super.call(this, name, config);
       this.$element.append(dialog.removeDataField.$element);
