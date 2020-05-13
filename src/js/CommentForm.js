@@ -1784,19 +1784,21 @@ export default class CommentForm {
       }
     }));
 
-    code = code
+    let implicitSmall = false;
+    if (this.smallCheckbox) {
       // If the user wrapped the comment in <small></small>, select the relevant checkbox and remove
       // the tags. This will include the signature into the tags and possibly ensure the right line
       // spacing.
-      .replace(/^<small>([^]+)<\/small>$/i, (s, m1) => {
-        this.smallCheckbox.setSelected(true);
+      code = code.replace(/^<small>([^]*)<\/small>$/i, (s, m1) => {
+        implicitSmall = true;
         return m1;
-      })
-      // Remove ending spaces from empty lines except when they are a part of the syntax creating
-      // <pre>.
-      .replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, (s) => (
-        / [^\s\uFEFF\xA0]$/.test(s) ? s : s.replace(/^ +/gm, '')
-      ));
+      });
+    }
+    // Remove ending spaces from empty lines except when they are a part of the syntax creating
+    // <pre>.
+    code = code.replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, (s) => (
+      / [^\s\uFEFF\xA0]$/.test(s) ? s : s.replace(/^ +/gm, '')
+    ));
 
     let signature;
     if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
@@ -1935,6 +1937,7 @@ export default class CommentForm {
     if (!/^\s/.test(signature) && code && !/[\s>]$/.test(code)) {
       code += ' ';
     }
+    // Space in the beggining of the line, creating <pre>.
     if (/(?:^|\n) .*$/.test(code)) {
       code += '\n';
     }
@@ -1942,7 +1945,7 @@ export default class CommentForm {
 
     // Process small font wrappers
     if (this.smallCheckbox) {
-      if (this.smallCheckbox.isSelected()) {
+      if (this.smallCheckbox.isSelected() || implicitSmall) {
         const indentation = (
           newLineIndentationChars +
           (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChar ? '' : ' ')
@@ -1953,10 +1956,6 @@ export default class CommentForm {
         code = (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) ?
           `{{${cd.config.blockSmallTemplate}|1=${code}}}` :
           `<small>${before}${code}</small>`;
-      } else {
-        if (this.mode === 'edit' && this.target.inCode.inSmallFont) {
-          code = code.replace(/\}\}|<\/small>$/, '');
-        }
       }
     }
 
