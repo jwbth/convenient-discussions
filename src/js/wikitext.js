@@ -138,7 +138,7 @@ export function extractSignatures(code, generateCommentAnchors) {
   // '[[u:a'.length.
   const signatureScanLimitWikitext = 250;
   const signatureRegexp = new RegExp(
-    `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*(?:\n*|$))`,
+    `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(?:\n*|$)`,
     'igm'
   );
   const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
@@ -172,9 +172,9 @@ export function extractSignatures(code, generateCommentAnchors) {
       );
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
-        // Slash can be in authorLinkMatch[2]. It often indicates a link to a page in the author's
-        // userspace that is not part of the signature (while some such links are, and we don't want
-        // to eliminate those cases).
+        // Slash can be present in authorLinkMatch[2]. It often indicates a link to a page in the
+        // author's userspace that is not part of the signature (while some such links are, and we
+        // don't want to eliminate those cases).
         if (authorLinkMatch[2]) continue;
         const testAuthor = userRegistry.getUser(decodeHtmlEntities(authorLinkMatch[1]));
         if (testAuthor === author) {
