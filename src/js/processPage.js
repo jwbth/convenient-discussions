@@ -255,6 +255,7 @@ function connectToAddTopicLinks() {
       const editintro = mw.util.getParamValue('editintro', href);
 
       if (cd.g.addSectionForm) {
+        cd.g.addSectionForm.$element.cdScrollIntoView('center');
         cd.g.addSectionForm.headlineInput.focus();
       } else {
         cd.g.addSectionForm = new CommentForm({

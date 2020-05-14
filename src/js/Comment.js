@@ -977,13 +977,20 @@ export default class Comment extends CommentSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   reply(dataToRestore) {
-    this.replyForm = dataToRestore instanceof CommentForm ?
-      dataToRestore :
-      new CommentForm({
-        mode: 'reply',
-        target: this,
-        dataToRestore,
-      });
+    if (!this.replyForm) {
+      /**
+       * Reply form related to the comment.
+       *
+       * @type {CommentForm|undefined}
+       */
+      this.replyForm = dataToRestore instanceof CommentForm ?
+        dataToRestore :
+        new CommentForm({
+          mode: 'reply',
+          target: this,
+          dataToRestore,
+        });
+    }
   }
 
   /**
