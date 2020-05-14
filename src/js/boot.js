@@ -718,6 +718,7 @@ export function restoreCommentForms() {
             cd.s('restore-suggestion-text'),
             'cd-message-restoreCommentForms',
             async () => {
+              if (cd.g.pageOverlayOn) return;
               notification.close();
               restoreCommentFormsFromData(commentFormsData);
             }
