@@ -258,6 +258,11 @@ function connectToAddTopicLinks() {
         cd.g.addSectionForm.$element.cdScrollIntoView('center');
         cd.g.addSectionForm.headlineInput.focus();
       } else {
+        /**
+         * Add section form.
+         *
+         * @type {CommentForm|undefined}
+         */
         cd.g.addSectionForm = new CommentForm({
           mode: 'addSection',
           $addSectionLink: $(this),

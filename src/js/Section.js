@@ -64,7 +64,7 @@ export default class Section extends SectionSkeleton {
      */
 
     /**
-     * Is this section the last section on the page.
+     * Is the section the last section on the page.
      *
      * @name isLastSection
      * @type {boolean}
@@ -113,7 +113,7 @@ export default class Section extends SectionSkeleton {
       }
 
       /**
-       * Section query as a jQuery element.
+       * Section heading as a jQuery element.
        *
        * @type {JQuery}
        */
@@ -141,8 +141,8 @@ export default class Section extends SectionSkeleton {
           this.addReply();
         };
 
-        // Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
-        // the comment form in the <ol> tag, and keep "#" in the reply.
+        // Sections may have "#" in the code as a placeholder for a vote. In this case, we must
+        // create the comment form in the <ol> tag, and keep "#" in the reply.
         const isVotePlaceholder = (
           this.lastElementInFirstChunk.tagName === 'OL' &&
           this.lastElementInFirstChunk.childElementCount === 1 &&
@@ -190,28 +190,28 @@ export default class Section extends SectionSkeleton {
         /**
          * Reply button on the bottom of the first section chunk.
          *
-         * @type {JQuery}
+         * @type {JQuery|undefined}
          */
         this.$replyButton = $(replyButton);
 
         /**
          * Link element contained in the reply button element.
          *
-         * @type {JQuery}
+         * @type {JQuery|undefined}
          */
         this.$replyButtonLink = $(replyButton.firstChild);
 
         /**
          * Reply button wrapper.
          *
-         * @type {JQuery}
+         * @type {JQuery|undefined}
          */
         this.$replyWrapper = $(replyWrapper);
 
         /**
-         * Reply button container if present. It may be wrapped around the reply button wraooer.
+         * Reply button container if present. It may be wrapped around the reply button wrapper.
          *
-         * @type {?JQuery}
+         * @type {?(JQuery|undefined)}
          */
         this.$replyContainer = replyContainer ? $(replyContainer) : null;
 
@@ -366,7 +366,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Create an add reply form, or focus an existing one.
+   * Create an {@link module:Section#addReplyForm add reply form}.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -374,6 +374,11 @@ export default class Section extends SectionSkeleton {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.addReplyForm) {
+       /**
+       * Add reply form related to the section.
+       *
+       * @type {CommentForm|undefined}
+       */
       this.addReplyForm = dataToRestore instanceof CommentForm ?
         dataToRestore :
         new CommentForm({
@@ -394,7 +399,8 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Create an add subsection form, or focus an existing one.
+   * Create an {@link module:Section#addSubsectionForm add subsection form} form or focus an
+   * existing one.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -403,6 +409,11 @@ export default class Section extends SectionSkeleton {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
       this.addSubsectionForm.headlineInput.focus();
     } else {
+      /**
+       * Add subsection form related to the section.
+       *
+       * @type {CommentForm|undefined}
+       */
       this.addSubsectionForm = dataToRestore instanceof CommentForm ?
         dataToRestore :
         new CommentForm({

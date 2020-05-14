@@ -304,7 +304,7 @@ export default class Comment extends CommentSkeleton {
       /**
        * "Go to the parent comment" button.
        *
-       * @type {Element}
+       * @type {Element|undefined}
        */
       this.goToParentButton = this.#elementPrototypes.goToParentButton.cloneNode(true);
       this.goToParentButton.onclick = this.goToParent.bind(this);
@@ -318,7 +318,7 @@ export default class Comment extends CommentSkeleton {
       /**
        * "Copy link" button.
        *
-       * @type {Element}
+       * @type {Element|undefined}
        */
       this.linkButton = this.#elementPrototypes.linkButton.cloneNode(true);
       this.#overlayContent.appendChild(this.linkButton);
@@ -330,7 +330,7 @@ export default class Comment extends CommentSkeleton {
       /**
        * Thank button.
        *
-       * @type {Element}
+       * @type {Element|undefined}
        */
       this.thankButton = this.#elementPrototypes.thankButton.cloneNode(true);
       this.#overlayContent.appendChild(this.thankButton);
@@ -342,7 +342,7 @@ export default class Comment extends CommentSkeleton {
         /**
          * Edit button.
          *
-         * @type {Element}
+         * @type {Element|undefined}
          */
         this.editButton = this.#elementPrototypes.editButton.cloneNode(true);
         this.editButton.firstChild.onclick = () => {
@@ -355,7 +355,7 @@ export default class Comment extends CommentSkeleton {
       /**
        * Reply button.
        *
-       * @type {Element}
+       * @type {Element|undefined}
        */
       this.replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
       this.replyButton.firstChild.onclick = () => {
@@ -374,7 +374,7 @@ export default class Comment extends CommentSkeleton {
           /**
            * Comment's background color if not default.
            *
-           * @type {string}
+           * @type {string|undefined}
            */
           this.backgroundColor = backgroundColor;
           break;
@@ -385,28 +385,28 @@ export default class Comment extends CommentSkeleton {
     /**
      * Comment's underlay.
      *
-     * @type {JQuery}
+     * @type {?(JQuery|undefined)}
      */
     this.$underlay = $(this.#underlay);
 
     /**
      * Comment's overlay.
      *
-     * @type {JQuery}
+     * @type {?(JQuery|undefined)}
      */
     this.$overlay = $(this.#overlay);
 
     /**
      * Links container of the comment's overlay.
      *
-     * @type {JQuery}
+     * @type {?(JQuery|undefined)}
      */
     this.$overlayContent = $(this.#overlayContent);
 
     /**
      * Gradient element of the comment's overlay.
      *
-     * @type {JQuery}
+     * @type {?(JQuery|undefined)}
      */
     this.$overlayGradient = $(this.#overlayGradient);
   }
@@ -631,7 +631,7 @@ export default class Comment extends CommentSkeleton {
     this.parent.goToChildButton = goToChildButton;
 
     /**
-     * Child comment that sent the user to this comment using the "Go to parent" function.
+     * Child comment that has sent the user to this comment using the "Go to parent" function.
      *
      * @name childToScrollBackTo
      * @type {Comment|undefined}
@@ -668,7 +668,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Find the edit that added this comment.
+   * Find the edit that added the comment.
    *
    * @param {boolean} [singleTimestamp=false] Whether the edit has to have not more than one
    *   timestamp (used to detect edits adding more than one comment).
@@ -972,7 +972,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a reply form for this comment.
+   * Create a {@link module:Comment#replyForm reply form} for the comment.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -994,7 +994,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create an edit form for this comment.
+   * Create an {@link module:Comment#editForm edit form} for the comment.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -1002,6 +1002,11 @@ export default class Comment extends CommentSkeleton {
     // "!this.editForm" check is in case the editing is called from a script of some kind (there is
     // no button to call it from CD when the form is displayed).
     if (!this.editForm) {
+      /**
+       * Edit form related to the comment.
+       *
+       * @type {CommentForm|undefined}
+       */
       this.editForm = dataToRestore instanceof CommentForm ?
         dataToRestore :
         new CommentForm({
@@ -1128,7 +1133,7 @@ export default class Comment extends CommentSkeleton {
       /**
        * Comment's newness state: `undefined`, `'new'` or `'unseen'`.
        *
-       * @type {string}
+       * @type {string|undefined}
        */
       this.newness = 'new';
       navPanel.decrementUnseenCommentCount();

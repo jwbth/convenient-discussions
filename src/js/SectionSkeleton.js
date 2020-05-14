@@ -161,14 +161,14 @@ export default class SectionSkeleton {
     this.id = cd.sections.length;
 
     /**
-     * Comments contained in this section.
+     * Comments contained in the section.
      *
      * @type {Comment[]}
      */
     this.comments = this.comments || [];
 
     /**
-     * Comments contained in the first chunk of this section, i.e. all elements up to the first
+     * Comments contained in the first chunk of the section, i.e. all elements up to the first
      * subheading if it is present, or all elements if it is not.
      *
      * @type {Comment[]}
