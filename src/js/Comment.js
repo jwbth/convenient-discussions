@@ -359,7 +359,11 @@ export default class Comment extends CommentSkeleton {
        */
       this.replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
       this.replyButton.firstChild.onclick = () => {
-        this.reply();
+        if (this.replyForm) {
+          this.replyForm.cancel();
+        } else {
+          this.reply();
+        }
       };
       this.#overlayContent.appendChild(this.replyButton);
     } else {
@@ -973,17 +977,13 @@ export default class Comment extends CommentSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   reply(dataToRestore) {
-    if (this.replyForm) {
-      this.replyForm.cancel();
-    } else {
-      this.replyForm = dataToRestore instanceof CommentForm ?
-        dataToRestore :
-        new CommentForm({
-          mode: 'reply',
-          target: this,
-          dataToRestore,
-        });
-    }
+    this.replyForm = dataToRestore instanceof CommentForm ?
+      dataToRestore :
+      new CommentForm({
+        mode: 'reply',
+        target: this,
+        dataToRestore,
+      });
   }
 
   /**
