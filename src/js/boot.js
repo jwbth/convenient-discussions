@@ -565,11 +565,7 @@ function cleanUpSessions(data) {
  *   preferences.
  */
 export function saveSession(warnedLeave) {
-  const commentFormsData = {
-    saveUnixTime: Date.now(),
-    warnedLeave,
-  };
-  commentFormsData.forms = cd.commentForms.map((commentForm) => {
+  const forms = cd.commentForms.map((commentForm) => {
     let targetData;
     const target = commentForm.target;
     if (commentForm.target instanceof Comment) {
@@ -606,6 +602,13 @@ export function saveSession(warnedLeave) {
       lastFocused: commentForm.lastFocused,
     };
   });
+  const commentFormsData = forms.length ?
+    {
+      forms,
+      saveUnixTime: Date.now(),
+      warnedLeave,
+    } :
+    {};
 
   const commentFormsDataAllPagesJson = localStorage.getItem('convenientDiscussions-commentForms');
   let commentFormsDataAllPages;
@@ -678,6 +681,7 @@ function restoreCommentFormsFromData(commentFormsData) {
       .sort(lastFocused)[0]
         .commentInput
         .focus();
+    saveSession();
   }
   if (rescue.length) {
     rescueCommentFormsContent(rescue);
