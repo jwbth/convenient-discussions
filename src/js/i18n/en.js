@@ -251,7 +251,7 @@ export default {
   'cf-settings-tooltip': '{{int:convenientdiscussions-script-name}} settings',
   'cf-help': '?',
   'cf-help-short': '?',
-  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Script documentation</p>\n<p>Hotkeys:</p><ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote</li>\n</ul>',
+  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Script documentation</a></p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote</li>\n</ul>',
   'cf-error-tryagain': 'Try again',
   'cf-error-cancel': 'Cancel',
   'cf-quote-tooltip': 'Quote the selected text',
@@ -361,7 +361,7 @@ export default {
   // Restore comment forms notifications
   'restore-restored-title': 'Session restored',
   'restore-restored-text': 'The unsent comment forms have been automatically recovered.',
-  'restore-suggestion-text': 'You had unsent comment forms when you last visited the page. <a class="cd-message-restoreCommentForms">Restore them</a>. Click the balloon to close.',
+  'restore-suggestion-text': 'You had unsent comment forms when you last visited the page. <a class="cd-message-restoreCommentForms">Restore them</a>. Click the balloon to close it.',
 
   // Rescue comment forms' content dialog
   'rd-intro': 'Couldn\'t find the comments or sections on the page that some of the opened forms were related to. Below is the restored content of these forms. Copy it if you need.',

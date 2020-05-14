@@ -251,7 +251,7 @@ export default {
   'cf-settings-tooltip': 'Настройки {{int:convenientdiscussions-script-name-genitive}}',
   'cf-help': '?',
   'cf-help-short': '?',
-  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Документация скрипта</p>\n<p>nСочетания клавиш:</p><ul>\n<li><b>Ctrl+Enter</b> — отправить</li>\n<li><b>Esc</b> — отменить</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — цитировать</li>\n</ul>',
+  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Документация скрипта</a></p>\n<p>Сочетания клавиш:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — отправить</li>\n<li><b>Esc</b> — отменить</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — цитировать</li>\n</ul>',
   'cf-error-tryagain': 'Попробовать ещё раз',
   'cf-error-cancel': 'Отмена',
   'cf-quote-tooltip': 'Цитировать выделенный текст',
@@ -361,7 +361,7 @@ export default {
   // Restore comment forms notifications
   'restore-restored-title': 'Сессия восстановлена',
   'restore-restored-text': 'Неотправленные формы ответа были автоматически восстановлены.',
-  'restore-suggestion-text': 'Во время предыдущего посещения страницы остались неотправленные формы ответа. <a class="cd-message-restoreCommentForms">Восстановить их</a>. Кликните по уведомлению, чтобы закрыть.',
+  'restore-suggestion-text': 'Во время предыдущего посещения страницы остались неотправленные формы ответа. <a class="cd-message-restoreCommentForms">Восстановить их</a>. Кликните по уведомлению, чтобы его закрыть.',
 
   // Rescue comment forms' content dialog
   'rd-intro': 'Не удалось найти на странице те сообщения или разделы, к которым относились некоторые из открытых на странице форм. Ниже приведено восстановленное содержимое этих форм. Скопируйте его, если нужно.',
