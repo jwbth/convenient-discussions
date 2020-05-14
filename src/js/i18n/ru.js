@@ -360,7 +360,12 @@ export default {
   'lp-comment-toyou': 'сообщение адресовано вам',
   'lp-comment-watchedsection': 'вы следите за этой темой',
 
-  // Rescue comment forms content dialog
+  // Restore comment forms notifications
+  'restore-restored-title': 'Сессия восстановлена',
+  'restore-restored-text': 'Неотправленные формы ответа были автоматически восстановлены.',
+  'restore-suggestion-text': 'Во время предыдущего посещения страницы остались неотправленные формы ответа. <a class="cd-message-restoreCommentForms">Восстановить их</a>. Кликните по уведомлению, чтобы закрыть.',
+
+  // Rescue comment forms' content dialog
   'rd-intro': 'Не удалось найти на странице те сообщения или разделы, к которым относились некоторые из открытых на странице форм. Ниже приведено восстановленное содержимое этих форм. Скопируйте его, если нужно.',
   'rd-close': 'Закрыть',
 

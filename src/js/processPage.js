@@ -23,7 +23,7 @@ import { adjustDom } from './modifyDom';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
-import { init, removeLoadingOverlay, restoreCommentForms } from './boot';
+import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
 import { isInline } from './util';
 import { setSettings } from './options';
 
@@ -574,13 +574,16 @@ export default async function processPage(keptData = {}) {
     // element (for example, as a result of scrolling).
     $(document).on('mousemove mouseover', highlightFocused);
     $(window).on('resize orientationchange', windowResizeHandler);
-    addPreventUnloadCondition('commentForms', () => (
-      mw.user.options.get('useeditwarning') &&
-      (
-        CommentForm.getLastActiveAlteredCommentForm() ||
-        (alwaysConfirmLeavingPage && CommentForm.getLastActiveCommentForm())
-      )
-    ));
+    addPreventUnloadCondition('commentForms', () => {
+      saveSession(true);
+      return (
+        mw.user.options.get('useeditwarning') &&
+        (
+          CommentForm.getLastActiveAlteredCommentForm() ||
+          (alwaysConfirmLeavingPage && cd.commentForms.length)
+        )
+      );
+    });
   }
 
   if ((cd.g.firstRun && !cd.g.pageIsInactive) || keptData.createdPage) {

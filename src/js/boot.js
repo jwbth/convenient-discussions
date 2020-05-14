@@ -6,13 +6,14 @@
 
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentForm from './CommentForm';
+import CommentForm, { lastFocused } from './CommentForm';
 import Section from './Section';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
 import {
+  animateLink,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
   removeDuplicates,
@@ -544,8 +545,9 @@ export async function reloadPage(keptData = {}) {
 function cleanUpSessions(data) {
   Object.keys(data).forEach((key) => {
     if (
-      !data[key][0] ||
-      data[key][0].saveUnixTime < Date.now() - cd.g.SECONDS_IN_A_DAY * 1000 * 30
+      !data[key].forms ||
+      !data[key].forms.length ||
+      data[key].saveUnixTime < Date.now() - cd.g.SECONDS_IN_A_DAY * 1000 * 30
     ) {
       delete data[key];
     }
@@ -554,11 +556,20 @@ function cleanUpSessions(data) {
 }
 
 /**
- * Save comment form data (so far) to the local storage. (Session storage doesn't allow to restore
- * when the browser has crashed.)
+ * Save comment form data to the local storage. (Session storage doesn't allow to restore when the
+ * browser has crashed.)
+ *
+ * @param {boolean} [warnedLeave] A value set to true when the user is closing (unloading) the page
+ *   and is warned that the changes may not be saved. It is also set when the user wasn't warned but
+ *   there is no altered forms on the page or the user has switched off warnings in the site
+ *   preferences.
  */
-export function saveSession() {
-  const commentFormsData = cd.commentForms.map((commentForm) => {
+export function saveSession(warnedLeave) {
+  const commentFormsData = {
+    saveUnixTime: Date.now(),
+    warnedLeave,
+  };
+  commentFormsData.forms = cd.commentForms.map((commentForm) => {
     let targetData;
     const target = commentForm.target;
     if (commentForm.target instanceof Comment) {
@@ -575,7 +586,7 @@ export function saveSession() {
       targetData,
       // OK, extracting a selector from an element would be too much, and likely unreliable, so we
       // extract a href (the only property that we use in the CommentForm constructor) to put it
-      // onto a fake element.
+      // onto a fake element when restoring the form.
       addSectionLinkHref: commentForm.$addSectionLink && commentForm.$addSectionLink.attr('href'),
       headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
       comment: commentForm.commentInput.getValue(),
@@ -593,7 +604,6 @@ export function saveSession() {
       originalComment: commentForm.originalComment,
       isSummaryAltered: commentForm.isSummaryAltered,
       lastFocused: commentForm.lastFocused,
-      saveUnixTime: Date.now(),
     };
   });
 
@@ -618,10 +628,66 @@ export function saveSession() {
 }
 
 /**
+ * Restore comment forms using data saved in the local storage.
+ *
+ * @param {object} commentFormsData
+ * @private
+ */
+function restoreCommentFormsFromData(commentFormsData) {
+  const restored = [];
+  const rescue = [];
+  commentFormsData.forms.forEach((data) => {
+    const property = CommentForm.modeToProperty(data.mode);
+    if (data.targetData && data.targetData.anchor) {
+      const comment = Comment.getCommentByAnchor(data.targetData.anchor);
+      if (comment && !comment[`${property}Form`]) {
+        comment[property](data);
+        restored.push(comment[`${property}Form`]);
+      } else {
+        rescue.push(data);
+      }
+    } else if (data.targetData && data.targetData.headline) {
+      const section = Section.search({
+        headline: data.targetData.headline,
+        firstCommentAnchor: data.targetData.firstCommentAnchor,
+        index: data.targetData.index,
+      });
+      if (section && !section[`${property}Form`]) {
+        section[property](data);
+        restored.push(section[`${property}Form`]);
+      } else {
+        rescue.push(data);
+      }
+    } else if (data.mode === 'addSection') {
+      if (!cd.g.addSectionForm) {
+        const $fakeA = $('<a>').attr('href', data.addSectionLinkHref);
+        cd.g.addSectionForm = new CommentForm({
+          mode: data.mode,
+          $addSectionLink: $fakeA,
+          dataToRestore: data,
+        });
+        restored.push(cd.g.addSectionForm);
+      } else {
+        rescue.push(data);
+      }
+    }
+  });
+  if (restored.length) {
+    restored
+      .slice()
+      .sort(lastFocused)[0]
+        .commentInput
+        .focus();
+  }
+  if (rescue.length) {
+    rescueCommentFormsContent(rescue);
+  }
+}
+
+/**
  * Return saved comment forms to their places.
  */
 export function restoreCommentForms() {
-  const rescue = [];
   if (cd.g.firstRun) {
     const commentFormsDataAllPagesJson = localStorage.getItem('convenientDiscussions-commentForms');
     if (commentFormsDataAllPagesJson) {
@@ -638,37 +704,29 @@ export function restoreCommentForms() {
         'convenientDiscussions-commentForms',
         JSON.stringify(commentFormsDataAllPages)
       );
-      const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || [];
-      commentFormsData.forEach((data) => {
-        if (data.targetData && data.targetData.anchor) {
-          const comment = Comment.getCommentByAnchor(data.targetData.anchor);
-          if (comment) {
-            comment[CommentForm.modeToProperty(data.mode)](data);
-          } else {
-            rescue.push(data);
-          }
-        } else if (data.targetData && data.targetData.headline) {
-          const section = Section.search({
-            headline: data.targetData.headline,
-            firstCommentAnchor: data.targetData.firstCommentAnchor,
-            index: data.targetData.index,
-          });
-          if (section) {
-            section[CommentForm.modeToProperty(data.mode)](data);
-          } else {
-            rescue.push(data);
-          }
-        } else if (data.mode === 'addSection') {
-          const $fakeA = $('<a>').attr('href', data.addSectionLinkHref);
-          cd.g.addSectionForm = new CommentForm({
-            mode: data.mode,
-            $addSectionLink: $fakeA,
-            dataToRestore: data,
-          });
+      const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || {};
+      if (commentFormsData.forms) {
+        // If the user was warned about leaving the page (or there was no altered forms, or they
+        // have switched off such warnings), don't restore immediately and show a notification
+        // instead containing a link to restore.
+        if (commentFormsData.warnedLeave) {
+          const $text = animateLink(
+            cd.s('restore-suggestion-text'),
+            'cd-message-restoreCommentForms',
+            async () => {
+              notification.close();
+              restoreCommentFormsFromData(commentFormsData);
+            }
+          );
+          const notification = mw.notification.notify($text, { autoHide: false });
+        } else {
+          restoreCommentFormsFromData(commentFormsData);
+          mw.notify(cd.s('restore-restored-text'), { title: cd.s('restore-restored-title') });
         }
-      });
+      }
     }
   } else {
+    const rescue = [];
     cd.commentForms.forEach((commentForm) => {
       commentForm.checkCodeRequest = null;
       const target = commentForm.target;
@@ -708,9 +766,9 @@ export function restoreCommentForms() {
         commentForm.addToPage();
       }
     });
-  }
-  if (rescue.length) {
-    rescueCommentFormsContent(rescue);
+    if (rescue.length) {
+      rescueCommentFormsContent(rescue);
+    }
   }
   saveSession();
 }

@@ -254,9 +254,7 @@ export function spacesToUnderlines(s) {
  */
 export function animateLink(html, className, callback) {
   const $link = html instanceof $ ? html : cd.util.wrapInElement(html);
-  $link
-    .find(`.${className}`)
-    .on('click', callback);
+  $link.find(`.${className}`).on('click', callback);
   return $link;
 }
 

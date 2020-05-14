@@ -29,9 +29,8 @@ let commentFormsCounter = 0;
  * @param {CommentForm} commentForm1
  * @param {CommentForm} commentForm2
  * @returns {number}
- * @private
  */
-function lastFocused(commentForm1, commentForm2) {
+export function lastFocused(commentForm1, commentForm2) {
   const lastFocused1 = commentForm1.lastFocused || new Date(0);
   const lastFocused2 = commentForm2.lastFocused || new Date(0);
 
