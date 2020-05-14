@@ -1,10 +1,9 @@
 export default {
+  // Script info
   'script-name': 'Convenient Discussions',
   'script-name-genitive': '{{int:convenientdiscussions-script-name}}',
   'script-name-prepositional': '{{int:convenientdiscussions-script-name}}',
   'script-name-short': 'CD',
-
-  'loading-ellipsis': 'Loading…',
 
   // Fill only if the phrase "reply to <Username>" sounds silly in your language (usually, because
   // the username lacks inflection), and "reply to user <Username>" is needed.
@@ -238,8 +237,8 @@ export default {
   'cf-delete-button-short': 'Delete',
   'cf-addtopic': 'Add topic',
   'cf-addtopic-short': 'Add',
-  'cf-add-subsection': 'Add subsection',
-  'cf-add-subsection-short': 'Add',
+  'cf-addsubsection': 'Add subsection',
+  'cf-addsubsection-short': 'Add',
   'cf-reply': 'Reply',
   'cf-reply-short': 'Reply',
   'cf-preview': 'Preview',
@@ -252,24 +251,23 @@ export default {
   'cf-settings-tooltip': '{{int:convenientdiscussions-script-name}} settings',
   'cf-help': '?',
   'cf-help-short': '?',
-  'cf-shortcuts': 'Hotkeys',
-  'cf-shortcuts-description': '<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote</li>\n</ul>',
+  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Script documentation</p>\n<p>Hotkeys:</p><ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote</li>\n</ul>',
   'cf-error-tryagain': 'Try again',
   'cf-error-cancel': 'Cancel',
   'cf-quote-tooltip': 'Quote the selected text',
   'cf-quote-placeholder': 'Quoted text',
 
   // Comment form options
-  'cf-minoredit': 'Minor edit',
-  'cf-watchpage': 'Watch this page',
+  'cf-minor': 'Minor edit',
+  'cf-watch': 'Watch this page',
   'cf-watchsection-topic': 'Watch this topic',
   'cf-watchsection-subsection': 'Watch subsection',
   'cf-watchsection-tooltip': 'Add this section to the watchlist. This affects notifications and bolding in the watchlist',
-  'cf-notify-sectionauthor': 'Notify section author',
-  'cf-notify-commentauthor': 'Notify addressee',
-  'cf-notify-tooltip': 'By the ping function',
-  'cf-notify-tooltip-unreg': 'Can\'t send a notification to a non-registered user',
-  'cf-insmallfont': 'In small font',
+  'cf-ping-sectionauthor': 'Notify section author',
+  'cf-ping-commentauthor': 'Notify addressee',
+  'cf-ping-tooltip': 'By the ping function',
+  'cf-ping-tooltip-unreg': 'Can\'t send a notification to a non-registered user',
+  'cf-small': 'In small font',
   'cf-nosignature': 'No signature',
   'cf-delete': 'Delete',
 
@@ -277,7 +275,7 @@ export default {
   'cf-block-preview': 'Preview',
   'cf-block-viewchanges': 'Changes',
   'cf-block-close': 'Close',
-  'cf-notice-nochanges': 'No changes.',
+  'cf-message-nochanges': 'No changes.',
 
   // Reactions to the text entered in the form
   'cf-reaction-templateinheadline': 'Don\'t use templates in headlines: this breaks section links.',
@@ -370,5 +368,6 @@ export default {
   'rd-close': 'Close',
 
   // Other
+  'loading-ellipsis': 'Loading…',
   'addtopicbutton-tooltip': 'Open in a new tab to create a new topic on a standard page, not in {{int:convenientdiscussions-script-name-prepositional}}.',
 };

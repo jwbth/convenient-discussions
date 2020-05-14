@@ -660,7 +660,7 @@ export default class CommentForm {
       [this.minorField, this.minorCheckbox] = checkboxField({
         value: 'minor',
         selected: dataToRestore ? dataToRestore.minor : true,
-        label: cd.s('cf-minoredit'),
+        label: cd.s('cf-minor'),
         tabIndex: String(this.id) + '20',
       });
     }
@@ -689,7 +689,7 @@ export default class CommentForm {
     [this.watchField, this.watchCheckbox] = checkboxField({
       value: 'watch',
       selected: dataToRestore ? dataToRestore.watch : watchCheckboxSelected,
-      label: cd.s('cf-watchpage'),
+      label: cd.s('cf-watch'),
       tabIndex: String(this.id) + '21',
     });
 
@@ -753,18 +753,18 @@ export default class CommentForm {
         value: 'ping',
         selected: dataToRestore ? dataToRestore.ping : false,
         label: this.targetComment.isOpeningSection ?
-          cd.s('cf-notify-sectionauthor') :
-          cd.s('cf-notify-commentauthor'),
+          cd.s('cf-ping-sectionauthor') :
+          cd.s('cf-ping-commentauthor'),
         tabIndex: String(this.id) + '23',
         title: cd.s('cf-watchsection-tooltip'),
       });
 
       if (this.targetComment.author.registered) {
-        this.pingField.setTitle(cd.s('cf-notify-tooltip'));
+        this.pingField.setTitle(cd.s('cf-ping-tooltip'));
       } else {
         this.pingCheckbox.setDisabled(true);
-        this.pingCheckbox.setTitle(cd.s('cf-notify-tooltip-unreg'));
-        this.pingField.setTitle(cd.s('cf-notify-tooltip-unreg'));
+        this.pingCheckbox.setTitle(cd.s('cf-ping-tooltip-unreg'));
+        this.pingField.setTitle(cd.s('cf-ping-tooltip-unreg'));
       }
     }
 
@@ -787,7 +787,7 @@ export default class CommentForm {
       [this.smallField, this.smallCheckbox] = checkboxField({
         value: 'small',
         selected: dataToRestore ? dataToRestore.small : false,
-        label: cd.s('cf-insmallfont'),
+        label: cd.s('cf-small'),
         tabIndex: String(this.id) + '24',
       });
     }
@@ -927,8 +927,8 @@ export default class CommentForm {
         this.#shortSubmitButtonLabel = cd.s('cf-addtopic-short');
         break;
       case 'addSubsection':
-        this.#standardSubmitButtonLabel = cd.s('cf-add-subsection');
-        this.#shortSubmitButtonLabel = cd.s('cf-add-subsection-short');
+        this.#standardSubmitButtonLabel = cd.s('cf-addsubsection');
+        this.#shortSubmitButtonLabel = cd.s('cf-addsubsection-short');
         break;
       default:
         this.#standardSubmitButtonLabel = cd.s('cf-reply');
@@ -974,8 +974,7 @@ export default class CommentForm {
       classes: ['cd-button'],
       popup: {
         head: true,
-        label: cd.s('cf-shortcuts'),
-        $content: cd.util.wrapInElement(cd.s('cf-shortcuts-description'), 'div'),
+        $content: cd.util.wrapInElement(cd.s('cf-help-content'), 'div'),
         padded: true,
         align: 'center',
       },
@@ -1222,7 +1221,7 @@ export default class CommentForm {
         e.preventDefault();
         this.submit();
       })
-      // Keyboard shortcuts
+      // Hotkeys
       .on('keydown', (e) => {
         // Ctrl+Enter
         if (e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 13) {
@@ -1234,7 +1233,7 @@ export default class CommentForm {
           this.cancel();
         }
       })
-      // `focusin` is `focus` that bubbles, i.e. propagates up the node tree.
+      // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
       .on('focusin', () => {
         this.lastFocused = new Date();
       });
@@ -2564,7 +2563,7 @@ export default class CommentForm {
     } else {
       this.$previewArea.empty();
       if (html !== undefined) {
-        this.showMessage(cd.s('cf-notice-nochanges'));
+        this.showMessage(cd.s('cf-message-nochanges'));
       }
     }
     this.$previewArea.cdScrollIntoView(
