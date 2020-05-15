@@ -109,7 +109,7 @@ async function prepare({ messagesRequest }) {
  * @private
  */
 function switchInteresting() {
-  // Item grouping switched on
+  // Item grouping switched on. This may be done in the settings or in the URL.
   const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
 
   // This is for many watchlist types at once.
@@ -120,7 +120,11 @@ function switchInteresting() {
   if (switchInterestingButton.hasFlag('progressive')) {
     // Show all
     // FIXME: old watchlist (no JS) + ?enhanced=1&urlversion=2
-    if (!isEnhanced || !mw.user.options.get('extendwatchlist')) {
+    if (isEnhanced) {
+      $lines
+        .filter('table')
+        .show();
+    } else {
       $lines
         .not(':has(.cd-commentLink-interesting)')
         .show();
