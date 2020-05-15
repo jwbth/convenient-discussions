@@ -608,7 +608,7 @@ const navPanel = {
 
   /**
    * Check is the navigation panel is mounted. For most of the practical purposes, does the same as
-   * the `!convenientDiscussions.g.pageIsInactive` check.
+   * the `convenientDiscussions.g.isPageActive` check.
    *
    * @returns {boolean}
    * @memberof module:navPanel

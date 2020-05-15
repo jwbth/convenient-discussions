@@ -125,7 +125,7 @@ export default class Comment extends CommentSkeleton {
     this.timestampElement = signature.timestampElement;
 
     const frozen = (
-      cd.g.pageIsInactive ||
+      !cd.g.isPageActive ||
       cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
     );
 

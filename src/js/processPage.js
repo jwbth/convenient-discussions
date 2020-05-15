@@ -350,7 +350,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       !$(`*[id="${escapedFragment}"]`).length
     );
 
-    if (decodedFragment && fragmentHasNoTarget && !cd.g.pageIsInactive) {
+    if (decodedFragment && fragmentHasNoTarget && cd.g.isPageActive) {
       await notFound(decodedFragment, date);
     }
   }
@@ -490,7 +490,7 @@ export default async function processPage(keptData = {}) {
 
   // This isn't static: a 404 page doesn't have an ID and is considered inactive, but if the user
   // adds a topic to it, it will become active and get an ID.
-  cd.g.pageIsInactive = Boolean(
+  cd.g.isPageActive = !(
     !mw.config.get('wgArticleId') ||
     cd.g.IS_ARCHIVE_PAGE ||
     (
@@ -510,7 +510,7 @@ export default async function processPage(keptData = {}) {
       console.warn('Couldn\'t load the settings from the server.', e);
     });
   }
-  const visitsRequest = !cd.g.pageIsInactive ? getVisits(true) : undefined;
+  const visitsRequest = cd.g.isPageActive ? getVisits(true) : undefined;
 
   cd.g.specialElements = findSpecialElements();
 
@@ -570,7 +570,7 @@ export default async function processPage(keptData = {}) {
   processFragment(keptData.commentAnchor, keptData.sectionAnchor);
 
   // New comments highlighting and navigation
-  if (!cd.g.pageIsInactive) {
+  if (cd.g.isPageActive) {
     if (cd.g.firstRun || keptData.createdPage) {
       navPanel.mount();
     } else {
@@ -597,7 +597,7 @@ export default async function processPage(keptData = {}) {
     });
   }
 
-  if ((cd.g.firstRun && !cd.g.pageIsInactive) || keptData.createdPage) {
+  if ((cd.g.firstRun && cd.g.isPageActive) || keptData.createdPage) {
     $(document)
       .on('keydown', globalKeyDownHandler)
       .on('scroll resize orientationchange', () => {

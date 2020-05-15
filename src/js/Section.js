@@ -125,7 +125,7 @@ export default class Section extends SectionSkeleton {
        * @type {boolean}
        */
       this.frozen = (
-        cd.g.pageIsInactive ||
+        !cd.g.isPageActive ||
         cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
       );
 
