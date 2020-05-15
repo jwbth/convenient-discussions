@@ -88,13 +88,11 @@ async function confirmCloseDialog(dialog, dialogCode) {
  */
 function handleError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {
-    const { type, code, apiData } = e.data;
     dialog.showErrors(new OO.ui.Error(cd.s(messageName), { recoverable }));
-    console.warn(type, code, apiData);
   } else {
     dialog.showErrors(new OO.ui.Error(cd.s('error-javascript'), { recoverable: false }));
-    console.warn(e);
   }
+  console.warn(e);
   if (!recoverable) {
     dialog.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
       dialog.close();
@@ -922,10 +920,9 @@ export async function editWatchedSections() {
             if (type === 'internal' && code === 'sizeLimit') {
               this.showErrors(new OO.ui.Error(cd.s('ewsd-error-maxsize'), { recoverable: false }));
             } else {
-              this.showErrors(new OO.ui.Error(
-                cd.s('ewsd-error-processing', type, apiData ? apiData.error.code : (code || '-')),
-                { recoverable: true }
-              ));
+              this.showErrors(
+                new OO.ui.Error(cd.s('ewsd-error-processing'), { recoverable: true })
+              );
             }
             console.warn(type, code, apiData);
           } else {

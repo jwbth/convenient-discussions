@@ -5,9 +5,17 @@
  */
 export default class CdError extends Error {
   constructor(data) {
-    let message = data && data.type || '';
-    if (data && data.code) {
-      message += `/${data.code}`;
+    let message;
+    if (data) {
+      message = data.type;
+      if (data.code) {
+        message += `/${data.code}`;
+      }
+      if (data.apiData && data.apiData.error && data.apiData.error.code) {
+        message += `/${data.apiData.error.code}`;
+      }
+    } else {
+      message = '';
     }
     super(message);
     this.name = 'CdError';

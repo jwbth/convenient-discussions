@@ -935,6 +935,8 @@ export default class Section extends SectionSkeleton {
     };
 
     const section = this;
+
+    // Make requests in advance.
     const preparationRequests = [
       getLastRevision(this.sourcePage),
       mw.loader.using('mediawiki.widgets'),
