@@ -68,8 +68,6 @@ export default {
   'sd-removedata-confirm-yes': 'Yes',
   'sd-removedata-confirm-no': 'No',
   'sd-dataremoved': 'Your data has been successfully removed.',
-  'sd-error-load': 'Couldn\'t load the settings: $1/$2',
-  'sd-error-save': 'Couldn\'t update the settings: $1/$2',
   'sd-error-removedata': 'Couldn\'t remove the data on the server: $1/$2',
 
   // Desktop notifications dialogs
@@ -209,6 +207,8 @@ export default {
   // Generic errors
   'error-loaddata': '{{int:convenientdiscussions-script-name}}: Couldn\'t load the data required by the script.',
   'error-processpage': '{{int:convenientdiscussions-script-name}}: Couldn\'t process the page.',
+  'error-settings-load': 'Couldn\'t load the settings to the server.',
+  'error-settings-save': 'Couldn\'t save the settings to the server.',
   'error-reloadpage': 'Couldn\'t reload the page.',
   'error-api': 'API error',
   'error-network': 'Network error.',

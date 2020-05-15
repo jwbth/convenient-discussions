@@ -68,8 +68,6 @@ export default {
   'sd-removedata-confirm-yes': 'Да',
   'sd-removedata-confirm-no': 'Нет',
   'sd-dataremoved': 'Ваши данные успешно удалены.',
-  'sd-error-load': 'Не удалось загрузить настройки с сервера: $1/$2',
-  'sd-error-save': 'Не удалось сохранить настройки на сервер: $1/$2',
   'sd-error-removedata': 'Не удалось удалить данные на сервере: $1/$2',
 
   // Desktop notifications dialogs
@@ -209,6 +207,8 @@ export default {
   // Generic errors
   'error-loaddata': '{{int:convenientdiscussions-script-name}}: не удалось загрузить данные, необходимые скрипту.',
   'error-processpage': '{{int:convenientdiscussions-script-name}}: не удалось обработать страницу.',
+  'error-settings-load': 'Не удалось загрузить настройки с сервера.',
+  'error-settings-save': 'Не удалось сохранить настройки на сервер.',
   'error-reloadpage': 'Не удалось обновить страницу.',
   'error-api': 'Ошибка API',
   'error-network': 'Сетевая ошибка.',
@@ -252,7 +252,7 @@ export default {
   'cf-settings-tooltip': 'Настройки {{int:convenientdiscussions-script-name-genitive}}',
   'cf-help': '?',
   'cf-help-short': '?',
-  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Документация скрипта</a></p>\n<p>Сочетания клавиш:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — отправить</li>\n<li><b>Esc</b> — отменить</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — цитировать</li>\n</ul>',
+  'cf-help-content': '<p><a href="https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions" target="_blank">Документация к скрипту</a></p>\n<p>Сочетания клавиш:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — отправить</li>\n<li><b>Esc</b> — отменить</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — цитировать</li>\n</ul>',
   'cf-error-tryagain': 'Попробовать ещё раз',
   'cf-error-cancel': 'Отмена',
   'cf-quote-tooltip': 'Цитировать выделенный текст',
