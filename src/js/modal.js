@@ -81,22 +81,27 @@ async function confirmCloseDialog(dialog, dialogCode) {
 /**
  * Standard process dialog error handler.
  *
+ * @param {OoUiProcessDialog} dialog
  * @param {CdError|Error} e
  * @param {string} messageName
+ * @param {boolean} recoverable
  */
-function handleError(e, messageName) {
+function handleError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {
     const { type, code, apiData } = e.data;
-    this.showErrors(new OO.ui.Error(
-      cd.s(messageName, type, apiData ? apiData.error.code : code),
-      true
-    ));
+    dialog.showErrors(new OO.ui.Error(cd.s(messageName), { recoverable }));
     console.warn(type, code, apiData);
   } else {
-    this.showErrors(new OO.ui.Error(cd.s('error-javascript'), false));
+    dialog.showErrors(new OO.ui.Error(cd.s('error-javascript'), { recoverable: false }));
     console.warn(e);
   }
-  this.popPending();
+  if (!recoverable) {
+    dialog.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
+      dialog.close();
+    });
+  }
+  dialog.actions.setAbilities({ close: true });
+  dialog.popPending();
 }
 
 /**
@@ -205,7 +210,7 @@ export async function settingsDialog() {
         await preparationsRequest;
         settings = await getSettings();
       } catch (e) {
-        handleError(e, 'sd-error-load');
+        handleError(this, e, 'error-settings-load', false);
         return;
       }
       this.settings = Object.assign({}, cd.settings, settings);
@@ -256,7 +261,7 @@ export async function settingsDialog() {
         try {
           await setSettings(settings);
         } catch (e) {
-          handleError(e, 'sd-error-save');
+          handleError(this, e, 'error-settings-save', true);
           return;
         }
 
@@ -689,7 +694,7 @@ export async function settingsDialog() {
           });
         }
       } catch (e) {
-        handleError(e, 'sd-error-removedata');
+        handleError(this, e, 'sd-error-removedata', false);
         return;
       }
 
@@ -787,7 +792,7 @@ export async function editWatchedSections() {
             Object.keys(watchedSections).filter((pageId) => watchedSections[pageId].length)
           );
         } catch (e) {
-          handleError(e, 'ewsd-error-processing');
+          handleError(this, e, 'ewsd-error-processing', false);
           return;
         }
 
@@ -863,7 +868,7 @@ export async function editWatchedSections() {
         try {
           ({ normalized, redirects, pages } = await getPageIds(pageTitles) || {});
         } catch (e) {
-          handleError(e, 'ewsd-error-processing');
+          handleError(this, e, 'ewsd-error-processing', true);
           return;
         }
 
@@ -901,16 +906,16 @@ export async function editWatchedSections() {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;
             if (type === 'internal' && code === 'sizeLimit') {
-              this.showErrors(new OO.ui.Error(cd.s('ewsd-error-maxsize'), false));
+              this.showErrors(new OO.ui.Error(cd.s('ewsd-error-maxsize'), { recoverable: false }));
             } else {
               this.showErrors(new OO.ui.Error(
-                cd.s('ewsd-error-processing', type, apiData ? apiData.error.code : code),
-                true
+                cd.s('ewsd-error-processing', type, apiData ? apiData.error.code : (code || '-')),
+                { recoverable: true }
               ));
             }
             console.warn(type, code, apiData);
           } else {
-            this.showErrors(new OO.ui.Error(cd.s('error-javascript'), false));
+            this.showErrors(new OO.ui.Error(cd.s('error-javascript'), { recoverable: false }));
             console.warn(e);
           }
           this.popPending();
