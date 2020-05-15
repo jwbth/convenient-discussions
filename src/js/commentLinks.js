@@ -43,8 +43,6 @@ let processDiffFirstRun = true;
  * @private
  */
 async function prepare({ messagesRequest }) {
-  cd.g.api = cd.g.api || new mw.Api();
-
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
     '::before': {
@@ -57,10 +55,11 @@ async function prepare({ messagesRequest }) {
 
   initTimestampParsingTools();
 
+  cd.g.api = cd.g.api || new mw.Api();
+
   // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
   // error, not letting it be caught by the try/catch block.
-  const watchedSectionsRequest = getWatchedSections(true);
-  watchedSectionsRequest.catch((e) => {
+  const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
     console.warn('Couldn\'t load the settings from the server.', e);
   });
   messagesRequest = messagesRequest || loadMessages();
@@ -69,10 +68,8 @@ async function prepare({ messagesRequest }) {
   try {
     [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
   } catch (e) {
-    console.error('Couldn\'t load the messages required for the script.', e);
-    return;
+    throw ['Couldn\'t load the messages required for the script.', e];
   }
-
   ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
@@ -660,7 +657,12 @@ async function addCommentLinks($content) {
  * @param {object} [data] Data passed from the main module.
  */
 export default async function commentLinks({ messagesRequest }) {
-  await prepare({ messagesRequest });
+  try {
+    await prepare({ messagesRequest });
+  } catch (e) {
+    console.warn(...e);
+    return;
+  }
 
   if (cd.g.IS_DIFF_PAGE) {
     mw.hook('convenientDiscussions.pageReady').add(processDiff);
