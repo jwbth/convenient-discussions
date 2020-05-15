@@ -374,7 +374,7 @@ export default class Section extends SectionSkeleton {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.addReplyForm) {
-       /**
+      /**
        * Add reply form related to the section.
        *
        * @type {CommentForm|undefined}
@@ -448,19 +448,21 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.static.title = cd.s('msd-title');
     MoveSectionDialog.static.actions = [
       {
+        action: 'close',
         modes: ['loading', 'move', 'reload'],
         flags: ['safe', 'close'],
+        disabled: true,
       },
       {
-        modes: 'move',
         action: 'move',
+        modes: ['move'],
         label: cd.s('msd-move'),
         flags: ['primary', 'progressive'],
         disabled: true,
       },
       {
-        modes: 'reload',
         action: 'reload',
+        modes: ['reload'],
         label: cd.s('msd-reload'),
         flags: ['primary', 'progressive'],
       },
@@ -472,7 +474,6 @@ export default class Section extends SectionSkeleton {
       this.pushPending();
 
       const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-
       this.panelLoading = new OO.ui.PanelLayout({
         padded: true,
         expanded: false,
@@ -493,11 +494,6 @@ export default class Section extends SectionSkeleton {
         items: [this.panelLoading, this.panelMove, this.panelReload],
       });
       this.$body.append(this.stackLayout.$element);
-
-      const pageRequest = getLastRevision(section.sourcePage).catch(() => {
-        this.abort(cd.s('cf-error-getpagecode'), true);
-      });
-      this.preparationRequests = Promise.all([pageRequest, mw.loader.using('mediawiki.widgets')]);
     };
 
     MoveSectionDialog.prototype.onTitleInputChange = async function () {
@@ -510,6 +506,10 @@ export default class Section extends SectionSkeleton {
       this.actions.setAbilities({ move });
     };
 
+    MoveSectionDialog.prototype.getBodyHeight = function () {
+      return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+    };
+
     MoveSectionDialog.prototype.getSetupProcess = function (data) {
       return MoveSectionDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
         this.stackLayout.setItem(this.panelLoading);
@@ -519,21 +519,23 @@ export default class Section extends SectionSkeleton {
 
     MoveSectionDialog.prototype.getReadyProcess = function (data) {
       return MoveSectionDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
-        const [pageRequest] = await this.preparationRequests;
-        if (!pageRequest) return;
+        let page;
+        try {
+          [page] = await Promise.all(preparationRequests);
+        } catch (e) {
+          this.abort(cd.s('cf-error-getpagecode'), false);
+          return;
+        }
 
         try {
-          section.locateInCode(pageRequest.code);
+          section.locateInCode(page.code);
         } catch (e) {
           if (e instanceof CdError) {
             const { data } = e.data;
-            let message;
-            if (data === 'couldntLocateSection') {
-              message = cd.s('error-locatesection');
-            } else {
-              message = cd.s('error-unknown');
-            }
-            this.abort(message, true);
+            const message = data === 'couldntLocateSection' ?
+              cd.s('error-locatesection') :
+              cd.s('error-unknown');
+            this.abort(message, false);
           } else {
             this.abort(cd.s('error-javascript'), false);
           }
@@ -594,10 +596,10 @@ export default class Section extends SectionSkeleton {
 
         this.stackLayout.setItem(this.panelMove);
         this.titleInput.focus();
-        this.actions.setMode('move');
+        this.actions.setMode('move').setAbilities({ close: true });
 
-        // A dirty workaround avoid scrollbar appearing when the window is loading. Couldn't figure
-        // out a way to do this out of the box.
+        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
+        // figure out a way to do this out of the box.
         dialog.$body.css('overflow', 'hidden');
         setTimeout(() => {
           dialog.$body.css('overflow', '');
@@ -613,15 +615,24 @@ export default class Section extends SectionSkeleton {
         cd.g.windowManager.clearWindows();
         reloadPage();
       });
-      this.showErrors(new OO.ui.Error($body, recoverable));
-      this.actions.setAbilities({ move: recoverable });
+      this.showErrors(new OO.ui.Error($body, { recoverable }));
+      if (!recoverable) {
+        this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
+          this.close();
+        });
+      }
+      this.actions.setAbilities({
+        close: true,
+        move: recoverable,
+      });
+      cd.g.windowManager.updateWindowSize(this);
       this.popPending();
     };
 
     MoveSectionDialog.prototype.loadSourcePage = async function () {
-      let pageRequest;
+      let page;
       try {
-        pageRequest = await getLastRevision(section.sourcePage);
+        page = await getLastRevision(section.sourcePage);
       } catch (e) {
         if (e instanceof CdError) {
           const { type, code } = e.data;
@@ -639,7 +650,7 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      const code = pageRequest.code;
+      const code = page.code;
       try {
         section.locateInCode(code);
       } catch (e) {
@@ -659,8 +670,8 @@ export default class Section extends SectionSkeleton {
 
       return {
         code,
-        timestamp: pageRequest.timestamp,
-        queryTimestamp: pageRequest.queryTimestamp,
+        timestamp: page.timestamp,
+        queryTimestamp: page.queryTimestamp,
         sectionInCode: section.inCode,
         wikilink: `${section.sourcePage}#${section.headline}`,
       };
@@ -912,11 +923,19 @@ export default class Section extends SectionSkeleton {
           this.close({ action });
           reloadPage({ sectionAnchor: section.anchor });
         });
+      } else if (action === 'close') {
+        return new OO.ui.Process(() => {
+          this.close();
+        });
       }
       return MoveSectionDialog.parent.prototype.getActionProcess.call(this, action);
     };
 
     const section = this;
+    const preparationRequests = [
+      getLastRevision(this.sourcePage),
+      mw.loader.using('mediawiki.widgets'),
+    ];
 
     const dialog = new MoveSectionDialog();
     cd.g.windowManager.addWindows([dialog]);
