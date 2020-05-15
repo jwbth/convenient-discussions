@@ -125,28 +125,30 @@ export async function settingsDialog() {
   SettingsDialog.static.title = cd.s('sd-title');
   SettingsDialog.static.actions = [
     {
-      modes: ['loading', 'settings', 'reload', 'dataRemoved'],
-      flags: ['safe', 'close'],
       action: 'close',
+      modes: ['settings', 'reload', 'dataRemoved'],
+      flags: ['safe', 'close'],
+      disabled: true,
     },
     {
-      modes: ['settings'],
       action: 'save',
+      modes: ['settings'],
       label: cd.s('sd-save'),
       flags: ['primary', 'progressive'],
       disabled: true,
     },
     {
-      modes: ['reload'],
-      action: 'reload',
-      label: cd.s('sd-reload'),
-      flags: ['primary', 'progressive'],
-    },
-    {
-      modes: ['settings'],
       action: 'reset',
+      modes: ['settings'],
       label: cd.s('sd-reset'),
       flags: ['destructive'],
+      disabled: true,
+    },
+    {
+      action: 'reload',
+      modes: ['reload'],
+      label: cd.s('sd-reload'),
+      flags: ['primary', 'progressive'],
     },
   ];
   SettingsDialog.static.size = 'large';
@@ -161,7 +163,6 @@ export async function settingsDialog() {
     this.pushPending();
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-
     this.panelLoading = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -174,7 +175,6 @@ export async function settingsDialog() {
     });
 
     const $settingsSaved = $('<p>').html(cd.s('sd-saved'));
-
     this.panelReload = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -182,7 +182,6 @@ export async function settingsDialog() {
     this.panelReload.$element.append($settingsSaved);
 
     const $dataRemoved = $('<p>').html(cd.s('sd-dataremoved'));
-
     this.panelDataRemoved = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -199,7 +198,7 @@ export async function settingsDialog() {
   SettingsDialog.prototype.getSetupProcess = function (data) {
     return SettingsDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
       this.stackLayout.setItem(this.panelLoading);
-      this.actions.setMode('loading');
+      this.actions.setMode('settings');
     });
   };
 
@@ -222,7 +221,7 @@ export async function settingsDialog() {
 
       this.stackLayout.setItem(this.panelSettings);
       this.bookletLayout.setPage('general');
-      this.actions.setMode('settings');
+      this.actions.setAbilities({ close: true });
 
       cd.g.windowManager.updateWindowSize(this);
       this.popPending();
@@ -591,8 +590,7 @@ export async function settingsDialog() {
     });
     this.bookletLayout.addPages([generalPage, commentFormPage, notificationsPage, removeDataPage]);
 
-    this.panelSettings.$element.empty();
-    this.panelSettings.$element.append(this.bookletLayout.$element);
+    this.panelSettings.$element.empty().append(this.bookletLayout.$element);
 
     this.updateActionsAvailability();
   };
@@ -700,10 +698,10 @@ export async function settingsDialog() {
 
       localStorage.removeItem('convenientDiscussions-commentForms');
 
-      this.popPending();
-
       this.stackLayout.setItem(this.panelDataRemoved);
       this.actions.setMode('dataRemoved');
+
+      this.popPending();
     }
   };
 
