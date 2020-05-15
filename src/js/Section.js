@@ -254,41 +254,44 @@ export default class Section extends SectionSkeleton {
         }
 
         if (watchedSectionsRequest) {
-           watchedSectionsRequest.then(({ thisPageWatchedSections }) => {
-            if (this.headline) {
-              this.isWatched = thisPageWatchedSections.includes(this.headline);
-              this.addMenuItem({
-                label: cd.s('sm-unwatch'),
-                tooltip: cd.s('sm-unwatch-tooltip'),
-                func: () => {
-                  this.unwatch();
-                },
-                class: 'cd-sectionLink-unwatch',
-                visible: this.isWatched,
-              });
-              this.addMenuItem({
-                label: cd.s('sm-watch'),
-                tooltip: cd.s('sm-watch-tooltip'),
-                func: () => {
-                  this.watch();
-                },
-                class: 'cd-sectionLink-watch',
-                visible: !this.isWatched,
-              });
-            }
+          watchedSectionsRequest.then(
+            ({ thisPageWatchedSections }) => {
+              if (this.headline) {
+                this.isWatched = thisPageWatchedSections.includes(this.headline);
+                this.addMenuItem({
+                  label: cd.s('sm-unwatch'),
+                  tooltip: cd.s('sm-unwatch-tooltip'),
+                  func: () => {
+                    this.unwatch();
+                  },
+                  class: 'cd-sectionLink-unwatch',
+                  visible: this.isWatched,
+                });
+                this.addMenuItem({
+                  label: cd.s('sm-watch'),
+                  tooltip: cd.s('sm-watch-tooltip'),
+                  func: () => {
+                    this.watch();
+                  },
+                  class: 'cd-sectionLink-watch',
+                  visible: !this.isWatched,
+                });
+              }
 
-            const targetString = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
+              const targetString = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
 
-            // We put it here to make it appear always after the "watch" item.
-            this.addMenuItem({
-              label: cd.s('sm-copylink'),
-              // We need the event object so we don't wrap the function into a container function.
-              func: this.copyLink.bind(this),
-              class: 'cd-sectionLink-copyLink',
-              tooltip: cd.s('sm-copylink-tooltip', cd.s(targetString)),
-              href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
-            });
-          });
+              // We put it here to make it appear always after the "watch" item.
+              this.addMenuItem({
+                label: cd.s('sm-copylink'),
+                // We need the event object so we don't wrap the function into a container function.
+                func: this.copyLink.bind(this),
+                class: 'cd-sectionLink-copyLink',
+                tooltip: cd.s('sm-copylink-tooltip', cd.s(targetString)),
+                href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
+              });
+            },
+            () => {}
+          );
         }
       }
     }

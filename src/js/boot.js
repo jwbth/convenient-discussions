@@ -118,7 +118,7 @@ export function initSettings() {
 
   if (JSON.stringify(cd.settings) !== mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME)) {
     setSettings().catch((e) => {
-      console.error('Couldn\'t save the settings to the server', e);
+      console.warn('Couldn\'t save the settings to the server.', e);
     });
   }
 }

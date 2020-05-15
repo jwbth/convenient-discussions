@@ -68,7 +68,7 @@ export default {
   'sd-removedata-confirm-yes': 'Yes',
   'sd-removedata-confirm-no': 'No',
   'sd-dataremoved': 'Your data has been successfully removed.',
-  'sd-error-removedata': 'Couldn\'t remove the data on the server: $1/$2',
+  'sd-error-removedata': 'Couldn\'t remove the data on the server.',
 
   // Desktop notifications dialogs
   'confirm-desktopnotifications': 'Do you want Convenient Discussions to send you desktop notifications about new comments on currently open pages if they are addressed to you or posted in sections that you watch? You can disable this feature in the settings.',
@@ -151,12 +151,12 @@ export default {
   'section-watch-error-save': 'Couldn\'t save the settings to the server.',
   'section-watch-error-maxsize': 'Couldn\'t update the settings: the size of the watched sections list exceeds the maximum size. <a class="cd-notification-editWatchedSections">Edit the sections list</a> to fix this.',
 
-  // Edit watched sections (topics)
+  // Edit watched sections (topics) dialog
   'ewsd-title': 'Edit watched sections list',
   'ewsd-save': 'Save',
   'ewsd-saved': 'The watched sections list has been successfully saved.',
   'ewsd-error-maxsize': 'Couldn\'t update the settings: the size of the watched sections list exceeds the maximum size. Reduce the size of the list to fix this.',
-  'ewsd-error-processing': 'An error occurred while processing the watched sections list: $1/$2',
+  'ewsd-error-processing': 'An error occurred while processing the watched sections list.',
   'ewsd-close-confirm': 'The watched sections list wasn\'t saved. Are you sure you want to close the window?',
   'ewsd-close-confirm-yes': 'Close',
   'ewsd-close-confirm-no': 'Cancel',

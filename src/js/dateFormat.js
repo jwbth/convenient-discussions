@@ -531,24 +531,23 @@ export function loadMessages() {
     'parentheses', 'parentheses-start', 'parentheses-end', 'file-anchor-link',
   ];
 
-  // I hope we won't be scolded too much for making two message requests in parallel...
-  const daysMonthsRequests = [];
+  // I hope we won't be scolded too much for making two message requests in parallel.
+  const messagesRequests = [];
   for (let i = 0; i < messageNames.length; i += 50) {
     const nextNames = messageNames.slice(i, i + 50);
-    daysMonthsRequests.push(cd.g.api.loadMessagesIfMissing(
-      nextNames,
-      { amlang: mw.config.get('wgContentLanguage') }
-    ));
+    messagesRequests.push(
+      cd.g.api.loadMessagesIfMissing(nextNames, { amlang: mw.config.get('wgContentLanguage') })
+    );
   }
 
-  Promise.all(daysMonthsRequests).then(() => {
+  Promise.all(messagesRequests).then(() => {
     // We need this object to pass to the web worker.
     cd.g.MESSAGES = {};
     messageNames.forEach((name) => {
       cd.g.MESSAGES[name] = mw.msg(name);
     });
   });
-  requests.push(...daysMonthsRequests);
+  requests.push(...messagesRequests);
 
   if (!Object.keys(cd.config.messages).some((name) => name.startsWith('timezone-'))) {
     const request = cd.g.api.loadMessages(undefined, {

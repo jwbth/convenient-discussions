@@ -802,7 +802,7 @@ export async function editWatchedSections() {
         let watchedSections;
         let pages;
         try {
-          ({ watchedSections } = await getWatchedSections());
+          ({ watchedSections } = await watchedSectionsRequest);
           pages = await getPageTitles(
             Object.keys(watchedSections).filter((pageId) => watchedSections[pageId].length)
           );
@@ -948,6 +948,9 @@ export async function editWatchedSections() {
     }
     return EditWatchedSectionsDialog.parent.prototype.getActionProcess.call(this, action);
   };
+
+  // Make a request in advance.
+  const watchedSectionsRequest = getWatchedSections();
 
   createWindowManager();
   const dialog = new EditWatchedSectionsDialog();
