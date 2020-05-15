@@ -206,8 +206,7 @@ export async function settingsDialog() {
     return SettingsDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
       let settings;
       try {
-        await preparationsRequest;
-        settings = await getSettings();
+        [settings] = await Promise.all(preparationsRequests);
       } catch (e) {
         handleError(this, e, 'error-settings-load', false);
         return;
@@ -705,7 +704,10 @@ export async function settingsDialog() {
     }
   };
 
-  const preparationsRequest = mw.loader.using(['mediawiki.widgets.UsersMultiselectWidget']);
+  const preparationsRequests = [
+    getSettings(),
+    mw.loader.using('mediawiki.widgets.UsersMultiselectWidget'),
+  ];
 
   createWindowManager();
   const dialog = new SettingsDialog();
