@@ -98,7 +98,10 @@ function handleError(dialog, e, messageName, recoverable) {
       dialog.close();
     });
   }
+
   dialog.actions.setAbilities({ close: true });
+
+  cd.g.windowManager.updateWindowSize(dialog);
   dialog.popPending();
 }
 
@@ -702,6 +705,7 @@ export async function settingsDialog() {
     }
   };
 
+  // Make requests in advance.
   const preparationRequests = [
     getSettings(),
     mw.loader.using('mediawiki.widgets.UsersMultiselectWidget'),
