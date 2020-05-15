@@ -184,6 +184,7 @@ function addWatchlistMenu() {
     invisibleLabel: true,
     title: cd.s('wl-button-switchinteresting-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchInteresting'],
+    disabled: !watchedSections,
   });
   switchInterestingButton.on('click', () => {
     switchInteresting();
