@@ -468,34 +468,6 @@ export default class Section extends SectionSkeleton {
       },
     ];
 
-    MoveSectionDialog.prototype.initialize = function () {
-      MoveSectionDialog.parent.prototype.initialize.apply(this, arguments);
-
-      this.pushPending();
-
-      const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-      this.panelLoading = new OO.ui.PanelLayout({
-        padded: true,
-        expanded: false,
-      });
-      this.panelLoading.$element.append($loading);
-
-      this.panelMove = new OO.ui.PanelLayout({
-        padded: true,
-        expanded: false,
-      });
-
-      this.panelReload = new OO.ui.PanelLayout({
-        padded: true,
-        expanded: false,
-      });
-
-      this.stackLayout = new OO.ui.StackLayout({
-        items: [this.panelLoading, this.panelMove, this.panelReload],
-      });
-      this.$body.append(this.stackLayout.$element);
-    };
-
     MoveSectionDialog.prototype.onTitleInputChange = async function () {
       let move = true;
       try {
@@ -504,177 +476,6 @@ export default class Section extends SectionSkeleton {
         move = false;
       }
       this.actions.setAbilities({ move });
-    };
-
-    MoveSectionDialog.prototype.getBodyHeight = function () {
-      return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
-    };
-
-    MoveSectionDialog.prototype.getSetupProcess = function (data) {
-      return MoveSectionDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
-        this.stackLayout.setItem(this.panelLoading);
-        this.actions.setMode('loading');
-      });
-    };
-
-    MoveSectionDialog.prototype.getReadyProcess = function (data) {
-      return MoveSectionDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
-        let page;
-        try {
-          [page] = await Promise.all(preparationRequests);
-        } catch (e) {
-          this.abort(cd.s('cf-error-getpagecode'), false);
-          return;
-        }
-
-        try {
-          section.locateInCode(page.code);
-        } catch (e) {
-          if (e instanceof CdError) {
-            const { data } = e.data;
-            const message = data === 'couldntLocateSection' ?
-              cd.s('error-locatesection') :
-              cd.s('error-unknown');
-            this.abort(message, false);
-          } else {
-            this.abort(cd.s('error-javascript'), false);
-          }
-          return;
-        }
-        const sectionCode = section.inCode.code;
-
-        this.titleInput = new mw.widgets.TitleInputWidget({
-          $overlay: this.$overlay,
-          excludeCurrentPage: true,
-          validate: () => {
-            let title = this.titleInput.getMWTitle();
-            return (
-              title &&
-              title.toText() !== section.sourcePage &&
-              isTalkNamespace(title.namespace)
-            );
-          },
-        });
-        this.titleField = new OO.ui.FieldLayout(this.titleInput, {
-          label: cd.s('msd-targetpage'),
-          align: 'top',
-        });
-
-        this.titleInput.connect(this, { 'change': 'onTitleInputChange' });
-        this.titleInput.connect(this, {
-          'enter': () => {
-            if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
-              this.executeAction('move');
-            }
-          },
-        });
-
-        let $sectionCodeNote = $('<div>');
-        $('<pre>')
-          .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : ''))
-          .appendTo($sectionCodeNote);
-        $('<p>')
-          .css('font-size', '85%')
-          .text(cd.s('msd-bottom'))
-          .appendTo($sectionCodeNote);
-
-        this.summaryEndingInput = new OO.ui.TextInputWidget({
-          // TODO: take into account the whole summary length, updating the maximum value
-          // dynamically.
-          maxLength: 250,
-        });
-        this.summaryEndingField = new OO.ui.FieldLayout(this.summaryEndingInput, {
-          label: cd.s('msd-summaryending'),
-          align: 'top',
-        });
-
-        this.panelMove.$element.append(
-          this.titleField.$element,
-          $sectionCodeNote,
-          this.summaryEndingField.$element
-        );
-
-        this.stackLayout.setItem(this.panelMove);
-        this.titleInput.focus();
-        this.actions.setMode('move').setAbilities({ close: true });
-
-        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
-        // figure out a way to do this out of the box.
-        dialog.$body.css('overflow', 'hidden');
-        setTimeout(() => {
-          dialog.$body.css('overflow', '');
-        }, 500);
-
-        cd.g.windowManager.updateWindowSize(this);
-        this.popPending();
-      });
-    };
-
-    MoveSectionDialog.prototype.abort = function (html, recoverable) {
-      const $body = animateLink(html, 'cd-message-reloadPage', () => {
-        cd.g.windowManager.clearWindows();
-        reloadPage();
-      });
-      this.showErrors(new OO.ui.Error($body, { recoverable }));
-      if (!recoverable) {
-        this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
-          this.close();
-        });
-      }
-      this.actions.setAbilities({
-        close: true,
-        move: recoverable,
-      });
-      cd.g.windowManager.updateWindowSize(this);
-      this.popPending();
-    };
-
-    MoveSectionDialog.prototype.loadSourcePage = async function () {
-      let page;
-      try {
-        page = await getLastRevision(section.sourcePage);
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, code } = e.data;
-          if (type === 'api') {
-            if (code === 'missing') {
-              throw [cd.s('msd-error-sourcepagedeleted'), true];
-            } else {
-              throw [`${cd.s('error-api')}: ${code}.`, true];
-            }
-          } else if (type === 'network') {
-            throw [cd.s('error-network'), true];
-          }
-        } else {
-          throw [cd.s('error-javascript'), false];
-        }
-      }
-
-      const code = page.code;
-      try {
-        section.locateInCode(code);
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { code } = e.data;
-          let message;
-          if (code === 'couldntLocateSection') {
-            message = cd.s('error-locatesection');
-          } else {
-            message = cd.s('error-unknown');
-          }
-          throw [message, true];
-        } else {
-          throw [cd.s('error-javascript'), false];
-        }
-      }
-
-      return {
-        code,
-        timestamp: page.timestamp,
-        queryTimestamp: page.queryTimestamp,
-        sectionInCode: section.inCode,
-        wikilink: `${section.sourcePage}#${section.headline}`,
-      };
     };
 
     MoveSectionDialog.prototype.areNewTopicsOnTop = async function (title, code) {
@@ -727,6 +528,54 @@ export default class Section extends SectionSkeleton {
       }
 
       return { newTopicsOnTop, firstSectionIndex };
+    };
+
+    MoveSectionDialog.prototype.loadSourcePage = async function () {
+      let page;
+      try {
+        page = await getLastRevision(section.sourcePage);
+      } catch (e) {
+        if (e instanceof CdError) {
+          const { type, code } = e.data;
+          if (type === 'api') {
+            if (code === 'missing') {
+              throw [cd.s('msd-error-sourcepagedeleted'), true];
+            } else {
+              throw [`${cd.s('error-api')}: ${code}.`, true];
+            }
+          } else if (type === 'network') {
+            throw [cd.s('error-network'), true];
+          }
+        } else {
+          throw [cd.s('error-javascript'), false];
+        }
+      }
+
+      const code = page.code;
+      try {
+        section.locateInCode(code);
+      } catch (e) {
+        if (e instanceof CdError) {
+          const { code } = e.data;
+          let message;
+          if (code === 'couldntLocateSection') {
+            message = cd.s('error-locatesection');
+          } else {
+            message = cd.s('error-unknown');
+          }
+          throw [message, true];
+        } else {
+          throw [cd.s('error-javascript'), false];
+        }
+      }
+
+      return {
+        code,
+        timestamp: page.timestamp,
+        queryTimestamp: page.queryTimestamp,
+        sectionInCode: section.inCode,
+        wikilink: `${section.sourcePage}#${section.headline}`,
+      };
     };
 
     MoveSectionDialog.prototype.loadTargetPage = async function (targetTitle) {
@@ -879,6 +728,157 @@ export default class Section extends SectionSkeleton {
       } catch (e) {
         throw [cd.s('msd-error-editingsourcepage'), false];
       }
+    };
+
+    MoveSectionDialog.prototype.abort = function (html, recoverable) {
+      const $body = animateLink(html, 'cd-message-reloadPage', () => {
+        cd.g.windowManager.clearWindows();
+        reloadPage();
+      });
+      this.showErrors(new OO.ui.Error($body, { recoverable }));
+      if (!recoverable) {
+        this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
+          this.close();
+        });
+      }
+      this.actions.setAbilities({
+        close: true,
+        move: recoverable,
+      });
+      cd.g.windowManager.updateWindowSize(this);
+      this.popPending();
+    };
+
+    MoveSectionDialog.prototype.getBodyHeight = function () {
+      return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+    };
+
+    MoveSectionDialog.prototype.initialize = function () {
+      MoveSectionDialog.parent.prototype.initialize.apply(this, arguments);
+
+      this.pushPending();
+
+      const $loading = $('<div>').text(cd.s('loading-ellipsis'));
+      this.panelLoading = new OO.ui.PanelLayout({
+        padded: true,
+        expanded: false,
+      });
+      this.panelLoading.$element.append($loading);
+
+      this.panelMove = new OO.ui.PanelLayout({
+        padded: true,
+        expanded: false,
+      });
+
+      this.panelReload = new OO.ui.PanelLayout({
+        padded: true,
+        expanded: false,
+      });
+
+      this.stackLayout = new OO.ui.StackLayout({
+        items: [this.panelLoading, this.panelMove, this.panelReload],
+      });
+      this.$body.append(this.stackLayout.$element);
+    };
+
+    MoveSectionDialog.prototype.getSetupProcess = function (data) {
+      return MoveSectionDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
+        this.stackLayout.setItem(this.panelLoading);
+        this.actions.setMode('loading');
+      });
+    };
+
+    MoveSectionDialog.prototype.getReadyProcess = function (data) {
+      return MoveSectionDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
+        let page;
+        try {
+          [page] = await Promise.all(preparationRequests);
+        } catch (e) {
+          this.abort(cd.s('cf-error-getpagecode'), false);
+          return;
+        }
+
+        try {
+          section.locateInCode(page.code);
+        } catch (e) {
+          if (e instanceof CdError) {
+            const { data } = e.data;
+            const message = data === 'couldntLocateSection' ?
+              cd.s('error-locatesection') :
+              cd.s('error-unknown');
+            this.abort(message, false);
+          } else {
+            this.abort(cd.s('error-javascript'), false);
+          }
+          return;
+        }
+        const sectionCode = section.inCode.code;
+
+        this.titleInput = new mw.widgets.TitleInputWidget({
+          $overlay: this.$overlay,
+          excludeCurrentPage: true,
+          validate: () => {
+            let title = this.titleInput.getMWTitle();
+            return (
+              title &&
+              title.toText() !== section.sourcePage &&
+              isTalkNamespace(title.namespace)
+            );
+          },
+        });
+        this.titleField = new OO.ui.FieldLayout(this.titleInput, {
+          label: cd.s('msd-targetpage'),
+          align: 'top',
+        });
+
+        this.titleInput.connect(this, { 'change': 'onTitleInputChange' });
+        this.titleInput.connect(this, {
+          'enter': () => {
+            if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
+              this.executeAction('move');
+            }
+          },
+        });
+
+        let $sectionCodeNote = $('<div>');
+        $('<pre>')
+          .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : ''))
+          .appendTo($sectionCodeNote);
+        $('<p>')
+          .css('font-size', '85%')
+          .text(cd.s('msd-bottom'))
+          .appendTo($sectionCodeNote);
+
+        this.summaryEndingInput = new OO.ui.TextInputWidget({
+          // TODO: take into account the whole summary length, updating the maximum value
+          // dynamically.
+          maxLength: 250,
+        });
+        this.summaryEndingField = new OO.ui.FieldLayout(this.summaryEndingInput, {
+          label: cd.s('msd-summaryending'),
+          align: 'top',
+        });
+
+        this.panelMove.$element.append(
+          this.titleField.$element,
+          $sectionCodeNote,
+          this.summaryEndingField.$element
+        );
+
+        this.stackLayout.setItem(this.panelMove);
+        this.titleInput.focus();
+        this.actions.setMode('move').setAbilities({ close: true });
+
+        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
+        // figure out a way to do this out of the box.
+        dialog.$body.css('overflow', 'hidden');
+        setTimeout(() => {
+          dialog.$body.css('overflow', '');
+        }, 500);
+
+        cd.g.windowManager.updateWindowSize(this);
+        this.popPending();
+      });
     };
 
     MoveSectionDialog.prototype.getActionProcess = function (action) {
