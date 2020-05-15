@@ -346,7 +346,6 @@ export default class Comment extends CommentSkeleton {
          */
         this.editButton = this.#elementPrototypes.editButton.cloneNode(true);
         this.editButton.firstChild.onclick = () => {
-          this.unhighlightFocused();
           this.edit();
         };
         this.#overlayContent.appendChild(this.editButton);
