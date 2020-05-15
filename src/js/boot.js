@@ -117,11 +117,9 @@ export function initSettings() {
   cd.settings = Object.assign({}, cd.defaultSettings, cd.settings);
 
   if (JSON.stringify(cd.settings) !== mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME)) {
-    try {
-      setSettings();
-    } catch (e) {
-      console.error('Couldn\'t save the settings', e);
-    }
+    setSettings().catch((e) => {
+      console.error('Couldn\'t save the settings to the server', e);
+    });
   }
 }
 
