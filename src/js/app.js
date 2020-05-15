@@ -235,7 +235,9 @@ function main() {
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       cd.g.api = new mw.Api();
       messagesRequest = loadMessages();
-      getUserInfo();
+      getUserInfo().catch((e) => {
+        console.warn(e);
+      });
     }
 
     // We use a jQuery promise as there is no way to know the state of native promises.
@@ -319,7 +321,9 @@ function main() {
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       cd.g.api = new mw.Api();
       messagesRequest = loadMessages();
-      getUserInfo();
+      getUserInfo().catch((e) => {
+        console.warn(e);
+      });
     }
 
     mw.loader.using([
