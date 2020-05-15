@@ -154,11 +154,12 @@ export default {
   'section-watch-error-maxsize': 'Couldn\'t update the settings: the size of the watched sections list exceeds the maximum size. <a class="cd-notification-editWatchedSections">Edit the sections list</a> to fix this.',
 
   // Edit watched sections (topics)
-  'ewsd-title': 'Edit section list',
+  'ewsd-title': 'Edit watched sections list',
   'ewsd-save': 'Save',
+  'ewsd-saved': 'The watched sections list has been successfully saved.',
   'ewsd-error-maxsize': 'Couldn\'t update the settings: the size of the watched sections list exceeds the maximum size. Reduce the size of the list to fix this.',
-  'ewsd-error-processing': 'An error occurred while processing the sections list: $1/$2',
-  'ewsd-close-confirm': 'The section list wasn\'t saved. Are you sure you want to close the window?',
+  'ewsd-error-processing': 'An error occurred while processing the watched sections list: $1/$2',
+  'ewsd-close-confirm': 'The watched sections list wasn\'t saved. Are you sure you want to close the window?',
   'ewsd-close-confirm-yes': 'Close',
   'ewsd-close-confirm-no': 'Cancel',
 

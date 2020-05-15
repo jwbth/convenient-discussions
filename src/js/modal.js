@@ -739,16 +739,24 @@ export async function editWatchedSections() {
   EditWatchedSectionsDialog.static.title = cd.s('ewsd-title');
   EditWatchedSectionsDialog.static.actions = [
     {
+      action: 'close',
+      modes: ['edit', 'saved'],
+      flags: ['safe', 'close'],
+      disabled: true,
+    },
+    {
       action: 'save',
+      modes: ['edit'],
       label: cd.s('ewsd-save'),
       flags: ['primary', 'progressive'],
       disabled: true,
     },
-    {
-      action: 'close',
-      flags: ['safe', 'close'],
-    },
   ];
+  EditWatchedSectionsDialog.static.size = 'large';
+
+  EditWatchedSectionsDialog.prototype.getBodyHeight = function () {
+    return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+  };
 
   EditWatchedSectionsDialog.prototype.initialize = async function () {
     EditWatchedSectionsDialog.parent.prototype.initialize.apply(this, arguments);
@@ -756,7 +764,6 @@ export async function editWatchedSections() {
     this.pushPending();
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-
     this.panelLoading = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -768,8 +775,15 @@ export async function editWatchedSections() {
       expanded: false,
     });
 
+    const $watchedSectionsSaved = $('<p>').html(cd.s('ewsd-saved'));
+    this.panelSaved = new OO.ui.PanelLayout({
+      padded: true,
+      expanded: false,
+    });
+    this.panelSaved.$element.append($watchedSectionsSaved);
+
     this.stackLayout = new OO.ui.StackLayout({
-      items: [this.panelLoading, this.panelSections],
+      items: [this.panelLoading, this.panelSections, this.panelSaved],
     });
 
     this.$body.append(this.stackLayout.$element);
@@ -778,6 +792,7 @@ export async function editWatchedSections() {
   EditWatchedSectionsDialog.prototype.getSetupProcess = function (data) {
     return EditWatchedSectionsDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
       this.stackLayout.setItem(this.panelLoading);
+      this.actions.setMode('edit');
     });
   };
 
@@ -824,9 +839,10 @@ export async function editWatchedSections() {
 
         this.stackLayout.setItem(this.panelSections);
         this.input.focus();
+        this.actions.setAbilities({ close: true });
 
-        // A dirty workaround avoid scrollbar appearing when the window is loading. Couldn't figure
-        // out a way to do this out of the box.
+        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
+        // figure out a way to do this out of the box.
         dialog.$body.css('overflow', 'hidden');
         setTimeout(() => {
           dialog.$body.css('overflow', '');
@@ -900,8 +916,6 @@ export async function editWatchedSections() {
 
         try {
           await setWatchedSections(newWatchedSections);
-          this.popPending();
-          this.close();
         } catch (e) {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;
@@ -921,6 +935,11 @@ export async function editWatchedSections() {
           this.popPending();
           return;
         }
+
+        this.stackLayout.setItem(this.panelSaved);
+        this.actions.setMode('saved');
+
+        this.popPending();
       });
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
