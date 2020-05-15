@@ -400,26 +400,31 @@ async function confirmDesktopNotifications() {
           size: 'medium',
           actions,
         }).then((action) => {
+          let promise;
           if (action === 'accept') {
             if (Notification.permission === 'default') {
               OO.ui.alert(cd.s('alert-grantpermission'));
               Notification.requestPermission((permission) => {
                 if (permission === 'granted') {
                   cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-                  setSettings(settings);
+                  promise = setSettings(settings);
                 } else if (permission === 'denied') {
                   cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-                  setSettings(settings);
+                  promise = setSettings(settings);
                 }
               });
             } else if (Notification.permission === 'granted') {
               cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-              setSettings(settings);
+              promise = setSettings(settings);
             }
           } else if (action === 'reject') {
             cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-            setSettings(settings);
+            promise = setSettings(settings);
           }
+          promise.catch((e) => {
+            mw.notify(cd.s('error-settings-save'), { type: 'error' })
+            console.warn(e);
+          })
         });
       }
     });
