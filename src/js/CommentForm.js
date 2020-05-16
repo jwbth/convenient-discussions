@@ -2502,7 +2502,7 @@ export default class CommentForm {
     const currentOperation = { type: 'viewChanges' };
     this.registerOperation(currentOperation);
 
-    const { newPageCode } = await this.tryPrepareNewPageCode('viewChanges') || {};
+    const { page, newPageCode } = await this.tryPrepareNewPageCode('viewChanges') || {};
     if (this.closeOperationIfNecessary(currentOperation, newPageCode === undefined)) return;
 
     mw.loader.load('mediawiki.diff.styles');
@@ -2517,7 +2517,7 @@ export default class CommentForm {
         formatversion: 2,
       };
       if (mw.config.get('wgArticleId')) {
-        options.fromtitle = this.targetPage;
+        options.fromrev = page.revisionId;
       } else {
         // Unexistent pages
         options.fromslots = 'main',
