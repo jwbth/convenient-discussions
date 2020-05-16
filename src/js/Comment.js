@@ -1330,7 +1330,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Exclude indentation characters and any foreign code before them from the comment code.
-    // Comments on the zero level sometimes start with ":" that is used to indent some side note. It
+    // Comments at the zero level sometimes start with ":" that is used to indent some side note. It
     // shouldn't be considered an indentation character.
     if (this.level > 0) {
       const replaceIndentationChars = (s, m1, m2) => {

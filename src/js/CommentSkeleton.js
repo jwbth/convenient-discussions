@@ -193,9 +193,9 @@ export default class CommentSkeleton {
     // We make sure the level on the top and on the bottom of the comment are the same, and add
     // corresponding classes.
     const levelElements = {};
-    levelElements.top = this.#parser.getLevelsUpTree(this.highlightables[0], 'top');
-    levelElements.bottom = this.elements.length > 1 ?
-      this.#parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1], 'bottom') :
+    levelElements.top = this.#parser.getLevelsUpTree(this.highlightables[0]);
+    levelElements.bottom = this.highlightables.length > 1 ?
+      this.#parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1]) :
       levelElements.top;
 
     /**

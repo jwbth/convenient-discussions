@@ -744,20 +744,14 @@ export default class Parser {
    * Get the ".cd-commentLevel" elements up the DOM tree.
    *
    * @param {Element} initialElement
-   * @param {string} initialElementLocation "top" or "bottom".
    * @returns {Element[]}
    */
-  getLevelsUpTree(initialElement, initialElementLocation) {
+  getLevelsUpTree(initialElement) {
     const levelElements = [];
     const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
-      if (
-        ['UL', 'DL'].includes(el.tagName) ||
-        // People often leave their signature in the last item of the list that is part of their
-        // comment.
-        (el.tagName === 'OL' && initialElementLocation === 'top')
-      ) {
+      if (['UL', 'DL', 'OL'].includes(el.tagName)) {
         if (el.classList.contains('cd-commentLevel')) {
           const classAttr = el.getAttribute('class');
           const match = classAttr.match(/cd-commentLevel-(\d+)/);
