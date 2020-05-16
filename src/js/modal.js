@@ -164,33 +164,33 @@ export async function settingsDialog() {
     this.pushPending();
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-    this.panelLoading = new OO.ui.PanelLayout({
+    this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.panelLoading.$element.append($loading);
+    this.loadingPanel.$element.append($loading);
 
-    this.panelSettings = new OO.ui.PanelLayout({
+    this.settingsPanel = new OO.ui.PanelLayout({
       padded: false,
       expanded: true,
     });
 
     const $settingsSaved = $('<p>').html(cd.s('sd-saved'));
-    this.panelReload = new OO.ui.PanelLayout({
+    this.reloadPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.panelReload.$element.append($settingsSaved);
+    this.reloadPanel.$element.append($settingsSaved);
 
     const $dataRemoved = $('<p>').html(cd.s('sd-dataremoved'));
-    this.panelDataRemoved = new OO.ui.PanelLayout({
+    this.dataRemovedPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.panelDataRemoved.$element.append($dataRemoved);
+    this.dataRemovedPanel.$element.append($dataRemoved);
 
     this.stackLayout = new OO.ui.StackLayout({
-      items: [this.panelLoading, this.panelSettings, this.panelReload, this.panelDataRemoved],
+      items: [this.loadingPanel, this.settingsPanel, this.reloadPanel, this.dataRemovedPanel],
     });
 
     this.$body.append(this.stackLayout.$element);
@@ -198,7 +198,7 @@ export async function settingsDialog() {
 
   SettingsDialog.prototype.getSetupProcess = function (data) {
     return SettingsDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
-      this.stackLayout.setItem(this.panelLoading);
+      this.stackLayout.setItem(this.loadingPanel);
       this.actions.setMode('settings');
     });
   };
@@ -219,7 +219,7 @@ export async function settingsDialog() {
 
       this.renderForm(this.settings);
 
-      this.stackLayout.setItem(this.panelSettings);
+      this.stackLayout.setItem(this.settingsPanel);
       this.bookletLayout.setPage('general');
       this.actions.setAbilities({ close: true });
 
@@ -264,7 +264,7 @@ export async function settingsDialog() {
           return;
         }
 
-        this.stackLayout.setItem(this.panelReload);
+        this.stackLayout.setItem(this.reloadPanel);
         this.actions.setMode('reload');
 
         this.popPending();
@@ -590,7 +590,7 @@ export async function settingsDialog() {
     });
     this.bookletLayout.addPages([generalPage, commentFormPage, notificationsPage, removeDataPage]);
 
-    this.panelSettings.$element.empty().append(this.bookletLayout.$element);
+    this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
     this.updateActionsAvailability();
   };
@@ -698,7 +698,7 @@ export async function settingsDialog() {
 
       localStorage.removeItem('convenientDiscussions-commentForms');
 
-      this.stackLayout.setItem(this.panelDataRemoved);
+      this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');
 
       this.popPending();
@@ -766,26 +766,26 @@ export async function editWatchedSections() {
     this.pushPending();
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-    this.panelLoading = new OO.ui.PanelLayout({
+    this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.panelLoading.$element.append($loading);
+    this.loadingPanel.$element.append($loading);
 
-    this.panelSections = new OO.ui.PanelLayout({
+    this.sectionsPanel = new OO.ui.PanelLayout({
       padded: false,
       expanded: false,
     });
 
     const $watchedSectionsSaved = $('<p>').html(cd.s('ewsd-saved'));
-    this.panelSaved = new OO.ui.PanelLayout({
+    this.savedPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.panelSaved.$element.append($watchedSectionsSaved);
+    this.savedPanel.$element.append($watchedSectionsSaved);
 
     this.stackLayout = new OO.ui.StackLayout({
-      items: [this.panelLoading, this.panelSections, this.panelSaved],
+      items: [this.loadingPanel, this.sectionsPanel, this.savedPanel],
     });
 
     this.$body.append(this.stackLayout.$element);
@@ -793,7 +793,7 @@ export async function editWatchedSections() {
 
   EditWatchedSectionsDialog.prototype.getSetupProcess = function (data) {
     return EditWatchedSectionsDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
-      this.stackLayout.setItem(this.panelLoading);
+      this.stackLayout.setItem(this.loadingPanel);
       this.actions.setMode('edit');
     });
   };
@@ -837,9 +837,9 @@ export async function editWatchedSections() {
           this.actions.setAbilities({ save: newValue !== value });
         });
 
-        this.panelSections.$element.append(this.input.$element);
+        this.sectionsPanel.$element.append(this.input.$element);
 
-        this.stackLayout.setItem(this.panelSections);
+        this.stackLayout.setItem(this.sectionsPanel);
         this.input.focus();
         this.actions.setAbilities({ close: true });
 
@@ -937,7 +937,7 @@ export async function editWatchedSections() {
           return;
         }
 
-        this.stackLayout.setItem(this.panelSaved);
+        this.stackLayout.setItem(this.savedPanel);
         this.actions.setMode('saved');
 
         this.popPending();

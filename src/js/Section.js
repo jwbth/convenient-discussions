@@ -774,31 +774,31 @@ export default class Section extends SectionSkeleton {
       this.pushPending();
 
       const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-      this.panelLoading = new OO.ui.PanelLayout({
+      this.loadingPanel = new OO.ui.PanelLayout({
         padded: true,
         expanded: false,
       });
-      this.panelLoading.$element.append($loading);
+      this.loadingPanel.$element.append($loading);
 
-      this.panelMove = new OO.ui.PanelLayout({
+      this.movePanel = new OO.ui.PanelLayout({
         padded: true,
         expanded: false,
       });
 
-      this.panelReload = new OO.ui.PanelLayout({
+      this.reloadPanel = new OO.ui.PanelLayout({
         padded: true,
         expanded: false,
       });
 
       this.stackLayout = new OO.ui.StackLayout({
-        items: [this.panelLoading, this.panelMove, this.panelReload],
+        items: [this.loadingPanel, this.movePanel, this.reloadPanel],
       });
       this.$body.append(this.stackLayout.$element);
     };
 
     MoveSectionDialog.prototype.getSetupProcess = function (data) {
       return MoveSectionDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
-        this.stackLayout.setItem(this.panelLoading);
+        this.stackLayout.setItem(this.loadingPanel);
         this.actions.setMode('loading');
       });
     };
@@ -874,13 +874,13 @@ export default class Section extends SectionSkeleton {
           align: 'top',
         });
 
-        this.panelMove.$element.append(
+        this.movePanel.$element.append(
           this.titleField.$element,
           $sectionCodeNote,
           this.summaryEndingField.$element
         );
 
-        this.stackLayout.setItem(this.panelMove);
+        this.stackLayout.setItem(this.movePanel);
         this.titleInput.focus();
         this.actions.setMode('move').setAbilities({ close: true });
 
@@ -927,9 +927,9 @@ export default class Section extends SectionSkeleton {
             return;
           }
 
-          this.panelReload.$element.html(cd.s('msd-moved', targetPage.sectionUrl));
+          this.reloadPanel.$element.html(cd.s('msd-moved', targetPage.sectionUrl));
 
-          this.stackLayout.setItem(this.panelReload);
+          this.stackLayout.setItem(this.reloadPanel);
           this.actions.setMode('reload');
           this.popPending();
         });
