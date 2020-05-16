@@ -488,6 +488,7 @@ export default class CommentForm {
 
     if (this.mode === 'reply') {
       const $list = tag === 'ul' ? this.$element : $('<ul>').appendTo(this.$element);
+
       /**
        * A wrapper for other comment form elements placed inside the main element.
        *
@@ -1146,6 +1147,7 @@ export default class CommentForm {
 
       case 'replyInSection': {
         this.$element.appendTo(this.target.$replyWrapper);
+        this.target.$replyWrapper.addClass('cd-replyWrapper-hasCommentForm');
         break;
       }
 
@@ -2892,6 +2894,7 @@ export default class CommentForm {
       this.target.scrollIntoView('top');
     } else if (this.mode === 'replyInSection') {
       this.target.$replyButton.show();
+      this.target.$replyWrapper.removeClass('cd-replyWrapper-hasCommentForm');
     } else if (this.mode === 'edit') {
       this.target.$elements.removeClass('cd-hidden');
       this.target.scrollIntoView('top');

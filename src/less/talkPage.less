@@ -13,6 +13,12 @@
   min-height: unset;
 }
 
+// Don't show a number in front of the button in a numbered list if there is no comment form insode
+// the list item.
+ol > .cd-replyWrapper:not(.cd-replyWrapper-hasCommentForm) {
+  list-style-type: none;
+}
+
 // #cd-notExistingClass is used to override other possibly set "display" properties.
 .action-view .cd-hidden:not(#cd-notExistingClass) {
   display: none;
