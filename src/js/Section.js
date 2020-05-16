@@ -153,7 +153,19 @@ export default class Section extends SectionSkeleton {
         let createUl = false;
         if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
           const tagName = this.lastElementInFirstChunk.tagName;
-          if (['UL', 'OL'].includes(tagName)) {
+          if (
+            tagName === 'UL' ||
+            (
+              tagName === 'OL' &&
+              // Check if this is indeed a numbered list with replies as list items, not a numbered
+              // list as part of the user's comment that has their signature technically inside the
+              // last item.
+              (
+                this.lastElementInFirstChunk.querySelectorAll('ol > li').length === 1 ||
+                this.lastElementInFirstChunk.querySelectorAll('ol > li > .cd-signature').length > 1
+              )
+            )
+          ) {
             tag = 'li';
           } else if (tagName === 'DL') {
             tag = 'dd';
@@ -211,9 +223,9 @@ export default class Section extends SectionSkeleton {
         /**
          * Reply button container if present. It may be wrapped around the reply button wrapper.
          *
-         * @type {?(JQuery|undefined)}
+         * @type {JQuery|undefined}
          */
-        this.$replyContainer = replyContainer ? $(replyContainer) : null;
+        this.$replyContainer = replyContainer ? $(replyContainer) : undefined;
 
         // Add section menu items
         if (
