@@ -980,48 +980,75 @@ export default class Section extends SectionSkeleton {
   /**
    * Add the section to the watched sections list.
    *
-   * @param {boolean} [silent=false] Don't show a notification about the addition.
+   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
    */
   watch(silent = false) {
-    const $link = this.$heading.find('.cd-sectionLink-watch');
-    if ($link.hasClass('cd-sectionLink-pending')) {
-      return;
-    } else {
-      $link.addClass('cd-sectionLink-pending');
+    let $link;
+    if (!silent) {
+      $link = this.$heading.find('.cd-sectionLink-watch');
+      if ($link.hasClass('cd-sectionLink-pending')) {
+        return;
+      } else {
+        $link.addClass('cd-sectionLink-pending');
+      }
     }
-    Section.watchSection(this.headline, silent, () => {
-      this.isWatched = true;
-      $link.removeClass('cd-sectionLink-pending');
-      Section.getSectionsByHeadline(this.headline).forEach((section) => {
-        section.updateWatchMenuItems();
-      });
+    Section.watchSection(
+      this.headline,
+      {
+        silent,
+        successCallback: () => {
+          this.isWatched = true;
+          if ($link) {
+            $link.removeClass('cd-sectionLink-pending');
+          }
+          Section.getSectionsByHeadline(this.headline).forEach((section) => {
+            section.updateWatchMenuItems();
+          });
+        },
+        errorCallback: () => {
+          if ($link) {
+            $link.removeClass('cd-sectionLink-pending');
+          }
+        },
     });
   }
 
   /**
    * Remove the section from the watched sections list.
    *
-   * @param {boolean} [silent=false] Don't show a notification about the removal.
+   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
    */
   unwatch(silent = false) {
-    const $link = this.$heading.find('.cd-sectionLink-unwatch');
-    if ($link.hasClass('cd-sectionLink-pending')) {
-      return;
-    } else {
-      $link.addClass('cd-sectionLink-pending');
+    let $link;
+    if (!silent) {
+      $link = this.$heading.find('.cd-sectionLink-unwatch');
+      if ($link.hasClass('cd-sectionLink-pending')) {
+        return;
+      } else {
+        $link.addClass('cd-sectionLink-pending');
+      }
     }
     const watchedAncestor = this.getWatchedAncestor();
     Section.unwatchSection(
       this.headline,
-      silent,
-      () => {
-        this.isWatched = false;
-        $link.removeClass('cd-sectionLink-pending');
-        Section.getSectionsByHeadline(this.headline).forEach((section) => {
-          section.updateWatchMenuItems();
-        });
-      },
-      watchedAncestor && watchedAncestor.headline
+      {
+        silent,
+        successCallback: () => {
+          this.isWatched = false;
+          if ($link) {
+            $link.removeClass('cd-sectionLink-pending');
+          }
+          Section.getSectionsByHeadline(this.headline).forEach((section) => {
+            section.updateWatchMenuItems();
+          });
+        },
+        errorCallback: () => {
+          if ($link) {
+            $link.removeClass('cd-sectionLink-pending');
+          }
+        },
+        watchedAncestorHeadline: watchedAncestor && watchedAncestor.headline,
+      }
     );
   }
 
@@ -1341,10 +1368,12 @@ export default class Section extends SectionSkeleton {
    * Add a section on the current page to the watched sections list.
    *
    * @param {string} headline
-   * @param {boolean} [silent=false] Don't display a notification.
-   * @param {Function} [callback]
+   * @param {boolean} [options]
+   * @param {boolean} [options.silent=false] Don't display a success notification.
+   * @param {Function} [options.successCallback]
+   * @param {Function} [options.errorCallback]
    */
-  static async watchSection(headline, silent = false, callback) {
+  static async watchSection(headline, { silent = false, successCallback, errorCallback }) {
     if (!headline) return;
 
     let watchedSections;
@@ -1353,6 +1382,9 @@ export default class Section extends SectionSkeleton {
       ({ watchedSections, thisPageWatchedSections } = await getWatchedSections());
     } catch (e) {
       mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
+      if (errorCallback) {
+        errorCallback();
+      }
       return;
     }
 
@@ -1363,16 +1395,6 @@ export default class Section extends SectionSkeleton {
 
     try {
       await setWatchedSections(watchedSections);
-      if (!silent) {
-        let text = cd.s('section-watch-success', headline);
-        if ($('#ca-watch').length) {
-          text += ` ${cd.s('section-watch-pagenotwatched')}`;
-        }
-        mw.notify(cd.util.wrapInElement(text));
-      }
-      if (callback) {
-        callback();
-      }
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;
@@ -1392,6 +1414,21 @@ export default class Section extends SectionSkeleton {
       } else {
         mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
       }
+      if (errorCallback) {
+        errorCallback();
+      }
+      return;
+    }
+
+    if (!silent) {
+      let text = cd.s('section-watch-success', headline);
+      if ($('#ca-watch').length) {
+        text += ` ${cd.s('section-watch-pagenotwatched')}`;
+      }
+      mw.notify(cd.util.wrapInElement(text));
+    }
+    if (successCallback) {
+      successCallback();
     }
   }
 
@@ -1399,11 +1436,17 @@ export default class Section extends SectionSkeleton {
    * Add a section on the current page to the watched sections list.
    *
    * @param {string} headline
-   * @param {boolean} [silent=false] Don't display a notification.
-   * @param {Function} [callback]
-   * @param {string} [watchedAncestorHeadline] Headline of the ancestor section that is watched.
+   * @param {boolean} [options]
+   * @param {boolean} [options.silent=false] Don't display a success notification.
+   * @param {Function} [options.successCallback]
+   * @param {Function} [options.errorCallback]
+   * @param {string} [options.watchedAncestorHeadline] Headline of the ancestor section that is
+   *   watched.
    */
-  static async unwatchSection(headline, silent = false, callback, watchedAncestorHeadline) {
+  static async unwatchSection(
+    headline,
+    { silent = false, successCallback, errorCallback, watchedAncestorHeadline }
+  ) {
     if (!headline) return;
 
     let watchedSections;
@@ -1412,6 +1455,9 @@ export default class Section extends SectionSkeleton {
       ({ watchedSections, thisPageWatchedSections } = await getWatchedSections());
     } catch (e) {
       mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
+      if (errorCallback) {
+        errorCallback();
+      }
       return;
     }
 
@@ -1425,18 +1471,23 @@ export default class Section extends SectionSkeleton {
 
     try {
       await setWatchedSections(watchedSections);
-      let text = cd.s('section-unwatch-success', headline);
-      if (watchedAncestorHeadline) {
-        text += ` ${cd.s('section-unwatch-stillwatched', watchedAncestorHeadline)}`;
-      }
-      if (!silent || watchedAncestorHeadline) {
-        mw.notify(cd.util.wrapInElement(text));
-      }
-      if (callback) {
-        callback();
-      }
     } catch (e) {
       mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+      if (errorCallback) {
+        errorCallback();
+      }
+      return;
+    }
+
+    let text = cd.s('section-unwatch-success', headline);
+    if (watchedAncestorHeadline) {
+      text += ` ${cd.s('section-unwatch-stillwatched', watchedAncestorHeadline)}`;
+    }
+    if (!silent || watchedAncestorHeadline) {
+      mw.notify(cd.util.wrapInElement(text));
+    }
+    if (successCallback) {
+      successCallback();
     }
   }
 
