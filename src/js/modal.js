@@ -990,10 +990,34 @@ function copyLinkToClipboardAndNotify(text) {
 /**
  * Copy a link to the object or show a copy link dialog.
  *
- * @param {Comment|Section} object
- * @param {boolean} chooseLink
+ * @param {Comment|Section} object Comment or section to copy the link to.
+ * @param {boolean} chooseLink Allow the user to choose the type of the link.
+ * @param {Function} [finallyCallback] Callback to execute on success or error.
  */
-export async function copyLink(object, chooseLink) {
+export async function copyLink(object, chooseLink, finallyCallback) {
+  if (object.linkBeingCopied) {
+    if (finallyCallback) {
+      finallyCallback();
+    }
+    return;
+  }
+  /**
+   * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
+   * being made to get the diff).
+   *
+   * @name linkBeingCopied
+   * @type {boolean}
+   * @instance module:Comment
+   */
+  /**
+   * Is a link to the section being copied right now (a copy link dialog is opened).
+   *
+   * @name linkBeingCopied
+   * @type {boolean}
+   * @instance module:Section
+   */
+  object.linkBeingCopied = true;
+
   let anchor = object instanceof Comment ? object.anchor : underlinesToSpaces(object.anchor);
   anchor = encodeWikilink(anchor);
   const wikilink = `[[${cd.g.CURRENT_PAGE}#${anchor}]]`;
@@ -1002,6 +1026,7 @@ export async function copyLink(object, chooseLink) {
     decodedCurrentPageUrl = decodeURI(mw.util.getUrl(cd.g.CURRENT_PAGE));
   } catch (e) {
     console.error(e);
+    object.linkBeingCopied = false;
     if (finallyCallback) {
       finallyCallback();
     }
@@ -1030,8 +1055,6 @@ export async function copyLink(object, chooseLink) {
           value = cd.s('cld-diff-error-unknown');
         }
       }
-
-      if (cd.g.pageOverlayOn) return;
 
       diffInput = new OO.ui.TextInputWidget({
         value: value || cd.s('cld-diff-error'),
@@ -1076,7 +1099,7 @@ export async function copyLink(object, chooseLink) {
     });
 
     const anchorWikilinkInput = new OO.ui.TextInputWidget({
-      value: `[[#${anchor}]]`
+      value: `[[#${anchor}]]`,
     });
     const anchorWikilinkButton = new OO.ui.ButtonWidget({
       label: cd.s('cld-copy'),
@@ -1130,6 +1153,7 @@ export async function copyLink(object, chooseLink) {
     });
     windowInstance.closed.then(() => {
       cd.g.windowManager.clearWindows();
+      object.linkBeingCopied = false;
     });
   } else {
     let link;
@@ -1158,20 +1182,25 @@ export async function copyLink(object, chooseLink) {
             text = cd.s('copylink-error-diffnotfound-unknown');
           }
           mw.notify(text, { type: 'error' });
+          object.linkBeingCopied = false;
           if (finallyCallback) {
             finallyCallback();
           }
           return;
         }
         break;
+
       case 'link':
         link = url;
         break;
+
       default:
         link = wikilink;
     }
 
     copyLinkToClipboardAndNotify(link);
+
+    object.linkBeingCopied = false;
   }
 
   if (finallyCallback) {
