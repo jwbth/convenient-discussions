@@ -95,7 +95,7 @@ export default class CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.isUnsigned = signature.isUnsigned;
+    this.unsigned = signature.unsigned;
 
     /**
      * Comment parts.

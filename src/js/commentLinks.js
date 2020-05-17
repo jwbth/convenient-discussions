@@ -331,7 +331,7 @@ function processWatchlist($content) {
       wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
-      let isWatched = false;
+      let watched = false;
       if (summary) {
         const curLink = (
           // Expanded watchlist
@@ -347,18 +347,18 @@ function processWatchlist($content) {
             for (let j = 0; j < thisPageWatchedSections.length; j++) {
               // \u200E is the left-to-right mark.
               if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
-                isWatched = true;
+                watched = true;
                 break;
               }
             }
-            if (isWatched) {
+            if (watched) {
               wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
         }
       }
-      if (!isWatched) {
+      if (!watched) {
         wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
       }
     }
@@ -489,7 +489,7 @@ function processHistory($content) {
       wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
-      let isWatched = false;
+      let watched = false;
       if (summary) {
         const thisPageWatchedSections = (
           (watchedSections && watchedSections[mw.config.get('wgArticleId')]) || []
@@ -498,17 +498,17 @@ function processHistory($content) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
             // \u200E is the left-to-right mark.
             if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
-              isWatched = true;
+              watched = true;
               break;
             }
           }
-          if (isWatched) {
+          if (watched) {
             wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
             wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
           }
         }
       }
-      if (!isWatched) {
+      if (!watched) {
         wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
       }
     }
@@ -587,21 +587,21 @@ async function processDiff() {
         wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
         wrapper.firstChild.lastChild.title = goToCommentToYou;
       } else {
-        let isWatched = false;
+        let watched = false;
         if (summary && thisPageWatchedSections.length) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
             // \u200E is the left-to-right mark.
             if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
-              isWatched = true;
+              watched = true;
               break;
             }
           }
-          if (isWatched) {
+          if (watched) {
             wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
             wrapper.firstChild.lastChild.title = goToCommentWatchedSection;
           }
         }
-        if (!isWatched) {
+        if (!watched) {
           wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
         }
       }

@@ -65,7 +65,7 @@ function main() {
   // Doesn't work in mobile version.
   if (location.host.endsWith('.m.wikipedia.org')) return;
 
-  if (cd.isRunning) {
+  if (cd.running) {
     console.warn('One instance of Convenient Discussions is already running.');
     return;
   }
@@ -73,11 +73,11 @@ function main() {
   /**
    * Is the script running.
    *
-   * @name isRunning
+   * @name running
    * @type {boolean}
    * @memberof module:cd~convenientDiscussions
    */
-  cd.isRunning = true;
+  cd.running = true;
 
   /**
    * Script configuration. Default configuration is at {@link module:default/config}.

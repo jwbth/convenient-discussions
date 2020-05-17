@@ -245,11 +245,11 @@ Object.defineProperty(Element.prototype, 'classList', {
       this._classList = {
         list: [],
 
-        isMovedFromClassAttr: false,
+        movedFromClassAttr: false,
 
         moveFromClassAttr(classAttr) {
           this.list = (classAttr || '').split(' ');
-          this.isMovedFromClassAttr = true;
+          this.movedFromClassAttr = true;
         },
 
         add: (...names) => {
@@ -261,7 +261,7 @@ Object.defineProperty(Element.prototype, 'classList', {
             }
             classAttr += name;
             this.setAttribute('class', classAttr);
-            if (this._classList.isMovedFromClassAttr) {
+            if (this._classList.movedFromClassAttr) {
               this._classList.list.push(name);
             } else {
               this._classList.moveFromClassAttr(classAttr);
@@ -277,7 +277,7 @@ Object.defineProperty(Element.prototype, 'classList', {
             cd.debug.stopTimer('containsClass');
             return false;
           }
-          if (!this._classList.isMovedFromClassAttr) {
+          if (!this._classList.movedFromClassAttr) {
             this._classList.moveFromClassAttr(classAttr);
           }
           // This can run tens of thousand times, so we microoptimize it (don't use template strings

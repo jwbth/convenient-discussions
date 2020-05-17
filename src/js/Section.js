@@ -269,7 +269,7 @@ export default class Section extends SectionSkeleton {
           watchedSectionsRequest.then(
             ({ thisPageWatchedSections }) => {
               if (this.headline) {
-                this.isWatched = thisPageWatchedSections.includes(this.headline);
+                this.watched = thisPageWatchedSections.includes(this.headline);
                 this.addMenuItem({
                   label: cd.s('sm-unwatch'),
                   tooltip: cd.s('sm-unwatch-tooltip'),
@@ -277,7 +277,7 @@ export default class Section extends SectionSkeleton {
                     this.unwatch();
                   },
                   class: 'cd-sectionLink-unwatch',
-                  visible: this.isWatched,
+                  visible: this.watched,
                 });
                 this.addMenuItem({
                   label: cd.s('sm-watch'),
@@ -286,7 +286,7 @@ export default class Section extends SectionSkeleton {
                     this.watch();
                   },
                   class: 'cd-sectionLink-watch',
-                  visible: !this.isWatched,
+                  visible: !this.watched,
                 });
               }
 
@@ -968,7 +968,7 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   updateWatchMenuItems() {
-    if (this.isWatched) {
+    if (this.watched) {
       this.$heading.find('.cd-sectionLink-unwatch').parent().show();
       this.$heading.find('.cd-sectionLink-watch').parent().hide();
     } else {
@@ -997,7 +997,7 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.isWatched = true;
+          this.watched = true;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
@@ -1034,7 +1034,7 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.isWatched = false;
+          this.watched = false;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
@@ -1110,7 +1110,7 @@ export default class Section extends SectionSkeleton {
       otherSection;
       otherSection = otherSection.parent
     ) {
-      if (otherSection.isWatched) {
+      if (otherSection.watched) {
         return otherSection;
       }
     }

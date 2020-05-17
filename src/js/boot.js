@@ -622,7 +622,7 @@ export function saveSession(warnedLeave) {
       delete: commentForm.deleteCheckbox && commentForm.deleteCheckbox.isSelected(),
       originalHeadline: commentForm.originalHeadline,
       originalComment: commentForm.originalComment,
-      isSummaryAltered: commentForm.isSummaryAltered,
+      summaryAltered: commentForm.summaryAltered,
       lastFocused: commentForm.lastFocused,
     };
   });

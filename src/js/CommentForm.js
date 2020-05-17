@@ -109,7 +109,7 @@ export default class CommentForm {
        *
        * @type {boolean}
        */
-      this.isTextLoaded = false;
+      this.textLoaded = false;
     }
 
     /**
@@ -117,7 +117,7 @@ export default class CommentForm {
      *
      * @type {boolean}
      */
-    this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
+    this.summaryAltered = dataToRestore ? dataToRestore.summaryAltered : false;
 
     if (editintro) {
       parseCode(`{{${editintro}}}`, { title: cd.g.CURRENT_PAGE }).then(
@@ -148,8 +148,8 @@ export default class CommentForm {
     /**
      * @typedef {object} Operation
      * @property {string} type One of `'preview'`, `'viewChanges'`, and `'submit'`.
-     * @property {boolean} isClosed Whether the operation is closed (settled).
-     * @property {boolean} isDelayed Whether the operation is delayed.
+     * @property {boolean} closed Whether the operation is closed (settled).
+     * @property {boolean} delayed Whether the operation is delayed.
      */
 
     /**
@@ -193,7 +193,7 @@ export default class CommentForm {
             this.willCommentBeIndented = this.target.inCode.indentationChars;
 
             this.popPending(true);
-            this.isTextLoaded = true;
+            this.textLoaded = true;
             saveSession();
 
             this.commentInput.focus();
@@ -702,7 +702,7 @@ export default class CommentForm {
       const label = callItTopic ? cd.s('cf-watchsection-topic') : cd.s('cf-watchsection-subsection');
       const selected = (
         (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
-        (this.targetSection && this.targetSection.isWatched)
+        (this.targetSection && this.targetSection.watched)
       );
 
       /**
@@ -1284,7 +1284,7 @@ export default class CommentForm {
       .on('change', saveSessionEventHandler);
     this.summaryInput.$element
       .on('keypress', () => {
-        this.isSummaryAltered = true;
+        this.summaryAltered = true;
         this.#dontAutopreview = false;
       });
     if (this.minorCheckbox) {
@@ -1465,7 +1465,7 @@ export default class CommentForm {
    */
   showMessage(html, type = 'notice', className) {
     if (
-      this.isDestroyed ||
+      this.destroyed ||
       (className && this.$messageArea.children(`.cd-message-${className}`).length)
     ) {
       return;
@@ -1530,7 +1530,7 @@ export default class CommentForm {
       this.closeOperation(currentOperation);
     }
 
-    if (this.isDestroyed) return;
+    if (this.destroyed) return;
 
     if (logMessage) {
       console.warn(logMessage);
@@ -2278,7 +2278,7 @@ export default class CommentForm {
    */
   registerOperation(operation) {
     this.operations.push(operation);
-    operation.isClosed = false;
+    operation.closed = false;
     if (operation.type !== 'preview' || !cd.settings.autopreview) {
       this.$messageArea.empty();
       this.pushPending(operation.type === 'submit');
@@ -2303,15 +2303,15 @@ export default class CommentForm {
    * @returns {boolean}
    */
   closeOperationIfNecessary(operation, condition) {
-    if (operation.isClosed) {
+    if (operation.closed) {
       return true;
     }
     const otherOperationIndex = findLastIndex(
       this.operations,
-      // With "&& !op.isDelayed", the preview would try to update at every key stroke, but not more
-      // often than once a second. Without "&& !op.isDelayed", the preview would update only when
+      // With "&& !op.delayed", the preview would try to update at every key stroke, but not more
+      // often than once a second. Without "&& !op.delayed", the preview would update only when
       // the user didn't type anything for 1 second (but still make requests in the background).
-      (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.isDelayed
+      (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.delayed
     );
     if (
       (otherOperationIndex !== null && otherOperationIndex > this.operations.indexOf(operation)) ||
@@ -2331,7 +2331,7 @@ export default class CommentForm {
    * @param {Operation} operation
    */
   closeOperation(operation) {
-    operation.isClosed = true;
+    operation.closed = true;
     if (operation.type !== 'preview' || !cd.settings.autopreview) {
       this.popPending(operation.type === 'submit');
     }
@@ -2354,7 +2354,7 @@ export default class CommentForm {
    * @returns {boolean}
    */
   isBeingSubmitted() {
-    return this.operations.some((op) => op.type === 'submit' && !op.isClosed);
+    return this.operations.some((op) => op.type === 'submit' && !op.closed);
   }
 
   /**
@@ -2369,7 +2369,7 @@ export default class CommentForm {
    */
   async preview(maySummaryHaveChanged = true, auto = true, operation) {
     if (
-      this.isTextLoaded === false ||
+      this.textLoaded === false ||
       (
         this.target &&
         !this.target.inCode &&
@@ -2398,12 +2398,12 @@ export default class CommentForm {
       if (
         isTooEarly ||
         this.operations
-          .some((op) => !op.isClosed && op.type === 'preview' && op !== currentOperation)
+          .some((op) => !op.closed && op.type === 'preview' && op !== currentOperation)
       ) {
         if (this.#previewTimeout) {
           this.unregisterOperation(currentOperation);
         } else {
-          currentOperation.isDelayed = true;
+          currentOperation.delayed = true;
           this.#previewTimeout = setTimeout(() => {
             this.#previewTimeout = null;
             this.preview(maySummaryHaveChanged, true, currentOperation);
@@ -2420,7 +2420,7 @@ export default class CommentForm {
     // - when restoring the form from a session,
     // - when the target comment has not been loaded yet, possibly because of an error when tried to
     // (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
-    // "this.isTextLoaded" check above).
+    // "this.textLoaded" check above).
     if (this.target && !this.target.inCode) {
       await this.checkCode();
       if (this.closeOperationIfNecessary(currentOperation, !this.target.inCode)) return;
@@ -2819,14 +2819,14 @@ export default class CommentForm {
           keptData.justWatchedSection = headline;
         } else {
           const section = this.targetSection;
-          if (section && !section.isWatched) {
+          if (section && !section.watched) {
             section.watch(true);
             keptData.justWatchedSection = section.headline;
           }
         }
       } else {
         const section = this.targetSection;
-        if (section && section.isWatched) {
+        if (section && section.watched) {
           section.unwatch(true);
           keptData.justUnwatchedSection = section.headline;
         }
@@ -2876,24 +2876,24 @@ export default class CommentForm {
    * @param {boolean} [confirmClose=true] Whether to confirm form close.
    */
   async cancel(confirmClose = true) {
-    if (this.isBeingCancelled || this.isBeingSubmitted()) return;
+    if (this.beingCancelled || this.isBeingSubmitted()) return;
 
     /**
      * Comment form is in the process of being cancelled.
      *
      * @type {boolean}
      */
-    this.isBeingCancelled = true;
+    this.beingCancelled = true;
 
     if (confirmClose && !(await this.confirmClose())) {
       this.commentInput.focus();
-      this.isBeingCancelled = false;
+      this.beingCancelled = false;
       return;
     }
 
     this.destroy();
 
-    this.isBeingCancelled = false;
+    this.beingCancelled = false;
 
     if (this.mode === 'reply') {
       this.target.scrollIntoView('top');
@@ -2912,7 +2912,7 @@ export default class CommentForm {
    */
   destroy() {
     this.operations
-      .filter((op) => !op.isClosed)
+      .filter((op) => !op.closed)
       .forEach(this.closeOperation.bind(this));
     this.forget();
     this.$element.remove();
@@ -2922,7 +2922,7 @@ export default class CommentForm {
      *
      * @type {boolean}
      */
-    this.isDestroyed = true;
+    this.destroyed = true;
   }
 
   /**
@@ -3037,7 +3037,7 @@ export default class CommentForm {
    * @private
    */
   updateAutoSummary(set = true, dontAutopreview = false) {
-    if (this.isSummaryAltered) return;
+    if (this.summaryAltered) return;
 
     this.#dontAutopreview = dontAutopreview;
 

@@ -203,7 +203,7 @@ export default class Parser {
             closestNotInlineAncestor = el;
           }
         }
-        const isUnsigned = Boolean(unsignedElement);
+        const unsigned = Boolean(unsignedElement);
 
         if (closestNotInlineAncestor) {
           const cniaChildren = Array.from(
@@ -304,7 +304,7 @@ export default class Parser {
         // part of other comment but don't append the list of signatures.
         if (!authorName) return;
 
-        return { element, timestampElement, timestampText, date, authorName, anchor, isUnsigned };
+        return { element, timestampElement, timestampText, date, authorName, anchor, unsigned };
       })
       .filter(defined);
 
@@ -318,8 +318,8 @@ export default class Parser {
               const authorName = getUserNameFromLink(link);
               if (authorName) {
                 element.classList.add('cd-signature');
-                const isUnsigned = true;
-                signatures.push({ element, authorName, isUnsigned });
+                const unsigned = true;
+                signatures.push({ element, authorName, unsigned });
                 return true;
               }
             });
