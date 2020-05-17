@@ -25,15 +25,6 @@ module.exports = {
     "jsdoc",
   ],
   "rules": {
-    "no-control-regex": "off",
-    "require-atomic-updates": "off",
-    "no-unused-vars": ["error", { "args": "after-used" }],
-    "no-constant-condition": ["error", { "checkLoops": false }],
-    "sort-imports-es6-autofix/sort-imports-es6": [2, {
-      "ignoreCase": false,
-      "ignoreMemberSort": false,
-      "memberSyntaxSortOrder": ["none", "all", "single", "multiple"],
-    }],
     "jsdoc/check-alignment": 1,
     "jsdoc/check-param-names": 1,
     "jsdoc/check-tag-names": 1,
@@ -51,6 +42,15 @@ module.exports = {
     // "jsdoc/require-returns-description": 1,
     "jsdoc/require-returns-type": 1,
     "jsdoc/valid-types": 1,
+    "no-constant-condition": ["error", { "checkLoops": false }],
+    "no-control-regex": "off",
+    "no-unused-vars": ["error", { "args": "after-used" }],
+    "require-atomic-updates": "off",
+    "sort-imports-es6-autofix/sort-imports-es6": [2, {
+      "ignoreCase": false,
+      "ignoreMemberSort": false,
+      "memberSyntaxSortOrder": ["none", "all", "single", "multiple"],
+    }],
   },
   "settings": {
     "jsdoc": {

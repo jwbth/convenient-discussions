@@ -134,8 +134,8 @@ export function extractSignatures(code, generateCommentAnchors) {
   );
 
   // ".*" helps to get the last author link. But after that we make another capture to make sure we
-  // take the first link to the comment author. 250 is 255 (max signature length) minus
-  // '[[u:a'.length.
+  // take the first link to the comment author. 250 is not arbitrary: it's 255 (maximum allowed
+  // signature length) minus '[[u:a'.length.
   const signatureScanLimitWikitext = 250;
   const signatureRegexp = new RegExp(
     `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(?:\n*|$)`,

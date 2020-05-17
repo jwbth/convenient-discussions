@@ -982,7 +982,7 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    let inCode = {
+    this.inCode = this.adjustCommentCodeData({
       lineStartIndex: bestMatch.lineStartIndex,
       startIndex: bestMatch.commentStartIndex,
       endIndex: bestMatch.signatureStartIndex,
@@ -992,8 +992,7 @@ export default class Comment extends CommentSkeleton {
       headingStartIndex: bestMatch.headingStartIndex,
       headingLevel: bestMatch.headingLevel,
       headlineCode: bestMatch.headlineCode,
-    };
-    this.inCode = this.adjustCommentCodeData(inCode);
+    });
 
     cd.debug.stopTimer('locate comment');
   }
