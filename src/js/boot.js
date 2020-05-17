@@ -714,7 +714,7 @@ export function restoreCommentForms() {
         if (commentFormsData.warnedLeave) {
           const $text = animateLink(
             cd.s('restore-suggestion-text'),
-            'cd-message-restoreCommentForms',
+            'cd-notification-restoreCommentForms',
             async () => {
               if (cd.g.pageOverlayOn) return;
               notification.close();

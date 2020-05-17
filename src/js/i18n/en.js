@@ -362,7 +362,7 @@ export default {
   // Restore comment forms notifications
   'restore-restored-title': 'Session restored',
   'restore-restored-text': 'The unsent comment forms have been automatically recovered.',
-  'restore-suggestion-text': 'You had unsent comment forms when you last visited the page. <a class="cd-message-restoreCommentForms">Restore them</a>. Click the balloon to close it.',
+  'restore-suggestion-text': 'You had unsent comment forms when you last visited the page. <a class="cd-notification-restoreCommentForms">Restore them</a>. Click the balloon to close it.',
 
   // Rescue comment forms' content dialog
   'rd-intro': 'Couldn\'t find the comments or sections on the page that some of the opened forms were related to. Below is the restored content of these forms. Copy it if you need.',
