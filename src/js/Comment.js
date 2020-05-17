@@ -881,6 +881,7 @@ export default class Comment extends CommentSkeleton {
             text = cd.s('thank-error-diffnotfound', url);
           } else {
             text = cd.s('thank-error');
+            console.warn(e);
           }
           break;
         }
@@ -915,14 +916,14 @@ export default class Comment extends CommentSkeleton {
         thankFail(e);
         return;
       }
-    }
 
-    mw.notify(cd.s('thank-success'));
-    this.replaceButton(
-      this.thankButton,
-      this.#elementPrototypes.disabledThankButton.cloneNode(true),
-      'thank'
-    );
+      mw.notify(cd.s('thank-success'));
+      this.replaceButton(
+        this.thankButton,
+        this.#elementPrototypes.disabledThankButton.cloneNode(true),
+        'thank'
+      );
+    }
   }
 
   /**
