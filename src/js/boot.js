@@ -187,6 +187,13 @@ export async function init({ messagesRequest }) {
   cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
+  cd.g.GENDER_AFFECTS_USER_STRING = (
+    cd.s('user-male-dative') !== cd.s('user-female-dative') ||
+    cd.s('user-male-dative') !== cd.s('user-unknown-dative') ||
+    cd.s('user-male-genitive') !== cd.s('user-female-genitive') ||
+    cd.s('user-male-genitive') !== cd.s('user-unknown-genitive')
+  );
+
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
 

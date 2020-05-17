@@ -307,7 +307,9 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.goToParentButton = this.#elementPrototypes.goToParentButton.cloneNode(true);
-      this.goToParentButton.firstChild.onclick = this.goToParent.bind(this);
+      this.goToParentButton.firstChild.onclick = () => {
+        this.goToParent();
+      };
       this.#overlayContent.appendChild(this.goToParentButton);
     }
 
@@ -332,7 +334,9 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.thankButton = this.#elementPrototypes.thankButton.cloneNode(true);
-      this.thankButton.firstChild.onclick = this.thank.bind(this);
+      this.thankButton.firstChild.onclick = () => {
+        this.thank();
+      };
       this.#overlayContent.appendChild(this.thankButton);
     }
 
@@ -626,7 +630,9 @@ export default class Comment extends CommentSkeleton {
       framed: false,
       classes: ['cd-button', 'cd-commentButton'],
     });
-    goToChildButton.on('click', this.parent.goToChild.bind(this.parent));
+    goToChildButton.on('click', () => {
+      this.parent.goToChild();
+    });
 
     if (!this.parent.$underlay) {
       this.parent.configureLayers();

@@ -51,7 +51,7 @@ export default class CommentForm {
   #shortSubmitButtonLabel
   #lastPreviewTimestamp
   #previewTimeout
-  #genderRequestCallbacksList
+  #genderRequestCallbackList
   #dontAutopreview
   #editingSectionOpeningComment
   #headlineInputPurpose
@@ -1329,13 +1329,18 @@ export default class CommentForm {
       .on('click', () => {
         settingsDialog();
       });
-
     this.settingsButton
-      .on('click', this.toggleSettings.bind(this));
+      .on('click', () => {
+        this.toggleSettings();
+      });
     this.cancelButton
-      .on('click', this.cancel.bind(this));
+      .on('click', () => {
+        this.cancel();
+      });
     this.viewChangesButton
-      .on('click', this.viewChanges.bind(this));
+      .on('click', () => {
+        this.viewChanges();
+      });
     if (this.previewButton) {
       this.previewButton
         .on('click', () => {
@@ -2985,31 +2990,23 @@ export default class CommentForm {
     { genitive = false, returnUnknown = true, callback = () => {} } = {}
   ) {
     let toUser;
-    if (
-      targetComment.author.gender === null &&
-      (
-        cd.s('user-male-dative') !== cd.s('user-female-dative') ||
-        cd.s('user-male-dative') !== cd.s('user-unknown-dative') ||
-        cd.s('user-male-genitive') !== cd.s('user-female-genitive') ||
-        cd.s('user-male-genitive') !== cd.s('user-unknown-genitive')
-      )
-    ) {
+    if (targetComment.author.gender === null && cd.g.GENDER_AFFECTS_USER_STRING) {
       if (targetComment.author.registered) {
-        this.#genderRequestCallbacksList = this.#genderRequestCallbacksList || [];
+        this.#genderRequestCallbackList = this.#genderRequestCallbackList || [];
         if (
           callback &&
-          (!this.genderRequest || !this.#genderRequestCallbacksList.includes(callback))
+          (!this.genderRequest || !this.#genderRequestCallbackList.includes(callback))
         ) {
-          let failCallback;
+          let errorCallback;
           if (!this.genderRequest) {
             this.genderRequest = getUserGenders([targetComment.author]);
-            failCallback = (e) => {
+            errorCallback = (e) => {
               console.warn(`Couldn't find out the gender of user ${targetComment.author.name}.`, e);
             };
           }
-          if (!this.#genderRequestCallbacksList.includes(callback)) {
-            this.genderRequest.then(callback, failCallback);
-            this.#genderRequestCallbacksList.push(callback);
+          if (!this.#genderRequestCallbackList.includes(callback)) {
+            this.genderRequest.then(callback, errorCallback);
+            this.#genderRequestCallbackList.push(callback);
           }
         }
         if (returnUnknown) {
@@ -3027,6 +3024,53 @@ export default class CommentForm {
     }
 
     return toUser === undefined ? '' : `${toUser} ${targetComment.author.name}`.trim();
+  }
+
+  /**
+   * Update the automatic text for the edit summary.
+   *
+   * @param {boolean} [set=true] Whether to actually set the input value, or just save auto summary
+   *   to a property.
+   * @param {boolean} [dontAutopreview=false] Was the update initiated by a change in the comment or
+   *   headline input which means no autopreview request is needed to be made to prevent making two
+   *   identical requests.
+   * @private
+   */
+  updateAutoSummary(set = true, dontAutopreview = false) {
+    if (this.isSummaryAltered) return;
+
+    this.#dontAutopreview = dontAutopreview;
+
+    const text = this.autoText();
+    const section = this.headlineInput && this.mode !== 'addSubsection' ?
+      removeWikiMarkup(this.headlineInput.getValue()) :
+      this.#sectionHeadline;
+
+    let optionalText;
+    if (['reply', 'replyInSection'].includes(this.mode)) {
+      const commentText = this.commentInput
+        .getValue()
+        .trim()
+        .replace(/\s+/g, ' ');
+      if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
+        optionalText = `: ${commentText} (-)`;
+      }
+    } else if (this.mode === 'addSubsection') {
+      const subsection = removeWikiMarkup(this.headlineInput.getValue());
+      if (subsection) {
+        optionalText = `: /* ${subsection} */`;
+      }
+    }
+
+    this.autoSummary = cd.util.buildEditSummary({
+      text,
+      section,
+      optionalText,
+      addPostfix: false,
+    });
+    if (set) {
+      this.summaryInput.setValue(this.autoSummary);
+    }
   }
 
   /**
@@ -3119,53 +3163,6 @@ export default class CommentForm {
       case 'addSubsection': {
         return cd.s('es-new-subsection');
       }
-    }
-  }
-
-  /**
-   * Update the automatic text for the edit summary.
-   *
-   * @param {boolean} [set=true] Whether to actually set the input value, or just save auto summary
-   *   to a property.
-   * @param {boolean} [dontAutopreview=false] Was the update initiated by a change in the comment or
-   *   headline input which means no autopreview request is needed to be made to prevent making two
-   *   identical requests.
-   * @private
-   */
-  updateAutoSummary(set = true, dontAutopreview = false) {
-    if (this.isSummaryAltered) return;
-
-    this.#dontAutopreview = dontAutopreview;
-
-    const text = this.autoText();
-    const section = this.headlineInput && this.mode !== 'addSubsection' ?
-      removeWikiMarkup(this.headlineInput.getValue()) :
-      this.#sectionHeadline;
-
-    let optionalText;
-    if (['reply', 'replyInSection'].includes(this.mode)) {
-      const commentText = this.commentInput
-        .getValue()
-        .trim()
-        .replace(/\s+/g, ' ');
-      if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
-        optionalText = `: ${commentText} (-)`;
-      }
-    } else if (this.mode === 'addSubsection') {
-      const subsection = removeWikiMarkup(this.headlineInput.getValue());
-      if (subsection) {
-        optionalText = `: /* ${subsection} */`;
-      }
-    }
-
-    this.autoSummary = cd.util.buildEditSummary({
-      text,
-      section,
-      optionalText,
-      addPostfix: false,
-    });
-    if (set) {
-      this.summaryInput.setValue(this.autoSummary);
     }
   }
 
