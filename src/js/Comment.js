@@ -1317,8 +1317,8 @@ export default class Comment extends CommentSkeleton {
     $dummy.find(selector).remove();
     let text = $dummy.cdGetText();
     if (doCleanUp) {
-      if (cd.config.cleanUpCommentText) {
-        text = cd.config.cleanUpCommentText(text);
+      if (cd.config.signatureEndingRegexp) {
+        text = text.replace(cd.config.signatureEndingRegexp, '');
       }
       // FIXME: we use the same regexp for cleaning the wikitext and the render. With the current
       // default config value the side effects seem to be negligable, but who knows...

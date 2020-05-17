@@ -65,6 +65,8 @@ export default {
 
   spaceAfterIndentationChar: false,
 
+  signatureEndingRegexp: /\(talk\)$/,
+
   blockSmallTemplate: 'smalldiv',
 
   paragraphTemplates: ['pb', 'paragraph break', 'parabr', 'paragraph'],
@@ -125,8 +127,4 @@ export default {
     'Undid revision',
     'Reverted edits',
   ],
-
-  cleanUpCommentText: function (text) {
-    return text.replace(/\(talk\)$/, '');
-  },
 };

@@ -402,6 +402,8 @@ export default class Parser {
       lastStep: 'start',
     });
 
+    const timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
+
     // 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
     for (let i = 0; i < 500; i++) {
       // lastStep may be:
@@ -420,9 +422,15 @@ export default class Parser {
         //               signature above. -->
         // :: Smth. [signature] <!-- The comment part we are at. -->
 
-        // A simple check before we go: a timestamp at the end of the line means a foreign
-        // signature; nothing more to search for in that case.
-        if (/\(UTC\)\s*$/.test(previousPart.node.textContent)) break;
+        // A simple check before we go: a timestamp or signature ending at the end of the line means
+        // a foreign signature; nothing more to search for in that case.
+        const text = previousPart.node.textContent;
+        if (
+          timezoneRegexp.test(text) ||
+          cd.config.signatureEndingRegexp && cd.config.signatureEndingRegexp.test(text)
+        ) {
+          break;
+        }
 
         // Get the last not inline child of the current node.
         let previousNode;
@@ -453,7 +461,7 @@ export default class Parser {
       //   === Section title ===
       //   Section introduction. Not a comment.
       //   # Vote. ~~~~
-      // Without the following code, the section introduction will be a part of the comment. The
+      // Without the following code, the section introduction would be a part of the comment. The
       // same may happen inside a discussion thread (often because one of the users didn't sign).
       if (
         lastStep === 'back' &&

@@ -118,10 +118,21 @@ export default {
    * ```
    * Here, `''` is not a part of the signature.
    *
+   * End the regexp with "$".
+   *
    * @type {RegExp}
    * @default
    */
   signaturePrefixRegexp: /(?:\s+>+)?(?:·|-|–|—|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
+
+  /**
+   * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
+   * not wikitext). End the regexp with "$".
+   *
+   * @type {?RegExp}
+   * @default null
+   */
+  signatureEndingRegexp: null,
 
   /**
    * Convenient Discussions tag according to Special:Tags. Needs to be added manually. Set to null
@@ -136,7 +147,7 @@ export default {
    * Script code name. For example, for the `source` parameter of the thank request: {@link
    * https://www.mediawiki.org/wiki/Extension:Thanks#API_documentation}.
    *
-   * @type {?string}
+   * @type {string}
    * @default 'convenient-discussions'
    */
   scriptCodeName: 'convenient-discussions',
@@ -491,16 +502,6 @@ export default {
    * @default false
    */
   commentInputEmptyPlaceholder: false,
-
-  /**
-   * Function that deletes foreign text from the comment text. It may be the "(talk)" part of the
-   * signatures (usually signatures are removed automatically, but there are exceptions). This helps
-   * to compare the text on the web page and the text in the source more accurately.
-   *
-   * @type {?function(string): string}
-   * @default null
-   */
-  cleanUpCommentText: null,
 
   /**
    * Function that generates an archive prefix without an ending slash for a given page title. It is

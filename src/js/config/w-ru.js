@@ -83,6 +83,8 @@ export default {
 
   signaturePrefixRegexp: /(?:\s*С уважением,)?(?:\s+>+)?(?:·|-|–|—|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
 
+  signatureEndingRegexp: /\(обс\.\)$/,
+
   tagName: 'convenient-discussions',
 
   optionsPrefix: 'cd',
@@ -197,10 +199,6 @@ export default {
       checkFunc: () => mw.user.options.get('gadget-urldecoder'),
     },
   ],
-
-  cleanUpCommentText(text) {
-    return text.replace(/\(обс.\)$/, '');
-  },
 
   getArchivePrefix: function (pageTitle) {
     if (/^Форум\//.test(pageTitle)) {
