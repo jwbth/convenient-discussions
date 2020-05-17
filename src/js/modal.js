@@ -1002,6 +1002,9 @@ export async function copyLink(object, chooseLink) {
     decodedCurrentPageUrl = decodeURI(mw.util.getUrl(cd.g.CURRENT_PAGE));
   } catch (e) {
     console.error(e);
+    if (finallyCallback) {
+      finallyCallback();
+    }
     return;
   }
   const anchorWithUnderlines = spacesToUnderlines(anchor);
@@ -1155,6 +1158,9 @@ export async function copyLink(object, chooseLink) {
             text = cd.s('copylink-error-diffnotfound-unknown');
           }
           mw.notify(text, { type: 'error' });
+          if (finallyCallback) {
+            finallyCallback();
+          }
           return;
         }
         break;
@@ -1166,6 +1172,10 @@ export async function copyLink(object, chooseLink) {
     }
 
     copyLinkToClipboardAndNotify(link);
+  }
+
+  if (finallyCallback) {
+    finallyCallback();
   }
 }
 

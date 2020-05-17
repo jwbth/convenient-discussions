@@ -307,7 +307,7 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.goToParentButton = this.#elementPrototypes.goToParentButton.cloneNode(true);
-      this.goToParentButton.onclick = this.goToParent.bind(this);
+      this.goToParentButton.firstChild.onclick = this.goToParent.bind(this);
       this.#overlayContent.appendChild(this.goToParentButton);
     }
 
@@ -321,9 +321,8 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.linkButton = this.#elementPrototypes.linkButton.cloneNode(true);
+      this.linkButton.firstChild.onclick = this.copyLink.bind(this);
       this.#overlayContent.appendChild(this.linkButton);
-      const linkButtonLink = this.linkButton.firstChild;
-      linkButtonLink.onclick = this.copyLink.bind(this);
     }
 
     if (this.author.registered && this.date && !this.own && !cd.g.IS_ARCHIVE_PAGE) {
@@ -333,8 +332,8 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.thankButton = this.#elementPrototypes.thankButton.cloneNode(true);
-      this.#overlayContent.appendChild(this.thankButton);
       this.thankButton.firstChild.onclick = this.thank.bind(this);
+      this.#overlayContent.appendChild(this.thankButton);
     }
 
     if (this.actionable) {
@@ -597,14 +596,23 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the parent comment of the comment.
+   * Replace a button in the comment overlay with another.
    *
-   * @param {Event} e
+   * @param {Element} button
+   * @param {Element} replacement
+   * @param {string} buttonName
+   * @private
    */
-  goToParent(e) {
-    if (e) {
-      e.preventDefault();
-    }
+  replaceButton(button, replacement, buttonName) {
+    this.#overlayContent.insertBefore(replacement, button);
+    button.parentNode.removeChild(button);
+    this[buttonName + 'Button'] = replacement;
+  }
+
+  /**
+   * Scroll to the parent comment of the comment.
+   */
+  goToParent() {
     if (!this.parent) {
       console.error('This comment has no parent.');
       return;
@@ -641,13 +649,8 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Scroll to the child comment of the comment.
-   *
-   * @param {Event} e
    */
-  goToChild(e) {
-    if (e) {
-      e.preventDefault();
-    }
+  goToChild() {
     if (!this.childToScrollBackTo) {
       console.error('This comment has no child from which the user has navigated earlier.');
       return;
@@ -662,8 +665,15 @@ export default class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   copyLink(e) {
-    e.preventDefault();
-    copyLink(this, e.shiftKey);
+    const linkButton = this.linkButton;
+    this.replaceButton(
+      this.linkButton,
+      this.#elementPrototypes.pendingLinkButton.cloneNode(true),
+      'link'
+    );
+    copyLink(this, e.shiftKey, () => {
+      this.replaceButton(this.linkButton, linkButton, 'link');
+    });
   }
 
   /**
@@ -834,6 +844,13 @@ export default class Comment extends CommentSkeleton {
    * notification.
    */
   async thank() {
+    const thankButton = this.thankButton;
+    this.replaceButton(
+      this.thankButton,
+      this.#elementPrototypes.pendingThankButton.cloneNode(true),
+      'thank'
+    );
+
     const thankFail = (e) => {
       const { type, code, data } = e.data;
       let text;
@@ -868,6 +885,7 @@ export default class Comment extends CommentSkeleton {
         }
       }
       mw.notify(cd.util.wrapInElement(text), { type: 'error' });
+      this.replaceButton(this.thankButton, thankButton, 'thank');
     };
 
     let edit;
@@ -887,15 +905,18 @@ export default class Comment extends CommentSkeleton {
           rev: edit.revid,
           source: cd.config.scriptCodeName,
         }).catch(handleApiReject);
-        mw.notify(cd.s('thank-success'));
-        const disabledThankButton = this.#elementPrototypes.disabledThankButton.cloneNode(true);
-        this.#overlayContent.insertBefore(disabledThankButton, this.thankButton);
-        this.thankButton.parentNode.removeChild(this.thankButton);
-        this.thankButton = disabledThankButton;
       } catch (e) {
         thankFail(e);
+        return;
       }
     }
+
+    mw.notify(cd.s('thank-success'));
+    this.replaceButton(
+      this.thankButton,
+      this.#elementPrototypes.disabledThankButton.cloneNode(true),
+      'thank'
+    );
   }
 
   /**
