@@ -1358,6 +1358,23 @@ export default class Comment extends CommentSkeleton {
       commentCode = commentCode.slice(headingMatch[0].length);
     }
 
+    // Exclude the text of the previous comment ended with "~~~" instead of "~~~~".
+    if (cd.config.signatureEndingRegexp) {
+      const regexp = new RegExp(cd.config.signatureEndingRegexp.source, 'm');
+      const linesRegexp = /(?:^|\n)(.*\n)/g;
+      let line;
+      while ((line = linesRegexp.exec(commentCode))) {
+        if (regexp.test(removeWikiMarkup(line[1]))) {
+          const indent = line.index + line[0].length;
+          if (indent === commentCode.length) break;
+          commentCode = commentCode.slice(indent);
+          lineStartIndex += indent;
+          commentStartIndex += indent;
+          break;
+        }
+      }
+    }
+
     // Exclude indentation characters and any foreign code before them from the comment code.
     // Comments at the zero level sometimes start with ":" that is used to indent some side note. It
     // shouldn't be considered an indentation character.

@@ -65,7 +65,7 @@ export default {
 
   spaceAfterIndentationChar: false,
 
-  signatureEndingRegexp: /\(talk\)$/,
+  signatureEndingRegexp: / \(talk\)$/,
 
   blockSmallTemplate: 'smalldiv',
 

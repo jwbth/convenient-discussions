@@ -233,10 +233,10 @@ export function extractSignatures(code, generateCommentAnchors) {
   }
 
   signatures.forEach((sig, i) => {
-    if (i > 0) {
-      sig.commentStartIndex = signatures[i - 1].nextCommentStartIndex;
-    } else {
+    if (i === 0) {
       sig.commentStartIndex = 0;
+    } else {
+      sig.commentStartIndex = signatures[i - 1].nextCommentStartIndex;
     }
   });
   signatures = signatures.filter((sig) => sig.author);
