@@ -615,7 +615,8 @@ export default async function processPage(keptData = {}) {
     setTimeout(() => {
       const observer = new MutationObserver((records) => {
         if (
-          records.every((record) => /^cd-(underlay|overlay|layers)/.test(record.target.className))
+          records
+            .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className))
         ) {
           return;
         }

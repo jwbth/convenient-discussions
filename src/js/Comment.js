@@ -466,7 +466,7 @@ export default class Comment extends CommentSkeleton {
     // Configure the layers only if they were unexistent or the comment position has changed, to
     // save time.
     if (this.#underlay) {
-      if (this.newness) {
+      if (this.newness && !this.#underlay.classList.contains('cd-commentUnderlay-new')) {
         this.#underlay.classList.add('cd-commentUnderlay-new');
       }
       if (isMoved && config.doSet) {
@@ -1610,7 +1610,7 @@ export default class Comment extends CommentSkeleton {
         const backgroundColor = style.backgroundColor;
         if (backgroundColor.includes('rgb(')) {
           offsetParent = treeWalker.currentNode;
-          offsetParent.classList.add('cd-layersContainerParent');
+          offsetParent.classList.add('cd-commentLayersContainerParent');
           break;
         }
       }
@@ -1618,9 +1618,9 @@ export default class Comment extends CommentSkeleton {
         offsetParent = document.body;
       }
       let container = offsetParent.firstElementChild;
-      if (!container.classList.contains('cd-layersContainer')) {
+      if (!container.classList.contains('cd-commentLayersContainer')) {
         container = document.createElement('div');
-        container.classList.add('cd-layersContainer');
+        container.classList.add('cd-commentLayersContainer');
         offsetParent.insertBefore(container, offsetParent.firstChild);
       }
       this.#cachedUnderlayContainer = container;
