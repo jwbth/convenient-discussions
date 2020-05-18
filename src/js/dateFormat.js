@@ -589,7 +589,7 @@ export function loadMessages() {
  * complicated).
  *
  * @param {string} format Date format, as used by MediaWiki.
- * @param {string} digits Regular expression matching a single localised digit, e.g. `[0-9]`.
+ * @param {string} digits Regular expression matching a single localized digit, e.g. `[0-9]`.
  * @returns {string} Pattern to be a part of a regular expression.
  * @private
  */

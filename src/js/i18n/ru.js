@@ -261,10 +261,10 @@ export default {
 
   // Comment form options
   'cf-minor': 'Малое изменение',
-  'cf-watch': 'В список наблюдения',
+  'cf-watch': 'Следить за страницей',
   'cf-watchsection-topic': 'Следить за темой',
   'cf-watchsection-subsection': 'Следить за подразделом',
-  'cf-watchsection-tooltip': 'Добавить раздел в список наблюдения. Это влияет на уведомления и выделение жирным ссылки в списке наблюдения',
+  'cf-watchsection-tooltip': 'Добавить этот раздел в список наблюдения. Это влияет на уведомления и выделение жирным ссылки в списке наблюдения',
   'cf-ping-sectionauthor': 'Уведомить автора раздела',
   'cf-ping-commentauthor': 'Уведомить адресата',
   'cf-ping-tooltip': 'Функцией пинга',

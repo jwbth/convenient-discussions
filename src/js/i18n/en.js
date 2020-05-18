@@ -263,7 +263,7 @@ export default {
   'cf-minor': 'Minor edit',
   'cf-watch': 'Watch this page',
   'cf-watchsection-topic': 'Watch this topic',
-  'cf-watchsection-subsection': 'Watch subsection',
+  'cf-watchsection-subsection': 'Watch this subsection',
   'cf-watchsection-tooltip': 'Add this section to the watchlist. This affects notifications and bolding in the watchlist',
   'cf-ping-sectionauthor': 'Notify section author',
   'cf-ping-commentauthor': 'Notify addressee',

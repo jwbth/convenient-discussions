@@ -699,7 +699,9 @@ export default class CommentForm {
         this.mode !== 'addSubsection' &&
         ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
       );
-      const label = callItTopic ? cd.s('cf-watchsection-topic') : cd.s('cf-watchsection-subsection');
+      const label = callItTopic ?
+        cd.s('cf-watchsection-topic') :
+        cd.s('cf-watchsection-subsection');
       const selected = (
         (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
         (this.targetSection && this.targetSection.watched)
@@ -757,7 +759,6 @@ export default class CommentForm {
           cd.s('cf-ping-sectionauthor') :
           cd.s('cf-ping-commentauthor'),
         tabIndex: String(this.id) + '23',
-        title: cd.s('cf-watchsection-tooltip'),
       });
 
       if (this.targetComment.author.registered) {
