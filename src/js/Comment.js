@@ -1361,7 +1361,7 @@ export default class Comment extends CommentSkeleton {
     // Exclude the text of the previous comment ended with "~~~" instead of "~~~~".
     if (cd.config.signatureEndingRegexp) {
       const regexp = new RegExp(cd.config.signatureEndingRegexp.source, 'm');
-      const linesRegexp = /^.*$/gm;
+      const linesRegexp = /^.+$/gm;
       let line;
       let indent;
       while ((line = linesRegexp.exec(commentCode))) {
