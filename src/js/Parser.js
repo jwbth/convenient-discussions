@@ -414,14 +414,8 @@ export default class Parser {
       // * "replaced" (obtained as a result of manipulations after node traversal)
       let lastStep;
       const previousPart = parts[parts.length - 1];
-      if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
-        // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
-        // that may be present. This happens with a code like this:
-        // :* Smth. [signature]
-        // :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
-        //               signature above. -->
-        // :: Smth. [signature] <!-- The comment part we are at. -->
 
+      if (!previousPart.isTextNode && !previousPart.hasCurrentSignature) {
         // A simple check before we go: a timestamp or signature ending at the end of the line means
         // a foreign signature; nothing more to search for in that case.
         const text = previousPart.node.textContent;
@@ -429,8 +423,18 @@ export default class Parser {
           timezoneRegexp.test(text) ||
           cd.config.signatureEndingRegexp && cd.config.signatureEndingRegexp.test(text)
         ) {
+          previousPart.hasForeignComponents = true;
           break;
         }
+      }
+
+      if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
+        // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
+        // that may be present. This happens with a code like this:
+        // :* Smth. [signature]
+        // :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
+        //               signature above. -->
+        // :: Smth. [signature] <!-- The comment part we are at. -->
 
         // Get the last not inline child of the current node.
         let previousNode;
