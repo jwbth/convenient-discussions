@@ -923,6 +923,8 @@ export default class Comment extends CommentSkeleton {
         this.#elementPrototypes.disabledThankButton.cloneNode(true),
         'thank'
       );
+    } else {
+      this.replaceButton(this.thankButton, thankButton, 'thank');
     }
   }
 
