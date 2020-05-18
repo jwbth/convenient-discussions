@@ -1779,12 +1779,12 @@ export default class CommentForm {
     // Work with code
     let code = text.trim();
 
-    let useColonsForNewlines = false;
+    let useColonsForNewLines = /^[:*#]+/.test(code);
     let hasTable = false;
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code, (isTable) => {
       if (isTable && this.willCommentBeIndented) {
-        useColonsForNewlines = true;
+        useColonsForNewLines = true;
         hasTable = true;
       }
     }));
@@ -1830,11 +1830,11 @@ export default class CommentForm {
 
     if (!isZeroLevel) {
       code = code.replace(/\n([:*#]+)/g, (s, m1) => {
-        useColonsForNewlines = true;
+        useColonsForNewLines = true;
         // **** → ::::, if the comment contains a list or internal indentations.
         return '\n' + newLineIndentationChars + m1;
       });
-      if (useColonsForNewlines && indentationChars) {
+      if (useColonsForNewLines && indentationChars) {
         code = code.replace(/\n(?![:#\x03])/g, () => {
           if (newLineIndentationChars === '#') {
             throw new CdError({
