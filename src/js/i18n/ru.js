@@ -143,6 +143,7 @@ export default {
   'sm-copylink-tooltip-wikilink': 'вики-ссылку',
   'sm-copylink-tooltip-link': 'ссылку',
 
+  // Section watch notification
   'section-watch-success': 'Раздел «$1» добавлен в список наблюдения.',
   'section-unwatch-success': 'Раздел «$1» удалён из списка наблюдения.',
   'section-unwatch-stillwatched': '<strong>Внимание:</strong> вы всё ещё следите за этим разделом, так как он входит в раздел «$1», за которым вы следите.',

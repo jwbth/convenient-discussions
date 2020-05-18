@@ -6,7 +6,7 @@ export default {
   'script-name-short': 'CD',
 
   // Fill only if the phrase "reply to <Username>" sounds silly in your language (usually, because
-  // the username lacks inflection), and "reply to user <Username>" is needed.
+  // the username lacks inflection) and "reply to user <Username>" is needed.
   'user-male-dative': '',
   'user-female-dative': '',
   'user-unknown-dative': '',
@@ -143,6 +143,7 @@ export default {
   'sm-copylink-tooltip-link': 'a link',
   'sm-copylink-tooltip': 'Сopy $1. Click while holding Shift to choose a link of another type',
 
+  // Section watch notification
   'section-watch-success': 'The section "$1" has been added to your watchlist.',
   'section-unwatch-success': 'The section "$1" has been removed from your watchlist.',
   'section-unwatch-stillwatched': '<strong>Note:</strong> you are still watching this section as it is included in the section "$1" that you watch.',
