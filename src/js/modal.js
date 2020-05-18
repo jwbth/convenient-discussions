@@ -28,6 +28,15 @@ export function createWindowManager() {
       cd.g.pageOverlayOn = false;
     });
   $(document.body).append(cd.g.windowManager.$element);
+
+  // Add handlers to the window manager created natively for alerts and confirmations too.
+  OO.ui.getWindowManager()
+    .on('opening', () => {
+      cd.g.pageOverlayOn = true;
+    })
+    .on('closing', () => {
+      cd.g.pageOverlayOn = false;
+    });
 }
 
 /**
