@@ -1,4 +1,4 @@
-![Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Convenient_Discussions_English_logo_2.svg/407px-Convenient_Discussions_English_logo_2.svg.png)
+![Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Convenient_Discussions_English_logo_2_color.svg/408px-Convenient_Discussions_English_logo_2_color.svg.png)
 
 For documentation, see the script homepage: https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions.
 
