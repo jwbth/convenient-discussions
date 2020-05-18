@@ -509,7 +509,7 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
-    if (cd.g.pageOverlayOn) return;
+    if (cd.util.isPageOverlayOn()) return;
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again on the next event.

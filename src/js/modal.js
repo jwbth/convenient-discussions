@@ -20,23 +20,8 @@ import { handleApiReject, underlinesToSpaces } from './util';
  */
 export function createWindowManager() {
   if (cd.g.windowManager) return;
-  cd.g.windowManager = new OO.ui.WindowManager()
-    .on('opening', () => {
-      cd.g.pageOverlayOn = true;
-    })
-    .on('closing', () => {
-      cd.g.pageOverlayOn = false;
-    });
+  cd.g.windowManager = new OO.ui.WindowManager();
   $(document.body).append(cd.g.windowManager.$element);
-
-  // Add handlers to the window manager created natively for alerts and confirmations too.
-  OO.ui.getWindowManager()
-    .on('opening', () => {
-      cd.g.pageOverlayOn = true;
-    })
-    .on('closing', () => {
-      cd.g.pageOverlayOn = false;
-    });
 }
 
 /**
@@ -118,7 +103,7 @@ function handleError(dialog, e, messageName, recoverable) {
  * Show a settings dialog.
  */
 export async function settingsDialog() {
-  if (cd.g.pageOverlayOn) return;
+  if (cd.util.isPageOverlayOn()) return;
 
   /**
    * @class Subclass of {@link
@@ -733,7 +718,7 @@ export async function settingsDialog() {
  * Show an edit watched sections dialog.
  */
 export async function editWatchedSections() {
-  if (cd.g.pageOverlayOn) return;
+  if (cd.util.isPageOverlayOn()) return;
 
   /**
    * @class Subclass of {@link

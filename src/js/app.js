@@ -197,8 +197,6 @@ function main() {
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
 
-  cd.g.pageOverlayOn = false;
-
   // Go
   if (
     mw.config.get('wgIsArticle') &&

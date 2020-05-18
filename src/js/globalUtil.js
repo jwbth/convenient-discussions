@@ -7,6 +7,7 @@
  */
 
 import cd from './cd';
+import { isLoadingOverlayOn } from './boot';
 
 /**
  * Properties of the `convenientDiscussions.util` object. Some of them are declared in {@link
@@ -82,4 +83,17 @@ export default {
 
     return text;
   },
+
+  /**
+   * Is there any kind of a page overlay present, like OOUI modal overlay or CD loading overlay.
+   * This runs very frequently, so we use the fastest way.
+   *
+   * @returns {boolean}
+   */
+  isPageOverlayOn() {
+    return (
+      document.body.classList.contains('oo-ui-windowManager-modal-active') ||
+      isLoadingOverlayOn()
+    );
+  }
 };

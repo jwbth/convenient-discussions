@@ -495,7 +495,6 @@ export function setLoadingOverlay() {
   } else {
     $loadingPopup.show();
   }
-  cd.g.pageOverlayOn = true;
 }
 
 /**
@@ -504,7 +503,15 @@ export function setLoadingOverlay() {
 export function removeLoadingOverlay() {
   if (!$loadingPopup || isShowLoadingOverlaySettingOff()) return;
   $loadingPopup.hide();
-  cd.g.pageOverlayOn = false;
+}
+
+/**
+ * Is the loading overlay on. This runs very frequently, so we use the fastest way.
+ *
+ * @returns {boolean}
+ */
+export function isLoadingOverlayOn() {
+  return Boolean($loadingPopup[0] && $loadingPopup[0].style.display === 'block');
 }
 
 /**
@@ -742,7 +749,7 @@ export function restoreCommentForms() {
             cd.s('restore-suggestion-text'),
             'cd-notification-restoreCommentForms',
             async () => {
-              if (cd.g.pageOverlayOn) return;
+              if (cd.util.isPageOverlayOn()) return;
               notification.close();
               restoreCommentFormsFromData(commentFormsData);
             }
