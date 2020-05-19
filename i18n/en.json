@@ -65,7 +65,7 @@
   "confirm-desktopnotifications-yes": "Yes",
   "confirm-desktopnotifications-no": "No",
   "alert-grantpermission": "Grant a permission to the site.",
-  "alert-grantpermission-again": "You have desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications, or deny to prevent this message from showing up again.",
+  "alert-grantpermission-again": "You have desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications or deny to prevent this message from showing up again.",
   "cm-gotoparent": "▲",
   "cm-gotoparent-tooltip": "Go to the parent comment",
   "cm-gotochild": "▼",
