@@ -660,7 +660,7 @@ export async function settingsDialog() {
 
   SettingsDialog.prototype.changeDesktopNotifications = function (option) {
     if (option.data !== 'none' && Notification.permission !== 'granted') {
-      OO.ui.alert(cd.s('alert-grantpermission'));
+      OO.ui.alert(cd.s('dn-grantpermission'));
       Notification.requestPermission((permission) => {
         if (permission !== 'granted') {
           this.desktopNotificationsSelect.selectItemByData('none');

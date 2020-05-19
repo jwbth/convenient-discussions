@@ -387,23 +387,23 @@ async function confirmDesktopNotifications() {
       if (settings.desktopNotifications === 'unknown') {
         const actions = [
           {
-            label: cd.s('confirm-desktopnotifications-yes'),
+            label: cd.s('dn-confirm-yes'),
             action: 'accept',
             flags: 'primary',
           },
           {
-            label: cd.s('confirm-desktopnotifications-no'),
+            label: cd.s('dn-confirm-no'),
             action: 'reject',
           },
         ];
-        confirmDialog(cd.s('confirm-desktopnotifications'), {
+        confirmDialog(cd.s('dn-confirm'), {
           size: 'medium',
           actions,
         }).then((action) => {
           let promise;
           if (action === 'accept') {
             if (Notification.permission === 'default') {
-              OO.ui.alert(cd.s('alert-grantpermission'));
+              OO.ui.alert(cd.s('dn-grantpermission'));
               Notification.requestPermission((permission) => {
                 if (permission === 'granted') {
                   cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
@@ -431,7 +431,7 @@ async function confirmDesktopNotifications() {
   }
 
   if (cd.settings.desktopNotifications !== 'unknown' && Notification.permission === 'default') {
-    await OO.ui.alert(cd.s('alert-grantpermission-again'), { title: cd.s('script-name') });
+    await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
     Notification.requestPermission();
   }
 }
