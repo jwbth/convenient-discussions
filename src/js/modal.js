@@ -410,7 +410,7 @@ export async function settingsDialog() {
     this.mySignatureField = new OO.ui.FieldLayout(this.mySignatureInput, {
       label: cd.s('sd-mysignature'),
       align: 'top',
-      help: cd.util.wrapInElement(cd.s('sd-mysignature-help')),
+      help: cd.util.wrapInElement(cd.s('sd-mysignature-help', cd.g.SIGN_CODE)),
       helpInline: true,
     });
 

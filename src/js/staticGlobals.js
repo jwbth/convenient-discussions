@@ -175,4 +175,13 @@ export default {
     '*[style*="float:left"]',
     '*[style*="float: left"]',
   ],
+
+  /**
+   * Auxiliary property to keep the sign code: "~~~~". If written as plain text, it gets transformed
+   * into the edit author's signature when saved. Note that minifier translates "~~\~" and "'~~' +
+   * '~'" into "~~~".
+   *
+   * @type {string}
+   */
+  SIGN_CODE: '~~'.concat('~~'),
 };

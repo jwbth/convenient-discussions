@@ -699,7 +699,7 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.saveSourcePage = async function (sourcePage, targetPage) {
-      const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || '~~'.concat('~~', '~');
+      const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
       const sourcePageNewSectionCode = (
         sourcePage.sectionInCode.code.slice(

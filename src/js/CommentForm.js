@@ -1206,8 +1206,8 @@ export default class CommentForm {
 
     const textReactions = [
       {
-        pattern: new RegExp('~~'.concat('~~') + '\\s*$'),
-        message: cd.s('cf-reaction-signature'),
+        pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
+        message: cd.s('cf-reaction-signature', cd.g.SIGN_CODE),
         class: 'signatureNotNeeded',
         type: 'notice',
       },

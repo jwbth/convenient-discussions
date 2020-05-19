@@ -79,7 +79,7 @@ module.exports = (env = { MODE: 'development' }) => {
       new webpack.DefinePlugin({
         IS_LOCAL: env.MODE === 'local',
         CONFIG_FILE_NAME: JSON.stringify(configFileName),
-        LANG_FILE_NAME: JSON.stringify(lang),
+        LANG_FILE_NAME: JSON.stringify(lang + '.json'),
       }),
     ],
   };

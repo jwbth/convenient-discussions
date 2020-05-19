@@ -60,8 +60,7 @@ export function initSettings() {
     // default configuration change.
     insertButtonsChanged: false,
     insertButtons: cd.config.defaultInsertButtons || [],
-    // Minifier translates "~~\~~" and "'~~' + '~~'" into "~~~~".
-    mySignature: '~~'.concat('~~'),
+    mySignature: cd.g.SIGN_CODE,
     notifications: 'all',
     notificationsBlacklist: [],
     // Not shown in the settings dialog
@@ -240,11 +239,11 @@ export async function init({ messagesRequest }) {
     // editing.
     const textBeforeSignature = (
       cd.settings.mySignature !== cd.defaultSettings.mySignature &&
-      // Minifier translates "~~\~~" and "'~~' + '~~'" into "~~~~".
+      // Minifier translates "~~\~" and "'~~' + '~'" into "~~~".
       cd.settings.mySignature.includes('~~'.concat('~'))
     ) ?
       mw.util.escapeRegExp(
-        // Minifier translates "~~\~~" and "'~~' + '~~'" into "~~~~".
+        // Minifier translates "~~\~" and "'~~' + '~'" into "~~~".
         cd.settings.mySignature.slice(0, cd.settings.mySignature.indexOf('~~'.concat('~')))
       ) :
       '';

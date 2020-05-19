@@ -28,7 +28,7 @@ let config;
 let strings;
 if (IS_LOCAL) {
   config = require(`./config/${CONFIG_FILE_NAME}`).default;
-  strings = require(`./i18n/${LANG_FILE_NAME}`).default;
+  strings = require(`./i18n/${LANG_FILE_NAME}`);
 }
 
 /**
