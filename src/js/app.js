@@ -56,125 +56,15 @@ function s(name, ...params) {
 }
 
 /**
- * The main script function.
+ * Function executed after the localization strings are ready.
  *
  * @private
- * @fires launched
  */
-function main() {
-  // Doesn't work in mobile version.
-  if (location.host.endsWith('.m.wikipedia.org')) return;
-
-  if (cd.running) {
-    console.warn('One instance of Convenient Discussions is already running.');
+function go() {
+  if (!cd.strings) {
+    console.warn('Convenient Discussions can\'t run: localization strings couldn\'t be found.');
     return;
   }
-
-  /**
-   * Is the script running.
-   *
-   * @name running
-   * @type {boolean}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.running = true;
-
-  /**
-   * Script configuration. Default configuration is at {@link module:default/config}.
-   *
-   * @name config
-   * @type {object}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.config = Object.assign(defaultConfig, cd.config);
-
-  if (IS_LOCAL) {
-    cd.config = Object.assign(defaultConfig, config);
-    cd.strings = strings;
-  }
-
-  /**
-   * @see module:debug
-   * @name debug
-   * @type {object}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.debug = debug;
-
-  cd.g = g;
-  cd.s = s;
-  cd.util = util;
-
-  /**
-   * @see module:Comment.getCommentByAnchor Get a comment by anchor
-   * @function getCommentByAnchor
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.getCommentByAnchor = Comment.getCommentByAnchor;
-
-  /**
-   * @see module:Section.getSectionByAnchor Get a section by anchor
-   * @function getSectionByAnchor
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.getSectionByAnchor = Section.getSectionByAnchor;
-
-  /**
-   * @see module:Section.getSectionsByHeadline
-   * @function getSectionsByHeadline
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.getSectionsByHeadline = Section.getSectionsByHeadline;
-
-  /**
-   * @see module:CommentForm.getLastActiveCommentForm
-   * @function getLastActiveCommentForm
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.getLastActiveCommentForm = CommentForm.getLastActiveCommentForm;
-
-  /**
-   * @see module:CommentForm.getLastActiveAlteredCommentForm
-   * @function getLastActiveAlteredCommentForm
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAlteredCommentForm;
-
-
-  /* Some utilities that we believe should be global for external use. */
-
-  /**
-   * @see module:timestamp.parseCommentAnchor
-   * @function parseCommentAnchor
-   * @memberof module:cd~convenientDiscussions.util
-   */
-  cd.util.parseCommentAnchor = parseCommentAnchor;
-
-  /**
-   * @see module:timestamp.formatDate
-   * @function formatDate
-   * @memberof module:cd~convenientDiscussions.util
-   */
-  cd.util.formatDate = formatDate;
-
-  /**
-   * @see module:options.setVisits
-   * @function setVisits
-   * @memberof module:cd~convenientDiscussions.util
-   */
-  cd.util.setVisits = setVisits;
-
-  cd.debug.init();
-  cd.debug.startTimer('total time');
-  cd.debug.startTimer('start');
-
-  /**
-   * The script has launched.
-   *
-   * @event launched
-   * @type {module:cd~convenientDiscussions}
-   */
-  mw.hook('convenientDiscussions.launched').fire(cd);
 
   Object.keys(cd.strings).forEach((name) => {
     mw.messages.set(`convenientdiscussions-${name}`, cd.strings[name]);
@@ -351,4 +241,144 @@ function main() {
   }
 }
 
-$(main);
+/**
+ * The main script function.
+ *
+ * @private
+ * @fires launched
+ */
+function app() {
+  // Doesn't work in mobile version.
+  if (location.host.endsWith('.m.wikipedia.org')) return;
+
+  if (cd.running) {
+    console.warn('One instance of Convenient Discussions is already running.');
+    return;
+  }
+
+  /**
+   * Is the script running.
+   *
+   * @name running
+   * @type {boolean}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.running = true;
+
+  /**
+   * Script configuration. Default configuration is at {@link module:default/config}.
+   *
+   * @name config
+   * @type {object}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.config = Object.assign(defaultConfig, cd.config);
+
+  if (IS_LOCAL) {
+    cd.config = Object.assign(defaultConfig, config);
+    cd.strings = strings;
+  }
+
+  /**
+   * @see module:debug
+   * @name debug
+   * @type {object}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.debug = debug;
+
+  cd.g = g;
+  cd.s = s;
+  cd.util = util;
+
+  /**
+   * @see module:Comment.getCommentByAnchor Get a comment by anchor
+   * @function getCommentByAnchor
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getCommentByAnchor = Comment.getCommentByAnchor;
+
+  /**
+   * @see module:Section.getSectionByAnchor Get a section by anchor
+   * @function getSectionByAnchor
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getSectionByAnchor = Section.getSectionByAnchor;
+
+  /**
+   * @see module:Section.getSectionsByHeadline
+   * @function getSectionsByHeadline
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getSectionsByHeadline = Section.getSectionsByHeadline;
+
+  /**
+   * @see module:CommentForm.getLastActiveCommentForm
+   * @function getLastActiveCommentForm
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getLastActiveCommentForm = CommentForm.getLastActiveCommentForm;
+
+  /**
+   * @see module:CommentForm.getLastActiveAlteredCommentForm
+   * @function getLastActiveAlteredCommentForm
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAlteredCommentForm;
+
+
+  /* Some utilities that we believe should be global for external use. */
+
+  /**
+   * @see module:timestamp.parseCommentAnchor
+   * @function parseCommentAnchor
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.parseCommentAnchor = parseCommentAnchor;
+
+  /**
+   * @see module:timestamp.formatDate
+   * @function formatDate
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.formatDate = formatDate;
+
+  /**
+   * @see module:options.setVisits
+   * @function setVisits
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.setVisits = setVisits;
+
+  cd.debug.init();
+  cd.debug.startTimer('total time');
+  cd.debug.startTimer('start');
+
+  /**
+   * The script has launched.
+   *
+   * @event launched
+   * @type {module:cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.launched').fire(cd);
+
+  if (!cd.strings) {
+    let match = location.host.match(/^([a-z-]+)\.(?:wikipedia|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary)\.org$/);
+    if (!match) {
+      // Chapters' sites
+      match = location.host.match(/^([a-z]{2})\.wikimedia\.org$/);
+    }
+    const lang = match ? match[1] : 'en';
+    mw.loader.getScript(`https://www.mediawiki.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions/strings-${lang}.js&action=raw&ctype=text/javascript`)
+      .then(
+        go,
+        (e) => {
+          console.warn(e);
+        }
+      );
+  } else {
+    go();
+  }
+}
+
+$(app);
