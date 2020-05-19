@@ -2,8 +2,8 @@
  * Web worker entry point.
  *
  * Note that currently there may be difficulties in testing the web worker in the "local" mode with
- * custom config functions such as {@link module:config/default.customForeignComponentChecker} due
- * to the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
+ * custom config functions such as {@link module:defaultConfig.customForeignComponentChecker} due to
+ * the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
  * contexts resulting in a lost tie between them.
  *
  * @module worker

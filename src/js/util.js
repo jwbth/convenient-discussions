@@ -94,7 +94,7 @@ export function caseInsensitiveFirstCharPattern(s) {
 
 /**
  * Check if the provided namespace is a talk namespace (an odd one or other specified in {@link
- * module:config/default.customTalkNamespaces}).
+ * module:defaultConfig.customTalkNamespaces}).
  *
  * @param {number} namespaceNumber
  * @returns {boolean}

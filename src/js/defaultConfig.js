@@ -1,5 +1,5 @@
 /**
- * @module config/default
+ * @module defaultConfig
  */
 
 export default {
@@ -237,7 +237,7 @@ export default {
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for a way to prevent certain elements from becoming comment
-   * parts, see {@link module:config/default.customForeignComponentChecker}. When it comes to the
+   * parts, see {@link module:defaultConfig.customForeignComponentChecker}. When it comes to the
    * wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
@@ -551,7 +551,7 @@ export default {
   /**
    * Function that returns `true` for nodes that are not parts of comments and should terminate
    * comment part collecting. These rules often need correspoding rules in {@link
-   * module:config/default.customBadCommentBeginnings}.
+   * module:defaultConfig.customBadCommentBeginnings}.
    *
    * The second parameter is a "context", i.e., a collection of classes, functions, and other
    * properties that perform the tasks we need in the current context (window or worker).

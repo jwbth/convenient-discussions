@@ -3,11 +3,11 @@ const path = require('path');
 
 const langs = [];
 const stringsContents = [];
-fs.readdirSync('./src/js/i18n/').forEach((file) => {
+fs.readdirSync('./i18n/').forEach((file) => {
   if (path.extname(file) === '.json') {
     const lang = path.basename(file, '.json');
     langs.push(lang);
-    let stringsContent = fs.readFileSync(`./src/js/i18n/${file}`).toString().trim();
+    let stringsContent = fs.readFileSync(`./i18n/${file}`).toString().trim();
     stringsContent = `convenientDiscussions.strings = ${stringsContent};`;
     stringsContents[lang] = stringsContent;
     fs.writeFileSync(`./dist/${lang}.js`, stringsContent + '\n');
@@ -15,7 +15,7 @@ fs.readdirSync('./src/js/i18n/').forEach((file) => {
 });
 
 const configs = [];
-fs.readdirSync('./src/js/config/').forEach((file) => {
+fs.readdirSync('./config/').forEach((file) => {
   if (path.extname(file) === '.js') {
     const [name, lang] = path.basename(file).match(/^\w+-(\w+)\.js/) || [];
     if (lang && langs.includes(lang)) {
@@ -25,7 +25,7 @@ fs.readdirSync('./src/js/config/').forEach((file) => {
 });
 
 configs.forEach((config) => {
-  const configContent = fs.readFileSync(`./src/js/config/${config.name}`).toString()
+  const configContent = fs.readFileSync(`./config/${config.name}`).toString()
     .trim()
     .replace(/[^]*?export default /, '');
   const data = `window.convenientDiscussions = {};

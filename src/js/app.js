@@ -13,7 +13,7 @@ import Worker from './worker';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import debug from './debug';
-import defaultConfig from './config/default';
+import defaultConfig from './defaultConfig';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
@@ -27,8 +27,8 @@ import { setVisits } from './options';
 let config;
 let strings;
 if (IS_LOCAL) {
-  config = require(`./config/${CONFIG_FILE_NAME}`).default;
-  strings = require(`./i18n/${LANG_FILE_NAME}`);
+  config = require(`../../config/${CONFIG_FILE_NAME}`).default;
+  strings = require(`../../i18n/${LANG_FILE_NAME}`);
 }
 
 /**
@@ -266,7 +266,7 @@ function app() {
   cd.running = true;
 
   /**
-   * Script configuration. Default configuration is at {@link module:default/config}.
+   * Script configuration. Default configuration is at {@link module:defaultConfig}.
    *
    * @name config
    * @type {object}
