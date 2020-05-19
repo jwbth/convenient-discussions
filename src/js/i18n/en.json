@@ -149,8 +149,6 @@
   "msd-error-editingsourcepage": "Error while editing the source page. You will have to edit it manually.",
   "msd-moved": "<p>The topic has been successfully moved. You may reload the page or go to <a href=\"$1\">the page where the topic was moved to</a>.</p>",
   "msd-bottom": "The code may be different if the page would be updated while the window is idle.",
-
-  // Move section code
   "move-sourcepagecode": "{{Moved discussion to|$1|$2}}",
   "move-targetpagecode": "{{Moved discussion from|$1|$2}}",
   "es-reply": "reply",
