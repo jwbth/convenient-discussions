@@ -37,9 +37,9 @@ configs.forEach((config) => {
   const data = `// This file was assembled automatically from the config at
 // https://github.com/jwbth/convenient-discussions/tree/master/config/${config.name} and translation at
 // https://translatewiki.net/wiki/Translating:Convenient_Discussions by running
-// "node configBuilder". If you edit this file directly, your changes may be lost with the next
+// "node buildConfigs". If you edit this file directly, your changes may be lost with the next
 // update. The correct way to update this file is to download the repository and make changes to it,
-// run "node configBuilder", and copy the contents of dist/${config.name} to this page, while making
+// run "node buildConfigs", and copy the contents of dist/${config.name} to this page, while making
 // a pull request to the repository. See the details at
 // https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
 window.convenientDiscussions = {};
