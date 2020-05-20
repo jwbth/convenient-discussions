@@ -1,16 +1,25 @@
 const fs = require('fs');
 const path = require('path');
 
+const enStringsContent = fs.readFileSync(`./i18n/en.json`).toString();
+const enStrings = JSON.parse(enStringsContent);
+
 const langs = [];
-const stringsContents = [];
+const allMergedStrings = {};
 fs.readdirSync('./i18n/').forEach((file) => {
   if (path.extname(file) === '.json') {
     const lang = path.basename(file, '.json');
     langs.push(lang);
-    let stringsContent = fs.readFileSync(`./i18n/${file}`).toString().trim();
-    stringsContent = `convenientDiscussions.strings = ${stringsContent};`;
-    stringsContents[lang] = stringsContent;
-    fs.writeFileSync(`./dist/${lang}.js`, stringsContent + '\n');
+    const stringsContent = fs.readFileSync(`./i18n/${file}`).toString();
+    const strings = JSON.parse(stringsContent);
+    Object.keys(enStrings).forEach((key) => {
+      if (!strings[key]) {
+        strings[key] = enStrings[key];
+      }
+    });
+    const mergedStrings = `convenientDiscussions.strings = ${JSON.stringify(strings)};`;
+    allMergedStrings[lang] = mergedStrings;
+    fs.writeFileSync(`./dist/${lang}.js`, mergedStrings + '\n');
   }
 });
 
@@ -30,7 +39,7 @@ configs.forEach((config) => {
     .replace(/[^]*?export default /, '');
   const data = `window.convenientDiscussions = {};
 
-${stringsContents[config.lang]}
+${allMergedStrings[config.lang]}
 
 convenientDiscussions.config = ${configContent}
 
