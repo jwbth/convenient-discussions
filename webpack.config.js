@@ -59,7 +59,7 @@ module.exports = (env = { MODE: 'development' }) => {
         }
       ]
     },
-    watch: env.MODE !== 'production',
+    watch: env.MODE === 'local',
     optimization: {
       minimizer: [
         new TerserPlugin({

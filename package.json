@@ -3,12 +3,11 @@
   "version": "0.1.0",
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
-    "build": "webpack --progress",
+    "build": "node configBuilder && webpack --progress",
     "local": "webpack --env.MODE=local --progress",
-    "release": "webpack --env.MODE=production --progress",
-    "config": "node configBuilder",
+    "release": "node configBuilder && webpack --env.MODE=production --progress",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
-    "all": "npm run config & npm run release & npm run docs"
+    "all": "npm run release & npm run docs"
   },
   "browser": "src/app.js",
   "repository": {
