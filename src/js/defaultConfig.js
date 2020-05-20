@@ -165,9 +165,9 @@ export default {
    * Script help wikilink. Used in the watchlist and, if there is no tag, in summary.
    *
    * @type {string}
-   * @default 'meta:User:JWBTH/CD'
+   * @default 'mw:User:JWBTH/CD'
    */
-  helpWikilink: 'meta:User:JWBTH/CD',
+  helpWikilink: 'mw:User:JWBTH/CD',
 
   /**
    * Names of the templates that are analogs of {@link
