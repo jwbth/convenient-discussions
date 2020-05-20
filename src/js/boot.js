@@ -661,7 +661,7 @@ export function saveSession(warnedLeave) {
 }
 
 /**
- * Restore comment forms using data saved in the local storage.
+ * Restore comment forms using the data saved in the local storage.
  *
  * @param {object} commentFormsData
  * @private

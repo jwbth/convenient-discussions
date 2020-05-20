@@ -367,7 +367,9 @@ function highlightOwnComments() {
   const floatingRects = myComments.length ?
     cd.g.specialElements.floating.map((el) => el.getBoundingClientRect()) :
     undefined;
-  myComments.forEach((comment) => comment.configureLayers(false, floatingRects));
+  myComments.forEach((comment) => {
+    comment.configureLayers(false, floatingRects);
+  });
 
   // Faster to add them in one sequence.
   myComments.forEach((comment) => {
@@ -561,22 +563,22 @@ export default async function processPage(keptData = {}) {
     window.scrollTo(0, y);
   }
 
-  // This should be below viewport position restoration, as it may rely on elements that are made
-  // invisible after comment forms restoration.
-  restoreCommentForms();
-
   highlightOwnComments();
 
   processFragment(keptData.commentAnchor, keptData.sectionAnchor);
 
-  // New comments highlighting and navigation
   if (cd.g.isPageActive) {
+    // This should be below the viewport position restoration and own comments highlighting as it
+    // may rely on the elements that are made invisible during the comment forms restoration.
+    restoreCommentForms();
+
     if (cd.g.firstRun || keptData.createdPage) {
       navPanel.mount();
     } else {
       navPanel.reset();
     }
 
+    // New comments highlighting
     navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
   }
 
