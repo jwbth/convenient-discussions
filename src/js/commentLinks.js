@@ -43,16 +43,6 @@ let processDiffFirstRun = true;
  * @private
  */
 async function prepare({ messagesRequest }) {
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
-    '::before': {
-      content: `"${mw.msg('parentheses-start')}"`,
-    },
-    '::after': {
-      content: `"${mw.msg('parentheses-end')}"`,
-    },
-  });
-
   initTimestampParsingTools();
 
   cd.g.api = cd.g.api || new mw.Api();
@@ -71,6 +61,16 @@ async function prepare({ messagesRequest }) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
   ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
+
+  cd.g.nanoCss = nanoCssCreate();
+  cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
+    '::before': {
+      content: `"${mw.msg('parentheses-start')}"`,
+    },
+    '::after': {
+      content: `"${mw.msg('parentheses-end')}"`,
+    },
+  });
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
