@@ -44,3 +44,5 @@ mw.loader.load('https://ru.wikipedia.org/w/index.php?title=%D0%A3%D1%87%D0%B0%D1
 `;
   fs.writeFileSync(`./dist/config/${config.name}`, data);
 });
+
+console.log('Configs have been built successfully.');
