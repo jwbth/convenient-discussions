@@ -806,4 +806,5 @@ export function restoreCommentForms() {
     }
   }
   saveSession();
+  navPanel.updateCommentFormButton();
 }

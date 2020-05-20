@@ -635,8 +635,6 @@ const navPanel = {
       cd.g.worker.onmessage = onMessageFromWorker;
       setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
     }
-
-    this.updateCommentFormButton();
   },
 
   /**
@@ -757,8 +755,6 @@ const navPanel = {
     $nextButton.hide();
     $firstUnseenButton.hide();
     $commentFormButton.hide();
-
-    this.updateCommentFormButton();
   },
 
   /**

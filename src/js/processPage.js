@@ -568,10 +568,6 @@ export default async function processPage(keptData = {}) {
   processFragment(keptData.commentAnchor, keptData.sectionAnchor);
 
   if (cd.g.isPageActive) {
-    // This should be below the viewport position restoration and own comments highlighting as it
-    // may rely on the elements that are made invisible during the comment forms restoration.
-    restoreCommentForms();
-
     if (cd.g.firstRun || keptData.createdPage) {
       navPanel.mount();
     } else {
@@ -580,6 +576,13 @@ export default async function processPage(keptData = {}) {
 
     // New comments highlighting
     navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
+
+    // This should be below the viewport position restoration and own comments highlighting as it
+    // may rely on the elements that are made invisible during the comment forms restoration. It
+    // should also be below the navPanel mount/reset methods as it runs
+    // navPanel.updateCommentFormButton() which would throw a error if the navigation panel is not
+    // mounted.
+    restoreCommentForms();
   }
 
   if (cd.g.firstRun) {
