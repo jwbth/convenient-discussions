@@ -236,6 +236,19 @@ function updateRefreshButton(newComments, areThereInteresting) {
 }
 
 /**
+ * Update the page title to show the number of comments added to the page since it was loaded.
+ *
+ * @param {number} newCommentsCount
+ * @param {boolean} areThereInteresting
+ * @private
+ */
+function updatePageTitle(newCommentsCount, areThereInteresting) {
+  const interestingMark = areThereInteresting ? '*' : '';
+  const s = `(${newCommentsCount}${interestingMark}) `;
+  document.title = document.title.replace(/^(?:\(\d+\*?\) )?/, s);
+}
+
+/**
  * Add new comments notifications to the end of each updated section.
  *
  * @param {CommentSkeleton[]} newComments
@@ -525,6 +538,7 @@ async function processComments(comments) {
   }
 
   updateRefreshButton(newComments, interestingNewComments.length);
+  updatePageTitle(newComments.length, interestingNewComments.length);
   addSectionNotifications(newComments);
   sendNotifications(interestingNewComments, thisPageWatchedSections);
 }
