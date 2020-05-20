@@ -186,10 +186,95 @@ async function checkForNewComments() {
 }
 
 /**
+ * Update the refresh button to show the number of comments added to the page since it was loaded.
+ *
+ * @param {CommentSkeleton[]} newComments
+ * @param {boolean} areThereInteresting
+ * @private
+ */
+function updateRefreshButton(newComments, areThereInteresting) {
+  const newCommentsBySection = {};
+  newComments.forEach((comment) => {
+    if (!newCommentsBySection[comment.sectionAnchor]) {
+      newCommentsBySection[comment.sectionAnchor] = [];
+    }
+    newCommentsBySection[comment.sectionAnchor].push(comment);
+  });
+
+  let tooltipText;
+  if (newComments.length) {
+    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} (R)`;
+    Object.keys(newCommentsBySection).forEach((anchor) => {
+      const headline = newCommentsBySection[anchor][0].sectionHeadline ?
+        cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
+        mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
+      tooltipText += `\n\n${headline}`;
+      newCommentsBySection[anchor].forEach((comment) => {
+        tooltipText += `\n`;
+        if (comment.toMe) {
+          tooltipText += `${cd.s('navpanel-newcomments-toyou')} `;
+        }
+        const author = comment.author.name || cd.s('navpanel-newcomments-unknownauthor');
+        const date = comment.date ?
+          cd.util.formatDate(comment.date) :
+          cd.s('navpanel-newcomments-unknowndate');
+        tooltipText += `${author}, ${date}`;
+      });
+    });
+  } else {
+    tooltipText = `${cd.s('navpanel-refresh')} (R)`;
+  }
+
+  $refreshButton
+    .text(newComments.length ? `+${newComments.length}` : ``)
+    .attr('title', tooltipText);
+  if (areThereInteresting) {
+    $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
+  } else {
+    $refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
+  }
+}
+
+/**
+ * Add new comments notifications to the end of each updated section.
+ *
+ * @param {CommentSkeleton[]} newComments
+ * @private
+ */
+function addSectionNotifications(newComments) {
+  $('.cd-refreshButtonContainer').remove();
+  const sectionAnchors = removeDuplicates(newComments.map((comment) => comment.sectionAnchor));
+  sectionAnchors.forEach((anchor) => {
+    const section = Section.getSectionByAnchor(anchor);
+    if (!section) return;
+
+    const button = new OO.ui.ButtonWidget({
+      label: `${cd.s('section-newcomments')}. ${cd.s('navpanel-refresh-tooltip')}.`,
+      framed: false,
+      classes: ['cd-button', 'cd-sectionButton'],
+    });
+    button.on('click', () => {
+      const commentAnchor = newComments.find((comment) => comment.sectionAnchor === anchor).anchor;
+      reloadPage({ commentAnchor });
+    });
+
+    const $lastElement = section.$replyButton ?
+      section.$replyButton.closest('ul, ol') :
+      section.$elements[section.$elements.length - 1];
+    $('<div>')
+      .addClass('cd-refreshButtonContainer')
+      .addClass('cd-sectionButtonContainer')
+      .append(button.$element)
+      .insertAfter($lastElement);
+  });
+}
+
+/**
  * Send ordinary and desktop notifications to the user.
  *
  * @param {CommentSkeleton[]} comments
  * @param {string[]} thisPageWatchedSections
+ * @private
  */
 async function sendNotifications(comments, thisPageWatchedSections) {
   const notifyAbout = comments.filter((comment) => (
@@ -439,74 +524,8 @@ async function processComments(comments) {
     relevantNewCommentAnchor = newComments[0].anchor;
   }
 
-  const newCommentsBySection = {};
-  newComments.forEach((comment) => {
-    if (!newCommentsBySection[comment.sectionAnchor]) {
-      newCommentsBySection[comment.sectionAnchor] = [];
-    }
-    newCommentsBySection[comment.sectionAnchor].push(comment);
-  });
-
-  let tooltipText;
-  if (newComments.length) {
-    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} (R)`;
-    Object.keys(newCommentsBySection).forEach((anchor) => {
-      const headline = newCommentsBySection[anchor][0].sectionHeadline ?
-        cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
-        mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
-      tooltipText += `\n\n${headline}`;
-      newCommentsBySection[anchor].forEach((comment) => {
-        tooltipText += `\n`;
-        if (comment.toMe) {
-          tooltipText += `${cd.s('navpanel-newcomments-toyou')} `;
-        }
-        const author = comment.author.name || cd.s('navpanel-newcomments-unknownauthor');
-        const date = comment.date ?
-          cd.util.formatDate(comment.date) :
-          cd.s('navpanel-newcomments-unknowndate');
-        tooltipText += `${author}, ${date}`;
-      });
-    });
-  } else {
-    tooltipText = `${cd.s('navpanel-refresh')} (R)`;
-  }
-
-  $refreshButton
-    .text(newComments.length ? `+${newComments.length}` : ``)
-    .attr('title', tooltipText);
-  if (interestingNewComments.length) {
-    $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
-  } else {
-    $refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
-  }
-
-  // Add new comments notifications to the end of each updated section.
-  $('.cd-refreshButtonContainer').remove();
-  const sectionAnchors = removeDuplicates(newComments.map((comment) => comment.sectionAnchor));
-  sectionAnchors.forEach((anchor) => {
-    const section = Section.getSectionByAnchor(anchor);
-    if (!section) return;
-
-    const button = new OO.ui.ButtonWidget({
-      label: `${cd.s('section-newcomments')}. ${cd.s('navpanel-refresh-tooltip')}.`,
-      framed: false,
-      classes: ['cd-button', 'cd-sectionButton'],
-    });
-    button.on('click', () => {
-      const commentAnchor = newComments.find((comment) => comment.sectionAnchor === anchor).anchor;
-      reloadPage({ commentAnchor });
-    });
-
-    const $lastElement = section.$replyButton ?
-      section.$replyButton.closest('ul, ol') :
-      section.$elements[section.$elements.length - 1];
-    $('<div>')
-      .addClass('cd-refreshButtonContainer')
-      .addClass('cd-sectionButtonContainer')
-      .append(button.$element)
-      .insertAfter($lastElement);
-  });
-
+  updateRefreshButton(newComments, interestingNewComments.length);
+  addSectionNotifications(newComments);
   sendNotifications(interestingNewComments, thisPageWatchedSections);
 }
 
