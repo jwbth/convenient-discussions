@@ -8,13 +8,14 @@ module.exports = (env = { MODE: 'development' }) => {
   const project = process.env.npm_config_project || 'w';
   const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
   const configFileName = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
+  const fileNamePostfix = env.MODE === 'local' ? '-local' : '';
 
   return {
     mode: 'production',
     entry: './src/js/app.js',
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: 'convenientDiscussions.js',
+      filename: `convenientDiscussions${fileNamePostfix}.js`,
     },
     module: {
       rules: [
