@@ -48,7 +48,7 @@ ${stringsRawCodes[config.lang]}
 
 convenientDiscussions.config = ${configContent}
 
-mw.loader.load('https://ru.wikipedia.org/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:Jack_who_built_the_house/convenientDiscussions-new.js&action=raw&ctype=text/javascript');
+mw.loader.load('https://www.mediawiki.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript');
 `;
   fs.writeFileSync(`./dist/config/${config.name}`, data);
 });
