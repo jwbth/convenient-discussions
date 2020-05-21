@@ -499,6 +499,7 @@ export async function settingsDialog() {
      */
     function GeneralPageLayout(name, config) {
       GeneralPageLayout.super.call(this, name, config);
+      this.icon = config.icon;
       this.$element.append(
         dialog.highlightOwnCommentsField.$element,
         dialog.allowEditOthersCommentsField.$element,
@@ -509,7 +510,9 @@ export async function settingsDialog() {
     OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
     GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
       GeneralPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
-      this.outlineItem.setLabel(cd.s('sd-page-general'));
+      this.outlineItem
+        .setLabel(cd.s('sd-page-general'))
+        .setIcon(this.icon);
     };
 
     /**
@@ -522,6 +525,7 @@ export async function settingsDialog() {
      */
     function CommentFormPageLayout(name, config) {
       CommentFormPageLayout.super.call(this, name, config);
+      this.icon = config.icon;
       this.$element.append(
         dialog.autopreviewField.$element,
         dialog.watchSectionOnReplyField.$element,
@@ -533,7 +537,9 @@ export async function settingsDialog() {
     }
     OO.inheritClass(CommentFormPageLayout, OO.ui.PageLayout);
     CommentFormPageLayout.prototype.setupOutlineItem = function () {
-      this.outlineItem.setLabel(cd.s('sd-page-commentform'));
+      this.outlineItem
+        .setLabel(cd.s('sd-page-commentform'))
+        .setIcon(this.icon);
     };
 
     /**
@@ -546,6 +552,7 @@ export async function settingsDialog() {
      */
     function NotificationsPageLayout(name, config) {
       NotificationsPageLayout.super.call(this, name, config);
+      this.icon = config.icon;
       this.$element.append(
         dialog.notificationsField.$element,
         dialog.desktopNotificationsField.$element,
@@ -554,7 +561,9 @@ export async function settingsDialog() {
     }
     OO.inheritClass(NotificationsPageLayout, OO.ui.PageLayout);
     NotificationsPageLayout.prototype.setupOutlineItem = function () {
-      this.outlineItem.setLabel(cd.s('sd-page-notifications'));
+      this.outlineItem
+        .setLabel(cd.s('sd-page-notifications'))
+        .setIcon(this.icon);
     };
 
     /**
@@ -567,17 +576,22 @@ export async function settingsDialog() {
      */
     function RemoveDataPageLayout(name, config) {
       RemoveDataPageLayout.super.call(this, name, config);
+      this.icon = config.icon;
       this.$element.append(dialog.removeDataField.$element);
     }
     OO.inheritClass(RemoveDataPageLayout, OO.ui.PageLayout);
     RemoveDataPageLayout.prototype.setupOutlineItem = function () {
-      this.outlineItem.setLabel(cd.s('sd-page-removedata'));
+      this.outlineItem
+        .setLabel(cd.s('sd-page-removedata'))
+        .setIcon(this.icon);
     };
 
-    const generalPage = new GeneralPageLayout('general');
-    const commentFormPage = new CommentFormPageLayout('commentForm');
-    const notificationsPage = new NotificationsPageLayout('notifications');
-    const removeDataPage = new RemoveDataPageLayout('removeData');
+    const generalPage = new GeneralPageLayout('general', { icon: 'pageSettings' });
+    const commentFormPage = new CommentFormPageLayout('commentForm', {
+      icon: 'ongoingConversation',
+    });
+    const notificationsPage = new NotificationsPageLayout('notifications', { icon: 'bell' });
+    const removeDataPage = new RemoveDataPageLayout('removeData', { icon: 'trash' });
 
     this.bookletLayout = new OO.ui.BookletLayout({
       outlined: true,
