@@ -61,11 +61,6 @@ function s(name, ...params) {
  * @private
  */
 function go() {
-  if (!cd.strings) {
-    console.warn('Convenient Discussions can\'t run: localization strings couldn\'t be found.');
-    return;
-  }
-
   Object.keys(cd.strings).forEach((name) => {
     mw.messages.set(`convenientdiscussions-${name}`, cd.strings[name]);
   });
@@ -242,6 +237,30 @@ function go() {
 }
 
 /**
+ * If localization strings are not available, load them.
+ *
+ * @param {string} lang
+ * @private
+ */
+function loadStrings(lang) {
+  mw.loader.getScript(`https://www.mediawiki.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions/strings-${lang}.js&action=raw&ctype=text/javascript`)
+    .then(
+      () => {
+        if (cd.strings) {
+          go();
+        } else if (lang !== 'en') {
+          loadStrings('en');
+        } else {
+          console.warn('Convenient Discussions can\'t run: localization strings couldn\'t be found.');
+        }
+      },
+      (e) => {
+        console.warn(e);
+      }
+    );
+}
+
+/**
  * The main script function.
  *
  * @private
@@ -369,13 +388,7 @@ function app() {
       match = location.host.match(/^([a-z]{2})\.wikimedia\.org$/);
     }
     const lang = match ? match[1] : 'en';
-    mw.loader.getScript(`https://www.mediawiki.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions/strings-${lang}.js&action=raw&ctype=text/javascript`)
-      .then(
-        go,
-        (e) => {
-          console.warn(e);
-        }
-      );
+    loadStrings(lang);
   } else {
     go();
   }
