@@ -149,7 +149,6 @@ function go() {
         'oojs-ui.styles.icons-alerts',
         'oojs-ui.styles.icons-content',
         'oojs-ui.styles.icons-interactions',
-        'oojs-ui.styles.icons-moderation',
         'user.options',
       ]),
       messagesRequest,
