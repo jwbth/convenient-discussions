@@ -510,7 +510,7 @@ export function removeLoadingOverlay() {
  * @returns {boolean}
  */
 export function isLoadingOverlayOn() {
-  return Boolean($loadingPopup[0] && $loadingPopup[0].style.display === 'block');
+  return Boolean($loadingPopup && $loadingPopup[0] && $loadingPopup[0].style.display === 'block');
 }
 
 /**
