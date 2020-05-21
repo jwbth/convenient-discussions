@@ -42,13 +42,14 @@ export default {
   localTimezoneOffset: null,
 
   /**
-   * Numbers of talk namespaces other than odd namespaces if different from the value of
-   * `mw.config.get('wgExtraSignatureNamespaces')`. For example: `[4]` for Project.
+   * Numbers of talk namespaces other than odd namespaces. If not set, the value of
+   * `mw.config.get('wgExtraSignatureNamespaces')` will be used, excluding the 0th (article)
+   * namespace. For example: `[4]` for Project.
    *
    * @type {number[]}
-   * @default []
+   * @default null
    */
-  customTalkNamespaces: mw.config.get('wgExtraSignatureNamespaces'),
+  customTalkNamespaces: null,
 
   /**
    * Pages in the custom talk namespaces other than odd namespaces where the script should work. If

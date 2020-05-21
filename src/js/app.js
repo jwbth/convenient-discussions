@@ -76,11 +76,19 @@ function go() {
     `userjs-${cd.config.optionsPrefix}-${watchedSectionsOptionName}`
   );
 
-  cd.g.$content = $('#mw-content-text');
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
   cd.g.CURRENT_PAGE = underlinesToSpaces(mw.config.get('wgPageName'));
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
+
+  cd.g.$content = $('#mw-content-text');
+
+  if (!cd.config.customTalkNamespaces) {
+    cd.config.customTalkNamespaces = mw.config.get('wgExtraSignatureNamespaces');
+    if (cd.config.customTalkNamespaces.includes(0)) {
+      cd.config.customTalkNamespaces.splice(cd.config.customTalkNamespaces.indexOf(0));
+    }
+  }
 
   // Go
   if (
