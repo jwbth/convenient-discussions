@@ -666,8 +666,7 @@ export default class Section extends SectionSkeleton {
 
       const summaryEnding = this.summaryEndingInput.getValue();
       const text = (
-        cd.s('es-moved-from', sourcePage.wikilink) +
-        (summaryEnding ? `: ${summaryEnding}` : '')
+        cd.s('es-move-from', sourcePage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
       );
       let editTargetPageData;
       try {
@@ -723,8 +722,7 @@ export default class Section extends SectionSkeleton {
 
       const summaryEnding = this.summaryEndingInput.getValue();
       const text = (
-        cd.s('es-moved-to', targetPage.wikilink) +
-        (summaryEnding ? `: ${summaryEnding}` : '')
+        cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
       );
       try {
         await cd.g.api.postWithToken('csrf', {

@@ -74,9 +74,9 @@ async function prepare({ messagesRequest }) {
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
-  // Would work only if cd.s('es-moved') is in the beginning of cd.s('es-moved-from') and
-  // cd.s('es-moved-to'), but other use cases could have many false positives.
-  colonMoved = `:  ${cd.s('es-moved')}`;
+  // Would work only if cd.s('es-move') is in the beginning of cd.s('es-move-from') and
+  // cd.s('es-move-to'), but other use cases could have many false positives.
+  colonMoved = `:  ${cd.s('es-move')}`;
 
   goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-toyou'))}`;
   goToCommentWatchedSection = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-watchedsection'))}`;
