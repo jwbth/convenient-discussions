@@ -464,7 +464,7 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.static.actions = [
       {
         action: 'close',
-        modes: ['loading', 'move', 'reload'],
+        modes: ['move', 'reload'],
         flags: ['safe', 'close'],
         disabled: true,
       },
@@ -797,7 +797,7 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.prototype.getSetupProcess = function (data) {
       return MoveSectionDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
         this.stackLayout.setItem(this.loadingPanel);
-        this.actions.setMode('loading');
+        this.actions.setMode('move');
       });
     };
 
@@ -880,7 +880,7 @@ export default class Section extends SectionSkeleton {
 
         this.stackLayout.setItem(this.movePanel);
         this.titleInput.focus();
-        this.actions.setMode('move').setAbilities({ close: true });
+        this.actions.setAbilities({ close: true });
 
         // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
         // figure out a way to do this out of the box.

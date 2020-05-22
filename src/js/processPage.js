@@ -423,10 +423,12 @@ async function confirmDesktopNotifications() {
             cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
             promise = setSettings(settings);
           }
-          promise.catch((e) => {
-            mw.notify(cd.s('error-settings-save'), { type: 'error' })
-            console.warn(e);
-          })
+          if (promise) {
+            promise.catch((e) => {
+              mw.notify(cd.s('error-settings-save'), { type: 'error' })
+              console.warn(e);
+            });
+          }
         });
       }
     });
