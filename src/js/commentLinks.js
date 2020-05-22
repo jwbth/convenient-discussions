@@ -43,8 +43,6 @@ let processDiffFirstRun = true;
  * @private
  */
 async function prepare({ messagesRequest }) {
-  initTimestampParsingTools();
-
   cd.g.api = cd.g.api || new mw.Api();
 
   // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
@@ -61,6 +59,8 @@ async function prepare({ messagesRequest }) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
   ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
+
+  initTimestampParsingTools();
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
