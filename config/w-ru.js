@@ -214,9 +214,9 @@ export default {
 
   transformSummary(summary) {
     return summary
-      .replace(`${cd.s('newSubsection')}: /* Итог */`, 'итог')
-      .replace(`${cd.s('newSubsection')}: /* Предварительный итог */`, 'предварительный итог')
-      .replace(`${cd.s('newSubsection')}: /* Предытог */`, 'предытог');
+      .replace(`${cd.s('es-new-subsection')}: /* Итог */`, 'итог')
+      .replace(`${cd.s('es-new-subsection')}: /* Предварительный итог */`, 'предварительный итог')
+      .replace(`${cd.s('es-new-subsection')}: /* Предытог */`, 'предытог');
   },
 
   customCodeTransformations(code, commentForm) {
