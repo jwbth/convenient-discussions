@@ -270,7 +270,7 @@ export async function settingsDialog() {
       });
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
-        confirmCloseDialog(this, 'sd');
+        await confirmCloseDialog(this, 'sd');
       });
     } else if (action === 'reset') {
       return new OO.ui.Process(async () => {
@@ -487,7 +487,12 @@ export async function settingsDialog() {
     });
     this.removeDataButton.connect(this, { click: 'removeData' });
 
-    this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton);
+    this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
+      label: cd.s('sd-removedata-description'),
+      align: "top",
+      help: cd.util.wrapInElement(cd.s('sd-removedata-help')),
+      helpInline: true,
+    });
 
     /**
      * @class Subclass of {@link
@@ -509,7 +514,7 @@ export async function settingsDialog() {
     OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
     GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
       GeneralPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
-      this.outlineItem.setLabel(cd.s('sd-page-general'));
+      this.outlineItem.setLabel(cd.s('sd-page-talkpage'));
     };
 
     /**
@@ -571,7 +576,7 @@ export async function settingsDialog() {
     }
     OO.inheritClass(RemoveDataPageLayout, OO.ui.PageLayout);
     RemoveDataPageLayout.prototype.setupOutlineItem = function () {
-      this.outlineItem.setLabel(cd.s('sd-page-removedata'));
+      this.outlineItem.setLabel(cd.s('sd-page-dataremoval'));
     };
 
     const generalPage = new GeneralPageLayout('general');
@@ -938,7 +943,7 @@ export async function editWatchedSections() {
       });
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
-        confirmCloseDialog(this, 'ewsd');
+        await confirmCloseDialog(this, 'ewsd');
       });
     }
     return EditWatchedSectionsDialog.parent.prototype.getActionProcess.call(this, action);
