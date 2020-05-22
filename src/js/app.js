@@ -275,8 +275,8 @@ function loadStrings(lang) {
  * @fires launched
  */
 function app() {
-  // Doesn't work in mobile version.
-  if (location.host.endsWith('.m.wikipedia.org')) return;
+  // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
+  if (location.host.endsWith('.m.wikipedia.org') || $('.flow-board-page').length) return;
 
   if (cd.running) {
     console.warn('One instance of Convenient Discussions is already running.');
