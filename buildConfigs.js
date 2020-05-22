@@ -11,7 +11,7 @@ fs.readdirSync('./i18n/').forEach((file) => {
     langs.push(lang);
     const strings = JSON.parse(fs.readFileSync(`./i18n/${file}`).toString());
     Object.keys(enStrings).forEach((key) => {
-      if (!strings[key]) {
+      if (strings[key] === undefined) {
         strings[key] = enStrings[key];
       }
     });
