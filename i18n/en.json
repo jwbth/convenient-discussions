@@ -4,12 +4,12 @@
   "script-name-prepositional": "Convenient Discussions",
   "script-name-short": "CD",
 
-  "user-male-dative": "user",
-  "user-male-genitive": "user",
-  "user-female-dative": "user",
-  "user-female-genitive": "user",
-  "user-unknown-dative": "user",
-  "user-unknown-genitive": "user",
+  "user-male-dative": "",
+  "user-male-genitive": "",
+  "user-female-dative": "",
+  "user-female-genitive": "",
+  "user-unknown-dative": "",
+  "user-unknown-genitive": "",
 
   "cm-gotoparent": "▲",
   "cm-gotoparent-tooltip": "Go to the parent comment",
@@ -98,7 +98,7 @@
   "es-move": "move",
   "es-move-from": "move from [[$1]]",
   "es-move-to": "move to [[$1]]",
-  "es-reply-to": "the reply to $1",
+  "es-reply-to": "reply to $1",
   "es-action-to": "$1 $2",
 
   "cf-headline": "Subject/headline",
