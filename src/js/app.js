@@ -45,10 +45,7 @@ function s(name, ...params) {
   }
   const fullName = `convenientdiscussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
-    const message = mw.message(fullName, ...params);
-    return typeof params[params.length - 1] === 'object' && params[params.length - 1].plain ?
-      message.plain() :
-      message.toString();
+    return mw.message(fullName, ...params).toString();
   } else {
     const paramsString = params.length ? `: ${params.join(', ')}` : '';
     return `(${fullName}${paramsString})`;

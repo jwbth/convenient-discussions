@@ -2,6 +2,8 @@
  * @module defaultConfig
  */
 
+import cd from './cd';
+
 export default {
   /**
    * Object with names and texts of messages as keys and values. Used to avoid making an additional
@@ -578,4 +580,33 @@ export default {
    * @default null
    */
   areNewTopicsOnTop: null,
+
+  /**
+   * Function that returns the code to insert in the place of a section moved to another page. If
+   * `null`, the section is just removed from the page.
+   *
+   * @type {?Function}
+   * @kind function
+   * @param {string} targetPageWikilink
+   * @param {string} signature
+   * @param {string} [timestamp]
+   * @returns {string}
+   */
+  getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
+    return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp);
+  },
+
+  /**
+   * Function that returns the code to insert in the beginning of the section moved from another
+   * page. If `null`, no code will be added.
+   *
+   * @type {?Function}
+   * @kind function
+   * @param {string} targetPageWikilink
+   * @param {string} signature
+   * @returns {string}
+   */
+  getMoveTargetPageCode: function (targetPageWikilink, signature) {
+    return cd.s('move-targetpagecode', targetPageWikilink, signature);
+  },
 };

@@ -547,7 +547,7 @@ async function processDiff() {
     const summary = summaryElement && summaryElement.textContent;
     if (
       summary &&
-      // BotDR's archivation can't be captured by looking at bytes added here.
+      // Here, archivation can't be captured by looking at bytes added.
       (
         isCommentEdit(summary) ||
         isUndo(summary) ||
