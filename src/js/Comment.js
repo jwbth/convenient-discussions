@@ -771,6 +771,7 @@ export default class Comment extends CommentSkeleton {
         return null;
       }
 
+      revisions[i].compareBody = body;
       const timestamp = new Date(revisions[i].timestamp).getTime();
       // Add 30 seconds to get better date proximity results since we don't see the seconds
       // number.
@@ -903,9 +904,15 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
+    mw.loader.load('mediawiki.diff.styles');
+
     const url = mw.util.getUrl(this.sourcePage, { diff: edit.revid });
-    const text = cd.util.wrapInElement(cd.s('thank-confirm', this.author.name, this.author, url));
-    if (await OO.ui.confirm(text)) {
+    const question = cd.util.wrapInElement(
+      cd.s('thank-confirm', this.author.name, this.author, url),
+      'div'
+    );
+    const $text = $('<div>').append(question, cd.util.wrapDiffBody(edit.compareBody));
+    if (await OO.ui.confirm($text, { size: 'larger' })) {
       try {
         await cd.g.api.postWithEditToken({
           action: 'thank',

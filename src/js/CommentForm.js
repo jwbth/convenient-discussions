@@ -2553,18 +2553,10 @@ export default class CommentForm {
 
     let html = resp && resp.compare && resp.compare.body;
     if (html) {
-      html = (
-        '<table class="diff">' +
-        '<col class="diff-marker"><col class="diff-content">' +
-        '<col class="diff-marker"><col class="diff-content">' +
-        html +
-        '</table>'
-      );
-
+      html = cd.util.wrapDiffBody(html);
       const $label = $('<div>')
         .addClass('cd-commentForm-blockLabel')
         .text(cd.s('cf-block-viewchanges'));
-
       this.$previewArea
         .html(html)
         .prepend($label)

@@ -95,5 +95,21 @@ export default {
       document.body.classList.contains('oo-ui-windowManager-modal-active') ||
       isLoadingOverlayOn()
     );
+  },
+
+  /**
+   * Wrap the response to the "compare" API request in a table.
+   *
+   * @param {string} body
+   * @returns {string}
+   */
+  wrapDiffBody(body) {
+    return (
+      '<table class="diff">' +
+      '<col class="diff-marker"><col class="diff-content">' +
+      '<col class="diff-marker"><col class="diff-content">' +
+      body +
+      '</table>'
+    );
   }
 };
