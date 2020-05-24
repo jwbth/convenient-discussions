@@ -69,7 +69,12 @@ export default {
 
   blockSmallTemplate: 'smalldiv',
 
-  paragraphTemplates: ['pb', 'paragraph break', 'parabr', 'paragraph'],
+  paragraphTemplates: [
+    'pb',
+    'paragraph break',
+    'parabr',
+    'paragraph',
+  ],
 
   pingTemplate: 're',
 
@@ -101,7 +106,10 @@ export default {
     '.vertical-navbox',
   ],
 
-  closedDiscussionsClasses: ['archived', 'boilerplate'],
+  closedDiscussionsClasses: [
+    'archived',
+    'boilerplate'
+  ],
 
   customUnhighlightableElementsClasses: [
     'infobox',
