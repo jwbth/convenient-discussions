@@ -45,10 +45,7 @@ function s(name, ...params) {
   }
   const fullName = `convenientdiscussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
-    const message = mw.message(fullName, ...params);
-    return typeof params[params.length - 1] === 'object' && params[params.length - 1].plain ?
-      message.plain() :
-      message.toString();
+    return mw.message(fullName, ...params).toString();
   } else {
     const paramsString = params.length ? `: ${params.join(', ')}` : '';
     return `(${fullName}${paramsString})`;
@@ -275,8 +272,8 @@ function loadStrings(lang) {
  * @fires launched
  */
 function app() {
-  // Doesn't work in mobile version.
-  if (location.host.endsWith('.m.wikipedia.org')) return;
+  // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
+  if (location.host.endsWith('.m.wikipedia.org') || $('.flow-board-page').length) return;
 
   if (cd.running) {
     console.warn('One instance of Convenient Discussions is already running.');

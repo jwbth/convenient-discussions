@@ -635,15 +635,17 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.saveTargetPage = async function (sourcePage, targetPage) {
-      const addTwoNewLines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
+      const endWithTwoNewLines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
 
-      let targetPageNewSectionCode = addTwoNewLines(
+      const targetPageCode = cd.config.getMoveTargetPageCode ?
+        cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.settings.mySignature) :
+        undefined;
+      const targetPageNewSectionCode = endWithTwoNewLines(
         sourcePage.sectionInCode.code.slice(
           0,
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
         ) +
-        cd.s('move-targetpagecode', sourcePage.wikilink, cd.settings.mySignature, { plain: true }) +
-        '\n' +
+        (targetPageCode ? targetPageCode + '\n' : '') +
         sourcePage.sectionInCode.code.slice(
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
         )
@@ -656,7 +658,7 @@ export default class Section extends SectionSkeleton {
           targetPage.firstSectionIndex = targetPage.code.length;
         }
         targetPageNewCode = (
-          addTwoNewLines(targetPage.code.slice(0, targetPage.firstSectionIndex)) +
+          endWithTwoNewLines(targetPage.code.slice(0, targetPage.firstSectionIndex)) +
           targetPageNewSectionCode +
           targetPage.code.slice(targetPage.firstSectionIndex)
         );
@@ -700,20 +702,23 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.prototype.saveSourcePage = async function (sourcePage, targetPage) {
       const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
-      const sourcePageNewSectionCode = (
-        sourcePage.sectionInCode.code.slice(
-          0,
-          sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
-        ) +
-        cd.s(
-          'move-sourcepagecode',
+      const sourcePageCode = cd.config.getMoveSourcePageCode ?
+        cd.config.getMoveSourcePageCode(
           targetPage.wikilink,
           cd.settings.mySignature,
-          timestamp,
-          { plain: true }
-        ) +
-        '\n\n'
-      );
+          timestamp
+        ) :
+        undefined;
+      const sourcePageNewSectionCode = sourcePageCode ?
+        (
+          sourcePage.sectionInCode.code.slice(
+            0,
+            sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
+          ) +
+          sourcePageCode +
+          '\n\n'
+        ) :
+        '';
       const newSourcePageCode = (
         sourcePage.code.slice(0, sourcePage.sectionInCode.startIndex) +
         sourcePageNewSectionCode +

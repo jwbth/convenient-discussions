@@ -66,7 +66,7 @@ export default {
 
   pageWhiteListRegexp: new RegExp(
     // Википедия:
-    '^(?:Википедия:(?:Форум[/ ]|Голосования/|Опросы/|Обсуждение правил/|Просьба прокомментировать/|Заявки на |Запросы|Кандидаты в .*/|К (?:удалению|объединению|переименованию|разделению|улучшению|оценке источников|посредничеству)/|Оспаривание|Рецензирование/|Проверка участников/|Фильтр правок/Срабатывания|.* запросы|К оценке источников|Защита страниц|Снятие защиты|Изменение спам-листа)|' +
+    '^(?:Википедия:(?:Форум[/ ]|Голосования/|Опросы/|Обсуждение правил/|Просьба прокомментировать/|Заявки на |Запросы|Кандидаты в .*/|К (?:удалению|объединению|переименованию|разделению|улучшению|оценке источников|посредничеству)/|Оспаривание|Рецензирование/|Проверка участников/|Фильтр правок/Срабатывания|.* запросы|К оценке источников|Установка защиты|Снятие защиты|Изменение спам-листа)|' +
     // Проект:
     'Проект:(?:Инкубатор/(?:Мини-рецензирование|Форум)|Социальная ответственность/Форум|Водные объекты|Библиотека/(?:Требуются книги|Вопросы|Горячие темы|Технические вопросы)|Графическая мастерская/Заявки|Добротные статьи/К лишению статуса|Грамотность/Запросы))'
   ),
@@ -91,7 +91,14 @@ export default {
 
   helpWikilink: 'U:JWBTH/CD',
 
-  unsignedTemplates: ['unsigned', 'unsignedIP', 'unsigned2', 'unsignedIP2', 'не подписано', 'нпп'],
+  unsignedTemplates: [
+    'unsigned',
+    'unsignedIP',
+    'unsigned2',
+    'unsignedIP2',
+    'не подписано',
+    'нпп',
+  ],
 
   pairQuoteTemplates: [
     ['начало цитаты', 'конец цитаты'],
@@ -99,7 +106,10 @@ export default {
 
   blockSmallTemplate: 'block-small',
 
-  paragraphTemplates: ['pb', 'абзац'],
+  paragraphTemplates: [
+    'pb',
+    'абзац',
+  ],
 
   pingTemplate: 're',
 
@@ -132,14 +142,19 @@ export default {
     /\n+(?:<!--[^]*?-->\s*)+$/,
   ],
 
-  foreignElementsInHeadlinesClasses: ['ch-helperText', 'userflags-wrapper'],
+  foreignElementsInHeadlinesClasses: [
+    'ch-helperText',
+    'userflags-wrapper',
+  ],
 
   customFloatingElementsSelectors: [
     '.infobox',
     '.vertical-navbox',
   ],
 
-  closedDiscussionsClasses: ['ruwiki-closedDiscussion'],
+  closedDiscussionsClasses: [
+    'ruwiki-closedDiscussion',
+  ],
 
   customUnhighlightableElementsClasses: [
     'infobox',
@@ -214,9 +229,9 @@ export default {
 
   transformSummary(summary) {
     return summary
-      .replace(`${cd.s('newSubsection')}: /* Итог */`, 'итог')
-      .replace(`${cd.s('newSubsection')}: /* Предварительный итог */`, 'предварительный итог')
-      .replace(`${cd.s('newSubsection')}: /* Предытог */`, 'предытог');
+      .replace(`${cd.s('es-new-subsection')}: /* Итог */`, 'итог')
+      .replace(`${cd.s('es-new-subsection')}: /* Предварительный итог */`, 'предварительный итог')
+      .replace(`${cd.s('es-new-subsection')}: /* Предытог */`, 'предытог');
   },
 
   customCodeTransformations(code, commentForm) {

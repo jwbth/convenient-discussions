@@ -627,7 +627,7 @@ const navPanel = {
       .attr('id', 'cd-navPanel-commentFormButton')
       .attr('title', cd.s('navpanel-commentform'))
       .on('click', () => {
-        this.goToCommentForm();
+        this.goToNextCommentForm();
       })
       .hide()
       .appendTo($navPanel);
@@ -901,15 +901,15 @@ const navPanel = {
    *
    * @memberof module:navPanel
    */
-  goToCommentForm() {
+  goToNextCommentForm() {
     const commentForm = cd.commentForms
       .filter((commentForm) => !commentForm.$element.cdIsInViewport(true))
       .sort((commentForm1, commentForm2) => {
         const top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
         const top2 = commentForm2.$element.get(0).getBoundingClientRect().top;
-        if (top1 > top2) {
+        if ((top2 > 0 && top1 < 0) || top1 > top2) {
           return 1;
-        } else if (top2 > top1) {
+        } else if ((top1 > 0 && top2 < 0) || top2 > top1) {
           return -1;
         } else {
           return 0;
