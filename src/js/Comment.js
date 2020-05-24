@@ -771,7 +771,7 @@ export default class Comment extends CommentSkeleton {
         return null;
       }
 
-      revisions[i].compareBody = body;
+      revisions[i].diffBody = body;
       const timestamp = new Date(revisions[i].timestamp).getTime();
       // Add 30 seconds to get better date proximity results since we don't see the seconds
       // number.
@@ -865,8 +865,8 @@ export default class Comment extends CommentSkeleton {
         case 'parse': {
           if (code === 'moreThanOneTimestamp') {
             const url = mw.util.getUrl(this.sourcePage, { diff: data.edit.revid });
-            text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
-            OO.ui.alert(text);
+            $text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
+            OO.ui.alert($text);
             return;
           } else {
             const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
@@ -907,11 +907,11 @@ export default class Comment extends CommentSkeleton {
     mw.loader.load('mediawiki.diff.styles');
 
     const url = mw.util.getUrl(this.sourcePage, { diff: edit.revid });
-    const question = cd.util.wrapInElement(
+    const $question = cd.util.wrapInElement(
       cd.s('thank-confirm', this.author.name, this.author, url),
       'div'
     );
-    const $text = $('<div>').append(question, cd.util.wrapDiffBody(edit.compareBody));
+    const $text = $('<div>').append($question, cd.util.wrapDiffBody(edit.diffBody));
     if (await OO.ui.confirm($text, { size: 'larger' })) {
       try {
         await cd.g.api.postWithEditToken({
