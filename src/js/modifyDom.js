@@ -51,6 +51,7 @@ function changeElementType(element, newType, firstVisibleElementData) {
 
 /**
  * @typedef {Array|NodeList|HTMLCollection|JQuery} ArrayLike
+ * @private
  */
 
 /**

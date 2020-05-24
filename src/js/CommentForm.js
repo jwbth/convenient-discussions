@@ -2028,6 +2028,7 @@ export default class CommentForm {
    * @typedef {object} TryPrepareNewPageCodeReturn
    * @property {object} page
    * @property {string} newPageCode
+   * @private
    */
 
   /**

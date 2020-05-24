@@ -73,6 +73,7 @@ async function prepare({ messagesRequest }) {
  * @typedef {object} GetFirstVisibleElementDataReturn
  * @property {Element} element
  * @property {number} top
+ * @private
  */
 
 /**
