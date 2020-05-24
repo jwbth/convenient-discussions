@@ -514,17 +514,7 @@ export default {
   getArchivePrefix: null,
 
   /**
-   * Custom function to execute when a topic/comment specified in the fragment part of the URL is
-   * not found. Takes a decoded fragment and a boolean indicating if the fragment is a comment
-   * anchor.
-   *
-   * @type {?function(string, boolean): undefined}
-   * @default null
-   */
-  customSectionNotFoundHandler: null,
-
-  /**
-   * Function that transforms an automatically generated summary text.
+   * Function that transforms the automatically generated summary text.
    *
    * @type {?function(string): string}
    * @default null
