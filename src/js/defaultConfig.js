@@ -506,17 +506,23 @@ export default {
 
   /**
    * Function that generates an archive prefix without an ending slash for a given page title. It is
-   * used for a feature that suggests to search in the archive if a section by the given fragment is
-   * not found on the page. If null, the page title is used as an archive prefix.
+   * used for the feature that suggests to search in the archive if the section by the given
+   * fragment is not found on the page. If `null`, the page title is used as an archive prefix.
    *
-   * @type {?function(string): string}
+   * @type {?Function}
+   * @kind function
+   * @param {string} pageTitle
+   * @returns {string}
    */
   getArchivePrefix: null,
 
   /**
    * Function that transforms the automatically generated summary text.
    *
-   * @type {?function(string): string}
+   * @type {?Function}
+   * @kind function
+   * @param {string} summary
+   * @returns {string}
    * @default null
    */
   transformSummary: null,
@@ -526,7 +532,11 @@ export default {
    * adding a closer template to all the closures by a user with the closer flag which is a
    * requirement in Russian Wikipedia.)
    *
-   * @type {?function(string, CommentForm): string}
+   * @type {?Function}
+   * @kind function
+   * @param {string} code
+   * @param {CommentForm} commentForm
+   * @returns {string}
    * @default null
    */
   customCodeTransformations: null,
@@ -534,7 +544,8 @@ export default {
   /**
    * Function with code that will run before the page is parsed.
    *
-   * @type {?function(): undefined}
+   * @type {?Function}
+   * @kind function
    * @default null
    */
   customBeforeParse: null,
@@ -547,16 +558,23 @@ export default {
    * The second parameter is a "context", i.e., a collection of classes, functions, and other
    * properties that perform the tasks we need in the current context (window or worker).
    *
-   * @type {?function(Node, object): boolean}
+   * @type {?Function}
+   * @kind function
+   * @param {Node} node
+   * @param {object} context
+   * @returns {boolean}
    * @default null
    */
   customForeignComponentChecker: null,
 
   /**
-   * Function that should return `true` if new topics are placed on top of the page. The first
-   * parameter is the title, the second is the code.
+   * Function that returns `true` if new topics are placed on top of the page.
    *
-   * @type {?function(string, string): boolean}
+   * @type {?Function}
+   * @kind function
+   * @param {string} title
+   * @param {string} code
+   * @returns {boolean}
    * @default null
    */
   areNewTopicsOnTop: null,
