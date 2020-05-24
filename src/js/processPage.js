@@ -378,9 +378,11 @@ function highlightOwnComments() {
 }
 
 /**
- * Ask the user if he wants to receive desktop notifications on first run and ask for a permission
+ * Ask the user if they want to receive desktop notifications on first run and ask for a permission
  * if it is default but the user has desktop notifications enabled (for example, if he/she is using
  * a browser different from where he/she has previously used).
+ *
+ * @private
  */
 async function confirmDesktopNotifications() {
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
@@ -463,13 +465,14 @@ function debugLog() {
  * @param {object} [keptData={}] Data passed from the previous page state or the main module.
  * @param {string} [keptData.commentAnchor] Comment anchor to scroll to.
  * @param {string} [keptData.sectionAnchor] Section anchor to scroll to.
- * @param {boolean} [keptData.createdPage] The page was created while it was in the previous state.
- * @param {number} [keptData.scrollPosition] The page Y offset.
+ * @param {boolean} [keptData.wasPageCreated] Whether the page was created while it was in the
+ *   previous state.
+ * @param {number} [keptData.scrollPosition] Page Y offset.
  * @param {object[]} [keptData.unseenCommentAnchors] Anchors of unseen comments on this page.
  * @param {string} [keptData.justWatchedSection] Section just watched so that there could be not
- *    enough time for it to be saved on the server.
+ *    enough time for it to be saved to the server.
  * @param {string} [keptData.justUnwatchedSection] Section just unwatched so that there could be not
- *    enough time for it to be saved on the server.
+ *    enough time for it to be saved to the server.
  * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
  *   module:dateFormat.loadMessages}.
  * @fires commentsReady
@@ -570,7 +573,7 @@ export default async function processPage(keptData = {}) {
   processFragment(keptData.commentAnchor, keptData.sectionAnchor);
 
   if (cd.g.isPageActive) {
-    if (cd.g.firstRun || keptData.createdPage) {
+    if (cd.g.firstRun || keptData.wasPageCreated) {
       navPanel.mount();
     } else {
       navPanel.reset();
@@ -604,7 +607,7 @@ export default async function processPage(keptData = {}) {
     });
   }
 
-  if ((cd.g.firstRun && cd.g.isPageActive) || keptData.createdPage) {
+  if ((cd.g.firstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
     $(document)
       .on('keydown', globalKeyDownHandler)
       .on('scroll resize orientationchange', () => {

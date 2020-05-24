@@ -2294,7 +2294,7 @@ export default class CommentForm {
    * the old is pending).
    * - `submit` operations may not be overriden (and are not checked by this function), but also
    * don't override existing `preview` and `viewChanges` operations (so that the user gets the last
-   * autopreview even after he sent the comment).
+   * autopreview even after they have sent the comment).
    *
    * For convenience, can also check for an arbitrary condition and close the operation if it is
    * `true`.
@@ -2847,7 +2847,7 @@ export default class CommentForm {
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
       mw.config.set('wgArticleId', resp.edit.pageid);
-      keptData.createdPage = true;
+      keptData.wasPageCreated = true;
       if (watchSectionAfterGettingArticleId) {
         Section.watchSection(watchSectionAfterGettingArticleId, true);
       }
