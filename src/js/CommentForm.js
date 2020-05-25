@@ -357,39 +357,42 @@ export default class CommentForm {
     mw.loader.using(modules).then(() => {
       $toolbarPlaceholder.hide();
 
-      this.commentInput.$input.wikiEditor(
+      const $textarea = this.commentInput.$input;
+      $textarea.wikiEditor(
         'addModule',
         mw.loader.moduleRegistry['ext.wikiEditor']
           .packageExports['jquery.wikiEditor.toolbar.config.js']
       );
+      const dialogsConfig = mw.loader.moduleRegistry['ext.wikiEditor']
+        .packageExports['jquery.wikiEditor.dialogs.config.js'];
+      dialogsConfig.replaceIcons($textarea);
+      $textarea.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
+      this.commentInput.$element
+        .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
+        .remove();
 
-      this.$element.find('.group-insert').remove();
-      this.$element.find('.option[rel="heading-2"]').remove();
-
-      this.commentInput.$input
-        .wikiEditor('addToToolbar', {
-          'section': 'main',
-          'groups': {
-            'convenient-discussions': {}
-          },
-        })
-        .wikiEditor('addToToolbar', {
-          'section': 'main',
-          'group': 'convenient-discussions',
-          'tools': {
-            'quote': {
-              label: cd.s('cf-quote-tooltip'),
-              type: 'button',
-              icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/OOjs_UI_icon_quotes-ltr.svg',
-              action: {
-                type: 'callback',
-                execute: () => {
-                  this.quote();
+      $textarea.wikiEditor('addToToolbar', {
+        section: 'main',
+        groups: {
+          'convenient-discussions': {
+            tools: {
+              quote: {
+                label: cd.s('cf-quote-tooltip'),
+                type: 'button',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/OOjs_UI_icon_quotes-ltr.svg',
+                action: {
+                  type: 'callback',
+                  execute: () => {
+                    this.quote();
+                  },
                 },
               },
             },
-          },
-        });
+          }
+        },
+      });
+      this.commentInput.$element.find('.group-convenient-discussions')
+        .insertBefore(this.commentInput.$element.find('.section-main .group-insert'));
 
       /**
        * The comment form is ready (all requested modules have been loaded and executed).

@@ -326,41 +326,34 @@ export default {
 
         mw.hook('convenientDiscussions.commentFormReady').add((commentForm) => {
           commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-            'section': 'main',
-            'groups': {
-              'gadgets': {}
-            },
-          });
-          const $groupGadgets = commentForm.$element.find('.group-gadgets');
-          const $groupFormat = commentForm.$element.find('.group-format');
-          if ($groupGadgets.length && $groupFormat.length) {
-            $groupGadgets.insertBefore($groupFormat);
-          }
-
-          commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-            'section': 'main',
-            'group': 'gadgets',
-            'tools': {
-              'wikificator': {
-                label: 'Викификатор — автоматический обработчик текста',
-                type: 'button',
-                icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
-                action: {
-                  type: 'callback',
-                  execute: () => {
-                    window.Wikify(commentForm.commentInput.$input.get(0));
+            section: 'main',
+            groups: {
+              gadgets: {
+                tools: {
+                  wikificator: {
+                    label: 'Викификатор — автоматический обработчик текста',
+                    type: 'button',
+                    icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+                    action: {
+                      type: 'callback',
+                      execute: () => {
+                        window.Wikify(commentForm.commentInput.$input.get(0));
+                      },
+                    },
                   },
                 },
-              },
+              }
             },
           });
+          commentForm.$element.find('.group-gadgets')
+            .insertBefore(commentForm.$element.find('.section-main .group-format'));
 
           if (mw.user.options.get('gadget-urldecoder')) {
             commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-              'section': 'main',
-              'group': 'gadgets',
-              'tools': {
-                'urlDecoder': {
+              section: 'main',
+              group: 'gadgets',
+              tools: {
+                urlDecoder: {
                   label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
                   type: 'button',
                   icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
