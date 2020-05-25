@@ -248,7 +248,7 @@
   "sd-reset-confirm": "Are you sure you want to reset the settings? (Click \"{{int:convenientdiscussions-sd-save}}\" after resetting.)",
   "sd-removedata": "Remove all script data",
   "sd-removedata-description": "Delete the data that Convenient Discussions has collected: your settings, talk page last visits, watched sections, and drafts of unsent comments",
-  "sd-removedata-help": "See <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Data\" target=\"_blank\">the script homepage</a> for the instructions on how to delete each piece of data individually.",
+  "sd-removedata-help": "See <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Data\" target=\"_blank\">the script homepage</a> for the clarifications on what, why, and how the script stores and instructions on how to delete each piece of data individually.",
   "sd-removedata-confirm": "This will permanently delete your settings, talk page last visits, watched sections, and drafts of unsent comments. Do you want to proceed?",
   "sd-removedata-confirm-yes": "Yes",
   "sd-removedata-confirm-no": "No",
