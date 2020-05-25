@@ -241,9 +241,8 @@ function updateRefreshButton(newComments, areThereInteresting) {
  *
  * @param {number} newCommentsCount
  * @param {boolean} areThereInteresting
- * @private
  */
-function updatePageTitle(newCommentsCount, areThereInteresting) {
+export function updatePageTitle(newCommentsCount, areThereInteresting) {
   const interestingMark = areThereInteresting ? '*' : '';
   const s = newCommentsCount ? `(${newCommentsCount}${interestingMark}) ` : '';
   document.title = document.title.replace(/^(?:\(\d+\*?\) )?/, s);

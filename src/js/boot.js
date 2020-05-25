@@ -10,7 +10,7 @@ import CommentForm, { lastFocused } from './CommentForm';
 import Section from './Section';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
-import navPanel from './navPanel';
+import navPanel, { updatePageTitle } from './navPanel';
 import processPage from './processPage';
 import {
   animateLink,
@@ -563,6 +563,7 @@ export async function reloadPage(keptData = {}) {
   mw.loader.load(pageData.modulestyles);
   mw.config.set(pageData.jsconfigvars);
 
+  updatePageTitle(0, false);
   updatePageContent(pageData.text, keptData);
 }
 
