@@ -167,7 +167,6 @@ function parse() {
 
   cd.debug.stopTimer('post message from the worker');
   cd.debug.stopTimer('worker operations');
-  console.debug('sent message from the worker', Date.now());
   cd.debug.logAndResetEverything();
 }
 
@@ -178,7 +177,6 @@ function parse() {
  * @private
  */
 function onMessageFromWindow(e) {
-  console.debug('received message from the main thread', Date.now());
   const message = e.data;
 
   if (message.type === 'setAlarm') {

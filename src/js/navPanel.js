@@ -171,7 +171,6 @@ async function checkForNewComments() {
               cd.config.customForeignComponentChecker,
           }
         });
-        console.debug('sent message from the main thread', Date.now());
       }
     }
   } catch (e) {
