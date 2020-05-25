@@ -865,8 +865,8 @@ export default class Comment extends CommentSkeleton {
         case 'parse': {
           if (code === 'moreThanOneTimestamp') {
             const url = mw.util.getUrl(this.sourcePage, { diff: data.edit.revid });
-            $text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
-            OO.ui.alert($text);
+            text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
+            OO.ui.alert(text);
             return;
           } else {
             const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
