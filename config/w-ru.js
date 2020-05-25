@@ -54,7 +54,6 @@ export default {
     'parentheses': '($1)',
     'parentheses-start': '(',
     'parentheses-end': ')',
-    'file-anchor-link': 'Файл',
   },
 
   contribsPage: 'Служебная:Вклад',

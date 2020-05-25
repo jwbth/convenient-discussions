@@ -16,7 +16,6 @@ import {
   animateLink,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
-  removeDuplicates,
   transparentize,
   underlinesToSpaces,
 } from './util';
@@ -305,9 +304,11 @@ export async function init({ messagesRequest }) {
   cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES
     .concat(cd.config.customUnhighlightableElementsClasses);
 
-  const file = removeDuplicates(['File', mw.msg('file-anchor-link')]).join('|');
+  const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
+  cd.g.FILE_NAMESPACES_PATTERN = underlinesToSpaces(fileNamespaces.join('|'));
+
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat([new RegExp(`^\\[\\[(?:${file}):.*\\n*(?=[*:#])`)])
+    .concat([new RegExp(`^\\[\\[(?:${cd.g.FILE_NAMESPACES_PATTERN}):.*\\n*(?=[*:#])`)])
     .concat(cd.config.customBadCommentBeginnings);
 
   cd.g.ADD_TOPIC_SELECTORS = ['#ca-addsection a']
