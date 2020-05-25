@@ -1,5 +1,5 @@
 /**
- * Some general DOM modification functions.
+ * DOM modification functions.
  *
  * @module modifyDom
  */
@@ -50,19 +50,16 @@ function changeElementType(element, newType, firstVisibleElementData) {
 }
 
 /**
- * @typedef {Array|NodeList|HTMLCollection|JQuery} ArrayLike
- * @private
- */
-
-/**
  * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
  * the nesting level.
  *
- * @param {ArrayLike} levels
  * @param {object} firstVisibleElementData
  * @private
  */
-function mergeAdjacentCommentLevels(levels, firstVisibleElementData) {
+function mergeAdjacentCommentLevels(firstVisibleElementData) {
+  const levels = (
+    cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
+  );
   if (!levels.length) return;
 
   const isOrHasCommentLevel = (el) => (
@@ -108,10 +105,10 @@ function mergeAdjacentCommentLevels(levels, firstVisibleElementData) {
               // there is a non-empty text node between. (An example that is now fixed:
               // [[Википедия:Форум/Архив/Викиданные/2018/1 полугодие#201805032155_NBS]], but other
               // can be on the loose.) Instead, wrap the text node into an element to prevent it
-              // from being ignored when searching next time for adjacent .commentLevel elements. This
-              // could be seen only as an additional precaution, since it doesn't fix the source of
-              // the problem: the fact that a bare text node is (probably) a part of the reply. It
-              // shouldn't be happening.
+              // from being ignored when searching next time for adjacent .commentLevel elements.
+              // This could be seen only as an additional precaution, since it doesn't fix the
+              // source of the problem: the fact that a bare text node is (probably) a part of the
+              // reply. It shouldn't be happening.
               firstMoved = null;
               const newChild = document.createElement('span');
               newChild.appendChild(child);
@@ -125,7 +122,11 @@ function mergeAdjacentCommentLevels(levels, firstVisibleElementData) {
 
       currentBottomElement = firstMoved;
       currentTopElement = firstMoved && firstMoved.previousElementSibling;
-    } while (currentTopElement && currentBottomElement && isOrHasCommentLevel(currentBottomElement));
+    } while (
+      currentTopElement &&
+      currentBottomElement &&
+      isOrHasCommentLevel(currentBottomElement)
+    );
   });
 }
 
@@ -135,14 +136,8 @@ function mergeAdjacentCommentLevels(levels, firstVisibleElementData) {
  * @param {Element} firstVisibleElementData
  */
 export function adjustDom(firstVisibleElementData) {
-  mergeAdjacentCommentLevels(
-    cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'),
-    firstVisibleElementData
-  );
-  mergeAdjacentCommentLevels(
-    cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'),
-    firstVisibleElementData
-  );
+  mergeAdjacentCommentLevels(firstVisibleElementData);
+  mergeAdjacentCommentLevels(firstVisibleElementData);
   if (cd.g.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')) {
     console.warn('.cd-commentLevel adjacencies have left.');
   }
