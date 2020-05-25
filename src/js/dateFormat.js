@@ -136,6 +136,7 @@ const DATE_FORMATS = {
   'gl': 'j \\d\\e F \\d\\e Y "ás" H:i',
   'glk': 'j xg Y، ساعت H:i',
   'gn': 'H:i j M Y',
+  'gom': 'H:i, j F Y',
   'gom-deva': 'H:i, j F Y',
   'gom-latn': 'H:i, j F Y',
   'gor': 'j F Y H.i',
