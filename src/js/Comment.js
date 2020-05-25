@@ -1340,7 +1340,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * When searching for the comment, adjust the index of the comment beginning and some related
+   * When searching for the comment, adjust the index of the comment start point and some related
    * properties.
    *
    * @param {string} commentCode
@@ -1366,18 +1366,15 @@ export default class Comment extends CommentSkeleton {
       commentCode = commentCode.slice(headingMatch[0].length);
     }
 
-    // Exclude the text of the previous comment ended with "~~~" instead of "~~~~".
+    // Exclude the text of the previous comment that is ended with "~~~" instead of "~~~~".
     if (cd.config.signatureEndingRegexp) {
       const regexp = new RegExp(cd.config.signatureEndingRegexp.source, 'm');
-      const linesRegexp = /^.+$/gm;
+      const linesRegexp = /^(.+)\n/gm;
       let line;
       let indent;
       while ((line = linesRegexp.exec(commentCode))) {
-        if (regexp.test(removeWikiMarkup(line[0]))) {
-          let testIndent = line.index + line[0].length;
-          while (commentCode[testIndent] === '\n') {
-            testIndent++;
-          }
+        if (regexp.test(removeWikiMarkup(line[1]))) {
+          const testIndent = line.index + line[0].length;
           if (testIndent === commentCode.length) {
             break;
           } else {
