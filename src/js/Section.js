@@ -635,12 +635,12 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.saveTargetPage = async function (sourcePage, targetPage) {
-      const endWithTwoNewLines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
+      const endWithTwoNewlines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
 
       const targetPageCode = cd.config.getMoveTargetPageCode ?
         cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.settings.mySignature) :
         undefined;
-      const targetPageNewSectionCode = endWithTwoNewLines(
+      const targetPageNewSectionCode = endWithTwoNewlines(
         sourcePage.sectionInCode.code.slice(
           0,
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
@@ -658,7 +658,7 @@ export default class Section extends SectionSkeleton {
           targetPage.firstSectionIndex = targetPage.code.length;
         }
         targetPageNewCode = (
-          endWithTwoNewLines(targetPage.code.slice(0, targetPage.firstSectionIndex)) +
+          endWithTwoNewlines(targetPage.code.slice(0, targetPage.firstSectionIndex)) +
           targetPageNewSectionCode +
           targetPage.code.slice(targetPage.firstSectionIndex)
         );

@@ -175,8 +175,8 @@ export default {
   /**
    * Names of the templates that are analogs of {@link
    * https://en.wikipedia.org/wiki/Template:Unsigned}, {@link
-   * https://en.wikipedia.org/wiki/Template:Unsigned_IP} on sites where they are not substituted. If
-   * they are, they are not needed to be added. Please include aliases.
+   * https://en.wikipedia.org/wiki/Template:Unsigned_IP} **on sites where they are not
+   * substituted**. If they are, they are not needed to be added. Please include aliases.
    *
    * @type {string[]}
    * @default []
