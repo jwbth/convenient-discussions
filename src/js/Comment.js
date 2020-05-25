@@ -687,10 +687,11 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {boolean} [singleTimestamp=false] Whether the edit has to have not more than one
    *   timestamp (used to detect edits adding more than one comment).
+   * @param {boolean} requestGender Request the gender of the edit's author (to save time).
    * @returns {?object}
    * @throws {CdError}
    */
-  async findAddingEdit(singleTimestamp = false) {
+  async findAddingEdit(singleTimestamp = false, requestGender = false) {
     if (singleTimestamp && this.addingEditOneTimestamp) {
       return this.addingEditOneTimestamp;
     }
@@ -717,7 +718,7 @@ export default class Comment extends CommentSkeleton {
 
     let [revisionsResp] = await Promise.all([
       revisionsRequest,
-      this.author.registered ? getUserGenders([this.author]) : undefined,
+      requestGender && this.author.registered ? getUserGenders([this.author]) : undefined,
     ].filter(defined));
 
     const revisions = (
@@ -898,7 +899,7 @@ export default class Comment extends CommentSkeleton {
 
     let edit;
     try {
-      edit = await this.findAddingEdit(true);
+      edit = await this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING);
     } catch (e) {
       thankFail(e);
       return;
