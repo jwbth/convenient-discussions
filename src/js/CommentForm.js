@@ -1783,7 +1783,7 @@ export default class CommentForm {
     // Work with code
     let code = text.trim();
 
-    let useColonsForNewLines = /^[:*#]+/.test(code);
+    let useColonsForNewLines = /^[:*#]/.test(code);
     let hasTable = false;
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code, (isTable) => {
@@ -1852,46 +1852,49 @@ export default class CommentForm {
     }
 
     if (this.willCommentBeIndented) {
-      const replacement = cd.config.paragraphTemplates.length ?
-        `{{${cd.config.paragraphTemplates[0]}}}` :
-        '<br><br>';
-      code = code.replace(/\n\n(?![:*#])/g, replacement);
-    }
-
-    // Remove spaces in the beginning of lines if the comment is indented.
-    if (this.willCommentBeIndented) {
+      // Remove spaces in the beginning of the lines if the comment is indented.
       code = code.replace(/^ +/gm, '');
+
+      const replacement = cd.config.paragraphTemplates.length ?
+        `$1{{${cd.config.paragraphTemplates[0]}}}` :
+        '$1<br><br>';
+      code = code.replace(/^((?![:*#= ]).+)\n\n(?![:*#=])/gm, replacement);
     }
 
-    // Process newlines by adding or not adding <br> and keeping or not keeping the newline.
-    const thisLinePnieRegexp = new RegExp(
-      `(?:\\x04|<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>)$`,
+    // Process newlines by adding or not adding <br> and keeping or not keeping the newline. (\x03
+    // and \x04 mean the beginning and ending of a table.)
+    const entireLineRegexp = new RegExp(
+      `^(?:\\x01.*?\\x02 *|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]\\s*)$`,
+      'im'
+    );
+    const thisLineEndingRegexp = new RegExp(
+      `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>)|\\x04$`,
       'i'
     );
-    const nextLinePnieRegexp = new RegExp(
+    const nextLineBeginningRegexp = new RegExp(
       `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN})`,
       'i'
     );
-    code = code.replace(/^(.*[^\n])\n(?![\n:*# \x03])(?=(.*))/gm, (s, m1, m2) => {
+    code = code.replace(/^((?![:*#= ]).+)\n(?![\n:*#= \x03])(?=(.*))/gm, (s, m1, m2) => {
       const br = (
-        /^[:*# ]/.test(m1) ||
-
-        // We assume that if a tag/template occupies the full line, it's a block tag/template and
-        // doesn't need <br>s before or after it.
+        // We assume that if a tag/template occupies an entire line or multiple lines, it's a block
+        // tag/template and it doesn't need <br>s before or after it. A false positive is possible
+        // in case of <nowiki> occupying an entire line (as of May 2020, no other inline tags are
+        // hidden, see hideSensitiveCode() in wikitext.js).
         // https://en.wikipedia.org/w/index.php?diff=946978893
         // https://en.wikipedia.org/w/index.php?diff=941991985
-        /^\x01.*?\x02 *$/.test(m1) ||
-        /^\x01.*?\x02 *$/.test(m2) ||
+        entireLineRegexp.test(m1) ||
+        entireLineRegexp.test(m2) ||
 
-        // Removing <br>s after block elements is not a perfect solution as there will be no
-        // newlines when editing an existing comment, but this way we avoid empty lines in cases
-        // like "</div><br>".
-        thisLinePnieRegexp.test(m1) ||
-        nextLinePnieRegexp.test(m2)
+        // Removing <br>s after block elements is not a perfect solution as there would be no
+        // newlines when editing such comment, but this way we would avoid empty lines in cases like
+        // "</div><br>".
+        thisLineEndingRegexp.test(m1) ||
+        nextLineBeginningRegexp.test(m2)
       ) ?
         '' :
         '<br>';
-      const newline = !this.willCommentBeIndented || /^[:*#]/.test(m1) ? '\n' : '';
+      const newline = this.willCommentBeIndented ? '' : '\n';
       return m1 + br + newline;
     });
 
@@ -2354,7 +2357,7 @@ export default class CommentForm {
   }
 
   /**
-   * If the form is being submitted right now.
+   * Whether the form is being submitted right now.
    *
    * @returns {boolean}
    */

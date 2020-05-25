@@ -305,10 +305,11 @@ export async function init({ messagesRequest }) {
     .concat(cd.config.customUnhighlightableElementsClasses);
 
   const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
-  cd.g.FILE_NAMESPACES_PATTERN = underlinesToSpaces(fileNamespaces.join('|'));
+  const fileNamespacesPatternAnySpace = anySpace(fileNamespaces.join('|'));
+  cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPatternAnySpace}):`;
 
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat([new RegExp(`^\\[\\[(?:${cd.g.FILE_NAMESPACES_PATTERN}):.*\\n*(?=[*:#])`)])
+    .concat([new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`)])
     .concat(cd.config.customBadCommentBeginnings);
 
   cd.g.ADD_TOPIC_SELECTORS = ['#ca-addsection a']

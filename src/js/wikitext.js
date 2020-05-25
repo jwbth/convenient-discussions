@@ -302,13 +302,13 @@ export function hideSensitiveCode(code, callback) {
         callback(isTable);
       }
 
-      // We handle tables separately.
-      return (!isTable ? '\x01' : '\x03') + hidden.push(s) + (!isTable ? '\x02' : '\x04');
+      // Handle tables separately
+      return (isTable ? '\x03' : '\x01') + hidden.push(s) + (isTable ? '\x04' : '\x02');
     });
   };
 
   // Taken from
-  // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721.
+  // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
   const hideTemplates = () => {
     // Simple function for hiding templates that have no nested ones.
     hide(/\{\{([^{]\{?)+?\}\}/g);
