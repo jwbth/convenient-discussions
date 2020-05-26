@@ -679,7 +679,7 @@ export async function settingsDialog() {
       try {
         this.pushPending();
 
-        const resp = await cd.g.api.postWithToken('csrf', {
+        const resp = await cd.g.api.postWithEditToken({
           action: 'options',
           change: `${cd.g.SETTINGS_OPTION_FULL_NAME}|${cd.g.VISITS_OPTION_FULL_NAME}|${cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME}`,
         }).catch(handleApiReject);

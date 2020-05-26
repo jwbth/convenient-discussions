@@ -2683,7 +2683,7 @@ export default class CommentForm {
   async tryEditPage(page, newPageCode, currentOperation) {
     let resp;
     try {
-      resp = await cd.g.api.postWithToken('csrf', {
+      resp = await cd.g.api.postWithEditToken({
         action: 'edit',
         title: this.targetPage,
         text: newPageCode,

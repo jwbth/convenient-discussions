@@ -672,7 +672,7 @@ export default class Section extends SectionSkeleton {
       );
       let editTargetPageData;
       try {
-        editTargetPageData = await cd.g.api.postWithToken('csrf', {
+        editTargetPageData = await cd.g.api.postWithEditToken({
           action: 'edit',
           title: targetPage.title.toString(),
           text: targetPageNewCode,
@@ -730,7 +730,7 @@ export default class Section extends SectionSkeleton {
         cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
       );
       try {
-        await cd.g.api.postWithToken('csrf', {
+        await cd.g.api.postWithEditToken({
           action: 'edit',
           title: section.sourcePage,
           text: newSourcePageCode,

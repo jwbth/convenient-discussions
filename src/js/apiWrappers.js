@@ -357,7 +357,7 @@ export async function setOption(name, value) {
     });
   }
 
-  const resp = await cd.g.api.postWithToken('csrf', {
+  const resp = await cd.g.api.postWithEditToken({
     action: 'options',
     optionname: name,
     optionvalue: value,
