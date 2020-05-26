@@ -1,0 +1,11 @@
+{
+	"@metadata": {
+		"authors": [
+			"Jack who built the house"
+		]
+	},
+	"notification-toyou": "* $1: the user name.\n* $2 (optional): the user object, for <nowiki>{{gender:}}</nowiki> use (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).\n* $3: the place where the user has replied ({{msg-wm|Convenient-discussions-notification-part-insection}} or {{msg-wm|Convenient-discussions-notification-part-onthispage}} is used here).\n* $4: the URL.\n* $5: if there are comment forms opened on the page, the text from {{msg-wm|Convenient-discussions-notification-formdata}} appears here in parentheses.",
+	"notification-toyou-desktop": "* $1: the user name.\n* $2 (optional): the user object, for <nowiki>{{gender:}}</nowiki> use (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).\n* $3: the place where the user has replied ({{msg-wm|Convenient-discussions-notification-part-insection}} or {{msg-wm|Convenient-discussions-notification-part-onthispage}} is used here).\n* $4: the page name.",
+	"notification-insection": "* $1: the user name.\n* $2 (optional): the user object, for <nowiki>{{gender:}}</nowiki> use (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).\n* $3: the section name.\n* $4: the URL.\n* $5: if there are comment forms opened on the page, the text from {{msg-wm|Convenient-discussions-notification-formdata}} appears here in parentheses.",
+	"notification-insection-desktop": "* $1: the user name.\n* $2 (optional): the user object, for <nowiki>{{gender:}}</nowiki> use (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).\n* $3: the section name.\n* $4: the page name."
+}
