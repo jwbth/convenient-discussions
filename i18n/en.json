@@ -47,7 +47,7 @@
   "copylink-error-diffnotfound-network": "Couldn't find the edit that added this comment (network error).",
   "copylink-error-diffnotfound-unknown": "Couldn't find the edit that added this comment (unknown error).",
 
-  "thank-confirm": "Thank $1 for <a href=\"$3\" target=\"_blank\">this edit</a>?",
+  "thank-confirm": "Thank {{gender:$2|}} $1 for <a href=\"$3\" target=\"_blank\">this edit</a>?",
   "thank-error": "Couldn't send the thank you.",
   "thank-error-multipletimestamps": "Looks like <a href=\"$1\" target=\"_blank\">the edit</a> that added this comment has more than one comment in it. Please decide for yourself if you're gonna thank for it.",
   "thank-error-diffnotfound": "Couldn't find the edit that added this comment. You can look for it in the <a href=\"$1\" target=\"_blank\">revision history</a> for yourself.",
@@ -219,10 +219,10 @@
   "navpanel-newcomments-unknownauthor": "Unknown author",
   "navpanel-newcomments-unknowndate": "unknown date",
 
-  "notification-toyou": "$1 replied to your comment$3. <a href=\"$4\" class=\"cd-notification-reloadPage\">Reload the page</a>$5.",
-  "notification-toyou-desktop": "$1 replied to your comment$3 on page \"$4\".",
-  "notification-insection": "$1 replied in section \"$3\". <a href=\"$4\" class=\"cd-notification-reloadPage\">Reload the page</a>$5.",
-  "notification-insection-desktop": "$1 replied in section \"$3\" on page \"$4\".",
+  "notification-toyou": "$1 {{gender:$2|replied}} to your comment$3. <a href=\"$4\" class=\"cd-notification-reloadPage\">Reload the page</a>$5.",
+  "notification-toyou-desktop": "$1 {{gender:$2|replied}} to your comment$3 on page \"$4\".",
+  "notification-insection": "$1 {{gender:$2|replied}} in section \"$3\". <a href=\"$4\" class=\"cd-notification-reloadPage\">Reload the page</a>$5.",
+  "notification-insection-desktop": "$1 {{gender:$2|replied}} in section \"$3\" on page \"$4\".",
   "notification-newcomments": "$1 new {{plural:$1|comment|comments}}$2$3. <a href=\"$4\" class=\"cd-notification-reloadPage\">Reload the page</a>$5.",
   "notification-newcomments-desktop": "$1 new {{plural:$1|comment|comments}}$2 on page \"$3\"$4.",
   "notification-newcomments-maybeinteresting": "that may be interesting to you",
