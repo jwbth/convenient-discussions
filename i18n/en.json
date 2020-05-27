@@ -49,7 +49,7 @@
 
   "thank-confirm": "Thank $1 for <a href=\"$3\" target=\"_blank\">this edit</a>?",
   "thank-error": "Couldn't send the thank you.",
-  "thank-error-multipletimestamps": "Looks like <a href=\"$1\" target=\"_blank\">the edit</a> that added this comment has more than one comment. Please decide for yourself if you're gonna thank for it.",
+  "thank-error-multipletimestamps": "Looks like <a href=\"$1\" target=\"_blank\">the edit</a> that added this comment has more than one comment in it. Please decide for yourself if you're gonna thank for it.",
   "thank-error-diffnotfound": "Couldn't find the edit that added this comment. You can look for it in the <a href=\"$1\" target=\"_blank\">revision history</a> for yourself.",
   "thank-error-network": "Couldn't send the thank you (network error).",
   "thank-success": "Thank you notification has been sent.",
@@ -165,7 +165,7 @@
   "cf-error-delete-repliestocomment": "Can't delete the comment because it has replies.",
   "cf-error-delete-repliesinsection": "Can't delete the section because it has replies.",
   "cf-error-preview": "Couldn't preview the comment.",
-  "cf-error-viewchanges": "Couldn't get changes.",
+  "cf-error-viewchanges": "Couldn't get the changes.",
   "cf-error-couldntedit": "Couldn't edit the page.",
   "cf-error-pagenotedited": "The page was not edited.",
   "cf-error-blocked": "You are blocked from editing. The page was not edited.",
