@@ -313,8 +313,8 @@
   "move-sourcepagecode": "''Moved to $1. $2''",
   "move-targetpagecode": "''Moved from $1. $2''",
 
-  "error-loaddata": "Convenient Discussions: Couldn't load the data required by the script.",
-  "error-processpage": "Convenient Discussions: Couldn't process the page.",
+  "error-loaddata": "{{int:convenientdiscussions-script-name}}: Couldn't load the data required by the script.",
+  "error-processpage": "{{int:convenientdiscussions-script-name}}: Couldn't process the page.",
   "error-settings-load": "Couldn't load the settings to the server.",
   "error-settings-save": "Couldn't save the settings to the server.",
   "error-reloadpage": "Couldn't reload the page.",
