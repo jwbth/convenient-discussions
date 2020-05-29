@@ -134,11 +134,11 @@ export function extractSignatures(code, generateCommentAnchors) {
   );
 
   // ".*" helps to get the last author link. But after that we make another capture to make sure we
-  // take the first link to the comment author. 250 is not arbitrary: it's 255 (maximum allowed
-  // signature length) minus '[[u:a'.length.
-  const signatureScanLimitWikitext = 250;
+  // take the first link to the comment author. 251 is not arbitrary: it's 255 (maximum allowed
+  // signature length) minus '[[u:a'.length plus ' '.length (the space before the timestamp).
+  const signatureScanLimitWikitext = 251;
   const signatureRegexp = new RegExp(
-    `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(?:\n*|$)`,
+    `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(\n*|$)`,
     'igm'
   );
   const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
@@ -168,7 +168,8 @@ export function extractSignatures(code, generateCommentAnchors) {
       authorLinkRegexp.lastIndex = 0;
       const commentEndingStartIndex = Math.max(
         0,
-        authorTimestampMatch[0].length - authorTimestampMatch[6].length - signatureScanLimitWikitext
+        authorTimestampMatch[0].length - authorTimestampMatch[6].length -
+        authorTimestampMatch[authorTimestampMatch.length - 1].length - signatureScanLimitWikitext
       );
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {

@@ -126,7 +126,7 @@ export default {
    * @type {RegExp}
    * @default
    */
-  signaturePrefixRegexp: /(?:\s+>+)?(?:·|-|–|—|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
+  signaturePrefixRegexp: /(?:\s+>+)?(?:·|-|–|—|―|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
 
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,

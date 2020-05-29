@@ -80,7 +80,7 @@ export default {
 
   defaultIndentationChar: '*',
 
-  signaturePrefixRegexp: /(?:\s*С уважением,)?(?:\s+>+)?(?:·|-|–|—|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
+  signaturePrefixRegexp: /(?:\s*С уважением,)?(?:\s+>+)?(?:·|-|–|—|―|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
 
   signatureEndingRegexp: / \(обс\.\)$/,
 
