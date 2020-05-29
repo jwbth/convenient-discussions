@@ -54,6 +54,7 @@ export default {
     'parentheses': '($1)',
     'parentheses-start': '(',
     'parentheses-end': ')',
+    'word-separator': ' ',
   },
 
   contribsPage: 'Special:Contributions',

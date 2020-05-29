@@ -203,7 +203,7 @@ function updateRefreshButton(newComments, areThereInteresting) {
 
   let tooltipText;
   if (newComments.length) {
-    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} (R)`;
+    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} ${mw.msg('parentheses', 'R')}`;
     Object.keys(newCommentsBySection).forEach((anchor) => {
       const headline = newCommentsBySection[anchor][0].sectionHeadline ?
         cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
@@ -222,7 +222,7 @@ function updateRefreshButton(newComments, areThereInteresting) {
       });
     });
   } else {
-    tooltipText = `${cd.s('navpanel-refresh')} (R)`;
+    tooltipText = `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`;
   }
 
   $refreshButton
@@ -261,7 +261,7 @@ function addSectionNotifications(newComments) {
     if (!section) return;
 
     const button = new OO.ui.ButtonWidget({
-      label: `${cd.s('section-newcomments')}. ${cd.s('navpanel-refresh-tooltip')}.`,
+      label: cd.s('section-newcomments'),
       framed: false,
       classes: ['cd-button', 'cd-sectionButton'],
     });
@@ -369,11 +369,11 @@ async function sendNotifications(comments, thisPageWatchedSections) {
       const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : undefined;
       href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${section ? `#${section}` : ''}`);
       const where = section ?
-        ' ' + cd.s('notification-part-insection', section) :
-        ' ' + cd.s('notification-part-onthispage');
+        mw.msg('word-separator') + cd.s('notification-part-insection', section) :
+        mw.msg('word-separator') + cd.s('notification-part-onthispage');
       let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
       if (!mayBeInterestingString.startsWith(',')) {
-        mayBeInterestingString = ' ' + mayBeInterestingString;
+        mayBeInterestingString = mw.msg('word-separator') + mayBeInterestingString;
       }
 
       // "that may be interesting to you" text is not needed when the section is watched and the
@@ -424,7 +424,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
       tag += comment.anchor;
       if (comment.toMe) {
         const where = comment.sectionHeadline ?
-          ' ' + cd.s('notification-part-insection', comment.sectionHeadline) :
+          mw.msg('word-separator') + cd.s('notification-part-insection', comment.sectionHeadline) :
           '';
         body = cd.s(
           'notification-toyou-desktop',
@@ -447,10 +447,12 @@ async function sendNotifications(comments, thisPageWatchedSections) {
         comment.watchedSectionHeadline === notifyAboutDesktop[0].watchedSectionHeadline
       ));
       const section = isCommonSection ? notifyAboutDesktop[0].watchedSectionHeadline : undefined;
-      const where = section ? ' ' + cd.s('notification-part-insection', section) : '';
+      const where = section ?
+        mw.msg('word-separator') + cd.s('notification-part-insection', section) :
+        '';
       let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
       if (!mayBeInterestingString.startsWith(',')) {
-        mayBeInterestingString = ' ' + mayBeInterestingString;
+        mayBeInterestingString = mw.msg('word-separator') + mayBeInterestingString;
       }
 
       // "that may be interesting to you" text is not needed when the section is watched and the
@@ -588,7 +590,7 @@ const navPanel = {
     $refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
-      .attr('title', `${cd.s('navpanel-refresh')} (R)`)
+      .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`)
       .on('click', () => {
         this.refreshClick();
       })
@@ -596,7 +598,7 @@ const navPanel = {
     $previousButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-previousButton')
-      .attr('title', `${cd.s('navpanel-previous')} (W)`)
+      .attr('title', `${cd.s('navpanel-previous')} ${mw.msg('parentheses', 'W')}`)
       .on('click', () => {
         this.goToPreviousNewComment();
       })
@@ -605,7 +607,7 @@ const navPanel = {
     $nextButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-nextButton')
-      .attr('title', `${cd.s('navpanel-next')} (S)`)
+      .attr('title', `${cd.s('navpanel-next')} ${mw.msg('parentheses', 'S')}`)
       .on('click', () => {
         this.goToNextNewComment();
       })
@@ -614,7 +616,7 @@ const navPanel = {
     $firstUnseenButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-firstUnseenButton')
-      .attr('title', `${cd.s('navpanel-firstunseen')} (F)`)
+      .attr('title', `${cd.s('navpanel-firstunseen')} ${mw.msg('parentheses', 'F')}`)
       .on('click', () => {
         this.goToFirstUnseenComment();
       })
@@ -749,7 +751,7 @@ const navPanel = {
 
     $refreshButton
       .empty()
-      .attr('title', `${cd.s('navpanel-refresh')} (R)`);
+      .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`);
     $previousButton.hide();
     $nextButton.hide();
     $firstUnseenButton.hide();
