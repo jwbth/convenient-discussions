@@ -496,8 +496,8 @@ export default async function processPage(keptData = {}) {
     cd.config.archivePathRegexp.test(cd.g.CURRENT_PAGE)
   );
 
-  // This isn't static: a 404 page doesn't have an ID and is considered inactive, but if the user
-  // adds a topic to it, it will become active and get an ID.
+  // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
+  // the user adds a topic to it, it will become active and get an ID.
   cd.g.isPageActive = !(
     !mw.config.get('wgArticleId') ||
     cd.g.IS_ARCHIVE_PAGE ||
@@ -545,6 +545,13 @@ export default async function processPage(keptData = {}) {
   }
 
   cd.debug.stopTimer('process comments');
+
+  // We change the evaluation of cd.g.isPageActive if there is no comments and no "Add section"
+  // button.
+  if (cd.g.isPageActive && !cd.comments.length && !$('#ca-addsection').length) {
+    cd.g.isPageActive = false;
+  }
+
   cd.debug.startTimer('process sections');
 
   processSections(parser, watchedSectionsRequest);
@@ -582,7 +589,9 @@ export default async function processPage(keptData = {}) {
 
     // New comments highlighting
     navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
+  }
 
+  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
     // This should be below the viewport position restoration and own comments highlighting as it
     // may rely on the elements that are made invisible during the comment forms restoration. It
     // should also be below the navPanel mount/reset methods as it runs

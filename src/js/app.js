@@ -92,6 +92,7 @@ function go() {
     mw.config.get('wgIsArticle') &&
     (
       isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER) ||
+      $('#ca-addsection').length ||
       // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
       // method, there won't be "comment" links for edits on pages that list revisions such as the
