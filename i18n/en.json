@@ -2,13 +2,6 @@
   "script-name": "Convenient Discussions",
   "script-name-short": "CD",
 
-  "user-male-dative": "",
-  "user-male-genitive": "",
-  "user-female-dative": "",
-  "user-female-genitive": "",
-  "user-unknown-dative": "",
-  "user-unknown-genitive": "",
-
   "cm-gotoparent": "▲",
   "cm-gotoparent-tooltip": "Go to the parent comment",
   "cm-gotochild": "▼",

@@ -3039,31 +3039,31 @@ export default class CommentForm {
         // The code for generating "edit" and "delete" descriptions is equivalent, so we provide an
         // umbrella function.
         const editOrDeleteText = (action) => {
-          let stringName;
+          let subject;
           if (this.target.own) {
             if (this.target.parent) {
               if (this.target.parent.level === 0) {
-                stringName = 'reply';
+                subject = 'reply';
               } else {
                 this.target.parent.requestAuthorGender(callback);
-                stringName = this.target.parent.own ? 'addition' : 'reply-to';
+                subject = this.target.parent.own ? 'addition' : 'reply-to';
               }
             } else {
               if (this.target.isOpeningSection) {
-                stringName = this.target.section.level <= 2 ? 'topic' : 'subsection';
+                subject = this.target.section.level <= 2 ? 'topic' : 'subsection';
               } else {
-                stringName = 'comment';
+                subject = 'comment';
               }
             }
           } else {
             if (this.target.isOpeningSection) {
-              stringName = this.target.section.level <= 2 ? 'topic' : 'subsection';
+              subject = this.target.section.level <= 2 ? 'topic' : 'subsection';
             } else {
               this.target.requestAuthorGender(callback);
-              stringName = 'comment-by';
+              subject = 'comment-by';
             }
           }
-          return cd.s(`es-${action}-${stringName}`, this.target.author.name, this.target.author);
+          return cd.s(`es-${action}-${subject}`, this.target.author.name, this.target.author);
         };
 
         return editOrDeleteText(
