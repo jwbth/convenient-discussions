@@ -400,6 +400,14 @@ export default {
       return false;
     }
   },
+
+  getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
+    return `{{перенесено на|${targetPageWikilink}|${signature}}}\n<small>Для бота: ${timestamp}</small>`;
+  },
+
+  getMoveTargetPageCode: function (targetPageWikilink, signature) {
+    return `{{перенесено с|${targetPageWikilink}|${signature}}}`;
+  },
 };
 
 const cd = convenientDiscussions;

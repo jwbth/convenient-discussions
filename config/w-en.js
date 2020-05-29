@@ -134,4 +134,12 @@ export default {
     'Undid revision',
     'Reverted edits',
   ],
+
+  getMoveSourcePageCode: function (targetPageWikilink, signature) {
+    return `{{Moved discussion to|${targetPageWikilink}|${signature}}}`;
+  },
+
+  getMoveTargetPageCode: function (targetPageWikilink, signature) {
+    return `{{Moved discussion from|${targetPageWikilink}|${signature}}}`;
+  },
 };
