@@ -309,8 +309,8 @@
   "msd-moved": "<p>The topic has been successfully moved. You may reload the page or go to <a href=\"$1\">the page where the topic was moved to</a>.</p>",
   "msd-bottom": "The code may be different if the page would be updated while the window is idle.",
 
-  "move-sourcepagecode": "''Moved to $1. $2''",
-  "move-targetpagecode": "''Moved from $1. $2''",
+  "move-sourcepagecode": "''Moved to [[$1]]. $2''",
+  "move-targetpagecode": "''Moved from [[$1]]. $2''",
 
   "error-loaddata": "{{int:convenientdiscussions-script-name}}: Couldn't load the data required by the script.",
   "error-processpage": "{{int:convenientdiscussions-script-name}}: Couldn't process the page.",
