@@ -327,39 +327,32 @@ async function sendNotifications(comments, thisPageWatchedSections) {
   if (notifyAboutOrdinary.length) {
     let html;
     let href;
+    const formsDataWillNotBeLost = (
+      cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+      ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
+      ''
+    );
+    const reloadLinkHtml = cd.s('notification-reload', href, formsDataWillNotBeLost);
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
       href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${comment.anchor ? `#${comment.anchor}` : ''}`);
       if (comment.toMe) {
-        const formsDataWillNotBeLost = (
-          cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-          ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-          ''
-        );
         const where = comment.watchedSectionHeadline ?
-          ' ' + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
-          ' ' + cd.s('notification-part-onthispage');
-        html = cd.s(
-          'notification-toyou',
-          comment.author.name,
-          comment.author,
-          where,
-          href,
-          formsDataWillNotBeLost
+          mw.msg('word-separator') + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
+          mw.msg('word-separator') + cd.s('notification-part-onthispage');
+        html = (
+          cd.s('notification-toyou', comment.author.name, comment.author, where) + ' ' +
+          reloadLinkHtml
         );
       } else {
-        const formsDataWillNotBeLost = (
-          cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-          ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-          ''
-        );
-        html = cd.s(
-          'notification-insection',
-          comment.author.name,
-          comment.author,
-          comment.watchedSectionHeadline,
-          href,
-          formsDataWillNotBeLost
+        html = (
+          cd.s(
+            'notification-insection',
+            comment.author.name,
+            comment.author,
+            comment.watchedSectionHeadline
+          ) + ' ' +
+          reloadLinkHtml
         );
       }
     } else {
@@ -382,18 +375,9 @@ async function sendNotifications(comments, thisPageWatchedSections) {
         '' :
         mayBeInterestingString;
 
-      const formsDataWillNotBeLost = (
-        cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-        ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-        ''
-      );
-      html = cd.s(
-        'notification-newcomments',
-        notifyAboutOrdinary.length,
-        where,
-        mayBeInteresting,
-        href,
-        formsDataWillNotBeLost
+      html = (
+        cd.s('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
+        ' ' + reloadLinkHtml
       );
     }
 
