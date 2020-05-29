@@ -167,7 +167,7 @@ export function initTalkPageCss() {
 export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
 
-  await messagesRequest || loadMessages();
+  await (messagesRequest || loadMessages());
   initSettings();
   initTimestampParsingTools();
 
