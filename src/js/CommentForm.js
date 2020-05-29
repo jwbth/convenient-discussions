@@ -18,7 +18,7 @@ import {
   unhideSensitiveCode,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
-import { getLastRevision, getUserGenders, parseCode } from './apiWrappers';
+import { getLastRevision, parseCode } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
@@ -51,7 +51,6 @@ export default class CommentForm {
   #shortSubmitButtonLabel
   #lastPreviewTimestamp
   #previewTimeout
-  #genderRequestCallbackList
   #dontAutopreview
   #editingSectionOpeningComment
   #headlineInputPurpose
@@ -563,21 +562,19 @@ export default class CommentForm {
         );
       } else if (this.mode === 'reply') {
         // If there is a need to make a request to get the user gender, we don't show any
-        // placeholder text at the beginning to avoid drawing user's attention to the changing of
-        // the text. (But it could be a better idea to set the commentInputEmptyPlaceholder config
-        // variable to true to avoid showing any text whatsoever.)
-        const ending = this.formUserName(this.target, {
-          returnUnknown: false,
-          callback: () => {
-            this.commentInput.$input.attr(
-              'placeholder',
-              cd.s('cf-comment-placeholder-replytocomment', this.formUserName(this.target))
-            );
-          },
+        // placeholder text at the beginning to avoid drawing the user's attention to the changing
+        // of the text. (But it could be a better idea to set the commentInputEmptyPlaceholder
+        // config variable to true to avoid showing any text whatsoever.)
+        this.target.requestAuthorGender(() => {
+          this.commentInput.$input.attr(
+            'placeholder',
+            cd.s(
+              'cf-comment-placeholder-replytocomment',
+              this.target.author.name,
+              this.target.author
+            )
+          );
         });
-        if (ending) {
-          commentInputPlaceholder = cd.s('cf-comment-placeholder-replytocomment', ending);
-        }
       } else if (this.mode === 'addSection') {
         commentInputPlaceholder = cd.s('cf-comment-placeholder-addsection');
       } else if (this.mode === 'addSubsection') {
@@ -2970,63 +2967,6 @@ export default class CommentForm {
   }
 
   /**
-   * Prepare the "[to] <User>" part of the edit summary and comment input placeholder. In languages
-   * with declensions we may need to add the word "user" in the needed declension for the phrase to
-   * be formed correctly.
-   *
-   * @param {Comment} targetComment Comment that this comment replies to.
-   * @param {object} [options={}] Options.
-   * @param {boolean} [options.genitive=false] In genitive form.
-   * @param {boolean} [options.returnUnknown=true] Whether to return gender-neutral version while
-   *   the request is pending. For example, if the phrase is generated for a comment input
-   *   placeholder, we choose not to return anything to avoid drawing user's attention to the
-   *   changing of text.
-   * @param {Function} [options.callback=() => {}] Gender request callback.
-   * @returns {string}
-   * @private
-   */
-  formUserName(
-    targetComment,
-    { genitive = false, returnUnknown = true, callback = () => {} } = {}
-  ) {
-    let toUser;
-    if (targetComment.author.gender === null && cd.g.GENDER_AFFECTS_USER_STRING) {
-      if (targetComment.author.registered) {
-        this.#genderRequestCallbackList = this.#genderRequestCallbackList || [];
-        if (
-          callback &&
-          (!this.genderRequest || !this.#genderRequestCallbackList.includes(callback))
-        ) {
-          let errorCallback;
-          if (!this.genderRequest) {
-            this.genderRequest = getUserGenders([targetComment.author]);
-            errorCallback = (e) => {
-              console.warn(`Couldn't find out the gender of user ${targetComment.author.name}.`, e);
-            };
-          }
-          if (!this.#genderRequestCallbackList.includes(callback)) {
-            this.genderRequest.then(callback, errorCallback);
-            this.#genderRequestCallbackList.push(callback);
-          }
-        }
-        if (returnUnknown) {
-          toUser = genitive ? cd.s('user-unknown-genitive') : cd.s('user-unknown-dative');
-        }
-      } else {
-        toUser = genitive ? cd.s('user-unknown-genitive') : cd.s('user-unknown-dative');
-      }
-    } else if (targetComment.author.gender === 'male') {
-      toUser = genitive ? cd.s('user-male-genitive') : cd.s('user-male-dative');
-    } else if (targetComment.author.gender === 'female') {
-      toUser = genitive ? cd.s('user-female-genitive') : cd.s('user-female-dative');
-    } else {
-      toUser = genitive ? cd.s('user-unknown-genitive') : cd.s('user-unknown-dative');
-    }
-
-    return toUser === undefined ? '' : `${toUser} ${targetComment.author.name}`.trim();
-  }
-
-  /**
    * Update the automatic text for the edit summary.
    *
    * @param {boolean} [set=true] Whether to actually set the input value, or just save auto summary
@@ -3088,62 +3028,49 @@ export default class CommentForm {
         if (this.target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          const userName = this.formUserName(this.target, { callback });
+          this.target.requestAuthorGender(callback);
           return this.target.own ?
             cd.s('es-addition') :
-            cd.s('es-reply-to', userName).replace(/  +/g, ' ');
+            cd.s('es-reply-to', this.target.author.name, this.target.author);
         }
       }
 
       case 'edit': {
-        // The code for generating "edit" and "delete" descriptions is nearly equivalent, so we
-        // provide an umbrella function.
-        const editOrDeleteText = (action, topicGenitive, subsectionGenitive) => {
-          let object;
+        // The code for generating "edit" and "delete" descriptions is equivalent, so we provide an
+        // umbrella function.
+        const editOrDeleteText = (action) => {
+          let stringName;
           if (this.target.own) {
             if (this.target.parent) {
               if (this.target.parent.level === 0) {
-                object = cd.s('es-reply-genitive');
+                stringName = 'reply';
               } else {
-                const userName = this.formUserName(this.target.parent, { callback });
-                object = this.target.parent.own ?
-                  cd.s('es-addition') :
-                  cd.s('es-reply-by-genitive', userName);
+                this.target.parent.requestAuthorGender(callback);
+                stringName = this.target.parent.own ? 'addition' : 'reply-to';
               }
             } else {
               if (this.target.isOpeningSection) {
-                object = this.target.section.level <= 2 ?
-                  cd.s('es-topic-genitive') :
-                  cd.s('es-subsection-genitive');
+                stringName = this.target.section.level <= 2 ? 'topic' : 'subsection';
               } else {
-                object = cd.s('es-comment-genitive');
+                stringName = 'comment';
               }
             }
           } else {
             if (this.target.isOpeningSection) {
-              object = this.target.section.level <= 2 ? topicGenitive : subsectionGenitive;
+              stringName = this.target.section.level <= 2 ? 'topic' : 'subsection';
             } else {
-              const userName = this.formUserName(this.target, {
-                callback,
-                genitive: true,
-              });
-              object = cd.s('es-comment-by-genitive', userName);
+              this.target.requestAuthorGender(callback);
+              stringName = 'comment-by';
             }
           }
-          return cd.s('es-action-to', action, object);
+          return cd.s(`es-${action}-${stringName}`, this.target.author.name, this.target.author);
         };
 
-        return this.deleteCheckbox && this.deleteCheckbox.isSelected() ?
-          editOrDeleteText(
-            cd.s('es-delete'),
-            cd.s('es-topic-genitive'),
-            cd.s('es-subsection-genitive')
-          ) :
-          editOrDeleteText(
-            cd.s('es-edit'),
-            cd.s('es-topic-openingcomment-genitive'),
-            cd.s('es-subsection-openingcomment-genitive')
-          );
+        return editOrDeleteText(
+          this.deleteCheckbox && this.deleteCheckbox.isSelected() ?
+          'delete' :
+          'edit'
+        );
       }
 
       case 'replyInSection': {

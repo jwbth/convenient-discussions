@@ -81,6 +81,7 @@ export default class Comment extends CommentSkeleton {
   #cachedCommentText
   #cachedParent
   #cachedUnderlayContainer
+  #genderRequestCallbacks
 
   /**
    * Create a comment object.
@@ -1668,6 +1669,30 @@ export default class Comment extends CommentSkeleton {
       el = offsetParent;
     }
     return { top, left };
+  }
+
+  /**
+   * Request the gender of the comment's author and do something when it's received.
+   *
+   * @param {Function} callback
+   */
+  requestAuthorGender(callback) {
+    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.gender === null && this.author.registered) {
+      this.#genderRequestCallbacks = this.#genderRequestCallbacks || [];
+      if (!this.genderRequest || !this.#genderRequestCallbacks.includes(callback)) {
+        let errorCallback;
+        if (!this.genderRequest) {
+          this.genderRequest = getUserGenders([this.author]);
+          errorCallback = (e) => {
+            console.warn(`Couldn't get the gender of user ${this.author.name}.`, e);
+          };
+        }
+        if (!this.#genderRequestCallbacks.includes(callback)) {
+          this.genderRequest.then(callback, errorCallback);
+          this.#genderRequestCallbacks.push(callback);
+        }
+      }
+    }
   }
 
   /**
