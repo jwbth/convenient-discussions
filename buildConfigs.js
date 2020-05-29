@@ -42,7 +42,7 @@ configs.forEach((config) => {
  * update. The correct way to update this file is to download the repository and make changes to it,
  * run "node buildConfigs", and copy the contents of dist/${config.name} to this page, while making
  * a pull request to the repository. See the details at
- * https://www.mediawiki.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
+ * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
  */
 
 window.convenientDiscussions = {};
@@ -51,7 +51,7 @@ ${stringsRawCodes[config.lang]}
 
 convenientDiscussions.config = ${configContent}
 
-mw.loader.load('https://www.mediawiki.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript');
+mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript');
 `;
   fs.writeFileSync(`./dist/config/${config.name}`, data);
 });

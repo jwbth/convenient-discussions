@@ -248,7 +248,7 @@ function go() {
  * @private
  */
 function loadStrings(lang) {
-  mw.loader.getScript(`https://www.mediawiki.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions/strings-${lang}.js&action=raw&ctype=text/javascript`)
+  mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions/strings-${lang}.js&action=raw&ctype=text/javascript`)
     .then(
       () => {
         if (cd.strings) {

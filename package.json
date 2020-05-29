@@ -19,7 +19,7 @@
   "bugs": {
     "url": "https://phabricator.wikimedia.org/tag/convenient-discussions/"
   },
-  "homepage": "https://www.mediawiki.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions",
+  "homepage": "https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions",
   "dependencies": {
     "htmlparser2": "^4.1.0",
     "locutus": "^2.0.11",
