@@ -279,7 +279,7 @@ export default {
   /**
    * Regexps for strings that should be kept in the section endings when adding a reply or
    * subsection (so that this reply or subsection is added _before_ them, not after). Usually begin
-   * with `\n+`.
+   * with `\n+`. The default value will keep HTML comments in the section endings.
    *
    * @type {RegExp[]}
    * @default <pre class="prettyprint source"><code>[

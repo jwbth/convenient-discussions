@@ -1175,12 +1175,12 @@ export async function copyLink(object, chooseLink, finallyCallback) {
               text = cd.s('copylink-error-diffnotfound-network');
             } else {
               const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
-              text = cd.util.wrapInElement(cd.s('copylink-error-diffnotfound', url));
+              text = cd.s('copylink-error-diffnotfound', url);
             }
           } else {
             text = cd.s('copylink-error-diffnotfound-unknown');
           }
-          mw.notify(text, { type: 'error' });
+          mw.notify(cd.util.wrapInElement(text), { type: 'error' });
           object.linkBeingCopied = false;
           if (finallyCallback) {
             finallyCallback();

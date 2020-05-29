@@ -1688,7 +1688,7 @@ export default class Comment extends CommentSkeleton {
     // viewport.
     const isVisible = (comment) => {
       comment.getPositions();
-      return comment.positions;
+      return Boolean(comment.positions);
     };
     const findVisible = (direction, startIndex = 0) => {
       const comments = reorderArray(cd.comments, startIndex, direction === 'backward');
