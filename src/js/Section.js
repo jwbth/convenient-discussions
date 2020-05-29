@@ -290,7 +290,7 @@ export default class Section extends SectionSkeleton {
                 });
               }
 
-              const targetString = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
+              const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
 
               // We put it here to make it appear always after the "watch" item.
               this.addMenuItem({
@@ -298,7 +298,7 @@ export default class Section extends SectionSkeleton {
                 // We need the event object so we don't wrap the function into a container function.
                 func: this.copyLink.bind(this),
                 class: 'cd-sectionLink-copyLink',
-                tooltip: cd.s('sm-copylink-tooltip', cd.s(targetString)),
+                tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
                 href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
               });
             },

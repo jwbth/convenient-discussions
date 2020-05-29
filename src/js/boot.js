@@ -333,18 +333,16 @@ export async function init({ messagesRequest }) {
     classes: ['cd-button', 'cd-commentButton'],
   }).$element.get(0);
 
-  const defaultTypeProperty = (
-    `cm-copylink-tooltip-${cd.settings.defaultCommentLinkType.toLowerCase()}`
-  );
+  const stringName = `cm-copylink-tooltip-${cd.settings.defaultCommentLinkType.toLowerCase()}`;
   cd.g.COMMENT_ELEMENT_PROTOTYPES.linkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
-    title: cd.s('cm-copylink-tooltip', cd.s(defaultTypeProperty)),
+    title: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
     framed: false,
     classes: ['cd-button', 'cd-commentButton'],
   }).$element.get(0);
   cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingLinkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
-    title: cd.s('cm-copylink-tooltip', cd.s(defaultTypeProperty)),
+    title: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
     framed: false,
     disabled: true,
     classes: ['cd-button', 'cd-commentButton', 'cd-button-pending'],
