@@ -1,7 +1,7 @@
 # Convenient Discussions ![lic](https://img.shields.io/github/license/jwbth/convenient-discussions)
 <img align="right" width="200" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Convenient_Discussions_logo_color.svg/500px-Convenient_Discussions_logo_color.svg.png" />
 
-**Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing MediaWiki discussion system that allows the user to post and edit comments without switching to a separate page.
+**Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://mediawiki.org/) discussion system that allows the user to post and edit comments without switching to a separate page.
 
 ## Features
 The full set of the script features includes much more:
@@ -27,6 +27,7 @@ A limitation of the script is that it works only in modern browsers, i.e., doesn
 ## Overview
 Convenient Discussions is being developed by Jack who built the house since 2017, enriched by the contributions and feedback from the Russian Wikipedia tech community and users. It also borrows the code for parsing timestamps in different formats from Matma Rex and uses solutions and ideas from the Wikimedia engineering and design teams.
 
+## See also
 For documentation, see the script's homepage: https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions.
 
 Please file issues on Wikimedia Phabricator under [the tag "Convenient-Discussions"](https://phabricator.wikimedia.org/tag/convenient-discussions/).
