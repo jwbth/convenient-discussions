@@ -3031,7 +3031,7 @@ export default class CommentForm {
           this.target.requestAuthorGender(callback);
           return this.target.own ?
             cd.s('es-addition') :
-            cd.s('es-reply-to', this.target.author.name, this.target.author);
+            cd.s('es-reply-to', this.target.author.name, this.target.author).replace(/ {2,}/, ' ');
         }
       }
 
@@ -3063,7 +3063,8 @@ export default class CommentForm {
               subject = 'comment-by';
             }
           }
-          return cd.s(`es-${action}-${subject}`, this.target.author.name, this.target.author);
+          return cd.s(`es-${action}-${subject}`, this.target.author.name, this.target.author)
+            .replace(/ {2,}/, ' ');
         };
 
         return editOrDeleteText(
