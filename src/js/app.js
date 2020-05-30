@@ -43,7 +43,7 @@ function s(name, ...params) {
   if (!name) {
     return null;
   }
-  const fullName = `convenientdiscussions-${name}`;
+  const fullName = `convenient-discussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
     return mw.message(fullName, ...params).toString();
   } else {
@@ -59,7 +59,7 @@ function s(name, ...params) {
  */
 function go() {
   Object.keys(cd.strings).forEach((name) => {
-    mw.messages.set(`convenientdiscussions-${name}`, cd.strings[name]);
+    mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
   });
 
   cd.g.SETTINGS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-settings`;
