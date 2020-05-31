@@ -2626,10 +2626,10 @@ export default class CommentForm {
       {
         condition: this.headlineInput && this.headlineInput.getValue() === '',
         confirmation: async () => {
-          const headingPurpose = this.#headlineInputPurpose === cd.s('cf-headline-topic') ?
-            cd.s('cf-headline-topic-lowercase') :
-            cd.s('cf-headline-subsection-lowercase');
-          return await OO.ui.confirm(cd.s('cf-confirm-noheadline', headingPurpose));
+          const noHeadline = this.#headlineInputPurpose === cd.s('cf-headline-topic') ?
+            cd.s('cf-confirm-noheadline-topic') :
+            cd.s('cf-confirm-noheadline-subsection');
+          return await OO.ui.confirm(noHeadline + ' ' + cd.s('cf-confirm-noheadline-question'));
         },
       },
       {

@@ -20,7 +20,7 @@
   "section-addsubsection-to": "Add subsection to \"$1\"",
   "section-newcomments": "There are new comments in this section. Click to update the page.",
 
-  "cld-invitation": "Click while holding Shift to select a different type of link",
+  "cld-invitation": "Click while holding Shift to choose a different type of link",
   "cld-diff": "Diff link",
   "cld-diff-error": "Couldn't find",
   "cld-diff-error-network": "Couldn't find (network error)",
@@ -93,9 +93,7 @@
 
   "cf-headline": "Subject/headline",
   "cf-headline-topic": "Topic subject/headline",
-  "cf-headline-topic-lowercase": "the topic subject/headline",
   "cf-headline-subsection": "Subject/headline of subsection of \"$1\"",
-  "cf-headline-subsection-lowercase": "the section subject/headline",
   "cf-comment-placeholder-replytosection": "Reply to \"$1\"",
   "cf-comment-placeholder-replytocomment": "Reply to {{gender:$2|}} $1",
   "cf-comment-placeholder-addsection": "Comment text",
@@ -169,7 +167,9 @@
   "cf-error-titleblacklist": "Error: the page name is blacklisted. The page was not edited.",
   "cf-error-abusefilter": "Your edit was automatically rejected by abuse filter \"$1\".",
 
-  "cf-confirm-noheadline": "You didn't enter $1. Are you sure you want to post the comment?",
+  "cf-confirm-noheadline-topic": "You didn't enter the topic subject/headline.",
+  "cf-confirm-noheadline-subsection": "You didn't enter the section subject/headline.",
+  "cf-confirm-noheadline-question": "Are you sure you want to post the comment?",
   "cf-confirm-empty": "Are you sure you want to post an empty comment?",
   "cf-confirm-long": "This comment is longer than $1 characters. Are you sure you want to post it?",
   "cf-confirm-secondlevelheading": "The comment contains the code of the second level section. If you are moving the source code, it's better to use the standard edit source function, otherwise it could be altered unpredictably. Are you sure you want to post the comment?",
