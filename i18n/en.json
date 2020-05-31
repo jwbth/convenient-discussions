@@ -17,7 +17,6 @@
   "cm-reply": "Reply",
 
   "section-reply": "Reply",
-  "section-addsubsection": "Add subsection",
   "section-addsubsection-to": "Add subsection to \"$1\"",
   "section-newcomments": "There are new comments in this section. Click to update the page.",
 
@@ -45,7 +44,7 @@
   "thank-error-multipletimestamps": "Looks like <a href=\"$1\" target=\"_blank\">the edit</a> that added this comment has more than one comment in it. Please decide for yourself if you're gonna thank for it.",
   "thank-error-diffnotfound": "Couldn't find the edit that added this comment. You can look for it in the <a href=\"$1\" target=\"_blank\">revision history</a> for yourself.",
   "thank-error-network": "Couldn't send the thank you (network error).",
-  "thank-success": "Thank you notification has been sent.",
+  "thank-success": "\"Thank you\" notification has been sent.",
 
   "sm-editopeningcomment": "edit opening comment",
   "sm-editopeningcomment-tooltip": "Edit the comment opening the section",
@@ -65,7 +64,7 @@
   "section-unwatch-success": "The section \"$1\" has been removed from your watchlist.",
   "section-unwatch-stillwatched": "<strong>Note:</strong> you are still watching this section as it is included in the section \"$1\" that you watch.",
   "section-watch-pagenotwatched": "<strong>Note:</strong> you watch the section but not the page. In order for new comments to be highlighted on your watchlist page, you should add the page to the watchlist.",
-  "section-watch-error-load": "Couldn't load the settings from the server`.",
+  "section-watch-error-load": "Couldn't load the settings from the server.",
   "section-watch-error-save": "Couldn't save the settings to the server.",
   "section-watch-error-maxsize": "Couldn't update the settings: the size of the watched sections list exceeds the maximum size. <a class=\"cd-notification-editWatchedSections\">Edit the sections list</a> to fix this.",
 

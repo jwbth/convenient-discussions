@@ -385,7 +385,8 @@ export async function init({ messagesRequest }) {
   }).$element.get(0);
 
   cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
-    label: cd.s('section-addsubsection'),
+    // Will be replaced
+    label: '',
     framed: false,
     classes: ['cd-button', 'cd-sectionButton'],
   }).$element.get(0);
