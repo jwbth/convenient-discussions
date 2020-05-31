@@ -1,7 +1,7 @@
 # Convenient Discussions ![lic](https://img.shields.io/github/license/jwbth/convenient-discussions)
 <img align="right" width="200" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Convenient_Discussions_logo_color.svg/500px-Convenient_Discussions_logo_color.svg.png" />
 
-**Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://mediawiki.org/) discussion system that allows the user to post and edit comments without switching to a separate page.
+**Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://www.mediawiki.org/) discussion system that allows the user to post and edit comments without switching to a separate page.
 
 ## Features
 The full set of the script features includes much more:
