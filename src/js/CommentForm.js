@@ -867,9 +867,9 @@ export default class CommentForm {
     this.scriptSettingsButton = new OO.ui.ButtonWidget({
       framed: false,
       icon: 'settings',
-      label: cd.s('cf-settings-tooltip'),
+      label: cd.s('cf-scriptsettings-tooltip'),
       invisibleLabel: true,
-      title: cd.s('cf-settings-tooltip'),
+      title: cd.s('cf-scriptsettings-tooltip'),
       classes: ['cd-button', 'cd-scriptSettingsButton'],
       tabIndex: String(this.id) + '27',
     });
@@ -1650,10 +1650,10 @@ export default class CommentForm {
             message = cd.s('cf-error-numberedlist');
             break;
           case 'findPlace':
-            message = `${cd.s('cf-error-findplace')}.`;
+            message = cd.s('cf-error-findplace');
             break;
           case 'findPlace-unexpectedHeading':
-            message = `${cd.s('cf-error-findplace')} (${cd.s('cf-error-findplace-unexpectedheading')}).`;
+            message = cd.s('cf-error-findplace-unexpectedheading');
             break;
           case 'delete-repliesToComment':
             message = cd.s('cf-error-delete-repliestocomment');
