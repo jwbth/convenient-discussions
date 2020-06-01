@@ -218,7 +218,7 @@ function updateRefreshButton(newComments, areThereInteresting) {
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
-        tooltipText += `${author}, ${date}`;
+        tooltipText += author + mw.msg('comma-separator') + date;
       });
     });
   } else {

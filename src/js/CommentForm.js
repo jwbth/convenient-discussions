@@ -2728,7 +2728,7 @@ export default class CommentForm {
                 }
                 break;
               case 'editconflict':
-                message = cd.s('cf-error-editconflict');
+                message = cd.s('cf-notice-editconflict');
                 messageType = 'notice';
                 this.submit();
                 break;

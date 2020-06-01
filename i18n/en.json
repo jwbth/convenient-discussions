@@ -143,11 +143,13 @@
   "cf-block-preview": "Preview",
   "cf-block-viewchanges": "Changes",
   "cf-block-close": "Close",
-  "cf-message-nochanges": "No changes.",
 
   "cf-reaction-templateinheadline": "Don't use templates in headlines: this breaks section links.",
   "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the sugnature will be added automatically.",
   "cf-reaction-pre": "<code>&lt;pre&gt;</code> tags can break the layout—better use <code>&lt;syntaxhighlight&gt;</code>.",
+
+  "cf-notice-nochanges": "No changes.",
+  "cf-notice-editconflict": "Edit conflict. Trying again…",
 
   "cf-error-getpagecode": "Couldn't get the page code.",
   "cf-error-findplace": "Couldn't find the proper place in the code to insert the comment into.",
@@ -162,8 +164,7 @@
   "cf-error-blocked": "You are blocked from editing. The page was not edited.",
   "cf-error-pagedoesntexist": "The page doesn't exist.",
   "cf-error-pagedeleted": "The page was deleted.",
-  "cf-error-editconflict": "Edit conflict. Trying again…",
-  "cf-error-spamblacklist": "Error: address $1 is blacklisted. The page was not edited.",
+  "cf-error-spamblacklist": "Error: you are trying to add a URL with the domain name $1 that is blacklisted. The page was not edited.",
   "cf-error-titleblacklist": "Error: the page name is blacklisted. The page was not edited.",
   "cf-error-abusefilter": "Your edit was automatically rejected by abuse filter \"$1\".",
 
