@@ -266,7 +266,7 @@
   "sd-notificationsblacklist": "Don't notify about comments of these users",
   "sd-notificationsblacklist-multiselect-placeholder": "Add a user",
   "sd-mysignature": "Signature code",
-  "sd-mysignature-help": "Must contain <code>$1</code>. Usually used to add characters before the signature. The signature itself should be edited in the <a href=\"https://en.wikipedia.org/wiki/Special:Preferences#mw-prefsection-personal\" target=\"_blank\">site settings</a>.",
+  "sd-mysignature-help": "Must contain <code>$1</code>. Usually used to add characters before the signature. The signature itself should be edited in the <a href=\"../Special:Preferences#mw-prefsection-personal\" target=\"_blank\">site settings</a>.",
   "sd-showtoolbar": "Show the edit toolbar",
   "sd-defaultcommentlinktype": "Default link type to copy when clicking \"{{int:convenient-discussions-cm-copylink}}\" in a comment menu",
   "sd-defaultcommentlinktype-radio-diff": "Diff link",
