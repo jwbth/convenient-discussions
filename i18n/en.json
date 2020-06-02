@@ -209,7 +209,6 @@
   "navpanel-newcomments-insection": "Section \"$1\":",
   "navpanel-newcomments-outsideofsections": "Outside of sections",
   "navpanel-newcomments-toyou": "(to you)",
-  "navpanel-newcomments-unknownauthor": "Unknown author",
   "navpanel-newcomments-unknowndate": "unknown date",
 
   "notification-toyou": "$1 {{gender:$2|replied}} to your comment$3.",

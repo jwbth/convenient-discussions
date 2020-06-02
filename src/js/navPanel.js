@@ -214,11 +214,10 @@ function updateRefreshButton(newComments, areThereInteresting) {
         if (comment.toMe) {
           tooltipText += `${cd.s('navpanel-newcomments-toyou')} `;
         }
-        const author = comment.author.name || cd.s('navpanel-newcomments-unknownauthor');
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
-        tooltipText += author + mw.msg('comma-separator') + date;
+        tooltipText += comment.author.name + mw.msg('comma-separator') + date;
       });
     });
   } else {
