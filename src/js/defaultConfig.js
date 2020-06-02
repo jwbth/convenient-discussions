@@ -6,8 +6,8 @@ import cd from './cd';
 
 export default {
   /**
-   * Object with names and texts of messages as keys and values. Used to avoid making an additional
-   * request. Get these messages by running
+   * Object with the names and texts of the messages required by the script as keys and values. Used to
+   * avoid making additional requests. Get these messages by running
    * ```
    * new mw.Api().loadMessages(messageNames, { amlang: mw.config.get('wgContentLanguage') });
    * ```
@@ -19,7 +19,7 @@ export default {
    *   amfilter: 'timezone-',
    * });
    * ```
-   * (only timezone abbreviatures are needed).
+   * (only timezone abbreviations are needed).
    *
    * @type {object}
    * @default {}
@@ -168,9 +168,9 @@ export default {
    * Script help wikilink. Used in the watchlist and, if there is no tag, in summary.
    *
    * @type {string}
-   * @default 'mw:User:JWBTH/CD'
+   * @default 'commons:User:JWBTH/CD'
    */
-  helpWikilink: 'mw:User:JWBTH/CD',
+  helpWikilink: 'commons:User:JWBTH/CD',
 
   /**
    * Names of the templates that are analogs of {@link
