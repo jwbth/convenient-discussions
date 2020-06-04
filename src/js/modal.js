@@ -240,10 +240,10 @@ export async function settingsDialog() {
         settings.defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
         settings.highlightOwnComments = this.highlightOwnCommentsCheckbox.isSelected();
         settings.insertButtons = this.processInsertButtons();
-        settings.mySignature = this.mySignatureInput.getValue();
         settings.notifications = getSelectedItemData(this.notificationsSelect);
         settings.notificationsBlacklist = this.notificationsBlacklistMultiselect.getValue();
         settings.showToolbar = this.showToolbarCheckbox.isSelected();
+        settings.signaturePrefix = this.signaturePrefixInput.getValue();
         settings.watchSectionOnReply = this.watchSectionOnReplyCheckbox.isSelected();
 
         settings.insertButtonsChanged = (
@@ -401,19 +401,6 @@ export async function settingsDialog() {
       })
     );
 
-    this.mySignatureInput = new OO.ui.TextInputWidget({
-      value: settings.mySignature,
-      maxlength: 100,
-      // eslint-disable-next-line
-      validate: /~~\~~/,
-    });
-    this.mySignatureField = new OO.ui.FieldLayout(this.mySignatureInput, {
-      label: cd.s('sd-mysignature'),
-      align: 'top',
-      help: cd.util.wrapInElement(cd.s('sd-mysignature-help', cd.g.SIGN_CODE)),
-      helpInline: true,
-    });
-
     [
       this.notificationsField,
       this.notificationsSelect,
@@ -458,6 +445,17 @@ export async function settingsDialog() {
       label: cd.s('sd-showtoolbar'),
     });
 
+    this.signaturePrefixInput = new OO.ui.TextInputWidget({
+      value: settings.signaturePrefix,
+      maxlength: 100,
+    });
+    this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
+      label: cd.s('sd-signatureprefix'),
+      align: 'top',
+      help: cd.util.wrapInElement(cd.s('sd-signatureprefix-help')),
+      helpInline: true,
+    });
+
     [this.watchSectionOnReplyField, this.watchSectionOnReplyCheckbox] = checkboxField({
       value: 'watchSectionOnReply',
       selected: settings.watchSectionOnReply,
@@ -475,10 +473,10 @@ export async function settingsDialog() {
     this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
     this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
     this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.mySignatureInput.connect(this, { change: 'updateActionsAvailability' });
     this.notificationsSelect.connect(this, { select: 'updateActionsAvailability' });
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateActionsAvailability' });
     this.showToolbarCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.signaturePrefixInput.connect(this, { change: 'updateActionsAvailability' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
 
     this.removeDataButton = new OO.ui.ButtonInputWidget({
@@ -533,7 +531,7 @@ export async function settingsDialog() {
         dialog.showToolbarField.$element,
         dialog.alwaysExpandSettingsField.$element,
         dialog.insertButtonsField.$element,
-        dialog.mySignatureField.$element,
+        dialog.signaturePrefixField.$element,
       );
     }
     OO.inheritClass(CommentFormPageLayout, OO.ui.PageLayout);
@@ -628,15 +626,15 @@ export async function settingsDialog() {
       defaultCommentLinkType !== this.settings.defaultCommentLinkType ||
       defaultSectionLinkType !== this.settings.defaultSectionLinkType ||
       this.highlightOwnCommentsCheckbox.isSelected() !== this.settings.highlightOwnComments ||
-      this.mySignatureInput.getValue() !== this.settings.mySignature ||
       notifications !== this.settings.notifications ||
       notificationsBlacklistJson !== JSON.stringify(this.settings.notificationsBlacklist) ||
       this.showToolbarCheckbox.isSelected() !== this.settings.showToolbar ||
+      this.signaturePrefixInput.getValue() !== this.settings.signaturePrefix ||
       this.watchSectionOnReplyCheckbox.isSelected() !== this.settings.watchSectionOnReply
     );
     save = save && this.insertButtonsMultiselect.isValid();
     try {
-      await this.mySignatureInput.getValidity();
+      await this.signaturePrefixInput.getValidity();
     } catch (e) {
       save = false;
     }
@@ -653,10 +651,10 @@ export async function settingsDialog() {
       defaultSectionLinkType !== cd.defaultSettings.defaultSectionLinkType ||
       this.highlightOwnCommentsCheckbox.isSelected() !== cd.defaultSettings.highlightOwnComments ||
       insertButtonsJson !== JSON.stringify(cd.defaultSettings.insertButtons) ||
-      this.mySignatureInput.getValue() !== cd.defaultSettings.mySignature ||
       notifications !== cd.defaultSettings.notifications ||
       notificationsBlacklistJson !== JSON.stringify(cd.defaultSettings.notificationsBlacklist) ||
       this.showToolbarCheckbox.isSelected() !== cd.defaultSettings.showToolbar ||
+      this.signaturePrefixInput.getValue() !== cd.defaultSettings.signaturePrefix ||
       this.watchSectionOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchSectionOnReply
     );
 

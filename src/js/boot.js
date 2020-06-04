@@ -59,7 +59,7 @@ export function initSettings() {
     // default configuration change.
     insertButtonsChanged: false,
     insertButtons: cd.config.defaultInsertButtons || [],
-    mySignature: cd.g.SIGN_CODE,
+    signaturePrefix: '',
     notifications: 'all',
     notificationsBlacklist: [],
     // Not shown in the settings dialog
@@ -69,7 +69,9 @@ export function initSettings() {
   };
 
   const aliases = {
+    allowEditOthersMsgs: ['allowEditOthersComments'],
     desktopNotifications: ['browserNotifications'],
+    signaturePrefix: ['mySignature', 'mySig'],
   };
 
   let nativeSettings;
@@ -98,6 +100,11 @@ export function initSettings() {
         }
       });
   });
+
+  // Seamless transition from mySignature.
+  if (cd.settings.signaturePrefix) {
+    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~~~/, '')
+  }
 
   if (
     !cd.settings.insertButtonsChanged &&
