@@ -242,7 +242,10 @@ export default {
       commentForm.headlineInput.getValue().trim() === 'Итог' &&
       !/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
     ) {
-      code += '\n' + (cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}'));
+      code = code.replace(
+        /(\n\n)$/,
+        (newlines) => '\n' + cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}') + newlines
+      );
     }
 
     return code;
