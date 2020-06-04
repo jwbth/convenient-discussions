@@ -1961,10 +1961,9 @@ export default class CommentForm {
           (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChar ? '' : ' ')
         );
         const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
-        // FIXME: replace the "|" character outside of links/templates, otherwise the template
-        // breaks.
+        const adjustedCode = code.replace(/\|/g, '{{!}}');
         code = (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) ?
-          `{{${cd.config.blockSmallTemplate}|1=${code}}}` :
+          `{{${cd.config.blockSmallTemplate}|1=${adjustedCode}}}` :
           `<small>${before}${code}</small>`;
       }
     }
