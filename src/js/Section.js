@@ -672,7 +672,7 @@ export default class Section extends SectionSkeleton {
       );
       let editTargetPageData;
       try {
-        editTargetPageData = await cd.g.api.postWithEditToken({
+        editTargetPageData = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
           action: 'edit',
           title: targetPage.title.toString(),
           text: targetPageNewCode,
@@ -684,7 +684,7 @@ export default class Section extends SectionSkeleton {
           baserevid: targetPage.revisionId,
           starttimestamp: targetPage.queryTimestamp,
           formatversion: 2,
-        }).catch(handleApiReject);
+        })).catch(handleApiReject);
       } catch (e) {
         throw [cd.s('msd-error-editingtargetpage'), true];
       }
@@ -730,7 +730,7 @@ export default class Section extends SectionSkeleton {
         cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
       );
       try {
-        await cd.g.api.postWithEditToken({
+        await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
           action: 'edit',
           title: section.sourcePage,
           text: newSourcePageCode,
@@ -742,7 +742,7 @@ export default class Section extends SectionSkeleton {
           baserevid: sourcePage.revisionId,
           starttimestamp: sourcePage.queryTimestamp,
           formatversion: 2,
-        }).catch(handleApiReject);
+        })).catch(handleApiReject);
       } catch (e) {
         throw [cd.s('msd-error-editingsourcepage'), false];
       }

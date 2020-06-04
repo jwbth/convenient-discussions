@@ -68,6 +68,7 @@ export function initSettings() {
     watchSectionOnReply: true,
   };
 
+  // Aliases for seamless transition when changing a setting name.
   const aliases = {
     allowEditOthersMsgs: ['allowEditOthersComments'],
     desktopNotifications: ['browserNotifications'],

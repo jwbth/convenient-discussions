@@ -2680,7 +2680,7 @@ export default class CommentForm {
   async tryEditPage(page, newPageCode, currentOperation) {
     let resp;
     try {
-      resp = await cd.g.api.postWithEditToken({
+      resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
         action: 'edit',
         title: this.targetPage,
         text: newPageCode,
@@ -2691,7 +2691,7 @@ export default class CommentForm {
         minor: this.minorCheckbox && this.minorCheckbox.isSelected(),
         watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
         formatversion: 2,
-      }).catch(handleApiReject);
+      })).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, apiData } = e.data;

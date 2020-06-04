@@ -357,11 +357,11 @@ export async function setOption(name, value) {
     });
   }
 
-  const resp = await cd.g.api.postWithEditToken({
+  const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
     action: 'options',
     optionname: name,
     optionvalue: value,
-  }).catch(handleApiReject);
+  })).catch(handleApiReject);
 
   if (!resp || resp.options !== 'success') {
     throw new CdError({

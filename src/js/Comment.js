@@ -916,11 +916,11 @@ export default class Comment extends CommentSkeleton {
     const $text = $('<div>').append($question, cd.util.wrapDiffBody(edit.diffBody));
     if (await OO.ui.confirm($text, { size: 'larger' })) {
       try {
-        await cd.g.api.postWithEditToken({
+        await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
           action: 'thank',
           rev: edit.revid,
           source: cd.config.scriptCodeName,
-        }).catch(handleApiReject);
+        })).catch(handleApiReject);
       } catch (e) {
         thankFail(e);
         return;

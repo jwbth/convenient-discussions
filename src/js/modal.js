@@ -677,10 +677,10 @@ export async function settingsDialog() {
       try {
         this.pushPending();
 
-        const resp = await cd.g.api.postWithEditToken({
+        const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
           action: 'options',
           change: `${cd.g.SETTINGS_OPTION_FULL_NAME}|${cd.g.VISITS_OPTION_FULL_NAME}|${cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME}`,
-        }).catch(handleApiReject);
+        })).catch(handleApiReject);
 
         if (!resp || resp.options !== 'success') {
           throw new CdError({
