@@ -1166,17 +1166,17 @@ export async function copyLink(object, chooseLink, finallyCallback) {
         try {
           link = await object.getDiffLink(object);
         } catch (e) {
-          let text;
+          let text = cd.s('error-diffnotfound');
           if (e instanceof CdError) {
             const { type } = e.data;
             if (type === 'network') {
-              text = cd.s('copylink-error-diffnotfound-network');
+              text += ' ' + cd.s('error-network');
             } else {
               const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
-              text = cd.s('copylink-error-diffnotfound', url);
+              text += ' ' + cd.s('error-diffnotfound-history', url);
             }
           } else {
-            text = cd.s('copylink-error-diffnotfound-unknown');
+            text += ' ' + cd.s('error-unknown');
           }
           mw.notify(cd.util.wrapInElement(text), { type: 'error' });
           object.linkBeingCopied = false;

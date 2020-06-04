@@ -872,7 +872,7 @@ export default class Comment extends CommentSkeleton {
             return;
           } else {
             const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
-            text = cd.s('thank-error-diffnotfound', url);
+            text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
           }
           break;
         }
@@ -881,7 +881,7 @@ export default class Comment extends CommentSkeleton {
         default: {
           if (code === 'noData') {
             const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
-            text = cd.s('thank-error-diffnotfound', url);
+            text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
           } else {
             text = cd.s('thank-error');
             console.warn(e);
@@ -890,7 +890,7 @@ export default class Comment extends CommentSkeleton {
         }
 
         case 'network': {
-          text = cd.s('thank-error-network');
+          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-network', url);
           break;
         }
       }

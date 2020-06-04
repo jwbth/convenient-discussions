@@ -1587,7 +1587,7 @@ export default class CommentForm {
   async unknownApiErrorText(errorCode, errorInfo) {
     let text;
     if (errorCode) {
-      text = `${cd.s('error-api')}: ${errorCode}. `;
+      text = cd.s('error-api', errorCode) + ' ';
       if (errorInfo) {
         try {
           const { html } = await parseCode(errorInfo);
@@ -2567,7 +2567,7 @@ export default class CommentForm {
     } else {
       this.$previewArea.empty();
       if (html !== undefined) {
-        this.showMessage(cd.s('cf-message-nochanges'));
+        this.showMessage(cd.s('cf-notice-nochanges'));
       }
     }
     this.$previewArea.cdScrollIntoView(

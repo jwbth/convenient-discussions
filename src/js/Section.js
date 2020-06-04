@@ -556,7 +556,7 @@ export default class Section extends SectionSkeleton {
             if (code === 'missing') {
               throw [cd.s('msd-error-sourcepagedeleted'), true];
             } else {
-              throw [`${cd.s('error-api')}: ${code}.`, true];
+              throw [cd.s('error-api', code), true];
             }
           } else if (type === 'network') {
             throw [cd.s('error-network'), true];
@@ -607,7 +607,7 @@ export default class Section extends SectionSkeleton {
               // Must be filtered before submit.
               throw [cd.s('msd-error-invalidpagename'), false];
             } else {
-              throw [`${cd.s('error-api')}: ${code}.`, true];
+              throw [cd.s('error-api', code), true];
             }
           } else if (type === 'network') {
             throw [cd.s('error-network'), true];
@@ -908,7 +908,6 @@ export default class Section extends SectionSkeleton {
           const targetPageTitle = this.titleInput.getMWTitle();
           // Should be ruled out by making the button disabled.
           if (
-            !targetPageTitle ||
             targetPageTitle.toText() === section.sourcePage ||
             !isTalkNamespace(targetPageTitle.namespace)
           ) {
@@ -930,7 +929,9 @@ export default class Section extends SectionSkeleton {
             return;
           }
 
-          this.reloadPanel.$element.html(cd.s('msd-moved', targetPage.sectionUrl));
+          this.reloadPanel.$element.html(
+            cd.util.wrapInElement(cd.s('msd-moved', targetPage.sectionUrl), 'div')
+          );
 
           this.stackLayout.setItem(this.reloadPanel);
           this.actions.setMode('reload');
