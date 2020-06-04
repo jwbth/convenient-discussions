@@ -80,29 +80,23 @@ export function initSettings() {
   }
 
   Object.keys(cd.defaultSettings).forEach((name) => {
-    // Settings in variables like "cdAlowEditOthersComments"
-    const settingName = 'cd' + firstCharToUpperCase(name);
-    if (settingName in window) {
-      cd.settings[name] = window[settingName];
-    }
+    (aliases[name] || [])
+      .concat(name)
+      .forEach((alias) => {
+        // Settings in variables like "cdAlowEditOthersComments"
+        const varAlias = 'cd' + firstCharToUpperCase(alias);
+        if (varAlias in window && typeof varAlias === typeof cd.defaultSettings[name]) {
+          cd.settings[name] = nativeSettings[alias];
+        }
 
-    // Native settings rewrite those set via personal JS.
-    if (
-      nativeSettings[name] !== undefined &&
-      typeof nativeSettings[name] === typeof cd.defaultSettings[name]
-    ) {
-      cd.settings[name] = nativeSettings[name];
-    }
-
-    // Seamless transition when changing a setting name.
-    (aliases[name] || []).forEach((alias) => {
-      if (
-        nativeSettings[alias] !== undefined &&
-        typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
-      ) {
-        cd.settings[name] = nativeSettings[alias];
-      }
-    });
+        // Native settings rewrite those set via personal JS.
+        if (
+          nativeSettings[alias] !== undefined &&
+          typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
+        ) {
+          cd.settings[name] = nativeSettings[alias];
+        }
+      });
   });
 
   if (
