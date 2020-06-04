@@ -25,7 +25,8 @@ import {
  * @returns {string}
  */
 export function hideHtmlComments(code) {
-  return code.replace(/(<!--)([^]*?)(-->)/g, (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3);
+  return code
+    .replace(/<!--([^]*?)-->/g, (s, content) => '<!--' + ' '.repeat(content.length) + '-->');
 }
 
 /**
@@ -125,7 +126,9 @@ export function encodeWikilink(link) {
 export function extractSignatures(code, generateCommentAnchors) {
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = hideHtmlComments(code)
-    .replace(cd.g.QUOTE_REGEXP, (s, m1, m2, m3) => m1 + ' '.repeat(m2.length) + m3)
+    .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
+      beginning + ' '.repeat(content.length) + ending
+    ))
     .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
 
   const timestampRegexp = new RegExp(

@@ -1106,13 +1106,14 @@ export default class Comment extends CommentSkeleton {
         s.replace(/<br[ \n]*\/?>\n? */gi, () => '\n')
       ))
       // Remove indentation characters
-      .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, m1, m2) => {
+      .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
+        const newChars = chars.slice(indentationChars.length);
         return (
           '\n' +
           (
-            m1.length >= indentationChars.length ?
-            m1.slice(indentationChars.length) + (m1.length > indentationChars.length ? m2 : '') :
-            m1 + m2
+            chars.length >= indentationChars.length ?
+            newChars + (chars.length > indentationChars.length ? spacing : '') :
+            chars + spacing
           )
         );
       });
@@ -1394,9 +1395,9 @@ export default class Comment extends CommentSkeleton {
     // Comments at the zero level sometimes start with ":" that is used to indent some side note. It
     // shouldn't be considered an indentation character.
     if (this.level > 0) {
-      const replaceIndentationChars = (s, m1, m2) => {
-        indentationChars = m2;
-        lineStartIndex += m1.length;
+      const replaceIndentationChars = (s, before, chars) => {
+        indentationChars = chars;
+        lineStartIndex += before.length;
         commentStartIndex += s.length;
         return '';
       };
