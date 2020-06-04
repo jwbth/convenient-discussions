@@ -1900,16 +1900,17 @@ export default class CommentForm {
 
     // Add the ping template
     if (this.pingCheckbox && this.pingCheckbox.isSelected()) {
+      const name = this.targetComment.author.name.includes('=') ?
+        '1=' + this.targetComment.author.name :
+        this.targetComment.author.name;
+      const param = code ? '' : '|p=.';
       let separator;
       if (/^[:*#]/.test(code)) {
         separator = '\n' + (isZeroLevel ? '' : newLineIndentationChars);
       } else {
         separator = ' ';
       }
-      code = (
-        '{{' + cd.config.pingTemplate + '|' + this.targetComment.author.name +
-        (code ? '' : '|p=.') + '}}' + separator + code
-      );
+      code = `{{${cd.config.pingTemplate}|${name}${param}}}${separator}${code}`;
     }
 
     // If there are numbered lists in the comment, replace all asterisks in the indentation chars
