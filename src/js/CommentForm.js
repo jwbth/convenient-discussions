@@ -575,10 +575,6 @@ export default class CommentForm {
             )
           );
         });
-      } else if (this.mode === 'addSection') {
-        commentInputPlaceholder = cd.s('cf-comment-placeholder-addsection');
-      } else if (this.mode === 'addSubsection') {
-        commentInputPlaceholder = cd.s('cf-comment-placeholder-addsubsection');
       }
     }
 

@@ -91,8 +91,6 @@
   "cf-headline-subsection": "Subject/headline of subsection of \"$1\"",
   "cf-comment-placeholder-replytosection": "Reply to \"$1\"",
   "cf-comment-placeholder-replytocomment": "Reply to {{gender:$2|}} $1",
-  "cf-comment-placeholder-addsection": "Comment text",
-  "cf-comment-placeholder-addsubsection": "Comment text",
   "cf-summary-placeholder": "Edit summary",
   "cf-summary-preview": "Edit summary preview",
 
