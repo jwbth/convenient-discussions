@@ -22,7 +22,8 @@ import { getWatchedSections } from './options';
 import { initSettings } from './boot';
 import { initTimestampParsingTools, loadMessages } from './dateFormat';
 
-let colonMoved;
+let moveFromBeginning;
+let moveToBeginning;
 let goToCommentToYou;
 let goToCommentWatchedSection;
 let currentUserRegexp;
@@ -74,9 +75,8 @@ async function prepare({ messagesRequest }) {
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
-  // Would work only if cd.s('es-move') is in the beginning of cd.s('es-move-from') and
-  // cd.s('es-move-to'), but other use cases could have many false positives.
-  colonMoved = `:  ${cd.s('es-move')}`;
+  [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
+  [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
   goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-toyou'))}`;
   goToCommentWatchedSection = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-watchedsection'))}`;
@@ -247,6 +247,33 @@ function extractAuthor(line) {
 }
 
 /**
+ * Check by an edit summary if an edit is probably a move performed by our script.
+ *
+ * @param {string} summary
+ * @returns {boolean}
+ * @private
+ */
+function isMoved(summary) {
+  // Would work only if cd.s('es-move') is in the beginning of cd.s('es-move-from') and
+  // cd.s('es-move-to'), but other use cases could have many false positives.
+  return (
+    (moveFromBeginning && summary.includes(`: ${moveFromBeginning}`)) ||
+    (moveToBeginning && summary.includes(`: ${moveToBeginning}`))
+  );
+}
+
+/**
+ * Check by an edit summary if an edit is probably an archiving operation.
+ *
+ * @param {string} summary
+ * @returns {boolean}
+ * @private
+ */
+function isArchiving(summary) {
+  return summary.includes('Archiving');
+}
+
+/**
  * Add comment links to a watchlist or a recent changes page. Add a watchlist menu to the watchlist.
  *
  * @param {JQuery} $content
@@ -300,9 +327,7 @@ function processWatchlist($content) {
 
     const summaryElement = line.querySelector('.comment');
     const summary = summaryElement && summaryElement.textContent;
-    if (summary && (isCommentEdit(summary) || isUndo(summary) || summary.includes(colonMoved))) {
-      return;
-    }
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) {
@@ -401,9 +426,7 @@ function processContributions($content) {
 
     const summaryElement = line.querySelector('.comment');
     const summary = summaryElement && summaryElement.textContent;
-    if (summary && (isCommentEdit(summary) || isUndo(summary) || summary.includes(colonMoved))) {
-      return;
-    }
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) return;
@@ -462,9 +485,7 @@ function processHistory($content) {
 
     const summaryElement = line.querySelector('.comment');
     const summary = summaryElement && summaryElement.textContent;
-    if (summary && (isCommentEdit(summary) || isUndo(summary) || summary.includes(colonMoved))) {
-      return;
-    }
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) return;
@@ -548,12 +569,7 @@ async function processDiff() {
     if (
       summary &&
       // Here, archivation can't be captured by looking at bytes added.
-      (
-        isCommentEdit(summary) ||
-        isUndo(summary) ||
-        summary.includes(colonMoved) ||
-        summary.includes('Archiving')
-      )
+      (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
     ) {
       return;
     }

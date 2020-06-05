@@ -82,7 +82,6 @@
   "es-delete-comment-by": "delete the comment by {{gender:$2|}} $1",
   "es-new-topic": "new topic",
   "es-new-subsection": "new subsection",
-  "es-move": "move",
   "es-move-from": "move from [[$1]]",
   "es-move-to": "move to [[$1]]",
 
