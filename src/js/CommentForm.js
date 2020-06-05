@@ -1800,11 +1800,9 @@ export default class CommentForm {
         return m1;
       });
     }
-    // Remove ending spaces from empty lines except when they are a part of the syntax creating
-    // <pre>.
-    code = code.replace(/^ +[\s\uFEFF\xA0]+[^\s\uFEFF\xA0]/gm, (s) => (
-      / [^\s\uFEFF\xA0]$/.test(s) ? s : s.replace(/^ +/gm, '')
-    ));
+    // Remove spaces from empty lines except when they are a part of the syntax creating <pre>.
+    code = code
+      .replace(/^(?:[ \t\xA0\uFEFF]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\uFEFF\xA0]+/gm, ''));
 
     let signature;
     if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
@@ -1849,13 +1847,13 @@ export default class CommentForm {
     }
 
     if (this.willCommentBeIndented) {
-      // Remove spaces in the beginning of the lines if the comment is indented.
+      // Remove spaces in the beginning of lines if the comment is indented.
       code = code.replace(/^ +/gm, '');
 
       const replacement = cd.config.paragraphTemplates.length ?
         `$1{{${cd.config.paragraphTemplates[0]}}}` :
         '$1<br><br>';
-      code = code.replace(/^((?![:*#= ]).+)\n\n(?![:*#=])/gm, replacement);
+      code = code.replace(/^((?![:*#= ]).*)\n\n(?![:*#=])/gm, replacement);
     }
 
     // Process newlines by adding or not adding <br> and keeping or not keeping the newline. (\x03
