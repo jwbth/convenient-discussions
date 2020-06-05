@@ -594,7 +594,7 @@ export default {
    * @returns {string}
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
-    return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp);
+    return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
   },
 
   /**
@@ -608,6 +608,6 @@ export default {
    * @returns {string}
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return cd.s('move-targetpagecode', targetPageWikilink, signature);
+    return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
   },
 };
