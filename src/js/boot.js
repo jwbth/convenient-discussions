@@ -6,14 +6,13 @@
 
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentForm, { lastFocused } from './CommentForm';
+import CommentForm from './CommentForm';
 import Section from './Section';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel, { updatePageTitle } from './navPanel';
 import processPage from './processPage';
 import {
-  animateLink,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
   transparentize,
@@ -590,13 +589,8 @@ function cleanUpSessions(data) {
 /**
  * Save comment form data to the local storage. (Session storage doesn't allow to restore when the
  * browser has crashed.)
- *
- * @param {boolean} [warnedLeave] A value set to true when the user is closing (unloading) the page
- *   and is warned that the changes may not be saved. It is also set when the user wasn't warned but
- *   there is no altered forms on the page or the user has switched off warnings in the site
- *   preferences.
  */
-export function saveSession(warnedLeave) {
+export function saveSession() {
   const forms = cd.commentForms.map((commentForm) => {
     let targetData;
     const target = commentForm.target;
@@ -638,7 +632,6 @@ export function saveSession(warnedLeave) {
     {
       forms,
       saveUnixTime: Date.now(),
-      warnedLeave,
     } :
     {};
 
@@ -708,11 +701,6 @@ function restoreCommentFormsFromData(commentFormsData) {
     }
   });
   if (restored.length) {
-    restored
-      .slice()
-      .sort(lastFocused)[0]
-        .commentInput
-        .focus();
     saveSession();
   }
   if (rescue.length) {
@@ -742,24 +730,8 @@ export function restoreCommentForms() {
       );
       const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || {};
       if (commentFormsData.forms) {
-        // If the user was warned about leaving the page (or there was no altered forms, or they
-        // have switched off such warnings), don't restore immediately and show a notification
-        // instead containing a link to restore.
-        if (commentFormsData.warnedLeave) {
-          const $text = animateLink(
-            cd.s('restore-suggestion-text'),
-            'cd-notification-restoreCommentForms',
-            async () => {
-              if (cd.util.isPageOverlayOn()) return;
-              notification.close();
-              restoreCommentFormsFromData(commentFormsData);
-            }
-          );
-          const notification = mw.notification.notify($text, { autoHide: false });
-        } else {
-          restoreCommentFormsFromData(commentFormsData);
-          mw.notify(cd.s('restore-restored-text'), { title: cd.s('restore-restored-title') });
-        }
+        restoreCommentFormsFromData(commentFormsData);
+        mw.notify(cd.s('restore-restored-text'), { title: cd.s('restore-restored-title') });
       }
     }
   } else {

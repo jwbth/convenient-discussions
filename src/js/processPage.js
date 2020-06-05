@@ -606,7 +606,7 @@ export default async function processPage(keptData = {}) {
     $(document).on('mousemove mouseover', highlightFocused);
     $(window).on('resize orientationchange', windowResizeHandler);
     addPreventUnloadCondition('commentForms', () => {
-      saveSession(true);
+      saveSession();
       return (
         mw.user.options.get('useeditwarning') &&
         (
