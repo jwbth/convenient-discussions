@@ -140,7 +140,7 @@
   "cf-block-close": "Close",
 
   "cf-reaction-templateinheadline": "Don't use templates in headlines: this breaks section links.",
-  "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the sugnature will be added automatically.",
+  "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the signature will be added automatically.",
   "cf-reaction-pre": "<code>&lt;pre&gt;</code> tags can break the layout—better use <code>&lt;syntaxhighlight&gt;</code>.",
 
   "cf-notice-nochanges": "No changes.",
