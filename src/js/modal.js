@@ -1218,9 +1218,9 @@ export function rescueCommentFormsContent(content) {
   const text = content
     .map((data) => {
       let text = data.headline !== undefined ?
-        `${cd.s('cf-headline')}: ${data.headline}\n\n` :
+        `${cd.s('rd-headline')}: ${data.headline}\n\n` :
         '';
-      text += `${data.comment}\n\n${cd.s('cf-summary-placeholder')}: ${data.summary}`;
+      text += `${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`;
       return text;
     })
     .join('\n\n----\n');
