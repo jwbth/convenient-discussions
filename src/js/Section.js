@@ -754,11 +754,13 @@ export default class Section extends SectionSkeleton {
         reloadPage();
       });
       this.showErrors(new OO.ui.Error($body, { recoverable }));
-      if (!recoverable) {
-        this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
+      this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
+        if (recoverable) {
+          cd.g.windowManager.updateWindowSize(this);
+        } else {
           this.close();
-        });
-      }
+        }
+      });
       this.actions.setAbilities({
         close: true,
         move: recoverable,
