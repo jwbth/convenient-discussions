@@ -105,11 +105,9 @@ function parse() {
     }
   });
 
-  cd.comments.forEach((comment) => {
-    // We need to determine which comments are replies to our comments. It would be too time-costly
-    // to get a parent comment for every comment, so we go the opposite way: take our comments and
-    // identify replies to them.
-    if (comment.own && cd.comments[comment.id + 1]) {
+  cd.comments.forEach((comment, i) => {
+    // Determine which comments reply to which.
+    if (i !== cd.comments.length - 1) {
       if (cd.g.specialElements.pageHasOutdents) {
         const treeWalker = new ElementsTreeWalker(comment.elements[comment.elements.length - 1]);
         let found;
@@ -121,11 +119,11 @@ function parse() {
           found = treeWalker.currentNode.classList.contains('outdent-template');
         }
         if (found) {
-          cd.comments[comment.id + 1].toMe = true;
+          cd.comments[comment.id + 1].targetComment = comment;
         }
       }
 
-      if (!cd.comments[comment.id + 1].toMe) {
+      if (cd.comments[comment.id + 1].targetComment !== comment) {
         cd.comments
           .slice(comment.id + 1)
           .some((otherComment) => {
@@ -135,7 +133,7 @@ function parse() {
                 // Comments mistakenly indented more than one level
                 otherComment.id === comment.id + 1
               ) {
-                otherComment.toMe = true;
+                otherComment.targetComment = comment;
               }
             } else {
               return true;
@@ -148,6 +146,11 @@ function parse() {
       comment.sectionHeadline = comment.section.headline;
       comment.sectionAnchor = comment.section.anchor;
       delete comment.section;
+    }
+    if (comment.targetComment) {
+      comment.targetCommentAuthorName = comment.targetComment.authorName;
+      comment.toMe = comment.targetComment.own;
+      delete comment.targetComment;
     }
     delete comment.elements;
     delete comment.parts;
