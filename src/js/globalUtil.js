@@ -89,6 +89,7 @@ export default {
    * This runs very frequently, so we use the fastest way.
    *
    * @returns {boolean}
+   * @memberof module:cd~convenientDiscussions.util
    */
   isPageOverlayOn() {
     return (
@@ -102,6 +103,7 @@ export default {
    *
    * @param {string} body
    * @returns {string}
+   * @memberof module:cd~convenientDiscussions.util
    */
   wrapDiffBody(body) {
     return (
