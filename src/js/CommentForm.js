@@ -972,7 +972,7 @@ export default class CommentForm {
       framed: false,
       classes: ['cd-button'],
       popup: {
-        head: true,
+        head: false,
         $content: cd.util.wrapInElement(cd.s('cf-help-content'), 'div'),
         padded: true,
         align: 'center',
