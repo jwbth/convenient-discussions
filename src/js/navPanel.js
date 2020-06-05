@@ -211,13 +211,13 @@ function updateRefreshButton(newComments, areThereInteresting) {
       tooltipText += `\n\n${headline}`;
       newCommentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
-        if (comment.toMe) {
-          tooltipText += `${cd.s('navpanel-newcomments-toyou')} `;
-        }
+        const author = comment.targetAuthor ?
+          cd.s('newpanel-newcomments-reply', comment.author.name, comment.targetAuthor.name) :
+          comment.author.name;
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
-        tooltipText += comment.author.name + mw.msg('comma-separator') + date;
+        tooltipText += author + mw.msg('comma-separator') + date;
       });
     });
   } else {
@@ -484,6 +484,10 @@ async function processComments(comments) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     delete comment.authorName;
+    if (comment.targetAuthorName) {
+      comment.targetAuthor = userRegistry.getUser(comment.targetAuthorName);
+      delete comment.targetAuthorName;
+    }
   });
 
   // Extract "interesting" comments (that would make the new comments counter purple and might
