@@ -329,7 +329,7 @@ export default {
           );
         });
 
-        mw.hook('convenientDiscussions.commentFormReady').add((commentForm) => {
+        mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
           commentForm.commentInput.$input.wikiEditor('addToToolbar', {
             section: 'main',
             groups: {

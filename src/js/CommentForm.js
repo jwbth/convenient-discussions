@@ -71,7 +71,7 @@ export default class CommentForm {
    * @param {string} [config.editintro] Editintro wikilink.
    * @throws {CdError}
    * @fires commentFormCreated
-   * @fires commentFormReady
+   * @fires commentFormToolbarReady
    */
   constructor({ mode, target, $addSectionLink, dataToRestore, scrollIntoView, editintro }) {
     /**
@@ -397,10 +397,10 @@ export default class CommentForm {
       /**
        * The comment form is ready (all requested modules have been loaded and executed).
        *
-       * @event commentFormReady
+       * @event commentFormToolbarReady
        * @type {module:CommentForm}
        */
-      mw.hook('convenientDiscussions.commentFormReady').fire(this);
+      mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this);
     });
   }
 
