@@ -2798,11 +2798,19 @@ export default class CommentForm {
       return;
     }
 
-    // That's a hack used where we pass, in keptData, the name of the section that was set to be
+    const resp = await this.tryEditPage(page, newPageCode, currentOperation);
+    if (!resp) return;
+
+    // Here we use a hack where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
-    // the value so quickly, so it returns the old value, but we must display the new one.
+    // the value quickly enough, so it returns the old value, but we must display the new one.
     let keptData = {};
-    let watchSectionAfterGettingArticleId;
+    // When creating a page
+    if (!mw.config.get('wgArticleId')) {
+      mw.config.set('wgArticleId', resp.edit.pageid);
+      keptData.wasPageCreated = true;
+    }
+
     if (this.watchSectionCheckbox) {
       if (this.watchSectionCheckbox.isSelected()) {
         const isHeadlineAltered = (
@@ -2811,16 +2819,13 @@ export default class CommentForm {
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
           const headline = removeWikiMarkup(this.headlineInput.getValue());
-          if (mw.config.get('wgArticleId')) {
-            Section.watchSection(headline, true);
-            if (isHeadlineAltered) {
-              const originalHeadline = removeWikiMarkup(this.originalHeadline);
-              Section.unwatchSection(originalHeadline, true);
-            }
-          } else {
-            watchSectionAfterGettingArticleId = headline;
-          }
+          Section.watchSection(headline, { silent: true });
           keptData.justWatchedSection = headline;
+          if (isHeadlineAltered) {
+            const originalHeadline = removeWikiMarkup(this.originalHeadline);
+            Section.unwatchSection(originalHeadline, { silent: true });
+            keptData.justUnwatchedSection = originalHeadline;
+          }
         } else {
           const section = this.targetSection;
           if (section && !section.watched) {
@@ -2837,23 +2842,11 @@ export default class CommentForm {
       }
     }
 
-    const resp = await this.tryEditPage(page, newPageCode, currentOperation);
-    if (!resp) return;
-
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {
       $('#ca-watch').attr('id', 'cd-unwatch');
     }
     if (!this.watchCheckbox.isSelected() && $('#ca-unwatch').length) {
       $('#ca-unwatch').attr('id', 'cd-watch');
-    }
-
-    // When creating a page
-    if (!mw.config.get('wgArticleId')) {
-      mw.config.set('wgArticleId', resp.edit.pageid);
-      keptData.wasPageCreated = true;
-      if (watchSectionAfterGettingArticleId) {
-        Section.watchSection(watchSectionAfterGettingArticleId, true);
-      }
     }
 
     if (!isDelete) {
