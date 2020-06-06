@@ -227,9 +227,10 @@ export async function init({ messagesRequest }) {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(`(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`, 'g');
   }
 
-  const currentUserStandardSignature = mw.user.options.get('nickname');
-  cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + currentUserStandardSignature;
-  const authorInSignatureMatch = currentUserStandardSignature.match(
+  cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + '~~~~';
+
+  const signatureContent = mw.user.options.get('nickname');
+  const authorInSignatureMatch = signatureContent.match(
     new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'i')
   );
   if (authorInSignatureMatch) {
@@ -237,7 +238,7 @@ export async function init({ messagesRequest }) {
     // when editing.
     const signaturePrefixPattern = mw.util.escapeRegExp(cd.settings.signaturePrefix);
     const signatureBeginning = mw.util.escapeRegExp(
-      currentUserStandardSignature.slice(0, authorInSignatureMatch.index)
+      signatureContent.slice(0, authorInSignatureMatch.index)
     );
     cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
       signaturePrefixPattern + signatureBeginning + '$'
