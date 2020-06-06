@@ -227,28 +227,20 @@ export async function init({ messagesRequest }) {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(`(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`, 'g');
   }
 
-  const currentUserSignature = mw.user.options.get('nickname');
-  const authorInSignatureMatch = currentUserSignature.match(
     new RegExp(`\\s*${cd.g.CAPTURE_USER_NAME_PATTERN}`, 'i')
+  const currentUserStandardSignature = mw.user.options.get('nickname');
+  cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + currentUserStandardSignature;
+  const authorInSignatureMatch = currentUserStandardSignature.match(
   );
   if (authorInSignatureMatch) {
-    // Signature contents before the user name - in order to cut it out from comment endings when
-    // editing.
-    const textBeforeSignature = (
-      cd.settings.mySignature !== cd.defaultSettings.mySignature &&
-      // Minifier translates "~~\~" and "'~~' + '~'" into "~~~".
-      cd.settings.mySignature.includes('~~'.concat('~'))
-    ) ?
-      mw.util.escapeRegExp(
-        // Minifier translates "~~\~" and "'~~' + '~'" into "~~~".
-        cd.settings.mySignature.slice(0, cd.settings.mySignature.indexOf('~~'.concat('~')))
-      ) :
-      '';
+    // Extract signature contents before the user name - in order to cut it out from comment endings
+    // when editing.
+    const signaturePrefixPattern = mw.util.escapeRegExp(cd.settings.signaturePrefix);
     const signatureBeginning = mw.util.escapeRegExp(
-      currentUserSignature.slice(0, authorInSignatureMatch.index)
+      currentUserStandardSignature.slice(0, authorInSignatureMatch.index)
     );
     cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
-      textBeforeSignature + signatureBeginning + '$'
+      signaturePrefixPattern + signatureBeginning + '$'
     );
   }
 

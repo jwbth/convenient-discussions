@@ -1795,7 +1795,7 @@ export default class CommentForm {
     } else {
       signature = this.mode === 'edit' ?
         this.target.inCode.signature :
-        cd.settings.mySignature;
+        cd.g.CURRENT_USER_SIGNATURE;
     }
 
     // So that the signature doesn't turn out to be at the end of the last item of the list if the

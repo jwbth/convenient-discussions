@@ -638,7 +638,7 @@ export default class Section extends SectionSkeleton {
       const endWithTwoNewlines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
 
       const targetPageCode = cd.config.getMoveTargetPageCode ?
-        cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.settings.mySignature) :
+        cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.g.CURRENT_USER_SIGNATURE) :
         undefined;
       const targetPageNewSectionCode = endWithTwoNewlines(
         sourcePage.sectionInCode.code.slice(
@@ -705,7 +705,7 @@ export default class Section extends SectionSkeleton {
       const sourcePageCode = cd.config.getMoveSourcePageCode ?
         cd.config.getMoveSourcePageCode(
           targetPage.wikilink,
-          cd.settings.mySignature,
+          cd.g.CURRENT_USER_SIGNATURE,
           timestamp
         ) :
         undefined;
