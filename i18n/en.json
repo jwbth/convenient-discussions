@@ -58,7 +58,7 @@
   "section-watch-success": "The section \"$1\" has been added to your watchlist.",
   "section-unwatch-success": "The section \"$1\" has been removed from your watchlist.",
   "section-unwatch-stillwatched": "<strong>Note:</strong> you are still watching this section as it is included in the section \"$1\" that you watch.",
-  "section-watch-pagenotwatched": "<strong>Note:</strong> you watch the section but not the page. In order for new comments to be highlighted on your watchlist page, you should add the page to the watchlist.",
+  "section-watch-pagenotwatched": "<strong>Note:</strong> you watch the section but not the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",
   "section-watch-error-load": "Couldn't load the settings from the server.",
   "section-watch-error-save": "Couldn't save the settings to the server.",
   "section-watch-error-maxsize": "Couldn't update the settings: the size of the watched sections list exceeds the maximum size. <a class=\"cd-notification-editWatchedSections\">Edit the sections list</a> to fix this.",
