@@ -244,8 +244,8 @@ export async function init({ messagesRequest }) {
     );
   }
 
-  const pniePattern = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
-  cd.g.PNIE_PATTERN = `(?:${pniePattern})`;
+  const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
+  cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
 
   const commentAntipatternsPatternParts = [];
   if (
