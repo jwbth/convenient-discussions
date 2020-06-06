@@ -279,7 +279,7 @@ export function decodeHtmlEntities(s) {
     }
     result = result.indexOf('&#') === -1 ?
       result :
-      result.replace(/&#(\d+);/g, (s, m1) => String.fromCharCode(m1));
+      result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
     return result.indexOf('&') === -1 ? result : html_entity_decode(result);
   }
 }

@@ -1792,9 +1792,9 @@ export default class CommentForm {
       // If the user wrapped the comment in <small></small>, select the relevant checkbox and remove
       // the tags. This will include the signature into the tags and possibly ensure the right line
       // spacing.
-      code = code.replace(/^<small>([^]*)<\/small>$/i, (s, m1) => {
+      code = code.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
         implicitSmall = true;
-        return m1;
+        return content;
       });
     }
     // Remove spaces from empty lines except when they are a part of the syntax creating <pre>.
@@ -1825,10 +1825,10 @@ export default class CommentForm {
     }
 
     if (!isZeroLevel) {
-      code = code.replace(/\n([:*#]+)/g, (s, m1) => {
+      code = code.replace(/\n([:*#]+)/g, (s, chars) => {
         useColonsForNewLines = true;
         // **** → ::::, if the comment contains a list or internal indentations.
-        return '\n' + newLineIndentationChars + m1;
+        return '\n' + newLineIndentationChars + chars;
       });
       if (useColonsForNewLines && indentationChars) {
         code = code.replace(/\n(?![:#\x03])/g, () => {
