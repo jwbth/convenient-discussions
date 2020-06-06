@@ -625,7 +625,8 @@ export default async function processPage(keptData = {}) {
         navPanel.updateCommentFormButton();
       });
 
-    // Mutation observer doesn't track all cases unfortunately.
+    // Mutation observer doesn't follow all possible cases of comment position changing
+    // unfortunately.
     setInterval(() => {
       commentLayers.redrawIfNecessary();
     }, 1000);

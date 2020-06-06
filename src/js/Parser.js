@@ -1,6 +1,6 @@
 /**
  * Web page (not wikitext) parsing module. Parsing here means "extracting meaningful parts from the
- * page". Functions that are more about modification of DOM go in {@link module:modifyDom}.
+ * page". Functions that are more about modification of the DOM go in {@link module:modifyDom}.
  * Functions related to wikitext parsing go in {@link module:wikitext}.
  *
  * Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
@@ -14,7 +14,7 @@ import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } fro
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
 /**
- * Get a page name from a URL.
+ * Get the page name from a URL.
  *
  * @param {string} url
  * @returns {?string}
@@ -59,7 +59,7 @@ function getPageNameFromUrl(url) {
 }
 
 /**
- * Get a user name from a link.
+ * Get the user name from a link.
  *
  * @param {Element} element
  * @returns {string}
@@ -130,7 +130,7 @@ export default class Parser {
    */
 
   /**
-   * Find timestamps under the root element.
+   * Find the timestamps under the root element.
    *
    * @returns {FindTimestampsReturn}
    */
@@ -173,7 +173,7 @@ export default class Parser {
   }
 
   /**
-   * Find signatures under the root element given the timestamps.
+   * Find the signatures under the root element given timestamps.
    *
    * Characters before the author link, like "—", aren't considered a part of the signature.
    *
@@ -335,7 +335,7 @@ export default class Parser {
   }
 
   /**
-   * Collect parts of a comment given a signature element.
+   * Collect the parts of the comment given a signature element.
    *
    * @param {Element} signatureElement
    * @returns {object[]}
@@ -540,7 +540,7 @@ export default class Parser {
   }
 
   /**
-   * Remove comment parts that are inside of other parts.
+   * Remove the comment parts that are inside of other parts.
    *
    * @param {object[]} parts
    * @returns {object[]}
@@ -565,7 +565,7 @@ export default class Parser {
   }
 
   /**
-   * Wrap text and inline nodes into block elements.
+   * Wrap the text and inline nodes into block elements.
    *
    * @param {object[]} parts
    * @param {Element} signatureElement
@@ -662,7 +662,7 @@ export default class Parser {
   }
 
   /**
-   * Replace list elements with collections of their items if appropriate.
+   * Replace the list elements with collections of their items if appropriate.
    *
    * @param {object[]} parts
    * @param {Element} signatureElement
