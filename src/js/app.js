@@ -388,13 +388,7 @@ function app() {
   mw.hook('convenientDiscussions.launched').fire(cd);
 
   if (!cd.strings) {
-    let match = location.host.match(/^([a-z-]+)\.(?:wikipedia|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary)\.org$/);
-    if (!match) {
-      // Chapters' sites
-      match = location.host.match(/^([a-z]{2})\.wikimedia\.org$/);
-    }
-    const lang = match ? match[1] : 'en';
-    loadStrings(lang);
+    loadStrings(mw.config.get('wgContentLanguage'));
   } else {
     go();
   }
