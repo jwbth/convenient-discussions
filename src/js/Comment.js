@@ -1082,21 +1082,22 @@ export default class Comment extends CommentSkeleton {
     let text = code;
 
     if (this.level === 0) {
+      const fileLineRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]\\s*$`, 'im');
+
       // Collapse random line breaks that do not affect text rendering but will transform into <br>
       // on posting.
       text = text.replace(
         /^(.*[^}|>\n\x02\x04] *)\n(?![{|<:*# \n\x01\x03])/gm,
-        (s, m1) => (
-          m1 +
-          (
-            (
-              /^[:*# ]/.test(m1) ||
-              /(?:\x02|<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>|<\/\w+ ?>)$/.test(m1)
-            ) ?
+        (s, thisLine) => {
+          const newlineOrSpace = (
+            /^[:*# ]/.test(thisLine) ||
+            /(?:\x02|<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>|<\/\w+ ?>)$/.test(thisLine) ||
+            fileLineRegexp.test(thisLine)
+          ) ?
             '\n' :
-            ' '
-          )
-        )
+            ' ';
+          return thisLine + newlineOrSpace;
+        }
       );
     }
 
