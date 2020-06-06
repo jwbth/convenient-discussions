@@ -522,7 +522,7 @@ export default class CommentForm {
     if (['addSection', 'addSubsection'].includes(this.mode) || this.#editingSectionOpeningComment) {
       if (this.mode === 'addSubsection') {
         this.#headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
-      } else if (this.mode === 'edit' && this.target.section.level > 2) {
+      } else if (this.mode === 'edit' && this.targetSection.parent) {
         this.#headlineInputPurpose = cd.s(
           'cf-headline-subsection',
           this.targetSection.parent.headline
@@ -3048,14 +3048,14 @@ export default class CommentForm {
               }
             } else {
               if (this.target.isOpeningSection) {
-                subject = this.target.section.level <= 2 ? 'topic' : 'subsection';
+                subject = this.targetSection.parent ? 'subsection' : 'topic';
               } else {
                 subject = 'comment';
               }
             }
           } else {
             if (this.target.isOpeningSection) {
-              subject = this.target.section.level <= 2 ? 'topic' : 'subsection';
+              subject = this.targetSection.parent ? 'subsection' : 'topic';
             } else {
               this.target.requestAuthorGender(callback);
               subject = 'comment-by';
