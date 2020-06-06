@@ -330,6 +330,10 @@ export default {
         });
 
         mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
+          const wikify = () => {
+            window.Wikify(commentForm.commentInput.$input.get(0));
+          };
+
           commentForm.commentInput.$input.wikiEditor('addToToolbar', {
             section: 'main',
             groups: {
@@ -341,9 +345,7 @@ export default {
                     icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
                     action: {
                       type: 'callback',
-                      execute: () => {
-                        window.Wikify(commentForm.commentInput.$input.get(0));
-                      },
+                      execute: wikify,
                     },
                   },
                 },
@@ -356,7 +358,7 @@ export default {
           commentForm.$form.on('keydown', (e) => {
             // Ctrl+Alt+W
             if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
-              window.Wikify();
+              wikify();
             }
           });
 
