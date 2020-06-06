@@ -47,12 +47,12 @@ function lastFocused(commentForm1, commentForm2) {
 /** Class representing a comment form. */
 export default class CommentForm {
   #sectionHeadline
-  #standardButtonsTotalWidth
-  #standardSubmitButtonLabel
-  #shortSubmitButtonLabel
+  #buttonsTotalWidthStandard
+  #submitButtonLabelStandard
+  #submitButtonLabelShort
   #lastPreviewTimestamp
   #previewTimeout
-  #dontAutopreview
+  #dontAutopreviewOnSummaryChange
   #editingSectionOpeningComment
   #headlineInputPurpose
 
@@ -918,20 +918,20 @@ export default class CommentForm {
 
     switch (this.mode) {
       case 'edit':
-        this.#standardSubmitButtonLabel = cd.s('cf-save');
-        this.#shortSubmitButtonLabel = cd.s('cf-save');
+        this.#submitButtonLabelStandard = cd.s('cf-save');
+        this.#submitButtonLabelShort = cd.s('cf-save');
         break;
       case 'addSection':
-        this.#standardSubmitButtonLabel = cd.s('cf-addtopic');
-        this.#shortSubmitButtonLabel = cd.s('cf-addtopic-short');
+        this.#submitButtonLabelStandard = cd.s('cf-addtopic');
+        this.#submitButtonLabelShort = cd.s('cf-addtopic-short');
         break;
       case 'addSubsection':
-        this.#standardSubmitButtonLabel = cd.s('cf-addsubsection');
-        this.#shortSubmitButtonLabel = cd.s('cf-addsubsection-short');
+        this.#submitButtonLabelStandard = cd.s('cf-addsubsection');
+        this.#submitButtonLabelShort = cd.s('cf-addsubsection-short');
         break;
       default:
-        this.#standardSubmitButtonLabel = cd.s('cf-reply');
-        this.#shortSubmitButtonLabel = cd.s('cf-reply-short');
+        this.#submitButtonLabelStandard = cd.s('cf-reply');
+        this.#submitButtonLabelShort = cd.s('cf-reply-short');
     }
 
     /**
@@ -1005,17 +1005,18 @@ export default class CommentForm {
       tabIndex: String(this.id) + '33',
     });
 
-    if (!cd.settings.autopreview) {
-      /**
-       * Preview button.
-       *
-       * @type {OoUiButtonWidget}
-       */
-      this.previewButton = new OO.ui.ButtonWidget({
-        label: cd.s('cf-preview'),
-        classes: ['cd-previewButton'],
-        tabIndex: String(this.id) + '34',
-      });
+    /**
+     * Preview button.
+     *
+     * @type {OoUiButtonWidget}
+     */
+    this.previewButton = new OO.ui.ButtonWidget({
+      label: cd.s('cf-preview'),
+      classes: ['cd-previewButton'],
+      tabIndex: String(this.id) + '34',
+    });
+    if (cd.settings.autopreview) {
+      this.previewButton.$element.hide();
     }
 
     /**
@@ -1025,7 +1026,7 @@ export default class CommentForm {
      */
     this.submitButton = new OO.ui.ButtonInputWidget({
       type: 'submit',
-      label: this.#standardSubmitButtonLabel,
+      label: this.#submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
       classes: ['cd-submitButton'],
       tabIndex: String(this.id) + '35',
@@ -1041,12 +1042,12 @@ export default class CommentForm {
       this.horizontalLayout.$element
     );
     this.$leftButtonsContainer.append(this.settingsButton.$element, this.helpPopupButton.$element);
-    this.$rightButtonsContainer.append(...[
+    this.$rightButtonsContainer.append(
       this.cancelButton.$element,
-      this.viewChangesButton && this.viewChangesButton.$element,
-      this.previewButton && this.previewButton.$element,
+      this.viewChangesButton.$element,
+      this.previewButton.$element,
       this.submitButton.$element
-    ].filter(defined));
+    );
     this.$buttonsContainer.append(this.$leftButtonsContainer, this.$rightButtonsContainer);
     this.$form = $('<form>');
     this.$form.append(...[
@@ -1275,7 +1276,7 @@ export default class CommentForm {
       .on('change', saveSessionEventHandler);
     this.summaryInput
       .on('change', () => {
-        if (!this.#dontAutopreview) {
+        if (!this.#dontAutopreviewOnSummaryChange) {
           preview();
         }
       })
@@ -1283,7 +1284,7 @@ export default class CommentForm {
     this.summaryInput.$element
       .on('keypress', () => {
         this.summaryAltered = true;
-        this.#dontAutopreview = false;
+        this.#dontAutopreviewOnSummaryChange = false;
       });
     if (this.minorCheckbox) {
       this.minorCheckbox
@@ -1313,14 +1314,10 @@ export default class CommentForm {
     if (this.deleteCheckbox) {
       this.deleteCheckbox
         .on('change', (selected) => {
-          this.updateAutoSummary();
+          this.updateAutoSummary(true, true);
           this.updateFormOnDeleteCheckboxChange(selected);
         })
-        .on('change', (selected) => {
-          if (selected && cd.settings.autopreview) {
-            this.$previewArea.empty();
-          }
-        })
+        .on('change', preview)
         .on('change', saveSessionEventHandler);
     }
     this.scriptSettingsButton
@@ -1339,12 +1336,10 @@ export default class CommentForm {
       .on('click', () => {
         this.viewChanges();
       });
-    if (this.previewButton) {
-      this.previewButton
-        .on('click', () => {
-          this.preview(true, false);
-        });
-    }
+    this.previewButton
+      .on('click', () => {
+        this.preview(true, false);
+      });
   }
 
   /**
@@ -1366,35 +1361,36 @@ export default class CommentForm {
     let formWidth = this.$innerWrapper.width();
 
     if (this.$element.hasClass('cd-commentForm-short')) {
-      if (formWidth >= this.#standardButtonsTotalWidth + 7) {
+      if (formWidth >= this.#buttonsTotalWidthStandard + 7) {
         this.$element.removeClass('cd-commentForm-short');
-        this.submitButton.setLabel(this.#standardSubmitButtonLabel);
-        if (this.previewButton) {
-          this.previewButton.setLabel(cd.s('cf-preview'));
-        }
-        if (this.viewChangesButton) {
-          this.viewChangesButton.setLabel(cd.s('cf-viewchanges'));
-        }
+        this.submitButton.setLabel(this.#submitButtonLabelStandard);
+        this.previewButton.setLabel(cd.s('cf-preview'));
+        this.viewChangesButton.setLabel(cd.s('cf-viewchanges'));
         this.cancelButton.setLabel(cd.s('cf-cancel'));
       }
     } else {
-      this.#standardButtonsTotalWidth = (
+      this.#buttonsTotalWidthStandard = (
         this.submitButton.$element.outerWidth(true) +
-        (this.previewButton ? this.previewButton.$element.outerWidth(true) : 0) +
-        (this.viewChangesButton ? this.viewChangesButton.$element.outerWidth(true) : 0) +
+        (
+          this.previewButton.$element.is(':visible') ?
+          this.previewButton.$element.outerWidth(true) :
+          0
+        ) +
+        // Users may hide the view changes button by any kind of a plugin.
+        (
+          this.viewChangesButton.$element.is(':visible') ?
+          this.viewChangesButton.$element.outerWidth(true) :
+          0
+        ) +
         this.settingsButton.$element.outerWidth(true) +
         this.helpPopupButton.$element.outerWidth(true) +
         this.cancelButton.$element.outerWidth(true)
       );
-      if (formWidth < this.#standardButtonsTotalWidth + 7) {
+      if (formWidth < this.#buttonsTotalWidthStandard + 7) {
         this.$element.addClass('cd-commentForm-short');
-        this.submitButton.setLabel(this.#shortSubmitButtonLabel);
-        if (this.previewButton) {
-          this.previewButton.setLabel(cd.s('cf-preview-short'));
-        }
-        if (this.viewChangesButton) {
-          this.viewChangesButton.setLabel(cd.s('cf-viewchanges-short'));
-        }
+        this.submitButton.setLabel(this.#submitButtonLabelShort);
+        this.previewButton.setLabel(cd.s('cf-preview-short'));
+        this.viewChangesButton.setLabel(cd.s('cf-viewchanges-short'));
         this.cancelButton.setLabel(cd.s('cf-cancel-short'));
       }
     }
@@ -1416,12 +1412,8 @@ export default class CommentForm {
 
     if (blockButtons) {
       this.submitButton.setDisabled(true);
-      if (this.previewButton) {
-        this.previewButton.setDisabled(true);
-      }
-      if (this.viewChangesButton) {
-        this.viewChangesButton.setDisabled(true);
-      }
+      this.previewButton.setDisabled(true);
+      this.viewChangesButton.setDisabled(true);
       this.cancelButton.setDisabled(true);
     }
   }
@@ -1442,12 +1434,8 @@ export default class CommentForm {
 
     if (unblockButtons) {
       this.submitButton.setDisabled(false);
-      if (this.previewButton) {
-        this.previewButton.setDisabled(false);
-      }
-      if (this.viewChangesButton) {
-        this.viewChangesButton.setDisabled(false);
-      }
+      this.previewButton.setDisabled(false);
+      this.viewChangesButton.setDisabled(false);
       this.cancelButton.setDisabled(false);
     }
   }
@@ -2284,7 +2272,7 @@ export default class CommentForm {
   registerOperation(operation) {
     this.operations.push(operation);
     operation.closed = false;
-    if (operation.type !== 'preview' || !cd.settings.autopreview) {
+    if (operation.type !== 'preview' || !operation.auto) {
       this.$messageArea.empty();
       this.pushPending(operation.type === 'submit');
     }
@@ -2337,7 +2325,7 @@ export default class CommentForm {
    */
   closeOperation(operation) {
     operation.closed = true;
-    if (operation.type !== 'preview' || !cd.settings.autopreview) {
+    if (operation.type !== 'preview' || !operation.auto) {
       this.popPending(operation.type === 'submit');
     }
   }
@@ -2350,6 +2338,10 @@ export default class CommentForm {
   unregisterOperation(operation) {
     if (this.operations.includes(operation)) {
       this.operations.splice(this.operations.indexOf(operation), 1);
+    }
+    // This was excessive at the time when it was written as the only use case is autopreview.
+    if (operation.type !== 'preview' || !operation.auto) {
+      this.popPending(operation.type === 'submit');
     }
   }
 
@@ -2394,7 +2386,10 @@ export default class CommentForm {
     if (operation) {
       currentOperation = operation;
     } else {
-      currentOperation = { type: 'preview' };
+      currentOperation = {
+        type: 'preview',
+        auto,
+      };
       this.registerOperation(currentOperation);
     }
 
@@ -2485,6 +2480,9 @@ export default class CommentForm {
         } else {
           this.$previewArea.removeClass('cd-previewArea-indentedComment');
         }
+        if (!auto) {
+          mw.hook('wikipage.content').fire(this.$previewArea);
+        }
       }
 
       const $parsedSummary = parsedSummary && cd.util.wrapInElement(parsedSummary);
@@ -2493,11 +2491,14 @@ export default class CommentForm {
           .find('.cd-summaryPreview')
           .html(`${cd.s('cf-summary-preview')}: <span class="comment">${$parsedSummary.html()}</span>`);
       }
-
-      if (!auto) {
-        mw.hook('wikipage.content').fire(this.$previewArea);
-      }
     }
+
+    if (cd.settings.autopreview) {
+      this.previewButton.$element.hide();
+      this.viewChangesButton.$element.show();
+      this.adjustLabels();
+    }
+
     if (this.$previewArea.hasClass('cd-previewArea-above')) {
       this.$previewArea.cdScrollIntoView('top');
     }
@@ -2570,6 +2571,12 @@ export default class CommentForm {
         this.showMessage(cd.s('cf-notice-nochanges'));
       }
     }
+    if (cd.settings.autopreview) {
+      this.viewChangesButton.$element.hide();
+      this.previewButton.$element.show();
+      this.adjustLabels();
+    }
+
     this.$previewArea.cdScrollIntoView(
       this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom'
     );
@@ -2971,15 +2978,15 @@ export default class CommentForm {
    *
    * @param {boolean} [set=true] Whether to actually set the input value, or just save auto summary
    *   to a property.
-   * @param {boolean} [dontAutopreview=false] Was the update initiated by a change in the comment or
-   *   headline input which means no autopreview request is needed to be made to prevent making two
-   *   identical requests.
+   * @param {boolean} [dontAutopreviewOnSummaryChange=false] Whether to prevent making autopreview
+   *   request in order not to make two identical requests (for example, if the update initiated by
+   *   a change in the comment).
    * @private
    */
-  updateAutoSummary(set = true, dontAutopreview = false) {
+  updateAutoSummary(set = true, dontAutopreviewOnSummaryChange = false) {
     if (this.summaryAltered) return;
 
-    this.#dontAutopreview = dontAutopreview;
+    this.#dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
 
     const text = this.autoText();
     const section = this.headlineInput && this.mode !== 'addSubsection' ?
@@ -3119,15 +3126,15 @@ export default class CommentForm {
 
       this.$element.addClass('cd-commentForm-disabled');
 
-      this.#standardSubmitButtonLabel = cd.s('cf-delete-button');
-      this.#shortSubmitButtonLabel = cd.s('cf-delete-button-short');
+      this.#submitButtonLabelStandard = cd.s('cf-delete-button');
+      this.#submitButtonLabelShort = cd.s('cf-delete-button-short');
       this.submitButton
         .clearFlags()
         .setFlags(['destructive', 'primary'])
         .setLabel(
           this.$element.hasClass('cd-commentForm-short') ?
-          this.#standardSubmitButtonLabel :
-          this.#shortSubmitButtonLabel
+          this.#submitButtonLabelStandard :
+          this.#submitButtonLabelShort
         );
     } else {
       this.minorCheckbox.setSelected(this.initialMinorCheckboxSelected);
@@ -3146,15 +3153,15 @@ export default class CommentForm {
 
       this.$element.removeClass('cd-commentForm-disabled');
 
-      this.#standardSubmitButtonLabel = cd.s('cf-save');
-      this.#shortSubmitButtonLabel = cd.s('cf-save-short');
+      this.#submitButtonLabelStandard = cd.s('cf-save');
+      this.#submitButtonLabelShort = cd.s('cf-save-short');
       this.submitButton
         .clearFlags()
         .setFlags(['progressive', 'primary'])
         .setLabel(
           this.$element.hasClass('cd-commentForm-short') ?
-          this.#standardSubmitButtonLabel :
-          this.#shortSubmitButtonLabel
+          this.#submitButtonLabelStandard :
+          this.#submitButtonLabelShort
         );
     }
   }
