@@ -350,8 +350,15 @@ export default {
               }
             },
           });
-          commentForm.$element.find('.group-gadgets')
+          commentForm.$element
+            .find('.group-gadgets')
             .insertBefore(commentForm.$element.find('.section-main .group-format'));
+          commentForm.$form.on('keydown', (e) => {
+            // Ctrl+Alt+W
+            if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
+              window.Wikify();
+            }
+          });
 
           if (mw.user.options.get('gadget-urldecoder')) {
             commentForm.commentInput.$input.wikiEditor('addToToolbar', {
