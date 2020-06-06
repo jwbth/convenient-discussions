@@ -254,8 +254,6 @@ function extractAuthor(line) {
  * @private
  */
 function isMoved(summary) {
-  // Would work only if cd.s('es-move') is in the beginning of cd.s('es-move-from') and
-  // cd.s('es-move-to'), but other use cases could have many false positives.
   return (
     (moveFromBeginning && summary.includes(`: ${moveFromBeginning}`)) ||
     (moveToBeginning && summary.includes(`: ${moveToBeginning}`))
