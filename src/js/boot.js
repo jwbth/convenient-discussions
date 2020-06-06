@@ -227,10 +227,10 @@ export async function init({ messagesRequest }) {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(`(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`, 'g');
   }
 
-    new RegExp(`\\s*${cd.g.CAPTURE_USER_NAME_PATTERN}`, 'i')
   const currentUserStandardSignature = mw.user.options.get('nickname');
   cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + currentUserStandardSignature;
   const authorInSignatureMatch = currentUserStandardSignature.match(
+    new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'i')
   );
   if (authorInSignatureMatch) {
     // Extract signature contents before the user name - in order to cut it out from comment endings
