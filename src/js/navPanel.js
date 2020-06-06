@@ -211,8 +211,12 @@ function updateRefreshButton(newComments, areThereInteresting) {
       tooltipText += `\n\n${headline}`;
       newCommentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
-        const author = comment.targetAuthor ?
-          cd.s('newpanel-newcomments-reply', comment.author.name, comment.targetAuthor.name) :
+        const author = comment.targetCommentAuthor ?
+          cd.s(
+            'newpanel-newcomments-reply',
+            comment.author.name,
+            comment.targetCommentAuthor.name
+          ) :
           comment.author.name;
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
@@ -484,9 +488,9 @@ async function processComments(comments) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     delete comment.authorName;
-    if (comment.targetAuthorName) {
-      comment.targetAuthor = userRegistry.getUser(comment.targetAuthorName);
-      delete comment.targetAuthorName;
+    if (comment.targetCommentAuthorName) {
+      comment.targetCommentAuthor = userRegistry.getUser(comment.targetCommentAuthorName);
+      delete comment.targetCommentAuthorName;
     }
   });
 
