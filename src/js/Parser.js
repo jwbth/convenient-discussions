@@ -239,8 +239,8 @@ export default class Parser {
           treeWalker.previousSibling();
         }
 
-        // Unsigned template may be the one of the "undated" kind - containing a timestamp but no
-        // author name, so we need to walk the tree anyway.
+        // Unsigned template may be of the "undated" kind - containing a timestamp but no author
+        // name, so we need to walk the tree anyway.
         do {
           const node = treeWalker.currentNode;
           length += node.textContent.length;
@@ -295,9 +295,7 @@ export default class Parser {
         element.classList.add('cd-signature');
         signatureNodes
           .reverse()
-          .forEach((node) => {
-            element.appendChild(node);
-          });
+          .forEach(element.appendChild.bind(element));
         signatureContainer.insertBefore(element, startElementNextSibling);
 
         // If there is no author, we add the class to prevent the element from being considered a
@@ -420,8 +418,15 @@ export default class Parser {
         // a foreign signature; nothing more to search for in that case.
         const text = previousPart.node.textContent;
         if (
-          timezoneRegexp.test(text) ||
-          cd.config.signatureEndingRegexp && cd.config.signatureEndingRegexp.test(text)
+          // Filter out additions to the end of a comment like:
+          // https://ru.wikipedia.org/w/index.php?diff=107450915
+          // https://ru.wikipedia.org/w/index.php?diff=107487558
+          !isInline(previousPart.node, true) &&
+
+          (
+            timezoneRegexp.test(text) ||
+            cd.config.signatureEndingRegexp && cd.config.signatureEndingRegexp.test(text)
+          )
         ) {
           previousPart.hasForeignComponents = true;
           break;
