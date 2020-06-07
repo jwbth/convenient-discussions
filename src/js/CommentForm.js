@@ -2073,8 +2073,6 @@ export default class CommentForm {
    * @private
    */
   prepareNewPageCode(pageCode, action) {
-    pageCode += '\n';
-
     let targetInCode;
     if (this.target) {
       this.target.locateInCode(pageCode);

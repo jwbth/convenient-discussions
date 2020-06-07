@@ -174,7 +174,10 @@ export async function getLastRevision(title) {
   }
 
   return {
-    code: revision.content,
+    // It's more convenient to unify regexps to have \n as the last character of anything, not
+    // (?:\n|$), and it doesn't seem to affect anything substantially.
+    code: revision.content + '\n',
+
     revisionId: revision.revid,
     redirectTarget: query.redirects && query.redirects[0] && query.redirects[0].to,
     queryTimestamp: resp.curtimestamp,
