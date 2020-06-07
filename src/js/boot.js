@@ -773,5 +773,10 @@ export function restoreCommentForms() {
     }
   }
   saveSession();
-  navPanel.updateCommentFormButton();
+
+  // Navigation panel doesn't appear on non-existent pages, but sessions are saved and restored on
+  // them.
+  if (navPanel.isMounted()) {
+    navPanel.updateCommentFormButton();
+  }
 }
