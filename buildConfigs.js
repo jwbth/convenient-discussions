@@ -10,11 +10,7 @@ fs.readdirSync('./i18n/').forEach((file) => {
     const lang = path.basename(file, '.json');
     langs.push(lang);
     const strings = JSON.parse(fs.readFileSync(`./i18n/${file}`).toString());
-    Object.keys(enStrings).forEach((key) => {
-      if (strings[key] === undefined) {
-        strings[key] = enStrings[key];
-      }
-    });
+    Object.assign(strings, enStrings);
     stringsRawCodes[lang] = `convenientDiscussions.strings = ${JSON.stringify(strings)};`;
     fs.writeFileSync(`./dist/strings/strings-${lang}.js`, stringsRawCodes[lang] + '\n');
   }
