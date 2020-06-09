@@ -837,6 +837,7 @@ export default class Section extends SectionSkeleton {
         this.titleInput = new mw.widgets.TitleInputWidget({
           $overlay: this.$overlay,
           excludeCurrentPage: true,
+          showMissing: false,
           validate: () => {
             let title = this.titleInput.getMWTitle();
             return (
