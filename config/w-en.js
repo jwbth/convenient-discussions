@@ -62,7 +62,9 @@ export default {
 
   localTimezoneOffset: 0,
 
-  archivePath: /\/Archive/,
+  archivePaths: [
+    /\/Archive/,
+  ],
 
   spaceAfterIndentationChar: false,
 

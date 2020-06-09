@@ -1323,8 +1323,8 @@ export async function notFound(decodedFragment, date) {
     .html(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
   let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
   const pageHasArchives = (
-    !cd.config.pagesWithoutArchivesRegexp ||
-    !cd.config.pagesWithoutArchivesRegexp.test(cd.g.CURRENT_PAGE)
+    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP ||
+    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(cd.g.CURRENT_PAGE)
   );
   if (pageHasArchives) {
     message += ' ' + cd.s('deadanchor-searchinarchive');

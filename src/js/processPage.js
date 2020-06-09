@@ -492,8 +492,8 @@ export default async function processPage(keptData = {}) {
   cd.debug.startTimer('main code');
 
   cd.g.IS_ARCHIVE_PAGE = Boolean(
-    cd.config.archivePathRegexp &&
-    cd.config.archivePathRegexp.test(cd.g.CURRENT_PAGE)
+    cd.g.ARCHIVE_PATHS_REGEXP &&
+    cd.g.ARCHIVE_PATHS_REGEXP.test(cd.g.CURRENT_PAGE)
   );
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if

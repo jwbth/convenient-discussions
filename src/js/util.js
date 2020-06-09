@@ -121,9 +121,9 @@ export function isProbablyTalkPage(page, namespaceNumber) {
     isTalkNamespace(namespaceNumber) &&
     (
       namespaceNumber % 2 === 1 ||
-      (!cd.config.pageWhiteListRegexp || cd.config.pageWhiteListRegexp.test(page))
+      (!cd.g.PAGE_WHITE_LIST_REGEXP || cd.g.PAGE_WHITE_LIST_REGEXP.test(page))
     ) &&
-    (!cd.config.pageBlackListRegexp || !cd.config.pageBlackListRegexp.test(page))
+    (!cd.g.PAGE_BLACK_LIST_REGEXP || !cd.g.PAGE_BLACK_LIST_REGEXP.test(page))
   );
 }
 

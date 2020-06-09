@@ -307,6 +307,18 @@ export async function init({ messagesRequest }) {
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
 
+  const mergeRegexps = (arr) => {
+    const pattern = arr
+      .map((regexpOrString) => regexpOrString.source || regexpOrString)
+      .join('|');
+    return pattern ? new RegExp(`(${pattern})`) : null;
+  };
+
+  cd.g.PAGE_WHITE_LIST_REGEXP = mergeRegexps(cd.config.pageWhiteList);
+  cd.g.PAGE_BLACK_LIST_REGEXP = mergeRegexps(cd.config.pageBlackList);
+  cd.g.ARCHIVE_PATHS_REGEXP = mergeRegexps(cd.config.archivePaths);
+  cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP = mergeRegexps(cd.config.pagesWithoutArchives);
+
 
   /* OOUI */
 

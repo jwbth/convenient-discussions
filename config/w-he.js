@@ -1,57 +1,68 @@
-/**
- * @module defaultConfig
- */
-
-import cd from './cd';
-
 export default {
-  /**
-   * Object with the names and texts of the messages required by the script as keys and values. Used to
-   * avoid making additional requests. Get these messages by running
-   * ```
-   * new mw.Api().loadMessages(messageNames, { amlang: mw.config.get('wgContentLanguage') });
-   * ```
-   * (take messageNames from {@link module:dateFormat.loadMessages}) and
-   * ```
-   * new mw.Api().loadMessages(undefined, {
-   *   amlang: mw.config.get('wgContentLanguage'),
-   *   amincludelocal: 1,
-   *   amfilter: 'timezone-',
-   * });
-   * ```
-   * (only timezone abbreviations are needed).
-   *
-   * @type {object}
-   * @default {}
-   */
-  messages: {},
+  messages: {
+    'sun': "א'",
+    'mon': "ב'",
+    'tue': "ג'",
+    'wed': "ד'",
+    'thu': "ה'",
+    'fri': "ו'",
+    'sat': "ש'",
+    'sunday': "יום א'",
+    'monday': "יום ב'",
+    'tuesday': "יום ג'",
+    'wednesday': "יום ד'",
+    'thursday': "יום ה'",
+    'friday': "יום ו',",
+    'saturday': "שבת",
+    'jan': "ינו'",
+    'feb': "פבר'",
+    'mar': "מרץ",
+    'apr': "אפר'",
+    'may': "מאי",
+    'jun': "יוני",
+    'jul': "יולי",
+    'aug': "אוג'",
+    'sep': "סנט'",
+    'oct': "אוקט'",
+    'nov': "נוב'",
+    'dec': "דצמ'",
+    'january': 'ינואר',
+    'february': 'פברואר',
+    'march': 'מרץ',
+    'april': 'אפריל',
+    'may_long': 'מאי',
+    'june': 'יוני',
+    'july': 'יולי',
+    'august': 'אוגוסט',
+    'september': 'ספטמבר',
+    'october': 'אוקטובר',
+    'november': 'נובמבר',
+    'december': 'דצמבר',
+    'january-gen': 'בינואר',
+    'february-gen': 'בפברואר',
+    'march-gen': 'במרץ',
+    'april-gen': 'באפריל',
+    'may-gen': 'במאי',
+    'june-gen': 'ביוני',
+    'july-gen': 'ביולי',
+    'august-gen': 'באוגוסט',
+    'september-gen': 'בספטמבר',
+    'october-gen': 'באוקטובר',
+    'november-gen': 'בנובמבר',
+    'december-gen': 'בדצמבר',
+    'timezone-utc': 'UTC',
+    'parentheses': '($1)',
+    'parentheses-start': '(',
+    'parentheses-end': ')',
+    'word-separator': ' ',
+    'comma-separator': ', ',
+  },
 
-  /**
-   * Contributions page wikilink as appears in IP users' signatures.
-   *
-   * @type {?string}
-   * @default null
-   */
-  contribsPage: null,
+  contribsPage: 'מיוחד:תרומות',
 
-  /**
-   * Local timezone offset in minutes. Get by a {@link https://www.mediawiki.org/wiki/API:Siteinfo}
-   * request.
-   *
-   * @type {?number}
-   * @default null
-   */
-  localTimezoneOffset: null,
+  localTimezoneOffset: 180,
 
-  /**
-   * Numbers of talk namespaces other than odd namespaces. If not set, the value of
-   * `mw.config.get('wgExtraSignatureNamespaces')` will be used, excluding the 0th (article)
-   * namespace. For example: `[4]` for Project.
-   *
-   * @type {number[]}
-   * @default null
-   */
-  customTalkNamespaces: null,
+  customTalkNamespaces: [4],
 
   /**
    * Pages in the custom talk namespaces other than odd namespaces where the script should work. If
@@ -70,14 +81,9 @@ export default {
    */
   pageBlackList: [],
 
-  /**
-   * Pages that match these patterns will be considered inactive, i.e. no replies can be left on
-   * such pages.
-   *
-   * @type {RegExp[]}
-   * @default []
-   */
-  archivePaths: [],
+  archivePaths: [
+    /\/ארכיון/,
+  ],
 
   /**
    * Pages that can never have archives on a subpage (page with a subtitle after "/"). If the
@@ -96,23 +102,6 @@ export default {
    * @default []
    */
   idleFragments: [],
-
-  /**
-   * Character that should directly precede the comment text. Normally, `':'` or `'*'`. `'#'` is
-   * used automatically in votings.
-   *
-   * @type {string}
-   * @default ':'
-   */
-  defaultIndentationChar: ':',
-
-  /**
-   * Whether to put a space between the indentation char and the comment text.
-   *
-   * @type {boolean}
-   * @default true
-   */
-  spaceAfterIndentationChar: true,
 
   /**
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
@@ -138,14 +127,7 @@ export default {
    */
   signatureEndingRegexp: null,
 
-  /**
-   * Convenient Discussions tag according to Special:Tags. Needs to be added manually. Set to null
-   * of there is no tag.
-   *
-   * @type {?string}
-   * @default null
-   */
-  tagName: null,
+  tagName: 'דיונים נוחים',
 
   /**
    * Script code name. For example, for the `source` parameter of the thank request: {@link
@@ -173,16 +155,7 @@ export default {
    */
   helpWikilink: 'commons:User:JWBTH/CD',
 
-  /**
-   * Names of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Unsigned}, {@link
-   * https://en.wikipedia.org/wiki/Template:Unsigned_IP} **on sites where they are not
-   * substituted**. If they are, don't add them. Please include aliases.
-   *
-   * @type {string[]}
-   * @default []
-   */
-  unsignedTemplates: [],
+  unsignedTemplates: ['לא חתם', 'שכח לחתום', 'אלם'],
 
   /**
    * Name of the class that the unsigned templates set to its container element.
@@ -220,23 +193,9 @@ export default {
    */
   paragraphTemplates: [],
 
-  /**
-   * Name of a template that is an analog of {@link
-   * https://en.wikipedia.org/wiki/Template:Reply_to}.
-   *
-   * @type {string}
-   * @default 'ping'
-   */
-  pingTemplate: 'ping',
+  pingTemplate: 'תגובה ל',
 
-  /**
-   * Array of two strings to insert before and after the selection when quote function is activated
-   * (by the toolbar button or Ctrl+Alt+Q / Q).
-   *
-   * @type {string[]}
-   * @default ["> ''", "''\n"]
-   */
-  quoteFormatting: ["> ''", "''\n"],
+  quoteFormatting: ["{{ציטוטון|1=", "}}\n"],
 
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
@@ -249,14 +208,7 @@ export default {
    */
   elementsToExcludeClasses: [],
 
-  /**
-   * Blocks with templates listed here won't be considered legit comment timestamp containers. All
-   * lines containing these templates are ignored when searching for timestamps in the wikitext.
-   *
-   * @type {string[]}
-   * @default []
-   */
-  templatesToExclude: [],
+  templatesToExclude: ['הועבר'],
 
   /**
    * All lines containing these patterns will be ignored when searching for comments in the
@@ -291,14 +243,7 @@ export default {
     /\n+(?:<!--[^]*?-->\s*)+$/,
   ],
 
-  /**
-   * How many displayed (not wikitext) characters to go back from a timestamp looking for an author
-   * link.
-   *
-   * @type {number}
-   * @default 80
-   */
-  signatureScanLimit: 80,
+  signatureScanLimit: 127,
 
   /**
    * Classes of elements that should be ignored when extracting headline text.
@@ -361,12 +306,23 @@ export default {
    * ]</code></pre>
    */
   defaultInsertButtons: [
-    ['{{ping|+}}'],
-    ['{{tl|+}}'],
+    ['{{א|+}}'],
+    ['{{תב|+}}'],
     ['{{+}}'],
     ['[[+]]'],
-    ['<+></>', '</>'],
-    ['<blockquote>+</blockquote>', '<blockquote />'],
+    ['{{ציטוטון|+}}'],
+    ['{{בעד}} +'],
+    ['{{נגד}} +'],
+    ['{{בעלי ידע|+}}'],
+    ['{{אלמ}}+'],
+    ['{{לא חתם|+}}'],
+    ['{{שכח לחתום|+}}'],
+    ['{{ש}}+'],
+    ['{{לפני התנגשות}} +'],
+    ['{{אחרי התנגשות}} +'],
+    ['{{תודה רבה}}+'],
+    ['{{בוצע}}+'],
+    ['{{טופל}}+'],
     ['<code>+</code>', '<code />'],
     ['<nowiki>+</nowiki>', '<nowiki />'],
     ['<syntaxhighlight lang="+"></syntaxhighlight>', '<syntaxhighlight />'],
@@ -441,15 +397,7 @@ export default {
    */
   customIndentationCharsPattern: null,
 
-  /**
-   * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be
-   * considered comments on log pages (watchlist, contributions, history). Displayed text, not
-   * wikitext. Take from MediaWiki:Undo-summary, MediaWiki:Revertpage.
-   *
-   * @type {string[]}
-   * @default []
-   */
-  undoTexts: [],
+  undoTexts: ['ביטול', 'בוטל', 'שחזור', 'שוחזר'],
 
   /**
    * Reaction, i.e. an object specifying messages to be displayed when the user enters text that
@@ -487,13 +435,6 @@ export default {
    */
   customCommentFormModules: [],
 
-  /**
-   * Default type of comment link when copying. `'diff'`, `'wikilink'`, or `'link'`. You may use
-   * `'wikilink'` if there is a code in your wiki that makes wikilinks work for all users.
-   *
-   * @type {string}
-   * @default 'diff'
-   */
   defaultCommentLinkType: 'diff',
 
   /**
@@ -595,7 +536,7 @@ export default {
    * @returns {string}
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
-    return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
+    return '{{הועבר|ל=${targetPageWikilink}} ${signature}\n';
   },
 
   /**
@@ -609,6 +550,6 @@ export default {
    * @returns {string}
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
-  },
+    return '{{הועבר|מ=${targetPageWikilink}} ${signature}\n';
+  }
 };
