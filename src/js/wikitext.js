@@ -53,6 +53,8 @@ export function removeWikiMarkup(code) {
   return code
     // Remove comments
     .replace(/<!--[^]*?-->/g, '')
+    // Pipe trick
+    .replace(/(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g, '$1$2$3')
     // Extract displayed text from [[wikilinks]]
     .replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
     // For optimization purposes, remove template names
