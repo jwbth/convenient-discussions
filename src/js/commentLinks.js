@@ -544,8 +544,8 @@ function processHistory($content) {
 /**
  * Add comment link to a diff page.
  *
- * @private
  * @fires commentLinksCreated
+ * @private
  */
 async function processDiff() {
   if (!processDiffFirstRun) return;

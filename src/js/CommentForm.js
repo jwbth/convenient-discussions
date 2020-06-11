@@ -1,4 +1,5 @@
-/** Comment form class.
+/**
+ * Comment form class.
  *
  * @module CommentForm
  */

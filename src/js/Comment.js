@@ -1276,7 +1276,7 @@ export default class Comment extends CommentSkeleton {
   /**
    * Get the parent comment of the comment.
    *
-   * This would work only if comments in cd.comments are in the order of their presence on the page
+   * This will work only if comments in `cd.comments` are in the order of their presence on the page
    * (which should be the case).
    *
    * @returns {?Comment}
@@ -1706,7 +1706,7 @@ export default class Comment extends CommentSkeleton {
   /**
    * Find any one comment inside the viewport.
    *
-   * This would work only if comments in cd.comments are in the order of their presence on the page
+   * This will work only if comments in `cd.comments` are in the order of their presence on the page
    * (which should be the case).
    *
    * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
