@@ -103,7 +103,8 @@ export function initSettings() {
 
   // Seamless transition from mySignature.
   if (cd.settings.signaturePrefix) {
-    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~~~/, '')
+    // eslint-disable-next-line no-useless-escape
+    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
   }
 
   if (
@@ -227,7 +228,7 @@ export async function init({ messagesRequest }) {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(`(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`, 'g');
   }
 
-  cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + '~~~~';
+  cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
 
   const signatureContent = mw.user.options.get('nickname');
   const authorInSignatureMatch = signatureContent.match(
