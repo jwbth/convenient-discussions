@@ -227,7 +227,7 @@
 	"sd-highlightowncomments": "להדגיש פוסטים שכתבתי",
 	"sd-insertbuttons": "כפתורים להכנסת טקסט",
 	"sd-insertbuttons-multiselect-placeholder": "להוסיף כפתור",
-	"sd-insertbuttons-help": "השתמשו בתו <code>+</code> לציון מקום מדוייק לסמן לאחר הכנסת הטקסט. למשל, <code dir=ltr>&#123;&#123;+&#125;&#125;</code>. השתמשו בתו <code>;</code> לציון העובדה שהטקסט המוצג על הפתיר שונה מזה המוכנס. למשל, <code dir=ltr>&lt;code&gt;+&lt;/code&gt;;&lt;code /&gt;</code>. השתמשו בתו <code>&#92;</code> לפני תווים שיש להכניס אותם ללא שינוי. למשל, <code>2&#92;+2</code>. ניתן לגרור את הכפתורים.",
+	"sd-insertbuttons-help": "השתמשו בתו <code>+</code> לציון מקום מדוייק לסמן לאחר הכנסת הטקסט. למשל, <code dir=ltr>&#123;&#123;+&#125;&#125;</code>. השתמשו בתו <code>;</code> לציון העובדה שהטקסט המוצג על הכפתור שונה מזה המוכנס. למשל, <code dir=ltr>&lt;code&gt;+&lt;/code&gt;;&lt;code /&gt;</code>. השתמשו בתו <code>&#92;</code> לפני תווים שיש להכניס אותם ללא שינוי. למשל, <code>2&#92;+2</code>. ניתן לגרור את הכפתורים.",
 	"sd-notificationsblacklist": "לא להודיע על פוסטים של המשתמשים הללו",
 	"sd-notificationsblacklist-multiselect-placeholder": "הוספת משתמש",
 	"sd-signatureprefix": "תחילית החתימה",
