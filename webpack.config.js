@@ -66,9 +66,10 @@ module.exports = (env = { MODE: 'development' }) => {
         new TerserPlugin({
           terserOptions: {
             output: {
-              beautify: env.MODE !== 'production',
               // Otherwise messes with \x01 \x02 \x03 \x04.
               ascii_only: true,
+              beautify: env.MODE !== 'production',
+              comments: false,
             },
             mangle: env.MODE === 'production',
           },
