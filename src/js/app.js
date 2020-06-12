@@ -12,8 +12,10 @@ import Section from './Section';
 import Worker from './worker';
 import cd from './cd';
 import commentLinks from './commentLinks';
+import configUrls from './../../config/urls.json';
 import debug from './debug';
 import defaultConfig from './defaultConfig';
+import enStrings from '../../i18n/en.json';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
@@ -53,11 +55,22 @@ function s(name, ...params) {
 }
 
 /**
- * Function executed after the localization strings are ready.
+ * Function executed after the config and localization strings are ready.
  *
  * @private
  */
 function go() {
+  /**
+   * Script configuration. Default configuration is at {@link module:defaultConfig}.
+   *
+   * @name config
+   * @type {object}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.config = Object.assign(defaultConfig, cd.config);
+
+  cd.strings = Object.assign({}, enStrings, cd.strings);
+
   Object.keys(cd.strings).forEach((name) => {
     mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
   });
@@ -243,36 +256,88 @@ function go() {
 }
 
 /**
- * If localization strings are not available, load them.
+ * Helper function to decode base64 strings.
  *
- * @param {string} lang
+ * @param {string} s
+ * @returns {string}
+ * @author Sophivorus
+ * @license GPL v2
+ * @license CC BY-SA 3.0
+ * @license GFDL
  * @private
  */
-function loadStrings(lang) {
-  mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions/strings-${lang}.js&action=raw&ctype=text/javascript`)
-    .then(
-      () => {
-        if (cd.strings) {
-          go();
-        } else if (lang !== 'en') {
-          loadStrings('en');
-        } else {
-          console.warn('Convenient Discussions can\'t run: localization strings couldn\'t be found.');
+function decodeBase64(s) {
+  return decodeURIComponent(
+    window.atob(s)
+      .split('')
+      .map((character) => (
+        '%' +
+        ('00' + character.charCodeAt(0).toString(16))
+          .slice(-2)
+      ))
+      .join('')
+  );
+}
+
+/**
+ * Load and execute the configuration script if available.
+ *
+ * @returns {Promise}
+ * @private
+ */
+function getConfig() {
+  return new Promise((resolve, reject) => {
+    if (configUrls[location.host]) {
+      mw.loader.getScript(configUrls[location.host]).then(
+        () => {
+          resolve();
+        },
+        (e) => {
+          reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
         }
-      },
-      (e) => {
-        console.warn(e);
-      }
-    );
+      );
+    } else {
+      resolve();
+    }
+  });
+}
+
+/**
+ * Load and add localization strings.
+ *
+ * @returns {Promise}
+ * @private
+ */
+function getStrings() {
+  const lang = mw.config.get('wgContentLanguage');
+  return new Promise((resolve) => {
+    if (lang === 'en') {
+      // English strings are already in the build.
+      resolve();
+    } else {
+      $.get(`https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/gadgets/ConvenientDiscussions/+/master/i18n/${lang}.json?format=text`)
+        .then(
+          (data) => {
+            cd.strings = JSON.parse(decodeBase64(data));
+            resolve();
+          },
+          () => {
+            // We assume it's OK to fall back to English if the translation is unavailable for any
+            // reason. After all, something wrong could be with Gerrit.
+            resolve();
+          }
+        );
+    }
+  });
 }
 
 /**
  * The main script function.
  *
- * @private
  * @fires launched
+ * @private
  */
-function app() {
+async function app() {
   // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
   if (location.host.endsWith('.m.wikipedia.org') || $('.flow-board-page').length) return;
 
@@ -289,15 +354,6 @@ function app() {
    * @memberof module:cd~convenientDiscussions
    */
   cd.running = true;
-
-  /**
-   * Script configuration. Default configuration is at {@link module:defaultConfig}.
-   *
-   * @name config
-   * @type {object}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.config = Object.assign(defaultConfig, cd.config);
 
   if (IS_LOCAL) {
     cd.config = Object.assign(defaultConfig, config);
@@ -387,11 +443,18 @@ function app() {
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
 
-  if (!cd.strings) {
-    loadStrings(mw.config.get('wgContentLanguage'));
-  } else {
-    go();
+  try {
+    await Promise.all([
+      !cd.config && getConfig(),
+      // cd.getStringsPromise may be set in the configuration file.
+      !cd.strings && (cd.getStringsPromise || getStrings()),
+    ].filter(defined));
+  } catch (e) {
+    console.warn(e);
+    return;
   }
+
+  go();
 }
 
 $(app);

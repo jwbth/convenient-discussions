@@ -1,55 +1,84 @@
 const fs = require('fs');
 const path = require('path');
 
-const enStrings = JSON.parse(fs.readFileSync(`./i18n/en.json`).toString());
-
-const langs = [];
-const stringsRawCodes = {};
-fs.readdirSync('./i18n/').forEach((file) => {
-  if (path.extname(file) === '.json') {
-    const lang = path.basename(file, '.json');
-    langs.push(lang);
-    const strings = JSON.parse(fs.readFileSync(`./i18n/${file}`).toString());
-    Object.assign(strings, enStrings);
-    stringsRawCodes[lang] = `convenientDiscussions.strings = ${JSON.stringify(strings)};`;
-    fs.writeFileSync(`./dist/strings/strings-${lang}.js`, stringsRawCodes[lang] + '\n');
-  }
-});
-
 const configs = [];
 fs.readdirSync('./config/').forEach((file) => {
   if (path.extname(file) === '.js') {
-    const [name, lang] = path.basename(file).match(/^\w+-(\w+)\.js/) || [];
-    if (lang && langs.includes(lang)) {
-      configs.push({ name, lang });
-    }
+    const [name] = path.basename(file).match(/^\w+-(\w+)\.js/) || [];
+    configs.push(name);
   }
 });
 
 configs.forEach((config) => {
-  const configContent = fs.readFileSync(`./config/${config.name}`).toString()
+  const content = fs.readFileSync(`./config/${config}`)
+    .toString()
     .trim()
     .replace(/[^]*?export default /, '');
   const data = `/**
- * This file was assembled automatically from the config at
- * https://github.com/jwbth/convenient-discussions/tree/master/config/${config.name} and translation at
- * https://translatewiki.net/wiki/Translating:Convenient_Discussions by running
- * "node buildConfigs". If you edit this file directly, your changes may be lost with the next
- * update. The correct way to update this file is to download the repository and make changes to it,
- * run "node buildConfigs", and copy the contents of dist/${config.name} to this page, while making
- * a pull request to the repository. See the details at
+ * This file was assembled automatically from the configuration at
+ * https://github.com/jwbth/convenient-discussions/tree/master/config/${config} by running
+ * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
+ * to keep it up to date by checking for the documentation updates from time to time. See the
+ * documentation at
  * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
  */
 
-window.convenientDiscussions = {};
+(function () {
 
-${stringsRawCodes[config.lang]}
+const cdLoaded = Boolean(window.convenientDiscussions);
+window.convenientDiscussions = window.convenientDiscussions || {};
 
-convenientDiscussions.config = ${configContent}
+convenientDiscussions.config = ${content}
 
-mw.loader.load('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript');
+// Author: [[User:Sophivorus]]
+// Licences: GFDL, CC BY-SA 3.0, GPL v2
+function decodeBase64(s) {
+  return decodeURIComponent(
+    window.atob(s)
+      .split('')
+      .map((character) => (
+        '%' +
+        ('00' + character.charCodeAt(0).toString(16))
+          .slice(-2)
+      ))
+      .join('')
+  );
+}
+
+function getStrings() {
+  const lang = mw.config.get('wgContentLanguage');
+  return new Promise((resolve) => {
+    if (lang === 'en') {
+      // English strings are already in the script.
+      resolve();
+    } else {
+      $.get(\`https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/gadgets/ConvenientDiscussions/+/master/i18n/$\{lang}.json?format=text\`)
+        .then(
+          (data) => {
+            convenientDiscussions.strings = JSON.parse(decodeBase64(data));
+            resolve();
+          },
+          () => {
+            // We assume it's OK to fall back to English if the translation is unavailable for any
+            // reason. After all, something wrong could be with Gerrit.
+            resolve();
+          }
+        );
+    }
+  });
+}
+
+if (!cdLoaded) {
+  convenientDiscussions.getStringsPromise = getStrings();
+  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript')
+    .catch((e) => {
+      console.warn('Couldn\\'t load Convenient Discussions.', e);
+    });
+}
+
+}());
 `;
-  fs.writeFileSync(`./dist/config/${config.name}`, data);
+  fs.writeFileSync(`./dist/config/${config}`, data);
 });
 
 console.log('Configs have been built successfully.');
