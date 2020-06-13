@@ -540,7 +540,9 @@ export async function reloadPage(keptData = {}) {
   setLoadingOverlay();
 
   // Save time by requesting options in advance.
-  getUserInfo();
+  getUserInfo().catch((e) => {
+    console.warn(e);
+  });
 
   let pageData;
   try {
