@@ -1246,11 +1246,10 @@ export default class CommentForm {
           this.updateAutoSummary(true, true);
 
           if (headline.includes('{{')) {
-            this.showMessage(
-              cd.s('cf-reaction-templateinheadline'),
-              'warning',
-              'templateInHeadline'
-            );
+            this.showMessage(cd.s('cf-reaction-templateinheadline'), {
+              type: 'warning',
+              class: 'templateInHeadline',
+            });
           } else {
             this.hideMessage('templateInHeadline');
           }
@@ -1267,7 +1266,10 @@ export default class CommentForm {
             reaction.pattern.test(text) &&
             (typeof reaction.checkFunc !== 'function' || reaction.checkFunc())
           ) {
-            this.showMessage(reaction.message, reaction.type, reaction.class);
+            this.showMessage(reaction.message, {
+              type: reaction.type,
+              class: reaction.class,
+            });
           } else {
             this.hideMessage(reaction.class);
           }
@@ -1445,34 +1447,53 @@ export default class CommentForm {
    * Show a service message above the form.
    *
    * @param {string|JQuery} html
-   * @param {string} [type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See {@link
+   * @param {object} options
+   * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
+   *   {@link
    *   https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true
    *   the OOUI Demos}.
-   * @param {string} [className]
+   * @param {string} [options.class] Class name added to the message element.
+   * @param {string} [options.allowClose=true] Show the close button.
+   * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
+   *   need to be wrapped in the widget.
    */
-  showMessage(html, type = 'notice', className) {
+  showMessage(html, {
+    type = 'notice',
+    class: classLastPart,
+    allowClose = true,
+    isRaw = false,
+  }) {
     if (
       this.destroyed ||
-      (className && this.$messageArea.children(`.cd-message-${className}`).length)
+      (classLastPart && this.$messageArea.children(`.cd-message-${classLastPart}`).length)
     ) {
       return;
     }
 
-    const $label = html instanceof $ ? html : cd.util.wrapInElement(html);
-    const classes = ['cd-message'];
-    if (className) {
-      classes.push(`cd-message-${className}`);
+    let appendable;
+    if (isRaw) {
+      appendable = html;
+    } else {
+      const $label = html instanceof $ ? html : cd.util.wrapInElement(html);
+      const classes = ['cd-message'];
+      if (classLastPart) {
+        classes.push(`cd-message-${classLastPart}`);
+      }
+      const message = new OO.ui.MessageWidget({
+        type,
+        inline: true,
+        label: $label,
+        classes,
+      });
+      appendable = message.$element;
     }
-    const message = new OO.ui.MessageWidget({
-      type,
-      inline: true,
-      label: $label,
-      classes,
-    });
+
     this.$messageArea
-      .append(message.$element)
-      .cdAddCloseButton()
+      .append(appendable)
       .cdScrollIntoView('top');
+    if (allowClose) {
+      this.$messageArea.cdAddCloseButton();
+    }
   }
 
   /**
@@ -1497,7 +1518,7 @@ export default class CommentForm {
    * @param {string} [options.logMessage] Message for the browser console.
    * @param {Function} [options.retryFunc] Function to execute when the user presses "Retry".
    *   Presence of this value implies tearing down the form.
-   * @param {boolean} [options.tearDown=false] Tear down the primary form elements (but keep the
+   * @param {boolean} [options.tearDown=false] Tear down the main form elements (but keep the
    *   message area).
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
    *   framing.
@@ -1524,11 +1545,11 @@ export default class CommentForm {
     }
 
     if (!(currentOperation && currentOperation.type === 'preview' && cd.settings.autopreview)) {
-      if (isRawMessage) {
-        this.$messageArea.append(message);
-      } else {
-        this.showMessage(message, messageType);
-      }
+      this.showMessage(message, {
+        type: messageType,
+        allowClose: !tearDown,
+        isRaw: isRawMessage,
+      });
     }
 
     if (retryFunc || tearDown) {
@@ -1625,6 +1646,7 @@ export default class CommentForm {
   }) {
     switch (type) {
       case 'parse': {
+        let editUrl;
         switch (code) {
           case 'locateComment':
             editUrl = this.targetSection ?
@@ -2960,9 +2982,6 @@ export default class CommentForm {
     }
     if (cd.commentForms.includes(this)) {
       cd.commentForms.splice(cd.commentForms.indexOf(this), 1);
-    }
-    if (this.mode === 'addSection') {
-      cd.g.addSectionForm = null;
     }
 
     saveSession();
