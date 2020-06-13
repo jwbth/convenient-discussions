@@ -135,187 +135,109 @@ export default class Section extends SectionSkeleton {
       );
 
       if (!this.frozen) {
-        this.#showAddSubsectionButtonTimeout = undefined;
-        this.#hideAddSubsectionButtonTimeout = undefined;
-
-        this.addAddSubsectionButton();
-
-        // Add a "Reply" button to the end of the first section chunk.
-        const replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
-        replyButton.firstChild.onclick = () => {
-          this.addReply();
-        };
-
-        // Sections may have "#" in the code as a placeholder for a vote. In this case, we must
-        // create the comment form in the <ol> tag, and keep "#" in the reply.
-        const isVotePlaceholder = (
-          this.lastElementInFirstChunk.tagName === 'OL' &&
-          this.lastElementInFirstChunk.childElementCount === 1 &&
-          this.lastElementInFirstChunk.children[0].classList.contains('mw-empty-elt')
-        );
-
-        let tag;
-        let createUl = false;
-        if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
-          const tagName = this.lastElementInFirstChunk.tagName;
-          if (
-            tagName === 'UL' ||
-            (
-              tagName === 'OL' &&
-              // Check if this is indeed a numbered list with replies as list items, not a numbered
-              // list as part of the user's comment that has their signature technically inside the
-              // last item.
-              (
-                this.lastElementInFirstChunk.querySelectorAll('ol > li').length === 1 ||
-                this.lastElementInFirstChunk.querySelectorAll('ol > li > .cd-signature').length > 1
-              )
-            )
-          ) {
-            tag = 'li';
-          } else if (tagName === 'DL') {
-            tag = 'dd';
-          } else {
-            tag = 'li';
-            createUl = true;
-          }
-        } else {
-          tag = 'li';
-          if (!isVotePlaceholder) {
-            createUl = true;
-          }
-        }
-
-        const replyWrapper = document.createElement(tag);
-        replyWrapper.className = 'cd-replyWrapper';
-        replyWrapper.appendChild(replyButton);
-
-        // Container contains wrapper contains element ^_^
-        let replyContainer;
-        if (createUl) {
-          const replyContainer = document.createElement('ul');
-          replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
-          replyContainer.appendChild(replyWrapper);
-
-          this.lastElementInFirstChunk.parentElement.insertBefore(
-            replyContainer,
-            this.lastElementInFirstChunk.nextElementSibling
-          );
-        } else {
-          this.lastElementInFirstChunk.appendChild(replyWrapper);
-        }
-
-        /**
-         * Reply button on the bottom of the first section chunk.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyButton = $(replyButton);
-
-        /**
-         * Link element contained in the reply button element.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyButtonLink = $(replyButton.firstChild);
-
-        /**
-         * Reply button wrapper.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyWrapper = $(replyWrapper);
-
-        /**
-         * Reply button container if present. It may be wrapped around the reply button wrapper.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyContainer = replyContainer ? $(replyContainer) : undefined;
-
-        // Add section menu items
-        if (
-          this.comments.length &&
-          this.comments[0].isOpeningSection &&
-          this.comments[0].openingSectionOfLevel === this.level &&
-          (this.comments[0].own || cd.settings.allowEditOthersComments) &&
-          this.comments[0].actionable
-        ) {
-          this.addMenuItem({
-            label: cd.s('sm-editopeningcomment'),
-            tooltip: cd.s('sm-editopeningcomment-tooltip'),
-            func: () => {
-              this.comments[0].edit();
-            },
-            class: 'cd-sectionLink-editOpeningComment',
-          });
-        }
-
-        this.addMenuItem({
-          label: cd.s('sm-addsubsection'),
-          tooltip: cd.s('sm-addsubsection-tooltip'),
-          func: () => {
-            this.addSubsection();
-          },
-          class: 'cd-sectionLink-addSubsection',
-        });
-
-        if (this.level === 2) {
-          this.addMenuItem({
-            label: cd.s('sm-move'),
-            tooltip: cd.s('sm-move-tooltip'),
-            func: () => {
-              this.move();
-            },
-            class: 'cd-sectionLink-moveSection',
-          });
-        }
-
-        if (watchedSectionsRequest) {
-          watchedSectionsRequest.then(
-            ({ thisPageWatchedSections }) => {
-              if (this.headline) {
-                this.watched = thisPageWatchedSections.includes(this.headline);
-                this.addMenuItem({
-                  label: cd.s('sm-unwatch'),
-                  tooltip: cd.s('sm-unwatch-tooltip'),
-                  func: () => {
-                    this.unwatch();
-                  },
-                  class: 'cd-sectionLink-unwatch',
-                  visible: this.watched,
-                });
-                this.addMenuItem({
-                  label: cd.s('sm-watch'),
-                  tooltip: cd.s('sm-watch-tooltip'),
-                  func: () => {
-                    this.watch();
-                  },
-                  class: 'cd-sectionLink-watch',
-                  visible: !this.watched,
-                });
-              }
-
-              const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
-
-              // We put it here to make it appear always after the "watch" item.
-              this.addMenuItem({
-                label: cd.s('sm-copylink'),
-                // We need the event object so we don't wrap the function into a container function.
-                func: this.copyLink.bind(this),
-                class: 'cd-sectionLink-copyLink',
-                tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
-                href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
-              });
-            },
-            () => {}
-          );
-        }
+        this.extendSectionMenu(watchedSectionsRequest);
       }
     }
   }
 
   /**
-   * Add "Add subsection" buttons that appear when hovering over "Reply" buttons.
+   * Add the "Reply" button to the end of the first section chunk.
+   */
+  addReplyButton() {
+    const replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
+    replyButton.firstChild.onclick = () => {
+      this.addReply();
+    };
+
+    // Sections may have "#" in the code as a placeholder for a vote. In this case, we must
+    // create the comment form in the <ol> tag, and keep "#" in the reply.
+    const isVotePlaceholder = (
+      this.lastElementInFirstChunk.tagName === 'OL' &&
+      this.lastElementInFirstChunk.childElementCount === 1 &&
+      this.lastElementInFirstChunk.children[0].classList.contains('mw-empty-elt')
+    );
+
+    let tag;
+    let createUl = false;
+    if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
+      const tagName = this.lastElementInFirstChunk.tagName;
+      if (
+        tagName === 'UL' ||
+        (
+          tagName === 'OL' &&
+          // Check if this is indeed a numbered list with replies as list items, not a numbered list
+          // as part of the user's comment that has their signature technically inside the last
+          // item.
+          (
+            this.lastElementInFirstChunk.querySelectorAll('ol > li').length === 1 ||
+            this.lastElementInFirstChunk.querySelectorAll('ol > li > .cd-signature').length > 1
+          )
+        )
+      ) {
+        tag = 'li';
+      } else if (tagName === 'DL') {
+        tag = 'dd';
+      } else {
+        tag = 'li';
+        createUl = true;
+      }
+    } else {
+      tag = 'li';
+      if (!isVotePlaceholder) {
+        createUl = true;
+      }
+    }
+
+    const replyWrapper = document.createElement(tag);
+    replyWrapper.className = 'cd-replyWrapper';
+    replyWrapper.appendChild(replyButton);
+
+    // Container contains wrapper that contains element ^_^
+    let replyContainer;
+    if (createUl) {
+      const replyContainer = document.createElement('ul');
+      replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
+      replyContainer.appendChild(replyWrapper);
+
+      this.lastElementInFirstChunk.parentElement.insertBefore(
+        replyContainer,
+        this.lastElementInFirstChunk.nextElementSibling
+      );
+    } else {
+      this.lastElementInFirstChunk.appendChild(replyWrapper);
+    }
+
+    /**
+     * Reply button on the bottom of the first section chunk.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyButton = $(replyButton);
+
+    /**
+     * Link element contained in the reply button element.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyButtonLink = $(replyButton.firstChild);
+
+    /**
+     * Reply button wrapper.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyWrapper = $(replyWrapper);
+
+    /**
+     * Reply button container if present. It may be wrapped around the reply button wrapper.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyContainer = replyContainer ? $(replyContainer) : undefined;
+  }
+
+  /**
+   * Add the "Add subsection" button that appears when hovering over the "Reply" button.
    */
   addAddSubsectionButton() {
     if (this.level !== 2) return;
@@ -368,8 +290,8 @@ export default class Section extends SectionSkeleton {
       clearTimeout(this.#hideAddSubsectionButtonTimeout);
       this.#hideAddSubsectionButtonTimeout = null;
 
-      if (!this.showAddSubsectionButtonTimeout) {
-        this.showAddSubsectionButtonTimeout = setTimeout(() => {
+      if (!this.#showAddSubsectionButtonTimeout) {
+        this.#showAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.show();
         }, 1000);
       }
@@ -378,11 +300,97 @@ export default class Section extends SectionSkeleton {
     this.replyButtonUnhoverHandler = () => {
       if (this.addSubsectionForm) return;
 
-      clearTimeout(this.showAddSubsectionButtonTimeout);
-      this.showAddSubsectionButtonTimeout = null;
+      clearTimeout(this.#showAddSubsectionButtonTimeout);
+      this.#showAddSubsectionButtonTimeout = null;
 
       deferAddSubsectionButtonHide();
     };
+  }
+
+  /**
+   * Add section menu items.
+   *
+   * @param {Promise} [watchedSectionsRequest]
+   * @private
+   */
+  extendSectionMenu(watchedSectionsRequest) {
+    if (
+      this.comments.length &&
+      this.comments[0].isOpeningSection &&
+      this.comments[0].openingSectionOfLevel === this.level &&
+      (this.comments[0].own || cd.settings.allowEditOthersComments) &&
+      this.comments[0].actionable
+    ) {
+      this.addMenuItem({
+        label: cd.s('sm-editopeningcomment'),
+        tooltip: cd.s('sm-editopeningcomment-tooltip'),
+        func: () => {
+          this.comments[0].edit();
+        },
+        class: 'cd-sectionLink-editOpeningComment',
+      });
+    }
+
+    this.addMenuItem({
+      label: cd.s('sm-addsubsection'),
+      tooltip: cd.s('sm-addsubsection-tooltip'),
+      func: () => {
+        this.addSubsection();
+      },
+      class: 'cd-sectionLink-addSubsection',
+    });
+
+    if (this.level === 2) {
+      this.addMenuItem({
+        label: cd.s('sm-move'),
+        tooltip: cd.s('sm-move-tooltip'),
+        func: () => {
+          this.move();
+        },
+        class: 'cd-sectionLink-moveSection',
+      });
+    }
+
+    if (watchedSectionsRequest) {
+      watchedSectionsRequest.then(
+        ({ thisPageWatchedSections }) => {
+          if (this.headline) {
+            this.watched = thisPageWatchedSections.includes(this.headline);
+            this.addMenuItem({
+              label: cd.s('sm-unwatch'),
+              tooltip: cd.s('sm-unwatch-tooltip'),
+              func: () => {
+                this.unwatch();
+              },
+              class: 'cd-sectionLink-unwatch',
+              visible: this.watched,
+            });
+            this.addMenuItem({
+              label: cd.s('sm-watch'),
+              tooltip: cd.s('sm-watch-tooltip'),
+              func: () => {
+                this.watch();
+              },
+              class: 'cd-sectionLink-watch',
+              visible: !this.watched,
+            });
+          }
+
+          const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
+
+          // We put it here to make it appear always after the "watch" item.
+          this.addMenuItem({
+            label: cd.s('sm-copylink'),
+            // We need the event object so we don't wrap the function into a container function.
+            func: this.copyLink.bind(this),
+            class: 'cd-sectionLink-copyLink',
+            tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
+            href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
+          });
+        },
+        () => {}
+      );
+    }
   }
 
   /**
@@ -413,8 +421,8 @@ export default class Section extends SectionSkeleton {
     if (baseSection && baseSection.$addSubsectionButtonContainer) {
       baseSection.$addSubsectionButtonContainer.hide();
 
-      clearTimeout(baseSection.showAddSubsectionButtonTimeout);
-      baseSection.showAddSubsectionButtonTimeout = null;
+      clearTimeout(baseSection.#showAddSubsectionButtonTimeout);
+      baseSection.#showAddSubsectionButtonTimeout = null;
     }
   }
 
@@ -578,7 +586,7 @@ export default class Section extends SectionSkeleton {
         if (e instanceof CdError) {
           const { code } = e.data;
           let message;
-          if (code === 'couldntLocateSection') {
+          if (code === 'locateSection') {
             message = cd.s('error-locatesection');
           } else {
             message = cd.s('error-unknown');
@@ -831,7 +839,7 @@ export default class Section extends SectionSkeleton {
         } catch (e) {
           if (e instanceof CdError) {
             const { data } = e.data;
-            const message = data === 'couldntLocateSection' ?
+            const message = data === 'locateSection' ?
               cd.s('error-locatesection') :
               cd.s('error-unknown');
             this.abort(message, false);
@@ -1106,7 +1114,7 @@ export default class Section extends SectionSkeleton {
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
-        code: 'couldntLocateSection',
+        code: 'locateSection',
       });
     }
 
@@ -1161,7 +1169,14 @@ export default class Section extends SectionSkeleton {
    * @param {string} [item.tooltip] Tooltip text.
    * @param {boolean} [item.visible=true] Should the item be visible.
    */
-  addMenuItem({ label, href, func, class: className, tooltip, visible = true }) {
+  addMenuItem({
+    label,
+    href,
+    func,
+    class: className,
+    tooltip,
+    visible = true,
+  }) {
     if (this.#closingBracketElement) {
       const wrapper = document.createElement('span');
       wrapper.className = 'cd-sectionLinkWrapper';
@@ -1388,7 +1403,11 @@ export default class Section extends SectionSkeleton {
    * @param {Function} [options.successCallback]
    * @param {Function} [options.errorCallback]
    */
-  static async watchSection(headline, { silent = false, successCallback, errorCallback }) {
+  static async watchSection(headline, {
+    silent = false,
+    successCallback,
+    errorCallback,
+  }) {
     if (!headline) return;
 
     let watchedSections;
@@ -1457,10 +1476,12 @@ export default class Section extends SectionSkeleton {
    * @param {string} [options.watchedAncestorHeadline] Headline of the ancestor section that is
    *   watched.
    */
-  static async unwatchSection(
-    headline,
-    { silent = false, successCallback, errorCallback, watchedAncestorHeadline }
-  ) {
+  static async unwatchSection(headline, {
+    silent = false,
+    successCallback,
+    errorCallback,
+    watchedAncestorHeadline,
+  }) {
     if (!headline) return;
 
     let watchedSections;
