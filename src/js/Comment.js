@@ -1470,14 +1470,14 @@ export default class Comment extends CommentSkeleton {
         .replace(cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
     }
 
-    const tagRegexp = /(<(?:small|span|sup|sub)(?: [\w ]+?=[^<>]+?)?> *)+$/i;
-
     const movePartsToSignature = (code, regexps) => {
       regexps.forEach((regexp) => {
         code = code.replace(regexp, movePartToSignature);
       });
       return code;
     };
+
+    const tagRegexp = new RegExp(`(<${cd.g.PIE_PATTERN}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
 
     // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
     // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.

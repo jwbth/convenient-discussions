@@ -246,6 +246,9 @@ export async function init({ messagesRequest }) {
     );
   }
 
+  const pieJoined = cd.g.POPULAR_INLINE_ELEMENTS.join('|');
+  cd.g.PIE_PATTERN = `(?:${pieJoined})`;
+
   const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
   cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
 
