@@ -81,6 +81,12 @@ export default class SectionSkeleton {
       headingElement
     );
 
+    this.headingNestingLevel = 0;
+    while (treeWalker.parentNode()) {
+      this.headingNestingLevel++;
+    }
+
+    treeWalker.currentNode = headingElement;
     const elements = [headingElement];
     const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
 
