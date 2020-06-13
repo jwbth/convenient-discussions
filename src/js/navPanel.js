@@ -10,7 +10,7 @@ import Section from './Section';
 import cd from './cd';
 import userRegistry from './userRegistry';
 import {
-  animateLink,
+  animateLinks,
   defined,
   handleApiReject,
   isCommentEdit,
@@ -385,11 +385,14 @@ async function sendNotifications(comments, thisPageWatchedSections) {
     }
 
     navPanel.closeAllNotifications();
-    const $body = animateLink(html, 'cd-notification-reloadPage', (e) => {
-      e.preventDefault();
-      reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
-      notification.close();
-    });
+    const $body = animateLinks(html, [
+      'cd-notification-reloadPage',
+      (e) => {
+        e.preventDefault();
+        reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
+        notification.close();
+      }
+    ]);
     const notification = mw.notification.notify($body);
     notifications.push({
       notification,

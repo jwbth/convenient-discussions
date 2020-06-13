@@ -63,7 +63,7 @@ export function isInline(node, countTextNodesAsInline) {
   } else {
     // This can be called from a worker.
     if (typeof window !== 'undefined') {
-      console.warn('Expensive operation: isInline() called for the element:', node);
+      console.warn('Expensive operation: isInline() called for:', node);
 
       // This is very expensive. Avoid by any means.
       return window.getComputedStyle(node).display === 'inline';
@@ -244,17 +244,18 @@ export function spacesToUnderlines(s) {
 }
 
 /**
- * Attach a callback function to a link with the provided class name given the HTML code, wrap in a
+ * Attach callback functions to links with the provided class names given HTML code, wrap in a
  * `<span>` element, and return the resultant jQuery object.
  *
  * @param {string|JQuery} html
- * @param {string} className
- * @param {Function} callback
+ * @param {...Array.<string, Function>} classToCallback
  * @returns {JQuery}
  */
-export function animateLink(html, className, callback) {
+export function animateLinks(html, ...classToCallback) {
   const $link = html instanceof $ ? html : cd.util.wrapInElement(html);
-  $link.find(`.${className}`).on('click', callback);
+  classToCallback.forEach(([className, callback]) => {
+    $link.find(`.${className}`).on('click', callback);
+  });
   return $link;
 }
 

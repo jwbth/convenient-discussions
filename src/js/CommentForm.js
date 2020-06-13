@@ -8,7 +8,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
-import { animateLink, defined, findLastIndex, handleApiReject, isInputFocused } from './util';
+import { animateLinks, defined, findLastIndex, handleApiReject, isInputFocused } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
 import {

@@ -8,7 +8,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLink, handleApiReject, isTalkNamespace, underlinesToSpaces } from './util';
+import { animateLinks, handleApiReject, isTalkNamespace, underlinesToSpaces } from './util';
 import { copyLink } from './modal.js';
 import { editWatchedSections } from './modal';
 import {
@@ -749,10 +749,13 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.abort = function (html, recoverable) {
-      const $body = animateLink(html, 'cd-message-reloadPage', () => {
-        cd.g.windowManager.clearWindows();
-        reloadPage();
-      });
+      const $body = animateLinks(html, [
+        'cd-message-reloadPage',
+        () => {
+          cd.g.windowManager.clearWindows();
+          reloadPage();
+        }
+      ]);
       this.showErrors(new OO.ui.Error($body, { recoverable }));
       this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
         if (recoverable) {
@@ -1406,14 +1409,13 @@ export default class Section extends SectionSkeleton {
       if (e instanceof CdError) {
         const { type, code } = e.data;
         if (type === 'internal' && code === 'sizeLimit') {
-          const $body = animateLink(
-            cd.s('section-watch-error-maxsize'),
+          const $body = animateLinks(cd.s('section-watch-error-maxsize'), [
             'cd-notification-editWatchedSections',
             (e) => {
               e.preventDefault();
               editWatchedSections();
             }
-          );
+          ]);
           mw.notify($body, { type: 'error' });
         } else {
           mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
