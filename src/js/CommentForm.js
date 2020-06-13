@@ -1626,11 +1626,18 @@ export default class CommentForm {
     switch (type) {
       case 'parse': {
         switch (code) {
-          case 'couldntLocateComment':
-            message = cd.s('error-locatecomment');
+          case 'locateComment':
+            editUrl = this.targetSection ?
+              this.targetSection.editUrl.href :
+              mw.util.getUrl(cd.g.CURRENT_PAGE, {
+                action: 'edit',
+                section: 0,
+              });
+            message = cd.s('error-locatecomment', editUrl);
             break;
-          case 'couldntLocateSection':
-            message = cd.s('error-locatesection');
+          case 'locateSection':
+            editUrl = mw.util.getUrl(cd.g.CURRENT_PAGE, { action: 'edit' });
+            message = cd.s('error-locatesection', editUrl);
             break;
           case 'numberedList':
             message = cd.s('cf-error-numberedlist');
@@ -1648,9 +1655,28 @@ export default class CommentForm {
             message = cd.s('cf-error-delete-repliesinsection');
             break;
         }
-        const $message = animateLink(message, 'cd-message-reloadPage', async () => {
-          this.reloadPage({}, null, true);
-        });
+        const $message = animateLinks(message, [
+          'cd-message-reloadPage',
+          () => {
+            this.reloadPage({}, null, true);
+          }
+        ], [
+          'cd-message-editPage',
+          async (e) => {
+            e.preventDefault();
+            await this.confirmClose();
+            this.forget();
+            location.assign(editUrl);
+          }
+        ], [
+          'cd-message-editPage',
+          async (e) => {
+            e.preventDefault();
+            await this.confirmClose();
+            this.forget();
+            location.assign(editUrl);
+          }
+        ]);
         this.abort({
           message: $message,
           messageType,

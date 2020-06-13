@@ -101,11 +101,16 @@ export default class Section extends SectionSkeleton {
       const editLink = this.#editSectionElement
         .querySelector('a[href*="&action=edit"], a[href*="&veaction=editsource"]');
       if (editLink) {
-        const editLinkUrl = new URL(editLink.href);
-        if (editLinkUrl) {
-          const sectionNumber = editLinkUrl.searchParams.get('section');
+        /**
+         * URL to edit the section.
+         *
+         * @type {URL}
+         */
+        this.editUrl = new URL(editLink.href);
+        if (this.editUrl) {
+          const sectionNumber = this.editUrl.searchParams.get('section');
           if (sectionNumber.startsWith('T-')) {
-            this.sourcePage = underlinesToSpaces(editLinkUrl.searchParams.get('title'));
+            this.sourcePage = underlinesToSpaces(this.editUrl.searchParams.get('title'));
           }
         }
       } else {

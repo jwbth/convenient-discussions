@@ -989,7 +989,7 @@ export default class Comment extends CommentSkeleton {
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
-        code: 'couldntLocateComment',
+        code: 'locateComment',
       });
     }
 
