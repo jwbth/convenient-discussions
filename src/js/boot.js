@@ -552,7 +552,7 @@ export async function reloadPage(keptData = {}) {
     pageData = await getCurrentPageData(true);
   } catch (e) {
     removeLoadingOverlay();
-    if (keptData.commentAnchor) {
+    if (keptData.submittedCommentForm) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -784,6 +784,7 @@ export function restoreCommentForms() {
         }
       } else if (commentForm.mode === 'addSection') {
         commentForm.addToPage();
+        cd.g.addSectionForm = commentForm;
       }
     });
     if (rescue.length) {

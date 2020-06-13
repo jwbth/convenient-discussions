@@ -2851,7 +2851,7 @@ export default class CommentForm {
     // Here we use a hack where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    let keptData = {};
+    let keptData = { submittedCommentForm: true };
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
       mw.config.set('wgArticleId', resp.edit.pageid);
@@ -2906,7 +2906,7 @@ export default class CommentForm {
   }
 
   /**
-   * Ask for confirmation to close the form if necessary.
+   * Ask for a confirmation to close the form if necessary.
    *
    * @returns {boolean}
    */
@@ -2936,7 +2936,6 @@ export default class CommentForm {
     }
 
     this.destroy();
-
     this.beingCancelled = false;
 
     if (this.mode === 'reply') {
@@ -2952,7 +2951,7 @@ export default class CommentForm {
   }
 
   /**
-   * Remove elements and other objects' properties related to the form.
+   * Remove the elements and other objects' properties related to the form.
    */
   destroy() {
     this.operations
@@ -2970,15 +2969,23 @@ export default class CommentForm {
   }
 
   /**
-   * Remove references to the form and unload it from the session data thus making it not appear
+   * Remove the references to the form and unload it from the session data thus making it not appear
    * after the page reload.
    *
-   * @param {boolean} [removeCommentProperty=true]
+   * @param {boolean} [removeTargetProperty=true] Remove the target object's property related to the
+   *   form. There can be a need to keep that in case the reload page operation fails and we show an
+   *   error message allowing to cancel the form. In that case, the form technically is still there,
+   *   so the references to it should be kept.
    * @private
    */
-  forget(removeCommentProperty = true) {
-    if (this.target && removeCommentProperty) {
-      delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
+  forget(removeTargetProperty = true) {
+    if (removeTargetProperty) {
+      if (this.target) {
+        delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
+      }
+      if (this.mode === 'addSection') {
+        cd.g.addSectionForm = null;
+      }
     }
     if (cd.commentForms.includes(this)) {
       cd.commentForms.splice(cd.commentForms.indexOf(this), 1);

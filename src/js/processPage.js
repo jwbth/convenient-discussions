@@ -61,6 +61,8 @@ async function prepare({ messagesRequest }) {
    */
   cd.sections = [];
 
+  cd.g.addSectionForm = null;
+
   if (cd.g.firstRun) {
     await init({ messagesRequest });
   } else {
