@@ -352,30 +352,34 @@ export default class Section extends SectionSkeleton {
     }
 
     if (watchedSectionsRequest) {
-      watchedSectionsRequest.then(
-        ({ thisPageWatchedSections }) => {
-          if (this.headline) {
-            this.watched = thisPageWatchedSections.includes(this.headline);
-            this.addMenuItem({
-              label: cd.s('sm-unwatch'),
-              tooltip: cd.s('sm-unwatch-tooltip'),
-              func: () => {
-                this.unwatch();
-              },
-              class: 'cd-sectionLink-unwatch',
-              visible: this.watched,
-            });
-            this.addMenuItem({
-              label: cd.s('sm-watch'),
-              tooltip: cd.s('sm-watch-tooltip'),
-              func: () => {
-                this.watch();
-              },
-              class: 'cd-sectionLink-watch',
-              visible: !this.watched,
-            });
-          }
-
+      watchedSectionsRequest
+        .then(
+          ({ thisPageWatchedSections }) => {
+            if (this.headline) {
+              this.watched = thisPageWatchedSections.includes(this.headline);
+              this.addMenuItem({
+                label: cd.s('sm-unwatch'),
+                tooltip: cd.s('sm-unwatch-tooltip'),
+                func: () => {
+                  this.unwatch();
+                },
+                class: 'cd-sectionLink-unwatch',
+                visible: this.watched,
+              });
+              this.addMenuItem({
+                label: cd.s('sm-watch'),
+                tooltip: cd.s('sm-watch-tooltip'),
+                func: () => {
+                  this.watch();
+                },
+                class: 'cd-sectionLink-watch',
+                visible: !this.watched,
+              });
+            }
+          },
+          () => {}
+        )
+        .finally(() => {
           const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
 
           // We put it here to make it appear always after the "watch" item.
@@ -387,9 +391,7 @@ export default class Section extends SectionSkeleton {
             tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
             href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
           });
-        },
-        () => {}
-      );
+        });
     }
   }
 
