@@ -225,9 +225,7 @@ function processComments(parser, firstVisibleElementData) {
  * @private
  */
 function processSections(parser, watchedSectionsRequest) {
-  const headings = parser.findHeadings();
-
-  headings.forEach((heading) => {
+  parser.findHeadings().forEach((heading) => {
     try {
       const section = parser.createSection(heading, watchedSectionsRequest);
       if (section.id !== undefined) {

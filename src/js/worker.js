@@ -90,9 +90,7 @@ function parse() {
   cd.debug.stopTimer('processing comments');
   cd.debug.startTimer('processing sections');
 
-  const headings = parser.findHeadings();
-
-  headings.forEach((heading) => {
+  parser.findHeadings().forEach((heading) => {
     try {
       const section = parser.createSection(heading);
       if (section.id !== undefined) {
