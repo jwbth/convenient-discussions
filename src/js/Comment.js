@@ -659,7 +659,7 @@ export default class Comment extends CommentSkeleton {
    */
   goToChild() {
     if (!this.childToScrollBackTo) {
-      console.error('This comment has no child from which the user has navigated earlier.');
+      console.error('This comment has no child from which the user had navigated earlier.');
       return;
     }
 

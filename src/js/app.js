@@ -176,7 +176,7 @@ function go() {
       (e) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         removeLoadingOverlay();
-        console.warn(e);
+        console.error(e);
       }
     );
 
@@ -249,7 +249,7 @@ function go() {
         require('../less/logPages.less');
       },
       (e) => {
-        console.warn(e);
+        console.error(e);
       }
     );
   }
@@ -450,7 +450,7 @@ async function app() {
       !cd.strings && (cd.getStringsPromise || getStrings()),
     ].filter(defined));
   } catch (e) {
-    console.warn(e);
+    console.error(e);
     return;
   }
 

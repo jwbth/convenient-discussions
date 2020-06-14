@@ -460,9 +460,9 @@ async function updatePageContent(html, keptData) {
       Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() })
     );
   } catch (e) {
-    mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-    removeLoadingOverlay();
+    mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
+    removeLoadingOverlay();
   }
 
   mw.hook('wikipage.content').fire(cd.g.$content);
