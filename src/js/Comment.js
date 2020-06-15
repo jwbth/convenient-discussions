@@ -635,9 +635,8 @@ export default class Comment extends CommentSkeleton {
       this.parent.goToChild();
     });
 
-    if (!this.parent.$underlay) {
-      this.parent.configureLayers();
-    }
+    this.parent.configureLayers();
+
     if (this.parent.goToChildButton) {
       this.parent.goToChildButton.$element.remove();
     }
@@ -1701,6 +1700,27 @@ export default class Comment extends CommentSkeleton {
         }
       }
     }
+  }
+
+  /**
+   * Configure and add underlayers for a group of comments.
+   *
+   * @param {Comment[]} comments
+   */
+  static configureAndAddLayers(comments) {
+    let floatingRects;
+    comments.forEach((comment) => {
+      floatingRects = (
+        floatingRects ||
+        cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
+      );
+      comment.configureLayers(false, floatingRects);
+    });
+
+    // Faster to add them in one sequence.
+    comments.forEach((comment) => {
+      comment.addLayers();
+    });
   }
 
   /**

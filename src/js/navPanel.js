@@ -698,17 +698,8 @@ const navPanel = {
 
         return false;
       });
-      const floatingRects = newComments.length ?
-        cd.g.specialElements.floating.map((el) => el.getBoundingClientRect()) :
-        undefined;
-      newComments.forEach((comment) => {
-        comment.configureLayers(false, floatingRects)
-      });
 
-      // Faster to add them in one sequence.
-      newComments.forEach((comment) => {
-        comment.addLayers();
-      });
+      Comment.configureAndAddLayers(newComments);
     }
 
     thisPageVisits.push(String(currentUnixTime));

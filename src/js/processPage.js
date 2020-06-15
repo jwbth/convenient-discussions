@@ -389,18 +389,8 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
  */
 function highlightOwnComments() {
   if (!cd.settings.highlightOwnComments) return;
-  const myComments = cd.comments.filter((comment) => comment.own);
-  const floatingRects = myComments.length ?
-    cd.g.specialElements.floating.map((el) => el.getBoundingClientRect()) :
-    undefined;
-  myComments.forEach((comment) => {
-    comment.configureLayers(false, floatingRects);
-  });
 
-  // Faster to add them in one sequence.
-  myComments.forEach((comment) => {
-    comment.addLayers();
-  });
+  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.own));
 }
 
 /**
