@@ -281,17 +281,6 @@ export default class CommentForm {
   }
 
   /**
-   * Function to run when the user retries loading a comment by pressing the relevant button.
-   *
-   * @private
-   */
-  retryLoad() {
-    this.$element.hide();
-    this.destroy();
-    this.target[CommentForm.modeToProperty(this.mode)]();
-  }
-
-  /**
    * Set the `target`, `targetSection` and `targetComment` properties.
    *
    * @param {Comment|Section|null} target
@@ -1453,14 +1442,12 @@ export default class CommentForm {
    *   https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true
    *   the OOUI Demos}.
    * @param {string} [options.class] Class name added to the message element.
-   * @param {string} [options.allowClose=true] Show the close button.
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.
    */
   showMessage(html, {
     type = 'notice',
     class: classLastPart,
-    allowClose = true,
     isRaw = false,
   }) {
     if (
@@ -1490,10 +1477,8 @@ export default class CommentForm {
 
     this.$messageArea
       .append(appendable)
+      .cdAddCloseButton()
       .cdScrollIntoView('top');
-    if (allowClose) {
-      this.$messageArea.cdAddCloseButton();
-    }
   }
 
   /**
@@ -1515,23 +1500,20 @@ export default class CommentForm {
    * @param {string} options.message Message visible to the user.
    * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
-   * @param {string} [options.logMessage] Message for the browser console.
-   * @param {Function} [options.retryFunc] Function to execute when the user presses "Retry".
-   *   Presence of this value implies tearing down the form.
-   * @param {boolean} [options.tearDown=false] Tear down the main form elements (but keep the
-   *   message area).
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
    *   framing.
+   * @param {string} [options.logMessage] Message for the browser console.
+   * @param {boolean} [options.doCancel=false] Cancel the form and show the message as a
+   *   notification.
    * @param {object} [options.currentOperation] Operation the form is undergoing.
    * @private
    */
   abort({
     message,
     messageType = 'error',
-    logMessage,
-    retryFunc,
-    tearDown = false,
     isRawMessage = false,
+    logMessage,
+    doCancel = false,
     currentOperation,
   }) {
     if (currentOperation) {
@@ -1544,43 +1526,18 @@ export default class CommentForm {
       console.warn(logMessage);
     }
 
-    if (!(currentOperation && currentOperation.type === 'preview' && cd.settings.autopreview)) {
-      this.showMessage(message, {
-        type: messageType,
-        allowClose: !tearDown,
-        isRaw: isRawMessage,
-      });
-    }
-
-    if (retryFunc || tearDown) {
-      this.$innerWrapper.children(':not(.cd-messageArea)').remove();
-
-      const cancelLink = new OO.ui.ButtonWidget({
-        label: cd.s('cf-error-cancel'),
-        framed: false,
-      });
-      cancelLink.on('click', () => {
-        this.cancel(false);
-      });
-
-      const $div = $('<div>')
-        .append(cancelLink.$element)
-        .appendTo(this.$messageArea);
-
-      if (retryFunc) {
-        const retryLink = new OO.ui.ButtonWidget({
-          label: cd.s('cf-error-tryagain'),
-          framed: false,
+    if (doCancel) {
+      mw.notify(message, { type: 'error' })
+      this.cancel(false);
+    } else {
+      if (!(currentOperation && currentOperation.type === 'preview' && cd.settings.autopreview)) {
+        this.showMessage(message, {
+          type: messageType,
+          isRaw: isRawMessage,
         });
-        retryLink.on('click', () => {
-          this.$messageArea.empty();
-          retryFunc.call(this);
-        });
-        $div.append(retryLink.$element);
       }
+      this.$messageArea.cdScrollIntoView('top');
     }
-
-    this.$messageArea.cdScrollIntoView('top');
   }
 
   /**
@@ -1625,10 +1582,8 @@ export default class CommentForm {
    * @param {string} [options.messageType] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
    * @param {string} [options.logMessage] Data or text to display in the browser console.
-   * @param {Function} [options.retryFunc] Function to execute when the user presses "Retry".
-   *   Presence of this value implies deletion of the form elements.
-   * @param {boolean} [options.tearDown=false] Tear down the primary form elements (but keep the
-   *   message area).
+   * @param {boolean} [options.doCancel=false] Cancel the form and show the message as a
+   *   notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
    * @param {object} [options.currentOperation] Operation the form is undergoing.
    */
@@ -1639,8 +1594,7 @@ export default class CommentForm {
     message,
     messageType,
     logMessage,
-    retryFunc,
-    tearDown = false,
+    doCancel = false,
     isRawMessage = false,
     currentOperation,
   }) {
@@ -1677,36 +1631,33 @@ export default class CommentForm {
             message = cd.s('cf-error-delete-repliesinsection');
             break;
         }
-        const $message = animateLinks(message, [
-          'cd-message-reloadPage',
-          () => {
-            this.reloadPage({}, null, true);
-          }
-        ], [
-          'cd-message-editPage',
-          async (e) => {
-            e.preventDefault();
-            await this.confirmClose();
-            this.forget();
-            location.assign(editUrl);
-          }
-        ], [
-          'cd-message-editPage',
-          async (e) => {
-            e.preventDefault();
-            await this.confirmClose();
-            this.forget();
-            location.assign(editUrl);
-          }
-        ]);
-        this.abort({
-          message: $message,
-          messageType,
-          retryFunc,
-          tearDown,
-          isRawMessage,
-          currentOperation,
-        });
+        message = animateLinks(
+          message,
+          [
+            'cd-message-reloadPage',
+            () => {
+              this.reloadPage({}, null, true);
+            },
+          ],
+          [
+            'cd-message-editPage',
+            async (e) => {
+              e.preventDefault();
+              await this.confirmClose();
+              this.forget();
+              location.assign(editUrl);
+            },
+          ],
+          [
+            'cd-message-editPage',
+            async (e) => {
+              e.preventDefault();
+              await this.confirmClose();
+              this.forget();
+              location.assign(editUrl);
+            },
+          ]
+        );
         break;
       }
 
@@ -1734,43 +1685,20 @@ export default class CommentForm {
           }
         }
 
-        const $message = cd.util.wrapInElement(message);
-        $message.find('.mw-parser-output').css('display', 'inline');
-        this.abort({
-          message: $message,
-          messageType,
-          isRawMessage,
-          logMessage: logMessage || [code, apiData],
-          retryFunc,
-          tearDown,
-          currentOperation,
-        });
+        message = cd.util.wrapInElement(message);
+        message.find('.mw-parser-output').css('display', 'inline');
+        logMessage = logMessage || [code, apiData];
         break;
       }
 
-      case 'network': {
-        message = (message ? `${message} ` : '') + cd.s('error-network');
-        this.abort({
-          message,
-          isRawMessage,
-          logMessage,
-          retryFunc,
-          tearDown,
-          currentOperation,
-        });
-        break;
-      }
-
+      case 'network':
       case 'javascript': {
-        this.abort({
-          message: cd.s('error-javascript'),
-          logMessage,
-          tearDown,
-          currentOperation,
-        });
+        message = (message ? `${message} ` : '') + cd.s(`error-${type}`);
         break;
       }
     }
+
+    this.abort({ message, messageType, isRawMessage, logMessage, doCancel, currentOperation });
   }
 
   /**
@@ -2413,7 +2341,7 @@ export default class CommentForm {
    */
   async preview(maySummaryHaveChanged = true, auto = true, operation) {
     if (
-      this.textLoaded === false ||
+      this.operations.some((op) => !op.closed && op.type === 'load') ||
       (
         this.target &&
         !this.target.inCode &&
@@ -2641,7 +2569,7 @@ export default class CommentForm {
   async reloadPage(keptData, currentOperation, confirmClose = false) {
     if (confirmClose && !(await this.confirmClose())) return;
 
-    this.forget(false);
+    this.forget();
 
     try {
       await reloadPage(keptData);
@@ -2972,20 +2900,14 @@ export default class CommentForm {
    * Remove the references to the form and unload it from the session data thus making it not appear
    * after the page reload.
    *
-   * @param {boolean} [removeTargetProperty=true] Remove the target object's property related to the
-   *   form. There can be a need to keep that in case the reload page operation fails and we show an
-   *   error message allowing to cancel the form. In that case, the form technically is still there,
-   *   so the references to it should be kept.
    * @private
    */
-  forget(removeTargetProperty = true) {
-    if (removeTargetProperty) {
-      if (this.target) {
-        delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
-      }
-      if (this.mode === 'addSection') {
-        cd.g.addSectionForm = null;
-      }
+  forget() {
+    if (this.target) {
+      delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
+    }
+    if (this.mode === 'addSection') {
+      cd.g.addSectionForm = null;
     }
     if (cd.commentForms.includes(this)) {
       cd.commentForms.splice(cd.commentForms.indexOf(this), 1);
