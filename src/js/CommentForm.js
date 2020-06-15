@@ -201,11 +201,16 @@ export default class CommentForm {
           },
           (e) => {
             if (e instanceof CdError) {
-              this.handleError(Object.assign({}, e.data, { retryFunc: this.retryLoad }));
+              this.handleError(Object.assign({}, e.data, {
+                doCancel: true,
+                currentOperation,
+              }));
             } else {
               this.handleError({
                 type: 'javascript',
                 logMessage: e,
+                doCancel: true,
+                currentOperation,
               });
             }
           }
@@ -2576,11 +2581,8 @@ export default class CommentForm {
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(Object.assign({}, e.data, {
-          message: cd.s('error-reloadpage'),
-          retryFunc: () => {
-            this.reloadPage(keptData);
-          },
-          tearDown: true,
+          message: cd.s('error-reloadpage-saved'),
+          doCancel: true,
           currentOperation,
         }));
       } else {
