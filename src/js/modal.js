@@ -31,6 +31,68 @@ export function createWindowManager() {
 }
 
 /**
+ * Display a OOUI message dialog where user is asked to confirm something. Compared to
+ * `OO.ui.confirm`, returns an action string, not a boolean (which helps to differentiate between
+ * more than two types of answer and also a window close by pressing Esc).
+ *
+ * @param {JQuery|string} message
+ * @param {object} [options={}]
+ * @returns {boolean}
+ */
+export async function confirmDialog(message, options = {}) {
+  const defaultOptions = {
+    message,
+    // OO.ui.MessageDialog standard
+    actions: [
+      {
+        action: 'accept',
+        label: OO.ui.deferMsg('ooui-dialog-message-accept'),
+        flags: 'primary',
+      },
+      {
+        action: 'reject',
+        label: OO.ui.deferMsg('ooui-dialog-message-reject'),
+        flags: 'safe',
+      },
+    ],
+  };
+
+  const dialog = new OO.ui.MessageDialog();
+  cd.g.windowManager.addWindows([dialog]);
+  const windowInstance = cd.g.windowManager.openWindow(
+    dialog,
+    Object.assign({}, defaultOptions, options)
+  );
+
+  const data = await windowInstance.closed;
+  return data && data.action;
+}
+
+/**
+ * Show a confirmation message dialog with a destructive action.
+ *
+ * @param {string} messageName
+ * @param {object} [options={}]
+ * @returns {Promise}
+ */
+export function confirmDestructive(messageName, options = {}) {
+  const actions = [
+    {
+      label: cd.s(`${messageName}-yes`),
+      action: 'accept',
+      flags: ['primary', 'destructive'],
+    },
+    {
+      label: cd.s(`${messageName}-no`),
+      action: 'reject',
+      flags: 'safe',
+    },
+  ];
+  const defaultOptions = { actions };
+  return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
+}
+
+/**
  * @typedef {object} OoUiRadioSelectWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
  */
@@ -1242,68 +1304,6 @@ export function rescueCommentFormsContent(content) {
     ],
     size: 'large',
   });
-
-/**
- * Display a OOUI message dialog where user is asked to confirm something. Compared to
- * `OO.ui.confirm`, returns an action string, not a boolean (which helps to differentiate between
- * more than two types of answer and also a window close by pressing Esc).
- *
- * @param {JQuery|string} message
- * @param {object} [options={}]
- * @returns {boolean}
- */
-export async function confirmDialog(message, options = {}) {
-  const defaultOptions = {
-    message,
-    // OO.ui.MessageDialog standard
-    actions: [
-      {
-        action: 'accept',
-        label: OO.ui.deferMsg('ooui-dialog-message-accept'),
-        flags: 'primary',
-      },
-      {
-        action: 'reject',
-        label: OO.ui.deferMsg('ooui-dialog-message-reject'),
-        flags: 'safe',
-      },
-    ],
-  };
-
-  const dialog = new OO.ui.MessageDialog();
-  cd.g.windowManager.addWindows([dialog]);
-  const windowInstance = cd.g.windowManager.openWindow(
-    dialog,
-    Object.assign({}, defaultOptions, options)
-  );
-
-  const data = await windowInstance.closed;
-  cd.g.windowManager.clearWindows();
-  return data && data.action;
-}
-
-/**
- * Show a confirmation message dialog with a destructive action.
- *
- * @param {string} messageName
- * @param {object} [options={}]
- * @returns {Promise}
- */
-export function confirmDestructive(messageName, options = {}) {
-  const actions = [
-    {
-      label: cd.s(`${messageName}-yes`),
-      action: 'accept',
-      flags: ['primary', 'destructive'],
-    },
-    {
-      label: cd.s(`${messageName}-no`),
-      action: 'reject',
-      flags: 'safe',
-    },
-  ];
-  const defaultOptions = { actions };
-  return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
 }
 
 /**
