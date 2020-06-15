@@ -767,7 +767,7 @@ export default class Section extends SectionSkeleton {
       const $body = animateLinks(html, [
         'cd-message-reloadPage',
         () => {
-          cd.g.windowManager.clearWindows();
+          this.close();
           reloadPage();
         }
       ]);
@@ -981,10 +981,7 @@ export default class Section extends SectionSkeleton {
 
     const dialog = new MoveSectionDialog();
     cd.g.windowManager.addWindows([dialog]);
-    const windowInstance = cd.g.windowManager.openWindow(dialog);
-    windowInstance.closed.then(() => {
-      cd.g.windowManager.clearWindows();
-    });
+    cd.g.windowManager.openWindow(dialog);
   }
 
   /**

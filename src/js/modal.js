@@ -20,7 +20,13 @@ import { handleApiReject, underlinesToSpaces } from './util';
  */
 export function createWindowManager() {
   if (cd.g.windowManager) return;
-  cd.g.windowManager = new OO.ui.WindowManager();
+
+  cd.g.windowManager = new OO.ui.WindowManager().on('closing', async (win, closed) => {
+    // We don't have windows that can be reused.
+    await closed;
+    cd.g.windowManager.clearWindows();
+  });
+
   $(document.body).append(cd.g.windowManager.$element);
 }
 
@@ -711,10 +717,7 @@ export async function settingsDialog() {
   createWindowManager();
   const dialog = new SettingsDialog();
   cd.g.windowManager.addWindows([dialog]);
-  let windowInstance = cd.g.windowManager.openWindow(dialog);
-  windowInstance.closed.then(() => {
-    cd.g.windowManager.clearWindows();
-  });
+  cd.g.windowManager.openWindow(dialog);
 }
 
 /**
@@ -953,10 +956,7 @@ export async function editWatchedSections() {
   createWindowManager();
   const dialog = new EditWatchedSectionsDialog();
   cd.g.windowManager.addWindows([dialog]);
-  let windowInstance = cd.g.windowManager.openWindow(dialog);
-  windowInstance.closed.then(() => {
-    cd.g.windowManager.clearWindows();
-  });
+  cd.g.windowManager.openWindow(dialog);
 }
 
 /**
@@ -1149,7 +1149,6 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       size: 'large',
     });
     windowInstance.closed.then(() => {
-      cd.g.windowManager.clearWindows();
       object.linkBeingCopied = false;
     });
   } else {
@@ -1236,17 +1235,13 @@ export function rescueCommentFormsContent(content) {
 
   const dialog = new OO.ui.MessageDialog();
   cd.g.windowManager.addWindows([dialog]);
-  const windowInstance = cd.g.windowManager.openWindow(dialog, {
+  cd.g.windowManager.openWindow(dialog, {
     message: field.$element,
     actions: [
       { label: cd.s('rd-close'), action: 'close' },
     ],
     size: 'large',
   });
-  windowInstance.closed.then(() => {
-    cd.g.windowManager.clearWindows();
-  });
-}
 
 /**
  * Display a OOUI message dialog where user is asked to confirm something. Compared to
