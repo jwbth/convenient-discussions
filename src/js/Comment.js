@@ -1316,11 +1316,11 @@ export default class Comment extends CommentSkeleton {
   /**
    * Get the comment's text without a signature.
    *
-   * @param {boolean} [doCleanUp=true]
+   * @param {boolean} [cleanUp=true]
    * @returns {string}
    * @private
    */
-  getText(doCleanUp = true) {
+  getText(cleanUp = true) {
     const $clone = this.$elements
       .not('h1, h2, h3, h4, h5, h6')
       .clone()
@@ -1334,11 +1334,11 @@ export default class Comment extends CommentSkeleton {
       .join(', ');
     $dummy.find(selector).remove();
     let text = $dummy.cdGetText();
-    if (doCleanUp) {
+    if (cleanUp) {
       if (cd.config.signatureEndingRegexp) {
         text = text.replace(cd.config.signatureEndingRegexp, '');
       }
-      // FIXME: we use the same regexp for cleaning the wikitext and the render. With the current
+      // FIXME: we use the same regexp for cleaning the wikitext and render. With the current
       // default config value the side effects seem to be negligable, but who knows...
       if (cd.config.signaturePrefixRegexp) {
         text = text.replace(cd.config.signaturePrefixRegexp, '');

@@ -73,7 +73,7 @@ export default {
       }
     });
 
-    // It's faster to update positions separately in one sequence.
+    // It's faster to update the positions separately in one sequence.
     comments.forEach((comment) => {
       comment.updateLayersPositions();
     });

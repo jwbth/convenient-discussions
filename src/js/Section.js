@@ -385,7 +385,7 @@ export default class Section extends SectionSkeleton {
           // We put it here to make it appear always after the "watch" item.
           this.addMenuItem({
             label: cd.s('sm-copylink'),
-            // We need the event object so we don't wrap the function into a container function.
+            // We need the event object to be passed to the function.
             func: this.copyLink.bind(this),
             class: 'cd-sectionLink-copyLink',
             tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
