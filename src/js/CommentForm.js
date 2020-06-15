@@ -2851,7 +2851,7 @@ export default class CommentForm {
     // Here we use a hack where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    let keptData = { submittedCommentForm: true };
+    let keptData = { didSubmitCommentForm: true };
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
       mw.config.set('wgArticleId', resp.edit.pageid);

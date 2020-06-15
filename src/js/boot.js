@@ -542,7 +542,7 @@ export async function reloadPage(keptData = {}) {
 
   setLoadingOverlay();
 
-  // Save time by requesting options in advance.
+  // Save time by requesting the options in advance.
   getUserInfo().catch((e) => {
     console.warn(e);
   });
@@ -552,7 +552,7 @@ export async function reloadPage(keptData = {}) {
     pageData = await getCurrentPageData(true);
   } catch (e) {
     removeLoadingOverlay();
-    if (keptData.submittedCommentForm) {
+    if (keptData.didSubmitCommentForm) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -572,6 +572,9 @@ export async function reloadPage(keptData = {}) {
   mw.loader.load(pageData.modules);
   mw.loader.load(pageData.modulestyles);
   mw.config.set(pageData.jsconfigvars);
+
+  // Remove the fragment
+  history.replaceState(history.state, '', location.pathname + location.search);
 
   updatePageTitle(0, false);
   updatePageContent(pageData.text, keptData);
