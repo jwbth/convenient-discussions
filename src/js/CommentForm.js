@@ -2589,7 +2589,7 @@ export default class CommentForm {
         this.handleError({
           type: 'javascript',
           logMessage: e,
-          tearDown: true,
+          doCancel: true,
           currentOperation,
         });
       }
