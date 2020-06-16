@@ -2850,23 +2850,14 @@ export default class CommentForm {
    * @param {boolean} [confirmClose=true] Whether to confirm form close.
    */
   async cancel(confirmClose = true) {
-    if (this.beingCancelled || this.isBeingSubmitted()) return;
-
-    /**
-     * Comment form is in the process of being cancelled.
-     *
-     * @type {boolean}
-     */
-    this.beingCancelled = true;
+    if (cd.util.isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !(await this.confirmClose())) {
       this.commentInput.focus();
-      this.beingCancelled = false;
       return;
     }
 
     this.destroy();
-    this.beingCancelled = false;
 
     if (this.mode === 'reply') {
       this.target.scrollIntoView('top');
