@@ -104,15 +104,6 @@ export default class CommentForm {
      */
     this.id = commentFormsCounter++;
 
-    if (this.mode === 'edit' && !dataToRestore) {
-      /**
-       * Has the text been loaded when editing an existing comment.
-       *
-       * @type {boolean}
-       */
-      this.textLoaded = false;
-    }
-
     /**
      * Was the summary altered manually.
      *
@@ -148,7 +139,7 @@ export default class CommentForm {
 
     /**
      * @typedef {object} Operation
-     * @property {string} type One of `'preview'`, `'viewChanges'`, and `'submit'`.
+     * @property {string} type One of `'load'`, `'preview'`, `'viewChanges'`, and `'submit'`.
      * @property {boolean} closed Whether the operation is closed (settled).
      * @property {boolean} delayed Whether the operation is delayed.
      */
@@ -175,7 +166,7 @@ export default class CommentForm {
       }
     } else {
       if (this.mode === 'edit') {
-        this.pushPending(true);
+        const currentOperation = this.registerOperation({ type: 'load' });
 
         this.target.getCode(true).then(
           ({ commentText, headline }) => {
@@ -193,8 +184,7 @@ export default class CommentForm {
             // take it from the most reliable source.
             this.willCommentBeIndented = this.target.inCode.indentationChars;
 
-            this.popPending(true);
-            this.textLoaded = true;
+            this.closeOperation(currentOperation);
             saveSession();
 
             this.commentInput.focus();
@@ -2399,7 +2389,7 @@ export default class CommentForm {
     // - when restoring the form from a session,
     // - when the target comment has not been loaded yet, possibly because of an error when tried to
     // (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
-    // "this.textLoaded" check above).
+    // looking for the unclosed 'load' operation above).
     if (this.target && !this.target.inCode) {
       await this.checkCode();
       if (this.closeOperationIfNecessary(currentOperation, !this.target.inCode)) return;
