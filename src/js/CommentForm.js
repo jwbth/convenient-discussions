@@ -1626,32 +1626,23 @@ export default class CommentForm {
             message = cd.s('cf-error-delete-repliesinsection');
             break;
         }
+        const navigateToEditUrl = async (e) => {
+          e.preventDefault();
+          if (!(await this.confirmClose())) return;
+          this.forget();
+          location.assign(editUrl);
+        };
         message = animateLinks(
           message,
           [
             'cd-message-reloadPage',
-            () => {
-              this.reloadPage({}, null, true);
+            async () => {
+              if (!(await this.confirmClose())) return;
+              this.reloadPage();
             },
           ],
-          [
-            'cd-message-editPage',
-            async (e) => {
-              e.preventDefault();
-              await this.confirmClose();
-              this.forget();
-              location.assign(editUrl);
-            },
-          ],
-          [
-            'cd-message-editPage',
-            async (e) => {
-              e.preventDefault();
-              await this.confirmClose();
-              this.forget();
-              location.assign(editUrl);
-            },
-          ]
+          [ 'cd-message-editSection', navigateToEditUrl ],
+          [ 'cd-message-editPage', navigateToEditUrl ]
         );
         break;
       }
@@ -2557,11 +2548,8 @@ export default class CommentForm {
    *
    * @param {object} [keptData] Data passed from the previous page state.
    * @param {Operation} [currentOperation] Current operation.
-   * @param {boolean} [confirmClose=false] Whether to confirm form close.
    */
-  async reloadPage(keptData, currentOperation, confirmClose = false) {
-    if (confirmClose && !(await this.confirmClose())) return;
-
+  async reloadPage(keptData, currentOperation) {
     this.forget();
 
     try {
