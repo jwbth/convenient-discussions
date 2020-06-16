@@ -211,7 +211,7 @@ function updateRefreshButton(newComments, areThereInteresting) {
       tooltipText += `\n\n${headline}`;
       newCommentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
-        const author = comment.targetCommentAuthor ?
+        const author = comment.targetCommentAuthor && comment.level > 1 ?
           cd.s(
             'newpanel-newcomments-reply',
             comment.author.name,
