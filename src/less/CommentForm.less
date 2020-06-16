@@ -1,8 +1,13 @@
+// Modern replacement of clearfix
+.flow-root() {
+  display: flow-root;
+  // Hack for Edge
+  -ms-display: grid;
+}
+
 .cd-commentForm {
   &.cd-commentForm {
-    display: flow-root;
-    // Hack for Edge
-    -ms-display: grid;
+    .flow-root();
 
     margin: 0.5em 0;
 
@@ -45,9 +50,7 @@
 
   .cd-buttonsContainer {
     margin-top: 0.5em;
-    display: flow-root;
-    // Hack for Edge
-    -ms-display: grid;
+    .flow-root();
   }
 
   .cd-leftButtonsContainer {
@@ -98,11 +101,7 @@
 
   &-innerWrapper {
     margin-bottom: 0;
-
-    // Modern replacement of clearfix
-    display: flow-root;
-    // Hack for Edge
-    -ms-display: grid;
+    .flow-root();
   }
 
   &-signature {
@@ -161,6 +160,7 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
   margin-top: 0.5em;
   padding: 0.5em 0.75em;
   background-color: #f8f9fa;
+  .flow-root();
 
   > .mw-parser-output > *:first-child {
     margin-top: 0;
@@ -222,7 +222,7 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
 .cd-previewArea-above,
 .cd-messageArea {
   // In Chrome, in the form is in a numbered list, this and "+ *" rule make the number to appear
-  // before the textarea, not before the message.
+  // before the textarea (which is better), not before the message.
   float: left;
 
   + * {
