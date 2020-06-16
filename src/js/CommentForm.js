@@ -2248,6 +2248,7 @@ export default class CommentForm {
    * Add an operation to the registry of operations.
    *
    * @param {Operation} operation
+   * @returns {Operation}
    */
   registerOperation(operation) {
     this.operations.push(operation);
@@ -2256,6 +2257,7 @@ export default class CommentForm {
       this.$messageArea.empty();
       this.pushPending(operation.type === 'submit');
     }
+    return operation;
   }
 
   /**
@@ -2362,16 +2364,13 @@ export default class CommentForm {
       return;
     }
 
-    let currentOperation;
-    if (operation) {
-      currentOperation = operation;
-    } else {
-      currentOperation = {
+    const currentOperation = (
+      operation ||
+      this.registerOperation({
         type: 'preview',
         auto,
-      };
-      this.registerOperation(currentOperation);
-    }
+      })
+    );
 
     if (auto) {
       const isTooEarly = Date.now() - this.#lastPreviewTimestamp < 1000;
@@ -2492,8 +2491,7 @@ export default class CommentForm {
   async viewChanges() {
     if (this.isBeingSubmitted()) return;
 
-    const currentOperation = { type: 'viewChanges' };
-    this.registerOperation(currentOperation);
+    const currentOperation = this.registerOperation({ type: 'viewChanges' });
 
     const { page, newPageCode } = await this.tryPrepareNewPageCode('viewChanges') || {};
     if (this.closeOperationIfNecessary(currentOperation, newPageCode === undefined)) return;
@@ -2766,8 +2764,7 @@ export default class CommentForm {
 
     if (!(await this.runChecks({ isDelete }))) return;
 
-    const currentOperation = { type: 'submit' };
-    this.registerOperation(currentOperation);
+    const currentOperation = this.registerOperation({ type: 'submit' });
 
     const { page, newPageCode } = await this.tryPrepareNewPageCode('submit') || {};
     if (newPageCode === undefined) {
