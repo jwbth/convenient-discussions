@@ -64,7 +64,12 @@ export default {
         if (isMoved) {
           notMovedCount = 0;
           comments.push(comment);
-        } else if (isMoved === false) {
+        } else if (
+          isMoved === false &&
+          // Nested containers shouldn't count, the positions of the layers inside them may be OK,
+          // unlike the layers preceding them.
+          !comment.getLayersContainer().closest('.cd-commentLayersContainer')
+        ) {
           notMovedCount++;
           if (notMovedCount === 2) {
             return true;
