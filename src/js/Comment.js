@@ -513,7 +513,7 @@ export default class Comment extends CommentSkeleton {
     if (cd.util.isPageOverlayOn()) return;
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
-    // again on the next event.
+    // again when the next event fires.
     if (!this.configureLayers() && this.#underlay) {
       this.#underlay.classList.add('cd-commentUnderlay-focused');
       this.#overlay.classList.add('cd-commentOverlay-focused');
@@ -1610,7 +1610,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get and sometimes create a container for the comment's underlay.
+   * Get and sometimes create the container for the comment's underlay.
    *
    * @returns {Element}
    */
