@@ -2264,9 +2264,6 @@ export default class CommentForm {
     }
     const otherOperationIndex = findLastIndex(
       this.operations,
-      // With "&& !op.delayed", the preview would try to update at every key stroke, but not more
-      // often than once a second. Without "&& !op.delayed", the preview would update only when
-      // the user didn't type anything for 1 second (but still make requests in the background).
       (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.delayed
     );
     if (
