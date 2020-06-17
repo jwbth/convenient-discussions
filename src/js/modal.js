@@ -1334,14 +1334,11 @@ export async function notFound(decodedFragment, date) {
           .replace(/"/g, '')
           .trim();
       }
+      const pageName = underlinesToSpaces(mw.config.get('wgPageName'));
       const archivePrefix = cd.config.getArchivePrefix ?
-        cd.config.getArchivePrefix(mw.config.get('wgTitle')) :
-        mw.config.get('wgTitle');
-      const searchQuery = (
-        `"${text}" prefix:` +
-        mw.config.get('wgFormattedNamespaces')[cd.g.CURRENT_NAMESPACE_NUMBER] +
-        `:${archivePrefix}`
-      );
+        cd.config.getArchivePrefix(pageName) :
+        pageName;
+      const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {
         profile: 'default',
         fulltext: 'Search',

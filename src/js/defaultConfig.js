@@ -509,13 +509,13 @@ export default {
   commentInputEmptyPlaceholder: false,
 
   /**
-   * Function that generates an archive prefix without an ending slash for a given page title. It is
-   * used for the feature that suggests to search in the archive if the section by the given
+   * Function that generates the archive prefix (without an ending slash) for a given page name. It
+   * is used for the feature that suggests to search in the archive if the section by the given
    * fragment is not found on the page. If `null`, the page title is used as an archive prefix.
    *
    * @type {?Function}
    * @kind function
-   * @param {string} pageTitle
+   * @param {string} pageName Page name with a namespace name. With spaces, not underlines.
    * @returns {string}
    */
   getArchivePrefix: null,
