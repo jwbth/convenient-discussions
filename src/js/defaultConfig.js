@@ -600,13 +600,14 @@ export default {
 
   /**
    * Function that returns the code to insert in the beginning of the section moved from another
-   * page. If `null`, no code will be added.
+   * page *or* an array of strings to insert in the beginning and the ending of the section
+   * respectively. If `null`, no code will be added.
    *
    * @type {?Function}
    * @kind function
    * @param {string} targetPageWikilink
    * @param {string} signature
-   * @returns {string}
+   * @returns {string|Array<string, string>}
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
     return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';

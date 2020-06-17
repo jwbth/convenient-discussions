@@ -655,15 +655,20 @@ export default class Section extends SectionSkeleton {
       const targetPageCode = cd.config.getMoveTargetPageCode ?
         cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.g.CURRENT_USER_SIGNATURE) :
         undefined;
+      const targetPageCodeBeginning = Array.isArray(targetPageCode) ?
+        targetPageCode[0] + '\n' :
+        targetPageCode;
+      const targetPageCodeEnding = Array.isArray(targetPageCode) ? '\n' + targetPageCode[1] : '';
       const targetPageNewSectionCode = endWithTwoNewlines(
         sourcePage.sectionInCode.code.slice(
           0,
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
         ) +
-        (targetPageCode ? targetPageCode + '\n' : '') +
+        targetPageCodeBeginning +
         sourcePage.sectionInCode.code.slice(
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
-        )
+        ) +
+        targetPageCodeEnding
       );
 
       let targetPageNewCode;
