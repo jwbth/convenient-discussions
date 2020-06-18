@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Nadine Siak",
 			"SomeyaMako",
 			"列维劳德"
 		]
@@ -8,6 +9,7 @@
 	"cm-copylink-tooltip-diff": "向差异复制链接。",
 	"cm-copylink-tooltip-wikilink": "复制链接。",
 	"cm-copylink-tooltip-link": "复制链接。",
+	"cm-thank": "感谢",
 	"cm-edit": "编辑",
 	"sm-editopeningcomment": "编辑序言",
 	"sm-editopeningcomment-tooltip": "编辑序言",
@@ -106,6 +108,7 @@
 	"deadanchor-comment-title": "未找到评论。",
 	"deadanchor-comment-text": "它可以被移动或被存档。",
 	"restore-restored-title": "段落已保存",
+	"rd-comment": "评论",
 	"rd-close": "关闭",
 	"navpanel-refresh": "刷新页面",
 	"navpanel-newcomments-outsideofsections": "段落之外",
