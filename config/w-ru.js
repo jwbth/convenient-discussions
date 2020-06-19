@@ -136,8 +136,11 @@ export default {
   unsignedTemplates: [
     'unsigned',
     'unsignedIP',
+    'unsignedip',
+    'unsigned-ip',
     'unsigned2',
     'unsignedIP2',
+    'unsignedip2',
     'не подписано',
     'нпп',
   ],
