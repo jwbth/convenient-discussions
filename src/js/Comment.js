@@ -125,19 +125,17 @@ export default class Comment extends CommentSkeleton {
      */
     this.timestampElement = signature.timestampElement;
 
-    const frozen = (
-      !cd.g.isPageActive ||
-      cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
-    );
-
     /**
-     * Is the comment actionable, i.e. is not in a closed discussion or an old diff page.
-     * (Previously the presence of an author was also checked, but currently all comments should
-     * have an author.)
+     * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
+     * not in a closed discussion or an old diff page. (Previously the presence of an author was
+     * also checked, but currently all comments should have an author.)
      *
      * @type {boolean}
      */
-    this.actionable = !frozen;
+    this.actionable = (
+      cd.g.isPageActive &&
+      !cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
+    );
 
     this.highlightables.forEach((el) => {
       this.bindEvents(el);
