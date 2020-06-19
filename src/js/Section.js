@@ -80,6 +80,15 @@ export default class Section extends SectionSkeleton {
      */
     this.$headline = $(this.headlineElement);
 
+    /**
+     * Wiki page that has the source code of the section (may be different from the current page if
+     * the section is transcluded from another page). This property may also be wrong on old version
+     * pages where there is no edit section links.
+     *
+     * @type {string}
+     */
+    this.sourcePage = cd.g.CURRENT_PAGE;
+
     this.#editSectionElement = headingElement.querySelector('.mw-editsection');
     if (this.#editSectionElement) {
       this.#closingBracketElement = this.#editSectionElement.lastElementChild;
@@ -91,13 +100,6 @@ export default class Section extends SectionSkeleton {
         this.#closingBracketElement = null;
       }
 
-      /**
-       * Wiki page that has the source code of the section (may be different from the current page
-       * if the section is transcluded from another page).
-       *
-       * @type {string}
-       */
-      this.sourcePage = cd.g.CURRENT_PAGE;
       const editLink = this.#editSectionElement
         .querySelector('a[href*="&action=edit"], a[href*="&veaction=editsource"]');
       if (editLink) {
@@ -946,7 +948,7 @@ export default class Section extends SectionSkeleton {
           try {
             [sourcePage, targetPage] = await Promise.all([
               this.loadSourcePage(),
-              this.loadTargetPage(targetPageTitle)
+              this.loadTargetPage(targetPageTitle),
             ]);
             await this.saveTargetPage(sourcePage, targetPage);
             await this.saveSourcePage(sourcePage, targetPage);
