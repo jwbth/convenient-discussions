@@ -1522,7 +1522,10 @@ export default class CommentForm {
     }
 
     if (doCancel) {
-      mw.notify(message, { type: 'error' })
+      mw.notify(message, {
+        type: 'error',
+        autoHideSeconds: 'long',
+      });
       this.cancel(false);
     } else {
       if (!(currentOperation && currentOperation.type === 'preview' && cd.settings.autopreview)) {

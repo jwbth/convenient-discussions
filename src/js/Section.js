@@ -1444,7 +1444,10 @@ export default class Section extends SectionSkeleton {
               editWatchedSections();
             }
           ]);
-          mw.notify($body, { type: 'error' });
+          mw.notify($body, {
+            type: 'error',
+            autoHideSeconds: 'long',
+          });
         } else {
           mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
         }
@@ -1459,10 +1462,12 @@ export default class Section extends SectionSkeleton {
 
     if (!silent) {
       let text = cd.s('section-watch-success', headline);
+      let autoHideSeconds;
       if ($('#ca-watch').length) {
         text += ` ${cd.s('section-watch-pagenotwatched')}`;
+        autoHideSeconds = 'long';
       }
-      mw.notify(cd.util.wrapInElement(text));
+      mw.notify(cd.util.wrapInElement(text), { autoHideSeconds });
     }
     if (successCallback) {
       successCallback();
@@ -1519,11 +1524,13 @@ export default class Section extends SectionSkeleton {
     }
 
     let text = cd.s('section-unwatch-success', headline);
+    let autoHideSeconds;
     if (watchedAncestorHeadline) {
       text += ` ${cd.s('section-unwatch-stillwatched', watchedAncestorHeadline)}`;
+      autoHideSeconds = 'long';
     }
     if (!silent || watchedAncestorHeadline) {
-      mw.notify(cd.util.wrapInElement(text));
+      mw.notify(cd.util.wrapInElement(text), { autoHideSeconds });
     }
     if (successCallback) {
       successCallback();
