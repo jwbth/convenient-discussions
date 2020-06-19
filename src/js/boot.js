@@ -682,7 +682,7 @@ function restoreCommentFormsFromData(commentFormsData) {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData && data.targetData.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
-      if (comment && !comment[`${property}Form`]) {
+      if (comment && comment.actionable && !comment[`${property}Form`]) {
         comment[property](data);
         restored.push(comment[`${property}Form`]);
       } else {
@@ -694,7 +694,7 @@ function restoreCommentFormsFromData(commentFormsData) {
         firstCommentAnchor: data.targetData.firstCommentAnchor,
         index: data.targetData.index,
       });
-      if (section && !section[`${property}Form`]) {
+      if (section && section.actionable && !section[`${property}Form`]) {
         section[property](data);
         restored.push(section[`${property}Form`]);
       } else {
@@ -756,7 +756,7 @@ export function restoreCommentForms() {
       if (target instanceof Comment) {
         if (target.anchor) {
           const comment = Comment.getCommentByAnchor(target.anchor);
-          if (comment) {
+          if (comment && comment.actionable) {
             commentForm.setTargets(comment);
             comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
             commentForm.addToPage();
@@ -774,7 +774,7 @@ export function restoreCommentForms() {
           firstCommentAnchor: target.comments[0] && target.comments[0].anchor,
           index: target.id,
         });
-        if (section) {
+        if (section && section.actionable) {
           commentForm.setTargets(section);
           section[CommentForm.modeToProperty(commentForm.mode)](commentForm);
           commentForm.addToPage();
