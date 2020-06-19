@@ -1928,17 +1928,15 @@ export default class CommentForm {
 
     // Add indentation characters
     if (action === 'submit') {
-      if (this.mode === 'reply' || this.mode === 'replyInSection') {
-        code = (
-          indentationChars +
-          (
-            indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChars ?
-            ' ' :
-            ''
-          ) +
-          code
-        );
-      }
+      code = (
+        indentationChars +
+        (
+          indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChars ?
+          ' ' :
+          ''
+        ) +
+        code
+      );
 
       // When an indented comment had been started with a list but the list has gone after editing.
       // Really rare but possible (see
@@ -2182,7 +2180,7 @@ export default class CommentForm {
           const startIndex = (
             this.target.isOpeningSection && targetInCode.headingStartIndex !== undefined ?
             targetInCode.headingStartIndex :
-            targetInCode.startIndex
+            targetInCode.lineStartIndex
           );
           before = pageCode.slice(0, startIndex);
           newPageCode = (
