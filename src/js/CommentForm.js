@@ -1431,7 +1431,7 @@ export default class CommentForm {
    * Show a service message above the form.
    *
    * @param {string|JQuery} html
-   * @param {object} options
+   * @param {object} [options]
    * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
    *   {@link
    *   https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true
@@ -1444,7 +1444,7 @@ export default class CommentForm {
     type = 'notice',
     class: classLastPart,
     isRaw = false,
-  }) {
+  } = {}) {
     if (
       this.destroyed ||
       (classLastPart && this.$messageArea.children(`.cd-message-${classLastPart}`).length)
@@ -1457,10 +1457,10 @@ export default class CommentForm {
       appendable = html;
     } else {
       const $label = html instanceof $ ? html : cd.util.wrapInElement(html);
-      const classes = ['cd-message'];
-      if (classLastPart) {
-        classes.push(`cd-message-${classLastPart}`);
-      }
+      const classes = [
+        'cd-message',
+        classLastPart && `cd-message-${classLastPart}`,
+      ].filter(defined);
       const message = new OO.ui.MessageWidget({
         type,
         inline: true,
