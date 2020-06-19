@@ -2239,7 +2239,7 @@ export default class CommentForm {
     operation.closed = false;
     if (operation.type !== 'preview' || !operation.auto) {
       this.$messageArea.empty();
-      this.pushPending(operation.type === 'submit');
+      this.pushPending(['load', 'submit'].includes(operation.type));
     }
     return operation;
   }
@@ -2289,7 +2289,7 @@ export default class CommentForm {
   closeOperation(operation) {
     operation.closed = true;
     if (operation.type !== 'preview' || !operation.auto) {
-      this.popPending(operation.type === 'submit');
+      this.popPending(['load', 'submit'].includes(operation.type));
     }
   }
 
@@ -2738,6 +2738,8 @@ export default class CommentForm {
    * Submit the form.
    */
   async submit() {
+    if (this.operations.some((op) => !op.closed && op.type === 'load')) return;
+
     const isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
 
     if (!(await this.runChecks({ isDelete }))) return;
