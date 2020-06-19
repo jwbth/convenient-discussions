@@ -48,7 +48,8 @@
     "terser-webpack-plugin": "^2.3.6",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11",
-    "worker-loader": "^2.0.0"
+    "worker-loader": "^2.0.0",
+    "yargs": "^15.3.1"
   },
   "sideEffects": [
     "*.less"

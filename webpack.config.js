@@ -6,9 +6,16 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = (env = { MODE: 'development' }) => {
   const lang = process.env.npm_config_lang || 'ru';
   const project = process.env.npm_config_project || 'w';
+  const test = Boolean(process.env.npm_config_test) || false;
   const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
   const configFileName = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
-  const fileNamePostfix = env.MODE === 'local' ? '-local' : '';
+
+  let fileNamePostfix = '';
+  if (env.MODE === 'local') {
+    fileNamePostfix = '-local';
+  } else if (test) {
+    fileNamePostfix = '-test';
+  }
 
   return {
     mode: 'production',
@@ -82,6 +89,7 @@ module.exports = (env = { MODE: 'development' }) => {
         IS_LOCAL: env.MODE === 'local',
         CONFIG_FILE_NAME: JSON.stringify(configFileName),
         LANG_FILE_NAME: JSON.stringify(lang + '.json'),
+        IS_TEST: test,
       }),
     ],
   };

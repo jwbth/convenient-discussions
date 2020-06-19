@@ -1,22 +1,28 @@
 const fs = require('fs');
 const path = require('path');
 
+const argv = require('yargs').argv;
+
+// node buildConfigs --test
+// npm run <command running this script> --test
+const testSuffix = (argv.test || process.env.npm_config_test) ? '-test' : '';
+
 const configs = [];
 fs.readdirSync('./config/').forEach((file) => {
   if (path.extname(file) === '.js') {
-    const [name] = path.basename(file).match(/^\w+-(\w+)\.js/) || [];
-    configs.push(name);
+    const [fullName, name] = path.basename(file).match(/^(\w+-\w+)\.js/) || [];
+    configs.push({ name, fullName });
   }
 });
 
 configs.forEach((config) => {
-  const content = fs.readFileSync(`./config/${config}`)
+  const content = fs.readFileSync(`./config/${config.fullName}`)
     .toString()
     .trim()
     .replace(/[^]*?export default /, '');
   const data = `/**
  * This file was assembled automatically from the configuration at
- * https://github.com/jwbth/convenient-discussions/tree/master/config/${config} by running
+ * https://github.com/jwbth/convenient-discussions/tree/master/config/${config.fullName} by running
  * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at
@@ -70,7 +76,7 @@ function getStrings() {
 
 if (!cdLoaded) {
   convenientDiscussions.getStringsPromise = getStrings();
-  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript')
+  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${testSuffix}.js&action=raw&ctype=text/javascript')
     .catch((e) => {
       console.warn('Couldn\\'t load Convenient Discussions.', e);
     });
@@ -78,7 +84,7 @@ if (!cdLoaded) {
 
 }());
 `;
-  fs.writeFileSync(`./dist/config/${config}`, data);
+  fs.writeFileSync(`./dist/config/${config.name}${testSuffix}.js`, data);
 });
 
 console.log('Configs have been built successfully.');

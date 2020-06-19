@@ -288,6 +288,9 @@ function decodeBase64(s) {
 function getConfig() {
   return new Promise((resolve, reject) => {
     if (configUrls[location.host]) {
+      if (IS_TEST) {
+        configUrls[location.host] = configUrls[location.host].replace(/.js/, '-test.js');
+      }
       mw.loader.getScript(configUrls[location.host]).then(
         () => {
           resolve();

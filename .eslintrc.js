@@ -9,6 +9,7 @@ module.exports = {
     "IS_LOCAL": "readonly",
     "CONFIG_FILE_NAME": "readonly",
     "LANG_FILE_NAME": "readonly",
+    "IS_TEST": "readonly",
     "$": "readonly",
     "OO": "readonly",
     "convenientDiscussions": "readonly",
