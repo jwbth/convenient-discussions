@@ -66,7 +66,7 @@ export default {
     /\/Archive/,
   ],
 
-  spaceAfterIndentationChar: false,
+  spaceAfterIndentationChars: false,
 
   signatureEndingRegexp: / \(talk\)$/,
 

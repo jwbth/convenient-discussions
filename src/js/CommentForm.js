@@ -1789,7 +1789,7 @@ export default class CommentForm {
               code: 'numberedList',
             });
           }
-          return `\n${newLineIndentationChars}` + (cd.config.spaceAfterIndentationChar ? ' ' : '');
+          return '\n' + newLineIndentationChars + (cd.config.spaceAfterIndentationChars ? ' ' : '');
         });
       }
     }
@@ -1909,7 +1909,7 @@ export default class CommentForm {
       if (this.smallCheckbox.isSelected() || implicitSmall) {
         const indentation = (
           newLineIndentationChars +
-          (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChar ? '' : ' ')
+          (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
         );
         const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
         const adjustedCode = code.replace(/\|/g, '{{!}}');
@@ -1929,7 +1929,7 @@ export default class CommentForm {
         code = (
           indentationChars +
           (
-            indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChar ?
+            indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChars ?
             ' ' :
             ''
           ) +

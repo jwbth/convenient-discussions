@@ -112,7 +112,7 @@ export default {
    * @type {boolean}
    * @default true
    */
-  spaceAfterIndentationChar: true,
+  spaceAfterIndentationChars: true,
 
   /**
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
