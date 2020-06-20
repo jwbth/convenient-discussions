@@ -142,7 +142,7 @@ function adjustSections() {
         });
     }
 
-    if (!section.frozen) {
+    if (section.actionable) {
       // If the next section of the same level has another nesting level (e.g., is inside a <div> with
       // a specific style), don't add the "Add subsection" button—it will appear in the wrong place.
       const nextSameLevelSection = cd.sections
@@ -167,7 +167,7 @@ function adjustSections() {
   });
 
   cd.sections
-    .filter((section) => !section.frozen && section.level === 2)
+    .filter((section) => section.actionable && section.level === 2)
     .forEach((section) => {
       // Section with the last reply button
       const targetSection = section.subsections.length ?

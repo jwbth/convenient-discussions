@@ -127,16 +127,16 @@ export default class Section extends SectionSkeleton {
       this.$heading = $(headingElement);
 
       /**
-       * Is the section frozen (is not in a closed discussion or an old diff page).
+       * Is the section actionable (is in a closed discussion or on an old version page).
        *
        * @type {boolean}
        */
-      this.frozen = (
-        !cd.g.isPageActive ||
-        cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
+      this.actionable = (
+        cd.g.isPageActive &&
+        !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
       );
 
-      if (!this.frozen) {
+      if (this.actionable) {
         this.extendSectionMenu(watchedSectionsRequest);
       }
     }
