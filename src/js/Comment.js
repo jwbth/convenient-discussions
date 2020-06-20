@@ -997,17 +997,7 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    this.inCode = this.adjustCommentCodeData({
-      lineStartIndex: bestMatch.lineStartIndex,
-      startIndex: bestMatch.commentStartIndex,
-      endIndex: bestMatch.signatureStartIndex,
-      code: bestMatch.commentCode,
-      dirtySignature: bestMatch.dirtySignature,
-      indentationChars: bestMatch.indentationChars,
-      headingStartIndex: bestMatch.headingStartIndex,
-      headingLevel: bestMatch.headingLevel,
-      headlineCode: bestMatch.headlineCode,
-    });
+    this.inCode = this.adjustCommentCodeData(bestMatch);
 
     cd.debug.stopTimer('locate comment');
   }
@@ -1353,30 +1343,28 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * When searching for the comment, adjust the index of the comment start point and some related
-   * properties.
+   * When searching for the comment in the code, adjust the index of the comment start point and
+   * some related properties.
    *
-   * @param {string} commentCode
-   * @param {number} commentStartIndex
+   * @param {object} originalData
    * @returns {object}
    * @private
    */
-  adjustCommentBeginning(commentCode, commentStartIndex) {
+  adjustCommentBeginning({ code, startIndex }) {
     // Identifying indentation characters
     let indentationChars = '';
-    let lineStartIndex = commentStartIndex;
+    let lineStartIndex = startIndex;
 
-    const headingMatch = commentCode
-      .match(/(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/);
+    const headingMatch = code.match(/(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/);
     let headingStartIndex;
     let headingLevel;
     let headlineCode;
     if (headingMatch) {
-      headingStartIndex = commentStartIndex + headingMatch[1].length;
+      headingStartIndex = startIndex + headingMatch[1].length;
       headingLevel = headingMatch[2].length;
       headlineCode = headingMatch[3].trim();
-      commentStartIndex += headingMatch[0].length;
-      commentCode = commentCode.slice(headingMatch[0].length);
+      startIndex += headingMatch[0].length;
+      code = code.slice(headingMatch[0].length);
     }
 
     // Exclude the text of the previous comment that is ended with "~~~" instead of "~~~~".
@@ -1385,10 +1373,10 @@ export default class Comment extends CommentSkeleton {
       const linesRegexp = /^(.+)\n/gm;
       let line;
       let indent;
-      while ((line = linesRegexp.exec(commentCode))) {
+      while ((line = linesRegexp.exec(code))) {
         if (regexp.test(removeWikiMarkup(line[1]))) {
           const testIndent = line.index + line[0].length;
-          if (testIndent === commentCode.length) {
+          if (testIndent === code.length) {
             break;
           } else {
             indent = testIndent;
@@ -1396,33 +1384,32 @@ export default class Comment extends CommentSkeleton {
         }
       }
       if (indent) {
-        commentCode = commentCode.slice(indent);
+        code = code.slice(indent);
         lineStartIndex += indent;
-        commentStartIndex += indent;
+        startIndex += indent;
       }
     }
 
-    // Exclude indentation characters and any foreign code before them from the comment code.
+    // Exclude the indentation characters and any foreign code before them from the comment code.
     // Comments at the zero level sometimes start with ":" that is used to indent some side note. It
     // shouldn't be considered an indentation character.
     if (this.level > 0) {
       const replaceIndentationChars = (s, before, chars) => {
         indentationChars = chars;
         lineStartIndex += before.length;
-        commentStartIndex += s.length;
+        startIndex += s.length;
         return '';
       };
 
       const indentationCharsPattern = cd.config.customIndentationCharsPattern || '\\n*([:*#]*) *';
-      commentCode = commentCode
-        .replace(new RegExp(`^()${indentationCharsPattern}`), replaceIndentationChars);
+      code = code.replace(new RegExp(`^()${indentationCharsPattern}`), replaceIndentationChars);
 
       // See the comment "Without the following code, the section introduction..." in Parser.js.
       // Dangerous case: https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1.
       // This was actually a mistake to put a signature to the first level, but if it was legit,
       // only the last sentence should be interpreted as the comment.
       if (indentationChars === '') {
-        commentCode = commentCode.replace(new RegExp(
+        code = code.replace(new RegExp(
           `(^[^]*?(?:^|\n))${indentationCharsPattern}(?![^]*\\n[^:*#])`),
           replaceIndentationChars
         );
@@ -1433,17 +1420,17 @@ export default class Comment extends CommentSkeleton {
       if (pattern.source[0] !== '^') {
         console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
       }
-      const match = commentCode.match(pattern);
+      const match = code.match(pattern);
       if (match) {
-        commentStartIndex += match[0].length;
-        commentCode = commentCode.slice(match[0].length);
+        startIndex += match[0].length;
+        code = code.slice(match[0].length);
       }
     });
 
     return {
-      commentCode,
+      code,
+      startIndex,
       lineStartIndex,
-      commentStartIndex,
       headingMatch,
       headingStartIndex,
       headingLevel,
@@ -1464,14 +1451,13 @@ export default class Comment extends CommentSkeleton {
     const data = Object.assign({}, originalData);
 
     const movePartToSignature = (s) => {
-      data.dirtySignature = s + data.dirtySignature;
+      data.dirtySignatureCode = s + data.dirtySignatureCode;
       data.endIndex -= s.length;
       return '';
     }
 
     if (this.own && cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP) {
-      data.code = data.code
-        .replace(cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
+      data.code = data.code.replace(cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
     }
 
     const movePartsToSignature = (code, regexps) => {
@@ -1507,13 +1493,13 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    data.signature = data.dirtySignature;
+    data.signatureCode = data.dirtySignatureCode;
     data.inSmallFont = false;
     smallWrappers.some((wrapper) => {
-      if (wrapper.start.test(data.code) && wrapper.end.test(data.signature)) {
+      if (wrapper.start.test(data.code) && wrapper.end.test(data.signatureCode)) {
         data.inSmallFont = true;
         data.code = data.code.replace(wrapper.start, '');
-        data.signature = data.signature.replace(wrapper.end, '');
+        data.signatureCode = data.signatureCode.replace(wrapper.end, '');
         return true;
       }
     });
@@ -1553,16 +1539,15 @@ export default class Comment extends CommentSkeleton {
    */
   searchInCode(pageCode) {
     const signatures = extractSignatures(pageCode);
-    const matches = signatures
-      // .startsWith() to account for cases where you can ignore timezone string in the "unsigned"
-      // templates but it will appear on the page.
-      .filter((sig) => (
-        sig.author === this.author &&
-        (
-          this.timestamp === sig.timestamp ||
-          (this.timestamp && this.timestamp.startsWith(sig.timestamp))
-        )
-      ));
+    // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
+    // templates, but it appears on the page.
+    const signatureMatches = signatures.filter((sig) => (
+      sig.author === this.author &&
+      (
+        this.timestamp === sig.timestamp ||
+        (this.timestamp && this.timestamp.startsWith(sig.timestamp))
+      )
+    ));
 
     // For the reserve method; the main method uses one date.
     let previousTimestampsToCheckCount = 2;
@@ -1570,9 +1555,21 @@ export default class Comment extends CommentSkeleton {
       .slice(Math.max(0, this.id - previousTimestampsToCheckCount), this.id)
       .reverse();
 
+    // Signature object to a comment match object
+    const matches = signatureMatches.map((match) => ({
+      id: match.id,
+      author: match.author,
+      timestamp: match.timestamp,
+      date: match.date,
+      anchor: match.anchor,
+      signatureDirtyCode: match.dirtyCode,
+      startIndex: match.commentStartIndex,
+      endIndex: match.startIndex,
+    }));
+
     // Collect data for every match
     matches.forEach((match) => {
-      match.commentCode = pageCode.slice(match.commentStartIndex, match.signatureStartIndex);
+      match.code = pageCode.slice(match.startIndex, match.endIndex);
 
       if (previousComments.length) {
         for (let i = 0; i < previousComments.length; i++) {
@@ -1594,7 +1591,7 @@ export default class Comment extends CommentSkeleton {
         match.previousCommentMatched = match.id === 0;
       }
 
-      Object.assign(match, this.adjustCommentBeginning(match.commentCode, match.commentStartIndex));
+      Object.assign(match, this.adjustCommentBeginning(match));
       match.headlineMatched = this.followsHeading ?
         (
           match.headingMatch &&
@@ -1607,8 +1604,8 @@ export default class Comment extends CommentSkeleton {
         ) :
         !match.headingMatch;
 
-      const commentCodeToCompare = removeWikiMarkup(match.commentCode);
-      match.overlap = calculateWordsOverlap(this.text, commentCodeToCompare);
+      const codeToCompare = removeWikiMarkup(match.code);
+      match.overlap = calculateWordsOverlap(this.text, codeToCompare);
     });
 
     return matches;

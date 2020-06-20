@@ -119,7 +119,8 @@ export function encodeWikilink(link) {
  * Extract signatures from wikitext.
  *
  * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in {@link module:Comment#adjustCommentCodeData}.
+ * performed in {@link module:Comment#adjustCommentCodeData}. See also {@link
+ * module:Comment#adjustCommentBeginning}, called before that.
  *
  * @param {string} code Code to extract signatures from.
  * @param {boolean} generateCommentAnchors Whether to generate and register comment anchors.
@@ -157,18 +158,18 @@ export function extractSignatures(code, generateCommentAnchors) {
 
     let author;
     let timestamp;
-    let signatureStartIndex;
-    let signatureEndIndex;
+    let startIndex;
+    let endIndex;
     let nextCommentStartIndex;
-    let dirtySignature;
+    let dirtyCode;
     if (authorTimestampMatch) {
       author = userRegistry.getUser(decodeHtmlEntities(authorTimestampMatch[4]));
       timestamp = authorTimestampMatch[7];
 
-      signatureStartIndex = timestampMatch.index + authorTimestampMatch[2].length;
-      signatureEndIndex = timestampMatch.index + authorTimestampMatch[1].length;
+      startIndex = timestampMatch.index + authorTimestampMatch[2].length;
+      endIndex = timestampMatch.index + authorTimestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + authorTimestampMatch[0].length;
-      dirtySignature = authorTimestampMatch[3];
+      dirtyCode = authorTimestampMatch[3];
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
       const commentEndingStartIndex = Math.max(
@@ -184,28 +185,26 @@ export function extractSignatures(code, generateCommentAnchors) {
         if (authorLinkMatch[2]) continue;
         const testAuthor = userRegistry.getUser(decodeHtmlEntities(authorLinkMatch[1]));
         if (testAuthor === author) {
-          signatureStartIndex = (
-            timestampMatch.index + commentEndingStartIndex + authorLinkMatch.index
-          );
-          dirtySignature = code.slice(signatureStartIndex, signatureEndIndex);
+          startIndex = timestampMatch.index + commentEndingStartIndex + authorLinkMatch.index;
+          dirtyCode = code.slice(startIndex, endIndex);
           break;
         }
       }
     } else {
       timestamp = timestampMatch[3];
 
-      signatureStartIndex = timestampMatch.index + timestampMatch[2].length;
-      signatureEndIndex = timestampMatch.index + timestampMatch[1].length;
+      startIndex = timestampMatch.index + timestampMatch[2].length;
+      endIndex = timestampMatch.index + timestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + timestampMatch[0].length;
-      dirtySignature = timestamp;
+      dirtyCode = timestamp;
     }
 
     signatures.push({
       author,
       timestamp,
-      signatureStartIndex,
-      signatureEndIndex,
-      dirtySignature,
+      startIndex,
+      endIndex,
+      dirtyCode,
       nextCommentStartIndex,
     });
   }
@@ -228,22 +227,18 @@ export function extractSignatures(code, generateCommentAnchors) {
       signatures.push({
         author,
         timestamp,
-        signatureStartIndex: match.index,
-        signatureEndIndex: match.index + match[1].length,
-        dirtySignature: match[1],
+        startIndex: match.index,
+        endIndex: match.index + match[1].length,
+        dirtyCode: match[1],
         nextCommentStartIndex: match.index + match[0].length,
       });
     }
 
-    signatures.sort((sig1, sig2) => sig1.signatureStartIndex > sig2.signatureStartIndex ? 1 : -1);
+    signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
   }
 
   signatures.forEach((sig, i) => {
-    if (i === 0) {
-      sig.commentStartIndex = 0;
-    } else {
-      sig.commentStartIndex = signatures[i - 1].nextCommentStartIndex;
-    }
+    sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
   });
   signatures = signatures.filter((sig) => sig.author);
   if (generateCommentAnchors) {

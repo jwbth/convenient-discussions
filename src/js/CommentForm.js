@@ -1755,7 +1755,7 @@ export default class CommentForm {
       signature = '';
     } else {
       signature = this.mode === 'edit' ?
-        this.target.inCode.signature :
+        this.target.inCode.signatureCode :
         cd.g.CURRENT_USER_SIGNATURE;
     }
 
@@ -2040,7 +2040,7 @@ export default class CommentForm {
       this.target.locateInCode(pageCode);
       targetInCode = this.target.inCode;
       if (this.mode === 'edit') {
-        this.willCommentBeIndented = this.target.inCode.indentationChars;
+        this.willCommentBeIndented = Boolean(this.target.inCode.indentationChars);
       }
     }
 
@@ -2050,7 +2050,7 @@ export default class CommentForm {
       const succeedingText = pageCode.slice(currentIndex);
 
       const properPlaceRegexp = new RegExp(
-        '^([^]*?(?:' + mw.util.escapeRegExp(targetInCode.signature) + '|' +
+        '^([^]*?(?:' + mw.util.escapeRegExp(targetInCode.signatureCode) + '|' +
         cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
         (
           targetInCode.indentationChars.length > 0 ?
@@ -2164,7 +2164,7 @@ export default class CommentForm {
               ({ startIndex, contentEndIndex: endIndex } = targetInCode);
             }
           } else {
-            endIndex = targetInCode.endIndex + targetInCode.dirtySignature.length + 1;
+            endIndex = targetInCode.endIndex + targetInCode.dirtySignatureCode.length + 1;
             const succeedingText = pageCode.slice(targetInCode.endIndex);
 
             const repliesRegexp = new RegExp(
@@ -2193,7 +2193,7 @@ export default class CommentForm {
           newPageCode = (
             before +
             commentCode +
-            pageCode.slice(targetInCode.endIndex + targetInCode.dirtySignature.length)
+            pageCode.slice(targetInCode.endIndex + targetInCode.dirtySignatureCode.length)
           );
         }
         break;
