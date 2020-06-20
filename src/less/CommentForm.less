@@ -185,17 +185,9 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
     width: calc(~"100% - 1.5em");
   }
 
-  &-indentedComment > .mw-parser-output > dl:first-child {
+  &-indentedComment > .mw-parser-output > dl > dd {
+    margin-left: 0;
     margin-bottom: 0;
-
-    > dd {
-      margin-left: 0;
-      margin-bottom: 0;
-    }
-
-    + p {
-      margin-top: 0;
-    }
   }
 }
 
