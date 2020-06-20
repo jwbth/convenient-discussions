@@ -846,6 +846,51 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Process thank error.
+   *
+   * @param {CdError|Error} e
+   * @param {Element} thankButton
+   * @private
+   */
+  thankFail(e, thankButton) {
+    const { type, code, data } = e.data;
+    let text;
+    switch (type) {
+      case 'parse': {
+        if (code === 'moreThanOneTimestamp') {
+          const url = mw.util.getUrl(this.sourcePage, { diff: data.edit.revid });
+          text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
+          OO.ui.alert(text);
+          return;
+        } else {
+          const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
+          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
+        }
+        break;
+      }
+
+      case 'api':
+      default: {
+        if (code === 'noData') {
+          const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
+          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
+        } else {
+          text = cd.s('thank-error');
+          console.warn(e);
+        }
+        break;
+      }
+
+      case 'network': {
+        text = cd.s('error-diffnotfound') + ' ' + cd.s('error-network');
+        break;
+      }
+    }
+    mw.notify(cd.util.wrapInElement(text), { type: 'error' });
+    this.replaceButton(this.thankButton, thankButton, 'thank');
+  }
+
+  /**
    * Find the edit that added the comment, ask for a confirmation, and send a "thank you"
    * notification.
    */
@@ -857,49 +902,11 @@ export default class Comment extends CommentSkeleton {
       'thank'
     );
 
-    const thankFail = (e) => {
-      const { type, code, data } = e.data;
-      let text;
-      switch (type) {
-        case 'parse': {
-          if (code === 'moreThanOneTimestamp') {
-            const url = mw.util.getUrl(this.sourcePage, { diff: data.edit.revid });
-            text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
-            OO.ui.alert(text);
-            return;
-          } else {
-            const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
-            text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
-          }
-          break;
-        }
-
-        case 'api':
-        default: {
-          if (code === 'noData') {
-            const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
-            text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
-          } else {
-            text = cd.s('thank-error');
-            console.warn(e);
-          }
-          break;
-        }
-
-        case 'network': {
-          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-network', url);
-          break;
-        }
-      }
-      mw.notify(cd.util.wrapInElement(text), { type: 'error' });
-      this.replaceButton(this.thankButton, thankButton, 'thank');
-    };
-
     let edit;
     try {
       edit = await this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING);
     } catch (e) {
-      thankFail(e);
+      this.thankFail(e, thankButton);
       return;
     }
 
@@ -919,7 +926,7 @@ export default class Comment extends CommentSkeleton {
           source: cd.config.scriptCodeName,
         })).catch(handleApiReject);
       } catch (e) {
-        thankFail(e);
+        this.thankFail(e, thankButton);
         return;
       }
 
