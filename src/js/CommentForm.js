@@ -1613,8 +1613,11 @@ export default class CommentForm {
             editUrl = mw.util.getUrl(cd.g.CURRENT_PAGE, { action: 'edit' });
             message = cd.s('error-locatesection', editUrl);
             break;
-          case 'numberedList':
-            message = cd.s('cf-error-numberedlist');
+          case 'numberedList-list':
+            message = cd.s('cf-error-numberedlist') + ' ' + cd.s('cf-error-numberedlist-list');
+            break;
+          case 'numberedList-table':
+            message = cd.s('cf-error-numberedlist') + ' ' + cd.s('cf-error-numberedlist-table');
             break;
           case 'findPlace':
             message = cd.s('cf-error-findplace');
@@ -1775,14 +1778,18 @@ export default class CommentForm {
       code = code.replace(/\n([:*#]+)/g, (s, chars) => '\n' + newLineIndentationChars + chars);
 
       if (this.willCommentBeIndented && (/^[:*#]/m.test(code) || code.includes('\x03'))) {
-        if (
-          newLineIndentationChars === '#' ||
-          // Table markup is OK only with colons as indentation characters.
-          (newLineIndentationChars.includes('#') && code.includes('\x03'))
-        ) {
+        if (newLineIndentationChars === '#') {
           throw new CdError({
             type: 'parse',
-            code: 'numberedList',
+            code: 'numberedList-list',
+          });
+        }
+
+        // Table markup is OK only with colons as indentation characters.
+        if (newLineIndentationChars.includes('#') && code.includes('\x03')) {
+          throw new CdError({
+            type: 'parse',
+            code: 'numberedList-table',
           });
         }
 
