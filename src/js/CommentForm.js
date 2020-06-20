@@ -1700,24 +1700,23 @@ export default class CommentForm {
   commentTextToCode(action) {
     let text = this.commentInput.getValue();
 
-    // Prepare indentation characters
     let indentationChars;
-    let replyIndentationChars;
-
-    // If this is a preview, there's no point to look into the code.
-    if (this.target instanceof Comment) {
-      indentationChars = this.target.inCode.indentationChars;
-      replyIndentationChars = this.target.inCode.replyIndentationChars;
-    }
-    indentationChars = indentationChars || '';
-
-    if (this.mode === 'reply') {
-      indentationChars = replyIndentationChars;
-    } else if (this.mode === 'replyInSection') {
-      indentationChars = (
-        this.target.inCode.lastCommentFirstIndentationChar ||
-        cd.config.defaultIndentationChar
-      );
+    switch (this.mode) {
+      case 'reply':
+        indentationChars = this.target.inCode.replyIndentationChars;
+        break;
+      case 'edit':
+        indentationChars = this.target.inCode.indentationChars;
+        break;
+      case 'replyInSection':
+        indentationChars = (
+          this.target.inCode.isLastCommentInNumberedList ?
+          '#' :
+          cd.config.defaultIndentationChar
+        );
+        break;
+      default:
+        indentationChars = '';
     }
 
     const isZeroLevel = (
@@ -1731,15 +1730,8 @@ export default class CommentForm {
     // Work with code
     let code = text.trim();
 
-    let useColonsForNewLines = /^[:*#]/.test(code);
-    let hasTable = false;
     let hidden;
-    ({ code, hidden } = hideSensitiveCode(code, (isTable) => {
-      if (isTable && this.willCommentBeIndented) {
-        useColonsForNewLines = true;
-        hasTable = true;
-      }
-    }));
+    ({ code, hidden } = hideSensitiveCode(code));
 
     let implicitSmall = false;
     if (this.smallCheckbox) {
@@ -1779,21 +1771,25 @@ export default class CommentForm {
     }
 
     if (!isZeroLevel) {
-      code = code.replace(/\n([:*#]+)/g, (s, chars) => {
-        useColonsForNewLines = true;
-        // **** → ::::, if the comment contains a list or internal indentations.
-        return '\n' + newLineIndentationChars + chars;
-      });
-      if (useColonsForNewLines && indentationChars) {
-        code = code.replace(/\n(?![:#\x03])/g, () => {
-          if (newLineIndentationChars === '#') {
-            throw new CdError({
-              type: 'parse',
-              code: 'numberedList',
-            });
-          }
-          return '\n' + newLineIndentationChars + (cd.config.spaceAfterIndentationChars ? ' ' : '');
-        });
+      // Add intentation characters to the lines with the list markup.
+      code = code.replace(/\n([:*#]+)/g, (s, chars) => '\n' + newLineIndentationChars + chars);
+
+      if (this.willCommentBeIndented && (/^[:*#]/m.test(code) || code.includes('\x03'))) {
+        if (
+          newLineIndentationChars === '#' ||
+          // Table markup is OK only with colons as indentation characters.
+          (newLineIndentationChars.includes('#') && code.includes('\x03'))
+        ) {
+          throw new CdError({
+            type: 'parse',
+            code: 'numberedList',
+          });
+        }
+
+        // Add intentation characters to the rest of the lines.
+        code = code.replace(/\n(?!:)/g, () => (
+          '\n' + newLineIndentationChars + (cd.config.spaceAfterIndentationChars ? ' ' : '')
+        ));
       }
     }
 
@@ -1867,9 +1863,9 @@ export default class CommentForm {
       code = `{{${cd.config.pingTemplate}|${name}${param}}}${separator}${code}`;
     }
 
-    // If there are numbered lists in the comment, replace all asterisks in the indentation chars
-    // with colons to have the <ol> form correctly.
-    if (!isZeroLevel && /^#/gm.test(code)) {
+    // If the comment starts with a numbered list or table, replace all asterisks in the indentation
+    // chars with colons to have the list or table form correctly.
+    if (!isZeroLevel && /^(#|.*\x03)/.test(code)) {
       indentationChars = newLineIndentationChars;
     }
 
@@ -1958,12 +1954,7 @@ export default class CommentForm {
     // Imitate a list so that the user will see where it would break on a real page. This
     // pseudolist's margin is made invisible by CSS.
     let imitateList;
-    if (
-      action === 'preview' &&
-      this.willCommentBeIndented &&
-      this.commentInput.getValue().trim() &&
-      !hasTable
-    ) {
+    if (action === 'preview' && this.willCommentBeIndented && this.commentInput.getValue().trim()) {
       code = code.replace(/^/gm, ':');
       imitateList = true;
     } else {
@@ -2100,15 +2091,24 @@ export default class CommentForm {
       currentIndex += textBeforeInsertion.length;
     }
 
-    if (
-      this.mode === 'replyInSection' &&
+    if (this.mode === 'replyInSection') {
+      targetInCode.isLastCommentInNumberedList = false;
+      const lastComment = this.target.comments[0];
+
       // For now we use the workaround with this.isInNumberedList to make sure "#" is a part of
       // comments organized in a numbered list, not of a numbered list _in_ the target comment in
       // which case the reply is in an <ul> tag, not <ol>.
-      this.isInNumberedList &&
-      /\n#.*\n+$/.test(targetInCode.firstChunkCode)
-    ) {
-      targetInCode.lastCommentFirstIndentationChar = '#';
+      if (this.isInNumberedList && lastComment) {
+        try {
+          lastComment.locateInCode(pageCode);
+        } finally {
+          if (lastComment.inCode) {
+            targetInCode.isLastCommentInNumberedList = (
+              lastComment.inCode.indentationChars.startsWith('#')
+            );
+          }
+        }
+      }
     }
 
     const isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();

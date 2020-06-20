@@ -296,21 +296,17 @@ export function decodeHtmlEntities(s) {
  * Replace code that should not be modified when processing it with placeholders.
  *
  * @param {string} code
- * @param {Function} callback
  * @returns {HideSensitiveCodeReturn}
  */
-export function hideSensitiveCode(code, callback) {
+export function hideSensitiveCode(code) {
   const hidden = [];
 
-  const hide = (re, isTable) => {
-    code = code.replace(re, (s) => {
-      if (callback) {
-        callback(isTable);
-      }
-
+  const hide = (regexp, isTable) => {
+    code = code.replace(regexp, (s, pre, textToHide) => (
       // Handle tables separately
-      return (isTable ? '\x03' : '\x01') + hidden.push(s) + (isTable ? '\x04' : '\x02');
-    });
+      (pre || '') + (isTable ? '\x03' : '\x01') + hidden.push(textToHide || s) +
+      (isTable ? '\x04' : '\x02')
+    ));
   };
 
   // Taken from
@@ -367,7 +363,7 @@ export function hideSensitiveCode(code, callback) {
   hideTemplates();
 
   // Hide tables
-  hide(/^\{\|[^]*?\n\|\}/gm, true);
+  hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, true);
 
   hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
 
