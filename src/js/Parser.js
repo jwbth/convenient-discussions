@@ -42,7 +42,6 @@ function getPageNameFromUrl(url) {
     return url;
   } else {
     const uri = new mw.Uri(url);
-
     const match = uri.path.match(cd.g.ARTICLE_PATH_REGEXP);
     if (match) {
       try {

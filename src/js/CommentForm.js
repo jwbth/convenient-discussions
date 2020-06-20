@@ -2059,8 +2059,8 @@ export default class CommentForm {
         ) +
         '(?![:*#\\n])'
       );
-      const properPlaceMatch = properPlaceRegexp.exec(succeedingText);
-      if (!properPlaceMatch) {
+      const [, textBeforeInsertion] = properPlaceRegexp.exec(succeedingText) || [];
+      if (textBeforeInsertion === undefined) {
         throw new CdError({
           type: 'parse',
           code: 'findPlace',
@@ -2069,11 +2069,7 @@ export default class CommentForm {
 
       // If the comment is to be put after a comment with different indentation characters, use
       // these.
-      const textBeforeInsertion = properPlaceMatch[1];
-      const changedIndentationCharsMatch = textBeforeInsertion.match(/\n([:*#]{2,}).*\n$/);
-      const changedIndentationChars = (
-        changedIndentationCharsMatch && changedIndentationCharsMatch[1]
-      );
+      const [, changedIndentationChars] = textBeforeInsertion.match(/\n([:*#]{2,}).*\n$/) || [];
       if (changedIndentationChars) {
         if (changedIndentationChars.length > targetInCode.indentationChars.length) {
           // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
@@ -2152,8 +2148,7 @@ export default class CommentForm {
           if (this.target.isOpeningSection && targetInCode.headingStartIndex !== undefined) {
             this.target.section.locateInCode(pageCode);
             const targetInCode = this.target.section.inCode;
-            const commentCount = extractSignatures(targetInCode.code).length;
-            if (commentCount > 1) {
+            if (extractSignatures(targetInCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
                 code: 'delete-repliesInSection',

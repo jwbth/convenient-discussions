@@ -36,7 +36,7 @@ export default {
 
   /**
    * Local timezone offset in minutes. Get by a {@link https://www.mediawiki.org/wiki/API:Siteinfo}
-   * request.
+   * request. Leave `null` if your wiki uses daylight saving time (summer time).
    *
    * @type {?number}
    * @default null
