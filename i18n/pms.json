@@ -281,5 +281,17 @@
 	"error-nodata": "La rispòsta dël servent a conten nen ij dàit ciamà.",
 	"error-unknown": "Eror nen conossù.",
 	"error-javascript": "A l'é rivaje n'eror JavaScript. Vëdde ij detaj ant ël cruscòt JavaScript (F12 → Cruscòt).",
-	"error-locatecomment": "Impossìbil localisé ël coment ant ël còdes. Sòn a peul esse causà da la complessità dël còdes comentà, a 'n givo dël copion o al fàit che ël coment a l'é stàit dëscancelà o motobin modificà. A peul prové a <a class=\"cd-message-reloadPage\">carié torna la pàgina</a>."
+	"error-locatecomment": "Impossìbil localisé ël coment ant ël còdes. Sòn a peul esse causà da la complessità dël còdes comentà, a 'n givo dël copion o al fàit che ël coment a l'é stàit dëscancelà o motobin modificà. A peul prové a <a class=\"cd-message-reloadPage\">carié torna la pàgina</a>.",
+	"error-locatesection": "Impossìbil localisé la session ant ël còdes. Sòn a peul esse causà da la complessità dël prim còdes ëd coment dla session, a 'n givo dël copion o al fàit che la session a l'é stàita dëscancelà. A peul prové a <a class=\"cd-message-reloadPage\">carié torna la pàgina</a>.",
+	"error-diffnotfound": "Impossìbil trové la modìfica che a l'ha giontà 's coment.",
+	"error-diffnotfound-history": "A peul sërchess-la daspërchiel ant lë <a href=\"$1\" target=\"_blank\">stòrich dle revision</a>.",
+	"wl-button-switchinteresting-tooltip": "Smon-e mach ij coment ant le session ch'i ten-o sot-euj e ij coment adrëssà a mi",
+	"wl-button-editwatchedsections-tooltip": "Mofiché le session ch'i ten-o sot-euj",
+	"wl-button-scriptsettings-tooltip": "Paràmeter ëd Discussion Pràtiche",
+	"lp-comment": "coment",
+	"lp-comment-tooltip": "Andé al coment",
+	"lp-comment-toyou": "al coment a l'é adrëssà a chiel",
+	"lp-comment-watchedsection": "a ten sot-euj costa session",
+	"loading-ellipsis": "Cariament…",
+	"addtopicbutton-tooltip": "Duverté an na neuva scheda për creé un neuv argoment an sla pàgina stàndard, e pa an Discussion Pràtiche"
 }
