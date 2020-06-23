@@ -348,9 +348,8 @@ export default {
    *
    * @type {Array.<string|Array>}
    * @default <pre class="prettyprint source"><code>[
-   *   ['{{ping|+}}'],
-   *   ['{{tl|+}}'],
    *   ['{{+}}'],
+   *   ['{{tl|+}}'],
    *   ['[[+]]'],
    *   ['&lt;+>&lt;/&gt;', '&lt;/&gt;'],
    *   ['&lt;blockquote&gt;+&lt;/blockquote&gt;', '&lt;blockquote /&gt;'],
@@ -361,9 +360,8 @@ export default {
    * ]</code></pre>
    */
   defaultInsertButtons: [
-    ['{{ping|+}}'],
-    ['{{tl|+}}'],
     ['{{+}}'],
+    ['{{tl|+}}'],
     ['[[+]]'],
     ['<+></>', '</>'],
     ['<blockquote>+</blockquote>', '<blockquote />'],
