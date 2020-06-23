@@ -24,20 +24,22 @@
   position: absolute;
   display: none;
   pointer-events: none;
+  justify-content: flex-end;
 
   &-focused {
-    display: block;
+    display: flex;
   }
 
   &-innerWrapper {
     position: absolute;
     z-index: 1;
     bottom: 0;
-    right: 0;
     font-size: 14px;
     // At least, for the Timeless skin.
     line-height: normal;
     pointer-events: all;
+    display: flex;
+    flex-direction: row;
   }
 
   &-gradient {
@@ -53,9 +55,11 @@
   }
 
   &-content {
-    display: inline-block;
+    display: inline-flex;
     padding: 0 0.5em 2px;
     background-color: var(--cd-comment-underlay-focused-color);
+    display: flex;
+    flex-direction: row;
 
     .oo-ui-buttonWidget {
       margin-right: 0;
@@ -69,6 +73,46 @@
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:active {
     background-color: transparent;
+  }
+}
+
+.mw-content-ltr .cd-commentOverlay {
+  justify-content: flex-end;
+
+  &-innerWrapper {
+    flex-direction: row;
+  }
+  
+  &-content {
+    flex-direction: row;
+
+    .oo-ui-buttonWidget {
+      margin-right: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-left: 1em;
+    }
+  }
+}
+
+.mw-content-rtl .cd-commentOverlay {
+  justify-content: flex-start;
+
+  &-innerWrapper {
+    flex-direction: row-reverse;
+  }
+
+  &-content {
+    flex-direction: row-reverse;
+
+    .oo-ui-buttonWidget {
+      margin-left: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-right: 1em;
+    }
   }
 }
 
