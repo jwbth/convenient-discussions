@@ -23,8 +23,28 @@ ol > li.cd-commentPart-last {
   border-left: 1px solid #c8ccd1;
 }
 
+.mw-content-ltr .cd-commentLevel.cd-commentLevel:not(ol) {
+  padding-left: 1em;
+  margin: 0 0 0 1em;
+  border-left: 1px solid #c8ccd1;
+}
+
+.mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol) {
+  padding-right: 1em;
+  margin: 0 1em 0 0;
+  border-right: 1px solid #c8ccd1;
+}
+
 dl.cd-commentLevel > dd {
   margin-left: 0;
+}
+
+.mw-content-ltr dl.cd-commentLevel > dd {
+  margin-left: 0;
+}
+
+.mw-content-rtl dl.cd-commentLevel > dd {
+  margin-right: : 0;
 }
 
 .cd-button-pending.cd-button-pending.cd-button-pending .oo-ui-buttonElement-button {
