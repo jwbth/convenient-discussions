@@ -153,8 +153,8 @@ export default class CommentSkeleton {
     }
     if (this.parts[0].isHeading) {
       /**
-       * Does the comment open a section (it should have a heading as the first element and be
-       * placed on the zeroth level).
+       * Does the comment open a section (has a heading as the first element and is placed at the
+       * zeroth level).
        *
        * @type {boolean}
        */

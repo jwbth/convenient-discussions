@@ -199,17 +199,15 @@ export function getUserInfo(reuse = false) {
     return keptUserInfoRequest;
   }
 
-  const params = {
+  // We never use timers here as this request can be reused while checking for new messages in the
+  // background which requires using timers (?), setting the process on hold if the browser
+  // throttles background tabs.
+  keptUserInfoRequest = makeRequestNoTimers({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
     formatversion: 2,
-  };
-
-  // We never use timers here as this request can be reused while checking for new messages in the
-  // background which requires using timers (?), setting the process on hold if the browser
-  // throttles background tabs.
-  keptUserInfoRequest = makeRequestNoTimers(params).then(
+  }).then(
     (resp) => {
       const userinfo = resp && resp.query && resp.query.userinfo;
       const options = userinfo && userinfo.options;

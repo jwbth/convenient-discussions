@@ -310,14 +310,15 @@ export default class CommentForm {
 
     if (target instanceof Comment) {
       /**
-       * Target comment.
+       * Target comment. This may be the comment the user replies or the comment opening the
+       * section.
        *
        * @type {?(Comment|Section)}
        */
       this.targetComment = target;
     } else if (target instanceof Section) {
-      if (target.commentsInFirstChunk[0] && target.commentsInFirstChunk[0].isOpeningSection) {
-        this.targetComment = target.commentsInFirstChunk[0];
+      if (target.comments[0] && target.comments[0].isOpeningSection) {
+        this.targetComment = target.comments[0];
       }
     }
   }
