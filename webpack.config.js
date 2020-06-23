@@ -24,6 +24,7 @@ module.exports = (env = { MODE: 'development' }) => {
       path: path.resolve(__dirname, 'dist'),
       filename: `convenientDiscussions${fileNamePostfix}.js`,
     },
+    devtool: 'eval',
     module: {
       rules: [
         {
@@ -75,7 +76,6 @@ module.exports = (env = { MODE: 'development' }) => {
             output: {
               // Otherwise messes with \x01 \x02 \x03 \x04.
               ascii_only: true,
-              beautify: env.MODE !== 'production',
               comments: false,
             },
             mangle: env.MODE === 'production',
