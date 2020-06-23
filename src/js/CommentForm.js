@@ -353,7 +353,7 @@ export default class CommentForm {
       dialogsConfig.replaceIcons($textarea);
       $textarea.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
       this.commentInput.$element
-        .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
+        .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
 
       $textarea.wikiEditor('addToToolbar', {
@@ -376,8 +376,6 @@ export default class CommentForm {
           }
         },
       });
-      this.commentInput.$element.find('.group-convenient-discussions')
-        .insertBefore(this.commentInput.$element.find('.section-main .group-insert'));
 
       /**
        * The comment form is ready (all requested modules have been loaded and executed).
