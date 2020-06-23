@@ -36,8 +36,26 @@
     margin-top: 0.25em;
   }
 
+  .ltr .cd-summaryInput {
+    margin-right: 8px;
+    margin-left: 0;
+  }
+
+  .rtl .cd-summaryInput {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+
   .cd-checkboxesContainer {
     margin-top: 0.5em;
+  }
+
+  .ltr .cd-checkboxesContainer {
+    direction: ltr;
+  }
+
+  .rtl .cd-checkboxesContainer {
+    direction: rtl;
   }
 
   .cd-checkboxesContainer .oo-ui-fieldLayout {
@@ -46,6 +64,34 @@
     &:last-child {
       margin-right: 0;
     }
+  }
+
+  .ltr .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-right: 1em;
+    margin-left: 0;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  .rtl .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-left: 1em;
+    margin-right: 0;
+
+    &:last-child {
+      margin-left: 0;
+    }
+  }
+
+  .ltr .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-left: 1em;
+    margin-right: 0;
+  }
+
+  .rlt .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-right: 1em;
+    margin-left: 0;
   }
 
   .cd-buttonsContainer {
@@ -59,6 +105,30 @@
 
   .cd-rightButtonsContainer {
     float: right;
+  }
+  //Use .ltr and .rtl classes for dedicate interface direction 
+  .ltr .cd-buttonsContainer {
+   direction: ltr; 
+  }
+
+  .ltr .cd-leftButtonsContainer {
+    float: left;
+  }
+
+  .ltr .cd-rightButtonsContainer {
+    float: right;
+  }
+
+  .ltr .cd-buttonsContainer {
+   direction: rtl; 
+  }
+
+  .ltr .cd-leftButtonsContainer {
+    float: right;
+  }
+
+  .ltr .cd-rightButtonsContainer {
+    float: left;
   }
 
   .cd-rightButtonsContainer > .oo-ui-buttonWidget:last-child {
@@ -128,7 +198,6 @@ ol > li.cd-commentForm.cd-commentForm {
 .cd-commentInput {
   // Compensation for "margin: -1px" below
   margin-top: 1px;
-
   border: 1px solid #a2a9b1;
 
   .wikiEditor-ui .wikiEditor-ui-top {
@@ -138,6 +207,16 @@ ol > li.cd-commentForm.cd-commentForm {
   .wikiEditor-ui .wikiEditor-ui-view {
     border: 0;
   }
+}
+
+.ltr .cd-commentInput {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+.rtl .cd-commentInput {
+  margin-left: 8px;
+  margin-right: 0;
 }
 
 .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
