@@ -8,7 +8,15 @@ import CdError from './CdError';
 import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
-import { animateLinks, defined, findLastIndex, handleApiReject, isInputFocused } from './util';
+import {
+  animateLinks,
+  defined,
+  findLastIndex,
+  firstCharToUpperCase,
+  handleApiReject,
+  isInputFocused,
+  removeDuplicates,
+} from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
 import {
@@ -19,7 +27,7 @@ import {
   unhideSensitiveCode,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
-import { getLastRevision, parseCode } from './apiWrappers';
+import { getLastRevision, getUserNames, parseCode } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
@@ -124,6 +132,8 @@ export default class CommentForm {
     this.createContents(dataToRestore);
 
     this.addEvents();
+
+    this.initMentions();
 
     this.addToPage();
 
@@ -362,6 +372,17 @@ export default class CommentForm {
         groups: {
           'convenient-discussions': {
             tools: {
+              mention: {
+                label: cd.s('cf-mentions-tooltip'),
+                type: 'button',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/9/98/OOjs_UI_icon_userAvatar.svg',
+                action: {
+                  type: 'callback',
+                  execute: () => {
+                    this.mention();
+                  },
+                },
+              },
               quote: {
                 label: cd.s('cf-quote-tooltip'),
                 type: 'button',
@@ -1326,6 +1347,195 @@ export default class CommentForm {
       .on('click', () => {
         this.preview(true, false);
       });
+  }
+
+  /**
+   * Initialize mentions using {@link https://github.com/zurb/tribute Tribute}.
+   */
+  initMentions() {
+    mw.loader.load('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.css', 'text/css');
+    mw.loader.getScript('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.js')
+      .then(
+        () => {
+          let comments = [];
+          if (this.targetSection) {
+            const baseSection = this.targetSection.level === 2 ?
+              this.targetSection :
+              this.targetSection.baseSection;
+            comments = baseSection.comments;
+          } else {
+            cd.comments.some((comment) => {
+              if (comment.section) {
+                comments.push(comment);
+                return true;
+              } else {
+                return false;
+              }
+            });
+          }
+
+          const removeSelf = (arr) => {
+            while (arr.includes(cd.g.CURRENT_USER_NAME)) {
+              arr.splice(arr.indexOf(cd.g.CURRENT_USER_NAME), 1);
+            }
+            return arr;
+          };
+          const prepareValues = (arr) => (
+            removeDuplicates(arr).map((name) => ({
+              key: name,
+              value: name,
+            }))
+          );
+
+          let usersInSection = comments.map((comment) => comment.author.name);
+          if (this.targetComment) {
+            usersInSection.unshift(this.targetComment.author.name);
+          }
+          usersInSection = removeSelf(usersInSection);
+
+          const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
+          const usersByText = {};
+          let usersFromLastRequest = [];
+          const collections = [{
+            selectTemplate: (item) => {
+              if (item) {
+                return `@[[${userNamespace}:${item.original.value.trim()}|${item.original.value.trim()}]]`;
+              } else {
+                return '';
+              }
+            },
+            values: async (text, callback) => {
+              text = firstCharToUpperCase(text);
+
+              if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+                usersFromLastRequest = [];
+              }
+
+              this.tribute.cdCurrentMentionTextSnapshot = text;
+
+              // Hack to make the menu disappear when pressing Home or Ctrl+A (the script bug).
+              this.tribute.currentMentionTextSnapshot = {};
+
+              if (text.includes(`[[${userNamespace}:`)) {
+                callback([]);
+              }
+
+              if (usersByText[text]) {
+                callback(prepareValues(usersByText[text]));
+              } else {
+                const users = usersInSection.slice();
+
+                // OK, 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
+                if (text && (text.match(/ /g) || []).length <= 4) {
+                  users.push(...usersFromLastRequest);
+
+                  // Make the typed text always appear on the last, 10th place.
+                  users[9] = text;
+                }
+
+                callback(prepareValues(users));
+
+                if (!this.tribute.search.filter(text, usersInSection).length) {
+                  let users;
+                  try {
+                    users = await getUserNames(text);
+                  } catch (e) {
+                    return;
+                  }
+
+                  // Yet another really annoying Tribute behaviour: it goes into a near-endless loop
+                  // upon meeting the user name "Test test test test test test test test test test
+                  // test test test". So we hardcodely remove such names.
+                  users = users.filter((name) => !name.startsWith('Test test test'));
+
+                  users = removeSelf(users);
+                  usersFromLastRequest = users.slice();
+
+                  // Make the typed text always appear on the last, 10th place.
+                  users[9] = text;
+
+                  usersByText[text] = users;
+
+                  // The text has updated since the request was made.
+                  if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+                  callback(prepareValues(users));
+                }
+              }
+            },
+            requireLeadingSpace: true,
+            containerClass: 'tribute-container cd-mentionsContainer',
+          }];
+
+          /**
+           * {@link https://github.com/zurb/tribute Tribute} object.
+           *
+           * @type {Tribute}
+           */
+          this.tribute = new Tribute({
+            collection: collections,
+            allowSpaces: true,
+            menuItemLimit: 10,
+            noMatchTemplate: () => {
+              const mentionText = this.tribute.current.mentionText;
+              return (mentionText.includes(`[[${userNamespace}:`) || mentionText.includes(' ')) ?
+                null :
+                '<li>' + cd.s('cf-mentions-nomatches') + '</li>';
+            },
+          });
+
+          // Replace the native function, removing "space" - it causes the menu not to hide when
+          // there is no matches and a space was typed.
+          this.tribute.events.constructor.keys = () => [
+            {
+              key: 9,
+              value: "TAB"
+            },
+            {
+              key: 8,
+              value: "DELETE"
+            },
+            {
+              key: 13,
+              value: "ENTER"
+            },
+            {
+              key: 27,
+              value: "ESCAPE"
+            },
+            {
+              key: 38,
+              value: "UP"
+            },
+            {
+              key: 40,
+              value: "DOWN"
+            }
+          ];
+
+          const attachTribute = (input) => {
+            const element = input.$input.get(0);
+            this.tribute.attach(element);
+
+            element.addEventListener('tribute-replaced', () => {
+              // This is quite silly, but we must remove the ending space because Tribute doesn't
+              // work with empty string in replaceTextSuffix due to a bug.
+              const cursorIndex = input.getRange().to;
+              const value = input.getValue();
+              input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
+              input.selectRange(cursorIndex - 1);
+            });
+          };
+          if (this.headlineInput) {
+            attachTribute(this.headlineInput);
+          }
+          attachTribute(this.commentInput);
+          attachTribute(this.summaryInput);
+        },
+        (e) => {
+          console.warn('Couldn\'t load Tribute from the wmflabs.org.', e);
+        }
+      );
   }
 
   /**
@@ -3099,6 +3309,23 @@ export default class CommentForm {
           this.#submitButtonLabelShort
         );
     }
+  }
+
+  /**
+   * Insert "@" into the comment input, activating the mention function.
+   */
+  mention() {
+    if (!this.tribute) return;
+
+    const cursorIndex = this.commentInput.getRange().to;
+    const lastChar = (
+      cursorIndex &&
+      this.commentInput.getValue().slice(cursorIndex - 1, cursorIndex)
+    );
+    if (cursorIndex && lastChar !== ' ' && lastChar !== '\n') {
+      this.commentInput.insertContent(' ');
+    }
+    this.tribute.showMenuForCollection(this.commentInput.$input.get(0));
   }
 
   /**

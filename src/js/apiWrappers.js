@@ -10,8 +10,11 @@ import lzString from 'lz-string';
 import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { handleApiReject } from './util';
+import { firstCharToUpperCase, handleApiReject } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
+
+let keptUserInfoRequest;
+let keptUserNamesRequests = {};
 
 /**
  * Make a request that isn't subject to throttling when the tab is in the background (google "Chrome
@@ -184,14 +187,12 @@ export async function getLastRevision(title) {
   };
 }
 
-let keptUserInfoRequest;
-
 /**
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Reuse the previous request if present.
- * @returns {Promise} An object containing the full options object, visits, watched sections, and
- *   rights.
+ * @returns {Promise} Promise for an object containing the full options object, visits, watched
+ *   sections, and rights.
  * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {
@@ -416,4 +417,51 @@ export async function getUserGenders(users, noTimers = false) {
       userRegistry.getUser(user.name).gender = user.gender;
     });
   }
+}
+
+/**
+ * Get a list of 10 usernames starting with the specified prefix. Reuses the existing request if
+ * available.
+ *
+ * @param {string} prefix
+ * @returns {Promise} Promise for a string array.
+ */
+export async function getUserNames(prefix) {
+  prefix = firstCharToUpperCase(prefix);
+
+  if (keptUserNamesRequests[prefix]) {
+    return keptUserNamesRequests[prefix];
+  }
+
+  keptUserNamesRequests[prefix] = cd.g.api.get({
+    action: 'query',
+    list: 'allusers',
+    auprefix: prefix,
+    aulimit: 10,
+    formatversion: 2,
+  }).then(
+    (resp) => {
+      const users = (
+        resp.query &&
+        resp.query.allusers &&
+        resp.query.allusers.map((user) => user.name)
+      );
+
+      if (!users) {
+        keptUserNamesRequests[prefix] = null;
+        throw new CdError({
+          type: 'api',
+          code: 'noData',
+        });
+      }
+
+      return users;
+    },
+    (e) => {
+      keptUserNamesRequests[prefix] = null;
+      handleApiReject(e);
+    }
+  );
+
+  return keptUserNamesRequests[prefix];
 }

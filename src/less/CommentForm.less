@@ -300,3 +300,33 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
 .cd-commentForm-disabled .cd-insertButtons {
   pointer-events: none;
 }
+
+.tribute-container.cd-mentionsContainer {
+  font-size: 14px;
+  margin-top: 3px;
+
+  // Make it look closer to the OOUI widget
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.25);
+  border: 1px solid #a2a9b1;
+
+  ul {
+    // Reset the default value
+    background-color: #fff;
+    margin: 0;
+  }
+
+  li {
+    padding: 0.5em;
+    // Overwrite the standard Vector (and other skins?) value
+    margin: 0;
+
+    span {
+      font-weight: normal;
+    }
+  }
+
+  .highlight {
+    background-color: rgba(0, 23, 70, 0.086);
+    font-weight: normal;
+  }
+}

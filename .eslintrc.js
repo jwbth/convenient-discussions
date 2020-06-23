@@ -12,6 +12,7 @@ module.exports = {
     "IS_TEST": "readonly",
     "$": "readonly",
     "OO": "readonly",
+    "Tribute": "readonly",
     "convenientDiscussions": "readonly",
     "mw": "readonly",
     "require": "readonly",
