@@ -303,3 +303,16 @@ export function findLastIndex(arr, callback) {
 export function isInputFocused() {
   return $(':focus:input').length || $(':focus').prop('isContentEditable');
 }
+
+/**
+ * Turn many regexps into one, putting it in `()` and separating individual regexps by `|`.
+ *
+ * @param {RegExp[]|string[]} arr
+ * @returns {?RegExp}
+ */
+export function mergeRegexps(arr) {
+  const pattern = arr
+    .map((regexpOrString) => regexpOrString.source || regexpOrString)
+    .join('|');
+  return pattern ? new RegExp(`(${pattern})`) : null;
+}

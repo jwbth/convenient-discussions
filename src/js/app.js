@@ -19,7 +19,7 @@ import enStrings from '../../i18n/en.json';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { defined, isProbablyTalkPage, underlinesToSpaces } from './util';
+import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import { initTalkPageCss, removeLoadingOverlay, setLoadingOverlay } from './boot';
@@ -90,6 +90,8 @@ function go() {
   cd.g.CURRENT_PAGE = underlinesToSpaces(mw.config.get('wgPageName'));
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
+  cd.g.PAGE_WHITE_LIST_REGEXP = mergeRegexps(cd.config.pageWhiteList);
+  cd.g.PAGE_BLACK_LIST_REGEXP = mergeRegexps(cd.config.pageBlackList);
 
   cd.g.$content = $('#mw-content-text');
 
