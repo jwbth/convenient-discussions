@@ -1427,10 +1427,15 @@ export default class CommentForm {
                   .filter(text, usersInSection)
                   .map((match) => match.string);
                 const users = matchedUsersInSection.slice(0, 9);
-                const tooManySpaces = (text.match(/ /g) || []).length > 4;
+                const isName = (
+                  text &&
+                  text.length <= 85 &&
+                  /[#<>[\]|{}/@:]/.test(text) &&
+                  // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
+                  (text.match(/ /g) || []).length <= 4
+                );
 
-                // OK, 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
-                if (text && !tooManySpaces) {
+                if (isName) {
                   // Logically, matchedUsersInSection or usersFromLastRequest should have zero
                   // length (request is made only if there is no matches in section; if there are,
                   // usersFromLastRequest is an empty array; if the text was heavily modified,
@@ -1445,7 +1450,7 @@ export default class CommentForm {
 
                 callback(prepareValues(users));
 
-                if (!tooManySpaces && !matchedUsersInSection.length) {
+                if (isName && !matchedUsersInSection.length) {
                   let users;
                   try {
                     users = await getUserNames(text);
