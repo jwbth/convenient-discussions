@@ -420,7 +420,7 @@ export async function getUserGenders(users, noTimers = false) {
 }
 
 /**
- * Get a list of 10 usernames starting with the specified prefix. Reuses the existing request if
+ * Get a list of 11 usernames starting with the specified prefix. Reuses the existing request if
  * available.
  *
  * @param {string} prefix
@@ -437,7 +437,7 @@ export async function getUserNames(prefix) {
     action: 'query',
     list: 'allusers',
     auprefix: prefix,
-    aulimit: 10,
+    aulimit: 11,
     formatversion: 2,
   }).then(
     (resp) => {

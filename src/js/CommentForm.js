@@ -1391,7 +1391,7 @@ export default class CommentForm {
           if (this.targetComment) {
             usersInSection.unshift(this.targetComment.author.name);
           }
-          usersInSection = removeSelf(usersInSection);
+          usersInSection = removeSelf(removeDuplicates(usersInSection));
 
           const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
           const usersByText = {};
@@ -1423,11 +1423,21 @@ export default class CommentForm {
               if (usersByText[text]) {
                 callback(prepareValues(usersByText[text]));
               } else {
-                const users = usersInSection.slice();
+                const matchedUsersInSection = this.tribute.search
+                  .filter(text, usersInSection)
+                  .map((match) => match.string);
+                const users = matchedUsersInSection.slice(0, 9);
+                const tooManySpaces = (text.match(/ /g) || []).length > 4;
 
                 // OK, 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
-                if (text && (text.match(/ /g) || []).length <= 4) {
-                  users.push(...usersFromLastRequest);
+                if (text && !tooManySpaces) {
+                  // Logically, matchedUsersInSection or usersFromLastRequest should have zero
+                  // length (request is made only if there is no matches in section; if there are,
+                  // usersFromLastRequest is an empty array; if the text was heavily modified,
+                  // usersFromLastRequest is reset).
+                  if (!matchedUsersInSection.length) {
+                    users.push(...usersFromLastRequest);
+                  }
 
                   // Make the typed text always appear on the last, 10th place.
                   users[9] = text;
@@ -1435,7 +1445,7 @@ export default class CommentForm {
 
                 callback(prepareValues(users));
 
-                if (!this.tribute.search.filter(text, usersInSection).length) {
+                if (!tooManySpaces && !matchedUsersInSection.length) {
                   let users;
                   try {
                     users = await getUserNames(text);
@@ -1443,7 +1453,7 @@ export default class CommentForm {
                     return;
                   }
 
-                  // Yet another really annoying Tribute behaviour: it goes into a near-endless loop
+                  // Yet another really annoying Tribute behavior: it goes into a near-endless loop
                   // upon meeting the user name "Test test test test test test test test test test
                   // test test test". So we hardcodely remove such names.
                   users = users.filter((name) => !name.startsWith('Test test test'));
@@ -1512,6 +1522,10 @@ export default class CommentForm {
               value: "DOWN"
             }
           ];
+
+          // This hack fixes disappearing of the menu when only "@" is typed and the user presses
+          // any command key.
+          this.tribute.events.shouldDeactivate = () => false;
 
           const attachTribute = (input) => {
             const element = input.$input.get(0);
@@ -3325,7 +3339,16 @@ export default class CommentForm {
     if (cursorIndex && lastChar !== ' ' && lastChar !== '\n') {
       this.commentInput.insertContent(' ');
     }
-    this.tribute.showMenuForCollection(this.commentInput.$input.get(0));
+
+    // Yet another hack. Type anything, remove it, press a button - values() will get an old value
+    // for the "text" parameter. This fixes it.
+    this.tribute.hideMenu();
+
+    this.commentInput.insertContent('@');
+    const element = this.commentInput.$input.get(0);
+    element.dispatchEvent(new Event('keydown'));
+    element.dispatchEvent(new Event('input'));
+    element.dispatchEvent(new Event('keyup'));
   }
 
   /**
