@@ -10,7 +10,7 @@ import lzString from 'lz-string';
 import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { firstCharToUpperCase, handleApiReject } from './util';
+import { defined, firstCharToUpperCase, handleApiReject } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
 
 let keptUserInfoRequest;
@@ -420,35 +420,50 @@ export async function getUserGenders(users, noTimers = false) {
 }
 
 /**
- * Get a list of 11 usernames starting with the specified prefix. Reuses the existing request if
- * available.
+ * Get a list of 11 user names matching the specified search text. User names are sorted as {@link
+ * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a talk page
+ * existent are included.
  *
- * @param {string} prefix
+ * Reuses the existing request if available.
+ *
+ * @param {string} text
  * @returns {Promise} Promise for a string array.
  */
-export async function getUserNames(prefix) {
-  prefix = firstCharToUpperCase(prefix);
+export async function getRelevantUserNames(text) {
+  text = firstCharToUpperCase(text);
 
-  if (keptUserNamesRequests[prefix]) {
-    return keptUserNamesRequests[prefix];
+  if (keptUserNamesRequests[text]) {
+    return keptUserNamesRequests[text];
   }
 
-  keptUserNamesRequests[prefix] = cd.g.api.get({
-    action: 'query',
-    list: 'allusers',
-    auprefix: prefix,
-    aulimit: 11,
+  keptUserNamesRequests[text] = cd.g.api.get({
+    action: 'opensearch',
+    profile: 'normal',
+    search: 'User talk:' + text,
+    redirects: 'resolve',
+    // We take 11 results, not 10, because in user name autocompletion we always
+    limit: 11,
     formatversion: 2,
   }).then(
     (resp) => {
+      const pageNames = resp && resp[1];
       const users = (
-        resp.query &&
-        resp.query.allusers &&
-        resp.query.allusers.map((user) => user.name)
+        pageNames &&
+        pageNames
+          .map((pageName) => (pageName.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+          .filter(defined)
+          .filter((pageName) => !pageName.includes('/'))
+          .map((name) => (
+            name.match(new RegExp(mw.util.escapeRegExp(text), 'i')) ?
+              name :
+              // We replace it with a hidden text later. Why not now? Because we need to replace
+              // with a different text in different places to make the result appear in the list.
+              name + ` #text`
+          ))
       );
 
       if (!users) {
-        keptUserNamesRequests[prefix] = null;
+        keptUserNamesRequests[text] = null;
         throw new CdError({
           type: 'api',
           code: 'noData',
@@ -458,10 +473,10 @@ export async function getUserNames(prefix) {
       return users;
     },
     (e) => {
-      keptUserNamesRequests[prefix] = null;
+      keptUserNamesRequests[text] = null;
       handleApiReject(e);
     }
   );
 
-  return keptUserNamesRequests[prefix];
+  return keptUserNamesRequests[text];
 }

@@ -27,7 +27,7 @@ import {
   unhideSensitiveCode,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
-import { getLastRevision, getUserNames, parseCode } from './apiWrappers';
+import { getLastRevision, getRelevantUserNames, parseCode } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
@@ -1383,7 +1383,7 @@ export default class CommentForm {
           const prepareValues = (arr) => (
             removeDuplicates(arr).map((name) => ({
               key: name,
-              value: name,
+              value: name.replace(/ <span.*/, ''),
             }))
           );
 
@@ -1399,10 +1399,14 @@ export default class CommentForm {
           const collections = [{
             selectTemplate: (item) => {
               if (item) {
-                return `@[[${userNamespace}:${item.original.value.trim()}|${item.original.value.trim()}]]`;
+                const value = item.original.value.trim();
+                return `@[[${userNamespace}:${value}|${value}]]`;
               } else {
                 return '';
               }
+            },
+            menuItemTemplate: (item) => {
+              return item.string.replace(/#/g, '');
             },
             values: async (text, callback) => {
               text = firstCharToUpperCase(text);
@@ -1426,11 +1430,11 @@ export default class CommentForm {
                 const matchedUsersInSection = this.tribute.search
                   .filter(text, usersInSection)
                   .map((match) => match.string);
-                const users = matchedUsersInSection.slice(0, 9);
+                let users = matchedUsersInSection.slice(0, 9);
                 const isName = (
                   text &&
                   text.length <= 85 &&
-                  /[#<>[\]|{}/@:]/.test(text) &&
+                  !/[#<>[\]|{}/@:]/.test(text) &&
                   // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
                   (text.match(/ /g) || []).length <= 4
                 );
@@ -1446,6 +1450,9 @@ export default class CommentForm {
 
                   // Make the typed text always appear on the last, 10th place.
                   users[9] = text;
+
+                  users = users
+                    .map((name) => name.replace('#text', `<span class="cd-hidden">${text}</a>`));
                 }
 
                 callback(prepareValues(users));
@@ -1453,7 +1460,7 @@ export default class CommentForm {
                 if (isName && !matchedUsersInSection.length) {
                   let users;
                   try {
-                    users = await getUserNames(text);
+                    users = await getRelevantUserNames(text);
                   } catch (e) {
                     return;
                   }
@@ -1469,6 +1476,8 @@ export default class CommentForm {
                   // Make the typed text always appear on the last, 10th place.
                   users[9] = text;
 
+                  users = users
+                    .map((name) => name.replace('#text', `<span class="cd-hidden">${text}</a>`));
                   usersByText[text] = users;
 
                   // The text has updated since the request was made.
@@ -1477,6 +1486,13 @@ export default class CommentForm {
                   callback(prepareValues(users));
                 }
               }
+            },
+            searchOpts: {
+              // Yet another hack. Empty string is not processed correctly, we use "#" characters
+              // (can't be used in a name) to replace them afterwards.
+              pre: '#',
+              post: '#',
+              skip: false,
             },
             requireLeadingSpace: true,
             containerClass: 'tribute-container cd-mentionsContainer',
@@ -1529,8 +1545,8 @@ export default class CommentForm {
           ];
 
           // This hack fixes disappearing of the menu when only "@" is typed and the user presses
-          // any command key.
-          this.tribute.events.shouldDeactivate = () => false;
+          // any command key except for Esc.
+          this.tribute.events.shouldDeactivate = (e) => e.keyCode === 27;
 
           const attachTribute = (input) => {
             const element = input.$input.get(0);
