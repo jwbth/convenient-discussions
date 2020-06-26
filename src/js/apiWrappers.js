@@ -10,11 +10,13 @@ import lzString from 'lz-string';
 import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { defined, firstCharToUpperCase, handleApiReject } from './util';
+import { defined, handleApiReject } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
 
-let keptUserInfoRequest;
-let keptUserNamesRequests = {};
+let cachedUserInfoRequest;
+let cachedUserNamesRequests = {};
+let cachedPageNamesRequests = {};
+let cachedTemplateNamesRequests = {};
 
 /**
  * Make a request that isn't subject to throttling when the tab is in the background (google "Chrome
@@ -196,14 +198,14 @@ export async function getLastRevision(title) {
  * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {
-  if (reuse && keptUserInfoRequest) {
-    return keptUserInfoRequest;
+  if (reuse && cachedUserInfoRequest) {
+    return cachedUserInfoRequest;
   }
 
   // We never use timers here as this request can be reused while checking for new messages in the
   // background which requires using timers (?), setting the process on hold if the browser
   // throttles background tabs.
-  keptUserInfoRequest = makeRequestNoTimers({
+  cachedUserInfoRequest = makeRequestNoTimers({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
@@ -239,7 +241,7 @@ export function getUserInfo(reuse = false) {
     handleApiReject
   );
 
-  return keptUserInfoRequest;
+  return cachedUserInfoRequest;
 }
 
 /**
@@ -420,9 +422,9 @@ export async function getUserGenders(users, noTimers = false) {
 }
 
 /**
- * Get a list of 11 user names matching the specified search text. User names are sorted as {@link
+ * Get a list of 10 user names matching the specified search text. User names are sorted as {@link
  * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a talk page
- * existent are included.
+ * existent are included. Redirects are resolved.
  *
  * Reuses the existing request if available.
  *
@@ -430,40 +432,30 @@ export async function getUserGenders(users, noTimers = false) {
  * @returns {Promise} Promise for a string array.
  */
 export async function getRelevantUserNames(text) {
-  text = firstCharToUpperCase(text);
-
-  if (keptUserNamesRequests[text]) {
-    return keptUserNamesRequests[text];
+  if (cachedUserNamesRequests[text]) {
+    return cachedUserNamesRequests[text];
   }
 
-  keptUserNamesRequests[text] = cd.g.api.get({
+  cachedUserNamesRequests[text] = cd.g.api.get({
     action: 'opensearch',
-    profile: 'normal',
-    search: 'User talk:' + text,
+    search: text,
+    namespace: 3,
     redirects: 'resolve',
-    // We take 11 results, not 10, because in user name autocompletion we always
-    limit: 11,
+    limit: 10,
     formatversion: 2,
   }).then(
     (resp) => {
-      const pageNames = resp && resp[1];
+      const pages = resp && resp[1];
       const users = (
-        pageNames &&
-        pageNames
-          .map((pageName) => (pageName.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+        pages &&
+        pages
+          .map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
           .filter(defined)
-          .filter((pageName) => !pageName.includes('/'))
-          .map((name) => (
-            name.match(new RegExp(mw.util.escapeRegExp(text), 'i')) ?
-              name :
-              // We replace it with a hidden text later. Why not now? Because we need to replace
-              // with a different text in different places to make the result appear in the list.
-              name + ` #text`
-          ))
+          .filter((name) => !name.includes('/'))
       );
 
       if (!users) {
-        keptUserNamesRequests[text] = null;
+        cachedUserNamesRequests[text] = null;
         throw new CdError({
           type: 'api',
           code: 'noData',
@@ -473,10 +465,105 @@ export async function getRelevantUserNames(text) {
       return users;
     },
     (e) => {
-      keptUserNamesRequests[text] = null;
+      cachedUserNamesRequests[text] = null;
       handleApiReject(e);
     }
   );
 
-  return keptUserNamesRequests[text];
+  return cachedUserNamesRequests[text];
+}
+
+/**
+ * Get a list of 10 page names matching the specified search text. Page names are sorted as {@link
+ * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not resolved.
+ *
+ * Reuses the existing request if available.
+ *
+ * @param {string} text
+ * @returns {Promise} Promise for a string array.
+ */
+export async function getRelevantPageNames(text) {
+  if (cachedPageNamesRequests[text]) {
+    return cachedPageNamesRequests[text];
+  }
+
+  cachedPageNamesRequests[text] = cd.g.api.get({
+    action: 'opensearch',
+    search: text,
+    redirects: 'return',
+    limit: 10,
+    formatversion: 2,
+  }).then(
+    (resp) => {
+      let pages = resp && resp[1];
+      pages = pages
+        .map((name) => name.replace(new RegExp('^' + text[0], 'i'), () => text[0]));
+
+      if (!pages) {
+        cachedPageNamesRequests[text] = null;
+        throw new CdError({
+          type: 'api',
+          code: 'noData',
+        });
+      }
+
+      return pages;
+    },
+    (e) => {
+      cachedPageNamesRequests[text] = null;
+      handleApiReject(e);
+    }
+  );
+
+  return cachedPageNamesRequests[text];
+}
+
+/**
+ * Get a list of 10 template names matching the specified search text. Template names are sorted as
+ * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
+ * resolved.
+ *
+ * Reuses the existing request if available.
+ *
+ * @param {string} text
+ * @returns {Promise} Promise for a string array.
+ */
+export async function getRelevantTemplateNames(text) {
+  if (cachedTemplateNamesRequests[text]) {
+    return cachedTemplateNamesRequests[text];
+  }
+
+  cachedTemplateNamesRequests[text] = cd.g.api.get({
+    action: 'opensearch',
+    search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
+    redirects: 'return',
+    limit: 10,
+    formatversion: 2,
+  }).then(
+    (resp) => {
+      const pages = resp && resp[1];
+      let templates = (
+        pages &&
+        pages.map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+      );
+      templates = templates
+        .map((name) => name.replace(new RegExp('^' + text[0], 'i'), () => text[0]));
+
+      if (!templates) {
+        cachedTemplateNamesRequests[text] = null;
+        throw new CdError({
+          type: 'api',
+          code: 'noData',
+        });
+      }
+
+      return templates;
+    },
+    (e) => {
+      cachedTemplateNamesRequests[text] = null;
+      handleApiReject(e);
+    }
+  );
+
+  return cachedTemplateNamesRequests[text];
 }

@@ -27,7 +27,13 @@ import {
   unhideSensitiveCode,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
-import { getLastRevision, getRelevantUserNames, parseCode } from './apiWrappers';
+import {
+  getLastRevision,
+  getRelevantUserNames,
+  getRelevantPageNames,
+  getRelevantTemplateNames,
+  parseCode,
+} from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
@@ -133,7 +139,7 @@ export default class CommentForm {
 
     this.addEvents();
 
-    this.initMentions();
+    this.initAutocomplete();
 
     this.addToPage();
 
@@ -1352,7 +1358,7 @@ export default class CommentForm {
   /**
    * Initialize mentions using {@link https://github.com/zurb/tribute Tribute}.
    */
-  initMentions() {
+  initAutocomplete() {
     mw.loader.load('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.css', 'text/css');
     mw.loader.getScript('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.js')
       .then(
@@ -1381,10 +1387,12 @@ export default class CommentForm {
             return arr;
           };
           const prepareValues = (arr) => (
-            removeDuplicates(arr).map((name) => ({
-              key: name,
-              value: name.replace(/ <span.*/, ''),
-            }))
+            removeDuplicates(arr)
+              .filter(defined)
+              .map((name) => ({
+                key: name,
+                value: name,
+              }))
           );
 
           let usersInSection = comments.map((comment) => comment.author.name);
@@ -1393,110 +1401,271 @@ export default class CommentForm {
           }
           usersInSection = removeSelf(removeDuplicates(usersInSection));
 
+          const allowedTags = [
+            // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
+            // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags.
+            // Deprecated elements are not included.
+            'abbr', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'caption', 'cite', 'code', 'data',
+            'dd', 'del', 'dfn', 'div', 'dl', 'dt', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'hr', 'i', 'ins', 'kbd', 'li', 'link', 'mark', 'meta', 'ol', 'p', 'pre',
+            'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'small',
+            'span', 'strong', 'sub', 'sup', 'table', 'td', 'th', 'time',
+            'tr', 'u', 'ul', 'var', 'wbr',
+            'gallery', 'includeonly', 'noinclude', 'nowiki', 'onlyinclude', 'categorytree',
+            'charinsert', 'chem', 'ce', 'graph', 'hiero', 'imagemap', 'indicator', 'inputbox',
+            'mapframe', 'maplink', 'math', 'math chem', 'poem', 'ref', 'references', 'score',
+            'section', 'syntaxhighlight', 'templatedata', 'templatestyles', 'timeline',
+          ];
+          allowedTags.sort();
+          const tagsWithSpace = allowedTags.filter((tag) => tag.includes(' '));
+
           const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
           const usersByText = {};
+          const pagesByText = {};
+          const templatesByText = {};
           let usersFromLastRequest = [];
-          const collections = [{
-            selectTemplate: (item) => {
-              if (item) {
-                const value = item.original.value.trim();
-                return `@[[${userNamespace}:${value}|${value}]]`;
-              } else {
-                return '';
-              }
-            },
-            menuItemTemplate: (item) => {
-              return item.string.replace(/#/g, '');
-            },
-            values: async (text, callback) => {
-              text = firstCharToUpperCase(text);
-
-              if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
-                usersFromLastRequest = [];
-              }
-
-              this.tribute.cdCurrentMentionTextSnapshot = text;
-
-              // Hack to make the menu disappear when pressing Home or Ctrl+A (the script bug).
-              this.tribute.currentMentionTextSnapshot = {};
-
-              if (text.includes(`[[${userNamespace}:`)) {
-                callback([]);
-              }
-
-              if (usersByText[text]) {
-                callback(prepareValues(usersByText[text]));
-              } else {
-                const matchedUsersInSection = this.tribute.search
-                  .filter(text, usersInSection)
-                  .map((match) => match.string);
-                let users = matchedUsersInSection.slice(0, 9);
-                const isName = (
-                  text &&
-                  text.length <= 85 &&
-                  !/[#<>[\]|{}/@:]/.test(text) &&
-                  // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
-                  (text.match(/ /g) || []).length <= 4
-                );
-
-                if (isName) {
-                  // Logically, matchedUsersInSection or usersFromLastRequest should have zero
-                  // length (request is made only if there is no matches in section; if there are,
-                  // usersFromLastRequest is an empty array; if the text was heavily modified,
-                  // usersFromLastRequest is reset).
-                  if (!matchedUsersInSection.length) {
-                    users.push(...usersFromLastRequest);
-                  }
-
-                  // Make the typed text always appear on the last, 10th place.
-                  users[9] = text;
-
-                  users = users
-                    .map((name) => name.replace('#text', `<span class="cd-hidden">${text}</a>`));
+          let pagesFromLastRequest = [];
+          let templatesFromLastRequest = [];
+          const collections = [
+            {
+              trigger: '@',
+              searchOpts: {
+                skip: true,
+              },
+              requireLeadingSpace: true,
+              selectTemplate: (item) => {
+                if (item) {
+                  const value = item.original.value.trim();
+                  return `@[[${userNamespace}:${value}|${value}]]`;
+                } else {
+                  return '';
+                }
+              },
+              values: async (text, callback) => {
+                if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+                  usersFromLastRequest = [];
                 }
 
-                callback(prepareValues(users));
+                this.tribute.cdCurrentMentionTextSnapshot = text;
 
-                if (isName && !matchedUsersInSection.length) {
-                  let users;
-                  try {
-                    users = await getRelevantUserNames(text);
-                  } catch (e) {
-                    return;
+                if (text.includes('[[')) {
+                  callback([]);
+                  return;
+                }
+
+                if (usersByText[text]) {
+                  callback(prepareValues(usersByText[text]));
+                } else {
+                  const matchedUsersInSection = this.tribute.search
+                    .filter(text, usersInSection)
+                    .map((match) => match.string);
+                  let users = matchedUsersInSection.slice();
+
+                  const isLikelyName = (
+                    text &&
+                    text.length <= 85 &&
+                    !/[#<>[\]|{}/@:]/.test(text) &&
+                    // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
+                    (text.match(/ /g) || []).length <= 4
+                  );
+                  if (isLikelyName) {
+                    // Logically, matchedUsersInSection or usersFromLastRequest should have zero
+                    // length (request is made only if there is no matches in the section; if there
+                    // are, usersFromLastRequest is an empty array).
+                    if (!matchedUsersInSection.length) {
+                      users.push(...usersFromLastRequest);
+                    }
+
+                    // Make the typed text always appear on the last, 10th place.
+                    users[9] = text;
                   }
-
-                  // Yet another really annoying Tribute behavior: it goes into a near-endless loop
-                  // upon meeting the user name "Test test test test test test test test test test
-                  // test test test". So we hardcodely remove such names.
-                  users = users.filter((name) => !name.startsWith('Test test test'));
-
-                  users = removeSelf(users);
-                  usersFromLastRequest = users.slice();
-
-                  // Make the typed text always appear on the last, 10th place.
-                  users[9] = text;
-
-                  users = users
-                    .map((name) => name.replace('#text', `<span class="cd-hidden">${text}</a>`));
-                  usersByText[text] = users;
-
-                  // The text has updated since the request was made.
-                  if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
 
                   callback(prepareValues(users));
+
+                  if (isLikelyName && !matchedUsersInSection.length) {
+                    let users;
+                    try {
+                      users = await getRelevantUserNames(text);
+                    } catch (e) {
+                      return;
+                    }
+
+                    users = removeSelf(users);
+                    usersFromLastRequest = users.slice();
+
+                    // Make the typed text always appear on the last, 10th place.
+                    users[9] = text;
+
+                    usersByText[text] = users;
+
+                    // The text has updated since the request was made.
+                    if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+                    callback(prepareValues(users));
+                  }
                 }
-              }
+              },
             },
-            searchOpts: {
-              // Yet another hack. Empty string is not processed correctly, we use "#" characters
-              // (can't be used in a name) to replace them afterwards.
-              pre: '#',
-              post: '#',
-              skip: false,
+            {
+              trigger: '[[',
+              searchOpts: {
+                skip: true,
+              },
+              selectTemplate: (item) => {
+                if (item) {
+                  const value = item.original.value.trim();
+                  return `[[${value}]]`;
+                } else {
+                  return '';
+                }
+              },
+              values: async (text, callback) => {
+                if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+                  pagesFromLastRequest = [];
+                }
+
+                this.tribute.cdCurrentMentionTextSnapshot = text;
+
+                if (text.includes('[[')) {
+                  callback([]);
+                  return;
+                }
+
+                if (pagesByText[text]) {
+                  callback(prepareValues(pagesByText[text]));
+                } else {
+                  let pages = [];
+                  const isLikelyName = (
+                    text &&
+                    text.length <= 255 &&
+                    !/[#<>[\]|{}]/.test(text) &&
+                    // 10 spaces in a page name seems too many.
+                    (text.match(/ /g) || []).length <= 9
+                  );
+                  if (isLikelyName) {
+                    pages.push(...pagesFromLastRequest);
+
+                    // Make the typed text always appear on the last, 10th place.
+                    pages[9] = text;
+                  }
+
+                  callback(prepareValues(pages));
+
+                  if (isLikelyName) {
+                    let pages;
+                    try {
+                      pages = await getRelevantPageNames(text);
+                    } catch (e) {
+                      return;
+                    }
+
+                    pagesFromLastRequest = pages.slice();
+
+                    // Make the typed text always appear on the last, 10th place.
+                    pages[9] = text;
+
+                    pagesByText[text] = pages;
+
+                    // The text has updated since the request was made.
+                    if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+                    callback(prepareValues(pages));
+                  }
+                }
+              },
             },
-            requireLeadingSpace: true,
-            containerClass: 'tribute-container cd-mentionsContainer',
-          }];
+            {
+              trigger: '{{',
+              searchOpts: {
+                skip: true,
+              },
+              selectTemplate: (item) => {
+                if (item) {
+                  const value = item.original.value.trim();
+                  return `{{${value}}}`;
+                } else {
+                  return '';
+                }
+              },
+              values: async (text, callback) => {
+                if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+                  templatesFromLastRequest = [];
+                }
+
+                this.tribute.cdCurrentMentionTextSnapshot = text;
+
+                if (text.includes('{{')) {
+                  callback([]);
+                  return;
+                }
+
+                if (templatesByText[text]) {
+                  callback(prepareValues(templatesByText[text]));
+                } else {
+                  let templates = [];
+                  const isLikelyName = (
+                    text &&
+                    text.length <= 255 &&
+                    !/[#<>[\]|{}]/.test(text) &&
+                    // 10 spaces in a page name seems too many.
+                    (text.match(/ /g) || []).length <= 9
+                  );
+                  if (isLikelyName) {
+                    templates.push(...templatesFromLastRequest);
+
+                    // Make the typed text always appear on the last, 10th place.
+                    templates[9] = text;
+                  }
+
+                  callback(prepareValues(templates));
+
+                  if (isLikelyName) {
+                    let templates;
+                    try {
+                      templates = await getRelevantTemplateNames(text);
+                    } catch (e) {
+                      return;
+                    }
+
+                    templatesFromLastRequest = templates.slice();
+
+                    // Make the typed text always appear on the last, 10th place.
+                    templates[9] = text;
+
+                    templatesByText[text] = templates;
+
+                    // The text has updated since the request was made.
+                    if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+                    callback(prepareValues(templates));
+                  }
+                }
+              },
+            },
+            {
+              trigger: '<',
+              menuShowMinLength: 1,
+              searchOpts: {
+                skip: true,
+              },
+              selectTemplate: (item) => {
+                if (item) {
+                  const value = item.original.value.trim();
+                  return `<${value}></${value}>`;
+                } else {
+                  return '';
+                }
+              },
+              values: (text, callback) => {
+                const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
+                if (!/^[a-z]+$/i.test(text) && !tagsWithSpace.some((tag) => regexp.test(tag))) {
+                  callback([]);
+                  return;
+                }
+                callback(prepareValues(allowedTags.filter((tag) => regexp.test(tag))));
+              },
+            },
+          ];
 
           /**
            * {@link https://github.com/zurb/tribute Tribute} object.
@@ -1507,12 +1676,8 @@ export default class CommentForm {
             collection: collections,
             allowSpaces: true,
             menuItemLimit: 10,
-            noMatchTemplate: () => {
-              const mentionText = this.tribute.current.mentionText;
-              return (mentionText.includes(`[[${userNamespace}:`) || mentionText.includes(' ')) ?
-                null :
-                '<li>' + cd.s('cf-mentions-nomatches') + '</li>';
-            },
+            noMatchTemplate: () => null,
+            containerClass: 'tribute-container cd-mentionsContainer',
           });
 
           // Replace the native function, removing "space" - it causes the menu not to hide when
@@ -1552,13 +1717,38 @@ export default class CommentForm {
             const element = input.$input.get(0);
             this.tribute.attach(element);
 
-            element.addEventListener('tribute-replaced', () => {
+            element.addEventListener('tribute-replaced', (e) => {
               // This is quite silly, but we must remove the ending space because Tribute doesn't
               // work with empty string in replaceTextSuffix due to a bug.
               const cursorIndex = input.getRange().to;
               const value = input.getValue();
               input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
-              input.selectRange(cursorIndex - 1);
+
+              let position;
+              switch (e.detail.context.mentionTriggerChar) {
+                case '{{':
+                  position = cursorIndex - 3;
+                  break;
+                case '<':
+                  position = cursorIndex - e.detail.item.original.value.length - 4;
+                  break;
+                default:
+                  position = cursorIndex - 1;
+              }
+
+              input.selectRange(position);
+            });
+
+            // Make the menu disappear when pressing Home or Ctrl+A (the script bug). With
+            // previously used hack,
+            //   this.tribute.currentMentionTextSnapshot = {};
+            // the wrong menu is displayed when typing a trigger, pressing Ctrl+A and typing another
+            // trigger.
+            $(element).on('keydown', (e) => {
+              // Home, End, Page Down, Page Up, Ctrl+A - keys moving the caret.
+              if ((e.keyCode >= 33 && e.keyCode <= 36) || (e.keyCode === 65 && e.ctrlKey)) {
+                this.tribute.hideMenu();
+              }
             });
           };
           if (this.headlineInput) {
@@ -3361,10 +3551,8 @@ export default class CommentForm {
       this.commentInput.insertContent(' ');
     }
 
-    // Yet another hack. Type anything, remove it, press a button - values() will get an old value
-    // for the "text" parameter. This fixes it.
-    this.tribute.hideMenu();
-
+    // And another workaround. The standard Tribute#showMenuForCollection method doesn't call
+    // values().
     this.commentInput.insertContent('@');
     const element = this.commentInput.$input.get(0);
     element.dispatchEvent(new Event('keydown'));
