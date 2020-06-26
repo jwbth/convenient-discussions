@@ -36,26 +36,8 @@
     margin-top: 0.25em;
   }
 
-  .ltr .cd-summaryInput {
-    margin-right: 8px;
-    margin-left: 0;
-  }
-
-  .rtl .cd-summaryInput {
-    margin-left: 8px;
-    margin-right: 0;
-  }
-
   .cd-checkboxesContainer {
     margin-top: 0.5em;
-  }
-
-  .ltr .cd-checkboxesContainer {
-    direction: ltr;
-  }
-
-  .rtl .cd-checkboxesContainer {
-    direction: rtl;
   }
 
   .cd-checkboxesContainer .oo-ui-fieldLayout {
@@ -64,34 +46,6 @@
     &:last-child {
       margin-right: 0;
     }
-  }
-
-  .ltr .cd-checkboxesContainer .oo-ui-fieldLayout {
-    margin-right: 1em;
-    margin-left: 0;
-
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-
-  .rtl .cd-checkboxesContainer .oo-ui-fieldLayout {
-    margin-left: 1em;
-    margin-right: 0;
-
-    &:last-child {
-      margin-left: 0;
-    }
-  }
-
-  .ltr .cd-checkboxesContainer .oo-ui-fieldLayout {
-    margin-left: 1em;
-    margin-right: 0;
-  }
-
-  .rtl .cd-checkboxesContainer .oo-ui-fieldLayout {
-    margin-right: 1em;
-    margin-left: 0;
   }
 
   .cd-buttonsContainer {
@@ -105,30 +59,6 @@
 
   .cd-rightButtonsContainer {
     float: right;
-  }
-  //Use .ltr and .rtl classes for dedicate interface direction 
-  .ltr .cd-buttonsContainer {
-   direction: ltr; 
-  }
-
-  .ltr .cd-leftButtonsContainer {
-    float: left;
-  }
-
-  .ltr .cd-rightButtonsContainer {
-    float: right;
-  }
-
-  .ltr .cd-buttonsContainer {
-   direction: rtl; 
-  }
-
-  .ltr .cd-leftButtonsContainer {
-    float: right;
-  }
-
-  .ltr .cd-rightButtonsContainer {
-    float: left;
   }
 
   .cd-rightButtonsContainer > .oo-ui-buttonWidget:last-child {
@@ -181,6 +111,73 @@
   &-dummyElement {
     height: 0;
   }
+}
+
+.ltr .cd-commentForm {
+  .cd-summaryInput {
+    margin-right: 8px;
+    margin-left: 0;
+  }
+
+  .cd-checkboxesContainer {
+    direction: ltr;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-right: 1em;
+    margin-left: 0;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  //Use .ltr and .rtl classes for dedicate interface direction 
+  .cd-buttonsContainer {
+   direction: ltr; 
+  }
+
+  .cd-leftButtonsContainer {
+    float: left;
+  }
+
+  .cd-rightButtonsContainer {
+    float: right;
+  }
+}
+
+.rtl .cd-commentForm {
+  .cd-summaryInput {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+
+  .cd-checkboxesContainer {
+    direction: rtl;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-left: 1em;
+    margin-right: 0;
+
+    &:last-child {
+      margin-left: 0;
+    }
+  }
+
+  //Use .ltr and .rtl classes for dedicate interface direction 
+  .cd-buttonsContainer {
+   direction: rtl; 
+  }
+
+  .cd-leftButtonsContainer {
+    float: right;
+  }
+
+  .cd-rightButtonsContainer {
+    float: left;
+  }
+
 }
 
 // flow-root removes the number in numbered lists which is too bad when editing a numbered comment
