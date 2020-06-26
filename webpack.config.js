@@ -8,11 +8,11 @@ module.exports = (env = { MODE: 'development' }) => {
   const project = process.env.npm_config_project || 'w';
   const test = Boolean(process.env.npm_config_test) || false;
   const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
-  const configFileName = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
+  const fullCode = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
 
   let fileNamePostfix = '';
   if (env.MODE === 'local') {
-    fileNamePostfix = '-local';
+    fileNamePostfix = `-local-${fullCode}`;
   } else if (test) {
     fileNamePostfix = '-test';
   }
@@ -87,7 +87,7 @@ module.exports = (env = { MODE: 'development' }) => {
     plugins: [
       new webpack.DefinePlugin({
         IS_LOCAL: env.MODE === 'local',
-        CONFIG_FILE_NAME: JSON.stringify(configFileName),
+        CONFIG_FILE_NAME: JSON.stringify(fullCode),
         LANG_FILE_NAME: JSON.stringify(lang + '.json'),
         IS_TEST: test,
       }),
