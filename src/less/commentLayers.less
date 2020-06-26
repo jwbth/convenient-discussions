@@ -75,16 +75,10 @@
   }
 }
 
-.mw-content-ltr .cd-commentOverlay {
-  justify-content: flex-end;
-
-  &-innerWrapper {
-    flex-direction: row;
-  }
-
+// Comments overlay container exist in the parent tag for tag with.mw-content-rtl.
+// So we cant use .in-content-rtl/ltr classes. To determine the direction we will take a more general tag .sitedir-ltr/rtl.
+.sitedir-ltr .cd-commentOverlay {
   &-content {
-    flex-direction: row;
-
     .oo-ui-buttonWidget {
       margin-right: 0;
     }
@@ -95,16 +89,8 @@
   }
 }
 
-.mw-content-rtl .cd-commentOverlay {
-  justify-content: flex-start;
-
-  &-innerWrapper {
-    flex-direction: row-reverse;
-  }
-
+.sitedir-rtl .cd-commentOverlay {
   &-content {
-    flex-direction: row-reverse;
-
     .oo-ui-buttonWidget {
       margin-left: 0;
     }
