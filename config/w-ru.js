@@ -370,7 +370,7 @@ export default {
               gadgets: {
                 tools: {
                   wikificator: {
-                    label: 'Викификатор — автоматический обработчик текста',
+                    label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
                     type: 'button',
                     icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
                     action: {
