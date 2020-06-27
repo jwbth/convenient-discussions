@@ -338,29 +338,9 @@ export default {
    * Default collection of insert buttons displayed under the text input in comment forms.
    *
    * @type {Array.<string|Array>}
-   * @default <pre class="prettyprint source"><code>[
-   *   ['{{+}}'],
-   *   ['{{tl|+}}'],
-   *   ['[[+]]'],
-   *   ['&lt;+>&lt;/&gt;', '&lt;/&gt;'],
-   *   ['&lt;blockquote&gt;+&lt;/blockquote&gt;', '&lt;blockquote /&gt;'],
-   *   ['&lt;code&gt;+&lt;/code&gt;', '&lt;code /&gt;'],
-   *   ['&lt;nowiki&gt;+&lt;/nowiki&gt;', '&lt;nowiki /&gt;'],
-   *   ['&lt;syntaxhighlight lang="+"&gt;&lt;/syntaxhighlight&gt;', '&lt;syntaxhighlight /&gt;'],
-   *   ['&lt;small&gt;+&lt;/small&gt;', '&lt;small /&gt;'],
-   * ]</code></pre>
+   * @default []
    */
-  defaultInsertButtons: [
-    ['{{+}}'],
-    ['{{tl|+}}'],
-    ['[[+]]'],
-    ['<+></>', '</>'],
-    ['<blockquote>+</blockquote>', '<blockquote />'],
-    ['<code>+</code>', '<code />'],
-    ['<nowiki>+</nowiki>', '<nowiki />'],
-    ['<syntaxhighlight lang="+"></syntaxhighlight>', '<syntaxhighlight />'],
-    ['<small>+</small>', '<small />'],
-  ],
+  defaultInsertButtons: [],
 
   /**
    * Data url of the script logo.
