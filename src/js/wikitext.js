@@ -297,11 +297,18 @@ export function hideSensitiveCode(code) {
   const hidden = [];
 
   const hide = (regexp, isTable) => {
-    code = code.replace(regexp, (s, pre, textToHide) => (
+    code = code.replace(regexp, (s, pre, textToHide) => {
+      // If there is no groups, the offset is the second argument.
+      if (typeof pre === 'number') {
+        pre = '';
+        textToHide = '';
+      }
       // Handle tables separately
-      (pre || '') + (isTable ? '\x03' : '\x01') + hidden.push(textToHide || s) +
-      (isTable ? '\x04' : '\x02')
-    ));
+      return (
+        (pre || '') + (isTable ? '\x03' : '\x01') + hidden.push(textToHide || s) +
+        (isTable ? '\x04' : '\x02')
+      );
+    });
   };
 
   // Taken from
