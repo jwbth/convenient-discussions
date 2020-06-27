@@ -18,13 +18,34 @@ ol > li.cd-commentPart-last {
 .cd-commentLevel.cd-commentLevel:not(ol) {
   list-style-type: none;
   list-style-image: none;
-  padding-left: 1em;
+  padding: 0 0 0 1em;
   margin: 0 0 0 1em;
-  border-left: 1px solid #c8ccd1;
+  border: 1px solid #c8ccd1;
+  border-width: 0 0 0 1px;
+}
+
+.mw-content-ltr .cd-commentLevel.cd-commentLevel:not(ol) {
+  padding: 0 0 0 1em;
+  margin: 0 0 0 1em;
+  border-width: 0 0 0 1px;
+}
+
+.mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol) {
+  padding: 0 1em 0 0;
+  margin: 0 1em 0 0;
+  border-width: 0 1px 0 0;
 }
 
 dl.cd-commentLevel > dd {
   margin-left: 0;
+}
+
+.mw-content-ltr dl.cd-commentLevel > dd {
+  margin-left: 0;
+}
+
+.mw-content-rtl dl.cd-commentLevel > dd {
+  margin-right: 0;
 }
 
 .cd-button-pending.cd-button-pending.cd-button-pending .oo-ui-buttonElement-button {
