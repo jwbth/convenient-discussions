@@ -276,6 +276,7 @@ export default class Comment extends CommentSkeleton {
   /**
    * Create the comment's underlay and overlay.
    *
+   * @fires commentLayersCreated
    * @private
    */
   createLayers() {
@@ -410,6 +411,14 @@ export default class Comment extends CommentSkeleton {
      * @type {?(JQuery|undefined)}
      */
     this.$overlayGradient = $(this.#overlayGradient);
+
+    /**
+     * Comment layers have been created.
+     *
+     * @event commentLayersReady
+     * @type {module:cd~convenientDiscussions}
+     */
+    mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
   }
 
   /**
