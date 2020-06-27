@@ -2,6 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 const TerserPlugin = require('terser-webpack-plugin');
+const WebpackBuildNotifierPlugin = require('webpack-build-notifier');
 
 module.exports = (env = { MODE: 'development' }) => {
   const lang = process.env.npm_config_lang || 'ru';
@@ -90,6 +91,10 @@ module.exports = (env = { MODE: 'development' }) => {
         CONFIG_FILE_NAME: JSON.stringify(fullCode),
         LANG_FILE_NAME: JSON.stringify(lang + '.json'),
         IS_TEST: test,
+      }),
+      new WebpackBuildNotifierPlugin({
+        suppressSuccess: true,
+        suppressWarning: true,
       }),
     ],
   };
