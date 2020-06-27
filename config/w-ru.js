@@ -265,7 +265,7 @@ export default {
       .replace(`${cd.s('es-new-subsection')}: /* Предытог */`, 'предытог');
   },
 
-  customCodeTransformations(code, commentForm) {
+  postTransformCode(code, commentForm) {
     // Add a closer template
     if (
       commentForm.couldBeCloserClosing &&
@@ -416,7 +416,7 @@ export default {
     });
   },
 
-  customForeignComponentChecker(node, context) {
+  checkForCustomForeignComponents(node, context) {
     return (
       cd.g.specialElements.pageHasOutdents &&
       (

@@ -166,9 +166,9 @@ async function checkForNewComments() {
             elementsToExcludeClasses: cd.config.elementsToExcludeClasses,
             signatureScanLimit: cd.config.signatureScanLimit,
             foreignElementsInHeadlinesClasses: cd.config.foreignElementsInHeadlinesClasses,
-            customForeignComponentChecker: cd.config.customForeignComponentChecker ?
-              cd.config.customForeignComponentChecker.toString() :
-              cd.config.customForeignComponentChecker,
+            checkForCustomForeignComponents: cd.config.checkForCustomForeignComponents ?
+              cd.config.checkForCustomForeignComponents.toString() :
+              cd.config.checkForCustomForeignComponents,
           }
         });
       }

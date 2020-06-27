@@ -535,11 +535,15 @@ export default async function processPage(keptData = {}) {
   }
   const visitsRequest = cd.g.isPageActive ? getVisits(true) : undefined;
 
-  cd.g.specialElements = findSpecialElements();
+  /**
+   * The script is going to parse the page.
+   *
+   * @event beforeParse
+   * @type {module:cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-  if (cd.config.customBeforeParse) {
-    cd.config.customBeforeParse();
-  }
+  cd.g.specialElements = findSpecialElements();
 
   cd.debug.startTimer('process comments');
 

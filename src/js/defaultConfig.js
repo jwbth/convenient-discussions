@@ -241,7 +241,7 @@ export default {
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for a way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.customForeignComponentChecker}. When it comes to the
+   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. When it comes to the
    * wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
@@ -530,9 +530,8 @@ export default {
   transformSummary: null,
 
   /**
-   * Function that makes alterations to the comment code before it is sent. (An example would be
-   * adding a closer template to all the closures by a user with the closer flag which is a
-   * requirement in Russian Wikipedia.)
+   * Function that makes custom alterations to the comment code before it is processed and
+   * submitted. See also {@link module:defaultConfig.postTransformCode}.
    *
    * @type {?Function}
    * @kind function
@@ -541,19 +540,25 @@ export default {
    * @returns {string}
    * @default null
    */
-  customCodeTransformations: null,
+  preTransformCode: null,
 
   /**
-   * Function with code that will run before the page is parsed.
+   * Function that makes custom alterations to the comment code after it is processed and before it
+   * is submitted. (An example would be adding a closer template to all the closures by a user with
+   * the closer flag which is a requirement in Russian Wikipedia.) See also {@link
+   * module:defaultConfig.preTransformCode}.
    *
    * @type {?Function}
    * @kind function
+   * @param {string} code
+   * @param {CommentForm} commentForm
+   * @returns {string}
    * @default null
    */
-  customBeforeParse: null,
+  postTransformCode: null,
 
   /**
-   * Function that returns `true` for nodes that are not parts of comments and should terminate
+   * Function that returns `true` for nodes that are not parts of comments and should terminate the
    * comment part collecting. These rules often need correspoding rules in {@link
    * module:defaultConfig.customBadCommentBeginnings}.
    *
@@ -567,7 +572,7 @@ export default {
    * @returns {boolean}
    * @default null
    */
-  customForeignComponentChecker: null,
+  checkForCustomForeignComponents: null,
 
   /**
    * Function that returns `true` if new topics are placed on top of the page.

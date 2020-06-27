@@ -2,7 +2,7 @@
  * Web worker entry point.
  *
  * Note that currently there may be difficulties in testing the web worker in the "local" mode with
- * custom config functions such as {@link module:defaultConfig.customForeignComponentChecker} due to
+ * custom config functions such as {@link module:defaultConfig.checkForCustomForeignComponents} due to
  * the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
  * contexts resulting in a lost tie between them.
  *
@@ -195,11 +195,11 @@ function onMessageFromWindow(e) {
     cd.config = message.config;
 
     // FIXME: Any idea how to avoid using eval() here?
-    let checker = cd.config.customForeignComponentChecker;
+    let checker = cd.config.checkForCustomForeignComponents;
     if (checker && !/^ *function +/.test(checker) && !/^.+=>/.test(checker)) {
       checker = 'function ' + checker;
     }
-    cd.config.customForeignComponentChecker = eval(checker);
+    cd.config.checkForCustomForeignComponents = eval(checker);
 
     cd.g.TIMESTAMP_PARSER = eval(cd.g.TIMESTAMP_PARSER);
 

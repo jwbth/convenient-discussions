@@ -508,8 +508,8 @@ export default class Parser {
           ) ||
 
           (
-            cd.config.customForeignComponentChecker &&
-            cd.config.customForeignComponentChecker(node, this.context)
+            cd.config.checkForCustomForeignComponents &&
+            cd.config.checkForCustomForeignComponents(node, this.context)
           )
         ) {
           break;

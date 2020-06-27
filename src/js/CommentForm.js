@@ -2135,8 +2135,6 @@ export default class CommentForm {
    * @throws {CdError}
    */
   commentTextToCode(action) {
-    let text = this.commentInput.getValue();
-
     let indentationChars;
     switch (this.mode) {
       case 'reply':
@@ -2164,8 +2162,14 @@ export default class CommentForm {
 
     const newLineIndentationChars = indentationChars.replace(/\*/g, ':');
 
-    // Work with code
-    let code = text.trim();
+    // Work with the code
+    let code = this.commentInput.getValue();
+
+    if (cd.config.preTransformCode) {
+      code = cd.config.preTransformCode(code, this);
+    }
+
+    code = code.trim();
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
@@ -2180,6 +2184,7 @@ export default class CommentForm {
         return content;
       });
     }
+
     // Remove spaces from empty lines except when they are a part of the syntax creating <pre>.
     code = code
       .replace(/^(?:[ \t\xA0\uFEFF]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\uFEFF\xA0]+/gm, ''));
@@ -2193,8 +2198,8 @@ export default class CommentForm {
         cd.g.CURRENT_USER_SIGNATURE;
     }
 
-    // So that the signature doesn't turn out to be at the end of the last item of the list if the
-    // comment contains one.
+    // Make so that the signature doesn't turn out to be at the end of the last item of the list if
+    // the comment contains one.
     if (
       signature &&
       (this.mode !== 'edit' || !/^[ \t]*\n/.test(signature)) &&
@@ -2344,7 +2349,7 @@ export default class CommentForm {
     }
     code += signature;
 
-    // Process small font wrappers
+    // Process the small font wrappers
     if (this.smallCheckbox) {
       if (this.smallCheckbox.isSelected() || implicitSmall) {
         const indentation = (
@@ -2363,7 +2368,7 @@ export default class CommentForm {
       code += '\n';
     }
 
-    // Add indentation characters
+    // Add the indentation characters
     if (action === 'submit') {
       code = (
         indentationChars +
@@ -2404,8 +2409,8 @@ export default class CommentForm {
 
     code = unhideSensitiveCode(code, hidden);
 
-    if (cd.config.customCodeTransformations) {
-      code = cd.config.customCodeTransformations(code, this);
+    if (cd.config.postTransformCode) {
+      code = cd.config.postTransformCode(code, this);
     }
 
     return { code, imitateList };
@@ -3365,8 +3370,7 @@ export default class CommentForm {
 
     let optionalText;
     if (['reply', 'replyInSection'].includes(this.mode)) {
-      const commentText = this.commentInput
-        .getValue()
+      const commentText = this.commentInput.getValue()
         .trim()
         .replace(/\s+/g, ' ');
       if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
