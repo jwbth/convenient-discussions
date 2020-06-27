@@ -12,7 +12,6 @@ import {
   animateLinks,
   defined,
   findLastIndex,
-  firstCharToUpperCase,
   handleApiReject,
   isInputFocused,
   removeDuplicates,
@@ -29,9 +28,9 @@ import {
 import { generateCommentAnchor } from './timestamp';
 import {
   getLastRevision,
-  getRelevantUserNames,
   getRelevantPageNames,
   getRelevantTemplateNames,
+  getRelevantUserNames,
   parseCode,
 } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
@@ -1359,314 +1358,331 @@ export default class CommentForm {
    * Initialize mentions using {@link https://github.com/zurb/tribute Tribute}.
    */
   initAutocomplete() {
+    let comments = [];
+    if (this.targetSection) {
+      const baseSection = this.targetSection.level === 2 ?
+        this.targetSection :
+        this.targetSection.baseSection;
+      comments = baseSection.comments;
+    } else {
+      cd.comments.some((comment) => {
+        if (comment.section) {
+          comments.push(comment);
+          return true;
+        } else {
+          return false;
+        }
+      });
+    }
+
+    const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
+    const users = {
+      byText: {},
+      cache: [],
+      transform: (name) => {
+        name = name.trim();
+        return `@[[${userNamespace}:${name}|${name}]]`;
+      },
+      removeSelf: (arr) => {
+        while (arr.includes(cd.g.CURRENT_USER_NAME)) {
+          arr.splice(arr.indexOf(cd.g.CURRENT_USER_NAME), 1);
+        }
+        return arr;
+      },
+    };
+    let usersInSection = comments.map((comment) => comment.author.name);
+    if (this.targetComment) {
+      usersInSection.unshift(this.targetComment.author.name);
+    }
+    users.default = users.removeSelf(removeDuplicates(usersInSection));
+
+    const colonNamespaces = mw.config.get('wgFormattedNamespaces');
+    const colonNamespacesRegexp = new RegExp(`^(${colonNamespaces[6]}|${colonNamespaces[14]}):`);
+    const pages = {
+      byText: {},
+      cache: [],
+      transform: (name) => {
+        name = name.trim();
+        if (colonNamespacesRegexp.test(name)) {
+          name = ':' + name;
+        }
+        return `[[${name}]]`;
+      },
+    };
+
+    const templates = {
+      byText: {},
+      cache: [],
+      transform: (name) => {
+        name = name.trim();
+        return `{{${name}}}`;
+      },
+      getEndOffset: () => 2,
+    };
+
+    const tags = {
+      default: [
+        // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
+        // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags.
+        // Deprecated elements are not included.
+        'abbr', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'caption', 'cite', 'code', 'codenowiki',
+        'data', 'dd', 'del', 'dfn', 'div', 'dl', 'dt', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'hr', 'i', 'ins', 'kbd', 'li', 'link', 'mark', 'meta', 'ol', 'p', 'pre', 'q', 'rp', 'rt',
+        'rtc', 'ruby', 's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'table', 'td', 'th',
+        'time', 'tr', 'u', 'ul', 'var', 'wbr',
+        'gallery', 'includeonly', 'noinclude', 'nowiki', 'onlyinclude', 'categorytree',
+        'charinsert', 'chem', 'ce', 'graph', 'hiero', 'imagemap', 'indicator', 'inputbox',
+        'mapframe', 'maplink', 'math', 'math chem', 'poem', 'ref', 'references', 'score', 'section',
+        'syntaxhighlight', 'templatedata', 'templatestyles', 'timeline',
+      ],
+      transform: (name) => {
+        name = name.trim();
+        return name === 'codenowiki' ? `<code><nowiki></nowiki></code>` : `<${name}></${name}>`;
+      },
+      getEndOffset: (name) => {
+        name = name.trim();
+        return name === 'codenowiki' ? name.length + 6 : name.length + 3;
+      },
+    };
+    tags.default.sort();
+    tags.withSpace = tags.default.filter((tag) => tag.includes(' '));
+
+    const selectTemplate = (item) => {
+      if (item) {
+        return item.original.value;
+      } else {
+        return '';
+      }
+    };
+
+    const prepareValues = (arr, config) => (
+      removeDuplicates(arr)
+        .filter(defined)
+        .map((name) => ({
+          key: name,
+          value: config && config.transform ? config.transform(name) : name,
+          endOffset: config && config.getEndOffset ? config.getEndOffset(name) : 0,
+        }))
+    );
+
+    const collections = [
+      {
+        trigger: '@',
+        searchOpts: {
+          skip: true,
+        },
+        requireLeadingSpace: true,
+        selectTemplate,
+        values: async (text, callback) => {
+          if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+            users.cache = [];
+          }
+          this.tribute.cdCurrentMentionTextSnapshot = text;
+
+          // Hack to make the menu disappear when a space is typed after "@".
+          this.tribute.currentMentionTextSnapshot = {};
+
+          if (text.includes('[[')) {
+            callback([]);
+            return;
+          }
+
+          if (users.byText[text]) {
+            callback(prepareValues(users.byText[text], users));
+          } else {
+            const matches = this.tribute.search
+              .filter(text, users.default)
+              .map((match) => match.string);
+            let values = matches.slice();
+
+            const isLikelyName = (
+              text &&
+              text.length <= 85 &&
+              !/[#<>[\]|{}/@:]/.test(text) &&
+              // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
+              (text.match(/ /g) || []).length <= 4
+            );
+            if (isLikelyName) {
+              // Logically, matched or users.cache should have zero length (a request is made only
+              // if there is no matches in the section; if there are, users.cache is an empty
+              // array).
+              if (!matches.length) {
+                values.push(...users.cache);
+              }
+
+              // Make the typed text always appear on the last, 10th place.
+              values[9] = text;
+            }
+
+            callback(prepareValues(values, users));
+
+            if (isLikelyName && !matches.length) {
+              let values;
+              try {
+                values = await getRelevantUserNames(text);
+              } catch (e) {
+                return;
+              }
+
+              values = users.removeSelf(values);
+              users.cache = values.slice();
+
+              // Make the typed text always appear on the last, 10th place.
+              values[9] = text;
+
+              users.byText[text] = values;
+
+              // The text has been updated since the request was made.
+              if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+              callback(prepareValues(values, users));
+            }
+          }
+        },
+      },
+      {
+        trigger: '[[',
+        searchOpts: {
+          skip: true,
+        },
+        selectTemplate,
+        values: async (text, callback) => {
+          if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+            pages.cache = [];
+          }
+          this.tribute.cdCurrentMentionTextSnapshot = text;
+
+          if (text.includes('[[')) {
+            callback([]);
+            return;
+          }
+
+          if (pages.byText[text]) {
+            callback(prepareValues(pages.byText[text], pages));
+          } else {
+            let values = [];
+            const isLikelyName = (
+              text &&
+              text.length <= 255 &&
+              !/[#<>[\]|{}]/.test(text) &&
+              // 10 spaces in a page name seems too many.
+              (text.match(/ /g) || []).length <= 9
+            );
+            if (isLikelyName) {
+              values.push(...pages.cache);
+
+              // Make the typed text always appear on the last, 10th place.
+              values[9] = text;
+            }
+
+            callback(prepareValues(values, pages));
+
+            if (isLikelyName) {
+              let values;
+              try {
+                values = await getRelevantPageNames(text);
+              } catch (e) {
+                return;
+              }
+
+              pages.cache = values.slice();
+
+              // Make the typed text always appear on the last, 10th place.
+              values[9] = text;
+
+              pages.byText[text] = values;
+
+              // The text has been updated since the request was made.
+              if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+              callback(prepareValues(values, pages));
+            }
+          }
+        },
+      },
+      {
+        trigger: '{{',
+        searchOpts: {
+          skip: true,
+        },
+        selectTemplate,
+        values: async (text, callback) => {
+          if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+            templates.cache = [];
+          }
+          this.tribute.cdCurrentMentionTextSnapshot = text;
+
+          if (text.includes('{{')) {
+            callback([]);
+            return;
+          }
+
+          if (templates.byText[text]) {
+            callback(prepareValues(templates.byText[text], templates));
+          } else {
+            let values = [];
+            const isLikelyName = (
+              text &&
+              text.length <= 255 &&
+              !/[#<>[\]|{}]/.test(text) &&
+              // 10 spaces in a page name seems too many.
+              (text.match(/ /g) || []).length <= 9
+            );
+            if (isLikelyName) {
+              values.push(...templates.cache);
+
+              // Make the typed text always appear on the last, 10th place.
+              values[9] = text;
+            }
+
+            callback(prepareValues(values, templates));
+
+            if (isLikelyName) {
+              let values;
+              try {
+                values = await getRelevantTemplateNames(text);
+              } catch (e) {
+                return;
+              }
+
+              templates.cache = values.slice();
+
+              // Make the typed text always appear on the last, 10th place.
+              values[9] = text;
+
+              templates.byText[text] = values;
+
+              // The text has been updated since the request was made.
+              if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+
+              callback(prepareValues(values, templates));
+            }
+          }
+        },
+      },
+      {
+        trigger: '<',
+        menuShowMinLength: 1,
+        searchOpts: {
+          skip: true,
+        },
+        selectTemplate,
+        values: (text, callback) => {
+          const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
+          if (!/^[a-z]+$/i.test(text) && !tags.withSpace.some((tag) => regexp.test(tag))) {
+            callback([]);
+            return;
+          }
+          const matches = tags.default.filter((tag) => regexp.test(tag));
+          callback(prepareValues(matches, tags));
+        },
+      },
+    ];
+
     mw.loader.load('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.css', 'text/css');
     mw.loader.getScript('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.js')
       .then(
         () => {
-          let comments = [];
-          if (this.targetSection) {
-            const baseSection = this.targetSection.level === 2 ?
-              this.targetSection :
-              this.targetSection.baseSection;
-            comments = baseSection.comments;
-          } else {
-            cd.comments.some((comment) => {
-              if (comment.section) {
-                comments.push(comment);
-                return true;
-              } else {
-                return false;
-              }
-            });
-          }
-
-          const removeSelf = (arr) => {
-            while (arr.includes(cd.g.CURRENT_USER_NAME)) {
-              arr.splice(arr.indexOf(cd.g.CURRENT_USER_NAME), 1);
-            }
-            return arr;
-          };
-          const prepareValues = (arr) => (
-            removeDuplicates(arr)
-              .filter(defined)
-              .map((name) => ({
-                key: name,
-                value: name,
-              }))
-          );
-
-          let usersInSection = comments.map((comment) => comment.author.name);
-          if (this.targetComment) {
-            usersInSection.unshift(this.targetComment.author.name);
-          }
-          usersInSection = removeSelf(removeDuplicates(usersInSection));
-
-          const allowedTags = [
-            // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
-            // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags.
-            // Deprecated elements are not included.
-            'abbr', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'caption', 'cite', 'code', 'data',
-            'dd', 'del', 'dfn', 'div', 'dl', 'dt', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            'hr', 'i', 'ins', 'kbd', 'li', 'link', 'mark', 'meta', 'ol', 'p', 'pre',
-            'q', 'rp', 'rt', 'rtc', 'ruby', 's', 'samp', 'small',
-            'span', 'strong', 'sub', 'sup', 'table', 'td', 'th', 'time',
-            'tr', 'u', 'ul', 'var', 'wbr',
-            'gallery', 'includeonly', 'noinclude', 'nowiki', 'onlyinclude', 'categorytree',
-            'charinsert', 'chem', 'ce', 'graph', 'hiero', 'imagemap', 'indicator', 'inputbox',
-            'mapframe', 'maplink', 'math', 'math chem', 'poem', 'ref', 'references', 'score',
-            'section', 'syntaxhighlight', 'templatedata', 'templatestyles', 'timeline',
-          ];
-          allowedTags.sort();
-          const tagsWithSpace = allowedTags.filter((tag) => tag.includes(' '));
-
-          const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
-          const usersByText = {};
-          const pagesByText = {};
-          const templatesByText = {};
-          let usersFromLastRequest = [];
-          let pagesFromLastRequest = [];
-          let templatesFromLastRequest = [];
-          const collections = [
-            {
-              trigger: '@',
-              searchOpts: {
-                skip: true,
-              },
-              requireLeadingSpace: true,
-              selectTemplate: (item) => {
-                if (item) {
-                  const value = item.original.value.trim();
-                  return `@[[${userNamespace}:${value}|${value}]]`;
-                } else {
-                  return '';
-                }
-              },
-              values: async (text, callback) => {
-                if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
-                  usersFromLastRequest = [];
-                }
-
-                this.tribute.cdCurrentMentionTextSnapshot = text;
-
-                if (text.includes('[[')) {
-                  callback([]);
-                  return;
-                }
-
-                if (usersByText[text]) {
-                  callback(prepareValues(usersByText[text]));
-                } else {
-                  const matchedUsersInSection = this.tribute.search
-                    .filter(text, usersInSection)
-                    .map((match) => match.string);
-                  let users = matchedUsersInSection.slice();
-
-                  const isLikelyName = (
-                    text &&
-                    text.length <= 85 &&
-                    !/[#<>[\]|{}/@:]/.test(text) &&
-                    // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
-                    (text.match(/ /g) || []).length <= 4
-                  );
-                  if (isLikelyName) {
-                    // Logically, matchedUsersInSection or usersFromLastRequest should have zero
-                    // length (request is made only if there is no matches in the section; if there
-                    // are, usersFromLastRequest is an empty array).
-                    if (!matchedUsersInSection.length) {
-                      users.push(...usersFromLastRequest);
-                    }
-
-                    // Make the typed text always appear on the last, 10th place.
-                    users[9] = text;
-                  }
-
-                  callback(prepareValues(users));
-
-                  if (isLikelyName && !matchedUsersInSection.length) {
-                    let users;
-                    try {
-                      users = await getRelevantUserNames(text);
-                    } catch (e) {
-                      return;
-                    }
-
-                    users = removeSelf(users);
-                    usersFromLastRequest = users.slice();
-
-                    // Make the typed text always appear on the last, 10th place.
-                    users[9] = text;
-
-                    usersByText[text] = users;
-
-                    // The text has updated since the request was made.
-                    if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
-
-                    callback(prepareValues(users));
-                  }
-                }
-              },
-            },
-            {
-              trigger: '[[',
-              searchOpts: {
-                skip: true,
-              },
-              selectTemplate: (item) => {
-                if (item) {
-                  const value = item.original.value.trim();
-                  return `[[${value}]]`;
-                } else {
-                  return '';
-                }
-              },
-              values: async (text, callback) => {
-                if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
-                  pagesFromLastRequest = [];
-                }
-
-                this.tribute.cdCurrentMentionTextSnapshot = text;
-
-                if (text.includes('[[')) {
-                  callback([]);
-                  return;
-                }
-
-                if (pagesByText[text]) {
-                  callback(prepareValues(pagesByText[text]));
-                } else {
-                  let pages = [];
-                  const isLikelyName = (
-                    text &&
-                    text.length <= 255 &&
-                    !/[#<>[\]|{}]/.test(text) &&
-                    // 10 spaces in a page name seems too many.
-                    (text.match(/ /g) || []).length <= 9
-                  );
-                  if (isLikelyName) {
-                    pages.push(...pagesFromLastRequest);
-
-                    // Make the typed text always appear on the last, 10th place.
-                    pages[9] = text;
-                  }
-
-                  callback(prepareValues(pages));
-
-                  if (isLikelyName) {
-                    let pages;
-                    try {
-                      pages = await getRelevantPageNames(text);
-                    } catch (e) {
-                      return;
-                    }
-
-                    pagesFromLastRequest = pages.slice();
-
-                    // Make the typed text always appear on the last, 10th place.
-                    pages[9] = text;
-
-                    pagesByText[text] = pages;
-
-                    // The text has updated since the request was made.
-                    if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
-
-                    callback(prepareValues(pages));
-                  }
-                }
-              },
-            },
-            {
-              trigger: '{{',
-              searchOpts: {
-                skip: true,
-              },
-              selectTemplate: (item) => {
-                if (item) {
-                  const value = item.original.value.trim();
-                  return `{{${value}}}`;
-                } else {
-                  return '';
-                }
-              },
-              values: async (text, callback) => {
-                if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
-                  templatesFromLastRequest = [];
-                }
-
-                this.tribute.cdCurrentMentionTextSnapshot = text;
-
-                if (text.includes('{{')) {
-                  callback([]);
-                  return;
-                }
-
-                if (templatesByText[text]) {
-                  callback(prepareValues(templatesByText[text]));
-                } else {
-                  let templates = [];
-                  const isLikelyName = (
-                    text &&
-                    text.length <= 255 &&
-                    !/[#<>[\]|{}]/.test(text) &&
-                    // 10 spaces in a page name seems too many.
-                    (text.match(/ /g) || []).length <= 9
-                  );
-                  if (isLikelyName) {
-                    templates.push(...templatesFromLastRequest);
-
-                    // Make the typed text always appear on the last, 10th place.
-                    templates[9] = text;
-                  }
-
-                  callback(prepareValues(templates));
-
-                  if (isLikelyName) {
-                    let templates;
-                    try {
-                      templates = await getRelevantTemplateNames(text);
-                    } catch (e) {
-                      return;
-                    }
-
-                    templatesFromLastRequest = templates.slice();
-
-                    // Make the typed text always appear on the last, 10th place.
-                    templates[9] = text;
-
-                    templatesByText[text] = templates;
-
-                    // The text has updated since the request was made.
-                    if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
-
-                    callback(prepareValues(templates));
-                  }
-                }
-              },
-            },
-            {
-              trigger: '<',
-              menuShowMinLength: 1,
-              searchOpts: {
-                skip: true,
-              },
-              selectTemplate: (item) => {
-                if (item) {
-                  const value = item.original.value.trim();
-                  return `<${value}></${value}>`;
-                } else {
-                  return '';
-                }
-              },
-              values: (text, callback) => {
-                const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
-                if (!/^[a-z]+$/i.test(text) && !tagsWithSpace.some((tag) => regexp.test(tag))) {
-                  callback([]);
-                  return;
-                }
-                callback(prepareValues(allowedTags.filter((tag) => regexp.test(tag))));
-              },
-            },
-          ];
-
           /**
            * {@link https://github.com/zurb/tribute Tribute} object.
            *
@@ -1680,8 +1696,8 @@ export default class CommentForm {
             containerClass: 'tribute-container cd-mentionsContainer',
           });
 
-          // Replace the native function, removing "space" - it causes the menu not to hide when
-          // there is no matches and a space was typed.
+          // Replace the native function, removing "space" - it causes the menu not to change or
+          // hide when a space was typed.
           this.tribute.events.constructor.keys = () => [
             {
               key: 9,
@@ -1709,9 +1725,18 @@ export default class CommentForm {
             }
           ];
 
-          // This hack fixes disappearing of the menu when only "@" is typed and the user presses
-          // any command key except for Esc.
-          this.tribute.events.shouldDeactivate = (e) => e.keyCode === 27;
+          // This hack fixes the disappearing of the menu when a part of mention is typed and the
+          // user presses any command key.
+          this.tribute.events.shouldDeactivate = (e) => {
+            if (!this.tribute.isActive) return false;
+
+            return (
+              (e.keyCode >= 33 && e.keyCode <= 37) ||
+              e.keyCode === 39 ||
+              (e.ctrlKey && e.keyCode !== 17) ||
+              (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
+            );
+          };
 
           const attachTribute = (input) => {
             const element = input.$input.get(0);
@@ -1723,32 +1748,7 @@ export default class CommentForm {
               const cursorIndex = input.getRange().to;
               const value = input.getValue();
               input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
-
-              let position;
-              switch (e.detail.context.mentionTriggerChar) {
-                case '{{':
-                  position = cursorIndex - 3;
-                  break;
-                case '<':
-                  position = cursorIndex - e.detail.item.original.value.length - 4;
-                  break;
-                default:
-                  position = cursorIndex - 1;
-              }
-
-              input.selectRange(position);
-            });
-
-            // Make the menu disappear when pressing Home or Ctrl+A (the script bug). With
-            // previously used hack,
-            //   this.tribute.currentMentionTextSnapshot = {};
-            // the wrong menu is displayed when typing a trigger, pressing Ctrl+A and typing another
-            // trigger.
-            $(element).on('keydown', (e) => {
-              // Home, End, Page Down, Page Up, Ctrl+A - keys moving the caret.
-              if ((e.keyCode >= 33 && e.keyCode <= 36) || (e.keyCode === 65 && e.ctrlKey)) {
-                this.tribute.hideMenu();
-              }
+              input.selectRange(cursorIndex - 1 - e.detail.item.original.endOffset);
             });
           };
           if (this.headlineInput) {
