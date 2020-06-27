@@ -281,141 +281,6 @@ export default {
     return code;
   },
 
-  customBeforeParse() {
-    // Handle {{-vote}} template by making pseudo-minus-1-level comments real ones. We split the
-    // parent list tag into two parts putting the comment in between.
-    $('.ruwiki-commentIndentation-minus1level').each(function () {
-      const $current = $(this).css('margin', 0);
-      const $list = $current.parent('dd, li').parent('dl, ol, ul');
-      while ($list.get(0).contains($current.get(0))) {
-        const $parent = $current.parent();
-        const $elementsAfter = $current.nextAll();
-        if ($elementsAfter.length) {
-          $parent
-            .clone()
-            .empty()
-            .append($elementsAfter);
-        }
-        $parent.after($current);
-        if (!$parent.children().length) {
-          $parent.remove();
-        }
-      }
-    });
-
-    mw.hook('convenientDiscussions.pageReady').add(() => {
-      if (cd.g.firstRun) {
-        const generateEditCommonJsLink = () => (
-          mw.util.getUrl(`User:${cd.g.CURRENT_USER_NAME}/common.js`, { action: 'edit' })
-        );
-
-        const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
-        if (cd.settings.highlightNew && isHlmEnabled) {
-          // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
-          window.highlightMessagesAfterLastVisit = false;
-          window.highlightMessages = 0;
-        }
-        if (isHlmEnabled && !mw.cookie.get('cd-hlmConflict')) {
-          // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
-          if (window.messagesHighlightColor !== undefined) {
-            const dummyElement = document.createElement('span');
-            dummyElement.style.color = window.messagesHighlightColor;
-            const hlmStyledElements = cd.g.rootElement.querySelectorAll(
-              `.cd-commentPart[style="background-color: ${dummyElement.style.color};"],` +
-              `.cd-commentPart[style="background-color: ${window.messagesHighlightColor}"]`
-            );
-            hlmStyledElements.forEach((el) => {
-              el.style.backgroundColor = null;
-            });
-          }
-
-          const $text = cd.util.wrapInElement(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`);
-          mw.notify($text, { autoHide: false } );
-          mw.cookie.set('cd-hlmConflict', '1', {
-            path: '/',
-            expires: cd.g.SECONDS_IN_A_DAY * 30,
-          });
-        }
-
-        if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-          const $text = cd.util.wrapInElement(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`);
-          mw.notify($text, { autoHide: false });
-          mw.cookie.set('cd-ptaConflict', '1', {
-            path: '/',
-            expires: cd.g.SECONDS_IN_A_DAY * 30,
-          });
-        }
-
-        if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-          const $text = cd.util.wrapInElement(`Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="${mw.util.getUrl(cd.config.helpWikilink)}#Совместимость">здесь</a>, чтобы обеспечить их совместимость.`);
-          mw.notify($text, { autoHide: false });
-        }
-
-        mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
-          commentForm.couldBeCloserClosing = (
-            /^Википедия:К удалению/.test(cd.g.CURRENT_PAGE) &&
-            commentForm.mode === 'addSubsection' &&
-            mw.config.get('wgUserGroups').includes('closer')
-          );
-        });
-
-        mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
-          const wikify = () => {
-            window.Wikify(commentForm.commentInput.$input.get(0));
-          };
-
-          commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-            section: 'main',
-            groups: {
-              gadgets: {
-                tools: {
-                  wikificator: {
-                    label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
-                    type: 'button',
-                    icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
-                    action: {
-                      type: 'callback',
-                      execute: wikify,
-                    },
-                  },
-                },
-              }
-            },
-          });
-          commentForm.$element
-            .find('.group-gadgets')
-            .insertBefore(commentForm.$element.find('.section-main .group-format'));
-          commentForm.$form.on('keydown', (e) => {
-            // Ctrl+Alt+W
-            if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
-              wikify();
-            }
-          });
-
-          if (mw.user.options.get('gadget-urldecoder')) {
-            commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-              section: 'main',
-              group: 'gadgets',
-              tools: {
-                urlDecoder: {
-                  label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
-                  type: 'button',
-                  icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
-                  action: {
-                    type: 'callback',
-                    execute: () => {
-                      window.urlDecoderRun(commentForm.commentInput.$input.get(0));
-                    },
-                  },
-                },
-              },
-            });
-          }
-        });
-      }
-    });
-  },
-
   checkForCustomForeignComponents(node, context) {
     return (
       cd.g.specialElements.pageHasOutdents &&
@@ -453,5 +318,140 @@ export default {
     return `{{перенесено с|${targetPageWikilink}|${signature}}}`;
   },
 };
+
+mw.hook('convenientDiscussions.beforeParse').add(() => {
+  // Handle {{-vote}} template by making pseudo-minus-1-level comments real ones. We split the
+  // parent list tag into two parts putting the comment in between.
+  $('.ruwiki-commentIndentation-minus1level').each(function () {
+    const $current = $(this).css('margin', 0);
+    const $list = $current.parent('dd, li').parent('dl, ol, ul');
+    while ($list.get(0).contains($current.get(0))) {
+      const $parent = $current.parent();
+      const $elementsAfter = $current.nextAll();
+      if ($elementsAfter.length) {
+        $parent
+          .clone()
+          .empty()
+          .append($elementsAfter);
+      }
+      $parent.after($current);
+      if (!$parent.children().length) {
+        $parent.remove();
+      }
+    }
+  });
+});
+
+mw.hook('convenientDiscussions.pageReady').add(() => {
+  if (cd.g.firstRun) {
+    const generateEditCommonJsLink = () => (
+      mw.util.getUrl(`User:${cd.g.CURRENT_USER_NAME}/common.js`, { action: 'edit' })
+    );
+
+    const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
+    if (cd.settings.highlightNew && isHlmEnabled) {
+      // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
+      window.highlightMessagesAfterLastVisit = false;
+      window.highlightMessages = 0;
+    }
+    if (isHlmEnabled && !mw.cookie.get('cd-hlmConflict')) {
+      // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
+      if (window.messagesHighlightColor !== undefined) {
+        const dummyElement = document.createElement('span');
+        dummyElement.style.color = window.messagesHighlightColor;
+        const hlmStyledElements = cd.g.rootElement.querySelectorAll(
+          `.cd-commentPart[style="background-color: ${dummyElement.style.color};"],` +
+          `.cd-commentPart[style="background-color: ${window.messagesHighlightColor}"]`
+        );
+        hlmStyledElements.forEach((el) => {
+          el.style.backgroundColor = null;
+        });
+      }
+
+      const $text = cd.util.wrapInElement(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`);
+      mw.notify($text, { autoHide: false } );
+      mw.cookie.set('cd-hlmConflict', '1', {
+        path: '/',
+        expires: cd.g.SECONDS_IN_A_DAY * 30,
+      });
+    }
+
+    if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
+      const $text = cd.util.wrapInElement(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`);
+      mw.notify($text, { autoHide: false });
+      mw.cookie.set('cd-ptaConflict', '1', {
+        path: '/',
+        expires: cd.g.SECONDS_IN_A_DAY * 30,
+      });
+    }
+
+    if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
+      const $text = cd.util.wrapInElement(`Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="${mw.util.getUrl(cd.config.helpWikilink)}#Совместимость">здесь</a>, чтобы обеспечить их совместимость.`);
+      mw.notify($text, { autoHide: false });
+    }
+  }
+});
+
+mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
+  commentForm.couldBeCloserClosing = (
+    /^Википедия:К удалению/.test(cd.g.CURRENT_PAGE) &&
+    commentForm.mode === 'addSubsection' &&
+    mw.config.get('wgUserGroups').includes('closer')
+  );
+});
+
+mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
+  const wikify = () => {
+    window.Wikify(commentForm.commentInput.$input.get(0));
+  };
+
+  commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+    section: 'main',
+    groups: {
+      gadgets: {
+        tools: {
+          wikificator: {
+            label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
+            type: 'button',
+            icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+            action: {
+              type: 'callback',
+              execute: wikify,
+            },
+          },
+        },
+      }
+    },
+  });
+  commentForm.$element
+    .find('.group-gadgets')
+    .insertBefore(commentForm.$element.find('.section-main .group-format'));
+  commentForm.$form.on('keydown', (e) => {
+    // Ctrl+Alt+W
+    if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
+      wikify();
+    }
+  });
+
+  if (mw.user.options.get('gadget-urldecoder')) {
+    commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+      section: 'main',
+      group: 'gadgets',
+      tools: {
+        urlDecoder: {
+          label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+          type: 'button',
+          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+          action: {
+            type: 'callback',
+            execute: () => {
+              window.urlDecoderRun(commentForm.commentInput.$input.get(0));
+            },
+          },
+        },
+      },
+    });
+  }
+});
 
 const cd = convenientDiscussions;
