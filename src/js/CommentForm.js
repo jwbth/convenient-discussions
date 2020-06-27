@@ -389,7 +389,7 @@ export default class CommentForm {
                 },
               },
               quote: {
-                label: cd.s('cf-quote-tooltip'),
+                label: `${cd.s('cf-quote-tooltip')} ${mw.msg('parentheses', `Q${mw.msg('comma-separator')}Ctrl+Alt+Q`)}`,
                 type: 'button',
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/OOjs_UI_icon_quotes-ltr.svg',
                 action: {
@@ -1623,9 +1623,9 @@ export default class CommentForm {
 
           // Replace the native function, removing:
           // * "space" - it causes the menu not to change or hide when a space was typed;
-          // * "delete" - it causes the menu not to appear when backspace is pressed and a character preventing
-          // the menu to appear is removed (for example, ">" in "<small>"). It is replaced with
-          // "e.keyCode === 8" in shouldDeactivate lower.
+          // * "delete" - it causes the menu not to appear when backspace is pressed and a character
+          // preventing the menu to appear is removed (for example, ">" in "<small>"). It is
+          // replaced with "e.keyCode === 8" in shouldDeactivate lower.
           this.tribute.events.constructor.keys = () => [
             {
               key: 9,
