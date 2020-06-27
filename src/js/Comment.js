@@ -368,20 +368,6 @@ export default class Comment extends CommentSkeleton {
         }
       };
       this.#overlayContent.appendChild(this.replyButton);
-    } else {
-      const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
-      while (treeWalker.parentNode()) {
-        const backgroundColor = window.getComputedStyle(treeWalker.currentNode).backgroundColor;
-        if (backgroundColor.includes('rgb(')) {
-          /**
-           * Comment's background color if not default.
-           *
-           * @type {string|undefined}
-           */
-          this.backgroundColor = backgroundColor;
-          break;
-        }
-      }
     }
 
     /**
@@ -1642,6 +1628,13 @@ export default class Comment extends CommentSkeleton {
         }
         const backgroundColor = style.backgroundColor;
         if (backgroundColor.includes('rgb(')) {
+          /**
+           * Comment's background color if not default.
+           *
+           * @type {string|undefined}
+           */
+          this.backgroundColor = backgroundColor;
+
           offsetParent = treeWalker.currentNode;
           offsetParent.classList.add('cd-commentLayersContainerParent');
           break;
