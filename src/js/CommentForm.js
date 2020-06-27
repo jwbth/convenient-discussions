@@ -1436,7 +1436,7 @@ export default class CommentForm {
               }
 
               // Make the typed text always appear on the last, 10th place.
-              values[9] = text;
+              values[9] = text.trim();
             }
 
             callback(prepareValues(values, users));
@@ -1453,7 +1453,7 @@ export default class CommentForm {
               users.cache = values.slice();
 
               // Make the typed text always appear on the last, 10th place.
-              values[9] = text;
+              values[9] = text.trim();
 
               users.byText[text] = values;
 
@@ -1497,7 +1497,7 @@ export default class CommentForm {
               values.push(...pages.cache);
 
               // Make the typed text always appear on the last, 10th place.
-              values[9] = text;
+              values[9] = text.trim();
             }
 
             callback(prepareValues(values, pages));
@@ -1513,7 +1513,7 @@ export default class CommentForm {
               pages.cache = values.slice();
 
               // Make the typed text always appear on the last, 10th place.
-              values[9] = text;
+              values[9] = text.trim();
 
               pages.byText[text] = values;
 
@@ -1557,7 +1557,7 @@ export default class CommentForm {
               values.push(...templates.cache);
 
               // Make the typed text always appear on the last, 10th place.
-              values[9] = text;
+              values[9] = text.trim();
             }
 
             callback(prepareValues(values, templates));
@@ -1573,7 +1573,7 @@ export default class CommentForm {
               templates.cache = values.slice();
 
               // Make the typed text always appear on the last, 10th place.
-              values[9] = text;
+              values[9] = text.trim();
 
               templates.byText[text] = values;
 
@@ -1621,32 +1621,31 @@ export default class CommentForm {
             containerClass: 'tribute-container cd-mentionsContainer',
           });
 
-          // Replace the native function, removing "space" - it causes the menu not to change or
-          // hide when a space was typed.
+          // Replace the native function, removing:
+          // * "space" - it causes the menu not to change or hide when a space was typed;
+          // * "delete" - it causes the menu not to appear when backspace is pressed and a character preventing
+          // the menu to appear is removed (for example, ">" in "<small>"). It is replaced with
+          // "e.keyCode === 8" in shouldDeactivate lower.
           this.tribute.events.constructor.keys = () => [
             {
               key: 9,
-              value: "TAB"
-            },
-            {
-              key: 8,
-              value: "DELETE"
+              value: 'TAB'
             },
             {
               key: 13,
-              value: "ENTER"
+              value: 'ENTER'
             },
             {
               key: 27,
-              value: "ESCAPE"
+              value: 'ESCAPE'
             },
             {
               key: 38,
-              value: "UP"
+              value: 'UP'
             },
             {
               key: 40,
-              value: "DOWN"
+              value: 'DOWN'
             }
           ];
 
@@ -1656,9 +1655,15 @@ export default class CommentForm {
             if (!this.tribute.isActive) return false;
 
             return (
+              // Backspace
+              e.keyCode === 8 ||
+              // Page Up, Page Down, End, Home, Left
               (e.keyCode >= 33 && e.keyCode <= 37) ||
+              // Right
               e.keyCode === 39 ||
+              // Ctrl+...
               (e.ctrlKey && e.keyCode !== 17) ||
+              // ⌘+...
               (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
             );
           };
