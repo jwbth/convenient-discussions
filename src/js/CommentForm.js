@@ -185,10 +185,10 @@ export default class CommentForm {
 
         this.target.getCode(true).then(
           ({ commentText, headline }) => {
-            this.commentInput.setValue(commentText);
-            if (this.smallCheckbox) {
-              this.smallCheckbox.setSelected(this.target.inCode.inSmallFont);
+            if (this.target.inCode.inSmallFont) {
+              commentText = `<small>${commentText}</small>`;
             }
+            this.commentInput.setValue(commentText);
             this.originalComment = commentText;
             if (this.headlineInput) {
               this.headlineInput.setValue(headline);
@@ -738,31 +738,6 @@ export default class CommentForm {
       });
     }
 
-
-    if (!this.headlineInput) {
-      /**
-       * Small font checkbox field.
-       *
-       * @name smallField
-       * @type {OoUiFieldLayout}
-       * @instance module:CommentForm
-       */
-
-      /**
-       * Small font checkbox.
-       *
-       * @name smallCheckbox
-       * @type {OoUiCheckboxInputWidget}
-       * @instance module:CommentForm
-       */
-      [this.smallField, this.smallCheckbox] = checkboxField({
-        value: 'small',
-        selected: dataToRestore ? dataToRestore.small : false,
-        label: cd.s('cf-small'),
-        tabIndex: String(this.id) + '24',
-      });
-    }
-
     if (this.headlineInput) {
       /**
        * No signature checkbox field.
@@ -860,7 +835,6 @@ export default class CommentForm {
       this.minorField,
       this.watchField,
       this.watchSectionField,
-      this.smallField,
       this.noSignatureField,
       this.deleteField,
       this.scriptSettingsButton,
@@ -1267,11 +1241,6 @@ export default class CommentForm {
       .on('change', saveSessionEventHandler);
     if (this.watchSectionCheckbox) {
       this.watchSectionCheckbox
-        .on('change', saveSessionEventHandler);
-    }
-    if (this.smallCheckbox) {
-      this.smallCheckbox
-        .on('change', previewFalse)
         .on('change', saveSessionEventHandler);
     }
     if (this.noSignatureCheckbox) {
@@ -2130,13 +2099,13 @@ export default class CommentForm {
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
 
-    let implicitSmall = false;
-    if (this.smallCheckbox) {
-      // If the user wrapped the comment in <small></small>, select the relevant checkbox and remove
-      // the tags. This will include the signature into the tags and possibly ensure the right line
+    let isWholeCommentInSmall = false;
+    if (!this.headlineInput) {
+      // If the user wrapped the comment in <small></small>, remove the tags to later wrap the
+      // comment together with the signature into the tags and possibly ensure the correct line
       // spacing.
       code = code.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
-        implicitSmall = true;
+        isWholeCommentInSmall = true;
         return content;
       });
     }
@@ -2291,18 +2260,16 @@ export default class CommentForm {
     code += signature;
 
     // Process the small font wrappers
-    if (this.smallCheckbox) {
-      if (this.smallCheckbox.isSelected() || implicitSmall) {
-        const indentation = (
-          newLineIndentationChars +
-          (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
-        );
-        const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
-        const adjustedCode = code.replace(/\|/g, '{{!}}');
-        code = (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) ?
-          `{{${cd.config.blockSmallTemplate}|1=${adjustedCode}}}` :
-          `<small>${before}${code}</small>`;
-      }
+    if (!this.headlineInput && isWholeCommentInSmall) {
+      const indentation = (
+        newLineIndentationChars +
+        (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
+      );
+      const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
+      const adjustedCode = code.replace(/\|/g, '{{!}}');
+      code = (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) ?
+        `{{${cd.config.blockSmallTemplate}|1=${adjustedCode}}}` :
+        `<small>${before}${code}</small>`;
     }
 
     if (this.mode !== 'edit') {
@@ -3432,9 +3399,6 @@ export default class CommentForm {
         this.headlineInput.setDisabled(true);
       }
       this.minorCheckbox.setDisabled(true);
-      if (this.smallCheckbox) {
-        this.smallCheckbox.setDisabled(true);
-      }
       if (this.noSignatureCheckbox) {
         this.noSignatureCheckbox.setDisabled(true);
       }
@@ -3459,9 +3423,6 @@ export default class CommentForm {
         this.headlineInput.setDisabled(false);
       }
       this.minorCheckbox.setDisabled(false);
-      if (this.smallCheckbox) {
-        this.smallCheckbox.setDisabled(false);
-      }
       if (this.noSignatureCheckbox) {
         this.noSignatureCheckbox.setDisabled(false);
       }
