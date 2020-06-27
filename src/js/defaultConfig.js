@@ -221,15 +221,6 @@ export default {
   paragraphTemplates: [],
 
   /**
-   * Name of a template that is an analog of {@link
-   * https://en.wikipedia.org/wiki/Template:Reply_to}.
-   *
-   * @type {string}
-   * @default 'ping'
-   */
-  pingTemplate: 'ping',
-
-  /**
    * Array of two strings to insert before and after the selection when quote function is activated
    * (by the toolbar button or Ctrl+Alt+Q / Q).
    *

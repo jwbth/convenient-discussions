@@ -79,8 +79,6 @@ export default {
     'paragraph',
   ],
 
-  pingTemplate: 're',
-
   elementsToExcludeClasses: [
     'unresolved',
     'resolved',

@@ -156,8 +156,6 @@ export default {
     'абзац',
   ],
 
-  pingTemplate: 're',
-
   elementsToExcludeClasses: [
     'botMessage',
     'ruwiki-movedTemplate',

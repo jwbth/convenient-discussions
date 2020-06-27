@@ -624,7 +624,6 @@ export function saveSession() {
       watchSection: (
         commentForm.watchSectionCheckbox && commentForm.watchSectionCheckbox.isSelected()
       ),
-      ping: commentForm.pingCheckbox && commentForm.pingCheckbox.isSelected(),
       small: commentForm.smallCheckbox && commentForm.smallCheckbox.isSelected(),
       noSignature: commentForm.noSignatureCheckbox && commentForm.noSignatureCheckbox.isSelected(),
       delete: commentForm.deleteCheckbox && commentForm.deleteCheckbox.isSelected(),

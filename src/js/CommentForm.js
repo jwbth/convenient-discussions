@@ -738,44 +738,6 @@ export default class CommentForm {
       });
     }
 
-    if (
-      !['addSection', 'addSubsection', 'edit'].includes(this.mode) &&
-      this.targetComment &&
-      !this.targetComment.own &&
-      cd.config.pingTemplate
-    ) {
-      /**
-       * Ping checkbox field.
-       *
-       * @name pingField
-       * @type {OoUiFieldLayout}
-       * @instance module:CommentForm
-       */
-
-      /**
-       * Ping checkbox.
-       *
-       * @name pingCheckbox
-       * @type {OoUiCheckboxInputWidget}
-       * @instance module:CommentForm
-       */
-      [this.pingField, this.pingCheckbox] = checkboxField({
-        value: 'ping',
-        selected: dataToRestore ? dataToRestore.ping : false,
-        label: this.targetComment.isOpeningSection ?
-          cd.s('cf-ping-sectionauthor') :
-          cd.s('cf-ping-commentauthor'),
-        tabIndex: String(this.id) + '23',
-      });
-
-      if (this.targetComment.author.registered) {
-        this.pingField.setTitle(cd.s('cf-ping-tooltip'));
-      } else {
-        this.pingCheckbox.setDisabled(true);
-        this.pingCheckbox.setTitle(cd.s('cf-ping-tooltip-unreg'));
-        this.pingField.setTitle(cd.s('cf-ping-tooltip-unreg'));
-      }
-    }
 
     if (!this.headlineInput) {
       /**
@@ -898,7 +860,6 @@ export default class CommentForm {
       this.minorField,
       this.watchField,
       this.watchSectionField,
-      this.pingField,
       this.smallField,
       this.noSignatureField,
       this.deleteField,
@@ -1306,11 +1267,6 @@ export default class CommentForm {
       .on('change', saveSessionEventHandler);
     if (this.watchSectionCheckbox) {
       this.watchSectionCheckbox
-        .on('change', saveSessionEventHandler);
-    }
-    if (this.pingCheckbox) {
-      this.pingCheckbox
-        .on('change', previewFalse)
         .on('change', saveSessionEventHandler);
     }
     if (this.smallCheckbox) {
@@ -2293,21 +2249,6 @@ export default class CommentForm {
 
     // Remove signature tildes
     code = code.replace(/\s*~{3,}$/, '');
-
-    // Add the ping template
-    if (this.pingCheckbox && this.pingCheckbox.isSelected()) {
-      const name = this.targetComment.author.name.includes('=') ?
-        '1=' + this.targetComment.author.name :
-        this.targetComment.author.name;
-      const param = code ? '' : '|p=.';
-      let separator;
-      if (/^[:*#]/.test(code)) {
-        separator = '\n' + (isZeroLevel ? '' : newLineIndentationChars);
-      } else {
-        separator = ' ';
-      }
-      code = `{{${cd.config.pingTemplate}|${name}${param}}}${separator}${code}`;
-    }
 
     // If the comment starts with a numbered list or table, replace all asterisks in the indentation
     // chars with colons to have the list or table form correctly.
