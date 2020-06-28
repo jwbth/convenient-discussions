@@ -17,13 +17,18 @@ import {
  */
 export default class Autocomplete {
   /**
+   * @typedef {object} OoUiTextInputWidget
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+   */
+
+  /**
    * Create an autocomplete instance. An instance is a set of settings and inputs to which these
    * settings apply.
    *
    * @param {object} options
    * @param {string[]} options.types Can contain `'mentions'`, `'wikilinks'`, `'templates'`, and
    *   `'tags'`.
-   * @param {Function} options.inputs Inputs to attach autocomplete to.
+   * @param {OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} options.defaultUserNames Default list of user names for the mentions
    *   autocomplete.
    */
