@@ -456,7 +456,7 @@ export default class Autocomplete {
         'bdi',
         'bdo',
         'blockquote',
-        'br',
+        ['br', '<br>'],
         'caption',
         'cite',
         'code',
@@ -475,7 +475,7 @@ export default class Autocomplete {
         'h4',
         'h5',
         'h6',
-        'hr',
+        ['hr', '<hr>'],
         'i',
         'ins',
         'kbd',
@@ -506,7 +506,7 @@ export default class Autocomplete {
         'u',
         'ul',
         'var',
-        'wbr',
+        ['wbr', '<wbr>'],
         'gallery',
         'includeonly',
         'noinclude',
@@ -527,7 +527,7 @@ export default class Autocomplete {
         'math chem',
         'poem',
         'ref',
-        ['references', '<references />+'],
+        ['references', '<references />'],
         'score',
         'section',
         'syntaxhighlight',
@@ -545,7 +545,7 @@ export default class Autocomplete {
       },
       getEndOffset: (item) => {
         if (Array.isArray(item)) {
-          return item[1].length - 1 - item[1].indexOf('+');
+          return item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0;
         } else {
           return item.length + 3;
         }
