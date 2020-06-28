@@ -42,6 +42,11 @@ export default class Autocomplete {
     mw.loader.getScript('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.js')
       .then(
         () => {
+          /**
+           * {@link https://github.com/zurb/tribute Tribute} object.
+           *
+           * @type {Tribute}
+           */
           this.tribute = new Tribute({
             collection: collections,
             allowSpaces: true,
@@ -134,10 +139,10 @@ export default class Autocomplete {
     const prepareValues = (arr, config) => (
       removeDuplicates(arr)
         .filter(defined)
-        .map((name) => ({
-          key: name,
-          value: config && config.transform ? config.transform(name) : name,
-          endOffset: config && config.getEndOffset ? config.getEndOffset(name) : 0,
+        .map((item) => ({
+          key: Array.isArray(item) ? item[0] : item,
+          value: config.transform ? config.transform(item) : item,
+          endOffset: config.getEndOffset ? config.getEndOffset(item) : 0,
         }))
     );
 
@@ -443,25 +448,107 @@ export default class Autocomplete {
     const config = {
       default: [
         // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
-        // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags.
-        // Deprecated elements are not included.
-        'abbr', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'caption', 'cite', 'code', 'codenowiki',
-        'data', 'dd', 'del', 'dfn', 'div', 'dl', 'dt', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'hr', 'i', 'ins', 'kbd', 'li', 'link', 'mark', 'meta', 'ol', 'p', 'pre', 'q', 'rp', 'rt',
-        'rtc', 'ruby', 's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'table', 'td', 'th',
-        'time', 'tr', 'u', 'ul', 'var', 'wbr',
-        'gallery', 'includeonly', 'noinclude', 'nowiki', 'onlyinclude', 'categorytree',
-        'charinsert', 'chem', 'ce', 'graph', 'hiero', 'imagemap', 'indicator', 'inputbox',
-        'mapframe', 'maplink', 'math', 'math chem', 'poem', 'ref', 'references', 'score', 'section',
-        'syntaxhighlight', 'templatedata', 'templatestyles', 'timeline',
+        // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags. Deprecated
+        // tags are not included. An element can be an array of a string to display and a string to
+        // insert, with "+" in the place where to put the caret.
+        'abbr',
+        'b',
+        'bdi',
+        'bdo',
+        'blockquote',
+        'br',
+        'caption',
+        'cite',
+        'code',
+        ['codenowiki', '<code><nowiki>+</nowiki></code>'],
+        'data',
+        'dd',
+        'del',
+        'dfn',
+        'div',
+        'dl',
+        'dt',
+        'em',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'hr',
+        'i',
+        'ins',
+        'kbd',
+        'li',
+        'link',
+        'mark',
+        'meta',
+        'ol',
+        'p',
+        'pre',
+        'q',
+        'rp',
+        'rt',
+        'rtc',
+        'ruby',
+        's',
+        'samp',
+        'small',
+        'span',
+        'strong',
+        'sub',
+        'sup',
+        'table',
+        'td',
+        'th',
+        'time',
+        'tr',
+        'u',
+        'ul',
+        'var',
+        'wbr',
+        'gallery',
+        'includeonly',
+        'noinclude',
+        'nowiki',
+        'onlyinclude',
+        'categorytree',
+        'charinsert',
+        'chem',
+        'ce',
+        'graph',
+        'hiero',
+        'imagemap',
+        'indicator',
+        'inputbox',
+        'mapframe',
+        'maplink',
+        'math',
+        'math chem',
+        'poem',
+        'ref',
+        ['references', '<references />+'],
+        'score',
+        'section',
+        'syntaxhighlight',
+        ['syntaxhighlight lang=""', '<syntaxhighlight lang="+"></syntaxhighlight>'],
+        'templatedata',
+        ['templatestyles', '<templatestyles src="+" />'],
+        'timeline',
       ],
-      transform: (name) => {
-        name = name.trim();
-        return name === 'codenowiki' ? `<code><nowiki></nowiki></code>` : `<${name}></${name}>`;
+      transform: (item) => {
+        if (Array.isArray(item)) {
+          return item[1].replace(/\+/, '');
+        } else {
+          return `<${item}></${item}>`;
+        }
       },
-      getEndOffset: (name) => {
-        name = name.trim();
-        return name === 'codenowiki' ? name.length + 6 : name.length + 3;
+      getEndOffset: (item) => {
+        if (Array.isArray(item)) {
+          return item[1].length - 1 - item[1].indexOf('+');
+        } else {
+          return item.length + 3;
+        }
       },
     };
     config.default.sort();
