@@ -314,7 +314,7 @@ function getConfig() {
  * @private
  */
 function getStrings() {
-  const lang = mw.config.get('wgContentLanguage');
+  const lang = mw.config.get('wgUserLanguage');
   return new Promise((resolve) => {
     if (lang === 'en') {
       // English strings are already in the build.
