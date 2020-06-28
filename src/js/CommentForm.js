@@ -1406,7 +1406,7 @@ export default class CommentForm {
         selectTemplate,
         values: async (text, callback) => {
           // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (this.tribute.cdCurrentMentionTextSnapshot === text) return;
+          if (text && this.tribute.cdCurrentMentionTextSnapshot === text) return;
 
           if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
             users.cache = [];
@@ -1481,7 +1481,7 @@ export default class CommentForm {
         selectTemplate,
         values: async (text, callback) => {
           // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (this.tribute.cdCurrentMentionTextSnapshot === text) return;
+          if (text && this.tribute.cdCurrentMentionTextSnapshot === text) return;
 
           if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
             pages.cache = [];
@@ -1545,7 +1545,7 @@ export default class CommentForm {
         selectTemplate,
         values: async (text, callback) => {
           // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (this.tribute.cdCurrentMentionTextSnapshot === text) return;
+          if (text && this.tribute.cdCurrentMentionTextSnapshot === text) return;
 
           if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
             templates.cache = [];

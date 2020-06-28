@@ -16,7 +16,7 @@ import { unpackVisits, unpackWatchedSections } from './options';
 let cachedUserInfoRequest;
 let currentAutocompletePromise;
 
-const autocompleteTimeout = 120;
+const autocompleteTimeout = 100;
 
 /**
  * Make a request that isn't subject to throttling when the tab is in the background (google "Chrome
@@ -493,8 +493,8 @@ export function getRelevantUserNames(text) {
  */
 export function getRelevantPageNames(text) {
   const promise = new Promise((resolve, reject) => {
-    try {
-      setTimeout(() => {
+    setTimeout(() => {
+      try {
         if (promise !== currentAutocompletePromise) {
           throw new CdError();
         }
@@ -527,10 +527,10 @@ export function getRelevantPageNames(text) {
             handleApiReject(e);
           }
         );
-      }, autocompleteTimeout);
-    } catch (e) {
-      reject(e);
-    }
+      } catch (e) {
+        reject(e);
+      }
+    }, autocompleteTimeout);
   });
   currentAutocompletePromise = promise;
 
