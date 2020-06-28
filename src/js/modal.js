@@ -554,7 +554,7 @@ export async function settingsDialog() {
     this.removeDataButton.connect(this, { click: 'removeData' });
 
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
-      label: cd.s('sd-removedata-description'),
+      label: cd.util.wrapInElement(cd.s('sd-removedata-description')),
       align: "top",
       help: cd.util.wrapInElement(cd.s('sd-removedata-help')),
       helpInline: true,
