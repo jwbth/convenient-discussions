@@ -1300,38 +1300,25 @@ export default class CommentForm {
     }
     usersInSection = removeDuplicates(usersInSection);
 
-    if (this.headlineInput) {
-      /**
-       * Autocomplete object for the headline input.
-       *
-       * @type {Tribute}
-       */
-      this.headlineAutocomplete = new Autocomplete({
-        types: ['mentions', 'wikilinks'],
-        inputs: [this.headlineInput],
-        defaultUserNames: usersInSection,
-      });
-    }
-
     /**
      * Autocomplete object for the comment input.
      *
-     * @type {Tribute}
+     * @type {Autocomplete}
      */
-    this.commentAutocomplete = new Autocomplete({
+    this.autocomplete = new Autocomplete({
       types: ['mentions', 'wikilinks', 'templates', 'tags'],
       inputs: [this.commentInput],
       defaultUserNames: usersInSection,
     });
 
     /**
-     * Autocomplete object for the summary input.
+     * Autocomplete object for the headline and summary inputs.
      *
-     * @type {Tribute}
+     * @type {Autocomplete}
      */
-    this.summaryAutocomplete = new Autocomplete({
+    this.croppedAutocomplete = new Autocomplete({
       types: ['mentions', 'wikilinks'],
-      inputs: [this.summaryInput],
+      inputs: [this.headlineInput, this.summaryInput].filter(defined),
       defaultUserNames: usersInSection,
     });
   }
@@ -3094,7 +3081,7 @@ export default class CommentForm {
    * Insert "@" into the comment input, activating the mention function.
    */
   mention() {
-    if (!this.commentAutocomplete) return;
+    if (!this.autocomplete) return;
 
     const cursorIndex = this.commentInput.getRange().to;
     const lastChar = (
