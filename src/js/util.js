@@ -154,7 +154,7 @@ export function isUndo(summary) {
 }
 
 /**
- * Callback for `Array.prototype.filter` functions used with `Array.prototype.map`.
+ * Callback for `Array#filter` functions used with `Array#map`.
  *
  * @param {*} el
  * @returns {boolean}
@@ -164,7 +164,7 @@ export function defined(el) {
 }
 
 /**
- * Callback for `Array.prototype.filter` functions used with `Array.prototype.map`.
+ * Callback for `Array#filter` functions used with `Array#map`.
  *
  * @param {*} el
  * @returns {boolean}
@@ -195,7 +195,7 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to `Array.prototype.flat(1)`. That method is not yet supported by major browsers.
+ * Alternative to `Array#flat(1)`. That method is not yet supported by major browsers.
  *
  * @param {Array} arr
  * @returns {Array}
@@ -280,7 +280,7 @@ export function getMessages(messages) {
 }
 
 /**
- * `Array.prototype.findIndex` analog that looks for the _last_ index.
+ * `Array#findIndex` analog that looks for the _last_ index.
  *
  * @param {Array} arr
  * @param {Function} callback

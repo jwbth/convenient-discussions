@@ -652,8 +652,8 @@ async function processDiff() {
 async function addCommentLinks($content) {
   // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
   // wikipage.content for the second time with an element that is not in the DOM,
-  // fieldset#mw-watchlist-options (in the
-  // mw.rcfilters.ui.FormWrapperWidget.prototype.onChangesModelUpdate() function).
+  // fieldset#mw-watchlist-options (in the mw.rcfilters.ui.FormWrapperWidget#onChangesModelUpdate
+  // function).
   if (!$content.parent().length) return;
 
   if (['Recentchanges', 'Watchlist'].includes(mw.config.get('wgCanonicalSpecialPageName'))) {
