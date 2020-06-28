@@ -29,8 +29,6 @@ A limitation of the script is that it works only in modern browsers, i.e., doesn
 Convenient Discussions is being developed by Jack who built the house since 2017, enriched by the contributions and feedback from the Russian Wikipedia tech community and users. It also borrows the code for parsing timestamps in different formats from Matma Rex and uses solutions and ideas from the Wikimedia engineering and design teams.
 
 ## See also
-For documentation, see [the script's homepage](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions).
-
-Please file issues on Wikimedia Phabricator under [the tag "Convenient-Discussions"](https://phabricator.wikimedia.org/tag/convenient-discussions/).
-
-If you want to help with localization, see [the translatewiki.net project](https://translatewiki.net/wiki/Translating:Convenient_Discussions).
+* For documentation, see [the script's homepage](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions).
+* Please file issues on Wikimedia Phabricator under [the tag "Convenient-Discussions"](https://phabricator.wikimedia.org/tag/convenient-discussions/).
+* If you want to help with localization, see [the translatewiki.net project](https://translatewiki.net/wiki/Translating:Convenient_Discussions).
