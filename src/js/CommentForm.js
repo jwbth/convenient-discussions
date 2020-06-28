@@ -1187,7 +1187,7 @@ export default class CommentForm {
           if (headline.includes('{{')) {
             this.showMessage(cd.s('cf-reaction-templateinheadline'), {
               type: 'warning',
-              class: 'templateInHeadline',
+              name: 'templateInHeadline',
             });
           } else {
             this.hideMessage('templateInHeadline');
@@ -1196,6 +1196,7 @@ export default class CommentForm {
         .on('change', preview)
         .on('change', saveSessionEventHandler);
     }
+
     this.commentInput
       .on('change', (text) => {
         this.updateAutoSummary(true, true);
@@ -1207,7 +1208,7 @@ export default class CommentForm {
           ) {
             this.showMessage(reaction.message, {
               type: reaction.type,
-              class: reaction.class,
+              name: reaction.class,
             });
           } else {
             this.hideMessage(reaction.class);
@@ -1216,6 +1217,23 @@ export default class CommentForm {
       })
       .on('change', preview)
       .on('change', saveSessionEventHandler);
+    this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
+      if (e.detail.instance.trigger === '@') {
+        if (this.mode === 'edit') {
+          this.showMessage(cd.s('cf-reaction-mention-edit'), {
+            type: 'notice',
+            name: 'mentionEdit',
+          });
+        }
+        if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
+          this.showMessage(cd.s('cf-reaction-mention-nosignature'), {
+            type: 'notice',
+            name: 'mentionNoSignature',
+          });
+        }
+      }
+    });
+
     this.summaryInput
       .on('change', () => {
         if (!this.#dontAutopreviewOnSummaryChange) {
@@ -1223,26 +1241,30 @@ export default class CommentForm {
         }
       })
       .on('change', saveSessionEventHandler);
-    this.summaryInput.$element
+    this.summaryInput.$input
       .on('keypress', () => {
         this.summaryAltered = true;
         this.#dontAutopreviewOnSummaryChange = false;
       });
+
     if (this.minorCheckbox) {
       this.minorCheckbox
         .on('change', saveSessionEventHandler);
     }
+
     this.watchCheckbox
       .on('change', saveSessionEventHandler);
     if (this.watchSectionCheckbox) {
       this.watchSectionCheckbox
         .on('change', saveSessionEventHandler);
     }
+
     if (this.noSignatureCheckbox) {
       this.noSignatureCheckbox
         .on('change', previewFalse)
         .on('change', saveSessionEventHandler);
     }
+
     if (this.deleteCheckbox) {
       this.deleteCheckbox
         .on('change', (selected) => {
@@ -1252,22 +1274,27 @@ export default class CommentForm {
         .on('change', preview)
         .on('change', saveSessionEventHandler);
     }
+
     this.scriptSettingsButton
       .on('click', () => {
         settingsDialog();
       });
+
     this.settingsButton
       .on('click', () => {
         this.toggleSettings();
       });
+
     this.cancelButton
       .on('click', () => {
         this.cancel();
       });
+
     this.viewChangesButton
       .on('click', () => {
         this.viewChanges();
       });
+
     this.previewButton
       .on('click', () => {
         this.preview(true, false);
@@ -1430,19 +1457,16 @@ export default class CommentForm {
    *   {@link
    *   https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true
    *   the OOUI Demos}.
-   * @param {string} [options.class] Class name added to the message element.
+   * @param {string} [options.name] Name added to the class name of the message element.
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.
    */
   showMessage(html, {
     type = 'notice',
-    class: classLastPart,
+    name,
     isRaw = false,
   } = {}) {
-    if (
-      this.destroyed ||
-      (classLastPart && this.$messageArea.children(`.cd-message-${classLastPart}`).length)
-    ) {
+    if (this.destroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
       return;
     }
 
@@ -1453,7 +1477,7 @@ export default class CommentForm {
       const $label = html instanceof $ ? html : cd.util.wrapInElement(html);
       const classes = [
         'cd-message',
-        classLastPart && `cd-message-${classLastPart}`,
+        name && `cd-message-${name}`,
       ].filter(defined);
       const message = new OO.ui.MessageWidget({
         type,
