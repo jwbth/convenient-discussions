@@ -89,7 +89,7 @@
   }
 
   .wikiEditor-ui-left {
-    // Makes a number in <ol> lists appear in front of the textarea, not below it.
+    // Make a number in <ol> lists appear in front of the textarea, not below it.
     float: none;
   }
 
@@ -110,6 +110,73 @@
   &-dummyElement {
     height: 0;
   }
+}
+
+.ltr .cd-commentForm {
+  .cd-summaryInput {
+    margin-right: 8px;
+    margin-left: 0;
+  }
+
+  .cd-checkboxesContainer {
+    direction: ltr;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-right: 1em;
+    margin-left: 0;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  // Use .ltr and .rtl classes to detect interface direction.
+  .cd-buttonsContainer {
+    direction: ltr; 
+  }
+
+  .cd-leftButtonsContainer {
+    float: left;
+  }
+
+  .cd-rightButtonsContainer {
+    float: right;
+  }
+}
+
+.rtl .cd-commentForm {
+  .cd-summaryInput {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+
+  .cd-checkboxesContainer {
+    direction: rtl;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-left: 1em;
+    margin-right: 0;
+
+    &:last-child {
+      margin-left: 0;
+    }
+  }
+
+  // Use .ltr and .rtl classes to detect interface direction.
+  .cd-buttonsContainer {
+    direction: rtl; 
+  }
+
+  .cd-leftButtonsContainer {
+    float: right;
+  }
+
+  .cd-rightButtonsContainer {
+    float: left;
+  }
+
 }
 
 // flow-root removes the number in numbered lists which is too bad when editing a numbered comment
@@ -137,6 +204,16 @@ ol > li.cd-commentForm.cd-commentForm {
   .wikiEditor-ui .wikiEditor-ui-view {
     border: 0;
   }
+}
+
+.ltr .cd-commentInput {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+.rtl .cd-commentInput {
+  margin-left: 8px;
+  margin-right: 0;
 }
 
 .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
