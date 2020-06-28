@@ -84,7 +84,8 @@ if (!cdLoaded) {
 
 }());
 `;
-  fs.writeFileSync(`./dist/config/${config.name}${testSuffix}.js`, data);
+  fs.mkdirSync('dist/config', { recursive: true });
+  fs.writeFileSync(`dist/config/${config.name}${testSuffix}.js`, data);
 });
 
 console.log('Configs have been built successfully.');
