@@ -29,7 +29,7 @@ export default class Autocomplete {
    * @param {string[]} options.types Can contain `'mentions'`, `'wikilinks'`, `'templates'`, and
    *   `'tags'`.
    * @param {OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
-   * @param {string[]} options.defaultUserNames Default list of user names for the mentions
+   * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
    *   autocomplete.
    */
   constructor({ types, inputs, defaultUserNames }) {
@@ -372,10 +372,10 @@ export default class Autocomplete {
   /**
    * Get mentions autocomplete configuration.
    *
-   * @param {string[]} defaultUserNames
+   * @param {string[]} [defaultUserNames=[]]
    * @returns {object}
    */
-  static getMentionsConfig(defaultUserNames) {
+  static getMentionsConfig(defaultUserNames = []) {
     const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
     const config = {
       byText: {},

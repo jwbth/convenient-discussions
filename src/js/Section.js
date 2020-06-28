@@ -4,6 +4,7 @@
  * @module Section
  */
 
+import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import SectionSkeleton from './SectionSkeleton';
@@ -899,6 +900,10 @@ export default class Section extends SectionSkeleton {
           // TODO: take into account the whole summary length, updating the maximum value
           // dynamically.
           maxLength: 250,
+        });
+        this.summaryEndingAutocomplete = new Autocomplete({
+          types: ['mentions', 'wikilinks'],
+          inputs: [this.summaryEndingInput],
         });
         this.summaryEndingField = new OO.ui.FieldLayout(this.summaryEndingInput, {
           label: cd.s('msd-summaryending'),
