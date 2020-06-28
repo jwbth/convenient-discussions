@@ -1380,6 +1380,12 @@ export default class CommentForm {
       }
     };
 
+    const search = (text, list) => (
+      this.tribute.search
+        .filter(text, list)
+        .map((match) => match.string)
+    );
+
     const prepareValues = (arr, config) => (
       removeDuplicates(arr)
         .filter(defined)
@@ -1399,6 +1405,9 @@ export default class CommentForm {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
+          // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
+          if (this.tribute.cdCurrentMentionTextSnapshot === text) return;
+
           if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
             users.cache = [];
           }
@@ -1415,9 +1424,7 @@ export default class CommentForm {
           if (users.byText[text]) {
             callback(prepareValues(users.byText[text], users));
           } else {
-            const matches = this.tribute.search
-              .filter(text, users.default)
-              .map((match) => match.string);
+            const matches = search(text, users.default);
             let values = matches.slice();
 
             const isLikelyName = (
@@ -1434,6 +1441,7 @@ export default class CommentForm {
               if (!matches.length) {
                 values.push(...users.cache);
               }
+              values = search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -1472,6 +1480,9 @@ export default class CommentForm {
         },
         selectTemplate,
         values: async (text, callback) => {
+          // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
+          if (this.tribute.cdCurrentMentionTextSnapshot === text) return;
+
           if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
             pages.cache = [];
           }
@@ -1495,6 +1506,7 @@ export default class CommentForm {
             );
             if (isLikelyName) {
               values.push(...pages.cache);
+              values = search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -1532,6 +1544,9 @@ export default class CommentForm {
         },
         selectTemplate,
         values: async (text, callback) => {
+          // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
+          if (this.tribute.cdCurrentMentionTextSnapshot === text) return;
+
           if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
             templates.cache = [];
           }
@@ -1555,6 +1570,7 @@ export default class CommentForm {
             );
             if (isLikelyName) {
               values.push(...templates.cache);
+              values = search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();

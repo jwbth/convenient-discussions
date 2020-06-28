@@ -14,9 +14,9 @@ import { defined, handleApiReject } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
 
 let cachedUserInfoRequest;
-let cachedUserNamesRequests = {};
-let cachedPageNamesRequests = {};
-let cachedTemplateNamesRequests = {};
+let currentAutocompletePromise;
+
+const autocompleteTimeout = 120;
 
 /**
  * Make a request that isn't subject to throttling when the tab is in the background (google "Chrome
@@ -430,47 +430,55 @@ export async function getUserGenders(users, noTimers = false) {
  *
  * @param {string} text
  * @returns {Promise} Promise for a string array.
+ * @throws {CdError}
  */
-export async function getRelevantUserNames(text) {
-  if (cachedUserNamesRequests[text]) {
-    return cachedUserNamesRequests[text];
-  }
+export function getRelevantUserNames(text) {
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        if (promise !== currentAutocompletePromise) {
+          throw new CdError();
+        }
 
-  cachedUserNamesRequests[text] = cd.g.api.get({
-    action: 'opensearch',
-    search: text,
-    namespace: 3,
-    redirects: 'resolve',
-    limit: 10,
-    formatversion: 2,
-  }).then(
-    (resp) => {
-      const pages = resp && resp[1];
-      const users = (
-        pages &&
-        pages
-          .map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
-          .filter(defined)
-          .filter((name) => !name.includes('/'))
-      );
+        cd.g.api.get({
+          action: 'opensearch',
+          search: text,
+          namespace: 3,
+          redirects: 'resolve',
+          limit: 10,
+          formatversion: 2,
+        }).then(
+          (resp) => {
+            const users = (
+              resp &&
+              resp[1] &&
+              resp[1]
+                .map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+                .filter(defined)
+                .filter((name) => !name.includes('/'))
+            );
 
-      if (!users) {
-        cachedUserNamesRequests[text] = null;
-        throw new CdError({
-          type: 'api',
-          code: 'noData',
-        });
+            if (!users) {
+              throw new CdError({
+                type: 'api',
+                code: 'noData',
+              });
+            }
+
+            resolve(users);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
       }
+    }, autocompleteTimeout);
+  });
+  currentAutocompletePromise = promise;
 
-      return users;
-    },
-    (e) => {
-      cachedUserNamesRequests[text] = null;
-      handleApiReject(e);
-    }
-  );
-
-  return cachedUserNamesRequests[text];
+  return promise;
 }
 
 /**
@@ -481,41 +489,52 @@ export async function getRelevantUserNames(text) {
  *
  * @param {string} text
  * @returns {Promise} Promise for a string array.
+ * @throws {CdError}
  */
-export async function getRelevantPageNames(text) {
-  if (cachedPageNamesRequests[text]) {
-    return cachedPageNamesRequests[text];
-  }
+export function getRelevantPageNames(text) {
+  const promise = new Promise((resolve, reject) => {
+    try {
+      setTimeout(() => {
+        if (promise !== currentAutocompletePromise) {
+          throw new CdError();
+        }
 
-  cachedPageNamesRequests[text] = cd.g.api.get({
-    action: 'opensearch',
-    search: text,
-    redirects: 'return',
-    limit: 10,
-    formatversion: 2,
-  }).then(
-    (resp) => {
-      let pages = resp && resp[1];
-      pages = pages
-        .map((name) => name.replace(new RegExp('^' + text[0], 'i'), () => text[0]));
+        cd.g.api.get({
+          action: 'opensearch',
+          search: text,
+          redirects: 'return',
+          limit: 10,
+          formatversion: 2,
+        }).then(
+          (resp) => {
+            const matchingFirstLetterRegexp = new RegExp('^' + text[0], 'i');
+            const pages = (
+              resp &&
+              resp[1] &&
+              resp[1].map((name) => name.replace(matchingFirstLetterRegexp, () => text[0]))
+            );
 
-      if (!pages) {
-        cachedPageNamesRequests[text] = null;
-        throw new CdError({
-          type: 'api',
-          code: 'noData',
-        });
-      }
+            if (!pages) {
+              throw new CdError({
+                type: 'api',
+                code: 'noData',
+              });
+            }
 
-      return pages;
-    },
-    (e) => {
-      cachedPageNamesRequests[text] = null;
-      handleApiReject(e);
+            resolve(pages);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      }, autocompleteTimeout);
+    } catch (e) {
+      reject(e);
     }
-  );
+  });
+  currentAutocompletePromise = promise;
 
-  return cachedPageNamesRequests[text];
+  return promise;
 }
 
 /**
@@ -527,43 +546,53 @@ export async function getRelevantPageNames(text) {
  *
  * @param {string} text
  * @returns {Promise} Promise for a string array.
+ * @throws {CdError}
  */
-export async function getRelevantTemplateNames(text) {
-  if (cachedTemplateNamesRequests[text]) {
-    return cachedTemplateNamesRequests[text];
-  }
+export function getRelevantTemplateNames(text) {
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        if (promise !== currentAutocompletePromise) {
+          throw new CdError();
+        }
 
-  cachedTemplateNamesRequests[text] = cd.g.api.get({
-    action: 'opensearch',
-    search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
-    redirects: 'return',
-    limit: 10,
-    formatversion: 2,
-  }).then(
-    (resp) => {
-      const pages = resp && resp[1];
-      let templates = (
-        pages &&
-        pages.map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
-      );
-      templates = templates
-        .map((name) => name.replace(new RegExp('^' + text[0], 'i'), () => text[0]));
+        cd.g.api.get({
+          action: 'opensearch',
+          search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
+          redirects: 'return',
+          limit: 10,
+          formatversion: 2,
+        }).then(
+          (resp) => {
+            const matchingFirstLetterRegexp = new RegExp('^' + text[0], 'i');
+            const templates = (
+              resp &&
+              resp[1] &&
+              resp[1]
+                .filter((name) => !name.endsWith('/doc'))
+                .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+                .map((name) => name.replace(matchingFirstLetterRegexp, () => text[0]))
+            );
 
-      if (!templates) {
-        cachedTemplateNamesRequests[text] = null;
-        throw new CdError({
-          type: 'api',
-          code: 'noData',
-        });
+            if (!templates) {
+              throw new CdError({
+                type: 'api',
+                code: 'noData',
+              });
+            }
+
+            resolve(templates);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
       }
+    }, autocompleteTimeout);
+  });
+  currentAutocompletePromise = promise;
 
-      return templates;
-    },
-    (e) => {
-      cachedTemplateNamesRequests[text] = null;
-      handleApiReject(e);
-    }
-  );
-
-  return cachedTemplateNamesRequests[text];
+  return promise;
 }
