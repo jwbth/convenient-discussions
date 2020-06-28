@@ -1283,16 +1283,16 @@ export default class CommentForm {
    * Initialize mentions using {@link https://github.com/zurb/tribute Tribute}.
    */
   initAutocomplete() {
-    let comments = [];
+    let commentsInSection = [];
     if (this.targetSection) {
       const baseSection = this.targetSection.level === 2 ?
         this.targetSection :
         this.targetSection.baseSection;
-      comments = baseSection.comments;
-    } else {
+      commentsInSection = baseSection.comments;
+    } else if (this.mode !== 'addSection') {
       cd.comments.some((comment) => {
         if (comment.section) {
-          comments.push(comment);
+          commentsInSection.push(comment);
           return true;
         } else {
           return false;
@@ -1315,7 +1315,8 @@ export default class CommentForm {
         return arr;
       },
     };
-    let usersInSection = comments.map((comment) => comment.author.name);
+
+    let usersInSection = commentsInSection.map((comment) => comment.author.name);
     if (this.targetComment) {
       usersInSection.unshift(this.targetComment.author.name);
     }
@@ -1406,12 +1407,12 @@ export default class CommentForm {
         selectTemplate,
         values: async (text, callback) => {
           // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (text && this.tribute.cdCurrentMentionTextSnapshot === text) return;
+          if (text && this.tribute.cdSnapshot === text) return;
 
-          if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+          if (!text.startsWith(this.tribute.cdSnapshot)) {
             users.cache = [];
           }
-          this.tribute.cdCurrentMentionTextSnapshot = text;
+          this.tribute.cdSnapshot = text;
 
           // Hack to make the menu disappear when a space is typed after "@".
           this.tribute.currentMentionTextSnapshot = {};
@@ -1466,7 +1467,7 @@ export default class CommentForm {
               users.byText[text] = values;
 
               // The text has been updated since the request was made.
-              if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+              if (this.tribute.cdSnapshot !== text) return;
 
               callback(prepareValues(values, users));
             }
@@ -1481,12 +1482,12 @@ export default class CommentForm {
         selectTemplate,
         values: async (text, callback) => {
           // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (text && this.tribute.cdCurrentMentionTextSnapshot === text) return;
+          if (text && this.tribute.cdSnapshot === text) return;
 
-          if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+          if (!text.startsWith(this.tribute.cdSnapshot)) {
             pages.cache = [];
           }
-          this.tribute.cdCurrentMentionTextSnapshot = text;
+          this.tribute.cdSnapshot = text;
 
           if (text.includes('[[')) {
             callback([]);
@@ -1530,7 +1531,7 @@ export default class CommentForm {
               pages.byText[text] = values;
 
               // The text has been updated since the request was made.
-              if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+              if (this.tribute.cdSnapshot !== text) return;
 
               callback(prepareValues(values, pages));
             }
@@ -1545,12 +1546,12 @@ export default class CommentForm {
         selectTemplate,
         values: async (text, callback) => {
           // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (text && this.tribute.cdCurrentMentionTextSnapshot === text) return;
+          if (text && this.tribute.cdSnapshot === text) return;
 
-          if (!text.startsWith(this.tribute.cdCurrentMentionTextSnapshot)) {
+          if (!text.startsWith(this.tribute.cdSnapshot)) {
             templates.cache = [];
           }
-          this.tribute.cdCurrentMentionTextSnapshot = text;
+          this.tribute.cdSnapshot = text;
 
           if (text.includes('{{')) {
             callback([]);
@@ -1594,7 +1595,7 @@ export default class CommentForm {
               templates.byText[text] = values;
 
               // The text has been updated since the request was made.
-              if (this.tribute.cdCurrentMentionTextSnapshot !== text) return;
+              if (this.tribute.cdSnapshot !== text) return;
 
               callback(prepareValues(values, templates));
             }
