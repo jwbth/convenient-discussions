@@ -317,6 +317,8 @@ export default {
   },
 };
 
+const cd = convenientDiscussions;
+
 mw.hook('convenientDiscussions.beforeParse').add(() => {
   // Handle {{-vote}} template by making pseudo-minus-1-level comments real ones. We split the
   // parent list tag into two parts putting the comment in between.
@@ -451,5 +453,3 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
     });
   }
 });
-
-const cd = convenientDiscussions;
