@@ -13,7 +13,7 @@ import { defined, removeDuplicates, spacesToUnderlines } from './util';
 import { encodeWikilink } from './wikitext';
 import { getPageIds, getPageTitles } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
-import { handleApiReject, underlinesToSpaces } from './util';
+import { handleApiReject, hideText, underlinesToSpaces, unhideText } from './util';
 
 /**
  * Create an OOUI window manager. It is supposed to be reused across the script.
@@ -664,8 +664,12 @@ export async function settingsDialog() {
     return this.insertButtonsMultiselect
       .getValue()
       .map((value) => {
-        let [, text, displayedText] = value.match(/^(.*?[^\\])(?:;(.+))?$/) || [];
+        const hidden = [];
+        value = hideText(value, /\\[+;\\]/g, hidden);
+        let [, text, displayedText] = value.match(/^(.*?)(?:;(.+))?$/) || [];
         if (!text || !text.replace(/^ +$/, '')) return;
+        text = unhideText(text, hidden);
+        displayedText = displayedText && unhideText(displayedText, hidden);
         return [text, displayedText].filter(defined);
       })
       .filter(defined);

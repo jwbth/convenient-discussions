@@ -14,6 +14,7 @@ import {
   defined,
   findLastIndex,
   handleApiReject,
+  hideText,
   isInputFocused,
   removeDuplicates,
   unhideText,
@@ -413,16 +414,19 @@ export default class CommentForm {
    * Add an insert button to the block under the comment input.
    *
    * @param {string} text
-   * @param {string} displayedText
+   * @param {string} [displayedText]
    * @private
    */
   addInsertButton(text, displayedText) {
-    let [, pre, post] = text.match(/^(.*?(?:^|[^\\]))(?:\+(.*))?$/) || [];
+    const hidden = [];
+    text = hideText(text, /\\[+;\\]/g, hidden);
+    let [, pre, post] = text.match(/^(.*?)(?:\+(.*))?$/) || [];
     if (!pre) return;
     post = post || '';
-    if (!displayedText) {
-      displayedText = pre + post;
-    }
+    const unescape = (text) => text.replace(/\\([+;\\])/g, '$1');
+    pre = unescape(unhideText(pre, hidden));
+    post = unescape(unhideText(post, hidden));
+    displayedText = displayedText ? unescape(displayedText) : pre + post;
 
     const $a = $('<a>')
       .text(displayedText)
