@@ -1326,7 +1326,7 @@ export default class CommentForm {
       });
     }
     let usersInSection = commentsInSection.map((comment) => comment.author.name);
-    if (this.targetComment) {
+    if (this.targetComment && this.mode !== 'edit') {
       usersInSection.unshift(this.targetComment.author.name);
     }
     usersInSection = removeDuplicates(usersInSection);
