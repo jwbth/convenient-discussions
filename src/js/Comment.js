@@ -945,8 +945,6 @@ export default class Comment extends CommentSkeleton {
   locateInCode(pageCode) {
     this.inCode = null;
 
-    cd.debug.startTimer('locate comment');
-
     // Collect matches
     const matches = this.searchInCode(pageCode);
 
@@ -993,8 +991,6 @@ export default class Comment extends CommentSkeleton {
     }
 
     this.inCode = this.adjustCommentCodeData(bestMatch);
-
-    cd.debug.stopTimer('locate comment');
   }
 
   /**

@@ -1929,10 +1929,12 @@ export default class CommentForm {
         (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
       );
       const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
-      const adjustedCode = code.replace(/\|/g, '{{!}}');
-      code = (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) ?
-        `{{${cd.config.blockSmallTemplate}|1=${adjustedCode}}}` :
-        `<small>${before}${code}</small>`;
+      if (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) {
+        const adjustedCode = code.replace(/\|/g, '{{!}}');
+        code = `{{${cd.config.blockSmallTemplate}|1=${adjustedCode}}}`;
+      } else {
+        code = `<small>${before}${code}</small>`;
+      }
     }
 
     if (this.mode !== 'edit') {

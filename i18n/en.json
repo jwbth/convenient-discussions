@@ -131,7 +131,7 @@
   "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the signature will be added automatically.",
   "cf-reaction-pre": "<code>&lt;pre&gt;</code> tags can break the layout—better use <code>&lt;syntaxhighlight&gt;</code>.",
   "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the signature will be added automatically.",
-  "cf-reaction-mention-edit": "Since you are <em>editing</em> a comment a <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
+  "cf-reaction-mention-edit": "Since you are <em>editing</em> a comment, a <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
   "cf-reaction-mention-nosignature": "Since you've opted not to include a signature in your comment, a <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
 
   "cf-notice-nochanges": "No changes.",
