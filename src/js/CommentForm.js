@@ -2988,10 +2988,11 @@ export default class CommentForm {
       }
 
       case 'edit': {
-        // The code for generating "edit" and "delete" descriptions is equivalent, so we provide an
-        // umbrella function.
+        // The codes for generating "edit" and "delete" descriptions are equivalent, so we provide
+        // an umbrella function.
         const editOrDeleteText = (action) => {
           let subject;
+          let target = this.target;
           if (this.target.own) {
             if (this.target.parent) {
               if (this.target.parent.level === 0) {
@@ -2999,6 +3000,7 @@ export default class CommentForm {
               } else {
                 this.target.parent.requestAuthorGender(callback);
                 subject = this.target.parent.own ? 'addition' : 'reply-to';
+                target = this.target.parent;
               }
             } else {
               if (this.target.isOpeningSection) {
@@ -3015,7 +3017,7 @@ export default class CommentForm {
               subject = 'comment-by';
             }
           }
-          return cd.s(`es-${action}-${subject}`, this.target.author.name, this.target.author)
+          return cd.s(`es-${action}-${subject}`, target.author.name, target.author)
             .replace(/ {2,}/, ' ');
         };
 
