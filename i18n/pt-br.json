@@ -3,7 +3,8 @@
 		"authors": [
 			"Abijeet Patro",
 			"Eduardo Addad de Oliveira",
-			"Iohanen"
+			"Iohanen",
+			"Rafaelff"
 		]
 	},
 	"script-name": "Discussões convenientes",
@@ -231,7 +232,7 @@
 	"sd-highlightowncomments": "Destacar meus comentários",
 	"sd-insertbuttons": "Botões de inserção de texto",
 	"sd-insertbuttons-multiselect-placeholder": "Adicionar um botão",
-	"sd-insertbuttons-help": "Use <code>+</code> para especificar o local onde o cursor deve ser colocado após a inserção do texto; por exemplo,<code>&#123;&#123;+&#125;&#125;</code>. Use <code>;</code> para para especifique o texto exibido diferente do inserido; por exemplo, <code>&lt;code&gt;+&lt;/code&gt;;&lt;code /&gt;</code>. Use <code>&#92;</code> antes dos caracteres mencionados para inseri-los como estão; por exemplo, <code>2&#92;+2</code>. Os botões podem ser arrastados e soltos.",
+	"sd-insertbuttons-help": "Use <code>+</code> para especificar um local onde o cursor deve ser colocado após a inserção do texto; por exemplo,<code>&#123;&#123;+&#125;&#125;</code>. Use <code>;</code> para especificar o texto exibido se você deseja que seja diferente daquele inserido; por exemplo, <code>&lt;code&gt;+&lt;/code&gt;;&lt;code /&gt;</code>. Use <code>&#92;</code> antes dos caracteres mencionados para inseri-los como estão; por exemplo, <code>2&#92;+2</code>. Os botões podem ser arrastados e soltos.",
 	"sd-notificationsblacklist": "Não notifique sobre comentários desses usuários",
 	"sd-notificationsblacklist-multiselect-placeholder": "Adicionar usuário",
 	"sd-signatureprefix": "Prefixo de assinatura",
