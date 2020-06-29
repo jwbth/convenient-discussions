@@ -2169,7 +2169,7 @@ export default class CommentForm {
               ({ startIndex, contentEndIndex: endIndex } = targetInCode);
             }
           } else {
-            endIndex = targetInCode.endIndex + targetInCode.dirtySignatureCode.length + 1;
+            endIndex = targetInCode.endIndex + targetInCode.signatureDirtyCode.length + 1;
             const succeedingText = pageCode.slice(targetInCode.endIndex);
 
             const repliesRegexp = new RegExp(
@@ -2198,7 +2198,7 @@ export default class CommentForm {
           newPageCode = (
             before +
             commentCode +
-            pageCode.slice(targetInCode.endIndex + targetInCode.dirtySignatureCode.length)
+            pageCode.slice(targetInCode.endIndex + targetInCode.signatureDirtyCode.length)
           );
         }
         break;

@@ -1446,7 +1446,7 @@ export default class Comment extends CommentSkeleton {
     const data = Object.assign({}, originalData);
 
     const movePartToSignature = (s) => {
-      data.dirtySignatureCode = s + data.dirtySignatureCode;
+      data.signatureDirtyCode = s + data.signatureDirtyCode;
       data.endIndex -= s.length;
       return '';
     }
@@ -1488,7 +1488,7 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    data.signatureCode = data.dirtySignatureCode;
+    data.signatureCode = data.signatureDirtyCode;
     data.inSmallFont = false;
     smallWrappers.some((wrapper) => {
       if (wrapper.start.test(data.code) && wrapper.end.test(data.signatureCode)) {
