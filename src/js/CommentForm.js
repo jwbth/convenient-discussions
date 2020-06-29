@@ -16,6 +16,7 @@ import {
   handleApiReject,
   isInputFocused,
   removeDuplicates,
+  unhideText,
 } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
@@ -24,7 +25,6 @@ import {
   hideHtmlComments,
   hideSensitiveCode,
   removeWikiMarkup,
-  unhideSensitiveCode,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { getLastRevision, parseCode } from './apiWrappers';
@@ -1974,7 +1974,7 @@ export default class CommentForm {
       imitateList = false;
     }
 
-    code = unhideSensitiveCode(code, hidden);
+    code = unhideText(code, hidden);
 
     if (cd.config.postTransformCode) {
       code = cd.config.postTransformCode(code, this);

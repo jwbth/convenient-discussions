@@ -14,6 +14,7 @@ import {
   registerCommentAnchor,
   resetCommentAnchors,
 } from './timestamp';
+import { hideText } from './util';
 
 /**
  * Conceal HTML comments (`<!-- -->`) in the code.
@@ -297,18 +298,7 @@ export function hideSensitiveCode(code) {
   const hidden = [];
 
   const hide = (regexp, isTable) => {
-    code = code.replace(regexp, (s, pre, textToHide) => {
-      // If there is no groups, the offset is the second argument.
-      if (typeof pre === 'number') {
-        pre = '';
-        textToHide = '';
-      }
-      // Handle tables separately
-      return (
-        (pre || '') + (isTable ? '\x03' : '\x01') + hidden.push(textToHide || s) +
-        (isTable ? '\x04' : '\x02')
-      );
-    });
+    code = hideText(code, regexp, hidden, isTable);
   };
 
   // Taken from
@@ -370,19 +360,4 @@ export function hideSensitiveCode(code) {
   hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
 
   return { code, hidden };
-}
-
-/**
- * Replace placeholders created by {@link module:wikitext.hideSensitiveCode}.
- *
- * @param {string} code
- * @param {string[]} hidden
- * @returns {string}
- */
-export function unhideSensitiveCode(code, hidden) {
-  while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
-    code = code.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
-  }
-
-  return code;
 }

@@ -17,6 +17,7 @@ import {
   notNull,
   removeDuplicates,
   reorderArray,
+  unhideText,
 } from './util';
 import { copyLink } from './modal.js';
 import {
@@ -25,7 +26,6 @@ import {
   hideSensitiveCode,
   normalizeCode,
   removeWikiMarkup,
-  unhideSensitiveCode,
 } from './wikitext';
 import { getLastRevision, getUserGenders } from './apiWrappers';
 
@@ -1109,7 +1109,7 @@ export default class Comment extends CommentSkeleton {
         );
       });
 
-    text = unhideSensitiveCode(text, hidden);
+    text = unhideText(text, hidden);
 
     if (cd.config.paragraphTemplates.length) {
       const pattern = (

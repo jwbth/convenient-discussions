@@ -316,3 +316,42 @@ export function mergeRegexps(arr) {
     .join('|');
   return pattern ? new RegExp(`(${pattern})`) : null;
 }
+
+/**
+ * Replace text matched by a regexp with placeholders.
+ *
+ * @param {string} code
+ * @param {RegExp} regexp
+ * @param {string[]} hidden
+ * @param {boolean} useAlternativeMarker
+ * @returns {string}
+ */
+export function hideText(code, regexp, hidden, useAlternativeMarker) {
+  return code.replace(regexp, (s, pre, textToHide) => {
+    // If there is no groups, the offset is the second argument.
+    if (typeof pre === 'number') {
+      pre = '';
+      textToHide = '';
+    }
+    // Handle tables separately
+    return (
+      (pre || '') + (useAlternativeMarker ? '\x03' : '\x01') + hidden.push(textToHide || s) +
+      (useAlternativeMarker ? '\x04' : '\x02')
+    );
+  });
+}
+
+/**
+ * Replace placeholders created by {@link module:util.hide}.
+ *
+ * @param {string} code
+ * @param {string[]} hidden
+ * @returns {string}
+ */
+export function unhideText(code, hidden) {
+  while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
+    code = code.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
+  }
+
+  return code;
+}
