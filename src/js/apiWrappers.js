@@ -507,7 +507,7 @@ export function getRelevantPageNames(text) {
           formatversion: 2,
         }).then(
           (resp) => {
-            const matchingFirstLetterRegexp = new RegExp('^' + text[0], 'i');
+            const matchingFirstLetterRegexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
             const pages = (
               resp &&
               resp[1] &&
@@ -564,7 +564,7 @@ export function getRelevantTemplateNames(text) {
           formatversion: 2,
         }).then(
           (resp) => {
-            const matchingFirstLetterRegexp = new RegExp('^' + text[0], 'i');
+            const matchingFirstLetterRegexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
             const templates = (
               resp &&
               resp[1] &&
