@@ -121,6 +121,13 @@ export default class Autocomplete {
       );
   }
 
+  /**
+   * Get a list of collection of specified types.
+   *
+   * @param {string[]} types
+   * @param {string[]} defaultUserNames
+   * @returns {object[]}
+   */
   getCollections(types, defaultUserNames) {
     const selectTemplate = (item) => {
       if (item) {
@@ -129,12 +136,6 @@ export default class Autocomplete {
         return '';
       }
     };
-
-    const search = (text, list) => (
-      this.tribute.search
-        .filter(text, list)
-        .map((match) => match.string)
-    );
 
     const prepareValues = (arr, config) => (
       removeDuplicates(arr)
@@ -174,7 +175,7 @@ export default class Autocomplete {
           if (this.mentions.byText[text]) {
             callback(prepareValues(this.mentions.byText[text], this.mentions));
           } else {
-            const matches = search(text, this.mentions.default);
+            const matches = Autocomplete.search(text, this.mentions.default);
             let values = matches.slice();
 
             const isLikelyName = (
@@ -191,7 +192,7 @@ export default class Autocomplete {
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }
-              values = search(text, values);
+              values = Autocomplete.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -253,7 +254,7 @@ export default class Autocomplete {
             );
             if (isLikelyName) {
               values.push(...this.wikilinks.cache);
-              values = search(text, values);
+              values = Autocomplete.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -314,7 +315,7 @@ export default class Autocomplete {
             );
             if (isLikelyName) {
               values.push(...this.templates.cache);
-              values = search(text, values);
+              values = Autocomplete.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -555,5 +556,30 @@ export default class Autocomplete {
     config.withSpace = config.default.filter((tag) => tag.includes(' '));
 
     return config;
+  }
+
+  /**
+   * Search for a text in a list of values,.
+   *
+   * @param {string} text
+   * @param {string[]} list
+   * @returns {string[]} Matched results.
+   */
+  static search(text, list) {
+    const containsRegexp = new RegExp(mw.util.escapeRegExp(text), 'i');
+    const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
+    return list
+      .filter((item) => containsRegexp.test(item))
+      .sort((item1, item2) => {
+        const item1StartsWith = startsWithRegexp.test(item1);
+        const item2StartsWith = startsWithRegexp.test(item2);
+        if (item1StartsWith && !item2StartsWith) {
+          return -1;
+        } else if (item2StartsWith && !item1StartsWith) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
   }
 }
