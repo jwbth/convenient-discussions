@@ -568,7 +568,12 @@ export default async function processPage(keptData = {}) {
 
   // We change the evaluation of cd.g.isPageActive if there is no comments and no "Add section"
   // button.
-  if (cd.g.isPageActive && !cd.comments.length && !$('#ca-addsection').length) {
+  if (
+    cd.g.isPageActive &&
+    !cd.comments.length &&
+    !$('#ca-addsection').length &&
+    !(cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(cd.g.CURRENT_PAGE))
+  ) {
     cd.g.isPageActive = false;
   }
 

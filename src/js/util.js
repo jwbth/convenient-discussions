@@ -118,10 +118,9 @@ export function isProbablyTalkPage(page, namespaceNumber) {
     namespaceNumber = title.namespace;
   }
   return (
-    isTalkNamespace(namespaceNumber) &&
     (
-      namespaceNumber % 2 === 1 ||
-      (!cd.g.PAGE_WHITE_LIST_REGEXP || cd.g.PAGE_WHITE_LIST_REGEXP.test(page))
+      isTalkNamespace(namespaceNumber) ||
+      (cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(page))
     ) &&
     (!cd.g.PAGE_BLACK_LIST_REGEXP || !cd.g.PAGE_BLACK_LIST_REGEXP.test(page))
   );
