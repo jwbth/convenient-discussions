@@ -515,6 +515,7 @@ export default async function processPage(keptData = {}) {
   // the user adds a topic to it, it will become active and get an ID.
   cd.g.isPageActive = !(
     !mw.config.get('wgArticleId') ||
+    mw.config.get('wgIsRedirect') ||
     cd.g.IS_ARCHIVE_PAGE ||
     (
       (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
