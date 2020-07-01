@@ -93,17 +93,6 @@ export function caseInsensitiveFirstCharPattern(s) {
 }
 
 /**
- * Check if the provided namespace is a talk namespace (an odd one or other specified in {@link
- * module:defaultConfig.customTalkNamespaces}).
- *
- * @param {number} namespaceNumber
- * @returns {boolean}
- */
-export function isTalkNamespace(namespaceNumber) {
-  return namespaceNumber % 2 === 1 || cd.config.customTalkNamespaces.includes(namespaceNumber);
-}
-
-/**
  * Check if the provided page is probably a talk page.
  *
  * If no namespace number is provided, the function will reconstruct it.
@@ -119,8 +108,9 @@ export function isProbablyTalkPage(page, namespaceNumber) {
   }
   return (
     (
-      isTalkNamespace(namespaceNumber) ||
-      (cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(page))
+      namespaceNumber % 2 === 1 ||
+      (cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(page)) ||
+      !cd.g.PAGE_WHITE_LIST_REGEXP && cd.config.customTalkNamespaces.includes(namespaceNumber)
     ) &&
     (!cd.g.PAGE_BLACK_LIST_REGEXP || !cd.g.PAGE_BLACK_LIST_REGEXP.test(page))
   );
@@ -310,6 +300,9 @@ export function isInputFocused() {
  * @returns {?RegExp}
  */
 export function mergeRegexps(arr) {
+  if (!arr) {
+    return null;
+  }
   const pattern = arr
     .map((regexpOrString) => regexpOrString.source || regexpOrString)
     .join('|');

@@ -44,9 +44,12 @@ export default {
   localTimezoneOffset: null,
 
   /**
-   * Numbers of talk namespaces other than odd namespaces. The script will run in these namespaces.
-   * If not set, the value of `mw.config.get('wgExtraSignatureNamespaces')` will be used, excluding
-   * the 0th (article) namespace. For example: `[4]` for Project.
+   * Numbers of talk namespaces other than odd namespaces. If not set, the value of
+   * `mw.config.get('wgExtraSignatureNamespaces')` will be used, excluding the 0th (article)
+   * namespace. For example: `[4]` for Project.
+   *
+   * This value overriden by the {@link module:defaultConfig.pageWhiteList} value: if that value is
+   * not `[]`, this value is not used.
    *
    * Note that this value is used in the script as a "soft" value. I.e., the script can decide
    * (based on the presence of the "Add section" button, existence of comments on the page and
@@ -61,7 +64,9 @@ export default {
 
   /**
    * Pages where the script should run. If `[]`, all pages in the {@link
-   * module:defaultConfig.customTalkNamespaces} namespaces will pass.
+   * module:defaultConfig.customTalkNamespaces} namespaces will pass. If you add at least one value,
+   * {@link module:defaultConfig.customTalkNamespaces} will not be used. In this case, you may
+   * specify entire namespaces in this value, e.g., /^Wikipedia:/.
    *
    * @type {RegExp[]}
    * @default []

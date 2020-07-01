@@ -9,7 +9,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLinks, handleApiReject, isTalkNamespace, underlinesToSpaces } from './util';
+import { animateLinks, handleApiReject, isProbablyTalkPage, underlinesToSpaces } from './util';
 import { copyLink } from './modal.js';
 import { editWatchedSections } from './modal';
 import {
@@ -869,7 +869,7 @@ export default class Section extends SectionSkeleton {
             return (
               title &&
               title.toText() !== section.sourcePage &&
-              isTalkNamespace(title.namespace)
+              isProbablyTalkPage(title.toText())
             );
           },
         });
@@ -942,7 +942,7 @@ export default class Section extends SectionSkeleton {
           // Should be ruled out by making the button disabled.
           if (
             targetPageTitle.toText() === section.sourcePage ||
-            !isTalkNamespace(targetPageTitle.namespace)
+            !isProbablyTalkPage(targetPageTitle.toText())
           ) {
             this.abort(cd.s('msd-error-wrongpage'), false);
             return;
