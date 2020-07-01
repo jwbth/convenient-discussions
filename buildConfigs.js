@@ -31,7 +31,7 @@ configs.forEach((config) => {
 
 (function () {
 
-const cdLoaded = Boolean(window.convenientDiscussions);
+const cdLoaded = Boolean(window.convenientDiscussions && window.convenientDiscussions.running);
 window.convenientDiscussions = window.convenientDiscussions || {};
 
 convenientDiscussions.config = ${content}
