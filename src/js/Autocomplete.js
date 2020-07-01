@@ -105,9 +105,10 @@ export default class Autocomplete {
           inputs.forEach((input) => {
             const element = input.$input.get(0);
             this.tribute.attach(element);
-
+            element.cdInput = input;
             element.addEventListener('tribute-replaced', (e) => {
-              // Move the caret to the place we need.
+              // Move the caret to the place we need and remove the space that is always included
+              // after the inserted text (the native mechanism to get rid of this space is buggy).
               const cursorIndex = input.getRange().to;
               const value = input.getValue();
               input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
@@ -290,7 +291,68 @@ export default class Autocomplete {
         searchOpts: {
           skip: true,
         },
-        selectTemplate,
+        selectTemplate: (item) => {
+          if (item) {
+            const input = this.tribute.current.element.cdInput;
+
+            input.setDisabled(true);
+            input.pushPending();
+
+            cd.g.api.get({
+              action: 'templatedata',
+              titles: `Template:${item.original.key}`,
+              redirects: true,
+            })
+              .then(
+                (resp) => {
+                  const pages = resp && resp.pages;
+                  let s = '';
+                  let firstValueIndex = 0;
+                  Object.keys(pages).forEach((key) => {
+                    const template = pages[key];
+                    const params = template.params || [];
+                    const paramNames = template.paramOrder || Object.keys(params);
+                    paramNames
+                      .filter((param) => params[param].required || params[param].suggested)
+                      .forEach((param) => {
+                        if (template.format === 'block') {
+                          s += `\n| ${param} = `;
+                        } else {
+                          if (isNaN(param)) {
+                            s += `|${param}=`;
+                          } else {
+                            s += `|`;
+                          }
+                        }
+                        if (!firstValueIndex) {
+                          firstValueIndex = s.length;
+                        }
+                      });
+                    if (template.format === 'block' && s) {
+                      s += '\n';
+                    }
+                  });
+
+                  const cursorIndex = input.getRange().to;
+                  const value = input.getValue();
+                  input.setValue(value.slice(0, cursorIndex) + s + value.slice(cursorIndex));
+                  input.selectRange(cursorIndex + firstValueIndex);
+                },
+                (e) => {
+                  mw.notify(e, { type: 'error' })
+                }
+              )
+              .always(() => {
+                input.setDisabled(false);
+                input.popPending();
+                input.focus();
+              });
+
+            return item.original.value;
+          } else {
+            return '';
+          }
+        },
         values: async (text, callback) => {
           if (!text.startsWith(this.templates.snapshot)) {
             this.templates.cache = [];
