@@ -511,11 +511,12 @@ export default async function processPage(keptData = {}) {
     cd.g.ARCHIVE_PATHS_REGEXP.test(cd.g.CURRENT_PAGE)
   );
 
+  const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
+
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID.
   cd.g.isPageActive = !(
-    !mw.config.get('wgArticleId') ||
-    mw.config.get('wgIsRedirect') ||
+    isEmptyPage ||
     cd.g.IS_ARCHIVE_PAGE ||
     (
       (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
@@ -616,7 +617,7 @@ export default async function processPage(keptData = {}) {
     navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
   }
 
-  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
+  if (cd.g.isPageActive || isEmptyPage) {
     // This should be below the viewport position restoration and own comments highlighting as it
     // may rely on the elements that are made invisible during the comment forms restoration. It
     // should also be below the navPanel mount/reset methods as it runs
