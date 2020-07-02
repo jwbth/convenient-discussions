@@ -1732,11 +1732,13 @@ export default class CommentForm {
         indentationChars = this.target.inCode.indentationChars;
         break;
       case 'replyInSection':
-        indentationChars = (
-          this.target.inCode.isLastCommentInNumberedList ?
-          '#' :
-          cd.config.defaultIndentationChar
-        );
+        if (this.target.inCode.lastCommentIndentationChars[0] === '#') {
+          indentationChars = '#';
+        } else if (cd.config.indentationCharMode === 'mimic') {
+          indentationChars = this.target.inCode.lastCommentIndentationChars[0];
+        } else {
+          indentationChars = cd.config.defaultIndentationChar;
+        }
         break;
       default:
         indentationChars = '';
@@ -2107,7 +2109,6 @@ export default class CommentForm {
     }
 
     if (this.mode === 'replyInSection') {
-      targetInCode.isLastCommentInNumberedList = false;
       const lastComment = this.target.comments[this.target.comments.length - 1];
 
       // For now we use the workaround with this.isInNumberedList to make sure "#" is a part of
@@ -2118,9 +2119,7 @@ export default class CommentForm {
           lastComment.locateInCode(pageCode);
         } finally {
           if (lastComment.inCode) {
-            targetInCode.isLastCommentInNumberedList = (
-              lastComment.inCode.indentationChars.startsWith('#')
-            );
+            targetInCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
           }
         }
       }

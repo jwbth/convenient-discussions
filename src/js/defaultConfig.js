@@ -126,6 +126,17 @@ export default {
   spaceAfterIndentationChars: true,
 
   /**
+   * Should a new comment at the first level repeat the previous comment's indentation style
+   * (`'mimic'` mode), or should the script use the default indentation char in {@link
+   * module:defaultConfig.checkForCustomForeignComponents} in all cases (`'unify'` mode). Note that
+   * if the last comment of the section uses `#` as the first indentation character, the script will
+   * use it for the comment independent of this value.
+   *
+   * @type {string}
+   */
+  indentationCharMode: 'mimic',
+
+  /**
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
    * this:
    * ```
