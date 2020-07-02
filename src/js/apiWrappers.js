@@ -245,6 +245,107 @@ export function getUserInfo(reuse = false) {
 }
 
 /**
+ * @typedef {object} EditPageReturn
+ * @property {string} pageId
+ * @property {number} editTimestamp
+ */
+
+/**
+ * Edit a page.
+ *
+ * @param {object} options
+ * @returns {EditPageReturn}
+ */
+export async function editPage(options) {
+  let resp;
+  try {
+    resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser(Object.assign(options, {
+      action: 'edit',
+      formatversion: 2,
+    }))).catch(handleApiReject);
+  } catch (e) {
+    if (e instanceof CdError) {
+      const { type, apiData } = e.data;
+      if (type === 'network') {
+        throw e;
+      } else {
+        const error = apiData && apiData.error;
+        let message;
+        let isRawMessage = false;
+        let logMessage;
+        let code;
+        if (error) {
+          code = error.code;
+          switch (code) {
+            case 'spamblacklist': {
+              message = cd.s('error-spamblacklist', error.spamblacklist.matches[0]);
+              break;
+            }
+
+            case 'titleblacklist': {
+              message = cd.s('error-titleblacklist');
+              break;
+            }
+
+            case 'abusefilter-warning':
+            case 'abusefilter-disallowed': {
+              await cd.g.api.loadMessagesIfMissing([code]);
+              const description = mw.message(code, error.abusefilter.description).plain();
+              ({ html: message } = await parseCode(description) || {});
+              if (message) {
+                isRawMessage = true;
+              } else {
+                message = cd.s('error-abusefilter', error.abusefilter.description);
+              }
+              break;
+            }
+
+            case 'editconflict': {
+              break;
+            }
+
+            case 'blocked': {
+              message = cd.s('error-blocked');
+              break;
+            }
+
+            case 'missingtitle': {
+              message = cd.s('error-pagedeleted');
+              break;
+            }
+
+            default: {
+              message = (
+                cd.s('error-pagenotedited') + ' ' +
+                (await this.unknownApiErrorText(code, error.info))
+              );
+            }
+          }
+
+          logMessage = [code, apiData];
+        } else {
+          logMessage = apiData;
+        }
+
+        throw new CdError({
+          type: 'api',
+          code: 'error',
+          apiData: resp,
+          details: { code, message, isRawMessage, logMessage },
+        });
+      }
+    } else {
+      throw e;
+    }
+  }
+
+  return {
+    pageId: resp.edit.pageid,
+    editTimestamp: resp.edit.newtimestamp,
+  };
+}
+
+/**
  * Get page titles for an array of page IDs.
  *
  * @param {number[]} pageIds

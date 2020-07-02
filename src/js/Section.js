@@ -11,6 +11,7 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import { animateLinks, handleApiReject, isProbablyTalkPage, underlinesToSpaces } from './util';
 import { copyLink } from './modal.js';
+import { editPage, getLastRevision } from './apiWrappers';
 import { editWatchedSections } from './modal';
 import {
   extractSignatures,
@@ -19,7 +20,6 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { getLastRevision } from './apiWrappers';
 import { getWatchedSections, setWatchedSections } from './options';
 import { parseTimestamp } from './timestamp';
 import { reloadPage } from './boot';
@@ -693,10 +693,8 @@ export default class Section extends SectionSkeleton {
       const text = (
         cd.s('es-move-from', sourcePage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
       );
-      let editTargetPageData;
       try {
-        editTargetPageData = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-          action: 'edit',
+        await editPage({
           title: targetPage.title.toString(),
           text: targetPageNewCode,
           summary: cd.util.buildEditSummary({
@@ -706,18 +704,23 @@ export default class Section extends SectionSkeleton {
           tags: cd.config.tagName,
           baserevid: targetPage.revisionId,
           starttimestamp: targetPage.queryTimestamp,
-          formatversion: 2,
-        })).catch(handleApiReject);
+        });
       } catch (e) {
-        throw [cd.s('msd-error-editingtargetpage'), true];
-      }
+        if (e instanceof CdError) {
+          const { type, details } = e.data;
+          if (type === 'network') {
+            throw [cd.s('msd-error-editingtargetpage'), true];
+          } else {
+            let { code, message, logMessage } = details;
+            console.warn(logMessage);
+            if (code === 'editconflict') {
+              message = cd.s('msd-error-editconflict');
+            }
 
-      const error = editTargetPageData.error;
-      if (error) {
-        if (error.code === 'editconflict') {
-          throw [cd.s('msd-error-editconflict'), true];
+            throw [message, true];
+          }
         } else {
-          throw [error.code + ': ' + error.info, true];
+          throw [cd.s('error-javascript'), true];
         }
       }
     };
@@ -752,9 +755,9 @@ export default class Section extends SectionSkeleton {
       const text = (
         cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
       );
+
       try {
-        await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-          action: 'edit',
+        await editPage({
           title: section.sourcePage,
           text: newSourcePageCode,
           summary: cd.util.buildEditSummary({
@@ -764,9 +767,9 @@ export default class Section extends SectionSkeleton {
           tags: cd.config.tagName,
           baserevid: sourcePage.revisionId,
           starttimestamp: sourcePage.queryTimestamp,
-          formatversion: 2,
-        })).catch(handleApiReject);
+        });
       } catch (e) {
+        console.warn(e);
         throw [cd.s('msd-error-editingsourcepage'), false];
       }
     };

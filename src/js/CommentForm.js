@@ -28,7 +28,7 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
-import { getLastRevision, parseCode } from './apiWrappers';
+import { editPage, getLastRevision, parseCode } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
@@ -2650,10 +2650,9 @@ export default class CommentForm {
    * @private
    */
   async tryEditPage(page, newPageCode, currentOperation) {
-    let resp;
+    let result;
     try {
-      resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-        action: 'edit',
+      result = await editPage({
         title: this.targetPage,
         text: newPageCode,
         summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
@@ -2662,11 +2661,10 @@ export default class CommentForm {
         starttimestamp: page.queryTimestamp,
         minor: this.minorCheckbox && this.minorCheckbox.isSelected(),
         watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
-        formatversion: 2,
-      })).catch(handleApiReject);
+      });
     } catch (e) {
       if (e instanceof CdError) {
-        const { type, apiData } = e.data;
+        const { type, details } = e.data;
         if (type === 'network') {
           this.handleError({
             type,
@@ -2674,52 +2672,12 @@ export default class CommentForm {
             currentOperation,
           });
         } else {
-          const error = apiData && apiData.error;
-          let message;
           let messageType;
-          let isRawMessage = false;
-          let logMessage;
-          if (error) {
-            switch (error.code) {
-              case 'spamblacklist':
-                message = cd.s('cf-error-spamblacklist', error.spamblacklist.matches[0]);
-                break;
-              case 'titleblacklist':
-                message = cd.s('cf-error-titleblacklist');
-                break;
-              case 'abusefilter-warning':
-              case 'abusefilter-disallowed':
-                await cd.g.api.loadMessagesIfMissing([error.code]);
-                ({ html: message } = await parseCode(
-                  mw.message(error.code, error.abusefilter.description).plain()
-                ) || {});
-                if (message) {
-                  isRawMessage = true;
-                } else {
-                  message = cd.s('cf-error-abusefilter', error.abusefilter.description);
-                }
-                break;
-              case 'editconflict':
-                message = cd.s('cf-notice-editconflict');
-                messageType = 'notice';
-                this.submit();
-                break;
-              case 'blocked':
-                message = cd.s('cf-error-blocked');
-                break;
-              case 'missingtitle':
-                message = cd.s('cf-error-pagedeleted');
-                break;
-              default:
-                message = (
-                  cd.s('cf-error-pagenotedited') + ' ' +
-                  (await this.unknownApiErrorText(error.code, error.info))
-                );
-            }
-
-            logMessage = [error.code, apiData];
-          } else {
-            logMessage = apiData;
+          let { code, message, isRawMessage, logMessage } = details;
+          if (code === 'editconflict') {
+            message = cd.s('cf-notice-editconflict');
+            messageType = 'notice';
+            this.submit();
           }
 
           // FIXME: We don't pass apiData to prevent the message for "missingtitle" to be overriden,
@@ -2743,7 +2701,7 @@ export default class CommentForm {
       return null;
     }
 
-    return resp;
+    return result;
   }
 
   /**
@@ -2764,8 +2722,8 @@ export default class CommentForm {
       return;
     }
 
-    const resp = await this.tryEditPage(page, newPageCode, currentOperation);
-    if (!resp) return;
+    const { pageId, editTimestamp } = await this.tryEditPage(page, newPageCode, currentOperation);
+    if (!pageId) return;
 
     // Here we use a hack where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
@@ -2773,7 +2731,7 @@ export default class CommentForm {
     let keptData = { didSubmitCommentForm: true };
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
-      mw.config.set('wgArticleId', resp.edit.pageid);
+      mw.config.set('wgArticleId', pageId);
       keptData.wasPageCreated = true;
     }
 
@@ -2818,7 +2776,7 @@ export default class CommentForm {
     if (!isDelete) {
       keptData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
-        generateCommentAnchor(new Date(resp.edit.newtimestamp), cd.g.CURRENT_USER_NAME, true);
+        generateCommentAnchor(new Date(editTimestamp), cd.g.CURRENT_USER_NAME, true);
     }
 
     this.reloadPage(keptData, currentOperation);
