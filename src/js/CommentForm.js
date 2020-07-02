@@ -2108,7 +2108,7 @@ export default class CommentForm {
 
     if (this.mode === 'replyInSection') {
       targetInCode.isLastCommentInNumberedList = false;
-      const lastComment = this.target.comments[0];
+      const lastComment = this.target.comments[this.target.comments.length - 1];
 
       // For now we use the workaround with this.isInNumberedList to make sure "#" is a part of
       // comments organized in a numbered list, not of a numbered list _in_ the target comment in
