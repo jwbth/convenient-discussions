@@ -2675,7 +2675,7 @@ export default class CommentForm {
           let messageType;
           let { code, message, isRawMessage, logMessage } = details;
           if (code === 'editconflict') {
-            message = cd.s('cf-notice-editconflict');
+            message += ' ' + cd.s('cf-notice-editconflict-retrying');
             messageType = 'notice';
             this.submit();
           }

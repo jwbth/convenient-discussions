@@ -301,6 +301,7 @@ export async function editPage(options) {
             }
 
             case 'editconflict': {
+              message = cd.s('error-editconflict');
               break;
             }
 

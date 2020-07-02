@@ -135,7 +135,7 @@
   "cf-reaction-mention-nosignature": "Since you've opted not to include a signature in your comment, a <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
 
   "cf-notice-nochanges": "No changes.",
-  "cf-notice-editconflict": "Edit conflict. Trying again…",
+  "cf-notice-editconflict-retrying": "Trying again…",
 
   "cf-error-getpagecode": "Couldn't get the page code.",
   "cf-error-findplace": "Couldn't find the proper place in the code to insert the comment into.",
@@ -284,9 +284,9 @@
   "msd-error-sourcepagedeleted": "The current page was deleted.",
   "msd-error-targetpagedoesntexist": "The target page doesn't exist.",
   "msd-error-invalidpagename": "Invalid page name.",
-  "msd-error-editconflict": "Edit conflict. Just click \"{{int:ooui-dialog-process-retry}}\".",
-  "msd-error-editingtargetpage": "Error while editing the target page.",
-  "msd-error-editingsourcepage": "Error while editing the source page. You will have to edit it manually.",
+  "msd-error-editconflict-retry": "Just click \"{{int:ooui-dialog-process-retry}}\".",
+  "msd-error-editingtargetpage": "Couldn't edit the target page.",
+  "msd-error-editingsourcepage": "Couldn't edit the source page. You will have to edit it manually.",
   "msd-moved": "The topic has been successfully moved. You may reload the page or go to <a href=\"$1\">the page where the topic was moved to</a>.",
   "msd-bottom": "The code may be different if the page would be updated while the window is idle.",
 
@@ -309,9 +309,10 @@
   "error-pagenotedited": "The page was not edited.",
   "error-blocked": "You are blocked from editing. The page was not edited.",
   "error-pagedeleted": "The page was deleted.",
-  "error-spamblacklist": "Error: you are trying to add a URL with the domain name $1 that is blacklisted. The page was not edited.",
-  "error-titleblacklist": "Error: the page name is blacklisted. The page was not edited.",
+  "error-spamblacklist": "You are trying to add a URL with the domain name $1 that is blacklisted. The page was not edited.",
+  "error-titleblacklist": "The page name is blacklisted. The page was not edited.",
   "error-abusefilter": "Your edit was automatically rejected by abuse filter \"$1\".",
+  "error-editconflict": "Edit conflict.",
   "error-diffnotfound": "Couldn't find the edit that added this comment.",
   "error-diffnotfound-history": "You can look for it in the <a href=\"$1\" target=\"_blank\">revision history</a> for yourself.",
 

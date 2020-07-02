@@ -709,18 +709,18 @@ export default class Section extends SectionSkeleton {
         if (e instanceof CdError) {
           const { type, details } = e.data;
           if (type === 'network') {
-            throw [cd.s('msd-error-editingtargetpage'), true];
+            throw [cd.s('msd-error-editingtargetpage') + ' ' + cd.s('error-network'), true];
           } else {
             let { code, message, logMessage } = details;
-            console.warn(logMessage);
             if (code === 'editconflict') {
-              message = cd.s('msd-error-editconflict');
+              message += ' ' + cd.s('msd-error-editconflict-retry');
             }
-
-            throw [message, true];
+            console.warn(logMessage);
+            throw [cd.s('msd-error-editingtargetpage') + ' ' + message, true];
           }
         } else {
-          throw [cd.s('error-javascript'), true];
+          console.warn(e);
+          throw [cd.s('msd-error-editingtargetpage') + ' ' + cd.s('error-javascript'), true];
         }
       }
     };
@@ -769,8 +769,19 @@ export default class Section extends SectionSkeleton {
           starttimestamp: sourcePage.queryTimestamp,
         });
       } catch (e) {
-        console.warn(e);
-        throw [cd.s('msd-error-editingsourcepage'), false];
+        if (e instanceof CdError) {
+          const { type, details } = e.data;
+          if (type === 'network') {
+            throw [cd.s('msd-error-editingsourcepage') + ' ' + cd.s('error-network'), false];
+          } else {
+            let { message, logMessage } = details;
+            console.warn(logMessage);
+            throw [cd.s('msd-error-editingsourcepage') + ' ' + message, false];
+          }
+        } else {
+          console.warn(e);
+          throw [cd.s('msd-error-editingsourcepage') + ' ' + cd.s('error-javascript'), false];
+        }
       }
     };
 
