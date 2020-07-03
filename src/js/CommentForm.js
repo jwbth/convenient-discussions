@@ -673,7 +673,7 @@ export default class CommentForm {
     }
 
     const watchCheckboxSelected = (
-      (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
+      (cd.settings.watchOnReply && this.mode !== 'edit') ||
       $('#ca-unwatch').length ||
       mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
     );

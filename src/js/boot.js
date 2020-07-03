@@ -65,6 +65,7 @@ export function initSettings() {
     // Not shown in the settings dialog
     showLoadingOverlay: true,
     showToolbar: true,
+    watchOnReply: true,
     watchSectionOnReply: true,
   };
 

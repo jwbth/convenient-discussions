@@ -264,6 +264,7 @@
   "sd-defaultsectionlinktype-radio-wikilink": "Wikilink",
   "sd-defaultsectionlinktype-radio-link": "Regular link",
   "sd-defaultsectionlinktype-help": "To copy a link of a different type, click \"{{int:convenient-discussions-sm-copylink}}\" while holding Shift.",
+  "sd-watchonreply": "Watch pages that I reply on",
   "sd-watchsectiononreply": "Watch sections that I reply in",
 
   "ewsd-title": "Edit watched sections list",
