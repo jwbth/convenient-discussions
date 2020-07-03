@@ -9,7 +9,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLinks, handleApiReject, isProbablyTalkPage, underlinesToSpaces } from './util';
+import { animateLinks, isProbablyTalkPage, underlinesToSpaces } from './util';
 import { copyLink } from './modal.js';
 import { editPage, getLastRevision } from './apiWrappers';
 import { editWatchedSections } from './modal';

@@ -21,6 +21,7 @@ import {
 } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
+import { editPage, getLastRevision, parseCode } from './apiWrappers';
 import {
   extractSignatures,
   hideHtmlComments,
@@ -28,7 +29,6 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
-import { editPage, getLastRevision, parseCode } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;

@@ -352,7 +352,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       // incorrectly.
       setTimeout(() => {
         comment.scrollToAndHighlightTarget(false);
-      }, 0);
+      });
     }
   }
 
