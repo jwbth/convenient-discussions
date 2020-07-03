@@ -65,6 +65,7 @@ export default class CommentForm {
   #dontAutopreviewOnSummaryChange
   #editingSectionOpeningComment
   #headlineInputPurpose
+  #updateAutoSummaryBound
 
   /**
    * Create a comment form.
@@ -1733,12 +1734,13 @@ export default class CommentForm {
         indentationChars = this.target.inCode.indentationChars;
         break;
       case 'replyInSection':
-        if (this.target.inCode.lastCommentIndentationChars[0] === '#') {
-          indentationChars = '#';
-        } else if (cd.config.indentationCharMode === 'mimic') {
-          indentationChars = this.target.inCode.lastCommentIndentationChars[0];
-        } else {
-          indentationChars = cd.config.defaultIndentationChar;
+        indentationChars = cd.config.defaultIndentationChar;
+        if (this.target.inCode.lastCommentIndentationChars) {
+          if (this.target.inCode.lastCommentIndentationChars[0] === '#') {
+            indentationChars = '#';
+          } else if (cd.config.indentationCharMode === 'mimic') {
+            indentationChars = this.target.inCode.lastCommentIndentationChars[0];
+          }
         }
         break;
       default:
@@ -2110,16 +2112,31 @@ export default class CommentForm {
     }
 
     if (this.mode === 'replyInSection') {
-      const lastComment = this.target.comments[this.target.comments.length - 1];
+      // Detect last section comment's indentation characters if needed or a vote / bulleted reply
+      // placeholder.
+      const [, replyPlaceholder] = targetInCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+      if (replyPlaceholder) {
+        targetInCode.lastCommentIndentationChars = replyPlaceholder;
+      }
 
-      // For now we use the workaround with this.isInNumberedList to make sure "#" is a part of
-      // comments organized in a numbered list, not of a numbered list _in_ the target comment in
-      // which case the reply is in an <ul> tag, not <ol>.
-      if (this.isInNumberedList && lastComment) {
+      const lastComment = this.target.comments[this.target.comments.length - 1];
+      if (
+        lastComment &&
+        (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
+      ) {
         try {
           lastComment.locateInCode(pageCode);
         } finally {
-          if (lastComment.inCode) {
+          if (
+            lastComment.inCode &&
+            (
+              !lastComment.inCode.indentationChars.startsWith('#') ||
+              // For now we use the workaround with this.containerListType to make sure "#" is a
+              // part of comments organized in a numbered list, not of a numbered list _in_ the
+              // target comment.
+              this.containerListType === 'ol'
+            )
+          ) {
             targetInCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
           }
         }

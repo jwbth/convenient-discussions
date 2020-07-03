@@ -152,8 +152,8 @@ export default class Section extends SectionSkeleton {
       this.addReply();
     };
 
-    // Sections may have "#" in the code as a placeholder for a vote. In this case, we must
-    // create the comment form in the <ol> tag, and keep "#" in the reply.
+    // Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
+    // the comment form in the <ol> tag.
     const isVotePlaceholder = (
       this.lastElementInFirstChunk.tagName === 'OL' &&
       this.lastElementInFirstChunk.childElementCount === 1 &&
@@ -1387,13 +1387,17 @@ export default class Section extends SectionSkeleton {
         }
       });
 
-      // Sections may have "#" as a placeholder for a vote. In this case, we must use that "#" in
-      // the reply.
-      if (!this.comments.length) {
-        const match = firstChunkCode.match(/\n(# *\n+)$/);
-        if (match) {
-          firstChunkContentEndIndex -= match[1].length;
-        }
+      // Sections may have "#" or "*" as a placeholder for a vote or bulleted reply. In this case,
+      // we must use that "#" or "*" in the reply. As for the placeholder, perhaps we should remove
+      // it, but as for now, we keep it because if:
+      // * the placeholder character is "*",
+      // * cd.config.indentationCharMode is 'unify',
+      // * cd.config.defaultIndentationChar is ':', and
+      // * there is more than one reply,
+      // the next reply would go back to ":", not "*" as should be.
+      const match = firstChunkCode.match(/\n([#*] *\n+)$/);
+      if (match) {
+        firstChunkContentEndIndex -= match[1].length;
       }
 
       matches.push({
