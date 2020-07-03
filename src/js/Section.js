@@ -511,53 +511,41 @@ export default class Section extends SectionSkeleton {
       this.actions.setAbilities({ move });
     };
 
-    MoveSectionDialog.prototype.areNewTopicsOnTop = async function (title, code) {
+    MoveSectionDialog.prototype.areNewTopicsOnTop = function (title, code) {
       let newTopicsOnTop;
       if (cd.config.areNewTopicsOnTop) {
         newTopicsOnTop = cd.config.areNewTopicsOnTop(title.toText(), code);
       }
 
       const adjustedCode = hideHtmlComments(code);
-
-      // Detect the topic order: newest first or newest last. While doing that, search for the first
-      // section position.
       const sectionHeadingRegexp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
       let firstSectionIndex;
       let sectionHeadingMatch;
-      let previousDate;
-      let higherLowerDifference = 0;
-      while (
-        (sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode)) &&
-        (
-          newTopicsOnTop === undefined ||
-          (newTopicsOnTop !== false && firstSectionIndex === undefined)
-        )
-      ) {
-        if (firstSectionIndex === undefined) {
-          firstSectionIndex = sectionHeadingMatch.index;
-        }
-        if (newTopicsOnTop !== undefined) break;
 
-        const codeStartingWithThisSection = code.slice(sectionHeadingMatch.index);
-
-        const timestamp = findFirstTimestamp(codeStartingWithThisSection);
-        const { date } = timestamp && parseTimestamp(timestamp) || {};
-        if (date) {
-          if (previousDate) {
-            higherLowerDifference += date > previousDate ? -1 : 1;
-          }
-          previousDate = date;
-        }
-
-        if (Math.abs(higherLowerDifference) > 5) {
-          newTopicsOnTop = higherLowerDifference > 0;
-        }
+      // Search for the first section's index. If newTopicsOnTop is true, we don't need it.
+      if (newTopicsOnTop !== false) {
+        sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode);
+        firstSectionIndex = sectionHeadingMatch.index;
+        sectionHeadingRegexp.lastIndex = 0;
       }
 
       if (newTopicsOnTop === undefined) {
-        newTopicsOnTop = higherLowerDifference === 0 ?
-          !(title.namespace % 2 === 1) :
-          higherLowerDifference > 0;
+        // Detect the topic order: newest first or newest last.
+        cd.debug.startTimer('areNewTopicsOnTop');
+        let previousDate;
+        let difference = 0;
+        while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
+          const timestamp = findFirstTimestamp(code.slice(sectionHeadingMatch.index));
+          const { date } = timestamp && parseTimestamp(timestamp) || {};
+          if (date) {
+            if (previousDate) {
+              difference += date > previousDate ? -1 : 1;
+            }
+            previousDate = date;
+          }
+        }
+        newTopicsOnTop = difference === 0 ? title.namespace % 2 === 0 : difference > 0;
+        cd.debug.logAndResetTimer('areNewTopicsOnTop');
       }
 
       return { newTopicsOnTop, firstSectionIndex };
@@ -652,7 +640,7 @@ export default class Section extends SectionSkeleton {
       };
     };
 
-    MoveSectionDialog.prototype.saveTargetPage = async function (sourcePage, targetPage) {
+    MoveSectionDialog.prototype.editTargetPage = async function (sourcePage, targetPage) {
       const endWithTwoNewlines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
 
       const targetPageCode = cd.config.getMoveTargetPageCode ?
@@ -725,7 +713,7 @@ export default class Section extends SectionSkeleton {
       }
     };
 
-    MoveSectionDialog.prototype.saveSourcePage = async function (sourcePage, targetPage) {
+    MoveSectionDialog.prototype.editSourcePage = async function (sourcePage, targetPage) {
       const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
       const sourcePageCode = cd.config.getMoveSourcePageCode ?
@@ -969,8 +957,8 @@ export default class Section extends SectionSkeleton {
               this.loadSourcePage(),
               this.loadTargetPage(targetPageTitle),
             ]);
-            await this.saveTargetPage(sourcePage, targetPage);
-            await this.saveSourcePage(sourcePage, targetPage);
+            await this.editTargetPage(sourcePage, targetPage);
+            await this.editSourcePage(sourcePage, targetPage);
           } catch (e) {
             this.abort(...e);
             return;
@@ -1330,7 +1318,8 @@ export default class Section extends SectionSkeleton {
         )
       );
       const code = (
-        sectionMatch && codeFromSection.substr(sectionMatch.index, sectionMatch[1].length)
+        sectionMatch &&
+        codeFromSection.substr(sectionMatch.index, sectionMatch[1].length)
       );
       const firstChunkCode = (
         firstChunkMatch &&
