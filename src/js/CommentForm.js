@@ -577,7 +577,7 @@ export default class CommentForm {
         // placeholder text at the beginning to avoid drawing the user's attention to the changing
         // of the text. (But it could be a better idea to set the commentInputPlaceholderEmpty
         // config variable to true to avoid showing any text whatsoever.)
-        this.target.requestAuthorGender(() => {
+        this.target.requestAuthorGenderIfNeeded(() => {
           this.commentInput.$input.attr(
             'placeholder',
             cd.s(
@@ -586,7 +586,7 @@ export default class CommentForm {
               this.target.author
             )
           );
-        });
+        }, true);
       }
     }
 
@@ -2950,14 +2950,17 @@ export default class CommentForm {
    * @private
    */
   autoText() {
-    const callback = this.updateAutoSummary.bind(this);
+    this.#updateAutoSummaryBound = (
+      this.#updateAutoSummaryBound ||
+      this.updateAutoSummary.bind(this)
+    );
 
     switch (this.mode) {
       case 'reply': {
         if (this.target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          this.target.requestAuthorGender(callback);
+          this.target.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
           return this.target.own ?
             cd.s('es-addition') :
             cd.s('es-reply-to', this.target.author.name, this.target.author).replace(/ {2,}/, ' ');
@@ -2975,7 +2978,7 @@ export default class CommentForm {
               if (this.target.parent.level === 0) {
                 subject = 'reply';
               } else {
-                this.target.parent.requestAuthorGender(callback);
+                this.target.parent.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
                 subject = this.target.parent.own ? 'addition' : 'reply-to';
                 target = this.target.parent;
               }
@@ -2990,7 +2993,7 @@ export default class CommentForm {
             if (this.target.isOpeningSection) {
               subject = this.targetSection.parent ? 'subsection' : 'topic';
             } else {
-              this.target.requestAuthorGender(callback);
+              this.target.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
               subject = 'comment-by';
             }
           }

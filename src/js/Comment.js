@@ -1679,25 +1679,30 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Request the gender of the comment's author and do something when it's received.
+   * Request the gender of the comment's author if it is absent and affects the user mention string
+   * and do something when it's received.
    *
    * @param {Function} callback
+   * @param {boolean} [runAlways=false] Whether to execute the callback even if the gender request
+   *   is not needed.
    */
-  requestAuthorGender(callback) {
-    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.gender === null && this.author.registered) {
+  requestAuthorGenderIfNeeded(callback, runAlways = false) {
+    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.registered && this.author.gender === null) {
       this.#genderRequestCallbacks = this.#genderRequestCallbacks || [];
-      if (!this.genderRequest || !this.#genderRequestCallbacks.includes(callback)) {
-        let errorCallback;
-        if (!this.genderRequest) {
-          this.genderRequest = getUserGenders([this.author]);
-          errorCallback = (e) => {
-            console.warn(`Couldn't get the gender of user ${this.author.name}.`, e);
-          };
-        }
-        if (!this.#genderRequestCallbacks.includes(callback)) {
-          this.genderRequest.then(callback, errorCallback);
-          this.#genderRequestCallbacks.push(callback);
-        }
+      let errorCallback;
+      if (!this.genderRequest) {
+        this.genderRequest = getUserGenders([this.author]);
+        errorCallback = (e) => {
+          console.warn(`Couldn't get the gender of user ${this.author.name}.`, e);
+        };
+      }
+      if (!this.#genderRequestCallbacks.includes(callback)) {
+        this.genderRequest.then(callback, errorCallback);
+        this.#genderRequestCallbacks.push(callback);
+      }
+    } else {
+      if (runAlways) {
+        setTimeout(callback);
       }
     }
   }
