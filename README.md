@@ -6,7 +6,7 @@
 ## Features
 The full set of script features includes much more:
 * creating topics and subsections;
-* @mentions, [[wikilinks]], {{template names}}, and \<tags> autocomplete;
+* @mentions, [[wikilinks]], {{templates}}, and \<tags> autocomplete;
 * highlighting and navigating new comments;
 * highlighting own comments;
 * desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in);
