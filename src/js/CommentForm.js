@@ -451,15 +451,16 @@ export default class CommentForm {
   createContents(dataToRestore) {
     if (this.target) {
       /**
-       * Comment form is an item in a numbered list.
+       * Name of the tag used as a list whereof this comment form is an item. `'dl'`, `'ul'`,
+       * `'ol'`, or null.
        *
-       * @type {boolean}
+       * @type {?string}
        */
-      this.isInNumberedList = this.target instanceof Comment ?
-        this.target.$elements.last().parent().is('ol') :
-        this.target.$replyWrapper.parent().is('ol');
+      this.containerListType = this.target instanceof Comment ?
+        this.target.$elements.last().parent().prop('tagName').toLowerCase() :
+        this.target.$replyWrapper.parent().prop('tagName').toLowerCase();
     } else {
-      this.isInNumberedList = false;
+      this.containerListType = null;
     }
 
     let tag = 'div';
@@ -468,7 +469,7 @@ export default class CommentForm {
       if ($lastElementOfTarget.is('li')) {
         // We need to avoid a number appearing next to the form in numbered lists, so we keep div in
         // those cases. Which is unsemantic, yes :-(
-        if (!this.isInNumberedList || this.mode === 'edit') {
+        if (this.containerListType !== 'ol' || this.mode === 'edit') {
           tag = 'li';
         }
       } else if ($lastElementOfTarget.is('dd')) {
@@ -488,7 +489,7 @@ export default class CommentForm {
     this.$element = $(document.createElement(tag))
       .addClass('cd-commentForm')
       .addClass(`cd-commentForm-${this.mode}`);
-    if (this.isInNumberedList) {
+    if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }
     if (this.#editingSectionOpeningComment) {
@@ -1022,7 +1023,7 @@ export default class CommentForm {
         .prependTo(this.$innerWrapper);
     }
 
-    if (this.target && this.isInNumberedList && $.client.profile().layout !== 'webkit') {
+    if (this.target && this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
       // Dummy element for forms inside a numbered list so that the number is placed in front of
       // that area, not in some silly place. Note that in Chrome, the number is placed in front of
       // the textarea, so we don't need this in that browser.
