@@ -34,7 +34,8 @@ if (IS_LOCAL) {
 }
 
 /**
- * Get a language string.
+ * Get a language string. The last parameter, if boolean, may indicate if the message should be
+ * returned in the plain, not substituted, form.
  *
  * @param {string} name
  * @param {...*} params
@@ -47,7 +48,10 @@ function s(name, ...params) {
   }
   const fullName = `convenient-discussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
-    return mw.message(fullName, ...params).toString();
+    const message = mw.message(fullName, ...params.filter((param) => typeof param !== 'boolean'));
+    return typeof params[params.length - 1] === 'boolean' && params[params.length - 1] ?
+      message.plain() :
+      message.toString();
   } else {
     const paramsString = params.length ? `: ${params.join(', ')}` : '';
     return `(${fullName}${paramsString})`;

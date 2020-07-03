@@ -190,8 +190,9 @@ export async function init({ messagesRequest }) {
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
-  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i
-    .test(cd.s('es-reply-to') + cd.s('es-edit-comment-by') + cd.s('thank-confirm'));
+  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
+    cd.s('es-reply-to', true) + cd.s('es-edit-comment-by', true) + cd.s('thank-confirm', true)
+  );
 
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
