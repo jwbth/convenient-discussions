@@ -497,7 +497,7 @@ export default {
    * @type {boolean}
    * @default false
    */
-  commentInputEmptyPlaceholder: false,
+  commentInputPlaceholderEmpty: false,
 
   /**
    * Function that generates the archive prefix (without an ending slash) for a given page name. It

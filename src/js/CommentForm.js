@@ -561,7 +561,7 @@ export default class CommentForm {
     }
 
     let commentInputPlaceholder;
-    if (!cd.config.commentInputEmptyPlaceholder) {
+    if (!cd.config.commentInputPlaceholderEmpty) {
       if (
         this.mode === 'replyInSection' ||
         (this.mode === 'reply' && this.target.isOpeningSection)
@@ -573,7 +573,7 @@ export default class CommentForm {
       } else if (this.mode === 'reply') {
         // If there is a need to make a request to get the user gender, we don't show any
         // placeholder text at the beginning to avoid drawing the user's attention to the changing
-        // of the text. (But it could be a better idea to set the commentInputEmptyPlaceholder
+        // of the text. (But it could be a better idea to set the commentInputPlaceholderEmpty
         // config variable to true to avoid showing any text whatsoever.)
         this.target.requestAuthorGender(() => {
           this.commentInput.$input.attr(
