@@ -198,12 +198,13 @@ function extractRegularSignatures(code) {
 /**
  * Extract signatures that come from the unsigned templates from wikitext.
  *
- * @param {string} code
+ * @param {string} code Page code.
+ * @param {object[]} signatures Existing signatures.
  * @returns {object[]}
  * @private
  */
-function extractUnsigneds(code) {
-  const signatures = [];
+function extractUnsigneds(code, signatures) {
+  const unsigneds = [];
 
   if (cd.g.UNSIGNED_TEMPLATES_REGEXP) {
     let match;
@@ -227,19 +228,17 @@ function extractUnsigneds(code) {
       const nextCommentStartIndex = match.index + match[0].length;
 
       // "~~~~~ {{unsigned|}}" cases. In these cases, both the signature and {{unsigned|}} are
-      // considered signatures and added to the array, so we try to combine these entries.
+      // considered signatures and added to the array. We could combine them but that would need
+      // corresponding code in Parser.js which could be tricky, so for now we just remove the
+      // duplicate. That still allows to reply to the comment.
       const relevantSignatureIndex = (
         signatures.findIndex((sig) => sig.nextCommentStartIndex === nextCommentStartIndex)
       );
       if (relevantSignatureIndex !== -1) {
-        const relevantSignature = signatures[relevantSignatureIndex];
-        timestamp = relevantSignature.timestamp;
-        startIndex = relevantSignature.startIndex;
-        dirtyCode = code.slice(startIndex, endIndex);
         signatures.splice(relevantSignatureIndex, 1);
       }
 
-      signatures.push({
+      unsigneds.push({
         author,
         timestamp,
         startIndex,
@@ -250,7 +249,7 @@ function extractUnsigneds(code) {
     }
   }
 
-  return signatures;
+  return unsigneds;
 }
 
 /**
@@ -273,7 +272,7 @@ export function extractSignatures(code, generateCommentAnchors) {
     .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
 
   let signatures = extractRegularSignatures(adjustedCode);
-  const unsigneds = extractUnsigneds(adjustedCode);
+  const unsigneds = extractUnsigneds(adjustedCode, signatures);
   signatures.push(...unsigneds);
 
   if (unsigneds.length) {
