@@ -117,24 +117,13 @@ export function encodeWikilink(link) {
 }
 
 /**
- * Extract signatures from wikitext.
+ * Extract signatures that don't come from the unsigned templates from wikitext.
  *
- * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in {@link module:Comment#adjustCommentCodeData}. See also {@link
- * module:Comment#adjustCommentBeginning}, called before that.
- *
- * @param {string} code Code to extract signatures from.
- * @param {boolean} generateCommentAnchors Whether to generate and register comment anchors.
+ * @param {string} code
  * @returns {object[]}
+ * @private
  */
-export function extractSignatures(code, generateCommentAnchors) {
-  // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = hideHtmlComments(code)
-    .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
-      beginning + ' '.repeat(content.length) + ending
-    ))
-    .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
-
+function extractRegularSignatures(code) {
   const timestampRegexp = new RegExp(
     `^((.*)(${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?).*(?:\n*|$)`,
     'igm'
@@ -152,7 +141,7 @@ export function extractSignatures(code, generateCommentAnchors) {
 
   let signatures = [];
   let timestampMatch;
-  while ((timestampMatch = timestampRegexp.exec(adjustedCode))) {
+  while ((timestampMatch = timestampRegexp.exec(code))) {
     const line = timestampMatch[0];
     signatureRegexp.lastIndex = 0;
     const authorTimestampMatch = signatureRegexp.exec(line);
@@ -200,19 +189,25 @@ export function extractSignatures(code, generateCommentAnchors) {
       dirtyCode = timestamp;
     }
 
-    signatures.push({
-      author,
-      timestamp,
-      startIndex,
-      endIndex,
-      dirtyCode,
-      nextCommentStartIndex,
-    });
+    signatures.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });
   }
+
+  return signatures;
+}
+
+/**
+ * Extract signatures that come from the unsigned templates from wikitext.
+ *
+ * @param {string} code
+ * @returns {object[]}
+ * @private
+ */
+function extractUnsigneds(code) {
+  const signatures = [];
 
   if (cd.g.UNSIGNED_TEMPLATES_REGEXP) {
     let match;
-    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(adjustedCode))) {
+    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(code))) {
       let author;
       let timestamp;
       if (cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.test(match[2])) {
@@ -225,16 +220,63 @@ export function extractSignatures(code, generateCommentAnchors) {
         author = match[2];
       }
       author = userRegistry.getUser(decodeHtmlEntities(author));
+
+      let startIndex = match.index;
+      const endIndex = match.index + match[1].length;
+      let dirtyCode = match[1];
+      const nextCommentStartIndex = match.index + match[0].length;
+
+      // "~~~~~ {{unsigned|}}" cases. In these cases, both the signature and {{unsigned|}} are
+      // considered signatures and added to the array, so we try to combine these entries.
+      const relevantSignatureIndex = (
+        signatures.findIndex((sig) => sig.nextCommentStartIndex === nextCommentStartIndex)
+      );
+      if (relevantSignatureIndex !== -1) {
+        const relevantSignature = signatures[relevantSignatureIndex];
+        timestamp = relevantSignature.timestamp;
+        startIndex = relevantSignature.startIndex;
+        dirtyCode = code.slice(startIndex, endIndex);
+        signatures.splice(relevantSignatureIndex, 1);
+      }
+
       signatures.push({
         author,
         timestamp,
-        startIndex: match.index,
-        endIndex: match.index + match[1].length,
-        dirtyCode: match[1],
-        nextCommentStartIndex: match.index + match[0].length,
+        startIndex,
+        endIndex,
+        dirtyCode,
+        nextCommentStartIndex,
       });
     }
+  }
 
+  return signatures;
+}
+
+/**
+ * Extract signatures from wikitext.
+ *
+ * Only basic signature parsing is performed here; more precise signature text identification is
+ * performed in {@link module:Comment#adjustCommentCodeData}. See also {@link
+ * module:Comment#adjustCommentBeginning}, called before that.
+ *
+ * @param {string} code Code to extract signatures from.
+ * @param {boolean} generateCommentAnchors Whether to generate and register comment anchors.
+ * @returns {object[]}
+ */
+export function extractSignatures(code, generateCommentAnchors) {
+  // Hide HTML comments, quotes and lines containing antipatterns.
+  const adjustedCode = hideHtmlComments(code)
+    .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
+      beginning + ' '.repeat(content.length) + ending
+    ))
+    .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
+
+  let signatures = extractRegularSignatures(adjustedCode);
+  const unsigneds = extractUnsigneds(adjustedCode);
+  signatures.push(...unsigneds);
+
+  if (unsigneds.length) {
     signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
   }
 
