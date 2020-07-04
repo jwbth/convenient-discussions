@@ -129,7 +129,7 @@ export default class Parser {
    */
 
   /**
-   * Find the timestamps under the root element.
+   * Find timestamps under the root element.
    *
    * @returns {FindTimestampsReturn}
    */
@@ -172,7 +172,7 @@ export default class Parser {
   }
 
   /**
-   * Find the signatures under the root element given timestamps.
+   * Find signatures under the root element given timestamps.
    *
    * Characters before the author link, like "—", aren't considered a part of the signature.
    *
@@ -298,7 +298,7 @@ export default class Parser {
         signatureContainer.insertBefore(element, startElementNextSibling);
 
         // If there is no author, we add the class to prevent the element from being considered a
-        // part of other comment but don't append the list of signatures.
+        // part of other comment but don't append to the list of signatures.
         if (!authorName) return;
 
         return { element, timestampElement, timestampText, date, authorName, anchor, unsigned };

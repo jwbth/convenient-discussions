@@ -228,7 +228,10 @@ export async function init({ messagesRequest }) {
     const unsignedTemplatesPattern = cd.config.unsignedTemplates
       .map(caseInsensitiveFirstCharPattern)
       .join('|');
-    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(`(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`, 'g');
+    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(
+      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`,
+      'g'
+    );
   }
 
   cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
