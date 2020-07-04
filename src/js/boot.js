@@ -52,7 +52,7 @@ export function initSettings() {
     alwaysExpandSettings: false,
     autopreview: true,
     desktopNotifications: 'unknown',
-    defaultCommentLinkType: cd.config.defaultCommentLinkType || 'diff',
+    defaultCommentLinkType: 'diff',
     defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,
     // If the user has never changed the insert buttons configuration, it should change with the

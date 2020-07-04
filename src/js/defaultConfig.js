@@ -479,15 +479,6 @@ export default {
   customCommentFormModules: [],
 
   /**
-   * Default type of comment link when copying. `'diff'`, `'wikilink'`, or `'link'`. You may use
-   * `'wikilink'` if there is a code in your wiki that makes wikilinks work for all users.
-   *
-   * @type {string}
-   * @default 'diff'
-   */
-  defaultCommentLinkType: 'diff',
-
-  /**
    * Whether to show a placeholder in a comment input.
    *
    * If gender is needed to output the comment input placeholder, it could be better to set the

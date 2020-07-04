@@ -396,10 +396,10 @@ export async function settingsDialog() {
       help: cd.s('sd-desktopnotifications-help', location.host),
     });
 
-    let defaultCommentLinkTypeHelp = cd.s('sd-defaultcommentlinktype-help');
-    if (cd.config.defaultCommentLinkType === 'diff') {
-      defaultCommentLinkTypeHelp += ` ${cd.s('sd-defaultcommentlinktype-help-notdifflinks')}`;
-    }
+    let defaultCommentLinkTypeHelp = (
+      cd.s('sd-defaultcommentlinktype-help') + ' ' +
+      cd.s('sd-defaultcommentlinktype-help-notdifflinks')
+    );
     [
       this.defaultCommentLinkTypeField,
       this.defaultCommentLinkTypeSelect,
@@ -1150,7 +1150,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     }
 
     let wikilinkFieldHelp;
-    if (object instanceof Comment && cd.config.defaultCommentLinkType === 'diff') {
+    if (object instanceof Comment) {
       wikilinkFieldHelp = cd.s('cld-wikilink-help-comment');
     }
 
