@@ -230,7 +230,7 @@ export default {
       message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
       class: 'closerTemplateNotNeeded',
       type: 'notice',
-      checkFunc: () => this.couldBeCloserClosing && this.headlineInput.getValue().trim() === 'Итог',
+      checkFunc: (commentForm) => commentForm.couldBeCloserClosing && commentForm.headlineInput.getValue().trim() === 'Итог',
     },
   ],
 
@@ -271,8 +271,8 @@ export default {
       !/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
     ) {
       code = code.replace(
-        /(\n\n)$/,
-        (newlines) => '\n' + cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}') + newlines
+        /(\n?\n)$/,
+        (newlines) => '\n' + (cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}')) + newlines
       );
     }
 
