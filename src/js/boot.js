@@ -69,6 +69,8 @@ export function initSettings() {
     watchSectionOnReply: true,
   };
 
+  cd.localSettingNames = ['insertButtons', 'insertButtonsChanged'];
+
   // Aliases for seamless transition when changing a setting name.
   const aliases = {
     allowEditOthersMsgs: ['allowEditOthersComments'],
@@ -83,24 +85,37 @@ export function initSettings() {
     nativeSettings = {};
   }
 
-  Object.keys(cd.defaultSettings).forEach((name) => {
-    (aliases[name] || [])
-      .concat(name)
-      .forEach((alias) => {
-        // Settings in variables like "cdAlowEditOthersComments"
-        const varAlias = 'cd' + firstCharToUpperCase(alias);
-        if (varAlias in window && typeof varAlias === typeof cd.defaultSettings[name]) {
-          cd.settings[name] = nativeSettings[alias];
-        }
+  let localSettings;
+  try {
+    localSettings = JSON.parse(mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME)) || {};
+  } catch (e) {
+    localSettings = {};
+  }
 
-        // Native settings rewrite those set via personal JS.
-        if (
-          nativeSettings[alias] !== undefined &&
-          typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
-        ) {
-          cd.settings[name] = nativeSettings[alias];
-        }
-      });
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    (aliases[name] || []).concat(name).forEach((alias) => {
+      // Settings in variables like "cdAlowEditOthersComments"
+      const varAlias = 'cd' + firstCharToUpperCase(alias);
+      if (varAlias in window && typeof varAlias === typeof cd.defaultSettings[name]) {
+        cd.settings[name] = window[alias];
+      }
+
+      // Global settings override those set via personal JS.
+      if (
+        nativeSettings[alias] !== undefined &&
+        typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        cd.settings[name] = nativeSettings[alias];
+      }
+
+      // Local settings override global.
+      if (
+        localSettings[alias] !== undefined &&
+        typeof localSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        cd.settings[name] = localSettings[alias];
+      }
+    });
   });
 
   // Seamless transition from mySignature.
@@ -118,11 +133,25 @@ export function initSettings() {
 
   cd.settings = Object.assign({}, cd.defaultSettings, cd.settings);
 
-  if (JSON.stringify(cd.settings) !== mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME)) {
+  const remoteSettings = Object.assign({}, nativeSettings, localSettings);
+  const needToSetRemote = Object.keys(cd.settings).some((key) => (
+    JSON.stringify(cd.settings[key]) !== JSON.stringify(remoteSettings[key])
+  ));
+  if (needToSetRemote) {
     setSettings().catch((e) => {
       console.warn('Couldn\'t save the settings to the server.', e);
     });
   }
+
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    (aliases[name] || []).concat(name).forEach((alias) => {
+      // Settings in variables like "cdLocal..." override all other and are not saved to the server.
+      const varLocalAlias = 'cdLocal' + firstCharToUpperCase(alias);
+      if (varLocalAlias in window && typeof varLocalAlias === typeof cd.defaultSettings[name]) {
+        cd.settings[name] = window[alias];
+      }
+    });
+  });
 }
 
 /**

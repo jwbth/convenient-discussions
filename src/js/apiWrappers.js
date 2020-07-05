@@ -449,32 +449,58 @@ export async function getPageIds(pageTitles) {
 }
 
 /**
+ * Generic function for setting an option.
+ *
+ * @param {string} name
+ * @param {string} value
+ * @param {string} action
+ * @private
+ */
+async function setOption(name, value, action) {
+  if (value.length > 65535) {
+    throw new CdError({
+      type: 'internal',
+      code: 'sizeLimit',
+      details: { action },
+    });
+  }
+
+  const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
+    action: action,
+    optionname: name,
+    optionvalue: value,
+  })).catch(handleApiReject);
+
+  if (!resp || resp[action] !== 'success') {
+    throw new CdError({
+      type: 'api',
+      code: 'noSuccess',
+      details: { action },
+    });
+  }
+}
+
+/**
  * Set an option value. See {@link https://www.mediawiki.org/wiki/API:Options}.
  *
  * @param {string} name
  * @param {string} value
  * @throws {CdError}
  */
-export async function setOption(name, value) {
-  if (value.length > 65535) {
-    throw new CdError({
-      type: 'internal',
-      code: 'sizeLimit',
-    });
-  }
+export async function setLocalOption(name, value) {
+  await setOption(name, value, 'options');
+}
 
-  const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-    action: 'options',
-    optionname: name,
-    optionvalue: value,
-  })).catch(handleApiReject);
-
-  if (!resp || resp.options !== 'success') {
-    throw new CdError({
-      type: 'api',
-      code: 'noSuccess',
-    });
-  }
+/**
+ * Set a global preferences' option value. See {@link
+ * https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
+ *
+ * @param {string} name
+ * @param {string} value
+ * @throws {CdError}
+ */
+export async function setGlobalOption(name, value) {
+  await setOption(name, value, 'globalpreferences');
 }
 
 /**

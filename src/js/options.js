@@ -8,7 +8,7 @@ import lzString from 'lz-string';
 
 import CdError from './CdError';
 import cd from './cd';
-import { getUserInfo, setOption } from './apiWrappers';
+import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
  * Pack the visits object into a string for further compression.
@@ -96,12 +96,39 @@ export async function getSettings(reuse = false) {
 }
 
 /**
- * Save settings to the server.
+ * Save settings to the server. This function will split the settings into the global and local ones
+ * and make two respective requests.
  *
  * @param {object} [settings]
  */
 export async function setSettings(settings) {
-  await setOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(settings || cd.settings));
+  settings = settings || cd.settings;
+  const globalSettings = {};
+  const localSettings = {};
+  Object.keys(settings).forEach((key) => {
+    if (cd.localSettingNames.includes(key)) {
+      localSettings[key] = settings[key];
+    } else {
+      globalSettings[key] = settings[key];
+    }
+  });
+
+  const localSettingsPromise = (
+    setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, JSON.stringify(localSettings))
+  );
+  const globalSettingsPromise = (
+    setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings))
+  );
+  try {
+    await Promise.all([localSettingsPromise, globalSettingsPromise]);
+  } catch (e) {
+    // The site doesn't support global preferences.
+    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
+      setLocalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings));
+    } else {
+      throw e;
+    }
+  }
 }
 
 /**
@@ -172,7 +199,7 @@ export async function setVisits(visits) {
   const visitsString = packVisits(visits);
   const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
   try {
-    await setOption(cd.g.VISITS_OPTION_FULL_NAME, visitsStringCompressed);
+    await setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, visitsStringCompressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
@@ -249,5 +276,5 @@ export function setWatchedSections(watchedSections) {
   const watchedSectionsStringCompressed = (
     lzString.compressToEncodedURIComponent(watchedSectionsString)
   );
-  setOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, watchedSectionsStringCompressed);
+  setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, watchedSectionsStringCompressed);
 }
