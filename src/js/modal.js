@@ -11,9 +11,9 @@ import { addPreventUnloadCondition, removePreventUnloadCondition } from './event
 import { checkboxField, radioField } from './ooui';
 import { defined, removeDuplicates, spacesToUnderlines } from './util';
 import { encodeWikilink } from './wikitext';
-import { getPageIds, getPageTitles } from './apiWrappers';
+import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
-import { handleApiReject, hideText, underlinesToSpaces, unhideText } from './util';
+import { hideText, underlinesToSpaces, unhideText } from './util';
 
 /**
  * Create an OOUI window manager. It is supposed to be reused across the script.
@@ -757,20 +757,15 @@ export async function settingsDialog() {
 
   SettingsDialog.prototype.removeData = async function () {
     if (await confirmDestructive('sd-removedata-confirm', { size: 'medium' })) {
+      this.pushPending();
+
       try {
-        this.pushPending();
-
-        const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-          action: 'options',
-          change: `${cd.g.SETTINGS_OPTION_FULL_NAME}|${cd.g.VISITS_OPTION_FULL_NAME}|${cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME}`,
-        })).catch(handleApiReject);
-
-        if (!resp || resp.options !== 'success') {
-          throw new CdError({
-            type: 'api',
-            code: 'noSuccess',
-          });
-        }
+        await Promise.all([
+          setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, null),
+          setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, null),
+          setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, null),
+          setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, null),
+        ]);
       } catch (e) {
         handleError(this, e, 'sd-error-removedata', false);
         return;
