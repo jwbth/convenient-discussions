@@ -238,9 +238,7 @@ function initPatterns() {
   );
 
   if (cd.config.unsignedTemplates.length) {
-    const unsignedTemplatesPattern = cd.config.unsignedTemplates
-      .map(caseInsensitiveFirstCharPattern)
-      .join('|');
+    const unsignedTemplatesPattern = cd.config.unsignedTemplates.join('|');
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(
       `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`,
       'ig'
