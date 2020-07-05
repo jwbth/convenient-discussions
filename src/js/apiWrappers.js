@@ -245,6 +245,31 @@ export function getUserInfo(reuse = false) {
 }
 
 /**
+ * Generate an error text for an unknown error.
+ *
+ * @param {string} errorCode
+ * @param {string} [errorInfo]
+ * @returns {string}
+ * @private
+ */
+export async function unknownApiErrorText(errorCode, errorInfo) {
+  let text;
+  if (errorCode) {
+    text = cd.s('error-api', errorCode) + ' ';
+    if (errorInfo) {
+      try {
+        const { html } = await parseCode(errorInfo);
+        text += html;
+      } catch (e) {
+        text += errorInfo;
+      }
+    }
+  }
+
+  return text;
+}
+
+/**
  * @typedef {object} EditPageReturn
  * @property {string} pageId
  * @property {number} editTimestamp
@@ -318,7 +343,7 @@ export async function editPage(options) {
             default: {
               message = (
                 cd.s('error-pagenotedited') + ' ' +
-                (await this.unknownApiErrorText(code, error.info))
+                (await unknownApiErrorText(code, error.info))
               );
             }
           }

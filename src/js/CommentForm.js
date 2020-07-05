@@ -21,7 +21,7 @@ import {
 } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
-import { editPage, getLastRevision, parseCode } from './apiWrappers';
+import { editPage, getLastRevision, parseCode, unknownApiErrorText } from './apiWrappers';
 import {
   extractSignatures,
   hideHtmlComments,
@@ -1563,31 +1563,6 @@ export default class CommentForm {
   }
 
   /**
-   * Generate an error text for an unknown error.
-   *
-   * @param {string} errorCode
-   * @param {string} [errorInfo]
-   * @returns {string}
-   * @private
-   */
-  async unknownApiErrorText(errorCode, errorInfo) {
-    let text;
-    if (errorCode) {
-      text = cd.s('error-api', errorCode) + ' ';
-      if (errorInfo) {
-        try {
-          const { html } = await parseCode(errorInfo);
-          text += html;
-        } catch (e) {
-          text += errorInfo;
-        }
-      }
-    }
-
-    return text;
-  }
-
-  /**
    * Abort the operation the form is undergoing and show an appropriate error message. This is a
    * wrapper around {@link module:CommentForm#abort}.
    *
@@ -1695,7 +1670,7 @@ export default class CommentForm {
                 message = cd.s('cf-error-pagedoesntexist');
                 break;
               default:
-                message = await this.unknownApiErrorText(errorCode, errorInfo);
+                message = await unknownApiErrorText(errorCode, errorInfo);
             }
             break;
           }
