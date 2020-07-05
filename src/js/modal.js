@@ -465,7 +465,7 @@ export async function settingsDialog() {
       new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
         label: cd.s('sd-insertbuttons'),
         align: 'top',
-        help: cd.util.wrapInElement(cd.s('sd-insertbuttons-help')),
+        help: cd.util.wrapInElement(cd.s('sd-insertbuttons-help') + ' ' + cd.s('sd-localsetting')),
         helpInline: true,
       })
     );

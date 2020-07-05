@@ -231,6 +231,7 @@
   "sd-removedata-confirm-no": "No",
   "sd-dataremoved": "Your data has been successfully removed.",
   "sd-error-removedata": "Couldn't remove the data on the server.",
+  "sd-localsetting": "<i>This setting is individual for each wiki.</i>",
 
   "sd-alloweditotherscomments": "Show a link to edit other users' comments",
   "sd-alwaysexpandsettings": "Expand the comment settings when replying",
