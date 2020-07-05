@@ -243,7 +243,7 @@ function initPatterns() {
       .join('|');
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(
       `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`,
-      'g'
+      'ig'
     );
   }
 
