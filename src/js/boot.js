@@ -161,20 +161,9 @@ export function initTalkPageCss() {
 }
 
 /**
- * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
- * the first run.
- *
- * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadMessages}.
+ * Initialize a number of the global object properties.
  */
-export async function init({ messagesRequest }) {
-  cd.g.api = cd.g.api || new mw.Api();
-
-  await (messagesRequest || loadMessages());
-  initSettings();
-  initTimestampParsingTools();
-
+function initGlobals() {
   if (cd.config.tagName) {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
@@ -196,19 +185,14 @@ export async function init({ messagesRequest }) {
 
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
+}
 
-  /**
-   * Collection of all comment forms on the page in the order of their creation.
-   *
-   * @name commentForms
-   * @type {CommentForm[]}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.commentForms = [];
-
-
-  /* Generate regexps, patterns (strings to be parts of regexps), selectors from config values */
-
+/**
+ * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
+ *
+ * @private
+ */
+function initPatterns() {
   const namespaceIds = mw.config.get('wgNamespaceIds');
   const userNamespaces = Object.keys(namespaceIds)
     .filter((key) => [2, 3].includes(namespaceIds[key]));
@@ -319,10 +303,14 @@ export async function init({ messagesRequest }) {
 
   cd.g.ARCHIVE_PATHS_REGEXP = mergeRegexps(cd.config.archivePaths);
   cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP = mergeRegexps(cd.config.pagesWithoutArchives);
+}
 
-
-  /* OOUI */
-
+/**
+ * Initialize OOUI and comment layers-related objects.
+ *
+ * @private
+ */
+function initOouiAndElementPrototypes() {
   createWindowManager();
 
   // OOUI button prototypes. Creating every button using the constructor takes 15 times longer than
@@ -416,10 +404,35 @@ export async function init({ messagesRequest }) {
   const overlayContent = document.createElement('div');
   overlayContent.className = 'cd-commentOverlay-content';
   overlayInnerWrapper.appendChild(overlayContent);
+}
 
+/**
+ * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
+ * the first run.
+ *
+ * @param {object} [data] Data passed from the main module.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadMessages}.
+ */
+export async function init({ messagesRequest }) {
+  cd.g.api = cd.g.api || new mw.Api();
 
-  /* Extensions */
+  await (messagesRequest || loadMessages());
+  initSettings();
+  initTimestampParsingTools();
+  initGlobals();
 
+  /**
+   * Collection of all comment forms on the page in the order of their creation.
+   *
+   * @name commentForms
+   * @type {CommentForm[]}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.commentForms = [];
+
+  initPatterns();
+  initOouiAndElementPrototypes();
   $.fn.extend(jqueryExtensions);
 }
 
