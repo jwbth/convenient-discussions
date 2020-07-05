@@ -1210,7 +1210,7 @@ export default class CommentForm {
         textReactions.forEach((reaction) => {
           if (
             reaction.pattern.test(text) &&
-            (typeof reaction.checkFunc !== 'function' || reaction.checkFunc())
+            (typeof reaction.checkFunc !== 'function' || reaction.checkFunc(this))
           ) {
             this.showMessage(reaction.message, {
               type: reaction.type,
