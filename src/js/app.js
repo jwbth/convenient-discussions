@@ -255,6 +255,7 @@ function go() {
         require('../less/logPages.less');
       },
       (e) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(e);
       }
     );
