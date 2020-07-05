@@ -21,8 +21,7 @@ import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './
  * @private
  */
 function getPageNameFromUrl(url) {
-  // Should we rely on document.querySelector('link[rel="dns-prefetch"]').href? Are only WMF wikis
-  // guaranteed to have the format we need?
+  // Are only WMF wikis guaranteed to have the format we need?
   if (
     typeof mw === 'undefined' ||
     (mw.config.get('wgArticlePath') === '/wiki/$1' && mw.config.get('wgScript') === '/w/index.php')

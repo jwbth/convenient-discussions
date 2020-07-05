@@ -55,10 +55,10 @@ export function initSettings() {
     defaultCommentLinkType: 'diff',
     defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,
+    insertButtons: cd.config.defaultInsertButtons || [],
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
     insertButtonsChanged: false,
-    insertButtons: cd.config.defaultInsertButtons || [],
     signaturePrefix: '',
     notifications: 'all',
     notificationsBlacklist: [],
