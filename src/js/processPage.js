@@ -402,7 +402,7 @@ function highlightOwnComments() {
  */
 async function confirmDesktopNotifications() {
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
-    // Sometimes the setting value is cached.
+    // Seems like sometimes the setting value is cached.
     getSettings(true).then((settings) => {
       if (settings.desktopNotifications === 'unknown') {
         const actions = [
