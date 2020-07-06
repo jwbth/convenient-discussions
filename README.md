@@ -15,6 +15,7 @@ The full set of script features includes much more:
 * moving topics between talk pages;
 * autofilling the edit summary with the indication of the addressee of the comment;
 * saving comment drafts to restore the forms' content after unexpected events such as browser crashes, accidental jumps to a different page etc.;
+* thanking for and copying links to edits that added comments;
 * slightly redesigned discussion threads that make it easier to follow which comment replies to which.
 
 The script makes the user forget about:
