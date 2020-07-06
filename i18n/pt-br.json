@@ -3,7 +3,8 @@
 		"authors": [
 			"Abijeet Patro",
 			"Eduardo Addad de Oliveira",
-			"Iohanen"
+			"Iohanen",
+			"Rafaelff"
 		]
 	},
 	"script-name": "Discussões convenientes",
@@ -36,7 +37,7 @@
 	"section-watch-success": "A seção \"$1\" foi adicionada à sua lista de páginas vigiadas.",
 	"section-unwatch-success": "A seção \"$1\" foi removida da sua lista de páginas vigiadas.",
 	"section-unwatch-stillwatched": "<strong>Nota:</strong> você ainda está vigiando esta seção, pois ela está incluída na seção \"$1\" que você vigia.",
-	"section-watch-pagenotwatched": "<strong>Nota:</strong> você vigia a seção, mas não a página. Para que novos comentários sejam destacados na página da sua lista de página vigiada, você deve adicionar a página à lista de página vigiada.",
+	"section-watch-pagenotwatched": "<strong>Nota:</strong> você vigia a seção, mas não a página. Para que novos comentários sejam destacados na página da sua lista de página vigiada, adicione a página à lista de página vigiada.",
 	"section-watch-error-load": "Não foi possível carregar as configurações do servidor.",
 	"section-watch-error-save": "Não foi possível salvar as configurações no servidor.",
 	"section-watch-error-maxsize": "Não foi possível atualizar as configurações: o tamanho da lista de seções vigiadas excede o tamanho máximo. <a class=\"cd-notification-editWatchedSections\">Edite a lista de seções</a> para corrigir isso.",
@@ -170,6 +171,8 @@
 	"restore-restored-text": "Os formulários de comentários não enviados foram recuperados automaticamente.",
 	"rd-intro": "Não foi possível encontrar os comentários ou seções na página aos quais alguns dos formulários abertos estavam relacionados. Abaixo está o conteúdo restaurado desses formulários. Copie-o se precisar.",
 	"rd-headline": "Assunto/título",
+	"rd-comment": "Comentário",
+	"rd-summary": "Resumo da edição",
 	"rd-close": "Fechar",
 	"navpanel-refresh": "Atualizar página",
 	"navpanel-previous": "Ir para o novo comentário anterior",
@@ -179,6 +182,7 @@
 	"navpanel-newcomments-count": "$1 novo(s) {{plural:$1|comentário|comentários}}. Clique para atualizar a página",
 	"navpanel-newcomments-insection": "Seção \"$1\":",
 	"navpanel-newcomments-outsideofsections": "Fora das seções",
+	"newpanel-newcomments-reply": "$1 → $2",
 	"navpanel-newcomments-unknowndate": "data desconhecida",
 	"notification-toyou": "$1 {{gender:$2|respondeu}} seu comentário$3.",
 	"notification-toyou-desktop": "$1 {{gender:$2|respondeu}} seu comentário$3 na página \"$4\".",
@@ -228,7 +232,7 @@
 	"sd-highlightowncomments": "Destacar meus comentários",
 	"sd-insertbuttons": "Botões de inserção de texto",
 	"sd-insertbuttons-multiselect-placeholder": "Adicionar um botão",
-	"sd-insertbuttons-help": "Use <code>+</code> para especificar o local onde o cursor deve ser colocado após a inserção do texto; por exemplo,<code>&#123;&#123;+&#125;&#125;</code>. Use <code>;</code> para para especifique o texto exibido diferente do inserido; por exemplo, <code>&lt;code&gt;+&lt;/code&gt;;&lt;code /&gt;</code>. Use <code>&#92;</code> antes dos caracteres mencionados para inseri-los como estão; por exemplo, <code>2&#92;+2</code>. Os botões podem ser arrastados e soltos.",
+	"sd-insertbuttons-help": "Use <code>+</code> para especificar um local onde o cursor deve ser colocado após a inserção do texto; por exemplo,<code>&#123;&#123;+&#125;&#125;</code>. Use <code>;</code> para especificar o texto exibido se você deseja que seja diferente daquele inserido; por exemplo, <code>&lt;code&gt;+&lt;/code&gt;;&lt;code /&gt;</code>. Use <code>&#92;</code> antes dos caracteres mencionados para inseri-los como estão; por exemplo, <code>2&#92;+2</code>. Os botões podem ser arrastados e soltos.",
 	"sd-notificationsblacklist": "Não notifique sobre comentários desses usuários",
 	"sd-notificationsblacklist-multiselect-placeholder": "Adicionar usuário",
 	"sd-signatureprefix": "Prefixo de assinatura",
@@ -291,5 +295,5 @@
 	"lp-comment-toyou": "o comentário é endereçado a você",
 	"lp-comment-watchedsection": "você está vigiando esta seção",
 	"loading-ellipsis": "Carregando…",
-	"addtopicbutton-tooltip": "Abra em uma nova guia para criar um novo tópico na página padrão, não em discussões convenientes."
+	"addtopicbutton-tooltip": "Abra em uma nova guia para criar um novo tópico na página padrão, não em Discussões convenientes"
 }
