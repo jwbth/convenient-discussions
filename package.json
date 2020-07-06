@@ -4,7 +4,7 @@
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
     "build": "node buildConfigs && webpack --progress",
-    "local": "webpack --env.MODE=local --progress",
+    "local": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --env.MODE=local --progress",
     "release": "node buildConfigs && webpack --env.MODE=production --progress",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
     "all": "npm run release & npm run docs"
