@@ -232,6 +232,10 @@ export default class Autocomplete {
         },
         selectTemplate,
         values: async (text, callback) => {
+          if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
+            text = text.slice(1);
+          }
+
           if (!text.startsWith(this.wikilinks.snapshot)) {
             this.wikilinks.cache = [];
           }
@@ -250,6 +254,7 @@ export default class Autocomplete {
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
+              (!/^:/.test(text) || cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) &&
               // 10 spaces in a page name seems too many.
               (text.match(/ /g) || []).length <= 9
             );
@@ -471,7 +476,10 @@ export default class Autocomplete {
    */
   static getWikilinksConfig() {
     const colonNamespaces = mw.config.get('wgFormattedNamespaces');
-    const colonNamespacesRegexp = new RegExp(`^(${colonNamespaces[6]}|${colonNamespaces[14]}):`);
+    const colonNamespacesRegexp = new RegExp(
+      `^(${colonNamespaces[6]}|${colonNamespaces[14]}):`,
+      'i'
+    );
     return {
       byText: {},
       cache: [],

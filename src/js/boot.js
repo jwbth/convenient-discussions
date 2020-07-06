@@ -320,6 +320,11 @@ function initPatterns() {
   const fileNamespacesPatternAnySpace = anySpace(fileNamespaces.join('|'));
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPatternAnySpace}):`;
 
+  const colonNamespaces = Object.keys(namespaceIds)
+    .filter((key) => [6, 14].includes(namespaceIds[key]));
+  const colonNamespacesPatternAnySpace = anySpace(colonNamespaces.join('|'));
+  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPatternAnySpace}):`, 'i');
+
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
     .concat([new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`)])
     .concat(cd.config.customBadCommentBeginnings);
@@ -780,7 +785,14 @@ export function restoreCommentForms() {
       const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || {};
       if (commentFormsData.forms) {
         restoreCommentFormsFromData(commentFormsData);
-        mw.notify(cd.s('restore-restored-text'), { title: cd.s('restore-restored-title') });
+        const notification = mw.notification.notify(cd.s('restore-restored-text'), {
+          title: cd.s('restore-restored-title'),
+        });
+        notification.$notification.on('click', () => {
+          if (navPanel.isMounted()) {
+            navPanel.goToNextCommentForm();
+          }
+        });
       }
     }
   } else {
