@@ -51,64 +51,16 @@ export default class Autocomplete {
       containerClass: 'tribute-container cd-mentionsContainer',
     });
 
-    // Replace the native function, removing:
-    // * "space" - it causes the menu not to change or hide when a space was typed;
-    // * "delete" - it causes the menu not to appear when backspace is pressed and a character
-    // preventing the menu to appear is removed (for example, ">" in "<small>"). It is
-    // replaced with "e.keyCode === 8" in shouldDeactivate lower.
-    this.tribute.events.constructor.keys = () => [
-      {
-        key: 9,
-        value: 'TAB'
-      },
-      {
-        key: 13,
-        value: 'ENTER'
-      },
-      {
-        key: 27,
-        value: 'ESCAPE'
-      },
-      {
-        key: 38,
-        value: 'UP'
-      },
-      {
-        key: 40,
-        value: 'DOWN'
-      }
-    ];
-
-    // This hack fixes the disappearing of the menu when a part of mention is typed and the
-    // user presses any command key.
-    this.tribute.events.shouldDeactivate = (e) => {
-      if (!this.tribute.isActive) return false;
-
-      return (
-        // Backspace
-        e.keyCode === 8 ||
-        // Page Up, Page Down, End, Home, Left
-        (e.keyCode >= 33 && e.keyCode <= 37) ||
-        // Right
-        e.keyCode === 39 ||
-        // Ctrl+...
-        (e.ctrlKey && e.keyCode !== 17) ||
-        // ⌘+...
-        (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
-      );
-    };
-
     inputs.forEach((input) => {
       const element = input.$input.get(0);
       this.tribute.attach(element);
       element.cdInput = input;
       element.addEventListener('tribute-replaced', (e) => {
-        // Move the caret to the place we need and remove the space that is always included
-        // after the inserted text (the native mechanism to get rid of this space is buggy).
+        // Move the caret to the place we need.
         const cursorIndex = input.getRange().to;
         const value = input.getValue();
-        input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
-        input.selectRange(cursorIndex - 1 - e.detail.item.original.endOffset);
+        input.setValue(value.slice(0, cursorIndex) + value.slice(cursorIndex));
+        input.selectRange(cursorIndex - e.detail.item.original.endOffset);
       });
     });
   }
@@ -178,9 +130,9 @@ export default class Autocomplete {
               (text.match(/ /g) || []).length <= 4
             );
             if (isLikelyName) {
-              // Logically, matched or this.mentions.cache should have zero length (a request is made only
-              // if there is no matches in the section; if there are, this.mentions.cache is an empty
-              // array).
+              // Logically, matched or this.mentions.cache should have zero length (a request is
+              // made only if there is no matches in the section; if there are, this.mentions.cache
+              // is an empty array).
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }

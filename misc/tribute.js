@@ -250,17 +250,25 @@
     }, {
       key: "shouldDeactivate",
       value: function shouldDeactivate(event) {
+        // [Jack:] We've replaced the native function fixing the disappearing of the menu when a
+        // part of mention is typed and the user presses any command key.
         if (!this.tribute.isActive) return false;
 
-        if (this.tribute.current.mentionText.length === 0) {
-          var eventKeyPressed = false;
-          TributeEvents.keys().forEach(function (o) {
-            if (event.keyCode === o.key) eventKeyPressed = true;
-          });
-          return !eventKeyPressed;
-        }
-
-        return false;
+        return (
+          this.tribute.current.mentionText.length === 0 &&
+          (
+            // Backspace
+            e.keyCode === 8 ||
+            // Page Up, Page Down, End, Home, Left
+            (e.keyCode >= 33 && e.keyCode <= 37) ||
+            // Right
+            e.keyCode === 39 ||
+            // Ctrl+...
+            (e.ctrlKey && e.keyCode !== 17) ||
+            // ⌘+...
+            (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
+          )
+        );
       }
     }, {
       key: "getKeyCode",
@@ -438,6 +446,11 @@
     }], [{
       key: "keys",
       value: function keys() {
+        // [Jack:] We've replaced the native function the native function, removing:
+        // * "space" - it causes the menu not to change or hide when a space was typed;
+        // * "delete" - it causes the menu not to appear when backspace is pressed and a character
+        // preventing the menu to appear is removed (for example, ">" in "<small>"). It is
+        // replaced with "e.keyCode === 8" in shouldDeactivate lower.
         return [{
           key: 9,
           value: "TAB"
@@ -450,9 +463,6 @@
         }, {
           key: 27,
           value: "ESCAPE"
-        }, {
-          key: 32,
-          value: "SPACE"
         }, {
           key: 38,
           value: "UP"
@@ -1187,118 +1197,6 @@
     }
 
     _createClass(TributeSearch, [{
-      key: "simpleFilter",
-      value: function simpleFilter(pattern, array) {
-        var _this = this;
-
-        return array.filter(function (string) {
-          return _this.test(pattern, string);
-        });
-      }
-    }, {
-      key: "test",
-      value: function test(pattern, string) {
-        return this.match(pattern, string) !== null;
-      }
-    }, {
-      key: "match",
-      value: function match(pattern, string, opts) {
-        opts = opts || {};
-        var len = string.length,
-            pre = opts.pre || '',
-            post = opts.post || '',
-            compareString = opts.caseSensitive && string || string.toLowerCase();
-
-        if (opts.skip) {
-          return {
-            rendered: string,
-            score: 0
-          };
-        }
-
-        pattern = opts.caseSensitive && pattern || pattern.toLowerCase();
-        var patternCache = this.traverse(compareString, pattern, 0, 0, []);
-
-        if (!patternCache) {
-          return null;
-        }
-
-        return {
-          rendered: this.render(string, patternCache.cache, pre, post),
-          score: patternCache.score
-        };
-      }
-    }, {
-      key: "traverse",
-      value: function traverse(string, pattern, stringIndex, patternIndex, patternCache) {
-        if (this.tribute.autocompleteSeparator) {
-          // if the pattern search at end
-          pattern = pattern.split(this.tribute.autocompleteSeparator).splice(-1)[0];
-        }
-
-        if (pattern.length === patternIndex) {
-          // calculate score and copy the cache containing the indices where it's found
-          return {
-            score: this.calculateScore(patternCache),
-            cache: patternCache.slice()
-          };
-        } // if string at end or remaining pattern > remaining string
-
-
-        if (string.length === stringIndex || pattern.length - patternIndex > string.length - stringIndex) {
-          return undefined;
-        }
-
-        var c = pattern[patternIndex];
-        var index = string.indexOf(c, stringIndex);
-        var best, temp;
-
-        while (index > -1) {
-          patternCache.push(index);
-          temp = this.traverse(string, pattern, index + 1, patternIndex + 1, patternCache);
-          patternCache.pop(); // if downstream traversal failed, return best answer so far
-
-          if (!temp) {
-            return best;
-          }
-
-          if (!best || best.score < temp.score) {
-            best = temp;
-          }
-
-          index = string.indexOf(c, index + 1);
-        }
-
-        return best;
-      }
-    }, {
-      key: "calculateScore",
-      value: function calculateScore(patternCache) {
-        var score = 0;
-        var temp = 1;
-        patternCache.forEach(function (index, i) {
-          if (i > 0) {
-            if (patternCache[i - 1] + 1 === index) {
-              temp += temp + 1;
-            } else {
-              temp = 1;
-            }
-          }
-
-          score += temp;
-        });
-        return score;
-      }
-    }, {
-      key: "render",
-      value: function render(string, indices, pre, post) {
-        var rendered = string.substring(0, indices[0]);
-        indices.forEach(function (index, i) {
-          rendered += pre + string[index] + post + string.substring(index + 1, indices[i + 1] ? indices[i + 1] : string.length);
-        });
-        return rendered;
-      }
-    }, {
       key: "filter",
       value: function filter(pattern, arr, opts) {
         var _this2 = this;
@@ -1316,23 +1214,14 @@
             }
           }
 
-          var rendered = _this2.match(pattern, str, opts);
-
-          if (rendered != null) {
-            prev[prev.length] = {
-              string: rendered.rendered,
-              score: rendered.score,
-              index: idx,
-              original: element
-            };
-          }
+          prev[prev.length] = {
+            string: str,
+            index: idx,
+            original: element
+          };
 
           return prev;
-        }, []).sort(function (a, b) {
-          var compare = b.score - a.score;
-          if (compare) return compare;
-          return a.index - b.index;
-        });
+        }, []);
       }
     }]);
 
