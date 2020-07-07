@@ -4,6 +4,7 @@
  * @module autocomplete
  */
 
+import Tribute from '../../misc/tribute';
 import cd from './cd';
 import { defined, firstCharToUpperCase, removeDuplicates } from './util';
 import {
@@ -35,91 +36,81 @@ export default class Autocomplete {
   constructor({ types, inputs, defaultUserNames }) {
     const collections = this.getCollections(types, defaultUserNames);
 
-    mw.loader.load(
-      'https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.css',
-      'text/css'
-    );
-    mw.loader.getScript('https://tools-static.wmflabs.org/cdnjs/ajax/libs/tributejs/5.1.3/tribute.js')
-      .then(
-        () => {
-          /**
-           * {@link https://github.com/zurb/tribute Tribute} object.
-           *
-           * @type {Tribute}
-           */
-          this.tribute = new Tribute({
-            collection: collections,
-            allowSpaces: true,
-            menuItemLimit: 10,
-            noMatchTemplate: () => null,
-            containerClass: 'tribute-container cd-mentionsContainer',
-          });
+    require('../../misc/tribute.css');
 
-          // Replace the native function, removing:
-          // * "space" - it causes the menu not to change or hide when a space was typed;
-          // * "delete" - it causes the menu not to appear when backspace is pressed and a character
-          // preventing the menu to appear is removed (for example, ">" in "<small>"). It is
-          // replaced with "e.keyCode === 8" in shouldDeactivate lower.
-          this.tribute.events.constructor.keys = () => [
-            {
-              key: 9,
-              value: 'TAB'
-            },
-            {
-              key: 13,
-              value: 'ENTER'
-            },
-            {
-              key: 27,
-              value: 'ESCAPE'
-            },
-            {
-              key: 38,
-              value: 'UP'
-            },
-            {
-              key: 40,
-              value: 'DOWN'
-            }
-          ];
+    /**
+     * {@link https://github.com/zurb/tribute Tribute} object.
+     *
+     * @type {Tribute}
+     */
+    this.tribute = new Tribute({
+      collection: collections,
+      allowSpaces: true,
+      menuItemLimit: 10,
+      noMatchTemplate: () => null,
+      containerClass: 'tribute-container cd-mentionsContainer',
+    });
 
-          // This hack fixes the disappearing of the menu when a part of mention is typed and the
-          // user presses any command key.
-          this.tribute.events.shouldDeactivate = (e) => {
-            if (!this.tribute.isActive) return false;
+    // Replace the native function, removing:
+    // * "space" - it causes the menu not to change or hide when a space was typed;
+    // * "delete" - it causes the menu not to appear when backspace is pressed and a character
+    // preventing the menu to appear is removed (for example, ">" in "<small>"). It is
+    // replaced with "e.keyCode === 8" in shouldDeactivate lower.
+    this.tribute.events.constructor.keys = () => [
+      {
+        key: 9,
+        value: 'TAB'
+      },
+      {
+        key: 13,
+        value: 'ENTER'
+      },
+      {
+        key: 27,
+        value: 'ESCAPE'
+      },
+      {
+        key: 38,
+        value: 'UP'
+      },
+      {
+        key: 40,
+        value: 'DOWN'
+      }
+    ];
 
-            return (
-              // Backspace
-              e.keyCode === 8 ||
-              // Page Up, Page Down, End, Home, Left
-              (e.keyCode >= 33 && e.keyCode <= 37) ||
-              // Right
-              e.keyCode === 39 ||
-              // Ctrl+...
-              (e.ctrlKey && e.keyCode !== 17) ||
-              // ⌘+...
-              (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
-            );
-          };
+    // This hack fixes the disappearing of the menu when a part of mention is typed and the
+    // user presses any command key.
+    this.tribute.events.shouldDeactivate = (e) => {
+      if (!this.tribute.isActive) return false;
 
-          inputs.forEach((input) => {
-            const element = input.$input.get(0);
-            this.tribute.attach(element);
-            element.cdInput = input;
-            element.addEventListener('tribute-replaced', (e) => {
-              // Move the caret to the place we need and remove the space that is always included
-              // after the inserted text (the native mechanism to get rid of this space is buggy).
-              const cursorIndex = input.getRange().to;
-              const value = input.getValue();
-              input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
-              input.selectRange(cursorIndex - 1 - e.detail.item.original.endOffset);
-            });
-          });
-        },
-        (e) => {
-          console.warn('Couldn\'t load Tribute from wmflabs.org.', e);
-        }
+      return (
+        // Backspace
+        e.keyCode === 8 ||
+        // Page Up, Page Down, End, Home, Left
+        (e.keyCode >= 33 && e.keyCode <= 37) ||
+        // Right
+        e.keyCode === 39 ||
+        // Ctrl+...
+        (e.ctrlKey && e.keyCode !== 17) ||
+        // ⌘+...
+        (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
       );
+    };
+
+    inputs.forEach((input) => {
+      const element = input.$input.get(0);
+      this.tribute.attach(element);
+      element.cdInput = input;
+      element.addEventListener('tribute-replaced', (e) => {
+        // Move the caret to the place we need and remove the space that is always included
+        // after the inserted text (the native mechanism to get rid of this space is buggy).
+        const cursorIndex = input.getRange().to;
+        const value = input.getValue();
+        input.setValue(value.slice(0, cursorIndex - 1) + value.slice(cursorIndex));
+        input.selectRange(cursorIndex - 1 - e.detail.item.original.endOffset);
+      });
+    });
   }
 
   /**

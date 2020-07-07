@@ -17,14 +17,7 @@ module.exports = {
     "mw": "readonly",
     "require": "readonly",
   },
-  "overrides": [
-    {
-      "files": ["dist/**"],
-      "rules": {
-        "jsdoc/require-jsdoc": "off",
-      },
-    },
-  ],
+  "ignorePatterns": ["dist/**", "misc/**"],
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 2018,
