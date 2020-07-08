@@ -134,6 +134,17 @@ function extractRegularSignatures(code) {
   // signature length) minus '[[u:a'.length plus ' '.length (the space before the timestamp).
   const signatureScanLimitWikitext = 251;
   const signatureRegexp = new RegExp(
+    /*
+      Captures:
+      1 - the whole line with the signature
+      2 - text before the last user link
+      3 - unprocessed signature
+      4 - author name (inside cd.g.CAPTURE_USER_NAME_PATTERN)
+      5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
+      6 - timestamp + small template ending characters / ending small tag
+      7 - timestamp
+      8 - new line characters or empty string
+    */
     `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(\n*|$)`,
     'igm'
   );
@@ -155,11 +166,12 @@ function extractRegularSignatures(code) {
     if (authorTimestampMatch) {
       author = userRegistry.getUser(decodeHtmlEntities(authorTimestampMatch[4]));
       timestamp = authorTimestampMatch[7];
-
       startIndex = timestampMatch.index + authorTimestampMatch[2].length;
       endIndex = timestampMatch.index + authorTimestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + authorTimestampMatch[0].length;
       dirtyCode = authorTimestampMatch[3];
+
+      // Find the first link to this author in the preceding text.
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
       const commentEndingStartIndex = Math.max(
@@ -182,7 +194,6 @@ function extractRegularSignatures(code) {
       }
     } else {
       timestamp = timestampMatch[3];
-
       startIndex = timestampMatch.index + timestampMatch[2].length;
       endIndex = timestampMatch.index + timestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + timestampMatch[0].length;
@@ -279,10 +290,10 @@ export function extractSignatures(code, generateCommentAnchors) {
     signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
   }
 
+  signatures = signatures.filter((sig) => sig.author);
   signatures.forEach((sig, i) => {
     sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
   });
-  signatures = signatures.filter((sig) => sig.author);
   if (generateCommentAnchors) {
     resetCommentAnchors();
   }
