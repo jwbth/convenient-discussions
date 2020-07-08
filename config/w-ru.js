@@ -56,6 +56,7 @@ export default {
     'parentheses-end': ')',
     'word-separator': ' ',
     'comma-separator': ', ',
+    'colon-separator': ': ',
   },
 
   contribsPage: 'Служебная:Вклад',

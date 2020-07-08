@@ -30,11 +30,11 @@ export default class Autocomplete {
    * @param {string[]} options.types Can contain `'mentions'`, `'wikilinks'`, `'templates'`, and
    *   `'tags'`.
    * @param {OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
-   * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
-   *   autocomplete.
+   * @param {string[]} [options.comments] List of comments in the section for the mentions and
+   *   comment links autocomplete.
    */
-  constructor({ types, inputs, defaultUserNames }) {
-    const collections = this.getCollections(types, defaultUserNames);
+  constructor({ types, inputs, comments }) {
+    const collections = this.getCollections(types, comments);
 
     require('../../misc/tribute.css');
 
@@ -49,6 +49,7 @@ export default class Autocomplete {
       menuItemLimit: 10,
       noMatchTemplate: () => null,
       containerClass: 'tribute-container cd-mentionsContainer',
+      replaceTextSuffix: '',
     });
 
     inputs.forEach((input) => {
@@ -60,7 +61,11 @@ export default class Autocomplete {
         const cursorIndex = input.getRange().to;
         const value = input.getValue();
         input.setValue(value.slice(0, cursorIndex) + value.slice(cursorIndex));
-        input.selectRange(cursorIndex - e.detail.item.original.endOffset);
+        const endOffset = cursorIndex - e.detail.item.original.endOffset;
+        const startOffset = e.detail.item.original.startOffset === null ?
+          endOffset :
+          e.detail.item.original.startOffset;
+        input.selectRange(startOffset, endOffset);
       });
     });
   }
@@ -69,10 +74,10 @@ export default class Autocomplete {
    * Get a list of collection of specified types.
    *
    * @param {string[]} types
-   * @param {string[]} defaultUserNames
+   * @param {string[]} comments
    * @returns {object[]}
    */
-  getCollections(types, defaultUserNames) {
+  getCollections(types, comments) {
     const selectTemplate = (item) => {
       if (item) {
         return item.original.value;
@@ -84,12 +89,28 @@ export default class Autocomplete {
     const prepareValues = (arr, config) => (
       removeDuplicates(arr)
         .filter(defined)
-        .map((item) => ({
-          key: Array.isArray(item) ? item[0] : item,
-          value: config.transform ? config.transform(item) : item,
-          endOffset: config.getEndOffset ? config.getEndOffset(item) : 0,
-        }))
+        .map((item) => {
+          let displayed;
+          if (Array.isArray(item)) {
+            displayed = item[0];
+          }
+          if (item.key) {
+            displayed = item.key;
+          }
+          return {
+            key: displayed === undefined ? item : displayed,
+            value: config.transform ? config.transform(item) : item,
+            // Start offset is calculated from the start position of the inserted text. `null` means
+            // the selection start position should match with the end position (i.e., no text should
+            // be selected).
+            startOffset: config.getStartOffset ? config.getStartOffset(item) : null,
+            // End offset is calculated from the end position of the inserted text.
+            endOffset: config.getEndOffset ? config.getEndOffset(item) : 0,
+          };
+        })
     );
+
+    const spacesRegexp = new RegExp(mw.msg('word-separator'), 'g');
 
     const collectionsByType = {
       mentions: {
@@ -122,14 +143,14 @@ export default class Autocomplete {
             const matches = Autocomplete.search(text, this.mentions.default);
             let values = matches.slice();
 
-            const isLikelyName = (
+            const doShowMenu = (
               text &&
               text.length <= 85 &&
               !/[#<>[\]|{}/@:]/.test(text) &&
-              // 5 spaces in a user name seems too many. "Jack who built the house" has 4 :-)
-              (text.match(/ /g) || []).length <= 4
+              // 5 spaces in a user name seem too many. "Jack who built the house" has 4 :-)
+              (text.match(spacesRegexp) || []).length <= 4
             );
-            if (isLikelyName) {
+            if (doShowMenu) {
               // Logically, matched or this.mentions.cache should have zero length (a request is
               // made only if there is no matches in the section; if there are, this.mentions.cache
               // is an empty array).
@@ -144,7 +165,7 @@ export default class Autocomplete {
 
             callback(prepareValues(values, this.mentions));
 
-            if (isLikelyName && !matches.length) {
+            if (doShowMenu && !matches.length) {
               let values;
               try {
                 values = await getRelevantUserNames(text);
@@ -193,15 +214,15 @@ export default class Autocomplete {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
             let values = [];
-            const isLikelyName = (
+            const doShowMenu = (
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
               (!/^:/.test(text) || cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) &&
               // 10 spaces in a page name seems too many.
-              (text.match(/ /g) || []).length <= 9
+              (text.match(spacesRegexp) || []).length <= 9
             );
-            if (isLikelyName) {
+            if (doShowMenu) {
               values.push(...this.wikilinks.cache);
               values = Autocomplete.search(text, values);
 
@@ -211,7 +232,7 @@ export default class Autocomplete {
 
             callback(prepareValues(values, this.wikilinks));
 
-            if (isLikelyName) {
+            if (doShowMenu) {
               let values;
               try {
                 values = await getRelevantPageNames(text);
@@ -316,14 +337,14 @@ export default class Autocomplete {
             callback(prepareValues(this.templates.byText[text], this.templates));
           } else {
             let values = [];
-            const isLikelyName = (
+            const doShowMenu = (
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
               // 10 spaces in a page name seems too many.
-              (text.match(/ /g) || []).length <= 9
+              (text.match(spacesRegexp) || []).length <= 9
             );
-            if (isLikelyName) {
+            if (doShowMenu) {
               values.push(...this.templates.cache);
               values = Autocomplete.search(text, values);
 
@@ -333,7 +354,7 @@ export default class Autocomplete {
 
             callback(prepareValues(values, this.templates));
 
-            if (isLikelyName) {
+            if (doShowMenu) {
               let values;
               try {
                 values = await getRelevantTemplateNames(text);
@@ -373,12 +394,73 @@ export default class Autocomplete {
           callback(prepareValues(matches, this.tags));
         },
       },
+      commentLinks: {
+        trigger: '##',
+        requireLeadingSpace: true,
+        selectTemplate,
+        values: async (text, callback) => {
+          if (!this.commentLinks.default) {
+            this.commentLinks.default = [];
+            this.commentLinks.comments.forEach(({ anchor, author, timestamp, text }) => {
+              let snippet;
+              if (text.length > 30) {
+                snippet = text.slice(0, 30);
+                const spacePos = snippet.lastIndexOf(mw.msg('word-separator'));
+                if (spacePos !== -1) {
+                  snippet = snippet.slice(0, spacePos);
+                }
+              } else {
+                snippet = text;
+              }
+              this.commentLinks.default.push({
+                key: `${author.name}${mw.msg('comma-separator')}${timestamp}${mw.msg('colon-separator')}${snippet}`,
+                anchor,
+                author: author.name,
+                timestamp,
+              });
+            });
+          }
+
+          // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
+          if (text && this.commentLinks.snapshot === text) return;
+
+          this.commentLinks.snapshot = text;
+
+          // Hack to make the menu disappear when a space is typed after "##".
+          this.tribute.currentMentionTextSnapshot = {};
+
+          if (text.includes('[[')) {
+            callback([]);
+            return;
+          }
+
+          const matches = this.tribute.search
+            .filter(text, this.commentLinks.default, {
+              extract: (el) => el.key,
+            })
+            .map((match) => match.original);
+
+          const doShowMenu = (text.match(spacesRegexp) || []).length <= 4;
+          if (doShowMenu) {
+            callback(prepareValues(matches, this.commentLinks));
+          }
+        },
+      },
     };
 
+    let defaultUserNames = comments.map((comment) => comment.author.name);
+    if (this.targetComment && this.mode !== 'edit') {
+      defaultUserNames.unshift(this.targetComment.author.name);
+    }
+    defaultUserNames = removeDuplicates(defaultUserNames);
+
+    const params = {
+      mentions: defaultUserNames,
+      commentLinks: comments,
+    };
     const collections = [];
     types.forEach((type) => {
-      this[type] = Autocomplete[`get${firstCharToUpperCase(type)}Config`]
-        .call(null, type === 'mentions' ? defaultUserNames : undefined);
+      this[type] = Autocomplete[`get${firstCharToUpperCase(type)}Config`].call(null, params[type]);
       collections.push(collectionsByType[type]);
     });
 
@@ -567,6 +649,25 @@ export default class Autocomplete {
     };
     config.default.sort();
     config.withSpace = config.default.filter((tag) => tag.includes(' '));
+
+    return config;
+  }
+
+  /**
+   * Get comment links autocomplete configuration.
+   *
+   * @param {string[]} [comments=[]]
+   * @returns {object}
+   */
+  static getCommentLinksConfig(comments = []) {
+    const config = {
+      comments,
+      transform: ({ anchor, author, timestamp }) => {
+        return `[[#cd-comment-${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`;
+      },
+      getStartOffset: ({ anchor } = {}) => `[[#cd-comment-${anchor}|`.length,
+      getEndOffset: () => 2,
+    };
 
     return config;
   }

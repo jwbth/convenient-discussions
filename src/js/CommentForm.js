@@ -1328,9 +1328,9 @@ export default class CommentForm {
      * @type {Autocomplete}
      */
     this.autocomplete = new Autocomplete({
-      types: ['mentions', 'wikilinks', 'templates', 'tags'],
+      types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
       inputs: [this.commentInput],
-      defaultUserNames: usersInSection,
+      comments: commentsInSection,
     });
 
     /**
@@ -1341,7 +1341,7 @@ export default class CommentForm {
     this.croppedAutocomplete = new Autocomplete({
       types: ['mentions', 'wikilinks'],
       inputs: [this.headlineInput, this.summaryInput].filter(defined),
-      defaultUserNames: usersInSection,
+      comments: commentsInSection,
     });
   }
 
