@@ -16,7 +16,6 @@ import {
   handleApiReject,
   hideText,
   isInputFocused,
-  removeDuplicates,
   unhideText,
 } from './util';
 import { checkboxField } from './ooui';
@@ -2028,7 +2027,6 @@ export default class CommentForm {
     let currentIndex;
     if (this.mode === 'reply') {
       currentIndex = targetInCode.endIndex;
-      const succeedingText = pageCode.slice(currentIndex);
 
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' + mw.util.escapeRegExp(targetInCode.signatureCode) + '|' +
@@ -2040,7 +2038,7 @@ export default class CommentForm {
         ) +
         '(?![:*#\\n])'
       );
-      const [, textBeforeInsertion] = properPlaceRegexp.exec(succeedingText) || [];
+      const [, textBeforeInsertion] = properPlaceRegexp.exec(pageCode.slice(currentIndex)) || [];
       if (textBeforeInsertion === undefined) {
         throw new CdError({
           type: 'parse',
@@ -2052,32 +2050,27 @@ export default class CommentForm {
       // these.
       const [, changedIndentationChars] = textBeforeInsertion.match(/\n([:*#]{2,}).*\n$/) || [];
       if (changedIndentationChars) {
-        if (changedIndentationChars.length > targetInCode.indentationChars.length) {
-          // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-          // possible here because of "slice(0, targetInCode.indentationChars.length + 1)".
-          targetInCode.replyIndentationChars = changedIndentationChars
-            .slice(0, targetInCode.replyIndentationChars.length)
-            .replace(/:$/, cd.config.defaultIndentationChar);
-        } else {
-          targetInCode.indentationChars = changedIndentationChars
-            .slice(0, targetInCode.indentationChars.length)
-            .replace(/:$/, cd.config.defaultIndentationChar);
-        }
+        // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
+        // possible here when we used "slice(0, targetInCode.indentationChars.length + 1)".
+        targetInCode.replyIndentationChars = changedIndentationChars
+          .slice(0, targetInCode.replyIndentationChars.length)
+          .replace(/:$/, cd.config.defaultIndentationChar);
       }
 
-      const adjustedTextBeforeInsertion = textBeforeInsertion.replace(/<!--[^]*?-->/g, '');
-      if (/\n(=+).*?\1[ \t]*\n/.test(adjustedTextBeforeInsertion)) {
+      if (/\n=+.*?\1[ \t]*\n/.test(hideHtmlComments(textBeforeInsertion))) {
+        // Something went wrong and we are going to post in another section.
         throw new CdError({
           type: 'parse',
           code: 'findPlace-unexpectedHeading',
         });
       }
+
       currentIndex += textBeforeInsertion.length;
     }
 
     if (this.mode === 'replyInSection') {
-      // Detect last section comment's indentation characters if needed or a vote / bulleted reply
-      // placeholder.
+      // Detect the last section comment's indentation characters if needed or a vote / bulleted
+      // reply placeholder.
       const [, replyPlaceholder] = targetInCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
       if (replyPlaceholder) {
         targetInCode.lastCommentIndentationChars = replyPlaceholder;
@@ -2214,7 +2207,8 @@ export default class CommentForm {
     }
 
     if (action === 'submit' && !isDelete) {
-      // We need this only to generate anchors for the comments above ours to avoid collisions.
+      // We need this only to generate anchors for the comments above our comment to avoid
+      // collisions.
       extractSignatures(before, true);
     }
 
