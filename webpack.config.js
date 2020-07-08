@@ -78,7 +78,6 @@ module.exports = (env = { MODE: 'development' }) => {
               // Otherwise messes with \x01 \x02 \x03 \x04.
               ascii_only: true,
               beautify: env.MODE !== 'local',
-              comments: false,
             },
             mangle: env.MODE === 'production',
           },

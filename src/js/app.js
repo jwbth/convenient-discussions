@@ -269,9 +269,9 @@ function go() {
  * @param {string} s
  * @returns {string}
  * @author Sophivorus
- * @license GPL v2
- * @license CC BY-SA 3.0
- * @license GFDL
+ * @license GPL-2.0-only
+ * @license CC-BY-SA-3.0
+ * @license GFDL-1.3
  * @private
  */
 function decodeBase64(s) {

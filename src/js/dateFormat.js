@@ -6,7 +6,7 @@
  *
  * @module dateFormat
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
- * @license GPL v2
+ * @license GPL-2.0-only
  */
 
 import cd from './cd';
