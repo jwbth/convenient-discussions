@@ -249,25 +249,22 @@
       }
     }, {
       key: "shouldDeactivate",
-      value: function shouldDeactivate(event) {
+      value: function shouldDeactivate(e) {
         // [Jack:] We've replaced the native function fixing the disappearing of the menu when a
-        // part of mention is typed and the user presses any command key.
+        // part of a mention is typed and the user presses any command key.
         if (!this.tribute.isActive) return false;
 
         return (
-          this.tribute.current.mentionText.length === 0 &&
-          (
-            // Backspace
-            e.keyCode === 8 ||
-            // Page Up, Page Down, End, Home, Left
-            (e.keyCode >= 33 && e.keyCode <= 37) ||
-            // Right
-            e.keyCode === 39 ||
-            // Ctrl+...
-            (e.ctrlKey && e.keyCode !== 17) ||
-            // ⌘+...
-            (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
-          )
+          // Backspace
+          e.keyCode === 8 ||
+          // Page Up, Page Down, End, Home, Left
+          (e.keyCode >= 33 && e.keyCode <= 37) ||
+          // Right
+          e.keyCode === 39 ||
+          // Ctrl+...
+          (e.ctrlKey && e.keyCode !== 17) ||
+          // ⌘+...
+          (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
         );
       }
     }, {
@@ -687,10 +684,14 @@
             var textSuffix = typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' ';
             text += textSuffix;
             var startPos = info.mentionPosition;
-            var endPos = info.mentionPosition + info.mentionText.length + textSuffix.length;
+            // [Jack:] We fixed this line to make it work with replaceTextSuffix'es of length other
+            // than 1.
+            var endPos = info.mentionPosition + info.mentionText.length;
 
             if (!this.tribute.autocompleteMode) {
-              endPos += info.mentionTriggerChar.length - 1;
+              // [Jack:] We fixed this line to make it work with replaceTextSuffix'es of length
+              // other than 1.
+              endPos += info.mentionTriggerChar.length;
             }
 
             myField.value = myField.value.substring(0, startPos) + text + myField.value.substring(endPos, myField.value.length);
