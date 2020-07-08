@@ -404,8 +404,9 @@ export default class Autocomplete {
             this.commentLinks.default = [];
             this.commentLinks.comments.forEach(({ anchor, author, timestamp, text }) => {
               let snippet;
-              if (text.length > 30) {
-                snippet = text.slice(0, 30);
+              const snippetMaxLength = 80;
+              if (text.length > snippetMaxLength) {
+                snippet = text.slice(0, snippetMaxLength);
                 const spacePos = snippet.lastIndexOf(mw.msg('word-separator'));
                 if (spacePos !== -1) {
                   snippet = snippet.slice(0, spacePos);
