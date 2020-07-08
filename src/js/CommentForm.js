@@ -1152,13 +1152,13 @@ export default class CommentForm {
       {
         pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
         message: cd.s('cf-reaction-signature', cd.g.SIGN_CODE),
-        class: 'signatureNotNeeded',
+        name: 'signatureNotNeeded',
         type: 'notice',
       },
       {
         pattern: /<pre/,
         message: cd.s('cf-reaction-pre'),
-        class: 'dontUsePre',
+        name: 'dontUsePre',
         type: 'warning',
       },
     ].concat(cd.config.customTextReactions);
@@ -1207,17 +1207,11 @@ export default class CommentForm {
       .on('change', (text) => {
         this.updateAutoSummary(true, true);
 
-        textReactions.forEach((reaction) => {
-          if (
-            reaction.pattern.test(text) &&
-            (typeof reaction.checkFunc !== 'function' || reaction.checkFunc(this))
-          ) {
-            this.showMessage(reaction.message, {
-              type: reaction.type,
-              name: reaction.class,
-            });
+        textReactions.forEach(({ pattern, checkFunc, message, type, name }) => {
+          if (pattern.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
+            this.showMessage(message, { type, name });
           } else {
-            this.hideMessage(reaction.class);
+            this.hideMessage(name);
           }
         });
       })
@@ -1327,11 +1321,6 @@ export default class CommentForm {
         }
       });
     }
-    let usersInSection = commentsInSection.map((comment) => comment.author.name);
-    if (this.targetComment && this.mode !== 'edit') {
-      usersInSection.unshift(this.targetComment.author.name);
-    }
-    usersInSection = removeDuplicates(usersInSection);
 
     /**
      * Autocomplete object for the comment input.
@@ -1503,10 +1492,10 @@ export default class CommentForm {
   /**
    * Hide the service message above the form with the provided class.
    *
-   * @param {string} className
+   * @param {string} name
    */
-  hideMessage(className) {
-    const $info = this.$messageArea.children(`.cd-message-${className}`);
+  hideMessage(name) {
+    const $info = this.$messageArea.children(`.cd-message-${name}`);
     if ($info.length) {
       $info.remove();
     }

@@ -449,7 +449,7 @@ export default {
    * @typedef {object[]} Reaction
    * @property {RegExp} pattern
    * @property {string} message
-   * @property {string} class
+   * @property {string} name Latin letters, digits, `-`.
    * @property {string} [type='notice'] For example, `notice`.
    * @property {Function} [checkFunc] If the function returns false, no message is displayed.
    */

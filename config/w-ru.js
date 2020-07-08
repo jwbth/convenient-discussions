@@ -229,7 +229,7 @@ export default {
     {
       pattern: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
       message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
-      class: 'closerTemplateNotNeeded',
+      name: 'closerTemplateNotNeeded',
       type: 'notice',
       checkFunc: (commentForm) => commentForm.couldBeCloserClosing && commentForm.headlineInput.getValue().trim() === 'Итог',
     },
