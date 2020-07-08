@@ -59,13 +59,14 @@ export default class Autocomplete {
       element.addEventListener('tribute-replaced', (e) => {
         // Move the caret to the place we need.
         const cursorIndex = input.getRange().to;
+        const startPos = cursorIndex - e.detail.item.original.value.length;
         const value = input.getValue();
         input.setValue(value.slice(0, cursorIndex) + value.slice(cursorIndex));
-        const endOffset = cursorIndex - e.detail.item.original.endOffset;
+        const endOffset = e.detail.item.original.endOffset;
         const startOffset = e.detail.item.original.startOffset === null ?
-          endOffset :
+          e.detail.item.original.value.length :
           e.detail.item.original.startOffset;
-        input.selectRange(startOffset, endOffset);
+        input.selectRange(startPos + startOffset, cursorIndex - endOffset);
       });
     });
   }
