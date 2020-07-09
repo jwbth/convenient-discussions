@@ -144,14 +144,14 @@ export default class Autocomplete {
             const matches = Autocomplete.search(text, this.mentions.default);
             let values = matches.slice();
 
-            const doShowMenu = (
+            const makeRequest = (
               text &&
               text.length <= 85 &&
               !/[#<>[\]|{}/@:]/.test(text) &&
               // 5 spaces in a user name seem too many. "Jack who built the house" has 4 :-)
               (text.match(spacesRegexp) || []).length <= 4
             );
-            if (doShowMenu) {
+            if (makeRequest) {
               // Logically, matched or this.mentions.cache should have zero length (a request is
               // made only if there is no matches in the section; if there are, this.mentions.cache
               // is an empty array).
@@ -166,7 +166,7 @@ export default class Autocomplete {
 
             callback(prepareValues(values, this.mentions));
 
-            if (doShowMenu && !matches.length) {
+            if (makeRequest && !matches.length) {
               let values;
               try {
                 values = await getRelevantUserNames(text);
@@ -215,7 +215,7 @@ export default class Autocomplete {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
             let values = [];
-            const doShowMenu = (
+            const makeRequest = (
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
@@ -223,7 +223,7 @@ export default class Autocomplete {
               // 10 spaces in a page name seems too many.
               (text.match(spacesRegexp) || []).length <= 9
             );
-            if (doShowMenu) {
+            if (makeRequest) {
               values.push(...this.wikilinks.cache);
               values = Autocomplete.search(text, values);
 
@@ -233,7 +233,7 @@ export default class Autocomplete {
 
             callback(prepareValues(values, this.wikilinks));
 
-            if (doShowMenu) {
+            if (makeRequest) {
               let values;
               try {
                 values = await getRelevantPageNames(text);
@@ -338,14 +338,14 @@ export default class Autocomplete {
             callback(prepareValues(this.templates.byText[text], this.templates));
           } else {
             let values = [];
-            const doShowMenu = (
+            const makeRequest = (
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
               // 10 spaces in a page name seems too many.
               (text.match(spacesRegexp) || []).length <= 9
             );
-            if (doShowMenu) {
+            if (makeRequest) {
               values.push(...this.templates.cache);
               values = Autocomplete.search(text, values);
 
@@ -355,7 +355,7 @@ export default class Autocomplete {
 
             callback(prepareValues(values, this.templates));
 
-            if (doShowMenu) {
+            if (makeRequest) {
               let values;
               try {
                 values = await getRelevantTemplateNames(text);
@@ -442,8 +442,7 @@ export default class Autocomplete {
             })
             .map((match) => match.original);
 
-          const doShowMenu = (text.match(spacesRegexp) || []).length <= 4;
-          if (doShowMenu) {
+          if ((text.match(spacesRegexp) || []).length <= 4) {
             callback(prepareValues(matches, this.commentLinks));
           }
         },

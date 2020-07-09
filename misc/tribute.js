@@ -252,7 +252,7 @@
     }, {
       key: "shouldDeactivate",
       value: function shouldDeactivate(e) {
-        // [Jack:] We've replaced the native function fixing the disappearing of the menu when a
+        // Jack: We've replaced the native function fixing the disappearing of the menu when a
         // part of a mention is typed and the user presses any command key.
         if (!this.tribute.isActive) return false;
 
@@ -450,7 +450,7 @@
     }], [{
       key: "keys",
       value: function keys() {
-        // [Jack:] We've replaced the native function the native function, removing:
+        // Jack: We've replaced the native function the native function, removing:
         // * "space" - it causes the menu not to change or hide when a space was typed;
         // * "delete" - it causes the menu not to appear when backspace is pressed. It is replaced
         // with "e.keyCode === 8" in shouldDeactivate() lower.
@@ -687,12 +687,12 @@
             var textSuffix = typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' ';
             text += textSuffix;
             var startPos = info.mentionPosition;
-            // [Jack:] We fixed this line to make it work with replaceTextSuffix'es of length other
+            // Jack: We fixed this line to make it work with replaceTextSuffix'es of length other
             // than 1.
             var endPos = info.mentionPosition + info.mentionText.length;
 
             if (!this.tribute.autocompleteMode) {
-              // [Jack:] We fixed this line to make it work with replaceTextSuffix'es of length
+              // Jack: We fixed this line to make it work with replaceTextSuffix'es of length
               // other than 1.
               endPos += info.mentionTriggerChar.length;
             }
