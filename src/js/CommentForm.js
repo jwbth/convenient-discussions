@@ -1311,11 +1311,12 @@ export default class CommentForm {
         this.targetSection.baseSection;
       commentsInSection = baseSection.comments;
     } else if (this.mode !== 'addSection') {
+      // Comments in the lead section
       cd.comments.some((comment) => {
         if (comment.section) {
-          commentsInSection.push(comment);
           return true;
         } else {
+          commentsInSection.push(comment);
           return false;
         }
       });
