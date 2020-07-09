@@ -64,7 +64,7 @@ export default class Autocomplete {
         input.setValue(value.slice(0, cursorIndex) + value.slice(cursorIndex));
         const endOffset = e.detail.item.original.endOffset;
         const startOffset = e.detail.item.original.startOffset === null ?
-          e.detail.item.original.value.length :
+          e.detail.item.original.value.length - endOffset :
           e.detail.item.original.startOffset;
         input.selectRange(startPos + startOffset, cursorIndex - endOffset);
       });
@@ -91,15 +91,16 @@ export default class Autocomplete {
       removeDuplicates(arr)
         .filter(defined)
         .map((item) => {
-          let displayed;
+          let key;
           if (Array.isArray(item)) {
-            displayed = item[0];
-          }
-          if (item.key) {
-            displayed = item.key;
+            key = item[0];
+          } else if (item.key) {
+            key = item.key;
+          } else {
+            key = item;
           }
           return {
-            key: displayed === undefined ? item : displayed,
+            key,
             value: config.transform ? config.transform(item) : item,
             // Start offset is calculated from the start position of the inserted text. `null` means
             // the selection start position should match with the end position (i.e., no text should
@@ -122,8 +123,7 @@ export default class Autocomplete {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
-          // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (text && this.mentions.snapshot === text) return;
+          text = text.replace(/ {2,}/g, ' ');
 
           if (!text.startsWith(this.mentions.snapshot)) {
             this.mentions.cache = [];
@@ -194,6 +194,8 @@ export default class Autocomplete {
         },
         selectTemplate,
         values: async (text, callback) => {
+          text = text.replace(/ {2,}/g, ' ');
+
           if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
             text = text.slice(1);
           }
@@ -321,6 +323,8 @@ export default class Autocomplete {
           }
         },
         values: async (text, callback) => {
+          text = text.replace(/ {2,}/g, ' ');
+
           if (!text.startsWith(this.templates.snapshot)) {
             this.templates.cache = [];
           }
@@ -377,14 +381,16 @@ export default class Autocomplete {
       },
       tags: {
         trigger: '<',
-        menuShowMinLength: 1,
         searchOpts: {
           skip: true,
         },
         selectTemplate,
         values: (text, callback) => {
           const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
-          if (!/^[a-z]+$/i.test(text) && !this.tags.withSpace.some((tag) => regexp.test(tag))) {
+          if (
+            !text ||
+            (!/^[a-z]+$/i.test(text) && !this.tags.withSpace.some((tag) => regexp.test(tag)))
+          ) {
             callback([]);
             return;
           }
@@ -397,6 +403,8 @@ export default class Autocomplete {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
+          text = text.replace(/ {2,}/g, ' ');
+
           if (!this.commentLinks.default) {
             this.commentLinks.default = [];
             this.commentLinks.comments.forEach(({ anchor, author, timestamp, text }) => {
@@ -433,9 +441,7 @@ export default class Autocomplete {
             })
             .map((match) => match.original);
 
-          if ((text.match(spacesRegexp) || []).length <= 4) {
-            callback(prepareValues(matches, this.commentLinks));
-          }
+          callback(prepareValues(matches, this.commentLinks));
         },
       },
     };
@@ -665,15 +671,15 @@ export default class Autocomplete {
   }
 
   /**
-   * Search for a text in a list of values,.
+   * Search for a string in a list of values.
    *
-   * @param {string} text
+   * @param {string} s
    * @param {string[]} list
    * @returns {string[]} Matched results.
    */
-  static search(text, list) {
-    const containsRegexp = new RegExp(mw.util.escapeRegExp(text), 'i');
-    const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
+  static search(s, list) {
+    const containsRegexp = new RegExp(mw.util.escapeRegExp(s), 'i');
+    const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(s), 'i');
     return list
       .filter((item) => containsRegexp.test(item))
       .sort((item1, item2) => {
