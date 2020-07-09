@@ -315,7 +315,8 @@ export default class Autocomplete {
                   input.selectRange(cursorIndex + firstValueIndex);
                 },
                 (e) => {
-                  mw.notify(e, { type: 'error' })
+                  mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
+                  console.warn(e);
                 }
               )
               .always(() => {
