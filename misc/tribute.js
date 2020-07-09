@@ -159,10 +159,8 @@
     }, {
       key: "keydown",
       value: function keydown(instance, event) {
-        if (instance.shouldDeactivate(event)) {
-          instance.tribute.isActive = false;
-          instance.tribute.hideMenu();
-        }
+        // Jack: We've removed shouldDeactivate() fixing the disappearing of the menu when a part of
+        // a mention is typed and the user presses any command key.
 
         var element = this;
         instance.commandEvent = false;
@@ -218,6 +216,13 @@
         instance.updateSelection(this);
         if (event.keyCode === 27) return;
 
+        if (instance.tribute.doDropMenu) {
+          instance.tribute.isActive = false;
+          instance.tribute.hideMenu();
+          instance.tribute.doDropMenu = false;
+          return;
+        }
+
         if (!instance.tribute.allowSpaces && instance.tribute.hasTrailingSpace) {
           instance.tribute.hasTrailingSpace = false;
           instance.commandEvent = true;
@@ -250,27 +255,6 @@
         }
       }
     }, {
-      key: "shouldDeactivate",
-      value: function shouldDeactivate(e) {
-        // Jack: We've replaced the native function fixing the disappearing of the menu when a
-        // part of a mention is typed and the user presses any command key.
-        if (!this.tribute.isActive) return false;
-
-        return (
-          // Backspace. Fixes the error when you type "@", press backspace, type another trigger,
-          // and the same menu appears.
-          e.keyCode === 8 ||
-          // Page Up, Page Down, End, Home, Left
-          (e.keyCode >= 33 && e.keyCode <= 37) ||
-          // Right
-          e.keyCode === 39 ||
-          // Ctrl+A
-          (e.ctrlKey && e.keyCode === 65) ||
-          // ⌘+A
-          (e.metaKey && e.keyCode === 65)
-        );
-      }
-    }, {
       key: "getKeyCode",
       value: function getKeyCode(instance, el, event) {
 
@@ -300,6 +284,7 @@
       value: function callbacks() {
         var _this = this;
 
+        // Jack: removed "delete" and "space" keys from here, see keys().
         return {
           triggerChar: function triggerChar(e, el, trigger) {
             var tribute = _this.tribute;
@@ -327,12 +312,8 @@
           },
           escape: function escape(e, el) {
             if (_this.tribute.isActive) {
-              // Jack: We've added this check to make the Esc event propagate when the menu isn't
-              // displayed.
-              if (_this.tribute.menu.style.display === 'block') {
-                e.preventDefault();
-                e.stopPropagation();
-              }
+              e.preventDefault();
+              e.stopPropagation();
               _this.tribute.isActive = false;
 
               _this.tribute.hideMenu();
@@ -341,20 +322,6 @@
           tab: function tab(e, el) {
             // choose first match
             _this.callbacks().enter(e, el);
-          },
-          space: function space(e, el) {
-            if (_this.tribute.isActive) {
-              if (_this.tribute.spaceSelectsMatch) {
-                _this.callbacks().enter(e, el);
-              } else if (!_this.tribute.allowSpaces) {
-                e.stopPropagation();
-                setTimeout(function () {
-                  _this.tribute.hideMenu();
-
-                  _this.tribute.isActive = false;
-                }, 0);
-              }
-            }
           },
           up: function up(e, el) {
             // navigate up ul
@@ -398,13 +365,6 @@
               }
             }
           },
-          "delete": function _delete(e, el) {
-            if (_this.tribute.isActive && _this.tribute.current.mentionText.length < 1) {
-              _this.tribute.hideMenu();
-            } else if (_this.tribute.isActive) {
-              _this.tribute.showMenuFor(el);
-            }
-          }
         };
       }
     }, {
@@ -450,10 +410,12 @@
     }], [{
       key: "keys",
       value: function keys() {
-        // Jack: We've replaced the native function the native function, removing:
-        // * "space" - it causes the menu not to change or hide when a space was typed;
-        // * "delete" - it causes the menu not to appear when backspace is pressed. It is replaced
-        // with "e.keyCode === 8" in shouldDeactivate() lower.
+        /*
+          Jack: We've removed:
+          - "space" - it causes the menu not to change or hide when a space was typed;
+          - "delete" - it causes the menu not to appear when backspace is pressed and a character
+            preventing the menu to appear is removed (for example, ">" in "<small>").
+         */
         return [{
           key: 9,
           value: "TAB"
@@ -687,13 +649,14 @@
             var textSuffix = typeof this.tribute.replaceTextSuffix == 'string' ? this.tribute.replaceTextSuffix : ' ';
             text += textSuffix;
             var startPos = info.mentionPosition;
+
             // Jack: We fixed this line to make it work with replaceTextSuffix'es of length other
             // than 1.
             var endPos = info.mentionPosition + info.mentionText.length;
 
             if (!this.tribute.autocompleteMode) {
-              // Jack: We fixed this line to make it work with replaceTextSuffix'es of length
-              // other than 1.
+              // Jack: We fixed this line to make it work with replaceTextSuffix'es of length other
+              // than 1.
               endPos += info.mentionTriggerChar.length;
             }
 
@@ -900,11 +863,14 @@
             }
           });
 
-          if (mostRecentTriggerCharPos >= 0 && (mostRecentTriggerCharPos === 0 || !requireLeadingSpace || /[\xA0\s]/g.test(effectiveRange.substring(mostRecentTriggerCharPos - 1, mostRecentTriggerCharPos)))) {
-            var currentTriggerSnippet = effectiveRange.substring(mostRecentTriggerCharPos + triggerChar.length, effectiveRange.length);
+          var currentTriggerSnippet;
+          var leadingSpace;
+          var inputOk = mostRecentTriggerCharPos >= 0 && (mostRecentTriggerCharPos === 0 || !requireLeadingSpace || /[\xA0\s]/g.test(effectiveRange.substring(mostRecentTriggerCharPos - 1, mostRecentTriggerCharPos)));
+          if (inputOk) {
+            currentTriggerSnippet = effectiveRange.substring(mostRecentTriggerCharPos + triggerChar.length, effectiveRange.length);
             triggerChar = effectiveRange.substring(mostRecentTriggerCharPos, mostRecentTriggerCharPos + triggerChar.length);
             var firstSnippetChar = currentTriggerSnippet.substring(0, 1);
-            var leadingSpace = currentTriggerSnippet.length > 0 && (firstSnippetChar === ' ' || firstSnippetChar === '\xA0');
+            leadingSpace = currentTriggerSnippet.length > 0 && (firstSnippetChar === ' ' || firstSnippetChar === '\xA0');
 
             if (hasTrailingSpace) {
               currentTriggerSnippet = currentTriggerSnippet.trim();
@@ -912,17 +878,32 @@
 
             var regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g;
             this.tribute.hasTrailingSpace = regex.test(currentTriggerSnippet);
+          }
 
-            if (!leadingSpace && (menuAlreadyActive || !regex.test(currentTriggerSnippet))) {
-              return {
-                mentionPosition: mostRecentTriggerCharPos,
-                mentionText: currentTriggerSnippet,
-                mentionSelectedElement: selected,
-                mentionSelectedPath: path,
-                mentionSelectedOffset: offset,
-                mentionTriggerChar: triggerChar
-              };
-            }
+          /*
+            Jack: We've added this block as we need to have the menu removed when:
+            - there is no valid trigger before the cursor position,
+            - typing a space after "@" or "##",
+            - there is a selection.
+           */
+          if (
+            mostRecentTriggerCharPos === -1 ||
+            (currentTriggerSnippet && !currentTriggerSnippet[0].trim()) ||
+            selected.selectionStart !== selected.selectionEnd
+          ) {
+            this.tribute.doDropMenu = true;
+            return;
+          }
+
+          if (inputOk && !leadingSpace && (menuAlreadyActive || !regex.test(currentTriggerSnippet))) {
+            return {
+              mentionPosition: mostRecentTriggerCharPos,
+              mentionText: currentTriggerSnippet,
+              mentionSelectedElement: selected,
+              mentionSelectedPath: path,
+              mentionSelectedOffset: offset,
+              mentionTriggerChar: triggerChar
+            };
           }
         }
       }

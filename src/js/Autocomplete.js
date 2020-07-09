@@ -130,9 +130,6 @@ export default class Autocomplete {
           }
           this.mentions.snapshot = text;
 
-          // Hack to make the menu disappear when a space is typed after "@".
-          this.tribute.currentMentionTextSnapshot = {};
-
           if (text.includes('[[')) {
             callback([]);
             return;
@@ -423,13 +420,7 @@ export default class Autocomplete {
             });
           }
 
-          // Fix multiple event firing (we need it after fixing currentMentionTextSnapshot below).
-          if (text && this.commentLinks.snapshot === text) return;
-
           this.commentLinks.snapshot = text;
-
-          // Hack to make the menu disappear when a space is typed after "##".
-          this.tribute.currentMentionTextSnapshot = {};
 
           if (text.includes('[[')) {
             callback([]);
