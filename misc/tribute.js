@@ -193,7 +193,9 @@
             li = li.parentNode;
 
             if (!li || li === tribute.menu) {
-              throw new Error("cannot find the <li> container for the click");
+              // Jack: We removed the error throw, as there is nothing wrong when a user clicks the
+              // scroll bar.
+              return;
             }
           }
 
@@ -255,16 +257,17 @@
         if (!this.tribute.isActive) return false;
 
         return (
-          // Backspace
+          // Backspace. Fixes the error when you type "@", press backspace, type another trigger,
+          // and the same menu appears.
           e.keyCode === 8 ||
           // Page Up, Page Down, End, Home, Left
           (e.keyCode >= 33 && e.keyCode <= 37) ||
           // Right
           e.keyCode === 39 ||
-          // Ctrl+...
-          (e.ctrlKey && e.keyCode !== 17) ||
-          // ⌘+...
-          (e.metaKey && (e.keyCode !== 91 && e.keyCode !== 93 && e.keyCode !== 224))
+          // Ctrl+A
+          (e.ctrlKey && e.keyCode === 65) ||
+          // ⌘+A
+          (e.metaKey && e.keyCode === 65)
         );
       }
     }, {
@@ -324,8 +327,12 @@
           },
           escape: function escape(e, el) {
             if (_this.tribute.isActive) {
-              e.preventDefault();
-              e.stopPropagation();
+              // Jack: We've added this check to make the Esc event propagate when the menu isn't
+              // displayed.
+              if (_this.tribute.menu.style.display === 'block') {
+                e.preventDefault();
+                e.stopPropagation();
+              }
               _this.tribute.isActive = false;
 
               _this.tribute.hideMenu();
@@ -445,15 +452,11 @@
       value: function keys() {
         // [Jack:] We've replaced the native function the native function, removing:
         // * "space" - it causes the menu not to change or hide when a space was typed;
-        // * "delete" - it causes the menu not to appear when backspace is pressed and a character
-        // preventing the menu to appear is removed (for example, ">" in "<small>"). It is
-        // replaced with "e.keyCode === 8" in shouldDeactivate lower.
+        // * "delete" - it causes the menu not to appear when backspace is pressed. It is replaced
+        // with "e.keyCode === 8" in shouldDeactivate() lower.
         return [{
           key: 9,
           value: "TAB"
-        }, {
-          key: 8,
-          value: "DELETE"
         }, {
           key: 13,
           value: "ENTER"
