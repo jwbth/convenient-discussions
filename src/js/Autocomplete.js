@@ -6,7 +6,13 @@
 
 import Tribute from '../../misc/tribute';
 import cd from './cd';
-import { defined, firstCharToUpperCase, removeDuplicates } from './util';
+import {
+  defined,
+  firstCharToUpperCase,
+  handleApiReject,
+  removeDoubleSpaces,
+  removeDuplicates,
+} from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -123,7 +129,7 @@ export default class Autocomplete {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
-          text = text.replace(/ {2,}/g, ' ');
+          text = removeDoubleSpaces(text);
 
           if (!text.startsWith(this.mentions.snapshot)) {
             this.mentions.cache = [];
@@ -194,7 +200,7 @@ export default class Autocomplete {
         },
         selectTemplate,
         values: async (text, callback) => {
-          text = text.replace(/ {2,}/g, ' ');
+          text = removeDoubleSpaces(text);
 
           if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
             text = text.slice(1);
@@ -272,6 +278,7 @@ export default class Autocomplete {
               titles: `Template:${item.original.key}`,
               redirects: true,
             })
+              .catch(handleApiReject)
               .then(
                 (resp) => {
                   const pages = resp && resp.pages;
@@ -323,7 +330,7 @@ export default class Autocomplete {
           }
         },
         values: async (text, callback) => {
-          text = text.replace(/ {2,}/g, ' ');
+          text = removeDoubleSpaces(text);
 
           if (!text.startsWith(this.templates.snapshot)) {
             this.templates.cache = [];
@@ -403,7 +410,7 @@ export default class Autocomplete {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
-          text = text.replace(/ {2,}/g, ' ');
+          text = removeDoubleSpaces(text);
 
           if (!this.commentLinks.default) {
             this.commentLinks.default = [];

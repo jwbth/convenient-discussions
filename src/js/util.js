@@ -233,6 +233,16 @@ export function spacesToUnderlines(s) {
 }
 
 /**
+ * Replaces sequences of spaces to one spaces.
+ *
+ * @param {string} s
+ * @returns {string}
+ */
+export function removeDoubleSpaces(s) {
+  return s.replace(/ {2,}/g, ' ');
+}
+
+/**
  * Attach callback functions to links with the provided class names given HTML code, wrap in a
  * `<span>` element, and return the resultant jQuery object.
  *

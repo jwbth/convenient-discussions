@@ -16,6 +16,7 @@ import {
   handleApiReject,
   hideText,
   isInputFocused,
+  removeDoubleSpaces,
   unhideText,
 } from './util';
 import { checkboxField } from './ooui';
@@ -579,11 +580,11 @@ export default class CommentForm {
         this.target.requestAuthorGenderIfNeeded(() => {
           this.commentInput.$input.attr(
             'placeholder',
-            cd.s(
+            removeDoubleSpaces(cd.s(
               'cf-comment-placeholder-replytocomment',
               this.target.author.name,
               this.target.author
-            )
+            ))
           );
         }, true);
       }
@@ -2922,7 +2923,7 @@ export default class CommentForm {
           this.target.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
           return this.target.own ?
             cd.s('es-addition') :
-            cd.s('es-reply-to', this.target.author.name, this.target.author).replace(/ {2,}/, ' ');
+            removeDoubleSpaces(cd.s('es-reply-to', this.target.author.name, this.target.author));
         }
       }
 
@@ -2956,8 +2957,9 @@ export default class CommentForm {
               subject = 'comment-by';
             }
           }
-          return cd.s(`es-${action}-${subject}`, target.author.name, target.author)
-            .replace(/ {2,}/, ' ');
+          return removeDoubleSpaces(
+            cd.s(`es-${action}-${subject}`, target.author.name, target.author)
+          );
         };
 
         return editOrDeleteText(
