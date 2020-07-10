@@ -293,16 +293,13 @@ export default {
   /**
    * Regexps for strings that should be kept in the section endings when adding a reply or
    * subsection (so that this reply or subsection is added _before_ them, not after). Usually begin
-   * with `\n+`. The default value will keep HTML comments in the section endings.
+   * with `\n+`. For example, `/\n+(?:&lt;!--[^]*?--&gt;\s*)+$/,` value will keep HTML comments in
+   * the section endings.
    *
    * @type {RegExp[]}
-   * @default <pre class="prettyprint source"><code>[
-   *   /\n+(?:&lt;!--[^]*?--&gt;\s*)+$/,
-   * ]</code></pre>
+   * @default []
    */
-  keepInSectionEnding: [
-    /\n+(?:<!--[^]*?-->\s*)+$/,
-  ],
+  keepInSectionEnding: [],
 
   /**
    * How many displayed (not wikitext) characters to go back from a timestamp looking for an author
