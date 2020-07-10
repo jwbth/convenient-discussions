@@ -247,14 +247,6 @@ function processSections(parser, watchedSectionsRequest) {
 
   adjustSections();
 
-  // Make section menus move to the next line without taking the last word of the heading with them.
-  const $space = $('<span>')
-    .addClass('cd-spaceBeforeSectionMenu')
-    .text(' ');
-  $('.mw-headline').each(function () {
-    $(this).append($space.clone());
-  });
-
   /**
    * The script has processed the sections.
    *
