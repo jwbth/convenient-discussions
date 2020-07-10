@@ -199,6 +199,8 @@ function adjustSections() {
         cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
       ) {
         section.addReplyButton();
+      } else {
+        section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
       }
     }
   });

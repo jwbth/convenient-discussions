@@ -716,15 +716,20 @@ export function saveSession() {
  * @private
  */
 function restoreCommentFormsFromData(commentFormsData) {
-  const restored = [];
+  let restored = false;
   const rescue = [];
   commentFormsData.forms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData && data.targetData.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
       if (comment && comment.actionable && !comment[`${property}Form`]) {
-        comment[property](data);
-        restored.push(comment[`${property}Form`]);
+        try {
+          comment[property](data);
+          restored = true;
+        } catch (e) {
+          console.warn(e);
+          rescue.push(data);
+        }
       } else {
         rescue.push(data);
       }
@@ -735,8 +740,13 @@ function restoreCommentFormsFromData(commentFormsData) {
         index: data.targetData.index,
       });
       if (section && section.actionable && !section[`${property}Form`]) {
-        section[property](data);
-        restored.push(section[`${property}Form`]);
+        try {
+          section[property](data);
+          restored = true;
+        } catch (e) {
+          console.warn(e);
+          rescue.push(data);
+        }
       } else {
         rescue.push(data);
       }
@@ -748,13 +758,13 @@ function restoreCommentFormsFromData(commentFormsData) {
           $addSectionLink: $fakeA,
           dataToRestore: data,
         });
-        restored.push(cd.g.addSectionForm);
+        restored = true;
       } else {
         rescue.push(data);
       }
     }
   });
-  if (restored.length) {
+  if (restored) {
     saveSession();
   }
   if (rescue.length) {
@@ -797,6 +807,14 @@ export function restoreCommentForms() {
     }
   } else {
     const rescue = [];
+    const addToRescue = (commentForm) => {
+      rescue.push({
+        headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
+        comment: commentForm.commentInput.getValue(),
+        summary: commentForm.summaryInput.getValue(),
+      });
+    }
+
     cd.commentForms.forEach((commentForm) => {
       commentForm.checkCodeRequest = null;
       const target = commentForm.target;
@@ -804,15 +822,16 @@ export function restoreCommentForms() {
         if (target.anchor) {
           const comment = Comment.getCommentByAnchor(target.anchor);
           if (comment && comment.actionable) {
-            commentForm.setTargets(comment);
-            comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
-            commentForm.addToPage();
+            try {
+              commentForm.setTargets(comment);
+              comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
+              commentForm.addToPage();
+            } catch (e) {
+              console.warn(e);
+              addToRescue(commentForm);
+            }
           } else {
-            rescue.push({
-              headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
-              comment: commentForm.commentInput.getValue(),
-              summary: commentForm.summaryInput.getValue(),
-            });
+            addToRescue(commentForm);
           }
         }
       } else if (target instanceof Section) {
@@ -822,15 +841,16 @@ export function restoreCommentForms() {
           index: target.id,
         });
         if (section && section.actionable) {
-          commentForm.setTargets(section);
-          section[CommentForm.modeToProperty(commentForm.mode)](commentForm);
-          commentForm.addToPage();
+          try {
+            commentForm.setTargets(section);
+            section[CommentForm.modeToProperty(commentForm.mode)](commentForm);
+            commentForm.addToPage();
+          } catch (e) {
+            console.warn(e);
+            addToRescue(commentForm);
+          }
         } else {
-          rescue.push({
-            headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
-            comment: commentForm.commentInput.getValue(),
-            summary: commentForm.summaryInput.getValue(),
-          });
+          addToRescue(commentForm);
         }
       } else if (commentForm.mode === 'addSection') {
         commentForm.addToPage();

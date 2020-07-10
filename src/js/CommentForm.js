@@ -318,6 +318,17 @@ export default class CommentForm {
       this.targetComment = this.target;
     } else if (this.target instanceof Section) {
       this.targetSection = this.target;
+
+      if (this.mode === 'replyInSection' && !this.target.$replyButton) {
+        throw new CdError();
+      }
+      if (
+        this.mode === 'addSubsection' &&
+        !this.targetSection.$heading.find('.cd-sectionLink-addSubsection').length
+      ) {
+        throw new CdError();
+      }
+
       if (this.target.comments[0] && this.target.comments[0].isOpeningSection) {
         this.targetComment = this.target.comments[0];
       }
