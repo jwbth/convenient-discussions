@@ -1319,6 +1319,7 @@ export default class CommentForm {
         }
       });
     }
+    commentsInSection = commentsInSection.filter((comment) => comment !== this.targetComment);
 
     /**
      * Autocomplete object for the comment input.
