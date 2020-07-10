@@ -2047,7 +2047,7 @@ export default class CommentForm {
           `[:*#]{0,${targetInCode.indentationChars.length}}` :
           ''
         ) +
-        '(?![:*#\\n])'
+        '(?![:*#])'
       );
       const [, textBeforeInsertion] = properPlaceRegexp.exec(pageCode.slice(currentIndex)) || [];
       if (textBeforeInsertion === undefined) {
