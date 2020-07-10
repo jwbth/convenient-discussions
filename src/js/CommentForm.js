@@ -140,16 +140,6 @@ export default class CommentForm {
     this.addToPage();
 
     /**
-     * Will the comment have indentation characters.
-     *
-     * This is mostly to tell if inconvertible newlines would cause problems in the comment and
-     * reflect that in the comment preview.
-     *
-     * @type {boolean}
-     */
-    this.willCommentBeIndented = ['reply', 'replyInSection'].includes(this.mode);
-
-    /**
      * @typedef {object} Operation
      * @property {string} type One of `'load'`, `'preview'`, `'viewChanges'`, and `'submit'`.
      * @property {boolean} closed Whether the operation is closed (settled).
@@ -191,10 +181,6 @@ export default class CommentForm {
               this.headlineInput.setValue(headline);
               this.originalHeadline = headline;
             }
-
-            // This value is probably inferrable from this.mode and this.level, but for safety we
-            // take it from the most reliable source.
-            this.willCommentBeIndented = this.target.inCode.indentationChars;
 
             this.closeOperation(currentOperation);
             saveSession();
@@ -1700,12 +1686,19 @@ export default class CommentForm {
    */
   commentTextToCode(action) {
     let indentationChars;
+
+    // This is mostly to tell if inconvertible newlines would cause problems in the comment and
+    // reflect that in the comment preview.
+    let willCommentBeIndented = false;
+
     switch (this.mode) {
       case 'reply':
         indentationChars = this.target.inCode.replyIndentationChars;
+        willCommentBeIndented = true;
         break;
       case 'edit':
         indentationChars = this.target.inCode.indentationChars;
+        willCommentBeIndented = Boolean(indentationChars);
         break;
       case 'replyInSection':
         indentationChars = cd.config.defaultIndentationChar;
@@ -1716,6 +1709,7 @@ export default class CommentForm {
             indentationChars = this.target.inCode.lastCommentIndentationChars[0];
           }
         }
+        willCommentBeIndented = true;
         break;
       default:
         indentationChars = '';
@@ -1783,7 +1777,7 @@ export default class CommentForm {
       // Add intentation characters to the lines with the list markup.
       code = code.replace(/\n([:*#]+)/g, (s, chars) => '\n' + newLineIndentationChars + chars);
 
-      if (this.willCommentBeIndented && (/^[:*#]/m.test(code) || code.includes('\x03'))) {
+      if (willCommentBeIndented && (/^[:*#]/m.test(code) || code.includes('\x03'))) {
         if (newLineIndentationChars === '#') {
           throw new CdError({
             type: 'parse',
@@ -1806,7 +1800,7 @@ export default class CommentForm {
       }
     }
 
-    if (this.willCommentBeIndented) {
+    if (willCommentBeIndented) {
       // Remove spaces in the beginning of lines if the comment is indented.
       code = code.replace(/^ +/gm, '');
 
@@ -1853,7 +1847,7 @@ export default class CommentForm {
         ) ?
           '' :
           '<br>';
-        const newline = this.willCommentBeIndented ? '' : '\n';
+        const newline = willCommentBeIndented ? '' : '\n';
         return thisLine + br + newline;
       }
     );
@@ -1936,7 +1930,7 @@ export default class CommentForm {
       // Really rare but possible (see
       // https://ru.wikipedia.org/w/index.php?diff=next&oldid=105978713) case.
       if (
-        this.willCommentBeIndented &&
+        willCommentBeIndented &&
         this.mode === 'edit' &&
         /^[:*]/.test(this.target.inCode.code) &&
         !/^[:*]/.test(code)
@@ -1952,7 +1946,7 @@ export default class CommentForm {
     // Imitate a list so that the user will see where it would break on a real page. This
     // pseudolist's margin is made invisible by CSS.
     let imitateList;
-    if (action === 'preview' && this.willCommentBeIndented && this.commentInput.getValue().trim()) {
+    if (action === 'preview' && willCommentBeIndented && this.commentInput.getValue().trim()) {
       code = code.replace(/^/gm, ':');
       imitateList = true;
     } else {
@@ -2030,9 +2024,6 @@ export default class CommentForm {
     if (this.target) {
       this.target.locateInCode(pageCode);
       targetInCode = this.target.inCode;
-      if (this.mode === 'edit') {
-        this.willCommentBeIndented = Boolean(this.target.inCode.indentationChars);
-      }
     }
 
     let currentIndex;
