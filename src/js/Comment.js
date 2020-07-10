@@ -1544,7 +1544,7 @@ export default class Comment extends CommentSkeleton {
   searchInCode(pageCode) {
     const signatures = extractSignatures(pageCode);
     // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
-    // templates, but it appears on the page.
+    // templates (it may be present and may be not), but it appears on the page.
     const signatureMatches = signatures.filter((sig) => (
       sig.author === this.author &&
       (

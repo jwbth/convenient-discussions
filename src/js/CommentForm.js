@@ -1963,54 +1963,6 @@ export default class CommentForm {
   }
 
   /**
-   * @typedef {object} TryPrepareNewPageCodeReturn
-   * @property {object} page
-   * @property {string} newPageCode
-   * @private
-   */
-
-  /**
-   * Prepare the new page code and handle errors.
-   *
-   * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {TryPrepareNewPageCodeReturn}
-   * @private
-   */
-  async tryPrepareNewPageCode(action) {
-    let page;
-    try {
-      page = await getLastRevision(this.targetPage);
-    } catch (e) {
-      if (e instanceof CdError) {
-        this.handleError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
-      } else {
-        this.handleError({
-          type: 'javascript',
-          logMessage: e,
-        });
-      }
-      return;
-    }
-
-    let newPageCode;
-    try {
-      newPageCode = this.prepareNewPageCode(page.code, action);
-    } catch (e) {
-      if (e instanceof CdError) {
-        this.handleError(e.data);
-      } else {
-        this.handleError({
-          type: 'javascript',
-          logMessage: e,
-        });
-      }
-      return;
-    }
-
-    return { page, newPageCode };
-  }
-
-  /**
    * Prepare the new page code based on the form input.
    *
    * @param {string} pageCode
@@ -2215,6 +2167,54 @@ export default class CommentForm {
     }
 
     return newPageCode;
+  }
+
+  /**
+   * @typedef {object} TryPrepareNewPageCodeReturn
+   * @property {object} page
+   * @property {string} newPageCode
+   * @private
+   */
+
+  /**
+   * Prepare the new page code and handle errors.
+   *
+   * @param {string} action `'submit'` or `'viewChanges'`.
+   * @returns {TryPrepareNewPageCodeReturn}
+   * @private
+   */
+  async tryPrepareNewPageCode(action) {
+    let page;
+    try {
+      page = await getLastRevision(this.targetPage);
+    } catch (e) {
+      if (e instanceof CdError) {
+        this.handleError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
+      } else {
+        this.handleError({
+          type: 'javascript',
+          logMessage: e,
+        });
+      }
+      return;
+    }
+
+    let newPageCode;
+    try {
+      newPageCode = this.prepareNewPageCode(page.code, action);
+    } catch (e) {
+      if (e instanceof CdError) {
+        this.handleError(e.data);
+      } else {
+        this.handleError({
+          type: 'javascript',
+          logMessage: e,
+        });
+      }
+      return;
+    }
+
+    return { page, newPageCode };
   }
 
   /**
