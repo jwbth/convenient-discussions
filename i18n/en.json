@@ -171,7 +171,7 @@
   "dn-confirm-yes": "Yes",
   "dn-confirm-no": "No",
   "dn-grantpermission": "Grant a permission to the site.",
-  "dn-grantpermission-again": "You have desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications or deny to prevent this message from showing up again.",
+  "dn-grantpermission-again": "You have the desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications or deny to prevent this message from showing up again.",
 
   "deadanchor-section-title": "Section not found",
   "deadanchor-section-text": "It could be moved or archived.",

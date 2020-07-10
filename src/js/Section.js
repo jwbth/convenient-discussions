@@ -144,7 +144,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add the "Reply" button to the end of the first section chunk.
+   * Add the "Reply" button to the end of the first chunk of the section.
    */
   addReplyButton() {
     const replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
@@ -211,7 +211,7 @@ export default class Section extends SectionSkeleton {
     }
 
     /**
-     * Reply button on the bottom of the first section chunk.
+     * Reply button on the bottom of the first chunk of the section.
      *
      * @type {JQuery|undefined}
      */
@@ -269,8 +269,6 @@ export default class Section extends SectionSkeleton {
       lastElement.nextElementSibling
     );
 
-    this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
-
     const deferAddSubsectionButtonHide = () => {
       if (!this.#hideAddSubsectionButtonTimeout) {
         this.#hideAddSubsectionButtonTimeout = setTimeout(() => {
@@ -308,6 +306,20 @@ export default class Section extends SectionSkeleton {
 
       deferAddSubsectionButtonHide();
     };
+
+    /**
+     * Add subsection button in the end of the section.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$addSubsectionButton = $(addSubsectionButton);
+
+    /**
+     * Add subsection button container.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
   }
 
   /**
@@ -1297,8 +1309,8 @@ export default class Section extends SectionSkeleton {
       );
 
       // To simplify the workings of the "replyInSection" mode we don't consider terminating line
-      // breaks to be a part of the first section chunk (i.e. the section subdivision before the
-      // first heading).
+      // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
+      // the first heading).
       const firstChunkMatch = (
         adjustedCodeFromSection.match(
           // Will fail at "===" or the like.

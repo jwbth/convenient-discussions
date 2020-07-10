@@ -109,6 +109,42 @@ function getFirstVisibleElementData() {
 }
 
 /**
+ * Parse comments and modify related parts of the DOM.
+ *
+ * @param {Parser} parser
+ * @param {object} firstVisibleElementData
+ * @throws {CdError} If there is no comments.
+ * @private
+ */
+function processComments(parser, firstVisibleElementData) {
+  const timestamps = parser.findTimestamps();
+  const signatures = parser.findSignatures(timestamps);
+
+  signatures.forEach((signature) => {
+    try {
+      const comment = parser.createComment(signature);
+      if (comment.highlightables.length) {
+        cd.comments.push(comment);
+      }
+    } catch (e) {
+      if (!(e instanceof CdError)) {
+        console.error(e);
+      }
+    }
+  });
+
+  adjustDom(firstVisibleElementData);
+
+  /**
+   * The script has processed the comments.
+   *
+   * @event commentsReady
+   * @type {module:cd~convenientDiscussions.comments}
+   */
+  mw.hook('convenientDiscussions.commentsReady').fire(cd.comments);
+}
+
+/**
  * Perform extra section-related tasks, including adding the `subsections` and `baseSection`
  * properties and binding events.
  *
@@ -143,8 +179,9 @@ function adjustSections() {
     }
 
     if (section.actionable) {
-      // If the next section of the same level has another nesting level (e.g., is inside a <div> with
-      // a specific style), don't add the "Add subsection" button—it will appear in the wrong place.
+      // If the next section of the same level has another nesting level (e.g., is inside a <div>
+      // with a specific style), don't add the "Add subsection" button - it will appear in the wrong
+      // place.
       const nextSameLevelSection = cd.sections
         .slice(i + 1)
         .find((otherSection) => otherSection.level === section.level);
@@ -156,7 +193,7 @@ function adjustSections() {
       }
 
       // The same for the "Reply" button, but as this button is added to the end of the first chunk,
-      // we look at just the next section, not necesserily of the same level.
+      // we look at just the next section, not necessarily of the same level.
       if (
         !cd.sections[i + 1] ||
         cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
@@ -179,42 +216,6 @@ function adjustSections() {
           .on('mouseleave', section.replyButtonUnhoverHandler);
       }
     });
-}
-
-/**
- * Parse comments and modify related parts of the DOM.
- *
- * @param {Parser} parser
- * @param {object} firstVisibleElementData
- * @throws {CdError} If there is no comments.
- * @private
- */
-function processComments(parser, firstVisibleElementData) {
-  const timestamps = parser.findTimestamps();
-  const signatures = parser.findSignatures(timestamps);
-
-  signatures.forEach((signature) => {
-    try {
-      const comment = parser.createComment(signature);
-      if (comment.highlightables.length) {
-        cd.comments.push(comment);
-      }
-    } catch (e) {
-      if (!(e instanceof CdError)) {
-        console.error(e);
-      }
-    }
-  });
-
-  adjustDom(firstVisibleElementData);
-
-  /**
-   * The script has processed the comments.
-   *
-   * @event commentsReady
-   * @type {module:cd~convenientDiscussions.comments}
-   */
-  mw.hook('convenientDiscussions.commentsReady').fire(cd.comments);
 }
 
 /**

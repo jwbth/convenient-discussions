@@ -127,7 +127,7 @@ export default class CommentSkeleton {
      */
     this.highlightables = this.elements.filter(isHighlightable);
 
-    // That which cannot be highlighted should not exist.
+    // That which cannot be highlighted should not be considered existent.
     if (!this.highlightables.length) {
       throw new CdError();
     }

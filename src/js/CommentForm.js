@@ -308,8 +308,19 @@ export default class CommentForm {
        * @type {?Section}
        */
       this.targetSection = this.target.section;
+
+      /**
+       * Target comment. This may be the comment the user replies to or the comment opening the
+       * section.
+       *
+       * @type {?(Comment|Section)}
+       */
+      this.targetComment = this.target;
     } else if (this.target instanceof Section) {
       this.targetSection = this.target;
+      if (this.target.comments[0] && this.target.comments[0].isOpeningSection) {
+        this.targetComment = this.target.comments[0];
+      }
     }
 
     /**
@@ -319,20 +330,6 @@ export default class CommentForm {
      * @type {string}
      */
     this.targetPage = this.targetSection ? this.targetSection.sourcePage : cd.g.CURRENT_PAGE;
-
-    if (target instanceof Comment) {
-      /**
-       * Target comment. This may be the comment the user replies or the comment opening the
-       * section.
-       *
-       * @type {?(Comment|Section)}
-       */
-      this.targetComment = target;
-    } else if (target instanceof Section) {
-      if (target.comments[0] && target.comments[0].isOpeningSection) {
-        this.targetComment = target.comments[0];
-      }
-    }
   }
 
   /**
