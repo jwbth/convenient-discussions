@@ -1315,7 +1315,9 @@ export default class CommentForm {
         }
       });
     }
-    commentsInSection = commentsInSection.filter((comment) => comment !== this.targetComment);
+    if (this.mode === 'edit') {
+      commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
+    }
 
     /**
      * Autocomplete object for the comment input.
