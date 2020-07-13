@@ -1144,10 +1144,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       });
     }
 
-    let wikilinkFieldHelp;
-    if (object instanceof Comment) {
-      wikilinkFieldHelp = cd.s('cld-wikilink-help-comment');
-    }
+    const onlyCdWarning = object instanceof Comment ? cd.s('cld-help-onlycd') : undefined;
 
     const wikilinkInput = new OO.ui.TextInputWidget({
       value: wikilink,
@@ -1163,7 +1160,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     const wikilinkField = new OO.ui.ActionFieldLayout(wikilinkInput, wikilinkButton, {
       align: 'top',
       label: cd.s('cld-wikilink'),
-      help: wikilinkFieldHelp,
+      help: onlyCdWarning,
       helpInline: true,
     });
 
@@ -1200,6 +1197,8 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     const linkField = new OO.ui.ActionFieldLayout(linkInput, linkButton, {
       align: 'top',
       label: cd.s('cld-link'),
+      help: onlyCdWarning,
+      helpInline: true,
     });
 
     const $message = $('<div>')
