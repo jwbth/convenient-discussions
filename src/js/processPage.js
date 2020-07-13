@@ -143,82 +143,6 @@ function processComments(parser, firstVisibleElementData) {
 }
 
 /**
- * Perform extra section-related tasks, including adding the `subsections` and `baseSection`
- * properties and binding events.
- *
- * @private
- */
-function adjustSections() {
-  cd.sections.forEach((section, i) => {
-    section.subsections = [];
-    cd.sections
-      .slice(i + 1)
-      .some((otherSection) => {
-        if (otherSection.level > section.level) {
-          section.subsections.push(otherSection);
-          if (section.level === 2) {
-            otherSection.baseSection = section;
-          }
-        } else {
-          return true;
-        }
-      });
-
-    if (section.level > 2) {
-      cd.sections
-        .slice(0, i)
-        .reverse()
-        .some((otherSection) => {
-          if (otherSection.level < section.level) {
-            section.parent = otherSection;
-            return true;
-          }
-        });
-    }
-
-    if (section.actionable) {
-      // If the next section of the same level has another nesting level (e.g., is inside a <div>
-      // with a specific style), don't add the "Add subsection" button - it will appear in the wrong
-      // place.
-      const nextSameLevelSection = cd.sections
-        .slice(i + 1)
-        .find((otherSection) => otherSection.level === section.level);
-      if (
-        !nextSameLevelSection ||
-        nextSameLevelSection.headingNestingLevel === section.headingNestingLevel
-      ) {
-        section.addAddSubsectionButton();
-      }
-
-      // The same for the "Reply" button, but as this button is added to the end of the first chunk,
-      // we look at just the next section, not necessarily of the same level.
-      if (
-        !cd.sections[i + 1] ||
-        cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
-      ) {
-        section.addReplyButton();
-      } else {
-        section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
-      }
-    }
-  });
-
-  cd.sections
-    .filter((section) => section.actionable && section.level === 2)
-    .forEach((section) => {
-      // Section with the last reply button
-      const targetSection = section.subsections.length ?
-        section.subsections[section.subsections.length - 1] :
-        section;
-      if (targetSection.$replyButtonLink) {
-        targetSection.$replyButtonLink
-          .on('mouseenter', section.replyButtonHoverHandler)
-          .on('mouseleave', section.replyButtonUnhoverHandler);
-      }
-    });
-}
-
-/**
  * Parse sections and modify some parts of them.
  *
  * @param {Parser} parser
@@ -239,11 +163,7 @@ function processSections(parser, watchedSectionsRequest) {
     }
   });
 
-  cd.sections.forEach((section, i) => {
-    section.isLastSection = i === cd.sections.length - 1;
-  });
-
-  adjustSections();
+  Section.adjustSections();
 
   /**
    * The script has processed the sections.
