@@ -1405,16 +1405,18 @@ export default class Comment extends CommentSkeleton {
         return '';
       };
 
-      const indentationCharsPattern = cd.config.customIndentationCharsPattern || '\\n*([:*#]*) *';
-      code = code.replace(new RegExp(`^()${indentationCharsPattern}`), replaceIndentationChars);
+      code = code.replace(
+        new RegExp(`^()${cd.config.indentationCharsPattern}`),
+        replaceIndentationChars
+      );
 
       // See the comment "Without the following code, the section introduction..." in Parser.js.
       // Dangerous case: https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1.
-      // This was actually a mistake to put a signature to the first level, but if it was legit,
+      // This was actually a mistake to put a signature at the first level, but if it was legit,
       // only the last sentence should be interpreted as the comment.
       if (indentationChars === '') {
-        code = code.replace(new RegExp(
-          `(^[^]*?(?:^|\n))${indentationCharsPattern}(?![^]*\\n[^:*#])`),
+        code = code.replace(
+          new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
           replaceIndentationChars
         );
       }

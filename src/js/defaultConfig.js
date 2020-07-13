@@ -421,13 +421,12 @@ export default {
   noConfirmPostEmptyCommentPageRegexp: null,
 
   /**
-   * String to be put into a regular expression for matching indentation characters. Default:
-   * `\\n*([:*#]+) *`.
+   * String to be put into a regular expression for matching indentation characters.
    *
    * @type {?string}
-   * @default null
+   * @default '\\n*([:*#]*) *'
    */
-  customIndentationCharsPattern: null,
+  indentationCharsPattern: '\\n*([:*#]*) *',
 
   /**
    * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be
