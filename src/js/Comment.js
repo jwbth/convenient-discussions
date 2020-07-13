@@ -589,7 +589,7 @@ export default class Comment extends CommentSkeleton {
    */
   scrollToAndHighlightTarget(smooth = true) {
     const $elements = this.editForm ? this.editForm.$element : this.$elements;
-    $elements.cdScrollTo(this.isOpeningSection || this.editForm ? 'top' : 'center', smooth);
+    $elements.cdScrollIntoView(this.isOpeningSection || this.editForm ? 'top' : 'center', smooth);
     this.highlightTarget();
   }
 
