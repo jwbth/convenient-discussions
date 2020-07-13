@@ -216,6 +216,27 @@ function connectToAddTopicLinks() {
 }
 
 /**
+ * Bind a click handler to comment links to make them work as in-script comment links.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function connectToCommentLinks($content) {
+  $content
+    .find(`a[href^="#"]`)
+    .filter(function () {
+      return /^#\d{12}_.+$/.test($(this).attr('href'));
+    })
+    .on('click', function (e) {
+      e.preventDefault();
+      const comment = Comment.getCommentByAnchor($(this).attr('href').slice(1));
+      if (comment) {
+        comment.scrollToAndHighlightTarget();
+      }
+    });
+}
+
+/**
  * Perform fragment-related tasks, as well as comment anchor-related ones.
  *
  * @param {string} keptCommentAnchor
@@ -556,6 +577,9 @@ export default async function processPage(keptData = {}) {
         )
       );
     });
+
+    mw.hook('wikipage.content').add(connectToCommentLinks);
+    mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
   }
 
   if ((cd.g.firstRun && cd.g.isPageActive) || keptData.wasPageCreated) {

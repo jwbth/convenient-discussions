@@ -2194,6 +2194,7 @@ export default class CommentForm {
    *   `cd.settings.autopreview` as `true`).
    * @param {boolean} [operation] Operation object when the function is called from within itself,
    *   being delayed.
+   * @fires previewReady
    */
   async preview(maySummaryHaveChanged = true, auto = true, operation) {
     if (
@@ -2308,6 +2309,15 @@ export default class CommentForm {
         } else {
           this.$previewArea.removeClass('cd-previewArea-indentedComment');
         }
+
+        /**
+         * A comment preview has been rendered.
+         *
+         * @event previewReady
+         * @type {JQuery}
+         */
+        mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea);
+
         if (!auto) {
           mw.hook('wikipage.content').fire(this.$previewArea);
         }
