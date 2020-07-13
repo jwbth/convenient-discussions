@@ -10,7 +10,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLinks, isProbablyTalkPage, underlinesToSpaces } from './util';
+import { animateLinks, isProbablyTalkPage } from './util';
 import { copyLink } from './modal.js';
 import { editPage, getLastRevision } from './apiWrappers';
 import { editWatchedSections } from './modal';
@@ -655,50 +655,48 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.editTargetPage = async function (sourcePage, targetPage) {
-      const targetPageCode = cd.config.getMoveTargetPageCode ?
+      const code = cd.config.getMoveTargetPageCode ?
         cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.g.CURRENT_USER_SIGNATURE) :
         undefined;
-      const targetPageCodeBeginning = Array.isArray(targetPageCode) ?
-        targetPageCode[0] + '\n' :
-        targetPageCode;
-      const targetPageCodeEnding = Array.isArray(targetPageCode) ? '\n' + targetPageCode[1] : '';
-      const targetPageNewSectionCode = endWithTwoNewlines(
+      const codeBeginning = Array.isArray(code) ? code[0] + '\n' : code;
+      const codeEnding = Array.isArray(code) ? '\n' + code[1] : '';
+      const newSectionCode = endWithTwoNewlines(
         sourcePage.sectionInCode.code.slice(
           0,
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
         ) +
-        targetPageCodeBeginning +
+        codeBeginning +
         sourcePage.sectionInCode.code.slice(
           sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
         ) +
-        targetPageCodeEnding
+        codeEnding
       );
 
-      let targetPageNewCode;
+      let newCode;
       if (targetPage.newTopicsOnTop) {
         // The page has no sections, so we add to the bottom.
         if (targetPage.firstSectionIndex === undefined) {
           targetPage.firstSectionIndex = targetPage.code.length;
         }
-        targetPageNewCode = (
+        newCode = (
           endWithTwoNewlines(targetPage.code.slice(0, targetPage.firstSectionIndex)) +
-          targetPageNewSectionCode +
+          newSectionCode +
           targetPage.code.slice(targetPage.firstSectionIndex)
         );
       } else {
-        targetPageNewCode = targetPage.code + '\n\n' + targetPageNewSectionCode;
+        newCode = targetPage.code + '\n\n' + newSectionCode;
       }
 
       const summaryEnding = this.summaryEndingInput.getValue();
-      const text = (
-        cd.s('es-move-from', sourcePage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
+      const summary = (
+        cd.s('es-move-from', sourcePage.wikilink) + (summaryEnding ? ': ' + summaryEnding : '')
       );
       try {
         await editPage({
           title: targetPage.title.toString(),
-          text: targetPageNewCode,
+          text: newCode,
           summary: cd.util.buildEditSummary({
-            text,
+            text: summary,
             section: section.headline,
           }),
           tags: cd.config.tagName,
@@ -728,40 +726,40 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.prototype.editSourcePage = async function (sourcePage, targetPage) {
       const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
-      const sourcePageCode = cd.config.getMoveSourcePageCode ?
+      const code = cd.config.getMoveSourcePageCode ?
         cd.config.getMoveSourcePageCode(
           targetPage.wikilink,
           cd.g.CURRENT_USER_SIGNATURE,
           timestamp
         ) :
         undefined;
-      const sourcePageNewSectionCode = sourcePageCode ?
+      const newSectionCode = code ?
         (
           sourcePage.sectionInCode.code.slice(
             0,
             sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
           ) +
-          sourcePageCode +
+          code +
           '\n\n'
         ) :
         '';
-      const newSourcePageCode = (
+      const newCode = (
         sourcePage.code.slice(0, sourcePage.sectionInCode.startIndex) +
-        sourcePageNewSectionCode +
+        newSectionCode +
         sourcePage.code.slice(sourcePage.sectionInCode.endIndex)
       );
 
       const summaryEnding = this.summaryEndingInput.getValue();
-      const text = (
-        cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
+      const summary = (
+        cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? ': ' + summaryEnding : '')
       );
 
       try {
         await editPage({
           title: section.sourcePage,
-          text: newSourcePageCode,
+          text: newCode,
           summary: cd.util.buildEditSummary({
-            text,
+            text: summary,
             section: section.headline,
           }),
           tags: cd.config.tagName,
@@ -1114,6 +1112,7 @@ export default class Section extends SectionSkeleton {
    * Locate the section in the page source code and set the result to the `inCode` property.
    *
    * @param {string} pageCode
+   * @throws {CdError}
    */
   locateInCode(pageCode) {
     this.inCode = null;

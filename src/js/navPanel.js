@@ -346,22 +346,22 @@ async function sendNotifications(comments, thisPageWatchedSections) {
       href = mw.util.getUrl(wikilink);
       if (comment.toMe) {
         const where = comment.watchedSectionHeadline ?
-          mw.msg('word-separator') + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
+          (
+            mw.msg('word-separator') +
+            cd.s('notification-part-insection', comment.watchedSectionHeadline)
+          ) :
           mw.msg('word-separator') + cd.s('notification-part-onthispage');
         html = (
           cd.s('notification-toyou', comment.author.name, comment.author, where) + ' ' +
           reloadLinkHtml
         );
       } else {
-        html = (
-          cd.s(
-            'notification-insection',
-            comment.author.name,
-            comment.author,
-            comment.watchedSectionHeadline
-          ) + ' ' +
-          reloadLinkHtml
-        );
+        html = cd.s(
+          'notification-insection',
+          comment.author.name,
+          comment.author,
+          comment.watchedSectionHeadline
+        ) + ' ' + reloadLinkHtml;
       }
     } else {
       const isCommonSection = notifyAboutOrdinary.every((comment) => (

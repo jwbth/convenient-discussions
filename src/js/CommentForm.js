@@ -126,11 +126,8 @@ export default class CommentForm {
     }
 
     this.createContents(dataToRestore);
-
     this.addEvents();
-
     this.initAutocomplete();
-
     this.addToPage();
 
     /**
@@ -1085,8 +1082,11 @@ export default class CommentForm {
       }
 
       case 'addSection': {
-        this.newTopicOnTop = this.$addSectionLink && this.$addSectionLink.is('[href*="section=0"]');
-        if (this.newTopicOnTop && cd.sections[0]) {
+        this.isNewTopicOnTop = (
+          this.$addSectionLink &&
+          this.$addSectionLink.is('[href*="section=0"]')
+        );
+        if (this.isNewTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
         } else {
           this.$element.appendTo(cd.g.$root);
@@ -2445,11 +2445,11 @@ export default class CommentForm {
    * Run checks before submitting the form.
    *
    * @param {object} options
-   * @param {boolean} options.isDelete
+   * @param {boolean} options.doDelete
    * @returns {boolean}
    * @private
    */
-  async runChecks({ isDelete }) {
+  async runChecks({ doDelete }) {
     const checks = [
       {
         condition: this.headlineInput && this.headlineInput.getValue() === '',
@@ -2481,7 +2481,7 @@ export default class CommentForm {
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-secondlevelheading')),
       },
       {
-        condition: isDelete,
+        condition: doDelete,
         confirmation: async () => await confirmDestructive('cf-confirm-delete'),
       }
     ];
@@ -2566,9 +2566,9 @@ export default class CommentForm {
   async submit() {
     if (this.operations.some((op) => !op.closed && op.type === 'load')) return;
 
-    const isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
+    const doDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
 
-    if (!(await this.runChecks({ isDelete }))) return;
+    if (!(await this.runChecks({ doDelete }))) return;
 
     const currentOperation = this.registerOperation({ type: 'submit' });
 
@@ -2629,7 +2629,7 @@ export default class CommentForm {
       $('#ca-unwatch').attr('id', 'cd-watch');
     }
 
-    if (!isDelete) {
+    if (!doDelete) {
       keptData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
         generateCommentAnchor(new Date(editTimestamp), cd.g.CURRENT_USER_NAME, true);
