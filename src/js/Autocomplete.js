@@ -211,11 +211,6 @@ export default class Autocomplete {
           }
           this.wikilinks.snapshot = text;
 
-          if (text.includes('[[')) {
-            callback([]);
-            return;
-          }
-
           if (this.wikilinks.byText[text]) {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
@@ -437,11 +432,6 @@ export default class Autocomplete {
           }
 
           this.commentLinks.snapshot = text;
-
-          if (text.includes('[[')) {
-            callback([]);
-            return;
-          }
 
           const matches = this.tribute.search
             .filter(text, this.commentLinks.default, {
