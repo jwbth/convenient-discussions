@@ -267,10 +267,14 @@ export default class Comment extends CommentSkeleton {
     return {
       underlayTop: -layersContainerOffset.top + this.positions.top,
       underlayLeft: (
-        -layersContainerOffset.left + this.positions.left - cd.g.COMMENT_UNDERLAY_SIDE_MARGIN
+        -layersContainerOffset.left +
+        this.positions.left -
+        cd.g.COMMENT_UNDERLAY_SIDE_MARGIN
       ),
       underlayWidth: (
-        this.positions.right - this.positions.left + cd.g.COMMENT_UNDERLAY_SIDE_MARGIN * 2
+        this.positions.right -
+        this.positions.left +
+        cd.g.COMMENT_UNDERLAY_SIDE_MARGIN * 2
       ),
       underlayHeight: this.positions.bottom - this.positions.top,
     };
@@ -1641,7 +1645,9 @@ export default class Comment extends CommentSkeleton {
       currentIndex = this.inCode.endIndex;
 
       const properPlaceRegexp = new RegExp(
-        '^([^]*?(?:' + mw.util.escapeRegExp(this.inCode.signatureCode) + '|' +
+        '^([^]*?(?:' +
+        mw.util.escapeRegExp(this.inCode.signatureCode) +
+        '|' +
         cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
         (
           this.inCode.indentationChars.length > 0 ?
@@ -1976,7 +1982,8 @@ export default class Comment extends CommentSkeleton {
         const higherTop = searchArea.top.positions.top;
         const lowerBottom = searchArea.bottom.positions.downplayedBottom;
         const proportion = (
-          (viewportTop - higherTop) / ((lowerBottom - viewportBottom) + (viewportTop - higherTop))
+          (viewportTop - higherTop) /
+          ((lowerBottom - viewportBottom) + (viewportTop - higherTop))
         );
         if (proportion < 0 || proportion >= 1) {
           console.warn(
@@ -1986,7 +1993,9 @@ export default class Comment extends CommentSkeleton {
           );
         }
         currentComment = cd.comments[Math.round(
-          (searchArea.bottom.id - searchArea.top.id - 1) * proportion + searchArea.top.id + 0.5
+          (searchArea.bottom.id - searchArea.top.id - 1) * proportion +
+          searchArea.top.id +
+          0.5
         )];
       }
     }

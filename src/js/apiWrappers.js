@@ -47,14 +47,17 @@ export function makeRequestNoTimers(params, method = 'get') {
  * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}) regarding
  * the current page.
  *
- * @param {object} [options]
- * @param {boolean} [options.markAsRead=false] Mark the current page as read in the watchlist.
+ * @param {object} [options={}]
  * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
  *   background tabs if the browser throttles them).
+ * @param {boolean} [options.markAsRead=false] Mark the current page as read in the watchlist.
  * @returns {object}
  * @throws {CdError}
  */
-export async function parseCurrentPage({ markAsRead = false, noTimers = false }) {
+export async function parseCurrentPage({
+  noTimers = false,
+  markAsRead = false,
+} = {}) {
   const params = {
     action: 'parse',
     page: cd.g.CURRENT_PAGE.name,
@@ -345,7 +348,8 @@ export async function editPage(options) {
 
             default: {
               message = (
-                cd.s('error-pagenotedited') + ' ' +
+                cd.s('error-pagenotedited') +
+                ' ' +
                 (await unknownApiErrorText(code, error.info))
               );
             }
@@ -535,11 +539,12 @@ export async function setGlobalOption(name, value) {
  * Request genders of a list of users. A gender may be `'male'`, `'female'`, or `'unknown'`.
  *
  * @param {User[]} users
- * @param {boolean} [noTimers=false] Don't use timers (they can set the process on hold in
+ * @param {object} [options={}]
+ * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
  *   background tabs if the browser throttles them).
  * @throws {CdError}
  */
-export async function getUserGenders(users, noTimers = false) {
+export async function getUserGenders(users, { noTimers = false } = {}) {
   const usersToRequest = users
     .filter((user) => !user.gender)
     .map((user) => user.name);

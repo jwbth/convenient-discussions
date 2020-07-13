@@ -1,5 +1,5 @@
 /**
- * User class and the object `userRegistry` used to obtain its instances while avoiding creating
+ * User class and object `userRegistry` used to obtain its instances while avoiding creating
  * duplicates.
  *
  * @module userRegistry

@@ -397,7 +397,8 @@ export async function settingsDialog() {
     });
 
     let defaultCommentLinkTypeHelp = (
-      cd.s('sd-defaultcommentlinktype-help') + ' ' +
+      cd.s('sd-defaultcommentlinktype-help') +
+      ' ' +
       cd.s('sd-defaultcommentlinktype-help-notdifflinks')
     );
     [

@@ -506,11 +506,8 @@ export default class Autocomplete {
    * @returns {object}
    */
   static getWikilinksConfig() {
-    const colonNamespaces = mw.config.get('wgFormattedNamespaces');
-    const colonNamespacesRegexp = new RegExp(
-      `^(${colonNamespaces[6]}|${colonNamespaces[14]}):`,
-      'i'
-    );
+    const namespaces = mw.config.get('wgFormattedNamespaces');
+    const colonNamespacesRegexp = new RegExp(`^(${namespaces[6]}|${namespaces[14]}):`, 'i');
     return {
       byText: {},
       cache: [],

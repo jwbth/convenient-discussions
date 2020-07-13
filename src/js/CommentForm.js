@@ -1816,7 +1816,9 @@ export default class CommentForm {
 
         // Add intentation characters to the rest of the lines.
         code = code.replace(/\n(?!:)/g, () => (
-          '\n' + newLineIndentationChars + (cd.config.spaceAfterIndentationChars ? ' ' : '')
+          '\n' +
+          newLineIndentationChars +
+          (cd.config.spaceAfterIndentationChars ? ' ' : '')
         ));
       }
     }
@@ -2025,11 +2027,14 @@ export default class CommentForm {
         );
         const commentTextIndex = commentStart.match(/^[:*#]* */)[0].length;
         commentStart = (
-          commentStart.slice(0, commentTextIndex) + anchorCode +
+          commentStart.slice(0, commentTextIndex) +
+          anchorCode +
           commentStart.slice(commentTextIndex)
         );
         const commentCode = (
-          (comment.inCode.headingCode || '') + commentStart + comment.inCode.signatureDirtyCode
+          (comment.inCode.headingCode || '') +
+          commentStart +
+          comment.inCode.signatureDirtyCode
         );
 
         ({ newPageCode } = comment.modifyCode(newPageCode, {
@@ -2746,8 +2751,8 @@ export default class CommentForm {
    * @param {boolean} [set=true] Whether to actually set the input value, or just save auto summary
    *   to a property.
    * @param {boolean} [dontAutopreviewOnSummaryChange=false] Whether to prevent making autopreview
-   *   request in order not to make two identical requests (for example, if the update initiated by
-   *   a change in the comment).
+   *   request in order not to make two identical requests (for example, if the update is initiated
+   *   by a change in the comment).
    * @private
    */
   updateAutoSummary(set = true, dontAutopreviewOnSummaryChange = false) {

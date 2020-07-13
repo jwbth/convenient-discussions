@@ -44,8 +44,7 @@ function decodeBase64(s) {
       .split('')
       .map((character) => (
         '%' +
-        ('00' + character.charCodeAt(0).toString(16))
-          .slice(-2)
+        ('00' + character.charCodeAt(0).toString(16)).slice(-2)
       ))
       .join('')
   );

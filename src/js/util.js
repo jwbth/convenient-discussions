@@ -343,7 +343,9 @@ export function hideText(code, regexp, hidden, useAlternativeMarker) {
     }
     // Handle tables separately
     return (
-      (pre || '') + (useAlternativeMarker ? '\x03' : '\x01') + hidden.push(textToHide || s) +
+      (pre || '') +
+      (useAlternativeMarker ? '\x03' : '\x01') +
+      hidden.push(textToHide || s) +
       (useAlternativeMarker ? '\x04' : '\x02')
     );
   });

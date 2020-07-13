@@ -401,7 +401,8 @@ async function confirmDesktopNotifications() {
  */
 function debugLog() {
   const baseTime = (
-    cd.debug.timerTotal['main code'] + cd.debug.timerTotal['final code and rendering']
+    cd.debug.timerTotal['main code'] +
+    cd.debug.timerTotal['final code and rendering']
   );
   const timePerComment = baseTime / cd.comments.length;
 

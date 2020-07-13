@@ -199,7 +199,8 @@ function initGlobals() {
   } else {
     cd.g.SUMMARY_POSTFIX = ` ([[${cd.config.helpWikilink}|${cd.s('script-name-short')}]])`;
     cd.g.SUMMARY_LENGTH_LIMIT = (
-      mw.config.get('wgCommentCodePointLimit') - cd.g.SUMMARY_POSTFIX.length
+      mw.config.get('wgCommentCodePointLimit') -
+      cd.g.SUMMARY_POSTFIX.length
     );
   }
 
@@ -209,7 +210,9 @@ function initGlobals() {
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
   cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
-    cd.s('es-reply-to', true) + cd.s('es-edit-comment-by', true) + cd.s('thank-confirm', true)
+    cd.s('es-reply-to', true) +
+    cd.s('es-edit-comment-by', true) +
+    cd.s('thank-confirm', true)
   );
 
   cd.g.dontHandleScroll = false;
@@ -259,7 +262,9 @@ function initPatterns() {
       signatureContent.slice(0, authorInSignatureMatch.index)
     );
     cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
-      signaturePrefixPattern + signatureBeginning + '$'
+      signaturePrefixPattern +
+      signatureBeginning +
+      '$'
     );
   }
 

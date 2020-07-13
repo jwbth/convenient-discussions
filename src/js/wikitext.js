@@ -278,7 +278,9 @@ export function extractSignatures(code, generateCommentAnchors) {
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = hideHtmlComments(code)
     .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
-      beginning + ' '.repeat(content.length) + ending
+      beginning +
+      ' '.repeat(content.length) +
+      ending
     ))
     .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
 
@@ -390,7 +392,9 @@ export function hideSensitiveCode(code) {
         template = code.substring(left, right);
         code = (
           code.substring(0, left) +
-          '\x01' + hidden.push(template) + '\x02' +
+          '\x01' +
+          hidden.push(template) +
+          '\x02' +
           code.substr(right)
         );
         pos = right - template.length;

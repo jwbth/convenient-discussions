@@ -80,7 +80,8 @@ async function checkForNewComments() {
     $(document).on('visibilitychange', callback);
 
     const interval = Math.abs(
-      cd.g.BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL - cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL
+      cd.g.BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL -
+      cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL
     );
     setAlarmViaWorker(interval * 1000);
     isBackgroundCheckArranged = true;
@@ -136,8 +137,8 @@ async function checkForNewComments() {
 
     if (addedNewRevisions.length) {
       const { text } = await parseCurrentPage({
-        markAsRead: false,
         noTimers: true,
+        markAsRead: false,
       }) || {};
       if (text === undefined) {
         console.error('No page text.');
@@ -329,7 +330,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
   const authors = removeDuplicates(notifyAboutOrdinary.concat(notifyAboutDesktop))
     .map((comment) => comment.author)
     .filter(defined);
-  await getUserGenders(authors, true);
+  await getUserGenders(authors, { noTimers: true });
 
   if (notifyAboutOrdinary.length) {
     let html;
@@ -352,16 +353,21 @@ async function sendNotifications(comments, thisPageWatchedSections) {
           ) :
           mw.msg('word-separator') + cd.s('notification-part-onthispage');
         html = (
-          cd.s('notification-toyou', comment.author.name, comment.author, where) + ' ' +
+          cd.s('notification-toyou', comment.author.name, comment.author, where) +
+          ' ' +
           reloadLinkHtml
         );
       } else {
-        html = cd.s(
-          'notification-insection',
-          comment.author.name,
-          comment.author,
-          comment.watchedSectionHeadline
-        ) + ' ' + reloadLinkHtml;
+        html = (
+          cd.s(
+            'notification-insection',
+            comment.author.name,
+            comment.author,
+            comment.watchedSectionHeadline
+          ) +
+          ' ' +
+          reloadLinkHtml
+        );
       }
     } else {
       const isCommonSection = notifyAboutOrdinary.every((comment) => (
@@ -386,7 +392,8 @@ async function sendNotifications(comments, thisPageWatchedSections) {
 
       html = (
         cd.s('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
-        ' ' + reloadLinkHtml
+        ' ' +
+        reloadLinkHtml
       );
     }
 

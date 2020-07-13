@@ -719,7 +719,9 @@ function setLocalTimestampRegexps() {
     return message.exists() ? message.text() : abbr;
   });
   const timezonePattern = (
-    '\\((?:' + localizedTimezones.map(mw.util.escapeRegExp).join('|').toUpperCase() + ')\\)'
+    '\\((?:' +
+    localizedTimezones.map(mw.util.escapeRegExp).join('|').toUpperCase() +
+    ')\\)'
   );
   const pattern = mainPartPattern + ' ' + timezonePattern;
 

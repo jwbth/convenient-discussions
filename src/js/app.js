@@ -8,8 +8,8 @@ import { create as nanoCssCreate } from 'nano-css';
 
 import Comment from './Comment';
 import CommentForm from './CommentForm';
-import Section from './Section';
 import Page from './Page';
+import Section from './Section';
 import Worker from './worker';
 import cd from './cd';
 import commentLinks from './commentLinks';
