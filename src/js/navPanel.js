@@ -97,7 +97,7 @@ async function checkForNewComments() {
   try {
     const revisionsResp = await makeRequestNoTimers({
       action: 'query',
-      titles: cd.g.CURRENT_PAGE,
+      titles: cd.g.CURRENT_PAGE.name,
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'size', 'comment'],
       rvdir: 'newer',
@@ -158,6 +158,7 @@ async function checkForNewComments() {
             UNHIGHLIGHTABLE_ELEMENTS_CLASSES: cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES,
             CURRENT_USER_NAME: cd.g.CURRENT_USER_NAME,
             CURRENT_USER_GENDER: cd.g.CURRENT_USER_GENDER,
+            CURRENT_PAGE_NAME: cd.g.CURRENT_PAGE.name,
             CURRENT_NAMESPACE_NUMBER: cd.g.CURRENT_NAMESPACE_NUMBER,
           },
           config: {
@@ -338,7 +339,8 @@ async function sendNotifications(comments, thisPageWatchedSections) {
     const reloadLinkHtml = cd.s('notification-reload', href, formsDataWillNotBeLost);
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
-      href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${comment.anchor ? `#${comment.anchor}` : ''}`);
+      const wikilink = cd.g.CURRENT_PAGE.name + (comment.anchor ? '#' + comment.anchor : '');
+      href = mw.util.getUrl(wikilink);
       if (comment.toMe) {
         const where = comment.watchedSectionHeadline ?
           mw.msg('word-separator') + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
@@ -363,7 +365,8 @@ async function sendNotifications(comments, thisPageWatchedSections) {
         comment.watchedSectionHeadline === notifyAboutOrdinary[0].watchedSectionHeadline
       ));
       const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : undefined;
-      href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${section ? `#${section}` : ''}`);
+      const wikilink = cd.g.CURRENT_PAGE.name + (section ? '#' + section : '');
+      href = mw.util.getUrl(wikilink);
       const where = section ?
         mw.msg('word-separator') + cd.s('notification-part-insection', section) :
         mw.msg('word-separator') + cd.s('notification-part-onthispage');
@@ -421,7 +424,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
           comment.author.name,
           comment.author,
           where,
-          cd.g.CURRENT_PAGE
+          cd.g.CURRENT_PAGE.name
         );
       } else {
         body = cd.s(
@@ -429,7 +432,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
           comment.author.name,
           comment.author,
           comment.sectionHeadline,
-          cd.g.CURRENT_PAGE
+          cd.g.CURRENT_PAGE.name
         );
       }
     } else {
@@ -455,7 +458,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
         'notification-newcomments-desktop',
         notifyAboutDesktop.length,
         where,
-        cd.g.CURRENT_PAGE,
+        cd.g.CURRENT_PAGE.name,
         mayBeInteresting
       );
       tag += notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor;

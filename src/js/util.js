@@ -6,6 +6,7 @@
  */
 
 import CdError from './CdError';
+import Page from './Page';
 import cd from './cd';
 
 /**
@@ -97,22 +98,27 @@ export function caseInsensitiveFirstCharPattern(s) {
  *
  * If no namespace number is provided, the function will reconstruct it.
  *
- * @param {string} page
+ * @param {string|Page} page
  * @param {number} [namespaceNumber]
  * @returns {boolean}
  */
 export function isProbablyTalkPage(page, namespaceNumber) {
-  if (namespaceNumber === undefined) {
+  let pageName;
+  if (page instanceof Page) {
+    pageName = page.name;
+    namespaceNumber = page.namespace;
+  } else if (namespaceNumber === undefined) {
+    pageName = page;
     const title = new mw.Title.newFromText(page);
     namespaceNumber = title.namespace;
   }
   return (
     (
       namespaceNumber % 2 === 1 ||
-      (cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(page)) ||
+      (cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(pageName)) ||
       !cd.g.PAGE_WHITE_LIST_REGEXP && cd.config.customTalkNamespaces.includes(namespaceNumber)
     ) &&
-    (!cd.g.PAGE_BLACK_LIST_REGEXP || !cd.g.PAGE_BLACK_LIST_REGEXP.test(page))
+    (!cd.g.PAGE_BLACK_LIST_REGEXP || !cd.g.PAGE_BLACK_LIST_REGEXP.test(pageName))
   );
 }
 

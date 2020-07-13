@@ -71,7 +71,7 @@ export async function getCurrentPageData(markAsRead = false, noTimers = false) {
     cd.g.api.get(params).catch(handleApiReject);
 
   if (markAsRead) {
-    $.get(mw.util.getUrl(cd.g.CURRENT_PAGE));
+    $.get(mw.util.getUrl(this.name));
   }
   const resp = await request;
 
@@ -128,7 +128,7 @@ export async function parseCode(code, options) {
  * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
  * code of the specified page, together with few revision properties.
  *
- * @param {string|mw.Title} title
+ * @param {string|mw.Title|Page} title
  * @returns {Promise} Promise resolved with an object containing the code, timestamp, redirect
  *   target, and query timestamp (curtimestamp).
  * @throws {CdError}

@@ -64,6 +64,7 @@ module.exports = {
         "Element",
         "JQuery",
         "Node",
+        "Page",
         "Parser",
         "Section",
         "User",

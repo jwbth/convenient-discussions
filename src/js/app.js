@@ -9,6 +9,7 @@ import { create as nanoCssCreate } from 'nano-css';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
+import Page from './Page';
 import Worker from './worker';
 import cd from './cd';
 import commentLinks from './commentLinks';
@@ -19,7 +20,7 @@ import enStrings from '../../i18n/en.json';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces } from './util';
+import { defined, isProbablyTalkPage, mergeRegexps } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import { initTalkPageCss, removeLoadingOverlay, setLoadingOverlay } from './boot';
@@ -92,11 +93,15 @@ function go() {
   );
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
-  cd.g.CURRENT_PAGE = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.CURRENT_PAGE = new Page(mw.config.get('wgPageName'));
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
   cd.g.PAGE_WHITE_LIST_REGEXP = mergeRegexps(cd.config.pageWhiteList);
   cd.g.PAGE_BLACK_LIST_REGEXP = mergeRegexps(cd.config.pageBlackList);
+
+  // This is currently not used, but may be needed in custom parser functions in projects'
+  // configuration.
+  cd.g.CURRENT_PAGE_NAME = cd.g.CURRENT_PAGE.name;
 
   cd.g.$content = $('#mw-content-text');
 
@@ -111,7 +116,7 @@ function go() {
   if (
     mw.config.get('wgIsArticle') &&
     (
-      isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER) ||
+      isProbablyTalkPage(cd.g.CURRENT_PAGE) ||
       $('#ca-addsection').length ||
       // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
@@ -218,10 +223,7 @@ function go() {
   if (
     ['Watchlist', 'Contributions', 'Recentchanges']
       .includes(mw.config.get('wgCanonicalSpecialPageName')) ||
-    (
-      mw.config.get('wgAction') === 'history' &&
-      isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER)
-    ) ||
+    (mw.config.get('wgAction') === 'history' && isProbablyTalkPage(cd.g.CURRENT_PAGE)) ||
     cd.g.IS_DIFF_PAGE
   ) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests

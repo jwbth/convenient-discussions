@@ -1089,10 +1089,10 @@ export async function copyLink(object, chooseLink, finallyCallback) {
 
   let anchor = object instanceof Comment ? object.anchor : underlinesToSpaces(object.anchor);
   anchor = encodeWikilink(anchor);
-  const wikilink = `[[${cd.g.CURRENT_PAGE}#${anchor}]]`;
+  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
   let decodedCurrentPageUrl;
   try {
-    decodedCurrentPageUrl = decodeURI(mw.util.getUrl(cd.g.CURRENT_PAGE));
+    decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
   } catch (e) {
     console.error(e);
     object.linkBeingCopied = false;
@@ -1329,7 +1329,7 @@ export async function notFound(decodedFragment, date) {
   let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
   const pageHasArchives = (
     !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP ||
-    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(cd.g.CURRENT_PAGE)
+    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(cd.g.CURRENT_PAGE.name)
   );
   if (pageHasArchives) {
     message += ' ' + cd.s('deadanchor-searchinarchive');

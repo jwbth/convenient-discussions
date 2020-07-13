@@ -395,7 +395,7 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
 
 mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
   commentForm.couldBeCloserClosing = (
-    /^Википедия:К удалению/.test(cd.g.CURRENT_PAGE) &&
+    /^Википедия:К удалению/.test(cd.g.CURRENT_PAGE.name) &&
     commentForm.mode === 'addSubsection' &&
     mw.config.get('wgUserGroups').includes('closer')
   );

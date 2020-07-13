@@ -7,6 +7,7 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import Comment from './Comment';
+import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import {
@@ -73,7 +74,7 @@ export default class CommentForm {
    * @param {object} config
    * @param {string} config.mode `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or
    *   `'addSection'`.
-   * @param {Comment|Section|null} config.target Comment or section that the comment should reply
+   * @param {Comment|Section|Page} config.target Comment, section, or page that the form is related
    *   to.
    * @param {JQuery} [config.$addSectionLink] When adding a section, the element the user clicked to
    *   do it.
@@ -122,13 +123,11 @@ export default class CommentForm {
     this.summaryAltered = dataToRestore ? dataToRestore.summaryAltered : false;
 
     if (editintro) {
-      parseCode(`{{${editintro}}}`, { title: cd.g.CURRENT_PAGE }).then(
-        (result) => {
-          this.$messageArea
-            .append(result.html)
-            .cdAddCloseButton();
-        }
-      );
+      parseCode(`{{${editintro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
+        this.$messageArea
+          .append(result.html)
+          .cdAddCloseButton();
+      });
     }
 
     this.createContents(dataToRestore);
@@ -209,10 +208,10 @@ export default class CommentForm {
           this.originalHeadline = '';
         }
 
-        if (this.target) {
-          this.checkCode();
-        } else {
+        if (this.target instanceof Page) {
           saveSession();
+        } else {
+          this.checkCode();
         }
 
         if (scrollIntoView) {
@@ -274,9 +273,9 @@ export default class CommentForm {
   }
 
   /**
-   * Set the `target`, `targetSection` and `targetComment` properties.
+   * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {Comment|Section|null} target
+   * @param {Comment|Section|Page} target
    * @throws {CdError}
    */
   setTargets(target) {
@@ -326,7 +325,7 @@ export default class CommentForm {
      *
      * @type {string}
      */
-    this.targetPage = this.targetSection ? this.targetSection.sourcePage : cd.g.CURRENT_PAGE;
+    this.targetPage = this.targetSection ? this.targetSection.sourcePage : this.target;
   }
 
   /**
@@ -444,7 +443,9 @@ export default class CommentForm {
    * @private
    */
   createContents(dataToRestore) {
-    if (this.target) {
+    if (this.target instanceof Page) {
+      this.containerListType = null;
+    } else {
       /**
        * Name of the tag used as a list whereof this comment form is an item. `'dl'`, `'ul'`,
        * `'ol'`, or null.
@@ -454,8 +455,6 @@ export default class CommentForm {
       this.containerListType = this.target instanceof Comment ?
         this.target.$elements.last().parent().prop('tagName').toLowerCase() :
         this.target.$replyWrapper.parent().prop('tagName').toLowerCase();
-    } else {
-      this.containerListType = null;
     }
 
     let tag = 'div';
@@ -1018,7 +1017,7 @@ export default class CommentForm {
         .prependTo(this.$innerWrapper);
     }
 
-    if (this.target && this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
+    if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
       // Dummy element for forms inside a numbered list so that the number is placed in front of
       // that area, not in some silly place. Note that in Chrome, the number is placed in front of
       // the textarea, so we don't need this in that browser.
@@ -1587,14 +1586,14 @@ export default class CommentForm {
           case 'locateComment':
             editUrl = this.targetSection ?
               this.targetSection.editUrl.href :
-              mw.util.getUrl(cd.g.CURRENT_PAGE, {
+              cd.g.CURRENT_PAGE.getUrl({
                 action: 'edit',
                 section: 0,
               });
             message = cd.s('error-locatecomment', editUrl);
             break;
           case 'locateSection':
-            editUrl = mw.util.getUrl(cd.g.CURRENT_PAGE, { action: 'edit' });
+            editUrl = cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
             message = cd.s('error-locatesection', editUrl);
             break;
           case 'numberedList-list':
@@ -1973,7 +1972,7 @@ export default class CommentForm {
    */
   prepareNewPageCode(pageCode, action) {
     let targetInCode;
-    if (this.target) {
+    if (!(this.target instanceof Page)) {
       this.target.locateInCode(pageCode);
       targetInCode = this.target.inCode;
     }
@@ -2320,7 +2319,7 @@ export default class CommentForm {
     if (
       this.operations.some((op) => !op.closed && op.type === 'load') ||
       (
-        this.target &&
+        !(this.target instanceof Page) &&
         !this.target.inCode &&
         this.checkCodeRequest &&
         this.checkCodeRequest.state() === 'resolved'
@@ -2370,7 +2369,7 @@ export default class CommentForm {
     // - when the target comment has not been loaded yet, possibly because of an error when tried to
     // (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
     // looking for the unclosed 'load' operation above).
-    if (this.target && !this.target.inCode) {
+    if (!(this.target instanceof Page) && !this.target.inCode) {
       await this.checkCode();
       if (this.closeOperationIfNecessary(currentOperation, !this.target.inCode)) return;
     }
@@ -2392,7 +2391,7 @@ export default class CommentForm {
     let parsedSummary;
     try {
       ({ html, parsedSummary } = await parseCode(commentCode, {
-        title: this.targetPage,
+        title: this.targetPage.name,
         summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
       }));
     } catch (e) {
@@ -2586,7 +2585,7 @@ export default class CommentForm {
           !this.commentInput.getValue().trim() &&
           (
             !cd.config.noConfirmPostEmptyCommentPageRegexp ||
-            !cd.config.noConfirmPostEmptyCommentPageRegexp.test(cd.g.CURRENT_PAGE)
+            !cd.config.noConfirmPostEmptyCommentPageRegexp.test(cd.g.CURRENT_PAGE.name)
           )
         ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
@@ -2630,7 +2629,7 @@ export default class CommentForm {
     let result;
     try {
       result = await editPage({
-        title: this.targetPage,
+        title: this.targetPage.name,
         text: newPageCode,
         summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
         tags: cd.config.tagName,
@@ -2820,12 +2819,7 @@ export default class CommentForm {
    * @private
    */
   forget() {
-    if (this.target) {
-      delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
-    }
-    if (this.mode === 'addSection') {
-      cd.g.addSectionForm = null;
-    }
+    delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     if (cd.commentForms.includes(this)) {
       cd.commentForms.splice(cd.commentForms.indexOf(this), 1);
     }

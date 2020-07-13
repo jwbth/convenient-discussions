@@ -61,8 +61,6 @@ async function prepare({ messagesRequest }) {
    */
   cd.sections = [];
 
-  cd.g.addSectionForm = null;
-
   if (cd.g.firstRun) {
     await init({ messagesRequest });
   } else {
@@ -275,17 +273,19 @@ function connectToAddTopicLinks() {
 
       const editintro = mw.util.getParamValue('editintro', href);
 
-      if (cd.g.addSectionForm) {
-        cd.g.addSectionForm.$element.cdScrollIntoView('center');
-        cd.g.addSectionForm.headlineInput.focus();
+      const addSectionForm = cd.g.CURRENT_PAGE.addSectionForm;
+      if (addSectionForm) {
+        addSectionForm.$element.cdScrollIntoView('center');
+        addSectionForm.headlineInput.focus();
       } else {
         /**
          * Add section form.
          *
          * @type {CommentForm|undefined}
          */
-        cd.g.addSectionForm = new CommentForm({
+        cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           mode: 'addSection',
+          target: cd.g.CURRENT_PAGE,
           $addSectionLink: $(this),
           scrollIntoView: true,
           editintro,
@@ -503,7 +503,7 @@ export default async function processPage(keptData = {}) {
 
   cd.g.IS_ARCHIVE_PAGE = Boolean(
     cd.g.ARCHIVE_PATHS_REGEXP &&
-    cd.g.ARCHIVE_PATHS_REGEXP.test(cd.g.CURRENT_PAGE)
+    cd.g.ARCHIVE_PATHS_REGEXP.test(cd.g.CURRENT_PAGE.name)
   );
 
   const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
@@ -568,7 +568,7 @@ export default async function processPage(keptData = {}) {
     cd.g.isPageActive &&
     !cd.comments.length &&
     !$('#ca-addsection').length &&
-    !(cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(cd.g.CURRENT_PAGE))
+    !(cd.g.PAGE_WHITE_LIST_REGEXP && cd.g.PAGE_WHITE_LIST_REGEXP.test(cd.g.CURRENT_PAGE.name))
   ) {
     cd.g.isPageActive = false;
   }

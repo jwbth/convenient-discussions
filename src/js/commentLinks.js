@@ -475,7 +475,7 @@ function processHistory($content) {
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
-  const link = mw.util.getUrl(cd.g.CURRENT_PAGE);
+  const link = cd.g.CURRENT_PAGE.getUrl();
 
   lines.forEach((line) => {
     const minorMark = line.querySelector('.minoredit');
@@ -660,10 +660,7 @@ async function addCommentLinks($content) {
     processWatchlist($content);
   } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
     processContributions($content);
-  } else if (
-    mw.config.get('wgAction') === 'history' &&
-    isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER)
-  ) {
+  } else if (mw.config.get('wgAction') === 'history' && isProbablyTalkPage(cd.g.CURRENT_PAGE)) {
     processHistory($content);
   }
 

@@ -836,7 +836,7 @@ export default class Comment extends CommentSkeleton {
    */
   async getDiffLink() {
     const edit = await this.findAddingEdit();
-    const urlEnding = decodeURI(mw.util.getUrl(cd.g.CURRENT_PAGE, { diff: edit.revid }));
+    const urlEnding = decodeURI(cd.g.CURRENT_PAGE.getUrl({ diff: edit.revid }));
     return `https:${mw.config.get('wgServer')}${urlEnding}`;
   }
 

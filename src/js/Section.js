@@ -7,6 +7,7 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
+import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import { animateLinks, isProbablyTalkPage, underlinesToSpaces } from './util';
@@ -113,7 +114,7 @@ export default class Section extends SectionSkeleton {
         if (this.editUrl) {
           const sectionNumber = this.editUrl.searchParams.get('section');
           if (sectionNumber.startsWith('T-')) {
-            this.sourcePage = underlinesToSpaces(this.editUrl.searchParams.get('title'));
+            this.sourcePage = new Page(this.editUrl.searchParams.get('title'));
           }
         }
       } else {

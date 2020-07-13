@@ -751,9 +751,10 @@ function restoreCommentFormsFromData(commentFormsData) {
         rescue.push(data);
       }
     } else if (data.mode === 'addSection') {
-      if (!cd.g.addSectionForm) {
+      if (!cd.g.CURRENT_PAGE.addSectionForm) {
         const $fakeA = $('<a>').attr('href', data.addSectionLinkHref);
-        cd.g.addSectionForm = new CommentForm({
+        cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
+          target: cd.g.CURRENT_PAGE,
           mode: data.mode,
           $addSectionLink: $fakeA,
           dataToRestore: data,
@@ -854,7 +855,7 @@ export function restoreCommentForms() {
         }
       } else if (commentForm.mode === 'addSection') {
         commentForm.addToPage();
-        cd.g.addSectionForm = commentForm;
+        cd.g.CURRENT_PAGE.addSectionForm = commentForm;
       }
     });
     if (rescue.length) {
