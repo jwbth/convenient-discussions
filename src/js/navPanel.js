@@ -17,7 +17,7 @@ import {
   removeDuplicates,
   reorderArray,
 } from './util';
-import { getCurrentPageData, getUserGenders, makeRequestNoTimers } from './apiWrappers';
+import { getUserGenders, makeRequestNoTimers, parseCurrentPage } from './apiWrappers';
 import { getWatchedSections, setVisits } from './options';
 import { reloadPage } from './boot';
 
@@ -135,7 +135,10 @@ async function checkForNewComments() {
     newRevisions = removeDuplicates(newRevisions);
 
     if (addedNewRevisions.length) {
-      const { text } = await getCurrentPageData(false, true) || {};
+      const { text } = await parseCurrentPage({
+        markAsRead: false,
+        noTimers: true,
+      }) || {};
       if (text === undefined) {
         console.error('No page text.');
       } else {

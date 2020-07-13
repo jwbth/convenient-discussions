@@ -20,7 +20,7 @@ import {
   underlinesToSpaces,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
-import { getCurrentPageData, getUserInfo } from './apiWrappers';
+import { getUserInfo, parseCurrentPage } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadMessages } from './dateFormat';
 import { setSettings } from './options';
@@ -589,9 +589,9 @@ export async function reloadPage(keptData = {}) {
     console.warn(e);
   });
 
-  let pageData;
+  let parseData;
   try {
-    pageData = await getCurrentPageData(true);
+    parseData = await parseCurrentPage({ markAsRead: true });
   } catch (e) {
     removeLoadingOverlay();
     if (keptData.didSubmitCommentForm) {
@@ -608,18 +608,18 @@ export async function reloadPage(keptData = {}) {
   });
 
   mw.config.set({
-    wgRevisionId: pageData.revid,
-    wgCurRevisionId: pageData.revid,
+    wgRevisionId: parseData.revid,
+    wgCurRevisionId: parseData.revid,
   });
-  mw.loader.load(pageData.modules);
-  mw.loader.load(pageData.modulestyles);
-  mw.config.set(pageData.jsconfigvars);
+  mw.loader.load(parseData.modules);
+  mw.loader.load(parseData.modulestyles);
+  mw.config.set(parseData.jsconfigvars);
 
   // Remove the fragment
   history.replaceState(history.state, '', location.pathname + location.search);
 
   updatePageTitle(0, false);
-  updatePageContent(pageData.text, keptData);
+  updatePageContent(parseData.text, keptData);
 }
 
 /**

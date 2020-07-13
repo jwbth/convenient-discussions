@@ -44,25 +44,20 @@ export function makeRequestNoTimers(params, method = 'get') {
 }
 
 /**
- * @typedef {object} GetCurrentPageDataReturn
- * @property {string} html
- * @property {number} revisionId
- */
-
-/**
  * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}) regarding
  * the current page.
  *
- * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
- * @param {boolean} [noTimers=false] Don't use timers (they can set the process on hold in
+ * @param {object} [options]
+ * @param {boolean} [options.markAsRead=false] Mark the current page as read in the watchlist.
+ * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
  *   background tabs if the browser throttles them).
- * @returns {GetCurrentPageDataReturn}
+ * @returns {object}
  * @throws {CdError}
  */
-export async function getCurrentPageData(markAsRead = false, noTimers = false) {
+export async function parseCurrentPage({ markAsRead = false, noTimers = false }) {
   const params = {
     action: 'parse',
-    page: cd.g.CURRENT_PAGE,
+    page: cd.g.CURRENT_PAGE.name,
     prop: ['text', 'revid', 'modules', 'jsconfigvars'],
     formatversion: 2,
   };
@@ -125,8 +120,16 @@ export async function parseCode(code, options) {
 }
 
 /**
+ * @typedef {object} GetLastRevisionReturn
+ * @property {string} html
+ * @property {number} revisionId
+ * @property {string} redirectTarget
+ * @property {string} queryTimestamp
+ */
+
+/**
  * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
- * code of the specified page, together with few revision properties.
+ * code of the specified page, together with a few revision properties.
  *
  * @param {string|mw.Title|Page} title
  * @returns {Promise} Promise resolved with an object containing the code, timestamp, redirect
