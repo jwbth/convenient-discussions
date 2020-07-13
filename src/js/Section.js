@@ -406,7 +406,7 @@ export default class Section extends SectionSkeleton {
             func: this.copyLink.bind(this),
             class: 'cd-sectionLink-copyLink',
             tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
-            href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
+            href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
           });
         });
     }

@@ -1242,7 +1242,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
             if (type === 'network') {
               text += ' ' + cd.s('error-network');
             } else {
-              const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
+              const url = this.sourcePage.getUrl({ action: 'history' });
               text += ' ' + cd.s('error-diffnotfound-history', url);
             }
           } else {

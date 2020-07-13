@@ -66,7 +66,7 @@ export async function parseCurrentPage({ markAsRead = false, noTimers = false })
     cd.g.api.get(params).catch(handleApiReject);
 
   if (markAsRead) {
-    $.get(mw.util.getUrl(this.name));
+    $.get(cd.g.CURRENT_PAGE.getUrl());
   }
   const resp = await request;
 

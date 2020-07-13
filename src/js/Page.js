@@ -28,7 +28,7 @@ export default class Page {
    * @returns {string}
    */
   getUrl(parameters) {
-    return mw.util.getUrl(parameters);
+    return mw.util.getUrl(this.name, parameters);
   }
 
   /**

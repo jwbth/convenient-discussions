@@ -856,12 +856,12 @@ export default class Comment extends CommentSkeleton {
     switch (type) {
       case 'parse': {
         if (code === 'moreThanOneTimestamp') {
-          const url = mw.util.getUrl(this.sourcePage, { diff: data.edit.revid });
+          const url = this.sourcePage.getUrl({ diff: data.edit.revid });
           text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
           OO.ui.alert(text);
           return;
         } else {
-          const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
+          const url = this.sourcePage.getUrl({ action: 'history' });
           text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         }
         break;
@@ -870,7 +870,7 @@ export default class Comment extends CommentSkeleton {
       case 'api':
       default: {
         if (code === 'noData') {
-          const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
+          const url = this.sourcePage.getUrl({ action: 'history' });
           text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         } else {
           text = cd.s('thank-error');
@@ -910,7 +910,7 @@ export default class Comment extends CommentSkeleton {
 
     mw.loader.load('mediawiki.diff.styles');
 
-    const url = mw.util.getUrl(this.sourcePage, { diff: edit.revid });
+    const url = this.sourcePage.getUrl({ diff: edit.revid });
     const $question = cd.util.wrapInElement(
       cd.s('thank-confirm', this.author.name, this.author, url),
       'div'
