@@ -413,3 +413,13 @@ export function hideSensitiveCode(code) {
 
   return { code, hidden };
 }
+
+/**
+ * Modify or leave unchanged the string to have two newlines in the end of it.
+ *
+ * @param {string} code
+ * @returns {string}
+ */
+export function endWithTwoNewlines(code) {
+  return code.replace(/([^\n])\n?$/, '$1\n\n');
+}

@@ -595,4 +595,12 @@ export default {
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
     return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
   },
+
+  /**
+   * Code that creates an anchor on the page.
+   *
+   * @param {string} anchor
+   * @returns {string}
+   */
+  getAnchorCode: (anchor) => `<span id="${anchor}"></span>`,
 };

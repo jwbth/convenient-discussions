@@ -15,6 +15,7 @@ import { copyLink } from './modal.js';
 import { editPage, getLastRevision } from './apiWrappers';
 import { editWatchedSections } from './modal';
 import {
+  endWithTwoNewlines,
   extractSignatures,
   findFirstTimestamp,
   hideHtmlComments,
@@ -654,8 +655,6 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.editTargetPage = async function (sourcePage, targetPage) {
-      const endWithTwoNewlines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
-
       const targetPageCode = cd.config.getMoveTargetPageCode ?
         cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.g.CURRENT_USER_SIGNATURE) :
         undefined;
@@ -1145,6 +1144,74 @@ export default class Section extends SectionSkeleton {
     }
 
     this.inCode = bestMatch;
+  }
+
+  /**
+   * Modify page code string related to the section in accordance with an action.
+   *
+   * @param {string} pageCode
+   * @param {object} options
+   * @param {string} options.action
+   * @param {string} options.commentForm
+   * @returns {string}
+   */
+  modifyCode(pageCode, { action, commentForm }) {
+    if (action === 'replyInSection') {
+      // Detect the last section comment's indentation characters if needed or a vote / bulleted
+      // reply placeholder.
+      const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+      if (replyPlaceholder) {
+        this.inCode.lastCommentIndentationChars = replyPlaceholder;
+      } else {
+        const lastComment = this.comments[this.comments.length - 1];
+        if (
+          lastComment &&
+          (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
+        ) {
+          try {
+            lastComment.locateInCode(pageCode);
+          } finally {
+            if (
+              lastComment.inCode &&
+              (
+                !lastComment.inCode.indentationChars.startsWith('#') ||
+                // For now we use the workaround with this.containerListType to make sure "#" is a
+                // part of comments organized in a numbered list, not of a numbered list _in_ the
+                // target comment.
+                this.containerListType === 'ol'
+              )
+            ) {
+              this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
+            }
+          }
+        }
+      }
+    }
+
+    let commentCode;
+    if (!commentCode && commentForm) {
+      ({ commentCode } = commentForm.commentTextToCode('submit'));
+    }
+
+    let newPageCode;
+    let codeBeforeInsertion;
+    switch (action) {
+      case 'replyInSection': {
+        codeBeforeInsertion = pageCode.slice(0, this.inCode.firstChunkContentEndIndex);
+        const codeAfterInsertion = pageCode.slice(this.inCode.firstChunkContentEndIndex);
+        newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        break;
+      }
+
+      case 'addSubsection': {
+        codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, this.inCode.contentEndIndex));
+        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex);
+        newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        break;
+      }
+    }
+
+    return { newPageCode, codeBeforeInsertion, commentCode };
   }
 
   /**

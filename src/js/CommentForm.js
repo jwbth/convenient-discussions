@@ -23,12 +23,7 @@ import {
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
 import { editPage, getLastRevision, parseCode, unknownApiErrorText } from './apiWrappers';
-import {
-  extractSignatures,
-  hideHtmlComments,
-  hideSensitiveCode,
-  removeWikiMarkup,
-} from './wikitext';
+import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
@@ -1558,6 +1553,7 @@ export default class CommentForm {
    *   script, `'javascript'` for JavaScript errors.
    * @param {string} [options.code] Code of the error (either `code`, `apiData`, or `message`
    *   should be specified).
+   * @param {object} [options.details] Additional details about an error.
    * @param {string} [options.apiData] Data object received from the MediaWiki server (either
    *   `code`, `apiData`, or `message` should be specified).
    * @param {string} [options.message] Text of the error (either `code`, `apiData`, or `message`
@@ -1573,6 +1569,7 @@ export default class CommentForm {
   async handleError({
     type,
     code,
+    details,
     apiData,
     message,
     messageType,
@@ -1615,6 +1612,9 @@ export default class CommentForm {
             break;
           case 'delete-repliesInSection':
             message = cd.s('cf-error-delete-repliesinsection');
+            break;
+          case 'commentLinks-commentNotFound':
+            message = cd.s('cf-error-commentlinks-commentnotfound', details.anchor);
             break;
         }
         const navigateToEditUrl = async (e) => {
@@ -1679,7 +1679,27 @@ export default class CommentForm {
   }
 
   /**
-   * Convert the comment in the form to wikitext.
+   * Prepend indentation chars to code.
+   *
+   * @param {string} code
+   * @param {string} indentationChars
+   * @returns {string}
+   * @private
+   */
+  addIndentationChars(code, indentationChars) {
+    return (
+      indentationChars +
+      (
+        indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChars ?
+        ' ' :
+        ''
+      ) +
+      code
+    );
+  }
+
+  /**
+   * Convert the text of the comment in the form to wikitext.
    *
    * @param {string} action `'submit'` (view changes maps to this too) or `'preview'`.
    * @returns {string}
@@ -1917,15 +1937,7 @@ export default class CommentForm {
 
     // Add the indentation characters
     if (action === 'submit') {
-      code = (
-        indentationChars +
-        (
-          indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChars ?
-          ' ' :
-          ''
-        ) +
-        code
-      );
+      code = this.addIndentationChars(code, indentationChars);
 
       // When an indented comment had been started with a list but the list has gone after editing.
       // Really rare but possible (see
@@ -1946,12 +1958,12 @@ export default class CommentForm {
 
     // Imitate a list so that the user will see where it would break on a real page. This
     // pseudolist's margin is made invisible by CSS.
-    let imitateList;
+    let doImitateList;
     if (action === 'preview' && willCommentBeIndented && this.commentInput.getValue().trim()) {
       code = code.replace(/^/gm, ':');
-      imitateList = true;
+      doImitateList = true;
     } else {
-      imitateList = false;
+      doImitateList = false;
     }
 
     code = unhideText(code, hidden);
@@ -1960,7 +1972,10 @@ export default class CommentForm {
       code = cd.config.postTransformCode(code, this);
     }
 
-    return { code, imitateList };
+    return {
+      commentCode: code,
+      doImitateList,
+    };
   }
 
   /**
@@ -1973,199 +1988,62 @@ export default class CommentForm {
    * @private
    */
   prepareNewPageCode(pageCode, action) {
-    let targetInCode;
+    const doDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
+
     if (!(this.target instanceof Page)) {
       this.target.locateInCode(pageCode);
-      targetInCode = this.target.inCode;
     }
+    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode(pageCode, {
+      action: this.mode,
+      doDelete,
+      commentForm: this,
+    });
 
-    let currentIndex;
-    if (this.mode === 'reply') {
-      currentIndex = targetInCode.endIndex;
-
-      const properPlaceRegexp = new RegExp(
-        '^([^]*?(?:' + mw.util.escapeRegExp(targetInCode.signatureCode) + '|' +
-        cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
-        (
-          targetInCode.indentationChars.length > 0 ?
-          `[:*#]{0,${targetInCode.indentationChars.length}}` :
-          ''
-        ) +
-        '(?![:*#])'
-      );
-      const [, textBeforeInsertion] = properPlaceRegexp.exec(pageCode.slice(currentIndex)) || [];
-      if (textBeforeInsertion === undefined) {
-        throw new CdError({
-          type: 'parse',
-          code: 'findPlace',
-        });
-      }
-
-      // If the comment is to be put after a comment with different indentation characters, use
-      // these.
-      const [, changedIndentationChars] = textBeforeInsertion.match(/\n([:*#]{2,}).*\n$/) || [];
-      if (changedIndentationChars) {
-        // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used "slice(0, targetInCode.indentationChars.length + 1)".
-        targetInCode.replyIndentationChars = changedIndentationChars
-          .slice(0, targetInCode.replyIndentationChars.length)
-          .replace(/:$/, cd.config.defaultIndentationChar);
-      }
-
-      if (/\n=+.*?\1[ \t]*\n/.test(hideHtmlComments(textBeforeInsertion))) {
-        // Something went wrong and we are going to post in another section.
-        throw new CdError({
-          type: 'parse',
-          code: 'findPlace-unexpectedHeading',
-        });
-      }
-
-      currentIndex += textBeforeInsertion.length;
-    }
-
-    if (this.mode === 'replyInSection') {
-      // Detect the last section comment's indentation characters if needed or a vote / bulleted
-      // reply placeholder.
-      const [, replyPlaceholder] = targetInCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
-      if (replyPlaceholder) {
-        targetInCode.lastCommentIndentationChars = replyPlaceholder;
-      }
-
-      const lastComment = this.target.comments[this.target.comments.length - 1];
-      if (
-        lastComment &&
-        (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
-      ) {
-        try {
-          lastComment.locateInCode(pageCode);
-        } finally {
-          if (
-            lastComment.inCode &&
-            (
-              !lastComment.inCode.indentationChars.startsWith('#') ||
-              // For now we use the workaround with this.containerListType to make sure "#" is a
-              // part of comments organized in a numbered list, not of a numbered list _in_ the
-              // target comment.
-              this.containerListType === 'ol'
-            )
-          ) {
-            targetInCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
-          }
-        }
-      }
-    }
-
-    const isDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
-    let commentCode;
-    if (!isDelete) {
-      try {
-        ({ code: commentCode } = this.commentTextToCode('submit'));
-      } catch (e) {
-        if (e instanceof CdError) {
-          this.handleError(e.data);
-        } else {
-          this.handleError({
-            type: 'javascript',
-            logMessage: e,
-          });
-        }
-        return;
-      }
-    }
-
-    let newPageCode;
-    let before;
-    switch (this.mode) {
-      case 'reply': {
-        before = pageCode.slice(0, currentIndex);
-        newPageCode = before + commentCode + pageCode.slice(currentIndex);
-        break;
-      }
-
-      case 'edit': {
-        if (isDelete) {
-          let startIndex;
-          let endIndex;
-          if (this.target.isOpeningSection && targetInCode.headingStartIndex !== undefined) {
-            this.target.section.locateInCode(pageCode);
-            const targetInCode = this.target.section.inCode;
-            if (extractSignatures(targetInCode.code).length > 1) {
-              throw new CdError({
-                type: 'parse',
-                code: 'delete-repliesInSection',
-              });
-            } else {
-              // Deleting the whole section is safer as we don't want to leave any content in the
-              // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = targetInCode);
-            }
-          } else {
-            endIndex = targetInCode.endIndex + targetInCode.signatureDirtyCode.length + 1;
-            const succeedingText = pageCode.slice(targetInCode.endIndex);
-
-            const repliesRegexp = new RegExp(
-              `^.+\\n+[:*#]{${targetInCode.indentationChars.length + 1},}`
-            );
-            const repliesMatch = repliesRegexp.exec(succeedingText);
-
-            if (repliesMatch) {
-              throw new CdError({
-                type: 'parse',
-                code: 'delete-repliesToComment',
-              });
-            } else {
-              startIndex = targetInCode.lineStartIndex;
-            }
-          }
-
-          newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
-        } else {
-          const startIndex = (
-            this.target.isOpeningSection && targetInCode.headingStartIndex !== undefined ?
-            targetInCode.headingStartIndex :
-            targetInCode.lineStartIndex
-          );
-          before = pageCode.slice(0, startIndex);
-          newPageCode = (
-            before +
-            commentCode +
-            pageCode.slice(targetInCode.endIndex + targetInCode.signatureDirtyCode.length)
-          );
-        }
-        break;
-      }
-
-      case 'replyInSection': {
-        before = pageCode.slice(0, targetInCode.firstChunkContentEndIndex);
-        newPageCode = before + commentCode + pageCode.slice(targetInCode.firstChunkContentEndIndex);
-        break;
-      }
-
-      case 'addSection': {
-        if (this.newTopicOnTop) {
-          const adjustedPageCode = hideHtmlComments(pageCode);
-          const firstSectionIndex = adjustedPageCode.search(/^(=+).*?\1/m);
-          before = pageCode.slice(0, firstSectionIndex);
-          newPageCode = before + commentCode + '\n' + pageCode.slice(firstSectionIndex);
-        } else {
-          before = (pageCode + '\n').trimStart();
-          newPageCode = before + commentCode;
-        }
-        break;
-      }
-
-      case 'addSubsection': {
-        before = pageCode.slice(0, targetInCode.contentEndIndex).replace(/([^\n])\n$/, '$1\n\n');
-        newPageCode = before + commentCode + pageCode.slice(targetInCode.contentEndIndex);
-        break;
-      }
-    }
-
-    if (action === 'submit' && !isDelete) {
+    if (action === 'submit' && !doDelete) {
       // We need this only to generate anchors for the comments above our comment to avoid
       // collisions.
-      extractSignatures(before, true);
+      extractSignatures(codeBeforeInsertion, true);
     }
+
+    // Add anchor code to comments linked from the comment.
+    const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
+    const anchors = [];
+    let match;
+    while ((match = anchorsRegexp.exec(commentCode))) {
+      anchors.push(match[1]);
+    }
+    anchors.forEach((anchor) => {
+      const comment = Comment.getCommentByAnchor(anchor);
+      if (comment) {
+        comment.locateInCode(newPageCode);
+        const anchorCode = cd.config.getAnchorCode(anchor);
+        if (comment.inCode.code.includes(anchorCode)) return;
+
+        let commentStart = this.addIndentationChars(
+          comment.inCode.code,
+          comment.inCode.indentationChars
+        );
+        const commentTextIndex = commentStart.match(/^[:*#]* */)[0].length;
+        commentStart = (
+          commentStart.slice(0, commentTextIndex) + anchorCode +
+          commentStart.slice(commentTextIndex)
+        );
+        const commentCode = (
+          (comment.inCode.headingCode || '') + commentStart + comment.inCode.signatureDirtyCode
+        );
+
+        ({ newPageCode } = comment.modifyCode(newPageCode, {
+          action: 'edit',
+          commentCode,
+        }));
+      } else if (!$('#' + anchor).length) {
+        throw new CdError({
+          type: 'parse',
+          code: 'commentLinks-commentNotFound',
+          details: { anchor },
+        });
+      }
+    });
 
     return newPageCode;
   }
@@ -2388,7 +2266,7 @@ export default class CommentForm {
       return;
     }
 
-    const { code: commentCode, imitateList } = this.commentTextToCode('preview');
+    const { commentCode, doImitateList } = this.commentTextToCode('preview');
     let html;
     let parsedSummary;
     try {
@@ -2425,7 +2303,7 @@ export default class CommentForm {
           .html(html)
           .prepend($label)
           .cdAddCloseButton();
-        if (imitateList) {
+        if (doImitateList) {
           this.$previewArea.addClass('cd-previewArea-indentedComment');
         } else {
           this.$previewArea.removeClass('cd-previewArea-indentedComment');

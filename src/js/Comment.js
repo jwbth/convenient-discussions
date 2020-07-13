@@ -1,4 +1,6 @@
 /**
+ * Comment class.
+ *
  * @module Comment
  */
 
@@ -23,6 +25,7 @@ import { copyLink } from './modal.js';
 import {
   decodeHtmlEntities,
   extractSignatures,
+  hideHtmlComments,
   hideSensitiveCode,
   normalizeCode,
   removeWikiMarkup,
@@ -1359,14 +1362,16 @@ export default class Comment extends CommentSkeleton {
     let indentationChars = '';
     let lineStartIndex = startIndex;
 
-    const headingMatch = code.match(/(^[^]*(?:^|\n))(=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/);
+    const headingMatch = code.match(/(^[^]*(?:^|\n))((=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n)/);
+    let headingCode;
     let headingStartIndex;
     let headingLevel;
     let headlineCode;
     if (headingMatch) {
+      headingCode = headingMatch[2];
       headingStartIndex = startIndex + headingMatch[1].length;
-      headingLevel = headingMatch[2].length;
-      headlineCode = headingMatch[3].trim();
+      headingLevel = headingMatch[3].length;
+      headlineCode = headingMatch[4].trim();
       startIndex += headingMatch[0].length;
       code = code.slice(headingMatch[0].length);
     }
@@ -1438,6 +1443,7 @@ export default class Comment extends CommentSkeleton {
       startIndex,
       lineStartIndex,
       headingMatch,
+      headingCode,
       headingStartIndex,
       headingLevel,
       headlineCode,
@@ -1615,6 +1621,131 @@ export default class Comment extends CommentSkeleton {
     });
 
     return matches;
+  }
+
+  /**
+   * Modify page code string related to the comment in accordance with an action.
+   *
+   * @param {string} pageCode
+   * @param {object} options
+   * @param {string} [options.action]
+   * @param {string} [options.doDelete]
+   * @param {string} [options.commentCode]
+   * @param {string} [options.commentForm]
+   * @returns {string}
+   * @throws {CdError}
+   */
+  modifyCode(pageCode, { action, doDelete, commentCode, commentForm }) {
+    let currentIndex;
+    if (action === 'reply') {
+      currentIndex = this.inCode.endIndex;
+
+      const properPlaceRegexp = new RegExp(
+        '^([^]*?(?:' + mw.util.escapeRegExp(this.inCode.signatureCode) + '|' +
+        cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
+        (
+          this.inCode.indentationChars.length > 0 ?
+          `[:*#]{0,${this.inCode.indentationChars.length}}` :
+          ''
+        ) +
+        '(?![:*#])'
+      );
+      const [, codeInBetween] = properPlaceRegexp.exec(pageCode.slice(currentIndex)) || [];
+      if (codeInBetween === undefined) {
+        throw new CdError({
+          type: 'parse',
+          code: 'findPlace',
+        });
+      }
+
+      // If the comment is to be put after a comment with different indentation characters, use
+      // these.
+      const [, changedIndentationChars] = codeInBetween.match(/\n([:*#]{2,}).*\n$/) || [];
+      if (changedIndentationChars) {
+        // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
+        // possible here when we used "slice(0, this.inCode.indentationChars.length + 1)".
+        this.inCode.replyIndentationChars = changedIndentationChars
+          .slice(0, this.inCode.replyIndentationChars.length)
+          .replace(/:$/, cd.config.defaultIndentationChar);
+      }
+
+      if (/\n=+.*?\1[ \t]*\n/.test(hideHtmlComments(codeInBetween))) {
+        // Something went wrong and we are going to post in another section.
+        throw new CdError({
+          type: 'parse',
+          code: 'findPlace-unexpectedHeading',
+        });
+      }
+
+      currentIndex += codeInBetween.length;
+    }
+
+    if (!commentCode && commentForm && !doDelete) {
+      ({ commentCode } = commentForm.commentTextToCode('submit'));
+    }
+
+    let newPageCode;
+    let codeBeforeInsertion;
+    switch (action) {
+      case 'reply': {
+        codeBeforeInsertion = pageCode.slice(0, currentIndex);
+        newPageCode = codeBeforeInsertion + commentCode + pageCode.slice(currentIndex);
+        break;
+      }
+
+      case 'edit': {
+        if (doDelete) {
+          let startIndex;
+          let endIndex;
+          if (this.isOpeningSection && this.inCode.headingStartIndex !== undefined) {
+            this.section.locateInCode(pageCode);
+            if (extractSignatures(this.section.inCode.code).length > 1) {
+              throw new CdError({
+                type: 'parse',
+                code: 'delete-repliesInSection',
+              });
+            } else {
+              // Deleting the whole section is safer as we don't want to leave any content in the
+              // end anyway.
+              ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
+            }
+          } else {
+            endIndex = this.inCode.endIndex + this.inCode.signatureDirtyCode.length + 1;
+            const succeedingText = pageCode.slice(this.inCode.endIndex);
+
+            const repliesRegexp = new RegExp(
+              `^.+\\n+[:*#]{${this.inCode.indentationChars.length + 1},}`
+            );
+            const repliesMatch = repliesRegexp.exec(succeedingText);
+
+            if (repliesMatch) {
+              throw new CdError({
+                type: 'parse',
+                code: 'delete-repliesToComment',
+              });
+            } else {
+              startIndex = this.inCode.lineStartIndex;
+            }
+          }
+
+          newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
+        } else {
+          const startIndex = (
+            this.isOpeningSection && this.inCode.headingStartIndex !== undefined ?
+            this.inCode.headingStartIndex :
+            this.inCode.lineStartIndex
+          );
+          codeBeforeInsertion = pageCode.slice(0, startIndex);
+          const codeAfterInsertion = (
+            pageCode.slice(this.inCode.endIndex + this.inCode.signatureDirtyCode.length)
+          );
+          newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        }
+        break;
+      }
+    }
+
+    return { newPageCode, codeBeforeInsertion, commentCode };
   }
 
   /**

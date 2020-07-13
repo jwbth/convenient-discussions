@@ -668,10 +668,10 @@ export default class Autocomplete {
   static getCommentLinksConfig(comments = []) {
     const config = {
       comments,
-      transform: ({ anchor, author, timestamp }) => {
-        return `[[#cd-comment-${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`;
-      },
-      getStartOffset: ({ anchor } = {}) => `[[#cd-comment-${anchor}|`.length,
+      transform: ({ anchor, author, timestamp }) => (
+        `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`
+      ),
+      getStartOffset: ({ anchor } = {}) => `[[#${anchor}|`.length,
       getEndOffset: () => 2,
     };
 
