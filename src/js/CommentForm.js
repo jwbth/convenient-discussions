@@ -22,7 +22,7 @@ import {
 } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
-import { editPage, getLastRevision, parseCode, unknownApiErrorText } from './apiWrappers';
+import { editPage, parseCode, unknownApiErrorText } from './apiWrappers';
 import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
@@ -2054,23 +2054,15 @@ export default class CommentForm {
   }
 
   /**
-   * @typedef {object} TryPrepareNewPageCodeReturn
-   * @property {object} page
-   * @property {string} newPageCode
-   * @private
-   */
-
-  /**
    * Prepare the new page code and handle errors.
    *
    * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {TryPrepareNewPageCodeReturn}
+   * @returns {string} newPageCode
    * @private
    */
   async tryPrepareNewPageCode(action) {
-    let page;
     try {
-      page = await getLastRevision(this.targetPage);
+      await this.targetPage.getCode();
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
@@ -2085,7 +2077,7 @@ export default class CommentForm {
 
     let newPageCode;
     try {
-      newPageCode = this.prepareNewPageCode(page.code, action);
+      newPageCode = this.prepareNewPageCode(this.targetPage.code, action);
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(e.data);
@@ -2098,7 +2090,7 @@ export default class CommentForm {
       return;
     }
 
-    return { page, newPageCode };
+    return newPageCode;
   }
 
   /**
@@ -2357,7 +2349,7 @@ export default class CommentForm {
 
     const currentOperation = this.registerOperation({ type: 'viewChanges' });
 
-    const { page, newPageCode } = await this.tryPrepareNewPageCode('viewChanges') || {};
+    const newPageCode = await this.tryPrepareNewPageCode('viewChanges') || {};
     if (this.closeOperationIfNecessary(currentOperation, newPageCode === undefined)) return;
 
     mw.loader.load('mediawiki.diff.styles');
@@ -2372,7 +2364,7 @@ export default class CommentForm {
         formatversion: 2,
       };
       if (mw.config.get('wgArticleId')) {
-        options.fromrev = page.revisionId;
+        options.fromrev = this.targetPage.revisionId;
       } else {
         // Unexistent pages
         options.fromslots = 'main',
@@ -2523,8 +2515,7 @@ export default class CommentForm {
   async tryEditPage(page, newPageCode, currentOperation) {
     let result;
     try {
-      result = await editPage({
-        title: this.targetPage.name,
+      result = this.targetPage.edit({
         text: newPageCode,
         summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
         tags: cd.config.tagName,
@@ -2587,14 +2578,18 @@ export default class CommentForm {
 
     const currentOperation = this.registerOperation({ type: 'submit' });
 
-    const { page, newPageCode } = await this.tryPrepareNewPageCode('submit') || {};
+    const newPageCode = await this.tryPrepareNewPageCode('submit') || {};
     if (newPageCode === undefined) {
       this.closeOperation(currentOperation);
       return;
     }
 
-    const { pageId, editTimestamp } = await this.tryEditPage(page, newPageCode, currentOperation);
-    if (!pageId) return;
+    const editTimestamp = await this.tryEditPage(
+      this.targetPage,
+      newPageCode,
+      currentOperation
+    );
+    if (!editTimestamp) return;
 
     // Here we use a hack where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
@@ -2602,7 +2597,7 @@ export default class CommentForm {
     let keptData = { didSubmitCommentForm: true };
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
-      mw.config.set('wgArticleId', pageId);
+      mw.config.set('wgArticleId', this.targetPage.pageId);
       keptData.wasPageCreated = true;
     }
 

@@ -21,7 +21,7 @@ import {
   underlinesToSpaces,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
-import { getUserInfo, parseCurrentPage } from './apiWrappers';
+import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadMessages } from './dateFormat';
 import { setSettings } from './options';
@@ -598,7 +598,7 @@ export async function reloadPage(keptData = {}) {
 
   let parseData;
   try {
-    parseData = await parseCurrentPage({ markAsRead: true });
+    parseData = await cd.g.CURRENT_PAGE.parse({ markAsRead: true });
   } catch (e) {
     removeLoadingOverlay();
     if (keptData.didSubmitCommentForm) {

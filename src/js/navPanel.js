@@ -17,7 +17,7 @@ import {
   removeDuplicates,
   reorderArray,
 } from './util';
-import { getUserGenders, makeRequestNoTimers, parseCurrentPage } from './apiWrappers';
+import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
 import { getWatchedSections, setVisits } from './options';
 import { reloadPage } from './boot';
 
@@ -136,7 +136,7 @@ async function checkForNewComments() {
     newRevisions = removeDuplicates(newRevisions);
 
     if (addedNewRevisions.length) {
-      const { text } = await parseCurrentPage({
+      const { text } = await cd.g.CURRENT_PAGE.parse({
         noTimers: true,
         markAsRead: false,
       }) || {};

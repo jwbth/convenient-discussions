@@ -1,6 +1,7 @@
 /**
  * Wrappers for MediaWiki action API requests ({@link
- * https://www.mediawiki.org/wiki/API:Main_page}).
+ * https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link module:Page Page class}
+ * methods for functions regarding concrete page names.
  *
  * @module apiWrappers
  */
@@ -44,46 +45,6 @@ export function makeRequestNoTimers(params, method = 'get') {
 }
 
 /**
- * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}) regarding
- * the current page.
- *
- * @param {object} [options={}]
- * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
- *   background tabs if the browser throttles them).
- * @param {boolean} [options.markAsRead=false] Mark the current page as read in the watchlist.
- * @returns {object}
- * @throws {CdError}
- */
-export async function parseCurrentPage({
-  noTimers = false,
-  markAsRead = false,
-} = {}) {
-  const params = {
-    action: 'parse',
-    page: cd.g.CURRENT_PAGE.name,
-    prop: ['text', 'revid', 'modules', 'jsconfigvars'],
-    formatversion: 2,
-  };
-  const request = noTimers ?
-    makeRequestNoTimers(params).catch(handleApiReject) :
-    cd.g.api.get(params).catch(handleApiReject);
-
-  if (markAsRead) {
-    $.get(cd.g.CURRENT_PAGE.getUrl());
-  }
-  const resp = await request;
-
-  if (resp.parse === undefined) {
-    throw new CdError({
-      type: 'api',
-      code: 'noData',
-    });
-  }
-
-  return resp.parse;
-}
-
-/**
  * Make a parse request with arbitrary code. We assume that if something is parsed, it will be
  * shown, so we automatically load modules.
  *
@@ -120,79 +81,6 @@ export async function parseCode(code, options) {
     },
     handleApiReject
   );
-}
-
-/**
- * @typedef {object} GetLastRevisionReturn
- * @property {string} html
- * @property {number} revisionId
- * @property {string} redirectTarget
- * @property {string} queryTimestamp
- */
-
-/**
- * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
- * code of the specified page, together with a few revision properties.
- *
- * @param {string|mw.Title|Page} title
- * @returns {Promise} Promise resolved with an object containing the code, timestamp, redirect
- *   target, and query timestamp (curtimestamp).
- * @throws {CdError}
- */
-export async function getLastRevision(title) {
-  // The page doesn't exist.
-  if (!mw.config.get('wgArticleId')) {
-    return { code: '' };
-  }
-
-  const resp = await cd.g.api.get({
-    action: 'query',
-    titles: title.toString(),
-    prop: 'revisions',
-    rvprop: ['ids', 'content'],
-    redirects: true,
-    curtimestamp: true,
-    formatversion: 2,
-  }).catch(handleApiReject);
-
-  const query = resp.query;
-  const page = query && query.pages && query.pages[0];
-  const revision = page && page.revisions && page.revisions[0];
-
-  if (!query || !page) {
-    throw new CdError({
-      type: 'api',
-      code: 'noData',
-    });
-  }
-  if (page.missing) {
-    throw new CdError({
-      type: 'api',
-      code: 'missing',
-    });
-  }
-  if (page.invalid) {
-    throw new CdError({
-      type: 'api',
-      code: 'invalid',
-    });
-  }
-  if (!revision) {
-    throw new CdError({
-      type: 'api',
-      code: 'noData',
-    });
-  }
-
-  return {
-    // It's more convenient to unify regexps to have \n as the last character of anything, not
-    // (?:\n|$), and it doesn't seem to affect anything substantially.
-    code: revision.content + '\n',
-
-    revisionId: revision.revid,
-    redirectTarget: query.redirects && query.redirects[0] && query.redirects[0].to,
-    queryTimestamp: resp.curtimestamp,
-  };
 }
 
 /**
@@ -273,109 +161,6 @@ export async function unknownApiErrorText(errorCode, errorInfo) {
   }
 
   return text;
-}
-
-/**
- * @typedef {object} EditPageReturn
- * @property {string} pageId
- * @property {number} editTimestamp
- */
-
-/**
- * Edit a page.
- *
- * @param {object} options
- * @returns {EditPageReturn}
- */
-export async function editPage(options) {
-  let resp;
-  try {
-    resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser(Object.assign(options, {
-      action: 'edit',
-      formatversion: 2,
-    }))).catch(handleApiReject);
-  } catch (e) {
-    if (e instanceof CdError) {
-      const { type, apiData } = e.data;
-      if (type === 'network') {
-        throw e;
-      } else {
-        const error = apiData && apiData.error;
-        let message;
-        let isRawMessage = false;
-        let logMessage;
-        let code;
-        if (error) {
-          code = error.code;
-          switch (code) {
-            case 'spamblacklist': {
-              message = cd.s('error-spamblacklist', error.spamblacklist.matches[0]);
-              break;
-            }
-
-            case 'titleblacklist': {
-              message = cd.s('error-titleblacklist');
-              break;
-            }
-
-            case 'abusefilter-warning':
-            case 'abusefilter-disallowed': {
-              await cd.g.api.loadMessagesIfMissing([code]);
-              const description = mw.message(code, error.abusefilter.description).plain();
-              ({ html: message } = await parseCode(description) || {});
-              if (message) {
-                isRawMessage = true;
-              } else {
-                message = cd.s('error-abusefilter', error.abusefilter.description);
-              }
-              break;
-            }
-
-            case 'editconflict': {
-              message = cd.s('error-editconflict');
-              break;
-            }
-
-            case 'blocked': {
-              message = cd.s('error-blocked');
-              break;
-            }
-
-            case 'missingtitle': {
-              message = cd.s('error-pagedeleted');
-              break;
-            }
-
-            default: {
-              message = (
-                cd.s('error-pagenotedited') +
-                ' ' +
-                (await unknownApiErrorText(code, error.info))
-              );
-            }
-          }
-
-          logMessage = [code, apiData];
-        } else {
-          logMessage = apiData;
-        }
-
-        throw new CdError({
-          type: 'api',
-          code: 'error',
-          apiData: resp,
-          details: { code, message, isRawMessage, logMessage },
-        });
-      }
-    } else {
-      throw e;
-    }
-  }
-
-  return {
-    pageId: resp.edit.pageid,
-    editTimestamp: resp.edit.newtimestamp,
-  };
 }
 
 /**

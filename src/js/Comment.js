@@ -30,7 +30,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { getLastRevision, getUserGenders } from './apiWrappers';
+import { getUserGenders } from './apiWrappers';
 
 /**
  * Calculates the proportion of the number of words (3 characters long minimum) present in both
@@ -1155,8 +1155,8 @@ export default class Comment extends CommentSkeleton {
    */
   async getCode() {
     try {
-      const page = await getLastRevision(this.sourcePage);
-      this.locateInCode(page.code);
+      await this.sourcePage.getCode();
+      this.locateInCode(this.sourcePage.code);
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
