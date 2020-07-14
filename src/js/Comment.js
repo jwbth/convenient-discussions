@@ -1128,11 +1128,10 @@ export default class Comment extends CommentSkeleton {
     text = unhideText(text, hidden);
 
     if (cd.config.paragraphTemplates.length) {
-      const pattern = (
-        '\\{\\{(?:' +
-        cd.config.paragraphTemplates.map(caseInsensitiveFirstCharPattern).join('|') +
-        ')\\}\\}'
-      );
+      const paragraphTemplatesPattern = cd.config.paragraphTemplates
+        .map(caseInsensitiveFirstCharPattern)
+        .join('|');
+      const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
       const regexp = new RegExp(pattern, 'g');
       const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
       text = text.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
