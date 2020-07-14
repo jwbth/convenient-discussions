@@ -7,6 +7,7 @@
 import { create as nanoCssCreate } from 'nano-css';
 
 import Comment from './Comment';
+import Page from './Page';
 import cd from './cd';
 import {
   caseInsensitiveFirstCharPattern,
@@ -73,6 +74,7 @@ async function prepare({ messagesRequest }) {
     },
   });
 
+  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];

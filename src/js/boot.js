@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
@@ -204,6 +205,7 @@ function initGlobals() {
     );
   }
 
+  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
   cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
