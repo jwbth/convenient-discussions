@@ -2764,7 +2764,11 @@ export default class CommentForm {
     if (['reply', 'replyInSection'].includes(this.mode)) {
       const commentText = this.commentInput.getValue()
         .trim()
-        .replace(/\s+/g, ' ');
+        .replace(/\s+/g, ' ')
+        // Remove user links to prevent sending a double notification.
+        .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
+          cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(wikilink) ? text : s
+        ));
       if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
         optionalText = `: ${commentText} (-)`;
       }

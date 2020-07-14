@@ -242,6 +242,13 @@ function initPatterns() {
     `(?:Special[ _]*:[ _]*Contributions|${contributionsPageAnySpace})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
+  const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
+  const userNamespaceAliasesPatternAnySpace = anySpace(userNamespaceAliases.join('|'));
+  cd.g.USER_NAMESPACE_ALIASES_REGEXP = new RegExp(
+    `^:?(?:${userNamespaceAliasesPatternAnySpace}):([^/]+)$`,
+    'i'
+  );
+
   if (cd.config.unsignedTemplates.length) {
     const unsignedTemplatesPattern = cd.config.unsignedTemplates.join('|');
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(
