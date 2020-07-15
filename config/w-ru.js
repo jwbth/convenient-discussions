@@ -250,7 +250,7 @@ export default {
       if (/^Википедия:Форум\/Географический/.test(pageName)) {
         return 'Википедия:Форум/Географический/Архивы';
       } else {
-        return 'Википедия:Форум/Архив/' + pageName.slice(6);
+        return 'Википедия:Форум/Архив/' + pageName.slice('Википедия:Форум/'.length);
       }
     } else {
       return pageName;
