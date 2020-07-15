@@ -12,7 +12,6 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import { animateLinks, isProbablyTalkPage } from './util';
 import { copyLink } from './modal.js';
-import { editPage } from './apiWrappers';
 import { editWatchedSections } from './modal';
 import {
   endWithTwoNewlines,

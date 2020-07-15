@@ -340,7 +340,7 @@ function initPatterns() {
   cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPatternAnySpace}):`, 'i');
 
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat([new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`)])
+    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
     .concat(cd.config.customBadCommentBeginnings);
 
   cd.g.ADD_TOPIC_SELECTORS = ['#ca-addsection a']

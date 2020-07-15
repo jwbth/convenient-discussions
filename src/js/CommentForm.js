@@ -22,9 +22,9 @@ import {
 } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
-import { editPage, parseCode, unknownApiErrorText } from './apiWrappers';
 import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
+import { parseCode, unknownApiErrorText } from './apiWrappers';
 import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
