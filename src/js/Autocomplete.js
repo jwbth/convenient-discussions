@@ -66,15 +66,15 @@ export default class Autocomplete {
       element.cdInput = input;
       element.addEventListener('tribute-replaced', (e) => {
         // Move the caret to the place we need.
-        const cursorIndex = input.getRange().to;
-        const startPos = cursorIndex - e.detail.item.original.value.length;
+        const caretIndex = input.getRange().to;
+        const startPos = caretIndex - e.detail.item.original.value.length;
         const value = input.getValue();
-        input.setValue(value.slice(0, cursorIndex) + value.slice(cursorIndex));
+        input.setValue(value.slice(0, caretIndex) + value.slice(caretIndex));
         const endOffset = e.detail.item.original.endOffset;
         const startOffset = e.detail.item.original.startOffset === null ?
           e.detail.item.original.value.length - endOffset :
           e.detail.item.original.startOffset;
-        input.selectRange(startPos + startOffset, cursorIndex - endOffset);
+        input.selectRange(startPos + startOffset, caretIndex - endOffset);
       });
     });
   }
@@ -307,10 +307,10 @@ export default class Autocomplete {
                     }
                   });
 
-                  const cursorIndex = input.getRange().to;
+                  const caretIndex = input.getRange().to;
                   const value = input.getValue();
-                  input.setValue(value.slice(0, cursorIndex) + s + value.slice(cursorIndex));
-                  input.selectRange(cursorIndex + firstValueIndex);
+                  input.setValue(value.slice(0, caretIndex) + s + value.slice(caretIndex));
+                  input.selectRange(caretIndex + firstValueIndex);
                 },
                 (e) => {
                   mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });

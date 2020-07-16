@@ -358,7 +358,7 @@ export function hideSensitiveCode(code) {
   // Taken from
   // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
   const hideTemplates = () => {
-    // Simple function for hiding templates that have no nested ones.
+    // Simple regexp for hiding templates that have no nested ones.
     hide(/\{\{(?:[^{]\{?)+?\}\}/g);
 
     let pos = 0;

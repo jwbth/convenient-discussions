@@ -709,7 +709,7 @@ function getTimestampMainPartPattern(format, digits) {
 function setLocalTimestampRegexps() {
   const mainPartPattern = getTimestampMainPartPattern(
     cd.g.DATE_FORMAT,
-    cd.g.DIGITS ? '[' + cd.g.DIGITS + ']' : '\\d'
+    cd.g.DIGITS ? `[${cd.g.DIGITS}]` : '\\d'
   );
   const timezones = Object.keys(cd.config.messages)
     .filter((name) => name.startsWith('timezone-'))

@@ -333,11 +333,9 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
   const usersToRequest = users
     .filter((user) => !user.gender)
     .map((user) => user.name);
-
   const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
     500 :
     50;
-
   let nextUsers;
   while ((nextUsers = usersToRequest.splice(0, limit).join('|'))) {
     const params = {
@@ -347,12 +345,9 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const request = noTimers ?
+    const resp = await noTimers ?
       makeRequestNoTimers(params, 'post').catch(handleApiReject) :
       cd.g.api.post(params).catch(handleApiReject);
-
-    const resp = await request;
-
     const users = resp && resp.query && resp.query.users;
     if (!users) {
       throw new CdError({
@@ -360,7 +355,6 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
         code: 'noData',
       });
     }
-
     users.forEach((user) => {
       userRegistry.getUser(user.name).gender = user.gender;
     });

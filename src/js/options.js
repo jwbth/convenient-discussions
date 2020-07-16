@@ -78,7 +78,7 @@ export function unpackWatchedSections(watchedSectionsString) {
 }
 
 /**
- * Request settings from the server.
+ * Request the settings from the server.
  *
  * @param {boolean} [reuse=false]
  * @returns {object}
@@ -96,8 +96,8 @@ export async function getSettings(reuse = false) {
 }
 
 /**
- * Save settings to the server. This function will split the settings into the global and local ones
- * and make two respective requests.
+ * Save the settings to the server. This function will split the settings into the global and local
+ * ones and make two respective requests.
  *
  * @param {object} [settings]
  */
@@ -138,7 +138,7 @@ export async function setSettings(settings) {
  */
 
 /**
- * Request pages visits data from the server.
+ * Request the pages visits data from the server.
  *
  * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
  * can be critical for determining new comments.
@@ -189,7 +189,7 @@ function cleanUpVisits(originalVisits) {
 }
 
 /**
- * Save pages visits data to the server.
+ * Save the pages visits data to the server.
  *
  * @param {object} visits
  */
@@ -215,13 +215,8 @@ export async function setVisits(visits) {
 }
 
 /**
- * @typedef {object} GetWatchedSectionsReturn
- * @property {object} watchedSections
- * @property {object} thisPageWatchedSections
- */
-
-/**
- * Request watched sections from the server.
+ * Request the watched sections from the server and assign them to
+ * `convenientDiscussions.g.watchedSections`.
  *
  * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
  * can be critical for determining watched sections.

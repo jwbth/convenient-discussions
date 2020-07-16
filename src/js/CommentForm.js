@@ -230,14 +230,15 @@ export default class CommentForm {
    */
   checkCode() {
     if (!this.checkCodeRequest) {
+      // We use a jQuery promise as there is no way to know the state of native promises.
+      const deferred = $.Deferred();
+
       /**
        * Request to test if a comment or section exists in the code made by {@link
        * module:CommentForm#checkCode}.
        *
        * @type {JQuery.Promise}
        */
-      // We use a jQuery promise as there is no way to know the state of native promises.
-      const deferred = $.Deferred();
       this.checkCodeRequest = deferred.then(
         () => {
           saveSession();
@@ -2951,12 +2952,12 @@ export default class CommentForm {
   mention() {
     if (!this.autocomplete) return;
 
-    const cursorIndex = this.commentInput.getRange().to;
+    const caretIndex = this.commentInput.getRange().to;
     const lastChar = (
-      cursorIndex &&
-      this.commentInput.getValue().slice(cursorIndex - 1, cursorIndex)
+      caretIndex &&
+      this.commentInput.getValue().slice(caretIndex - 1, caretIndex)
     );
-    if (cursorIndex && lastChar !== ' ' && lastChar !== '\n') {
+    if (caretIndex && lastChar !== ' ' && lastChar !== '\n') {
       this.commentInput.insertContent(' ');
     }
 
@@ -2988,7 +2989,7 @@ export default class CommentForm {
       // started.
       const isCommentInputFocused = this.commentInput.$input.is(':focus');
       const range = this.commentInput.getRange();
-      const cursorIndex = range.to;
+      const caretIndex = range.to;
       const rangeStart = Math.min(range.to, range.from);
       const rangeEnd = Math.max(range.to, range.from);
       const value = this.commentInput.getValue();
@@ -2996,7 +2997,7 @@ export default class CommentForm {
       const quotePost = cd.config.quoteFormatting[1];
       const quotation = quotePre + (selectionText || cd.s('cf-quote-placeholder')) + quotePost;
       const newRangeStart = (
-        (isCommentInputFocused ? rangeStart : cursorIndex) +
+        (isCommentInputFocused ? rangeStart : caretIndex) +
         (selectionText ? quotation.length : quotePre.length)
       );
       const newRangeEnd = selectionText ?
@@ -3004,7 +3005,7 @@ export default class CommentForm {
         newRangeStart + cd.s('cf-quote-placeholder').length;
       const newValue = isCommentInputFocused ?
         value.slice(0, rangeStart) + quotation + value.slice(rangeEnd) :
-        value.slice(0, cursorIndex) + quotation + value.slice(cursorIndex);
+        value.slice(0, caretIndex) + quotation + value.slice(caretIndex);
       this.commentInput.setValue(newValue);
       this.commentInput.selectRange(newRangeStart, newRangeEnd);
     }

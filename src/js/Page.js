@@ -226,19 +226,22 @@ export default class Page {
       makeRequestNoTimers(params).catch(handleApiReject) :
       cd.g.api.get(params).catch(handleApiReject);
 
+    // We make the GET request that marks the page as read at the same time with the parse request,
+    // not after it, to minimize the chance that the page will get new revisions that we will
+    // erroneously mark as read.
     if (markAsRead) {
       $.get(this.getUrl());
     }
-    const resp = await request;
 
-    if (resp.parse === undefined) {
+    const parse = (await request).parse;
+    if (parse === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    return resp.parse;
+    return parse;
   }
 
   /**
