@@ -276,7 +276,6 @@
         if (info) {
           this.tribute.current.selectedPath = info.mentionSelectedPath;
           this.tribute.current.mentionText = info.mentionText;
-          this.tribute.current.textAfterMention = info.textAfterMention;
           this.tribute.current.selectedOffset = info.mentionSelectedOffset;
         }
       }
@@ -771,11 +770,10 @@
         }
       }
     }, {
-      key: "getTextAroundCurrentSelection",
-      value: function getTextAroundCurrentSelection() {
+      key: "getTextPrecedingCurrentSelection",
+      value: function getTextPrecedingCurrentSelection() {
         var context = this.tribute.current,
-            textBefore = '',
-            textAfter = '';
+            text = '';
 
         if (!this.isContentEditable(context.element)) {
           var textComponent = this.tribute.current.element;
@@ -783,9 +781,8 @@
           if (textComponent) {
             var startPos = textComponent.selectionStart;
 
-            if (textComponent.value) {
-              textBefore = textComponent.value.substring(0, startPos);
-              textAfter = textComponent.value.substring(startPos);
+            if (textComponent.value && startPos >= 0) {
+              text = textComponent.value.substring(0, startPos);
             }
           }
         } else {
@@ -796,13 +793,12 @@
             var selectStartOffset = this.getWindowSelection().getRangeAt(0).startOffset;
 
             if (workingNodeContent && selectStartOffset >= 0) {
-              textBefore = workingNodeContent.substring(0, selectStartOffset);
-              textAfter = workingNodeContent.substring(selectStartOffset);
+              text = workingNodeContent.substring(0, selectStartOffset);
             }
           }
         }
 
-        return [textBefore, textAfter];
+        return text;
       }
     }, {
       key: "getLastWordInText",
@@ -840,15 +836,13 @@
           }
         }
 
-        // Jack: we altered the function to get the text after the selection as well.
-        var [effectiveRange, textAfterMention] = this.getTextAroundCurrentSelection();
+        var effectiveRange = this.getTextPrecedingCurrentSelection();
         var lastWordOfEffectiveRange = this.getLastWordInText(effectiveRange);
 
         if (isAutocomplete) {
           return {
             mentionPosition: effectiveRange.length - lastWordOfEffectiveRange.length,
             mentionText: lastWordOfEffectiveRange,
-            textAfterMention,
             mentionSelectedElement: selected,
             mentionSelectedPath: path,
             mentionSelectedOffset: offset
@@ -905,7 +899,6 @@
             return {
               mentionPosition: mostRecentTriggerCharPos,
               mentionText: currentTriggerSnippet,
-              textAfterMention,
               mentionSelectedElement: selected,
               mentionSelectedPath: path,
               mentionSelectedOffset: offset,
