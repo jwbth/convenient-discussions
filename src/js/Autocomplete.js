@@ -38,9 +38,11 @@ export default class Autocomplete {
    * @param {OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
+   * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
+   *   autocomplete.
    */
-  constructor({ types, inputs, comments }) {
-    const collections = this.getCollections(types, comments);
+  constructor({ types, inputs, comments, defaultUserNames }) {
+    const collections = this.getCollections(types, comments, defaultUserNames);
 
     require('../../misc/tribute.css');
 
@@ -84,7 +86,7 @@ export default class Autocomplete {
    * @param {string[]} comments
    * @returns {object[]}
    */
-  getCollections(types, comments) {
+  getCollections(types, comments, defaultUserNames) {
     const selectTemplate = (item) => {
       if (item) {
         return item.original.value;
@@ -443,12 +445,6 @@ export default class Autocomplete {
         },
       },
     };
-
-    let defaultUserNames = comments.map((comment) => comment.author.name);
-    if (this.targetComment && this.mode !== 'edit') {
-      defaultUserNames.unshift(this.targetComment.author.name);
-    }
-    defaultUserNames = removeDuplicates(defaultUserNames);
 
     const params = {
       mentions: defaultUserNames,

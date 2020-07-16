@@ -18,6 +18,7 @@ import {
   hideText,
   isInputFocused,
   removeDoubleSpaces,
+  removeDuplicates,
   unhideText,
 } from './util';
 import { checkboxField } from './ooui';
@@ -1314,6 +1315,13 @@ export default class CommentForm {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
     }
 
+    let usersInSection = commentsInSection.map((comment) => comment.author.name);
+    usersInSection.sort();
+    if (this.targetComment && this.mode !== 'edit') {
+      usersInSection.unshift(this.targetComment.author.name);
+    }
+    usersInSection = removeDuplicates(usersInSection);
+
     /**
      * Autocomplete object for the comment input.
      *
@@ -1323,6 +1331,7 @@ export default class CommentForm {
       types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
       inputs: [this.commentInput],
       comments: commentsInSection,
+      defaultUserNames: usersInSection,
     });
 
     /**
