@@ -245,15 +245,15 @@ export default {
     },
   ],
 
-  getArchivePrefix: function (pageName) {
-    if (/^Википедия:Форум\//.test(pageName)) {
-      if (/^Википедия:Форум\/Географический/.test(pageName)) {
+  getArchivePrefix: function (page) {
+    if (/^Википедия:Форум\//.test(page.name)) {
+      if (/^Википедия:Форум\/Географический/.test(page.name)) {
         return 'Википедия:Форум/Географический/Архивы';
       } else {
-        return 'Википедия:Форум/Архив/' + pageName.slice('Википедия:Форум/'.length);
+        return 'Википедия:Форум/Архив/' + page.name.slice('Википедия:Форум/'.length);
       }
     } else {
-      return pageName;
+      return page.name;
     }
   },
 

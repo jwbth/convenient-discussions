@@ -1344,10 +1344,9 @@ export async function notFound(decodedFragment, date) {
           .replace(/"/g, '')
           .trim();
       }
-      const pageName = underlinesToSpaces(mw.config.get('wgPageName'));
       const archivePrefix = cd.config.getArchivePrefix ?
-        cd.config.getArchivePrefix(pageName) :
-        pageName;
+        cd.config.getArchivePrefix(cd.g.CURRENT_PAGE) :
+        cd.g.CURRENT_PAGE.name;
       const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {
         profile: 'default',
