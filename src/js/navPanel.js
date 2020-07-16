@@ -18,7 +18,7 @@ import {
   reorderArray,
 } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
-import { getWatchedSections, setVisits } from './options';
+import { setVisits } from './options';
 import { reloadPage } from './boot';
 
 let newCount;
@@ -294,10 +294,9 @@ function addSectionNotifications(newComments) {
  * Send ordinary and desktop notifications to the user.
  *
  * @param {CommentSkeleton[]} comments
- * @param {string[]} thisPageWatchedSections
  * @private
  */
-async function sendNotifications(comments, thisPageWatchedSections) {
+async function sendNotifications(comments) {
   const notifyAbout = comments.filter((comment) => (
     !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
   ));
@@ -387,7 +386,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && thisPageWatchedSections.includes(section) ?
+      const mayBeInteresting = section && cd.g.thisPageWatchedSections.includes(section) ?
         '' :
         mayBeInterestingString;
 
@@ -461,7 +460,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && thisPageWatchedSections.includes(section) ?
+      const mayBeInteresting = section && cd.g.thisPageWatchedSections.includes(section) ?
         '' :
         mayBeInterestingString;
 
@@ -494,14 +493,6 @@ async function sendNotifications(comments, thisPageWatchedSections) {
  * @private
  */
 async function processComments(comments) {
-  // Get this pages' watched sections without making a request.
-  let thisPageWatchedSections;
-  try {
-    ({ thisPageWatchedSections } = await getWatchedSections(true) || {});
-  } catch (e) {
-    console.warn('Couldn\'t load the settings from the server.');
-  }
-
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     delete comment.authorName;
@@ -521,7 +512,7 @@ async function processComments(comments) {
     if (
       comment.own ||
       cd.settings.notificationsBlacklist.includes(comment.author.name) ||
-      !thisPageWatchedSections
+      !cd.g.thisPageWatchedSections
     ) {
       return false;
     }
@@ -549,7 +540,7 @@ async function processComments(comments) {
   updateRefreshButton(newComments, interestingNewComments.length);
   updatePageTitle(newComments.length, interestingNewComments.length);
   addSectionNotifications(newComments);
-  sendNotifications(interestingNewComments, thisPageWatchedSections);
+  sendNotifications(interestingNewComments);
 }
 
 /**

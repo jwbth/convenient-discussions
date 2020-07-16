@@ -369,9 +369,9 @@ export default class Section extends SectionSkeleton {
     if (watchedSectionsRequest) {
       watchedSectionsRequest
         .then(
-          ({ thisPageWatchedSections }) => {
+          () => {
             if (this.headline) {
-              this.watched = thisPageWatchedSections.includes(this.headline);
+              this.watched = cd.g.thisPageWatchedSections.includes(this.headline);
               this.addMenuItem({
                 label: cd.s('sm-unwatch'),
                 tooltip: cd.s('sm-unwatch-tooltip'),
@@ -1440,10 +1440,8 @@ export default class Section extends SectionSkeleton {
   }) {
     if (!headline) return;
 
-    let watchedSections;
-    let thisPageWatchedSections;
     try {
-      ({ watchedSections, thisPageWatchedSections } = await getWatchedSections());
+      await getWatchedSections();
     } catch (e) {
       mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
       if (errorCallback) {
@@ -1453,12 +1451,12 @@ export default class Section extends SectionSkeleton {
     }
 
     // The section could be watched in another tab.
-    if (!thisPageWatchedSections.includes(headline)) {
-      thisPageWatchedSections.push(headline);
+    if (!cd.g.thisPageWatchedSections.includes(headline)) {
+      cd.g.thisPageWatchedSections.push(headline);
     }
 
     try {
-      await setWatchedSections(watchedSections);
+      await setWatchedSections();
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;
@@ -1519,10 +1517,8 @@ export default class Section extends SectionSkeleton {
   }) {
     if (!headline) return;
 
-    let watchedSections;
-    let thisPageWatchedSections;
     try {
-      ({ watchedSections, thisPageWatchedSections } = await getWatchedSections());
+      await getWatchedSections();
     } catch (e) {
       mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
       if (errorCallback) {
@@ -1532,15 +1528,15 @@ export default class Section extends SectionSkeleton {
     }
 
     // The section could be unwatched in another tab.
-    if (thisPageWatchedSections.includes(headline)) {
-      thisPageWatchedSections.splice(thisPageWatchedSections.indexOf(headline), 1);
+    if (cd.g.thisPageWatchedSections.includes(headline)) {
+      cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
     }
-    if (!thisPageWatchedSections.length) {
-      delete watchedSections[mw.config.get('wgArticleId')];
+    if (!cd.g.thisPageWatchedSections.length) {
+      delete cd.g.watchedSections[mw.config.get('wgArticleId')];
     }
 
     try {
-      await setWatchedSections(watchedSections);
+      await setWatchedSections();
     } catch (e) {
       mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
       if (errorCallback) {

@@ -84,6 +84,7 @@ export default class Autocomplete {
    *
    * @param {string[]} types
    * @param {string[]} comments
+   * @param {string[]} defaultUserNames
    * @returns {object[]}
    */
   getCollections(types, comments, defaultUserNames) {

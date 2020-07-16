@@ -874,12 +874,12 @@ export async function editWatchedSections() {
   EditWatchedSectionsDialog.prototype.getReadyProcess = function (data) {
     return EditWatchedSectionsDialog.parent.prototype.getReadyProcess.call(this, data)
       .next(async () => {
-        let watchedSections;
         let pages;
         try {
-          ({ watchedSections } = await watchedSectionsRequest);
+          await watchedSectionsRequest;
           pages = await getPageTitles(
-            Object.keys(watchedSections).filter((pageId) => watchedSections[pageId].length)
+            Object.keys(cd.g.watchedSections)
+              .filter((pageId) => cd.g.watchedSections[pageId].length)
           );
         } catch (e) {
           handleError(this, e, 'ewsd-error-processing', false);
@@ -895,7 +895,7 @@ export async function editWatchedSections() {
           .filter((page) => page.title)
 
           .map((page) => (
-            watchedSections[page.pageid]
+            cd.g.watchedSections[page.pageid]
               .map((section) => `${page.title}#${section}`)
               .join('\n')
           ))
@@ -982,15 +982,15 @@ export async function editWatchedSections() {
             titleToId[page.title] = page.pageid;
           });
 
-        const newWatchedSections = {};
+        cd.g.watchedSections = {};
         Object.keys(sections)
           .filter((key) => titleToId[key])
           .forEach((key) => {
-            newWatchedSections[titleToId[key]] = removeDuplicates(sections[key]);
+            cd.g.watchedSections[titleToId[key]] = removeDuplicates(sections[key]);
           });
 
         try {
-          await setWatchedSections(newWatchedSections);
+          await setWatchedSections();
         } catch (e) {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;

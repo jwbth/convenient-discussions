@@ -230,15 +230,12 @@ export async function setVisits(visits) {
  * @param {object} [keptData={}]
  * @param {string} [keptData.justWatchedSection]
  * @param {string} [keptData.justUnwatchedSection]
- * @param {boolean} [noTimers=false] Don't use timers (they can set the process on hold in
- *   background tabs if the browser throttles them).
- * @returns {GetWatchedSectionsReturn}
  */
-export async function getWatchedSections(reuse = false, keptData = {}, noTimers = false) {
+export async function getWatchedSections(reuse = false, keptData = {}) {
   const watchedSections = await (
     cd.g.firstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME) === null ?
     Promise.resolve({}) :
-    getUserInfo(reuse, noTimers).then((options) => options.watchedSections)
+    getUserInfo(reuse).then((options) => options.watchedSections)
   );
 
   const articleId = mw.config.get('wgArticleId');
@@ -263,16 +260,15 @@ export async function getWatchedSections(reuse = false, keptData = {}, noTimers 
     }
   }
 
-  return { watchedSections, thisPageWatchedSections };
+  cd.g.watchedSections = watchedSections;
+  cd.g.thisPageWatchedSections = thisPageWatchedSections;
 }
 
 /**
- * Save watched sections to the server.
- *
- * @param {object} watchedSections
+ * Save the watched sections kept in `convenientDiscussions.g.watchedSections` to the server.
  */
-export function setWatchedSections(watchedSections) {
-  const watchedSectionsString = packWatchedSections(watchedSections);
+export function setWatchedSections() {
+  const watchedSectionsString = packWatchedSections(cd.g.watchedSections);
   const watchedSectionsStringCompressed = (
     lzString.compressToEncodedURIComponent(watchedSectionsString)
   );

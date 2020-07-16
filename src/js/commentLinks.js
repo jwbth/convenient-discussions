@@ -30,8 +30,6 @@ let goToCommentWatchedSection;
 let currentUserRegexp;
 let $wrapperRegularPrototype;
 let $wrapperInterestingPrototype;
-let watchedSections;
-let thisPageWatchedSections;
 let switchInterestingButton;
 
 let processDiffFirstRun = true;
@@ -54,13 +52,11 @@ async function prepare({ messagesRequest }) {
   });
   messagesRequest = messagesRequest || loadMessages();
 
-  let watchedSectionsResult;
   try {
-    [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
+    await Promise.all([watchedSectionsRequest, messagesRequest]);
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
-  ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
 
   initTimestampParsingTools();
 
@@ -190,7 +186,7 @@ function addWatchlistMenu() {
     invisibleLabel: true,
     title: cd.s('wl-button-switchinteresting-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchInteresting'],
-    disabled: !watchedSections,
+    disabled: !cd.g.watchedSections,
   });
   switchInterestingButton.on('click', () => {
     switchInteresting();
@@ -296,7 +292,7 @@ function processWatchlist($content) {
 
     $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
       try {
-        ({ watchedSections } = await getWatchedSections());
+        await getWatchedSections();
       } catch (e) {
         console.warn('Couldn\'t load the settings from the server.', e);
       }
@@ -367,7 +363,10 @@ function processWatchlist($content) {
         const curIdMatch = curLink && curLink.href && curLink.href.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const thisPageWatchedSections = watchedSections && watchedSections[curId] || [];
+          const thisPageWatchedSections = (
+            (cd.g.watchedSections && cd.g.watchedSections[curId]) ||
+            []
+          );
           if (thisPageWatchedSections.length) {
             for (let j = 0; j < thisPageWatchedSections.length; j++) {
               // \u200E is the left-to-right mark.
@@ -513,7 +512,8 @@ function processHistory($content) {
       let watched = false;
       if (summary) {
         const thisPageWatchedSections = (
-          (watchedSections && watchedSections[mw.config.get('wgArticleId')]) || []
+          (cd.g.watchedSections && cd.g.watchedSections[mw.config.get('wgArticleId')]) ||
+          []
         );
         if (thisPageWatchedSections.length) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
@@ -604,10 +604,10 @@ async function processDiff() {
         wrapper.firstChild.lastChild.title = goToCommentToYou;
       } else {
         let watched = false;
-        if (summary && thisPageWatchedSections.length) {
-          for (let j = 0; j < thisPageWatchedSections.length; j++) {
+        if (summary && cd.g.thisPageWatchedSections.length) {
+          for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
             // \u200E is the left-to-right mark.
-            if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+            if (summary.includes('→\u200E' + cd.g.thisPageWatchedSections[j])) {
               watched = true;
               break;
             }
