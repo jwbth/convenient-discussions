@@ -704,7 +704,7 @@ export default class Comment extends CommentSkeleton {
     const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
     const revisionsRequest = cd.g.api.get({
       action: 'query',
-      titles: this.sourcePage,
+      titles: this.sourcePage.name,
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'comment', 'timestamp'],
       rvdir: 'newer',
@@ -737,7 +737,7 @@ export default class Comment extends CommentSkeleton {
 
     const compareRequests = revisions.map((revision) => cd.g.api.get({
       action: 'compare',
-      fromtitle: this.sourcePage,
+      fromtitle: this.sourcePage.name,
       fromrev: revision.revid,
       torelative: 'prev',
       prop: 'diff|diffsize',

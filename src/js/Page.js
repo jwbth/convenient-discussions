@@ -24,16 +24,30 @@ export default class Page {
    * @param {string|mw.Title} name
    */
   constructor(name) {
-    const title = name instanceof mw.Title ?
-      name :
-      mw.Title.newFromText(firstCharToUpperCase(name));
+    let title;
+    if (name instanceof mw.Title) {
+      title = name;
+
+      /**
+       * Page name, with a namespace name. The word separator is a space, not an underline, as in
+       *   `mediawiki.Title`.
+       *
+       * @type {number}
+       */
+      this.name = mw.config.get('wgFormattedNamespaces')[title.namespace] + ':' + this.title;
+
+    } else {
+      title = mw.Title.newFromText(firstCharToUpperCase(name));
+      this.name = underlinesToSpaces(name);
+    }
 
     /**
-     * Page ID.
+     * Page title, with no namespace name. The word separator is a space, not an underline, as in
+     *   `mediawiki.Title`.
      *
      * @type {number}
      */
-    this.name = underlinesToSpaces(name);
+    this.title = underlinesToSpaces(title.title);
 
     /**
      * Namespace number.

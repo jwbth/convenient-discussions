@@ -85,6 +85,9 @@ export function caseInsensitiveFirstCharPattern(s) {
   const firstChar = s[0];
   return (
     (
+      // Could be issues, probably not very serious, resulting from the difference of PHP's
+      // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
+      // https://phabricator.wikimedia.org/T141723#2513800.
       firstChar.toUpperCase() !== firstChar.toLowerCase() ?
       '[' + firstChar.toUpperCase() + firstChar.toLowerCase() + ']' :
       mw.util.escapeRegExp(firstChar)
@@ -107,10 +110,12 @@ export function isProbablyTalkPage(page, namespaceNumber) {
   if (page instanceof Page) {
     pageName = page.name;
     namespaceNumber = page.namespace;
-  } else if (namespaceNumber === undefined) {
+  } else {
     pageName = page;
-    const title = new mw.Title.newFromText(page);
-    namespaceNumber = title.namespace;
+    if (namespaceNumber === undefined) {
+      const title = new mw.Title.newFromText(page);
+      namespaceNumber = title.namespace;
+    }
   }
   return (
     (
