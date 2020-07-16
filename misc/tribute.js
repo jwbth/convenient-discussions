@@ -209,6 +209,9 @@
     }, {
       key: "keyup",
       value: function keyup(instance, event) {
+        // Jack: Added this to avoid menu appearing-disappearing when moving the caret.
+        if (!instance.inputEvent && !instance.tribute.isActive) return;
+
         if (instance.inputEvent) {
           instance.inputEvent = false;
         }
