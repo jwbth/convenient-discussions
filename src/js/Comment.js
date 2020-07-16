@@ -717,7 +717,7 @@ export default class Comment extends CommentSkeleton {
       formatversion: 2,
     }).catch(handleApiReject);
 
-    let [revisionsResp] = await Promise.all([
+    const [revisionsResp] = await Promise.all([
       revisionsRequest,
       requestGender && this.author.registered ? getUserGenders([this.author]) : undefined,
     ].filter(defined));
@@ -1654,9 +1654,12 @@ export default class Comment extends CommentSkeleton {
           `[:*#]{0,${this.inCode.indentationChars.length}}` :
           ''
         ) +
-        '(?![:*#])'
+        '(?![:*#]|<!--)'
       );
-      const [, codeInBetween] = properPlaceRegexp.exec(pageCode.slice(currentIndex)) || [];
+      const [, codeInBetween] = (
+        properPlaceRegexp.exec(hideHtmlComments(pageCode).slice(currentIndex)) ||
+        []
+      );
       if (codeInBetween === undefined) {
         throw new CdError({
           type: 'parse',
@@ -1675,7 +1678,7 @@ export default class Comment extends CommentSkeleton {
           .replace(/:$/, cd.config.defaultIndentationChar);
       }
 
-      if (/\n=+.*?\1[ \t]*\n/.test(hideHtmlComments(codeInBetween))) {
+      if (/\n=+.*?\1[ \t]*\n/.test(codeInBetween)) {
         // Something went wrong and we are going to post in another section.
         throw new CdError({
           type: 'parse',
