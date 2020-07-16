@@ -165,6 +165,7 @@ async function checkForNewComments() {
             CURRENT_USER_GENDER: cd.g.CURRENT_USER_GENDER,
             CURRENT_PAGE_NAME: cd.g.CURRENT_PAGE.name,
             CURRENT_NAMESPACE_NUMBER: cd.g.CURRENT_NAMESPACE_NUMBER,
+            PHP_CHAR_TO_UPPER_JSON: cd.g.PHP_CHAR_TO_UPPER_JSON,
           },
           config: {
             customFloatingElementsSelectors: cd.config.customFloatingElementsSelectors,

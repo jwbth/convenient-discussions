@@ -194,6 +194,20 @@ export function initTalkPageCss() {
  * Initialize a number of the global object properties.
  */
 function initGlobals() {
+  cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
+    .files["phpCharToUpper.json"];
+  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
+  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
+
+  // {{gender:}} with at least two pipes in a selection of the affected strings.
+  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
+    cd.s('es-reply-to', true) +
+    cd.s('es-edit-comment-by', true) +
+    cd.s('thank-confirm', true)
+  );
+
+  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
+
   if (cd.config.tagName) {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
@@ -205,18 +219,6 @@ function initGlobals() {
     );
   }
 
-  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
-  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
-  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
-  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
-
-  // {{gender:}} with at least two pipes in a selection of the affected strings.
-  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
-    cd.s('es-reply-to', true) +
-    cd.s('es-edit-comment-by', true) +
-    cd.s('thank-confirm', true)
-  );
-
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
 }
@@ -227,6 +229,8 @@ function initGlobals() {
  * @private
  */
 function initPatterns() {
+  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
+
   const namespaceIds = mw.config.get('wgNamespaceIds');
   const userNamespaces = Object.keys(namespaceIds)
     .filter((key) => [2, 3].includes(namespaceIds[key]));
@@ -333,6 +337,10 @@ function initPatterns() {
   const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
   const fileNamespacesPatternAnySpace = anySpace(fileNamespaces.join('|'));
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPatternAnySpace}):`;
+  cd.g.FILE_LINK_REGEXP = new RegExp(
+    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^]+?(?:\\|[^]+?\\|((?:\\[\\[[^]+?\\]\\]|[^|])+?))?\\]\\]`,
+    'ig'
+  );
 
   const colonNamespaces = Object.keys(namespaceIds)
     .filter((key) => [6, 14].includes(namespaceIds[key]));
@@ -464,9 +472,9 @@ export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
 
   await (messagesRequest || loadMessages());
+  initGlobals();
   initSettings();
   initTimestampParsingTools();
-  initGlobals();
 
   /**
    * Collection of all comment forms on the page in the order of their creation.

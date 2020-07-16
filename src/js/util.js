@@ -270,13 +270,28 @@ export function animateLinks(html, ...classToCallback) {
 }
 
 /**
+ * Provide `mw.Title.phpCharToUpper` functionality for the web worker context.
+ *
+ * @param {string} char
+ * @returns {string}
+ */
+function phpCharToUpper(char) {
+  if (cd.g.PHP_CHAR_TO_UPPER_JSON[char] === '') {
+    return char;
+  }
+  return cd.g.PHP_CHAR_TO_UPPER_JSON[char] || char.toUpperCase();
+}
+
+/**
  * Transform the first letter of a string to upper case, for example: `'wikilink'` → `'Wikilink'`.
+ * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see {@link
+ * https://phabricator.wikimedia.org/T141723#2513800}.
  *
  * @param {string} s
  * @returns {string}
  */
 export function firstCharToUpperCase(s) {
-  return s.length ? s[0].toUpperCase() + s.slice(1) : '';
+  return s.length ? phpCharToUpper(s[0]) + s.slice(1) : '';
 }
 
 /**
