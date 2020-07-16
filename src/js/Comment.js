@@ -705,6 +705,7 @@ export default class Comment extends CommentSkeleton {
     const revisionsRequest = cd.g.api.get({
       action: 'query',
       titles: this.sourcePage.name,
+      rvslots: 'main',
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'comment', 'timestamp'],
       rvdir: 'newer',

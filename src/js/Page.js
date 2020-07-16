@@ -92,6 +92,7 @@ export default class Page {
     const resp = await cd.g.api.get({
       action: 'query',
       titles: this.name,
+      rvslots: 'main',
       prop: 'revisions',
       rvprop: ['ids', 'content'],
       redirects: true,
@@ -102,8 +103,14 @@ export default class Page {
     const query = resp.query;
     const page = query && query.pages && query.pages[0];
     const revision = page && page.revisions && page.revisions[0];
+    const content = (
+      revision &&
+      revision.slots &&
+      revision.slots.main &&
+      revision.slots.main.content
+    );
 
-    if (!query || !page) {
+    if (!query || !page || !revision || content === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',
@@ -119,12 +126,6 @@ export default class Page {
       throw new CdError({
         type: 'api',
         code: 'invalid',
-      });
-    }
-    if (!revision) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
       });
     }
 
@@ -189,7 +190,7 @@ export default class Page {
 
       // It's more convenient to unify regexps to have \n as the last character of anything, not
       // (?:\n|$), and it doesn't seem to affect anything substantially.
-      code: revision.content + '\n',
+      code: content + '\n',
 
       revisionId: revision.revid,
       redirectTarget,

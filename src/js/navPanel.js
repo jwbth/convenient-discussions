@@ -99,6 +99,7 @@ async function checkForNewComments() {
     const revisionsResp = await makeRequestNoTimers({
       action: 'query',
       titles: cd.g.CURRENT_PAGE.name,
+      rvslots: 'main',
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'size', 'comment'],
       rvdir: 'newer',
