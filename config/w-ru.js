@@ -184,6 +184,7 @@ export default {
 
   keepInSectionEnding: [
     /\n+\{\{(?:-|clear)\}\}\s*$/,
+    /\n+(?:<!--[^]*?-->\s*)+$/,
   ],
 
   foreignElementsInHeadlinesClasses: [
