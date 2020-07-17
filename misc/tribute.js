@@ -580,8 +580,8 @@
 
             var menuIsOffScreen = _this.isMenuOffScreen(coordinates, menuDimensions);
 
-            var menuIsOffScreenHorizontally = window.innerWidth > menuDimensions.width && (menuIsOffScreen.left || menuIsOffScreen.right);
-            var menuIsOffScreenVertically = window.innerHeight > menuDimensions.height && (menuIsOffScreen.top || menuIsOffScreen.bottom);
+            var menuIsOffScreenHorizontally = document.documentElement.clientWidth > menuDimensions.width && (menuIsOffScreen.left || menuIsOffScreen.right);
+            var menuIsOffScreenVertically = document.documentElement.clientHeight > menuDimensions.height && (menuIsOffScreen.top || menuIsOffScreen.bottom);
 
             if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
               _this.tribute.menu.style.cssText = 'display: none';
@@ -944,8 +944,8 @@
     }, {
       key: "isMenuOffScreen",
       value: function isMenuOffScreen(coordinates, menuDimensions) {
-        var windowWidth = window.innerWidth;
-        var windowHeight = window.innerHeight;
+        var windowWidth = document.documentElement.clientWidth;
+        var windowHeight = document.documentElement.clientHeight;
         var doc = document.documentElement;
         var windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0);
         var windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0);
@@ -1032,13 +1032,17 @@
           top: top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth) + parseInt(computed.fontSize) - element.scrollTop,
           left: left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth)
         };
-        var windowWidth = window.innerWidth;
-        var windowHeight = window.innerHeight;
+        // Jack: Replaces `window.innerWidth` with `document.documentElement.clientWidth` here and
+        // in other places to have the scrollbars counted.
+        var windowWidth = doc.clientWidth;
+        var windowHeight = doc.clientHeight;
         var menuDimensions = this.getMenuDimensions();
         var menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
         if (menuIsOffScreen.right) {
-          coordinates.right = windowWidth - coordinates.left;
+          // Jack: Added "- span.offsetWidth" to have the menu horizontally overlap with the mention
+          // trigger.
+          coordinates.right = windowWidth - coordinates.left - span.offsetWidth;
           coordinates.left = 'auto';
         }
 
@@ -1085,8 +1089,8 @@
           left: left + windowLeft,
           top: top + rect.height + windowTop
         };
-        var windowWidth = window.innerWidth;
-        var windowHeight = window.innerHeight;
+        var windowWidth = doc.clientWidth;
+        var windowHeight = doc.clientHeight;
         var menuDimensions = this.getMenuDimensions();
         var menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
@@ -1149,14 +1153,14 @@
 
         if (elemTop < 0) {
           window.scrollTo(0, window.pageYOffset + clientRect.top - reasonableBuffer);
-        } else if (elemBottom > window.innerHeight) {
+        } else if (elemBottom > document.documentElement.clientHeight) {
           var maxY = window.pageYOffset + clientRect.top - reasonableBuffer;
 
           if (maxY - window.pageYOffset > maxScrollDisplacement) {
             maxY = window.pageYOffset + maxScrollDisplacement;
           }
 
-          var targetY = window.pageYOffset - (window.innerHeight - elemBottom);
+          var targetY = window.pageYOffset - (document.documentElement.clientHeight - elemBottom);
 
           if (targetY > maxY) {
             targetY = maxY;
