@@ -345,9 +345,8 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const resp = await noTimers ?
-      makeRequestNoTimers(params, 'post').catch(handleApiReject) :
-      cd.g.api.post(params).catch(handleApiReject);
+    const resp = await (noTimers ? makeRequestNoTimers(params, 'post') : cd.g.api.post(params))
+      .catch(handleApiReject);
     const users = resp && resp.query && resp.query.users;
     if (!users) {
       throw new CdError({

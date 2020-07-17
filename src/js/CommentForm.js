@@ -2139,10 +2139,10 @@ export default class CommentForm {
    * `true`.
    *
    * @param {Operation} operation
-   * @param {boolean} [condition] Additional condition to close operation on.
+   * @param {boolean} [force] Force closing the operation.
    * @returns {boolean}
    */
-  closeOperationIfNecessary(operation, condition) {
+  closeOperationIfNecessary(operation, force) {
     if (operation.closed) {
       return true;
     }
@@ -2152,7 +2152,7 @@ export default class CommentForm {
     );
     if (
       (otherOperationIndex !== null && otherOperationIndex > this.operations.indexOf(operation)) ||
-      condition
+      force
     ) {
       this.closeOperation(operation);
       return true;
