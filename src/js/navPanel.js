@@ -420,12 +420,8 @@ async function sendNotifications(comments) {
     notifyAboutDesktop.length
   ) {
     let body;
-    // We use a tag so that there aren't duplicate notifications when the same page is opened in
-    // two tabs.
-    let tag = 'convenient-discussions-';
     const comment = notifyAboutDesktop[0];
     if (notifyAboutDesktop.length === 1) {
-      tag += comment.anchor;
       if (comment.toMe) {
         const where = comment.sectionHeadline ?
           mw.msg('word-separator') + cd.s('notification-part-insection', comment.sectionHeadline) :
@@ -472,10 +468,15 @@ async function sendNotifications(comments) {
         cd.g.CURRENT_PAGE.name,
         mayBeInteresting
       );
-      tag += notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor;
     }
 
-    const notification = new Notification(mw.config.get('wgSiteName'), { body, tag });
+    const notification = new Notification(mw.config.get('wgSiteName'), {
+      body,
+
+      // We use a tag so that there aren't duplicate notifications when the same page is opened in
+      // two tabs. (Seems it doesn't work? :-/)
+      tag: 'convenient-discussions-' + notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor,
+    });
     notification.onclick = () => {
       parent.focus();
       // Just in case, old browsers. TODO: delete?

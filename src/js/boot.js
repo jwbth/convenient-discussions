@@ -337,6 +337,11 @@ function initPatterns() {
   const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
   const fileNamespacesPatternAnySpace = anySpace(fileNamespaces.join('|'));
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPatternAnySpace}):`;
+
+  // Actually, only the text from "mini" format images should be captured, as in the standard
+  // format, the text is not displayed. See "img_thumbnail" in
+  // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
+  // Unfortunately, that would add like 100ms to the server's response time.
   cd.g.FILE_LINK_REGEXP = new RegExp(
     `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^]+?(?:\\|[^]+?\\|((?:\\[\\[[^]+?\\]\\]|[^|])+?))?\\]\\]`,
     'ig'
