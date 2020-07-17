@@ -81,27 +81,17 @@ export function removeWikiMarkup(code) {
 
 /**
  * Replace HTML entities with corresponding characters. Also replace different kinds of spaces,
- * including multiple, with one normal space. For the most part, it's a reverse of {@link
- * module:wikitext.encodeWikilink}.
+ * including multiple, with one normal space.
  *
  * @param {string} text
  * @returns {string}
  */
 export function normalizeCode(text) {
-  return text
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#91;/g, '[')
-    .replace(/&#93;/g, ']')
-    .replace(/&#123;/g, '{')
-    .replace(/&#124;/g, '|')
-    .replace(/&#125;/g, '}')
-    .replace(/\s+/g, ' ');
+  return decodeHtmlEntities(text).replace(/\s+/g, ' ').trim();
 }
 
 /**
- * Encode link text to put it in a `[[wikilink]]`. For the most part, it's a reverse of {@link
- * module:wikitext.normalizeCode}.
+ * Encode link text to put it in a `[[wikilink]]`.
  *
  * @param {string} link
  * @returns {string}
@@ -320,6 +310,8 @@ export function extractSignatures(code, generateCommentAnchors) {
 /**
  * Decode HTML entities in a string.
  *
+ * It should work as fast as possible, so we use String#indexOf, not String#includes.
+ *
  * @param {string} s
  * @returns {string}
  */
@@ -331,10 +323,13 @@ export function decodeHtmlEntities(s) {
     if (result.indexOf('&#38;amp;') !== -1) {
       result = result.replace(/&#38;amp;/g, '&amp;amp;')
     }
-    result = result.indexOf('&#') === -1 ?
-      result :
-      result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
-    return result.indexOf('&') === -1 ? result : html_entity_decode(result);
+    if (result.indexOf('&#') !== -1) {
+      result = result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
+    }
+    if (result.indexOf('&') !== -1) {
+      result = html_entity_decode(result);
+    }
+    return result;
   }
 }
 
