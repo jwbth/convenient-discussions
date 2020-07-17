@@ -56,6 +56,8 @@ export function removeWikiMarkup(code) {
     .replace(/<!--[^]*?-->/g, '')
     // Pipe trick
     .replace(/(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g, '$1$2$3')
+    // Extract displayed text from file embeddings
+    .replace(cd.g.FILE_LINK_REGEXP, '$1')
     // Extract displayed text from [[wikilinks]]
     .replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
     // For optimization purposes, remove template names
