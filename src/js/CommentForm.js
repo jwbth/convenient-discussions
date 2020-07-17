@@ -162,9 +162,11 @@ export default class CommentForm {
       if (this.mode === 'edit') {
         const currentOperation = this.registerOperation({ type: 'load' });
 
-        this.target.getCode(true).then(
-          ({ commentText, headline }) => {
-            if (this.target.inCode.inSmallFont) {
+        this.checkCodeRequest = this.target.getCode(true).then(
+          (inCode) => {
+            let commentText = this.target.codeToText(inCode);
+            const headline = inCode.headlineCode;
+            if (inCode.inSmallFont) {
               commentText = `<small>${commentText}</small>`;
             }
             this.commentInput.setValue(commentText);
@@ -178,6 +180,8 @@ export default class CommentForm {
             saveSession();
 
             this.commentInput.focus();
+
+            return inCode;
           },
           (e) => {
             if (e instanceof CdError) {
@@ -255,8 +259,8 @@ export default class CommentForm {
         }
       );
       this.target.getCode(this).then(
-        () => {
-          deferred.resolve();
+        (inCode) => {
+          deferred.resolve(inCode);
         },
         (e) => {
           deferred.reject(e);
@@ -1712,10 +1716,11 @@ export default class CommentForm {
    * Convert the text of the comment in the form to wikitext.
    *
    * @param {string} action `'submit'` (view changes maps to this too) or `'preview'`.
+   * @param {object} [targetInCode] Irrelevant, if the target is a Page instance.
    * @returns {string}
    * @throws {CdError}
    */
-  commentTextToCode(action) {
+  commentTextToCode(action, targetInCode) {
     let indentationChars;
 
     // This is mostly to tell if inconvertible newlines would cause problems in the comment and
@@ -1724,20 +1729,20 @@ export default class CommentForm {
 
     switch (this.mode) {
       case 'reply':
-        indentationChars = this.target.inCode.replyIndentationChars;
+        indentationChars = targetInCode.replyIndentationChars;
         willCommentBeIndented = true;
         break;
       case 'edit':
-        indentationChars = this.target.inCode.indentationChars;
+        indentationChars = targetInCode.indentationChars;
         willCommentBeIndented = Boolean(indentationChars);
         break;
       case 'replyInSection':
         indentationChars = cd.config.defaultIndentationChar;
-        if (this.target.inCode.lastCommentIndentationChars) {
-          if (this.target.inCode.lastCommentIndentationChars[0] === '#') {
+        if (targetInCode.lastCommentIndentationChars) {
+          if (targetInCode.lastCommentIndentationChars[0] === '#') {
             indentationChars = '#';
           } else if (cd.config.indentationCharMode === 'mimic') {
-            indentationChars = this.target.inCode.lastCommentIndentationChars[0];
+            indentationChars = targetInCode.lastCommentIndentationChars[0];
           }
         }
         willCommentBeIndented = true;
@@ -1785,9 +1790,7 @@ export default class CommentForm {
     if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
       signature = '';
     } else {
-      signature = this.mode === 'edit' ?
-        this.target.inCode.signatureCode :
-        cd.g.CURRENT_USER_SIGNATURE;
+      signature = this.mode === 'edit' ? targetInCode.signatureCode : cd.g.CURRENT_USER_SIGNATURE;
     }
 
     // Make so that the signature doesn't turn out to be at the end of the last item of the list if
@@ -1902,11 +1905,11 @@ export default class CommentForm {
       } else if (this.mode === 'addSubsection') {
         level = this.target.level + 1;
       } else {
-        level = this.target.inCode.headingLevel;
+        level = targetInCode.headingLevel;
       }
       const equalSigns = '='.repeat(level);
 
-      if (this.#editingSectionOpeningComment && /^\n/.test(this.target.inCode.code)) {
+      if (this.#editingSectionOpeningComment && /^\n/.test(targetInCode.code)) {
         // To have pretty diffs.
         code = '\n' + code;
       }
@@ -1957,7 +1960,7 @@ export default class CommentForm {
       if (
         willCommentBeIndented &&
         this.mode === 'edit' &&
-        /^[:*]/.test(this.target.inCode.code) &&
+        /^[:*]/.test(targetInCode.code) &&
         !/^[:*]/.test(code)
       ) {
         code = ' ' + code;
@@ -2001,11 +2004,12 @@ export default class CommentForm {
    */
   prepareNewPageCode(pageCode, action) {
     const doDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
-
-    if (!(this.target instanceof Page)) {
+    const targetInCode = this.target instanceof Page ?
+      undefined :
       this.target.locateInCode(pageCode);
-    }
-    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode(pageCode, {
+    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode({
+      pageCode,
+      thisInCode: targetInCode,
       action: this.mode,
       doDelete,
       commentForm: this,
@@ -2027,27 +2031,29 @@ export default class CommentForm {
     anchors.forEach((anchor) => {
       const comment = Comment.getCommentByAnchor(anchor);
       if (comment) {
-        comment.locateInCode(newPageCode);
+        const commentInCode = comment.locateInCode(newPageCode);
         const anchorCode = cd.config.getAnchorCode(anchor);
-        if (comment.inCode.code.includes(anchorCode)) return;
+        if (commentInCode.code.includes(anchorCode)) return;
 
-        let commentStart = this.addIndentationChars(
-          comment.inCode.code,
-          comment.inCode.indentationChars
+        let newCommentStart = this.addIndentationChars(
+          commentInCode.code,
+          commentInCode.indentationChars
         );
-        const commentTextIndex = commentStart.match(/^[:*#]* */)[0].length;
-        commentStart = (
-          commentStart.slice(0, commentTextIndex) +
+        const commentTextIndex = newCommentStart.match(/^[:*#]* */)[0].length;
+        newCommentStart = (
+          newCommentStart.slice(0, commentTextIndex) +
           anchorCode +
-          commentStart.slice(commentTextIndex)
+          newCommentStart.slice(commentTextIndex)
         );
         const commentCode = (
-          (comment.inCode.headingCode || '') +
-          commentStart +
-          comment.inCode.signatureDirtyCode
+          (commentInCode.headingCode || '') +
+          newCommentStart +
+          commentInCode.signatureDirtyCode
         );
 
-        ({ newPageCode } = comment.modifyCode(newPageCode, {
+        ({ newPageCode } = comment.modifyCode({
+          pageCode: newPageCode,
+          thisInCode: commentInCode,
           action: 'edit',
           commentCode,
         }));
@@ -2208,7 +2214,7 @@ export default class CommentForm {
       this.operations.some((op) => !op.closed && op.type === 'load') ||
       (
         !(this.target instanceof Page) &&
-        !this.target.inCode &&
+        !this.target.locatedInCodeOnce &&
         this.checkCodeRequest &&
         this.checkCodeRequest.state() === 'resolved'
       ) ||
@@ -2252,14 +2258,17 @@ export default class CommentForm {
 
     if (this.closeOperationIfNecessary(currentOperation)) return;
 
-    // This happens:
-    // - when restoring the form from a session,
-    // - when the target comment has not been loaded yet, possibly because of an error when tried to
-    // (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
-    // looking for the unclosed 'load' operation above).
-    if (!(this.target instanceof Page) && !this.target.inCode) {
-      await this.checkCode();
-      if (this.closeOperationIfNecessary(currentOperation, !this.target.inCode)) return;
+    const inCode = await this.checkCode();
+
+    /*
+      This happens:
+      - when restoring the form from a session,
+      - when the target comment has not been loaded yet, possibly because of an error when tried to
+      (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
+      looking for the unclosed 'load' operation above).
+    */
+    if (!(this.target instanceof Page) && !this.target.locatedInCodeOnce) {
+      if (this.closeOperationIfNecessary(currentOperation, !this.target.locatedInCodeOnce)) return;
     }
 
     // In case of an empty comment input, we in fact make this request for the sake of parsing
@@ -2274,7 +2283,7 @@ export default class CommentForm {
       return;
     }
 
-    const { commentCode, doImitateList } = this.commentTextToCode('preview');
+    const { commentCode, doImitateList } = this.commentTextToCode('preview', inCode);
     let html;
     let parsedSummary;
     try {

@@ -143,6 +143,13 @@ export default class Comment extends CommentSkeleton {
     this.highlightables.forEach((el) => {
       this.bindEvents(el);
     });
+
+    /**
+     * Have we located the code of the comment in the source at least once.
+     *
+     * @type {boolean}
+     */
+    this.locatedInCodeOnce = false;
   }
 
   /**
@@ -945,14 +952,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Locate the comment in the page source code and set the results to the `inCode` property.
+   * Locate the comment in the page's source code.
    *
    * @param {string} pageCode
+   * @returns {object}
    * @throws {CdError}
    */
   locateInCode(pageCode) {
-    this.inCode = null;
-
     // Collect matches
     const matches = this.searchInCode(pageCode);
 
@@ -998,7 +1004,9 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    this.inCode = this.adjustCommentCodeData(bestMatch);
+    this.locatedInCodeOnce = true;
+
+    return this.adjustCommentCodeData(bestMatch);
   }
 
   /**
@@ -1053,21 +1061,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Convert the comment code as present in the `inCode` property to text to set as a value of the
-   * form's comment input.
+   * Convert the comment code to text to set as a value of the form's comment input.
    *
+   * @param {object} thisInCode Comment code data.
    * @returns {string}
    */
-  codeToText() {
-    if (!this.inCode) {
-      console.error('The Comment#inCode property should contain an object with the comment code data.');
-      return;
-    }
-    let { code, indentationChars } = this.inCode;
-    if (code === undefined || indentationChars === undefined) {
-      console.error('No "code" or "indentationChars" property is set for Comment#inCode.');
-      return;
-    }
+  codeToText(thisInCode) {
+    let { code, indentationChars } = thisInCode;
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
@@ -1142,21 +1142,16 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {object} GetCodeReturn
-   * @property {string} commentText
-   * @property {string} headline
-   */
-
-  /**
    * Load the comment code.
    *
-   * @returns {GetCodeReturn}
+   * @returns {object}
    * @throws {CdError|Error}
    */
   async getCode() {
+    let inCode;
     try {
       await this.sourcePage.getCode();
-      this.locateInCode(this.sourcePage.code);
+      inCode = this.locateInCode(this.sourcePage.code);
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
@@ -1165,10 +1160,7 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    return {
-      commentText: this.codeToText(),
-      headline: this.inCode.headlineCode,
-    };
+    return inCode;
   }
 
   /**
@@ -1630,28 +1622,29 @@ export default class Comment extends CommentSkeleton {
   /**
    * Modify page code string related to the comment in accordance with an action.
    *
-   * @param {string} pageCode
    * @param {object} options
-   * @param {string} [options.action]
-   * @param {string} [options.doDelete]
-   * @param {string} [options.commentCode]
-   * @param {string} [options.commentForm]
+   * @param {string} options.pageCode
+   * @param {string} options.thisInCode
+   * @param {string} options.action
+   * @param {string} options.doDelete
+   * @param {string} [options.commentCode] `commentCode` or `commentForm` should be set.
+   * @param {string} [options.commentForm] `commentCode` or `commentForm` should be set.
    * @returns {string}
    * @throws {CdError}
    */
-  modifyCode(pageCode, { action, doDelete, commentCode, commentForm }) {
+  modifyCode({ pageCode, action, doDelete, thisInCode, commentCode, commentForm }) {
     let currentIndex;
     if (action === 'reply') {
-      currentIndex = this.inCode.endIndex;
+      currentIndex = thisInCode.endIndex;
 
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' +
-        mw.util.escapeRegExp(this.inCode.signatureCode) +
+        mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
         cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
         (
-          this.inCode.indentationChars.length > 0 ?
-          `[:*#]{0,${this.inCode.indentationChars.length}}` :
+          thisInCode.indentationChars.length > 0 ?
+          `[:*#]{0,${thisInCode.indentationChars.length}}` :
           ''
         ) +
         '(?![:*#]|<!--)'
@@ -1672,9 +1665,9 @@ export default class Comment extends CommentSkeleton {
       const [, changedIndentationChars] = codeInBetween.match(/\n([:*#]{2,}).*\n$/) || [];
       if (changedIndentationChars) {
         // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used "slice(0, this.inCode.indentationChars.length + 1)".
-        this.inCode.replyIndentationChars = changedIndentationChars
-          .slice(0, this.inCode.replyIndentationChars.length)
+        // possible here when we used "slice(0, thisInCode.indentationChars.length + 1)".
+        thisInCode.replyIndentationChars = changedIndentationChars
+          .slice(0, thisInCode.replyIndentationChars.length)
           .replace(/:$/, cd.config.defaultIndentationChar);
       }
 
@@ -1690,7 +1683,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (!commentCode && commentForm && !doDelete) {
-      ({ commentCode } = commentForm.commentTextToCode('submit'));
+      ({ commentCode } = commentForm.commentTextToCode('submit', thisInCode));
     }
 
     let newPageCode;
@@ -1706,9 +1699,9 @@ export default class Comment extends CommentSkeleton {
         if (doDelete) {
           let startIndex;
           let endIndex;
-          if (this.isOpeningSection && this.inCode.headingStartIndex !== undefined) {
-            this.section.locateInCode(pageCode);
-            if (extractSignatures(this.section.inCode.code).length > 1) {
+          if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
+            const inCode = this.section.locateInCode(pageCode);
+            if (extractSignatures(inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
                 code: 'delete-repliesInSection',
@@ -1716,14 +1709,14 @@ export default class Comment extends CommentSkeleton {
             } else {
               // Deleting the whole section is safer as we don't want to leave any content in the
               // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
+              ({ startIndex, contentEndIndex: endIndex } = inCode);
             }
           } else {
-            endIndex = this.inCode.endIndex + this.inCode.signatureDirtyCode.length + 1;
-            const succeedingText = pageCode.slice(this.inCode.endIndex);
+            endIndex = thisInCode.endIndex + thisInCode.signatureDirtyCode.length + 1;
+            const succeedingText = pageCode.slice(thisInCode.endIndex);
 
             const repliesRegexp = new RegExp(
-              `^.+\\n+[:*#]{${this.inCode.indentationChars.length + 1},}`
+              `^.+\\n+[:*#]{${thisInCode.indentationChars.length + 1},}`
             );
             const repliesMatch = repliesRegexp.exec(succeedingText);
 
@@ -1733,20 +1726,20 @@ export default class Comment extends CommentSkeleton {
                 code: 'delete-repliesToComment',
               });
             } else {
-              startIndex = this.inCode.lineStartIndex;
+              startIndex = thisInCode.lineStartIndex;
             }
           }
 
           newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
         } else {
           const startIndex = (
-            this.isOpeningSection && this.inCode.headingStartIndex !== undefined ?
-            this.inCode.headingStartIndex :
-            this.inCode.lineStartIndex
+            this.isOpeningSection && thisInCode.headingStartIndex !== undefined ?
+            thisInCode.headingStartIndex :
+            thisInCode.lineStartIndex
           );
           codeBeforeInsertion = pageCode.slice(0, startIndex);
           const codeAfterInsertion = (
-            pageCode.slice(this.inCode.endIndex + this.inCode.signatureDirtyCode.length)
+            pageCode.slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length)
           );
           newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         }
