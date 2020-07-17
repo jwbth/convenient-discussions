@@ -945,16 +945,21 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Locate the comment in the page source code and set the results to the `inCode` property.
+   * Locate the comment in the page source code and, if no `pageCode` is passed, set the results to
+   * the `inCode` property. Otherwise, return the result.
    *
-   * @param {string} pageCode
+   * @param {string} [pageCode] Page code, if different from `code` property of {@link
+   *   Comment#sourcePage}.
+   * @returns {string|undefined}
    * @throws {CdError}
    */
   locateInCode(pageCode) {
-    this.inCode = null;
+    if (!pageCode) {
+      this.inCode = null;
+    }
 
     // Collect matches
-    const matches = this.searchInCode(pageCode);
+    const matches = this.searchInCode(pageCode || this.sourcePage.code);
 
     // The main method: by the current & previous author & date & section headline & comment text
     // overlap. Necessary are the current author & date & comment text overlap.
@@ -998,7 +1003,12 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    this.inCode = this.adjustCommentCodeData(bestMatch);
+    const inCode = this.adjustCommentCodeData(bestMatch);
+    if (pageCode) {
+      return inCode;
+    } else {
+      this.inCode = inCode;
+    }
   }
 
   /**
@@ -1064,10 +1074,6 @@ export default class Comment extends CommentSkeleton {
       return;
     }
     let { code, indentationChars } = this.inCode;
-    if (code === undefined || indentationChars === undefined) {
-      console.error('No "code" or "indentationChars" property is set for Comment#inCode.');
-      return;
-    }
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
@@ -1142,21 +1148,14 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {object} GetCodeReturn
-   * @property {string} commentText
-   * @property {string} headline
-   */
-
-  /**
    * Load the comment code.
    *
-   * @returns {GetCodeReturn}
    * @throws {CdError|Error}
    */
   async getCode() {
     try {
       await this.sourcePage.getCode();
-      this.locateInCode(this.sourcePage.code);
+      this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
@@ -1164,11 +1163,6 @@ export default class Comment extends CommentSkeleton {
         throw e;
       }
     }
-
-    return {
-      commentText: this.codeToText(),
-      headline: this.inCode.headlineCode,
-    };
   }
 
   /**
@@ -1630,16 +1624,16 @@ export default class Comment extends CommentSkeleton {
   /**
    * Modify page code string related to the comment in accordance with an action.
    *
-   * @param {string} pageCode
    * @param {object} options
-   * @param {string} [options.action]
-   * @param {string} [options.doDelete]
-   * @param {string} [options.commentCode]
-   * @param {string} [options.commentForm]
+   * @param {string} options.pageCode
+   * @param {string} options.action
+   * @param {string} options.doDelete
+   * @param {string} [options.commentCode] `commentCode` or `commentForm` should be set.
+   * @param {string} [options.commentForm] `commentCode` or `commentForm` should be set.
    * @returns {string}
    * @throws {CdError}
    */
-  modifyCode(pageCode, { action, doDelete, commentCode, commentForm }) {
+  modifyCode({ pageCode, action, doDelete, commentCode, commentForm }) {
     let currentIndex;
     if (action === 'reply') {
       currentIndex = this.inCode.endIndex;
@@ -1707,7 +1701,7 @@ export default class Comment extends CommentSkeleton {
           let startIndex;
           let endIndex;
           if (this.isOpeningSection && this.inCode.headingStartIndex !== undefined) {
-            this.section.locateInCode(pageCode);
+            this.section.locateInCode();
             if (extractSignatures(this.section.inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',

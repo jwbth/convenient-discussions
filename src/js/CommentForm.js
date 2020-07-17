@@ -163,7 +163,10 @@ export default class CommentForm {
         const currentOperation = this.registerOperation({ type: 'load' });
 
         this.target.getCode(true).then(
-          ({ commentText, headline }) => {
+          () => {
+            let commentText = this.target.codeToText();
+            const headline = this.target.inCode.headlineCode;
+
             if (this.target.inCode.inSmallFont) {
               commentText = `<small>${commentText}</small>`;
             }
@@ -2003,9 +2006,10 @@ export default class CommentForm {
     const doDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
 
     if (!(this.target instanceof Page)) {
-      this.target.locateInCode(pageCode);
+      this.target.locateInCode();
     }
-    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode(pageCode, {
+    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode({
+      pageCode,
       action: this.mode,
       doDelete,
       commentForm: this,
@@ -2027,13 +2031,13 @@ export default class CommentForm {
     anchors.forEach((anchor) => {
       const comment = Comment.getCommentByAnchor(anchor);
       if (comment) {
-        comment.locateInCode(newPageCode);
+        const commentInCode = comment.locateInCode(newPageCode);
         const anchorCode = cd.config.getAnchorCode(anchor);
-        if (comment.inCode.code.includes(anchorCode)) return;
+        if (commentInCode.code.includes(anchorCode)) return;
 
         let commentStart = this.addIndentationChars(
-          comment.inCode.code,
-          comment.inCode.indentationChars
+          commentInCode.code,
+          commentInCode.indentationChars
         );
         const commentTextIndex = commentStart.match(/^[:*#]* */)[0].length;
         commentStart = (
@@ -2042,12 +2046,13 @@ export default class CommentForm {
           commentStart.slice(commentTextIndex)
         );
         const commentCode = (
-          (comment.inCode.headingCode || '') +
+          (commentInCode.headingCode || '') +
           commentStart +
-          comment.inCode.signatureDirtyCode
+          commentInCode.signatureDirtyCode
         );
 
-        ({ newPageCode } = comment.modifyCode(newPageCode, {
+        ({ newPageCode } = comment.modifyCode({
+          pageCode: newPageCode,
           action: 'edit',
           commentCode,
         }));

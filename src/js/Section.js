@@ -544,7 +544,7 @@ export default class Section extends SectionSkeleton {
       }
 
       try {
-        section.locateInCode(section.sourcePage.code);
+        section.locateInCode();
       } catch (e) {
         if (e instanceof CdError) {
           const { code } = e.data;
@@ -785,16 +785,15 @@ export default class Section extends SectionSkeleton {
 
     MoveSectionDialog.prototype.getReadyProcess = function (data) {
       return MoveSectionDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
-        let page;
         try {
-          [page] = await Promise.all(preparationRequests);
+          await Promise.all(preparationRequests);
         } catch (e) {
           this.abort(cd.s('cf-error-getpagecode'), false);
           return;
         }
 
         try {
-          section.locateInCode(page.code);
+          section.locateInCode();
         } catch (e) {
           if (e instanceof CdError) {
             const { data } = e.data;
@@ -1042,11 +1041,12 @@ export default class Section extends SectionSkeleton {
   /**
    * Locate the section in the page source code and set the result to the `inCode` property.
    *
-   * @param {string} pageCode
    * @throws {CdError}
    */
-  locateInCode(pageCode) {
+  locateInCode() {
     this.inCode = null;
+
+    const pageCode = this.sourcePage.code;
 
     const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
@@ -1079,13 +1079,13 @@ export default class Section extends SectionSkeleton {
   /**
    * Modify page code string related to the section in accordance with an action.
    *
-   * @param {string} pageCode
    * @param {object} options
+   * @param {string} options.pageCode
    * @param {string} options.action
    * @param {string} options.commentForm
    * @returns {string}
    */
-  modifyCode(pageCode, { action, commentForm }) {
+  modifyCode({ pageCode, action, commentForm }) {
     if (action === 'replyInSection') {
       // Detect the last section comment's indentation characters if needed or a vote / bulleted
       // reply placeholder.
@@ -1099,7 +1099,7 @@ export default class Section extends SectionSkeleton {
           (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
         ) {
           try {
-            lastComment.locateInCode(pageCode);
+            lastComment.locateInCode();
           } finally {
             if (
               lastComment.inCode &&
@@ -1171,7 +1171,7 @@ export default class Section extends SectionSkeleton {
   async getCode() {
     try {
       await this.sourcePage.getCode();
-      this.locateInCode(this.sourcePage.code);
+      this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
