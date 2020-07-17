@@ -141,13 +141,6 @@ export default class Section extends SectionSkeleton {
         this.extendSectionMenu(watchedSectionsRequest);
       }
     }
-
-    /**
-     * Have we located the code of the section in the source at least once.
-     *
-     * @type {boolean}
-     */
-    this.locatedInCodeOnce = false;
   }
 
   /**
@@ -550,9 +543,8 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      let sectionInCode;
       try {
-        sectionInCode = section.locateInCode(section.sourcePage.code);
+        section.locateInCode(section.sourcePage.code);
       } catch (e) {
         if (e instanceof CdError) {
           const { code } = e.data;
@@ -569,7 +561,7 @@ export default class Section extends SectionSkeleton {
       }
 
       return Object.assign({}, section.sourcePage, {
-        sectionInCode,
+        sectionInCode: section.inCode,
         sectionWikilink: `${section.sourcePage}#${section.headline}`,
       });
     };
@@ -801,9 +793,8 @@ export default class Section extends SectionSkeleton {
           return;
         }
 
-        let sectionCode;
         try {
-          ({ code: sectionCode } = section.locateInCode(page.code));
+          section.locateInCode(page.code);
         } catch (e) {
           if (e instanceof CdError) {
             const { data } = e.data;
@@ -816,6 +807,7 @@ export default class Section extends SectionSkeleton {
           }
           return;
         }
+        const sectionCode = section.inCode.code;
 
         this.titleInput = new mw.widgets.TitleInputWidget({
           $overlay: this.$overlay,
@@ -1048,13 +1040,14 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Locate the section in the page's source code.
+   * Locate the section in the page source code and set the result to the `inCode` property.
    *
    * @param {string} pageCode
-   * @returns {object}
    * @throws {CdError}
    */
   locateInCode(pageCode) {
+    this.inCode = null;
+
     const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
     const adjustedPageCode = hideHtmlComments(pageCode);
@@ -1080,49 +1073,45 @@ export default class Section extends SectionSkeleton {
       });
     }
 
-    this.locatedInCodeOnce = true;
-
-    return bestMatch;
+    this.inCode = bestMatch;
   }
 
   /**
    * Modify page code string related to the section in accordance with an action.
    *
+   * @param {string} pageCode
    * @param {object} options
-   * @param {string} options.pageCode
-   * @param {string} options.thisInCode
    * @param {string} options.action
    * @param {string} options.commentForm
    * @returns {string}
    */
-  modifyCode({ pageCode, action, thisInCode, commentForm }) {
+  modifyCode(pageCode, { action, commentForm }) {
     if (action === 'replyInSection') {
       // Detect the last section comment's indentation characters if needed or a vote / bulleted
       // reply placeholder.
-      const [, replyPlaceholder] = thisInCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+      const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
       if (replyPlaceholder) {
-        thisInCode.lastCommentIndentationChars = replyPlaceholder;
+        this.inCode.lastCommentIndentationChars = replyPlaceholder;
       } else {
         const lastComment = this.comments[this.comments.length - 1];
         if (
           lastComment &&
           (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
         ) {
-          let lastCommentInCode;
           try {
-            lastCommentInCode = lastComment.locateInCode(pageCode);
+            lastComment.locateInCode(pageCode);
           } finally {
             if (
-              lastCommentInCode &&
+              lastComment.inCode &&
               (
-                !lastCommentInCode.indentationChars.startsWith('#') ||
+                !lastComment.inCode.indentationChars.startsWith('#') ||
                 // For now we use the workaround with this.containerListType to make sure "#" is a
                 // part of comments organized in a numbered list, not of a numbered list _in_ the
                 // target comment.
                 this.containerListType === 'ol'
               )
             ) {
-              thisInCode.lastCommentIndentationChars = lastCommentInCode.indentationChars;
+              this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
             }
           }
         }
@@ -1130,23 +1119,23 @@ export default class Section extends SectionSkeleton {
     }
 
     let commentCode;
-    if (commentForm) {
-      ({ commentCode } = commentForm.commentTextToCode('submit', thisInCode));
+    if (!commentCode && commentForm) {
+      ({ commentCode } = commentForm.commentTextToCode('submit'));
     }
 
     let newPageCode;
     let codeBeforeInsertion;
     switch (action) {
       case 'replyInSection': {
-        codeBeforeInsertion = pageCode.slice(0, thisInCode.firstChunkContentEndIndex);
-        const codeAfterInsertion = pageCode.slice(thisInCode.firstChunkContentEndIndex);
+        codeBeforeInsertion = pageCode.slice(0, this.inCode.firstChunkContentEndIndex);
+        const codeAfterInsertion = pageCode.slice(this.inCode.firstChunkContentEndIndex);
         newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         break;
       }
 
       case 'addSubsection': {
-        codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, thisInCode.contentEndIndex));
-        const codeAfterInsertion = pageCode.slice(thisInCode.contentEndIndex);
+        codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, this.inCode.contentEndIndex));
+        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex);
         newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         break;
       }
@@ -1177,14 +1166,12 @@ export default class Section extends SectionSkeleton {
   /**
    * Load the section code.
    *
-   * @returns {object}
    * @throws {CdError|Error}
    */
   async getCode() {
-    let inCode;
     try {
       await this.sourcePage.getCode();
-      inCode = this.locateInCode(this.sourcePage.code);
+      this.locateInCode(this.sourcePage.code);
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
@@ -1192,8 +1179,6 @@ export default class Section extends SectionSkeleton {
         throw e;
       }
     }
-
-    return inCode;
   }
 
   /**

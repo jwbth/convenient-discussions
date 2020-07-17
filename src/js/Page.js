@@ -247,12 +247,12 @@ export default class Page {
   /**
    * Modify page code string in accordance with an action. The `'addSection'` action is presumed.
    *
+   * @param {string} pageCode
    * @param {object} options
-   * @param {string} options.pageCode
-   * @param {string} options.commentForm
+   * @param {string} [options.commentForm]
    * @returns {string}
    */
-  modifyCode({ pageCode, commentForm }) {
+  modifyCode(pageCode, { commentForm }) {
     const { commentCode } = commentForm.commentTextToCode('submit');
 
     let newPageCode;
