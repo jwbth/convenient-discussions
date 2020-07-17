@@ -2053,6 +2053,7 @@ export default class CommentForm {
 
         ({ newPageCode } = comment.modifyCode({
           pageCode: newPageCode,
+          thisInCode: commentInCode,
           action: 'edit',
           commentCode,
         }));

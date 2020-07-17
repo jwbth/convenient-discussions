@@ -1628,24 +1628,27 @@ export default class Comment extends CommentSkeleton {
    * @param {string} options.pageCode
    * @param {string} options.action
    * @param {string} options.doDelete
-   * @param {string} [options.commentCode] `commentCode` or `commentForm` should be set.
+   * @param {string} [options.thisInCode] Should be set if `commentCode` is set.
    * @param {string} [options.commentForm] `commentCode` or `commentForm` should be set.
+   * @param {string} [options.commentCode] `commentCode` or `commentForm` should be set.
    * @returns {string}
    * @throws {CdError}
    */
-  modifyCode({ pageCode, action, doDelete, commentCode, commentForm }) {
+  modifyCode({ pageCode, action, doDelete, commentForm, thisInCode, commentCode }) {
+    thisInCode = thisInCode || this.inCode;
+
     let currentIndex;
     if (action === 'reply') {
-      currentIndex = this.inCode.endIndex;
+      currentIndex = thisInCode.endIndex;
 
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' +
-        mw.util.escapeRegExp(this.inCode.signatureCode) +
+        mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
         cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
         (
-          this.inCode.indentationChars.length > 0 ?
-          `[:*#]{0,${this.inCode.indentationChars.length}}` :
+          thisInCode.indentationChars.length > 0 ?
+          `[:*#]{0,${thisInCode.indentationChars.length}}` :
           ''
         ) +
         '(?![:*#]|<!--)'
@@ -1666,9 +1669,9 @@ export default class Comment extends CommentSkeleton {
       const [, changedIndentationChars] = codeInBetween.match(/\n([:*#]{2,}).*\n$/) || [];
       if (changedIndentationChars) {
         // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used "slice(0, this.inCode.indentationChars.length + 1)".
-        this.inCode.replyIndentationChars = changedIndentationChars
-          .slice(0, this.inCode.replyIndentationChars.length)
+        // possible here when we used "slice(0, thisInCode.indentationChars.length + 1)".
+        thisInCode.replyIndentationChars = changedIndentationChars
+          .slice(0, thisInCode.replyIndentationChars.length)
           .replace(/:$/, cd.config.defaultIndentationChar);
       }
 
@@ -1700,7 +1703,7 @@ export default class Comment extends CommentSkeleton {
         if (doDelete) {
           let startIndex;
           let endIndex;
-          if (this.isOpeningSection && this.inCode.headingStartIndex !== undefined) {
+          if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
             this.section.locateInCode();
             if (extractSignatures(this.section.inCode.code).length > 1) {
               throw new CdError({
@@ -1713,11 +1716,11 @@ export default class Comment extends CommentSkeleton {
               ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
             }
           } else {
-            endIndex = this.inCode.endIndex + this.inCode.signatureDirtyCode.length + 1;
-            const succeedingText = pageCode.slice(this.inCode.endIndex);
+            endIndex = thisInCode.endIndex + thisInCode.signatureDirtyCode.length + 1;
+            const succeedingText = pageCode.slice(thisInCode.endIndex);
 
             const repliesRegexp = new RegExp(
-              `^.+\\n+[:*#]{${this.inCode.indentationChars.length + 1},}`
+              `^.+\\n+[:*#]{${thisInCode.indentationChars.length + 1},}`
             );
             const repliesMatch = repliesRegexp.exec(succeedingText);
 
@@ -1727,20 +1730,20 @@ export default class Comment extends CommentSkeleton {
                 code: 'delete-repliesToComment',
               });
             } else {
-              startIndex = this.inCode.lineStartIndex;
+              startIndex = thisInCode.lineStartIndex;
             }
           }
 
           newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
         } else {
           const startIndex = (
-            this.isOpeningSection && this.inCode.headingStartIndex !== undefined ?
-            this.inCode.headingStartIndex :
-            this.inCode.lineStartIndex
+            this.isOpeningSection && thisInCode.headingStartIndex !== undefined ?
+            thisInCode.headingStartIndex :
+            thisInCode.lineStartIndex
           );
           codeBeforeInsertion = pageCode.slice(0, startIndex);
           const codeAfterInsertion = (
-            pageCode.slice(this.inCode.endIndex + this.inCode.signatureDirtyCode.length)
+            pageCode.slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length)
           );
           newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         }
