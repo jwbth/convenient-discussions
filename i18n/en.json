@@ -179,6 +179,7 @@
   "deadanchor-comment-title": "Comment not found",
   "deadanchor-comment-text": "It could be moved or archived.",
   "deadanchor-searchinarchive": "Do you want to search in the archive?",
+  "deadanchor-search-gotocomment": "jump to comment",
 
   "restore-restored-title": "Session restored",
   "restore-restored-text": "The unsent comment forms have been automatically recovered.",

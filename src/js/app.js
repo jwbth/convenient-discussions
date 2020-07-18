@@ -59,6 +59,33 @@ function s(name, ...params) {
 }
 
 /**
+ * When searching for a comment after clicking "OK" in a "Comment not found" dialog, add comment
+ * links to the titles.
+ *
+ * @private
+ */
+function addCommentLinksOnSpecialSearch() {
+  const [, commentAnchor] = location.search.match(/[?&]cdComment=([^&]+)(?:&|$)/) || [];
+  if (commentAnchor) {
+    mw.loader.using(['mediawiki.api']).then(
+      async () => {
+        await loadMessages();
+        $('.mw-search-result-heading').each((i, el) => {
+          const $a = $('<a>')
+            .attr('href', $(el).find('a').first().attr('href') + '#' + commentAnchor)
+            .text(cd.s('deadanchor-search-gotocomment'));
+          const $span = $('<span>')
+            .addClass("cd-searchCommentLink")
+            .append(mw.msg('parentheses-start'), $a, mw.msg('parentheses-end'));
+          $(el).append(' ', $span.clone());
+        });
+      },
+      console.error
+    );
+  }
+}
+
+/**
  * Function executed after the config and localization strings are ready.
  *
  * @private
@@ -142,7 +169,6 @@ function go() {
     // sequentially.
     let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      cd.g.api = new mw.Api();
       messagesRequest = loadMessages();
       getUserInfo().catch((e) => {
         console.warn(e);
@@ -228,7 +254,6 @@ function go() {
     // sequentially.
     let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      cd.g.api = new mw.Api();
       messagesRequest = loadMessages();
       getUserInfo().catch((e) => {
         console.warn(e);
@@ -260,6 +285,10 @@ function go() {
         console.error(e);
       }
     );
+  }
+
+  if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
+    addCommentLinksOnSpecialSearch();
   }
 }
 

@@ -533,6 +533,8 @@ export function loadMessages() {
     'colon-separator',
   ];
 
+  cd.g.api = cd.g.api || new mw.Api();
+
   // I hope we won't be scolded too much for making two message requests in parallel.
   const messagesRequests = [];
   for (let i = 0; i < messageNames.length; i += 50) {
