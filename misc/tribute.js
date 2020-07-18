@@ -1896,6 +1896,7 @@
    * @license
    * The MIT License (MIT)
    *
+   * Copyright (c) 2020 Jack who built the house
    * Copyright (c) 2017-2020 ZURB, Inc.
    * Copyright (c) 2014 Jeff Collins
    * Copyright (c) 2012 Matt York
