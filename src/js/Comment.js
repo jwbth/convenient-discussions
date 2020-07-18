@@ -1360,7 +1360,7 @@ export default class Comment extends CommentSkeleton {
     let indentationChars = '';
     let lineStartIndex = startIndex;
 
-    const headingMatch = code.match(/(^[^]*(?:^|\n))((=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*\n)/);
+    const headingMatch = code.match(/(^[^]*(?:^|\n))((=+)(.*?)\3[ \t]*(?:<!--[^]*?-->[ \t]*)*\n)/);
     let headingCode;
     let headingStartIndex;
     let headingLevel;
