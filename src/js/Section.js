@@ -326,6 +326,7 @@ export default class Section extends SectionSkeleton {
    * Add section menu items.
    *
    * @param {Promise} [watchedSectionsRequest]
+   * @fires sectionMenuExtended
    * @private
    */
   extendSectionMenu(watchedSectionsRequest) {
@@ -406,6 +407,14 @@ export default class Section extends SectionSkeleton {
             tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
             href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
           });
+
+          /**
+           * Section menu has been extneded.
+           *
+           * @event sectionMenuExtended
+           * @type {module:cd~convenientDiscussions}
+           */
+          mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
         });
     }
   }
