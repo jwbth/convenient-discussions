@@ -159,8 +159,8 @@
     }, {
       key: "keydown",
       value: function keydown(instance, event) {
-        // Jack: We've removed shouldDeactivate() fixing the disappearing of the menu when a part of
-        // a mention is typed and the user presses any command key.
+        // Jack: Removed shouldDeactivate() fixing the disappearing of the menu when a part of a
+        // mention is typed and the user presses any command key.
 
         var element = this;
         instance.commandEvent = false;
@@ -191,7 +191,7 @@
             li = li.parentNode;
 
             if (!li || li === tribute.menu) {
-              // Jack: We removed the error throw, as there is nothing wrong when a user clicks the
+              // Jack: Removed the error throw, as there is nothing wrong when a user clicks the
               // scroll bar.
               return;
             }
@@ -287,7 +287,7 @@
       value: function callbacks() {
         var _this = this;
 
-        // Jack: removed "delete" and "space" keys from here, see keys().
+        // Jack: Removed "delete" and "space" keys from here, see keys().
         return {
           triggerChar: function triggerChar(e, el, trigger) {
             var tribute = _this.tribute;
@@ -414,7 +414,7 @@
       key: "keys",
       value: function keys() {
         /*
-          Jack: We've removed:
+          Jack: Removed:
           - "space" - it causes the menu not to change or hide when a space was typed;
           - "delete" - it causes the menu not to appear when backspace is pressed and a character
             preventing the menu to appear is removed (for example, ">" in "<small>").
@@ -583,8 +583,8 @@
             var menuIsOffScreenHorizontally = document.documentElement.clientWidth > menuDimensions.width && (menuIsOffScreen.left || menuIsOffScreen.right);
             var menuIsOffScreenVertically = document.documentElement.clientHeight > menuDimensions.height && (menuIsOffScreen.top || menuIsOffScreen.bottom);
 
-            // Jack: We can't scroll down without having the menu travelling with us in moments when
-            // we resize the window, seriously?
+            // Jack: You can't scroll down without having the menu travelling with you in moments
+            // when you resize the window, seriously?
             /* if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
               _this.tribute.menu.style.cssText = 'display: none';
 
@@ -655,12 +655,12 @@
             text += textSuffix;
             var startPos = info.mentionPosition;
 
-            // Jack: We fixed this line to make it work with replaceTextSuffix'es of length other
-            // than 1.
+            // Jack: Fixed this line to make it work with `replaceTextSuffix`es of length other than
+            // 1.
             var endPos = info.mentionPosition + info.mentionText.length;
 
             if (!this.tribute.autocompleteMode) {
-              // Jack: We fixed this line to make it work with replaceTextSuffix'es of length other
+              // Jack: Fixed this line to make it work with `replaceTextSuffix`es of length other
               // than 1.
               endPos += info.mentionTriggerChar.length;
             }
@@ -886,7 +886,7 @@
           }
 
           /*
-            Jack: We've added this block as we need to have the menu removed when:
+            Jack: Added this block as we need to have the menu removed when:
             - there is no valid trigger before the cursor position,
             - typing a space after "@" or "##",
             - there is a selection.
