@@ -1015,8 +1015,13 @@
           div.textContent = div.textContent.replace(/\s/g, ' ');
         }
 
+        // Jack: Added this element to better position the menu.
+        var mentionSpan = this.getDocument().createElement('span');
+        mentionSpan.textContent = this.tribute.current.trigger + this.tribute.current.mentionText;
+
         var span = this.getDocument().createElement('span');
-        span.textContent = element.value.substring(position) || '.';
+        var text = element.value.substring(position + mentionSpan.textContent.length) || '.';
+        span.append(mentionSpan, text);
         div.appendChild(span);
         var rect = element.getBoundingClientRect();
         var doc = document.documentElement;
@@ -1042,9 +1047,9 @@
         var menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
         if (menuIsOffScreen.right) {
-          // Jack: Added "- span.offsetWidth" to have the menu horizontally overlap with the mention
-          // trigger.
-          coordinates.right = windowWidth - coordinates.left - span.offsetWidth;
+          // Jack: Added "- mentionSpan.offsetWidth" to have the menu horizontally overlap with the
+          // mention trigger.
+          coordinates.right = windowWidth - coordinates.left - mentionSpan.offsetWidth;
           coordinates.left = 'auto';
         }
 
