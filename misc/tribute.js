@@ -585,11 +585,11 @@
 
             // Jack: You can't scroll down without having the menu travelling with you in moments
             // when you resize the window, seriously?
-            /* if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
+            if ((menuIsOffScreenHorizontally || menuIsOffScreenVertically) && !(menuIsOffScreen.vertical || menuIsOffScreen.horizontal)) {
               _this.tribute.menu.style.cssText = 'display: none';
 
               _this.positionMenuAtCaret(scrollTo);
-            } */
+            }
           }, 0);
         } else {
           this.tribute.menu.style.cssText = 'display: none';
@@ -959,7 +959,13 @@
           top: menuTop < Math.floor(windowTop),
           right: menuRight > Math.ceil(windowLeft + windowWidth),
           bottom: menuBottom > Math.ceil(windowTop + windowHeight),
-          left: menuLeft < Math.floor(windowLeft)
+          left: menuLeft < Math.floor(windowLeft),
+
+          // Jack: Added two properties to denote cases where the menu is completely invisible (for
+          // example, when the user resizes the window while the input is out of sight). Otherwise,
+          // it appears in unexpected places.
+          vertical: menuTop > Math.ceil(windowTop + windowHeight) || menuBottom < Math.floor(windowTop),
+          horizontal: menuLeft > Math.ceil(windowLeft + windowWidth) || menuRight < Math.floor(windowLeft),
         };
       }
     }, {
@@ -1015,13 +1021,8 @@
           div.textContent = div.textContent.replace(/\s/g, ' ');
         }
 
-        // Jack: Added this element to better position the menu.
-        var mentionSpan = this.getDocument().createElement('span');
-        mentionSpan.textContent = this.tribute.current.trigger + this.tribute.current.mentionText;
-
         var span = this.getDocument().createElement('span');
-        var text = element.value.substring(position + mentionSpan.textContent.length) || '.';
-        span.append(mentionSpan, text);
+        span.textContent = element.value.substring(position) || '.';
         div.appendChild(span);
         var rect = element.getBoundingClientRect();
         var doc = document.documentElement;
@@ -1039,7 +1040,8 @@
           top: top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth) + parseInt(computed.fontSize) - element.scrollTop,
           left: left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth)
         };
-        // Jack: Replaces `window.innerWidth` with `document.documentElement.clientWidth` here and
+
+        // Jack: Replaced `window.innerWidth` with `document.documentElement.clientWidth` here and
         // in other places to have the scrollbars counted.
         var windowWidth = doc.clientWidth;
         var windowHeight = doc.clientHeight;
@@ -1047,9 +1049,8 @@
         var menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
         if (menuIsOffScreen.right) {
-          // Jack: Added "- mentionSpan.offsetWidth" to have the menu horizontally overlap with the
-          // mention trigger.
-          coordinates.right = windowWidth - coordinates.left - mentionSpan.offsetWidth;
+          // Jack: Simplified logic by putting `right` at 0.
+          coordinates.right = 0;
           coordinates.left = 'auto';
         }
 
@@ -1064,14 +1065,12 @@
 
         menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
-        if (menuIsOffScreen.left) {
+        if (menuIsOffScreen.left && !menuIsOffScreen.horizontal) {
           coordinates.left = windowWidth > menuDimensions.width ? windowLeft + windowWidth - menuDimensions.width : windowLeft;
           delete coordinates.right;
         }
 
-        // Jack: Added "coordinates.top === 'auto'". Otherwise, if the user resizes the window while
-        // the form is out of sight, the menu appears in unexpected places.
-        if (menuIsOffScreen.top && coordinates.top === 'auto') {
+        if (menuIsOffScreen.top && !menuIsOffScreen.vertical) {
           coordinates.top = windowHeight > menuDimensions.height ? windowTop + windowHeight - menuDimensions.height : windowTop;
           delete coordinates.bottom;
         }
