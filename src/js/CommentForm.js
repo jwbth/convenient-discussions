@@ -1849,7 +1849,7 @@ export default class CommentForm {
     // Process newlines by adding or not adding <br> and keeping or not keeping the newline. \x01
     // and \x02 mean the beginning and ending of sensitive code except for tables. \x03 and \x04
     // mean the beginning and ending of a table. Note: This should be kept coordinated with the
-    // counterpart code in Comment#codeToText.
+    // reverse transformation code in Comment#codeToText.
     const entireLineRegexp = new RegExp(
       `^(?:\\x01.+?\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
       'i'
@@ -1859,7 +1859,7 @@ export default class CommentForm {
       'i'
     );
     const nextLineBeginningRegexp = new RegExp(
-      `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN})`,
+      `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
       'i'
     );
     code = code.replace(

@@ -1084,8 +1084,8 @@ export default class Comment extends CommentSkeleton {
       // Collapse random line breaks that do not affect text rendering but will transform into <br>
       // on posting. \x01 and \x02 mean the beginning and ending of sensitive code except for
       // tables. \x03 and \x04 mean the beginning and ending of a table. Note: This should be kept
-      // coordinated with the counterpart code in CommentForm#commentTextToCode. Some more comments
-      // are there.
+      // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
+      // more comments are there.
       const entireLineRegexp = new RegExp(
         `^(?:\\x01.+?\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
         'i'
@@ -1095,7 +1095,7 @@ export default class Comment extends CommentSkeleton {
         'i'
       );
       const nextLineBeginningRegexp = new RegExp(
-        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN})`,
+        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
         'i'
       );
       text = text.replace(
