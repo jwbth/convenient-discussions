@@ -1372,6 +1372,10 @@ export default class Comment extends CommentSkeleton {
       headlineCode = headingMatch[4].trim();
       startIndex += headingMatch[0].length;
       code = code.slice(headingMatch[0].length);
+
+      // Editing the first comment at
+      // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да.
+      lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     }
 
     // Exclude the text of the previous comment that is ended with "~~~" instead of "~~~~".
