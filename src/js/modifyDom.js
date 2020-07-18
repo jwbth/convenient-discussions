@@ -103,12 +103,12 @@ function mergeAdjacentCommentLevels(firstVisibleElementData) {
             if (firstMoved === undefined && child.textContent.trim()) {
               // Don't fill the "firstMoved" variable which is used further to merge elements if
               // there is a non-empty text node between. (An example that is now fixed:
-              // [[Википедия:Форум/Архив/Викиданные/2018/1 полугодие#201805032155_NBS]], but other
-              // can be on the loose.) Instead, wrap the text node into an element to prevent it
-              // from being ignored when searching next time for adjacent .commentLevel elements.
-              // This could be seen only as an additional precaution, since it doesn't fix the
-              // source of the problem: the fact that a bare text node is (probably) a part of the
-              // reply. It shouldn't be happening.
+              // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
+              // but other can be on the loose.) Instead, wrap the text node into an element to
+              // prevent it from being ignored when searching next time for adjacent .commentLevel
+              // elements. This could be seen only as an additional precaution, since it doesn't fix
+              // the source of the problem: the fact that a bare text node is (probably) a part of
+              // the reply. It shouldn't be happening.
               firstMoved = null;
               const newChild = document.createElement('span');
               newChild.appendChild(child);
