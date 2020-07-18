@@ -76,6 +76,13 @@ export default class Autocomplete {
           e.detail.item.original.startOffset;
         input.selectRange(startPos + startOffset, caretIndex - endOffset);
       });
+      if (input instanceof OO.ui.MultilineTextInputWidget) {
+        input.on('resize', () => {
+          if (this.tribute.menuEvents.windowResizeEvent) {
+            this.tribute.menuEvents.windowResizeEvent();
+          }
+        });
+      }
     });
   }
 
