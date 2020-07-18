@@ -583,11 +583,13 @@
             var menuIsOffScreenHorizontally = document.documentElement.clientWidth > menuDimensions.width && (menuIsOffScreen.left || menuIsOffScreen.right);
             var menuIsOffScreenVertically = document.documentElement.clientHeight > menuDimensions.height && (menuIsOffScreen.top || menuIsOffScreen.bottom);
 
-            if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
+            // Jack: We can't scroll down without having the menu travelling with us in moments when
+            // we resize the window, seriously?
+            /* if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
               _this.tribute.menu.style.cssText = 'display: none';
 
               _this.positionMenuAtCaret(scrollTo);
-            }
+            } */
           }, 0);
         } else {
           this.tribute.menu.style.cssText = 'display: none';
@@ -1062,7 +1064,9 @@
           delete coordinates.right;
         }
 
-        if (menuIsOffScreen.top) {
+        // Jack: Added "coordinates.top === 'auto'". Otherwise, if the user resizes the window while
+        // the form is out of sight, the menu appears in unexpected places.
+        if (menuIsOffScreen.top && coordinates.top === 'auto') {
           coordinates.top = windowHeight > menuDimensions.height ? windowTop + windowHeight - menuDimensions.height : windowTop;
           delete coordinates.bottom;
         }
