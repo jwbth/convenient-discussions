@@ -1065,12 +1065,8 @@ function copyLinkToClipboardAndNotify(text) {
  * @param {Function} [finallyCallback] Callback to execute on success or error.
  */
 export async function copyLink(object, chooseLink, finallyCallback) {
-  if (object.linkBeingCopied) {
-    if (finallyCallback) {
-      finallyCallback();
-    }
-    return;
-  }
+  if (object.linkBeingCopied) return;
+
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
    * being made to get the diff).
@@ -1079,6 +1075,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
    * @type {boolean}
    * @instance module:Comment
    */
+
   /**
    * Is a link to the section being copied right now (a copy link dialog is opened).
    *
