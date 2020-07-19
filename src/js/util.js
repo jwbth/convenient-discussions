@@ -9,6 +9,8 @@ import CdError from './CdError';
 import Page from './Page';
 import cd from './cd';
 
+let keptScrollPosition = null;
+
 /**
  * Removes duplicated elements from an array.
  *
@@ -384,4 +386,20 @@ export function unhideText(code, hidden) {
   }
 
   return code;
+}
+
+/**
+ * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
+ */
+export function saveScrollPosition() {
+  keptScrollPosition = window.pageYOffset;
+}
+
+/**
+ * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
+ */
+export function restoreScrollPosition() {
+  if (keptScrollPosition === null) return;
+  window.scrollTo(0, keptScrollPosition);
+  keptScrollPosition = null;
 }

@@ -24,7 +24,7 @@ import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
-import { isInline } from './util';
+import { isInline, restoreScrollPosition } from './util';
 import { setSettings } from './options';
 
 /**
@@ -110,7 +110,7 @@ function getFirstVisibleElementData() {
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @param {object} firstVisibleElementData
+ * @param {object|undefined} firstVisibleElementData
  * @throws {CdError} If there is no comments.
  * @private
  */
@@ -438,7 +438,7 @@ export default async function processPage(keptData = {}) {
 
   await prepare(keptData);
 
-  const firstVisibleElementData = cd.g.firstRun ? getFirstVisibleElementData() : {};
+  const firstVisibleElementData = cd.g.firstRun ? getFirstVisibleElementData() : undefined;
 
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
@@ -529,14 +529,16 @@ export default async function processPage(keptData = {}) {
 
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
-  if (firstVisibleElementData.element || keptData.scrollPosition) {
-    const y = firstVisibleElementData.element ?
+  if (firstVisibleElementData) {
+    window.scrollTo(
+      0,
       (
         window.pageYOffset + firstVisibleElementData.element.getBoundingClientRect().top -
         firstVisibleElementData.top
-      ) :
-      keptData.scrollPosition;
-    window.scrollTo(0, y);
+      )
+    );
+  } else {
+    restoreScrollPosition();
   }
 
   highlightOwnComments();

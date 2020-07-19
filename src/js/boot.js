@@ -17,6 +17,7 @@ import {
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
   mergeRegexps,
+  saveScrollPosition,
   transparentize,
   underlinesToSpaces,
 } from './util';
@@ -601,7 +602,7 @@ export async function reloadPage(keptData = {}) {
   // In case checkboxes were changed programmatically.
   saveSession();
 
-  keptData.scrollPosition = window.pageYOffset;
+  saveScrollPosition();
 
   navPanel.closeAllNotifications();
 

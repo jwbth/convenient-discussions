@@ -19,6 +19,8 @@ import {
   isInputFocused,
   removeDoubleSpaces,
   removeDuplicates,
+  restoreScrollPosition,
+  saveScrollPosition,
   unhideText,
 } from './util';
 import { checkboxField } from './ooui';
@@ -129,6 +131,11 @@ export default class CommentForm {
     this.createContents(dataToRestore);
     this.addEvents();
     this.initAutocomplete();
+
+    // This call and subsequent `restoreScrollPosition()` call is, first of all, for compensation of
+    // Chrome 84.0.4147.89 behavior where the viewport jumps down all of a sudden.
+    saveScrollPosition();
+
     this.addToPage();
 
     /**
@@ -216,6 +223,8 @@ export default class CommentForm {
         this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
       }
     }
+
+    restoreScrollPosition();
 
     /**
      * A comment form has been created.
@@ -343,8 +352,6 @@ export default class CommentForm {
       });
 
     mw.loader.using(modules).then(() => {
-      $toolbarPlaceholder.hide();
-
       const $textarea = this.commentInput.$input;
       $textarea.wikiEditor(
         'addModule',
@@ -390,6 +397,10 @@ export default class CommentForm {
           }
         },
       });
+
+      // For some reason, in Chrome 84.0.4147.89, if you put this line to the top, the viewport
+      // will jump down. See also saveScrollPosition() call above.
+      $toolbarPlaceholder.hide();
 
       /**
        * The comment form is ready (all requested modules have been loaded and executed).

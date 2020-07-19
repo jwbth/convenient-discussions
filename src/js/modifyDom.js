@@ -16,7 +16,7 @@ import cd from './cd';
  *
  * @param {Element} element
  * @param {string} newType
- * @param {object} firstVisibleElementData
+ * @param {object|undefined} firstVisibleElementData
  * @returns {Element}
  * @private
  */
@@ -42,7 +42,7 @@ function changeElementType(element, newType, firstVisibleElementData) {
     }
   }
 
-  if (element === firstVisibleElementData.element) {
+  if (firstVisibleElementData && element === firstVisibleElementData.element) {
     firstVisibleElementData.element = newElement;
   }
 
@@ -53,7 +53,7 @@ function changeElementType(element, newType, firstVisibleElementData) {
  * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
  * the nesting level.
  *
- * @param {object} firstVisibleElementData
+ * @param {object|undefined} firstVisibleElementData
  * @private
  */
 function mergeAdjacentCommentLevels(firstVisibleElementData) {
@@ -133,7 +133,7 @@ function mergeAdjacentCommentLevels(firstVisibleElementData) {
 /**
  * Perform some DOM-related taskes after parsing comments.
  *
- * @param {Element} firstVisibleElementData
+ * @param {object|undefined} firstVisibleElementData
  */
 export function adjustDom(firstVisibleElementData) {
   mergeAdjacentCommentLevels(firstVisibleElementData);

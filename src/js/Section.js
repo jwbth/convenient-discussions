@@ -425,6 +425,8 @@ export default class Section extends SectionSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   addReply(dataToRestore) {
+    this.$replyButton.hide();
+
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.addReplyForm) {
@@ -441,7 +443,6 @@ export default class Section extends SectionSkeleton {
           dataToRestore,
         });
     }
-    this.$replyButton.hide();
 
     const baseSection = this.level === 2 ? this : this.baseSection;
     if (baseSection && baseSection.$addSubsectionButtonContainer) {
@@ -459,6 +460,10 @@ export default class Section extends SectionSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   addSubsection(dataToRestore) {
+    if (this.$addSubsectionButtonContainer) {
+      this.$addSubsectionButtonContainer.hide();
+    }
+
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
       this.addSubsectionForm.headlineInput.focus();
@@ -476,10 +481,6 @@ export default class Section extends SectionSkeleton {
           dataToRestore,
           scrollIntoView: true,
         });
-    }
-
-    if (this.$addSubsectionButtonContainer) {
-      this.$addSubsectionButtonContainer.hide();
     }
   }
 
