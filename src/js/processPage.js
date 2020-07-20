@@ -79,7 +79,7 @@ async function prepare({ messagesRequest }) {
 /**
  * Identify the first visible element from the top of the page and its top offset.
  *
- * @returns {GetFirstVisibleElementDataReturn}
+ * @returns {?GetFirstVisibleElementDataReturn}
  * @private
  */
 function getFirstVisibleElementData() {
@@ -103,7 +103,7 @@ function getFirstVisibleElementData() {
       if (!treeWalker.nextSibling()) break;
     }
   }
-  return { element, top };
+  return element ? { element, top } : null;
 }
 
 /**
