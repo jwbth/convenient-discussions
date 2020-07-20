@@ -22,7 +22,12 @@ import util from './globalUtil';
 import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
-import { initTalkPageCss, removeLoadingOverlay, setLoadingOverlay } from './boot';
+import {
+  initTalkPageCss,
+  isLoadingOverlayOn,
+  removeLoadingOverlay,
+  setLoadingOverlay,
+} from './boot';
 import { loadMessages } from './dateFormat';
 import { setVisits } from './options';
 
@@ -207,6 +212,8 @@ function go() {
         }
       },
       (e) => {
+        // Note https://phabricator.wikimedia.org/T68598
+
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         removeLoadingOverlay();
         console.error(e);
@@ -214,10 +221,9 @@ function go() {
     );
 
     setTimeout(() => {
-      // https://phabricator.wikimedia.org/T68598
-      if (modulesRequest.state() !== 'resolved') {
+      if (isLoadingOverlayOn()) {
         removeLoadingOverlay();
-        console.warn('The promise is in the "pending" state for 10 seconds; removing the loading overlay.');
+        console.warn('The loading overlay stays for more than 10 seconds; removing it.');
       }
     }, 10000);
 
