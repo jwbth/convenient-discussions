@@ -2611,7 +2611,7 @@ export default class CommentForm {
 
     const currentOperation = this.registerOperation({ type: 'submit' });
 
-    const newPageCode = await this.tryPrepareNewPageCode('submit') || {};
+    const newPageCode = await this.tryPrepareNewPageCode('submit');
     if (newPageCode === undefined) {
       this.closeOperation(currentOperation);
       return;
