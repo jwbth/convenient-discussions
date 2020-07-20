@@ -2150,10 +2150,9 @@ export default class CommentForm {
    * `true`.
    *
    * @param {Operation} operation
-   * @param {boolean} [force] Force closing the operation.
    * @returns {boolean}
    */
-  closeOperationIfNecessary(operation, force) {
+  closeOperationIfNecessary(operation) {
     if (operation.closed) {
       return true;
     }
@@ -2161,10 +2160,7 @@ export default class CommentForm {
       this.operations,
       (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.delayed
     );
-    if (
-      (otherOperationIndex !== null && otherOperationIndex > this.operations.indexOf(operation)) ||
-      force
-    ) {
+    if (otherOperationIndex !== null && otherOperationIndex > this.operations.indexOf(operation)) {
       this.closeOperation(operation);
       return true;
     } else {
@@ -2173,12 +2169,13 @@ export default class CommentForm {
   }
 
   /**
-   * Mark the operation as closed. Should be done when the operation has finished (either
-   * successfully or not).
+   * Mark the operation as closed if it is not. Should be done when the operation has finished
+   * (either successfully or not).
    *
    * @param {Operation} operation
    */
   closeOperation(operation) {
+    if (operation.closed) return;
     operation.closed = true;
     if (operation.type !== 'preview' || !operation.auto) {
       this.popPending(['load', 'submit'].includes(operation.type));
@@ -2276,7 +2273,10 @@ export default class CommentForm {
     // looking for the unclosed 'load' operation above).
     if (!(this.target instanceof Page) && !this.target.inCode) {
       await this.checkCode();
-      if (this.closeOperationIfNecessary(currentOperation, !this.target.inCode)) return;
+      if (!this.target.inCode) {
+        this.closeOperation(currentOperation);
+      }
+      if (currentOperation.closed) return;
     }
 
     // In case of an empty comment input, we in fact make this request for the sake of parsing
@@ -2376,8 +2376,11 @@ export default class CommentForm {
 
     const currentOperation = this.registerOperation({ type: 'viewChanges' });
 
-    const newPageCode = await this.tryPrepareNewPageCode('viewChanges') || {};
-    if (this.closeOperationIfNecessary(currentOperation, newPageCode === undefined)) return;
+    const newPageCode = await this.tryPrepareNewPageCode('viewChanges');
+    if (newPageCode === undefined) {
+      this.closeOperation(currentOperation);
+    }
+    if (currentOperation.closed) return;
 
     mw.loader.load('mediawiki.diff.styles');
 
