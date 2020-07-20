@@ -132,8 +132,9 @@ export default class CommentForm {
     this.addEvents();
     this.initAutocomplete();
 
-    // This call and subsequent `restoreScrollPosition()` call is, first of all, for compensation of
-    // Chrome 84.0.4147.89 behavior where the viewport jumps down all of a sudden.
+    // This call and the subsequent `restoreScrollPosition()` call is, first of all, for
+    // compensation of the Chrome 84.0.4147.89 behavior where the viewport jumps down all of a
+    // sudden.
     saveScrollPosition();
 
     this.addToPage();
@@ -1365,11 +1366,13 @@ export default class CommentForm {
    * Show or hide the comment settings.
    */
   toggleSettings() {
+    saveScrollPosition();
     if (this.$settings.is(':hidden')) {
       this.$settings.show();
     } else {
       this.$settings.hide();
     }
+    restoreScrollPosition();
   }
 
   /**
