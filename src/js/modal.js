@@ -1113,10 +1113,10 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       } catch (e) {
         if (e instanceof CdError) {
           const { type } = e.data;
-          if (type === 'api') {
-            value = cd.s('cld-diff-error');
-          } else if (type === 'network') {
+          if (type === 'network') {
             value = cd.s('cld-diff-error-network');
+          } else {
+            value = cd.s('cld-diff-error');
           }
         } else {
           value = cd.s('cld-diff-error-unknown');
@@ -1124,7 +1124,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       }
 
       diffInput = new OO.ui.TextInputWidget({
-        value: value || cd.s('cld-diff-error'),
+        value,
         disabled: !diffLink,
       });
       const diffButton = new OO.ui.ButtonWidget({
