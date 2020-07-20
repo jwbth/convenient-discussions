@@ -48,7 +48,7 @@
   "cld-diff-error-unknown": "Couldn't find (unknown error)",
   "cld-wikilink": "Wikilink",
   "cld-help-onlycd": "This link will work only for users that have Convenient Discussions installed.",
-  "cld-currentpagewikilink": "Wikilink from the same page",
+  "cld-currentpagewikilink": "Wikilink from the same <em>section</em>",
   "cld-link": "Regular link",
   "cld-close": "Close",
   "cld-copy": "Copy",

@@ -1138,7 +1138,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       });
       diffField = new OO.ui.ActionFieldLayout(diffInput, diffButton, {
         align: 'top',
-        label: cd.s('cld-diff'),
+        label: cd.util.wrapInElement(cd.s('cld-diff')),
       });
     }
 
@@ -1157,7 +1157,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
     const wikilinkField = new OO.ui.ActionFieldLayout(wikilinkInput, wikilinkButton, {
       align: 'top',
-      label: cd.s('cld-wikilink'),
+      label: cd.util.wrapInElement(cd.s('cld-wikilink')),
       help: onlyCdWarning,
       helpInline: true,
     });
@@ -1177,7 +1177,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       anchorWikilinkInput,
       anchorWikilinkButton, {
         align: 'top',
-        label: cd.s('cld-currentpagewikilink'),
+        label: cd.util.wrapInElement(cd.s('cld-currentpagewikilink')),
       }
     );
 
@@ -1194,7 +1194,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
     const linkField = new OO.ui.ActionFieldLayout(linkInput, linkButton, {
       align: 'top',
-      label: cd.s('cld-link'),
+      label: cd.util.wrapInElement(cd.s('cld-link')),
       help: onlyCdWarning,
       helpInline: true,
     });
