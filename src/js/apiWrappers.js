@@ -57,6 +57,7 @@ export async function parseCode(code, options) {
   const defaultOptions = {
     action: 'parse',
     text: code,
+    contentmodel: 'wikitext',
     prop: ['text', 'modules'],
     pst: true,
     disablelimitreport: true,
