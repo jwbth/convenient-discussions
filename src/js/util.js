@@ -332,7 +332,7 @@ export function isInputFocused() {
 }
 
 /**
- * Turn many regexps into one, putting it in `()` and separating individual regexps by `|`.
+ * Turn many regexps into one, putting it in `()` and separating individual expressions by `|`.
  *
  * @param {RegExp[]|string[]} arr
  * @returns {?RegExp}
@@ -350,14 +350,14 @@ export function mergeRegexps(arr) {
 /**
  * Replace text matched by a regexp with placeholders.
  *
- * @param {string} code
+ * @param {string} text
  * @param {RegExp} regexp
  * @param {string[]} hidden
  * @param {boolean} useAlternativeMarker
  * @returns {string}
  */
-export function hideText(code, regexp, hidden, useAlternativeMarker) {
-  return code.replace(regexp, (s, pre, textToHide) => {
+export function hideText(text, regexp, hidden, useAlternativeMarker) {
+  return text.replace(regexp, (s, pre, textToHide) => {
     // If there is no groups, the offset is the second argument.
     if (typeof pre === 'number') {
       pre = '';
@@ -376,16 +376,16 @@ export function hideText(code, regexp, hidden, useAlternativeMarker) {
 /**
  * Replace placeholders created by {@link module:util.hide}.
  *
- * @param {string} code
+ * @param {string} text
  * @param {string[]} hidden
  * @returns {string}
  */
-export function unhideText(code, hidden) {
-  while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
-    code = code.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
+export function unhideText(text, hidden) {
+  while (text.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
+    text = text.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
   }
 
-  return code;
+  return text;
 }
 
 /**
