@@ -180,6 +180,9 @@
     }, {
       key: "click",
       value: function click(instance, event) {
+        // Jack: Don't react on other than left button clicks.
+        if (event.which !== 1) return;
+
         var tribute = instance.tribute;
 
         if (tribute.menu && tribute.menu.contains(event.target)) {
@@ -471,6 +474,10 @@
         this.tribute.range.getDocument().addEventListener("mousedown", this.menuClickEvent, false);
         window.addEventListener("resize", this.windowResizeEvent);
 
+        // Jack: Added this line to make the menu change its height if its lower border is off
+        // screen.
+        window.addEventListener("scroll", this.windowResizeEvent);
+
         if (this.menuContainer) {
           this.menuContainer.addEventListener("scroll", this.menuContainerScrollEvent, false);
         } else {
@@ -483,6 +490,9 @@
         this.tribute.range.getDocument().removeEventListener("mousedown", this.menuClickEvent, false);
         this.tribute.range.getDocument().removeEventListener("MSPointerDown", this.menuClickEvent, false);
         window.removeEventListener("resize", this.windowResizeEvent);
+
+        // Jack: Added this line, see above.
+        window.removeEventListener("scroll", this.windowResizeEvent);
 
         if (this.menuContainer) {
           this.menuContainer.removeEventListener("scroll", this.menuContainerScrollEvent, false);
@@ -563,6 +573,11 @@
 
           this.tribute.menu.style.cssText = "top: ".concat(coordinates.top, "px;\n                                     left: ").concat(coordinates.left, "px;\n                                     right: ").concat(coordinates.right, "px;\n                                     bottom: ").concat(coordinates.bottom, "px;\n                                     position: absolute;\n                                     display: block;");
 
+          // Jack: Added this block.
+          if (coordinates.additionalStyles) {
+            this.tribute.menu.style.cssText += ' ' + coordinates.additionalStyles;
+          }
+
           if (coordinates.left === 'auto') {
             this.tribute.menu.style.left = 'auto';
           }
@@ -572,25 +587,9 @@
           }
 
           if (scrollTo) this.scrollIntoView();
-          window.setTimeout(function () {
-            var menuDimensions = {
-              width: _this.tribute.menu.offsetWidth,
-              height: _this.tribute.menu.offsetHeight
-            };
 
-            var menuIsOffScreen = _this.isMenuOffScreen(coordinates, menuDimensions);
-
-            var menuIsOffScreenHorizontally = document.documentElement.clientWidth > menuDimensions.width && (menuIsOffScreen.left || menuIsOffScreen.right);
-            var menuIsOffScreenVertically = document.documentElement.clientHeight > menuDimensions.height && (menuIsOffScreen.top || menuIsOffScreen.bottom);
-
-            // Jack: You can't scroll down without having the menu travelling with you in moments
-            // when you resize the window, seriously?
-            if ((menuIsOffScreenHorizontally || menuIsOffScreenVertically) && !(menuIsOffScreen.vertical || menuIsOffScreen.horizontal)) {
-              _this.tribute.menu.style.cssText = 'display: none';
-
-              _this.positionMenuAtCaret(scrollTo);
-            }
-          }, 0);
+          // Jack: Removed `setTimeout` part entirely as it seems to have no effect after other
+          // changes.
         } else {
           this.tribute.menu.style.cssText = 'display: none';
         }
@@ -960,12 +959,6 @@
           right: menuRight > Math.ceil(windowLeft + windowWidth),
           bottom: menuBottom > Math.ceil(windowTop + windowHeight),
           left: menuLeft < Math.floor(windowLeft),
-
-          // Jack: Added two properties to denote cases where the menu is completely invisible (for
-          // example, when the user resizes the window while the input is out of sight). Otherwise,
-          // it appears in unexpected places.
-          vertical: menuTop > Math.ceil(windowTop + windowHeight) || menuBottom < Math.floor(windowTop),
-          horizontal: menuLeft > Math.ceil(windowLeft + windowWidth) || menuRight < Math.floor(windowLeft),
         };
       }
     }, {
@@ -1057,23 +1050,23 @@
         var parentHeight = this.tribute.menuContainer ? this.tribute.menuContainer.offsetHeight : this.getDocument().body.offsetHeight;
 
         if (menuIsOffScreen.bottom) {
-          var parentRect = this.tribute.menuContainer ? this.tribute.menuContainer.getBoundingClientRect() : this.getDocument().body.getBoundingClientRect();
-          var scrollStillAvailable = parentHeight - (windowHeight - parentRect.top);
-          coordinates.bottom = scrollStillAvailable + (windowHeight - rect.top - span.offsetTop);
-          coordinates.top = 'auto';
+          // Jack: Removed the block setting coordinates.bottom as the reference point, added the
+          // block setting the height for the menu.
+          const height = windowTop + windowHeight - coordinates.top - span.offsetTop;
+          coordinates.additionalStyles = 'height: ' + height + 'px; overflow-y: scroll;';
         }
 
         menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
-        if (menuIsOffScreen.left && !menuIsOffScreen.horizontal) {
+        // Jack: Added "coordinates.left === 'auto'" to avoid changing erroneously the position if
+        // the page is scrolled to the right and the menu is off the screen.
+        if (menuIsOffScreen.left && coordinates.left === 'auto') {
           coordinates.left = windowWidth > menuDimensions.width ? windowLeft + windowWidth - menuDimensions.width : windowLeft;
           delete coordinates.right;
         }
 
-        if (menuIsOffScreen.top && !menuIsOffScreen.vertical) {
-          coordinates.top = windowHeight > menuDimensions.height ? windowTop + windowHeight - menuDimensions.height : windowTop;
-          delete coordinates.bottom;
-        }
+        // Jack: Removed the "if (menuIsOffScreen.top)" block as it seem reduntant after we stopped
+        // basing the menu placement on the bottom position.
 
         this.getDocument().body.removeChild(div);
         return coordinates;
@@ -1678,6 +1671,10 @@
             fragment.appendChild(li);
           });
           ul.appendChild(fragment);
+
+          // Jack: Added this line to make the menu redrawn immediately, not wait the `setTimeout`'s
+          // callback.
+          _this2.range.positionMenuAtCaret(scrollTo);
         };
 
         if (typeof this.current.collection.values === "function") {

@@ -104,7 +104,14 @@ export function globalKeyDownHandler(e) {
  * @param {Event} e
  */
 export function highlightFocused(e) {
-  if (cd.util.isPageOverlayOn() || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
+  if (
+    cd.util.isPageOverlayOn() ||
+    cd.g.dontHandleScroll ||
+    cd.g.autoScrollInProgress ||
+    (cd.g.activeAutocompleteMenu && cd.g.activeAutocompleteMenu.matches(':hover'))
+  ) {
+    return;
+  }
 
   const contentLeft = cd.g.rootElement.getBoundingClientRect().left;
   if (e.pageX < contentLeft - cd.g.COMMENT_UNDERLAY_SIDE_MARGIN) {

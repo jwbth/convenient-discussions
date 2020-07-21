@@ -224,6 +224,7 @@ function initGlobals() {
 
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
+  cd.g.activeAutocompleteMenu = null;
 }
 
 /**

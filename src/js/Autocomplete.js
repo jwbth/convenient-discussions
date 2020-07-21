@@ -76,6 +76,12 @@ export default class Autocomplete {
           e.detail.item.original.startOffset;
         input.selectRange(startPos + startOffset, caretIndex - endOffset);
       });
+      element.addEventListener('tribute-active-true', () => {
+        cd.g.activeAutocompleteMenu = this.tribute.menu;
+      });
+      element.addEventListener('tribute-active-false', () => {
+        cd.g.activeAutocompleteMenu = null;
+      });
       if (input instanceof OO.ui.MultilineTextInputWidget) {
         input.on('resize', () => {
           if (this.tribute.menuEvents.windowResizeEvent) {
