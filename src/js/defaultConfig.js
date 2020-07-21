@@ -482,13 +482,11 @@ export default {
    * Whether to show a placeholder in a comment input.
    *
    * If gender is needed to output the comment input placeholder, it could be better to set the
-   * value to `true` to avoid displaying the placeholder altogether (a gender request would need
+   * value to `false` to avoid displaying the placeholder altogether (a gender request would need
    * time to proceed hampering user experience).
    *
    * @type {boolean}
-   * @default false
    */
-  commentInputPlaceholderEmpty: false,
 
   /**
    * Function that generates the archive prefix (without an ending slash) for a given page. It is
@@ -499,8 +497,10 @@ export default {
    * @kind function
    * @param {Page} page {@link module:Page Page} object.
    * @returns {string}
+   * @default true
    */
   getArchivePrefix: null,
+  showCommentInputPlaceholder: true,
 
   /**
    * Function that transforms the automatically generated summary text.
