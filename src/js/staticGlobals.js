@@ -177,11 +177,12 @@ export default {
   ],
 
   /**
-   * Auxiliary property to keep the sign code: "~~~~". If written as plain text, it gets transformed
-   * into the edit author's signature when saved. Note that minifier translates "~~\~" and "'~~' +
-   * '~'" into "~~~".
+   * Auxiliary property to keep the sign code: "\~\~\~\~". If written as plain text, it gets
+   * transformed into the edit author's signature when saved. Note that the minifier translates
+   * "~\~\\~" and "'\~\~' + '\~'" into "\~\~\~".
    *
    * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
    */
   SIGN_CODE: '~~'.concat('~~'),
 };

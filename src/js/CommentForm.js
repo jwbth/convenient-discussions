@@ -2140,6 +2140,20 @@ export default class CommentForm {
   }
 
   /**
+   * Mark the operation as closed if it is not. Should be done when the operation has finished
+   * (either successfully or not).
+   *
+   * @param {Operation} operation
+   */
+  closeOperation(operation) {
+    if (operation.closed) return;
+    operation.closed = true;
+    if (operation.type !== 'preview' || !operation.auto) {
+      this.popPending(['load', 'submit'].includes(operation.type));
+    }
+  }
+
+  /**
    * Check for conflicts of the operation with other pending operations, and if there are such,
    * close the operation and return `true` to abort it. The rules are the following:
    * - `preview` and `viewChanges` operations may be overriden with other of one of these types
@@ -2168,20 +2182,6 @@ export default class CommentForm {
       return true;
     } else {
       return false;
-    }
-  }
-
-  /**
-   * Mark the operation as closed if it is not. Should be done when the operation has finished
-   * (either successfully or not).
-   *
-   * @param {Operation} operation
-   */
-  closeOperation(operation) {
-    if (operation.closed) return;
-    operation.closed = true;
-    if (operation.type !== 'preview' || !operation.auto) {
-      this.popPending(['load', 'submit'].includes(operation.type));
     }
   }
 

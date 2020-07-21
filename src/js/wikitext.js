@@ -292,13 +292,13 @@ export function extractSignatures(code, generateCommentAnchors) {
     resetCommentAnchors();
   }
   signatures.forEach((sig, i) => {
-    const { date } = sig.timestamp ? (parseTimestamp(sig.timestamp) || {}) : {};
+    const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
     sig.id = i;
     sig.date = date;
     delete sig.nextCommentStartIndex;
 
     if (generateCommentAnchors) {
-      const anchor = date ? generateCommentAnchor(date, sig.author.name, true) : undefined;
+      const anchor = date && generateCommentAnchor(date, sig.author.name, true);
       sig.anchor = anchor;
       registerCommentAnchor(anchor);
     }
