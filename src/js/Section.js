@@ -823,12 +823,9 @@ export default class Section extends SectionSkeleton {
           excludeCurrentPage: true,
           showMissing: false,
           validate: () => {
-            let title = this.titleInput.getMWTitle();
-            return (
-              title &&
-              title.toText() !== section.sourcePage &&
-              isProbablyTalkPage(title.toText())
-            );
+            const title = this.titleInput.getMWTitle();
+            const page = title && new Page(title);
+            return page && page.name !== section.sourcePage.name && page.isProbablyTalkPage();
           },
         });
         this.titleField = new OO.ui.FieldLayout(this.titleInput, {
@@ -898,7 +895,7 @@ export default class Section extends SectionSkeleton {
 
           let targetPage = new Page(this.titleInput.getMWTitle());
           // Should be ruled out by making the button disabled.
-          if (targetPage.name === section.sourcePage.name || !isProbablyTalkPage(targetPage)) {
+          if (targetPage.name === section.sourcePage.name || !targetPage.isProbablyTalkPage()) {
             this.abort(cd.s('msd-error-wrongpage'), false);
             return;
           }

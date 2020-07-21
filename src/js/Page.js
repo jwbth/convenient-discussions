@@ -8,6 +8,7 @@ import CdError from './CdError';
 import cd from './cd';
 import { findFirstTimestamp, hideHtmlComments } from './wikitext';
 import { firstCharToUpperCase, handleApiReject, underlinesToSpaces } from './util';
+import { isProbablyTalkPage } from './boot';
 import { makeRequestNoTimers, parseCode, unknownApiErrorText } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
 
@@ -23,12 +24,13 @@ export default class Page {
   /**
    * Create a page instance.
    *
-   * @param {string|mw.Title} name
+   * @param {string|mw.Title} nameOrMwTitle
+   * @throws {CdError}
    */
-  constructor(name) {
+  constructor(nameOrMwTitle) {
     let title;
-    if (name instanceof mw.Title) {
-      title = name;
+    if (nameOrMwTitle instanceof mw.Title) {
+      title = nameOrMwTitle;
 
       /**
        * Page name, with a namespace name. The word separator is a space, not an underline, as in
@@ -39,8 +41,8 @@ export default class Page {
       this.name = mw.config.get('wgFormattedNamespaces')[title.namespace] + ':' + this.title;
 
     } else {
-      title = mw.Title.newFromText(firstCharToUpperCase(name));
-      this.name = underlinesToSpaces(name);
+      title = mw.Title.newFromText(firstCharToUpperCase(nameOrMwTitle));
+      this.name = underlinesToSpaces(nameOrMwTitle);
     }
 
     /**
@@ -50,6 +52,10 @@ export default class Page {
      * @type {number}
      */
     this.title = underlinesToSpaces(title.title);
+
+    if (!this.title) {
+      throw new CdError();
+    }
 
     /**
      * Namespace number.
@@ -237,7 +243,7 @@ export default class Page {
       });
     }
 
-    const redirectTarget = query.redirects && query.redirects[0] && query.redirects[0].to;
+    const redirectTarget = query.redirects && query.redirects[0] && query.redirects[0].to || null;
 
     /**
      * Page ID on the wiki. Filled upon running {@link module:Page#getCode} or {@link
@@ -270,7 +276,7 @@ export default class Page {
      * module:Page#getCode}.
      *
      * @name redirectTarget
-     * @type {string|undefined}
+     * @type {?(string|undefined)}
      * @instance module:Page
      */
 

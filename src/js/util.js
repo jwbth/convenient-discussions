@@ -99,26 +99,18 @@ export function caseInsensitiveFirstCharPattern(s) {
 }
 
 /**
- * Check if the provided page is probably a talk page.
+ * Check if the provided page is probably a talk page. The namespace number is required.
  *
- * If no namespace number is provided, the function will reconstruct it.
+ * This function exists mostly because we can't be sure the `mediawiki.Title` module is loaded when
+ * the script has started executing (and can't use the {@link module:Page Page} constructor), and we
+ * need to make this check fast. So, in most cases, {@link module:Page#isProbablyTalkPage} should be
+ * used.
  *
- * @param {string|Page} page
- * @param {number} [namespaceNumber]
+ * @param {string} pageName
+ * @param {number} namespaceNumber
  * @returns {boolean}
  */
-export function isProbablyTalkPage(page, namespaceNumber) {
-  let pageName;
-  if (page instanceof Page) {
-    pageName = page.name;
-    namespaceNumber = page.namespace;
-  } else {
-    pageName = page;
-    if (namespaceNumber === undefined) {
-      const title = new mw.Title.newFromText(page);
-      namespaceNumber = title.namespace;
-    }
-  }
+export function isProbablyTalkPage(pageName, namespaceNumber) {
   return (
     (
       namespaceNumber % 2 === 1 ||

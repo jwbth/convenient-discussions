@@ -415,7 +415,8 @@ function processContributions($content) {
     if (!linkElement) return;
 
     const pageName = linkElement.textContent;
-    if (!isProbablyTalkPage(pageName)) return;
+    const page = new Page(pageName);
+    if (!page.isProbablyTalkPage()) return;
 
     const link = linkElement.href;
     if (!link) return;
@@ -662,7 +663,7 @@ async function addCommentLinks($content) {
     processWatchlist($content);
   } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
     processContributions($content);
-  } else if (mw.config.get('wgAction') === 'history' && isProbablyTalkPage(cd.g.CURRENT_PAGE)) {
+  } else if (mw.config.get('wgAction') === 'history' && cd.g.CURRENT_PAGE.isProbablyTalkPage()) {
     processHistory($content);
   }
 
