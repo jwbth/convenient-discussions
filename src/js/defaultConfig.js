@@ -27,7 +27,8 @@ export default {
   messages: {},
 
   /**
-   * Contributions page wikilink as appears in IP users' signatures.
+   * Contributions page wikilink as it appears in IP users' signatures (for example,
+   * `Special:Contributions` for English Wikipedia).
    *
    * @type {?string}
    * @default null
@@ -82,10 +83,55 @@ export default {
   pageBlackList: [],
 
   /**
-   * Pages that match these patterns will be considered inactive, i.e. no replies can be left on
-   * such pages.
+   * Object that connects active (source) talk page names with their archive pages prefixes and vice
+   * versa: archive page names with their source page names.
    *
-   * @type {RegExp[]}
+   * @typedef {object} ArchivePathEntry
+   * @property {string} source Source path. Dynamic parts should be replaced with tokens such as
+   *   `$1`, `$2` etc. Regular expressions for these tokens, if any, should be defined in the
+   *   `replacements` array.
+   * @property {string} archive Archive prefix. Should use the same tokens as in `source`.
+   * @property {RegExp[]|undefined} replacements Array of replacements for `$1`, `$2` tokens in
+   *   `source` and `archive`. Note that the regexp should, if put into the `archive` pattern,
+   *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
+   *   in "Wikipedia:Discussion/Archive/General/2020/07", it should capture "General", but not
+   *   "General/2020/07". So, you probably shouldn't use `/.+/` here and use, for example, `/[^/]+/`
+   *   instead.
+   */
+
+  /**
+   * Collection of archive paths, (sometimes) with correspondent source pages paths. It is used in
+   * multiple purposes:
+   * - to identify pages that will be considered inactive, i.e. no replies can be left on them;
+   * - to suggest to search in the archive if the section/comment by a given fragment is not found
+   * on the page;
+   * - to make diff/thank links work on archive pages.
+   *
+   * Each of the array elements can be an object with the defined structure (see {@link
+   * module:defaultConfig~ArchivePathEntry} for details) or a regexp. In the latter case, if a page
+   * name matches the regexp, it will be considered an archive page, and the name of the source page
+   * for that page is obtained by removing everything that starts with the pattern in the page name
+   * (i.e., the actually used regexp will end with `.*`).
+   *
+   * The entries are applied in the order or their precense in the array. So, if a page name fits
+   * two patterns, the one closer to the beginning of the array is used.
+   *
+   * Example:
+   * <pre class="prettyprint source"><code>[
+   *   {
+   *     source: 'Wikipedia:Discussion/Geography',
+   *     archive: 'Wikipedia:Discussion/Geography/Archives/',
+   *   },
+   *   {
+   *     source: 'Wikipedia:Discussion/$1',
+   *     archive: 'Wikipedia:Discussion/Archive/$1/',
+   *     replacements: [/[^/]+/],
+   *   },
+   *   /\/Archive/,
+   * ]</code></pre>
+   *
+   *
+   * @type {Array.<ArchivePathEntry|RegExp>}
    * @default []
    */
   archivePaths: [],
@@ -282,8 +328,9 @@ export default {
 
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them). This is in an addition to {@link module:staticGlobals.BAD_COMMENT_BEGINNINGS}. They
-   * begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
+   * them). This is in an addition to {@link
+   * module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
+   * with ` *\n*` or ` *\n*(?=[*:#])`.
    *
    * @type {RegExp[]}
    * @default []
@@ -443,8 +490,7 @@ export default {
   undoTexts: [],
 
   /**
-   * Reaction, i.e. an object specifying messages to be displayed when the user enters text that
-   * matches a pattern.
+   * Object specifying messages to be displayed when the user enters text that matches a pattern.
    *
    * @typedef {object[]} Reaction
    * @property {RegExp} pattern
@@ -486,20 +532,8 @@ export default {
    * time to proceed hampering user experience).
    *
    * @type {boolean}
-   */
-
-  /**
-   * Function that generates the archive prefix (without an ending slash) for a given page. It is
-   * used for the feature that suggests to search in the archive if the section by the given
-   * fragment is not found on the page. If `null`, the page name is used as an archive prefix.
-   *
-   * @type {?Function}
-   * @kind function
-   * @param {Page} page {@link module:Page Page} object.
-   * @returns {string}
    * @default true
    */
-  getArchivePrefix: null,
   showCommentInputPlaceholder: true,
 
   /**

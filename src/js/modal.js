@@ -1240,7 +1240,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
             if (type === 'network') {
               text += ' ' + cd.s('error-network');
             } else {
-              const url = this.sourcePage.getUrl({ action: 'history' });
+              const url = object.sourcePage.getSourcePage().getUrl({ action: 'history' });
               text += ' ' + cd.s('error-diffnotfound-history', url);
             }
           } else {
@@ -1324,13 +1324,8 @@ export async function notFound(decodedFragment, date) {
     .addClass('cd-destructiveText')
     .html(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
   let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
-  const pageHasArchives = (
-    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP ||
-    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(cd.g.CURRENT_PAGE.name)
-  );
-  if (pageHasArchives) {
+  if (cd.g.CURRENT_PAGE.canHaveArchives()) {
     message += ' ' + cd.s('deadanchor-searchinarchive');
-
     if (await OO.ui.confirm(message, { title })) {
       let text;
       if (date) {
@@ -1341,9 +1336,7 @@ export async function notFound(decodedFragment, date) {
           .replace(/"/g, '')
           .trim();
       }
-      const archivePrefix = cd.config.getArchivePrefix ?
-        cd.config.getArchivePrefix(cd.g.CURRENT_PAGE) :
-        cd.g.CURRENT_PAGE.name;
+      const archivePrefix = cd.g.CURRENT_PAGE.getArchivePrefix();
       const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {
         profile: 'default',

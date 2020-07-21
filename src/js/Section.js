@@ -198,6 +198,7 @@ export default class Section extends SectionSkeleton {
     // Container contains wrapper that contains element ^_^
     let replyContainer;
     if (createUl) {
+      replyContainer = document.createElement('ul');
       replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
       replyContainer.appendChild(replyWrapper);
 

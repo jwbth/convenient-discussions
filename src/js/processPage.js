@@ -443,18 +443,13 @@ export default async function processPage(keptData = {}) {
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
 
-  cd.g.IS_ARCHIVE_PAGE = Boolean(
-    cd.g.ARCHIVE_PATHS_REGEXP &&
-    cd.g.ARCHIVE_PATHS_REGEXP.test(cd.g.CURRENT_PAGE.name)
-  );
-
   const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID.
   cd.g.isPageActive = !(
     isEmptyPage ||
-    cd.g.IS_ARCHIVE_PAGE ||
+    cd.g.CURRENT_PAGE.isArchivePage() ||
     (
       (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
       mw.config.get('wgRevisionId') !== mw.config.get('wgCurRevisionId')

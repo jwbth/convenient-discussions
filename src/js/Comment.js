@@ -320,10 +320,7 @@ export default class Comment extends CommentSkeleton {
       this.#overlayContent.appendChild(this.goToParentButton);
     }
 
-    if (
-      this.anchor &&
-      (!cd.g.IS_ARCHIVE_PAGE || cd.settings.defaultCommentLinkType !== 'diff')
-    ) {
+    if (this.anchor) {
       /**
        * "Copy link" button.
        *
@@ -334,7 +331,7 @@ export default class Comment extends CommentSkeleton {
       this.#overlayContent.appendChild(this.linkButton);
     }
 
-    if (this.author.registered && this.date && !this.own && !cd.g.IS_ARCHIVE_PAGE) {
+    if (this.author.registered && this.date && !this.own) {
       /**
        * Thank button.
        *
@@ -422,8 +419,8 @@ export default class Comment extends CommentSkeleton {
    *   If set to false, it is expected that the layers created during this procedure, if any, will
    *   be added afterwards (otherwise there would be layers without a parent element which would
    *   lead to bugs).
-   * @param {object} [floatingRects] `getBoundingClientRect()` results. It may be calculated in
-   *   advance for many elements in one sequence to save time.
+   * @param {object} [floatingRects] `Element#getBoundingClientRect` results. It may be calculated
+   *   in advance for many elements in one sequence to save time.
    * @returns {?boolean} Was the comment moved.
    */
   configureLayers(doSet = true, floatingRects) {
@@ -705,7 +702,7 @@ export default class Comment extends CommentSkeleton {
     const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
     const revisionsRequest = cd.g.api.get({
       action: 'query',
-      titles: this.sourcePage.name,
+      titles: this.sourcePage.getSourcePage().name,
       rvslots: 'main',
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'comment', 'timestamp'],
@@ -739,7 +736,7 @@ export default class Comment extends CommentSkeleton {
 
     const compareRequests = revisions.map((revision) => cd.g.api.get({
       action: 'compare',
-      fromtitle: this.sourcePage.name,
+      fromtitle: this.sourcePage.getSourcePage().name,
       fromrev: revision.revid,
       torelative: 'prev',
       prop: 'diff|diffsize',
@@ -862,12 +859,12 @@ export default class Comment extends CommentSkeleton {
     switch (type) {
       case 'parse': {
         if (code === 'moreThanOneTimestamp') {
-          const url = this.sourcePage.getUrl({ diff: data.edit.revid });
+          const url = this.sourcePage.getSourcePage().getUrl({ diff: data.edit.revid });
           text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
           OO.ui.alert(text);
           return;
         } else {
-          const url = this.sourcePage.getUrl({ action: 'history' });
+          const url = this.sourcePage.getSourcePage().getUrl({ action: 'history' });
           text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         }
         break;
@@ -876,7 +873,7 @@ export default class Comment extends CommentSkeleton {
       case 'api':
       default: {
         if (code === 'noData') {
-          const url = this.sourcePage.getUrl({ action: 'history' });
+          const url = this.sourcePage.getSourcePage().getUrl({ action: 'history' });
           text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         } else {
           text = cd.s('thank-error');
@@ -916,7 +913,7 @@ export default class Comment extends CommentSkeleton {
 
     mw.loader.load('mediawiki.diff.styles');
 
-    const url = this.sourcePage.getUrl({ diff: edit.revid });
+    const url = this.sourcePage.getSourcePage().getUrl({ diff: edit.revid });
     const $question = cd.util.wrapInElement(
       cd.s('thank-confirm', this.author.name, this.author, url),
       'div'

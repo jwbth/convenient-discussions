@@ -107,6 +107,15 @@ export default {
   pageBlackList: [],
 
   archivePaths: [
+    {
+      source: 'Википедия:Форум/Географический',
+      archive: 'Википедия:Форум/Географический/Архивы/',
+    },
+    {
+      source: 'Википедия:Форум/$1',
+      archive: 'Википедия:Форум/Архив/$1/',
+      replacements: [/[^/]+/],
+    },
     /\/Архив/,
   ],
 
@@ -245,18 +254,6 @@ export default {
       checkFunc: () => mw.user.options.get('gadget-urldecoder'),
     },
   ],
-
-  getArchivePrefix: function (page) {
-    if (/^Википедия:Форум\//.test(page.name)) {
-      if (/^Википедия:Форум\/Географический/.test(page.name)) {
-        return 'Википедия:Форум/Географический/Архивы';
-      } else {
-        return 'Википедия:Форум/Архив/' + page.name.slice('Википедия:Форум/'.length);
-      }
-    } else {
-      return page.name;
-    }
-  },
 
   transformSummary(summary) {
     return summary

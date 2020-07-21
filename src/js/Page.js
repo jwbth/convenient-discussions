@@ -18,6 +18,8 @@ import { parseTimestamp } from './timestamp';
  * @module Page
  */
 export default class Page {
+  #cachedIsArchivePage
+
   /**
    * Create a page instance.
    *
@@ -72,6 +74,112 @@ export default class Page {
    */
   getUrl(parameters) {
     return mw.util.getUrl(this.name, parameters);
+  }
+
+  /**
+   * Check if the page is probably a talk page.
+   *
+   * @returns {boolean}
+   */
+  isProbablyTalkPage() {
+    return isProbablyTalkPage(this.realName || this.name, this.namespace);
+  }
+
+  /**
+   * Whether the page is an archive page. Relies on {@link module:defaultConfig.archivePaths} and/or
+   * elements with the class `cd-archivingInfo` and attribute `data-is-archive-page`.
+   *
+   * @returns {boolean}
+   */
+  isArchivePage() {
+    if (this.#cachedIsArchivePage !== undefined) {
+      return this.#cachedIsArchivePage;
+    }
+    let result = $('.cd-archivingInfo').data('isArchivePage');
+    if (result === undefined) {
+      result = false;
+      const name = this.realName || this.name;
+      const iterator = cd.g.SOURCE_PAGES_MAP.keys();
+      for (const sourceRegexp of iterator) {
+        if (sourceRegexp.test(name)) {
+          result = true;
+          break;
+        }
+      }
+    }
+    this.#cachedIsArchivePage = Boolean(result);
+    return result;
+  }
+
+  /**
+   * Whether this page can have archives. If the page is an archive page, returns `false`. Relies on
+   * {@link module:defaultConfig.pagesWithoutArchives} and {@link module:defaultConfig.archivePaths}
+   * and/or elements with the class `cd-archivingInfo` and attribute `data-can-have-archives`.
+   *
+   * @returns {?boolean}
+   */
+  canHaveArchives() {
+    if (this.isArchivePage()) {
+      return false;
+    }
+    let result = $('.cd-archivingInfo').data('canHaveArchives');
+    if (result === undefined) {
+      const name = this.realName || this.name;
+      result = (
+        !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP ||
+        !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(name)
+      );
+    }
+    return Boolean(result);
+  }
+
+  /**
+   * Get the archive prefix for the page. If no prefix is found based on {@link
+   * module:defaultConfig.archivePaths} and/or elements with the class `cd-archivingInfo` and
+   * attribute `data-archive-prefix`, returns the current page's name. If the page is an archive
+   * page or can't have archives, returns `null`;
+   *
+   * @returns {?string}
+   */
+  getArchivePrefix() {
+    if (!this.canHaveArchives()) {
+      return null;
+    }
+    let result = $('.cd-archivingInfo').data('archivePrefix');
+    if (!result) {
+      const name = this.realName || this.name;
+      const iterator = cd.g.ARCHIVE_PAGES_MAP.entries();
+      for (const [sourceRegexp, replacement] of iterator) {
+        if (sourceRegexp.test(name)) {
+          result = name.replace(sourceRegexp, replacement);
+          break;
+        }
+      }
+    }
+    return String(result || name);
+  }
+
+  /**
+   * Get the source page for the page (i.e., a page from which archivation is happening). Returns
+   * the page itself if it is not an archive page. Relies on {@link
+   * module:defaultConfig.archivePaths} and/or elements with the class `cd-archivingInfo` and
+   * attribute `data-source-page`.
+   *
+   * @returns {Page}
+   */
+  getSourcePage() {
+    let result = $('.cd-archivingInfo').data('sourcePage');
+    if (!result) {
+      const name = this.realName || this.name;
+      const iterator = cd.g.SOURCE_PAGES_MAP.entries();
+      for (const [archiveRegexp, replacement] of iterator) {
+        if (archiveRegexp.test(name)) {
+          result = name.replace(archiveRegexp, replacement);
+          break;
+        }
+      }
+    }
+    return result ? new Page(String(result)) : this;
   }
 
   /**

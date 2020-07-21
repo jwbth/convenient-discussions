@@ -16,10 +16,12 @@ import processPage from './processPage';
 import {
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
+  hideText,
   mergeRegexps,
   saveScrollPosition,
   transparentize,
   underlinesToSpaces,
+  unhideText,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
 import { getUserInfo } from './apiWrappers';
@@ -361,8 +363,37 @@ function initPatterns() {
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
 
-  cd.g.ARCHIVE_PATHS_REGEXP = mergeRegexps(cd.config.archivePaths);
   cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP = mergeRegexps(cd.config.pagesWithoutArchives);
+
+  cd.g.ARCHIVE_PAGES_MAP = new Map();
+  cd.g.SOURCE_PAGES_MAP = new Map();
+  const pathToRegexp = (s, replacements, isArchivePath) => {
+    let hidden = [];
+    let pattern = hideText(s, /\\[$\\]/g, hidden);
+    pattern = mw.util.escapeRegExp(pattern);
+    if (replacements) {
+      pattern = pattern
+        .replace(/\\\$/, '$')
+        .replace(/\$(\d+)/, (s, n) => {
+          const replacement = replacements[n - 1];
+          return replacement ? `(${replacement.source})` : s;
+        });
+    }
+    pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+    pattern = unhideText(pattern, hidden);
+    return new RegExp(pattern);
+  };
+  cd.config.archivePaths.forEach((entry) => {
+    if (entry instanceof RegExp) {
+      let archiveRegexp = new RegExp(entry.source + '.*');
+      cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, '');
+    } else {
+      const sourceRegexp = pathToRegexp(entry.source, entry.replacements);
+      const archiveRegexp = pathToRegexp(entry.archive, entry.replacements, true);
+      cd.g.ARCHIVE_PAGES_MAP.set(sourceRegexp, entry.archive);
+      cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, entry.source);
+    }
+  });
 }
 
 /**
