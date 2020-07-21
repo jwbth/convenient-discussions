@@ -428,6 +428,7 @@ function debugLog() {
  *    enough time for it to be saved to the server.
  * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
  *   module:dateFormat.loadMessages}.
+ * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady

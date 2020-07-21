@@ -56,7 +56,7 @@ export default class Autocomplete {
       allowSpaces: true,
       menuItemLimit: 10,
       noMatchTemplate: () => null,
-      containerClass: 'tribute-container cd-mentionsContainer',
+      containerClass: 'tribute-container cd-autocompleteContainer',
       replaceTextSuffix: '',
     });
 
