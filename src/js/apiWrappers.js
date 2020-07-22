@@ -178,7 +178,7 @@ export async function unknownApiErrorText(errorCode, errorInfo) {
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
-  const allPages = [];
+  const pages = [];
 
   const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
     500 :
@@ -201,18 +201,18 @@ export async function getPageTitles(pageIds) {
     }
 
     const query = resp && resp.query;
-    const pages = query && query.pages;
-    if (!pages) {
+    const thisPages = query && query.pages;
+    if (!thisPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    allPages.push(...pages);
+    pages.push(...thisPages);
   }
 
-  return allPages;
+  return pages;
 }
 
 /**
@@ -223,9 +223,9 @@ export async function getPageTitles(pageIds) {
  * @throws {CdError}
  */
 export async function getPageIds(pageTitles) {
-  const allPages = [];
-  const allNormalized = [];
-  const allRedirects = [];
+  const pages = [];
+  const normalized = [];
+  const redirects = [];
 
   const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
     500 :
@@ -249,27 +249,20 @@ export async function getPageIds(pageTitles) {
     }
 
     const query = resp && resp.query;
-    const pages = query && query.pages;
-    if (!pages) {
+    const thisPages = query && query.pages;
+    if (!thisPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    const normalized = query.normalized || [];
-    const redirects = query.redirects || [];
-
-    allNormalized.push(...normalized);
-    allRedirects.push(...redirects);
-    allPages.push(...pages);
+    normalized.push(...query.normalized || []);
+    redirects.push(...query.redirects || []);
+    pages.push(...thisPages);
   }
 
-  return {
-    pages: allPages,
-    normalized: allNormalized,
-    redirects: allRedirects,
-  };
+  return { pages, normalized, redirects };
 }
 
 /**

@@ -10,7 +10,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLinks, isProbablyTalkPage } from './util';
+import { animateLinks } from './util';
 import { copyLink } from './modal.js';
 import { editWatchedSections } from './modal';
 import {
