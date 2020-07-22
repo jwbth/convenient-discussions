@@ -1879,18 +1879,18 @@ export default class CommentForm {
       /^((?![:*#= ]).+)\n(?![\n:*#= \x03])(?=(.*))/gm,
       (s, thisLine, nextLine) => {
         const br = (
-          // We assume that if a tag/template occupies an entire line or multiple lines, it's a block
-          // tag/template and it doesn't need <br>s before or after it. A false positive is possible
-          // in case of <nowiki> occupying an entire line (as of May 2020, no other inline tags are
-          // hidden, see hideSensitiveCode() in wikitext.js).
+          // We assume that if a tag/template occupies an entire line or multiple lines, it's a
+          // block tag/template and it doesn't need <br>s before or after it. A false positive is
+          // possible in case of <nowiki> occupying an entire line (as of May 2020, no other inline
+          // tags are hidden, see hideSensitiveCode() in wikitext.js).
           // https://en.wikipedia.org/w/index.php?diff=946978893
           // https://en.wikipedia.org/w/index.php?diff=941991985
           entireLineRegexp.test(thisLine) ||
           entireLineRegexp.test(nextLine) ||
 
           // Removing <br>s after block elements is not a perfect solution as there would be no
-          // newlines when editing such comment, but this way we would avoid empty lines in cases like
-          // "</div><br>".
+          // newlines when editing such comment, but this way we would avoid empty lines in cases
+          // like "</div><br>".
           thisLineEndingRegexp.test(thisLine) ||
           nextLineBeginningRegexp.test(nextLine)
         ) ?

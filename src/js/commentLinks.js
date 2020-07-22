@@ -254,8 +254,8 @@ function extractAuthor(line) {
  */
 function isMoved(summary) {
   return (
-    (moveFromBeginning && summary.includes(`: ${moveFromBeginning}`)) ||
-    (moveToBeginning && summary.includes(`: ${moveToBeginning}`))
+    (moveFromBeginning && summary.includes(': ' + moveFromBeginning)) ||
+    (moveToBeginning && summary.includes(': ' + moveToBeginning))
   );
 }
 
