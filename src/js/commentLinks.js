@@ -58,8 +58,6 @@ async function prepare({ messagesRequest }) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
 
-  initTimestampParsingTools();
-
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
     '::before': {
@@ -70,8 +68,12 @@ async function prepare({ messagesRequest }) {
     },
   });
 
+  cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
+    .files["phpCharToUpper.json"];
   cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
+
+  initTimestampParsingTools();
 
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
