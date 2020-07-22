@@ -143,6 +143,13 @@ export default class Comment extends CommentSkeleton {
     this.highlightables.forEach((el) => {
       this.bindEvents(el);
     });
+
+    /**
+     * Is the comment currently highlighted as the target comment.
+     *
+     * @type {boolean}
+     */
+    this.target = false;
   }
 
   /**
@@ -548,10 +555,14 @@ export default class Comment extends CommentSkeleton {
     }
 
     this.$underlay.addClass('cd-commentUnderlay-target');
+
     // We don't take the color from cd.g.COMMENT_UNDERLAY_TARGET_COLOR as it may be overriden by the
     // user in their personal CSS.
     const targetColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
+
     this.$underlay.removeClass('cd-commentUnderlay-target');
+
+    this.target = true;
 
     $elementsToAnimate
       .stop()
@@ -566,8 +577,9 @@ export default class Comment extends CommentSkeleton {
         { backgroundColor: initialColor },
         400,
         'swing',
-        function () {
-          $(this)
+        () => {
+          this.target = false;
+          $elementsToAnimate
             .css('background-image', '')
             .css('background-color', '');
         }
