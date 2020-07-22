@@ -732,7 +732,8 @@ export function saveSession() {
       minor: commentForm.minorCheckbox && commentForm.minorCheckbox.isSelected(),
       watch: commentForm.watchCheckbox && commentForm.watchCheckbox.isSelected(),
       watchSection: (
-        commentForm.watchSectionCheckbox && commentForm.watchSectionCheckbox.isSelected()
+        commentForm.watchSectionCheckbox &&
+        commentForm.watchSectionCheckbox.isSelected()
       ),
       noSignature: commentForm.noSignatureCheckbox && commentForm.noSignatureCheckbox.isSelected(),
       delete: commentForm.deleteCheckbox && commentForm.deleteCheckbox.isSelected(),

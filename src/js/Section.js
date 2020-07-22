@@ -1603,7 +1603,8 @@ export default class Section extends SectionSkeleton {
     const matches = [
       ...cd.sections.filter((section) => section.headline === headline),
       ...cd.sections.filter((section) => (
-        section.comments[0] && section.comments[0].anchor === firstCommentAnchor
+        section.comments[0] &&
+        section.comments[0].anchor === firstCommentAnchor
       )),
     ];
     if (cd.sections[index]) {
@@ -1616,15 +1617,13 @@ export default class Section extends SectionSkeleton {
       }
       scores[match.id]++;
     });
-    const bestMatchId = Object.keys(scores).reduce(
-      (bestMatchId, matchId) => (
-        scores[matchId] >= 2 && (bestMatchId === null || scores[matchId] > scores[bestMatchId]) ?
-        matchId :
-        bestMatchId
-      ),
-      null
-    );
-    return bestMatchId !== null ? cd.sections[bestMatchId] : null;
+    let bestMatchId = null;
+    Object.keys(scores).forEach((matchId) => {
+      if (scores[matchId] >= 2 && (bestMatchId === null || scores[matchId] > scores[bestMatchId])) {
+        bestMatchId = matchId;
+      }
+    });
+    return bestMatchId === null ? null : cd.sections[bestMatchId];
   }
 
   /**

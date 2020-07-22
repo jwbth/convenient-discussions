@@ -302,7 +302,8 @@ export async function settingsDialog() {
         settings.alwaysExpandSettings = this.alwaysExpandSettingsCheckbox.isSelected();
         settings.autopreview = this.autopreviewCheckbox.isSelected();
         settings.desktopNotifications = (
-          getSelectedItemData(this.desktopNotificationsSelect) || 'unknown'
+          getSelectedItemData(this.desktopNotificationsSelect) ||
+          'unknown'
         );
         settings.defaultCommentLinkType = getSelectedItemData(this.defaultCommentLinkTypeSelect);
         settings.defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
