@@ -2350,11 +2350,12 @@ export default class CommentForm {
         }
       }
 
-      const $parsedSummary = parsedSummary && cd.util.wrapInElement(parsedSummary);
-      if ($parsedSummary.length) {
-        this.$element
-          .find('.cd-summaryPreview')
-          .html(`${cd.s('cf-summary-preview')}: <span class="comment">${$parsedSummary.html()}</span>`);
+      const $comment = $('<span>')
+        .addClass('comment')
+        .append(parsedSummary);
+      this.$summaryPreview.empty();
+      if (parsedSummary) {
+        this.$summaryPreview.append(cd.s('cf-summary-preview'), ': ', $comment);
       }
     }
 

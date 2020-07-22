@@ -77,6 +77,12 @@ export async function parseCode(code, options) {
       }
 
       const parsedSummary = resp.parse.parsedsummary;
+      if (options.summary && !parsedSummary) {
+        throw new CdError({
+          type: 'api',
+          code: 'noData',
+        });
+      }
 
       return { html, parsedSummary };
     },
