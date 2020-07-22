@@ -261,7 +261,7 @@ function go() {
     let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       messagesRequest = loadMessages();
-      getUserInfo().catch((e) => {
+      getUserInfo(true).catch((e) => {
         console.warn(e);
       });
     }
