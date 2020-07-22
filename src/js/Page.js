@@ -7,8 +7,12 @@
 import CdError from './CdError';
 import cd from './cd';
 import { findFirstTimestamp, hideHtmlComments } from './wikitext';
-import { firstCharToUpperCase, handleApiReject, underlinesToSpaces } from './util';
-import { isProbablyTalkPage } from './boot';
+import {
+  firstCharToUpperCase,
+  handleApiReject,
+  isProbablyTalkPage,
+  underlinesToSpaces,
+} from './util';
 import { makeRequestNoTimers, parseCode, unknownApiErrorText } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
 
