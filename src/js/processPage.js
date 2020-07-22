@@ -1,5 +1,6 @@
 /**
- * The main function responsible for page processing goes here.
+ * Web page processing module. Its only export, `processPage()`, is executed after {@link module:app
+ * the main module} on first run and as part of {@link module:boot.reloadPage} on subsequent runs.
  *
  * @module processPage
  */
@@ -413,13 +414,13 @@ function debugLog() {
 }
 
 /**
- * Process the page.
+ * Process the current web page.
  *
  * @param {object} [keptData={}] Data passed from the previous page state or the main module.
  * @param {string} [keptData.commentAnchor] Comment anchor to scroll to.
  * @param {string} [keptData.sectionAnchor] Section anchor to scroll to.
  * @param {boolean} [keptData.wasPageCreated] Whether the page was created while it was in the
- *   previous state.
+ *   previous state. Affects navigation panel mounting and certain key press handlers adding.
  * @param {number} [keptData.scrollPosition] Page Y offset.
  * @param {object[]} [keptData.unseenCommentAnchors] Anchors of unseen comments on this page.
  * @param {string} [keptData.justWatchedSection] Section just watched so that there could be not

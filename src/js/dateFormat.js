@@ -757,7 +757,7 @@ function setLocalTimestampRegexps() {
 
 /**
  * Create and set the function that parses timestamps in the local date format, based on the result
- * of matching the regexp set by {@link module:dateFormat~setLocalTimestampRegexps}.
+ * of matching the regexp set by `setLocalTimestampRegexps()`.
  *
  * @private
  */

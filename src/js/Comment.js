@@ -2006,7 +2006,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment by anchor.
+   * Get a comment by anchor.
    *
    * @param {string} anchor
    * @returns {?Comment}

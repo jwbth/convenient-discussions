@@ -142,8 +142,8 @@ export default class CommentForm {
     /**
      * @typedef {object} Operation
      * @property {string} type One of `'load'`, `'preview'`, `'viewChanges'`, and `'submit'`.
-     * @property {boolean} closed Whether the operation is closed (settled).
-     * @property {boolean} delayed Whether the operation is delayed.
+     * @property {boolean} closed Is the operation closed (settled).
+     * @property {boolean} delayed Is the operation delayed.
      */
 
     /**

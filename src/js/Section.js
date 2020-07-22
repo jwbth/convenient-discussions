@@ -1567,7 +1567,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the section by anchor.
+   * Get a section by anchor.
    *
    * @param {string} anchor
    * @returns {?Section}
@@ -1580,7 +1580,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the sections by headline.
+   * Get sections by headline.
    *
    * @param {string} headline
    * @returns {Section[]}
@@ -1590,7 +1590,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the section by headline, first comment data, and/or index. At least two parameters must
+   * Get a section by headline, first comment data, and/or index. At least two parameters must
    * match.
    *
    * @param {object} options

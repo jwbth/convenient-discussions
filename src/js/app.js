@@ -419,14 +419,14 @@ async function app() {
   cd.util = util;
 
   /**
-   * @see module:Comment.getCommentByAnchor Get a comment by anchor
+   * @see module:Comment.getCommentByAnchor
    * @function getCommentByAnchor
    * @memberof module:cd~convenientDiscussions
    */
   cd.getCommentByAnchor = Comment.getCommentByAnchor;
 
   /**
-   * @see module:Section.getSectionByAnchor Get a section by anchor
+   * @see module:Section.getSectionByAnchor
    * @function getSectionByAnchor
    * @memberof module:cd~convenientDiscussions
    */
