@@ -89,9 +89,8 @@ async function prepare({ messagesRequest }) {
     .append($aRegularPrototype);
   $wrapperRegularPrototype = $('<span>')
     .addClass('cd-commentLink')
-    .append($spanRegularPrototype)[cd.g.IS_DIFF_PAGE ? 'append' : 'prepend'](
-      document.createTextNode(' ')
-    );
+    .append($spanRegularPrototype)
+    .prepend(' ');
   $wrapperInterestingPrototype = $wrapperRegularPrototype
     .clone()
     .addClass('cd-commentLink-interesting');
@@ -391,7 +390,7 @@ function processWatchlist($content) {
 
     wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
 
-    const destination = line.querySelector('.mw-usertoollinks');
+    const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks');
     if (!destination) return;
     destination.parentElement.insertBefore(wrapper, destination.nextSibling);
   });
@@ -456,12 +455,12 @@ function processContributions($content) {
 
     wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
 
-    if (linkElement.nextSibling) {
-      linkElement.nextSibling.textContent = (
-        linkElement.nextSibling.textContent.replace(/^\s/, '')
-      );
+    let destination = line.querySelector('.comment');
+    if (!destination) {
+      destination = linkElement;
+      destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '');
     }
-    linkElement.parentElement.insertBefore(wrapper, linkElement.nextSibling);
+    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
   });
 }
 
@@ -539,8 +538,11 @@ function processHistory($content) {
 
     wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
 
-    const separators = line.querySelectorAll('.mw-changeslist-separator');
-    const destination = separators && separators[separators.length - 1];
+    let destination = line.querySelector('.comment');
+    if (!destination) {
+      const separators = line.querySelectorAll('.mw-changeslist-separator');
+      destination = separators && separators[separators.length - 1];
+    }
     if (!destination) return;
     destination.parentElement.insertBefore(wrapper, destination.nextSibling);
   });
@@ -604,7 +606,7 @@ async function processDiff() {
       let wrapper;
       if (summary && currentUserRegexp.test(` ${summary} `)) {
         wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
-        wrapper.firstChild.lastChild.title = goToCommentToYou;
+        wrapper.lastChild.lastChild.title = goToCommentToYou;
       } else {
         let watched = false;
         if (summary && cd.g.thisPageWatchedSections.length) {
@@ -617,7 +619,7 @@ async function processDiff() {
           }
           if (watched) {
             wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
-            wrapper.firstChild.lastChild.title = goToCommentWatchedSection;
+            wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
           }
         }
         if (!watched) {
@@ -625,7 +627,7 @@ async function processDiff() {
         }
       }
 
-      wrapper.firstChild.lastChild.href = `#${anchor}`;
+      wrapper.lastChild.lastChild.href = '#' + anchor;
       wrapper.onclick = function (e) {
         e.preventDefault();
         comment.scrollToAndHighlightTarget(false);
@@ -633,7 +635,7 @@ async function processDiff() {
 
       const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
       if (!destination) return;
-      destination.insertBefore(wrapper, destination.firstChild);
+      destination.appendChild(wrapper);
     }
   });
 
