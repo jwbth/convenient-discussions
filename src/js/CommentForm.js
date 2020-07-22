@@ -1241,16 +1241,15 @@ export default class CommentForm {
 
     this.summaryInput
       .on('change', () => {
+        if (this.summaryInput.$input.is(':focus')) {
+          this.summaryAltered = true;
+          this.#dontAutopreviewOnSummaryChange = false;
+        }
         if (!this.#dontAutopreviewOnSummaryChange) {
           preview();
         }
       })
       .on('change', saveSessionEventHandler);
-    this.summaryInput.$input
-      .on('keypress', () => {
-        this.summaryAltered = true;
-        this.#dontAutopreviewOnSummaryChange = false;
-      });
 
     if (this.minorCheckbox) {
       this.minorCheckbox
