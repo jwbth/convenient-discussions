@@ -418,12 +418,10 @@ export default class Autocomplete {
         },
       },
       commentLinks: {
-        trigger: '##',
+        trigger: '[[#',
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
-          text = removeDoubleSpaces(text);
-
           if (!this.commentLinks.default) {
             this.commentLinks.default = [];
             this.commentLinks.comments.forEach(({ anchor, author, timestamp, text }) => {
@@ -447,14 +445,14 @@ export default class Autocomplete {
             });
           }
 
-          this.commentLinks.snapshot = text;
-
+          text = removeDoubleSpaces(text);
+          if (/[#<>[\]|{}]/.test(text)) {
+            callback([]);
+            return;
+          }
           const matches = this.tribute.search
-            .filter(text, this.commentLinks.default, {
-              extract: (el) => el.key,
-            })
+            .filter(text, this.commentLinks.default, { extract: (el) => el.key })
             .map((match) => match.original);
-
           callback(prepareValues(matches, this.commentLinks));
         },
       },
