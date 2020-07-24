@@ -193,14 +193,14 @@ export default class CommentForm {
           (e) => {
             if (e instanceof CdError) {
               this.handleError(Object.assign({}, e.data, {
-                doCancel: true,
+                cancel: true,
                 currentOperation,
               }));
             } else {
               this.handleError({
                 type: 'javascript',
                 logMessage: e,
-                doCancel: true,
+                cancel: true,
                 currentOperation,
               });
             }
@@ -1529,8 +1529,7 @@ export default class CommentForm {
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
    *   framing.
    * @param {string} [options.logMessage] Message for the browser console.
-   * @param {boolean} [options.doCancel=false] Cancel the form and show the message as a
-   *   notification.
+   * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
    * @param {object} [options.currentOperation] Operation the form is undergoing.
    * @private
    */
@@ -1539,7 +1538,7 @@ export default class CommentForm {
     messageType = 'error',
     isRawMessage = false,
     logMessage,
-    doCancel = false,
+    cancel = false,
     currentOperation,
   }) {
     if (currentOperation) {
@@ -1552,7 +1551,7 @@ export default class CommentForm {
       console.warn(logMessage);
     }
 
-    if (doCancel) {
+    if (cancel) {
       mw.notify(message, {
         type: 'error',
         autoHideSeconds: 'long',
@@ -1587,7 +1586,7 @@ export default class CommentForm {
    * @param {string} [options.messageType] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
    * @param {string} [options.logMessage] Data or text to display in the browser console.
-   * @param {boolean} [options.doCancel=false] Cancel the form and show the message as a
+   * @param {boolean} [options.cancel=false] Cancel the form and show the message as a
    *   notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
    * @param {object} [options.currentOperation] Operation the form is undergoing.
@@ -1600,7 +1599,7 @@ export default class CommentForm {
     message,
     messageType,
     logMessage,
-    doCancel = false,
+    cancel = false,
     isRawMessage = false,
     currentOperation,
   }) {
@@ -1701,7 +1700,7 @@ export default class CommentForm {
       }
     }
 
-    this.abort({ message, messageType, isRawMessage, logMessage, doCancel, currentOperation });
+    this.abort({ message, messageType, isRawMessage, logMessage, cancel, currentOperation });
   }
 
   /**
@@ -1986,12 +1985,12 @@ export default class CommentForm {
 
     // Imitate a list so that the user will see where it would break on a real page. This
     // pseudolist's margin is made invisible by CSS.
-    let doImitateList;
+    let imitateList;
     if (action === 'preview' && willCommentBeIndented && this.commentInput.getValue().trim()) {
       code = code.replace(/^/gm, ': ');
-      doImitateList = true;
+      imitateList = true;
     } else {
-      doImitateList = false;
+      imitateList = false;
     }
 
     code = unhideText(code, hidden);
@@ -2002,7 +2001,7 @@ export default class CommentForm {
 
     return {
       commentCode: code,
-      doImitateList,
+      imitateList,
     };
   }
 
@@ -2293,7 +2292,7 @@ export default class CommentForm {
       return;
     }
 
-    const { commentCode, doImitateList } = this.commentTextToCode('preview');
+    const { commentCode, imitateList } = this.commentTextToCode('preview');
     let html;
     let parsedSummary;
     try {
@@ -2330,7 +2329,7 @@ export default class CommentForm {
           .html(html)
           .prepend($label)
           .cdAddCloseButton();
-        if (doImitateList) {
+        if (imitateList) {
           this.$previewArea.addClass('cd-previewArea-indentedComment');
         } else {
           this.$previewArea.removeClass('cd-previewArea-indentedComment');
@@ -2466,14 +2465,14 @@ export default class CommentForm {
       if (e instanceof CdError) {
         this.handleError(Object.assign({}, e.data, {
           message: cd.s('error-reloadpage-saved'),
-          doCancel: true,
+          cancel: true,
           currentOperation,
         }));
       } else {
         this.handleError({
           type: 'javascript',
           logMessage: e,
-          doCancel: true,
+          cancel: true,
           currentOperation,
         });
       }

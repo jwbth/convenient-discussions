@@ -60,14 +60,18 @@ export function initSettings() {
     defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
+
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
     insertButtonsChanged: false,
+
     signaturePrefix: '',
     notifications: 'all',
     notificationsBlacklist: [],
+
     // Not shown in the settings dialog
     showLoadingOverlay: true,
+
     showToolbar: true,
     watchOnReply: true,
     watchSectionOnReply: true,

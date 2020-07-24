@@ -1383,8 +1383,9 @@ export default class Comment extends CommentSkeleton {
       startIndex += headingMatch[0].length;
       code = code.slice(headingMatch[0].length);
 
-      // Editing the first comment at
-      // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да.
+      // Try to edit the first comment at
+      // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
+      // to see a bug happening if we don't check for `this.isOpeningSection`.
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     }
 
@@ -1406,8 +1407,8 @@ export default class Comment extends CommentSkeleton {
       }
       if (indent) {
         code = code.slice(indent);
-        lineStartIndex += indent;
         startIndex += indent;
+        lineStartIndex += indent;
       }
     }
 
@@ -1898,7 +1899,7 @@ export default class Comment extends CommentSkeleton {
    * Find any one comment inside the viewport.
    *
    * This will work only if comments in `cd.comments` are in the order of their presence on the page
-   * (which should be the case).
+   * (which should be the case normally).
    *
    * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
    *   comment in the specified direction.
