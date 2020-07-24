@@ -49,12 +49,7 @@ export function parseTimestamp(timestamp, timezoneOffset) {
     return null;
   }
 
-  let date = cd.g.TIMESTAMP_PARSER(
-    match,
-    cd.g.TIMESTAMP_MATCHING_GROUPS,
-    cd.g.DIGITS,
-    cd.g.LOCAL_TIMEZONE_OFFSET
-  );
+  let date = cd.g.TIMESTAMP_PARSER(match, cd);
   if (timezoneOffset) {
     date = new Date(date.getTime() - timezoneOffset * cd.g.MILLISECONDS_IN_A_MINUTE);
   }

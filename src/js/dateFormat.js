@@ -817,22 +817,20 @@ function setLocalTimestampParser() {
    *
    * @name TIMESTAMP_PARSER
    * @param {Array} match Regexp match data.
-   * @param {Array} matchingGroups Codes of date components in the order of the matches. These
-   *   codes are returned by this very function.
-   * @param {Array} digits Local digits.
-   * @param {Array} timezoneOffset Local timezone offset.
+   * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker
+   *   context) global object.
    * @returns {Date}
    * @memberof module:cd~convenientDiscussions.g
    */
-  // We can't use the variables from the scope of the current function and have to accept them as
-  // parameters because we need to use the function in a web worker which can receive functions only
-  // as strings, forgetting their scope.
-  cd.g.TIMESTAMP_PARSER = (match, matchingGroups, digits, timezoneOffset) => {
+  // We can't use the variables from the scope of the current function and have to accept the global
+  // object as a parameter because we need to use the function in a web worker which can receive
+  // functions only as strings, forgetting their scope.
+  cd.g.TIMESTAMP_PARSER = (match, cd) => {
     const untransformDigits = (text) => {
-      if (!digits) {
+      if (!cd.g.DIGITS) {
         return text;
       }
-      return text.replace(new RegExp('[' + digits + ']', 'g'), (m) => digits.indexOf(m));
+      return text.replace(new RegExp('[' + cd.g.DIGITS + ']', 'g'), (m) => cd.g.DIGITS.indexOf(m));
     };
 
     const getMessages = (messages) => messages.map((name) => cd.g.MESSAGES[name]);
@@ -843,8 +841,8 @@ function setLocalTimestampParser() {
     let hour = 0;
     let minute = 0;
 
-    for (let i = 0; i < matchingGroups.length; i++) {
-      const code = matchingGroups[i];
+    for (let i = 0; i < cd.g.TIMESTAMP_MATCHING_GROUPS.length; i++) {
+      const code = cd.g.TIMESTAMP_MATCHING_GROUPS[i];
       const text = match[i + 3];
 
       switch (code) {
@@ -895,7 +893,10 @@ function setLocalTimestampParser() {
       }
     }
 
-    return new Date(Date.UTC(year, monthIdx, day, hour, minute) - timezoneOffset * 60 * 1000);
+    return new Date(
+      Date.UTC(year, monthIdx, day, hour, minute) -
+      cd.g.LOCAL_TIMEZONE_OFFSET * 60 * 1000
+    );
   };
 
   /**
