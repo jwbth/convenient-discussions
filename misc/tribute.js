@@ -240,11 +240,9 @@
           if (instance.tribute.autocompleteMode) {
             instance.callbacks().triggerChar(event, this, "");
           } else {
-            var keyCode = instance.getKeyCode(instance, this, event);
-            if (isNaN(keyCode) || !keyCode) return;
-            var trigger = instance.tribute.triggers().find(function (trigger) {
-              return trigger.charCodeAt(0) === keyCode;
-            });
+            // Jack: Removed the block and made `trigger` be filled from
+            // `tribute.current.triggerChar` to account for triggers with the same first character.
+            var trigger = instance.tribute.current.triggerChar;
 
             if (typeof trigger !== "undefined") {
               instance.callbacks().triggerChar(event, this, trigger);
@@ -260,20 +258,9 @@
           instance.tribute.showMenuFor(this, true);
         }
       }
-    }, {
-      key: "getKeyCode",
-      value: function getKeyCode(instance, el, event) {
-
-        var tribute = instance.tribute;
-        var info = tribute.range.getTriggerInfo(false, tribute.hasTrailingSpace, true, tribute.allowSpaces, tribute.autocompleteMode);
-
-        if (info) {
-          return info.mentionTriggerChar.charCodeAt(0);
-        } else {
-          return false;
-        }
-      }
-    }, {
+    },
+    // Jack: Removed "getKeyCode" as it is redundant.
+    {
       key: "updateSelection",
       value: function updateSelection(el) {
         this.tribute.current.element = el;
@@ -283,6 +270,9 @@
           this.tribute.current.selectedPath = info.mentionSelectedPath;
           this.tribute.current.mentionText = info.mentionText;
           this.tribute.current.selectedOffset = info.mentionSelectedOffset;
+
+          // Jack: Added this line.
+          this.tribute.current.triggerChar = info.mentionTriggerChar;
         }
       }
     }, {
@@ -855,13 +845,25 @@
 
         if (effectiveRange !== undefined && effectiveRange !== null) {
           var mostRecentTriggerCharPos = -1;
+          var mostRecentTriggerCharLength = 0;
           var triggerChar;
           this.tribute.collection.forEach(function (config) {
             var c = config.trigger;
             var idx = config.requireLeadingSpace ? _this2.lastIndexWithLeadingSpace(effectiveRange, c) : effectiveRange.lastIndexOf(c);
 
-            if (idx > mostRecentTriggerCharPos) {
+            if (
+              idx > mostRecentTriggerCharPos ||
+
+              // Jack: Added this lines to have triggers like "[[#" be used instead of triggers like
+              // "[[" if both are present.
+              (
+                idx > -1 &&
+                idx === mostRecentTriggerCharPos &&
+                c.length > mostRecentTriggerCharLength
+              )
+            ) {
               mostRecentTriggerCharPos = idx;
+              mostRecentTriggerCharLength = c.length;
               triggerChar = c;
               requireLeadingSpace = config.requireLeadingSpace;
             }
@@ -893,7 +895,10 @@
           if (
             mostRecentTriggerCharPos === -1 ||
             (currentTriggerSnippet && !currentTriggerSnippet[0].trim()) ||
-            selected.selectionStart !== selected.selectionEnd
+            selected.selectionStart !== selected.selectionEnd ||
+
+            // When pressed backspace in "[[#" and faced the trigger "[["
+            (this.tribute.current.trigger && triggerChar !== this.tribute.current.trigger)
           ) {
             this.tribute.doDropMenu = true;
             return;
