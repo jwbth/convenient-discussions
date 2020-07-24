@@ -889,13 +889,15 @@ const navPanel = {
   },
 
   /**
-   * Go to the next comment form out of sight.
+   * Go to the next comment form out of sight, or just the first comment form, if `justFirst` is set
+   * to true.
    *
+   * @param {boolean} [justFirst=false]
    * @memberof module:navPanel
    */
-  goToNextCommentForm() {
+  goToNextCommentForm(justFirst = false) {
     const commentForm = cd.commentForms
-      .filter((commentForm) => !commentForm.$element.cdIsInViewport(true))
+      .filter((commentForm) => justFirst || !commentForm.$element.cdIsInViewport(true))
       .sort((commentForm1, commentForm2) => {
         const top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
         const top2 = commentForm2.$element.get(0).getBoundingClientRect().top;

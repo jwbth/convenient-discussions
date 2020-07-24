@@ -862,7 +862,7 @@ export function restoreCommentForms() {
         });
         notification.$notification.on('click', () => {
           if (navPanel.isMounted()) {
-            navPanel.goToNextCommentForm();
+            navPanel.goToNextCommentForm(true);
           }
         });
       }
