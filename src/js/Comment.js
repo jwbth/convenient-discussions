@@ -1389,7 +1389,7 @@ export default class Comment extends CommentSkeleton {
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     }
 
-    // Exclude the text of the previous comment that is ended with "~~~" instead of "~~~~".
+    // Exclude the text of the previous comment that is ended with 3 tildes instead of 4.
     if (cd.config.signatureEndingRegexp) {
       const regexp = new RegExp(cd.config.signatureEndingRegexp.source, 'm');
       const linesRegexp = /^(.+)\n/gm;

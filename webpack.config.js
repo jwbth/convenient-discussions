@@ -1,6 +1,6 @@
 const path = require('path');
-const webpack = require('webpack');
 
+const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier');
 
@@ -45,7 +45,7 @@ module.exports = (env = { MODE: 'development' }) => {
               plugins: [
                 // private.#fields
                 '@babel/plugin-proposal-class-properties',
-                // private.#methods
+                // private.#methods - buggy so far
                 // '@babel/plugin-proposal-private-methods',
                 '@babel/plugin-transform-runtime',
                 '@babel/plugin-transform-async-to-generator',
@@ -62,6 +62,7 @@ module.exports = (env = { MODE: 'development' }) => {
           use: {
             loader: 'worker-loader',
             options: {
+              name: `worker${fileNamePostfix}.js`,
               inline: true,
               fallback: false,
             },
@@ -74,14 +75,36 @@ module.exports = (env = { MODE: 'development' }) => {
       minimizer: [
         new TerserPlugin({
           terserOptions: {
+            // This allows for better debugging (less places where you can't set a breakpoint) while
+            // costing not so much size.
+            compress: {
+              // + 0.3% to file size
+              sequences: false,
+              // + 1% to file size
+              conditionals: false,
+            },
             output: {
               // Otherwise messes with \x01 \x02 \x03 \x04.
               ascii_only: true,
-              beautify: env.MODE !== 'local',
+              beautify: env.MODE === 'development',
             },
-            mangle: env.MODE === 'production',
+            mangle: env.MODE === 'production' && {
+              // Copypasted from .eslintrc.js's preferredTypes -JQuery -Node +cd
+              reserved: [
+                'Comment',
+                'CommentSkeleton',
+                'CommentForm',
+                'Element',
+                'Page',
+                'Parser',
+                'Section',
+                'User',
+                'cd',
+              ],
+            },
           },
           extractComments: false,
+          sourceMap: env.MODE !== 'local',
         }),
       ],
     },
@@ -95,6 +118,10 @@ module.exports = (env = { MODE: 'development' }) => {
       new WebpackBuildNotifierPlugin({
         suppressSuccess: true,
         suppressWarning: true,
+      }),
+      new webpack.SourceMapDevToolPlugin({
+        filename: '[file].map.js',
+        append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=text/javascript'
       }),
     ],
   };

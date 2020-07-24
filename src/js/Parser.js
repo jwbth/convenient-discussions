@@ -464,12 +464,14 @@ export default class Parser {
       const node = treeWalker.currentNode;
       const isTextNode = node.nodeType === Node.TEXT_NODE;
 
-      // Cases like:
-      //   === Section title ===
-      //   Section introduction. Not a comment.
-      //   # Vote. ~~~~
-      // Without the following code, the section introduction would be a part of the comment. The
-      // same may happen inside a discussion thread (often because one of the users didn't sign).
+      /*
+        Cases like:
+          === Section title ===
+          Section introduction. Not a comment.
+          # Vote. [signature]
+        Without the following code, the section introduction would be a part of the comment. The
+        same may happen inside a discussion thread (often because one of the users didn't sign).
+       */
       if (
         lastStep === 'back' &&
         ['OL', 'UL'].includes(previousPart.node.tagName) &&

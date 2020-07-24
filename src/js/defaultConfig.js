@@ -186,7 +186,7 @@ export default {
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
    * this:
    * ```
-   * ''Reply in italics.'' ~~~~
+   * ''Reply in italics.'' [signature]
    * ```
    * Here, `''` is not a part of the signature.
    *

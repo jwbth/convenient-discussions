@@ -230,7 +230,7 @@ function extractUnsigneds(code, signatures) {
       let dirtyCode = match[1];
       const nextCommentStartIndex = match.index + match[0].length;
 
-      // "~~~~~ {{unsigned|}}" cases. In these cases, both the signature and {{unsigned|}} are
+      // "[5 tildes] {{unsigned|}}" cases. In these cases, both the signature and {{unsigned|}} are
       // considered signatures and added to the array. We could combine them but that would need
       // corresponding code in Parser.js which could be tricky, so for now we just remove the
       // duplicate. That still allows to reply to the comment.
