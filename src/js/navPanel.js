@@ -893,15 +893,15 @@ const navPanel = {
     const commentForm = cd.commentForms
       .filter((commentForm) => justFirst || !commentForm.$element.cdIsInViewport(true))
       .sort((commentForm1, commentForm2) => {
-        const top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
-        const top2 = commentForm2.$element.get(0).getBoundingClientRect().top;
-        if ((top2 > 0 && top1 < 0) || top1 > top2) {
-          return 1;
-        } else if ((top1 > 0 && top2 < 0) || top2 > top1) {
-          return -1;
-        } else {
-          return 0;
+        let top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
+        if (top1 < 0) {
+          top1 += $(document).height() * 2;
         }
+        let top2 = commentForm2.$element.get(0).getBoundingClientRect().top;
+        if (top2 < 0) {
+          top2 += $(document).height() * 2;
+        }
+        return top1 - top2;
       })[0];
     if (commentForm) {
       commentForm.$element.cdScrollIntoView('center');
