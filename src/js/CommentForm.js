@@ -173,9 +173,9 @@ export default class CommentForm {
 
         this.target.getCode(true).then(
           () => {
+            this.closeOperation(currentOperation);
             let commentText = this.target.codeToText();
             const headline = this.target.inCode.headlineCode;
-
             if (this.target.inCode.inSmallFont) {
               commentText = `<small>${commentText}</small>`;
             }
@@ -185,11 +185,8 @@ export default class CommentForm {
               this.headlineInput.setValue(headline);
               this.originalHeadline = headline;
             }
-
-            this.closeOperation(currentOperation);
-            saveSession();
-
             this.commentInput.focus();
+            saveSession();
           },
           (e) => {
             if (e instanceof CdError) {
@@ -2257,11 +2254,13 @@ export default class CommentForm {
 
     if (this.closeOperationIfNecessary(currentOperation)) return;
 
-    // This happens:
-    // - when restoring the form from a session,
-    // - when the target comment has not been loaded yet, possibly because of an error when tried to
-    // (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
-    // looking for the unclosed 'load' operation above).
+    /*
+      This happens:
+      - when restoring the form from a session,
+      - when the target comment has not been loaded yet, possibly because of an error when tried to
+      (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
+      looking for the unclosed 'load' operation above).
+     */
     if (!(this.target instanceof Page) && !this.target.inCode) {
       await this.checkCode();
       if (!this.target.inCode) {
