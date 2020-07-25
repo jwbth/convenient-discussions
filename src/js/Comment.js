@@ -216,14 +216,14 @@ export default class Comment extends CommentSkeleton {
         return bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT;
       });
 
-      // We calculate the right border separately - in its case, we need to change the overflow
+      // We calculate the right border separately - in its case, we need to change the `overflow`
       // property to get the desired value, otherwise floating elements are not taken into account.
       const initialOverflows = [];
       if (intersectsFloating) {
-        for (let i = 0; i < this.elements.length; i++) {
-          initialOverflows[i] = this.elements[i].style.overflow;
-          this.elements[i].style.overflow = 'hidden';
-        }
+        this.elements.forEach((el, i) => {
+          initialOverflows[i] = el.style.overflow;
+          el.style.overflow = 'hidden';
+        });
       }
 
       rectTop = this.highlightables[0].getBoundingClientRect();
@@ -232,9 +232,9 @@ export default class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
 
       if (intersectsFloating) {
-        for (let i = 0; i < this.elements.length; i++) {
-          this.elements[i].style.overflow = initialOverflows[i];
-        }
+        this.elements.forEach((el, i) => {
+          el.style.overflow = initialOverflows[i];
+        });
       }
     }
     const left = window.pageXOffset + Math.min(rectTop.left, rectBottom.left);
@@ -1662,10 +1662,8 @@ export default class Comment extends CommentSkeleton {
         ) +
         '(?![:*#]|<!--)'
       );
-      const [, codeInBetween] = (
-        properPlaceRegexp.exec(hideHtmlComments(pageCode).slice(currentIndex)) ||
-        []
-      );
+      const codeAfter = hideHtmlComments(pageCode).slice(currentIndex);
+      const [, codeInBetween] = properPlaceRegexp.exec(codeAfter) || [];
       if (codeInBetween === undefined) {
         throw new CdError({
           type: 'parse',

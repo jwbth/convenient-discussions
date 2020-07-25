@@ -6,7 +6,6 @@
  */
 
 import CdError from './CdError';
-import Page from './Page';
 import cd from './cd';
 
 let keptScrollPosition = null;

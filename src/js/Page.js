@@ -210,8 +210,8 @@ export default class Page {
     const resp = await cd.g.api.get({
       action: 'query',
       titles: this.name,
-      rvslots: 'main',
       prop: 'revisions',
+      rvslots: 'main',
       rvprop: ['ids', 'content'],
       redirects: true,
       curtimestamp: true,

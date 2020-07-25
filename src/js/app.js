@@ -181,7 +181,7 @@ function go() {
     }
 
     // We use a jQuery promise as there is no way to know the state of native promises.
-    const modulesRequest = $.when(...[
+    $.when(...[
       mw.loader.using([
         'jquery.color',
         'jquery.client',

@@ -319,8 +319,7 @@ function processWatchlist($content) {
     const pageName = linkElement.textContent;
     if (!isProbablyTalkPage(pageName, nsNumber)) return;
 
-    const minorMark = line.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
     const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
@@ -420,8 +419,7 @@ function processContributions($content) {
     const link = linkElement.href;
     if (!link) return;
 
-    const minorMark = line.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
     const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
@@ -478,8 +476,7 @@ function processHistory($content) {
   const link = cd.g.CURRENT_PAGE.getUrl();
 
   lines.forEach((line) => {
-    const minorMark = line.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
     const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
@@ -562,12 +559,12 @@ async function processDiff() {
     .filter(notNull);
 
   areas.forEach((area) => {
-    const minorMark = area.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
     const summary = area.querySelector('.comment')?.textContent;
     if (
       summary &&
+
       // Here, archivation can't be captured by looking at bytes added.
       (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
     ) {

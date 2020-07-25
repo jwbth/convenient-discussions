@@ -145,8 +145,8 @@ export default class CommentSkeleton {
       this.followsHeading = true;
 
       if (this.level !== 0) {
-        this.parts.splice(0, 1);
-        this.elements.splice(0, 1);
+        this.parts.shift();
+        this.elements.shift();
       }
     } else {
       this.followsHeading = true;

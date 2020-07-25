@@ -1695,7 +1695,7 @@ export default class CommentForm {
 
       case 'network':
       case 'javascript': {
-        message = (message ? `${message} ` : '') + cd.s(`error-${type}`);
+        message = (message ? message + ' ' : '') + cd.s(`error-${type}`);
         break;
       }
     }
@@ -2897,8 +2897,7 @@ export default class CommentForm {
         let newTopicSummary;
         if (this.$addSectionLink) {
           const uri = new mw.Uri(this.$addSectionLink.attr('href'));
-          const summary = uri.query.summary;
-          newTopicSummary = summary && summary.replace(/^.+?\*\/ */, '');
+          newTopicSummary = uri.query.summary?.replace(/^.+?\*\/ */, '');
         }
         return newTopicSummary || cd.s('es-new-topic');
       }

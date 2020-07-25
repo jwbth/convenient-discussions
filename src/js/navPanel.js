@@ -80,8 +80,8 @@ async function checkForNewComments() {
     $(document).on('visibilitychange', callback);
 
     const interval = Math.abs(
-      cd.g.BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL -
-      cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL
+      cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL -
+      cd.g.NEW_COMMENTS_CHECK_INTERVAL
     );
     setAlarmViaWorker(interval * 1000);
     isBackgroundCheckArranged = true;
@@ -179,10 +179,10 @@ async function checkForNewComments() {
   }
 
   if (document.hidden) {
-    setAlarmViaWorker(cd.g.BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL * 1000);
     isBackgroundCheckArranged = true;
   } else {
-    setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
   }
 }
 
@@ -629,7 +629,7 @@ const navPanel = {
 
     if (cd.g.worker) {
       cd.g.worker.onmessage = onMessageFromWorker;
-      setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
+      setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
     }
   },
 
@@ -732,7 +732,7 @@ const navPanel = {
     relevantNewCommentAnchor = null;
 
     removeAlarmViaWorker();
-    setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
     isBackgroundCheckArranged = false;
 
     $refreshButton
