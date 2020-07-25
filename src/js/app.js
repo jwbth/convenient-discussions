@@ -33,7 +33,7 @@ import { setVisits } from './options';
 
 let config;
 let strings;
-if (IS_LOCAL) {
+if (IS_SNIPPET) {
   config = require(`../../config/${CONFIG_FILE_NAME}`).default;
   strings = require(`../../i18n/${LANG_FILE_NAME}`);
 }
@@ -401,7 +401,7 @@ async function app() {
    */
   cd.running = true;
 
-  if (IS_LOCAL) {
+  if (IS_SNIPPET) {
     cd.config = Object.assign(defaultConfig, config);
     cd.strings = strings;
   }

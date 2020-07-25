@@ -6,7 +6,7 @@ module.exports = {
   },
   "extends": "eslint:recommended",
   "globals": {
-    "IS_LOCAL": "readonly",
+    "IS_SNIPPET": "readonly",
     "CONFIG_FILE_NAME": "readonly",
     "LANG_FILE_NAME": "readonly",
     "IS_TEST": "readonly",
