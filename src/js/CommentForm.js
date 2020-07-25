@@ -17,6 +17,7 @@ import {
   handleApiReject,
   hideText,
   isInputFocused,
+  nativePromiseState,
   removeDoubleSpaces,
   removeDuplicates,
   restoreScrollPosition,
@@ -243,16 +244,13 @@ export default class CommentForm {
    */
   checkCode() {
     if (!this.checkCodeRequest) {
-      // We use a jQuery promise as there is no way to know the state of native promises.
-      const deferred = $.Deferred();
-
       /**
        * Request to test if a comment or section exists in the code made by {@link
        * module:CommentForm#checkCode}.
        *
        * @type {JQuery.Promise}
        */
-      this.checkCodeRequest = deferred.then(
+      this.checkCodeRequest = this.target.getCode(this).then(
         () => {
           saveSession();
         },
@@ -265,14 +263,6 @@ export default class CommentForm {
               logMessage: e,
             });
           }
-        }
-      );
-      this.target.getCode(this).then(
-        () => {
-          deferred.resolve();
-        },
-        (e) => {
-          deferred.reject(e);
         }
       );
     }
@@ -2225,7 +2215,7 @@ export default class CommentForm {
         !(this.target instanceof Page) &&
         !this.target.inCode &&
         this.checkCodeRequest &&
-        this.checkCodeRequest.state() === 'resolved'
+        (await nativePromiseState(this.checkCodeRequest)) === 'resolved'
       ) ||
       this.isBeingSubmitted() ||
       (auto && !cd.settings.autopreview)

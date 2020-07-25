@@ -394,3 +394,19 @@ export function restoreScrollPosition() {
   window.scrollTo(0, keptScrollPosition);
   keptScrollPosition = null;
 }
+
+/**
+ * Use a {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
+ * Promise.race()} workaround to get the state of a native promise. Note that it works _only_ with
+ * native promises: it doesn't work with jQuery promises (for example, ones that `mw.Api()`
+ * returne).
+ *
+ * @param {Promise} promise
+ * @returns {string}
+ */
+export async function nativePromiseState(promise) {
+  const obj = {};
+  return Promise.race([promise, obj])
+    .then((value) => value === obj ? 'pending' : 'resolved', () => 'rejected');
+}
