@@ -1650,16 +1650,14 @@ export default class Comment extends CommentSkeleton {
     if (action === 'reply') {
       currentIndex = thisInCode.endIndex;
 
+      const searchedIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
-        cd.g.TIMESTAMP_REGEXP.source + '.*)\\n)\\n*' +
-        (
-          thisInCode.indentationChars.length > 0 ?
-          `[:*#]{0,${thisInCode.indentationChars.length}}` :
-          ''
-        ) +
+        cd.g.TIMESTAMP_REGEXP.source +
+        '.*)\\n)\\n*' +
+        (searchedIndentationCharsLength > 0 ? `[:*#]{0,${searchedIndentationCharsLength}}` : '') +
         '(?![:*#]|<!--)'
       );
       const codeAfter = hideHtmlComments(pageCode).slice(currentIndex);
