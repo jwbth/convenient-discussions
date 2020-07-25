@@ -11,7 +11,7 @@ export default class CdError extends Error {
       if (data.code) {
         message += `/${data.code}`;
       }
-      if (data.apiData && data.apiData.error && data.apiData.error.code) {
+      if (data?.apiData?.error?.code) {
         message += `/${data.apiData.error.code}`;
       }
     } else {

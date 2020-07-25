@@ -219,14 +219,9 @@ export default class Page {
     }).catch(handleApiReject);
 
     const query = resp.query;
-    const page = query && query.pages && query.pages[0];
-    const revision = page && page.revisions && page.revisions[0];
-    const content = (
-      revision &&
-      revision.slots &&
-      revision.slots.main &&
-      revision.slots.main.content
-    );
+    const page = query?.pages?.[0];
+    const revision = page?.revisions?.[0];
+    const content = revision?.slots?.main?.content;
 
     if (!query || !page || !revision || content === undefined) {
       throw new CdError({
@@ -411,7 +406,7 @@ export default class Page {
         if (type === 'network') {
           throw e;
         } else {
-          const error = apiData && apiData.error;
+          const error = apiData?.error;
           let message;
           let isRawMessage = false;
           let logMessage;

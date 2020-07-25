@@ -109,13 +109,7 @@ async function checkForNewComments() {
       formatversion: 2,
     }).catch(handleApiReject);
 
-    const revisions = (
-      revisionsResp &&
-      revisionsResp.query &&
-      revisionsResp.query.pages &&
-      revisionsResp.query.pages[0] &&
-      revisionsResp.query.pages[0].revisions
-    );
+    const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',

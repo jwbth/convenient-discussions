@@ -785,7 +785,7 @@ function restoreCommentFormsFromData(commentFormsData) {
   const rescue = [];
   commentFormsData.forms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
-    if (data.targetData && data.targetData.anchor) {
+    if (data?.targetData.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
       if (comment && comment.actionable && !comment[`${property}Form`]) {
         try {
@@ -798,13 +798,13 @@ function restoreCommentFormsFromData(commentFormsData) {
       } else {
         rescue.push(data);
       }
-    } else if (data.targetData && data.targetData.headline) {
+    } else if (data?.targetData.headline) {
       const section = Section.search({
         headline: data.targetData.headline,
         firstCommentAnchor: data.targetData.firstCommentAnchor,
         index: data.targetData.index,
       });
-      if (section && section.actionable && !section[`${property}Form`]) {
+      if (section?.actionable && !section[`${property}Form`]) {
         try {
           section[property](data);
           restored = true;
@@ -887,7 +887,7 @@ export function restoreCommentForms() {
       if (target instanceof Comment) {
         if (target.anchor) {
           const comment = Comment.getCommentByAnchor(target.anchor);
-          if (comment && comment.actionable) {
+          if (comment?.actionable) {
             try {
               commentForm.setTargets(comment);
               comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
@@ -906,7 +906,7 @@ export function restoreCommentForms() {
           firstCommentAnchor: target.comments[0] && target.comments[0].anchor,
           index: target.id,
         });
-        if (section && section.actionable) {
+        if (section?.actionable) {
           try {
             commentForm.setTargets(section);
             section[CommentForm.modeToProperty(commentForm.mode)](commentForm);

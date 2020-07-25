@@ -445,7 +445,7 @@ export default class Section extends SectionSkeleton {
     }
 
     const baseSection = this.level === 2 ? this : this.baseSection;
-    if (baseSection && baseSection.$addSubsectionButtonContainer) {
+    if (baseSection?.$addSubsectionButtonContainer) {
       baseSection.$addSubsectionButtonContainer.hide();
 
       clearTimeout(baseSection.#showAddSubsectionButtonTimeout);

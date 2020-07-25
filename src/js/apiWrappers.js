@@ -65,7 +65,7 @@ export async function parseCode(code, options) {
   };
   return cd.g.api.post(Object.assign({}, defaultOptions, options)).then(
     (resp) => {
-      const html = resp && resp.parse && resp.parse.text;
+      const html = resp?.parse?.text;
       if (html) {
         mw.loader.load(resp.parse.modules);
         mw.loader.load(resp.parse.modulestyles);
@@ -113,9 +113,9 @@ export function getUserInfo(reuse = false) {
     formatversion: 2,
   }).then(
     (resp) => {
-      const userinfo = resp && resp.query && resp.query.userinfo;
-      const options = userinfo && userinfo.options;
-      const rights = userinfo && userinfo.rights;
+      const userinfo = resp?.query?.userinfo;
+      const options = userinfo?.options;
+      const rights = userinfo?.rights;
       if (!options || !rights) {
         throw new CdError({
           type: 'api',
@@ -200,8 +200,8 @@ export async function getPageTitles(pageIds) {
       });
     }
 
-    const query = resp && resp.query;
-    const thisPages = query && query.pages;
+    const query = resp?.query;
+    const thisPages = query?.pages;
     if (!thisPages) {
       throw new CdError({
         type: 'api',
@@ -248,8 +248,8 @@ export async function getPageIds(pageTitles) {
       });
     }
 
-    const query = resp && resp.query;
-    const thisPages = query && query.pages;
+    const query = resp?.query;
+    const thisPages = query?.pages;
     if (!thisPages) {
       throw new CdError({
         type: 'api',
@@ -347,7 +347,7 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
     };
     const resp = await (noTimers ? makeRequestNoTimers(params, 'post') : cd.g.api.post(params))
       .catch(handleApiReject);
-    const users = resp && resp.query && resp.query.users;
+    const users = resp?.query?.users;
     if (!users) {
       throw new CdError({
         type: 'api',

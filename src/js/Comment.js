@@ -732,13 +732,7 @@ export default class Comment extends CommentSkeleton {
       requestGender && this.author.registered ? getUserGenders([this.author]) : undefined,
     ].filter(defined));
 
-    const revisions = (
-      revisionsResp &&
-      revisionsResp.query &&
-      revisionsResp.query.pages &&
-      revisionsResp.query.pages[0] &&
-      revisionsResp.query.pages[0].revisions
-    );
+    const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
@@ -759,7 +753,7 @@ export default class Comment extends CommentSkeleton {
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
     const thisTextAndSignature = this.getText(false) + ` ${this.signatureElement.innerText}`;
     const matches = compareData.map((data, i) => {
-      const body = data && data.compare && data.compare.body;
+      const body = data?.compare?.body;
       if (!body) {
         return null;
       }
@@ -820,7 +814,7 @@ export default class Comment extends CommentSkeleton {
         }
       });
 
-    if (singleTimestamp && bestMatch && bestMatch.moreThanOneTimestamp) {
+    if (singleTimestamp && bestMatch?.moreThanOneTimestamp) {
       throw new CdError({
         type: 'parse',
         code: 'moreThanOneTimestamp',
@@ -1198,7 +1192,7 @@ export default class Comment extends CommentSkeleton {
 
     if (registerAllInDirection && !navPanel.areAllCommentsSeen()) {
       const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
-      if (nextComment && nextComment.isInViewport(true)) {
+      if (nextComment?.isInViewport(true)) {
         nextComment.registerSeen(registerAllInDirection, highlight);
       }
     }

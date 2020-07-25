@@ -64,8 +64,7 @@ export async function confirmDialog(message, options = {}) {
     Object.assign({}, defaultOptions, options)
   );
 
-  const data = await windowInstance.closed;
-  return data && data.action;
+  return (await windowInstance.closed)?.action;
 }
 
 /**
@@ -105,8 +104,7 @@ export function confirmDestructive(messageName, options = {}) {
  * @private
  */
 function getSelectedItemData(select) {
-  const selectedItem = select.findSelectedItem();
-  return selectedItem && selectedItem.getData();
+  return select.findSelectedItem()?.getData();
 }
 
 /**
@@ -1201,7 +1199,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
 
     const $message = $('<div>')
-      .append(diffField && diffField.$element)
+      .append(diffField?.$element)
       .append(wikilinkField.$element)
       .append(anchorWikilinkField.$element)
       .append(linkField.$element);

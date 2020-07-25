@@ -121,7 +121,7 @@ function mergeAdjacentCommentLevels(firstVisibleElementData) {
       }
 
       currentBottomElement = firstMoved;
-      currentTopElement = firstMoved && firstMoved.previousElementSibling;
+      currentTopElement = firstMoved?.previousElementSibling;
     } while (
       currentTopElement &&
       currentBottomElement &&

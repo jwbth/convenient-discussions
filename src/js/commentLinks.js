@@ -322,8 +322,7 @@ function processWatchlist($content) {
     const minorMark = line.querySelector('.minoredit');
     if (minorMark) return;
 
-    const summaryElement = line.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -336,8 +335,7 @@ function processWatchlist($content) {
       if (!bytesAdded || bytesAdded < cd.config.bytesToDeemComment) return;
     }
 
-    let timestamp = line.getAttribute('data-mw-ts');
-    timestamp = timestamp && timestamp.slice(0, 12);
+    const timestamp = line.getAttribute('data-mw-ts')?.slice(0, 12);
     if (!timestamp) return;
 
     const author = extractAuthor(line);
@@ -361,7 +359,7 @@ function processWatchlist($content) {
           // Non-expanded watchlist
           line.querySelector('.mw-changeslist-history')
         );
-        const curIdMatch = curLink && curLink.href && curLink.href.match(/[&?]curid=(\d+)/);
+        const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
           const thisPageWatchedSections = (
@@ -404,7 +402,7 @@ function processWatchlist($content) {
  */
 function processContributions($content) {
   const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone && timezone.split('|');
+  const timezoneParts = timezone?.split('|');
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
@@ -425,8 +423,7 @@ function processContributions($content) {
     const minorMark = line.querySelector('.minoredit');
     if (minorMark) return;
 
-    const summaryElement = line.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -472,7 +469,7 @@ function processContributions($content) {
  */
 function processHistory($content) {
   const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone && timezone.split('|');
+  const timezoneParts = timezone?.split('|');
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
@@ -484,8 +481,7 @@ function processHistory($content) {
     const minorMark = line.querySelector('.minoredit');
     if (minorMark) return;
 
-    const summaryElement = line.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -558,7 +554,7 @@ async function processDiff() {
   if (!processDiffFirstRun) return;
 
   const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone && timezone.split('|');
+  const timezoneParts = timezone?.split('|');
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
@@ -569,8 +565,7 @@ async function processDiff() {
     const minorMark = area.querySelector('.minoredit');
     if (minorMark) return;
 
-    const summaryElement = area.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = area.querySelector('.comment')?.textContent;
     if (
       summary &&
       // Here, archivation can't be captured by looking at bytes added.

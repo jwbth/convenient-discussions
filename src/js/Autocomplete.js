@@ -292,7 +292,7 @@ export default class Autocomplete {
               .catch(handleApiReject)
               .then(
                 (resp) => {
-                  const pages = resp && resp.pages;
+                  const pages = resp?.pages;
                   let s = '';
                   let firstValueIndex = 0;
                   Object.keys(pages).forEach((key) => {
