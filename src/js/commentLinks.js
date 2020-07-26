@@ -559,7 +559,7 @@ async function processDiff() {
     .filter(notNull);
 
   areas.forEach((area) => {
-    if (line.querySelector('.minoredit')) return;
+    if (area.querySelector('.minoredit')) return;
 
     const summary = area.querySelector('.comment')?.textContent;
     if (
