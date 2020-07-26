@@ -210,16 +210,23 @@ export default class Comment extends CommentSkeleton {
           };
         })
       );
-      const intersectsFloating = floatingRects.some((rect) => {
+      let intersectsFloatingCount = 0;
+      let bottomIntersectsFloating = false;
+      floatingRects.forEach((rect) => {
         const floatingTop = window.pageYOffset + rect.top;
         const floatingBottom = window.pageYOffset + rect.bottom;
-        return bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT;
+        if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
+          bottomIntersectsFloating = true;
+        }
+        if (bottom > floatingTop && top < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
+          intersectsFloatingCount++;
+        }
       });
 
       // We calculate the right border separately - in its case, we need to change the `overflow`
       // property to get the desired value, otherwise floating elements are not taken into account.
       const initialOverflows = [];
-      if (intersectsFloating) {
+      if (bottomIntersectsFloating) {
         this.elements.forEach((el, i) => {
           initialOverflows[i] = el.style.overflow;
           el.style.overflow = 'hidden';
@@ -231,7 +238,10 @@ export default class Comment extends CommentSkeleton {
         rectTop :
         this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
 
-      if (intersectsFloating) {
+      // If the comment intersects more than one floating block, we better keep `overflow: hidden`
+      // to avoid bugs like where there are two floating block to the right with different leftmost
+      // positions, and the layer is more narrow than the comment.
+      if (intersectsFloatingCount === 1) {
         this.elements.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
         });
@@ -250,7 +260,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Calculate underlay positions.
+   * Calculate the underlay and overlay positions.
    *
    * @param {object} [config={}]
    * @returns {?object}
