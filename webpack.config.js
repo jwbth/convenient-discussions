@@ -20,11 +20,14 @@ if (snippet) {
 }
 
 module.exports = {
-  mode: 'production',
+  mode: snippet ? 'development' : 'production',
   entry: './src/js/app.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: `convenientDiscussions${fileNamePostfix}.js`,
+  },
+  performance: {
+    hints: false,
   },
   devtool: snippet ? 'eval' : false,
   module: {
@@ -66,6 +69,7 @@ module.exports = {
   },
   watch: snippet,
   optimization: {
+    concatenateModules: true,
     minimizer: [
       new TerserPlugin({
         terserOptions: {
@@ -102,9 +106,11 @@ module.exports = {
       suppressSuccess: true,
       suppressWarning: true,
     }),
-    new webpack.SourceMapDevToolPlugin({
-      filename: '[file].map.js',
-      append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=text/javascript'
-    }),
-  ],
+    snippet ?
+      undefined :
+      new webpack.SourceMapDevToolPlugin({
+        filename: '[file].map.js',
+        append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=text/javascript'
+      }),
+  ].filter((el) => el !== undefined),
 };
