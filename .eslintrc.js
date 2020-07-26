@@ -9,7 +9,7 @@ module.exports = {
     "IS_SNIPPET": "readonly",
     "CONFIG_FILE_NAME": "readonly",
     "LANG_FILE_NAME": "readonly",
-    "IS_TEST": "readonly",
+    "IS_DEV": "readonly",
     "$": "readonly",
     "OO": "readonly",
     "Tribute": "readonly",

@@ -8,15 +8,15 @@ const argv = require('yargs').argv;
 const lang = process.env.npm_config_lang || 'ru';
 const project = process.env.npm_config_project || 'w';
 const snippet = Boolean(argv.snippet || process.env.npm_config_snippet);
-const test = Boolean(process.env.npm_config_test);
+const dev = Boolean(process.env.npm_config_dev);
 const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
 const fullCode = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
 
 let fileNamePostfix = '';
 if (snippet) {
   fileNamePostfix = `-snippet-${fullCode}`;
-} else if (test) {
-  fileNamePostfix = '-test';
+} else if (dev) {
+  fileNamePostfix = '-dev';
 }
 
 module.exports = {
@@ -96,7 +96,7 @@ module.exports = {
       IS_SNIPPET: snippet,
       CONFIG_FILE_NAME: JSON.stringify(fullCode),
       LANG_FILE_NAME: JSON.stringify(lang + '.json'),
-      IS_TEST: test,
+      IS_DEV: dev,
     }),
     new WebpackBuildNotifierPlugin({
       suppressSuccess: true,
