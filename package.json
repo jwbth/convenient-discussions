@@ -56,5 +56,9 @@
   },
   "sideEffects": [
     "*.less"
+  ],
+  "browserslist": [
+    "> 1%",
+    "not IE 11"
   ]
 }
