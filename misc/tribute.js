@@ -180,7 +180,7 @@
     }, {
       key: "click",
       value: function click(instance, event) {
-        // Jack: Don't react on other than left button clicks.
+        // Jack: Ignore other than left button clicks.
         if (event.which !== 1) return;
 
         var tribute = instance.tribute;
@@ -222,6 +222,7 @@
         instance.updateSelection(this);
         if (event.keyCode === 27) return;
 
+        // Jack: Added this block (search for `doDropMenu` for the explanation).
         if (instance.tribute.doDropMenu) {
           instance.tribute.isActive = false;
           instance.tribute.hideMenu();
@@ -280,7 +281,7 @@
       value: function callbacks() {
         var _this = this;
 
-        // Jack: Removed "delete" and "space" keys from here, see keys().
+        // Jack: Removed `delete` and `space` keys from here, see keys().
         return {
           triggerChar: function triggerChar(e, el, trigger) {
             var tribute = _this.tribute;
@@ -871,6 +872,7 @@
 
           var currentTriggerSnippet;
           var leadingSpace;
+          var regex;
           var inputOk = mostRecentTriggerCharPos >= 0 && (mostRecentTriggerCharPos === 0 || !requireLeadingSpace || /[\xA0\s]/g.test(effectiveRange.substring(mostRecentTriggerCharPos - 1, mostRecentTriggerCharPos)));
           if (inputOk) {
             currentTriggerSnippet = effectiveRange.substring(mostRecentTriggerCharPos + triggerChar.length, effectiveRange.length);
@@ -882,7 +884,7 @@
               currentTriggerSnippet = currentTriggerSnippet.trim();
             }
 
-            var regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g;
+            regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g;
             this.tribute.hasTrailingSpace = regex.test(currentTriggerSnippet);
           }
 
@@ -1047,7 +1049,7 @@
         var menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions);
 
         if (menuIsOffScreen.right) {
-          // Jack: Simplified logic by putting `right` at 0.
+          // Jack: Simplified the positioning by putting `right` at 0.
           coordinates.right = 0;
           coordinates.left = 'auto';
         }
@@ -1070,7 +1072,7 @@
           delete coordinates.right;
         }
 
-        // Jack: Removed the "if (menuIsOffScreen.top)" block as it seem reduntant after we stopped
+        // Jack: Removed the `if (menuIsOffScreen.top)` block as it seems reduntant after we stopped
         // basing the menu placement on the bottom position.
 
         this.getDocument().body.removeChild(div);

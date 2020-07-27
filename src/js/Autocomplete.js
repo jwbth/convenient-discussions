@@ -4,7 +4,7 @@
  * @module autocomplete
  */
 
-import Tribute from '../../misc/tribute';
+import Tribute from '../tribute';
 import cd from './cd';
 import {
   defined,
