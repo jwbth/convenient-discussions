@@ -99,29 +99,25 @@ export function globalKeyDownHandler(e) {
 
 /**
  * Handles the `mousemove` and `mouseover` events and highlights hovered comments even when the
- * mouse is between comment parts, not over them.
+ * cursor is between comment parts, not over them.
  *
  * @param {Event} e
  */
 export function highlightFocused(e) {
-  if (
-    cd.util.isPageOverlayOn() ||
-    cd.g.dontHandleScroll ||
-    cd.g.autoScrollInProgress ||
-    (cd.g.activeAutocompleteMenu && cd.g.activeAutocompleteMenu.matches(':hover'))
-  ) {
-    return;
-  }
+  if (cd.util.isPageOverlayOn() || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
 
   const contentLeft = cd.g.rootElement.getBoundingClientRect().left;
   if (e.pageX < contentLeft - cd.g.COMMENT_UNDERLAY_SIDE_MARGIN) {
-    commentLayers.underlays
-      .filter((underlay) => underlay.classList.contains('cd-commentUnderlay-focused'))
-      .forEach((underlay) => {
-        underlay.cdTarget.unhighlightFocused();
-      });
+    commentLayers.underlays.forEach((underlay) => {
+      underlay.cdTarget.unhighlightFocused();
+    });
     return;
   }
+
+  const autocompleteMenuHovered = (
+    cd.g.activeAutocompleteMenu &&
+    cd.g.activeAutocompleteMenu.matches(':hover')
+  );
 
   cd.comments
     .filter((comment) => comment.$underlay)
@@ -138,21 +134,18 @@ export function highlightFocused(e) {
       const layersContainerOffset = comment.getLayersContainerOffset();
 
       if (
-        // In case some user moves the navigation panel to the right side.
+        // In case the user has moved the navigation panel to the right side.
         !navPanel.isMouseOver &&
 
+        !autocompleteMenuHovered &&
         e.pageY >= top + layersContainerOffset.top &&
         e.pageY <= top + height + layersContainerOffset.top &&
         e.pageX >= left + layersContainerOffset.left &&
         e.pageX <= left + width + layersContainerOffset.left
       ) {
-        if (!underlay.classList.contains('cd-commentUnderlay-focused')) {
-          underlay.cdTarget.highlightFocused();
-        }
+        underlay.cdTarget.highlightFocused();
       } else {
-        if (underlay.classList.contains('cd-commentUnderlay-focused')) {
-          underlay.cdTarget.unhighlightFocused();
-        }
+        underlay.cdTarget.unhighlightFocused();
       }
     });
 }

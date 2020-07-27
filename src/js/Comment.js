@@ -465,7 +465,6 @@ export default class Comment extends CommentSkeleton {
 
     if (!this.#underlay || isMoved) {
       const positions = this.calculateLayersPositions(config);
-
       if (positions) {
         this.#layersTop = positions.underlayTop;
         this.#layersLeft = positions.underlayLeft;
@@ -490,11 +489,9 @@ export default class Comment extends CommentSkeleton {
       return isMoved;
     } else {
       this.createLayers();
-
       if (config.doSet) {
         this.addLayers();
       }
-
       return false;
     }
   }
@@ -524,7 +521,12 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
-    if (cd.util.isPageOverlayOn()) return;
+    if (
+      cd.util.isPageOverlayOn() ||
+     this.#underlay?.classList.contains('cd-commentUnderlay-focused')
+    ) {
+      return;
+    }
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again when the next event fires.
@@ -538,7 +540,7 @@ export default class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightFocused() {
-    if (!this.#underlay) return;
+    if (!this.#underlay?.classList.contains('cd-commentUnderlay-focused')) return;
 
     this.#underlay.classList.remove('cd-commentUnderlay-focused');
     this.#overlay.classList.remove('cd-commentOverlay-focused');
@@ -1770,7 +1772,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get and sometimes create the container for the comment's underlay.
+   * Get and sometimes create a container for the comment's underlay.
    *
    * @returns {Element}
    */
