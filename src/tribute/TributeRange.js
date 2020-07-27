@@ -41,12 +41,19 @@ class TributeRange {
                 coordinates = this.getContentEditableCaretPosition(info.mentionPosition)
             }
 
-            this.tribute.menu.style.cssText = `top: ${coordinates.top}px;
-                                     left: ${coordinates.left}px;
-                                     right: ${coordinates.right}px;
-                                     bottom: ${coordinates.bottom}px;
-                                     position: absolute;
-                                     display: block;`
+            this.tribute.menu.style.cssText = (
+                `top: ${coordinates.top}px; ` +
+                `left:${coordinates.left}px; ` +
+                `right: ${coordinates.right}px; ` +
+                `bottom: ${coordinates.bottom}px; ` +
+                `position: absolute; ` +
+                `display: block;`
+            );
+
+            // jwbth: Added this block.
+            if (coordinates.additionalStyles) {
+                this.tribute.menu.style.cssText += ' ' + coordinates.additionalStyles;
+            }
 
             if (coordinates.left === 'auto') {
                 this.tribute.menu.style.left = 'auto'
@@ -58,21 +65,8 @@ class TributeRange {
 
             if (scrollTo) this.scrollIntoView()
 
-            window.setTimeout(() => {
-                let menuDimensions = {
-                   width: this.tribute.menu.offsetWidth,
-                   height: this.tribute.menu.offsetHeight
-                }
-                let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
-
-                let menuIsOffScreenHorizontally = window.innerWidth > menuDimensions.width && (menuIsOffScreen.left || menuIsOffScreen.right)
-                let menuIsOffScreenVertically = window.innerHeight > menuDimensions.height && (menuIsOffScreen.top || menuIsOffScreen.bottom)
-                if (menuIsOffScreenHorizontally || menuIsOffScreenVertically) {
-                    this.tribute.menu.style.cssText = 'display: none'
-                    this.positionMenuAtCaret(scrollTo)
-                }
-            }, 0)
-
+            // jwbth: Removed `setTimeout` part entirely as it seems to have no effect after other
+            // changes.
         } else {
             this.tribute.menu.style.cssText = 'display: none'
         }
@@ -138,9 +132,15 @@ class TributeRange {
                     : ' '
                 text += textSuffix
                 let startPos = info.mentionPosition
-                let endPos = info.mentionPosition + info.mentionText.length + textSuffix.length
+
+                // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
+                // than 1.
+                let endPos = info.mentionPosition + info.mentionText.length
+
                 if (!this.tribute.autocompleteMode) {
-                    endPos += info.mentionTriggerChar.length - 1
+                    // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length
+                    // other than 1.
+                    endPos += info.mentionTriggerChar.length
                 }
                 myField.value = myField.value.substring(0, startPos) + text +
                     myField.value.substring(endPos, myField.value.length)
@@ -310,6 +310,7 @@ class TributeRange {
 
         if (effectiveRange !== undefined && effectiveRange !== null) {
             let mostRecentTriggerCharPos = -1
+            let mostRecentTriggerCharLength = 0
             let triggerChar
 
             this.tribute.collection.forEach(config => {
@@ -318,14 +319,29 @@ class TributeRange {
                     this.lastIndexWithLeadingSpace(effectiveRange, c) :
                     effectiveRange.lastIndexOf(c)
 
-                if (idx > mostRecentTriggerCharPos) {
+                if (
+                    idx > mostRecentTriggerCharPos ||
+
+                    // jwbth: Added this lines, as well as the `mostRecentTriggerCharLength`
+                    // variable and operations with it, to have triggers like "[[#" be used instead
+                    // of triggers like "[[" if both are present.
+                    (
+                        idx > -1 &&
+                        idx === mostRecentTriggerCharPos &&
+                        c.length > mostRecentTriggerCharLength
+                    )
+                ) {
                     mostRecentTriggerCharPos = idx
+                    mostRecentTriggerCharLength = c.length
                     triggerChar = c
                     requireLeadingSpace = config.requireLeadingSpace
                 }
             })
 
-            if (mostRecentTriggerCharPos >= 0 &&
+            let currentTriggerSnippet
+            let leadingSpace
+            let regex
+            let inputOk = (mostRecentTriggerCharPos >= 0 &&
                 (
                     mostRecentTriggerCharPos === 0 ||
                     !requireLeadingSpace ||
@@ -335,13 +351,14 @@ class TributeRange {
                             mostRecentTriggerCharPos)
                     )
                 )
-            ) {
-                let currentTriggerSnippet = effectiveRange.substring(mostRecentTriggerCharPos + triggerChar.length,
+            )
+            if (inputOk) {
+                currentTriggerSnippet = effectiveRange.substring(mostRecentTriggerCharPos + triggerChar.length,
                     effectiveRange.length)
 
                 triggerChar = effectiveRange.substring(mostRecentTriggerCharPos, mostRecentTriggerCharPos + triggerChar.length)
                 let firstSnippetChar = currentTriggerSnippet.substring(0, 1)
-                let leadingSpace = currentTriggerSnippet.length > 0 &&
+                leadingSpace = currentTriggerSnippet.length > 0 &&
                     (
                         firstSnippetChar === ' ' ||
                         firstSnippetChar === '\xA0'
@@ -350,19 +367,38 @@ class TributeRange {
                     currentTriggerSnippet = currentTriggerSnippet.trim()
                 }
 
-                let regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g;
+                regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g;
 
                 this.tribute.hasTrailingSpace = regex.test(currentTriggerSnippet);
+            }
 
-                if (!leadingSpace && (menuAlreadyActive || !(regex.test(currentTriggerSnippet)))) {
-                    return {
-                        mentionPosition: mostRecentTriggerCharPos,
-                        mentionText: currentTriggerSnippet,
-                        mentionSelectedElement: selected,
-                        mentionSelectedPath: path,
-                        mentionSelectedOffset: offset,
-                        mentionTriggerChar: triggerChar
-                    }
+            /*
+                jwbth: Added this block, breaking the block starting with `inputOk` check into two
+                parts, as we need to have the menu removed when:
+                - there is no valid trigger before the cursor position,
+                - typing a space after "@" or "##",
+                - there is a selection.
+            */
+            if (
+                mostRecentTriggerCharPos === -1 ||
+                (currentTriggerSnippet && !currentTriggerSnippet[0].trim()) ||
+                selected.selectionStart !== selected.selectionEnd ||
+
+                // When pressed backspace in "[[#" and faced the trigger "[["
+                (this.tribute.current.trigger && triggerChar !== this.tribute.current.trigger)
+            ) {
+                this.tribute.doDropMenu = true;
+                return;
+            }
+
+            if (inputOk && !leadingSpace && (menuAlreadyActive || !regex.test(currentTriggerSnippet))) {
+                return {
+                    mentionPosition: mostRecentTriggerCharPos,
+                    mentionText: currentTriggerSnippet,
+                    mentionSelectedElement: selected,
+                    mentionSelectedPath: path,
+                    mentionSelectedOffset: offset,
+                    mentionTriggerChar: triggerChar
                 }
             }
         }
@@ -508,44 +544,40 @@ class TributeRange {
             left: left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth)
         }
 
-        let windowWidth = window.innerWidth
-        let windowHeight = window.innerHeight
+        // jwbth: Replaced `window.innerWidth` with `document.documentElement.clientWidth` here and
+        // in other places to have the scrollbars counted.
+        let windowWidth = doc.clientWidth;
+        let windowHeight = doc.clientHeight;
 
         let menuDimensions = this.getMenuDimensions()
         let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
 
         if (menuIsOffScreen.right) {
-            coordinates.right = windowWidth - coordinates.left
+            // jwbth: Simplified the positioning by putting `right` at 0.
+            coordinates.right = 0
             coordinates.left = 'auto'
         }
 
-        let parentHeight = this.tribute.menuContainer
-            ? this.tribute.menuContainer.offsetHeight
-            : this.getDocument().body.offsetHeight
-
         if (menuIsOffScreen.bottom) {
-            let parentRect = this.tribute.menuContainer
-                ? this.tribute.menuContainer.getBoundingClientRect()
-                : this.getDocument().body.getBoundingClientRect()
-            let scrollStillAvailable = parentHeight - (windowHeight - parentRect.top)
-
-            coordinates.bottom = scrollStillAvailable + (windowHeight - rect.top - span.offsetTop)
-            coordinates.top = 'auto'
+            // jwbth: Removed the block setting `coordinates.bottom` as a reference point as well as
+            // the `parentHeight` variable, added the block setting the height for the menu.
+            const height = windowTop + windowHeight - coordinates.top - span.offsetTop
+            coordinates.additionalStyles = 'height: ' + height + 'px; overflow-y: scroll;'
         }
 
         menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
-        if (menuIsOffScreen.left) {
+
+        // jwbth: Added "coordinates.left === 'auto'" to avoid changing erroneously the position if
+        // the page is scrolled to the right and the menu is off the screen.
+        if (menuIsOffScreen.left && coordinates.left === 'auto') {
             coordinates.left = windowWidth > menuDimensions.width
                 ? windowLeft + windowWidth - menuDimensions.width
                 : windowLeft
             delete coordinates.right
         }
-        if (menuIsOffScreen.top) {
-            coordinates.top = windowHeight > menuDimensions.height
-                ? windowTop + windowHeight - menuDimensions.height
-                : windowTop
-            delete coordinates.bottom
-        }
+
+        // jwbth: Removed the `if (menuIsOffScreen.top)` block as it seems reduntant after we
+        // stopped basing the menu placement on the bottom position.
 
         this.getDocument().body.removeChild(div)
         return coordinates

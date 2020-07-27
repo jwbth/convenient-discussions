@@ -35,6 +35,9 @@ class TributeMenuEvents {
       .addEventListener("mousedown", this.menuClickEvent, false);
     window.addEventListener("resize", this.windowResizeEvent);
 
+    // jwbth: Added this line to make the menu change its height if its lower border is off screen.
+    window.addEventListener("scroll", this.windowResizeEvent);
+
     if (this.menuContainer) {
       this.menuContainer.addEventListener(
         "scroll",
@@ -54,6 +57,9 @@ class TributeMenuEvents {
       .getDocument()
       .removeEventListener("MSPointerDown", this.menuClickEvent, false);
     window.removeEventListener("resize", this.windowResizeEvent);
+
+    // jwbth: Added this line, see above.
+    window.removeEventListener("scroll", this.windowResizeEvent);
 
     if (this.menuContainer) {
       this.menuContainer.removeEventListener(

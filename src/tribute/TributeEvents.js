@@ -4,15 +4,17 @@ class TributeEvents {
     this.tribute.events = this;
   }
 
+  /*
+    jwbth: Removed:
+    - "space" - it causes the menu not to change or hide when a space was typed;
+    - "delete" - it causes the menu not to appear when backspace is pressed and a character
+      preventing the menu to appear is removed (for example, ">" in "<small>").
+   */
   static keys() {
     return [
       {
         key: 9,
         value: "TAB"
-      },
-      {
-        key: 8,
-        value: "DELETE"
       },
       {
         key: 13,
@@ -21,10 +23,6 @@ class TributeEvents {
       {
         key: 27,
         value: "ESCAPE"
-      },
-      {
-        key: 32,
-        value: "SPACE"
       },
       {
         key: 38,
@@ -58,10 +56,8 @@ class TributeEvents {
   }
 
   keydown(instance, event) {
-    if (instance.shouldDeactivate(event)) {
-      instance.tribute.isActive = false;
-      instance.tribute.hideMenu();
-    }
+    // jwbth: Removed shouldDeactivate() fixing the disappearing of the menu when a part of a
+    // mention is typed and the user presses any command key.
 
     let element = this;
     instance.commandEvent = false;
@@ -80,6 +76,9 @@ class TributeEvents {
   }
 
   click(instance, event) {
+    // jwbth: Ignore other than left button clicks.
+    if (event.which !== 1) return;
+
     let tribute = instance.tribute;
     if (tribute.menu && tribute.menu.contains(event.target)) {
       let li = event.target;
@@ -88,7 +87,9 @@ class TributeEvents {
       while (li.nodeName.toLowerCase() !== "li") {
         li = li.parentNode;
         if (!li || li === tribute.menu) {
-          throw new Error("cannot find the <li> container for the click");
+          // jwbth: Replaced the error throw with return, as there is nothing wrong when a user
+          // clicks the scroll bar.
+          return;
         }
       }
       tribute.selectItemAtIndex(li.getAttribute("data-index"), event);
@@ -102,12 +103,23 @@ class TributeEvents {
   }
 
   keyup(instance, event) {
+    // jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
+    if (!instance.inputEvent && !instance.tribute.isActive) return;
+
     if (instance.inputEvent) {
       instance.inputEvent = false;
     }
     instance.updateSelection(this);
 
     if (event.keyCode === 27) return;
+
+    // jwbth: Added this block (search for `doDropMenu` for the explanation).
+    if (instance.tribute.doDropMenu) {
+      instance.tribute.isActive = false;
+      instance.tribute.hideMenu();
+      instance.tribute.doDropMenu = false;
+      return;
+    }
 
     if (!instance.tribute.allowSpaces && instance.tribute.hasTrailingSpace) {
       instance.tribute.hasTrailingSpace = false;
@@ -120,13 +132,9 @@ class TributeEvents {
       if (instance.tribute.autocompleteMode) {
         instance.callbacks().triggerChar(event, this, "");
       } else {
-        let keyCode = instance.getKeyCode(instance, this, event);
-
-        if (isNaN(keyCode) || !keyCode) return;
-
-        let trigger = instance.tribute.triggers().find(trigger => {
-          return trigger.charCodeAt(0) === keyCode;
-        });
+        // jwbth: Removed the block and made `trigger` be filled from `tribute.current.triggerChar`
+        // to account for triggers with the same first character.
+        let trigger = instance.tribute.current.triggerChar;
 
         if (typeof trigger !== "undefined") {
           instance.callbacks().triggerChar(event, this, trigger);
@@ -166,23 +174,7 @@ class TributeEvents {
     return false;
   }
 
-  getKeyCode(instance, el, event) {
-    let char;
-    let tribute = instance.tribute;
-    let info = tribute.range.getTriggerInfo(
-      false,
-      tribute.hasTrailingSpace,
-      true,
-      tribute.allowSpaces,
-      tribute.autocompleteMode
-    );
-
-    if (info) {
-      return info.mentionTriggerChar.charCodeAt(0);
-    } else {
-      return false;
-    }
-  }
+  // jwbth: Removed `getKeyCode` as it is redundant.
 
   updateSelection(el) {
     this.tribute.current.element = el;
@@ -198,10 +190,14 @@ class TributeEvents {
       this.tribute.current.selectedPath = info.mentionSelectedPath;
       this.tribute.current.mentionText = info.mentionText;
       this.tribute.current.selectedOffset = info.mentionSelectedOffset;
+
+      // jwbth: Added this line to use this property in `keyup()`.
+      this.tribute.current.triggerChar = info.mentionTriggerChar;
     }
   }
 
   callbacks() {
+    // jwbth: Removed `delete` and `space` keys from here, see `keys()`.
     return {
       triggerChar: (e, el, trigger) => {
         let tribute = this.tribute;
@@ -244,19 +240,6 @@ class TributeEvents {
         // choose first match
         this.callbacks().enter(e, el);
       },
-      space: (e, el) => {
-        if (this.tribute.isActive) {
-          if (this.tribute.spaceSelectsMatch) {
-            this.callbacks().enter(e, el);
-          } else if (!this.tribute.allowSpaces) {
-            e.stopPropagation();
-            setTimeout(() => {
-              this.tribute.hideMenu();
-              this.tribute.isActive = false;
-            }, 0);
-          }
-        }
-      },
       up: (e, el) => {
         // navigate up ul
         if (this.tribute.isActive && this.tribute.current.filteredItems) {
@@ -293,16 +276,6 @@ class TributeEvents {
           }
         }
       },
-      delete: (e, el) => {
-        if (
-          this.tribute.isActive &&
-          this.tribute.current.mentionText.length < 1
-        ) {
-          this.tribute.hideMenu();
-        } else if (this.tribute.isActive) {
-          this.tribute.showMenuFor(el);
-        }
-      }
     };
   }
 

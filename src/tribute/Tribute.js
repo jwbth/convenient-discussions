@@ -366,6 +366,10 @@ class Tribute {
         fragment.appendChild(li);
       });
       ul.appendChild(fragment);
+
+      // jwbth: Added this line to make the menu redrawn immediately, not wait the `setTimeout`'s
+      // callback.
+      this.range.positionMenuAtCaret(scrollTo);
     };
 
     if (typeof this.current.collection.values === "function") {
