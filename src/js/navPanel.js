@@ -47,6 +47,7 @@ let $commentFormButton;
  * @private
  */
 function setAlarmViaWorker(interval) {
+  if (Number.isNaN(Number(interval))) return;
   cd.g.worker.postMessage({
     type: 'setAlarm',
     interval,

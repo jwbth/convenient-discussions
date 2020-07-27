@@ -83,7 +83,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  CHECK_FOR_NEW_COMMENTS_INTERVAL: 15,
+  NEW_COMMENTS_CHECK_INTERVAL: 15,
 
   /**
    * Number of seconds between new comments checks when the tab is hidden.
@@ -91,7 +91,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL: 60,
+  BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL: 60,
 
   /**
    * Number of seconds in a day.
