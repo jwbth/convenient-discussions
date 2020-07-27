@@ -11,6 +11,7 @@ class Tribute {
     containerClass = "tribute-container",
     itemClass = "",
     trigger = "@",
+    autocompleteSeparator = null,
     selectTemplate = null,
     menuItemTemplate = null,
     lookup = "key",
@@ -26,6 +27,7 @@ class Tribute {
     menuItemLimit = null,
     menuShowMinLength = 0
   }) {
+    this.autocompleteSeparator = autocompleteSeparator;
     this.menuSelected = 0;
     this.current = {};
     this.inputEvent = false;
