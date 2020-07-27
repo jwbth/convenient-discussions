@@ -7,24 +7,10 @@ class TributeRange {
         this.tribute.range = this
     }
 
-    getDocument() {
-        let iframe
-        if (this.tribute.current.collection) {
-            iframe = this.tribute.current.collection.iframe
-        }
-
-        if (!iframe) {
-            return document
-        }
-
-        return iframe.contentWindow.document
-    }
-
     positionMenuAtCaret(scrollTo) {
-        let context = this.tribute.current,
-            coordinates
+        let coordinates
 
-        let info = this.getTriggerInfo(false, this.tribute.hasTrailingSpace, true, this.tribute.allowSpaces, this.tribute.autocompleteMode)
+        let info = this.getTriggerInfo(false, this.tribute.hasTrailingSpace, true, this.tribute.allowSpaces)
 
         if (typeof info !== 'undefined') {
 
@@ -33,13 +19,8 @@ class TributeRange {
                 return
             }
 
-            if (!this.isContentEditable(context.element)) {
-                coordinates = this.getTextAreaOrInputUnderlinePosition(this.tribute.current.element,
-                    info.mentionPosition)
-            }
-            else {
-                coordinates = this.getContentEditableCaretPosition(info.mentionPosition)
-            }
+            coordinates = this.getTextAreaOrInputUnderlinePosition(this.tribute.current.element,
+                info.mentionPosition)
 
             this.tribute.menu.style.cssText = (
                 `top: ${coordinates.top}px; ` +
@@ -96,23 +77,25 @@ class TributeRange {
                 }
             }
         }
-        let sel = this.getWindowSelection()
+        let sel = window.getSelection()
 
-        range = this.getDocument().createRange()
+        range = document.createRange()
         range.setStart(elem, offset)
         range.setEnd(elem, offset)
         range.collapse(true)
 
         try {
             sel.removeAllRanges()
-        } catch (error) {}
+        } catch (error) {
+            console.warn(error)
+        }
 
         sel.addRange(range)
         targetElement.focus()
     }
 
     replaceTriggerText(text, requireLeadingSpace, hasTrailingSpace, originalEvent, item) {
-        let info = this.getTriggerInfo(true, hasTrailingSpace, requireLeadingSpace, this.tribute.allowSpaces, this.tribute.autocompleteMode)
+        let info = this.getTriggerInfo(true, hasTrailingSpace, requireLeadingSpace, this.tribute.allowSpaces)
 
         if (info !== undefined) {
             let context = this.tribute.current
@@ -125,78 +108,28 @@ class TributeRange {
                 }
             })
 
-            if (!this.isContentEditable(context.element)) {
-                let myField = this.tribute.current.element
-                let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
-                    ? this.tribute.replaceTextSuffix
-                    : ' '
-                text += textSuffix
-                let startPos = info.mentionPosition
+            let myField = this.tribute.current.element
+            let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
+                ? this.tribute.replaceTextSuffix
+                : ' '
+            text += textSuffix
+            let startPos = info.mentionPosition
 
-                // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
-                // than 1.
-                let endPos = info.mentionPosition + info.mentionText.length
+            // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
+            // than 1.
+            let endPos = info.mentionPosition + info.mentionText.length
 
-                if (!this.tribute.autocompleteMode) {
-                    // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length
-                    // other than 1.
-                    endPos += info.mentionTriggerChar.length
-                }
-                myField.value = myField.value.substring(0, startPos) + text +
-                    myField.value.substring(endPos, myField.value.length)
-                myField.selectionStart = startPos + text.length
-                myField.selectionEnd = startPos + text.length
-            } else {
-                // add a space to the end of the pasted text
-                let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
-                    ? this.tribute.replaceTextSuffix
-                    : '\xA0'
-                text += textSuffix
-                let endPos = info.mentionPosition + info.mentionText.length
-                if (!this.tribute.autocompleteMode) {
-                    endPos += info.mentionTriggerChar.length
-                }
-                this.pasteHtml(text, info.mentionPosition, endPos)
-            }
+            // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
+            // than 1.
+            endPos += info.mentionTriggerChar.length
+            myField.value = myField.value.substring(0, startPos) + text +
+                myField.value.substring(endPos, myField.value.length)
+            myField.selectionStart = startPos + text.length
+            myField.selectionEnd = startPos + text.length
 
             context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
             context.element.dispatchEvent(replaceEvent)
         }
-    }
-
-    pasteHtml(html, startPos, endPos) {
-        let range, sel
-        sel = this.getWindowSelection()
-        range = this.getDocument().createRange()
-        range.setStart(sel.anchorNode, startPos)
-        range.setEnd(sel.anchorNode, endPos)
-        range.deleteContents()
-
-        let el = this.getDocument().createElement('div')
-        el.innerHTML = html
-        let frag = this.getDocument().createDocumentFragment(),
-            node, lastNode
-        while ((node = el.firstChild)) {
-            lastNode = frag.appendChild(node)
-        }
-        range.insertNode(frag)
-
-        // Preserve the selection
-        if (lastNode) {
-            range = range.cloneRange()
-            range.setStartAfter(lastNode)
-            range.collapse(true)
-            sel.removeAllRanges()
-            sel.addRange(range)
-        }
-    }
-
-    getWindowSelection() {
-        if (this.tribute.collection.iframe) {
-            return this.tribute.collection.iframe.contentWindow.getSelection()
-        }
-
-        return window.getSelection()
     }
 
     getNodePositionInParent(element) {
@@ -213,59 +146,14 @@ class TributeRange {
         }
     }
 
-    getContentEditableSelectedPath(ctx) {
-        let sel = this.getWindowSelection()
-        let selected = sel.anchorNode
-        let path = []
-        let offset
-
-        if (selected != null) {
-            let i
-            let ce = selected.contentEditable
-            while (selected !== null && ce !== 'true') {
-                i = this.getNodePositionInParent(selected)
-                path.push(i)
-                selected = selected.parentNode
-                if (selected !== null) {
-                    ce = selected.contentEditable
-                }
-            }
-            path.reverse()
-
-            // getRangeAt may not exist, need alternative
-            offset = sel.getRangeAt(0).startOffset
-
-            return {
-                selected: selected,
-                path: path,
-                offset: offset
-            }
-        }
-    }
-
     getTextPrecedingCurrentSelection() {
-        let context = this.tribute.current,
-            text = ''
+        let text = ''
 
-        if (!this.isContentEditable(context.element)) {
-            let textComponent = this.tribute.current.element;
-            if (textComponent) {
-                let startPos = textComponent.selectionStart
-                if (textComponent.value && startPos >= 0) {
-                    text = textComponent.value.substring(0, startPos)
-                }
-            }
-
-        } else {
-            let selectedElem = this.getWindowSelection().anchorNode
-
-            if (selectedElem != null) {
-                let workingNodeContent = selectedElem.textContent
-                let selectStartOffset = this.getWindowSelection().getRangeAt(0).startOffset
-
-                if (workingNodeContent && selectStartOffset >= 0) {
-                    text = workingNodeContent.substring(0, selectStartOffset)
-                }
+        let textComponent = this.tribute.current.element;
+        if (textComponent) {
+            let startPos = textComponent.selectionStart
+            if (textComponent.value && startPos >= 0) {
+                text = textComponent.value.substring(0, startPos)
             }
         }
 
@@ -279,34 +167,12 @@ class TributeRange {
         return wordsArray[worldsCount].trim()
     }
 
-    getTriggerInfo(menuAlreadyActive, hasTrailingSpace, requireLeadingSpace, allowSpaces, isAutocomplete) {
-        let ctx = this.tribute.current
+    getTriggerInfo(menuAlreadyActive, hasTrailingSpace, requireLeadingSpace, allowSpaces) {
         let selected, path, offset
 
-        if (!this.isContentEditable(ctx.element)) {
-            selected = this.tribute.current.element
-        } else {
-            let selectionInfo = this.getContentEditableSelectedPath(ctx)
-
-            if (selectionInfo) {
-                selected = selectionInfo.selected
-                path = selectionInfo.path
-                offset = selectionInfo.offset
-            }
-        }
+        selected = this.tribute.current.element
 
         let effectiveRange = this.getTextPrecedingCurrentSelection()
-        let lastWordOfEffectiveRange = this.getLastWordInText(effectiveRange)
-
-        if (isAutocomplete) {
-            return {
-                mentionPosition: effectiveRange.length - lastWordOfEffectiveRange.length,
-                mentionText: lastWordOfEffectiveRange,
-                mentionSelectedElement: selected,
-                mentionSelectedPath: path,
-                mentionSelectedOffset: offset
-            }
-        }
 
         if (effectiveRange !== undefined && effectiveRange !== null) {
             let mostRecentTriggerCharPos = -1
@@ -429,10 +295,6 @@ class TributeRange {
         return index
     }
 
-    isContentEditable(element) {
-        return element.nodeName !== 'INPUT' && element.nodeName !== 'TEXTAREA'
-    }
-
     isMenuOffScreen(coordinates, menuDimensions) {
         let windowWidth = window.innerWidth
         let windowHeight = window.innerHeight
@@ -475,7 +337,7 @@ class TributeRange {
        return dimensions
     }
 
-    getTextAreaOrInputUnderlinePosition(element, position, flipped) {
+    getTextAreaOrInputUnderlinePosition(element, position) {
         let properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX',
             'overflowY', 'borderTopWidth', 'borderRightWidth',
             'borderBottomWidth', 'borderLeftWidth', 'paddingTop',
@@ -488,9 +350,9 @@ class TributeRange {
 
         let isFirefox = (window.mozInnerScreenX !== null)
 
-        let div = this.getDocument().createElement('div')
+        let div = document.createElement('div')
         div.id = 'input-textarea-caret-position-mirror-div'
-        this.getDocument().body.appendChild(div)
+        document.body.appendChild(div)
 
         let style = div.style
         let computed = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle
@@ -523,7 +385,7 @@ class TributeRange {
             div.textContent = div.textContent.replace(/\s/g, ' ')
         }
 
-        let span = this.getDocument().createElement('span')
+        let span = document.createElement('span')
         span.textContent = element.value.substring(position) || '.'
         div.appendChild(span)
 
@@ -579,80 +441,11 @@ class TributeRange {
         // jwbth: Removed the `if (menuIsOffScreen.top)` block as it seems reduntant after we
         // stopped basing the menu placement on the bottom position.
 
-        this.getDocument().body.removeChild(div)
+        document.body.removeChild(div)
         return coordinates
     }
 
-    getContentEditableCaretPosition(selectedNodePosition) {
-        let range
-        let sel = this.getWindowSelection()
-
-        range = this.getDocument().createRange()
-        range.setStart(sel.anchorNode, selectedNodePosition)
-        range.setEnd(sel.anchorNode, selectedNodePosition)
-
-        range.collapse(false)
-
-        let rect = range.getBoundingClientRect()
-        let doc = document.documentElement
-        let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
-        let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
-
-        let left = rect.left
-        let top = rect.top
-
-        let coordinates = {
-            left: left + windowLeft,
-            top: top + rect.height + windowTop
-        }
-        let windowWidth = window.innerWidth
-        let windowHeight = window.innerHeight
-
-        let menuDimensions = this.getMenuDimensions()
-        let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
-
-        if (menuIsOffScreen.right) {
-            coordinates.left = 'auto'
-            coordinates.right = windowWidth - rect.left - windowLeft
-        }
-
-        let parentHeight = this.tribute.menuContainer
-            ? this.tribute.menuContainer.offsetHeight
-            : this.getDocument().body.offsetHeight
-
-        if (menuIsOffScreen.bottom) {
-            let parentRect = this.tribute.menuContainer
-                ? this.tribute.menuContainer.getBoundingClientRect()
-                : this.getDocument().body.getBoundingClientRect()
-            let scrollStillAvailable = parentHeight - (windowHeight - parentRect.top)
-
-            coordinates.top = 'auto'
-            coordinates.bottom = scrollStillAvailable + (windowHeight - rect.top)
-        }
-
-        menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
-        if (menuIsOffScreen.left) {
-            coordinates.left = windowWidth > menuDimensions.width
-                ? windowLeft + windowWidth - menuDimensions.width
-                : windowLeft
-            delete coordinates.right
-        }
-        if (menuIsOffScreen.top) {
-            coordinates.top = windowHeight > menuDimensions.height
-                ? windowTop + windowHeight - menuDimensions.height
-                : windowTop
-            delete coordinates.bottom
-        }
-
-        if (!this.menuContainerIsBody) {
-            coordinates.left = coordinates.left ? coordinates.left - this.tribute.menuContainer.offsetLeft : coordinates.left
-            coordinates.top = coordinates.top ? coordinates.top - this.tribute.menuContainer.offsetTop : coordinates.top
-        }
-
-        return coordinates
-    }
-
-    scrollIntoView(elem) {
+    scrollIntoView() {
         let reasonableBuffer = 20,
             clientRect
         let maxScrollDisplacement = 100

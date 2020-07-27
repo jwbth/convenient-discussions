@@ -5,7 +5,7 @@ class TributeMenuEvents {
     this.menu = this.tribute.menu;
   }
 
-  bind(menu) {
+  bind() {
     this.menuClickEvent = this.tribute.events.click.bind(null, this);
     this.menuContainerScrollEvent = this.debounce(
       () => {
@@ -27,12 +27,8 @@ class TributeMenuEvents {
     );
 
     // fixes IE11 issues with mousedown
-    this.tribute.range
-      .getDocument()
-      .addEventListener("MSPointerDown", this.menuClickEvent, false);
-    this.tribute.range
-      .getDocument()
-      .addEventListener("mousedown", this.menuClickEvent, false);
+    document.addEventListener("MSPointerDown", this.menuClickEvent, false);
+    document.addEventListener("mousedown", this.menuClickEvent, false);
     window.addEventListener("resize", this.windowResizeEvent);
 
     // jwbth: Added this line to make the menu change its height if its lower border is off screen.
@@ -49,13 +45,9 @@ class TributeMenuEvents {
     }
   }
 
-  unbind(menu) {
-    this.tribute.range
-      .getDocument()
-      .removeEventListener("mousedown", this.menuClickEvent, false);
-    this.tribute.range
-      .getDocument()
-      .removeEventListener("MSPointerDown", this.menuClickEvent, false);
+  unbind() {
+    document.removeEventListener("mousedown", this.menuClickEvent, false);
+    document.removeEventListener("MSPointerDown", this.menuClickEvent, false);
     window.removeEventListener("resize", this.windowResizeEvent);
 
     // jwbth: Added this line, see above.

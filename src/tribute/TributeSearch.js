@@ -5,27 +5,15 @@ class TributeSearch {
         this.tribute.search = this
     }
 
-    simpleFilter(pattern, array) {
-        return array.filter(string => {
-            return this.test(pattern, string)
-        })
-    }
-
     test(pattern, string) {
         return this.match(pattern, string) !== null
     }
 
     match(pattern, string, opts) {
         opts = opts || {}
-        let patternIdx = 0,
-            result = [],
-            len = string.length,
-            totalScore = 0,
-            currScore = 0,
-            pre = opts.pre || '',
+        let pre = opts.pre || '',
             post = opts.post || '',
-            compareString = opts.caseSensitive && string || string.toLowerCase(),
-            ch, compareChar
+            compareString = opts.caseSensitive && string || string.toLowerCase()
 
         if (opts.skip) {
             return {rendered: string, score: 0}
@@ -117,7 +105,7 @@ class TributeSearch {
     filter(pattern, arr, opts) {
         opts = opts || {}
         return arr
-            .reduce((prev, element, idx, arr) => {
+            .reduce((prev, element, idx) => {
                 let str = element
 
                 if (opts.extract) {

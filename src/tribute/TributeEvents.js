@@ -121,24 +121,13 @@ class TributeEvents {
       return;
     }
 
-    if (!instance.tribute.allowSpaces && instance.tribute.hasTrailingSpace) {
-      instance.tribute.hasTrailingSpace = false;
-      instance.commandEvent = true;
-      instance.callbacks()["space"](event, this);
-      return;
-    }
-
     if (!instance.tribute.isActive) {
-      if (instance.tribute.autocompleteMode) {
-        instance.callbacks().triggerChar(event, this, "");
-      } else {
-        // jwbth: Removed the block and made `trigger` be filled from `tribute.current.triggerChar`
-        // to account for triggers with the same first character.
-        let trigger = instance.tribute.current.triggerChar;
+      // jwbth: Removed the block and made `trigger` be filled from `tribute.current.triggerChar`
+      // to account for triggers with the same first character.
+      let trigger = instance.tribute.current.triggerChar;
 
-        if (typeof trigger !== "undefined") {
-          instance.callbacks().triggerChar(event, this, trigger);
-        }
+      if (typeof trigger !== "undefined") {
+        instance.callbacks().triggerChar(event, this, trigger);
       }
     }
 
@@ -150,9 +139,7 @@ class TributeEvents {
     }
 
     if (
-      ((instance.tribute.current.trigger ||
-        instance.tribute.autocompleteMode) &&
-        instance.commandEvent === false) ||
+      (instance.tribute.current.trigger && instance.commandEvent === false) ||
       (instance.tribute.isActive && event.keyCode === 8)
     ) {
       instance.tribute.showMenuFor(this, true);
@@ -178,13 +165,7 @@ class TributeEvents {
 
   updateSelection(el) {
     this.tribute.current.element = el;
-    let info = this.tribute.range.getTriggerInfo(
-      false,
-      this.tribute.hasTrailingSpace,
-      true,
-      this.tribute.allowSpaces,
-      this.tribute.autocompleteMode
-    );
+    let info = this.tribute.range.getTriggerInfo(false, this.tribute.hasTrailingSpace, true);
 
     if (info) {
       this.tribute.current.selectedPath = info.mentionSelectedPath;
@@ -217,7 +198,7 @@ class TributeEvents {
           tribute.showMenuFor(el, true);
         }
       },
-      enter: (e, el) => {
+      enter: (e) => {
         // choose selection
         if (this.tribute.isActive && this.tribute.current.filteredItems) {
           e.preventDefault();
@@ -228,7 +209,7 @@ class TributeEvents {
           }, 0);
         }
       },
-      escape: (e, el) => {
+      escape: (e) => {
         if (this.tribute.isActive) {
           e.preventDefault();
           e.stopPropagation();
@@ -240,7 +221,7 @@ class TributeEvents {
         // choose first match
         this.callbacks().enter(e, el);
       },
-      up: (e, el) => {
+      up: (e) => {
         // navigate up ul
         if (this.tribute.isActive && this.tribute.current.filteredItems) {
           e.preventDefault();
@@ -258,7 +239,7 @@ class TributeEvents {
           }
         }
       },
-      down: (e, el) => {
+      down: (e) => {
         // navigate down ul
         if (this.tribute.isActive && this.tribute.current.filteredItems) {
           e.preventDefault();

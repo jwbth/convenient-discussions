@@ -7,12 +7,10 @@ import TributeSearch from "./TributeSearch";
 class Tribute {
   constructor({
     values = null,
-    iframe = null,
     selectClass = "highlight",
     containerClass = "tribute-container",
     itemClass = "",
     trigger = "@",
-    autocompleteMode = false,
     selectTemplate = null,
     menuItemTemplate = null,
     lookup = "key",
@@ -24,12 +22,10 @@ class Tribute {
     allowSpaces = false,
     replaceTextSuffix = null,
     positionMenu = true,
-    spaceSelectsMatch = false,
     searchOpts = {},
     menuItemLimit = null,
     menuShowMinLength = 0
   }) {
-    this.autocompleteMode = autocompleteMode;
     this.menuSelected = 0;
     this.current = {};
     this.inputEvent = false;
@@ -39,21 +35,12 @@ class Tribute {
     this.replaceTextSuffix = replaceTextSuffix;
     this.positionMenu = positionMenu;
     this.hasTrailingSpace = false;
-    this.spaceSelectsMatch = spaceSelectsMatch;
-
-    if (this.autocompleteMode) {
-      trigger = "";
-      allowSpaces = false;
-    }
 
     if (values) {
       this.collection = [
         {
           // symbol that starts the lookup
           trigger: trigger,
-
-          // is it wrapped in an iframe
-          iframe: iframe,
 
           // class applied to selected item
           selectClass: selectClass,
@@ -111,14 +98,9 @@ class Tribute {
         }
       ];
     } else if (collection) {
-      if (this.autocompleteMode)
-        console.warn(
-          "Tribute in autocomplete mode does not work for collections"
-        );
       this.collection = collection.map(item => {
         return {
           trigger: item.trigger || trigger,
-          iframe: item.iframe || iframe,
           selectClass: item.selectClass || selectClass,
           containerClass: item.containerClass || containerClass,
           itemClass: item.itemClass || itemClass,
@@ -181,14 +163,6 @@ class Tribute {
   static defaultSelectTemplate(item) {
     if (typeof item === "undefined")
       return `${this.current.collection.trigger}${this.current.mentionText}`;
-    if (this.range.isContentEditable(this.current.element)) {
-      return (
-        '<span class="tribute-mention">' +
-        (this.current.collection.trigger +
-          item.original[this.current.collection.fillAttr]) +
-        "</span>"
-      );
-    }
 
     return (
       this.current.collection.trigger +
@@ -240,24 +214,13 @@ class Tribute {
       console.warn("Tribute was already bound to " + el.nodeName);
     }
 
-    this.ensureEditable(el);
     this.events.bind(el);
     el.setAttribute("data-tribute", true);
   }
 
-  ensureEditable(element) {
-    if (Tribute.inputTypes().indexOf(element.nodeName) === -1) {
-      if (element.contentEditable) {
-        element.contentEditable = true;
-      } else {
-        throw new Error("[Tribute] Cannot bind to " + element.nodeName);
-      }
-    }
-  }
-
   createMenu(containerClass) {
-    let wrapper = this.range.getDocument().createElement("div"),
-      ul = this.range.getDocument().createElement("ul");
+    let wrapper = document.createElement("div"),
+      ul = document.createElement("ul");
     wrapper.className = containerClass;
     wrapper.appendChild(ul);
 
@@ -265,7 +228,7 @@ class Tribute {
       return this.menuContainer.appendChild(wrapper);
     }
 
-    return this.range.getDocument().body.appendChild(wrapper);
+    return document.body.appendChild(wrapper);
   }
 
   showMenuFor(element, scrollTo) {
@@ -347,14 +310,14 @@ class Tribute {
       }
 
       ul.innerHTML = "";
-      let fragment = this.range.getDocument().createDocumentFragment();
+      let fragment = document.createDocumentFragment();
 
       items.forEach((item, index) => {
-        let li = this.range.getDocument().createElement("li");
+        let li = document.createElement("li");
         li.setAttribute("data-index", index);
         li.className = this.current.collection.itemClass;
         li.addEventListener("mousemove", e => {
-          let [li, index] = this._findLiTarget(e.target);
+          let [, index] = this._findLiTarget(e.target);
           if (e.movementY !== 0) {
             this.events.setActiveLi(index);
           }
@@ -394,9 +357,7 @@ class Tribute {
     this.current.externalTrigger = true;
     this.current.element = element;
 
-    if (element.isContentEditable)
-      this.insertTextAtCursor(this.current.collection.trigger);
-    else this.insertAtCaret(element, this.current.collection.trigger);
+    this.insertAtCaret(element, this.current.collection.trigger);
 
     this.showMenuFor(element);
   }
@@ -422,21 +383,6 @@ class Tribute {
     }
   }
 
-  // for contenteditable
-  insertTextAtCursor(text) {
-    var sel, range, html;
-    sel = window.getSelection();
-    range = sel.getRangeAt(0);
-    range.deleteContents();
-    var textNode = document.createTextNode(text);
-    range.insertNode(textNode);
-    range.selectNodeContents(textNode);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
-
-  // for regular inputs
   insertAtCaret(textarea, text) {
     var scrollPos = textarea.scrollTop;
     var caretPos = textarea.selectionStart;

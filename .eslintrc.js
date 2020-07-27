@@ -14,6 +14,7 @@ module.exports = {
     "OO": "readonly",
     "Tribute": "readonly",
     "convenientDiscussions": "readonly",
+    "jQuery": "readonly",
     "mw": "readonly",
     "require": "readonly",
   },
