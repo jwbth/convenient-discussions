@@ -49,6 +49,7 @@ export default {
       if (
         (
           removeUnhighlighted ||
+
           // Layers that ended up under the bottom of the page content and could be moving the page
           // bottom down.
           (comment.positions && comment.positions.bottom > rootBottom)
@@ -68,9 +69,13 @@ export default {
           comments.push(comment);
         } else if (
           isMoved === false &&
-          // Nested containers shouldn't count, the positions of the layers inside them may be OK,
-          // unlike the layers preceding them.
-          !comment.getLayersContainer().closest('.cd-commentLayersContainer')
+
+          // Nested containers shouldn't count, the positions of layers inside them may be OK,
+          // unlike layers preceding them.
+          !comment.getLayersContainer()
+            .closest('.cd-commentLayersContainer')
+            .parentNode
+            .closest('.cd-commentLayersContainer')
         ) {
           notMovedCount++;
           if (notMovedCount === 2) {
@@ -78,6 +83,7 @@ export default {
           }
         }
       }
+      return false;
     });
 
     // It's faster to update the positions separately in one sequence.
