@@ -165,7 +165,7 @@ class TributeEvents {
 
   updateSelection(el) {
     this.tribute.current.element = el;
-    let info = this.tribute.range.getTriggerInfo(false, this.tribute.hasTrailingSpace, true);
+    let info = this.tribute.range.getTriggerInfo(false, this.tribute.hasTrailingSpace, true, this.tribute.allowSpaces);
 
     if (info) {
       this.tribute.current.selectedPath = info.mentionSelectedPath;
