@@ -4,7 +4,7 @@
  * @module autocomplete
  */
 
-import Tribute from '../tribute';
+import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import {
   defined,
@@ -44,7 +44,7 @@ export default class Autocomplete {
   constructor({ types, inputs, comments, defaultUserNames }) {
     const collections = this.getCollections(types, comments, defaultUserNames);
 
-    require('../../misc/tribute.css');
+    require('../tribute/tribute.less');
 
     /**
      * {@link https://github.com/zurb/tribute Tribute} object.
