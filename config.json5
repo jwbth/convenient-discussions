@@ -1,0 +1,29 @@
+{
+  protocol: 'https',
+  server: 'commons.wikimedia.org',
+
+  // No ending slash, as in `mw.config.get('wgScriptPath')`
+  scriptPath: '/w',
+
+  // With a placeholder, as in `mw.config.get('wgArticlePath')`
+  articlePath: '/wiki/$1',
+
+  // Prefix for wiki page names for the script files. Should end with "/".
+  rootPath: 'User:Jack who built the house/',
+
+  // First file in the arrays is considered the main file. Commit subjects are added to the edit
+  // summary only for this file.
+  distFiles: {
+    default: [
+      'convenientDiscussions.js',
+      'convenientDiscussions.js.LICENSE.txt',
+      'convenientDiscussions.js.map.js',
+      'worker.js.map.js',
+    ],
+    dev: [
+      'convenientDiscussions-dev.js',
+      'convenientDiscussions-dev.js.map.js',
+      'worker-dev.js.map.js',
+    ],
+  },
+}
