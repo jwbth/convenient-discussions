@@ -3,9 +3,9 @@ const path = require('path');
 
 const argv = require('yargs').argv;
 
-// node buildConfigs --test
-// npm run <command running this script> --test
-const testSuffix = (argv.test || process.env.npm_config_test) ? '-test' : '';
+// node buildConfigs --dev
+// npm run <command running this script> --dev
+const devSuffix = (argv.dev || process.env.npm_config_dev) ? '-dev' : '';
 
 const configs = [];
 fs.readdirSync('./config/').forEach((file) => {
@@ -75,7 +75,7 @@ function getStrings() {
 
 if (!cdLoaded) {
   convenientDiscussions.getStringsPromise = getStrings();
-  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${testSuffix}.js&action=raw&ctype=text/javascript')
+  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${devSuffix}.js&action=raw&ctype=text/javascript')
     .catch((e) => {
       console.warn('Couldn\\'t load Convenient Discussions.', e);
     });
@@ -84,7 +84,7 @@ if (!cdLoaded) {
 }());
 `;
   fs.mkdirSync('dist/config', { recursive: true });
-  fs.writeFileSync(`dist/config/${config.name}${testSuffix}.js`, data);
+  fs.writeFileSync(`dist/config/${config.name}${devSuffix}.js`, data);
 });
 
 console.log('Configs have been built successfully.');
