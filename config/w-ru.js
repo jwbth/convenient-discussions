@@ -68,6 +68,7 @@ export default {
 
   pageWhiteList: [
     /^Википедия:.* запросы/,
+    /^Википедия:Выборы арбитров\//,
     /^Википедия:Голосования\//,
     /^Википедия:Запросы/,
     /^Википедия:Заявки на /,
@@ -104,7 +105,9 @@ export default {
     /^Проект:Социальная ответственность\/Форум/,
   ],
 
-  pageBlackList: [],
+  pageBlackList: [
+    /^Википедия:Выборы арбитров\/.+\/Голосование\//,
+  ],
 
   archivePaths: [
     {
@@ -319,8 +322,8 @@ export default {
 const cd = convenientDiscussions;
 
 mw.hook('convenientDiscussions.beforeParse').add(() => {
-  // Handle {{-vote}} template by making pseudo-minus-1-level comments real ones. We split the
-  // parent list tag into two parts putting the comment in between.
+  // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
+  // the parent list tag into two parts putting the comment in between.
   $('.ruwiki-commentIndentation-minus1level').each(function () {
     const $current = $(this).css('margin', 0);
     const $list = $current.parent('dd, li').parent('dl, ol, ul');
