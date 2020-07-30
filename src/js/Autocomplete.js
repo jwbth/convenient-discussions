@@ -557,7 +557,7 @@ export default class Autocomplete {
         'caption',
         'cite',
         'code',
-        ['codenowiki', '<code><nowiki>+</nowiki></code>'],
+        ['codenowiki', '<code><nowiki>+</'.concat('nowiki></code>')],
         'data',
         'dd',
         'del',
