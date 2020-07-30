@@ -18,7 +18,15 @@ module.exports = {
     "mw": "readonly",
     "require": "readonly",
   },
-  "ignorePatterns": ["dist/**", "misc/**"],
+  "ignorePatterns": ["dist/**", "misc/**", "*.json5"],
+  "overrides": [
+    {
+      "files": ["./*.js"],
+      "rules": {
+        "jsdoc/require-jsdoc": "off"
+      }
+    }
+  ],
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 2018,
@@ -29,28 +37,28 @@ module.exports = {
     "jsdoc",
   ],
   "rules": {
-    "jsdoc/check-alignment": 1,
-    "jsdoc/check-param-names": 1,
-    "jsdoc/check-tag-names": 1,
-    "jsdoc/check-types": 1,
-    "jsdoc/implements-on-classes": 1,
-    "jsdoc/newline-after-description": 1,
-    "jsdoc/no-undefined-types": 1,
-    "jsdoc/require-jsdoc": 1,
-    "jsdoc/require-param": 1,
-    // "jsdoc/require-param-description": 1,
-    "jsdoc/require-param-name": 1,
-    "jsdoc/require-param-type": 1,
-    "jsdoc/require-returns": 1,
-    "jsdoc/require-returns-check": 1,
-    // "jsdoc/require-returns-description": 1,
-    "jsdoc/require-returns-type": 1,
-    "jsdoc/valid-types": 1,
+    "jsdoc/check-alignment": "warn",
+    "jsdoc/check-param-names": "warn",
+    "jsdoc/check-tag-names": "warn",
+    "jsdoc/check-types": "warn",
+    "jsdoc/implements-on-classes": "warn",
+    "jsdoc/newline-after-description": "warn",
+    "jsdoc/no-undefined-types": "warn",
+    "jsdoc/require-jsdoc": "warn",
+    "jsdoc/require-param": "warn",
+    // "jsdoc/require-param-description": "warn",
+    "jsdoc/require-param-name": "warn",
+    "jsdoc/require-param-type": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/require-returns-check": "warn",
+    // "jsdoc/require-returns-description": "warn",
+    "jsdoc/require-returns-type": "warn",
+    "jsdoc/valid-types": "warn",
     "no-constant-condition": ["error", { "checkLoops": false }],
     "no-control-regex": "off",
     "no-unused-vars": ["error", { "args": "after-used" }],
     "require-atomic-updates": "off",
-    "sort-imports-es6-autofix/sort-imports-es6": [2, {
+    "sort-imports-es6-autofix/sort-imports-es6": ["warn", {
       "ignoreCase": false,
       "ignoreMemberSort": false,
       "memberSyntaxSortOrder": ["none", "all", "single", "multiple"],
