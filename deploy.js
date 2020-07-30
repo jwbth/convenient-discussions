@@ -12,6 +12,7 @@ const config = require('./config.json5');
 
 const warning = (text) => console.log(chalk.yellowBright(text));
 const error = (text) => console.log(chalk.red(text));
+const success = chalk.green;
 const code = chalk.inverse;
 const keyword = chalk.cyan;
 
@@ -47,7 +48,7 @@ const client = new Mw({
 let branch;
 let commits;
 let newCommitsSubjects = [];
-let editData = [];
+let edits = [];
 
 exec('git rev-parse --abbrev-ref HEAD && git log -15 --pretty=format:"%h %s"', parseCmdOutput);
 
@@ -73,27 +74,31 @@ function parseCmdOutput(err, stdout, stderr) {
 }
 
 function requestComments() {
-  client.api.call({
-    action: 'query',
-    titles: config.rootPath + files[0],
-    prop: 'revisions',
-    rvprop: ['comment'],
-    rvlimit: 50,
-    formatversion: 2,
-  }, getLastDeployedCommit);
+  client.api.call(
+    {
+      action: 'query',
+      titles: config.rootPath + files[0],
+      prop: 'revisions',
+      rvprop: ['comment'],
+      rvlimit: 50,
+      formatversion: 2,
+    },
+    (e, info) => {
+      if (e) {
+        error(e);
+        return;
+      }
+      const revisions = info?.pages?.[0]?.revisions || [];
+      if (revisions.length || info?.pages?.[0]?.missing) {
+        getLastDeployedCommit(revisions);
+      } else {
+        console.log('Couldn\'t load the revisions data.');
+      }
+    }
+  );
 }
 
-function getLastDeployedCommit(e, info) {
-  if (e) {
-    error(e);
-    return;
-  }
-  const revisions = info?.pages?.[0]?.revisions || [];
-  if (!revisions.length && !info?.pages?.[0]?.missing) {
-    console.log('Couldn\'t load the revisions data.');
-    return;
-  }
-
+function getLastDeployedCommit(revisions) {
   let lastDeployedCommit;
   revisions.some((revision) => {
     lastDeployedCommit = revision.comment.match(/\b[0-9a-f]{7}(?= @)/);
@@ -106,10 +111,10 @@ function getLastDeployedCommit(e, info) {
       .map((commit) => commit.subject);
   }
 
-  prepareEditData();
+  prepareEdits();
 }
 
-async function prepareEditData() {
+async function prepareEdits() {
   files.forEach((file, i) => {
     let content;
     content = fs.readFileSync(`./dist/${file}`).toString();
@@ -137,14 +142,14 @@ async function prepareEditData() {
       summary += '. ' + newCommitsSubjects.join('. ');
     }
 
-    editData.push({
+    edits.push({
       title: config.rootPath + file,
       content: content.slice(0, 300) + (content.length > 300 ? '...' : ''),
       summary,
     });
   });
 
-  const overview = editData
+  const overview = edits
     .map((edit) => `${keyword('Page:')} ${edit.title}\n${keyword('Edit summary:')} ${edit.summary}\n${keyword('Content:')} ${code(edit.content)}\n`)
     .join('\n');
   console.log(`\n${'Gonna make these edits:'}\n\n${overview}`);
@@ -192,11 +197,20 @@ async function logIn() {
 }
 
 function deploy() {
-  // client.edit(editData.title, editData.content, editData.summary, (e, info, next, data) => {
-  //   if (e) {
-  //     error(e);
-  //     return;
-  //   }
-  //   console.log(info, data);
-  // });
+  editNext();
+}
+
+function editNext() {
+  const edit = edits.shift();
+  if (edit) {
+    client.edit(edit.title, edit.content, edit.summary, (e, info, next, data) => {
+      if (e) {
+        error(e);
+        return;
+      }
+      console.log(info, data);
+    });
+  } else {
+    success('The files have been successfully deployed.');
+  }
 }
