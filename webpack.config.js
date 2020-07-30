@@ -4,11 +4,15 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier');
 const argv = require('yargs').argv;
+require('json5/lib/register.js');
+
+const config = require('./config.json5');
 
 const lang = process.env.npm_config_lang || 'ru';
 const project = process.env.npm_config_project || 'w';
 const snippet = Boolean(argv.snippet || process.env.npm_config_snippet);
 const dev = Boolean(process.env.npm_config_dev);
+
 const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
 const fullCode = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
 
@@ -18,6 +22,13 @@ if (snippet) {
 } else if (dev) {
   fileNamePostfix = '-dev';
 }
+
+if (!config.protocol || !config.server || !config.rootPath || !config.articlePath) {
+  throw new Error('No protocol/server/root path/article path found in config.json5.');
+}
+
+const pathname = config.articlePath.replace('$1', config.rootPath);
+const rootUrl = `${config.protocol}://${config.server}${pathname}`;
 
 module.exports = {
   mode: snippet ? 'development' : 'production',
@@ -90,7 +101,10 @@ module.exports = {
             reserved: ['cd'],
           },
         },
-        extractComments: false,
+        extractComments: !dev && {
+          filename: (fileData) => `${fileData.filename}.LICENSE`,
+          banner: (licenseFile) => `For license information please see ${rootUrl}${licenseFile}`,
+        },
         sourceMap: !snippet,
       }),
     ],
