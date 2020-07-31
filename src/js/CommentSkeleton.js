@@ -235,9 +235,44 @@ export default class CommentSkeleton {
   }
 
   /**
+   * Get all replies to the comment.
    *
+   * @returns {CommentSkeleton[]}
    */
+  getReplies() {
+    if (this.id === cd.comments.length - 1) {
+      return [];
     }
 
+    if (cd.g.specialElements.pageHasOutdents) {
+      const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
+      while (
+        treeWalker.nextNode() &&
+        !treeWalker.currentNode.classList.contains('cd-commentPart')
+      ) {
+        if (treeWalker.currentNode.classList.contains('outdent-template')) {
+          return [cd.comments[this.id + 1]];
+        }
+      }
+    }
+
+    const replies = [];
+    cd.comments
+      .slice(this.id + 1)
+      .some((otherComment) => {
+        if (otherComment.getSection() === this.getSection() && otherComment.level > this.level) {
+          if (
+            otherComment.level === this.level + 1 ||
+            // Comments mistakenly indented more than one level
+            otherComment.id === this.id + 1
+          ) {
+            replies.push(otherComment);
+          }
+        } else {
+          return true;
+        }
+      });
+
+    return replies;
   }
 }

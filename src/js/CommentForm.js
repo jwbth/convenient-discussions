@@ -740,42 +740,30 @@ export default class CommentForm {
       });
     }
 
-    if (
-      this.mode === 'edit' &&
-      (
-        !this.target.isOpeningSection ||
-        (this.target.section && this.target.section.comments.length === 1)
-      )
-    ) {
-      const hasReplies = !this.target.isOpeningSection ?
-        !this.target.section || this.target.section.comments
-          .slice(this.target.section.comments.indexOf(this.target))
-          .some((comment) => comment.parent === this.target) :
-        undefined;
-      if (this.target.isOpeningSection || !hasReplies) {
-        const selected = dataToRestore ? dataToRestore.delete : false;
-        /**
-         * Delete checkbox field.
-         *
-         * @name deleteField
-         * @type {OoUiFieldLayout}
-         * @instance module:CommentForm
-         */
+    if (this.mode === 'edit' && !this.target.getReplies().length) {
+      const selected = dataToRestore ? dataToRestore.delete : false;
 
-        /**
-         * Delete checkbox.
-         *
-         * @name deleteCheckbox
-         * @type {OoUiCheckboxInputWidget}
-         * @instance module:CommentForm
-         */
-        [this.deleteField, this.deleteCheckbox] = checkboxField({
-          value: 'delete',
-          selected,
-          label: cd.s('cf-delete'),
-          tabIndex: String(this.id) + '26',
-        });
-      }
+      /**
+       * Delete checkbox field.
+       *
+       * @name deleteField
+       * @type {OoUiFieldLayout}
+       * @instance module:CommentForm
+       */
+
+      /**
+       * Delete checkbox.
+       *
+       * @name deleteCheckbox
+       * @type {OoUiCheckboxInputWidget}
+       * @instance module:CommentForm
+       */
+      [this.deleteField, this.deleteCheckbox] = checkboxField({
+        value: 'delete',
+        selected,
+        label: cd.s('cf-delete'),
+        tabIndex: String(this.id) + '26',
+      });
     }
 
     /**

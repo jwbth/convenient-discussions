@@ -103,47 +103,15 @@ function parse() {
     }
   });
 
-  cd.comments.forEach((comment, i) => {
-    // Determine which comments reply to which.
-    if (i !== cd.comments.length - 1) {
-      if (cd.g.specialElements.pageHasOutdents) {
-        const treeWalker = new ElementsTreeWalker(comment.elements[comment.elements.length - 1]);
-        let found;
-        while (
-          !found &&
-          treeWalker.nextNode() &&
-          !treeWalker.currentNode.classList.contains('cd-commentPart')
-        ) {
-          found = treeWalker.currentNode.classList.contains('outdent-template');
-        }
-        if (found) {
-          cd.comments[comment.id + 1].targetComment = comment;
-        }
-      }
-
-      if (cd.comments[comment.id + 1].targetComment !== comment) {
-        cd.comments
-          .slice(comment.id + 1)
-          .some((otherComment) => {
-            if (otherComment.section === comment.section && otherComment.level > comment.level) {
-              if (
-                otherComment.level === comment.level + 1 ||
-                // Comments mistakenly indented more than one level
-                otherComment.id === comment.id + 1
-              ) {
-                otherComment.targetComment = comment;
-              }
-            } else {
-              return true;
-            }
-          });
-      }
-    }
-
-    if (comment.section) {
-      comment.sectionHeadline = comment.section.headline;
-      comment.sectionAnchor = comment.section.anchor;
-      delete comment.section;
+  cd.debug.startTimer('identifying replies');
+  cd.comments.forEach((comment) => {
+    comment.getReplies().forEach((reply) => {
+      reply.targetComment = comment;
+    });
+    if (comment.getSection()) {
+      comment.sectionHeadline = comment.getSection().headline;
+      comment.sectionAnchor = comment.getSection().anchor;
+      delete comment.getSection;
     }
     if (comment.targetComment) {
       comment.targetCommentAuthorName = comment.targetComment.authorName;
@@ -157,6 +125,7 @@ function parse() {
     delete comment.setLevels;
     delete comment.getSection;
   });
+  cd.debug.stopTimer('identifying replies');
 
   cd.debug.stopTimer('processing sections');
   cd.debug.startTimer('post message from the worker');
