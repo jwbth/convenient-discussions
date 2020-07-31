@@ -100,12 +100,12 @@ export function normalizeCode(text) {
 export function encodeWikilink(link) {
   return link
     // Tags
-    .replace(/<(\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)|\/\w+(?: \w+)? ?)>/g, '&lt;$1&gt;')
-    .replace(/\[/g, '&#91;')
-    .replace(/\]/g, '&#93;')
-    .replace(/\{/g, '&#123;')
-    .replace(/\|/g, '&#124;')
-    .replace(/\}/g, '&#125;')
+    .replace(/<(\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)|\/\w+(?: \w+)? ?)>/g, '%3C$1%3E')
+    .replace(/\[/g, '%5B')
+    .replace(/\]/g, '%5D')
+    .replace(/\{/g, '%7B')
+    .replace(/\|/g, '%7C')
+    .replace(/\}/g, '%7D')
     .replace(/\s+/g, ' ');
 }
 

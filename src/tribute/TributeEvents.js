@@ -113,8 +113,14 @@ class TributeEvents {
 
     if (event.keyCode === 27) return;
 
+    if (!instance.tribute.allowSpaces && instance.tribute.hasTrailingSpace) {
+      instance.tribute.hasTrailingSpace = false;
+      instance.commandEvent = true;
+      return;
+    }
+
     // jwbth: Added this block (search for `doDropMenu` for the explanation).
-    if (instance.tribute.doDropMenu) {
+    if (instance.tribute.doDropMenu || instance.tribute.current.mentionText === undefined) {
       instance.tribute.isActive = false;
       instance.tribute.hideMenu();
       instance.tribute.doDropMenu = false;
