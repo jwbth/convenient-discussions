@@ -231,18 +231,25 @@ export default class Autocomplete {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
             let values = [];
+            const isInterwiki = /^:/.test(text) || /^[a-z]\w*:/.test(text);
             const makeRequest = (
               text &&
               text.length <= 255 &&
-              !/[#<>[\]|{}]/.test(text) &&
-              (!/^:/.test(text) || cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) &&
+
               // 10 spaces in a page name seems too many.
-              (text.match(spacesRegexp) || []).length <= 9
+              (text.match(spacesRegexp) || []).length <= 9 &&
+
+              // Forbidden characters
+              !/[#<>[\]|{}]/.test(text) &&
+
+              // Interwikis
+              (!isInterwiki || cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text))
             );
             if (makeRequest) {
               values.push(...this.wikilinks.cache);
               values = Autocomplete.search(text, values);
-
+            }
+            if (makeRequest || isInterwiki) {
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
             }
