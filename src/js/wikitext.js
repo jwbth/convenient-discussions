@@ -98,8 +98,8 @@ export function normalizeCode(text) {
  */
 export function encodeWikilink(link) {
   return link
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+    // Tags
+    .replace(/<(\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)|\/\w+(?: \w+)? ?)>/g, '&lt;$1&gt;')
     .replace(/\[/g, '&#91;')
     .replace(/\]/g, '&#93;')
     .replace(/\{/g, '&#123;')
