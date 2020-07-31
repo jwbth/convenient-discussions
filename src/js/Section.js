@@ -1453,16 +1453,19 @@ export default class Section extends SectionSkeleton {
    * Get the collection of the section's subsections.
    *
    * @name subsections
+   * @param {boolean} [allLevels=false] Whether to include subsections of subsections and so on.
    * @type {Section[]}
    * @instance module:Section
    */
-  getSubsections() {
+  getSubsections(allLevels = false) {
     const subsections = [];
     cd.sections
       .slice(this.id + 1)
       .some((section) => {
         if (section.level > this.level) {
-          subsections.push(section);
+          if (allLevels || section.level === this.level + 1) {
+            subsections.push(section);
+          }
         } else {
           return true;
         }
@@ -1712,7 +1715,7 @@ export default class Section extends SectionSkeleton {
       .filter((section) => section.actionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
-        const subsections = section.getSubsections();
+        const subsections = section.getSubsections(true);
         const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
         if (targetSection.$replyButtonLink) {
           targetSection.$replyButtonLink
