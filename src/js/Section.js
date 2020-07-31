@@ -1030,7 +1030,7 @@ export default class Section extends SectionSkeleton {
             $link.removeClass('cd-sectionLink-pending');
           }
         },
-        watchedAncestorHeadline: watchedAncestor && watchedAncestor.headline,
+        watchedAncestorHeadline: watchedAncestor?.headline,
       }
     );
   }

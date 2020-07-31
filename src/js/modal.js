@@ -676,7 +676,7 @@ export async function settingsDialog() {
         const hidden = [];
         value = hideText(value, /\\[+;\\]/g, hidden);
         let [, text, displayedText] = value.match(/^(.*?)(?:;(.+))?$/) || [];
-        if (!text || !text.replace(/^ +$/, '')) return;
+        if (!text?.replace(/^ +$/, '')) return;
         text = unhideText(text, hidden);
         displayedText = displayedText && unhideText(displayedText, hidden);
         return [text, displayedText].filter(defined);

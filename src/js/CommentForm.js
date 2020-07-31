@@ -2491,10 +2491,7 @@ export default class CommentForm {
       {
         condition: (
           !this.commentInput.getValue().trim() &&
-          (
-            !cd.config.noConfirmPostEmptyCommentPageRegexp ||
-            !cd.config.noConfirmPostEmptyCommentPageRegexp.test(cd.g.CURRENT_PAGE.name)
-          )
+          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.CURRENT_PAGE.name)
         ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
       },

@@ -135,10 +135,7 @@ export default class Page {
     let result = $('.cd-archivingInfo').data('canHaveArchives');
     if (result === undefined) {
       const name = this.realName || this.name;
-      result = (
-        !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP ||
-        !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(name)
-      );
+      result = !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP?.test(name);
     }
     return Boolean(result);
   }

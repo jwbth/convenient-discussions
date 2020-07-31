@@ -787,7 +787,7 @@ function restoreCommentFormsFromData(commentFormsData) {
     const property = CommentForm.modeToProperty(data.mode);
     if (data?.targetData.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
-      if (comment && comment.actionable && !comment[`${property}Form`]) {
+      if (comment?.actionable && !comment[`${property}Form`]) {
         try {
           comment[property](data);
           restored = true;
