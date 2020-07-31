@@ -70,10 +70,11 @@ export function removeWikiMarkup(code) {
     .replace(/''(.+?)''/g, '$1')
     // Replace <br> with a space
     .replace(/<br ?\/?>/g, ' ')
-    // Remove opening tags (won't work with <smth param=">">, but wikiparser fails too)
-    .replace(/<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>/g, '')
+    // Remove opening tags (won't work with <smth param=">">, but wikiparser fails too). This
+    // includes tags containing spaces, like <math chem>.
+    .replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>/g, '')
     // Remove closing tags
-    .replace(/<\/\w+ ?>/g, '')
+    .replace(/<\/\w+(?: \w+)? ?>/g, '')
     // Replace multiple spaces with one space
     .replace(/ {2,}/g, ' ')
     .trim();
