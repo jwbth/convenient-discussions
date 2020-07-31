@@ -162,7 +162,6 @@ export default class CommentForm {
 
         this.target.getCode(true).then(
           () => {
-            this.closeOperation(currentOperation);
             let commentText = this.target.codeToText();
             const headline = this.target.inCode.headlineCode;
             if (this.target.inCode.inSmallFont) {
@@ -176,6 +175,9 @@ export default class CommentForm {
             }
             this.commentInput.focus();
             saveSession();
+
+            this.closeOperation(currentOperation);
+            this.preview();
           },
           (e) => {
             if (e instanceof CdError) {
