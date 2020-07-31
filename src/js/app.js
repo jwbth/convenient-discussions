@@ -139,17 +139,20 @@ function go() {
     }
   }
 
-  // Go
+  // Process the page as a talk page
   if (
     mw.config.get('wgIsArticle') &&
     (
       isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
       $('#ca-addsection').length ||
+
       // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
       // method, there won't be "comment" links for edits on pages that list revisions such as the
       // watchlist.
-      cd.g.$content.find('.cd-talkPage').length
+      cd.g.$content.find('.cd-talkPage').length ||
+
+      /[?&]cdTalkPage=(1|true|yes|y)(?=&|$)/.test(location.search)
     )
   ) {
     cd.g.firstRun = true;
@@ -245,8 +248,19 @@ function go() {
     require('../less/navPanel.less');
     require('../less/skin.less');
     require('../less/talkPage.less');
+  } else {
+    const url = new URL(location.href);
+    url.searchParams.set('cdTalkPage', '1');
+    const $li = $('<li>').attr('id', 'footer-places-enablecd');
+    $('<a>')
+      .attr('href', url.href)
+      .addClass('noprint')
+      .text(cd.s('footer-enablecd'))
+      .appendTo($li);
+    $('#footer-places').append($li);
   }
 
+  // Process the page as a log page
   if (
     ['Watchlist', 'Contributions', 'Recentchanges']
       .includes(mw.config.get('wgCanonicalSpecialPageName')) ||
