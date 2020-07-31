@@ -1272,10 +1272,7 @@ export default class CommentForm {
   initAutocomplete() {
     let commentsInSection = [];
     if (this.targetSection) {
-      const baseSection = this.targetSection.level === 2 ?
-        this.targetSection :
-        this.targetSection.baseSection;
-      commentsInSection = baseSection.comments;
+      commentsInSection = this.targetSection.getBaseSection().comments;
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
       cd.comments.some((comment) => {

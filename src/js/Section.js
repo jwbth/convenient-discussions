@@ -409,12 +409,11 @@ export default class Section extends SectionSkeleton {
         });
     }
 
-    const baseSection = this.level === 2 ? this : this.baseSection;
-    if (baseSection?.$addSubsectionButtonContainer) {
+    const baseSection = this.getBaseSection();
+    if (baseSection.$addSubsectionButtonContainer) {
       baseSection.$addSubsectionButtonContainer.hide();
-
-      clearTimeout(baseSection.#showAddSubsectionButtonTimeout);
-      baseSection.#showAddSubsectionButtonTimeout = null;
+      clearTimeout(baseSection.showAddSubsectionButtonTimeout);
+      baseSection.showAddSubsectionButtonTimeout = null;
     }
   }
 
@@ -1413,6 +1412,29 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Get the base section, i.e. a section of level 2 that is an ancestor of the section, or the
+   * section itself if it is of level 2 (even if there is a level 1 section) or if there is no
+   * higher level section (the current section may be of level 3 or 1, for example).
+   *
+   * @name baseSection
+   * @type {Section}
+   * @instance module:Section
+   */
+  getBaseSection() {
+    if (this.level <= 2) {
+      return this;
+    }
+
+    return (
+      cd.sections
+        .slice(0, this.id)
+        .reverse()
+        .find((section) => section.level === 2) ||
+      this
+    );
+  }
+
+  /**
    * Get the parent section of the section if the section is lower than level 2.
    *
    * @returns {?Section}
@@ -1425,6 +1447,28 @@ export default class Section extends SectionSkeleton {
         .find((section) => section.level < this.level) ||
       null
     );
+  }
+
+  /**
+   * Get the collection of the section's subsections.
+   *
+   * @name subsections
+   * @type {Section[]}
+   * @instance module:Section
+   */
+  getSubsections() {
+    const subsections = [];
+    cd.sections
+      .slice(this.id + 1)
+      .some((section) => {
+        if (section.level > this.level) {
+          subsections.push(section);
+        } else {
+          return true;
+        }
+      });
+
+    return subsections;
   }
 
   /**
@@ -1623,38 +1667,19 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Perform extra section-related tasks, including adding the `subsections` and `baseSection`
-   * properties and binding events.
+   * Perform extra section-related tasks, including adding the `isLastSection` property, adding
+   * buttons, and binding events.
    */
   static adjustSections() {
     cd.sections.forEach((section, i) => {
+      /**
+       * Is the section the last section on the page.
+       *
+       * @name isLastSection
+       * @type {boolean}
+       * @instance module:Section
+       */
       section.isLastSection = i === cd.sections.length - 1;
-
-      section.subsections = [];
-      cd.sections
-        .slice(i + 1)
-        .some((otherSection) => {
-          if (otherSection.level > section.level) {
-            section.subsections.push(otherSection);
-            if (section.level === 2) {
-              otherSection.baseSection = section;
-            }
-          } else {
-            return true;
-          }
-        });
-
-      if (section.level > 2) {
-        cd.sections
-          .slice(0, i)
-          .reverse()
-          .some((otherSection) => {
-            if (otherSection.level < section.level) {
-              section.parent = otherSection;
-              return true;
-            }
-          });
-      }
 
       if (section.actionable) {
         // If the next section of the same level has another nesting level (e.g., is inside a <div>
@@ -1687,9 +1712,8 @@ export default class Section extends SectionSkeleton {
       .filter((section) => section.actionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
-        const targetSection = section.subsections.length ?
-          section.subsections[section.subsections.length - 1] :
-          section;
+        const subsections = section.getSubsections();
+        const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
         if (targetSection.$replyButtonLink) {
           targetSection.$replyButtonLink
             .on('mouseenter', section.replyButtonHoverHandler)
