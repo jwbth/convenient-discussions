@@ -47,7 +47,7 @@ const client = new Mw({
 
 let branch;
 let commits;
-let newCommitsSubjects = [];
+let newCommitsSubjects;
 let edits = [];
 
 exec('git rev-parse --abbrev-ref HEAD && git log -15 --pretty=format:"%h %s"', parseCmdOutput);
@@ -138,7 +138,7 @@ async function prepareEdits() {
     }
 
     let summary = `Update to ${commits[0].hash} @ ${branch}`;
-    if (i === 0 && newCommitsSubjects.length) {
+    if (i === 0 && newCommitsSubjects?.length) {
       summary += '. ' + newCommitsSubjects.join('. ');
     }
 
