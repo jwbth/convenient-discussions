@@ -1239,7 +1239,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
             if (type === 'network') {
               text += ' ' + cd.s('error-network');
             } else {
-              const url = object.sourcePage.getSourcePage().getUrl({ action: 'history' });
+              const url = object.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
               text += ' ' + cd.s('error-diffnotfound-history', url);
             }
           } else {

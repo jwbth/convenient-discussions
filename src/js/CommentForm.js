@@ -56,17 +56,6 @@ function lastFocused(commentForm1, commentForm2) {
 
 /** Class representing a comment form. */
 export default class CommentForm {
-  #sectionHeadline
-  #buttonsTotalWidthStandard
-  #submitButtonLabelStandard
-  #submitButtonLabelShort
-  #lastPreviewTimestamp
-  #previewTimeout
-  #dontAutopreviewOnSummaryChange
-  #editingSectionOpeningComment
-  #headlineInputPurpose
-  #updateAutoSummaryBound
-
   /**
    * Create a comment form.
    *
@@ -102,9 +91,9 @@ export default class CommentForm {
     this.$addSectionLink = $addSectionLink;
 
     if (this.target instanceof Comment) {
-      this.#sectionHeadline = this.target.section && this.target.section.headline;
+      this.sectionHeadline = this.target.getSection() && this.target.getSection().headline;
     } else if (this.target instanceof Section) {
-      this.#sectionHeadline = this.target.headline;
+      this.sectionHeadline = this.target.headline;
     }
 
     /**
@@ -286,7 +275,7 @@ export default class CommentForm {
        *
        * @type {?Section}
        */
-      this.targetSection = this.target.section;
+      this.targetSection = this.target.getSection();
 
       /**
        * Target comment. This may be the comment the user replies to or the comment opening the
@@ -319,7 +308,7 @@ export default class CommentForm {
      *
      * @type {string}
      */
-    this.targetPage = this.targetSection ? this.targetSection.sourcePage : this.target;
+    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : this.target;
   }
 
   /**
@@ -469,7 +458,7 @@ export default class CommentForm {
       }
     }
 
-    this.#editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
+    this.editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
      * The main form element.
@@ -482,7 +471,7 @@ export default class CommentForm {
     if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }
-    if (this.#editingSectionOpeningComment) {
+    if (this.editingSectionOpeningComment) {
       this.$element.addClass('cd-commentForm-sectionOpeningComment');
     }
     if (this.mode === 'addSubsection') {
@@ -519,16 +508,16 @@ export default class CommentForm {
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
      */
 
-    if (['addSection', 'addSubsection'].includes(this.mode) || this.#editingSectionOpeningComment) {
+    if (['addSection', 'addSubsection'].includes(this.mode) || this.editingSectionOpeningComment) {
       if (this.mode === 'addSubsection') {
-        this.#headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
-      } else if (this.mode === 'edit' && this.targetSection.parent) {
-        this.#headlineInputPurpose = cd.s(
+        this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
+      } else if (this.mode === 'edit' && this.targetSection.getParent()) {
+        this.headlineInputPurpose = cd.s(
           'cf-headline-subsection',
-          this.targetSection.parent.headline
+          this.targetSection.getParent().headline
         );
       } else {
-        this.#headlineInputPurpose = cd.s('cf-headline-topic');
+        this.headlineInputPurpose = cd.s('cf-headline-topic');
       }
 
       /**
@@ -538,7 +527,7 @@ export default class CommentForm {
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
-        placeholder: this.#headlineInputPurpose,
+        placeholder: this.headlineInputPurpose,
         classes: ['cd-headlineInput'],
         tabIndex: String(this.id) + '11',
       });
@@ -696,9 +685,7 @@ export default class CommentForm {
         this.mode !== 'addSubsection' &&
         ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
       );
-      const label = callItTopic ?
-        cd.s('cf-watchsection-topic') :
-        cd.s('cf-watchsection-subsection');
+      const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
       const selected = (
         (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
         (this.targetSection && this.targetSection.watched)
@@ -851,23 +838,22 @@ export default class CommentForm {
      */
     this.$rightButtonsContainer = $('<div>').addClass('cd-rightButtonsContainer');
 
+    let message;
     switch (this.mode) {
       case 'edit':
-        this.#submitButtonLabelStandard = cd.s('cf-save');
-        this.#submitButtonLabelShort = cd.s('cf-save');
+        message = 'save';
         break;
       case 'addSection':
-        this.#submitButtonLabelStandard = cd.s('cf-addtopic');
-        this.#submitButtonLabelShort = cd.s('cf-addtopic-short');
+        message = 'addtopic';
         break;
       case 'addSubsection':
-        this.#submitButtonLabelStandard = cd.s('cf-addsubsection');
-        this.#submitButtonLabelShort = cd.s('cf-addsubsection-short');
+        message = 'addsubsection';
         break;
       default:
-        this.#submitButtonLabelStandard = cd.s('cf-reply');
-        this.#submitButtonLabelShort = cd.s('cf-reply-short');
+        message = 'reply';
     }
+    this.submitButtonLabelStandard = cd.s(`cf-${message}`);
+    this.submitButtonLabelShort = cd.s(`cf-${message}-short`);
 
     /**
      * @typedef {object} OoUiButtonWidget
@@ -961,7 +947,7 @@ export default class CommentForm {
      */
     this.submitButton = new OO.ui.ButtonInputWidget({
       type: 'submit',
-      label: this.#submitButtonLabelStandard,
+      label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
       classes: ['cd-submitButton'],
       tabIndex: String(this.id) + '35',
@@ -1230,9 +1216,9 @@ export default class CommentForm {
       .on('change', () => {
         if (this.summaryInput.$input.is(':focus')) {
           this.summaryAltered = true;
-          this.#dontAutopreviewOnSummaryChange = false;
+          this.dontAutopreviewOnSummaryChange = false;
         }
-        if (!this.#dontAutopreviewOnSummaryChange) {
+        if (!this.dontAutopreviewOnSummaryChange) {
           preview();
         }
       })
@@ -1305,7 +1291,7 @@ export default class CommentForm {
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
       cd.comments.some((comment) => {
-        if (comment.section) {
+        if (comment.getSection()) {
           return true;
         } else {
           commentsInSection.push(comment);
@@ -1369,15 +1355,15 @@ export default class CommentForm {
     let formWidth = this.$innerWrapper.width();
 
     if (this.$element.hasClass('cd-commentForm-short')) {
-      if (formWidth >= this.#buttonsTotalWidthStandard + 7) {
+      if (formWidth >= this.buttonsTotalWidthStandard + 7) {
         this.$element.removeClass('cd-commentForm-short');
-        this.submitButton.setLabel(this.#submitButtonLabelStandard);
+        this.submitButton.setLabel(this.submitButtonLabelStandard);
         this.previewButton.setLabel(cd.s('cf-preview'));
         this.viewChangesButton.setLabel(cd.s('cf-viewchanges'));
         this.cancelButton.setLabel(cd.s('cf-cancel'));
       }
     } else {
-      this.#buttonsTotalWidthStandard = (
+      this.buttonsTotalWidthStandard = (
         this.submitButton.$element.outerWidth(true) +
         (
           this.previewButton.$element.is(':visible') ?
@@ -1394,9 +1380,9 @@ export default class CommentForm {
         this.helpPopupButton.$element.outerWidth(true) +
         this.cancelButton.$element.outerWidth(true)
       );
-      if (formWidth < this.#buttonsTotalWidthStandard + 7) {
+      if (formWidth < this.buttonsTotalWidthStandard + 7) {
         this.$element.addClass('cd-commentForm-short');
-        this.submitButton.setLabel(this.#submitButtonLabelShort);
+        this.submitButton.setLabel(this.submitButtonLabelShort);
         this.previewButton.setLabel(cd.s('cf-preview-short'));
         this.viewChangesButton.setLabel(cd.s('cf-viewchanges-short'));
         this.cancelButton.setLabel(cd.s('cf-cancel-short'));
@@ -1908,7 +1894,7 @@ export default class CommentForm {
       }
       const equalSigns = '='.repeat(level);
 
-      if (this.#editingSectionOpeningComment && /^\n/.test(this.target.inCode.code)) {
+      if (this.editingSectionOpeningComment && /^\n/.test(this.target.inCode.code)) {
         // To have pretty diffs.
         code = '\n' + code;
       }
@@ -2232,24 +2218,24 @@ export default class CommentForm {
     );
 
     if (auto) {
-      const isTooEarly = Date.now() - this.#lastPreviewTimestamp < 1000;
+      const isTooEarly = Date.now() - this.lastPreviewTimestamp < 1000;
       if (
         isTooEarly ||
         this.operations
           .some((op) => !op.closed && op.type === 'preview' && op !== currentOperation)
       ) {
-        if (this.#previewTimeout) {
+        if (this.previewTimeout) {
           this.unregisterOperation(currentOperation);
         } else {
           currentOperation.delayed = true;
-          this.#previewTimeout = setTimeout(() => {
-            this.#previewTimeout = null;
+          this.previewTimeout = setTimeout(() => {
+            this.previewTimeout = null;
             this.preview(maySummaryHaveChanged, true, currentOperation);
-          }, isTooEarly ? 1000 - (Date.now() - this.#lastPreviewTimestamp) : 100);
+          }, isTooEarly ? 1000 - (Date.now() - this.lastPreviewTimestamp) : 100);
         }
         return;
       }
-      this.#lastPreviewTimestamp = Date.now();
+      this.lastPreviewTimestamp = Date.now();
     }
 
     if (this.closeOperationIfNecessary(currentOperation)) return;
@@ -2482,9 +2468,10 @@ export default class CommentForm {
       {
         condition: this.headlineInput && this.headlineInput.getValue() === '',
         confirmation: async () => {
-          const noHeadline = this.#headlineInputPurpose === cd.s('cf-headline-topic') ?
-            cd.s('cf-confirm-noheadline-topic') :
-            cd.s('cf-confirm-noheadline-subsection');
+          const noHeadline = cd.s(
+            'cf-confirm-noheadline-' +
+            (this.headlineInputPurpose === cd.s('cf-headline-topic') ? 'topic' : 'subsection')
+          );
           return await OO.ui.confirm(noHeadline + ' ' + cd.s('cf-confirm-noheadline-question'));
         },
       },
@@ -2622,7 +2609,7 @@ export default class CommentForm {
     if (this.watchSectionCheckbox) {
       if (this.watchSectionCheckbox.isSelected()) {
         const isHeadlineAltered = (
-          this.#editingSectionOpeningComment &&
+          this.editingSectionOpeningComment &&
           this.headlineInput.getValue() !== this.originalHeadline
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
@@ -2771,12 +2758,12 @@ export default class CommentForm {
   updateAutoSummary(set = true, dontAutopreviewOnSummaryChange = false) {
     if (this.summaryAltered) return;
 
-    this.#dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
+    this.dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
 
     const text = this.autoText();
     const section = this.headlineInput && this.mode !== 'addSubsection' ?
       removeWikiMarkup(this.headlineInput.getValue()) :
-      this.#sectionHeadline;
+      this.sectionHeadline;
 
     let optionalText;
     if (['reply', 'replyInSection'].includes(this.mode)) {
@@ -2816,17 +2803,14 @@ export default class CommentForm {
    * @private
    */
   autoText() {
-    this.#updateAutoSummaryBound = (
-      this.#updateAutoSummaryBound ||
-      this.updateAutoSummary.bind(this)
-    );
+    this.updateAutoSummaryBound = this.updateAutoSummaryBound || this.updateAutoSummary.bind(this);
 
     switch (this.mode) {
       case 'reply': {
         if (this.target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          this.target.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
+          this.target.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
           return this.target.own ?
             cd.s('es-addition') :
             removeDoubleSpaces(cd.s('es-reply-to', this.target.author.name, this.target.author));
@@ -2840,26 +2824,27 @@ export default class CommentForm {
           let subject;
           let target = this.target;
           if (this.target.own) {
-            if (this.target.parent) {
-              if (this.target.parent.level === 0) {
+            const targetParent = this.target.getParent();
+            if (targetParent) {
+              if (targetParent.level === 0) {
                 subject = 'reply';
               } else {
-                this.target.parent.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
-                subject = this.target.parent.own ? 'addition' : 'reply-to';
-                target = this.target.parent;
+                targetParent.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
+                subject = targetParent.own ? 'addition' : 'reply-to';
+                target = targetParent;
               }
             } else {
               if (this.target.isOpeningSection) {
-                subject = this.targetSection.parent ? 'subsection' : 'topic';
+                subject = this.targetSection.getParent() ? 'subsection' : 'topic';
               } else {
                 subject = 'comment';
               }
             }
           } else {
             if (this.target.isOpeningSection) {
-              subject = this.targetSection.parent ? 'subsection' : 'topic';
+              subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              this.target.requestAuthorGenderIfNeeded(this.#updateAutoSummaryBound);
+              this.target.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
               subject = 'comment-by';
             }
           }
@@ -2916,15 +2901,15 @@ export default class CommentForm {
 
       this.$element.addClass('cd-commentForm-disabled');
 
-      this.#submitButtonLabelStandard = cd.s('cf-delete-button');
-      this.#submitButtonLabelShort = cd.s('cf-delete-button-short');
+      this.submitButtonLabelStandard = cd.s('cf-delete-button');
+      this.submitButtonLabelShort = cd.s('cf-delete-button-short');
       this.submitButton
         .clearFlags()
         .setFlags(['destructive', 'primary'])
         .setLabel(
           this.$element.hasClass('cd-commentForm-short') ?
-          this.#submitButtonLabelStandard :
-          this.#submitButtonLabelShort
+          this.submitButtonLabelStandard :
+          this.submitButtonLabelShort
         );
     } else {
       this.minorCheckbox.setSelected(this.initialMinorCheckboxSelected);
@@ -2940,15 +2925,15 @@ export default class CommentForm {
 
       this.$element.removeClass('cd-commentForm-disabled');
 
-      this.#submitButtonLabelStandard = cd.s('cf-save');
-      this.#submitButtonLabelShort = cd.s('cf-save-short');
+      this.submitButtonLabelStandard = cd.s('cf-save');
+      this.submitButtonLabelShort = cd.s('cf-save-short');
       this.submitButton
         .clearFlags()
         .setFlags(['progressive', 'primary'])
         .setLabel(
           this.$element.hasClass('cd-commentForm-short') ?
-          this.#submitButtonLabelStandard :
-          this.#submitButtonLabelShort
+          this.submitButtonLabelStandard :
+          this.submitButtonLabelShort
         );
     }
   }
@@ -2960,6 +2945,12 @@ export default class CommentForm {
     if (!this.autocomplete) return;
 
     const caretIndex = this.commentInput.getRange().to;
+
+    // Prevent removing of text
+    if (this.commentInput.getRange().from !== caretIndex) {
+      this.commentInput.selectRange(caretIndex);
+    }
+
     const lastChar = (
       caretIndex &&
       this.commentInput.getValue().slice(caretIndex - 1, caretIndex)
@@ -2968,8 +2959,8 @@ export default class CommentForm {
       this.commentInput.insertContent(' ');
     }
 
-    // And another workaround. The standard Tribute#showMenuForCollection method doesn't call
-    // values().
+    // And another workaround. The standard `Tribute#showMenuForCollection` method doesn't call
+    // `values()`.
     this.commentInput.insertContent('@');
     const element = this.commentInput.$input.get(0);
     element.dispatchEvent(new Event('keydown'));

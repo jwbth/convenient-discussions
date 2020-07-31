@@ -51,10 +51,6 @@ module.exports = {
           options: {
             presets: ['@babel/preset-env'],
             plugins: [
-              // private.#fields
-              '@babel/plugin-proposal-class-properties',
-              // private.#methods - buggy so far
-              // '@babel/plugin-proposal-private-methods',
               '@babel/plugin-transform-runtime',
               '@babel/plugin-transform-async-to-generator',
             ]

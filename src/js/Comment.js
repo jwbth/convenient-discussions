@@ -68,24 +68,6 @@ function calculateWordsOverlap(s1, s2) {
  * @augments module:CommentSkeleton
  */
 export default class Comment extends CommentSkeleton {
-  #elementPrototypes
-  #firstWidth
-  #underlay
-  #layersTop
-  #layersLeft
-  #layersWidth
-  #layersHeight
-  #overlay
-  #overlayInnerWrapper
-  #overlayContent
-  #overlayGradient
-  #unhighlightTimeout
-  #cached$elements
-  #cachedCommentText
-  #cachedParent
-  #cachedUnderlayContainer
-  #genderRequestCallbacks
-
   /**
    * Create a comment object.
    *
@@ -96,7 +78,7 @@ export default class Comment extends CommentSkeleton {
   constructor(parser, signature) {
     super(parser, signature);
 
-    this.#elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
+    this.elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
 
     /**
      * Comment author {@link module:userRegistry~User user object}.
@@ -277,7 +259,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     // This is to determine if the element has moved in future checks.
-    this.#firstWidth = this.highlightables[0].offsetWidth;
+    this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     const layersContainerOffset = this.getLayersContainerOffset();
 
@@ -304,37 +286,37 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   createLayers() {
-    this.#underlay = this.#elementPrototypes.underlay.cloneNode(true);
+    this.underlay = this.elementPrototypes.underlay.cloneNode(true);
     if (this.newness) {
-      this.#underlay.classList.add('cd-commentUnderlay-new');
+      this.underlay.classList.add('cd-commentUnderlay-new');
     }
     if (cd.settings.highlightOwnComments && this.own) {
-      this.#underlay.classList.add('cd-commentUnderlay-own');
+      this.underlay.classList.add('cd-commentUnderlay-own');
     }
-    this.#underlay.cdTarget = this;
-    commentLayers.underlays.push(this.#underlay);
+    this.underlay.cdTarget = this;
+    commentLayers.underlays.push(this.underlay);
 
-    this.#overlay = this.#elementPrototypes.overlay.cloneNode(true);
-    this.#overlayInnerWrapper = this.#overlay.firstChild;
+    this.overlay = this.elementPrototypes.overlay.cloneNode(true);
+    this.overlayInnerWrapper = this.overlay.firstChild;
     // Hide the overlay on right click. It can block clicking the author page link.
-    this.#overlayInnerWrapper.oncontextmenu = (e) => {
+    this.overlayInnerWrapper.oncontextmenu = (e) => {
       e.preventDefault();
-      this.#overlay.style.display = 'none';
+      this.overlay.style.display = 'none';
     };
-    this.#overlayGradient = this.#overlayInnerWrapper.firstChild;
-    this.#overlayContent = this.#overlayInnerWrapper.lastChild;
+    this.overlayGradient = this.overlayInnerWrapper.firstChild;
+    this.overlayContent = this.overlayInnerWrapper.lastChild;
 
-    if (this.parent) {
+    if (this.getParent()) {
       /**
        * "Go to the parent comment" button.
        *
        * @type {Element|undefined}
        */
-      this.goToParentButton = this.#elementPrototypes.goToParentButton.cloneNode(true);
+      this.goToParentButton = this.elementPrototypes.goToParentButton.cloneNode(true);
       this.goToParentButton.firstChild.onclick = () => {
         this.goToParent();
       };
-      this.#overlayContent.appendChild(this.goToParentButton);
+      this.overlayContent.appendChild(this.goToParentButton);
     }
 
     if (this.anchor) {
@@ -343,22 +325,22 @@ export default class Comment extends CommentSkeleton {
        *
        * @type {Element|undefined}
        */
-      this.linkButton = this.#elementPrototypes.linkButton.cloneNode(true);
+      this.linkButton = this.elementPrototypes.linkButton.cloneNode(true);
       this.linkButton.firstChild.onclick = this.copyLink.bind(this);
-      this.#overlayContent.appendChild(this.linkButton);
+      this.overlayContent.appendChild(this.linkButton);
     }
 
-    if (this.author.registered && this.date && !this.own) {
+    if (this.author.isRegistered() && this.date && !this.own) {
       /**
        * Thank button.
        *
        * @type {Element|undefined}
        */
-      this.thankButton = this.#elementPrototypes.thankButton.cloneNode(true);
+      this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
       this.thankButton.firstChild.onclick = () => {
         this.thank();
       };
-      this.#overlayContent.appendChild(this.thankButton);
+      this.overlayContent.appendChild(this.thankButton);
     }
 
     if (this.actionable) {
@@ -368,11 +350,11 @@ export default class Comment extends CommentSkeleton {
          *
          * @type {Element|undefined}
          */
-        this.editButton = this.#elementPrototypes.editButton.cloneNode(true);
+        this.editButton = this.elementPrototypes.editButton.cloneNode(true);
         this.editButton.firstChild.onclick = () => {
           this.edit();
         };
-        this.#overlayContent.appendChild(this.editButton);
+        this.overlayContent.appendChild(this.editButton);
       }
 
       /**
@@ -380,7 +362,7 @@ export default class Comment extends CommentSkeleton {
        *
        * @type {Element|undefined}
        */
-      this.replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
+      this.replyButton = this.elementPrototypes.replyButton.cloneNode(true);
       this.replyButton.firstChild.onclick = () => {
         if (this.replyForm) {
           this.replyForm.cancel();
@@ -388,7 +370,7 @@ export default class Comment extends CommentSkeleton {
           this.reply();
         }
       };
-      this.#overlayContent.appendChild(this.replyButton);
+      this.overlayContent.appendChild(this.replyButton);
     }
 
     /**
@@ -396,28 +378,28 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$underlay = $(this.#underlay);
+    this.$underlay = $(this.underlay);
 
     /**
      * Comment's overlay.
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$overlay = $(this.#overlay);
+    this.$overlay = $(this.overlay);
 
     /**
      * Links container of the comment's overlay.
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$overlayContent = $(this.#overlayContent);
+    this.$overlayContent = $(this.overlayContent);
 
     /**
      * Gradient element of the comment's overlay.
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$overlayGradient = $(this.#overlayGradient);
+    this.$overlayGradient = $(this.overlayGradient);
 
     /**
      * Comment layers have been created.
@@ -455,33 +437,33 @@ export default class Comment extends CommentSkeleton {
 
     const layersContainerOffset = this.getLayersContainerOffset();
     const isMoved = (
-      this.#underlay &&
+      this.underlay &&
       (
-        -layersContainerOffset.top + window.pageYOffset + config.rectTop.top !== this.#layersTop ||
-        config.rectBottom.bottom - config.rectTop.top !== this.#layersHeight ||
-        this.highlightables[0].offsetWidth !== this.#firstWidth
+        -layersContainerOffset.top + window.pageYOffset + config.rectTop.top !== this.layersTop ||
+        config.rectBottom.bottom - config.rectTop.top !== this.layersHeight ||
+        this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
       )
     );
 
-    if (!this.#underlay || isMoved) {
+    if (!this.underlay || isMoved) {
       const positions = this.calculateLayersPositions(config);
       if (positions) {
-        this.#layersTop = positions.underlayTop;
-        this.#layersLeft = positions.underlayLeft;
-        this.#layersWidth = positions.underlayWidth;
-        this.#layersHeight = positions.underlayHeight;
+        this.layersTop = positions.underlayTop;
+        this.layersLeft = positions.underlayLeft;
+        this.layersWidth = positions.underlayWidth;
+        this.layersHeight = positions.underlayHeight;
       }
     }
 
-    if (this.#layersLeft === undefined) {
+    if (this.layersLeft === undefined) {
       return null;
     }
 
     // Configure the layers only if they were unexistent or the comment position has changed, to
     // save time.
-    if (this.#underlay) {
-      if (this.newness && !this.#underlay.classList.contains('cd-commentUnderlay-new')) {
-        this.#underlay.classList.add('cd-commentUnderlay-new');
+    if (this.underlay) {
+      if (this.newness && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
+        this.underlay.classList.add('cd-commentUnderlay-new');
       }
       if (isMoved && config.doSet) {
         this.updateLayersPositions();
@@ -500,21 +482,21 @@ export default class Comment extends CommentSkeleton {
    * Add the comment's layers to the DOM.
    */
   addLayers() {
-    if (this.#underlay) {
+    if (this.underlay) {
       this.updateLayersPositions();
-      this.getLayersContainer().appendChild(this.#underlay);
-      this.getLayersContainer().appendChild(this.#overlay);
+      this.getLayersContainer().appendChild(this.underlay);
+      this.getLayersContainer().appendChild(this.overlay);
     }
   }
 
   /**
-   * Transfer the `#layers(Top|Left|Width|Height)` values to the style of the layers.
+   * Transfer the `layers(Top|Left|Width|Height)` values to the style of the layers.
    */
   updateLayersPositions() {
-    this.#underlay.style.top = this.#overlay.style.top = this.#layersTop + 'px';
-    this.#underlay.style.left = this.#overlay.style.left = this.#layersLeft + 'px';
-    this.#underlay.style.width = this.#overlay.style.width = this.#layersWidth + 'px';
-    this.#underlay.style.height = this.#overlay.style.height = this.#layersHeight + 'px';
+    this.underlay.style.top = this.overlay.style.top = this.layersTop + 'px';
+    this.underlay.style.left = this.overlay.style.left = this.layersLeft + 'px';
+    this.underlay.style.width = this.overlay.style.width = this.layersWidth + 'px';
+    this.underlay.style.height = this.overlay.style.height = this.layersHeight + 'px';
   }
 
   /**
@@ -523,16 +505,16 @@ export default class Comment extends CommentSkeleton {
   highlightFocused() {
     if (
       cd.util.isPageOverlayOn() ||
-     this.#underlay?.classList.contains('cd-commentUnderlay-focused')
+     this.underlay?.classList.contains('cd-commentUnderlay-focused')
     ) {
       return;
     }
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again when the next event fires.
-    if (!this.configureLayers() && this.#underlay) {
-      this.#underlay.classList.add('cd-commentUnderlay-focused');
-      this.#overlay.classList.add('cd-commentOverlay-focused');
+    if (!this.configureLayers() && this.underlay) {
+      this.underlay.classList.add('cd-commentUnderlay-focused');
+      this.overlay.classList.add('cd-commentOverlay-focused');
     }
   }
 
@@ -540,11 +522,11 @@ export default class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightFocused() {
-    if (!this.#underlay?.classList.contains('cd-commentUnderlay-focused')) return;
+    if (!this.underlay?.classList.contains('cd-commentUnderlay-focused')) return;
 
-    this.#underlay.classList.remove('cd-commentUnderlay-focused');
-    this.#overlay.classList.remove('cd-commentOverlay-focused');
-    this.#overlay.style.display = '';
+    this.underlay.classList.remove('cd-commentUnderlay-focused');
+    this.overlay.classList.remove('cd-commentOverlay-focused');
+    this.overlay.style.display = '';
   }
 
   /**
@@ -579,8 +561,8 @@ export default class Comment extends CommentSkeleton {
     $elementsToAnimate
       .stop()
       .css('background-color', targetColor);
-    clearTimeout(this.#unhighlightTimeout);
-    this.#unhighlightTimeout = setTimeout(() => {
+    clearTimeout(this.unhighlightTimeout);
+    this.unhighlightTimeout = setTimeout(() => {
       // We may not know from the beginning if the comment is new.
       if (this.newness) {
         initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
@@ -630,7 +612,7 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   replaceButton(button, replacement, buttonName) {
-    this.#overlayContent.insertBefore(replacement, button);
+    this.overlayContent.insertBefore(replacement, button);
     button.parentNode.removeChild(button);
     this[buttonName + 'Button'] = replacement;
   }
@@ -639,12 +621,14 @@ export default class Comment extends CommentSkeleton {
    * Scroll to the parent comment of the comment.
    */
   goToParent() {
-    if (!this.parent) {
+    const parent = this.getParent();
+
+    if (!parent) {
       console.error('This comment has no parent.');
       return;
     }
 
-    this.parent.scrollToAndHighlightTarget('center');
+    parent.scrollToAndHighlightTarget('center');
 
     const goToChildButton = new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
@@ -653,16 +637,16 @@ export default class Comment extends CommentSkeleton {
       classes: ['cd-button', 'cd-commentButton'],
     });
     goToChildButton.on('click', () => {
-      this.parent.goToChild();
+      parent.goToChild();
     });
 
-    this.parent.configureLayers();
+    parent.configureLayers();
 
-    if (this.parent.goToChildButton) {
-      this.parent.goToChildButton.$element.remove();
+    if (parent.goToChildButton) {
+      parent.goToChildButton.$element.remove();
     }
-    this.parent.$overlayContent.prepend(goToChildButton.$element);
-    this.parent.goToChildButton = goToChildButton;
+    parent.$overlayContent.prepend(goToChildButton.$element);
+    parent.goToChildButton = goToChildButton;
 
     /**
      * Child comment that has sent the user to this comment using the "Go to parent" function.
@@ -671,7 +655,7 @@ export default class Comment extends CommentSkeleton {
      * @type {Comment|undefined}
      * @instance module:Comment
      */
-    this.parent.childToScrollBackTo = this;
+    parent.childToScrollBackTo = this;
   }
 
   /**
@@ -696,7 +680,7 @@ export default class Comment extends CommentSkeleton {
     const linkButton = this.linkButton;
     this.replaceButton(
       this.linkButton,
-      this.#elementPrototypes.pendingLinkButton.cloneNode(true),
+      this.elementPrototypes.pendingLinkButton.cloneNode(true),
       'link'
     );
     copyLink(this, e.shiftKey, () => {
@@ -726,7 +710,7 @@ export default class Comment extends CommentSkeleton {
     const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
     const revisionsRequest = cd.g.api.get({
       action: 'query',
-      titles: this.sourcePage.getSourcePage().name,
+      titles: this.getSourcePage().getArchivedPage().name,
       rvslots: 'main',
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'comment', 'timestamp'],
@@ -741,7 +725,7 @@ export default class Comment extends CommentSkeleton {
 
     const [revisionsResp] = await Promise.all([
       revisionsRequest,
-      requestGender && this.author.registered ? getUserGenders([this.author]) : undefined,
+      requestGender && this.author.isRegistered() ? getUserGenders([this.author]) : undefined,
     ].filter(defined));
 
     const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
@@ -754,7 +738,7 @@ export default class Comment extends CommentSkeleton {
 
     const compareRequests = revisions.map((revision) => cd.g.api.get({
       action: 'compare',
-      fromtitle: this.sourcePage.getSourcePage().name,
+      fromtitle: this.getSourcePage().getArchivedPage().name,
       fromrev: revision.revid,
       torelative: 'prev',
       prop: 'diff|diffsize',
@@ -877,12 +861,12 @@ export default class Comment extends CommentSkeleton {
     switch (type) {
       case 'parse': {
         if (code === 'moreThanOneTimestamp') {
-          const url = this.sourcePage.getSourcePage().getUrl({ diff: data.edit.revid });
+          const url = this.getSourcePage().getArchivedPage().getUrl({ diff: data.edit.revid });
           text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
           OO.ui.alert(text);
           return;
         } else {
-          const url = this.sourcePage.getSourcePage().getUrl({ action: 'history' });
+          const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
           text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         }
         break;
@@ -891,7 +875,7 @@ export default class Comment extends CommentSkeleton {
       case 'api':
       default: {
         if (code === 'noData') {
-          const url = this.sourcePage.getSourcePage().getUrl({ action: 'history' });
+          const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
           text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         } else {
           text = cd.s('thank-error');
@@ -917,7 +901,7 @@ export default class Comment extends CommentSkeleton {
     const thankButton = this.thankButton;
     this.replaceButton(
       this.thankButton,
-      this.#elementPrototypes.pendingThankButton.cloneNode(true),
+      this.elementPrototypes.pendingThankButton.cloneNode(true),
       'thank'
     );
 
@@ -931,7 +915,7 @@ export default class Comment extends CommentSkeleton {
 
     mw.loader.load('mediawiki.diff.styles');
 
-    const url = this.sourcePage.getSourcePage().getUrl({ diff: edit.revid });
+    const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
     const $question = cd.util.wrapInElement(
       cd.s('thank-confirm', this.author.name, this.author, url),
       'div'
@@ -952,7 +936,7 @@ export default class Comment extends CommentSkeleton {
       mw.notify(cd.s('thank-success'));
       this.replaceButton(
         this.thankButton,
-        this.#elementPrototypes.disabledThankButton.cloneNode(true),
+        this.elementPrototypes.disabledThankButton.cloneNode(true),
         'thank'
       );
     } else {
@@ -965,7 +949,7 @@ export default class Comment extends CommentSkeleton {
    * the `inCode` property. Otherwise, return the result.
    *
    * @param {string} [pageCode] Page code, if different from `code` property of {@link
-   *   Comment#sourcePage}.
+   *   Comment#getSourcePage()}.
    * @returns {string|undefined}
    * @throws {CdError}
    */
@@ -975,7 +959,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Collect matches
-    const matches = this.searchInCode(pageCode || this.sourcePage.code);
+    const matches = this.searchInCode(pageCode || this.getSourcePage().code);
 
     // The main method: by the current & previous author & date & section headline & comment text
     // overlap. Necessary are the current author & date & comment text overlap.
@@ -1170,7 +1154,7 @@ export default class Comment extends CommentSkeleton {
    */
   async getCode() {
     try {
-      await this.sourcePage.getCode();
+      await this.getSourcePage().getCode();
       this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
@@ -1238,16 +1222,16 @@ export default class Comment extends CommentSkeleton {
    * Remove the comment's layers.
    */
   removeLayers() {
-    if (!this.#underlay) return;
+    if (!this.underlay) return;
 
-    commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.#underlay), 1);
+    commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
-    this.#underlay.parentElement.removeChild(this.#underlay);
-    this.#underlay = null;
+    this.underlay.parentElement.removeChild(this.underlay);
+    this.underlay = null;
     this.$underlay = null;
 
-    this.#overlay.parentElement.removeChild(this.#overlay);
-    this.#overlay = null;
+    this.overlay.parentElement.removeChild(this.overlay);
+    this.overlay = null;
     this.$overlay = null;
   }
 
@@ -1258,34 +1242,15 @@ export default class Comment extends CommentSkeleton {
    */
   // Using a getter allows to save a little time on running $().
   get $elements() {
-    if (this.#cached$elements === undefined) {
-      this.#cached$elements = $(this.elements);
+    if (this.cached$elements === undefined) {
+      this.cached$elements = $(this.elements);
     }
-    return this.#cached$elements;
+    return this.cached$elements;
   }
 
-  /**
-   * Comment text.
-   *
-   * @type {string}
-   */
-  get text() {
-    if (this.#cachedCommentText === undefined) {
-      this.#cachedCommentText = this.getText();
-    }
-    return this.#cachedCommentText;
-  }
-
-  /**
-   * Parent comment.
-   *
-   * @type {?Comment}
-   */
-  get parent() {
-    if (this.#cachedParent === undefined) {
-      this.#cachedParent = this.getParent();
-    }
-    return this.#cachedParent;
+  set $elements(value) {
+    this.cached$elements = value;
+    this.elements = value.get();
   }
 
   /**
@@ -1298,34 +1263,42 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   getParent() {
-    let level = this.level;
+    if (this.cachedParent === undefined && this.id === 0) {
+      this.cachedParent = null;
+    }
 
-    if (cd.g.specialElements.pageHasOutdents) {
+    // Look for {{outdent}} templates
+    if (this.cachedParent === undefined && cd.g.specialElements.pageHasOutdents) {
       const treeWalker = new ElementsTreeWalker(this.elements[0]);
-      let found;
       while (
-        !found &&
         treeWalker.previousNode() &&
         !treeWalker.currentNode.classList.contains('cd-commentPart')
       ) {
-        found = treeWalker.currentNode.classList.contains('outdent-template');
-      }
-      if (found && cd.comments[this.id - 1]) {
-        return cd.comments[this.id - 1];
+        if (treeWalker.currentNode.classList.contains('outdent-template')) {
+          this.cachedParent = cd.comments[this.id - 1];
+          break;
+        }
       }
     }
 
-    if (level === 0) {
-      return null;
+    if (this.cachedParent === undefined && this.level === 0) {
+      this.cachedParent = null;
     }
 
-    return (
-      cd.comments
-        .slice(0, this.id)
-        .reverse()
-        .find((comment) => comment.section === this.section && comment.level < level) ||
-      null
-    );
+    if (this.cachedParent === undefined) {
+      this.cachedParent = (
+        cd.comments
+          .slice(0, this.id)
+          .reverse()
+          .find((comment) => (
+            comment.getSection() === this.getSection() &&
+            comment.level < this.level
+          )) ||
+        null
+      );
+    }
+
+    return this.cachedParent;
   }
 
   /**
@@ -1336,31 +1309,36 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   getText(cleanUp = true) {
-    const $clone = this.$elements
-      .not('h1, h2, h3, h4, h5, h6')
-      .clone()
-      .removeClass('cd-hidden');
-    const $dummy = $('<div>').append($clone);
-    const selector = [
-      '.cd-signature',
-      cd.config.unsignedClass ? `.${cd.config.unsignedClass}` : undefined
-    ]
-      .filter(defined)
-      .join(', ');
-    $dummy.find(selector).remove();
-    let text = $dummy.cdGetText();
-    if (cleanUp) {
-      if (cd.config.signatureEndingRegexp) {
-        text = text.replace(cd.config.signatureEndingRegexp, '');
+    if (this.cachedText === undefined) {
+      const $clone = this.$elements
+        .not('h1, h2, h3, h4, h5, h6')
+        .clone()
+        .removeClass('cd-hidden');
+      const $dummy = $('<div>').append($clone);
+      const selector = [
+        '.cd-signature',
+        cd.config.unsignedClass ? `.${cd.config.unsignedClass}` : undefined
+      ]
+        .filter(defined)
+        .join(', ');
+      $dummy.find(selector).remove();
+      let text = $dummy.cdGetText();
+      if (cleanUp) {
+        if (cd.config.signatureEndingRegexp) {
+          text = text.replace(cd.config.signatureEndingRegexp, '');
+        }
+
+        // FIXME: we use the same regexp for cleaning the wikitext and render. With the current
+        // default config value the side effects seem to be negligable, but who knows...
+        if (cd.config.signaturePrefixRegexp) {
+          text = text.replace(cd.config.signaturePrefixRegexp, '');
+        }
       }
-      // FIXME: we use the same regexp for cleaning the wikitext and render. With the current
-      // default config value the side effects seem to be negligable, but who knows...
-      if (cd.config.signaturePrefixRegexp) {
-        text = text.replace(cd.config.signaturePrefixRegexp, '');
-      }
+
+      this.cachedText = text;
     }
 
-    return text;
+    return this.cachedText;
   }
 
   /**
@@ -1626,17 +1604,17 @@ export default class Comment extends CommentSkeleton {
       match.headlineMatched = this.followsHeading ?
         (
           match.headingMatch &&
-          this.section &&
-          this.section.headline &&
+          this.getSection() &&
+          this.getSection().headline &&
           (
             normalizeCode(removeWikiMarkup(match.headlineCode)) ===
-            normalizeCode(this.section.headline)
+            normalizeCode(this.getSection().headline)
           )
         ) :
         !match.headingMatch;
 
       const codeToCompare = removeWikiMarkup(match.code);
-      match.overlap = calculateWordsOverlap(this.text, codeToCompare);
+      match.overlap = calculateWordsOverlap(this.getText(), codeToCompare);
     });
 
     return matches;
@@ -1721,8 +1699,8 @@ export default class Comment extends CommentSkeleton {
           let startIndex;
           let endIndex;
           if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
-            this.section.locateInCode();
-            if (extractSignatures(this.section.inCode.code).length > 1) {
+            this.getSection().locateInCode();
+            if (extractSignatures(this.getSection().inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
                 code: 'delete-repliesInSection',
@@ -1730,7 +1708,7 @@ export default class Comment extends CommentSkeleton {
             } else {
               // Deleting the whole section is safer as we don't want to leave any content in the
               // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
+              ({ startIndex, contentEndIndex: endIndex } = this.getSection().inCode);
             }
           } else {
             endIndex = thisInCode.endIndex + thisInCode.signatureDirtyCode.length + 1;
@@ -1777,7 +1755,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {Element}
    */
   getLayersContainer() {
-    if (this.#cachedUnderlayContainer === undefined) {
+    if (this.cachedUnderlayContainer === undefined) {
       let offsetParent;
       const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
       while (treeWalker.parentNode()) {
@@ -1814,12 +1792,12 @@ export default class Comment extends CommentSkeleton {
         container.classList.add('cd-commentLayersContainer');
         offsetParent.insertBefore(container, offsetParent.firstChild);
       }
-      this.#cachedUnderlayContainer = container;
+      this.cachedUnderlayContainer = container;
       if (!commentLayers.layersContainers.includes(container)) {
         commentLayers.layersContainers.push(container);
       }
     }
-    return this.#cachedUnderlayContainer;
+    return this.cachedUnderlayContainer;
   }
 
   /**
@@ -1856,8 +1834,8 @@ export default class Comment extends CommentSkeleton {
    *   is not needed.
    */
   requestAuthorGenderIfNeeded(callback, runAlways = false) {
-    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.registered && this.author.gender === null) {
-      this.#genderRequestCallbacks = this.#genderRequestCallbacks || [];
+    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered() && !this.author.getGender()) {
+      this.genderRequestCallbacks = this.genderRequestCallbacks || [];
       let errorCallback;
       if (!this.genderRequest) {
         this.genderRequest = getUserGenders([this.author]);
@@ -1865,15 +1843,25 @@ export default class Comment extends CommentSkeleton {
           console.warn(`Couldn't get the gender of user ${this.author.name}.`, e);
         };
       }
-      if (!this.#genderRequestCallbacks.includes(callback)) {
+      if (!this.genderRequestCallbacks.includes(callback)) {
         this.genderRequest.then(callback, errorCallback);
-        this.#genderRequestCallbacks.push(callback);
+        this.genderRequestCallbacks.push(callback);
       }
     } else {
       if (runAlways) {
         setTimeout(callback);
       }
     }
+  }
+
+  /**
+   * Get the wiki page that has the source code of the comment (may be different from the current
+   * page if the comment is transcluded from another page).
+   *
+   * @type {Page}
+   */
+  getSourcePage() {
+    return this.getSection() ? this.getSection().getSourcePage() : cd.g.CURRENT_PAGE;
   }
 
   /**

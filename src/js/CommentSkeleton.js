@@ -6,6 +6,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
+import { ElementsTreeWalker } from './treeWalker';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -14,9 +15,6 @@ import cd from './cd';
  * @class
  */
 export default class CommentSkeleton {
-  #parser
-  #cachedSection
-
   /**
    * Create a comment skeleton instance.
    *
@@ -25,25 +23,25 @@ export default class CommentSkeleton {
    * @throws {CdError}
    */
   constructor(parser, signature) {
-    this.#parser = parser;
+    this.parser = parser;
 
     // Identify all comment nodes and save the path to them.
-    let parts = this.#parser.collectParts(signature.element);
+    let parts = this.parser.collectParts(signature.element);
 
     // Remove parts contained by other parts
-    parts = this.#parser.removeNestedParts(parts);
+    parts = this.parser.removeNestedParts(parts);
 
     // We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
     // can't get bounding client rectangle for text nodes, can't specify margins for them etc.).
-    parts = this.#parser.encloseInlineParts(parts, signature.element);
+    parts = this.parser.encloseInlineParts(parts, signature.element);
 
     // At this point, we can safely remove unnecessary nodes.
-    parts = this.#parser.filterParts(parts);
+    parts = this.parser.filterParts(parts);
 
     parts.reverse();
 
     // dd, li instead of dl, ul, ol where appropriate.
-    parts = this.#parser.replaceListsWithItems(parts, signature.element);
+    parts = this.parser.replaceListsWithItems(parts, signature.element);
 
     /**
      * Comment ID. Same as the comment index in {@link module:cd~convenientDiscussions.comments
@@ -193,9 +191,9 @@ export default class CommentSkeleton {
     // We make sure the level on the top and on the bottom of the comment are the same, and add
     // corresponding classes.
     const levelElements = {};
-    levelElements.top = this.#parser.getLevelsUpTree(this.highlightables[0]);
+    levelElements.top = this.parser.getLevelsUpTree(this.highlightables[0]);
     levelElements.bottom = this.highlightables.length > 1 ?
-      this.#parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1]) :
+      this.parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1]) :
       levelElements.top;
 
     /**
@@ -222,34 +220,24 @@ export default class CommentSkeleton {
    * @private
    */
   getSection() {
-    return (
-      cd.sections
-        .slice()
-        .reverse()
-        .find((section) => section.comments.includes(this)) ||
-      null
-    );
-  }
-
-  /**
-   * Lowest level section that this comment belongs to.
-   *
-   * @type {?Section}
-   */
-  get section() {
-    if (this.#cachedSection === undefined) {
-      this.#cachedSection = this.getSection();
+    cd.debug.startTimer('getSection');
+    if (this.cachedSection === undefined) {
+      this.cachedSection = (
+        cd.sections
+          .slice()
+          .reverse()
+          .find((section) => section.comments.includes(this)) ||
+        null
+      );
     }
-    return this.#cachedSection;
+    cd.debug.stopTimer('getSection');
+    return this.cachedSection;
   }
 
   /**
-   * Wiki page that has the source code of the comment (may be different from the current page if
-   * the comment is transcluded from another page).
    *
-   * @type {string}
    */
-  get sourcePage() {
-    return this.section ? this.section.sourcePage : cd.g.CURRENT_PAGE;
+    }
+
   }
 }

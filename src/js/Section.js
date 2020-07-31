@@ -30,13 +30,6 @@ import { reloadPage } from './boot';
  * @augments module:SectionSkeleton
  */
 export default class Section extends SectionSkeleton {
-  #elementPrototypes
-  #closingBracketElement
-  #editSectionElement
-  #cached$elements
-  #showAddSubsectionButtonTimeout
-  #hideAddSubsectionButtonTimeout
-
   /**
    * Create a section object.
    *
@@ -48,31 +41,7 @@ export default class Section extends SectionSkeleton {
   constructor(parser, headingElement, watchedSectionsRequest) {
     super(parser, headingElement);
 
-    /**
-     * Collection of the section's subsections.
-     *
-     * @name subsections
-     * @type {Section[]}
-     * @instance module:Section
-     */
-
-    /**
-     * Base section, i.e. a section of the level 2 that is an ancestor of the section.
-     *
-     * @name baseSection
-     * @type {Section}
-     * @instance module:Section
-     */
-
-    /**
-     * Is the section the last section on the page.
-     *
-     * @name isLastSection
-     * @type {boolean}
-     * @instance module:Section
-     */
-
-    this.#elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
+    this.elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
     /**
      * Section headline element as a jQuery object.
@@ -90,18 +59,14 @@ export default class Section extends SectionSkeleton {
      */
     this.sourcePage = cd.g.CURRENT_PAGE;
 
-    this.#editSectionElement = headingElement.querySelector('.mw-editsection');
-    if (this.#editSectionElement) {
-      this.#closingBracketElement = this.#editSectionElement.lastElementChild;
-      if (
-        !this.#closingBracketElement ||
-        !this.#closingBracketElement.classList ||
-        !this.#closingBracketElement.classList.contains('mw-editsection-bracket')
-      ) {
-        this.#closingBracketElement = null;
+    this.editSectionElement = headingElement.querySelector('.mw-editsection');
+    if (this.editSectionElement) {
+      this.closingBracketElement = this.editSectionElement.lastElementChild;
+      if (!this.closingBracketElement?.classList?.contains('mw-editsection-bracket')) {
+        this.closingBracketElement = null;
       }
 
-      const editLink = this.#editSectionElement
+      const editLink = this.editSectionElement
         .querySelector('a[href*="&action=edit"], a[href*="&veaction=editsource"]');
       if (editLink) {
         /**
@@ -147,7 +112,7 @@ export default class Section extends SectionSkeleton {
    * Add the "Reply" button to the end of the first chunk of the section.
    */
   addReplyButton() {
-    const replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
+    const replyButton = this.elementPrototypes.replyButton.cloneNode(true);
     replyButton.firstChild.onclick = () => {
       this.addReply();
     };
@@ -245,7 +210,7 @@ export default class Section extends SectionSkeleton {
   addAddSubsectionButton() {
     if (this.level !== 2) return;
 
-    const addSubsectionButton = this.#elementPrototypes.addSubsectionButton.cloneNode(true);
+    const addSubsectionButton = this.elementPrototypes.addSubsectionButton.cloneNode(true);
     const labelContainer = addSubsectionButton.querySelector('.oo-ui-labelElement-label');
     if (!labelContainer) return;
     labelContainer.innerHTML = '';
@@ -270,16 +235,16 @@ export default class Section extends SectionSkeleton {
     );
 
     const deferAddSubsectionButtonHide = () => {
-      if (!this.#hideAddSubsectionButtonTimeout) {
-        this.#hideAddSubsectionButtonTimeout = setTimeout(() => {
+      if (!this.hideAddSubsectionButtonTimeout) {
+        this.hideAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.hide();
         }, 1000);
       }
     };
 
     addSubsectionButton.firstChild.onmouseenter = () => {
-      clearTimeout(this.#hideAddSubsectionButtonTimeout);
-      this.#hideAddSubsectionButtonTimeout = null;
+      clearTimeout(this.hideAddSubsectionButtonTimeout);
+      this.hideAddSubsectionButtonTimeout = null;
     };
     addSubsectionButton.firstChild.onmouseleave = () => {
       deferAddSubsectionButtonHide();
@@ -288,11 +253,11 @@ export default class Section extends SectionSkeleton {
     this.replyButtonHoverHandler = () => {
       if (this.addSubsectionForm) return;
 
-      clearTimeout(this.#hideAddSubsectionButtonTimeout);
-      this.#hideAddSubsectionButtonTimeout = null;
+      clearTimeout(this.hideAddSubsectionButtonTimeout);
+      this.hideAddSubsectionButtonTimeout = null;
 
-      if (!this.#showAddSubsectionButtonTimeout) {
-        this.#showAddSubsectionButtonTimeout = setTimeout(() => {
+      if (!this.showAddSubsectionButtonTimeout) {
+        this.showAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.show();
         }, 1000);
       }
@@ -301,8 +266,8 @@ export default class Section extends SectionSkeleton {
     this.replyButtonUnhoverHandler = () => {
       if (this.addSubsectionForm) return;
 
-      clearTimeout(this.#showAddSubsectionButtonTimeout);
-      this.#showAddSubsectionButtonTimeout = null;
+      clearTimeout(this.showAddSubsectionButtonTimeout);
+      this.showAddSubsectionButtonTimeout = null;
 
       deferAddSubsectionButtonHide();
     };
@@ -535,7 +500,7 @@ export default class Section extends SectionSkeleton {
 
     MoveSectionDialog.prototype.loadSourcePage = async function () {
       try {
-        await section.sourcePage.getCode();
+        await section.getSourcePage().getCode();
       } catch (e) {
         if (e instanceof CdError) {
           const { type, code } = e.data;
@@ -570,9 +535,9 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      return Object.assign({}, section.sourcePage, {
+      return Object.assign({}, section.getSourcePage(), {
         sectionInCode: section.inCode,
-        sectionWikilink: `${section.sourcePage}#${section.headline}`,
+        sectionWikilink: `${section.getSourcePage()}#${section.headline}`,
       });
     };
 
@@ -825,7 +790,7 @@ export default class Section extends SectionSkeleton {
           validate: () => {
             const title = this.titleInput.getMWTitle();
             const page = title && new Page(title);
-            return page && page.name !== section.sourcePage.name && page.isProbablyTalkPage();
+            return page && page.name !== section.getSourcePage().name && page.isProbablyTalkPage();
           },
         });
         this.titleField = new OO.ui.FieldLayout(this.titleInput, {
@@ -895,7 +860,10 @@ export default class Section extends SectionSkeleton {
 
           let targetPage = new Page(this.titleInput.getMWTitle());
           // Should be ruled out by making the button disabled.
-          if (targetPage.name === section.sourcePage.name || !targetPage.isProbablyTalkPage()) {
+          if (
+            targetPage.name === section.getSourcePage().name ||
+            !targetPage.isProbablyTalkPage()
+          ) {
             this.abort(cd.s('msd-error-wrongpage'), false);
             return;
           }
@@ -938,7 +906,10 @@ export default class Section extends SectionSkeleton {
     const section = this;
 
     // Make requests in advance.
-    const preparationRequests = [this.sourcePage.getCode(), mw.loader.using('mediawiki.widgets')];
+    const preparationRequests = [
+      this.getSourcePage().getCode(),
+      mw.loader.using('mediawiki.widgets'),
+    ];
 
     const dialog = new MoveSectionDialog();
     cd.g.windowManager.addWindows([dialog]);
@@ -1053,7 +1024,7 @@ export default class Section extends SectionSkeleton {
   locateInCode() {
     this.inCode = null;
 
-    const pageCode = this.sourcePage.code;
+    const pageCode = this.getSourcePage().code;
 
     const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
@@ -1159,9 +1130,9 @@ export default class Section extends SectionSkeleton {
    */
   getWatchedAncestor(includeCurrent) {
     for (
-      let otherSection = includeCurrent ? this : this.parent;
+      let otherSection = includeCurrent ? this : this.getParent();
       otherSection;
-      otherSection = otherSection.parent
+      otherSection = otherSection.getParent()
     ) {
       if (otherSection.watched) {
         return otherSection;
@@ -1177,7 +1148,7 @@ export default class Section extends SectionSkeleton {
    */
   async getCode() {
     try {
-      await this.sourcePage.getCode();
+      await this.getSourcePage().getCode();
       this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
@@ -1207,7 +1178,7 @@ export default class Section extends SectionSkeleton {
     tooltip,
     visible = true,
   }) {
-    if (this.#closingBracketElement) {
+    if (this.closingBracketElement) {
       const wrapper = document.createElement('span');
       wrapper.className = 'cd-sectionLinkWrapper';
       if (!visible) {
@@ -1231,7 +1202,7 @@ export default class Section extends SectionSkeleton {
       }
 
       wrapper.appendChild(a);
-      this.#editSectionElement.insertBefore(wrapper, this.#closingBracketElement);
+      this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
     }
   }
 
@@ -1242,14 +1213,14 @@ export default class Section extends SectionSkeleton {
    */
   // Using a getter allows to save a little time on running $().
   get $elements() {
-    if (this.#cached$elements === undefined) {
-      this.#cached$elements = $(this.elements);
+    if (this.cached$elements === undefined) {
+      this.cached$elements = $(this.elements);
     }
-    return this.#cached$elements;
+    return this.cached$elements;
   }
 
   set $elements(value) {
-    this.#cached$elements = value;
+    this.cached$elements = value;
     this.elements = value.get();
   }
 
@@ -1429,6 +1400,31 @@ export default class Section extends SectionSkeleton {
     }
 
     return matches;
+  }
+
+  /**
+   * Get the wiki page that has the source code of the section (may be different from the current
+   * page if the section is transcluded from another page).
+   *
+   * @type {Page}
+   */
+  getSourcePage() {
+    return this.sourcePage;
+  }
+
+  /**
+   * Get the parent section of the section if the section is lower than level 2.
+   *
+   * @returns {?Section}
+   */
+  getParent() {
+    return (
+      cd.sections
+        .slice(0, this.id)
+        .reverse()
+        .find((section) => section.level < this.level) ||
+      null
+    );
   }
 
   /**

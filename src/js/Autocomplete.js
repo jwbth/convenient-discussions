@@ -431,17 +431,19 @@ export default class Autocomplete {
         values: async (text, callback) => {
           if (!this.commentLinks.default) {
             this.commentLinks.default = [];
-            this.commentLinks.comments.forEach(({ anchor, author, timestamp, text }) => {
+            this.commentLinks.comments.forEach((comment) => {
+              let { anchor, author, timestamp, getText } = comment;
+              getText = getText.bind(comment);
               let snippet;
               const snippetMaxLength = 80;
-              if (text.length > snippetMaxLength) {
-                snippet = text.slice(0, snippetMaxLength);
+              if (getText().length > snippetMaxLength) {
+                snippet = getText().slice(0, snippetMaxLength);
                 const spacePos = snippet.lastIndexOf(mw.msg('word-separator'));
                 if (spacePos !== -1) {
                   snippet = snippet.slice(0, spacePos);
                 }
               } else {
-                snippet = text;
+                snippet = getText();
               }
               this.commentLinks.default.push({
                 key: `${author.name}${mw.msg('comma-separator')}${timestamp}${mw.msg('colon-separator')}${snippet}`,

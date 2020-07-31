@@ -23,8 +23,6 @@ import { parseTimestamp } from './timestamp';
  * @module Page
  */
 export default class Page {
-  #cachedIsArchivePage
-
   /**
    * Create a page instance.
    *
@@ -102,8 +100,8 @@ export default class Page {
    * @returns {boolean}
    */
   isArchivePage() {
-    if (this.#cachedIsArchivePage !== undefined) {
-      return this.#cachedIsArchivePage;
+    if (this.cachedIsArchivePage !== undefined) {
+      return this.cachedIsArchivePage;
     }
     let result = $('.cd-archivingInfo').data('isArchivePage');
     if (result === undefined) {
@@ -117,7 +115,7 @@ export default class Page {
         }
       }
     }
-    this.#cachedIsArchivePage = Boolean(result);
+    this.cachedIsArchivePage = Boolean(result);
     return result;
   }
 
@@ -167,14 +165,14 @@ export default class Page {
   }
 
   /**
-   * Get the source page for the page (i.e., a page from which archivation is happening). Returns
-   * the page itself if it is not an archive page. Relies on {@link
+   * Get the source page for the page (i.e., the page from which the archiving is happening).
+   * Returns the page itself if it is not an archive page. Relies on {@link
    * module:defaultConfig.archivePaths} and/or elements with the class `cd-archivingInfo` and
    * attribute `data-source-page`.
    *
    * @returns {Page}
    */
-  getSourcePage() {
+  getArchivedPage() {
     let result = $('.cd-archivingInfo').data('sourcePage');
     if (!result) {
       const name = this.realName || this.name;
