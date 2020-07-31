@@ -140,8 +140,9 @@ export async function setSettings(settings) {
 /**
  * Request the pages visits data from the server.
  *
- * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
- * can be critical for determining new comments.
+ * `mw.user.options` is not used even on first run because the script may not run immediately after
+ * the page is loaded. In fact, when the page is loaded in a background tab, it can be throttled
+ * until it is focused, so an indefinite amount of time can pass.
  *
  * @param {boolean} [reuse=false]
  * @returns {GetVisitsReturn}

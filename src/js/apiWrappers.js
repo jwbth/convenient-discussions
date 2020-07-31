@@ -103,10 +103,8 @@ export function getUserInfo(reuse = false) {
     return cachedUserInfoRequest;
   }
 
-  // We never use timers here as this request can be reused while checking for new messages in the
-  // background which requires using timers (?), setting the process on hold if the browser
-  // throttles background tabs.
-  cachedUserInfoRequest = makeRequestNoTimers({
+  cd.g.api = cd.g.api || new mw.Api();
+  cachedUserInfoRequest = cd.g.api.get({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
