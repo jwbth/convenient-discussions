@@ -44,6 +44,13 @@ export default class Section extends SectionSkeleton {
     this.elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
     /**
+     * Section elements as a jQuery object.
+     *
+     * @type {JQuery}
+     */
+    this.$elements = $(this.elements);
+
+    /**
      * Section headline element as a jQuery object.
      *
      * @type {JQuery}
@@ -1203,24 +1210,6 @@ export default class Section extends SectionSkeleton {
       wrapper.appendChild(a);
       this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
     }
-  }
-
-  /**
-   * Section elements as a jQuery object.
-   *
-   * @type {JQuery}
-   */
-  // Using a getter allows to save a little time on running $().
-  get $elements() {
-    if (this.cached$elements === undefined) {
-      this.cached$elements = $(this.elements);
-    }
-    return this.cached$elements;
-  }
-
-  set $elements(value) {
-    this.cached$elements = value;
-    this.elements = value.get();
   }
 
   /**

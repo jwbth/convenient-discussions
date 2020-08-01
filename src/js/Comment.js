@@ -97,6 +97,13 @@ export default class Comment extends CommentSkeleton {
     delete this.authorName;
 
     /**
+     * Comment elements as a jQuery object.
+     *
+     * @type {JQuery}
+     */
+    this.$elements = $(this.elements);
+
+    /**
      * Comment signature element.
      *
      * @type {Element}
@@ -1233,24 +1240,6 @@ export default class Comment extends CommentSkeleton {
     this.overlay.parentElement.removeChild(this.overlay);
     this.overlay = null;
     this.$overlay = null;
-  }
-
-  /**
-   * Comment elements as a jQuery object.
-   *
-   * @type {JQuery}
-   */
-  // Using a getter allows to save a little time on running $().
-  get $elements() {
-    if (this.cached$elements === undefined) {
-      this.cached$elements = $(this.elements);
-    }
-    return this.cached$elements;
-  }
-
-  set $elements(value) {
-    this.cached$elements = value;
-    this.elements = value.get();
   }
 
   /**
