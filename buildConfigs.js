@@ -87,4 +87,4 @@ if (!cdLoaded) {
   fs.writeFileSync(`dist/config/${config.name}${devSuffix}.js`, data);
 });
 
-console.log('Configs have been built successfully.');
+console.log('Project configs have been built successfully.');

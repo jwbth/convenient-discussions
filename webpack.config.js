@@ -27,7 +27,19 @@ if (!config.protocol || !config.server || !config.rootPath || !config.articlePat
   throw new Error('No protocol/server/root path/article path found in config.json5.');
 }
 
-const pathname = config.articlePath.replace('$1', config.rootPath);
+const wikiUrlencode = (s) => (
+  encodeURIComponent(s)
+    .replace(/'/g,'%27')
+    .replace(/%20/g,'_')
+    .replace(/%3B/g,';')
+    .replace(/%40/g,'@')
+    .replace(/%24/g,'$')
+    .replace(/%2C/g,',')
+    .replace(/%2F/g,'/')
+    .replace(/%3A/g,':')
+);
+
+const pathname = wikiUrlencode(config.articlePath.replace('$1', config.rootPath));
 const rootUrl = `${config.protocol}://${config.server}${pathname}`;
 
 module.exports = {
@@ -66,7 +78,7 @@ module.exports = {
         use: {
           loader: 'worker-loader',
           options: {
-            name: `worker${fileNamePostfix}.js`,
+            name: `convenientDiscussions-worker${fileNamePostfix}.js`,
             inline: true,
             fallback: false,
           },
