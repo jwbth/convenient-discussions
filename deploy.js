@@ -10,11 +10,12 @@ require('json5/lib/register.js');
 
 const config = require('./config.json5');
 
-const warning = (text) => console.log(chalk.yellowBright(text));
-const error = (text) => console.log(chalk.red(text));
-const success = chalk.green;
+const warning = (text) => console.log(chalk.yellowBright(text) + '\n');
+const error = (text) => console.log(chalk.red(text) + '\n');
+const success = (text) => console.log(chalk.green(text) + '\n');
 const code = chalk.inverse;
 const keyword = chalk.cyan;
+const important = chalk.magentaBright;
 
 /*
   node deploy --dev
@@ -144,15 +145,22 @@ async function prepareEdits() {
 
     edits.push({
       title: config.rootPath + file,
-      content: content.slice(0, 300) + (content.length > 300 ? '...' : ''),
+      content,
+      contentSnippet: content.slice(0, 300) + (content.length > 300 ? '...' : ''),
       summary,
     });
   });
 
+  const byteLength = (text) => (new TextEncoder().encode(text)).length;
+
   const overview = edits
-    .map((edit) => `${keyword('Page:')} ${edit.title}\n${keyword('Edit summary:')} ${edit.summary}\n${keyword('Content:')} ${code(edit.content)}\n`)
+    .map((edit) => (
+      `${keyword('Page:')} ${edit.title}\n` +
+      `${keyword('Edit summary:')} ${edit.summary}\n` +
+      `${keyword(`Content (${important(byteLength(edit.content) + ' bytes')}):`)} ${code(edit.contentSnippet)}\n`
+    ))
     .join('\n');
-  console.log(`\n${'Gonna make these edits:'}\n\n${overview}`);
+  console.log('Gonna make these edits:\n\n' + overview);
   const { confirm } = await prompts({
     type: 'confirm',
     name: 'confirm',

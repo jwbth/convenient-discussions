@@ -16,14 +16,14 @@
   distFiles: {
     default: [
       'convenientDiscussions.js',
-      'convenientDiscussions.js.LICENSE.txt',
+      'convenientDiscussions.js.LICENSE',
       'convenientDiscussions.js.map.js',
-      'worker.js.map.js',
+      'convenientDiscussions-worker.js.map.js',
     ],
     dev: [
       'convenientDiscussions-dev.js',
       'convenientDiscussions-dev.js.map.js',
-      'worker-dev.js.map.js',
+      'convenientDiscussions-worker-dev.js.map.js',
     ],
   },
 }
