@@ -1249,11 +1249,7 @@ export default class Comment extends CommentSkeleton {
   /**
    * Get the parent comment of the comment.
    *
-   * This will work only if comments in `cd.comments` are in the order of their presence on the page
-   * (which should be the case).
-   *
    * @returns {?Comment}
-   * @private
    */
   getParent() {
     if (this.cachedParent === undefined && this.id === 0) {
@@ -1880,9 +1876,6 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Find any one comment inside the viewport.
-   *
-   * This will work only if comments in `cd.comments` are in the order of their presence on the page
-   * (which should be the case normally).
    *
    * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
    *   comment in the specified direction.

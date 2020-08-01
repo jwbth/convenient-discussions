@@ -1394,7 +1394,7 @@ export default class Section extends SectionSkeleton {
    * Get the wiki page that has the source code of the section (may be different from the current
    * page if the section is transcluded from another page).
    *
-   * @type {Page}
+   * @returns {Page}
    */
   getSourcePage() {
     return this.sourcePage;
@@ -1405,9 +1405,7 @@ export default class Section extends SectionSkeleton {
    * section itself if it is of level 2 (even if there is a level 1 section) or if there is no
    * higher level section (the current section may be of level 3 or 1, for example).
    *
-   * @name baseSection
-   * @type {Section}
-   * @instance module:Section
+   * @returns {Section}
    */
   getBase() {
     if (this.level <= 2) {
@@ -1441,10 +1439,8 @@ export default class Section extends SectionSkeleton {
   /**
    * Get the collection of the section's subsections.
    *
-   * @name subsections
-   * @param {boolean} [allLevels=false] Whether to include subsections of subsections and so on.
-   * @type {Section[]}
-   * @instance module:Section
+   * @param {boolean} [indirect=false] Whether to include subsections of subsections and so on.
+   * @returns {Section[]}
    */
   getChildren(indirect = false) {
     const children = [];
