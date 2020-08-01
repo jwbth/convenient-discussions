@@ -416,7 +416,7 @@ export default class Section extends SectionSkeleton {
         });
     }
 
-    const baseSection = this.getBaseSection();
+    const baseSection = this.getBase();
     if (baseSection.$addSubsectionButtonContainer) {
       baseSection.$addSubsectionButtonContainer.hide();
       clearTimeout(baseSection.showAddSubsectionButtonTimeout);
@@ -1409,7 +1409,7 @@ export default class Section extends SectionSkeleton {
    * @type {Section}
    * @instance module:Section
    */
-  getBaseSection() {
+  getBase() {
     if (this.level <= 2) {
       return this;
     }
@@ -1446,21 +1446,21 @@ export default class Section extends SectionSkeleton {
    * @type {Section[]}
    * @instance module:Section
    */
-  getSubsections(allLevels = false) {
-    const subsections = [];
+  getChildren(indirect = false) {
+    const children = [];
     cd.sections
       .slice(this.id + 1)
       .some((section) => {
         if (section.level > this.level) {
-          if (allLevels || section.level === this.level + 1) {
-            subsections.push(section);
+          if (indirect || section.level === this.level + 1) {
+            children.push(section);
           }
         } else {
           return true;
         }
       });
 
-    return subsections;
+    return children;
   }
 
   /**
@@ -1704,7 +1704,7 @@ export default class Section extends SectionSkeleton {
       .filter((section) => section.actionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
-        const subsections = section.getSubsections(true);
+        const subsections = section.getChildren(true);
         const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
         if (targetSection.$replyButtonLink) {
           targetSection.$replyButtonLink

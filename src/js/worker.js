@@ -105,7 +105,7 @@ function parse() {
 
   cd.debug.startTimer('identifying replies');
   cd.comments.forEach((comment) => {
-    comment.getReplies().forEach((reply) => {
+    comment.getChildren().forEach((reply) => {
       reply.targetComment = comment;
     });
     if (comment.getSection()) {

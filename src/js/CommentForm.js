@@ -742,7 +742,7 @@ export default class CommentForm {
       });
     }
 
-    if (this.mode === 'edit' && !this.target.getReplies().length) {
+    if (this.mode === 'edit' && !this.target.getChildren().length) {
       const selected = dataToRestore ? dataToRestore.delete : false;
 
       /**

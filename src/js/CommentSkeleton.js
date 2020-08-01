@@ -239,7 +239,7 @@ export default class CommentSkeleton {
    *
    * @returns {CommentSkeleton[]}
    */
-  getReplies() {
+  getChildren() {
     if (this.id === cd.comments.length - 1) {
       return [];
     }
@@ -256,7 +256,7 @@ export default class CommentSkeleton {
       }
     }
 
-    const replies = [];
+    const children = [];
     cd.comments
       .slice(this.id + 1)
       .some((otherComment) => {
@@ -266,13 +266,13 @@ export default class CommentSkeleton {
             // Comments mistakenly indented more than one level
             otherComment.id === this.id + 1
           ) {
-            replies.push(otherComment);
+            children.push(otherComment);
           }
         } else {
           return true;
         }
       });
 
-    return replies;
+    return children;
   }
 }
