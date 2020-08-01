@@ -832,6 +832,14 @@ function restoreCommentFormsFromData(commentFormsData) {
   });
   if (restored) {
     saveSession();
+    const notification = mw.notification.notify(cd.s('restore-restored-text'), {
+      title: cd.s('restore-restored-title'),
+    });
+    notification.$notification.on('click', () => {
+      if (navPanel.isMounted()) {
+        navPanel.goToNextCommentForm(true);
+      }
+    });
   }
   if (rescue.length) {
     rescueCommentFormsContent(rescue);
@@ -861,14 +869,6 @@ export function restoreCommentForms() {
       const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || {};
       if (commentFormsData.forms) {
         restoreCommentFormsFromData(commentFormsData);
-        const notification = mw.notification.notify(cd.s('restore-restored-text'), {
-          title: cd.s('restore-restored-title'),
-        });
-        notification.$notification.on('click', () => {
-          if (navPanel.isMounted()) {
-            navPanel.goToNextCommentForm(true);
-          }
-        });
       }
     }
   } else {
