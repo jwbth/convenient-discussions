@@ -98,7 +98,7 @@ module.exports = {
           },
         },
         extractComments: !dev && {
-          filename: (fileData) => `${fileData.filename}.LICENSE`,
+          filename: (filename) => `${filename}.LICENSE`,
           banner: (licenseFile) => `For license information please see ${rootUrl}${licenseFile}`,
         },
         sourceMap: !snippet,
