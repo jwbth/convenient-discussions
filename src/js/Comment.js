@@ -96,6 +96,8 @@ export default class Comment extends CommentSkeleton {
      */
     delete this.authorName;
 
+    cd.debug.startTimer('jquery');
+
     /**
      * Comment elements as a jQuery object.
      *
@@ -104,18 +106,20 @@ export default class Comment extends CommentSkeleton {
     this.$elements = $(this.elements);
 
     /**
-     * Comment signature element.
+     * Comment signature element as a jQuery object.
      *
-     * @type {Element}
+     * @type {JQuery}
      */
-    this.signatureElement = signature.element;
+    this.$signature = $(signature.element);
 
     /**
-     * Comment timestamp element.
+     * Comment timestamp element as a jQuery object.
      *
-     * @type {Element}
+     * @type {JQuery}
      */
-    this.timestampElement = signature.timestampElement;
+    this.$timestamp = $(signature.timestampElement);
+
+    cd.debug.stopTimer('jquery');
 
     /**
      * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
@@ -754,7 +758,7 @@ export default class Comment extends CommentSkeleton {
 
     const compareData = await Promise.all(compareRequests);
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
-    const thisTextAndSignature = this.getText(false) + ` ${this.signatureElement.innerText}`;
+    const thisTextAndSignature = this.getText(false) + ` ${this.$signature.get(0).innerText}`;
     const matches = compareData.map((data, i) => {
       const body = data?.compare?.body;
       if (!body) {
