@@ -1274,7 +1274,7 @@ export default class CommentForm {
   initAutocomplete() {
     let commentsInSection = [];
     if (this.targetSection) {
-      commentsInSection = this.targetSection.getBaseSection().comments;
+      commentsInSection = this.targetSection.getBase().comments;
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
       cd.comments.some((comment) => {
