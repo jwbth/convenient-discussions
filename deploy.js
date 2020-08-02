@@ -134,7 +134,7 @@ async function prepareEdits() {
     if (nowikiMatch) {
       warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}`);
     }
-    if (path.extname(file) === '.js') {
+    if (path.extname(file) === '.js' && !file.includes('.map.js')) {
       content = `// <nowiki>\n${content}\n// </nowiki>`;
     }
 
