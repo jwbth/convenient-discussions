@@ -102,7 +102,7 @@ function requestComments() {
 function getLastDeployedCommit(revisions) {
   let lastDeployedCommit;
   revisions.some((revision) => {
-    lastDeployedCommit = revision.comment.match(/\b[0-9a-f]{7}(?= @)/);
+    [lastDeployedCommit] = revision.comment.match(/\b[0-9a-f]{7}(?= @)/) || [];
     return lastDeployedCommit;
   });
   if (lastDeployedCommit) {
