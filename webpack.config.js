@@ -131,8 +131,8 @@ module.exports = {
     snippet ?
       undefined :
       new webpack.SourceMapDevToolPlugin({
-        filename: '[file].map.js',
-        append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=text/javascript'
+        filename: '[file].map.json',
+        append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=application/json'
       }),
   ].filter((el) => el !== undefined),
 };
