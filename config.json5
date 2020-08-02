@@ -17,13 +17,13 @@
     default: [
       'convenientDiscussions.js',
       'convenientDiscussions.js.LICENSE',
-      'convenientDiscussions.js.map.js',
-      'convenientDiscussions-worker.js.map.js',
+      'convenientDiscussions.js.map.json',
+      'convenientDiscussions-worker.js.map.json',
     ],
     dev: [
       'convenientDiscussions-dev.js',
-      'convenientDiscussions-dev.js.map.js',
-      'convenientDiscussions-worker-dev.js.map.js',
+      'convenientDiscussions-dev.js.map.json',
+      'convenientDiscussions-worker-dev.js.map.json',
     ],
   },
 }
