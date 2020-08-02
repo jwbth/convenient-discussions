@@ -211,12 +211,17 @@ function deploy() {
 function editNext() {
   const edit = edits.shift();
   if (edit) {
-    client.edit(edit.title, edit.content, edit.summary, (e, info, next, data) => {
+    client.edit(edit.title, edit.content, edit.summary, (e, info) => {
       if (e) {
         error(e);
         return;
       }
-      console.log(info, data);
+      if (info && info.result === 'Success') {
+        success(`Successfully edited ${important(edit.title)}. Edit timestamp: ${new Date(edit.newtimestamp).toUTCString()}.`);
+        editNext();
+      } else {
+        error('Unknown error', info);
+      }
     });
   } else {
     success('The files have been successfully deployed.');
