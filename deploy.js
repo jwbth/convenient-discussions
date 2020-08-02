@@ -10,9 +10,9 @@ require('json5/lib/register.js');
 
 const config = require('./config.json5');
 
-const warning = (text) => console.log(chalk.yellowBright(text) + '\n');
-const error = (text) => console.log(chalk.red(text) + '\n');
-const success = (text) => console.log(chalk.green(text) + '\n');
+const warning = (text) => console.log(chalk.yellowBright(text));
+const error = (text) => console.log(chalk.red(text));
+const success = (text) => console.log(chalk.green(text));
 const code = chalk.inverse;
 const keyword = chalk.cyan;
 const important = chalk.magentaBright;
@@ -157,10 +157,10 @@ async function prepareEdits() {
     .map((edit) => (
       `${keyword('Page:')} ${edit.title}\n` +
       `${keyword('Edit summary:')} ${edit.summary}\n` +
-      `${keyword(`Content (${important(byteLength(edit.content) + ' bytes')}):`)} ${code(edit.contentSnippet)}\n`
+      `${keyword(`Content (${important(byteLength(edit.content).toLocaleString() + ' bytes')}):`)} ${code(edit.contentSnippet)}\n`
     ))
     .join('\n');
-  console.log('Gonna make these edits:\n\n' + overview);
+  console.log(`Gonna make these edits:\n\n${overview}`);
   const { confirm } = await prompts({
     type: 'confirm',
     name: 'confirm',
@@ -217,7 +217,7 @@ function editNext() {
         return;
       }
       if (info && info.result === 'Success') {
-        success(`Successfully edited ${important(edit.title)}. Edit timestamp: ${new Date(edit.newtimestamp).toUTCString()}.`);
+        success(`Successfully edited ${important(edit.title)}. Edit timestamp: ${new Date(info.newtimestamp).toUTCString()}.`);
         editNext();
       } else {
         error('Unknown error', info);
