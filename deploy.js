@@ -217,7 +217,11 @@ function editNext() {
         return;
       }
       if (info && info.result === 'Success') {
-        success(`Successfully edited ${important(edit.title)}. Edit timestamp: ${new Date(info.newtimestamp).toUTCString()}.`);
+        if (info.nochange === undefined) {
+          success(`Successfully edited ${important(edit.title)}. Edit timestamp: ${new Date(info.newtimestamp).toUTCString()}.`);
+        } else {
+          success(`No changes in ${important(edit.title)}.`);
+        }
         editNext();
       } else {
         error('Unknown error', info);
