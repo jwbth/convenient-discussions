@@ -234,12 +234,12 @@ export default {
   optionsPrefix: 'convenientDiscussions',
 
   /**
-   * Script help wikilink. Used in the watchlist and, if there is no tag, in summary.
+   * Wikilink to the script's page. Used in the watchlist and, if there is no tag, in summary.
    *
    * @type {string}
-   * @default 'commons:User:JWBTH/CD'
+   * @default 'c:User:JWBTH/CD'
    */
-  helpWikilink: 'commons:User:JWBTH/CD',
+  scriptPageWikilink: 'c:User:JWBTH/CD',
 
   /**
    * Names of the templates that are analogs of {@link

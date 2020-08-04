@@ -147,7 +147,7 @@ export default {
 
   optionsPrefix: 'cd',
 
-  helpWikilink: 'U:JWBTH/CD',
+  scriptPageWikilink: 'U:JWBTH/CD',
 
   unsignedTemplates: [
     'unsigned',

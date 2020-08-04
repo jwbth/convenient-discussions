@@ -176,7 +176,7 @@ function addWatchlistMenu() {
     .addClass('cd-watchlistMenu-legend')
     .appendTo($menu);
   $('<a>')
-    .attr('href', mw.util.getUrl(cd.config.helpWikilink))
+    .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
     .html(cd.s('script-name-short'))
     .appendTo($legend);
 
