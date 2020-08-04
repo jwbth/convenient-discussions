@@ -16,7 +16,6 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
 import g from './staticGlobals';
-import { ElementsTreeWalker } from './treeWalker';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
 import { resetCommentAnchors } from './timestamp';
 
@@ -120,12 +119,14 @@ function parse() {
       comment.toMe = comment.targetComment.own;
       delete comment.targetComment;
     }
+    delete comment.parser;
     delete comment.elements;
     delete comment.parts;
     delete comment.highlightables;
     delete comment.addAttributes;
     delete comment.setLevels;
     delete comment.getSection;
+    delete comment.getChildren;
   });
   cd.debug.stopTimer('identifying replies');
 
