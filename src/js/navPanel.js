@@ -18,8 +18,8 @@ import {
   reorderArray,
 } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
-import { setVisits } from './options';
 import { reloadPage } from './boot';
+import { setVisits } from './options';
 
 let newCount;
 let unseenCount;

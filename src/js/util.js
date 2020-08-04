@@ -237,7 +237,7 @@ export function spacesToUnderlines(s) {
 }
 
 /**
- * Replaces sequences of spaces to one spaces.
+ * Replaces sequences of spaces with single spaces.
  *
  * @param {string} s
  * @returns {string}

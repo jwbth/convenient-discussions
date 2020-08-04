@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 const { exec } = require('child_process');
 
 const argv = require('yargs').argv;
@@ -15,7 +14,7 @@ const error = (text) => console.log(chalk.red(text));
 const success = (text) => console.log(chalk.green(text));
 const code = chalk.inverse;
 const keyword = chalk.cyan;
-const important = chalk.magentaBright;
+const important = chalk.greenBright;
 
 /*
   node deploy --dev
