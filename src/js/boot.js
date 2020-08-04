@@ -9,6 +9,7 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
 import Section from './Section';
+import Worker from './worker';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel, { updatePageTitle } from './navPanel';
@@ -512,6 +513,7 @@ function initOouiAndElementPrototypes() {
  */
 export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
+  cd.g.worker = new Worker();
 
   await (messagesRequest || loadMessages());
   initGlobals();

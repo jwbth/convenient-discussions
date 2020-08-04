@@ -69,8 +69,6 @@ function removeAlarmViaWorker() {
  * @private
  */
 async function checkForNewComments() {
-  if (!cd.g.worker) return;
-
   if (document.hidden && !isBackgroundCheckArranged) {
     const callback = () => {
       $(document).off('visibilitychange', callback);

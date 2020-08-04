@@ -9,7 +9,6 @@ import { create as nanoCssCreate } from 'nano-css';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
-import Worker from './worker';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
@@ -170,8 +169,6 @@ function go() {
 
     cd.debug.stopTimer('start');
     cd.debug.startTimer('loading data');
-
-    cd.g.worker = new Worker();
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
