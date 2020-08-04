@@ -231,8 +231,7 @@ export default class Autocomplete {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
             let values = [];
-            const isInterwiki = /^:/.test(text) || /^[a-z]\w*:/.test(text);
-            const makeRequest = (
+            const valid = (
               text &&
               text.length <= 255 &&
 
@@ -240,16 +239,18 @@ export default class Autocomplete {
               (text.match(spacesRegexp) || []).length <= 9 &&
 
               // Forbidden characters
-              !/[#<>[\]|{}]/.test(text) &&
-
-              // Interwikis
+              !/[#<>[\]|{}]/.test(text)
+            );
+            const isInterwiki = /^:/.test(text) || /^[a-z]\w*:/.test(text);
+            const makeRequest = (
+              valid &&
               (!isInterwiki || cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text))
             );
             if (makeRequest) {
               values.push(...this.wikilinks.cache);
               values = Autocomplete.search(text, values);
             }
-            if (makeRequest || isInterwiki) {
+            if (valid) {
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
             }
