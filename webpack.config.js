@@ -1,8 +1,10 @@
+const fs = require('fs');
 const path = require('path');
 
 const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier');
+const BannerWebpackPlugin = require('banner-webpack-plugin');
 const argv = require('yargs').argv;
 require('json5/lib/register.js');
 
@@ -16,12 +18,14 @@ const dev = Boolean(process.env.npm_config_dev);
 const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
 const fullCode = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
 
-let fileNamePostfix = '';
+let filenamePostfix = '';
 if (snippet) {
-  fileNamePostfix = `-snippet-${fullCode}`;
+  filenamePostfix = `-snippet-${fullCode}`;
 } else if (dev) {
-  fileNamePostfix = '-dev';
+  filenamePostfix = '-dev';
 }
+const filename = `convenientDiscussions${filenamePostfix}.js`;
+const sourceMapExt = '.map.json';
 
 if (!config.protocol || !config.server || !config.rootPath || !config.articlePath) {
   throw new Error('No protocol/server/root path/article path found in config.json5.');
@@ -42,12 +46,67 @@ const wikiUrlencode = (s) => (
 const pathname = wikiUrlencode(config.articlePath.replace('$1', config.rootPath));
 const rootUrl = `${config.protocol}://${config.server}${pathname}`;
 
+const plugins = [
+  new webpack.DefinePlugin({
+    IS_SNIPPET: snippet,
+    CONFIG_FILE_NAME: JSON.stringify(fullCode),
+    LANG_FILE_NAME: JSON.stringify(lang + '.json'),
+    IS_DEV: dev,
+  }),
+  new WebpackBuildNotifierPlugin({
+    suppressSuccess: true,
+    suppressWarning: true,
+  })
+];
+
+if (!snippet) {
+  plugins.push(
+    new webpack.SourceMapDevToolPlugin({
+      filename: `[file]${sourceMapExt}`,
+      append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=application/json',
+    }),
+    new webpack.BannerPlugin({
+      banner: '<nowiki>',
+      test: filename,
+    }),
+
+    // We can't use BannerWebpackPlugin for both the code to prepend and append, because if we add
+    // the code to prepend with BannerWebpackPlugin, the source maps would break.
+    // `webpack.BannerPlugin`, on the other hand, handles this, but doesn't have an option for the
+    // code to append to the build (this code doesn't break the source maps).
+    new BannerWebpackPlugin({
+      chunks: {
+        main: {
+          afterContent: '\n/*! </nowiki> */',
+        },
+      },
+    }),
+
+    // Fix the exposal of an absolute path in the source map by worker-loader
+    {
+      apply: (compiler) => {
+        compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
+          const sourceMapFilename = `./dist/${filename}${sourceMapExt}`;
+          const content = fs.readFileSync(sourceMapFilename).toString();
+          const newContent = content.replace(
+            /(require\(\\"!!)([^"]+[^.\\/])([\\/]+node_modules[\\/]+worker-loader)/g,
+
+            // Fill with spaces to avoid the breaking of source maps
+            (s, before, beginning, end) => before + ' '.repeat(beginning.length - 1) + '.' + end,
+          );
+          fs.writeFileSync(sourceMapFilename, newContent);
+        });
+      },
+    },
+  );
+}
+
 module.exports = {
   mode: snippet ? 'development' : 'production',
   entry: './src/js/app.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: `convenientDiscussions${fileNamePostfix}.js`,
+    filename,
   },
   performance: {
     hints: false,
@@ -65,9 +124,9 @@ module.exports = {
             plugins: [
               '@babel/plugin-transform-runtime',
               '@babel/plugin-transform-async-to-generator',
-            ]
-          }
-        }
+            ],
+          },
+        },
       },
       {
         test: /\.(less|css)$/,
@@ -78,13 +137,13 @@ module.exports = {
         use: {
           loader: 'worker-loader',
           options: {
-            name: `convenientDiscussions-worker${fileNamePostfix}.js`,
+            name: `convenientDiscussions-worker${filenamePostfix}.js`,
             inline: true,
             fallback: false,
           },
         },
-      }
-    ]
+      },
+    ],
   },
   watch: snippet,
   optimization: {
@@ -103,36 +162,24 @@ module.exports = {
           output: {
             // Otherwise messes with \x01 \x02 \x03 \x04.
             ascii_only: true,
+
+            comments: dev ? /^\**!|@preserve|@license|@cc_on/i : /^\**!/,
           },
-          mangle: !snippet && {
+          mangle: {
             keep_classnames: true,
             reserved: ['cd'],
           },
         },
         extractComments: !dev && {
+          // Removed "\**!|" at the beginning not to extract the <nowiki> comment
+          condition: /@preserve|@license|@cc_on/i,
+
           filename: (filename) => `${filename}.LICENSE`,
           banner: (licenseFile) => `For license information please see ${rootUrl}${licenseFile}`,
         },
-        sourceMap: !snippet,
+        sourceMap: true,
       }),
     ],
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      IS_SNIPPET: snippet,
-      CONFIG_FILE_NAME: JSON.stringify(fullCode),
-      LANG_FILE_NAME: JSON.stringify(lang + '.json'),
-      IS_DEV: dev,
-    }),
-    new WebpackBuildNotifierPlugin({
-      suppressSuccess: true,
-      suppressWarning: true,
-    }),
-    snippet ?
-      undefined :
-      new webpack.SourceMapDevToolPlugin({
-        filename: '[file].map.json',
-        append: '\n//# sourceMappingURL=https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/[url]&action=raw&ctype=application/json'
-      }),
-  ].filter((el) => el !== undefined),
+  plugins,
 };

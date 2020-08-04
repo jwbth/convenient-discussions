@@ -120,7 +120,13 @@ async function prepareEdits() {
     content = fs.readFileSync(`./dist/${file}`).toString();
     const [tildesMatch] = content.match(/~~~~.{0,100}/) || [];
     const [substMatch] = content.match(/\{\{(safe)?subst:.{0,100}/) || [];
-    const [nowikiMatch] = content.match(/<\/nowiki>.{0,100}/) || [];
+    const [nowikiMatch] = (
+      content
+        // Ignore the "// </nowiki>" piece, added from the both sides of the build.
+        .replace(/\/(?:\*!?|\/) <\/nowiki>/g, '')
+        .match(/<\/nowiki>.{0,100}/) ||
+      []
+    );
     if (tildesMatch || substMatch) {
       const snippet = code(tildesMatch || substMatch);
       if (nowikiMatch) {
@@ -132,9 +138,6 @@ async function prepareEdits() {
     }
     if (nowikiMatch) {
       warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}`);
-    }
-    if (path.extname(file) === '.js') {
-      content = `// <nowiki>\n${content}\n// </nowiki>`;
     }
 
     let summary = `Update to ${commits[0].hash} @ ${branch}`;
