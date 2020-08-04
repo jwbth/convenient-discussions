@@ -25,6 +25,8 @@ cd.g = g;
 cd.debug = debug;
 cd.debug.init();
 
+let firstRun = true;
+
 const context = {
   CommentClass: CommentSkeleton,
   SectionClass: SectionSkeleton,
@@ -148,6 +150,11 @@ function parse() {
  */
 function onMessageFromWindow(e) {
   const message = e.data;
+
+  if (firstRun) {
+    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link from the file name and line number to open the source code in your debug tool. Note that there is a bug in Chrome (https://bugs.chromium.org/p/chromium/issues/detail?id=1111297) that prevents opening the source code in that browser, while it\'s OK in Firefox.');
+    firstRun = false;
+  }
 
   if (message.type === 'setAlarm') {
     setAlarm(message.interval);
