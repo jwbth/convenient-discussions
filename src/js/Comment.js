@@ -269,18 +269,18 @@ export default class Comment extends CommentSkeleton {
     this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     return {
-      underlayTop: -options.layersContainerOffset.top + this.positions.top,
-      underlayLeft: (
-        -options.layersContainerOffset.left +
+      layersTop: this.positions.top - options.layersContainerOffset.top,
+      layersLeft: (
         this.positions.left -
-        cd.g.COMMENT_UNDERLAY_SIDE_MARGIN
+        cd.g.COMMENT_UNDERLAY_SIDE_MARGIN -
+        options.layersContainerOffset.left
       ),
-      underlayWidth: (
+      layersWidth: (
         this.positions.right -
         this.positions.left +
         cd.g.COMMENT_UNDERLAY_SIDE_MARGIN * 2
       ),
-      underlayHeight: this.positions.bottom - this.positions.top,
+      layersHeight: this.positions.bottom - this.positions.top,
     };
   }
 
@@ -444,7 +444,7 @@ export default class Comment extends CommentSkeleton {
       this.underlay &&
       (
         (
-          -options.layersContainerOffset.top + window.pageYOffset + options.rectTop.top !==
+          window.pageYOffset + options.rectTop.top - options.layersContainerOffset.top !==
           this.layersTop
         ) ||
         options.rectBottom.bottom - options.rectTop.top !== this.layersHeight ||
@@ -453,13 +453,7 @@ export default class Comment extends CommentSkeleton {
     );
 
     if (!this.underlay || moved) {
-      const positions = this.calculateLayersPositions(options);
-      if (positions) {
-        this.layersTop = positions.underlayTop;
-        this.layersLeft = positions.underlayLeft;
-        this.layersWidth = positions.underlayWidth;
-        this.layersHeight = positions.underlayHeight;
-      }
+      Object.assign(this, this.calculateLayersPositions(options));
     }
 
     if (this.layersLeft === undefined) {

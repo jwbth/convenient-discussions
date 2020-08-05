@@ -149,7 +149,7 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          // This allows for better debugging (less places where you can't set a breakpoint) while
+          // This provides better debugging (less places where you can't set a breakpoint) while
           // costing not so much size.
           compress: {
             // + 0.3% to file size

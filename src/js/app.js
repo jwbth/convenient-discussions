@@ -491,6 +491,7 @@ async function app() {
   cd.debug.init();
   cd.debug.startTimer('total time');
   cd.debug.startTimer('start');
+  cd.debug.startTimer('load data');
 
   /**
    * The script has launched.
@@ -510,6 +511,8 @@ async function app() {
     console.error(e);
     return;
   }
+
+  cd.debug.stopTimer('load data');
 
   go();
 }
