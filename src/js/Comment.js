@@ -164,21 +164,21 @@ export default class Comment extends CommentSkeleton {
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
    *
-   * @param {object} [config={}]
+   * @param {object} [options={}]
    * @private
    */
-  getPositions(config = {}) {
-    if (config.considerFloating === undefined) {
-      config.considerFloating = false;
+  getPositions(options = {}) {
+    if (options.considerFloating === undefined) {
+      options.considerFloating = false;
     }
 
     this.positions = null;
 
     if (this.editForm) return;
 
-    let rectTop = config.rectTop || this.highlightables[0].getBoundingClientRect();
+    let rectTop = options.rectTop || this.highlightables[0].getBoundingClientRect();
     let rectBottom = (
-      config.rectBottom ||
+      options.rectBottom ||
       (
         this.elements.length === 1 ?
         rectTop :
@@ -192,9 +192,9 @@ export default class Comment extends CommentSkeleton {
     const top = window.pageYOffset + rectTop.top;
     const bottom = window.pageYOffset + rectBottom.bottom;
 
-    if (config.considerFloating) {
+    if (options.considerFloating) {
       const floatingRects = (
-        config.floatingRects ||
+        options.floatingRects ||
         cd.g.specialElements.floating.map((el) => {
           const nativeRect = el.getBoundingClientRect();
           return {
@@ -255,15 +255,15 @@ export default class Comment extends CommentSkeleton {
   /**
    * Calculate the underlay and overlay positions.
    *
-   * @param {object} [config={}]
+   * @param {object} [options={}]
    * @returns {?object}
    * @private
    */
-  calculateLayersPositions(config = {}) {
+  calculateLayersPositions(options = {}) {
     // getBoundingClientRect() calculation is a little costly, so we take the value that has already
-    // been calculated in configuration where possible.
+    // been calculated where possible.
 
-    this.getPositions(Object.assign({}, config, { considerFloating: true }));
+    this.getPositions(Object.assign({}, options, { considerFloating: true }));
 
     if (!this.positions) {
       return null;
@@ -438,26 +438,26 @@ export default class Comment extends CommentSkeleton {
       return null;
     }
 
-    const config = { doSet, floatingRects };
-    config.rectTop = this.highlightables[0].getBoundingClientRect();
-    config.rectBottom = (
+    const options = { doSet, floatingRects };
+    options.rectTop = this.highlightables[0].getBoundingClientRect();
+    options.rectBottom = (
       this.elements.length === 1 ?
-      config.rectTop :
+      options.rectTop :
       this.highlightables[this.highlightables.length - 1].getBoundingClientRect()
     );
 
     const layersContainerOffset = this.getLayersContainerOffset();
-    const isMoved = (
+    const moved = (
       this.underlay &&
       (
-        -layersContainerOffset.top + window.pageYOffset + config.rectTop.top !== this.layersTop ||
-        config.rectBottom.bottom - config.rectTop.top !== this.layersHeight ||
+        -layersContainerOffset.top + window.pageYOffset + options.rectTop.top !== this.layersTop ||
+        options.rectBottom.bottom - options.rectTop.top !== this.layersHeight ||
         this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
       )
     );
 
-    if (!this.underlay || isMoved) {
-      const positions = this.calculateLayersPositions(config);
+    if (!this.underlay || moved) {
+      const positions = this.calculateLayersPositions(options);
       if (positions) {
         this.layersTop = positions.underlayTop;
         this.layersLeft = positions.underlayLeft;
@@ -476,13 +476,13 @@ export default class Comment extends CommentSkeleton {
       if (this.newness && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
         this.underlay.classList.add('cd-commentUnderlay-new');
       }
-      if (isMoved && config.doSet) {
+      if (moved && options.doSet) {
         this.updateLayersPositions();
       }
-      return isMoved;
+      return moved;
     } else {
       this.createLayers();
-      if (config.doSet) {
+      if (options.doSet) {
         this.addLayers();
       }
       return false;
