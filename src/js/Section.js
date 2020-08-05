@@ -1037,12 +1037,8 @@ export default class Section extends SectionSkeleton {
     const adjustedPageCode = hideHtmlComments(pageCode);
     const searchInput = { firstComment, headline, pageCode, adjustedPageCode };
 
-    cd.debug.startTimer('locate section');
-
     // Collect all possible matches
     const matches = this.searchInCode(searchInput);
-
-    cd.debug.stopTimer('locate section');
 
     let bestMatch;
     matches.forEach((match) => {

@@ -38,11 +38,7 @@ export default {
    *   layers.
    */
   redrawIfNecessary(removeUnhighlighted = false) {
-    cd.debug.startTimer('redrawIfNecessary');
-    if (!this.underlays.length || document.hidden) {
-      cd.debug.stopTimer('redrawIfNecessary');
-      return;
-    }
+    if (!this.underlays.length || document.hidden) return;
 
     const comments = [];
     const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.pageYOffset;
@@ -72,13 +68,11 @@ export default {
       ) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
-        cd.debug.startTimer('isMoved');
         floatingRects = (
           floatingRects ||
           cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
         );
         const isMoved = comment.configureLayers(false, floatingRects);
-        cd.debug.startTimer('closest');
         if (isMoved) {
           notMovedCount = 0;
           comments.push(comment);
@@ -94,14 +88,10 @@ export default {
         ) {
           notMovedCount++;
           if (notMovedCount === 2) {
-            cd.debug.stopTimer('closest');
-            cd.debug.stopTimer('isMoved');
             return true;
           }
         }
-        cd.debug.stopTimer('closest');
       }
-      cd.debug.stopTimer('isMoved');
       return false;
     });
 
@@ -109,7 +99,6 @@ export default {
     comments.forEach((comment) => {
       comment.updateLayersPositions();
     });
-    cd.debug.stopTimer('redrawIfNecessary');
   },
 
   /**

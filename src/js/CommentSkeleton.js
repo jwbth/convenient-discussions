@@ -220,7 +220,6 @@ export default class CommentSkeleton {
    * @private
    */
   getSection() {
-    cd.debug.startTimer('getSection');
     if (this.cachedSection === undefined) {
       this.cachedSection = (
         cd.sections
@@ -230,7 +229,6 @@ export default class CommentSkeleton {
         null
       );
     }
-    cd.debug.stopTimer('getSection');
     return this.cachedSection;
   }
 

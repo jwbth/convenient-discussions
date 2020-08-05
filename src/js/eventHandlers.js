@@ -105,14 +105,7 @@ export function globalKeyDownHandler(e) {
  * @param {Event} e
  */
 export function highlightFocused(e) {
-  cd.debug.startTimer('highlightFocused');
-  cd.debug.startTimer('isPageOverlayOn');
-  if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) {
-    cd.debug.stopTimer('isPageOverlayOn');
-    cd.debug.stopTimer('highlightFocused');
-    return;
-  }
-  cd.debug.stopTimer('isPageOverlayOn');
+  if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
   const autocompleteMenuHovered = (
     cd.g.activeAutocompleteMenu &&
@@ -122,19 +115,12 @@ export function highlightFocused(e) {
   cd.comments
     .filter((comment) => comment.underlay)
     .forEach((comment) => {
-      cd.debug.startTimer('getLayersContainerOffset before');
-      cd.debug.stopTimer('getLayersContainerOffset before');
-
       const top = Number(comment.underlay.style.top.replace('px', ''));
       const left = Number(comment.underlay.style.left.replace('px', ''));
       const width = Number(comment.underlay.style.width.replace('px', ''));
       const height = Number(comment.underlay.style.height.replace('px', ''));
 
-      cd.debug.startTimer('getLayersContainerOffset');
       const layersContainerOffset = comment.getLayersContainerOffset();
-      cd.debug.stopTimer('getLayersContainerOffset');
-
-      cd.debug.startTimer('getLayersContainerOffset after');
       if (
         // In case the user has moved the navigation panel to the right side.
         !navPanel.isMouseOver &&
@@ -149,7 +135,5 @@ export function highlightFocused(e) {
       } else {
         comment.unhighlightFocused();
       }
-      cd.debug.stopTimer('getLayersContainerOffset after');
-      cd.debug.stopTimer('highlightFocused');
     });
 }

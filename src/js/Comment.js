@@ -96,8 +96,6 @@ export default class Comment extends CommentSkeleton {
      */
     delete this.authorName;
 
-    cd.debug.startTimer('jquery');
-
     /**
      * Comment elements as a jQuery object.
      *
@@ -118,8 +116,6 @@ export default class Comment extends CommentSkeleton {
      * @type {JQuery}
      */
     this.$timestamp = $(signature.timestampElement);
-
-    cd.debug.stopTimer('jquery');
 
     /**
      * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
@@ -514,12 +510,10 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
-    cd.debug.startTimer('Comment#highlightFocused');
     if (
       cd.util.isPageOverlayOn() ||
-     this.underlay?.classList.contains('cd-commentUnderlay-focused')
+      this.underlay?.classList.contains('cd-commentUnderlay-focused')
     ) {
-      cd.debug.stopTimer('Comment#highlightFocused');
       return;
     }
 
@@ -531,7 +525,6 @@ export default class Comment extends CommentSkeleton {
       this.underlay.classList.add('cd-commentUnderlay-focused');
       this.overlay.classList.add('cd-commentOverlay-focused');
     }
-    cd.debug.stopTimer('Comment#highlightFocused');
   }
 
   /**
@@ -1806,9 +1799,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {LayersContainerOffset}
    */
   getLayersContainerOffset() {
-    cd.debug.startTimer('getLayersContainer');
     const underlayContainer = this.getLayersContainer();
-    cd.debug.stopTimer('getLayersContainer');
 
     let top = this.cachedLayersContainerTop;
     let left = this.cachedLayersContainerLeft;
@@ -1818,10 +1809,8 @@ export default class Comment extends CommentSkeleton {
       top = 0;
       left = 0;
       while ((offsetParent = el.offsetParent)) {
-        cd.debug.startTimer('offsetTop');
         top += offsetParent.offsetTop;
         left += offsetParent.offsetLeft;
-        cd.debug.stopTimer('offsetTop');
         el = offsetParent;
       }
       commentLayers.couldHaveMoved = false;
