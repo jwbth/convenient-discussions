@@ -8,27 +8,18 @@ import cd from './cd';
 
 export default {
   /**
-   * List of underlays.
+   * List of the underlays.
    *
    * @type {Element[]}
    */
   underlays: [],
 
   /**
-   * List of layers containers.
+   * List of the containers of the underlays.
    *
    * @type {Element[]}
    */
   layersContainers: [],
-
-  /**
-   * Whether the layers (actually, the layers containers make difference to us) could have moved
-   * after some event. Used to avoid expensive operations like calculating the layers offset if they
-   * don't make sense.
-   *
-   * @type {boolean}
-   */
-  couldHaveMoved: false,
 
   /**
    * Recalculate positions of the highlighted comments' (usually, new or own) layers and redraw if
@@ -39,6 +30,10 @@ export default {
    */
   redrawIfNecessary(removeUnhighlighted = false) {
     if (!this.underlays.length || document.hidden) return;
+
+    this.layersContainers.forEach((container) => {
+      container.cdCouldHaveMoved = true;
+    });
 
     const comments = [];
     const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.pageYOffset;
@@ -73,12 +68,12 @@ export default {
           floatingRects ||
           cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
         );
-        const isMoved = comment.configureLayers(false, floatingRects);
-        if (isMoved) {
+        const moved = comment.configureLayers(false, floatingRects);
+        if (moved) {
           notMovedCount = 0;
           comments.push(comment);
         } else if (
-          isMoved === false &&
+          moved === false &&
 
           // Nested containers shouldn't count, the positions of layers inside them may be OK,
           // unlike layers preceding them.

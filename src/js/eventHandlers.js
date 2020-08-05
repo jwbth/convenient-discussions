@@ -23,7 +23,6 @@ export function windowResizeHandler() {
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();
   });
-  commentLayers.couldHaveMoved = true;
 }
 
 /**

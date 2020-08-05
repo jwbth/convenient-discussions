@@ -1735,7 +1735,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get and sometimes create a container for the comment's underlay.
+   * Get and sometimes create the container for the comment's underlay.
    *
    * @returns {Element}
    */
@@ -1797,18 +1797,16 @@ export default class Comment extends CommentSkeleton {
    * @returns {LayersContainerOffset}
    */
   getLayersContainerOffset() {
-    const underlayContainer = this.getLayersContainer();
-
+    const container = this.getLayersContainer();
     let top = this.cachedLayersContainerTop;
     let left = this.cachedLayersContainerLeft;
-    if (top === undefined || commentLayers.couldHaveMoved) {
-      top = underlayContainer.getBoundingClientRect().top + window.pageYOffset;
-      left = underlayContainer.getBoundingClientRect().left + window.pageXOffset;
-      commentLayers.couldHaveMoved = false;
+    if (top === undefined || container.cdCouldHaveMoved) {
+      top = container.offsetParent.getBoundingClientRect().top + window.pageYOffset;
+      left = container.offsetParent.getBoundingClientRect().left + window.pageXOffset;
+      container.cdCouldHaveMoved = false;
+      this.cachedLayersContainerTop = top;
+      this.cachedLayersContainerLeft = left;
     }
-
-    this.cachedLayersContainerTop = top;
-    this.cachedLayersContainerLeft = left;
     return { top, left };
   }
 
