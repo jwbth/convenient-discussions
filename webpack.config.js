@@ -166,7 +166,6 @@ module.exports = {
           mangle: {
             keep_classnames: true,
             reserved: ['cd'],
-            properties: true,
           },
         },
         extractComments: !dev && {
