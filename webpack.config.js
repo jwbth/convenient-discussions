@@ -89,10 +89,8 @@ if (!snippet) {
           const sourceMapFilename = `./dist/${filename}${sourceMapExt}`;
           const content = fs.readFileSync(sourceMapFilename).toString();
           const newContent = content.replace(
-            /(require\(\\"!!)([^"]+[^.\\/])([\\/]+node_modules[\\/]+worker-loader)/g,
-
-            // Fill with spaces to avoid the breaking of source maps
-            (s, before, beginning, end) => before + ' '.repeat(beginning.length - 1) + '.' + end,
+            /(require\(\\"!!)[^"]+[^.\\/]([\\/]+node_modules[\\/]+worker-loader)/g,
+            (s, before, end) => before + '.' + end,
           );
           fs.writeFileSync(sourceMapFilename, newContent);
         });
