@@ -22,6 +22,15 @@ export default {
   layersContainers: [],
 
   /**
+   * Whether the layers (actually, the layers containers make difference to us) could have moved
+   * after some event. Used to avoid expensive operations like calculating the layers offset if they
+   * don't make sense.
+   *
+   * @type {boolean}
+   */
+  couldHaveMoved: false,
+
+  /**
    * Recalculate positions of the highlighted comments' (usually, new or own) layers and redraw if
    * they've changed.
    *
@@ -29,7 +38,11 @@ export default {
    *   layers.
    */
   redrawIfNecessary(removeUnhighlighted = false) {
-    if (!this.underlays.length || document.hidden) return;
+    cd.debug.startTimer('redrawIfNecessary');
+    if (!this.underlays.length || document.hidden) {
+      cd.debug.stopTimer('redrawIfNecessary');
+      return;
+    }
 
     const comments = [];
     const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.pageYOffset;
@@ -59,11 +72,13 @@ export default {
       ) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
+        cd.debug.startTimer('isMoved');
         floatingRects = (
           floatingRects ||
           cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
         );
         const isMoved = comment.configureLayers(false, floatingRects);
+        cd.debug.startTimer('closest');
         if (isMoved) {
           notMovedCount = 0;
           comments.push(comment);
@@ -79,10 +94,14 @@ export default {
         ) {
           notMovedCount++;
           if (notMovedCount === 2) {
+            cd.debug.stopTimer('closest');
+            cd.debug.stopTimer('isMoved');
             return true;
           }
         }
+        cd.debug.stopTimer('closest');
       }
+      cd.debug.stopTimer('isMoved');
       return false;
     });
 
@@ -90,6 +109,7 @@ export default {
     comments.forEach((comment) => {
       comment.updateLayersPositions();
     });
+    cd.debug.stopTimer('redrawIfNecessary');
   },
 
   /**

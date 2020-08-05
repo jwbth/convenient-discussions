@@ -23,6 +23,7 @@ export function windowResizeHandler() {
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();
   });
+  commentLayers.couldHaveMoved = true;
 }
 
 /**
@@ -104,15 +105,14 @@ export function globalKeyDownHandler(e) {
  * @param {Event} e
  */
 export function highlightFocused(e) {
-  if (cd.util.isPageOverlayOn() || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
-
-  const contentLeft = cd.g.rootElement.getBoundingClientRect().left;
-  if (e.pageX < contentLeft - cd.g.COMMENT_UNDERLAY_SIDE_MARGIN) {
-    commentLayers.underlays.forEach((underlay) => {
-      underlay.cdTarget.unhighlightFocused();
-    });
+  cd.debug.startTimer('highlightFocused');
+  cd.debug.startTimer('isPageOverlayOn');
+  if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) {
+    cd.debug.stopTimer('isPageOverlayOn');
+    cd.debug.stopTimer('highlightFocused');
     return;
   }
+  cd.debug.stopTimer('isPageOverlayOn');
 
   const autocompleteMenuHovered = (
     cd.g.activeAutocompleteMenu &&
@@ -120,19 +120,21 @@ export function highlightFocused(e) {
   );
 
   cd.comments
-    .filter((comment) => comment.$underlay)
+    .filter((comment) => comment.underlay)
     .forEach((comment) => {
-      const underlay = comment.$underlay.get(0);
+      cd.debug.startTimer('getLayersContainerOffset before');
+      cd.debug.stopTimer('getLayersContainerOffset before');
 
-      if (!underlay.classList.contains('cd-commentUnderlay')) return;
+      const top = Number(comment.underlay.style.top.replace('px', ''));
+      const left = Number(comment.underlay.style.left.replace('px', ''));
+      const width = Number(comment.underlay.style.width.replace('px', ''));
+      const height = Number(comment.underlay.style.height.replace('px', ''));
 
-      const top = Number(underlay.style.top.replace('px', ''));
-      const left = Number(underlay.style.left.replace('px', ''));
-      const width = Number(underlay.style.width.replace('px', ''));
-      const height = Number(underlay.style.height.replace('px', ''));
-
+      cd.debug.startTimer('getLayersContainerOffset');
       const layersContainerOffset = comment.getLayersContainerOffset();
+      cd.debug.stopTimer('getLayersContainerOffset');
 
+      cd.debug.startTimer('getLayersContainerOffset after');
       if (
         // In case the user has moved the navigation panel to the right side.
         !navPanel.isMouseOver &&
@@ -143,9 +145,11 @@ export function highlightFocused(e) {
         e.pageX >= left + layersContainerOffset.left &&
         e.pageX <= left + width + layersContainerOffset.left
       ) {
-        underlay.cdTarget.highlightFocused();
+        comment.highlightFocused();
       } else {
-        underlay.cdTarget.unhighlightFocused();
+        comment.unhighlightFocused();
       }
+      cd.debug.stopTimer('getLayersContainerOffset after');
+      cd.debug.stopTimer('highlightFocused');
     });
 }

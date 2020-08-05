@@ -607,6 +607,7 @@ export default async function processPage(keptData = {}) {
           return;
         }
         commentLayers.redrawIfNecessary();
+        commentLayers.couldHaveMoved = true;
       });
       observer.observe(cd.g.$content.get(0), {
         attributes: true,

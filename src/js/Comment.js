@@ -272,12 +272,10 @@ export default class Comment extends CommentSkeleton {
     // This is to determine if the element has moved in future checks.
     this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
-    const layersContainerOffset = this.getLayersContainerOffset();
-
     return {
-      underlayTop: -layersContainerOffset.top + this.positions.top,
+      underlayTop: -options.layersContainerOffset.top + this.positions.top,
       underlayLeft: (
-        -layersContainerOffset.left +
+        -options.layersContainerOffset.left +
         this.positions.left -
         cd.g.COMMENT_UNDERLAY_SIDE_MARGIN
       ),
@@ -304,7 +302,6 @@ export default class Comment extends CommentSkeleton {
     if (cd.settings.highlightOwnComments && this.own) {
       this.underlay.classList.add('cd-commentUnderlay-own');
     }
-    this.underlay.cdTarget = this;
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
@@ -445,12 +442,15 @@ export default class Comment extends CommentSkeleton {
       options.rectTop :
       this.highlightables[this.highlightables.length - 1].getBoundingClientRect()
     );
+    options.layersContainerOffset = this.getLayersContainerOffset();
 
-    const layersContainerOffset = this.getLayersContainerOffset();
     const moved = (
       this.underlay &&
       (
-        -layersContainerOffset.top + window.pageYOffset + options.rectTop.top !== this.layersTop ||
+        (
+          -options.layersContainerOffset.top + window.pageYOffset + options.rectTop.top !==
+          this.layersTop
+        ) ||
         options.rectBottom.bottom - options.rectTop.top !== this.layersHeight ||
         this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
       )
@@ -514,19 +514,24 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
+    cd.debug.startTimer('Comment#highlightFocused');
     if (
       cd.util.isPageOverlayOn() ||
      this.underlay?.classList.contains('cd-commentUnderlay-focused')
     ) {
+      cd.debug.stopTimer('Comment#highlightFocused');
       return;
     }
 
+    const moved = this.configureLayers();
+
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again when the next event fires.
-    if (!this.configureLayers() && this.underlay) {
+    if (!moved && this.underlay) {
       this.underlay.classList.add('cd-commentUnderlay-focused');
       this.overlay.classList.add('cd-commentOverlay-focused');
     }
+    cd.debug.stopTimer('Comment#highlightFocused');
   }
 
   /**
@@ -1744,13 +1749,13 @@ export default class Comment extends CommentSkeleton {
    * @returns {Element}
    */
   getLayersContainer() {
-    if (this.cachedUnderlayContainer === undefined) {
+    if (this.cachedLayersContainer === undefined) {
       let offsetParent;
       const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
       while (treeWalker.parentNode()) {
         let style = treeWalker.currentNode.cdStyle;
         if (!style) {
-          // window.getComputedStyle is expensive, so we save the result to a node property.
+          // window.getComputedStyle is expensive, so we save the result to a node's property.
           style = window.getComputedStyle(treeWalker.currentNode);
           treeWalker.currentNode.cdStyle = style;
         }
@@ -1781,12 +1786,12 @@ export default class Comment extends CommentSkeleton {
         container.classList.add('cd-commentLayersContainer');
         offsetParent.insertBefore(container, offsetParent.firstChild);
       }
-      this.cachedUnderlayContainer = container;
+      this.cachedLayersContainer = container;
       if (!commentLayers.layersContainers.includes(container)) {
         commentLayers.layersContainers.push(container);
       }
     }
-    return this.cachedUnderlayContainer;
+    return this.cachedLayersContainer;
   }
 
   /**
@@ -1801,16 +1806,29 @@ export default class Comment extends CommentSkeleton {
    * @returns {LayersContainerOffset}
    */
   getLayersContainerOffset() {
+    cd.debug.startTimer('getLayersContainer');
     const underlayContainer = this.getLayersContainer();
-    let el = underlayContainer;
-    let offsetParent;
-    let top = 0;
-    let left = 0;
-    while ((offsetParent = el.offsetParent)) {
-      top += offsetParent.offsetTop;
-      left += offsetParent.offsetLeft;
-      el = offsetParent;
+    cd.debug.stopTimer('getLayersContainer');
+
+    let top = this.cachedLayersContainerTop;
+    let left = this.cachedLayersContainerLeft;
+    if (top === undefined || commentLayers.couldHaveMoved) {
+      let el = underlayContainer;
+      let offsetParent;
+      top = 0;
+      left = 0;
+      while ((offsetParent = el.offsetParent)) {
+        cd.debug.startTimer('offsetTop');
+        top += offsetParent.offsetTop;
+        left += offsetParent.offsetLeft;
+        cd.debug.stopTimer('offsetTop');
+        el = offsetParent;
+      }
+      commentLayers.couldHaveMoved = false;
     }
+
+    this.cachedLayersContainerTop = top;
+    this.cachedLayersContainerLeft = left;
     return { top, left };
   }
 
