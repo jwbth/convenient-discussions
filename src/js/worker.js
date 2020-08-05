@@ -126,6 +126,7 @@ function parse() {
     delete comment.addAttributes;
     delete comment.setLevels;
     delete comment.getSection;
+    delete comment.cachedSection;
     delete comment.getChildren;
   });
   cd.debug.stopTimer('identifying replies');
