@@ -139,6 +139,13 @@ export default class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.target = false;
+
+    /**
+     * Is the comment currently focused.
+     *
+     * @type {boolean}
+     */
+    this.focused = false;
   }
 
   /**
@@ -504,12 +511,7 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
-    if (
-      cd.util.isPageOverlayOn() ||
-      this.underlay?.classList.contains('cd-commentUnderlay-focused')
-    ) {
-      return;
-    }
+    if (cd.util.isPageOverlayOn() || this.focused) return;
 
     const moved = this.configureLayers();
 
@@ -518,6 +520,7 @@ export default class Comment extends CommentSkeleton {
     if (!moved && this.underlay) {
       this.underlay.classList.add('cd-commentUnderlay-focused');
       this.overlay.classList.add('cd-commentOverlay-focused');
+      this.focused = true;
     }
   }
 
@@ -525,11 +528,12 @@ export default class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightFocused() {
-    if (!this.underlay?.classList.contains('cd-commentUnderlay-focused')) return;
+    if (!this.focused) return;
 
     this.underlay.classList.remove('cd-commentUnderlay-focused');
     this.overlay.classList.remove('cd-commentOverlay-focused');
     this.overlay.style.display = '';
+    this.focused = false;
   }
 
   /**

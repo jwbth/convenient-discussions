@@ -53,7 +53,8 @@ export default {
       const shouldBeHighlighted = (
         comment.newness ||
         (comment.own && cd.settings.highlightOwnComments) ||
-        comment.target
+        comment.target ||
+        comment.focused
       );
       if (
         (
