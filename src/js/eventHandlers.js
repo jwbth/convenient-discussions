@@ -115,21 +115,16 @@ export function highlightFocused(e) {
   cd.comments
     .filter((comment) => comment.underlay)
     .forEach((comment) => {
-      const top = Number(comment.underlay.style.top.replace('px', ''));
-      const left = Number(comment.underlay.style.left.replace('px', ''));
-      const width = Number(comment.underlay.style.width.replace('px', ''));
-      const height = Number(comment.underlay.style.height.replace('px', ''));
-
       const layersContainerOffset = comment.getLayersContainerOffset();
       if (
         // In case the user has moved the navigation panel to the right side.
         !navPanel.isMouseOver &&
 
         !autocompleteMenuHovered &&
-        e.pageY >= top + layersContainerOffset.top &&
-        e.pageY <= top + height + layersContainerOffset.top &&
-        e.pageX >= left + layersContainerOffset.left &&
-        e.pageX <= left + width + layersContainerOffset.left
+        e.pageY >= comment.layersTop + layersContainerOffset.top &&
+        e.pageY <= comment.layersTop + comment.layersHeight + layersContainerOffset.top &&
+        e.pageX >= comment.layersLeft + layersContainerOffset.left &&
+        e.pageX <= comment.layersLeft + comment.layersWidth + layersContainerOffset.left
       ) {
         comment.highlightFocused();
       } else {
