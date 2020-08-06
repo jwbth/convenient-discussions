@@ -876,6 +876,7 @@ export function restoreCommentForms() {
         comment: commentForm.commentInput.getValue(),
         summary: commentForm.summaryInput.getValue(),
       });
+      cd.commentForms.splice(cd.commentForms.indexOf(commentForm), 1);
     }
 
     cd.commentForms.forEach((commentForm) => {
@@ -896,6 +897,8 @@ export function restoreCommentForms() {
           } else {
             addToRescue(commentForm);
           }
+        } else {
+          addToRescue(commentForm);
         }
       } else if (target instanceof Section) {
         const section = Section.search({
