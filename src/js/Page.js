@@ -30,48 +30,34 @@ export default class Page {
    * @throws {CdError}
    */
   constructor(nameOrMwTitle) {
-    let title;
-    if (nameOrMwTitle instanceof mw.Title) {
-      title = nameOrMwTitle;
+    const title = nameOrMwTitle instanceof mw.Title ?
+      nameOrMwTitle :
+      mw.Title.newFromText(nameOrMwTitle);
 
-      /**
-       * Page name, with a namespace name. The word separator is a space, not an underline, as in
-       *   `mediawiki.Title`.
-       *
-       * @type {number}
-       */
-      this.name = mw.config.get('wgFormattedNamespaces')[title.namespace] + ':' + this.title;
-
-    } else {
-      title = mw.Title.newFromText(firstCharToUpperCase(nameOrMwTitle));
-      this.name = underlinesToSpaces(nameOrMwTitle);
+    if (!title) {
+      throw new CdError();
     }
 
     /**
-     * Page title, with no namespace name. The word separator is a space, not an underline, as in
-     *   `mediawiki.Title`.
+     * Page title, with no namespace name. The word separator is a space, not an underline.
      *
      * @type {number}
      */
-    this.title = underlinesToSpaces(title.title);
+    this.title = title.getMainText();
 
-    if (!this.title) {
-      throw new CdError();
-    }
+    /**
+     * Page name, with a namespace name. The word separator is a space, not an underline.
+     *
+     * @type {number}
+     */
+    this.name = title.getPrefixedText();
 
     /**
      * Namespace number.
      *
      * @type {number}
      */
-    this.namespace = title.namespace;
-
-    /**
-     * Page fragment (the part after `#`).
-     *
-     * @type {?string}
-     */
-    this.fragment = title.fragment;
+    this.namespace = title.getNamespaceId();
   }
 
   /**
