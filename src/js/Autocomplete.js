@@ -241,10 +241,14 @@ export default class Autocomplete {
               // Forbidden characters
               !/[#<>[\]|{}]/.test(text)
             );
-            const isInterwiki = /^:/.test(text) || /^[a-z]\w*:/.test(text);
             const makeRequest = (
               valid &&
-              (!isInterwiki || cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text))
+
+              // Interwikis
+              !(
+                (/^:/.test(text) || /^[a-z]\w*:/.test(text)) &&
+                !cd.g.ALL_NAMESPACES_REGEXP.test(text)
+              )
             );
             if (makeRequest) {
               values.push(...this.wikilinks.cache);

@@ -248,6 +248,10 @@ function initPatterns() {
 
   const anySpace = (s) => s.replace(/:/g, ' : ').replace(/[ _]/g, '[ _]*');
 
+  const allNamespaces = Object.keys(namespaceIds);
+  const allNamespacesPattern = anySpace(allNamespaces.join('|'));
+  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${allNamespacesPattern}):`, 'i');
+
   const userNamespacesPatternAnySpace = anySpace(userNamespaces.join('|'));
   const contributionsPageAnySpace = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
