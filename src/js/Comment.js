@@ -1801,8 +1801,15 @@ export default class Comment extends CommentSkeleton {
     let top = this.cachedLayersContainerTop;
     let left = this.cachedLayersContainerLeft;
     if (top === undefined || container.cdCouldHaveMoved) {
-      top = container.offsetParent.getBoundingClientRect().top + window.pageYOffset;
-      left = container.offsetParent.getBoundingClientRect().left + window.pageXOffset;
+      let el = container;
+      let offsetParent;
+      top = 0;
+      left = 0;
+      while ((offsetParent = el.offsetParent)) {
+        top += offsetParent.offsetTop;
+        left += offsetParent.offsetLeft;
+        el = offsetParent;
+      }
       container.cdCouldHaveMoved = false;
       this.cachedLayersContainerTop = top;
       this.cachedLayersContainerLeft = left;
