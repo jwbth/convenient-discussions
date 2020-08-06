@@ -230,6 +230,7 @@ export default class Autocomplete {
             let values = [];
             const valid = (
               text &&
+              text !== ':' &&
               text.length <= 255 &&
 
               // 10 spaces in a page name seems too many.
