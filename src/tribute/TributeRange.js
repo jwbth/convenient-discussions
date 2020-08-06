@@ -33,7 +33,7 @@ class TributeRange {
 
             // jwbth: Added this block.
             if (coordinates.additionalStyles) {
-                this.tribute.menu.style.cssText += ' ' + coordinates.additionalStyles;
+                this.tribute.menu.style.cssText += ' ' + coordinates.additionalStyles
             }
 
             if (coordinates.left === 'auto') {
@@ -420,8 +420,8 @@ class TributeRange {
 
         // jwbth: Replaced `window.innerWidth` with `document.documentElement.clientWidth` here and
         // in other places to have the scrollbars counted.
-        let windowWidth = doc.clientWidth;
-        let windowHeight = doc.clientHeight;
+        let windowWidth = doc.clientWidth
+        let windowHeight = doc.clientHeight
 
         let menuDimensions = this.getMenuDimensions()
         let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
