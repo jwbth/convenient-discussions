@@ -415,6 +415,12 @@ export function getRelevantUserNames(text) {
  * @throws {CdError}
  */
 export function getRelevantPageNames(text) {
+  let colonPrefix = false;
+  if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
+    text = text.slice(1);
+    colonPrefix = true;
+  }
+
   const promise = new Promise((resolve, reject) => {
     setTimeout(() => {
       try {
@@ -431,7 +437,11 @@ export function getRelevantPageNames(text) {
         }).then(
           (resp) => {
             const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const pages = resp?.[1]?.map((name) => name.replace(regexp, () => text[0]));
+            const pages = resp?.[1]?.map((name) => (
+              name
+                .replace(regexp, () => text[0])
+                .replace(/^/, colonPrefix ? ':' : '')
+            ));
 
             if (!pages) {
               throw new CdError({

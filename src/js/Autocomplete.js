@@ -218,10 +218,6 @@ export default class Autocomplete {
         values: async (text, callback) => {
           text = removeDoubleSpaces(text);
 
-          if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
-            text = text.slice(1);
-          }
-
           if (!text.startsWith(this.wikilinks.snapshot)) {
             this.wikilinks.cache = [];
           }
@@ -518,16 +514,11 @@ export default class Autocomplete {
    * @returns {object}
    */
   static getWikilinksConfig() {
-    const namespaces = mw.config.get('wgFormattedNamespaces');
-    const colonNamespacesRegexp = new RegExp(`^(${namespaces[6]}|${namespaces[14]}):`, 'i');
     return {
       byText: {},
       cache: [],
       transform: (name) => {
         name = name.trim();
-        if (colonNamespacesRegexp.test(name)) {
-          name = ':' + name;
-        }
         return `[[${name}]]`;
       },
     };
