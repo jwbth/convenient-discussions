@@ -46,8 +46,7 @@ export default {
 
   /**
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
-   * `mw.config.get('wgExtraSignatureNamespaces')` will be used, excluding the 0th (article)
-   * namespace. For example: `[4]` for Project.
+   * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
    *
    * This value overriden by the {@link module:defaultConfig.pageWhiteList} value: if that value is
    * not `[]`, this value is not used.

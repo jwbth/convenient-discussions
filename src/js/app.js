@@ -131,12 +131,10 @@ function go() {
 
   cd.g.$content = $('#mw-content-text');
 
-  if (!cd.config.customTalkNamespaces) {
-    cd.config.customTalkNamespaces = mw.config.get('wgExtraSignatureNamespaces');
-    if (cd.config.customTalkNamespaces.includes(0)) {
-      cd.config.customTalkNamespaces.splice(cd.config.customTalkNamespaces.indexOf(0));
-    }
-  }
+  cd.config.customTalkNamespaces = (
+    cd.config.customTalkNamespaces ||
+    mw.config.get('wgExtraSignatureNamespaces')
+  );
 
   // Process the page as a talk page
   if (
