@@ -49,7 +49,7 @@ export function makeRequestNoTimers(params, method = 'get') {
  * shown, so we automatically load modules.
  *
  * @param {string} code
- * @param {object} options
+ * @param {object} [options]
  * @returns {Promise}
  * @throws {CdError}
  */
@@ -77,7 +77,7 @@ export async function parseCode(code, options) {
       }
 
       const parsedSummary = resp.parse.parsedsummary;
-      if (options.summary && !parsedSummary) {
+      if (options?.summary && !parsedSummary) {
         throw new CdError({
           type: 'api',
           code: 'noData',

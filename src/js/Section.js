@@ -542,10 +542,11 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      return Object.assign({}, section.getSourcePage(), {
+      return {
+        page: section.getSourcePage(),
         sectionInCode: section.inCode,
         sectionWikilink: `${section.getSourcePage().name}#${encodeWikilink(section.headline)}`,
-      });
+      };
     };
 
     MoveSectionDialog.prototype.loadTargetPage = async function (targetPage) {
@@ -575,52 +576,56 @@ export default class Section extends SectionSkeleton {
       const sectionWikilink = `${targetPage.realName}#${encodeWikilink(section.headline)}`;
       const sectionUrl = mw.util.getUrl(sectionWikilink);
 
-      return Object.assign({}, targetPage, { sectionWikilink, sectionUrl });
+      return {
+        page: targetPage,
+        sectionWikilink,
+        sectionUrl,
+      };
     };
 
-    MoveSectionDialog.prototype.editTargetPage = async function (sourcePage, targetPage) {
+    MoveSectionDialog.prototype.editTargetPage = async function (source, target) {
       const code = cd.config.getMoveTargetPageCode ?
-        cd.config.getMoveTargetPageCode(sourcePage.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE) :
+        cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE) :
         undefined;
       const codeBeginning = Array.isArray(code) ? code[0] + '\n' : code;
       const codeEnding = Array.isArray(code) ? '\n' + code[1] : '';
       const newSectionCode = endWithTwoNewlines(
-        sourcePage.sectionInCode.code.slice(0, sourcePage.sectionInCode.relativeContentStartIndex) +
+        source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
         codeBeginning +
-        sourcePage.sectionInCode.code.slice(sourcePage.sectionInCode.relativeContentStartIndex) +
+        source.sectionInCode.code.slice(source.sectionInCode.relativeContentStartIndex) +
         codeEnding
       );
 
       let newCode;
-      if (targetPage.areNewTopicsOnTop) {
+      if (target.page.areNewTopicsOnTop) {
         // The page has no sections, so we add to the bottom.
-        if (targetPage.firstSectionStartIndex === undefined) {
-          targetPage.firstSectionStartIndex = targetPage.code.length;
+        if (target.page.firstSectionStartIndex === undefined) {
+          target.page.firstSectionStartIndex = target.page.code.length;
         }
         newCode = (
-          endWithTwoNewlines(targetPage.code.slice(0, targetPage.firstSectionStartIndex)) +
+          endWithTwoNewlines(target.page.code.slice(0, target.page.firstSectionStartIndex)) +
           newSectionCode +
-          targetPage.code.slice(targetPage.firstSectionStartIndex)
+          target.page.code.slice(target.page.firstSectionStartIndex)
         );
       } else {
-        newCode = targetPage.code + '\n\n' + newSectionCode;
+        newCode = target.page.code + '\n\n' + newSectionCode;
       }
 
       const summaryEnding = this.summaryEndingInput.getValue();
       const summary = (
-        cd.s('es-move-from', sourcePage.sectionWikilink) +
+        cd.s('es-move-from', source.sectionWikilink) +
         (summaryEnding ? ': ' + summaryEnding : '')
       );
       try {
-        await targetPage.edit({
+        await target.page.edit({
           text: newCode,
           summary: cd.util.buildEditSummary({
             text: summary,
             section: section.headline,
           }),
           tags: cd.config.tagName,
-          baserevid: targetPage.revisionId,
-          starttimestamp: targetPage.queryTimestamp,
+          baserevid: target.page.revisionId,
+          starttimestamp: target.page.queryTimestamp,
         });
       } catch (e) {
         if (e instanceof CdError) {
@@ -642,48 +647,48 @@ export default class Section extends SectionSkeleton {
       }
     };
 
-    MoveSectionDialog.prototype.editSourcePage = async function (sourcePage, targetPage) {
-      const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || cd.g.SIGN_CODE + '~';
+    MoveSectionDialog.prototype.editSourcePage = async function (source, target) {
+      const timestamp = findFirstTimestamp(source.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
       const code = cd.config.getMoveSourcePageCode ?
         cd.config.getMoveSourcePageCode(
-          targetPage.sectionWikilink,
+          target.sectionWikilink,
           cd.g.CURRENT_USER_SIGNATURE,
           timestamp
         ) :
         undefined;
       const newSectionCode = code ?
         (
-          sourcePage.sectionInCode.code.slice(
+          source.sectionInCode.code.slice(
             0,
-            sourcePage.sectionInCode.relativeContentStartIndex
+            source.sectionInCode.relativeContentStartIndex
           ) +
           code +
           '\n\n'
         ) :
         '';
       const newCode = (
-        sourcePage.code.slice(0, sourcePage.sectionInCode.startIndex) +
+        source.page.code.slice(0, source.sectionInCode.startIndex) +
         newSectionCode +
-        sourcePage.code.slice(sourcePage.sectionInCode.endIndex)
+        source.page.code.slice(source.sectionInCode.endIndex)
       );
 
       const summaryEnding = this.summaryEndingInput.getValue();
       const summary = (
-        cd.s('es-move-to', targetPage.sectionWikilink) +
+        cd.s('es-move-to', target.sectionWikilink) +
         (summaryEnding ? ': ' + summaryEnding : '')
       );
 
       try {
-        await sourcePage.edit({
+        await source.page.edit({
           text: newCode,
           summary: cd.util.buildEditSummary({
             text: summary,
             section: section.headline,
           }),
           tags: cd.config.tagName,
-          baserevid: sourcePage.revisionId,
-          starttimestamp: sourcePage.queryTimestamp,
+          baserevid: source.page.revisionId,
+          starttimestamp: source.page.queryTimestamp,
         });
       } catch (e) {
         if (e instanceof CdError) {
