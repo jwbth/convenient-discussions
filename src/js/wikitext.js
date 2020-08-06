@@ -92,7 +92,9 @@ export function normalizeCode(text) {
 }
 
 /**
- * Encode link text to put it in a `[[wikilink]]`.
+ * Encode text to put it in a `[[wikilink]]`. This is meant for section links as the characters that
+ * this function encodes are forbidden in page titles anyway, so page titles containing them are not
+ * valid titles.
  *
  * @param {string} link
  * @returns {string}

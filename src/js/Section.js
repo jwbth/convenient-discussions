@@ -14,6 +14,7 @@ import { animateLinks } from './util';
 import { copyLink } from './modal.js';
 import { editWatchedSections } from './modal';
 import {
+  encodeWikilink,
   endWithTwoNewlines,
   extractSignatures,
   findFirstTimestamp,
@@ -543,7 +544,7 @@ export default class Section extends SectionSkeleton {
 
       return Object.assign({}, section.getSourcePage(), {
         sectionInCode: section.inCode,
-        sectionWikilink: `${section.getSourcePage()}#${section.headline}`,
+        sectionWikilink: `${section.getSourcePage().name}#${encodeWikilink(section.headline)}`,
       });
     };
 
@@ -571,7 +572,7 @@ export default class Section extends SectionSkeleton {
       }
 
       targetPage.analyzeNewTopicPlacement();
-      const sectionWikilink = `${targetPage.realName}#${section.headline}`;
+      const sectionWikilink = `${targetPage.realName}#${encodeWikilink(section.headline)}`;
       const sectionUrl = mw.util.getUrl(sectionWikilink);
 
       return Object.assign({}, targetPage, { sectionWikilink, sectionUrl });
