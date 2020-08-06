@@ -749,20 +749,15 @@ export function saveSession() {
       lastFocused: commentForm.lastFocused,
     };
   });
-  const commentFormsData = forms.length ?
-    {
-      forms,
-      saveUnixTime: Date.now(),
-    } :
-    {};
+  const saveUnixTime = Date.now();
+  const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
 
   const commentFormsDataAllPagesJson = localStorage.getItem('convenientDiscussions-commentForms');
   let commentFormsDataAllPages;
   try {
     commentFormsDataAllPages = (
-      commentFormsDataAllPagesJson &&
       // "||" in case of a falsy value.
-      JSON.parse(commentFormsDataAllPagesJson) ||
+      (commentFormsDataAllPagesJson && JSON.parse(commentFormsDataAllPagesJson)) ||
       {}
     );
   } catch (e) {
