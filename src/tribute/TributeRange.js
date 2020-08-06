@@ -122,8 +122,15 @@ class TributeRange {
             // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
             // than 1.
             endPos += info.mentionTriggerChar.length
-            myField.value = myField.value.substring(0, startPos) + text +
-                myField.value.substring(endPos, myField.value.length)
+
+
+            // jwbth: Made alterations to make `keepTextAfter` config value work.
+            let ending = myField.value.substring(endPos, myField.value.length);
+            if (ending.startsWith(context.collection.keepTextAfter)) {
+                ending = ending.slice(context.collection.keepTextAfter.length);
+            }
+            myField.value = myField.value.substring(0, startPos) + text + ending;
+
             myField.selectionStart = startPos + text.length
             myField.selectionEnd = startPos + text.length
 

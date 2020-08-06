@@ -211,6 +211,7 @@ export default class Autocomplete {
       },
       wikilinks: {
         trigger: '[[',
+        keepTextAfter: ']]',
         searchOpts: {
           skip: true,
         },
@@ -282,6 +283,7 @@ export default class Autocomplete {
       },
       templates: {
         trigger: '{{',
+        keepTextAfter: '}}',
         searchOpts: {
           skip: true,
         },
@@ -408,6 +410,7 @@ export default class Autocomplete {
       },
       tags: {
         trigger: '<',
+        keepTextAfter: '>',
         searchOpts: {
           skip: true,
         },
