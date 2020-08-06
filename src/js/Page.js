@@ -489,7 +489,7 @@ export default class Page {
     // Search for the first section's index. If areNewTopicsOnTop is true, we don't need it.
     if (areNewTopicsOnTop !== false) {
       sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode);
-      firstSectionStartIndex = sectionHeadingMatch.index;
+      firstSectionStartIndex = sectionHeadingMatch?.index;
       sectionHeadingRegexp.lastIndex = 0;
     }
 
