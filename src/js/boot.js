@@ -698,8 +698,7 @@ export async function reloadPage(keptData = {}) {
 function cleanUpSessions(data) {
   Object.keys(data).forEach((key) => {
     if (
-      !data[key].forms ||
-      !data[key].forms.length ||
+      !data[key].forms?.length ||
       data[key].saveUnixTime < Date.now() - cd.g.SECONDS_IN_A_DAY * 1000 * 30
     ) {
       delete data[key];
@@ -721,7 +720,7 @@ export function saveSession() {
     } else if (target instanceof Section) {
       targetData = {
         headline: target.headline,
-        firstCommentAnchor: target.comments[0] && target.comments[0].anchor,
+        firstCommentAnchor: target.comments[0]?.anchor,
         index: target.id,
       };
     }
@@ -731,18 +730,15 @@ export function saveSession() {
       // OK, extracting a selector from an element would be too much, and likely unreliable, so we
       // extract a href (the only property that we use in the CommentForm constructor) to put it
       // onto a fake element when restoring the form.
-      addSectionLinkHref: commentForm.$addSectionLink && commentForm.$addSectionLink.attr('href'),
-      headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
+      addSectionLinkHref: commentForm.$addSectionLink?.attr('href'),
+      headline: commentForm.headlineInput?.getValue(),
       comment: commentForm.commentInput.getValue(),
       summary: commentForm.summaryInput.getValue(),
-      minor: commentForm.minorCheckbox && commentForm.minorCheckbox.isSelected(),
-      watch: commentForm.watchCheckbox && commentForm.watchCheckbox.isSelected(),
-      watchSection: (
-        commentForm.watchSectionCheckbox &&
-        commentForm.watchSectionCheckbox.isSelected()
-      ),
-      noSignature: commentForm.noSignatureCheckbox && commentForm.noSignatureCheckbox.isSelected(),
-      delete: commentForm.deleteCheckbox && commentForm.deleteCheckbox.isSelected(),
+      minor: commentForm.minorCheckbox?.isSelected(),
+      watch: commentForm.watchCheckbox?.isSelected(),
+      watchSection: commentForm.watchSectionCheckbox?.isSelected(),
+      noSignature: commentForm.noSignatureCheckbox?.isSelected(),
+      delete: commentForm.deleteCheckbox?.isSelected(),
       originalHeadline: commentForm.originalHeadline,
       originalComment: commentForm.originalComment,
       summaryAltered: commentForm.summaryAltered,
@@ -877,7 +873,7 @@ export function restoreCommentForms() {
     const rescue = [];
     const addToRescue = (commentForm) => {
       rescue.push({
-        headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
+        headline: commentForm.headlineInput?.getValue(),
         comment: commentForm.commentInput.getValue(),
         summary: commentForm.summaryInput.getValue(),
       });
@@ -905,7 +901,7 @@ export function restoreCommentForms() {
       } else if (target instanceof Section) {
         const section = Section.search({
           headline: target.headline,
-          firstCommentAnchor: target.comments[0] && target.comments[0].anchor,
+          firstCommentAnchor: target.comments[0]?.anchor,
           index: target.id,
         });
         if (section?.actionable) {

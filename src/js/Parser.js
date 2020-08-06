@@ -421,10 +421,7 @@ export default class Parser {
           // https://ru.wikipedia.org/w/index.php?diff=107487558
           !isInline(previousPart.node, true) &&
 
-          (
-            timezoneRegexp.test(text) ||
-            cd.config.signatureEndingRegexp && cd.config.signatureEndingRegexp.test(text)
-          )
+          (timezoneRegexp.test(text) || cd.config.signatureEndingRegexp?.test(text))
         ) {
           previousPart.hasForeignComponents = true;
           break;

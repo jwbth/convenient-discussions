@@ -177,11 +177,7 @@ export async function unknownApiErrorText(errorCode, errorInfo) {
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
-
-  const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
-    500 :
-    50;
-
+  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
   while ((nextPageIds = pageIds.splice(0, limit).join('|'))) {
     const resp = await cd.g.api.post({
@@ -224,11 +220,7 @@ export async function getPageIds(pageTitles) {
   const pages = [];
   const normalized = [];
   const redirects = [];
-
-  const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
-    500 :
-    50;
-
+  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageTitles;
   while ((nextPageTitles = pageTitles.splice(0, limit).join('|'))) {
     const resp = await cd.g.api.post({
@@ -331,9 +323,7 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
   const usersToRequest = users
     .filter((user) => !user.getGender())
     .map((user) => user.name);
-  const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
-    500 :
-    50;
+  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;
   while ((nextUsers = usersToRequest.splice(0, limit).join('|'))) {
     const params = {
@@ -386,14 +376,10 @@ export function getRelevantUserNames(text) {
           formatversion: 2,
         }).then(
           (resp) => {
-            const users = (
-              resp &&
-              resp[1] &&
-              resp[1]
-                .map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
-                .filter(defined)
-                .filter((name) => !name.includes('/'))
-            );
+            const users = resp?.[1]
+              ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+              .filter(defined)
+              .filter((name) => !name.includes('/'));
 
             if (!users) {
               throw new CdError({
@@ -444,12 +430,8 @@ export function getRelevantPageNames(text) {
           formatversion: 2,
         }).then(
           (resp) => {
-            const matchingFirstLetterRegexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const pages = (
-              resp &&
-              resp[1] &&
-              resp[1].map((name) => name.replace(matchingFirstLetterRegexp, () => text[0]))
-            );
+            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            const pages = resp?.[1]?.map((name) => name.replace(regexp, () => text[0]));
 
             if (!pages) {
               throw new CdError({
@@ -501,15 +483,11 @@ export function getRelevantTemplateNames(text) {
           formatversion: 2,
         }).then(
           (resp) => {
-            const matchingFirstLetterRegexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const templates = (
-              resp &&
-              resp[1] &&
-              resp[1]
-                .filter((name) => !name.endsWith('/doc'))
-                .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
-                .map((name) => name.replace(matchingFirstLetterRegexp, () => text[0]))
-            );
+            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            const templates = resp?.[1]
+              ?.filter((name) => !name.endsWith('/doc'))
+              .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+              .map((name) => name.replace(regexp, () => text[0]));
 
             if (!templates) {
               throw new CdError({

@@ -106,10 +106,7 @@ export function globalKeyDownHandler(e) {
 export function highlightFocused(e) {
   if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
-  const autocompleteMenuHovered = (
-    cd.g.activeAutocompleteMenu &&
-    cd.g.activeAutocompleteMenu.matches(':hover')
-  );
+  const autocompleteMenuHovered = cd.g.activeAutocompleteMenu?.matches(':hover');
 
   cd.comments
     .filter((comment) => comment.underlay)

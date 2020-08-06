@@ -223,7 +223,7 @@ export default class Page {
       });
     }
 
-    const redirectTarget = query.redirects && query.redirects[0] && query.redirects[0].to || null;
+    const redirectTarget = query.redirects?.[0]?.to || null;
 
     /**
      * Page ID on the wiki. Filled upon running {@link module:Page#getCode} or {@link

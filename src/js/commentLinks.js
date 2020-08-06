@@ -361,10 +361,7 @@ function processWatchlist($content) {
         const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const thisPageWatchedSections = (
-            (cd.g.watchedSections && cd.g.watchedSections[curId]) ||
-            []
-          );
+          const thisPageWatchedSections = cd.g.watchedSections?.[curId] || [];
           if (thisPageWatchedSections.length) {
             for (let j = 0; j < thisPageWatchedSections.length; j++) {
               // \u200E is the left-to-right mark.
@@ -506,10 +503,7 @@ function processHistory($content) {
     } else {
       let watched = false;
       if (summary) {
-        const thisPageWatchedSections = (
-          (cd.g.watchedSections && cd.g.watchedSections[mw.config.get('wgArticleId')]) ||
-          []
-        );
+        const thisPageWatchedSections = cd.g.watchedSections?.[mw.config.get('wgArticleId')] || [];
         if (thisPageWatchedSections.length) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
             // \u200E is the left-to-right mark.
@@ -534,7 +528,7 @@ function processHistory($content) {
     let destination = line.querySelector('.comment');
     if (!destination) {
       const separators = line.querySelectorAll('.mw-changeslist-separator');
-      destination = separators && separators[separators.length - 1];
+      destination = separators?.[separators.length - 1];
     }
     if (!destination) return;
     destination.parentElement.insertBefore(wrapper, destination.nextSibling);

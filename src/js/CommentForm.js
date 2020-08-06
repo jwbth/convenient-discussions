@@ -299,7 +299,7 @@ export default class CommentForm {
         throw new CdError();
       }
 
-      if (this.target.comments[0] && this.target.comments[0].isOpeningSection) {
+      if (this.target.comments[0]?.isOpeningSection) {
         this.targetComment = this.target.comments[0];
       }
     }
@@ -690,7 +690,7 @@ export default class CommentForm {
       const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
       const selected = (
         (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
-        (this.targetSection && this.targetSection.watched)
+        this.targetSection?.watched
       );
 
       /**
@@ -943,7 +943,7 @@ export default class CommentForm {
       tabIndex: String(this.id) + '35',
     });
 
-    if (this.deleteCheckbox && this.deleteCheckbox.isSelected()) {
+    if (this.deleteCheckbox?.isSelected()) {
       this.updateFormOnDeleteCheckboxChange(true);
     }
 
@@ -962,7 +962,7 @@ export default class CommentForm {
     this.$buttonsContainer.append(this.$leftButtonsContainer, this.$rightButtonsContainer);
     this.$form = $('<form>');
     this.$form.append(...[
-      this.headlineInput && this.headlineInput.$element,
+      this.headlineInput?.$element,
       this.commentInput.$element,
       this.$settings,
       this.$buttonsContainer,
@@ -1193,7 +1193,7 @@ export default class CommentForm {
             name: 'mentionEdit',
           });
         }
-        if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
+        if (this.noSignatureCheckbox?.isSelected()) {
           this.showMessage(cd.s('cf-reaction-mention-nosignature'), {
             type: 'notice',
             name: 'mentionNoSignature',
@@ -1757,7 +1757,7 @@ export default class CommentForm {
       .replace(/^(?:[ \t\xA0\uFEFF]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\uFEFF\xA0]+/gm, ''));
 
     let signature;
-    if (this.noSignatureCheckbox && this.noSignatureCheckbox.isSelected()) {
+    if (this.noSignatureCheckbox?.isSelected()) {
       signature = '';
     } else {
       signature = this.mode === 'edit' ?
@@ -1975,7 +1975,7 @@ export default class CommentForm {
    * @private
    */
   prepareNewPageCode(pageCode, action) {
-    const doDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
+    const doDelete = this.deleteCheckbox?.isSelected();
 
     if (!(this.target instanceof Page)) {
       this.target.locateInCode();
@@ -2246,7 +2246,7 @@ export default class CommentForm {
     // summary if there is a need.
     const emptyPreview = (
       !this.commentInput.getValue().trim() &&
-      !(this.headlineInput && this.headlineInput.getValue().trim())
+      !this.headlineInput?.getValue().trim()
     );
 
     if (emptyPreview && !maySummaryHaveChanged) {
@@ -2281,7 +2281,7 @@ export default class CommentForm {
     if (this.closeOperationIfNecessary(currentOperation)) return;
 
     if (html) {
-      if ((auto && emptyPreview) || (this.deleteCheckbox && this.deleteCheckbox.isSelected())) {
+      if ((auto && emptyPreview) || (this.deleteCheckbox?.isSelected())) {
         this.$previewArea.empty();
       } else {
         const $label = $('<div>')
@@ -2453,7 +2453,7 @@ export default class CommentForm {
   async runChecks({ doDelete }) {
     const checks = [
       {
-        condition: this.headlineInput && this.headlineInput.getValue() === '',
+        condition: this.headlineInput?.getValue() === '',
         confirmation: async () => {
           const noHeadline = cd.s(
             'cf-confirm-noheadline-' +
@@ -2513,7 +2513,7 @@ export default class CommentForm {
         tags: cd.config.tagName,
         baserevid: page.revisionId,
         starttimestamp: page.queryTimestamp,
-        minor: this.minorCheckbox && this.minorCheckbox.isSelected(),
+        minor: this.minorCheckbox?.isSelected(),
         watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
       });
     } catch (e) {
@@ -2564,7 +2564,7 @@ export default class CommentForm {
   async submit() {
     if (this.operations.some((op) => !op.closed && op.type === 'load')) return;
 
-    const doDelete = this.deleteCheckbox && this.deleteCheckbox.isSelected();
+    const doDelete = this.deleteCheckbox?.isSelected();
 
     if (!(await this.runChecks({ doDelete }))) return;
 
@@ -2840,11 +2840,7 @@ export default class CommentForm {
           );
         };
 
-        return editOrDeleteText(
-          this.deleteCheckbox && this.deleteCheckbox.isSelected() ?
-          'delete' :
-          'edit'
-        );
+        return editOrDeleteText(this.deleteCheckbox?.isSelected() ? 'delete' : 'edit');
       }
 
       case 'replyInSection': {
