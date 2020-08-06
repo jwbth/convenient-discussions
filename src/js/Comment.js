@@ -1631,17 +1631,25 @@ export default class Comment extends CommentSkeleton {
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
         cd.g.TIMESTAMP_REGEXP.source +
+        '.*|' +
+        cd.g.UNSIGNED_TEMPLATES_PATTERN +
         '.*)\\n)\\n*' +
         (searchedIndentationCharsLength > 0 ? `[:*#]{0,${searchedIndentationCharsLength}}` : '') +
         '(?![:*#]|<!--)'
       );
       const codeAfter = hideHtmlComments(pageCode).slice(currentIndex);
-      const [, codeInBetween] = properPlaceRegexp.exec(codeAfter) || [];
+      let [, codeInBetween] = codeAfter.match(properPlaceRegexp) || [];
+
       if (codeInBetween === undefined) {
         throw new CdError({
           type: 'parse',
           code: 'findPlace',
         });
+      }
+
+      const headingMatch = /\n+(=+).*?\1[ \t]*\n/.exec(codeInBetween);
+      if (headingMatch) {
+        codeInBetween = codeInBetween.slice(0, headingMatch.index + 1);
       }
 
       // If the comment is to be put after a comment with different indentation characters, use
@@ -1653,14 +1661,6 @@ export default class Comment extends CommentSkeleton {
         thisInCode.replyIndentationChars = changedIndentationChars
           .slice(0, thisInCode.replyIndentationChars.length)
           .replace(/:$/, cd.config.defaultIndentationChar);
-      }
-
-      if (/\n=+.*?\1[ \t]*\n/.test(codeInBetween)) {
-        // Something went wrong and we are going to post in another section.
-        throw new CdError({
-          type: 'parse',
-          code: 'findPlace-unexpectedHeading',
-        });
       }
 
       currentIndex += codeInBetween.length;
