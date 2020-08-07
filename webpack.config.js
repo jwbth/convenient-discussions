@@ -9,6 +9,7 @@ const argv = require('yargs').argv;
 require('json5/lib/register.js');
 
 const config = require('./config.json5');
+const getUrl = require('./misc/util.js').getUrl;
 
 const lang = process.env.npm_config_lang || 'ru';
 const project = process.env.npm_config_project || 'w';
@@ -30,21 +31,6 @@ const sourceMapExt = '.map.json';
 if (!config.protocol || !config.server || !config.rootPath || !config.articlePath) {
   throw new Error('No protocol/server/root path/article path found in config.json5.');
 }
-
-const wikiUrlencode = (s) => (
-  encodeURIComponent(s)
-    .replace(/'/g,'%27')
-    .replace(/%20/g,'_')
-    .replace(/%3B/g,';')
-    .replace(/%40/g,'@')
-    .replace(/%24/g,'$')
-    .replace(/%2C/g,',')
-    .replace(/%2F/g,'/')
-    .replace(/%3A/g,':')
-);
-
-const pathname = wikiUrlencode(config.articlePath.replace('$1', config.rootPath));
-const rootUrl = `${config.protocol}://${config.server}${pathname}`;
 
 const plugins = [
   new webpack.DefinePlugin({
@@ -173,7 +159,7 @@ module.exports = {
           condition: /@preserve|@license|@cc_on/i,
 
           filename: (filename) => `${filename}.LICENSE`,
-          banner: (licenseFile) => `For license information please see ${rootUrl}${licenseFile}`,
+          banner: (licenseFile) => `For license information please see ${getUrl(config.rootPath + licenseFile)}`,
         },
         sourceMap: true,
       }),

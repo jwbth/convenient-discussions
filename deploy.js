@@ -8,6 +8,13 @@ const prompts = require('prompts');
 require('json5/lib/register.js');
 
 const config = require('./config.json5');
+const getUrl = require('./misc/util.js').getUrl;
+
+/*
+  node deploy --dev
+  npm run deploy --dev
+ */
+const dev = argv.dev || process.env.npm_config_dev;
 
 const warning = (text) => console.log(chalk.yellowBright(text));
 const error = (text) => console.log(chalk.red(text));
@@ -15,12 +22,6 @@ const success = (text) => console.log(chalk.green(text));
 const code = chalk.inverse;
 const keyword = chalk.cyan;
 const important = chalk.greenBright;
-
-/*
-  node deploy --dev
-  npm run deploy --dev
- */
-const dev = argv.dev || process.env.npm_config_dev;
 
 if (!config?.rootPath) {
   error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}.`)
@@ -147,6 +148,7 @@ async function prepareEdits() {
 
     edits.push({
       title: config.rootPath + file,
+      url: getUrl(config.rootPath + file),
       content,
       contentSnippet: content.slice(0, 300) + (content.length > 300 ? '...' : ''),
       summary,
@@ -158,6 +160,7 @@ async function prepareEdits() {
   const overview = edits
     .map((edit) => (
       `${keyword('Page:')} ${edit.title}\n` +
+      `${keyword('URL:')} ${edit.url}\n` +
       `${keyword('Edit summary:')} ${edit.summary}\n` +
       `${keyword(`Content (${important(byteLength(edit.content).toLocaleString() + ' bytes')}):`)} ${code(edit.contentSnippet)}\n`
     ))
