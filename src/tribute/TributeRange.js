@@ -435,7 +435,8 @@ class TributeRange {
         if (menuIsOffScreen.bottom) {
             // jwbth: Removed the block setting `coordinates.bottom` as a reference point as well as
             // the `parentHeight` variable, added the block setting the height for the menu.
-            const height = windowTop + windowHeight - coordinates.top - span.offsetTop
+            const height = windowTop + windowHeight - coordinates.top -
+                Number(getComputedStyle(element).paddingTop.replace('px', ''))
             coordinates.additionalStyles = 'height: ' + height + 'px; overflow-y: scroll;'
         }
 
