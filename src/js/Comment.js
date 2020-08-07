@@ -1193,7 +1193,7 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    if (registerAllInDirection && !navPanel.areAllCommentsSeen()) {
+    if (registerAllInDirection && navPanel.getUnseenCount() !== 0) {
       const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
       if (nextComment?.isInViewport(true)) {
         nextComment.registerSeen(registerAllInDirection, highlight);

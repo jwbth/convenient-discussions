@@ -1290,8 +1290,9 @@ export default class CommentForm {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
     }
 
-    let usersInSection = commentsInSection.map((comment) => comment.author.name);
-    usersInSection.sort();
+    let usersInSection = commentsInSection
+      .map((comment) => comment.author.name)
+      .sort();
     if (this.targetComment && this.mode !== 'edit') {
       usersInSection.unshift(this.targetComment.author.name);
     }

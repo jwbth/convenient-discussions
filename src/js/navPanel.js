@@ -23,11 +23,11 @@ import { setVisits } from './options';
 
 let newCount;
 let unseenCount;
-let lastFirstTimeSeenCommentId = null;
+let lastFirstTimeSeenCommentId;
 let newRevisions = [];
 let notifiedAbout = [];
 let notifications = [];
-let isBackgroundCheckArranged = false;
+let backgroundCheckArranged = false;
 let relevantNewCommentAnchor;
 
 let $navPanel;
@@ -69,10 +69,10 @@ function removeAlarmViaWorker() {
  * @private
  */
 async function checkForNewComments() {
-  if (document.hidden && !isBackgroundCheckArranged) {
+  if (document.hidden && !backgroundCheckArranged) {
     const callback = () => {
       $(document).off('visibilitychange', callback);
-      isBackgroundCheckArranged = false;
+      backgroundCheckArranged = false;
       removeAlarmViaWorker();
       checkForNewComments();
     };
@@ -83,12 +83,12 @@ async function checkForNewComments() {
       cd.g.NEW_COMMENTS_CHECK_INTERVAL
     );
     setAlarmViaWorker(interval * 1000);
-    isBackgroundCheckArranged = true;
+    backgroundCheckArranged = true;
     return;
   }
 
   // Precaution
-  isBackgroundCheckArranged = false;
+  backgroundCheckArranged = false;
 
   const rvstartid = newRevisions.length ?
     newRevisions[newRevisions.length - 1] :
@@ -178,7 +178,7 @@ async function checkForNewComments() {
 
   if (document.hidden) {
     setAlarmViaWorker(cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL * 1000);
-    isBackgroundCheckArranged = true;
+    backgroundCheckArranged = true;
   } else {
     setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
   }
@@ -752,7 +752,7 @@ const navPanel = {
 
     removeAlarmViaWorker();
     setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
-    isBackgroundCheckArranged = false;
+    backgroundCheckArranged = false;
 
     $refreshButton
       .empty()
@@ -770,25 +770,24 @@ const navPanel = {
    */
   fill() {
     newCount = cd.comments.filter((comment) => comment.newness).length;
-    unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
     if (newCount) {
       $nextButton.show();
       $previousButton.show();
+      unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
       if (unseenCount) {
-        $firstUnseenButton.show();
         this.updateFirstUnseenButton();
       }
     }
   },
 
   /**
-   * Check if all comments on the page have been seen.
+   * Get the number of comments on the page that haven't been seen.
    *
    * @returns {boolean}
    * @memberof module:navPanel
    */
-  areAllCommentsSeen() {
-    return unseenCount === 0;
+  getUnseenCount() {
+    return unseenCount;
   },
 
   /**
@@ -894,19 +893,17 @@ const navPanel = {
    * @memberof module:navPanel
    */
   goToFirstUnseenComment() {
-    if (cd.g.autoScrollInProgress) return;
+    if (!unseenCount || cd.g.autoScrollInProgress) return;
 
-    if (unseenCount) {
-      const comment = cd.comments
-        .slice(lastFirstTimeSeenCommentId || 0)
-        .find((comment) => comment.newness === 'unseen');
-      if (comment) {
-        comment.$elements.cdScrollTo('center', true, () => {
-          comment.registerSeen('forward', true);
-          this.updateFirstUnseenButton();
-        });
-        lastFirstTimeSeenCommentId = comment.id;
-      }
+    const comment = cd.comments
+      .slice(lastFirstTimeSeenCommentId || 0)
+      .find((comment) => comment.newness === 'unseen');
+    if (comment) {
+      comment.$elements.cdScrollTo('center', true, () => {
+        comment.registerSeen('forward', true);
+        this.updateFirstUnseenButton();
+      });
+      lastFirstTimeSeenCommentId = comment.id;
     }
   },
 
@@ -943,8 +940,8 @@ const navPanel = {
    * @memberof module:navPanel
    */
   registerSeenComments() {
-    // Don't run this more than once in some period, otherwise the scrolling may be slowed down.
-    // Also, wait before running, otherwise comments may be registered as seen after a press of Page
+    // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
+    // wait before running, otherwise comments may be registered as seen after a press of Page
     // Down/Page Up.
     if (!unseenCount || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
 

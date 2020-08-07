@@ -62,14 +62,18 @@ export default {
       offset = offsetTop;
     }
 
+    const onComplete = () => {
+      cd.g.autoScrollInProgress = false;
+      if (navPanel.isMounted()) {
+        navPanel.registerSeenComments();
+        navPanel.updateCommentFormButton();
+      }
+    };
+
     if (smooth) {
       $('body, html').animate({ scrollTop: offset }, {
         complete: () => {
-          cd.g.autoScrollInProgress = false;
-          if (navPanel.isMounted()) {
-            navPanel.registerSeenComments();
-            navPanel.updateCommentFormButton();
-          }
+          onComplete();
           if (callback) {
             callback();
           }
@@ -77,11 +81,7 @@ export default {
       });
     } else {
       window.scrollTo(0, offset);
-      cd.g.autoScrollInProgress = false;
-      if (navPanel.isMounted()) {
-        navPanel.registerSeenComments();
-        navPanel.updateCommentFormButton();
-      }
+      onComplete();
     }
 
     return this;
