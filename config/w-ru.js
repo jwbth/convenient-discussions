@@ -388,7 +388,7 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
     }
 
     if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-      const $text = cd.util.wrapInElement(`Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="${mw.util.getUrl(cd.config.helpWikilink)}#Совместимость">здесь</a>, чтобы обеспечить их совместимость.`);
+      const $text = cd.util.wrapInElement(`Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="${mw.util.getUrl(cd.config.scriptPageWikilink)}#Совместимость">здесь</a>, чтобы обеспечить их совместимость.`);
       mw.notify($text, { autoHide: false });
     }
   }

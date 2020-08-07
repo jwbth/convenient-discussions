@@ -220,7 +220,7 @@ function initGlobals() {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
   } else {
-    cd.g.SUMMARY_POSTFIX = ` ([[${cd.config.helpWikilink}|${cd.s('script-name-short')}]])`;
+    cd.g.SUMMARY_POSTFIX = ` ([[${cd.config.scriptPageWikilink}|${cd.s('script-name-short')}]])`;
     cd.g.SUMMARY_LENGTH_LIMIT = (
       mw.config.get('wgCommentCodePointLimit') -
       cd.g.SUMMARY_POSTFIX.length
