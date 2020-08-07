@@ -110,8 +110,10 @@ function parse() {
       reply.targetComment = comment;
     });
     if (comment.getSection()) {
-      comment.sectionHeadline = comment.getSection().headline;
-      comment.sectionAnchor = comment.getSection().anchor;
+      comment.section = {
+        headline: comment.getSection().headline,
+        anchor: comment.getSection().anchor,
+      }
       delete comment.getSection;
     }
     if (comment.targetComment) {

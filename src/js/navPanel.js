@@ -185,30 +185,35 @@ async function checkForNewComments() {
 }
 
 /**
- * Update the refresh button to show the number of comments added to the page since it was loaded.
+ * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
- * @param {CommentSkeleton[]} newComments
- * @param {boolean} areThereInteresting
- * @private
+ * @param {CommentSkeleton[]|Comment[]} comments
+ * @param {string} mode 'firstunseen' or 'refresh'. Code of action of the button.
+ * @returns {string}
  */
-function updateRefreshButton(newComments, areThereInteresting) {
-  const newCommentsBySection = {};
-  newComments.forEach((comment) => {
-    if (!newCommentsBySection[comment.sectionAnchor]) {
-      newCommentsBySection[comment.sectionAnchor] = [];
+function generateTooltipText(comments, mode) {
+  const commentsBySection = {};
+  comments.forEach((comment) => {
+    const section = comment.section || comment.getSection();
+    if (!commentsBySection[section.anchor]) {
+      commentsBySection[section.anchor] = [];
     }
-    newCommentsBySection[comment.sectionAnchor].push(comment);
+    commentsBySection[section.anchor].push(comment);
   });
 
   let tooltipText;
-  if (newComments.length) {
-    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} ${mw.msg('parentheses', 'R')}`;
-    Object.keys(newCommentsBySection).forEach((anchor) => {
-      const headline = newCommentsBySection[anchor][0].sectionHeadline ?
-        cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
+  if (comments.length) {
+    tooltipText = `${cd.s('navpanel-newcomments-count', comments.length)} ${cd.s('navpanel-newcomments-' + mode)} ${mw.msg('parentheses', 'R')}`;
+    Object.keys(commentsBySection).forEach((anchor) => {
+      const section = (
+        commentsBySection[anchor][0].section ||
+        commentsBySection[anchor][0].getSection()
+      );
+      const headline = section.headline ?
+        cd.s('navpanel-newcomments-insection', section.headline) :
         mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
       tooltipText += `\n\n${headline}`;
-      newCommentsBySection[anchor].forEach((comment) => {
+      commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
         const author = comment.targetCommentAuthor && comment.level > 1 ?
           cd.s(
@@ -223,13 +228,24 @@ function updateRefreshButton(newComments, areThereInteresting) {
         tooltipText += author + mw.msg('comma-separator') + date;
       });
     });
-  } else {
+  } else if (mode === 'refresh') {
     tooltipText = `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`;
   }
 
+  return tooltipText;
+}
+
+/**
+ * Update the refresh button to show the number of comments added to the page since it was loaded.
+ *
+ * @param {CommentSkeleton[]} newComments
+ * @param {boolean} areThereInteresting
+ * @private
+ */
+function updateRefreshButton(newComments, areThereInteresting) {
   $refreshButton
     .text(newComments.length ? `+${newComments.length}` : ``)
-    .attr('title', tooltipText);
+    .attr('title', generateTooltipText(newComments, 'refresh'));
   if (areThereInteresting) {
     $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
   } else {
@@ -258,7 +274,7 @@ export function updatePageTitle(newCommentsCount, areThereInteresting) {
 function addSectionNotifications(newComments) {
   $('.cd-refreshButtonContainer').remove();
   newComments
-    .map((comment) => comment.sectionAnchor)
+    .map((comment) => comment.section.anchor)
     .filter(unique)
     .forEach((anchor) => {
       const section = Section.getSectionByAnchor(anchor);
@@ -271,19 +287,19 @@ function addSectionNotifications(newComments) {
       });
       button.on('click', () => {
         const commentAnchor = newComments
-          .find((comment) => comment.sectionAnchor === anchor).anchor;
+          .find((comment) => comment.section.anchor === anchor).anchor;
         reloadPage({ commentAnchor });
       });
 
-    const $lastElement = section.$replyButton ?
-      section.$replyButton.closest('ul, ol') :
-      section.$elements[section.$elements.length - 1];
-    $('<div>')
-      .addClass('cd-refreshButtonContainer')
-      .addClass('cd-sectionButtonContainer')
-      .append(button.$element)
-      .insertAfter($lastElement);
-  });
+      const $lastElement = section.$replyButton ?
+        section.$replyButton.closest('ul, ol') :
+        section.$elements[section.$elements.length - 1];
+      $('<div>')
+        .addClass('cd-refreshButtonContainer')
+        .addClass('cd-sectionButtonContainer')
+        .append(button.$element)
+        .insertAfter($lastElement);
+    });
 }
 
 /**
@@ -420,8 +436,8 @@ async function sendNotifications(comments) {
     const comment = notifyAboutDesktop[0];
     if (notifyAboutDesktop.length === 1) {
       if (comment.toMe) {
-        const where = comment.sectionHeadline ?
-          mw.msg('word-separator') + cd.s('notification-part-insection', comment.sectionHeadline) :
+        const where = comment.section.headline ?
+          mw.msg('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
           '';
         body = cd.s(
           'notification-toyou-desktop',
@@ -435,7 +451,7 @@ async function sendNotifications(comments) {
           'notification-insection-desktop',
           comment.author.name,
           comment.author,
-          comment.sectionHeadline,
+          comment.section.headline,
           cd.g.CURRENT_PAGE.name
         );
       }
@@ -520,7 +536,7 @@ async function processComments(comments) {
     }
 
     // Is this section watched by means of an upper level section?
-    const sections = Section.getSectionsByHeadline(comment.sectionHeadline);
+    const sections = Section.getSectionsByHeadline(comment.section.headline);
     for (const section of sections) {
       const watchedAncestor = section.getWatchedAncestor(true);
       if (watchedAncestor) {
@@ -776,7 +792,9 @@ const navPanel = {
   },
 
   /**
-   * Update the unseen comments count without recounting.
+   * Update the unseen comments count without recounting. We try to avoid recounting mostly because
+   * {@link module:navPanel.registerSeenComments} that uses the unseen count is executed very
+   * frequently (up to a hundred times a second).
    *
    * @memberof module:navPanel
    */
@@ -791,7 +809,14 @@ const navPanel = {
    */
   updateFirstUnseenButton() {
     if (unseenCount) {
-      $firstUnseenButton.text(unseenCount);
+      const shownUnseenCommentsCount = Number($firstUnseenButton.text());
+      if (unseenCount !== shownUnseenCommentsCount) {
+        const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
+        $firstUnseenButton
+          .show()
+          .text(unseenCount)
+          .attr('title', generateTooltipText(unseenComments, 'firstunseen'));
+      }
     } else {
       $firstUnseenButton.hide();
     }
