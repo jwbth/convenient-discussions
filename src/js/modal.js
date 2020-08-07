@@ -9,7 +9,7 @@ import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { checkboxField, radioField } from './ooui';
-import { defined, removeDuplicates, spacesToUnderlines } from './util';
+import { defined, spacesToUnderlines, unique } from './util';
 import { encodeWikilink } from './wikitext';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
@@ -985,7 +985,7 @@ export async function editWatchedSections() {
         Object.keys(sections)
           .filter((key) => titleToId[key])
           .forEach((key) => {
-            cd.g.watchedSections[titleToId[key]] = removeDuplicates(sections[key]);
+            cd.g.watchedSections[titleToId[key]] = sections[key].filter(unique);
           });
 
         try {

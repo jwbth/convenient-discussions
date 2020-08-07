@@ -6,13 +6,7 @@
 
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
-import {
-  defined,
-  firstCharToUpperCase,
-  handleApiReject,
-  removeDoubleSpaces,
-  removeDuplicates,
-} from './util';
+import { defined, firstCharToUpperCase, handleApiReject, removeDoubleSpaces, unique } from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -110,8 +104,9 @@ export default class Autocomplete {
     };
 
     const prepareValues = (arr, config) => (
-      removeDuplicates(arr)
+      arr
         .filter(defined)
+        .filter(unique)
         .map((item) => {
           let key;
           if (Array.isArray(item)) {

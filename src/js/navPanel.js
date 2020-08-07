@@ -14,8 +14,8 @@ import {
   defined,
   handleApiReject,
   isCommentEdit,
-  removeDuplicates,
   reorderArray,
+  unique,
 } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
 import { reloadPage } from './boot';
@@ -126,7 +126,7 @@ async function checkForNewComments() {
     newRevisions.push(...addedNewRevisions);
 
     // Precaution
-    newRevisions = removeDuplicates(newRevisions);
+    newRevisions = newRevisions.filter(unique);
 
     if (addedNewRevisions.length) {
       const { text } = await cd.g.CURRENT_PAGE.parse({
@@ -257,20 +257,23 @@ export function updatePageTitle(newCommentsCount, areThereInteresting) {
  */
 function addSectionNotifications(newComments) {
   $('.cd-refreshButtonContainer').remove();
-  const sectionAnchors = removeDuplicates(newComments.map((comment) => comment.sectionAnchor));
-  sectionAnchors.forEach((anchor) => {
-    const section = Section.getSectionByAnchor(anchor);
-    if (!section) return;
+  newComments
+    .map((comment) => comment.sectionAnchor)
+    .filter(unique)
+    .forEach((anchor) => {
+      const section = Section.getSectionByAnchor(anchor);
+      if (!section) return;
 
-    const button = new OO.ui.ButtonWidget({
-      label: cd.s('section-newcomments'),
-      framed: false,
-      classes: ['cd-button', 'cd-sectionButton'],
-    });
-    button.on('click', () => {
-      const commentAnchor = newComments.find((comment) => comment.sectionAnchor === anchor).anchor;
-      reloadPage({ commentAnchor });
-    });
+      const button = new OO.ui.ButtonWidget({
+        label: cd.s('section-newcomments'),
+        framed: false,
+        classes: ['cd-button', 'cd-sectionButton'],
+      });
+      button.on('click', () => {
+        const commentAnchor = newComments
+          .find((comment) => comment.sectionAnchor === anchor).anchor;
+        reloadPage({ commentAnchor });
+      });
 
     const $lastElement = section.$replyButton ?
       section.$replyButton.closest('ul, ol') :
@@ -320,7 +323,9 @@ async function sendNotifications(comments) {
     });
   }
 
-  const authors = removeDuplicates(notifyAboutOrdinary.concat(notifyAboutDesktop))
+  const authors = notifyAboutOrdinary
+    .concat(notifyAboutDesktop)
+    .filter(unique)
     .map((comment) => comment.author)
     .filter(defined);
   await getUserGenders(authors, { noTimers: true });

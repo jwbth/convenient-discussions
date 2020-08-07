@@ -19,10 +19,10 @@ import {
   isInputFocused,
   nativePromiseState,
   removeDoubleSpaces,
-  removeDuplicates,
   restoreScrollPosition,
   saveScrollPosition,
   unhideText,
+  unique,
 } from './util';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
@@ -1295,7 +1295,7 @@ export default class CommentForm {
     if (this.targetComment && this.mode !== 'edit') {
       usersInSection.unshift(this.targetComment.author.name);
     }
-    usersInSection = removeDuplicates(usersInSection);
+    usersInSection = usersInSection.filter(unique);
 
     /**
      * Autocomplete object for the comment input.

@@ -11,16 +11,15 @@ import cd from './cd';
 let keptScrollPosition = null;
 
 /**
- * Removes duplicated elements from an array.
+ * Removes duplicated elements from an array. Callback for `Array#filter` functions.
  *
+ * @param {*} item
+ * @param {number} pos
  * @param {Array} arr
- * @returns {?Array}
+ * @returns {boolean}
  */
-export function removeDuplicates(arr) {
-  if (!arr || typeof arr !== 'object') {
-    return null;
-  }
-  return arr.filter((value, i) => arr.indexOf(value) === i);
+export function unique(item, pos, arr) {
+  return arr.indexOf(item) === pos;
 }
 
 /**
@@ -147,7 +146,7 @@ export function isUndo(summary) {
 }
 
 /**
- * Callback for `Array#filter` functions used with `Array#map`.
+ * Callback for `Array#filter` functions to keep only defined values in the array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -157,7 +156,7 @@ export function defined(el) {
 }
 
 /**
- * Callback for `Array#filter` functions used with `Array#map`.
+ * Callback for `Array#filter` functions to keep only not null values in the array.
  *
  * @param {*} el
  * @returns {boolean}

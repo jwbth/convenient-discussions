@@ -17,9 +17,9 @@ import {
   defined,
   handleApiReject,
   notNull,
-  removeDuplicates,
   reorderArray,
   unhideText,
+  unique,
 } from './util';
 import { copyLink } from './modal.js';
 import {
@@ -43,8 +43,8 @@ import { getUserGenders } from './apiWrappers';
  */
 function calculateWordsOverlap(s1, s2) {
   const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{3,}`, 'g');
-  const words1 = removeDuplicates(s1.match(regexp));
-  const words2 = removeDuplicates(s2.match(regexp));
+  const words1 = s1.match(regexp).filter(unique);
+  const words2 = s2.match(regexp).filter(unique);
   if (!words1 || !words2) {
     return 0;
   }
