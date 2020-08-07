@@ -782,7 +782,7 @@ function restoreCommentFormsFromData(commentFormsData) {
   const rescue = [];
   commentFormsData.forms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
-    if (data?.targetData.anchor) {
+    if (data.targetData?.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
       if (comment?.actionable && !comment[`${property}Form`]) {
         try {
@@ -795,7 +795,7 @@ function restoreCommentFormsFromData(commentFormsData) {
       } else {
         rescue.push(data);
       }
-    } else if (data?.targetData.headline) {
+    } else if (data.targetData?.headline) {
       const section = Section.search({
         headline: data.targetData.headline,
         firstCommentAnchor: data.targetData.firstCommentAnchor,
