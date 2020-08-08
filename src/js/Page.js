@@ -339,7 +339,7 @@ export default class Page {
   }
 
   /**
-   * Modify page code string in accordance with an action. The `'addSection'` action is presumed.
+   * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
    *
    * @param {object} options
    * @param {string} options.pageCode

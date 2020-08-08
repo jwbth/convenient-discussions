@@ -440,11 +440,9 @@ export default class Comment extends CommentSkeleton {
 
     const options = { doSet, floatingRects };
     options.rectTop = this.highlightables[0].getBoundingClientRect();
-    options.rectBottom = (
-      this.elements.length === 1 ?
+    options.rectBottom = this.elements.length === 1 ?
       options.rectTop :
-      this.highlightables[this.highlightables.length - 1].getBoundingClientRect()
-    );
+      this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
     options.layersContainerOffset = this.getLayersContainerOffset();
 
     const moved = (
@@ -1606,7 +1604,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Modify page code string related to the comment in accordance with an action.
+   * Modify a page code string related to the comment in accordance with an action.
    *
    * @param {object} options
    * @param {string} options.pageCode

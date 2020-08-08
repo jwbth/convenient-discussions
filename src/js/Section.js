@@ -1063,7 +1063,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Modify page code string related to the section in accordance with an action.
+   * Modify a page code string related to the section in accordance with an action.
    *
    * @param {object} options
    * @param {string} options.pageCode
