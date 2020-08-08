@@ -201,8 +201,8 @@ export default class Comment extends CommentSkeleton {
         cd.g.specialElements.floating.map((el) => {
           const nativeRect = el.getBoundingClientRect();
           return {
-            top: nativeRect.top - Number(el.getAttribute('data-margin-top')),
-            bottom: nativeRect.bottom + Number(el.getAttribute('data-margin-bottom')),
+            top: nativeRect.top - el.cdMarginTop,
+            bottom: nativeRect.bottom + el.cdMarginBottom,
           };
         })
       );

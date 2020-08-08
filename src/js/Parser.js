@@ -843,8 +843,8 @@ export function findSpecialElements() {
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
   floating.forEach((el) => {
     const style = window.getComputedStyle(el);
-    el.setAttribute('data-margin-top', parseFloat(style.marginTop));
-    el.setAttribute('data-margin-bottom', parseFloat(style.marginBottom));
+    el.cdMarginTop = parseFloat(style.marginTop);
+    el.cdMarginBottom = parseFloat(style.marginBottom);
   });
 
   const closedDiscussionsSelector = cd.config.closedDiscussionsClasses
