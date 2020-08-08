@@ -209,7 +209,11 @@ async function logIn() {
         validate: (value) => Boolean(value),
       },
     ]);
-    client.logIn(response.username, response.password, callback);
+
+    // Ctrl+C leaves the password unspecified.
+    if (response.password) {
+      client.logIn(response.username, response.password, callback);
+    }
   }
 }
 
