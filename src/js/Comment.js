@@ -1798,8 +1798,8 @@ export default class Comment extends CommentSkeleton {
    */
   getLayersContainerOffset() {
     const container = this.getLayersContainer();
-    let top = this.cachedLayersContainerTop;
-    let left = this.cachedLayersContainerLeft;
+    let top = container.cdCachedLayersContainerTop;
+    let left = container.cdCachedLayersContainerLeft;
     if (top === undefined || container.cdCouldHaveMoved) {
       let el = container;
       let offsetParent;
@@ -1811,8 +1811,8 @@ export default class Comment extends CommentSkeleton {
         el = offsetParent;
       }
       container.cdCouldHaveMoved = false;
-      this.cachedLayersContainerTop = top;
-      this.cachedLayersContainerLeft = left;
+      container.cdCachedLayersContainerTop = top;
+      container.cdCachedLayersContainerLeft = left;
     }
     return { top, left };
   }
