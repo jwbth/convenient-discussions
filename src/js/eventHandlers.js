@@ -99,53 +99,32 @@ export function globalKeyDownHandler(e) {
 
 /**
  * Handles the `mousemove` and `mouseover` events and highlights hovered comments even when the
- * mouse is between comment parts, not over them.
+ * cursor is between comment parts, not over them.
  *
  * @param {Event} e
  */
 export function highlightFocused(e) {
-  if (cd.util.isPageOverlayOn() || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
+  if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
-  const contentLeft = cd.g.rootElement.getBoundingClientRect().left;
-  if (e.pageX < contentLeft - cd.g.COMMENT_UNDERLAY_SIDE_MARGIN) {
-    commentLayers.underlays
-      .filter((underlay) => underlay.classList.contains('cd-commentUnderlay-focused'))
-      .forEach((underlay) => {
-        underlay.cdTarget.unhighlightFocused();
-      });
-    return;
-  }
+  const autocompleteMenuHovered = cd.g.activeAutocompleteMenu?.matches(':hover');
 
   cd.comments
-    .filter((comment) => comment.$underlay)
+    .filter((comment) => comment.underlay)
     .forEach((comment) => {
-      const underlay = comment.$underlay.get(0);
-
-      if (!underlay.classList.contains('cd-commentUnderlay')) return;
-
-      const top = Number(underlay.style.top.replace('px', ''));
-      const left = Number(underlay.style.left.replace('px', ''));
-      const width = Number(underlay.style.width.replace('px', ''));
-      const height = Number(underlay.style.height.replace('px', ''));
-
       const layersContainerOffset = comment.getLayersContainerOffset();
-
       if (
-        // In case some user moves the navigation panel to the right side.
+        // In case the user has moved the navigation panel to the right side.
         !navPanel.isMouseOver &&
 
-        e.pageY >= top + layersContainerOffset.top &&
-        e.pageY <= top + height + layersContainerOffset.top &&
-        e.pageX >= left + layersContainerOffset.left &&
-        e.pageX <= left + width + layersContainerOffset.left
+        !autocompleteMenuHovered &&
+        e.pageY >= comment.layersTop + layersContainerOffset.top &&
+        e.pageY <= comment.layersTop + comment.layersHeight + layersContainerOffset.top &&
+        e.pageX >= comment.layersLeft + layersContainerOffset.left &&
+        e.pageX <= comment.layersLeft + comment.layersWidth + layersContainerOffset.left
       ) {
-        if (!underlay.classList.contains('cd-commentUnderlay-focused')) {
-          underlay.cdTarget.highlightFocused();
-        }
+        comment.highlightFocused();
       } else {
-        if (underlay.classList.contains('cd-commentUnderlay-focused')) {
-          underlay.cdTarget.unhighlightFocused();
-        }
+        comment.unhighlightFocused();
       }
     });
 }

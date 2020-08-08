@@ -7,6 +7,7 @@
 import { create as nanoCssCreate } from 'nano-css';
 
 import Comment from './Comment';
+import Page from './Page';
 import cd from './cd';
 import {
   caseInsensitiveFirstCharPattern,
@@ -29,8 +30,6 @@ let goToCommentWatchedSection;
 let currentUserRegexp;
 let $wrapperRegularPrototype;
 let $wrapperInterestingPrototype;
-let watchedSections;
-let thisPageWatchedSections;
 let switchInterestingButton;
 
 let processDiffFirstRun = true;
@@ -53,15 +52,11 @@ async function prepare({ messagesRequest }) {
   });
   messagesRequest = messagesRequest || loadMessages();
 
-  let watchedSectionsResult;
   try {
-    [watchedSectionsResult] = await Promise.all([watchedSectionsRequest, messagesRequest]);
+    await Promise.all([watchedSectionsRequest, messagesRequest]);
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
-  ({ watchedSections, thisPageWatchedSections } = watchedSectionsResult || {});
-
-  initTimestampParsingTools();
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
@@ -73,7 +68,12 @@ async function prepare({ messagesRequest }) {
     },
   });
 
+  cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
+    .files["phpCharToUpper.json"];
+  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
+
+  initTimestampParsingTools();
 
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
@@ -89,9 +89,8 @@ async function prepare({ messagesRequest }) {
     .append($aRegularPrototype);
   $wrapperRegularPrototype = $('<span>')
     .addClass('cd-commentLink')
-    .append($spanRegularPrototype)[cd.g.IS_DIFF_PAGE ? 'append' : 'prepend'](
-      document.createTextNode(' ')
-    );
+    .append($spanRegularPrototype)
+    .prepend(' ');
   $wrapperInterestingPrototype = $wrapperRegularPrototype
     .clone()
     .addClass('cd-commentLink-interesting');
@@ -177,7 +176,7 @@ function addWatchlistMenu() {
     .addClass('cd-watchlistMenu-legend')
     .appendTo($menu);
   $('<a>')
-    .attr('href', mw.util.getUrl(cd.config.helpWikilink))
+    .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
     .html(cd.s('script-name-short'))
     .appendTo($legend);
 
@@ -188,7 +187,7 @@ function addWatchlistMenu() {
     invisibleLabel: true,
     title: cd.s('wl-button-switchinteresting-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchInteresting'],
-    disabled: !watchedSections,
+    disabled: !cd.g.watchedSections,
   });
   switchInterestingButton.on('click', () => {
     switchInteresting();
@@ -255,8 +254,8 @@ function extractAuthor(line) {
  */
 function isMoved(summary) {
   return (
-    (moveFromBeginning && summary.includes(`: ${moveFromBeginning}`)) ||
-    (moveToBeginning && summary.includes(`: ${moveToBeginning}`))
+    (moveFromBeginning && summary.includes(': ' + moveFromBeginning)) ||
+    (moveToBeginning && summary.includes(': ' + moveToBeginning))
   );
 }
 
@@ -294,7 +293,7 @@ function processWatchlist($content) {
 
     $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
       try {
-        ({ watchedSections } = await getWatchedSections());
+        await getWatchedSections();
       } catch (e) {
         console.warn('Couldn\'t load the settings from the server.', e);
       }
@@ -320,11 +319,9 @@ function processWatchlist($content) {
     const pageName = linkElement.textContent;
     if (!isProbablyTalkPage(pageName, nsNumber)) return;
 
-    const minorMark = line.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
-    const summaryElement = line.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -337,8 +334,7 @@ function processWatchlist($content) {
       if (!bytesAdded || bytesAdded < cd.config.bytesToDeemComment) return;
     }
 
-    let timestamp = line.getAttribute('data-mw-ts');
-    timestamp = timestamp && timestamp.slice(0, 12);
+    const timestamp = line.getAttribute('data-mw-ts')?.slice(0, 12);
     if (!timestamp) return;
 
     const author = extractAuthor(line);
@@ -362,10 +358,10 @@ function processWatchlist($content) {
           // Non-expanded watchlist
           line.querySelector('.mw-changeslist-history')
         );
-        const curIdMatch = curLink && curLink.href && curLink.href.match(/[&?]curid=(\d+)/);
+        const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const thisPageWatchedSections = watchedSections && watchedSections[curId] || [];
+          const thisPageWatchedSections = cd.g.watchedSections?.[curId] || [];
           if (thisPageWatchedSections.length) {
             for (let j = 0; j < thisPageWatchedSections.length; j++) {
               // \u200E is the left-to-right mark.
@@ -388,7 +384,7 @@ function processWatchlist($content) {
 
     wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
 
-    const destination = line.querySelector('.mw-usertoollinks');
+    const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks');
     if (!destination) return;
     destination.parentElement.insertBefore(wrapper, destination.nextSibling);
   });
@@ -402,7 +398,7 @@ function processWatchlist($content) {
  */
 function processContributions($content) {
   const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone && timezone.split('|');
+  const timezoneParts = timezone?.split('|');
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
@@ -414,16 +410,15 @@ function processContributions($content) {
     if (!linkElement) return;
 
     const pageName = linkElement.textContent;
-    if (!isProbablyTalkPage(pageName)) return;
+    const page = new Page(pageName);
+    if (!page.isProbablyTalkPage()) return;
 
     const link = linkElement.href;
     if (!link) return;
 
-    const minorMark = line.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
-    const summaryElement = line.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -452,12 +447,12 @@ function processContributions($content) {
 
     wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
 
-    if (linkElement.nextSibling) {
-      linkElement.nextSibling.textContent = (
-        linkElement.nextSibling.textContent.replace(/^\s/, '')
-      );
+    let destination = line.querySelector('.comment');
+    if (!destination) {
+      destination = linkElement;
+      destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '');
     }
-    linkElement.parentElement.insertBefore(wrapper, linkElement.nextSibling);
+    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
   });
 }
 
@@ -469,20 +464,18 @@ function processContributions($content) {
  */
 function processHistory($content) {
   const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone && timezone.split('|');
+  const timezoneParts = timezone?.split('|');
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
-  const link = mw.util.getUrl(cd.g.CURRENT_PAGE);
+  const link = cd.g.CURRENT_PAGE.getUrl();
 
   lines.forEach((line) => {
-    const minorMark = line.querySelector('.minoredit');
-    if (minorMark) return;
+    if (line.querySelector('.minoredit')) return;
 
-    const summaryElement = line.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = line.querySelector('.comment')?.textContent;
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -510,9 +503,7 @@ function processHistory($content) {
     } else {
       let watched = false;
       if (summary) {
-        const thisPageWatchedSections = (
-          (watchedSections && watchedSections[mw.config.get('wgArticleId')]) || []
-        );
+        const thisPageWatchedSections = cd.g.watchedSections?.[mw.config.get('wgArticleId')] || [];
         if (thisPageWatchedSections.length) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
             // \u200E is the left-to-right mark.
@@ -534,8 +525,11 @@ function processHistory($content) {
 
     wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
 
-    const separators = line.querySelectorAll('.mw-changeslist-separator');
-    const destination = separators && separators[separators.length - 1];
+    let destination = line.querySelector('.comment');
+    if (!destination) {
+      const separators = line.querySelectorAll('.mw-changeslist-separator');
+      destination = separators?.[separators.length - 1];
+    }
     if (!destination) return;
     destination.parentElement.insertBefore(wrapper, destination.nextSibling);
   });
@@ -551,7 +545,7 @@ async function processDiff() {
   if (!processDiffFirstRun) return;
 
   const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone && timezone.split('|');
+  const timezoneParts = timezone?.split('|');
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
@@ -559,13 +553,12 @@ async function processDiff() {
     .filter(notNull);
 
   areas.forEach((area) => {
-    const minorMark = area.querySelector('.minoredit');
-    if (minorMark) return;
+    if (area.querySelector('.minoredit')) return;
 
-    const summaryElement = area.querySelector('.comment');
-    const summary = summaryElement && summaryElement.textContent;
+    const summary = area.querySelector('.comment')?.textContent;
     if (
       summary &&
+
       // Here, archivation can't be captured by looking at bytes added.
       (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
     ) {
@@ -599,20 +592,20 @@ async function processDiff() {
       let wrapper;
       if (summary && currentUserRegexp.test(` ${summary} `)) {
         wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
-        wrapper.firstChild.lastChild.title = goToCommentToYou;
+        wrapper.lastChild.lastChild.title = goToCommentToYou;
       } else {
         let watched = false;
-        if (summary && thisPageWatchedSections.length) {
-          for (let j = 0; j < thisPageWatchedSections.length; j++) {
+        if (summary && cd.g.thisPageWatchedSections.length) {
+          for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
             // \u200E is the left-to-right mark.
-            if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+            if (summary.includes('→\u200E' + cd.g.thisPageWatchedSections[j])) {
               watched = true;
               break;
             }
           }
           if (watched) {
             wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
-            wrapper.firstChild.lastChild.title = goToCommentWatchedSection;
+            wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
           }
         }
         if (!watched) {
@@ -620,15 +613,17 @@ async function processDiff() {
         }
       }
 
-      wrapper.firstChild.lastChild.href = `#${anchor}`;
+      const href = '#' + anchor;
+      wrapper.lastChild.lastChild.href = href;
       wrapper.onclick = function (e) {
         e.preventDefault();
         comment.scrollToAndHighlightTarget(false);
+        history.pushState(history.state, '', href);
       };
 
       const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
       if (!destination) return;
-      destination.insertBefore(wrapper, destination.firstChild);
+      destination.appendChild(wrapper);
     }
   });
 
@@ -652,18 +647,15 @@ async function processDiff() {
 async function addCommentLinks($content) {
   // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
   // wikipage.content for the second time with an element that is not in the DOM,
-  // fieldset#mw-watchlist-options (in the
-  // mw.rcfilters.ui.FormWrapperWidget.prototype.onChangesModelUpdate() function).
+  // fieldset#mw-watchlist-options (in the mw.rcfilters.ui.FormWrapperWidget#onChangesModelUpdate
+  // function).
   if (!$content.parent().length) return;
 
   if (['Recentchanges', 'Watchlist'].includes(mw.config.get('wgCanonicalSpecialPageName'))) {
     processWatchlist($content);
   } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
     processContributions($content);
-  } else if (
-    mw.config.get('wgAction') === 'history' &&
-    isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER)
-  ) {
+  } else if (mw.config.get('wgAction') === 'history' && cd.g.CURRENT_PAGE.isProbablyTalkPage()) {
     processHistory($content);
   }
 

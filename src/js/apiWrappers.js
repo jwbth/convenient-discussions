@@ -1,6 +1,7 @@
 /**
  * Wrappers for MediaWiki action API requests ({@link
- * https://www.mediawiki.org/wiki/API:Main_page}).
+ * https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link module:Page Page class}
+ * methods for functions regarding concrete page names.
  *
  * @module apiWrappers
  */
@@ -10,8 +11,13 @@ import lzString from 'lz-string';
 import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { handleApiReject } from './util';
+import { defined, handleApiReject } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
+
+let cachedUserInfoRequest;
+let currentAutocompletePromise;
+
+const autocompleteTimeout = 100;
 
 /**
  * Make a request that isn't subject to throttling when the tab is in the background (google "Chrome
@@ -39,53 +45,11 @@ export function makeRequestNoTimers(params, method = 'get') {
 }
 
 /**
- * @typedef {object} GetCurrentPageDataReturn
- * @property {string} html
- * @property {number} revisionId
- */
-
-/**
- * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}) regarding
- * the current page.
- *
- * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
- * @param {boolean} [noTimers=false] Don't use timers (they can set the process on hold in
- *   background tabs if the browser throttles them).
- * @returns {GetCurrentPageDataReturn}
- * @throws {CdError}
- */
-export async function getCurrentPageData(markAsRead = false, noTimers = false) {
-  const params = {
-    action: 'parse',
-    page: cd.g.CURRENT_PAGE,
-    prop: ['text', 'revid', 'modules', 'jsconfigvars'],
-    formatversion: 2,
-  };
-  const request = noTimers ?
-    makeRequestNoTimers(params).catch(handleApiReject) :
-    cd.g.api.get(params).catch(handleApiReject);
-
-  if (markAsRead) {
-    $.get(mw.util.getUrl(cd.g.CURRENT_PAGE));
-  }
-  const resp = await request;
-
-  if (resp.parse === undefined) {
-    throw new CdError({
-      type: 'api',
-      code: 'noData',
-    });
-  }
-
-  return resp.parse;
-}
-
-/**
  * Make a parse request with arbitrary code. We assume that if something is parsed, it will be
  * shown, so we automatically load modules.
  *
  * @param {string} code
- * @param {object} options
+ * @param {object} [options]
  * @returns {Promise}
  * @throws {CdError}
  */
@@ -93,6 +57,7 @@ export async function parseCode(code, options) {
   const defaultOptions = {
     action: 'parse',
     text: code,
+    contentmodel: 'wikitext',
     prop: ['text', 'modules'],
     pst: true,
     disablelimitreport: true,
@@ -100,7 +65,7 @@ export async function parseCode(code, options) {
   };
   return cd.g.api.post(Object.assign({}, defaultOptions, options)).then(
     (resp) => {
-      const html = resp && resp.parse && resp.parse.text;
+      const html = resp?.parse?.text;
       if (html) {
         mw.loader.load(resp.parse.modules);
         mw.loader.load(resp.parse.modulestyles);
@@ -112,6 +77,12 @@ export async function parseCode(code, options) {
       }
 
       const parsedSummary = resp.parse.parsedsummary;
+      if (options?.summary && !parsedSummary) {
+        throw new CdError({
+          type: 'api',
+          code: 'noData',
+        });
+      }
 
       return { html, parsedSummary };
     },
@@ -120,100 +91,29 @@ export async function parseCode(code, options) {
 }
 
 /**
- * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
- * code of the specified page, together with few revision properties.
- *
- * @param {string|mw.Title} title
- * @returns {Promise} Promise resolved with an object containing the code, timestamp, redirect
- *   target, and query timestamp (curtimestamp).
- * @throws {CdError}
- */
-export async function getLastRevision(title) {
-  // The page doesn't exist.
-  if (!mw.config.get('wgArticleId')) {
-    return { code: '' };
-  }
-
-  const resp = await cd.g.api.get({
-    action: 'query',
-    titles: title.toString(),
-    prop: 'revisions',
-    rvprop: ['ids', 'content'],
-    redirects: true,
-    curtimestamp: true,
-    formatversion: 2,
-  }).catch(handleApiReject);
-
-  const query = resp.query;
-  const page = query && query.pages && query.pages[0];
-  const revision = page && page.revisions && page.revisions[0];
-
-  if (!query || !page) {
-    throw new CdError({
-      type: 'api',
-      code: 'noData',
-    });
-  }
-  if (page.missing) {
-    throw new CdError({
-      type: 'api',
-      code: 'missing',
-    });
-  }
-  if (page.invalid) {
-    throw new CdError({
-      type: 'api',
-      code: 'invalid',
-    });
-  }
-  if (!revision) {
-    throw new CdError({
-      type: 'api',
-      code: 'noData',
-    });
-  }
-
-  return {
-    // It's more convenient to unify regexps to have \n as the last character of anything, not
-    // (?:\n|$), and it doesn't seem to affect anything substantially.
-    code: revision.content + '\n',
-
-    revisionId: revision.revid,
-    redirectTarget: query.redirects && query.redirects[0] && query.redirects[0].to,
-    queryTimestamp: resp.curtimestamp,
-  };
-}
-
-let keptUserInfoRequest;
-
-/**
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Reuse the previous request if present.
- * @returns {Promise} An object containing the full options object, visits, watched sections, and
- *   rights.
+ * @returns {Promise} Promise for an object containing the full options object, visits, watched
+ *   sections, and rights.
  * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {
-  if (reuse && keptUserInfoRequest) {
-    return keptUserInfoRequest;
+  if (reuse && cachedUserInfoRequest) {
+    return cachedUserInfoRequest;
   }
 
-  const params = {
+  cd.g.api = cd.g.api || new mw.Api();
+  cachedUserInfoRequest = cd.g.api.get({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
     formatversion: 2,
-  };
-
-  // We never use timers here as this request can be reused while checking for new messages in the
-  // background which requires using timers (?), setting the process on hold if the browser
-  // throttles background tabs.
-  keptUserInfoRequest = makeRequestNoTimers(params).then(
+  }).then(
     (resp) => {
-      const userinfo = resp && resp.query && resp.query.userinfo;
-      const options = userinfo && userinfo.options;
-      const rights = userinfo && userinfo.rights;
+      const userinfo = resp?.query?.userinfo;
+      const options = userinfo?.options;
+      const rights = userinfo?.rights;
       if (!options || !rights) {
         throw new CdError({
           type: 'api',
@@ -240,7 +140,32 @@ export function getUserInfo(reuse = false) {
     handleApiReject
   );
 
-  return keptUserInfoRequest;
+  return cachedUserInfoRequest;
+}
+
+/**
+ * Generate an error text for an unknown error.
+ *
+ * @param {string} errorCode
+ * @param {string} [errorInfo]
+ * @returns {string}
+ * @private
+ */
+export async function unknownApiErrorText(errorCode, errorInfo) {
+  let text;
+  if (errorCode) {
+    text = cd.s('error-api', errorCode) + ' ';
+    if (errorInfo) {
+      try {
+        const { html } = await parseCode(errorInfo);
+        text += html;
+      } catch (e) {
+        text += errorInfo;
+      }
+    }
+  }
+
+  return text;
 }
 
 /**
@@ -251,12 +176,8 @@ export function getUserInfo(reuse = false) {
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
-  const allPages = [];
-
-  const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
-    500 :
-    50;
-
+  const pages = [];
+  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
   while ((nextPageIds = pageIds.splice(0, limit).join('|'))) {
     const resp = await cd.g.api.post({
@@ -273,19 +194,19 @@ export async function getPageTitles(pageIds) {
       });
     }
 
-    const query = resp && resp.query;
-    const pages = query && query.pages;
-    if (!pages) {
+    const query = resp?.query;
+    const thisPages = query?.pages;
+    if (!thisPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    allPages.push(...pages);
+    pages.push(...thisPages);
   }
 
-  return allPages;
+  return pages;
 }
 
 /**
@@ -296,14 +217,10 @@ export async function getPageTitles(pageIds) {
  * @throws {CdError}
  */
 export async function getPageIds(pageTitles) {
-  const allPages = [];
-  const allNormalized = [];
-  const allRedirects = [];
-
-  const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
-    500 :
-    50;
-
+  const pages = [];
+  const normalized = [];
+  const redirects = [];
+  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageTitles;
   while ((nextPageTitles = pageTitles.splice(0, limit).join('|'))) {
     const resp = await cd.g.api.post({
@@ -321,28 +238,53 @@ export async function getPageIds(pageTitles) {
       });
     }
 
-    const query = resp && resp.query;
-    const pages = query && query.pages;
-    if (!pages) {
+    const query = resp?.query;
+    const thisPages = query?.pages;
+    if (!thisPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    const normalized = query.normalized || [];
-    const redirects = query.redirects || [];
-
-    allNormalized.push(...normalized);
-    allRedirects.push(...redirects);
-    allPages.push(...pages);
+    normalized.push(...query.normalized || []);
+    redirects.push(...query.redirects || []);
+    pages.push(...thisPages);
   }
 
-  return {
-    pages: allPages,
-    normalized: allNormalized,
-    redirects: allRedirects,
-  };
+  return { pages, normalized, redirects };
+}
+
+/**
+ * Generic function for setting an option.
+ *
+ * @param {string} name
+ * @param {string} value
+ * @param {string} action
+ * @private
+ */
+async function setOption(name, value, action) {
+  if (value.length > 65535) {
+    throw new CdError({
+      type: 'internal',
+      code: 'sizeLimit',
+      details: { action },
+    });
+  }
+
+  const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
+    action: action,
+    optionname: name,
+    optionvalue: value,
+  })).catch(handleApiReject);
+
+  if (!resp || resp[action] !== 'success') {
+    throw new CdError({
+      type: 'api',
+      code: 'noSuccess',
+      details: { action },
+    });
+  }
 }
 
 /**
@@ -352,45 +294,36 @@ export async function getPageIds(pageTitles) {
  * @param {string} value
  * @throws {CdError}
  */
-export async function setOption(name, value) {
-  if (value.length > 65535) {
-    throw new CdError({
-      type: 'internal',
-      code: 'sizeLimit',
-    });
-  }
+export async function setLocalOption(name, value) {
+  await setOption(name, value, 'options');
+}
 
-  const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-    action: 'options',
-    optionname: name,
-    optionvalue: value,
-  })).catch(handleApiReject);
-
-  if (!resp || resp.options !== 'success') {
-    throw new CdError({
-      type: 'api',
-      code: 'noSuccess',
-    });
-  }
+/**
+ * Set a global preferences' option value. See {@link
+ * https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
+ *
+ * @param {string} name
+ * @param {string} value
+ * @throws {CdError}
+ */
+export async function setGlobalOption(name, value) {
+  await setOption(name, value, 'globalpreferences');
 }
 
 /**
  * Request genders of a list of users. A gender may be `'male'`, `'female'`, or `'unknown'`.
  *
  * @param {User[]} users
- * @param {boolean} [noTimers=false] Don't use timers (they can set the process on hold in
+ * @param {object} [options={}]
+ * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
  *   background tabs if the browser throttles them).
  * @throws {CdError}
  */
-export async function getUserGenders(users, noTimers = false) {
+export async function getUserGenders(users, { noTimers = false } = {}) {
   const usersToRequest = users
-    .filter((user) => !user.gender)
+    .filter((user) => !user.getGender())
     .map((user) => user.name);
-
-  const limit = cd.g.CURRENT_USER_RIGHTS && cd.g.CURRENT_USER_RIGHTS.includes('apihighlimits') ?
-    500 :
-    50;
-
+  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;
   while ((nextUsers = usersToRequest.splice(0, limit).join('|'))) {
     const params = {
@@ -400,22 +333,191 @@ export async function getUserGenders(users, noTimers = false) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const request = noTimers ?
-      makeRequestNoTimers(params, 'post').catch(handleApiReject) :
-      cd.g.api.post(params).catch(handleApiReject);
-
-    const resp = await request;
-
-    const users = resp && resp.query && resp.query.users;
+    const resp = await (noTimers ? makeRequestNoTimers(params, 'post') : cd.g.api.post(params))
+      .catch(handleApiReject);
+    const users = resp?.query?.users;
     if (!users) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
-
     users.forEach((user) => {
-      userRegistry.getUser(user.name).gender = user.gender;
+      userRegistry.getUser(user.name).setGender(user.gender);
     });
   }
+}
+
+/**
+ * Get a list of 10 user names matching the specified search text. User names are sorted as {@link
+ * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a talk page
+ * existent are included. Redirects are resolved.
+ *
+ * Reuses the existing request if available.
+ *
+ * @param {string} text
+ * @returns {Promise} Promise for a string array.
+ * @throws {CdError}
+ */
+export function getRelevantUserNames(text) {
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        if (promise !== currentAutocompletePromise) {
+          throw new CdError();
+        }
+
+        cd.g.api.get({
+          action: 'opensearch',
+          search: text,
+          namespace: 3,
+          redirects: 'resolve',
+          limit: 10,
+          formatversion: 2,
+        }).then(
+          (resp) => {
+            const users = resp?.[1]
+              ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+              .filter(defined)
+              .filter((name) => !name.includes('/'));
+
+            if (!users) {
+              throw new CdError({
+                type: 'api',
+                code: 'noData',
+              });
+            }
+
+            resolve(users);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
+      }
+    }, autocompleteTimeout);
+  });
+  currentAutocompletePromise = promise;
+
+  return promise;
+}
+
+/**
+ * Get a list of 10 page names matching the specified search text. Page names are sorted as {@link
+ * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not resolved.
+ *
+ * Reuses the existing request if available.
+ *
+ * @param {string} text
+ * @returns {Promise} Promise for a string array.
+ * @throws {CdError}
+ */
+export function getRelevantPageNames(text) {
+  let colonPrefix = false;
+  if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
+    text = text.slice(1);
+    colonPrefix = true;
+  }
+
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        if (promise !== currentAutocompletePromise) {
+          throw new CdError();
+        }
+
+        cd.g.api.get({
+          action: 'opensearch',
+          search: text,
+          redirects: 'return',
+          limit: 10,
+          formatversion: 2,
+        }).then(
+          (resp) => {
+            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            const pages = resp?.[1]?.map((name) => (
+              name
+                .replace(regexp, () => text[0])
+                .replace(/^/, colonPrefix ? ':' : '')
+            ));
+
+            if (!pages) {
+              throw new CdError({
+                type: 'api',
+                code: 'noData',
+              });
+            }
+
+            resolve(pages);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
+      }
+    }, autocompleteTimeout);
+  });
+  currentAutocompletePromise = promise;
+
+  return promise;
+}
+
+/**
+ * Get a list of 10 template names matching the specified search text. Template names are sorted as
+ * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
+ * resolved.
+ *
+ * Reuses the existing request if available.
+ *
+ * @param {string} text
+ * @returns {Promise} Promise for a string array.
+ * @throws {CdError}
+ */
+export function getRelevantTemplateNames(text) {
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      try {
+        if (promise !== currentAutocompletePromise) {
+          throw new CdError();
+        }
+
+        cd.g.api.get({
+          action: 'opensearch',
+          search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
+          redirects: 'return',
+          limit: 10,
+          formatversion: 2,
+        }).then(
+          (resp) => {
+            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            const templates = resp?.[1]
+              ?.filter((name) => !name.endsWith('/doc'))
+              .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+              .map((name) => name.replace(regexp, () => text[0]));
+
+            if (!templates) {
+              throw new CdError({
+                type: 'api',
+                code: 'noData',
+              });
+            }
+
+            resolve(templates);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
+      }
+    }, autocompleteTimeout);
+  });
+  currentAutocompletePromise = promise;
+
+  return promise;
 }

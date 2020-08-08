@@ -8,17 +8,18 @@
 import CdError from './CdError';
 import cd from './cd';
 
+let keptScrollPosition = null;
+
 /**
- * Removes duplicated elements from an array.
+ * Removes duplicated elements from an array. Callback for `Array#filter` functions.
  *
+ * @param {*} item
+ * @param {number} pos
  * @param {Array} arr
- * @returns {?Array}
+ * @returns {boolean}
  */
-export function removeDuplicates(arr) {
-  if (!arr || typeof arr !== 'object') {
-    return null;
-  }
-  return arr.filter((value, i) => arr.indexOf(value) === i);
+export function unique(item, pos, arr) {
+  return arr.indexOf(item) === pos;
 }
 
 /**
@@ -63,7 +64,7 @@ export function isInline(node, countTextNodesAsInline) {
   } else {
     // This can be called from a worker.
     if (typeof window !== 'undefined') {
-      console.warn('Expensive operation: isInline() called for the element:', node);
+      console.warn('Expensive operation: isInline() called for:', node);
 
       // This is very expensive. Avoid by any means.
       return window.getComputedStyle(node).display === 'inline';
@@ -84,6 +85,9 @@ export function caseInsensitiveFirstCharPattern(s) {
   const firstChar = s[0];
   return (
     (
+      // Could be issues, probably not very serious, resulting from the difference of PHP's
+      // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
+      // https://phabricator.wikimedia.org/T141723#2513800.
       firstChar.toUpperCase() !== firstChar.toLowerCase() ?
       '[' + firstChar.toUpperCase() + firstChar.toLowerCase() + ']' :
       mw.util.escapeRegExp(firstChar)
@@ -93,37 +97,25 @@ export function caseInsensitiveFirstCharPattern(s) {
 }
 
 /**
- * Check if the provided namespace is a talk namespace (an odd one or other specified in {@link
- * module:defaultConfig.customTalkNamespaces}).
+ * Check if the provided page is probably a talk page. The namespace number is required.
  *
+ * This function exists mostly because we can't be sure the `mediawiki.Title` module is loaded when
+ * the script has started executing (and can't use the {@link module:Page Page} constructor), and we
+ * need to make this check fast. So, in most cases, {@link module:Page#isProbablyTalkPage} should be
+ * used.
+ *
+ * @param {string} pageName
  * @param {number} namespaceNumber
  * @returns {boolean}
  */
-export function isTalkNamespace(namespaceNumber) {
-  return namespaceNumber % 2 === 1 || cd.config.customTalkNamespaces.includes(namespaceNumber);
-}
-
-/**
- * Check if the provided page is probably a talk page.
- *
- * If no namespace number is provided, the function will reconstruct it.
- *
- * @param {string} page
- * @param {number} [namespaceNumber]
- * @returns {boolean}
- */
-export function isProbablyTalkPage(page, namespaceNumber) {
-  if (namespaceNumber === undefined) {
-    const title = new mw.Title.newFromText(page);
-    namespaceNumber = title.namespace;
-  }
+export function isProbablyTalkPage(pageName, namespaceNumber) {
   return (
-    isTalkNamespace(namespaceNumber) &&
     (
       namespaceNumber % 2 === 1 ||
-      (!cd.g.PAGE_WHITE_LIST_REGEXP || cd.g.PAGE_WHITE_LIST_REGEXP.test(page))
+      cd.g.PAGE_WHITE_LIST_REGEXP?.test(pageName) ||
+      !cd.g.PAGE_WHITE_LIST_REGEXP && cd.config.customTalkNamespaces.includes(namespaceNumber)
     ) &&
-    (!cd.g.PAGE_BLACK_LIST_REGEXP || !cd.g.PAGE_BLACK_LIST_REGEXP.test(page))
+    !cd.g.PAGE_BLACK_LIST_REGEXP?.test(pageName)
   );
 }
 
@@ -154,7 +146,7 @@ export function isUndo(summary) {
 }
 
 /**
- * Callback for `Array.prototype.filter` functions used with `Array.prototype.map`.
+ * Callback for `Array#filter` functions to keep only defined values in the array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -164,7 +156,7 @@ export function defined(el) {
 }
 
 /**
- * Callback for `Array.prototype.filter` functions used with `Array.prototype.map`.
+ * Callback for `Array#filter` functions to keep only not null values in the array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -195,7 +187,7 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to `Array.prototype.flat(1)`. That method is not yet supported by major browsers.
+ * Alternative to `Array#flat(1)`. That method is not yet supported by major browsers.
  *
  * @param {Array} arr
  * @returns {Array}
@@ -212,10 +204,10 @@ export function flat(arr) {
  * @throws {CdError}
  */
 export function handleApiReject(code, data) {
+  // See parameters with which mw.Api() rejects:
+  // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
   throw code === 'http' ?
-    new CdError({
-      type: 'network',
-    }) :
+    new CdError({ type: 'network' }) :
     new CdError({
       type: 'api',
       code: 'error',
@@ -244,28 +236,54 @@ export function spacesToUnderlines(s) {
 }
 
 /**
- * Attach a callback function to a link with the provided class name given the HTML code, wrap in a
+ * Replaces sequences of spaces with single spaces.
+ *
+ * @param {string} s
+ * @returns {string}
+ */
+export function removeDoubleSpaces(s) {
+  return s.replace(/ {2,}/g, ' ');
+}
+
+/**
+ * Attach callback functions to links with the provided class names given HTML code, wrap in a
  * `<span>` element, and return the resultant jQuery object.
  *
  * @param {string|JQuery} html
- * @param {string} className
- * @param {Function} callback
+ * @param {...Array.<string, Function>} classToCallback
  * @returns {JQuery}
  */
-export function animateLink(html, className, callback) {
+export function animateLinks(html, ...classToCallback) {
   const $link = html instanceof $ ? html : cd.util.wrapInElement(html);
-  $link.find(`.${className}`).on('click', callback);
+  classToCallback.forEach(([className, callback]) => {
+    $link.find(`.${className}`).on('click', callback);
+  });
   return $link;
 }
 
 /**
+ * Provide `mw.Title.phpCharToUpper` functionality for the web worker context.
+ *
+ * @param {string} char
+ * @returns {string}
+ */
+function phpCharToUpper(char) {
+  if (cd.g.PHP_CHAR_TO_UPPER_JSON[char] === '') {
+    return char;
+  }
+  return cd.g.PHP_CHAR_TO_UPPER_JSON[char] || char.toUpperCase();
+}
+
+/**
  * Transform the first letter of a string to upper case, for example: `'wikilink'` → `'Wikilink'`.
+ * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see {@link
+ * https://phabricator.wikimedia.org/T141723#2513800}.
  *
  * @param {string} s
  * @returns {string}
  */
 export function firstCharToUpperCase(s) {
-  return s.length ? s[0].toUpperCase() + s.slice(1) : '';
+  return s.length ? phpCharToUpper(s[0]) + s.slice(1) : '';
 }
 
 /**
@@ -279,7 +297,7 @@ export function getMessages(messages) {
 }
 
 /**
- * `Array.prototype.findIndex` analog that looks for the _last_ index.
+ * `Array#findIndex` analog that looks for the _last_ index.
  *
  * @param {Array} arr
  * @param {Function} callback
@@ -301,4 +319,93 @@ export function findLastIndex(arr, callback) {
  */
 export function isInputFocused() {
   return $(':focus:input').length || $(':focus').prop('isContentEditable');
+}
+
+/**
+ * Turn many regexps into one, putting it in `()` and separating individual expressions by `|`.
+ *
+ * @param {RegExp[]|string[]} arr
+ * @returns {?RegExp}
+ */
+export function mergeRegexps(arr) {
+  if (!arr) {
+    return null;
+  }
+  const pattern = arr
+    .map((regexpOrString) => regexpOrString.source || regexpOrString)
+    .join('|');
+  return pattern ? new RegExp(`(${pattern})`) : null;
+}
+
+/**
+ * Replace text matched by a regexp with placeholders.
+ *
+ * @param {string} text
+ * @param {RegExp} regexp
+ * @param {string[]} hidden
+ * @param {boolean} useAlternativeMarker
+ * @returns {string}
+ */
+export function hideText(text, regexp, hidden, useAlternativeMarker) {
+  return text.replace(regexp, (s, pre, textToHide) => {
+    // If there is no groups, the offset is the second argument.
+    if (typeof pre === 'number') {
+      pre = '';
+      textToHide = '';
+    }
+    // Handle tables separately
+    return (
+      (pre || '') +
+      (useAlternativeMarker ? '\x03' : '\x01') +
+      hidden.push(textToHide || s) +
+      (useAlternativeMarker ? '\x04' : '\x02')
+    );
+  });
+}
+
+/**
+ * Replace placeholders created by {@link module:util.hide}.
+ *
+ * @param {string} text
+ * @param {string[]} hidden
+ * @returns {string}
+ */
+export function unhideText(text, hidden) {
+  while (text.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
+    text = text.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
+  }
+
+  return text;
+}
+
+/**
+ * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
+ */
+export function saveScrollPosition() {
+  keptScrollPosition = window.pageYOffset;
+}
+
+/**
+ * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
+ */
+export function restoreScrollPosition() {
+  if (keptScrollPosition === null) return;
+  window.scrollTo(0, keptScrollPosition);
+  keptScrollPosition = null;
+}
+
+/**
+ * Use a {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
+ * Promise.race()} workaround to get the state of a native promise. Note that it works _only_ with
+ * native promises: it doesn't work with jQuery promises (for example, ones that `mw.Api()`
+ * returne).
+ *
+ * @param {Promise} promise
+ * @returns {string}
+ */
+export async function nativePromiseState(promise) {
+  const obj = {};
+  return Promise.race([promise, obj])
+    .then((value) => value === obj ? 'pending' : 'resolved', () => 'rejected');
 }

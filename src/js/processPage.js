@@ -1,5 +1,6 @@
 /**
- * The main function responsible for page processing goes here.
+ * Web page processing module. Its only export, `processPage()`, is executed after {@link module:app
+ * the main module} on first run and as part of {@link module:boot.reloadPage} on subsequent runs.
  *
  * @module processPage
  */
@@ -24,7 +25,7 @@ import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
-import { isInline } from './util';
+import { isInline, restoreScrollPosition } from './util';
 import { setSettings } from './options';
 
 /**
@@ -79,7 +80,7 @@ async function prepare({ messagesRequest }) {
 /**
  * Identify the first visible element from the top of the page and its top offset.
  *
- * @returns {GetFirstVisibleElementDataReturn}
+ * @returns {?GetFirstVisibleElementDataReturn}
  * @private
  */
 function getFirstVisibleElementData() {
@@ -103,62 +104,14 @@ function getFirstVisibleElementData() {
       if (!treeWalker.nextSibling()) break;
     }
   }
-  return { element, top };
-}
-
-/**
- * Perform extra section-related tasks, including adding the `subsections` and `baseSection`
- * properties and binding events.
- *
- * @private
- */
-function adjustSections() {
-  cd.sections.forEach((section, i) => {
-    section.subsections = [];
-    cd.sections
-      .slice(i + 1)
-      .some((otherSection) => {
-        if (otherSection.level > section.level) {
-          section.subsections.push(otherSection);
-          if (section.level === 2) {
-            otherSection.baseSection = section;
-          }
-        } else {
-          return true;
-        }
-      });
-
-    if (section.level > 2) {
-      cd.sections
-        .slice(0, i)
-        .reverse()
-        .some((otherSection) => {
-          if (otherSection.level < section.level) {
-            section.parent = otherSection;
-            return true;
-          }
-        });
-    }
-
-    if (!section.frozen && section.level === 2) {
-      // Section with the last reply button
-      const targetSection = section.subsections.length ?
-        section.subsections[section.subsections.length - 1] :
-        section;
-      if (targetSection.$replyButtonLink) {
-        targetSection.$replyButtonLink
-          .on('mouseenter', section.replyButtonHoverHandler)
-          .on('mouseleave', section.replyButtonUnhoverHandler);
-      }
-    }
-  });
+  return element ? { element, top } : null;
 }
 
 /**
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @param {object} firstVisibleElementData
+ * @param {object|undefined} firstVisibleElementData
  * @throws {CdError} If there is no comments.
  * @private
  */
@@ -198,9 +151,7 @@ function processComments(parser, firstVisibleElementData) {
  * @private
  */
 function processSections(parser, watchedSectionsRequest) {
-  const headings = parser.findHeadings();
-
-  headings.forEach((heading) => {
+  parser.findHeadings().forEach((heading) => {
     try {
       const section = parser.createSection(heading, watchedSectionsRequest);
       if (section.id !== undefined) {
@@ -213,19 +164,7 @@ function processSections(parser, watchedSectionsRequest) {
     }
   });
 
-  cd.sections.forEach((section, i) => {
-    section.isLastSection = i === cd.sections.length - 1;
-  });
-
-  adjustSections();
-
-  // Make section menus move to the next line without taking the last word of the heading with them.
-  const $space = $('<span>')
-    .addClass('cd-spaceBeforeSectionMenu')
-    .text(' ');
-  $('.mw-headline').each(function () {
-    $(this).append($space.clone());
-  });
+  Section.adjustSections();
 
   /**
    * The script has processed the sections.
@@ -255,17 +194,19 @@ function connectToAddTopicLinks() {
 
       const editintro = mw.util.getParamValue('editintro', href);
 
-      if (cd.g.addSectionForm) {
-        cd.g.addSectionForm.$element.cdScrollIntoView('center');
-        cd.g.addSectionForm.headlineInput.focus();
+      const addSectionForm = cd.g.CURRENT_PAGE.addSectionForm;
+      if (addSectionForm) {
+        addSectionForm.$element.cdScrollIntoView('center');
+        addSectionForm.headlineInput.focus();
       } else {
         /**
          * Add section form.
          *
          * @type {CommentForm|undefined}
          */
-        cd.g.addSectionForm = new CommentForm({
+        cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           mode: 'addSection',
+          target: cd.g.CURRENT_PAGE,
           $addSectionLink: $(this),
           scrollIntoView: true,
           editintro,
@@ -273,6 +214,27 @@ function connectToAddTopicLinks() {
       }
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));
+}
+
+/**
+ * Bind a click handler to comment links to make them work as in-script comment links.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function connectToCommentLinks($content) {
+  $content
+    .find(`a[href^="#"]`)
+    .filter(function () {
+      return /^#\d{12}_.+$/.test($(this).attr('href'));
+    })
+    .on('click', function (e) {
+      e.preventDefault();
+      const comment = Comment.getCommentByAnchor($(this).attr('href').slice(1));
+      if (comment) {
+        comment.scrollToAndHighlightTarget();
+      }
+    });
 }
 
 /**
@@ -327,7 +289,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       // incorrectly.
       setTimeout(() => {
         comment.scrollToAndHighlightTarget(false);
-      }, 0);
+      });
     }
   }
 
@@ -364,18 +326,8 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
  */
 function highlightOwnComments() {
   if (!cd.settings.highlightOwnComments) return;
-  const myComments = cd.comments.filter((comment) => comment.own);
-  const floatingRects = myComments.length ?
-    cd.g.specialElements.floating.map((el) => el.getBoundingClientRect()) :
-    undefined;
-  myComments.forEach((comment) => {
-    comment.configureLayers(false, floatingRects);
-  });
 
-  // Faster to add them in one sequence.
-  myComments.forEach((comment) => {
-    comment.addLayers();
-  });
+  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.own));
 }
 
 /**
@@ -387,7 +339,7 @@ function highlightOwnComments() {
  */
 async function confirmDesktopNotifications() {
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
-    // Sometimes the setting value is cached.
+    // Seems like sometimes the setting value is cached.
     getSettings(true).then((settings) => {
       if (settings.desktopNotifications === 'unknown') {
         const actions = [
@@ -450,7 +402,8 @@ async function confirmDesktopNotifications() {
  */
 function debugLog() {
   const baseTime = (
-    cd.debug.timerTotal['main code'] + cd.debug.timerTotal['final code and rendering']
+    cd.debug.timerTotal['main code'] +
+    cd.debug.timerTotal['final code and rendering']
   );
   const timePerComment = baseTime / cd.comments.length;
 
@@ -461,13 +414,13 @@ function debugLog() {
 }
 
 /**
- * Process the page.
+ * Process the current web page.
  *
  * @param {object} [keptData={}] Data passed from the previous page state or the main module.
  * @param {string} [keptData.commentAnchor] Comment anchor to scroll to.
  * @param {string} [keptData.sectionAnchor] Section anchor to scroll to.
  * @param {boolean} [keptData.wasPageCreated] Whether the page was created while it was in the
- *   previous state.
+ *   previous state. Affects navigation panel mounting and certain key press handlers adding.
  * @param {number} [keptData.scrollPosition] Page Y offset.
  * @param {object[]} [keptData.unseenCommentAnchors] Anchors of unseen comments on this page.
  * @param {string} [keptData.justWatchedSection] Section just watched so that there could be not
@@ -476,6 +429,7 @@ function debugLog() {
  *    enough time for it to be saved to the server.
  * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
  *   module:dateFormat.loadMessages}.
+ * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
@@ -486,21 +440,18 @@ export default async function processPage(keptData = {}) {
 
   await prepare(keptData);
 
-  const firstVisibleElementData = cd.g.firstRun ? getFirstVisibleElementData() : {};
+  const firstVisibleElementData = cd.g.firstRun ? getFirstVisibleElementData() : undefined;
 
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
 
-  cd.g.IS_ARCHIVE_PAGE = Boolean(
-    cd.g.ARCHIVE_PATHS_REGEXP &&
-    cd.g.ARCHIVE_PATHS_REGEXP.test(cd.g.CURRENT_PAGE)
-  );
+  const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID.
   cd.g.isPageActive = !(
-    !mw.config.get('wgArticleId') ||
-    cd.g.IS_ARCHIVE_PAGE ||
+    isEmptyPage ||
+    cd.g.CURRENT_PAGE.isArchivePage() ||
     (
       (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
       mw.config.get('wgRevisionId') !== mw.config.get('wgCurRevisionId')
@@ -520,11 +471,15 @@ export default async function processPage(keptData = {}) {
   }
   const visitsRequest = cd.g.isPageActive ? getVisits(true) : undefined;
 
-  cd.g.specialElements = findSpecialElements();
+  /**
+   * The script is going to parse the page.
+   *
+   * @event beforeParse
+   * @type {module:cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-  if (cd.config.customBeforeParse) {
-    cd.config.customBeforeParse();
-  }
+  cd.g.specialElements = findSpecialElements();
 
   cd.debug.startTimer('process comments');
 
@@ -548,7 +503,12 @@ export default async function processPage(keptData = {}) {
 
   // We change the evaluation of cd.g.isPageActive if there is no comments and no "Add section"
   // button.
-  if (cd.g.isPageActive && !cd.comments.length && !$('#ca-addsection').length) {
+  if (
+    cd.g.isPageActive &&
+    !cd.comments.length &&
+    !$('#ca-addsection').length &&
+    !cd.g.PAGE_WHITE_LIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
+  ) {
     cd.g.isPageActive = false;
   }
 
@@ -566,14 +526,16 @@ export default async function processPage(keptData = {}) {
 
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
-  if (firstVisibleElementData.element || keptData.scrollPosition) {
-    const y = firstVisibleElementData.element ?
+  if (firstVisibleElementData) {
+    window.scrollTo(
+      0,
       (
         window.pageYOffset + firstVisibleElementData.element.getBoundingClientRect().top -
         firstVisibleElementData.top
-      ) :
-      keptData.scrollPosition;
-    window.scrollTo(0, y);
+      )
+    );
+  } else {
+    restoreScrollPosition();
   }
 
   highlightOwnComments();
@@ -591,7 +553,7 @@ export default async function processPage(keptData = {}) {
     navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
   }
 
-  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
+  if (cd.g.isPageActive || isEmptyPage) {
     // This should be below the viewport position restoration and own comments highlighting as it
     // may rely on the elements that are made invisible during the comment forms restoration. It
     // should also be below the navPanel mount/reset methods as it runs
@@ -615,6 +577,9 @@ export default async function processPage(keptData = {}) {
         )
       );
     });
+
+    mw.hook('wikipage.content').add(connectToCommentLinks);
+    mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
   }
 
   if ((cd.g.firstRun && cd.g.isPageActive) || keptData.wasPageCreated) {

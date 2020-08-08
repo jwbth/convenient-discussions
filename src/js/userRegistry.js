@@ -1,5 +1,5 @@
 /**
- * User class and the object `userRegistry` used to obtain its instances while avoiding creating
+ * User class and object `userRegistry` used to obtain its instances while avoiding creating
  * duplicates.
  *
  * @module userRegistry
@@ -42,8 +42,6 @@ export default {
  * `mw.msg` and have `{{gender:}}` replaced.
  */
 class User {
-  #cachedRegistered
-
   /**
    * Create a user object.
    *
@@ -64,14 +62,14 @@ class User {
    *
    * @type {boolean}
    */
-  get registered() {
-    if (this.#cachedRegistered === undefined) {
-      this.#cachedRegistered = !mw.util.isIPAddress(this.name);
+  isRegistered() {
+    if (this.cachedRegistered === undefined) {
+      this.cachedRegistered = !mw.util.isIPAddress(this.name);
     }
-    return this.#cachedRegistered;
+    return this.cachedRegistered;
   }
 
-  set gender(value) {
+  setGender(value) {
     this.options.set('gender', value);
   }
 
@@ -80,7 +78,7 @@ class User {
    *
    * @type {string}
    */
-  get gender() {
+  getGender() {
     return this.options.get('gender');
   }
 }

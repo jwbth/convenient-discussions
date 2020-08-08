@@ -8,14 +8,14 @@ import cd from './cd';
 
 export default {
   /**
-   * List of underlays.
+   * List of the underlays.
    *
    * @type {Element[]}
    */
   underlays: [],
 
   /**
-   * List of layers containers.
+   * List of the containers of the underlays.
    *
    * @type {Element[]}
    */
@@ -31,6 +31,10 @@ export default {
   redrawIfNecessary(removeUnhighlighted = false) {
     if (!this.underlays.length || document.hidden) return;
 
+    this.layersContainers.forEach((container) => {
+      container.cdCouldHaveMoved = true;
+    });
+
     const comments = [];
     const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.pageYOffset;
     let notMovedCount = 0;
@@ -42,11 +46,15 @@ export default {
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
-        comment.newness || (comment.own && cd.settings.highlightOwnComments)
+        comment.newness ||
+        (comment.own && cd.settings.highlightOwnComments) ||
+        comment.target ||
+        comment.focused
       );
       if (
         (
           removeUnhighlighted ||
+
           // Layers that ended up under the bottom of the page content and could be moving the page
           // bottom down.
           (comment.positions && comment.positions.bottom > rootBottom)
@@ -60,20 +68,30 @@ export default {
           floatingRects ||
           cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
         );
-        const isMoved = comment.configureLayers(false, floatingRects);
-        if (isMoved) {
+        const moved = comment.configureLayers(false, floatingRects);
+        if (moved) {
           notMovedCount = 0;
           comments.push(comment);
-        } else if (isMoved === false) {
+        } else if (
+          moved === false &&
+
+          // Nested containers shouldn't count, the positions of layers inside them may be OK,
+          // unlike layers preceding them.
+          !comment.getLayersContainer()
+            .closest('.cd-commentLayersContainer')
+            .parentNode
+            .closest('.cd-commentLayersContainer')
+        ) {
           notMovedCount++;
           if (notMovedCount === 2) {
             return true;
           }
         }
       }
+      return false;
     });
 
-    // It's faster to update positions separately in one sequence.
+    // It's faster to update the positions separately in one sequence.
     comments.forEach((comment) => {
       comment.updateLayersPositions();
     });

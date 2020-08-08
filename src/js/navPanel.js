@@ -10,24 +10,24 @@ import Section from './Section';
 import cd from './cd';
 import userRegistry from './userRegistry';
 import {
-  animateLink,
+  animateLinks,
   defined,
   handleApiReject,
   isCommentEdit,
-  removeDuplicates,
   reorderArray,
+  unique,
 } from './util';
-import { getCurrentPageData, getUserGenders, makeRequestNoTimers } from './apiWrappers';
-import { getWatchedSections, setVisits } from './options';
+import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
 import { reloadPage } from './boot';
+import { setVisits } from './options';
 
 let newCount;
 let unseenCount;
-let lastFirstTimeSeenCommentId = null;
+let lastFirstTimeSeenCommentId;
 let newRevisions = [];
 let notifiedAbout = [];
 let notifications = [];
-let isBackgroundCheckArranged = false;
+let backgroundCheckArranged = false;
 let relevantNewCommentAnchor;
 
 let $navPanel;
@@ -47,6 +47,7 @@ let $commentFormButton;
  * @private
  */
 function setAlarmViaWorker(interval) {
+  if (Number.isNaN(Number(interval))) return;
   cd.g.worker.postMessage({
     type: 'setAlarm',
     interval,
@@ -68,27 +69,26 @@ function removeAlarmViaWorker() {
  * @private
  */
 async function checkForNewComments() {
-  if (!cd.g.worker) return;
-
-  if (document.hidden && !isBackgroundCheckArranged) {
+  if (document.hidden && !backgroundCheckArranged) {
     const callback = () => {
       $(document).off('visibilitychange', callback);
-      isBackgroundCheckArranged = false;
+      backgroundCheckArranged = false;
       removeAlarmViaWorker();
       checkForNewComments();
     };
     $(document).on('visibilitychange', callback);
 
     const interval = Math.abs(
-      cd.g.BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL - cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL
+      cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL -
+      cd.g.NEW_COMMENTS_CHECK_INTERVAL
     );
     setAlarmViaWorker(interval * 1000);
-    isBackgroundCheckArranged = true;
+    backgroundCheckArranged = true;
     return;
   }
 
   // Precaution
-  isBackgroundCheckArranged = false;
+  backgroundCheckArranged = false;
 
   const rvstartid = newRevisions.length ?
     newRevisions[newRevisions.length - 1] :
@@ -97,7 +97,7 @@ async function checkForNewComments() {
   try {
     const revisionsResp = await makeRequestNoTimers({
       action: 'query',
-      titles: cd.g.CURRENT_PAGE,
+      titles: cd.g.CURRENT_PAGE.name,
       prop: 'revisions',
       rvprop: ['ids', 'flags', 'size', 'comment'],
       rvdir: 'newer',
@@ -107,13 +107,7 @@ async function checkForNewComments() {
       formatversion: 2,
     }).catch(handleApiReject);
 
-    const revisions = (
-      revisionsResp &&
-      revisionsResp.query &&
-      revisionsResp.query.pages &&
-      revisionsResp.query.pages[0] &&
-      revisionsResp.query.pages[0].revisions
-    );
+    const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
@@ -132,10 +126,13 @@ async function checkForNewComments() {
     newRevisions.push(...addedNewRevisions);
 
     // Precaution
-    newRevisions = removeDuplicates(newRevisions);
+    newRevisions = newRevisions.filter(unique);
 
     if (addedNewRevisions.length) {
-      const { text } = await getCurrentPageData(false, true) || {};
+      const { text } = await cd.g.CURRENT_PAGE.parse({
+        noTimers: true,
+        markAsRead: false,
+      }) || {};
       if (text === undefined) {
         console.error('No page text.');
       } else {
@@ -158,7 +155,9 @@ async function checkForNewComments() {
             UNHIGHLIGHTABLE_ELEMENTS_CLASSES: cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES,
             CURRENT_USER_NAME: cd.g.CURRENT_USER_NAME,
             CURRENT_USER_GENDER: cd.g.CURRENT_USER_GENDER,
+            CURRENT_PAGE_NAME: cd.g.CURRENT_PAGE.name,
             CURRENT_NAMESPACE_NUMBER: cd.g.CURRENT_NAMESPACE_NUMBER,
+            PHP_CHAR_TO_UPPER_JSON: cd.g.PHP_CHAR_TO_UPPER_JSON,
           },
           config: {
             customFloatingElementsSelectors: cd.config.customFloatingElementsSelectors,
@@ -166,9 +165,9 @@ async function checkForNewComments() {
             elementsToExcludeClasses: cd.config.elementsToExcludeClasses,
             signatureScanLimit: cd.config.signatureScanLimit,
             foreignElementsInHeadlinesClasses: cd.config.foreignElementsInHeadlinesClasses,
-            customForeignComponentChecker: cd.config.customForeignComponentChecker ?
-              cd.config.customForeignComponentChecker.toString() :
-              cd.config.customForeignComponentChecker,
+            checkForCustomForeignComponents: cd.config.checkForCustomForeignComponents ?
+              cd.config.checkForCustomForeignComponents.toString() :
+              cd.config.checkForCustomForeignComponents,
           }
         });
       }
@@ -178,40 +177,47 @@ async function checkForNewComments() {
   }
 
   if (document.hidden) {
-    setAlarmViaWorker(cd.g.BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
-    isBackgroundCheckArranged = true;
+    setAlarmViaWorker(cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL * 1000);
+    backgroundCheckArranged = true;
   } else {
-    setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
   }
 }
 
 /**
- * Update the refresh button to show the number of comments added to the page since it was loaded.
+ * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
- * @param {CommentSkeleton[]} newComments
- * @param {boolean} areThereInteresting
- * @private
+ * @param {CommentSkeleton[]|Comment[]} comments
+ * @param {string} mode 'firstunseen' or 'refresh'. Code of action of the button.
+ * @returns {?string}
  */
-function updateRefreshButton(newComments, areThereInteresting) {
-  const newCommentsBySection = {};
-  newComments.forEach((comment) => {
-    if (!newCommentsBySection[comment.sectionAnchor]) {
-      newCommentsBySection[comment.sectionAnchor] = [];
-    }
-    newCommentsBySection[comment.sectionAnchor].push(comment);
-  });
+function generateTooltipText(comments, mode) {
+  let tooltipText = null;
+  if (comments.length) {
+    const commentsBySection = {};
+    comments
+      .slice(0, 30)
+      .forEach((comment) => {
+        const section = comment.section || comment.getSection();
+        if (!commentsBySection[section.anchor]) {
+          commentsBySection[section.anchor] = [];
+        }
+        commentsBySection[section.anchor].push(comment);
+      });
 
-  let tooltipText;
-  if (newComments.length) {
-    tooltipText = `${cd.s('navpanel-newcomments-count', newComments.length)} ${mw.msg('parentheses', 'R')}`;
-    Object.keys(newCommentsBySection).forEach((anchor) => {
-      const headline = newCommentsBySection[anchor][0].sectionHeadline ?
-        cd.s('navpanel-newcomments-insection', newCommentsBySection[anchor][0].sectionHeadline) :
+    tooltipText = `${cd.s('navpanel-newcomments-count', comments.length)} ${cd.s('navpanel-newcomments-' + mode)} ${mw.msg('parentheses', 'R')}`;
+    Object.keys(commentsBySection).forEach((anchor) => {
+      const section = (
+        commentsBySection[anchor][0].section ||
+        commentsBySection[anchor][0].getSection()
+      );
+      const headline = section.headline ?
+        cd.s('navpanel-newcomments-insection', section.headline) :
         mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
       tooltipText += `\n\n${headline}`;
-      newCommentsBySection[anchor].forEach((comment) => {
+      commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
-        const author = comment.targetCommentAuthor ?
+        const author = comment.targetCommentAuthor && comment.level > 1 ?
           cd.s(
             'newpanel-newcomments-reply',
             comment.author.name,
@@ -224,13 +230,24 @@ function updateRefreshButton(newComments, areThereInteresting) {
         tooltipText += author + mw.msg('comma-separator') + date;
       });
     });
-  } else {
+  } else if (mode === 'refresh') {
     tooltipText = `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`;
   }
 
+  return tooltipText;
+}
+
+/**
+ * Update the refresh button to show the number of comments added to the page since it was loaded.
+ *
+ * @param {CommentSkeleton[]} newComments
+ * @param {boolean} areThereInteresting
+ * @private
+ */
+function updateRefreshButton(newComments, areThereInteresting) {
   $refreshButton
-    .text(newComments.length ? `+${newComments.length}` : ``)
-    .attr('title', tooltipText);
+    .text(newComments.length ? `+${newComments.length}` : '')
+    .attr('title', generateTooltipText(newComments, 'refresh'));
   if (areThereInteresting) {
     $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
   } else {
@@ -258,40 +275,42 @@ export function updatePageTitle(newCommentsCount, areThereInteresting) {
  */
 function addSectionNotifications(newComments) {
   $('.cd-refreshButtonContainer').remove();
-  const sectionAnchors = removeDuplicates(newComments.map((comment) => comment.sectionAnchor));
-  sectionAnchors.forEach((anchor) => {
-    const section = Section.getSectionByAnchor(anchor);
-    if (!section) return;
+  newComments
+    .map((comment) => comment.section.anchor)
+    .filter(unique)
+    .forEach((anchor) => {
+      const section = Section.getSectionByAnchor(anchor);
+      if (!section) return;
 
-    const button = new OO.ui.ButtonWidget({
-      label: cd.s('section-newcomments'),
-      framed: false,
-      classes: ['cd-button', 'cd-sectionButton'],
-    });
-    button.on('click', () => {
-      const commentAnchor = newComments.find((comment) => comment.sectionAnchor === anchor).anchor;
-      reloadPage({ commentAnchor });
-    });
+      const button = new OO.ui.ButtonWidget({
+        label: cd.s('section-newcomments'),
+        framed: false,
+        classes: ['cd-button', 'cd-sectionButton'],
+      });
+      button.on('click', () => {
+        const commentAnchor = newComments
+          .find((comment) => comment.section.anchor === anchor).anchor;
+        reloadPage({ commentAnchor });
+      });
 
-    const $lastElement = section.$replyButton ?
-      section.$replyButton.closest('ul, ol') :
-      section.$elements[section.$elements.length - 1];
-    $('<div>')
-      .addClass('cd-refreshButtonContainer')
-      .addClass('cd-sectionButtonContainer')
-      .append(button.$element)
-      .insertAfter($lastElement);
-  });
+      const $lastElement = section.$replyButton ?
+        section.$replyButton.closest('ul, ol') :
+        section.$elements[section.$elements.length - 1];
+      $('<div>')
+        .addClass('cd-refreshButtonContainer')
+        .addClass('cd-sectionButtonContainer')
+        .append(button.$element)
+        .insertAfter($lastElement);
+    });
 }
 
 /**
  * Send ordinary and desktop notifications to the user.
  *
  * @param {CommentSkeleton[]} comments
- * @param {string[]} thisPageWatchedSections
  * @private
  */
-async function sendNotifications(comments, thisPageWatchedSections) {
+async function sendNotifications(comments) {
   const notifyAbout = comments.filter((comment) => (
     !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
   ));
@@ -322,10 +341,12 @@ async function sendNotifications(comments, thisPageWatchedSections) {
     });
   }
 
-  const authors = removeDuplicates(notifyAboutOrdinary.concat(notifyAboutDesktop))
+  const authors = notifyAboutOrdinary
+    .concat(notifyAboutDesktop)
+    .filter(unique)
     .map((comment) => comment.author)
     .filter(defined);
-  await getUserGenders(authors, true);
+  await getUserGenders(authors, { noTimers: true });
 
   if (notifyAboutOrdinary.length) {
     let html;
@@ -338,13 +359,18 @@ async function sendNotifications(comments, thisPageWatchedSections) {
     const reloadLinkHtml = cd.s('notification-reload', href, formsDataWillNotBeLost);
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
-      href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${comment.anchor ? `#${comment.anchor}` : ''}`);
+      const wikilink = cd.g.CURRENT_PAGE.name + (comment.anchor ? '#' + comment.anchor : '');
+      href = mw.util.getUrl(wikilink);
       if (comment.toMe) {
         const where = comment.watchedSectionHeadline ?
-          mw.msg('word-separator') + cd.s('notification-part-insection', comment.watchedSectionHeadline) :
+          (
+            mw.msg('word-separator') +
+            cd.s('notification-part-insection', comment.watchedSectionHeadline)
+          ) :
           mw.msg('word-separator') + cd.s('notification-part-onthispage');
         html = (
-          cd.s('notification-toyou', comment.author.name, comment.author, where) + ' ' +
+          cd.s('notification-toyou', comment.author.name, comment.author, where) +
+          ' ' +
           reloadLinkHtml
         );
       } else {
@@ -354,7 +380,8 @@ async function sendNotifications(comments, thisPageWatchedSections) {
             comment.author.name,
             comment.author,
             comment.watchedSectionHeadline
-          ) + ' ' +
+          ) +
+          ' ' +
           reloadLinkHtml
         );
       }
@@ -363,7 +390,8 @@ async function sendNotifications(comments, thisPageWatchedSections) {
         comment.watchedSectionHeadline === notifyAboutOrdinary[0].watchedSectionHeadline
       ));
       const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : undefined;
-      href = mw.util.getUrl(`${cd.g.CURRENT_PAGE}${section ? `#${section}` : ''}`);
+      const wikilink = cd.g.CURRENT_PAGE.name + (section ? '#' + section : '');
+      href = mw.util.getUrl(wikilink);
       const where = section ?
         mw.msg('word-separator') + cd.s('notification-part-insection', section) :
         mw.msg('word-separator') + cd.s('notification-part-onthispage');
@@ -374,22 +402,26 @@ async function sendNotifications(comments, thisPageWatchedSections) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && thisPageWatchedSections.includes(section) ?
+      const mayBeInteresting = section && cd.g.thisPageWatchedSections.includes(section) ?
         '' :
         mayBeInterestingString;
 
       html = (
         cd.s('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
-        ' ' + reloadLinkHtml
+        ' ' +
+        reloadLinkHtml
       );
     }
 
     navPanel.closeAllNotifications();
-    const $body = animateLink(html, 'cd-notification-reloadPage', (e) => {
-      e.preventDefault();
-      reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
-      notification.close();
-    });
+    const $body = animateLinks(html, [
+      'cd-notification-reloadPage',
+      (e) => {
+        e.preventDefault();
+        reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
+        notification.close();
+      }
+    ]);
     const notification = mw.notification.notify($body);
     notifications.push({
       notification,
@@ -403,30 +435,26 @@ async function sendNotifications(comments, thisPageWatchedSections) {
     notifyAboutDesktop.length
   ) {
     let body;
-    // We use a tag so that there aren't duplicate notifications when the same page is opened in
-    // two tabs.
-    let tag = 'convenient-discussions-';
     const comment = notifyAboutDesktop[0];
     if (notifyAboutDesktop.length === 1) {
-      tag += comment.anchor;
       if (comment.toMe) {
-        const where = comment.sectionHeadline ?
-          mw.msg('word-separator') + cd.s('notification-part-insection', comment.sectionHeadline) :
+        const where = comment.section.headline ?
+          mw.msg('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
           '';
         body = cd.s(
           'notification-toyou-desktop',
           comment.author.name,
           comment.author,
           where,
-          cd.g.CURRENT_PAGE
+          cd.g.CURRENT_PAGE.name
         );
       } else {
         body = cd.s(
           'notification-insection-desktop',
           comment.author.name,
           comment.author,
-          comment.sectionHeadline,
-          cd.g.CURRENT_PAGE
+          comment.section.headline,
+          cd.g.CURRENT_PAGE.name
         );
       }
     } else {
@@ -444,7 +472,7 @@ async function sendNotifications(comments, thisPageWatchedSections) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && thisPageWatchedSections.includes(section) ?
+      const mayBeInteresting = section && cd.g.thisPageWatchedSections.includes(section) ?
         '' :
         mayBeInterestingString;
 
@@ -452,13 +480,18 @@ async function sendNotifications(comments, thisPageWatchedSections) {
         'notification-newcomments-desktop',
         notifyAboutDesktop.length,
         where,
-        cd.g.CURRENT_PAGE,
+        cd.g.CURRENT_PAGE.name,
         mayBeInteresting
       );
-      tag += notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor;
     }
 
-    const notification = new Notification(mw.config.get('wgSiteName'), { body, tag });
+    const notification = new Notification(mw.config.get('wgSiteName'), {
+      body,
+
+      // We use a tag so that there aren't duplicate notifications when the same page is opened in
+      // two tabs. (Seems it doesn't work? :-/)
+      tag: 'convenient-discussions-' + notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor,
+    });
     notification.onclick = () => {
       parent.focus();
       // Just in case, old browsers. TODO: delete?
@@ -477,14 +510,6 @@ async function sendNotifications(comments, thisPageWatchedSections) {
  * @private
  */
 async function processComments(comments) {
-  // Get this pages' watched sections without making a request.
-  let thisPageWatchedSections;
-  try {
-    ({ thisPageWatchedSections } = await getWatchedSections(true) || {});
-  } catch (e) {
-    console.warn('Couldn\'t load the settings from the server.');
-  }
-
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     delete comment.authorName;
@@ -504,7 +529,7 @@ async function processComments(comments) {
     if (
       comment.own ||
       cd.settings.notificationsBlacklist.includes(comment.author.name) ||
-      !thisPageWatchedSections
+      !cd.g.thisPageWatchedSections
     ) {
       return false;
     }
@@ -513,7 +538,7 @@ async function processComments(comments) {
     }
 
     // Is this section watched by means of an upper level section?
-    const sections = Section.getSectionsByHeadline(comment.sectionHeadline);
+    const sections = Section.getSectionsByHeadline(comment.section.headline);
     for (const section of sections) {
       const watchedAncestor = section.getWatchedAncestor(true);
       if (watchedAncestor) {
@@ -532,7 +557,7 @@ async function processComments(comments) {
   updateRefreshButton(newComments, interestingNewComments.length);
   updatePageTitle(newComments.length, interestingNewComments.length);
   addSectionNotifications(newComments);
-  sendNotifications(interestingNewComments, thisPageWatchedSections);
+  sendNotifications(interestingNewComments);
 }
 
 /**
@@ -625,7 +650,7 @@ const navPanel = {
 
     if (cd.g.worker) {
       cd.g.worker.onmessage = onMessageFromWorker;
-      setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
+      setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
     }
   },
 
@@ -695,17 +720,8 @@ const navPanel = {
 
         return false;
       });
-      const floatingRects = newComments.length ?
-        cd.g.specialElements.floating.map((el) => el.getBoundingClientRect()) :
-        undefined;
-      newComments.forEach((comment) => {
-        comment.configureLayers(false, floatingRects)
-      });
 
-      // Faster to add them in one sequence.
-      newComments.forEach((comment) => {
-        comment.addLayers();
-      });
+      Comment.configureAndAddLayers(newComments);
     }
 
     thisPageVisits.push(String(currentUnixTime));
@@ -737,8 +753,8 @@ const navPanel = {
     relevantNewCommentAnchor = null;
 
     removeAlarmViaWorker();
-    setAlarmViaWorker(cd.g.CHECK_FOR_NEW_COMMENTS_INTERVAL * 1000);
-    isBackgroundCheckArranged = false;
+    setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
+    backgroundCheckArranged = false;
 
     $refreshButton
       .empty()
@@ -756,29 +772,30 @@ const navPanel = {
    */
   fill() {
     newCount = cd.comments.filter((comment) => comment.newness).length;
-    unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
     if (newCount) {
       $nextButton.show();
       $previousButton.show();
+      unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
       if (unseenCount) {
-        $firstUnseenButton.show();
         this.updateFirstUnseenButton();
       }
     }
   },
 
   /**
-   * Check if all comments on the page have been seen.
+   * Get the number of comments on the page that haven't been seen.
    *
    * @returns {boolean}
    * @memberof module:navPanel
    */
-  areAllCommentsSeen() {
-    return unseenCount === 0;
+  getUnseenCount() {
+    return unseenCount;
   },
 
   /**
-   * Update the unseen comments count without recounting.
+   * Update the unseen comments count without recounting. We try to avoid recounting mostly because
+   * {@link module:navPanel.registerSeenComments} that uses the unseen count is executed very
+   * frequently (up to a hundred times a second).
    *
    * @memberof module:navPanel
    */
@@ -793,7 +810,14 @@ const navPanel = {
    */
   updateFirstUnseenButton() {
     if (unseenCount) {
-      $firstUnseenButton.text(unseenCount);
+      const shownUnseenCommentsCount = Number($firstUnseenButton.text());
+      if (unseenCount !== shownUnseenCommentsCount) {
+        const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
+        $firstUnseenButton
+          .show()
+          .text(unseenCount)
+          .attr('title', generateTooltipText(unseenComments, 'firstunseen'));
+      }
     } else {
       $firstUnseenButton.hide();
     }
@@ -871,40 +895,40 @@ const navPanel = {
    * @memberof module:navPanel
    */
   goToFirstUnseenComment() {
-    if (cd.g.autoScrollInProgress) return;
+    if (!unseenCount || cd.g.autoScrollInProgress) return;
 
-    if (unseenCount) {
-      const comment = cd.comments
-        .slice(lastFirstTimeSeenCommentId || 0)
-        .find((comment) => comment.newness === 'unseen');
-      if (comment) {
-        comment.$elements.cdScrollTo('center', true, () => {
-          comment.registerSeen('forward', true);
-          this.updateFirstUnseenButton();
-        });
-        lastFirstTimeSeenCommentId = comment.id;
-      }
+    const comment = cd.comments
+      .slice(lastFirstTimeSeenCommentId || 0)
+      .find((comment) => comment.newness === 'unseen');
+    if (comment) {
+      comment.$elements.cdScrollTo('center', true, () => {
+        comment.registerSeen('forward', true);
+        this.updateFirstUnseenButton();
+      });
+      lastFirstTimeSeenCommentId = comment.id;
     }
   },
 
   /**
-   * Go to the next comment form out of sight.
+   * Go to the next comment form out of sight, or just the first comment form, if `justFirst` is set
+   * to true.
    *
+   * @param {boolean} [justFirst=false]
    * @memberof module:navPanel
    */
-  goToNextCommentForm() {
+  goToNextCommentForm(justFirst = false) {
     const commentForm = cd.commentForms
-      .filter((commentForm) => !commentForm.$element.cdIsInViewport(true))
+      .filter((commentForm) => justFirst || !commentForm.$element.cdIsInViewport(true))
       .sort((commentForm1, commentForm2) => {
-        const top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
-        const top2 = commentForm2.$element.get(0).getBoundingClientRect().top;
-        if ((top2 > 0 && top1 < 0) || top1 > top2) {
-          return 1;
-        } else if ((top1 > 0 && top2 < 0) || top2 > top1) {
-          return -1;
-        } else {
-          return 0;
+        let top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
+        if (top1 < 0) {
+          top1 += $(document).height() * 2;
         }
+        let top2 = commentForm2.$element.get(0).getBoundingClientRect().top;
+        if (top2 < 0) {
+          top2 += $(document).height() * 2;
+        }
+        return top1 - top2;
       })[0];
     if (commentForm) {
       commentForm.$element.cdScrollIntoView('center');
@@ -918,8 +942,8 @@ const navPanel = {
    * @memberof module:navPanel
    */
   registerSeenComments() {
-    // Don't run this more than once in some period, otherwise the scrolling may be slowed down.
-    // Also, wait before running, otherwise comments may be registered as seen after a press of Page
+    // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
+    // wait before running, otherwise comments may be registered as seen after a press of Page
     // Down/Page Up.
     if (!unseenCount || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
 

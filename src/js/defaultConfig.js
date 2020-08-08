@@ -27,7 +27,8 @@ export default {
   messages: {},
 
   /**
-   * Contributions page wikilink as appears in IP users' signatures.
+   * Contributions page wikilink as it appears in IP users' signatures (for example,
+   * `Special:Contributions` for English Wikipedia).
    *
    * @type {?string}
    * @default null
@@ -36,7 +37,7 @@ export default {
 
   /**
    * Local timezone offset in minutes. Get by a {@link https://www.mediawiki.org/wiki/API:Siteinfo}
-   * request.
+   * request. Leave `null` if your wiki uses daylight saving time (summer time).
    *
    * @type {?number}
    * @default null
@@ -45,8 +46,16 @@ export default {
 
   /**
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
-   * `mw.config.get('wgExtraSignatureNamespaces')` will be used, excluding the 0th (article)
-   * namespace. For example: `[4]` for Project.
+   * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
+   *
+   * This value overriden by the {@link module:defaultConfig.pageWhiteList} value: if that value is
+   * not `[]`, this value is not used.
+   *
+   * Note that this value is used in the script as a "soft" value. I.e., the script can decide
+   * (based on the presence of the "Add section" button, existence of comments on the page and
+   * possibly other factors) that the page is not a talk page after all. Use {@link
+   * module:defaultConfig.pageWhiteList} to indicate pages where the script should work in any
+   * circumstances. (For example, you can specify the entire namespace, e.g., /^Wikipedia:/).
    *
    * @type {number[]}
    * @default null
@@ -54,8 +63,10 @@ export default {
   customTalkNamespaces: null,
 
   /**
-   * Pages in the custom talk namespaces other than odd namespaces where the script should work. If
-   * `[]`, all pages will pass.
+   * Pages where the script should run. If `[]`, all pages in the {@link
+   * module:defaultConfig.customTalkNamespaces} namespaces will pass. If you add at least one value,
+   * {@link module:defaultConfig.customTalkNamespaces} will not be used. In this case, you may
+   * specify entire namespaces in this value, e.g., /^Wikipedia:/.
    *
    * @type {RegExp[]}
    * @default []
@@ -71,10 +82,55 @@ export default {
   pageBlackList: [],
 
   /**
-   * Pages that match these patterns will be considered inactive, i.e. no replies can be left on
-   * such pages.
+   * Object that connects active (source) talk page names with their archive pages prefixes and vice
+   * versa: archive page names with their source page names.
    *
-   * @type {RegExp[]}
+   * @typedef {object} ArchivePathEntry
+   * @property {string} source Source path. Dynamic parts should be replaced with tokens such as
+   *   `$1`, `$2` etc. Regular expressions for these tokens, if any, should be defined in the
+   *   `replacements` array.
+   * @property {string} archive Archive prefix. Should use the same tokens as in `source`.
+   * @property {RegExp[]|undefined} replacements Array of replacements for `$1`, `$2` tokens in
+   *   `source` and `archive`. Note that the regexp should, if put into the `archive` pattern,
+   *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
+   *   in "Wikipedia:Discussion/Archive/General/2020/07", it should capture "General", but not
+   *   "General/2020/07". So, you probably shouldn't use `/.+/` here and use, for example, `/[^/]+/`
+   *   instead.
+   */
+
+  /**
+   * Collection of archive paths, (sometimes) with correspondent source pages paths. It is used in
+   * multiple purposes:
+   * - to identify pages that will be considered inactive, i.e. no replies can be left on them;
+   * - to suggest to search in the archive if the section/comment by a given fragment is not found
+   * on the page;
+   * - to make diff/thank links work on archive pages.
+   *
+   * Each of the array elements can be an object with the defined structure (see {@link
+   * module:defaultConfig~ArchivePathEntry} for details) or a regexp. In the latter case, if a page
+   * name matches the regexp, it will be considered an archive page, and the name of the source page
+   * for that page is obtained by removing everything that starts with the pattern in the page name
+   * (i.e., the actually used regexp will end with `.*`).
+   *
+   * The entries are applied in the order or their precense in the array. So, if a page name fits
+   * two patterns, the one closer to the beginning of the array is used.
+   *
+   * Example:
+   * <pre class="prettyprint source"><code>[
+   *   {
+   *     source: 'Wikipedia:Discussion/Geography',
+   *     archive: 'Wikipedia:Discussion/Geography/Archives/',
+   *   },
+   *   {
+   *     source: 'Wikipedia:Discussion/$1',
+   *     archive: 'Wikipedia:Discussion/Archive/$1/',
+   *     replacements: [/[^/]+/],
+   *   },
+   *   /\/Archive/,
+   * ]</code></pre>
+   *
+   *
+   * @type {Array.<ArchivePathEntry|RegExp>}
    * @default []
    */
   archivePaths: [],
@@ -112,13 +168,24 @@ export default {
    * @type {boolean}
    * @default true
    */
-  spaceAfterIndentationChar: true,
+  spaceAfterIndentationChars: true,
+
+  /**
+   * Should a new comment at the first level repeat the previous comment's indentation style
+   * (`'mimic'` mode), or should the script use the default indentation char in {@link
+   * module:defaultConfig.checkForCustomForeignComponents} in all cases (`'unify'` mode). Note that
+   * if the last comment of the section uses `#` as the first indentation character, the script will
+   * use it for the comment independent of this value.
+   *
+   * @type {string}
+   */
+  indentationCharMode: 'mimic',
 
   /**
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
    * this:
    * ```
-   * ''Reply in italics.'' ~~~~
+   * ''Reply in italics.'' [signature]
    * ```
    * Here, `''` is not a part of the signature.
    *
@@ -166,12 +233,12 @@ export default {
   optionsPrefix: 'convenientDiscussions',
 
   /**
-   * Script help wikilink. Used in the watchlist and, if there is no tag, in summary.
+   * Wikilink to the script's page. Used in the watchlist and, if there is no tag, in summary.
    *
    * @type {string}
-   * @default 'commons:User:JWBTH/CD'
+   * @default 'c:User:JWBTH/CD'
    */
-  helpWikilink: 'commons:User:JWBTH/CD',
+  scriptPageWikilink: 'c:User:JWBTH/CD',
 
   /**
    * Names of the templates that are analogs of {@link
@@ -221,15 +288,6 @@ export default {
   paragraphTemplates: [],
 
   /**
-   * Name of a template that is an analog of {@link
-   * https://en.wikipedia.org/wiki/Template:Reply_to}.
-   *
-   * @type {string}
-   * @default 'ping'
-   */
-  pingTemplate: 'ping',
-
-  /**
    * Array of two strings to insert before and after the selection when quote function is activated
    * (by the toolbar button or Ctrl+Alt+Q / Q).
    *
@@ -241,7 +299,7 @@ export default {
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for a way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.customForeignComponentChecker}. When it comes to the
+   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. When it comes to the
    * wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
@@ -269,8 +327,9 @@ export default {
 
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them). This is in an addition to {@link module:staticGlobals.BAD_COMMENT_BEGINNINGS}. They
-   * begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
+   * them). This is in an addition to {@link
+   * module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
+   * with ` *\n*` or ` *\n*(?=[*:#])`.
    *
    * @type {RegExp[]}
    * @default []
@@ -280,15 +339,16 @@ export default {
   /**
    * Regexps for strings that should be kept in the section endings when adding a reply or
    * subsection (so that this reply or subsection is added _before_ them, not after). Usually begin
-   * with `\n+`. The default value will keep HTML comments in the section endings.
+   * with `\n+`. The default value will keep HTML comments placed after an empty line in the section
+   * endings.
    *
    * @type {RegExp[]}
    * @default <pre class="prettyprint source"><code>[
-   *   /\n+(?:&lt;!--[^]*?--&gt;\s*)+$/,
+   *   /\n{2,}(?:&lt;!--[^]*?--&gt;\s*)+$/,
    * ]</code></pre>
    */
   keepInSectionEnding: [
-    /\n+(?:<!--[^]*?-->\s*)+$/,
+    /\n{2,}(?:<!--[^]*?-->\s*)+$/,
   ],
 
   /**
@@ -347,31 +407,9 @@ export default {
    * Default collection of insert buttons displayed under the text input in comment forms.
    *
    * @type {Array.<string|Array>}
-   * @default <pre class="prettyprint source"><code>[
-   *   ['{{ping|+}}'],
-   *   ['{{tl|+}}'],
-   *   ['{{+}}'],
-   *   ['[[+]]'],
-   *   ['&lt;+>&lt;/&gt;', '&lt;/&gt;'],
-   *   ['&lt;blockquote&gt;+&lt;/blockquote&gt;', '&lt;blockquote /&gt;'],
-   *   ['&lt;code&gt;+&lt;/code&gt;', '&lt;code /&gt;'],
-   *   ['&lt;nowiki&gt;+&lt;/nowiki&gt;', '&lt;nowiki /&gt;'],
-   *   ['&lt;syntaxhighlight lang="+"&gt;&lt;/syntaxhighlight&gt;', '&lt;syntaxhighlight /&gt;'],
-   *   ['&lt;small&gt;+&lt;/small&gt;', '&lt;small /&gt;'],
-   * ]</code></pre>
+   * @default []
    */
-  defaultInsertButtons: [
-    ['{{ping|+}}'],
-    ['{{tl|+}}'],
-    ['{{+}}'],
-    ['[[+]]'],
-    ['<+></>', '</>'],
-    ['<blockquote>+</blockquote>', '<blockquote />'],
-    ['<code>+</code>', '<code />'],
-    ['<nowiki>+</nowiki>', '<nowiki />'],
-    ['<syntaxhighlight lang="+"></syntaxhighlight>', '<syntaxhighlight />'],
-    ['<small>+</small>', '<small />'],
-  ],
+  defaultInsertButtons: [],
 
   /**
    * Data url of the script logo.
@@ -433,13 +471,12 @@ export default {
   noConfirmPostEmptyCommentPageRegexp: null,
 
   /**
-   * String to be put into a regular expression for matching indentation characters. Default:
-   * `\\n*([:*#]+) *`.
+   * String to be put into a regular expression for matching indentation characters.
    *
    * @type {?string}
-   * @default null
+   * @default '\\n*([:*#]*) *'
    */
-  customIndentationCharsPattern: null,
+  indentationCharsPattern: '\\n*([:*#]*) *',
 
   /**
    * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be
@@ -452,13 +489,12 @@ export default {
   undoTexts: [],
 
   /**
-   * Reaction, i.e. an object specifying messages to be displayed when the user enters text that
-   * matches a pattern.
+   * Object specifying messages to be displayed when the user enters text that matches a pattern.
    *
    * @typedef {object[]} Reaction
    * @property {RegExp} pattern
    * @property {string} message
-   * @property {string} class
+   * @property {string} name Latin letters, digits, `-`.
    * @property {string} [type='notice'] For example, `notice`.
    * @property {Function} [checkFunc] If the function returns false, no message is displayed.
    */
@@ -488,37 +524,16 @@ export default {
   customCommentFormModules: [],
 
   /**
-   * Default type of comment link when copying. `'diff'`, `'wikilink'`, or `'link'`. You may use
-   * `'wikilink'` if there is a code in your wiki that makes wikilinks work for all users.
-   *
-   * @type {string}
-   * @default 'diff'
-   */
-  defaultCommentLinkType: 'diff',
-
-  /**
    * Whether to show a placeholder in a comment input.
    *
    * If gender is needed to output the comment input placeholder, it could be better to set the
-   * value to `true` to avoid displaying the placeholder altogether (a gender request would need
+   * value to `false` to avoid displaying the placeholder altogether (a gender request would need
    * time to proceed hampering user experience).
    *
    * @type {boolean}
-   * @default false
+   * @default true
    */
-  commentInputEmptyPlaceholder: false,
-
-  /**
-   * Function that generates an archive prefix without an ending slash for a given page title. It is
-   * used for the feature that suggests to search in the archive if the section by the given
-   * fragment is not found on the page. If `null`, the page title is used as an archive prefix.
-   *
-   * @type {?Function}
-   * @kind function
-   * @param {string} pageTitle
-   * @returns {string}
-   */
-  getArchivePrefix: null,
+  showCommentInputPlaceholder: true,
 
   /**
    * Function that transforms the automatically generated summary text.
@@ -532,9 +547,8 @@ export default {
   transformSummary: null,
 
   /**
-   * Function that makes alterations to the comment code before it is sent. (An example would be
-   * adding a closer template to all the closures by a user with the closer flag which is a
-   * requirement in Russian Wikipedia.)
+   * Function that makes custom alterations to the comment code before it is processed and
+   * submitted. See also {@link module:defaultConfig.postTransformCode}.
    *
    * @type {?Function}
    * @kind function
@@ -543,19 +557,25 @@ export default {
    * @returns {string}
    * @default null
    */
-  customCodeTransformations: null,
+  preTransformCode: null,
 
   /**
-   * Function with code that will run before the page is parsed.
+   * Function that makes custom alterations to the comment code after it is processed and before it
+   * is submitted. (An example would be adding a closer template to all the closures by a user with
+   * the closer flag which is a requirement in Russian Wikipedia.) See also {@link
+   * module:defaultConfig.preTransformCode}.
    *
    * @type {?Function}
    * @kind function
+   * @param {string} code
+   * @param {CommentForm} commentForm
+   * @returns {string}
    * @default null
    */
-  customBeforeParse: null,
+  postTransformCode: null,
 
   /**
-   * Function that returns `true` for nodes that are not parts of comments and should terminate
+   * Function that returns `true` for nodes that are not parts of comments and should terminate the
    * comment part collecting. These rules often need correspoding rules in {@link
    * module:defaultConfig.customBadCommentBeginnings}.
    *
@@ -569,7 +589,7 @@ export default {
    * @returns {boolean}
    * @default null
    */
-  customForeignComponentChecker: null,
+  checkForCustomForeignComponents: null,
 
   /**
    * Function that returns `true` if new topics are placed on top of the page.
@@ -600,15 +620,24 @@ export default {
 
   /**
    * Function that returns the code to insert in the beginning of the section moved from another
-   * page. If `null`, no code will be added.
+   * page *or* an array of strings to insert in the beginning and the ending of the section
+   * respectively. If `null`, no code will be added.
    *
    * @type {?Function}
    * @kind function
    * @param {string} targetPageWikilink
    * @param {string} signature
-   * @returns {string}
+   * @returns {string|Array<string, string>}
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
     return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
   },
+
+  /**
+   * Code that creates an anchor on the page.
+   *
+   * @param {string} anchor
+   * @returns {string}
+   */
+  getAnchorCode: (anchor) => `<span id="${anchor}"></span>`,
 };

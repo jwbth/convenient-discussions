@@ -8,7 +8,7 @@ import lzString from 'lz-string';
 
 import CdError from './CdError';
 import cd from './cd';
-import { getUserInfo, setOption } from './apiWrappers';
+import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
  * Pack the visits object into a string for further compression.
@@ -78,7 +78,7 @@ export function unpackWatchedSections(watchedSectionsString) {
 }
 
 /**
- * Request settings from the server.
+ * Request the settings from the server.
  *
  * @param {boolean} [reuse=false]
  * @returns {object}
@@ -96,12 +96,39 @@ export async function getSettings(reuse = false) {
 }
 
 /**
- * Save settings to the server.
+ * Save the settings to the server. This function will split the settings into the global and local
+ * ones and make two respective requests.
  *
  * @param {object} [settings]
  */
 export async function setSettings(settings) {
-  await setOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(settings || cd.settings));
+  settings = settings || cd.settings;
+  const globalSettings = {};
+  const localSettings = {};
+  Object.keys(settings).forEach((key) => {
+    if (cd.localSettingNames.includes(key)) {
+      localSettings[key] = settings[key];
+    } else {
+      globalSettings[key] = settings[key];
+    }
+  });
+
+  const localSettingsPromise = (
+    setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, JSON.stringify(localSettings))
+  );
+  const globalSettingsPromise = (
+    setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings))
+  );
+  try {
+    await Promise.all([localSettingsPromise, globalSettingsPromise]);
+  } catch (e) {
+    // The site doesn't support global preferences.
+    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
+      setLocalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings));
+    } else {
+      throw e;
+    }
+  }
 }
 
 /**
@@ -111,10 +138,11 @@ export async function setSettings(settings) {
  */
 
 /**
- * Request pages visits data from the server.
+ * Request the pages visits data from the server.
  *
- * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
- * can be critical for determining new comments.
+ * `mw.user.options` is not used even on first run because the script may not run immediately after
+ * the page is loaded. In fact, when the page is loaded in a background tab, it can be throttled
+ * until it is focused, so an indefinite amount of time can pass.
  *
  * @param {boolean} [reuse=false]
  * @returns {GetVisitsReturn}
@@ -162,7 +190,7 @@ function cleanUpVisits(originalVisits) {
 }
 
 /**
- * Save pages visits data to the server.
+ * Save the pages visits data to the server.
  *
  * @param {object} visits
  */
@@ -172,7 +200,7 @@ export async function setVisits(visits) {
   const visitsString = packVisits(visits);
   const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
   try {
-    await setOption(cd.g.VISITS_OPTION_FULL_NAME, visitsStringCompressed);
+    await setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, visitsStringCompressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
@@ -188,13 +216,8 @@ export async function setVisits(visits) {
 }
 
 /**
- * @typedef {object} GetWatchedSectionsReturn
- * @property {object} watchedSections
- * @property {object} thisPageWatchedSections
- */
-
-/**
- * Request watched sections from the server.
+ * Request the watched sections from the server and assign them to
+ * `convenientDiscussions.g.watchedSections`.
  *
  * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
  * can be critical for determining watched sections.
@@ -203,15 +226,12 @@ export async function setVisits(visits) {
  * @param {object} [keptData={}]
  * @param {string} [keptData.justWatchedSection]
  * @param {string} [keptData.justUnwatchedSection]
- * @param {boolean} [noTimers=false] Don't use timers (they can set the process on hold in
- *   background tabs if the browser throttles them).
- * @returns {GetWatchedSectionsReturn}
  */
-export async function getWatchedSections(reuse = false, keptData = {}, noTimers = false) {
+export async function getWatchedSections(reuse = false, keptData = {}) {
   const watchedSections = await (
     cd.g.firstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME) === null ?
     Promise.resolve({}) :
-    getUserInfo(reuse, noTimers).then((options) => options.watchedSections)
+    getUserInfo(reuse).then((options) => options.watchedSections)
   );
 
   const articleId = mw.config.get('wgArticleId');
@@ -236,18 +256,17 @@ export async function getWatchedSections(reuse = false, keptData = {}, noTimers 
     }
   }
 
-  return { watchedSections, thisPageWatchedSections };
+  cd.g.watchedSections = watchedSections;
+  cd.g.thisPageWatchedSections = thisPageWatchedSections;
 }
 
 /**
- * Save watched sections to the server.
- *
- * @param {object} watchedSections
+ * Save the watched sections kept in `convenientDiscussions.g.watchedSections` to the server.
  */
-export function setWatchedSections(watchedSections) {
-  const watchedSectionsString = packWatchedSections(watchedSections);
+export function setWatchedSections() {
+  const watchedSectionsString = packWatchedSections(cd.g.watchedSections);
   const watchedSectionsStringCompressed = (
     lzString.compressToEncodedURIComponent(watchedSectionsString)
   );
-  setOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, watchedSectionsStringCompressed);
+  setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, watchedSectionsStringCompressed);
 }
