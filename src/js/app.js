@@ -90,6 +90,23 @@ function addCommentLinksOnSpecialSearch() {
 }
 
 /**
+ * Add a footer link to enable/disable CD.
+ *
+ * @param {boolean} enable
+ */
+function addFooterLink(enable) {
+  const url = new URL(location.href);
+  url.searchParams.set('cdTalkPage', enable ? '1' : '0');
+  const $li = $('<li>').attr('id', enable ? 'footer-places-enablecd' : 'footer-places-disablecd');
+  $('<a>')
+    .attr('href', url.href)
+    .addClass('noprint')
+    .text(cd.s(enable ? 'footer-enablecd' : 'footer-disablecd'))
+    .appendTo($li);
+  $('#footer-places').append($li);
+}
+
+/**
  * Function executed after the config and localization strings are ready.
  *
  * @private
@@ -139,6 +156,7 @@ function go() {
   // Process the page as a talk page
   if (
     mw.config.get('wgIsArticle') &&
+    !/[?&]cdTalkPage=(0|false|no|n)(?=&|$)/.test(location.search) &&
     (
       isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
       $('#ca-addsection').length ||
@@ -210,7 +228,8 @@ function go() {
         }
       },
       (e) => {
-        // Note https://phabricator.wikimedia.org/T68598
+        // Note https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at
+        // "loading" if request was aborted"
 
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         removeLoadingOverlay();
@@ -243,16 +262,10 @@ function go() {
     require('../less/navPanel.less');
     require('../less/skin.less');
     require('../less/talkPage.less');
+
+    addFooterLink(false);
   } else {
-    const url = new URL(location.href);
-    url.searchParams.set('cdTalkPage', '1');
-    const $li = $('<li>').attr('id', 'footer-places-enablecd');
-    $('<a>')
-      .attr('href', url.href)
-      .addClass('noprint')
-      .text(cd.s('footer-enablecd'))
-      .appendTo($li);
-    $('#footer-places').append($li);
+    addFooterLink(true);
   }
 
   // Process the page as a log page
