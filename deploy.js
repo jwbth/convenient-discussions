@@ -48,10 +48,11 @@ const client = new Mw({
 
 let branch;
 let commits;
+let newCommitsCount;
 let newCommitsSubjects;
 let edits = [];
 
-exec('git rev-parse --abbrev-ref HEAD && git log -15 --pretty=format:"%h %s"', parseCmdOutput);
+exec('git rev-parse --abbrev-ref HEAD && git log --pretty=format:"%h %s"', parseCmdOutput);
 
 function parseCmdOutput(err, stdout, stderr) {
   if (stdout === '') {
@@ -106,9 +107,12 @@ function getLastDeployedCommit(revisions) {
     return lastDeployedCommit;
   });
   if (lastDeployedCommit) {
-    const index = commits.findIndex((commit) => commit.hash === lastDeployedCommit);
+    newCommitsCount = commits.findIndex((commit) => commit.hash === lastDeployedCommit);
+    if (newCommitsCount === -1) {
+      newCommitsCount = 0;
+    }
     newCommitsSubjects = commits
-      .slice(0, index === -1 ? undefined : index)
+      .slice(0, newCommitsCount)
       .map((commit) => commit.subject);
   }
 
@@ -142,8 +146,8 @@ async function prepareEdits() {
     }
 
     let summary = `Update to ${commits[0].hash} @ ${branch}`;
-    if (i === 0 && newCommitsSubjects?.length) {
-      summary += '. ' + newCommitsSubjects.join('. ');
+    if (i === 0 && newCommitsCount) {
+      summary += `. ${newCommitsCount} new commits: ${newCommitsSubjects.join('. ')}`;
     }
 
     edits.push({
