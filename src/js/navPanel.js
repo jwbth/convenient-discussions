@@ -189,22 +189,22 @@ async function checkForNewComments() {
  *
  * @param {CommentSkeleton[]|Comment[]} comments
  * @param {string} mode 'firstunseen' or 'refresh'. Code of action of the button.
- * @returns {string}
+ * @returns {?string}
  */
 function generateTooltipText(comments, mode) {
-  const commentsBySection = {};
-  comments
-    .slice(0, 30)
-    .forEach((comment) => {
-      const section = comment.section || comment.getSection();
-      if (!commentsBySection[section.anchor]) {
-        commentsBySection[section.anchor] = [];
-      }
-      commentsBySection[section.anchor].push(comment);
-    });
-
-  let tooltipText;
+  let tooltipText = null;
   if (comments.length) {
+    const commentsBySection = {};
+    comments
+      .slice(0, 30)
+      .forEach((comment) => {
+        const section = comment.section || comment.getSection();
+        if (!commentsBySection[section.anchor]) {
+          commentsBySection[section.anchor] = [];
+        }
+        commentsBySection[section.anchor].push(comment);
+      });
+
     tooltipText = `${cd.s('navpanel-newcomments-count', comments.length)} ${cd.s('navpanel-newcomments-' + mode)} ${mw.msg('parentheses', 'R')}`;
     Object.keys(commentsBySection).forEach((anchor) => {
       const section = (
@@ -246,7 +246,7 @@ function generateTooltipText(comments, mode) {
  */
 function updateRefreshButton(newComments, areThereInteresting) {
   $refreshButton
-    .text(newComments.length ? `+${newComments.length}` : ``)
+    .text(newComments.length ? `+${newComments.length}` : '')
     .attr('title', generateTooltipText(newComments, 'refresh'));
   if (areThereInteresting) {
     $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
