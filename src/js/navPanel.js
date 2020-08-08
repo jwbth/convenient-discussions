@@ -193,13 +193,15 @@ async function checkForNewComments() {
  */
 function generateTooltipText(comments, mode) {
   const commentsBySection = {};
-  comments.forEach((comment) => {
-    const section = comment.section || comment.getSection();
-    if (!commentsBySection[section.anchor]) {
-      commentsBySection[section.anchor] = [];
-    }
-    commentsBySection[section.anchor].push(comment);
-  });
+  comments
+    .slice(0, 30)
+    .forEach((comment) => {
+      const section = comment.section || comment.getSection();
+      if (!commentsBySection[section.anchor]) {
+        commentsBySection[section.anchor] = [];
+      }
+      commentsBySection[section.anchor].push(comment);
+    });
 
   let tooltipText;
   if (comments.length) {
