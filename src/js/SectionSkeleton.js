@@ -13,8 +13,6 @@ import { TreeWalker } from './treeWalker';
  * context for sections.
  */
 export default class SectionSkeleton {
-  #parser
-
   /**
    * Create a section skeleton instance.
    *
@@ -22,14 +20,14 @@ export default class SectionSkeleton {
    * @param {Element} headingElement
    */
   constructor(parser, headingElement) {
-    this.#parser = parser;
+    this.parser = parser;
 
     /**
      * Headline element.
      *
      * @type {Element}
      */
-    this.headlineElement = this.#parser.context
+    this.headlineElement = this.parser.context
       .getElementByClassName(headingElement, 'mw-headline');
     if (!this.headlineElement) {
       throw new CdError();
@@ -49,7 +47,10 @@ export default class SectionSkeleton {
     ));
 
     /**
-     * Section headline.
+     * Section headline as it appears on the page.
+     *
+     * Foreign elements can get there, add the classes of these elements to {@link
+     * module:defaultConfig.foreignElementsInHeadlinesClasses} to filter them out.
      *
      * @type {string}
      */
@@ -81,6 +82,12 @@ export default class SectionSkeleton {
       headingElement
     );
 
+    this.headingNestingLevel = 0;
+    while (treeWalker.parentNode()) {
+      this.headingNestingLevel++;
+    }
+
+    treeWalker.currentNode = headingElement;
     const elements = [headingElement];
     const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
 
@@ -145,7 +152,7 @@ export default class SectionSkeleton {
       this.comments = cd.comments.slice(firstCommentPartId, lastCommentPartId + 1);
       if (hasSubsections) {
         const endIndex = this.comments.findIndex((comment) => !(
-          this.#parser.context.follows(this.lastElementInFirstChunk, comment.elements[0]) ||
+          this.parser.context.follows(this.lastElementInFirstChunk, comment.elements[0]) ||
           this.lastElementInFirstChunk.contains(comment.elements[0])
         ));
         this.commentsInFirstChunk = this.comments.slice(0, endIndex || 0);

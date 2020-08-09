@@ -9,7 +9,6 @@ import { create as nanoCssCreate } from 'nano-css';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
-import Worker from './worker';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
@@ -19,22 +18,28 @@ import enStrings from '../../i18n/en.json';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { defined, isProbablyTalkPage, underlinesToSpaces } from './util';
+import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
-import { initTalkPageCss, removeLoadingOverlay, setLoadingOverlay } from './boot';
+import {
+  initTalkPageCss,
+  isLoadingOverlayOn,
+  removeLoadingOverlay,
+  setLoadingOverlay,
+} from './boot';
 import { loadMessages } from './dateFormat';
 import { setVisits } from './options';
 
 let config;
 let strings;
-if (IS_LOCAL) {
+if (IS_SNIPPET) {
   config = require(`../../config/${CONFIG_FILE_NAME}`).default;
   strings = require(`../../i18n/${LANG_FILE_NAME}`);
 }
 
 /**
- * Get a language string.
+ * Get a language string. The last parameter, if boolean, may indicate if the message should be
+ * returned in the plain, not substituted, form.
  *
  * @param {string} name
  * @param {...*} params
@@ -47,11 +52,58 @@ function s(name, ...params) {
   }
   const fullName = `convenient-discussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
-    return mw.message(fullName, ...params).toString();
+    const message = mw.message(fullName, ...params.filter((param) => typeof param !== 'boolean'));
+    return typeof params[params.length - 1] === 'boolean' && params[params.length - 1] ?
+      message.plain() :
+      message.toString();
   } else {
     const paramsString = params.length ? `: ${params.join(', ')}` : '';
     return `(${fullName}${paramsString})`;
   }
+}
+
+/**
+ * When searching for a comment after clicking "OK" in a "Comment not found" dialog, add comment
+ * links to the titles.
+ *
+ * @private
+ */
+function addCommentLinksOnSpecialSearch() {
+  const [, commentAnchor] = location.search.match(/[?&]cdComment=([^&]+)(?:&|$)/) || [];
+  if (commentAnchor) {
+    mw.loader.using(['mediawiki.api']).then(
+      async () => {
+        await loadMessages();
+        $('.mw-search-result-heading').each((i, el) => {
+          const $a = $('<a>')
+            .attr('href', $(el).find('a').first().attr('href') + '#' + commentAnchor)
+            .text(cd.s('deadanchor-search-gotocomment'));
+          const $span = $('<span>')
+            .addClass("cd-searchCommentLink")
+            .append(mw.msg('parentheses-start'), $a, mw.msg('parentheses-end'));
+          $(el).append(' ', $span.clone());
+        });
+      },
+      console.error
+    );
+  }
+}
+
+/**
+ * Add a footer link to enable/disable CD.
+ *
+ * @param {boolean} enable
+ */
+function addFooterLink(enable) {
+  const url = new URL(location.href);
+  url.searchParams.set('cdTalkPage', enable ? '1' : '0');
+  const $li = $('<li>').attr('id', enable ? 'footer-places-enablecd' : 'footer-places-disablecd');
+  $('<a>')
+    .attr('href', url.href)
+    .addClass('noprint')
+    .text(cd.s(enable ? 'footer-enablecd' : 'footer-disablecd'))
+    .appendTo($li);
+  $('#footer-places').append($li);
 }
 
 /**
@@ -76,6 +128,7 @@ function go() {
   });
 
   cd.g.SETTINGS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-settings`;
+  cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
   cd.g.VISITS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
 
   // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
@@ -87,30 +140,34 @@ function go() {
   );
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
-  cd.g.CURRENT_PAGE = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.CURRENT_PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
+  cd.g.PAGE_WHITE_LIST_REGEXP = mergeRegexps(cd.config.pageWhiteList);
+  cd.g.PAGE_BLACK_LIST_REGEXP = mergeRegexps(cd.config.pageBlackList);
 
   cd.g.$content = $('#mw-content-text');
 
-  if (!cd.config.customTalkNamespaces) {
-    cd.config.customTalkNamespaces = mw.config.get('wgExtraSignatureNamespaces');
-    if (cd.config.customTalkNamespaces.includes(0)) {
-      cd.config.customTalkNamespaces.splice(cd.config.customTalkNamespaces.indexOf(0));
-    }
-  }
+  cd.config.customTalkNamespaces = (
+    cd.config.customTalkNamespaces ||
+    mw.config.get('wgExtraSignatureNamespaces')
+  );
 
-  // Go
+  // Process the page as a talk page
   if (
     mw.config.get('wgIsArticle') &&
+    !/[?&]cdTalkPage=(0|false|no|n)(?=&|$)/.test(location.search) &&
     (
-      isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER) ||
+      isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
       $('#ca-addsection').length ||
+
       // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
       // method, there won't be "comment" links for edits on pages that list revisions such as the
       // watchlist.
-      cd.g.$content.find('.cd-talkPage').length
+      cd.g.$content.find('.cd-talkPage').length ||
+
+      /[?&]cdTalkPage=(1|true|yes|y)(?=&|$)/.test(location.search)
     )
   ) {
     cd.g.firstRun = true;
@@ -129,13 +186,10 @@ function go() {
     cd.debug.stopTimer('start');
     cd.debug.startTimer('loading data');
 
-    cd.g.worker = new Worker();
-
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      cd.g.api = new mw.Api();
       messagesRequest = loadMessages();
       getUserInfo().catch((e) => {
         console.warn(e);
@@ -143,7 +197,7 @@ function go() {
     }
 
     // We use a jQuery promise as there is no way to know the state of native promises.
-    const modulesRequest = $.when(...[
+    $.when(...[
       mw.loader.using([
         'jquery.color',
         'jquery.client',
@@ -174,17 +228,19 @@ function go() {
         }
       },
       (e) => {
+        // Note https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at
+        // "loading" if request was aborted"
+
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         removeLoadingOverlay();
-        console.warn(e);
+        console.error(e);
       }
     );
 
     setTimeout(() => {
-      // https://phabricator.wikimedia.org/T68598
-      if (modulesRequest.state() !== 'resolved') {
+      if (isLoadingOverlayOn()) {
         removeLoadingOverlay();
-        console.warn('The promise is in the "pending" state for 10 seconds; removing the loading overlay.');
+        console.warn('The loading overlay stays for more than 10 seconds; removing it.');
       }
     }, 10000);
 
@@ -206,14 +262,19 @@ function go() {
     require('../less/navPanel.less');
     require('../less/skin.less');
     require('../less/talkPage.less');
+
+    addFooterLink(false);
+  } else {
+    addFooterLink(true);
   }
 
+  // Process the page as a log page
   if (
     ['Watchlist', 'Contributions', 'Recentchanges']
       .includes(mw.config.get('wgCanonicalSpecialPageName')) ||
     (
       mw.config.get('wgAction') === 'history' &&
-      isProbablyTalkPage(cd.g.CURRENT_PAGE, cd.g.CURRENT_NAMESPACE_NUMBER)
+      isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER)
     ) ||
     cd.g.IS_DIFF_PAGE
   ) {
@@ -221,9 +282,8 @@ function go() {
     // sequentially.
     let messagesRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      cd.g.api = new mw.Api();
       messagesRequest = loadMessages();
-      getUserInfo().catch((e) => {
+      getUserInfo(true).catch((e) => {
         console.warn(e);
       });
     }
@@ -249,9 +309,14 @@ function go() {
         require('../less/logPages.less');
       },
       (e) => {
-        console.warn(e);
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(e);
       }
     );
+  }
+
+  if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
+    addCommentLinksOnSpecialSearch();
   }
 }
 
@@ -261,9 +326,9 @@ function go() {
  * @param {string} s
  * @returns {string}
  * @author Sophivorus
- * @license GPL v2
- * @license CC BY-SA 3.0
- * @license GFDL
+ * @license GPL-2.0-only
+ * @license CC-BY-SA-3.0
+ * @license GFDL-1.3
  * @private
  */
 function decodeBase64(s) {
@@ -288,6 +353,9 @@ function decodeBase64(s) {
 function getConfig() {
   return new Promise((resolve, reject) => {
     if (configUrls[location.host]) {
+      if (IS_DEV) {
+        configUrls[location.host] = configUrls[location.host].replace(/.js/, '-dev.js');
+      }
       mw.loader.getScript(configUrls[location.host]).then(
         () => {
           resolve();
@@ -309,7 +377,7 @@ function getConfig() {
  * @private
  */
 function getStrings() {
-  const lang = mw.config.get('wgContentLanguage');
+  const lang = mw.config.get('wgUserLanguage');
   return new Promise((resolve) => {
     if (lang === 'en') {
       // English strings are already in the build.
@@ -355,7 +423,7 @@ async function app() {
    */
   cd.running = true;
 
-  if (IS_LOCAL) {
+  if (IS_SNIPPET) {
     cd.config = Object.assign(defaultConfig, config);
     cd.strings = strings;
   }
@@ -373,14 +441,14 @@ async function app() {
   cd.util = util;
 
   /**
-   * @see module:Comment.getCommentByAnchor Get a comment by anchor
+   * @see module:Comment.getCommentByAnchor
    * @function getCommentByAnchor
    * @memberof module:cd~convenientDiscussions
    */
   cd.getCommentByAnchor = Comment.getCommentByAnchor;
 
   /**
-   * @see module:Section.getSectionByAnchor Get a section by anchor
+   * @see module:Section.getSectionByAnchor
    * @function getSectionByAnchor
    * @memberof module:cd~convenientDiscussions
    */
@@ -434,6 +502,7 @@ async function app() {
   cd.debug.init();
   cd.debug.startTimer('total time');
   cd.debug.startTimer('start');
+  cd.debug.startTimer('load data');
 
   /**
    * The script has launched.
@@ -450,9 +519,11 @@ async function app() {
       !cd.strings && (cd.getStringsPromise || getStrings()),
     ].filter(defined));
   } catch (e) {
-    console.warn(e);
+    console.error(e);
     return;
   }
+
+  cd.debug.stopTimer('load data');
 
   go();
 }

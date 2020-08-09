@@ -1,8 +1,13 @@
+// Modern replacement of clearfix
+.flow-root() {
+  display: flow-root;
+  // Hack for Edge
+  -ms-display: grid;
+}
+
 .cd-commentForm {
   &.cd-commentForm {
-    display: flow-root;
-    // Hack for Edge
-    -ms-display: grid;
+    .flow-root();
 
     margin: 0.5em 0;
 
@@ -45,9 +50,7 @@
 
   .cd-buttonsContainer {
     margin-top: 0.5em;
-    display: flow-root;
-    // Hack for Edge
-    -ms-display: grid;
+    .flow-root();
   }
 
   .cd-leftButtonsContainer {
@@ -86,23 +89,18 @@
   }
 
   .wikiEditor-ui-left {
-    // Makes a number in <ol> lists appear in front of the textarea, not below it.
+    // Make a number in <ol> lists appear in front of the textarea, not below it.
     float: none;
   }
 
   .wikiEditor-ui-toolbar {
-    .group .tool-select .options {
-      z-index: 1;
-    }
+    // To make the shadow appear.
+    z-index: 1;
   }
 
   &-innerWrapper {
     margin-bottom: 0;
-
-    // Modern replacement of clearfix
-    display: flow-root;
-    // Hack for Edge
-    -ms-display: grid;
+    .flow-root();
   }
 
   &-signature {
@@ -112,6 +110,73 @@
   &-dummyElement {
     height: 0;
   }
+}
+
+.ltr .cd-commentForm {
+  .cd-summaryInput {
+    margin-right: 8px;
+    margin-left: 0;
+  }
+
+  .cd-checkboxesContainer {
+    direction: ltr;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-right: 1em;
+    margin-left: 0;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  // Use .ltr and .rtl classes to detect interface direction.
+  .cd-buttonsContainer {
+    direction: ltr;
+  }
+
+  .cd-leftButtonsContainer {
+    float: left;
+  }
+
+  .cd-rightButtonsContainer {
+    float: right;
+  }
+}
+
+.rtl .cd-commentForm {
+  .cd-summaryInput {
+    margin-left: 8px;
+    margin-right: 0;
+  }
+
+  .cd-checkboxesContainer {
+    direction: rtl;
+  }
+
+  .cd-checkboxesContainer .oo-ui-fieldLayout {
+    margin-left: 1em;
+    margin-right: 0;
+
+    &:last-child {
+      margin-left: 0;
+    }
+  }
+
+  // Use .ltr and .rtl classes to detect interface direction.
+  .cd-buttonsContainer {
+    direction: rtl;
+  }
+
+  .cd-leftButtonsContainer {
+    float: right;
+  }
+
+  .cd-rightButtonsContainer {
+    float: left;
+  }
+
 }
 
 // flow-root removes the number in numbered lists which is too bad when editing a numbered comment
@@ -141,6 +206,16 @@ ol > li.cd-commentForm.cd-commentForm {
   }
 }
 
+.ltr .cd-commentInput {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+.rtl .cd-commentInput {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
 .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
   width: calc(~"100% + 2px");
   margin: -1px;
@@ -161,6 +236,7 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
   margin-top: 0.5em;
   padding: 0.5em 0.75em;
   background-color: #f8f9fa;
+  .flow-root();
 
   > .mw-parser-output > *:first-child {
     margin-top: 0;
@@ -185,17 +261,9 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
     width: calc(~"100% - 1.5em");
   }
 
-  &-indentedComment > .mw-parser-output > dl:first-child {
+  &-indentedComment > .mw-parser-output > dl > dd {
+    margin-left: 0;
     margin-bottom: 0;
-
-    > dd {
-      margin-left: 0;
-      margin-bottom: 0;
-    }
-
-    + p {
-      margin-top: 0;
-    }
   }
 }
 
@@ -222,7 +290,7 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
 .cd-previewArea-above,
 .cd-messageArea {
   // In Chrome, in the form is in a numbered list, this and "+ *" rule make the number to appear
-  // before the textarea, not before the message.
+  // before the textarea (which is better), not before the message.
   float: left;
 
   + * {
@@ -308,4 +376,36 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
 .cd-commentForm-disabled .wikiEditor-ui-top,
 .cd-commentForm-disabled .cd-insertButtons {
   pointer-events: none;
+}
+
+.tribute-container.cd-autocompleteContainer {
+  font-size: 14px;
+  margin-top: 3px;
+  line-height: 20px;
+  max-height: 500px;
+
+  // Make it look closer to the OOUI widget
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.25);
+  border: 1px solid #a2a9b1;
+
+  ul {
+    // Reset the default value
+    background-color: #fff;
+    margin: 0;
+  }
+
+  li {
+    padding: 5px 7px;
+    // Overwrite the standard Vector (and other skins?) value
+    margin: 0;
+
+    span {
+      font-weight: normal;
+    }
+  }
+
+  .highlight {
+    background-color: rgba(0, 23, 70, 0.086);
+    font-weight: normal;
+  }
 }

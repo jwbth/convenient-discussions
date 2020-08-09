@@ -6,7 +6,7 @@
   width: 32px;
   background-color: #fff;
   border: 1px solid #a2a9b1;
-  border-left: 0;
+  border-left-width: 0;
   // Enough to make it pass AA level for contrast ratio on Vector in case of
   // .cd-navPanel-refreshButton-interesting (#7d00cc).
   opacity: 0.695;
@@ -56,6 +56,20 @@
     background-image: url(https://upload.wikimedia.org/wikipedia/commons/a/ac/OOjs_UI_icon_ongoingConversation-ltr.svg);
     background-size: 16px 16px;
   }
+}
+
+.sitedir-ltr #cd-navPanel {
+  left: 0;
+  right: unset;
+  border-left-width: 0;
+  border-right-width: 1px;
+}
+
+.sitedir-rtl #cd-navPanel {
+  right: 0;
+  left: unset;
+  border-left-width: 1px;
+  border-right-width: 0;
 }
 
 .cd-navPanel-button {

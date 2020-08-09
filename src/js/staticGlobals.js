@@ -83,7 +83,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  CHECK_FOR_NEW_COMMENTS_INTERVAL: 15,
+  NEW_COMMENTS_CHECK_INTERVAL: 15,
 
   /**
    * Number of seconds between new comments checks when the tab is hidden.
@@ -91,7 +91,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  BACKGROUND_CHECK_FOR_NEW_COMMENTS_INTERVAL: 60,
+  BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL: 60,
 
   /**
    * Number of seconds in a day.
@@ -116,8 +116,8 @@ export default {
    * @memberof module:cd~convenientDiscussions.g
    */
   POPULAR_NOT_INLINE_ELEMENTS: [
-    'BLOCKQUOTE', 'DD', 'DIV', 'DL', 'FORM', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT', 'LI',
-    'OL', 'P', 'PRE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'
+    'BLOCKQUOTE', 'DD', 'DIV', 'DL', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT',
+    'LI', 'OL', 'P', 'PRE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'
   ],
 
   /**
@@ -127,8 +127,8 @@ export default {
    * @memberof module:cd~convenientDiscussions.g
    */
   POPULAR_INLINE_ELEMENTS: [
-    'A', 'ABBR', 'B', 'BIG', 'BR', 'CITE', 'CODE', 'EM', 'FONT', 'I', 'IMG', 'KBD', 'S', 'SMALL',
-    'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U', 'VAR'
+    'A', 'ABBR', 'B', 'BIG', 'BR', 'CENTER', 'CITE', 'CODE', 'EM', 'FONT', 'I', 'IMG', 'KBD', 'Q',
+    'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U', 'VAR'
   ],
 
   /**
@@ -177,11 +177,12 @@ export default {
   ],
 
   /**
-   * Auxiliary property to keep the sign code: "~~~~". If written as plain text, it gets transformed
-   * into the edit author's signature when saved. Note that minifier translates "~~\~" and "'~~' +
-   * '~'" into "~~~".
+   * Auxiliary property to keep the sign code: "\~\~\~\~". If written as plain text, it gets
+   * transformed into the edit author's signature when saved. Note that the minifier translates
+   * "~\~\\~" and "'\~\~' + '\~'" into "\~\~\~".
    *
    * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
    */
   SIGN_CODE: '~~'.concat('~~'),
 };

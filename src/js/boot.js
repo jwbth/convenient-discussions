@@ -7,7 +7,9 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import Page from './Page';
 import Section from './Section';
+import Worker from './worker';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel, { updatePageTitle } from './navPanel';
@@ -15,11 +17,15 @@ import processPage from './processPage';
 import {
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
+  hideText,
+  mergeRegexps,
+  saveScrollPosition,
   transparentize,
   underlinesToSpaces,
+  unhideText,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
-import { getCurrentPageData, getUserInfo } from './apiWrappers';
+import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadMessages } from './dateFormat';
 import { setSettings } from './options';
@@ -51,21 +57,28 @@ export function initSettings() {
     alwaysExpandSettings: false,
     autopreview: true,
     desktopNotifications: 'unknown',
-    defaultCommentLinkType: cd.config.defaultCommentLinkType || 'diff',
+    defaultCommentLinkType: 'diff',
     defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,
+    insertButtons: cd.config.defaultInsertButtons || [],
+
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
     insertButtonsChanged: false,
-    insertButtons: cd.config.defaultInsertButtons || [],
+
     signaturePrefix: '',
     notifications: 'all',
     notificationsBlacklist: [],
+
     // Not shown in the settings dialog
     showLoadingOverlay: true,
+
     showToolbar: true,
+    watchOnReply: true,
     watchSectionOnReply: true,
   };
+
+  cd.localSettingNames = ['insertButtons', 'insertButtonsChanged'];
 
   // Aliases for seamless transition when changing a setting name.
   const aliases = {
@@ -81,24 +94,37 @@ export function initSettings() {
     nativeSettings = {};
   }
 
-  Object.keys(cd.defaultSettings).forEach((name) => {
-    (aliases[name] || [])
-      .concat(name)
-      .forEach((alias) => {
-        // Settings in variables like "cdAlowEditOthersComments"
-        const varAlias = 'cd' + firstCharToUpperCase(alias);
-        if (varAlias in window && typeof varAlias === typeof cd.defaultSettings[name]) {
-          cd.settings[name] = nativeSettings[alias];
-        }
+  let localSettings;
+  try {
+    localSettings = JSON.parse(mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME)) || {};
+  } catch (e) {
+    localSettings = {};
+  }
 
-        // Native settings rewrite those set via personal JS.
-        if (
-          nativeSettings[alias] !== undefined &&
-          typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
-        ) {
-          cd.settings[name] = nativeSettings[alias];
-        }
-      });
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    (aliases[name] || []).concat(name).forEach((alias) => {
+      // Settings in variables like "cdAlowEditOthersComments"
+      const varAlias = 'cd' + firstCharToUpperCase(alias);
+      if (varAlias in window && typeof varAlias === typeof cd.defaultSettings[name]) {
+        cd.settings[name] = window[alias];
+      }
+
+      // Global settings override those set via personal JS.
+      if (
+        nativeSettings[alias] !== undefined &&
+        typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        cd.settings[name] = nativeSettings[alias];
+      }
+
+      // Local settings override global.
+      if (
+        localSettings[alias] !== undefined &&
+        typeof localSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        cd.settings[name] = localSettings[alias];
+      }
+    });
   });
 
   // Seamless transition from mySignature.
@@ -116,11 +142,25 @@ export function initSettings() {
 
   cd.settings = Object.assign({}, cd.defaultSettings, cd.settings);
 
-  if (JSON.stringify(cd.settings) !== mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME)) {
+  const remoteSettings = Object.assign({}, nativeSettings, localSettings);
+  const needToSetRemote = Object.keys(cd.settings).some((key) => (
+    JSON.stringify(cd.settings[key]) !== JSON.stringify(remoteSettings[key])
+  ));
+  if (needToSetRemote) {
     setSettings().catch((e) => {
       console.warn('Couldn\'t save the settings to the server.', e);
     });
   }
+
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    (aliases[name] || []).concat(name).forEach((alias) => {
+      // Settings in variables like "cdLocal..." override all other and are not saved to the server.
+      const varLocalAlias = 'cdLocal' + firstCharToUpperCase(alias);
+      if (varLocalAlias in window && typeof varLocalAlias === typeof cd.defaultSettings[name]) {
+        cd.settings[name] = window[alias];
+      }
+    });
+  });
 }
 
 /**
@@ -159,52 +199,46 @@ export function initTalkPageCss() {
 }
 
 /**
- * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
- * the first run.
- *
- * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadMessages}.
+ * Initialize a number of the global object properties.
  */
-export async function init({ messagesRequest }) {
-  cd.g.api = cd.g.api || new mw.Api();
+function initGlobals() {
+  cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
+    .files["phpCharToUpper.json"];
+  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
+  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
 
-  await (messagesRequest || loadMessages());
-  initSettings();
-  initTimestampParsingTools();
+  // {{gender:}} with at least two pipes in a selection of the affected strings.
+  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
+    cd.s('es-reply-to', true) +
+    cd.s('es-edit-comment-by', true) +
+    cd.s('thank-confirm', true)
+  );
+
+  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   if (cd.config.tagName) {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
   } else {
-    cd.g.SUMMARY_POSTFIX = ` ([[${cd.config.helpWikilink}|${cd.s('script-name-short')}]])`;
+    cd.g.SUMMARY_POSTFIX = ` ([[${cd.config.scriptPageWikilink}|${cd.s('script-name-short')}]])`;
     cd.g.SUMMARY_LENGTH_LIMIT = (
-      mw.config.get('wgCommentCodePointLimit') - cd.g.SUMMARY_POSTFIX.length
+      mw.config.get('wgCommentCodePointLimit') -
+      cd.g.SUMMARY_POSTFIX.length
     );
   }
 
-  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
-  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
-  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
-
-  // {{gender:}} with at least two pipes in a selection of the affected strings.
-  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i
-    .test(cd.s('es-reply-to') + cd.s('es-edit-comment-by') + cd.s('thank-confirm'));
-
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
+  cd.g.activeAutocompleteMenu = null;
+}
 
-  /**
-   * Collection of all comment forms on the page in the order of their creation.
-   *
-   * @name commentForms
-   * @type {CommentForm[]}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.commentForms = [];
-
-
-  /* Generate regexps, patterns (strings to be parts of regexps), selectors from config values */
+/**
+ * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
+ *
+ * @private
+ */
+function initPatterns() {
+  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
 
   const namespaceIds = mw.config.get('wgNamespaceIds');
   const userNamespaces = Object.keys(namespaceIds)
@@ -214,6 +248,10 @@ export async function init({ messagesRequest }) {
 
   const anySpace = (s) => s.replace(/:/g, ' : ').replace(/[ _]/g, '[ _]*');
 
+  const allNamespaces = Object.keys(namespaceIds);
+  const allNamespacesPattern = anySpace(allNamespaces.join('|'));
+  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${allNamespacesPattern}):`, 'i');
+
   const userNamespacesPatternAnySpace = anySpace(userNamespaces.join('|'));
   const contributionsPageAnySpace = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
@@ -221,11 +259,19 @@ export async function init({ messagesRequest }) {
     `(?:Special[ _]*:[ _]*Contributions|${contributionsPageAnySpace})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
+  const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
+  const userNamespaceAliasesPatternAnySpace = anySpace(userNamespaceAliases.join('|'));
+  cd.g.USER_NAMESPACE_ALIASES_REGEXP = new RegExp(
+    `^:?(?:${userNamespaceAliasesPatternAnySpace}):([^/]+)$`,
+    'i'
+  );
+
   if (cd.config.unsignedTemplates.length) {
-    const unsignedTemplatesPattern = cd.config.unsignedTemplates
-      .map(caseInsensitiveFirstCharPattern)
-      .join('|');
-    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(`(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\}).*\\n`, 'g');
+    const unsignedTemplatesPattern = cd.config.unsignedTemplates.join('|');
+    cd.g.UNSIGNED_TEMPLATES_PATTERN = (
+      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\})`
+    );
+    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
   }
 
   cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
@@ -242,9 +288,14 @@ export async function init({ messagesRequest }) {
       signatureContent.slice(0, authorInSignatureMatch.index)
     );
     cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
-      signaturePrefixPattern + signatureBeginning + '$'
+      signaturePrefixPattern +
+      signatureBeginning +
+      '$'
     );
   }
+
+  const pieJoined = cd.g.POPULAR_INLINE_ELEMENTS.join('|');
+  cd.g.PIE_PATTERN = `(?:${pieJoined})`;
 
   const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
   cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
@@ -300,29 +351,67 @@ export async function init({ messagesRequest }) {
   const fileNamespacesPatternAnySpace = anySpace(fileNamespaces.join('|'));
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPatternAnySpace}):`;
 
+  // Actually, only the text from "mini" format images should be captured, as in the standard
+  // format, the text is not displayed. See "img_thumbnail" in
+  // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
+  // Unfortunately, that would add like 100ms to the server's response time.
+  cd.g.FILE_LINK_REGEXP = new RegExp(
+    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^]+?(?:\\|[^]+?\\|((?:\\[\\[[^]+?\\]\\]|[^|])+?))?\\]\\]`,
+    'ig'
+  );
+
+  const colonNamespaces = Object.keys(namespaceIds)
+    .filter((key) => [6, 14].includes(namespaceIds[key]));
+  const colonNamespacesPatternAnySpace = anySpace(colonNamespaces.join('|'));
+  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPatternAnySpace}):`, 'i');
+
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat([new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`)])
+    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
     .concat(cd.config.customBadCommentBeginnings);
 
   cd.g.ADD_TOPIC_SELECTORS = ['#ca-addsection a']
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
 
-  const mergeRegexps = (arr) => {
-    const pattern = arr
-      .map((regexpOrString) => regexpOrString.source || regexpOrString)
-      .join('|');
-    return pattern ? new RegExp(`(${pattern})`) : null;
-  };
-
-  cd.g.PAGE_WHITE_LIST_REGEXP = mergeRegexps(cd.config.pageWhiteList);
-  cd.g.PAGE_BLACK_LIST_REGEXP = mergeRegexps(cd.config.pageBlackList);
-  cd.g.ARCHIVE_PATHS_REGEXP = mergeRegexps(cd.config.archivePaths);
   cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP = mergeRegexps(cd.config.pagesWithoutArchives);
 
+  cd.g.ARCHIVE_PAGES_MAP = new Map();
+  cd.g.SOURCE_PAGES_MAP = new Map();
+  const pathToRegexp = (s, replacements, isArchivePath) => {
+    let hidden = [];
+    let pattern = hideText(s, /\\[$\\]/g, hidden);
+    pattern = mw.util.escapeRegExp(pattern);
+    if (replacements) {
+      pattern = pattern
+        .replace(/\\\$/, '$')
+        .replace(/\$(\d+)/, (s, n) => {
+          const replacement = replacements[n - 1];
+          return replacement ? `(${replacement.source})` : s;
+        });
+    }
+    pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+    pattern = unhideText(pattern, hidden);
+    return new RegExp(pattern);
+  };
+  cd.config.archivePaths.forEach((entry) => {
+    if (entry instanceof RegExp) {
+      let archiveRegexp = new RegExp(entry.source + '.*');
+      cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, '');
+    } else {
+      const sourceRegexp = pathToRegexp(entry.source, entry.replacements);
+      const archiveRegexp = pathToRegexp(entry.archive, entry.replacements, true);
+      cd.g.ARCHIVE_PAGES_MAP.set(sourceRegexp, entry.archive);
+      cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, entry.source);
+    }
+  });
+}
 
-  /* OOUI */
-
+/**
+ * Initialize OOUI and comment layers-related objects.
+ *
+ * @private
+ */
+function initOouiAndElementPrototypes() {
   createWindowManager();
 
   // OOUI button prototypes. Creating every button using the constructor takes 15 times longer than
@@ -416,10 +505,36 @@ export async function init({ messagesRequest }) {
   const overlayContent = document.createElement('div');
   overlayContent.className = 'cd-commentOverlay-content';
   overlayInnerWrapper.appendChild(overlayContent);
+}
 
+/**
+ * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
+ * the first run.
+ *
+ * @param {object} [data] Data passed from the main module.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadMessages}.
+ */
+export async function init({ messagesRequest }) {
+  cd.g.api = cd.g.api || new mw.Api();
+  cd.g.worker = new Worker();
 
-  /* Extensions */
+  await (messagesRequest || loadMessages());
+  initGlobals();
+  initSettings();
+  initTimestampParsingTools();
 
+  /**
+   * Collection of all comment forms on the page in the order of their creation.
+   *
+   * @name commentForms
+   * @type {CommentForm[]}
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.commentForms = [];
+
+  initPatterns();
+  initOouiAndElementPrototypes();
   $.fn.extend(jqueryExtensions);
 }
 
@@ -457,9 +572,9 @@ async function updatePageContent(html, keptData) {
       Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() })
     );
   } catch (e) {
-    mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-    removeLoadingOverlay();
+    mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
+    removeLoadingOverlay();
   }
 
   mw.hook('wikipage.content').fire(cd.g.$content);
@@ -529,7 +644,7 @@ export async function reloadPage(keptData = {}) {
   // In case checkboxes were changed programmatically.
   saveSession();
 
-  keptData.scrollPosition = window.pageYOffset;
+  saveScrollPosition();
 
   navPanel.closeAllNotifications();
 
@@ -539,15 +654,17 @@ export async function reloadPage(keptData = {}) {
 
   setLoadingOverlay();
 
-  // Save time by requesting options in advance.
-  getUserInfo();
+  // Save time by requesting the options in advance.
+  getUserInfo().catch((e) => {
+    console.warn(e);
+  });
 
-  let pageData;
+  let parseData;
   try {
-    pageData = await getCurrentPageData(true);
+    parseData = await cd.g.CURRENT_PAGE.parse({ markAsRead: true });
   } catch (e) {
     removeLoadingOverlay();
-    if (keptData.commentAnchor) {
+    if (keptData.didSubmitCommentForm) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -561,15 +678,18 @@ export async function reloadPage(keptData = {}) {
   });
 
   mw.config.set({
-    wgRevisionId: pageData.revid,
-    wgCurRevisionId: pageData.revid,
+    wgRevisionId: parseData.revid,
+    wgCurRevisionId: parseData.revid,
   });
-  mw.loader.load(pageData.modules);
-  mw.loader.load(pageData.modulestyles);
-  mw.config.set(pageData.jsconfigvars);
+  mw.loader.load(parseData.modules);
+  mw.loader.load(parseData.modulestyles);
+  mw.config.set(parseData.jsconfigvars);
+
+  // Remove the fragment
+  history.replaceState(history.state, '', location.pathname + location.search);
 
   updatePageTitle(0, false);
-  updatePageContent(pageData.text, keptData);
+  updatePageContent(parseData.text, keptData);
 }
 
 /**
@@ -582,8 +702,7 @@ export async function reloadPage(keptData = {}) {
 function cleanUpSessions(data) {
   Object.keys(data).forEach((key) => {
     if (
-      !data[key].forms ||
-      !data[key].forms.length ||
+      !data[key].forms?.length ||
       data[key].saveUnixTime < Date.now() - cd.g.SECONDS_IN_A_DAY * 1000 * 30
     ) {
       delete data[key];
@@ -605,7 +724,7 @@ export function saveSession() {
     } else if (target instanceof Section) {
       targetData = {
         headline: target.headline,
-        firstCommentAnchor: target.comments[0] && target.comments[0].anchor,
+        firstCommentAnchor: target.comments[0]?.anchor,
         index: target.id,
       };
     }
@@ -615,39 +734,30 @@ export function saveSession() {
       // OK, extracting a selector from an element would be too much, and likely unreliable, so we
       // extract a href (the only property that we use in the CommentForm constructor) to put it
       // onto a fake element when restoring the form.
-      addSectionLinkHref: commentForm.$addSectionLink && commentForm.$addSectionLink.attr('href'),
-      headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
+      addSectionLinkHref: commentForm.$addSectionLink?.attr('href'),
+      headline: commentForm.headlineInput?.getValue(),
       comment: commentForm.commentInput.getValue(),
       summary: commentForm.summaryInput.getValue(),
-      minor: commentForm.minorCheckbox && commentForm.minorCheckbox.isSelected(),
-      watch: commentForm.watchCheckbox && commentForm.watchCheckbox.isSelected(),
-      watchSection: (
-        commentForm.watchSectionCheckbox && commentForm.watchSectionCheckbox.isSelected()
-      ),
-      ping: commentForm.pingCheckbox && commentForm.pingCheckbox.isSelected(),
-      small: commentForm.smallCheckbox && commentForm.smallCheckbox.isSelected(),
-      noSignature: commentForm.noSignatureCheckbox && commentForm.noSignatureCheckbox.isSelected(),
-      delete: commentForm.deleteCheckbox && commentForm.deleteCheckbox.isSelected(),
+      minor: commentForm.minorCheckbox?.isSelected(),
+      watch: commentForm.watchCheckbox?.isSelected(),
+      watchSection: commentForm.watchSectionCheckbox?.isSelected(),
+      noSignature: commentForm.noSignatureCheckbox?.isSelected(),
+      delete: commentForm.deleteCheckbox?.isSelected(),
       originalHeadline: commentForm.originalHeadline,
       originalComment: commentForm.originalComment,
       summaryAltered: commentForm.summaryAltered,
       lastFocused: commentForm.lastFocused,
     };
   });
-  const commentFormsData = forms.length ?
-    {
-      forms,
-      saveUnixTime: Date.now(),
-    } :
-    {};
+  const saveUnixTime = Date.now();
+  const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
 
   const commentFormsDataAllPagesJson = localStorage.getItem('convenientDiscussions-commentForms');
   let commentFormsDataAllPages;
   try {
     commentFormsDataAllPages = (
-      commentFormsDataAllPagesJson &&
       // "||" in case of a falsy value.
-      JSON.parse(commentFormsDataAllPagesJson) ||
+      (commentFormsDataAllPagesJson && JSON.parse(commentFormsDataAllPagesJson)) ||
       {}
     );
   } catch (e) {
@@ -668,46 +778,65 @@ export function saveSession() {
  * @private
  */
 function restoreCommentFormsFromData(commentFormsData) {
-  const restored = [];
+  let restored = false;
   const rescue = [];
   commentFormsData.forms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
-    if (data.targetData && data.targetData.anchor) {
+    if (data.targetData?.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
-      if (comment && !comment[`${property}Form`]) {
-        comment[property](data);
-        restored.push(comment[`${property}Form`]);
+      if (comment?.actionable && !comment[`${property}Form`]) {
+        try {
+          comment[property](data);
+          restored = true;
+        } catch (e) {
+          console.warn(e);
+          rescue.push(data);
+        }
       } else {
         rescue.push(data);
       }
-    } else if (data.targetData && data.targetData.headline) {
+    } else if (data.targetData?.headline) {
       const section = Section.search({
         headline: data.targetData.headline,
         firstCommentAnchor: data.targetData.firstCommentAnchor,
         index: data.targetData.index,
       });
-      if (section && !section[`${property}Form`]) {
-        section[property](data);
-        restored.push(section[`${property}Form`]);
+      if (section?.actionable && !section[`${property}Form`]) {
+        try {
+          section[property](data);
+          restored = true;
+        } catch (e) {
+          console.warn(e);
+          rescue.push(data);
+        }
       } else {
         rescue.push(data);
       }
     } else if (data.mode === 'addSection') {
-      if (!cd.g.addSectionForm) {
+      if (!cd.g.CURRENT_PAGE.addSectionForm) {
         const $fakeA = $('<a>').attr('href', data.addSectionLinkHref);
-        cd.g.addSectionForm = new CommentForm({
+        cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
+          target: cd.g.CURRENT_PAGE,
           mode: data.mode,
           $addSectionLink: $fakeA,
           dataToRestore: data,
         });
-        restored.push(cd.g.addSectionForm);
+        restored = true;
       } else {
         rescue.push(data);
       }
     }
   });
-  if (restored.length) {
+  if (restored) {
     saveSession();
+    const notification = mw.notification.notify(cd.s('restore-restored-text'), {
+      title: cd.s('restore-restored-title'),
+    });
+    notification.$notification.on('click', () => {
+      if (navPanel.isMounted()) {
+        navPanel.goToNextCommentForm(true);
+      }
+    });
   }
   if (rescue.length) {
     rescueCommentFormsContent(rescue);
@@ -737,48 +866,61 @@ export function restoreCommentForms() {
       const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || {};
       if (commentFormsData.forms) {
         restoreCommentFormsFromData(commentFormsData);
-        mw.notify(cd.s('restore-restored-text'), { title: cd.s('restore-restored-title') });
       }
     }
   } else {
     const rescue = [];
+    const addToRescue = (commentForm) => {
+      rescue.push({
+        headline: commentForm.headlineInput?.getValue(),
+        comment: commentForm.commentInput.getValue(),
+        summary: commentForm.summaryInput.getValue(),
+      });
+      cd.commentForms.splice(cd.commentForms.indexOf(commentForm), 1);
+    }
+
     cd.commentForms.forEach((commentForm) => {
       commentForm.checkCodeRequest = null;
       const target = commentForm.target;
       if (target instanceof Comment) {
         if (target.anchor) {
           const comment = Comment.getCommentByAnchor(target.anchor);
-          if (comment) {
-            commentForm.setTargets(comment);
-            comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
-            commentForm.addToPage();
+          if (comment?.actionable) {
+            try {
+              commentForm.setTargets(comment);
+              comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
+              commentForm.addToPage();
+            } catch (e) {
+              console.warn(e);
+              addToRescue(commentForm);
+            }
           } else {
-            rescue.push({
-              headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
-              comment: commentForm.commentInput.getValue(),
-              summary: commentForm.summaryInput.getValue(),
-            });
+            addToRescue(commentForm);
           }
+        } else {
+          addToRescue(commentForm);
         }
       } else if (target instanceof Section) {
         const section = Section.search({
           headline: target.headline,
-          firstCommentAnchor: target.comments[0] && target.comments[0].anchor,
+          firstCommentAnchor: target.comments[0]?.anchor,
           index: target.id,
         });
-        if (section) {
-          commentForm.setTargets(section);
-          section[CommentForm.modeToProperty(commentForm.mode)](commentForm);
-          commentForm.addToPage();
+        if (section?.actionable) {
+          try {
+            commentForm.setTargets(section);
+            section[CommentForm.modeToProperty(commentForm.mode)](commentForm);
+            commentForm.addToPage();
+          } catch (e) {
+            console.warn(e);
+            addToRescue(commentForm);
+          }
         } else {
-          rescue.push({
-            headline: commentForm.headlineInput && commentForm.headlineInput.getValue(),
-            comment: commentForm.commentInput.getValue(),
-            summary: commentForm.summaryInput.getValue(),
-          });
+          addToRescue(commentForm);
         }
       } else if (commentForm.mode === 'addSection') {
         commentForm.addToPage();
+        cd.g.CURRENT_PAGE.addSectionForm = commentForm;
       }
     });
     if (rescue.length) {

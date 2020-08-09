@@ -38,7 +38,7 @@ export default {
    *
    * @param {string} [alignment='top'] Where the element should be positioned relative to the
    *   viewport. Possible values: `'top'`, `'center'`, and `'bottom'`.
-   * @param {boolean} [smooth=true] Use a smooth animation.
+   * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] A callback to run after the animation has completed (works with
    *   `smooth` set to `true`).
    * @returns {JQuery}
@@ -62,14 +62,18 @@ export default {
       offset = offsetTop;
     }
 
+    const onComplete = () => {
+      cd.g.autoScrollInProgress = false;
+      if (navPanel.isMounted()) {
+        navPanel.registerSeenComments();
+        navPanel.updateCommentFormButton();
+      }
+    };
+
     if (smooth) {
       $('body, html').animate({ scrollTop: offset }, {
         complete: () => {
-          cd.g.autoScrollInProgress = false;
-          if (navPanel.isMounted()) {
-            navPanel.registerSeenComments();
-            navPanel.updateCommentFormButton();
-          }
+          onComplete();
           if (callback) {
             callback();
           }
@@ -77,11 +81,7 @@ export default {
       });
     } else {
       window.scrollTo(0, offset);
-      cd.g.autoScrollInProgress = false;
-      if (navPanel.isMounted()) {
-        navPanel.registerSeenComments();
-        navPanel.updateCommentFormButton();
-      }
+      onComplete();
     }
 
     return this;
@@ -127,12 +127,13 @@ export default {
    *
    * @param {string} [alignment] One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
    *   `'center'`, or `'bottom'`.
+   * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @returns {JQuery}
    * @memberof $.fn
    */
-  cdScrollIntoView(alignment) {
+  cdScrollIntoView(alignment, smooth = true) {
     if (!this.cdIsInViewport()) {
-      this.cdScrollTo(alignment);
+      this.cdScrollTo(alignment, smooth);
     }
 
     return this;

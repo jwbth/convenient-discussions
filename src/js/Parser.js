@@ -21,8 +21,7 @@ import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './
  * @private
  */
 function getPageNameFromUrl(url) {
-  // Should we rely on document.querySelector('link[rel="dns-prefetch"]').href? Are only WMF wikis
-  // guaranteed to have the format we need?
+  // Are only WMF wikis guaranteed to have the format we need?
   if (
     typeof mw === 'undefined' ||
     (mw.config.get('wgArticlePath') === '/wiki/$1' && mw.config.get('wgScript') === '/w/index.php')
@@ -42,7 +41,6 @@ function getPageNameFromUrl(url) {
     return url;
   } else {
     const uri = new mw.Uri(url);
-
     const match = uri.path.match(cd.g.ARTICLE_PATH_REGEXP);
     if (match) {
       try {
@@ -130,7 +128,7 @@ export default class Parser {
    */
 
   /**
-   * Find the timestamps under the root element.
+   * Find timestamps under the root element.
    *
    * @returns {FindTimestampsReturn}
    */
@@ -173,7 +171,7 @@ export default class Parser {
   }
 
   /**
-   * Find the signatures under the root element given timestamps.
+   * Find signatures under the root element given timestamps.
    *
    * Characters before the author link, like "—", aren't considered a part of the signature.
    *
@@ -299,7 +297,7 @@ export default class Parser {
         signatureContainer.insertBefore(element, startElementNextSibling);
 
         // If there is no author, we add the class to prevent the element from being considered a
-        // part of other comment but don't append the list of signatures.
+        // part of other comment but don't append to the list of signatures.
         if (!authorName) return;
 
         return { element, timestampElement, timestampText, date, authorName, anchor, unsigned };
@@ -423,10 +421,7 @@ export default class Parser {
           // https://ru.wikipedia.org/w/index.php?diff=107487558
           !isInline(previousPart.node, true) &&
 
-          (
-            timezoneRegexp.test(text) ||
-            cd.config.signatureEndingRegexp && cd.config.signatureEndingRegexp.test(text)
-          )
+          (timezoneRegexp.test(text) || cd.config.signatureEndingRegexp?.test(text))
         ) {
           previousPart.hasForeignComponents = true;
           break;
@@ -466,12 +461,14 @@ export default class Parser {
       const node = treeWalker.currentNode;
       const isTextNode = node.nodeType === Node.TEXT_NODE;
 
-      // Cases like:
-      //   === Section title ===
-      //   Section introduction. Not a comment.
-      //   # Vote. ~~~~
-      // Without the following code, the section introduction would be a part of the comment. The
-      // same may happen inside a discussion thread (often because one of the users didn't sign).
+      /*
+        Cases like:
+          === Section title ===
+          Section introduction. Not a comment.
+          # Vote. [signature]
+        Without the following code, the section introduction would be a part of the comment. The
+        same may happen inside a discussion thread (often because one of the users didn't sign).
+       */
       if (
         lastStep === 'back' &&
         ['OL', 'UL'].includes(previousPart.node.tagName) &&
@@ -509,8 +506,8 @@ export default class Parser {
           ) ||
 
           (
-            cd.config.customForeignComponentChecker &&
-            cd.config.customForeignComponentChecker(node, this.context)
+            cd.config.checkForCustomForeignComponents &&
+            cd.config.checkForCustomForeignComponents(node, this.context)
           )
         ) {
           break;
@@ -846,8 +843,8 @@ export function findSpecialElements() {
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
   floating.forEach((el) => {
     const style = window.getComputedStyle(el);
-    el.setAttribute('data-margin-top', parseFloat(style.marginTop));
-    el.setAttribute('data-margin-bottom', parseFloat(style.marginBottom));
+    el.cdMarginTop = parseFloat(style.marginTop);
+    el.cdMarginBottom = parseFloat(style.marginBottom);
   });
 
   const closedDiscussionsSelector = cd.config.closedDiscussionsClasses

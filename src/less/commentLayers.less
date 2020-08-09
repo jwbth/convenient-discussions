@@ -24,20 +24,22 @@
   position: absolute;
   display: none;
   pointer-events: none;
+  justify-content: flex-end;
 
   &-focused {
-    display: block;
+    display: flex;
   }
 
   &-innerWrapper {
     position: absolute;
     z-index: 1;
     bottom: 0;
-    right: 0;
     font-size: 14px;
     // At least, for the Timeless skin.
     line-height: normal;
     pointer-events: all;
+    display: flex;
+    flex-direction: row;
   }
 
   &-gradient {
@@ -53,9 +55,10 @@
   }
 
   &-content {
-    display: inline-block;
+    display: inline-flex;
     padding: 0 0.5em 2px;
     background-color: var(--cd-comment-underlay-focused-color);
+    flex-direction: row;
 
     .oo-ui-buttonWidget {
       margin-right: 0;
@@ -72,7 +75,35 @@
   }
 }
 
+// Comments overlay container is placed in the parent tag for the tag with .mw-content-ltr/rtl, so
+// we can't use .mw-content-ltr/rtl classes. To detect the direction we take the more general class
+// .sitedir-ltr/rtl.
+.sitedir-ltr .cd-commentOverlay {
+  &-content {
+    .oo-ui-buttonWidget {
+      margin-right: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-left: 1em;
+    }
+  }
+}
+
+.sitedir-rtl .cd-commentOverlay {
+  &-content {
+    .oo-ui-buttonWidget {
+      margin-left: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-right: 1em;
+    }
+  }
+}
+
 .cd-commentLayersContainerParent {
   position: relative;
   z-index: 0;
+  overflow: hidden;
 }

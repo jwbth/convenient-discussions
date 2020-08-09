@@ -4,23 +4,25 @@
  * @module Section
  */
 
+import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
+import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLink, handleApiReject, isTalkNamespace, underlinesToSpaces } from './util';
+import { animateLinks } from './util';
 import { copyLink } from './modal.js';
 import { editWatchedSections } from './modal';
 import {
+  encodeWikilink,
+  endWithTwoNewlines,
   extractSignatures,
   findFirstTimestamp,
   hideHtmlComments,
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { getLastRevision } from './apiWrappers';
 import { getWatchedSections, setWatchedSections } from './options';
-import { parseTimestamp } from './timestamp';
 import { reloadPage } from './boot';
 
 /**
@@ -29,13 +31,6 @@ import { reloadPage } from './boot';
  * @augments module:SectionSkeleton
  */
 export default class Section extends SectionSkeleton {
-  #elementPrototypes
-  #closingBracketElement
-  #editSectionElement
-  #cached$elements
-  #showAddSubsectionButtonTimeout
-  #hideAddSubsectionButtonTimeout
-
   /**
    * Create a section object.
    *
@@ -47,31 +42,14 @@ export default class Section extends SectionSkeleton {
   constructor(parser, headingElement, watchedSectionsRequest) {
     super(parser, headingElement);
 
-    /**
-     * Collection of the section's subsections.
-     *
-     * @name subsections
-     * @type {Section[]}
-     * @instance module:Section
-     */
+    this.elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
     /**
-     * Base section, i.e. a section of the level 2 that is an ancestor of the section.
+     * Section elements as a jQuery object.
      *
-     * @name baseSection
-     * @type {Section}
-     * @instance module:Section
+     * @type {JQuery}
      */
-
-    /**
-     * Is the section the last section on the page.
-     *
-     * @name isLastSection
-     * @type {boolean}
-     * @instance module:Section
-     */
-
-    this.#elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
+    this.$elements = $(this.elements);
 
     /**
      * Section headline element as a jQuery object.
@@ -80,32 +58,35 @@ export default class Section extends SectionSkeleton {
      */
     this.$headline = $(this.headlineElement);
 
-    this.#editSectionElement = headingElement.querySelector('.mw-editsection');
-    if (this.#editSectionElement) {
-      this.#closingBracketElement = this.#editSectionElement.lastElementChild;
-      if (
-        !this.#closingBracketElement ||
-        !this.#closingBracketElement.classList ||
-        !this.#closingBracketElement.classList.contains('mw-editsection-bracket')
-      ) {
-        this.#closingBracketElement = null;
+    /**
+     * Wiki page that has the source code of the section (may be different from the current page if
+     * the section is transcluded from another page). This property may also be wrong on old version
+     * pages where there is no edit section links.
+     *
+     * @type {string}
+     */
+    this.sourcePage = cd.g.CURRENT_PAGE;
+
+    this.editSectionElement = headingElement.querySelector('.mw-editsection');
+    if (this.editSectionElement) {
+      this.closingBracketElement = this.editSectionElement.lastElementChild;
+      if (!this.closingBracketElement?.classList?.contains('mw-editsection-bracket')) {
+        this.closingBracketElement = null;
       }
 
-      /**
-       * Wiki page that has the source code of the section (may be different from the current page
-       * if the section is transcluded from another page).
-       *
-       * @type {string}
-       */
-      this.sourcePage = cd.g.CURRENT_PAGE;
-      const editLink = this.#editSectionElement
+      const editLink = this.editSectionElement
         .querySelector('a[href*="&action=edit"], a[href*="&veaction=editsource"]');
       if (editLink) {
-        const editLinkUrl = new URL(editLink.href);
-        if (editLinkUrl) {
-          const sectionNumber = editLinkUrl.searchParams.get('section');
+        /**
+         * URL to edit the section.
+         *
+         * @type {URL}
+         */
+        this.editUrl = new URL(editLink.href);
+        if (this.editUrl) {
+          const sectionNumber = this.editUrl.searchParams.get('section');
           if (sectionNumber.startsWith('T-')) {
-            this.sourcePage = underlinesToSpaces(editLinkUrl.searchParams.get('title'));
+            this.sourcePage = new Page(this.editUrl.searchParams.get('title'));
           }
         }
       } else {
@@ -120,202 +101,124 @@ export default class Section extends SectionSkeleton {
       this.$heading = $(headingElement);
 
       /**
-       * Is the section frozen (is not in a closed discussion or an old diff page).
+       * Is the section actionable (is in a closed discussion or on an old version page).
        *
        * @type {boolean}
        */
-      this.frozen = (
-        !cd.g.isPageActive ||
-        cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
+      this.actionable = (
+        cd.g.isPageActive &&
+        !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
       );
 
-      if (!this.frozen) {
-        this.#showAddSubsectionButtonTimeout = undefined;
-        this.#hideAddSubsectionButtonTimeout = undefined;
-
-        this.addAddSubsectionButton();
-
-        // Add a "Reply" button to the end of the first section chunk.
-        const replyButton = this.#elementPrototypes.replyButton.cloneNode(true);
-        replyButton.firstChild.onclick = () => {
-          this.addReply();
-        };
-
-        // Sections may have "#" in the code as a placeholder for a vote. In this case, we must
-        // create the comment form in the <ol> tag, and keep "#" in the reply.
-        const isVotePlaceholder = (
-          this.lastElementInFirstChunk.tagName === 'OL' &&
-          this.lastElementInFirstChunk.childElementCount === 1 &&
-          this.lastElementInFirstChunk.children[0].classList.contains('mw-empty-elt')
-        );
-
-        let tag;
-        let createUl = false;
-        if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
-          const tagName = this.lastElementInFirstChunk.tagName;
-          if (
-            tagName === 'UL' ||
-            (
-              tagName === 'OL' &&
-              // Check if this is indeed a numbered list with replies as list items, not a numbered
-              // list as part of the user's comment that has their signature technically inside the
-              // last item.
-              (
-                this.lastElementInFirstChunk.querySelectorAll('ol > li').length === 1 ||
-                this.lastElementInFirstChunk.querySelectorAll('ol > li > .cd-signature').length > 1
-              )
-            )
-          ) {
-            tag = 'li';
-          } else if (tagName === 'DL') {
-            tag = 'dd';
-          } else {
-            tag = 'li';
-            createUl = true;
-          }
-        } else {
-          tag = 'li';
-          if (!isVotePlaceholder) {
-            createUl = true;
-          }
-        }
-
-        const replyWrapper = document.createElement(tag);
-        replyWrapper.className = 'cd-replyWrapper';
-        replyWrapper.appendChild(replyButton);
-
-        // Container contains wrapper contains element ^_^
-        let replyContainer;
-        if (createUl) {
-          const replyContainer = document.createElement('ul');
-          replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
-          replyContainer.appendChild(replyWrapper);
-
-          this.lastElementInFirstChunk.parentElement.insertBefore(
-            replyContainer,
-            this.lastElementInFirstChunk.nextElementSibling
-          );
-        } else {
-          this.lastElementInFirstChunk.appendChild(replyWrapper);
-        }
-
-        /**
-         * Reply button on the bottom of the first section chunk.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyButton = $(replyButton);
-
-        /**
-         * Link element contained in the reply button element.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyButtonLink = $(replyButton.firstChild);
-
-        /**
-         * Reply button wrapper.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyWrapper = $(replyWrapper);
-
-        /**
-         * Reply button container if present. It may be wrapped around the reply button wrapper.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$replyContainer = replyContainer ? $(replyContainer) : undefined;
-
-        // Add section menu items
-        if (
-          this.comments.length &&
-          this.comments[0].isOpeningSection &&
-          this.comments[0].openingSectionOfLevel === this.level &&
-          (this.comments[0].own || cd.settings.allowEditOthersComments) &&
-          this.comments[0].actionable
-        ) {
-          this.addMenuItem({
-            label: cd.s('sm-editopeningcomment'),
-            tooltip: cd.s('sm-editopeningcomment-tooltip'),
-            func: () => {
-              this.comments[0].edit();
-            },
-            class: 'cd-sectionLink-editOpeningComment',
-          });
-        }
-
-        this.addMenuItem({
-          label: cd.s('sm-addsubsection'),
-          tooltip: cd.s('sm-addsubsection-tooltip'),
-          func: () => {
-            this.addSubsection();
-          },
-          class: 'cd-sectionLink-addSubsection',
-        });
-
-        if (this.level === 2) {
-          this.addMenuItem({
-            label: cd.s('sm-move'),
-            tooltip: cd.s('sm-move-tooltip'),
-            func: () => {
-              this.move();
-            },
-            class: 'cd-sectionLink-moveSection',
-          });
-        }
-
-        if (watchedSectionsRequest) {
-          watchedSectionsRequest.then(
-            ({ thisPageWatchedSections }) => {
-              if (this.headline) {
-                this.watched = thisPageWatchedSections.includes(this.headline);
-                this.addMenuItem({
-                  label: cd.s('sm-unwatch'),
-                  tooltip: cd.s('sm-unwatch-tooltip'),
-                  func: () => {
-                    this.unwatch();
-                  },
-                  class: 'cd-sectionLink-unwatch',
-                  visible: this.watched,
-                });
-                this.addMenuItem({
-                  label: cd.s('sm-watch'),
-                  tooltip: cd.s('sm-watch-tooltip'),
-                  func: () => {
-                    this.watch();
-                  },
-                  class: 'cd-sectionLink-watch',
-                  visible: !this.watched,
-                });
-              }
-
-              const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
-
-              // We put it here to make it appear always after the "watch" item.
-              this.addMenuItem({
-                label: cd.s('sm-copylink'),
-                // We need the event object so we don't wrap the function into a container function.
-                func: this.copyLink.bind(this),
-                class: 'cd-sectionLink-copyLink',
-                tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
-                href: `${mw.util.getUrl(cd.g.CURRENT_PAGE)}#${this.anchor}`,
-              });
-            },
-            () => {}
-          );
-        }
+      if (this.actionable) {
+        this.extendSectionMenu(watchedSectionsRequest);
       }
     }
   }
 
   /**
-   * Add "Add subsection" buttons that appear when hovering over "Reply" buttons.
+   * Add the "Reply" button to the end of the first chunk of the section.
+   */
+  addReplyButton() {
+    const replyButton = this.elementPrototypes.replyButton.cloneNode(true);
+    replyButton.firstChild.onclick = () => {
+      this.addReply();
+    };
+
+    // Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
+    // the comment form in the <ol> tag.
+    const isVotePlaceholder = (
+      this.lastElementInFirstChunk.tagName === 'OL' &&
+      this.lastElementInFirstChunk.childElementCount === 1 &&
+      this.lastElementInFirstChunk.children[0].classList.contains('mw-empty-elt')
+    );
+
+    let tag;
+    let createUl = false;
+    if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
+      const tagName = this.lastElementInFirstChunk.tagName;
+      if (
+        tagName === 'UL' ||
+        (
+          tagName === 'OL' &&
+          // Check if this is indeed a numbered list with replies as list items, not a numbered list
+          // as part of the user's comment that has their signature technically inside the last
+          // item.
+          (
+            this.lastElementInFirstChunk.querySelectorAll('ol > li').length === 1 ||
+            this.lastElementInFirstChunk.querySelectorAll('ol > li > .cd-signature').length > 1
+          )
+        )
+      ) {
+        tag = 'li';
+      } else if (tagName === 'DL') {
+        tag = 'dd';
+      } else {
+        tag = 'li';
+        createUl = true;
+      }
+    } else {
+      tag = 'li';
+      if (!isVotePlaceholder) {
+        createUl = true;
+      }
+    }
+
+    const replyWrapper = document.createElement(tag);
+    replyWrapper.className = 'cd-replyWrapper';
+    replyWrapper.appendChild(replyButton);
+
+    // Container contains wrapper that contains element ^_^
+    let replyContainer;
+    if (createUl) {
+      replyContainer = document.createElement('ul');
+      replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
+      replyContainer.appendChild(replyWrapper);
+
+      this.lastElementInFirstChunk.parentElement.insertBefore(
+        replyContainer,
+        this.lastElementInFirstChunk.nextElementSibling
+      );
+    } else {
+      this.lastElementInFirstChunk.appendChild(replyWrapper);
+    }
+
+    /**
+     * Reply button on the bottom of the first chunk of the section.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyButton = $(replyButton);
+
+    /**
+     * Link element contained in the reply button element.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyButtonLink = $(replyButton.firstChild);
+
+    /**
+     * Reply button wrapper.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyWrapper = $(replyWrapper);
+
+    /**
+     * Reply button container if present. It may be wrapped around the reply button wrapper.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$replyContainer = replyContainer && $(replyContainer);
+  }
+
+  /**
+   * Add the "Add subsection" button that appears when hovering over the "Reply" button.
    */
   addAddSubsectionButton() {
     if (this.level !== 2) return;
 
-    const addSubsectionButton = this.#elementPrototypes.addSubsectionButton.cloneNode(true);
+    const addSubsectionButton = this.elementPrototypes.addSubsectionButton.cloneNode(true);
     const labelContainer = addSubsectionButton.querySelector('.oo-ui-labelElement-label');
     if (!labelContainer) return;
     labelContainer.innerHTML = '';
@@ -339,19 +242,17 @@ export default class Section extends SectionSkeleton {
       lastElement.nextElementSibling
     );
 
-    this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
-
     const deferAddSubsectionButtonHide = () => {
-      if (!this.#hideAddSubsectionButtonTimeout) {
-        this.#hideAddSubsectionButtonTimeout = setTimeout(() => {
+      if (!this.hideAddSubsectionButtonTimeout) {
+        this.hideAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.hide();
         }, 1000);
       }
     };
 
     addSubsectionButton.firstChild.onmouseenter = () => {
-      clearTimeout(this.#hideAddSubsectionButtonTimeout);
-      this.#hideAddSubsectionButtonTimeout = null;
+      clearTimeout(this.hideAddSubsectionButtonTimeout);
+      this.hideAddSubsectionButtonTimeout = null;
     };
     addSubsectionButton.firstChild.onmouseleave = () => {
       deferAddSubsectionButtonHide();
@@ -360,8 +261,8 @@ export default class Section extends SectionSkeleton {
     this.replyButtonHoverHandler = () => {
       if (this.addSubsectionForm) return;
 
-      clearTimeout(this.#hideAddSubsectionButtonTimeout);
-      this.#hideAddSubsectionButtonTimeout = null;
+      clearTimeout(this.hideAddSubsectionButtonTimeout);
+      this.hideAddSubsectionButtonTimeout = null;
 
       if (!this.showAddSubsectionButtonTimeout) {
         this.showAddSubsectionButtonTimeout = setTimeout(() => {
@@ -378,6 +279,117 @@ export default class Section extends SectionSkeleton {
 
       deferAddSubsectionButtonHide();
     };
+
+    /**
+     * Add subsection button in the end of the section.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$addSubsectionButton = $(addSubsectionButton);
+
+    /**
+     * Add subsection button container.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
+  }
+
+  /**
+   * Add section menu items.
+   *
+   * @param {Promise} [watchedSectionsRequest]
+   * @fires sectionMenuExtended
+   * @private
+   */
+  extendSectionMenu(watchedSectionsRequest) {
+    if (
+      this.comments.length &&
+      this.comments[0].isOpeningSection &&
+      this.comments[0].openingSectionOfLevel === this.level &&
+      (this.comments[0].own || cd.settings.allowEditOthersComments) &&
+      this.comments[0].actionable
+    ) {
+      this.addMenuItem({
+        label: cd.s('sm-editopeningcomment'),
+        tooltip: cd.s('sm-editopeningcomment-tooltip'),
+        func: () => {
+          this.comments[0].edit();
+        },
+        class: 'cd-sectionLink-editOpeningComment',
+      });
+    }
+
+    this.addMenuItem({
+      label: cd.s('sm-addsubsection'),
+      tooltip: cd.s('sm-addsubsection-tooltip'),
+      func: () => {
+        this.addSubsection();
+      },
+      class: 'cd-sectionLink-addSubsection',
+    });
+
+    if (this.level === 2) {
+      this.addMenuItem({
+        label: cd.s('sm-move'),
+        tooltip: cd.s('sm-move-tooltip'),
+        func: () => {
+          this.move();
+        },
+        class: 'cd-sectionLink-moveSection',
+      });
+    }
+
+    if (watchedSectionsRequest) {
+      watchedSectionsRequest
+        .then(
+          () => {
+            if (this.headline) {
+              this.watched = cd.g.thisPageWatchedSections.includes(this.headline);
+              this.addMenuItem({
+                label: cd.s('sm-unwatch'),
+                tooltip: cd.s('sm-unwatch-tooltip'),
+                func: () => {
+                  this.unwatch();
+                },
+                class: 'cd-sectionLink-unwatch',
+                visible: this.watched,
+              });
+              this.addMenuItem({
+                label: cd.s('sm-watch'),
+                tooltip: cd.s('sm-watch-tooltip'),
+                func: () => {
+                  this.watch();
+                },
+                class: 'cd-sectionLink-watch',
+                visible: !this.watched,
+              });
+            }
+          },
+          () => {}
+        )
+        .finally(() => {
+          const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
+
+          // We put it here to make it appear always after the "watch" item.
+          this.addMenuItem({
+            label: cd.s('sm-copylink'),
+            // We need the event object to be passed to the function.
+            func: this.copyLink.bind(this),
+            class: 'cd-sectionLink-copyLink',
+            tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
+            href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
+          });
+
+          /**
+           * Section menu has been extneded.
+           *
+           * @event sectionMenuExtended
+           * @type {module:cd~convenientDiscussions}
+           */
+          mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+        });
+    }
   }
 
   /**
@@ -386,6 +398,8 @@ export default class Section extends SectionSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   addReply(dataToRestore) {
+    this.$replyButton.hide();
+
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.addReplyForm) {
@@ -402,12 +416,10 @@ export default class Section extends SectionSkeleton {
           dataToRestore,
         });
     }
-    this.$replyButton.hide();
 
-    const baseSection = this.level === 2 ? this : this.baseSection;
-    if (baseSection && baseSection.$addSubsectionButtonContainer) {
+    const baseSection = this.getBase();
+    if (baseSection.$addSubsectionButtonContainer) {
       baseSection.$addSubsectionButtonContainer.hide();
-
       clearTimeout(baseSection.showAddSubsectionButtonTimeout);
       baseSection.showAddSubsectionButtonTimeout = null;
     }
@@ -420,6 +432,10 @@ export default class Section extends SectionSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   addSubsection(dataToRestore) {
+    if (this.$addSubsectionButtonContainer) {
+      this.$addSubsectionButtonContainer.hide();
+    }
+
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
       this.addSubsectionForm.headlineInput.focus();
@@ -437,10 +453,6 @@ export default class Section extends SectionSkeleton {
           dataToRestore,
           scrollIntoView: true,
         });
-    }
-
-    if (this.$addSubsectionButtonContainer) {
-      this.$addSubsectionButtonContainer.hide();
     }
   }
 
@@ -493,62 +505,9 @@ export default class Section extends SectionSkeleton {
       this.actions.setAbilities({ move });
     };
 
-    MoveSectionDialog.prototype.areNewTopicsOnTop = async function (title, code) {
-      let newTopicsOnTop;
-      if (cd.config.areNewTopicsOnTop) {
-        newTopicsOnTop = cd.config.areNewTopicsOnTop(title.toText(), code);
-      }
-
-      const adjustedCode = hideHtmlComments(code);
-
-      // Detect the topic order: newest first or newest last. While doing that, search for the first
-      // section position.
-      const sectionHeadingRegexp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
-      let firstSectionIndex;
-      let sectionHeadingMatch;
-      let previousDate;
-      let higherLowerDifference = 0;
-      while (
-        (sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode)) &&
-        (
-          newTopicsOnTop === undefined ||
-          (newTopicsOnTop !== false && firstSectionIndex === undefined)
-        )
-      ) {
-        if (firstSectionIndex === undefined) {
-          firstSectionIndex = sectionHeadingMatch.index;
-        }
-        if (newTopicsOnTop !== undefined) break;
-
-        const codeStartingWithThisSection = code.slice(sectionHeadingMatch.index);
-
-        const timestamp = findFirstTimestamp(codeStartingWithThisSection);
-        const { date } = timestamp && parseTimestamp(timestamp) || {};
-        if (date) {
-          if (previousDate) {
-            higherLowerDifference += date > previousDate ? -1 : 1;
-          }
-          previousDate = date;
-        }
-
-        if (Math.abs(higherLowerDifference) > 5) {
-          newTopicsOnTop = higherLowerDifference > 0;
-        }
-      }
-
-      if (newTopicsOnTop === undefined) {
-        newTopicsOnTop = higherLowerDifference === 0 ?
-          !(title.namespace % 2 === 1) :
-          higherLowerDifference > 0;
-      }
-
-      return { newTopicsOnTop, firstSectionIndex };
-    };
-
     MoveSectionDialog.prototype.loadSourcePage = async function () {
-      let page;
       try {
-        page = await getLastRevision(section.sourcePage);
+        await section.getSourcePage().getCode();
       } catch (e) {
         if (e instanceof CdError) {
           const { type, code } = e.data;
@@ -566,14 +525,13 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      const code = page.code;
       try {
-        section.locateInCode(code);
+        section.locateInCode();
       } catch (e) {
         if (e instanceof CdError) {
           const { code } = e.data;
           let message;
-          if (code === 'couldntLocateSection') {
+          if (code === 'locateSection') {
             message = cd.s('error-locatesection');
           } else {
             message = cd.s('error-unknown');
@@ -585,18 +543,15 @@ export default class Section extends SectionSkeleton {
       }
 
       return {
-        code,
-        timestamp: page.timestamp,
-        queryTimestamp: page.queryTimestamp,
+        page: section.getSourcePage(),
         sectionInCode: section.inCode,
-        wikilink: `${section.sourcePage}#${section.headline}`,
+        sectionWikilink: `${section.getSourcePage().name}#${encodeWikilink(section.headline)}`,
       };
     };
 
-    MoveSectionDialog.prototype.loadTargetPage = async function (targetTitle) {
-      let page;
+    MoveSectionDialog.prototype.loadTargetPage = async function (targetPage) {
       try {
-        page = await getLastRevision(targetTitle);
+        await targetPage.getCode();
       } catch (e) {
         if (e instanceof CdError) {
           const { type, code } = e.data;
@@ -617,142 +572,149 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      const { code, timestamp, queryTimestamp } = page;
-      const title = page.redirectTarget || targetTitle;
-      const { newTopicsOnTop, firstSectionIndex } = this.areNewTopicsOnTop(title, code);
-      const wikilink = `${title.toText()}#${section.headline}`;
+      targetPage.analyzeNewTopicPlacement();
+      const sectionWikilink = `${targetPage.realName}#${encodeWikilink(section.headline)}`;
+      const sectionUrl = mw.util.getUrl(sectionWikilink);
 
       return {
-        code,
-        timestamp,
-        queryTimestamp,
-        title,
-        newTopicsOnTop,
-        firstSectionIndex,
-        wikilink,
-        sectionUrl: mw.util.getUrl(wikilink),
+        page: targetPage,
+        sectionWikilink,
+        sectionUrl,
       };
     };
 
-    MoveSectionDialog.prototype.saveTargetPage = async function (sourcePage, targetPage) {
-      const endWithTwoNewlines = (code) => code.replace(/([^\n])\n?$/, '$1\n\n');
-
-      const targetPageCode = cd.config.getMoveTargetPageCode ?
-        cd.config.getMoveTargetPageCode(sourcePage.wikilink, cd.g.CURRENT_USER_SIGNATURE) :
+    MoveSectionDialog.prototype.editTargetPage = async function (source, target) {
+      const code = cd.config.getMoveTargetPageCode ?
+        cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE) :
         undefined;
-      const targetPageNewSectionCode = endWithTwoNewlines(
-        sourcePage.sectionInCode.code.slice(
-          0,
-          sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
-        ) +
-        (targetPageCode ? targetPageCode + '\n' : '') +
-        sourcePage.sectionInCode.code.slice(
-          sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
-        )
+      const codeBeginning = Array.isArray(code) ? code[0] + '\n' : code;
+      const codeEnding = Array.isArray(code) ? '\n' + code[1] : '';
+      const newSectionCode = endWithTwoNewlines(
+        source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
+        codeBeginning +
+        source.sectionInCode.code.slice(source.sectionInCode.relativeContentStartIndex) +
+        codeEnding
       );
 
-      let targetPageNewCode;
-      if (targetPage.newTopicsOnTop) {
+      let newCode;
+      if (target.page.areNewTopicsOnTop) {
         // The page has no sections, so we add to the bottom.
-        if (targetPage.firstSectionIndex === undefined) {
-          targetPage.firstSectionIndex = targetPage.code.length;
+        if (target.page.firstSectionStartIndex === undefined) {
+          target.page.firstSectionStartIndex = target.page.code.length;
         }
-        targetPageNewCode = (
-          endWithTwoNewlines(targetPage.code.slice(0, targetPage.firstSectionIndex)) +
-          targetPageNewSectionCode +
-          targetPage.code.slice(targetPage.firstSectionIndex)
+        newCode = (
+          endWithTwoNewlines(target.page.code.slice(0, target.page.firstSectionStartIndex)) +
+          newSectionCode +
+          target.page.code.slice(target.page.firstSectionStartIndex)
         );
       } else {
-        targetPageNewCode = targetPage.code + '\n\n' + targetPageNewSectionCode;
+        newCode = target.page.code + '\n\n' + newSectionCode;
       }
 
       const summaryEnding = this.summaryEndingInput.getValue();
-      const text = (
-        cd.s('es-move-from', sourcePage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
+      const summary = (
+        cd.s('es-move-from', source.sectionWikilink) +
+        (summaryEnding ? ': ' + summaryEnding : '')
       );
-      let editTargetPageData;
       try {
-        editTargetPageData = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-          action: 'edit',
-          title: targetPage.title.toString(),
-          text: targetPageNewCode,
+        await target.page.edit({
+          text: newCode,
           summary: cd.util.buildEditSummary({
-            text,
+            text: summary,
             section: section.headline,
           }),
           tags: cd.config.tagName,
-          baserevid: targetPage.revisionId,
-          starttimestamp: targetPage.queryTimestamp,
-          formatversion: 2,
-        })).catch(handleApiReject);
+          baserevid: target.page.revisionId,
+          starttimestamp: target.page.queryTimestamp,
+        });
       } catch (e) {
-        throw [cd.s('msd-error-editingtargetpage'), true];
-      }
-
-      const error = editTargetPageData.error;
-      if (error) {
-        if (error.code === 'editconflict') {
-          throw [cd.s('msd-error-editconflict'), true];
+        if (e instanceof CdError) {
+          const { type, details } = e.data;
+          if (type === 'network') {
+            throw [cd.s('msd-error-editingtargetpage') + ' ' + cd.s('error-network'), true];
+          } else {
+            let { code, message, logMessage } = details;
+            if (code === 'editconflict') {
+              message += ' ' + cd.s('msd-error-editconflict-retry');
+            }
+            console.warn(logMessage);
+            throw [cd.s('msd-error-editingtargetpage') + ' ' + message, true];
+          }
         } else {
-          throw [error.code + ': ' + error.info, true];
+          console.warn(e);
+          throw [cd.s('msd-error-editingtargetpage') + ' ' + cd.s('error-javascript'), true];
         }
       }
     };
 
-    MoveSectionDialog.prototype.saveSourcePage = async function (sourcePage, targetPage) {
-      const timestamp = findFirstTimestamp(sourcePage.sectionInCode.code) || cd.g.SIGN_CODE + '~';
+    MoveSectionDialog.prototype.editSourcePage = async function (source, target) {
+      const timestamp = findFirstTimestamp(source.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
-      const sourcePageCode = cd.config.getMoveSourcePageCode ?
+      const code = cd.config.getMoveSourcePageCode ?
         cd.config.getMoveSourcePageCode(
-          targetPage.wikilink,
+          target.sectionWikilink,
           cd.g.CURRENT_USER_SIGNATURE,
           timestamp
         ) :
         undefined;
-      const sourcePageNewSectionCode = sourcePageCode ?
+      const newSectionCode = code ?
         (
-          sourcePage.sectionInCode.code.slice(
+          source.sectionInCode.code.slice(
             0,
-            sourcePage.sectionInCode.contentStartIndex - sourcePage.sectionInCode.startIndex
+            source.sectionInCode.relativeContentStartIndex
           ) +
-          sourcePageCode +
+          code +
           '\n\n'
         ) :
         '';
-      const newSourcePageCode = (
-        sourcePage.code.slice(0, sourcePage.sectionInCode.startIndex) +
-        sourcePageNewSectionCode +
-        sourcePage.code.slice(sourcePage.sectionInCode.endIndex)
+      const newCode = (
+        source.page.code.slice(0, source.sectionInCode.startIndex) +
+        newSectionCode +
+        source.page.code.slice(source.sectionInCode.endIndex)
       );
 
       const summaryEnding = this.summaryEndingInput.getValue();
-      const text = (
-        cd.s('es-move-to', targetPage.wikilink) + (summaryEnding ? `: ${summaryEnding}` : '')
+      const summary = (
+        cd.s('es-move-to', target.sectionWikilink) +
+        (summaryEnding ? ': ' + summaryEnding : '')
       );
+
       try {
-        await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-          action: 'edit',
-          title: section.sourcePage,
-          text: newSourcePageCode,
+        await source.page.edit({
+          text: newCode,
           summary: cd.util.buildEditSummary({
-            text,
+            text: summary,
             section: section.headline,
           }),
           tags: cd.config.tagName,
-          baserevid: sourcePage.revisionId,
-          starttimestamp: sourcePage.queryTimestamp,
-          formatversion: 2,
-        })).catch(handleApiReject);
+          baserevid: source.page.revisionId,
+          starttimestamp: source.page.queryTimestamp,
+        });
       } catch (e) {
-        throw [cd.s('msd-error-editingsourcepage'), false];
+        if (e instanceof CdError) {
+          const { type, details } = e.data;
+          if (type === 'network') {
+            throw [cd.s('msd-error-editingsourcepage') + ' ' + cd.s('error-network'), false];
+          } else {
+            let { message, logMessage } = details;
+            console.warn(logMessage);
+            throw [cd.s('msd-error-editingsourcepage') + ' ' + message, false];
+          }
+        } else {
+          console.warn(e);
+          throw [cd.s('msd-error-editingsourcepage') + ' ' + cd.s('error-javascript'), false];
+        }
       }
     };
 
     MoveSectionDialog.prototype.abort = function (html, recoverable) {
-      const $body = animateLink(html, 'cd-message-reloadPage', () => {
-        cd.g.windowManager.clearWindows();
-        reloadPage();
-      });
+      const $body = animateLinks(html, [
+        'cd-message-reloadPage',
+        () => {
+          this.close();
+          reloadPage();
+        }
+      ]);
       this.showErrors(new OO.ui.Error($body, { recoverable }));
       this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
         if (recoverable) {
@@ -810,20 +772,19 @@ export default class Section extends SectionSkeleton {
 
     MoveSectionDialog.prototype.getReadyProcess = function (data) {
       return MoveSectionDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
-        let page;
         try {
-          [page] = await Promise.all(preparationRequests);
+          await Promise.all(preparationRequests);
         } catch (e) {
           this.abort(cd.s('cf-error-getpagecode'), false);
           return;
         }
 
         try {
-          section.locateInCode(page.code);
+          section.locateInCode();
         } catch (e) {
           if (e instanceof CdError) {
             const { data } = e.data;
-            const message = data === 'couldntLocateSection' ?
+            const message = data === 'locateSection' ?
               cd.s('error-locatesection') :
               cd.s('error-unknown');
             this.abort(message, false);
@@ -839,12 +800,9 @@ export default class Section extends SectionSkeleton {
           excludeCurrentPage: true,
           showMissing: false,
           validate: () => {
-            let title = this.titleInput.getMWTitle();
-            return (
-              title &&
-              title.toText() !== section.sourcePage &&
-              isTalkNamespace(title.namespace)
-            );
+            const title = this.titleInput.getMWTitle();
+            const page = title && new Page(title);
+            return page && page.name !== section.getSourcePage().name && page.isProbablyTalkPage();
           },
         });
         this.titleField = new OO.ui.FieldLayout(this.titleInput, {
@@ -874,6 +832,10 @@ export default class Section extends SectionSkeleton {
           // TODO: take into account the whole summary length, updating the maximum value
           // dynamically.
           maxLength: 250,
+        });
+        this.summaryEndingAutocomplete = new Autocomplete({
+          types: ['mentions', 'wikilinks'],
+          inputs: [this.summaryEndingInput],
         });
         this.summaryEndingField = new OO.ui.FieldLayout(this.summaryEndingInput, {
           label: cd.s('msd-summaryending'),
@@ -908,32 +870,32 @@ export default class Section extends SectionSkeleton {
           this.pushPending();
           this.titleInput.$input.blur();
 
-          const targetPageTitle = this.titleInput.getMWTitle();
+          let targetPage = new Page(this.titleInput.getMWTitle());
           // Should be ruled out by making the button disabled.
           if (
-            targetPageTitle.toText() === section.sourcePage ||
-            !isTalkNamespace(targetPageTitle.namespace)
+            targetPage.name === section.getSourcePage().name ||
+            !targetPage.isProbablyTalkPage()
           ) {
             this.abort(cd.s('msd-error-wrongpage'), false);
             return;
           }
 
-          let sourcePage;
-          let targetPage;
+          let source;
+          let target;
           try {
-            [sourcePage, targetPage] = await Promise.all([
+            [source, target] = await Promise.all([
               this.loadSourcePage(),
-              this.loadTargetPage(targetPageTitle)
+              this.loadTargetPage(targetPage),
             ]);
-            await this.saveTargetPage(sourcePage, targetPage);
-            await this.saveSourcePage(sourcePage, targetPage);
+            await this.editTargetPage(source, target);
+            await this.editSourcePage(source, target);
           } catch (e) {
             this.abort(...e);
             return;
           }
 
           this.reloadPanel.$element.html(
-            cd.util.wrapInElement(cd.s('msd-moved', targetPage.sectionUrl), 'div')
+            cd.util.wrapInElement(cd.s('msd-moved', target.sectionUrl), 'div')
           );
 
           this.stackLayout.setItem(this.reloadPanel);
@@ -957,16 +919,13 @@ export default class Section extends SectionSkeleton {
 
     // Make requests in advance.
     const preparationRequests = [
-      getLastRevision(this.sourcePage),
+      this.getSourcePage().getCode(),
       mw.loader.using('mediawiki.widgets'),
     ];
 
     const dialog = new MoveSectionDialog();
     cd.g.windowManager.addWindows([dialog]);
-    const windowInstance = cd.g.windowManager.openWindow(dialog);
-    windowInstance.closed.then(() => {
-      cd.g.windowManager.clearWindows();
-    });
+    cd.g.windowManager.openWindow(dialog);
   }
 
   /**
@@ -1054,7 +1013,7 @@ export default class Section extends SectionSkeleton {
             $link.removeClass('cd-sectionLink-pending');
           }
         },
-        watchedAncestorHeadline: watchedAncestor && watchedAncestor.headline,
+        watchedAncestorHeadline: watchedAncestor?.headline,
       }
     );
   }
@@ -1072,22 +1031,20 @@ export default class Section extends SectionSkeleton {
   /**
    * Locate the section in the page source code and set the result to the `inCode` property.
    *
-   * @param {string} pageCode
+   * @throws {CdError}
    */
-  locateInCode(pageCode) {
+  locateInCode() {
     this.inCode = null;
+
+    const pageCode = this.getSourcePage().code;
 
     const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
     const adjustedPageCode = hideHtmlComments(pageCode);
     const searchInput = { firstComment, headline, pageCode, adjustedPageCode };
 
-    cd.debug.startTimer('locate section');
-
     // Collect all possible matches
     const matches = this.searchInCode(searchInput);
-
-    cd.debug.stopTimer('locate section');
 
     let bestMatch;
     matches.forEach((match) => {
@@ -1098,11 +1055,79 @@ export default class Section extends SectionSkeleton {
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
-        code: 'couldntLocateSection',
+        code: 'locateSection',
       });
     }
 
     this.inCode = bestMatch;
+  }
+
+  /**
+   * Modify a page code string related to the section in accordance with an action.
+   *
+   * @param {object} options
+   * @param {string} options.pageCode
+   * @param {string} options.action
+   * @param {string} options.commentForm
+   * @returns {string}
+   */
+  modifyCode({ pageCode, action, commentForm }) {
+    if (action === 'replyInSection') {
+      // Detect the last section comment's indentation characters if needed or a vote / bulleted
+      // reply placeholder.
+      const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+      if (replyPlaceholder) {
+        this.inCode.lastCommentIndentationChars = replyPlaceholder;
+      } else {
+        const lastComment = this.comments[this.comments.length - 1];
+        if (
+          lastComment &&
+          (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
+        ) {
+          try {
+            lastComment.locateInCode();
+          } finally {
+            if (
+              lastComment.inCode &&
+              (
+                !lastComment.inCode.indentationChars.startsWith('#') ||
+                // For now we use the workaround with this.containerListType to make sure "#" is a
+                // part of comments organized in a numbered list, not of a numbered list _in_ the
+                // target comment.
+                this.containerListType === 'ol'
+              )
+            ) {
+              this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
+            }
+          }
+        }
+      }
+    }
+
+    let commentCode;
+    if (!commentCode && commentForm) {
+      ({ commentCode } = commentForm.commentTextToCode('submit'));
+    }
+
+    let newPageCode;
+    let codeBeforeInsertion;
+    switch (action) {
+      case 'replyInSection': {
+        codeBeforeInsertion = pageCode.slice(0, this.inCode.firstChunkContentEndIndex);
+        const codeAfterInsertion = pageCode.slice(this.inCode.firstChunkContentEndIndex);
+        newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        break;
+      }
+
+      case 'addSubsection': {
+        codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, this.inCode.contentEndIndex));
+        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex);
+        newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        break;
+      }
+    }
+
+    return { newPageCode, codeBeforeInsertion, commentCode };
   }
 
   /**
@@ -1113,9 +1138,9 @@ export default class Section extends SectionSkeleton {
    */
   getWatchedAncestor(includeCurrent) {
     for (
-      let otherSection = includeCurrent ? this : this.parent;
+      let otherSection = includeCurrent ? this : this.getParent();
       otherSection;
-      otherSection = otherSection.parent
+      otherSection = otherSection.getParent()
     ) {
       if (otherSection.watched) {
         return otherSection;
@@ -1131,8 +1156,8 @@ export default class Section extends SectionSkeleton {
    */
   async getCode() {
     try {
-      const page = await getLastRevision(this.sourcePage);
-      this.locateInCode(page.code);
+      await this.getSourcePage().getCode();
+      this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
@@ -1153,8 +1178,15 @@ export default class Section extends SectionSkeleton {
    * @param {string} [item.tooltip] Tooltip text.
    * @param {boolean} [item.visible=true] Should the item be visible.
    */
-  addMenuItem({ label, href, func, class: className, tooltip, visible = true }) {
-    if (this.#closingBracketElement) {
+  addMenuItem({
+    label,
+    href,
+    func,
+    class: className,
+    tooltip,
+    visible = true,
+  }) {
+    if (this.closingBracketElement) {
       const wrapper = document.createElement('span');
       wrapper.className = 'cd-sectionLinkWrapper';
       if (!visible) {
@@ -1178,26 +1210,8 @@ export default class Section extends SectionSkeleton {
       }
 
       wrapper.appendChild(a);
-      this.#editSectionElement.insertBefore(wrapper, this.#closingBracketElement);
+      this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
     }
-  }
-
-  /**
-   * Section elements as a jQuery object.
-   *
-   * @type {JQuery}
-   */
-  // Using a getter allows to save a little time on running $().
-  get $elements() {
-    if (this.#cached$elements === undefined) {
-      this.#cached$elements = $(this.elements);
-    }
-    return this.#cached$elements;
-  }
-
-  set $elements(value) {
-    this.#cached$elements = value;
-    this.elements = value.get();
   }
 
   /**
@@ -1261,8 +1275,8 @@ export default class Section extends SectionSkeleton {
       );
 
       // To simplify the workings of the "replyInSection" mode we don't consider terminating line
-      // breaks to be a part of the first section chunk (i.e. the section subdivision before the
-      // first heading).
+      // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
+      // the first heading).
       const firstChunkMatch = (
         adjustedCodeFromSection.match(
           // Will fail at "===" or the like.
@@ -1282,7 +1296,8 @@ export default class Section extends SectionSkeleton {
         )
       );
       const code = (
-        sectionMatch && codeFromSection.substr(sectionMatch.index, sectionMatch[1].length)
+        sectionMatch &&
+        codeFromSection.substr(sectionMatch.index, sectionMatch[1].length)
       );
       const firstChunkCode = (
         firstChunkMatch &&
@@ -1322,6 +1337,7 @@ export default class Section extends SectionSkeleton {
       const endIndex = startIndex + code.length;
       const contentStartIndex = sectionHeadingMatch.index + sectionHeadingMatch[0].length;
       const firstChunkEndIndex = startIndex + firstChunkCode.length;
+      const relativeContentStartIndex = contentStartIndex - startIndex;
 
       let firstChunkContentEndIndex = firstChunkEndIndex;
       let contentEndIndex = endIndex;
@@ -1339,13 +1355,17 @@ export default class Section extends SectionSkeleton {
         }
       });
 
-      // Sections may have "#" as a placeholder for a vote. In this case, we must use that "#" in
-      // the reply.
-      if (!this.comments.length) {
-        const match = firstChunkCode.match(/\n(# *\n+)$/);
-        if (match) {
-          firstChunkContentEndIndex -= match[1].length;
-        }
+      // Sections may have "#" or "*" as a placeholder for a vote or bulleted reply. In this case,
+      // we must use that "#" or "*" in the reply. As for the placeholder, perhaps we should remove
+      // it, but as for now, we keep it because if:
+      // * the placeholder character is "*",
+      // * cd.config.indentationCharMode is 'unify',
+      // * cd.config.defaultIndentationChar is ':', and
+      // * there is more than one reply,
+      // the next reply would go back to ":", not "*" as should be.
+      const match = firstChunkCode.match(/\n([#*] *\n+)$/);
+      if (match) {
+        firstChunkContentEndIndex -= match[1].length;
       }
 
       matches.push({
@@ -1359,6 +1379,7 @@ export default class Section extends SectionSkeleton {
         code,
         contentStartIndex,
         contentEndIndex,
+        relativeContentStartIndex,
         firstChunkEndIndex,
         firstChunkContentEndIndex,
         firstChunkCode,
@@ -1372,6 +1393,75 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Get the wiki page that has the source code of the section (may be different from the current
+   * page if the section is transcluded from another page).
+   *
+   * @returns {Page}
+   */
+  getSourcePage() {
+    return this.sourcePage;
+  }
+
+  /**
+   * Get the base section, i.e. a section of level 2 that is an ancestor of the section, or the
+   * section itself if it is of level 2 (even if there is a level 1 section) or if there is no
+   * higher level section (the current section may be of level 3 or 1, for example).
+   *
+   * @returns {Section}
+   */
+  getBase() {
+    if (this.level <= 2) {
+      return this;
+    }
+
+    return (
+      cd.sections
+        .slice(0, this.id)
+        .reverse()
+        .find((section) => section.level === 2) ||
+      this
+    );
+  }
+
+  /**
+   * Get the parent section of the section if the section is lower than level 2.
+   *
+   * @returns {?Section}
+   */
+  getParent() {
+    return (
+      cd.sections
+        .slice(0, this.id)
+        .reverse()
+        .find((section) => section.level < this.level) ||
+      null
+    );
+  }
+
+  /**
+   * Get the collection of the section's subsections.
+   *
+   * @param {boolean} [indirect=false] Whether to include subsections of subsections and so on.
+   * @returns {Section[]}
+   */
+  getChildren(indirect = false) {
+    const children = [];
+    cd.sections
+      .slice(this.id + 1)
+      .some((section) => {
+        if (section.level > this.level) {
+          if (indirect || section.level === this.level + 1) {
+            children.push(section);
+          }
+        } else {
+          return true;
+        }
+      });
+
+    return children;
+  }
+
+  /**
    * Add a section on the current page to the watched sections list.
    *
    * @param {string} headline
@@ -1380,13 +1470,15 @@ export default class Section extends SectionSkeleton {
    * @param {Function} [options.successCallback]
    * @param {Function} [options.errorCallback]
    */
-  static async watchSection(headline, { silent = false, successCallback, errorCallback }) {
+  static async watchSection(headline, {
+    silent = false,
+    successCallback,
+    errorCallback,
+  }) {
     if (!headline) return;
 
-    let watchedSections;
-    let thisPageWatchedSections;
     try {
-      ({ watchedSections, thisPageWatchedSections } = await getWatchedSections());
+      await getWatchedSections();
     } catch (e) {
       mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
       if (errorCallback) {
@@ -1396,25 +1488,27 @@ export default class Section extends SectionSkeleton {
     }
 
     // The section could be watched in another tab.
-    if (!thisPageWatchedSections.includes(headline)) {
-      thisPageWatchedSections.push(headline);
+    if (!cd.g.thisPageWatchedSections.includes(headline)) {
+      cd.g.thisPageWatchedSections.push(headline);
     }
 
     try {
-      await setWatchedSections(watchedSections);
+      await setWatchedSections();
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;
         if (type === 'internal' && code === 'sizeLimit') {
-          const $body = animateLink(
-            cd.s('section-watch-error-maxsize'),
+          const $body = animateLinks(cd.s('section-watch-error-maxsize'), [
             'cd-notification-editWatchedSections',
             (e) => {
               e.preventDefault();
               editWatchedSections();
             }
-          );
-          mw.notify($body, { type: 'error' });
+          ]);
+          mw.notify($body, {
+            type: 'error',
+            autoHideSeconds: 'long',
+          });
         } else {
           mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
         }
@@ -1429,10 +1523,12 @@ export default class Section extends SectionSkeleton {
 
     if (!silent) {
       let text = cd.s('section-watch-success', headline);
+      let autoHideSeconds;
       if ($('#ca-watch').length) {
         text += ` ${cd.s('section-watch-pagenotwatched')}`;
+        autoHideSeconds = 'long';
       }
-      mw.notify(cd.util.wrapInElement(text));
+      mw.notify(cd.util.wrapInElement(text), { autoHideSeconds });
     }
     if (successCallback) {
       successCallback();
@@ -1450,16 +1546,16 @@ export default class Section extends SectionSkeleton {
    * @param {string} [options.watchedAncestorHeadline] Headline of the ancestor section that is
    *   watched.
    */
-  static async unwatchSection(
-    headline,
-    { silent = false, successCallback, errorCallback, watchedAncestorHeadline }
-  ) {
+  static async unwatchSection(headline, {
+    silent = false,
+    successCallback,
+    errorCallback,
+    watchedAncestorHeadline,
+  }) {
     if (!headline) return;
 
-    let watchedSections;
-    let thisPageWatchedSections;
     try {
-      ({ watchedSections, thisPageWatchedSections } = await getWatchedSections());
+      await getWatchedSections();
     } catch (e) {
       mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
       if (errorCallback) {
@@ -1469,15 +1565,15 @@ export default class Section extends SectionSkeleton {
     }
 
     // The section could be unwatched in another tab.
-    if (thisPageWatchedSections.includes(headline)) {
-      thisPageWatchedSections.splice(thisPageWatchedSections.indexOf(headline), 1);
+    if (cd.g.thisPageWatchedSections.includes(headline)) {
+      cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
     }
-    if (!thisPageWatchedSections.length) {
-      delete watchedSections[mw.config.get('wgArticleId')];
+    if (!cd.g.thisPageWatchedSections.length) {
+      delete cd.g.watchedSections[mw.config.get('wgArticleId')];
     }
 
     try {
-      await setWatchedSections(watchedSections);
+      await setWatchedSections();
     } catch (e) {
       mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
       if (errorCallback) {
@@ -1487,11 +1583,13 @@ export default class Section extends SectionSkeleton {
     }
 
     let text = cd.s('section-unwatch-success', headline);
+    let autoHideSeconds;
     if (watchedAncestorHeadline) {
       text += ` ${cd.s('section-unwatch-stillwatched', watchedAncestorHeadline)}`;
+      autoHideSeconds = 'long';
     }
     if (!silent || watchedAncestorHeadline) {
-      mw.notify(cd.util.wrapInElement(text));
+      mw.notify(cd.util.wrapInElement(text), { autoHideSeconds });
     }
     if (successCallback) {
       successCallback();
@@ -1499,7 +1597,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the section by anchor.
+   * Get a section by anchor.
    *
    * @param {string} anchor
    * @returns {?Section}
@@ -1512,7 +1610,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the sections by headline.
+   * Get sections by headline.
    *
    * @param {string} headline
    * @returns {Section[]}
@@ -1522,7 +1620,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the section by headline, first comment data, and/or index. At least two parameters must
+   * Get a section by headline, first comment data, and/or index. At least two parameters must
    * match.
    *
    * @param {object} options
@@ -1535,7 +1633,8 @@ export default class Section extends SectionSkeleton {
     const matches = [
       ...cd.sections.filter((section) => section.headline === headline),
       ...cd.sections.filter((section) => (
-        section.comments[0] && section.comments[0].anchor === firstCommentAnchor
+        section.comments[0] &&
+        section.comments[0].anchor === firstCommentAnchor
       )),
     ];
     if (cd.sections[index]) {
@@ -1548,14 +1647,68 @@ export default class Section extends SectionSkeleton {
       }
       scores[match.id]++;
     });
-    const bestMatchId = Object.keys(scores).reduce(
-      (bestMatchId, matchId) => (
-        scores[matchId] >= 2 && (bestMatchId === null || scores[matchId] > scores[bestMatchId]) ?
-        matchId :
-        bestMatchId
-      ),
-      null
-    );
-    return bestMatchId !== null ? cd.sections[bestMatchId] : null;
+    let bestMatchId = null;
+    Object.keys(scores).forEach((matchId) => {
+      if (scores[matchId] >= 2 && (bestMatchId === null || scores[matchId] > scores[bestMatchId])) {
+        bestMatchId = matchId;
+      }
+    });
+    return bestMatchId === null ? null : cd.sections[bestMatchId];
+  }
+
+  /**
+   * Perform extra section-related tasks, including adding the `isLastSection` property, adding
+   * buttons, and binding events.
+   */
+  static adjustSections() {
+    cd.sections.forEach((section, i) => {
+      /**
+       * Is the section the last section on the page.
+       *
+       * @name isLastSection
+       * @type {boolean}
+       * @instance module:Section
+       */
+      section.isLastSection = i === cd.sections.length - 1;
+
+      if (section.actionable) {
+        // If the next section of the same level has another nesting level (e.g., is inside a <div>
+        // with a specific style), don't add the "Add subsection" button - it will appear in the
+        // wrong place.
+        const nextSameLevelSection = cd.sections
+          .slice(i + 1)
+          .find((otherSection) => otherSection.level === section.level);
+        if (
+          !nextSameLevelSection ||
+          nextSameLevelSection.headingNestingLevel === section.headingNestingLevel
+        ) {
+          section.addAddSubsectionButton();
+        }
+
+        // The same for the "Reply" button, but as this button is added to the end of the first
+        // chunk, we look at just the next section, not necessarily of the same level.
+        if (
+          !cd.sections[i + 1] ||
+          cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
+        ) {
+          section.addReplyButton();
+        } else {
+          section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
+        }
+      }
+    });
+
+    cd.sections
+      .filter((section) => section.actionable && section.level === 2)
+      .forEach((section) => {
+        // Section with the last reply button
+        const subsections = section.getChildren(true);
+        const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
+        if (targetSection.$replyButtonLink) {
+          targetSection.$replyButtonLink
+            .on('mouseenter', section.replyButtonHoverHandler)
+            .on('mouseleave', section.replyButtonUnhoverHandler);
+        }
+      });
   }
 }

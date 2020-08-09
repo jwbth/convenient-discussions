@@ -234,9 +234,8 @@ Object.defineProperty(Element.prototype, 'tagName', {
   },
 });
 
-// We have to create a getter as there is no way to access an element instance from a method of an
-// object (.classList.add() and such in this case) if we create a plain object
-// Element.prototype.classList.
+// We have to create a getter as there is no way to access an object from a method of that object's
+// property (Element#classList.add() and such in this case).
 Object.defineProperty(Element.prototype, 'classList', {
   get: function () {
     if (this._classList) {
@@ -281,9 +280,10 @@ Object.defineProperty(Element.prototype, 'classList', {
             this._classList.moveFromClassAttr(classAttr);
           }
           // This can run tens of thousand times, so we microoptimize it (don't use template strings
-          // and String.prototype.includes).
+          // and String#includes).
           const returnValue = (
-            Boolean(this._classList.list.length) && this._classList.list.indexOf(name) !== -1
+            Boolean(this._classList.list.length) &&
+            this._classList.list.indexOf(name) !== -1
           );
           cd.debug.stopTimer('containsClass');
           return returnValue;

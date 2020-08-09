@@ -9,19 +9,86 @@ import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { checkboxField, radioField } from './ooui';
-import { defined, removeDuplicates, spacesToUnderlines } from './util';
+import { defined, spacesToUnderlines, unique } from './util';
 import { encodeWikilink } from './wikitext';
-import { getPageIds, getPageTitles } from './apiWrappers';
+import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
-import { handleApiReject, underlinesToSpaces } from './util';
+import { hideText, underlinesToSpaces, unhideText } from './util';
 
 /**
  * Create an OOUI window manager. It is supposed to be reused across the script.
  */
 export function createWindowManager() {
   if (cd.g.windowManager) return;
-  cd.g.windowManager = new OO.ui.WindowManager();
+
+  cd.g.windowManager = new OO.ui.WindowManager().on('closing', async (win, closed) => {
+    // We don't have windows that can be reused.
+    await closed;
+    cd.g.windowManager.clearWindows();
+  });
+
   $(document.body).append(cd.g.windowManager.$element);
+}
+
+/**
+ * Display a OOUI message dialog where user is asked to confirm something. Compared to
+ * `OO.ui.confirm`, returns an action string, not a boolean (which helps to differentiate between
+ * more than two types of answer and also a window close by pressing Esc).
+ *
+ * @param {JQuery|string} message
+ * @param {object} [options={}]
+ * @returns {boolean}
+ */
+export async function confirmDialog(message, options = {}) {
+  const defaultOptions = {
+    message,
+    // OO.ui.MessageDialog standard
+    actions: [
+      {
+        action: 'accept',
+        label: OO.ui.deferMsg('ooui-dialog-message-accept'),
+        flags: 'primary',
+      },
+      {
+        action: 'reject',
+        label: OO.ui.deferMsg('ooui-dialog-message-reject'),
+        flags: 'safe',
+      },
+    ],
+  };
+
+  const dialog = new OO.ui.MessageDialog();
+  cd.g.windowManager.addWindows([dialog]);
+  const windowInstance = cd.g.windowManager.openWindow(
+    dialog,
+    Object.assign({}, defaultOptions, options)
+  );
+
+  return (await windowInstance.closed)?.action;
+}
+
+/**
+ * Show a confirmation message dialog with a destructive action.
+ *
+ * @param {string} messageName
+ * @param {object} [options={}]
+ * @returns {Promise}
+ */
+export function confirmDestructive(messageName, options = {}) {
+  const actions = [
+    {
+      label: cd.s(`${messageName}-yes`),
+      action: 'accept',
+      flags: ['primary', 'destructive'],
+    },
+    {
+      label: cd.s(`${messageName}-no`),
+      action: 'reject',
+      flags: 'safe',
+    },
+  ];
+  const defaultOptions = { actions };
+  return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
 }
 
 /**
@@ -37,8 +104,7 @@ export function createWindowManager() {
  * @private
  */
 function getSelectedItemData(select) {
-  const selectedItem = select.findSelectedItem();
-  return selectedItem && selectedItem.getData();
+  return select.findSelectedItem()?.getData();
 }
 
 /**
@@ -234,7 +300,8 @@ export async function settingsDialog() {
         settings.alwaysExpandSettings = this.alwaysExpandSettingsCheckbox.isSelected();
         settings.autopreview = this.autopreviewCheckbox.isSelected();
         settings.desktopNotifications = (
-          getSelectedItemData(this.desktopNotificationsSelect) || 'unknown'
+          getSelectedItemData(this.desktopNotificationsSelect) ||
+          'unknown'
         );
         settings.defaultCommentLinkType = getSelectedItemData(this.defaultCommentLinkTypeSelect);
         settings.defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
@@ -244,6 +311,7 @@ export async function settingsDialog() {
         settings.notificationsBlacklist = this.notificationsBlacklistMultiselect.getValue();
         settings.showToolbar = this.showToolbarCheckbox.isSelected();
         settings.signaturePrefix = this.signaturePrefixInput.getValue();
+        settings.watchOnReply = this.watchOnReplyCheckbox.isSelected();
         settings.watchSectionOnReply = this.watchSectionOnReplyCheckbox.isSelected();
 
         settings.insertButtonsChanged = (
@@ -327,10 +395,11 @@ export async function settingsDialog() {
       help: cd.s('sd-desktopnotifications-help', location.host),
     });
 
-    let defaultCommentLinkTypeHelp = cd.s('sd-defaultcommentlinktype-help');
-    if (cd.config.defaultCommentLinkType === 'diff') {
-      defaultCommentLinkTypeHelp += ` ${cd.s('sd-defaultcommentlinktype-help-notdifflinks')}`;
-    }
+    let defaultCommentLinkTypeHelp = (
+      cd.s('sd-defaultcommentlinktype-help') +
+      ' ' +
+      cd.s('sd-defaultcommentlinktype-help-notdifflinks')
+    );
     [
       this.defaultCommentLinkTypeField,
       this.defaultCommentLinkTypeSelect,
@@ -396,7 +465,7 @@ export async function settingsDialog() {
       new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
         label: cd.s('sd-insertbuttons'),
         align: 'top',
-        help: cd.util.wrapInElement(cd.s('sd-insertbuttons-help')),
+        help: cd.util.wrapInElement(cd.s('sd-insertbuttons-help') + ' ' + cd.s('sd-localsetting')),
         helpInline: true,
       })
     );
@@ -456,6 +525,12 @@ export async function settingsDialog() {
       helpInline: true,
     });
 
+    [this.watchOnReplyField, this.watchOnReplyCheckbox] = checkboxField({
+      value: 'watchOnReply',
+      selected: settings.watchOnReply,
+      label: cd.s('sd-watchonreply'),
+    });
+
     [this.watchSectionOnReplyField, this.watchSectionOnReplyCheckbox] = checkboxField({
       value: 'watchSectionOnReply',
       selected: settings.watchSectionOnReply,
@@ -478,6 +553,7 @@ export async function settingsDialog() {
     this.showToolbarCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.signaturePrefixInput.connect(this, { change: 'updateActionsAvailability' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.watchOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
 
     this.removeDataButton = new OO.ui.ButtonInputWidget({
       label: cd.s('sd-removedata'),
@@ -486,7 +562,7 @@ export async function settingsDialog() {
     this.removeDataButton.connect(this, { click: 'removeData' });
 
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
-      label: cd.s('sd-removedata-description'),
+      label: cd.util.wrapInElement(cd.s('sd-removedata-description')),
       align: "top",
       help: cd.util.wrapInElement(cd.s('sd-removedata-help')),
       helpInline: true,
@@ -528,6 +604,7 @@ export async function settingsDialog() {
       this.$element.append(
         dialog.autopreviewField.$element,
         dialog.watchSectionOnReplyField.$element,
+        dialog.watchOnReplyField.$element,
         dialog.showToolbarField.$element,
         dialog.alwaysExpandSettingsField.$element,
         dialog.insertButtonsField.$element,
@@ -596,8 +673,12 @@ export async function settingsDialog() {
     return this.insertButtonsMultiselect
       .getValue()
       .map((value) => {
-        let [, text, displayedText] = value.match(/^(.*?[^\\])(?:;(.+))?$/) || [];
-        if (!text || !text.replace(/^ +$/, '')) return;
+        const hidden = [];
+        value = hideText(value, /\\[+;\\]/g, hidden);
+        let [, text, displayedText] = value.match(/^(.*?)(?:;(.+))?$/) || [];
+        if (!text?.replace(/^ +$/, '')) return;
+        text = unhideText(text, hidden);
+        displayedText = displayedText && unhideText(displayedText, hidden);
         return [text, displayedText].filter(defined);
       })
       .filter(defined);
@@ -630,6 +711,7 @@ export async function settingsDialog() {
       notificationsBlacklistJson !== JSON.stringify(this.settings.notificationsBlacklist) ||
       this.showToolbarCheckbox.isSelected() !== this.settings.showToolbar ||
       this.signaturePrefixInput.getValue() !== this.settings.signaturePrefix ||
+      this.watchOnReplyCheckbox.isSelected() !== this.settings.watchOnReply ||
       this.watchSectionOnReplyCheckbox.isSelected() !== this.settings.watchSectionOnReply
     );
     save = save && this.insertButtonsMultiselect.isValid();
@@ -655,6 +737,7 @@ export async function settingsDialog() {
       notificationsBlacklistJson !== JSON.stringify(cd.defaultSettings.notificationsBlacklist) ||
       this.showToolbarCheckbox.isSelected() !== cd.defaultSettings.showToolbar ||
       this.signaturePrefixInput.getValue() !== cd.defaultSettings.signaturePrefix ||
+      this.watchOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchOnReply ||
       this.watchSectionOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchSectionOnReply
     );
 
@@ -674,20 +757,15 @@ export async function settingsDialog() {
 
   SettingsDialog.prototype.removeData = async function () {
     if (await confirmDestructive('sd-removedata-confirm', { size: 'medium' })) {
+      this.pushPending();
+
       try {
-        this.pushPending();
-
-        const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
-          action: 'options',
-          change: `${cd.g.SETTINGS_OPTION_FULL_NAME}|${cd.g.VISITS_OPTION_FULL_NAME}|${cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME}`,
-        })).catch(handleApiReject);
-
-        if (!resp || resp.options !== 'success') {
-          throw new CdError({
-            type: 'api',
-            code: 'noSuccess',
-          });
-        }
+        await Promise.all([
+          setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, null),
+          setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, null),
+          setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, null),
+          setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, null),
+        ]);
       } catch (e) {
         handleError(this, e, 'sd-error-removedata', false);
         return;
@@ -711,10 +789,7 @@ export async function settingsDialog() {
   createWindowManager();
   const dialog = new SettingsDialog();
   cd.g.windowManager.addWindows([dialog]);
-  let windowInstance = cd.g.windowManager.openWindow(dialog);
-  windowInstance.closed.then(() => {
-    cd.g.windowManager.clearWindows();
-  });
+  cd.g.windowManager.openWindow(dialog);
 }
 
 /**
@@ -798,12 +873,12 @@ export async function editWatchedSections() {
   EditWatchedSectionsDialog.prototype.getReadyProcess = function (data) {
     return EditWatchedSectionsDialog.parent.prototype.getReadyProcess.call(this, data)
       .next(async () => {
-        let watchedSections;
         let pages;
         try {
-          ({ watchedSections } = await watchedSectionsRequest);
+          await watchedSectionsRequest;
           pages = await getPageTitles(
-            Object.keys(watchedSections).filter((pageId) => watchedSections[pageId].length)
+            Object.keys(cd.g.watchedSections)
+              .filter((pageId) => cd.g.watchedSections[pageId].length)
           );
         } catch (e) {
           handleError(this, e, 'ewsd-error-processing', false);
@@ -819,7 +894,7 @@ export async function editWatchedSections() {
           .filter((page) => page.title)
 
           .map((page) => (
-            watchedSections[page.pageid]
+            cd.g.watchedSections[page.pageid]
               .map((section) => `${page.title}#${section}`)
               .join('\n')
           ))
@@ -906,15 +981,15 @@ export async function editWatchedSections() {
             titleToId[page.title] = page.pageid;
           });
 
-        const newWatchedSections = {};
+        cd.g.watchedSections = {};
         Object.keys(sections)
           .filter((key) => titleToId[key])
           .forEach((key) => {
-            newWatchedSections[titleToId[key]] = removeDuplicates(sections[key]);
+            cd.g.watchedSections[titleToId[key]] = sections[key].filter(unique);
           });
 
         try {
-          await setWatchedSections(newWatchedSections);
+          await setWatchedSections();
         } catch (e) {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;
@@ -953,10 +1028,7 @@ export async function editWatchedSections() {
   createWindowManager();
   const dialog = new EditWatchedSectionsDialog();
   cd.g.windowManager.addWindows([dialog]);
-  let windowInstance = cd.g.windowManager.openWindow(dialog);
-  windowInstance.closed.then(() => {
-    cd.g.windowManager.clearWindows();
-  });
+  cd.g.windowManager.openWindow(dialog);
 }
 
 /**
@@ -992,12 +1064,8 @@ function copyLinkToClipboardAndNotify(text) {
  * @param {Function} [finallyCallback] Callback to execute on success or error.
  */
 export async function copyLink(object, chooseLink, finallyCallback) {
-  if (object.linkBeingCopied) {
-    if (finallyCallback) {
-      finallyCallback();
-    }
-    return;
-  }
+  if (object.linkBeingCopied) return;
+
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
    * being made to get the diff).
@@ -1006,6 +1074,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
    * @type {boolean}
    * @instance module:Comment
    */
+
   /**
    * Is a link to the section being copied right now (a copy link dialog is opened).
    *
@@ -1017,10 +1086,10 @@ export async function copyLink(object, chooseLink, finallyCallback) {
 
   let anchor = object instanceof Comment ? object.anchor : underlinesToSpaces(object.anchor);
   anchor = encodeWikilink(anchor);
-  const wikilink = `[[${cd.g.CURRENT_PAGE}#${anchor}]]`;
+  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
   let decodedCurrentPageUrl;
   try {
-    decodedCurrentPageUrl = decodeURI(mw.util.getUrl(cd.g.CURRENT_PAGE));
+    decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
   } catch (e) {
     console.error(e);
     object.linkBeingCopied = false;
@@ -1043,10 +1112,10 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       } catch (e) {
         if (e instanceof CdError) {
           const { type } = e.data;
-          if (type === 'api') {
-            value = cd.s('cld-diff-error');
-          } else if (type === 'network') {
+          if (type === 'network') {
             value = cd.s('cld-diff-error-network');
+          } else {
+            value = cd.s('cld-diff-error');
           }
         } else {
           value = cd.s('cld-diff-error-unknown');
@@ -1054,7 +1123,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       }
 
       diffInput = new OO.ui.TextInputWidget({
-        value: value || cd.s('cld-diff-error'),
+        value,
         disabled: !diffLink,
       });
       const diffButton = new OO.ui.ButtonWidget({
@@ -1068,14 +1137,11 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       });
       diffField = new OO.ui.ActionFieldLayout(diffInput, diffButton, {
         align: 'top',
-        label: cd.s('cld-diff'),
+        label: cd.util.wrapInElement(cd.s('cld-diff')),
       });
     }
 
-    let wikilinkFieldHelp;
-    if (object instanceof Comment && cd.config.defaultCommentLinkType === 'diff') {
-      wikilinkFieldHelp = cd.s('cld-wikilink-help-comment');
-    }
+    const onlyCdWarning = object instanceof Comment ? cd.s('cld-help-onlycd') : undefined;
 
     const wikilinkInput = new OO.ui.TextInputWidget({
       value: wikilink,
@@ -1090,8 +1156,8 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
     const wikilinkField = new OO.ui.ActionFieldLayout(wikilinkInput, wikilinkButton, {
       align: 'top',
-      label: cd.s('cld-wikilink'),
-      help: wikilinkFieldHelp,
+      label: cd.util.wrapInElement(cd.s('cld-wikilink')),
+      help: onlyCdWarning,
       helpInline: true,
     });
 
@@ -1110,7 +1176,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       anchorWikilinkInput,
       anchorWikilinkButton, {
         align: 'top',
-        label: cd.s('cld-currentpagewikilink'),
+        label: cd.util.wrapInElement(cd.s('cld-currentpagewikilink')),
       }
     );
 
@@ -1127,11 +1193,13 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
     const linkField = new OO.ui.ActionFieldLayout(linkInput, linkButton, {
       align: 'top',
-      label: cd.s('cld-link'),
+      label: cd.util.wrapInElement(cd.s('cld-link')),
+      help: onlyCdWarning,
+      helpInline: true,
     });
 
     const $message = $('<div>')
-      .append(diffField && diffField.$element)
+      .append(diffField?.$element)
       .append(wikilinkField.$element)
       .append(anchorWikilinkField.$element)
       .append(linkField.$element);
@@ -1149,7 +1217,6 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       size: 'large',
     });
     windowInstance.closed.then(() => {
-      cd.g.windowManager.clearWindows();
       object.linkBeingCopied = false;
     });
   } else {
@@ -1172,7 +1239,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
             if (type === 'network') {
               text += ' ' + cd.s('error-network');
             } else {
-              const url = mw.util.getUrl(this.sourcePage, { action: 'history' });
+              const url = object.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
               text += ' ' + cd.s('error-diffnotfound-history', url);
             }
           } else {
@@ -1236,79 +1303,13 @@ export function rescueCommentFormsContent(content) {
 
   const dialog = new OO.ui.MessageDialog();
   cd.g.windowManager.addWindows([dialog]);
-  const windowInstance = cd.g.windowManager.openWindow(dialog, {
+  cd.g.windowManager.openWindow(dialog, {
     message: field.$element,
     actions: [
       { label: cd.s('rd-close'), action: 'close' },
     ],
     size: 'large',
   });
-  windowInstance.closed.then(() => {
-    cd.g.windowManager.clearWindows();
-  });
-}
-
-/**
- * Display a OOUI message dialog where user is asked to confirm something. Compared to
- * `OO.ui.confirm`, returns an action string, not a boolean (which helps to differentiate between
- * more than two types of answer and also a window close by pressing Esc).
- *
- * @param {JQuery|string} message
- * @param {object} [options={}]
- * @returns {boolean}
- */
-export async function confirmDialog(message, options = {}) {
-  const defaultOptions = {
-    message,
-    // OO.ui.MessageDialog standard
-    actions: [
-      {
-        action: 'accept',
-        label: OO.ui.deferMsg('ooui-dialog-message-accept'),
-        flags: 'primary',
-      },
-      {
-        action: 'reject',
-        label: OO.ui.deferMsg('ooui-dialog-message-reject'),
-        flags: 'safe',
-      },
-    ],
-  };
-
-  const dialog = new OO.ui.MessageDialog();
-  cd.g.windowManager.addWindows([dialog]);
-  const windowInstance = cd.g.windowManager.openWindow(
-    dialog,
-    Object.assign({}, defaultOptions, options)
-  );
-
-  const data = await windowInstance.closed;
-  cd.g.windowManager.clearWindows();
-  return data && data.action;
-}
-
-/**
- * Show a confirmation message dialog with a destructive action.
- *
- * @param {string} messageName
- * @param {object} [options={}]
- * @returns {Promise}
- */
-export function confirmDestructive(messageName, options = {}) {
-  const actions = [
-    {
-      label: cd.s(`${messageName}-yes`),
-      action: 'accept',
-      flags: ['primary', 'destructive'],
-    },
-    {
-      label: cd.s(`${messageName}-no`),
-      action: 'reject',
-      flags: 'safe',
-    },
-  ];
-  const defaultOptions = { actions };
-  return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
 }
 
 /**
@@ -1322,13 +1323,8 @@ export async function notFound(decodedFragment, date) {
     .addClass('cd-destructiveText')
     .html(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
   let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
-  const pageHasArchives = (
-    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP ||
-    !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP.test(cd.g.CURRENT_PAGE)
-  );
-  if (pageHasArchives) {
+  if (cd.g.CURRENT_PAGE.canHaveArchives()) {
     message += ' ' + cd.s('deadanchor-searchinarchive');
-
     if (await OO.ui.confirm(message, { title })) {
       let text;
       if (date) {
@@ -1339,18 +1335,13 @@ export async function notFound(decodedFragment, date) {
           .replace(/"/g, '')
           .trim();
       }
-      const archivePrefix = cd.config.getArchivePrefix ?
-        cd.config.getArchivePrefix(mw.config.get('wgTitle')) :
-        mw.config.get('wgTitle');
-      const searchQuery = (
-        `"${text}" prefix:` +
-        mw.config.get('wgFormattedNamespaces')[cd.g.CURRENT_NAMESPACE_NUMBER] +
-        `:${archivePrefix}`
-      );
+      const archivePrefix = cd.g.CURRENT_PAGE.getArchivePrefix();
+      const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {
         profile: 'default',
         fulltext: 'Search',
         search: searchQuery,
+        cdComment: date && decodedFragment,
       });
       location.assign(mw.config.get('wgServer') + url);
     }

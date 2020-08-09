@@ -4,10 +4,10 @@
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
     "build": "node buildConfigs && webpack --progress",
-    "local": "webpack --env.MODE=local --progress",
-    "release": "node buildConfigs && webpack --env.MODE=production --progress",
+    "snippet": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --progress --snippet",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
-    "all": "npm run release & npm run docs"
+    "all": "npm run build & npm run docs",
+    "deploy": "node deploy"
   },
   "browser": "src/app.js",
   "repository": {
@@ -24,33 +24,44 @@
     "htmlparser2": "^4.1.0",
     "locutus": "^2.0.11",
     "lz-string": "^1.4.4",
-    "nano-css": "^5.3.0"
+    "nano-css": "^5.3.0",
+    "prompts": "^2.3.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/plugin-proposal-class-properties": "^7.8.3",
-    "@babel/plugin-proposal-private-methods": "^7.8.3",
-    "@babel/plugin-transform-async-to-generator": "^7.8.3",
-    "@babel/plugin-transform-runtime": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@babel/runtime": "^7.9.6",
+    "@babel/core": "^7.11.1",
+    "@babel/plugin-transform-async-to-generator": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/runtime": "^7.11.2",
+    "ajv": "^6.12.3",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.1.0",
-    "css-loader": "^3.5.3",
+    "banner-webpack-plugin": "^0.2.3",
+    "css-loader": "^3.6.0",
     "docdash": "^1.2.0",
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^22.2.0",
     "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
+    "json5": "^2.1.3",
+    "less": "^3.12.2",
     "less-loader": "^5.0.0",
-    "node-lessify": "^0.1.5",
+    "nodemw": "^0.13.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
     "rimraf": "^3.0.2",
     "style-loader": "^1.2.1",
-    "terser-webpack-plugin": "^2.3.6",
-    "webpack": "^4.43.0",
-    "webpack-cli": "^3.3.11",
-    "worker-loader": "^2.0.0"
+    "terser-webpack-plugin": "^2.3.7",
+    "webpack": "^4.44.1",
+    "webpack-build-notifier": "^2.1.0",
+    "webpack-cli": "^3.3.12",
+    "worker-loader": "^2.0.0",
+    "yargs": "^15.4.1"
   },
   "sideEffects": [
     "*.less"
+  ],
+  "browserslist": [
+    "> 1%",
+    "not IE 11"
   ]
 }

@@ -14,6 +14,7 @@ import {
   registerCommentAnchor,
   resetCommentAnchors,
 } from './timestamp';
+import { hideText } from './util';
 
 /**
  * Conceal HTML comments (`<!-- -->`) in the code.
@@ -55,6 +56,8 @@ export function removeWikiMarkup(code) {
     .replace(/<!--[^]*?-->/g, '')
     // Pipe trick
     .replace(/(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g, '$1$2$3')
+    // Extract displayed text from file embeddings
+    .replace(cd.g.FILE_LINK_REGEXP, '$1')
     // Extract displayed text from [[wikilinks]]
     .replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
     // For optimization purposes, remove template names
@@ -67,10 +70,11 @@ export function removeWikiMarkup(code) {
     .replace(/''(.+?)''/g, '$1')
     // Replace <br> with a space
     .replace(/<br ?\/?>/g, ' ')
-    // Remove opening tags (won't work with <smth param=">">, but wikiparser fails too)
-    .replace(/<\w+(?: [\w ]+?=[^<>]+?| ?\/?)>/g, '')
+    // Remove opening tags (won't work with <smth param=">">, but wikiparser fails too). This
+    // includes tags containing spaces, like <math chem>.
+    .replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>/g, '')
     // Remove closing tags
-    .replace(/<\/\w+ ?>/g, '')
+    .replace(/<\/\w+(?: \w+)? ?>/g, '')
     // Replace multiple spaces with one space
     .replace(/ {2,}/g, ' ')
     .trim();
@@ -78,61 +82,43 @@ export function removeWikiMarkup(code) {
 
 /**
  * Replace HTML entities with corresponding characters. Also replace different kinds of spaces,
- * including multiple, with one normal space. For the most part, it's a reverse of {@link
- * module:wikitext.encodeWikilink}.
+ * including multiple, with one normal space.
  *
  * @param {string} text
  * @returns {string}
  */
 export function normalizeCode(text) {
-  return text
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&#91;/g, '[')
-    .replace(/&#93;/g, ']')
-    .replace(/&#123;/g, '{')
-    .replace(/&#124;/g, '|')
-    .replace(/&#125;/g, '}')
-    .replace(/\s+/g, ' ');
+  return decodeHtmlEntities(text).replace(/\s+/g, ' ').trim();
 }
 
 /**
- * Encode link text to put it in a `[[wikilink]]`. For the most part, it's a reverse of {@link
- * module:wikitext.normalizeCode}.
+ * Encode text to put it in a `[[wikilink]]`. This is meant for section links as the characters that
+ * this function encodes are forbidden in page titles anyway, so page titles containing them are not
+ * valid titles.
  *
  * @param {string} link
  * @returns {string}
  */
 export function encodeWikilink(link) {
   return link
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\[/g, '&#91;')
-    .replace(/\]/g, '&#93;')
-    .replace(/\{/g, '&#123;')
-    .replace(/\|/g, '&#124;')
-    .replace(/\}/g, '&#125;')
+    // Tags
+    .replace(/<(\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)|\/\w+(?: \w+)? ?)>/g, '%3C$1%3E')
+    .replace(/\[/g, '%5B')
+    .replace(/\]/g, '%5D')
+    .replace(/\{/g, '%7B')
+    .replace(/\|/g, '%7C')
+    .replace(/\}/g, '%7D')
     .replace(/\s+/g, ' ');
 }
 
 /**
- * Extract signatures from wikitext.
+ * Extract signatures that don't come from the unsigned templates from wikitext.
  *
- * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in {@link module:Comment#adjustCommentCodeData}.
- *
- * @param {string} code Code to extract signatures from.
- * @param {boolean} generateCommentAnchors Whether to generate and register comment anchors.
+ * @param {string} code
  * @returns {object[]}
+ * @private
  */
-export function extractSignatures(code, generateCommentAnchors) {
-  // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = hideHtmlComments(code)
-    .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
-      beginning + ' '.repeat(content.length) + ending
-    ))
-    .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
-
+function extractRegularSignatures(code) {
   const timestampRegexp = new RegExp(
     `^((.*)(${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?).*(?:\n*|$)`,
     'igm'
@@ -143,6 +129,17 @@ export function extractSignatures(code, generateCommentAnchors) {
   // signature length) minus '[[u:a'.length plus ' '.length (the space before the timestamp).
   const signatureScanLimitWikitext = 251;
   const signatureRegexp = new RegExp(
+    /*
+      Captures:
+      1 - the whole line with the signature
+      2 - text before the last user link
+      3 - unprocessed signature
+      4 - author name (inside cd.g.CAPTURE_USER_NAME_PATTERN)
+      5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
+      6 - timestamp + small template ending characters / ending small tag
+      7 - timestamp
+      8 - new line characters or empty string
+    */
     `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(\n*|$)`,
     'igm'
   );
@@ -150,25 +147,26 @@ export function extractSignatures(code, generateCommentAnchors) {
 
   let signatures = [];
   let timestampMatch;
-  while ((timestampMatch = timestampRegexp.exec(adjustedCode))) {
+  while ((timestampMatch = timestampRegexp.exec(code))) {
     const line = timestampMatch[0];
     signatureRegexp.lastIndex = 0;
     const authorTimestampMatch = signatureRegexp.exec(line);
 
     let author;
     let timestamp;
-    let signatureStartIndex;
-    let signatureEndIndex;
+    let startIndex;
+    let endIndex;
     let nextCommentStartIndex;
-    let dirtySignature;
+    let dirtyCode;
     if (authorTimestampMatch) {
       author = userRegistry.getUser(decodeHtmlEntities(authorTimestampMatch[4]));
       timestamp = authorTimestampMatch[7];
-
-      signatureStartIndex = timestampMatch.index + authorTimestampMatch[2].length;
-      signatureEndIndex = timestampMatch.index + authorTimestampMatch[1].length;
+      startIndex = timestampMatch.index + authorTimestampMatch[2].length;
+      endIndex = timestampMatch.index + authorTimestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + authorTimestampMatch[0].length;
-      dirtySignature = authorTimestampMatch[3];
+      dirtyCode = authorTimestampMatch[3];
+
+      // Find the first link to this author in the preceding text.
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
       const commentEndingStartIndex = Math.max(
@@ -184,35 +182,39 @@ export function extractSignatures(code, generateCommentAnchors) {
         if (authorLinkMatch[2]) continue;
         const testAuthor = userRegistry.getUser(decodeHtmlEntities(authorLinkMatch[1]));
         if (testAuthor === author) {
-          signatureStartIndex = (
-            timestampMatch.index + commentEndingStartIndex + authorLinkMatch.index
-          );
-          dirtySignature = code.slice(signatureStartIndex, signatureEndIndex);
+          startIndex = timestampMatch.index + commentEndingStartIndex + authorLinkMatch.index;
+          dirtyCode = code.slice(startIndex, endIndex);
           break;
         }
       }
     } else {
       timestamp = timestampMatch[3];
-
-      signatureStartIndex = timestampMatch.index + timestampMatch[2].length;
-      signatureEndIndex = timestampMatch.index + timestampMatch[1].length;
+      startIndex = timestampMatch.index + timestampMatch[2].length;
+      endIndex = timestampMatch.index + timestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + timestampMatch[0].length;
-      dirtySignature = timestamp;
+      dirtyCode = timestamp;
     }
 
-    signatures.push({
-      author,
-      timestamp,
-      signatureStartIndex,
-      signatureEndIndex,
-      dirtySignature,
-      nextCommentStartIndex,
-    });
+    signatures.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });
   }
+
+  return signatures;
+}
+
+/**
+ * Extract signatures that come from the unsigned templates from wikitext.
+ *
+ * @param {string} code Page code.
+ * @param {object[]} signatures Existing signatures.
+ * @returns {object[]}
+ * @private
+ */
+function extractUnsigneds(code, signatures) {
+  const unsigneds = [];
 
   if (cd.g.UNSIGNED_TEMPLATES_REGEXP) {
     let match;
-    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(adjustedCode))) {
+    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(code))) {
       let author;
       let timestamp;
       if (cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.test(match[2])) {
@@ -225,38 +227,81 @@ export function extractSignatures(code, generateCommentAnchors) {
         author = match[2];
       }
       author = userRegistry.getUser(decodeHtmlEntities(author));
-      signatures.push({
+
+      let startIndex = match.index;
+      const endIndex = match.index + match[1].length;
+      let dirtyCode = match[1];
+      const nextCommentStartIndex = match.index + match[0].length;
+
+      // "[5 tildes] {{unsigned|}}" cases. In these cases, both the signature and {{unsigned|}} are
+      // considered signatures and added to the array. We could combine them but that would need
+      // corresponding code in Parser.js which could be tricky, so for now we just remove the
+      // duplicate. That still allows to reply to the comment.
+      const relevantSignatureIndex = (
+        signatures.findIndex((sig) => sig.nextCommentStartIndex === nextCommentStartIndex)
+      );
+      if (relevantSignatureIndex !== -1) {
+        signatures.splice(relevantSignatureIndex, 1);
+      }
+
+      unsigneds.push({
         author,
         timestamp,
-        signatureStartIndex: match.index,
-        signatureEndIndex: match.index + match[1].length,
-        dirtySignature: match[1],
-        nextCommentStartIndex: match.index + match[0].length,
+        startIndex,
+        endIndex,
+        dirtyCode,
+        nextCommentStartIndex,
       });
     }
-
-    signatures.sort((sig1, sig2) => sig1.signatureStartIndex > sig2.signatureStartIndex ? 1 : -1);
   }
 
-  signatures.forEach((sig, i) => {
-    if (i === 0) {
-      sig.commentStartIndex = 0;
-    } else {
-      sig.commentStartIndex = signatures[i - 1].nextCommentStartIndex;
-    }
-  });
+  return unsigneds;
+}
+
+/**
+ * Extract signatures from wikitext.
+ *
+ * Only basic signature parsing is performed here; more precise signature text identification is
+ * performed in {@link module:Comment#adjustCommentCodeData}. See also {@link
+ * module:Comment#adjustCommentBeginning}, called before that.
+ *
+ * @param {string} code Code to extract signatures from.
+ * @param {boolean} generateCommentAnchors Whether to generate and register comment anchors.
+ * @returns {object[]}
+ */
+export function extractSignatures(code, generateCommentAnchors) {
+  // Hide HTML comments, quotes and lines containing antipatterns.
+  const adjustedCode = hideHtmlComments(code)
+    .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
+      beginning +
+      ' '.repeat(content.length) +
+      ending
+    ))
+    .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
+
+  let signatures = extractRegularSignatures(adjustedCode);
+  const unsigneds = extractUnsigneds(adjustedCode, signatures);
+  signatures.push(...unsigneds);
+
+  if (unsigneds.length) {
+    signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
+  }
+
   signatures = signatures.filter((sig) => sig.author);
+  signatures.forEach((sig, i) => {
+    sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
+  });
   if (generateCommentAnchors) {
     resetCommentAnchors();
   }
   signatures.forEach((sig, i) => {
-    const { date } = sig.timestamp ? (parseTimestamp(sig.timestamp) || {}) : {};
+    const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
     sig.id = i;
     sig.date = date;
     delete sig.nextCommentStartIndex;
 
     if (generateCommentAnchors) {
-      const anchor = date ? generateCommentAnchor(date, sig.author.name, true) : undefined;
+      const anchor = date && generateCommentAnchor(date, sig.author.name, true);
       sig.anchor = anchor;
       registerCommentAnchor(anchor);
     }
@@ -267,6 +312,8 @@ export function extractSignatures(code, generateCommentAnchors) {
 
 /**
  * Decode HTML entities in a string.
+ *
+ * It should work as fast as possible, so we use String#indexOf, not String#includes.
  *
  * @param {string} s
  * @returns {string}
@@ -279,10 +326,13 @@ export function decodeHtmlEntities(s) {
     if (result.indexOf('&#38;amp;') !== -1) {
       result = result.replace(/&#38;amp;/g, '&amp;amp;')
     }
-    result = result.indexOf('&#') === -1 ?
-      result :
-      result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
-    return result.indexOf('&') === -1 ? result : html_entity_decode(result);
+    if (result.indexOf('&#') !== -1) {
+      result = result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
+    }
+    if (result.indexOf('&') !== -1) {
+      result = html_entity_decode(result);
+    }
+    return result;
   }
 }
 
@@ -296,28 +346,20 @@ export function decodeHtmlEntities(s) {
  * Replace code that should not be modified when processing it with placeholders.
  *
  * @param {string} code
- * @param {Function} callback
  * @returns {HideSensitiveCodeReturn}
  */
-export function hideSensitiveCode(code, callback) {
+export function hideSensitiveCode(code) {
   const hidden = [];
 
-  const hide = (re, isTable) => {
-    code = code.replace(re, (s) => {
-      if (callback) {
-        callback(isTable);
-      }
-
-      // Handle tables separately
-      return (isTable ? '\x03' : '\x01') + hidden.push(s) + (isTable ? '\x04' : '\x02');
-    });
+  const hide = (regexp, isTable) => {
+    code = hideText(code, regexp, hidden, isTable);
   };
 
   // Taken from
   // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
   const hideTemplates = () => {
-    // Simple function for hiding templates that have no nested ones.
-    hide(/\{\{([^{]\{?)+?\}\}/g);
+    // Simple regexp for hiding templates that have no nested ones.
+    hide(/\{\{(?:[^{]\{?)+?\}\}/g);
 
     let pos = 0;
     const stack = [];
@@ -350,7 +392,9 @@ export function hideSensitiveCode(code, callback) {
         template = code.substring(left, right);
         code = (
           code.substring(0, left) +
-          '\x01' + hidden.push(template) + '\x02' +
+          '\x01' +
+          hidden.push(template) +
+          '\x02' +
           code.substr(right)
         );
         pos = right - template.length;
@@ -360,14 +404,14 @@ export function hideSensitiveCode(code, callback) {
 
   const hideTags = (...args) => {
     args.forEach((arg) => {
-      hide(new RegExp(`<${arg}( [^>]+)?>[\\s\\S]+?<\\/${arg}>`, 'gi'));
+      hide(new RegExp(`<${arg}(?: [^>]+)?>[\\s\\S]+?<\\/${arg}>`, 'gi'));
     });
   };
 
   hideTemplates();
 
   // Hide tables
-  hide(/^\{\|[^]*?\n\|\}/gm, true);
+  hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, true);
 
   hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
 
@@ -375,16 +419,11 @@ export function hideSensitiveCode(code, callback) {
 }
 
 /**
- * Replace placeholders created by {@link module:wikitext.hideSensitiveCode}.
+ * Modify or leave unchanged the string to have two newlines in the end of it.
  *
  * @param {string} code
- * @param {string[]} hidden
  * @returns {string}
  */
-export function unhideSensitiveCode(code, hidden) {
-  while (code.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
-    code = code.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
-  }
-
-  return code;
+export function endWithTwoNewlines(code) {
+  return code.replace(/([^\n])\n?$/, '$1\n\n');
 }

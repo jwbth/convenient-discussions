@@ -2,7 +2,7 @@
  * Web worker entry point.
  *
  * Note that currently there may be difficulties in testing the web worker in the "local" mode with
- * custom config functions such as {@link module:defaultConfig.customForeignComponentChecker} due to
+ * custom config functions such as {@link module:defaultConfig.checkForCustomForeignComponents} due to
  * the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
  * contexts resulting in a lost tie between them.
  *
@@ -16,7 +16,6 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
 import g from './staticGlobals';
-import { ElementsTreeWalker } from './treeWalker';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
 import { resetCommentAnchors } from './timestamp';
 
@@ -24,6 +23,8 @@ self.cd = cd;
 cd.g = g;
 cd.debug = debug;
 cd.debug.init();
+
+let firstRun = true;
 
 const context = {
   CommentClass: CommentSkeleton,
@@ -90,9 +91,7 @@ function parse() {
   cd.debug.stopTimer('processing comments');
   cd.debug.startTimer('processing sections');
 
-  const headings = parser.findHeadings();
-
-  headings.forEach((heading) => {
+  parser.findHeadings().forEach((heading) => {
     try {
       const section = parser.createSection(heading);
       if (section.id !== undefined) {
@@ -105,60 +104,34 @@ function parse() {
     }
   });
 
-  cd.comments.forEach((comment, i) => {
-    // Determine which comments reply to which.
-    if (i !== cd.comments.length - 1) {
-      if (cd.g.specialElements.pageHasOutdents) {
-        const treeWalker = new ElementsTreeWalker(comment.elements[comment.elements.length - 1]);
-        let found;
-        while (
-          !found &&
-          treeWalker.nextNode() &&
-          !treeWalker.currentNode.classList.contains('cd-commentPart')
-        ) {
-          found = treeWalker.currentNode.classList.contains('outdent-template');
-        }
-        if (found) {
-          cd.comments[comment.id + 1].targetComment = comment;
-        }
+  cd.debug.startTimer('identifying replies');
+  cd.comments.forEach((comment) => {
+    comment.getChildren().forEach((reply) => {
+      reply.targetComment = comment;
+    });
+    if (comment.getSection()) {
+      comment.section = {
+        headline: comment.getSection().headline,
+        anchor: comment.getSection().anchor,
       }
-
-      if (cd.comments[comment.id + 1].targetComment !== comment) {
-        cd.comments
-          .slice(comment.id + 1)
-          .some((otherComment) => {
-            if (otherComment.section === comment.section && otherComment.level > comment.level) {
-              if (
-                otherComment.level === comment.level + 1 ||
-                // Comments mistakenly indented more than one level
-                otherComment.id === comment.id + 1
-              ) {
-                otherComment.targetComment = comment;
-              }
-            } else {
-              return true;
-            }
-          });
-      }
-    }
-
-    if (comment.section) {
-      comment.sectionHeadline = comment.section.headline;
-      comment.sectionAnchor = comment.section.anchor;
-      delete comment.section;
+      delete comment.getSection;
     }
     if (comment.targetComment) {
       comment.targetCommentAuthorName = comment.targetComment.authorName;
       comment.toMe = comment.targetComment.own;
       delete comment.targetComment;
     }
+    delete comment.parser;
     delete comment.elements;
     delete comment.parts;
     delete comment.highlightables;
     delete comment.addAttributes;
     delete comment.setLevels;
     delete comment.getSection;
+    delete comment.cachedSection;
+    delete comment.getChildren;
   });
+  cd.debug.stopTimer('identifying replies');
 
   cd.debug.stopTimer('processing sections');
   cd.debug.startTimer('post message from the worker');
@@ -182,6 +155,11 @@ function parse() {
 function onMessageFromWindow(e) {
   const message = e.data;
 
+  if (firstRun) {
+    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link from the file name and line number to open the source code in your debug tool. Note that there is a bug in Chrome (https://bugs.chromium.org/p/chromium/issues/detail?id=1111297) that prevents opening the source code in that browser while it\'s OK in Firefox.');
+    firstRun = false;
+  }
+
   if (message.type === 'setAlarm') {
     setAlarm(message.interval);
   }
@@ -197,11 +175,11 @@ function onMessageFromWindow(e) {
     cd.config = message.config;
 
     // FIXME: Any idea how to avoid using eval() here?
-    let checker = cd.config.customForeignComponentChecker;
+    let checker = cd.config.checkForCustomForeignComponents;
     if (checker && !/^ *function +/.test(checker) && !/^.+=>/.test(checker)) {
       checker = 'function ' + checker;
     }
-    cd.config.customForeignComponentChecker = eval(checker);
+    cd.config.checkForCustomForeignComponents = eval(checker);
 
     cd.g.TIMESTAMP_PARSER = eval(cd.g.TIMESTAMP_PARSER);
 

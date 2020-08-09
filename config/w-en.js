@@ -56,6 +56,7 @@ export default {
     'parentheses-end': ')',
     'word-separator': ' ',
     'comma-separator': ', ',
+    'colon-separator': ': ',
   },
 
   contribsPage: 'Special:Contributions',
@@ -66,7 +67,7 @@ export default {
     /\/Archive/,
   ],
 
-  spaceAfterIndentationChar: false,
+  spaceAfterIndentationChars: false,
 
   signatureEndingRegexp: / \(talk\)$/,
 
@@ -78,8 +79,6 @@ export default {
     'parabr',
     'paragraph',
   ],
-
-  pingTemplate: 're',
 
   elementsToExcludeClasses: [
     'unresolved',
