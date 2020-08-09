@@ -43,9 +43,9 @@ import { getUserGenders } from './apiWrappers';
  */
 function calculateWordsOverlap(s1, s2) {
   const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{3,}`, 'g');
-  const words1 = s1.match(regexp).filter(unique);
-  const words2 = s2.match(regexp).filter(unique);
-  if (!words1 || !words2) {
+  const words1 = (s1.match(regexp) || []).filter(unique);
+  const words2 = (s2.match(regexp) || []).filter(unique);
+  if (!words1.length || !words2.length) {
     return 0;
   }
 
