@@ -97,13 +97,6 @@ export default class Comment extends CommentSkeleton {
     delete this.authorName;
 
     /**
-     * Comment elements as a jQuery object.
-     *
-     * @type {JQuery}
-     */
-    this.$elements = $(this.elements);
-
-    /**
      * Comment signature element as a jQuery object.
      *
      * @type {JQuery}
@@ -1238,6 +1231,28 @@ export default class Comment extends CommentSkeleton {
     this.overlay.parentElement.removeChild(this.overlay);
     this.overlay = null;
     this.$overlay = null;
+  }
+
+  /**
+   * Comment elements as a jQuery object.
+   *
+   * Uses a getter because elements of a comment can be altered after creating an instance, for
+   * example with `mergeAdjacentCommentLevels()` in {@link module:modifyDom}. Using a getter also
+   * allows to save a little time on running `$()`, although that alone is perhaps not enough to
+   * create it.
+   *
+   * @type {JQuery}
+   */
+  get $elements() {
+    if (this.cached$elements === undefined) {
+      this.cached$elements = $(this.elements);
+    }
+    return this.cached$elements;
+  }
+
+  set $elements(value) {
+    this.cached$elements = value;
+    this.elements = value.get();
   }
 
   /**

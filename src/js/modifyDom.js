@@ -9,10 +9,10 @@ import cd from './cd';
 /**
  * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
  * attributes, and some bound events to a new node, and also reassign references in some variables
- * and properties to this element. Unfortunately, we can't just change the element's tagName to do
+ * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
  * that.
  *
- * Not a pure function; it alters firstVisibleElementData.
+ * Not a pure function; it alters `firstVisibleElementData`.
  *
  * @param {Element} element
  * @param {string} newType
