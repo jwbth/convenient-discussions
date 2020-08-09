@@ -596,12 +596,6 @@ const navPanel = {
   async mount() {
     $navPanel = $('<div>')
       .attr('id', 'cd-navPanel')
-      .on('mouseenter', () => {
-        this.isMouseOver = true;
-      })
-      .on('mouseleave', () => {
-        this.isMouseOver = false;
-      })
       .appendTo(document.body);
     $refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
@@ -647,6 +641,13 @@ const navPanel = {
       })
       .hide()
       .appendTo($navPanel);
+
+    /**
+     * Navigation panel element.
+     *
+     * @type {JQuery}
+     */
+    this.$element = $navPanel;
 
     if (cd.g.worker) {
       cd.g.worker.onmessage = onMessageFromWorker;

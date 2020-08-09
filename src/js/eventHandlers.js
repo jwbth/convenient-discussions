@@ -107,6 +107,7 @@ export function highlightFocused(e) {
   if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
   const autocompleteMenuHovered = cd.g.activeAutocompleteMenu?.matches(':hover');
+  const navPanelHovered = navPanel.$element?.get(0).matches(':hover');
 
   cd.comments
     .filter((comment) => comment.underlay)
@@ -114,7 +115,7 @@ export function highlightFocused(e) {
       const layersContainerOffset = comment.getLayersContainerOffset();
       if (
         // In case the user has moved the navigation panel to the right side.
-        !navPanel.isMouseOver &&
+        !navPanelHovered &&
 
         !autocompleteMenuHovered &&
         e.pageY >= comment.layersTop + layersContainerOffset.top &&
