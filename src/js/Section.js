@@ -10,7 +10,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import { animateLinks } from './util';
+import { animateLinks, dealWithLoadingBug } from './util';
 import { copyLink } from './modal.js';
 import { editWatchedSections } from './modal';
 import {
@@ -909,6 +909,8 @@ export default class Section extends SectionSkeleton {
     };
 
     const section = this;
+
+    if (dealWithLoadingBug('mediawiki.widgets')) return;
 
     // Make requests in advance.
     const preparationRequests = [

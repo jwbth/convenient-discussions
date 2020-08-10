@@ -9,7 +9,7 @@ import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { checkboxField, radioField } from './ooui';
-import { defined, spacesToUnderlines, unique } from './util';
+import { dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
 import { encodeWikilink } from './wikitext';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
@@ -779,6 +779,8 @@ export async function settingsDialog() {
       this.popPending();
     }
   };
+
+  if (dealWithLoadingBug('mediawiki.widgets.UsersMultiselectWidget')) return;
 
   // Make requests in advance.
   const preparationRequests = [

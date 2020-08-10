@@ -14,6 +14,7 @@ import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
   caseInsensitiveFirstCharPattern,
+  dealWithLoadingBug,
   defined,
   handleApiReject,
   notNull,
@@ -902,6 +903,8 @@ export default class Comment extends CommentSkeleton {
       this.elementPrototypes.pendingThankButton.cloneNode(true),
       'thank'
     );
+
+    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
     let edit;
     try {

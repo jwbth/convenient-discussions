@@ -409,3 +409,29 @@ export async function nativePromiseState(promise) {
   return Promise.race([promise, obj])
     .then((value) => value === obj ? 'pending' : 'resolved', () => 'rejected');
 }
+
+/**
+ * Show a notification suggesting to reload the page if the specified module is in the "loading"
+ * state. Also return `true` in such a case.
+ *
+ * For the details of the bug, see https://phabricator.wikimedia.org/T68598 "mw.loader state of
+ * module stuck at "loading" if request was aborted".
+ *
+ * @param {string} moduleName
+ * @returns {boolean}
+ */
+export function dealWithLoadingBug(moduleName) {
+  if (mw.loader.getState(moduleName) === 'loading') {
+    const $body = animateLinks(cd.s('error-needreloadpage'), [
+      'cd-notification-reloadPage',
+      () => {
+        location.reload();
+      }
+    ]);
+    mw.notify($body, { type: 'error' });
+
+    return true;
+  }
+
+  return false;
+}

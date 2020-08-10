@@ -299,6 +299,7 @@
   "move-targetpagecode": "''Moved from [[$1]]. $2''",
 
   "error-loaddata": "{{int:convenient-discussions-script-name}}: Couldn't load the data required by the script.",
+  "error-needreloadpage": "API error. Please <a class=\"cd-notification-reloadPage\">reload the page</a> and try again.",
   "error-processpage": "{{int:convenient-discussions-script-name}}: Couldn't process the page.",
   "error-settings-load": "Couldn't load the settings from the server.",
   "error-settings-save": "Couldn't save the settings to the server.",
