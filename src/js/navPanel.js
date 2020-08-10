@@ -856,10 +856,10 @@ const navPanel = {
   goToPreviousNewComment() {
     if (cd.g.autoScrollInProgress) return;
 
-    const foundComment = Comment.findInViewport('backward');
-    if (!foundComment) return;
+    const commentInViewport = Comment.findInViewport('backward');
+    if (!commentInViewport) return;
 
-    const comment = reorderArray(cd.comments, foundComment.id, true)
+    const comment = reorderArray(cd.comments, commentInViewport.id, true)
       .find((comment) => comment.newness && comment.isInViewport(true) === false);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
@@ -877,10 +877,10 @@ const navPanel = {
   goToNextNewComment() {
     if (cd.g.autoScrollInProgress) return;
 
-    const foundComment = Comment.findInViewport('forward');
-    if (!foundComment) return;
+    const commentInViewport = Comment.findInViewport('forward');
+    if (!commentInViewport) return;
 
-    const comment = reorderArray(cd.comments, foundComment.id)
+    const comment = reorderArray(cd.comments, commentInViewport.id)
       .find((comment) => comment.newness && comment.isInViewport(true) === false);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
@@ -955,8 +955,8 @@ const navPanel = {
     setTimeout(() => {
       cd.g.dontHandleScroll = false;
 
-      const foundComment = Comment.findInViewport();
-      if (!foundComment) return;
+      const commentInViewport = Comment.findInViewport();
+      if (!commentInViewport) return;
 
       const registerSeenIfInViewport = (comment) => {
         const isInViewport = comment.isInViewport(true);
@@ -970,13 +970,13 @@ const navPanel = {
 
       // Back
       cd.comments
-        .slice(0, foundComment.id)
+        .slice(0, commentInViewport.id)
         .reverse()
         .some(registerSeenIfInViewport);
 
       // Forward
       cd.comments
-        .slice(foundComment.id)
+        .slice(commentInViewport.id)
         .some(registerSeenIfInViewport);
 
       this.updateFirstUnseenButton();
