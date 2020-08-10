@@ -30,13 +30,6 @@ let notifications = [];
 let backgroundCheckArranged = false;
 let relevantNewCommentAnchor;
 
-let $navPanel;
-let $refreshButton;
-let $previousButton;
-let $nextButton;
-let $firstUnseenButton;
-let $commentFormButton;
-
 /**
  * Tell the worker to wake the script up after a given interval.
  *
@@ -237,24 +230,6 @@ function generateTooltipText(comments, mode) {
   }
 
   return tooltipText;
-}
-
-/**
- * Update the refresh button to show the number of comments added to the page since it was loaded.
- *
- * @param {CommentSkeleton[]} newComments
- * @param {boolean} areThereInteresting
- * @private
- */
-function updateRefreshButton(newComments, areThereInteresting) {
-  $refreshButton
-    .text(newComments.length ? `+${newComments.length}` : '')
-    .attr('title', generateTooltipText(newComments, 'refresh'));
-  if (areThereInteresting) {
-    $refreshButton.addClass('cd-navPanel-refreshButton-interesting');
-  } else {
-    $refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
-  }
 }
 
 /**
@@ -556,7 +531,7 @@ async function processComments(comments) {
     relevantNewCommentAnchor = newComments[0].anchor;
   }
 
-  updateRefreshButton(newComments, interestingNewComments.length);
+  navPanel.updateRefreshButton(newComments, interestingNewComments.length);
   updatePageTitle(newComments.length, interestingNewComments.length);
   addSectionNotifications(newComments);
   sendNotifications(interestingNewComments);
@@ -596,18 +571,23 @@ const navPanel = {
    * @memberof module:navPanel
    */
   async mount() {
-    $navPanel = $('<div>')
+    /**
+     * Navigation panel element.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$element = $('<div>')
       .attr('id', 'cd-navPanel')
       .appendTo(document.body);
-    $refreshButton = $('<div>')
+    this.$refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
       .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`)
       .on('click', () => {
         this.refreshClick();
       })
-      .appendTo($navPanel);
-    $previousButton = $('<div>')
+      .appendTo(this.$element);
+    this.$previousButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-previousButton')
       .attr('title', `${cd.s('navpanel-previous')} ${mw.msg('parentheses', 'W')}`)
@@ -615,8 +595,8 @@ const navPanel = {
         this.goToPreviousNewComment();
       })
       .hide()
-      .appendTo($navPanel);
-    $nextButton = $('<div>')
+      .appendTo(this.$element);
+    this.$nextButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-nextButton')
       .attr('title', `${cd.s('navpanel-next')} ${mw.msg('parentheses', 'S')}`)
@@ -624,8 +604,8 @@ const navPanel = {
         this.goToNextNewComment();
       })
       .hide()
-      .appendTo($navPanel);
-    $firstUnseenButton = $('<div>')
+      .appendTo(this.$element);
+    this.$firstUnseenButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-firstUnseenButton')
       .attr('title', `${cd.s('navpanel-firstunseen')} ${mw.msg('parentheses', 'F')}`)
@@ -633,8 +613,8 @@ const navPanel = {
         this.goToFirstUnseenComment();
       })
       .hide()
-      .appendTo($navPanel);
-    $commentFormButton = $('<div>')
+      .appendTo(this.$element);
+    this.$commentFormButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-commentFormButton')
       .attr('title', cd.s('navpanel-commentform'))
@@ -642,14 +622,7 @@ const navPanel = {
         this.goToNextCommentForm();
       })
       .hide()
-      .appendTo($navPanel);
-
-    /**
-     * Navigation panel element.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$element = $navPanel;
+      .appendTo(this.$element);
 
     if (cd.g.worker) {
       cd.g.worker.onmessage = onMessageFromWorker;
@@ -666,7 +639,7 @@ const navPanel = {
    * @memberof module:navPanel
    */
   isMounted() {
-    return Boolean($navPanel);
+    return Boolean(this.$element);
   },
 
   /**
@@ -760,13 +733,13 @@ const navPanel = {
     setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
     backgroundCheckArranged = false;
 
-    $refreshButton
+    this.$refreshButton
       .empty()
       .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`);
-    $previousButton.hide();
-    $nextButton.hide();
-    $firstUnseenButton.hide();
-    $commentFormButton.hide();
+    this.$previousButton.hide();
+    this.$nextButton.hide();
+    this.$firstUnseenButton.hide();
+    this.$commentFormButton.hide();
   },
 
   /**
@@ -777,8 +750,8 @@ const navPanel = {
   fill() {
     newCount = cd.comments.filter((comment) => comment.newness).length;
     if (newCount) {
-      $nextButton.show();
-      $previousButton.show();
+      this.$nextButton.show();
+      this.$previousButton.show();
       unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
       if (unseenCount) {
         this.updateFirstUnseenButton();
@@ -814,16 +787,16 @@ const navPanel = {
    */
   updateFirstUnseenButton() {
     if (unseenCount) {
-      const shownUnseenCommentsCount = Number($firstUnseenButton.text());
+      const shownUnseenCommentsCount = Number(this.$firstUnseenButton.text());
       if (unseenCount !== shownUnseenCommentsCount) {
         const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
-        $firstUnseenButton
+        this.$firstUnseenButton
           .show()
           .text(unseenCount)
           .attr('title', generateTooltipText(unseenComments, 'firstunseen'));
       }
     } else {
-      $firstUnseenButton.hide();
+      this.$firstUnseenButton.hide();
     }
   },
 
@@ -987,6 +960,25 @@ const navPanel = {
   },
 
   /**
+   * Update the refresh button to show the number of comments added to the page since it was loaded.
+   *
+   * @param {CommentSkeleton[]} newComments
+   * @param {boolean} areThereInteresting
+   * @private
+   * @memberof module:navPanel
+   */
+  updateRefreshButton(newComments, areThereInteresting) {
+    this.$refreshButton
+      .text(newComments.length ? `+${newComments.length}` : '')
+      .attr('title', generateTooltipText(newComments, 'refresh'));
+    if (areThereInteresting) {
+      this.$refreshButton.addClass('cd-navPanel-refreshButton-interesting');
+    } else {
+      this.$refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
+    }
+  },
+
+  /**
    * Update the "Go to the next comment form out of sight" button visibility.
    *
    * @memberof module:navPanel
@@ -995,11 +987,11 @@ const navPanel = {
     if (cd.g.autoScrollInProgress) return;
 
     if (cd.commentForms.some((commentForm) => !commentForm.$element.cdIsInViewport(true))) {
-      $commentFormButton.show();
+      this.$commentFormButton.show();
     } else {
-      $commentFormButton.hide();
+      this.$commentFormButton.hide();
     }
-  }
+  },
 };
 
 export default navPanel;
