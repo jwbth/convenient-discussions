@@ -3,8 +3,6 @@
  * https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link module:Page Page class}
  * methods for functions regarding concrete page names.
  *
- * We prefer POST requests as GET requests can be cached in Firefox when offline.
- *
  * @module apiWrappers
  */
 
@@ -26,10 +24,10 @@ const autocompleteTimeout = 100;
  * throttles background tabs").
  *
  * @param {object} params
- * @param {string} [method='post']
+ * @param {string} method
  * @returns {Promise}
  */
-export function makeRequestNoTimers(params, method = 'post') {
+export function makeRequestNoTimers(params, method = 'get') {
   return new Promise((resolve, reject) => {
     cd.g.api[method](params, {
       success: (resp) => {
@@ -106,7 +104,7 @@ export function getUserInfo(reuse = false) {
   }
 
   cd.g.api = cd.g.api || new mw.Api();
-  cachedUserInfoRequest = cd.g.api.post({
+  cachedUserInfoRequest = cd.g.api.get({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
@@ -335,7 +333,7 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const resp = await (noTimers ? makeRequestNoTimers(params) : cd.g.api.post(params))
+    const resp = await (noTimers ? makeRequestNoTimers(params, 'post') : cd.g.api.post(params))
       .catch(handleApiReject);
     const users = resp?.query?.users;
     if (!users) {
