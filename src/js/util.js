@@ -250,12 +250,12 @@ export function removeDoubleSpaces(s) {
  * `<span>` element, and return the resultant jQuery object.
  *
  * @param {string|JQuery} html
- * @param {...Array.<string, Function>} classToCallback
+ * @param {...Array.<string, Function>} classesToAnimate
  * @returns {JQuery}
  */
-export function animateLinks(html, ...classToCallback) {
+export function animateLinks(html, ...classesToAnimate) {
   const $link = html instanceof $ ? html : cd.util.wrapInElement(html);
-  classToCallback.forEach(([className, callback]) => {
+  classesToAnimate.forEach(([className, callback]) => {
     $link.find(`.${className}`).on('click', callback);
   });
   return $link;

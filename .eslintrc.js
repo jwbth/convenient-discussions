@@ -23,7 +23,7 @@ module.exports = {
     {
       "files": ["./*.js"],
       "rules": {
-        "jsdoc/require-jsdoc": "off"
+        "jsdoc/require-jsdoc": "off",
       }
     }
   ],

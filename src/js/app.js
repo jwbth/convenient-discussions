@@ -228,15 +228,14 @@ function go() {
         }
       },
       (e) => {
-        // Note https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at
-        // "loading" if request was aborted"
-
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         removeLoadingOverlay();
         console.error(e);
       }
     );
 
+    // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
+    // request was aborted"
     setTimeout(() => {
       if (isLoadingOverlayOn()) {
         removeLoadingOverlay();
