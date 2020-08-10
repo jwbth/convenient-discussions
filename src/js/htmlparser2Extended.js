@@ -100,7 +100,6 @@ Object.defineProperty(Element.prototype, 'lastElementChild', {
 
 Object.defineProperty(Element.prototype, 'textContent', {
   get: function () {
-    cd.debug.startTimer('textContent');
     // const returnValue = DomUtils.getText(this);
     // const returnValue = this.childNodes.map((node) => node.textContent).join('');
     let returnValue = '';
@@ -108,7 +107,6 @@ Object.defineProperty(Element.prototype, 'textContent', {
     this.childNodes.forEach((node) => {
       returnValue += node.textContent;
     });
-    cd.debug.stopTimer('textContent');
     return returnValue;
   },
 });
@@ -142,16 +140,13 @@ Element.prototype.setAttribute = function (name, value) {
 };
 
 Element.prototype.appendChild = function (node) {
-  cd.debug.startTimer('appendChild');
   if (node.parentNode) {
     node.remove();
   }
   DomUtils.appendChild(this, node);
-  cd.debug.stopTimer('appendChild');
 };
 
 Element.prototype.insertBefore = function (node, referenceNode) {
-  cd.debug.startTimer('insertBefore');
   if (referenceNode) {
     if (node.parentNode) {
       node.remove();
@@ -160,7 +155,6 @@ Element.prototype.insertBefore = function (node, referenceNode) {
   } else {
     this.appendChild(node);
   }
-  cd.debug.stopTimer('insertBefore');
 };
 
 Element.prototype.removeChild = function (node) {
@@ -170,7 +164,6 @@ Element.prototype.removeChild = function (node) {
 };
 
 Element.prototype.contains = function (node) {
-  cd.debug.startTimer('contains');
   if (node === this) {
     return true;
   }
@@ -180,12 +173,10 @@ Element.prototype.contains = function (node) {
       return true;
     }
   }
-  cd.debug.stopTimer('contains');
   return false;
 };
 
 Element.prototype.follows = function (node) {
-  cd.debug.startTimer('follows');
   if (this.startIndex && node.startIndex) {
     return this.startIndex > node.startIndex;
   }
@@ -224,7 +215,6 @@ Element.prototype.follows = function (node) {
     )
   );
   // const returnValue = null;
-  cd.debug.stopTimer('follows');
   return returnValue;
 };
 
@@ -253,7 +243,6 @@ Object.defineProperty(Element.prototype, 'classList', {
 
         add: (...names) => {
           names.forEach((name) => {
-            cd.debug.startTimer('addClass');
             let classAttr = this.getAttribute('class') || '';
             if (classAttr) {
               classAttr += ' ';
@@ -265,15 +254,12 @@ Object.defineProperty(Element.prototype, 'classList', {
             } else {
               this._classList.moveFromClassAttr(classAttr);
             }
-            cd.debug.stopTimer('addClass');
           });
         },
 
         contains: (name) => {
-          cd.debug.startTimer('containsClass');
           const classAttr = this.getAttribute('class');
           if (!classAttr) {
-            cd.debug.stopTimer('containsClass');
             return false;
           }
           if (!this._classList.movedFromClassAttr) {
@@ -285,7 +271,6 @@ Object.defineProperty(Element.prototype, 'classList', {
             Boolean(this._classList.list.length) &&
             this._classList.list.indexOf(name) !== -1
           );
-          cd.debug.stopTimer('containsClass');
           return returnValue;
         },
       };
@@ -295,7 +280,6 @@ Object.defineProperty(Element.prototype, 'classList', {
 });
 
 Element.prototype.getElementsByClassName = function (name, limit, our) {
-  cd.debug.startTimer('getElementsByClassName');
   let nodes = [];
   walkThroughSubtree(this, (node) => {
     if (node.nodeType !== Node.ELEMENT_NODE) return;
@@ -306,15 +290,11 @@ Element.prototype.getElementsByClassName = function (name, limit, our) {
       }
     }
   });
-  cd.debug.stopTimer('getElementsByClassName');
   return nodes;
 };
 
 Element.prototype.getElementsByTagName = function (name) {
-  cd.debug.startTimer('getElementsByTagName');
-  const returnValue = DomUtils.getElementsByTagName(name, this);
-  cd.debug.stopTimer('getElementsByTagName');
-  return returnValue;
+  return DomUtils.getElementsByTagName(name, this);
 };
 
 Object.defineProperty(DataNode.prototype, 'textContent', {
