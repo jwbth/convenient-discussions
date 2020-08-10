@@ -905,13 +905,14 @@ export default class Comment extends CommentSkeleton {
 
     let edit;
     try {
-      edit = await this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING);
+      ([edit] = await Promise.all([
+        this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING),
+        mw.loader.using('mediawiki.diff.styles')
+      ]));
     } catch (e) {
       this.thankFail(e, thankButton);
       return;
     }
-
-    mw.loader.load('mediawiki.diff.styles');
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
     const $question = cd.util.wrapInElement(
