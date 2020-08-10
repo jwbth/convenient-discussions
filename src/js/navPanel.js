@@ -173,7 +173,9 @@ async function checkForNewComments() {
       }
     }
   } catch (e) {
-    console.warn(e);
+    if (e?.data?.type !== 'network') {
+      console.warn(e);
+    }
   }
 
   if (document.hidden) {
@@ -645,7 +647,7 @@ const navPanel = {
     /**
      * Navigation panel element.
      *
-     * @type {JQuery}
+     * @type {JQuery|undefined}
      */
     this.$element = $navPanel;
 
@@ -656,8 +658,9 @@ const navPanel = {
   },
 
   /**
-   * Check is the navigation panel is mounted. For most of the practical purposes, does the same as
-   * the `convenientDiscussions.g.isPageActive` check.
+   * Check if the navigation panel is mounted. Is equivalent to checking the existence of {@link
+   * module:navPanel.$element}, and for most of the practical purposes, does the same as the
+   * `convenientDiscussions.g.isPageActive` check.
    *
    * @returns {boolean}
    * @memberof module:navPanel
