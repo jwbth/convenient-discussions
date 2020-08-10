@@ -48,16 +48,19 @@ export default {
     cd.g.autoScrollInProgress = true;
 
     let $elements = this.cdRemoveNonElementNodes();
-    let offset;
     const offsetTop = $elements.first().offset().top;
-    const offsetLast = $elements.last().offset().top + $elements.last().height();
+    const offsetTopLast = $elements.last().offset().top;
+    let offsetBottom = offsetTopLast + $elements.last().height();
+    if (offsetTop === 0 || offsetTopLast === 0) return;
+
+    let offset;
     if (alignment === 'center') {
       offset = Math.min(
         offsetTop,
-        offsetTop + ((offsetLast - offsetTop) * 0.5) - $(window).height() * 0.5
+        offsetTop + ((offsetBottom - offsetTop) * 0.5) - $(window).height() * 0.5
       );
     } else if (alignment === 'bottom') {
-      offset = offsetLast - $(window).height();
+      offset = offsetBottom - $(window).height();
     } else {
       offset = offsetTop;
     }
