@@ -188,7 +188,7 @@ export default class Page {
       return { code: '' };
     }
 
-    const resp = await cd.g.api.get({
+    const resp = await cd.g.api.post({
       action: 'query',
       titles: this.name,
       prop: 'revisions',
@@ -318,7 +318,7 @@ export default class Page {
     };
     const request = noTimers ?
       makeRequestNoTimers(params).catch(handleApiReject) :
-      cd.g.api.get(params).catch(handleApiReject);
+      cd.g.api.post(params).catch(handleApiReject);
 
     // We make the GET request that marks the page as read at the same time with the parse request,
     // not after it, to minimize the chance that the page will get new revisions that we will
