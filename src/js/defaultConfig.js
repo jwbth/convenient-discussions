@@ -48,8 +48,8 @@ export default {
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
    * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
    *
-   * This value overriden by the {@link module:defaultConfig.pageWhiteList} value: if that value is
-   * not `[]`, this value is not used.
+   * This value is overriden by the {@link module:defaultConfig.pageWhiteList} value: if that value
+   * is not `[]`, this value is not used.
    *
    * Note that this value is used in the script as a "soft" value. I.e., the script can decide
    * (based on the presence of the "Add section" button, existence of comments on the page and

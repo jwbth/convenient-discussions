@@ -113,7 +113,10 @@ export function isProbablyTalkPage(pageName, namespaceNumber) {
     (
       namespaceNumber % 2 === 1 ||
       cd.g.PAGE_WHITE_LIST_REGEXP?.test(pageName) ||
-      !cd.g.PAGE_WHITE_LIST_REGEXP && cd.config.customTalkNamespaces.includes(namespaceNumber)
+      (
+        !cd.g.PAGE_WHITE_LIST_REGEXP?.length &&
+        cd.config.customTalkNamespaces.includes(namespaceNumber)
+      )
     ) &&
     !cd.g.PAGE_BLACK_LIST_REGEXP?.test(pageName)
   );
