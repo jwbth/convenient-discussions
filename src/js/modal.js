@@ -535,6 +535,8 @@ export async function settingsDialog() {
       value: 'watchSectionOnReply',
       selected: settings.watchSectionOnReply,
       label: cd.s('sd-watchsectiononreply'),
+      help: cd.s('sd-watchsectiononreply-help'),
+      helpInline: true,
     });
 
     this.insertButtonsMultiselect.connect(this, { change: 'updateActionsAvailability' });
@@ -603,8 +605,8 @@ export async function settingsDialog() {
       CommentFormPageLayout.super.call(this, name, config);
       this.$element.append(
         dialog.autopreviewField.$element,
-        dialog.watchSectionOnReplyField.$element,
         dialog.watchOnReplyField.$element,
+        dialog.watchSectionOnReplyField.$element,
         dialog.showToolbarField.$element,
         dialog.alwaysExpandSettingsField.$element,
         dialog.insertButtonsField.$element,
