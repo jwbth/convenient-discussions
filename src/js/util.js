@@ -435,3 +435,18 @@ export function dealWithLoadingBug(moduleName) {
 
   return false;
 }
+
+/**
+ * Get top and bottom positions of the bounding client rectangle of an element including margins set
+ * with `cdMarginTop` and `cdMarginBottom` properties.
+ *
+ * @param {Element} el
+ * @returns {object}
+ */
+export function getTopAndBottomIncludingMargins(el) {
+  const nativeRect = el.getBoundingClientRect();
+  return {
+    top: nativeRect.top - el.cdMarginTop,
+    bottom: nativeRect.bottom + el.cdMarginBottom,
+  };
+}

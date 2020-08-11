@@ -5,6 +5,7 @@
  */
 
 import cd from './cd';
+import { getTopAndBottomIncludingMargins } from './util';
 
 export default {
   /**
@@ -66,7 +67,7 @@ export default {
       } else if (shouldBeHighlighted && !comment.editForm) {
         floatingRects = (
           floatingRects ||
-          cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
+          cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
         );
         const moved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add it.

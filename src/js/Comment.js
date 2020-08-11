@@ -193,13 +193,7 @@ export default class Comment extends CommentSkeleton {
     if (options.considerFloating) {
       const floatingRects = (
         options.floatingRects ||
-        cd.g.specialElements.floating.map((el) => {
-          const nativeRect = el.getBoundingClientRect();
-          return {
-            top: nativeRect.top - el.cdMarginTop,
-            bottom: nativeRect.bottom + el.cdMarginBottom,
-          };
-        })
+        cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
       );
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
@@ -1890,12 +1884,11 @@ export default class Comment extends CommentSkeleton {
    * @param {Comment[]} comments
    */
   static configureAndAddLayers(comments) {
-    let floatingRects;
+    const floatingRects = comments.length ?
+      cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins) :
+      undefined;
+
     comments.forEach((comment) => {
-      floatingRects = (
-        floatingRects ||
-        cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
-      );
       comment.configureLayers({
         doAdd: false,
         doUpdate: false,
