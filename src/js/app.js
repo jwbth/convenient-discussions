@@ -158,6 +158,7 @@ function go() {
   if (
     mw.config.get('wgIsArticle') &&
     !/[?&]cdTalkPage=(0|false|no|n)(?=&|$)/.test(location.search) &&
+    !cd.g.$content.find('.cd-notTalkPage').length &&
     (
       isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
       $('#ca-addsection').length ||
