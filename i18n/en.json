@@ -271,6 +271,7 @@
   "sd-defaultsectionlinktype-help": "To copy a link of a different type, click \"{{int:convenient-discussions-sm-copylink}}\" while holding Shift.",
   "sd-watchonreply": "Watch the page that I reply on",
   "sd-watchsectiononreply": "Watch the section that I reply in",
+  "sd-watchsectiononreply-help": "This affects notifications and bolding in the watchlist.",
 
   "ewsd-title": "Edit watched sections list",
   "ewsd-save": "Save",
