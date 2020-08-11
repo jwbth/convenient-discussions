@@ -51,7 +51,11 @@ export default {
     const offsetTop = $elements.first().offset().top;
     const offsetTopLast = $elements.last().offset().top;
     let offsetBottom = offsetTopLast + $elements.last().height();
-    if (offsetTop === 0 || offsetTopLast === 0) return;
+    if (offsetTop === 0 || offsetTopLast === 0) {
+      cd.g.autoScrollInProgress = false;
+      mw.notify(cd.s('navpanel-elementhidden'), { type: 'error' })
+      return;
+    }
 
     let offset;
     if (alignment === 'center') {
