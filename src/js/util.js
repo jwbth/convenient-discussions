@@ -429,10 +429,8 @@ export function dealWithLoadingBug(moduleName) {
       }
     ]);
     mw.notify($body, { type: 'error' });
-
     return true;
   }
-
   return false;
 }
 

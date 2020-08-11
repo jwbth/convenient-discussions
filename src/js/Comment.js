@@ -1216,6 +1216,7 @@ export default class Comment extends CommentSkeleton {
     if (updatePositions || !this.positions) {
       this.getPositions();
     }
+
     if (!this.positions) {
       return null;
     }
@@ -1929,6 +1930,7 @@ export default class Comment extends CommentSkeleton {
     if (!firstVisibleComment) {
       return null;
     }
+
     let searchArea = {
       top: firstVisibleComment,
       bottom: lastVisibleComment,
@@ -1960,11 +1962,13 @@ export default class Comment extends CommentSkeleton {
 
       if (
         currentComment.positions &&
+
         // The bottom edge of the viewport is above the first comment.
         (
           currentComment === firstVisibleComment &&
           viewportBottom < currentComment.positions.downplayedBottom
         ) ||
+
         // The top edge of the viewport is below the last comment.
         (currentComment === lastVisibleComment && viewportTop > currentComment.positions.top)
       ) {

@@ -167,7 +167,9 @@ Element.prototype.contains = function (node) {
   if (node === this) {
     return true;
   }
-  if (!this.childNodes.length) return false;
+  if (!this.childNodes.length) {
+    return false;
+  }
   for (let n = node; n; n = n.parentNode) {
     if (n === this) {
       return true;
