@@ -835,8 +835,9 @@ const navPanel = {
     const commentInViewport = Comment.findInViewport('backward');
     if (!commentInViewport) return;
 
+    // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id, true)
-      .find((comment) => comment.newness && comment.isInViewport(true) === false);
+      .find((comment) => comment.newness && comment.isInViewport(true) !== true);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('backward', true);
@@ -856,8 +857,9 @@ const navPanel = {
     const commentInViewport = Comment.findInViewport('forward');
     if (!commentInViewport) return;
 
+    // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id)
-      .find((comment) => comment.newness && comment.isInViewport(true) === false);
+      .find((comment) => comment.newness && comment.isInViewport(true) !== true);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);
