@@ -16,6 +16,7 @@ import {
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
+  getTopAndBottomIncludingMargins,
   handleApiReject,
   notNull,
   reorderArray,
@@ -419,20 +420,29 @@ export default class Comment extends CommentSkeleton {
    * Add the underlay and overlay if they are missing, recalculate their positions and redraw if
    * they have been moved, or do nothing if everything is right.
    *
-   * @param {boolean} [doSet=true] Change the layers' parameters in case they are moved or existent.
-   *   If set to false, it is expected that the layers created during this procedure, if any, will
-   *   be added afterwards (otherwise there would be layers without a parent element which would
-   *   lead to bugs).
-   * @param {object} [floatingRects] `Element#getBoundingClientRect` results. It may be calculated
-   *   in advance for many elements in one sequence to save time.
+   * @param {object} [options={}]
+   * @param {boolean} [options.doAdd=true] Add the layers in case they are created. If set to
+   *   false, it is expected that the layers created during this procedure, if any, will be added
+   *   afterwards (otherwise there would be layers without a parent element which would lead to
+   *   bugs).
+   * @param {boolean} [options.doUpdate=true] Update the layers' positions in case the comment is
+   *   moved. If set to false, it is expected that the positions will be updated afterwards.
+   * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results. It may be
+   *   calculated in advance for many elements in one sequence to save time.
    * @returns {?boolean} Was the comment moved.
    */
-  configureLayers(doSet = true, floatingRects) {
+  configureLayers(options = {}) {
     if (this.editForm) {
       return null;
     }
 
-    const options = { doSet, floatingRects };
+    if (options.doAdd === undefined) {
+      options.doAdd = true;
+    }
+    if (options.doUpdate === undefined) {
+      options.doUpdate = true;
+    }
+
     options.rectTop = this.highlightables[0].getBoundingClientRect();
     options.rectBottom = this.elements.length === 1 ?
       options.rectTop :
@@ -455,6 +465,7 @@ export default class Comment extends CommentSkeleton {
       Object.assign(this, this.calculateLayersPositions(options));
     }
 
+    // The comment is invisible.
     if (this.layersLeft === undefined) {
       return null;
     }
@@ -465,13 +476,13 @@ export default class Comment extends CommentSkeleton {
       if (this.newness && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
         this.underlay.classList.add('cd-commentUnderlay-new');
       }
-      if (moved && options.doSet) {
+      if (moved && options.doUpdate) {
         this.updateLayersPositions();
       }
       return moved;
     } else {
       this.createLayers();
-      if (options.doSet) {
+      if (options.doAdd) {
         this.addLayers();
       }
       return false;
@@ -1885,7 +1896,11 @@ export default class Comment extends CommentSkeleton {
         floatingRects ||
         cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
       );
-      comment.configureLayers(false, floatingRects);
+      comment.configureLayers({
+        doAdd: false,
+        doUpdate: false,
+        floatingRects,
+      });
     });
 
     // Faster to add them in one sequence.

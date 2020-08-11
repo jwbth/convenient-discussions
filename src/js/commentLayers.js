@@ -68,7 +68,12 @@ export default {
           floatingRects ||
           cd.g.specialElements.floating.map((el) => el.getBoundingClientRect())
         );
-        const moved = comment.configureLayers(false, floatingRects);
+        const moved = comment.configureLayers({
+          // If a comment was hidden, then became visible, we need to add it.
+          doAdd: true,
+          doUpdate: false,
+          floatingRects,
+        });
         if (moved) {
           notMovedCount = 0;
           comments.push(comment);
