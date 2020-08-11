@@ -63,9 +63,6 @@ export default {
 
   localTimezoneOffset: 0,
 
-  // Don't need CD for the "Арбитраж" namespace. (Or do we?)
-  customTalkNamespaces: [4, 104],
-
   pageWhiteList: [
     /^Википедия:.* запросы/,
     /^Википедия:Выборы арбитров\//,
