@@ -95,6 +95,7 @@ function addCommentLinksOnSpecialSearch() {
  * @param {boolean} enable
  */
 function addFooterLink(enable) {
+  if (cd.g.CURRENT_NAMESPACE_NUMBER === -1) return;
   const url = new URL(location.href);
   url.searchParams.set('cdTalkPage', enable ? '1' : '0');
   const $li = $('<li>').attr('id', enable ? 'footer-places-enablecd' : 'footer-places-disablecd');
