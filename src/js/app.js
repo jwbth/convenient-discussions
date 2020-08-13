@@ -128,7 +128,7 @@ function go() {
     mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
   });
 
-  cd.g.SETTINGS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-settings`;
+  cd.g.SETTINGS_OPTION_FULL_NAME = `userjs-convenientDiscussions-settings`;
   cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
   cd.g.VISITS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
 

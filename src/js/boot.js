@@ -25,7 +25,7 @@ import {
   unhideText,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
-import { getUserInfo } from './apiWrappers';
+import { getUserInfo, setLocalOption } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadMessages } from './dateFormat';
 import { setSettings } from './options';
@@ -150,6 +150,11 @@ export function initSettings() {
     setSettings().catch((e) => {
       console.warn('Couldn\'t save the settings to the server.', e);
     });
+  }
+
+  // FIXME: Temporary, clean the setting with an old name for ruwiki beta version users.
+  if (mw.user.options.get('userjs-cd-settings')) {
+    setLocalOption('userjs-cd-settings', null);
   }
 
   Object.keys(cd.defaultSettings).forEach((name) => {
