@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Abijeet Patro",
 			"Mainframe98"
 		]
 	},
@@ -41,12 +42,9 @@
 	"cf-cancel": "Annuleren",
 	"cf-cancel-short": "Annuleren",
 	"cf-settings": "Instellingen",
-	"cf-error-tryagain": "Opnieuw proberen",
-	"cf-error-cancel": "Annuleren",
 	"cf-minor": "Kleine bewerking",
 	"cf-watch": "Deze pagina volgen",
 	"cf-watchsection-topic": "Dit onderwerp volgen",
-	"cf-small": "In klein lettertype",
 	"cf-nosignature": "Geen handtekening",
 	"cf-delete": "Verwijderen",
 	"cf-block-preview": "Voorvertoning",
@@ -54,7 +52,6 @@
 	"cf-block-close": "Sluiten",
 	"cf-notice-nochanges": "Geen wijzigingen.",
 	"cf-error-couldntedit": "Kon de pagina niet bewerken.",
-	"cf-error-pagenotedited": "De pagina is niet bewerkt.",
 	"cf-error-pagedoesntexist": "De pagina bestaat niet.",
 	"cf-confirm-noheadline-topic": "U hebt geen onderwerp/kop ingevoerd.",
 	"cf-confirm-empty": "Weet u zeker dat u een lege reactie wilt plaatsen?",
@@ -77,9 +74,9 @@
 	"navpanel-refresh": "Pagina vernieuwen",
 	"navpanel-previous": "Ga naar de vorige nieuwe reactie",
 	"navpanel-next": "Ga naar de volgende nieuwe reactie",
-	"navpanel-firstunseen": "Ga naar de eerste ongelezen reactie",
 	"navpanel-newcomments-count": "$1 nieuwe {{plural:$1|reactie|reacties}}. Klik op de pagina bij te werken",
 	"navpanel-newcomments-unknowndate": "onbekende datum",
+	"navpanel-newcomments-firstunseen": "Ga naar de eerste ongelezen reactie",
 	"notification-reload": "<a href=\"$1\" class=\"cd-notification-reloadPage\">De pagina opnieuw laden</a>$2.",
 	"notification-part-onthispage": "op deze pagina",
 	"sd-save": "Opslaan",
@@ -106,5 +103,5 @@
 	"msd-error-sourcepagedeleted": "De huidige pagina is verwijderd.",
 	"msd-error-targetpagedoesntexist": "De doelpagina bestaat niet.",
 	"msd-error-invalidpagename": "Ongeldige paginanaam.",
-	"msd-error-editconflict": "Bewerkingsconflict. Klik op \"{{int:ooui-dialog-process-retry}}\"."
+	"error-pagenotedited": "De pagina is niet bewerkt."
 }

@@ -1,7 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"DraconicDark"
+			"Abijeet Patro",
+			"DraconicDark",
+			"Umherirrender"
 		]
 	},
 	"script-name": "Bequeme Diskussionen",
@@ -61,8 +63,6 @@
 	"cf-cancel-short": "Abbrechen",
 	"cf-settings": "Einstellungen",
 	"cf-scriptsettings-tooltip": "Bequeme Diskussionseinstellungen",
-	"cf-error-tryagain": "Erneut versuchen",
-	"cf-error-cancel": "Abbrechen",
 	"cf-quote-tooltip": "Den ausgewählten Text zitieren",
 	"cf-quote-placeholder": "Zitierter Text",
 	"cf-minor": "Kleine Änderung",
@@ -70,11 +70,6 @@
 	"cf-watchsection-topic": "Dieses Thema beobachten",
 	"cf-watchsection-subsection": "Diesen Unterabschnitt beobachten",
 	"cf-watchsection-tooltip": "Diesen Abschnitt zur Beobachtungsliste hinzufügen. Dies betrifft die Benachrichtigungen und die Fettschrift auf der Beobachtungsliste",
-	"cf-ping-sectionauthor": "Abschnittsautor benachrichtigen",
-	"cf-ping-commentauthor": "Adressat benachrichtigen",
-	"cf-ping-tooltip": "Durch die Ping-Funktion",
-	"cf-ping-tooltip-unreg": "Kann keine Benachrichtigung an einen nicht registrierten Benutzer senden",
-	"cf-small": "In kleiner Schrift",
 	"cf-nosignature": "Ohne Signatur",
 	"cf-delete": "Löschen",
 	"cf-block-preview": "Vorschau",
@@ -82,20 +77,15 @@
 	"cf-block-close": "Schließen",
 	"cf-reaction-templateinheadline": "Verwenden Sie keine Vorlagen in Überschriften: dies unterbricht Abschnittslinks.",
 	"cf-notice-nochanges": "Keine Änderungen",
-	"cf-notice-editconflict": "Bearbeitungskonflikt. Es wird erneut versucht...",
 	"cf-error-getpagecode": "Konnte den Seitencode nicht erhalten.",
 	"cf-error-findplace": "Konnte die richtige Stelle im Code zum Einfügen des Kommentars nicht finden.",
-	"cf-error-findplace-unexpectedheading": "Konnte die richtige Stelle im Code zum Einfügen des Kommentars nicht finden (unerwartete Überschrift).",
-	"cf-error-numberedlist": "Es ist unmöglich, den Kommentar korrekt zu formulieren, ohne die nummerierte Listenauszeichnung zu verzerren. Entfernen Sie Listen aus dem Kommentar.",
+	"cf-error-numberedlist": "Es ist unmöglich, den Kommentar korrekt zu formulieren, ohne die nummerierte Listenauszeichnung zu verzerren.",
 	"cf-error-delete-repliestocomment": "Der Kommentar kann nicht gelöscht werden, weil er Antworten enthält.",
 	"cf-error-delete-repliesinsection": "Der Abschnitt kann nicht gelöscht werden, weil er Antworten enthält.",
 	"cf-error-preview": "Konnte keine Vorschau des Kommentars anzeigen.",
 	"cf-error-viewchanges": "Konnte die Änderungen nicht bekommen.",
 	"cf-error-couldntedit": "Die Seite konnte nicht bearbeitet werden.",
-	"cf-error-pagenotedited": "Die Seite wurde nicht bearbeitet.",
-	"cf-error-blocked": "Sie sind für die Bearbeitung gesperrt. Die Seite wurde nicht bearbeitet.",
 	"cf-error-pagedoesntexist": "Die Seite existiert nicht.",
-	"cf-error-pagedeleted": "Die Seite wurde gelöscht.",
 	"cf-confirm-delete-yes": "Löschen",
 	"cf-confirm-delete-no": "Abbrechen",
 	"cf-confirm-close-yes": "Schließen",
@@ -123,5 +113,8 @@
 	"msd-error-invalidpagename": "Ungültiger Seitenname",
 	"error-network": "Netzwerkfehler.",
 	"error-unknown": "Unbekannter Fehler.",
+	"error-blocked": "Sie sind für die Bearbeitung gesperrt. Die Seite wurde nicht bearbeitet.",
+	"error-pagedeleted": "Die Seite wurde gelöscht.",
+	"error-pagenotedited": "Die Seite wurde nicht bearbeitet.",
 	"lp-comment": "Kommentar"
 }

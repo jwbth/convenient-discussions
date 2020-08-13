@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Abijeet Patro",
 			"Nadine Siak",
 			"SomeyaMako",
 			"列维劳德"
@@ -66,8 +67,6 @@
 	"cf-viewchanges-short": "更改",
 	"cf-cancel": "取消",
 	"cf-settings": "设置",
-	"cf-error-tryagain": "重试",
-	"cf-error-cancel": "取消",
 	"cf-quote-tooltip": "引用选中的文本",
 	"cf-quote-placeholder": "引用文字",
 	"cf-minor": "小编辑",
@@ -75,9 +74,6 @@
 	"cf-watchsection-topic": "监视这个话题",
 	"cf-watchsection-subsection": "监视这个章节",
 	"cf-watchsection-tooltip": "将此小节添加到监视列表中。这会影响监视列表中的通知以及加粗",
-	"cf-ping-commentauthor": "通知收件人",
-	"cf-ping-tooltip-unreg": "无法向未注册用户发送提醒。",
-	"cf-small": "以较小字体",
 	"cf-delete": "删除",
 	"cf-block-preview": "预览",
 	"cf-block-close": "关闭",
@@ -90,8 +86,6 @@
 	"cf-error-viewchanges": "无法获取更改。",
 	"cf-error-couldntedit": "无法编辑页面。",
 	"cf-error-pagedoesntexist": "页面不存在。",
-	"cf-error-pagedeleted": "页面已删除。",
-	"cf-error-abusefilter": "您刚才的编辑因滥用过滤器“$1”而被自动拒绝。",
 	"cf-confirm-noheadline-topic": "您没有输入话题的主题或标题。",
 	"cf-confirm-noheadline-subsection": "您没有输入话题的主题或标题。",
 	"cf-confirm-noheadline-question": "您确定要发送该评论吗？",
@@ -170,6 +164,8 @@
 	"error-nodata": "服务器的回复缺少请求的数据。",
 	"error-unknown": "未知错误。",
 	"error-javascript": "出现了一个JavaScript错误。若要查看详细信息，请前往JavaScript控制台（F12→控制台）。",
+	"error-abusefilter": "您刚才的编辑因滥用过滤器“$1”而被自动拒绝。",
+	"error-pagedeleted": "页面已删除。",
 	"wl-button-switchinteresting-tooltip": "只显示被我关注或被我评论过的页面下的评论",
 	"wl-button-editwatchedsections-tooltip": "编辑我监视的章节"
 }
