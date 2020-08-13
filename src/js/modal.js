@@ -763,10 +763,10 @@ export async function settingsDialog() {
 
       try {
         await Promise.all([
-          setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, null),
-          setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, null),
-          setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, null),
-          setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, null),
+          setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, undefined),
+          setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, undefined),
+          setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, undefined),
+          setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, undefined),
         ]);
       } catch (e) {
         handleError(this, e, 'sd-error-removedata', false);

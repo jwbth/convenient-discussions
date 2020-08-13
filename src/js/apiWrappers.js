@@ -264,7 +264,7 @@ export async function getPageIds(pageTitles) {
  * @private
  */
 async function setOption(name, value, action) {
-  if (value.length > 65535) {
+  if (value && value.length > 65535) {
     throw new CdError({
       type: 'internal',
       code: 'sizeLimit',
@@ -275,7 +275,9 @@ async function setOption(name, value, action) {
   const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
     action: action,
     optionname: name,
-    optionvalue: value,
+
+    // Global options can't be deleted because of a bug: https://phabricator.wikimedia.org/T207448.
+    optionvalue: value === undefined && action === 'globalpreferences' ? '' : value,
   })).catch(handleApiReject);
 
   if (!resp || resp[action] !== 'success') {

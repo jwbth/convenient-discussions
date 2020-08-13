@@ -154,7 +154,7 @@ export function initSettings() {
 
   // FIXME: Temporary, clean the setting with an old name for ruwiki beta version users.
   if (mw.user.options.get('userjs-cd-settings')) {
-    setLocalOption('userjs-cd-settings', null);
+    setLocalOption('userjs-cd-settings', undefined);
   }
 
   Object.keys(cd.defaultSettings).forEach((name) => {
