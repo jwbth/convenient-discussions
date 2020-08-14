@@ -200,7 +200,6 @@
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-firstunseen": "Click to go to the first unseen comment",
   "navpanel-newcomments-refresh": "Click to refresh the page",
-  "navpanel-elementhidden": "The element is hidden. Can't scroll to it.",
 
   "notification-toyou": "$1 {{gender:$2|replied}} to your comment$3.",
   "notification-toyou-desktop": "$1 {{gender:$2|replied}} to your comment$3 on page \"$4\".",
@@ -323,6 +322,7 @@
   "error-pagenotedited": "The page was not edited.",
   "error-diffnotfound": "Couldn't find the edit that added this comment.",
   "error-diffnotfound-history": "You can look for it in the <a href=\"$1\" target=\"_blank\">revision history</a> for yourself.",
+  "error-elementhidden": "The element is hidden. Can't scroll to it.",
 
   "wl-button-switchinteresting-tooltip": "Show only comments in sections that I watch and comments addressed to me",
   "wl-button-editwatchedsections-tooltip": "Edit sections that I watch",

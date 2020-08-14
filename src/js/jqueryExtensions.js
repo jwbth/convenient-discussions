@@ -53,7 +53,7 @@ export default {
     let offsetBottom = offsetTopLast + $elements.last().height();
     if (offsetTop === 0 || offsetTopLast === 0) {
       cd.g.autoScrollInProgress = false;
-      mw.notify(cd.s('navpanel-elementhidden'), { type: 'error' })
+      mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return;
     }
 
