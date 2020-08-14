@@ -111,7 +111,7 @@
   "cf-scriptsettings-tooltip": "Convenient Discussions settings",
   "cf-help": "?",
   "cf-help-short": "?",
-  "cf-help-content": "<p>Type <kbd>@</kbd> to <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention\" target=\"_blank\">mention</a> a user. Type <kbd>##</kbd> to link a comment from this section.</p>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Script documentation</a></p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>",
+  "cf-help-content": "<p>Type <kbd>@</kbd> to <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention\" target=\"_blank\">mention</a> a user. Type <kbd>##</kbd> to link a comment from this section.</p>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Script documentation</a></p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>",
   "cf-quote-tooltip": "Quote the selected text",
   "cf-quote-placeholder": "Quoted text",
 
@@ -131,15 +131,15 @@
   "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the signature will be added automatically.",
   "cf-reaction-pre": "<code>&lt;pre&gt;</code> tags can break the layout—better use <code>&lt;syntaxhighlight&gt;</code>.",
   "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the signature will be added automatically.",
-  "cf-reaction-mention-edit": "Since you are <em>editing</em> a comment, a <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
-  "cf-reaction-mention-nosignature": "Since you've opted not to include a signature in your comment, a <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
+  "cf-reaction-mention-edit": "Since you are <em>editing</em> a comment, a <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
+  "cf-reaction-mention-nosignature": "Since you've opted not to include a signature in your comment, a <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">mention notification</a> will not be sent.",
 
   "cf-notice-nochanges": "No changes.",
   "cf-notice-editconflict-retrying": "Trying again…",
 
   "cf-error-getpagecode": "Couldn't get the page code.",
   "cf-error-findplace": "Couldn't find the proper place in the code to insert the comment into.",
-  "cf-error-commentlinks-commentnotfound": "Couldn't find the comment with ID $1, linked from the comment, on the page.",
+  "cf-error-commentlinks-commentnotfound": "Couldn't find the comment with ID $1, linked from your comment, on the page.",
   "cf-error-numberedlist": "It's impossible to form the comment correctly without distorting the numbered list markup.",
   "cf-error-numberedlist-list": "Remove lists from the comment.",
   "cf-error-numberedlist-table": "Remove tables from the comment.",
