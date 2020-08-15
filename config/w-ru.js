@@ -258,9 +258,9 @@ export default {
 
   transformSummary(summary) {
     return summary
-      .replace(`${cd.s('es-new-subsection')}: /* Итог */`, 'итог')
-      .replace(`${cd.s('es-new-subsection')}: /* Предварительный итог */`, 'предварительный итог')
-      .replace(`${cd.s('es-new-subsection')}: /* Предытог */`, 'предытог');
+      .replace(cd.s('es-new-subsection') + ': /* Итог */', 'итог')
+      .replace(cd.s('es-new-subsection') + ': /* Предварительный итог */', 'предварительный итог')
+      .replace(cd.s('es-new-subsection') + ': /* Предытог */', 'предытог');
   },
 
   postTransformCode(code, commentForm) {
@@ -309,11 +309,11 @@ export default {
   },
 
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
-    return `{{перенесено на|${targetPageWikilink}|${signature}}}\n<small>Для бота: ${timestamp}</small>`;
+    return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>';
   },
 
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return `{{перенесено с|${targetPageWikilink}|${signature}}}`;
+    return '{{перенесено с|' + targetPageWikilink + '|' + signature + '}}';
   },
 };
 
@@ -345,7 +345,7 @@ mw.hook('convenientDiscussions.beforeParse').add(() => {
 mw.hook('convenientDiscussions.pageReady').add(() => {
   if (cd.g.firstRun) {
     const generateEditCommonJsLink = () => (
-      mw.util.getUrl(`User:${cd.g.CURRENT_USER_NAME}/common.js`, { action: 'edit' })
+      mw.util.getUrl('User:' + cd.g.CURRENT_USER_NAME + '/common.js', { action: 'edit' })
     );
 
     const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
@@ -360,15 +360,15 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
         const hlmStyledElements = cd.g.rootElement.querySelectorAll(
-          `.cd-commentPart[style="background-color: ${dummyElement.style.color};"],` +
-          `.cd-commentPart[style="background-color: ${window.messagesHighlightColor}"]`
+          '.cd-commentPart[style="background-color: ' + dummyElement.style.color + ';"],' +
+          '.cd-commentPart[style="background-color: ' + window.messagesHighlightColor + '"]'
         );
         hlmStyledElements.forEach((el) => {
           el.style.backgroundColor = null;
         });
       }
 
-      const $text = cd.util.wrapInElement(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`);
+      const $text = cd.util.wrapInElement('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные дискуссии». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
       mw.notify($text, { autoHide: false } );
       mw.cookie.set('cd-hlmConflict', '1', {
         path: '/',
@@ -377,7 +377,7 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
     }
 
     if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-      const $text = cd.util.wrapInElement(`У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="${generateEditCommonJsLink()}">вашем common.js</a> (или другом файле настроек).`);
+      const $text = cd.util.wrapInElement('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
       mw.notify($text, { autoHide: false });
       mw.cookie.set('cd-ptaConflict', '1', {
         path: '/',
@@ -386,7 +386,7 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
     }
 
     if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-      const $text = cd.util.wrapInElement(`Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="${mw.util.getUrl(cd.config.scriptPageWikilink)}#Совместимость">здесь</a>, чтобы обеспечить их совместимость.`);
+      const $text = cd.util.wrapInElement('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
       mw.notify($text, { autoHide: false });
     }
   }

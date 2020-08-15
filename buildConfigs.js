@@ -52,7 +52,7 @@ function getStrings() {
       // English strings are already in the script.
       resolve();
     } else {
-      $.get(\`https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/gadgets/ConvenientDiscussions/+/master/i18n/$\{lang}.json?format=text\`)
+      $.get('https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/gadgets/ConvenientDiscussions/+/master/i18n/' + lang + '.json?format=text')
         .then(
           (data) => {
             convenientDiscussions.strings = JSON.parse(decodeBase64(data));
