@@ -620,7 +620,7 @@ export default {
 
   /**
    * Function that returns the code to insert in the beginning of the section moved from another
-   * page *or* an array of strings to insert in the beginning and the ending of the section
+   * page *or* an array of two strings to insert in the beginning and the ending of the section
    * respectively. If `null`, no code will be added.
    *
    * @type {?Function}
