@@ -8,7 +8,8 @@
     "configs": "node buildConfigs",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
     "all": "npm run build & npm run docs",
-    "deploy": "node deploy"
+    "deploy": "node deploy",
+    "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions"
   },
   "browser": "src/app.js",
   "repository": {
