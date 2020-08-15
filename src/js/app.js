@@ -144,8 +144,8 @@ function go() {
   cd.g.CURRENT_PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
-  cd.g.PAGE_WHITE_LIST_REGEXP = mergeRegexps(cd.config.pageWhiteList);
-  cd.g.PAGE_BLACK_LIST_REGEXP = mergeRegexps(cd.config.pageBlackList);
+  cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
+  cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
 
   cd.g.$content = $('#mw-content-text');
 

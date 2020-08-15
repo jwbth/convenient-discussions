@@ -507,7 +507,7 @@ export default async function processPage(keptData = {}) {
     cd.g.isPageActive &&
     !cd.comments.length &&
     !$('#ca-addsection').length &&
-    !cd.g.PAGE_WHITE_LIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
+    !cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
   ) {
     cd.g.isPageActive = false;
   }

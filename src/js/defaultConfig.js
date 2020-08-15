@@ -48,13 +48,13 @@ export default {
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
    * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
    *
-   * This value is overriden by the {@link module:defaultConfig.pageWhiteList} value: if that value
-   * is not `[]`, this value is not used.
+   * **Warning:** This value is overriden by the {@link module:defaultConfig.pageWhitelist} value:
+   * `customTalkNamespaces` is used only if `pageWhitelist` is `[]` or `null`.
    *
    * Note that this value is used in the script as a "soft" value. I.e., the script can decide
    * (based on the presence of the "Add section" button, existence of comments on the page and
    * possibly other factors) that the page is not a talk page after all. Use {@link
-   * module:defaultConfig.pageWhiteList} to indicate pages where the script should work in any
+   * module:defaultConfig.pageWhitelist} to indicate pages where the script should work in any
    * circumstances. (For example, you can specify the entire namespace, e.g., /^Wikipedia:/).
    *
    * @type {number[]}
@@ -71,7 +71,7 @@ export default {
    * @type {RegExp[]}
    * @default []
    */
-  pageWhiteList: [],
+  pageWhitelist: [],
 
   /**
    * Pages where the script shouldn't run.
@@ -79,7 +79,7 @@ export default {
    * @type {RegExp[]}
    * @default []
    */
-  pageBlackList: [],
+  pageBlacklist: [],
 
   /**
    * Object that connects active (source) talk page names with their archive pages prefixes and vice
