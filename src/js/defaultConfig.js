@@ -11,7 +11,7 @@ export default {
    * ```
    * new mw.Api().loadMessages(messageNames, { amlang: mw.config.get('wgContentLanguage') });
    * ```
-   * (take messageNames from {@link module:dateFormat.loadMessages}) and
+   * (take `messageNames` from the source code of {@link module:dateFormat.loadMessages}) and
    * ```
    * new mw.Api().loadMessages(undefined, {
    *   amlang: mw.config.get('wgContentLanguage'),

@@ -577,11 +577,24 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.editTargetPage = async function (source, target) {
-      const code = cd.config.getMoveTargetPageCode ?
-        cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE) :
-        undefined;
-      const codeBeginning = Array.isArray(code) ? code[0] + '\n' : code;
-      const codeEnding = Array.isArray(code) ? '\n' + code[1] : '';
+      let codeBeginning;
+      let codeEnding;
+      if (cd.config.getMoveTargetPageCode) {
+        const code = (
+          cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE)
+        );
+        if (Array.isArray(code)) {
+          codeBeginning = code[0] + '\n';
+          codeEnding = '\n' + code[1];
+        } else {
+          codeBeginning = code;
+          codeEnding = '';
+        }
+      } else {
+        codeBeginning = '';
+        codeEnding = '';
+      }
+
       const newSectionCode = endWithTwoNewlines(
         source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
         codeBeginning +
@@ -643,23 +656,25 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.prototype.editSourcePage = async function (source, target) {
       const timestamp = findFirstTimestamp(source.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
-      const code = cd.config.getMoveSourcePageCode ?
-        cd.config.getMoveSourcePageCode(
+      let newSectionCode;
+      if (cd.config.getMoveSourcePageCode) {
+        const code = cd.config.getMoveSourcePageCode(
           target.sectionWikilink,
           cd.g.CURRENT_USER_SIGNATURE,
           timestamp
-        ) :
-        undefined;
-      const newSectionCode = code ?
-        (
+        );
+        newSectionCode = (
           source.sectionInCode.code.slice(
             0,
             source.sectionInCode.relativeContentStartIndex
           ) +
           code +
           '\n\n'
-        ) :
-        '';
+        );
+      } else {
+        newSectionCode = '';
+      }
+
       const newCode = (
         source.page.code.slice(0, source.sectionInCode.startIndex) +
         newSectionCode +

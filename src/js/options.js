@@ -113,14 +113,11 @@ export async function setSettings(settings) {
     }
   });
 
-  const localSettingsPromise = (
-    setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, JSON.stringify(localSettings))
-  );
-  const globalSettingsPromise = (
-    setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings))
-  );
   try {
-    await Promise.all([localSettingsPromise, globalSettingsPromise]);
+    await Promise.all([
+      setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, JSON.stringify(localSettings)),
+      setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings))
+    ]);
   } catch (e) {
     // The site doesn't support global preferences.
     if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {

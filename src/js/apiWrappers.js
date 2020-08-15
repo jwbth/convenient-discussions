@@ -276,7 +276,7 @@ async function setOption(name, value, action) {
     action: action,
     optionname: name,
 
-    // Global options can't be deleted because of a bug: https://phabricator.wikimedia.org/T207448.
+    // Global options can't be deleted because of the bug https://phabricator.wikimedia.org/T207448.
     optionvalue: value === undefined && action === 'globalpreferences' ? '' : value,
   })).catch(handleApiReject);
 
