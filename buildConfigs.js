@@ -31,11 +31,6 @@ configs.forEach((config) => {
 
 (function () {
 
-const cdLoaded = Boolean(window.convenientDiscussions && window.convenientDiscussions.running);
-window.convenientDiscussions = window.convenientDiscussions || {};
-
-convenientDiscussions.config = ${content}
-
 // Author: [[User:Sophivorus]]
 // Licences: GFDL, CC BY-SA 3.0, GPL v2
 function decodeBase64(s) {
@@ -73,7 +68,17 @@ function getStrings() {
   });
 }
 
-if (!cdLoaded) {
+window.convenientDiscussions = window.convenientDiscussions || {};
+
+
+/* BEGINNING OF THE CONFIGURATION */
+
+convenientDiscussions.config = ${content}
+
+/* END OF THE CONFIGURATION */
+
+
+if (!convenientDiscussions.running) {
   convenientDiscussions.getStringsPromise = getStrings();
   mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${devSuffix}.js&action=raw&ctype=text/javascript')
     .catch((e) => {
