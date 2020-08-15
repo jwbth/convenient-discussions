@@ -119,20 +119,6 @@ export default {
     'resolved',
   ],
 
-  insertButtons: [
-    ['{{ping|+}}'],
-    ['{{u|+}}'],
-    ['{{tl|+}}'],
-    ['{{+}}'],
-    ['[[+]]'],
-    ['<>+</>', '</>'],
-    ['<blockquote>+</blockquote>', '<blockquote />'],
-    ['<code>+</code>', '<code />'],
-    ['<nowiki>+</nowiki>', '<nowiki />'],
-    ['<syntaxhighlight lang="+"></syntaxhighlight>', '<syntaxhighlight />'],
-    ['<small>+</small>', '<small />'],
-  ],
-
   undoTexts: [
     'Undid revision',
     'Reverted edits',
