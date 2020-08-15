@@ -58,9 +58,9 @@ export default {
    * circumstances. (For example, you can specify the entire namespace, e.g., /^Wikipedia:/).
    *
    * @type {number[]}
-   * @default null
+   * @default mw.config.get('wgExtraSignatureNamespaces')
    */
-  customTalkNamespaces: null,
+  customTalkNamespaces: mw.config.get('wgExtraSignatureNamespaces'),
 
   /**
    * Pages where the script should run. If `[]`, all pages in the {@link

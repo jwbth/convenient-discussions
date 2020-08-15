@@ -149,11 +149,6 @@ function go() {
 
   cd.g.$content = $('#mw-content-text');
 
-  cd.config.customTalkNamespaces = (
-    cd.config.customTalkNamespaces ||
-    mw.config.get('wgExtraSignatureNamespaces')
-  );
-
   // Process the page as a talk page
   if (
     mw.config.get('wgIsArticle') &&
