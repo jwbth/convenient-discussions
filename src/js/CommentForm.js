@@ -127,6 +127,13 @@ export default class CommentForm {
     // sudden.
     saveScrollPosition();
 
+    if (this.mode === 'replyInSection') {
+      this.target.$replyButton.hide();
+    }
+    if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
+      this.target.$addSubsectionButtonContainer.hide();
+    }
+
     this.addToPage();
 
     /**
