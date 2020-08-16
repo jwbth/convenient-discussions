@@ -548,7 +548,7 @@ export function loadData() {
     // We need this object to pass to the web worker.
     cd.g.MESSAGES = {};
     messageNames.forEach((name) => {
-      cd.g.MESSAGES[name] = mw.msg(name);
+      cd.g.MESSAGES[name] = mw.messages.get(name);
     });
   });
   requests.push(...messagesRequests);
