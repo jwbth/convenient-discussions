@@ -1,7 +1,7 @@
 /**
  * Autocomplete mechanism.
  *
- * @module autocomplete
+ * @module Autocomplete
  */
 
 import Tribute from '../tribute/Tribute';

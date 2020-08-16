@@ -6,20 +6,10 @@ import cd from './cd';
 
 export default {
   /**
-   * Object with the names and texts of the messages required by the script as keys and values. Used to
-   * avoid making additional requests. Get these messages by running
-   * ```
-   * new mw.Api().loadMessages(messageNames, { amlang: mw.config.get('wgContentLanguage') });
-   * ```
-   * (take `messageNames` from the source code of {@link module:dateFormat.loadMessages}) and
-   * ```
-   * new mw.Api().loadMessages(undefined, {
-   *   amlang: mw.config.get('wgContentLanguage'),
-   *   amincludelocal: 1,
-   *   amfilter: 'timezone-',
-   * });
-   * ```
-   * (only timezone abbreviations are needed).
+   * Object with the names and texts of the messages required by the script as keys and values. Used
+   * to avoid making additional requests. Get these messages by running
+   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js
+   * in your browser's console while the page of your wiki is open.
    *
    * @type {object}
    * @default {}
@@ -36,8 +26,10 @@ export default {
   contribsPage: null,
 
   /**
-   * Local timezone offset in minutes. Get by a {@link https://www.mediawiki.org/wiki/API:Siteinfo}
-   * request. Leave `null` if your wiki uses daylight saving time (summer time).
+   * Local timezone offset in minutes. Get by running
+   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js
+   * in your browser's console while the page of your wiki is open. Leave `null` if your wiki uses
+   * daylight saving time (summer time).
    *
    * @type {?number}
    * @default null
@@ -286,8 +278,10 @@ export default {
   blockSmallTemplate: null,
 
   /**
-   * Names of the templates that are analogs of {@link https://ru.wikipedia.org/wiki/Шаблон:Абзац}.
-   * The first string will be used when posting comments.
+   * Names of the templates that are analogs of {@link
+   * https://en.wikipedia.org/wiki/Template:Paragraph_break} / {@link
+   * https://ru.wikipedia.org/wiki/Шаблон:Абзац}. The first string will be used when posting
+   * comments.
    *
    * @type {string[]}
    * @default []
