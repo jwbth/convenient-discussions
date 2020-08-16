@@ -27,7 +27,7 @@ import {
 import { createWindowManager, rescueCommentFormsContent } from './modal';
 import { getUserInfo, setLocalOption } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
-import { loadMessages } from './dateFormat';
+import { loadData } from './dateFormat';
 import { setSettings } from './options';
 
 /**
@@ -519,14 +519,13 @@ function initOouiAndElementPrototypes() {
  * the first run.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadMessages}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:dateFormat.loadData}.
  */
 export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
   cd.g.worker = new Worker();
 
-  await (messagesRequest || loadMessages());
+  await (messagesRequest || loadData());
   initGlobals();
   initSettings();
   initTimestampParsingTools();

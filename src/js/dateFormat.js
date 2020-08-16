@@ -508,7 +508,7 @@ function setFormats() {
  *
  * @returns {Promise}
  */
-export function loadMessages() {
+export function loadData() {
   const requests = [];
 
   mw.messages.set(cd.config.messages);

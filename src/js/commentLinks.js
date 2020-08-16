@@ -21,7 +21,7 @@ import { editWatchedSections, settingsDialog } from './modal';
 import { generateCommentAnchor, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
 import { initSettings } from './boot';
-import { initTimestampParsingTools, loadMessages } from './dateFormat';
+import { initTimestampParsingTools, loadData } from './dateFormat';
 
 let moveFromBeginning;
 let moveToBeginning;
@@ -38,11 +38,11 @@ let processDiffFirstRun = true;
  * Prepare variables.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadMessages}.
+ * @param {Promise} [data.dataRequest] Promise returned by {@link
+ *   module:dateFormat.loadData}.
  * @private
  */
-async function prepare({ messagesRequest }) {
+async function prepare({ dataRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
 
   // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
@@ -50,10 +50,10 @@ async function prepare({ messagesRequest }) {
   const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
     console.warn('Couldn\'t load the settings from the server.', e);
   });
-  messagesRequest = messagesRequest || loadMessages();
+  dataRequest = dataRequest || loadData();
 
   try {
-    await Promise.all([watchedSectionsRequest, messagesRequest]);
+    await Promise.all([watchedSectionsRequest, dataRequest]);
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
@@ -667,9 +667,9 @@ async function addCommentLinks($content) {
  *
  * @param {object} [data] Data passed from the main module.
  */
-export default async function commentLinks({ messagesRequest }) {
+export default async function commentLinks({ dataRequest }) {
   try {
-    await prepare({ messagesRequest });
+    await prepare({ dataRequest });
   } catch (e) {
     console.warn(...e);
     return;

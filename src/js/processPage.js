@@ -33,8 +33,7 @@ import { setSettings } from './options';
  * comment layers are also made here.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadMessages}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:dateFormat.loadData}.
  * @private
  */
 async function prepare({ messagesRequest }) {
@@ -428,7 +427,7 @@ function debugLog() {
  * @param {string} [keptData.justUnwatchedSection] Section just unwatched so that there could be not
  *    enough time for it to be saved to the server.
  * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadMessages}.
+ *   module:dateFormat.loadData}.
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady

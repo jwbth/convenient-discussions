@@ -27,7 +27,7 @@ import {
   removeLoadingOverlay,
   setLoadingOverlay,
 } from './boot';
-import { loadMessages } from './dateFormat';
+import { loadData } from './dateFormat';
 import { setVisits } from './options';
 
 let config;
@@ -73,7 +73,7 @@ function addCommentLinksOnSpecialSearch() {
   if (commentAnchor) {
     mw.loader.using(['mediawiki.api']).then(
       async () => {
-        await loadMessages();
+        await loadData();
         $('.mw-search-result-heading').each((i, el) => {
           const $a = $('<a>')
             .attr('href', $(el).find('a').first().attr('href') + '#' + commentAnchor)
@@ -185,9 +185,9 @@ function go() {
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let messagesRequest;
+    let dataRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      messagesRequest = loadMessages();
+      dataRequest = loadData();
       getUserInfo().catch((e) => {
         console.warn(e);
       });
@@ -213,11 +213,11 @@ function go() {
         'oojs-ui.styles.icons-interactions',
         'user.options',
       ]),
-      messagesRequest,
+      dataRequest,
     ].filter(defined)).then(
       () => {
         try {
-          processPage({ messagesRequest });
+          processPage({ dataRequest });
         } catch (e) {
           mw.notify(cd.s('error-processpage'), { type: 'error' });
           removeLoadingOverlay();
@@ -276,9 +276,9 @@ function go() {
   ) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let messagesRequest;
+    let dataRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      messagesRequest = loadMessages();
+      dataRequest = loadData();
       getUserInfo(true).catch((e) => {
         console.warn(e);
       });
@@ -298,7 +298,7 @@ function go() {
       'oojs-ui.styles.icons-alerts',
     ]).then(
       () => {
-        commentLinks({ messagesRequest });
+        commentLinks({ dataRequest });
 
         // See the comment above: "Additions of CSS...".
         require('../less/global.less');
