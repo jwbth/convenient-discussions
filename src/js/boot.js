@@ -338,9 +338,11 @@ function initPatterns() {
 
   const quoteBeginnings = ['<blockquote>', '<q>'];
   const quoteEndings = ['</blockquote>', '</q>'];
-  cd.config.pairQuoteTemplates.forEach((template) => {
-    quoteBeginnings.push(`{{${template[0]}`);
-    quoteEndings.push(`{{${template[1]}`);
+  cd.config.pairQuoteTemplates?.[0].forEach((template) => {
+    quoteBeginnings.push(`{{${template}`);
+  });
+  cd.config.pairQuoteTemplates?.[1].forEach((template) => {
+    quoteEndings.push(`{{${template}`);
   });
   const quoteBeginningsPattern = quoteBeginnings.map(mw.util.escapeRegExp).join('|');
   const quoteEndingsPattern = quoteEndings.map(mw.util.escapeRegExp).join('|');

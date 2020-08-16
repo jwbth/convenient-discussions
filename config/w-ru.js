@@ -158,7 +158,8 @@ export default {
   ],
 
   pairQuoteTemplates: [
-    ['начало цитаты', 'конец цитаты'],
+    ['начало цитаты'],
+    ['конец цитаты'],
   ],
 
   blockSmallTemplate: 'block-small',

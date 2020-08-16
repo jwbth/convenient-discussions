@@ -259,13 +259,20 @@ export default {
   unsignedClass: 'autosigned',
 
   /**
-   * Quote templates that have a beginning and an ending template, like `{{Quote begin}}{{Quote
-   * end}}`. So, this is an array of two string arrays.
+   * There are quote template pairs where there is a beginning template and an ending template, like
+   * `{{Quote begin}}{{Quote end}}`. So, this is an array of two arrays of strings: the first one
+   * for beginning templates, the second one for ending templates.
    *
-   * @type {string[]}
-   * @default []
+   * @type {Array.<Array.<string>>}
+   * @default <pre class="prettyprint source"><code>[
+   *   [],
+   *   [],
+   * ]</code></pre>
    */
-  pairQuoteTemplates: [],
+  pairQuoteTemplates: [
+    [],
+    [],
+  ],
 
   /**
    * Name of the template that is an analog of {@link
