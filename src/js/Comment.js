@@ -1654,11 +1654,13 @@ export default class Comment extends CommentSkeleton {
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
         cd.g.TIMESTAMP_REGEXP.source +
-        '.*|' +
-        cd.g.UNSIGNED_TEMPLATES_PATTERN +
-        '.*)\\n)\\n*' +
+        '.*' +
+        (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
+        ')\\n)\\n*' +
         (searchedIndentationCharsLength > 0 ? `[:*#]{0,${searchedIndentationCharsLength}}` : '') +
-        '(?![:*#]|<!--)'
+
+        // "\n" is here to avoid putting the reply on a casual empty line.
+        '(?![:*#\\n]|<!--)'
       );
       const codeAfter = hideHtmlComments(pageCode).slice(currentIndex);
       let [, codeInBetween] = codeAfter.match(properPlaceRegexp) || [];
