@@ -4,7 +4,7 @@ on:
   release:
     types:
       - published
-  workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -18,5 +18,5 @@ jobs:
       - run: npm run build --dev
       - run: npm run deploy --dev
         env:
-          USERNAME: {{ secrets.WIKI_USERNAME }}
-          PASSWORD: {{ secrets.WIKI_PASSWORD }}
+          USERNAME: ${{ secrets.WIKI_USERNAME }}
+          PASSWORD: ${{ secrets.WIKI_PASSWORD }}
