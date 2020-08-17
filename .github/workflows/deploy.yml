@@ -1,0 +1,22 @@
+name: Build and deploy
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: npm ci
+      - run: npm run build --dev
+      - run: npm run deploy --dev
+        env:
+          USERNAME: {{ secrets.WIKI_USERNAME }}
+          PASSWORD: {{ secrets.WIKI_PASSWORD }}

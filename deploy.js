@@ -176,14 +176,19 @@ async function prepareEdits() {
     ))
     .join('\n');
   console.log(`Gonna make these edits:\n\n${overview}`);
-  const { confirm } = await prompts({
-    type: 'confirm',
-    name: 'confirm',
-    message: 'Proceed?',
-  });
 
-  if (confirm) {
+  if (process.env.CI) {
     logIn();
+  } else {
+    const { confirm } = await prompts({
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Proceed?',
+    });
+
+    if (confirm) {
+      logIn();
+    }
   }
 }
 
@@ -196,29 +201,33 @@ async function logIn() {
     deploy();
   }
 
-  const credentials = fs.existsSync('./credentials.json5') ? require('./credentials.json5') : {};
-  if (credentials.username && credentials.password) {
-    client.logIn(credentials.username, credentials.password, callback);
+  if (process.env.CI) {
+    client.logIn(process.env.USERNAME, process.env.PASSWORD, callback);
   } else {
-    console.log(`User name and/or password were not found in ${keyword('credentials.json5')}.`);
-    const response = await prompts([
-      {
-        type: 'text',
-        name: 'username',
-        message: 'Wikimedia user name',
-        validate: (value) => Boolean(value),
-      },
-      {
-        type: 'invisible',
-        name: 'password',
-        message: 'Password',
-        validate: (value) => Boolean(value),
-      },
-    ]);
+    const credentials = fs.existsSync('./credentials.json5') ? require('./credentials.json5') : {};
+    if (credentials.username && credentials.password) {
+      client.logIn(credentials.username, credentials.password, callback);
+    } else {
+      console.log(`User name and/or password were not found in ${keyword('credentials.json5')}.`);
+      const response = await prompts([
+        {
+          type: 'text',
+          name: 'username',
+          message: 'Wikimedia user name',
+          validate: (value) => Boolean(value),
+        },
+        {
+          type: 'invisible',
+          name: 'password',
+          message: 'Password',
+          validate: (value) => Boolean(value),
+        },
+      ]);
 
-    // Ctrl+C leaves the password unspecified.
-    if (response.password) {
-      client.logIn(response.username, response.password, callback);
+      // Ctrl+C leaves the password unspecified.
+      if (response.password) {
+        client.logIn(response.username, response.password, callback);
+      }
     }
   }
 }
