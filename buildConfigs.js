@@ -60,7 +60,7 @@ if (!convenientDiscussions.running) {
 
 }());
 `;
-    fs.mkdirSync('dist/config', { recursive: true });
+    fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true });
     fs.writeFileSync(`dist/convenientDiscussions-config/${name}${devSuffix}.js`, data);
   }
 });
