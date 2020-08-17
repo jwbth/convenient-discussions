@@ -12,4 +12,4 @@ fs.readdirSync('./i18n/').forEach((file) => {
   }
 });
 
-console.log('Internationalization has been built successfully.');
+console.log('Internationalization files has been built successfully.');

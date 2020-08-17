@@ -42,7 +42,7 @@ const plugins = [
   new WebpackBuildNotifierPlugin({
     suppressSuccess: true,
     suppressWarning: true,
-  })
+  }),
 ];
 
 if (!snippet) {
