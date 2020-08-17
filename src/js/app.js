@@ -380,11 +380,9 @@ function getStrings() {
       resolve();
     } else {
       mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`)
-        .catch(() => {
-          // We assume it's OK to fall back to English if the translation is unavailable for any
-          // reason. After all, something wrong could be with Gerrit.
-          resolve();
-        });
+        // We assume it's OK to fall back to English if the translation is unavailable for any
+        // reason.
+        .always(resolve);
     }
   });
 }
