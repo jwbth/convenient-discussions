@@ -317,30 +317,6 @@ function go() {
 }
 
 /**
- * Helper function to decode base64 strings.
- *
- * @param {string} s
- * @returns {string}
- * @author Sophivorus
- * @license GPL-2.0-only
- * @license CC-BY-SA-3.0
- * @license GFDL-1.3
- * @private
- */
-function decodeBase64(s) {
-  return decodeURIComponent(
-    window.atob(s)
-      .split('')
-      .map((character) => (
-        '%' +
-        ('00' + character.charCodeAt(0).toString(16))
-          .slice(-2)
-      ))
-      .join('')
-  );
-}
-
-/**
  * Load and execute the configuration script if available.
  *
  * @returns {Promise}
