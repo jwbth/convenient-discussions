@@ -7,22 +7,16 @@ const argv = require('yargs').argv;
 // npm run <command running this script> --dev
 const devSuffix = (argv.dev || process.env.npm_config_dev) ? '-dev' : '';
 
-const configs = [];
 fs.readdirSync('./config/').forEach((file) => {
   if (path.extname(file) === '.js') {
-    const [fullName, name] = path.basename(file).match(/^(\w+-\w+)\.js/) || [];
-    configs.push({ name, fullName });
-  }
-});
-
-configs.forEach((config) => {
-  const content = fs.readFileSync(`./config/${config.fullName}`)
-    .toString()
-    .trim()
-    .replace(/[^]*?export default /, '');
-  const data = `/**
+    const [fullName, name] = path.basename(file).match(/^(\w+-\w+)\.js$/) || [];
+    const content = fs.readFileSync(`./config/${fullName}`)
+      .toString()
+      .trim()
+      .replace(/[^]*?export default /, '');
+    const data = `/**
  * This file was assembled automatically from the configuration at
- * https://github.com/jwbth/convenient-discussions/tree/master/config/${config.fullName} by running
+ * https://github.com/jwbth/convenient-discussions/tree/master/config/${fullName} by running
  * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at
@@ -31,20 +25,6 @@ configs.forEach((config) => {
 
 (function () {
 
-// Author: [[User:Sophivorus]]
-// Licences: GFDL, CC BY-SA 3.0, GPL v2
-function decodeBase64(s) {
-  return decodeURIComponent(
-    window.atob(s)
-      .split('')
-      .map((character) => (
-        '%' +
-        ('00' + character.charCodeAt(0).toString(16)).slice(-2)
-      ))
-      .join('')
-  );
-}
-
 function getStrings() {
   const lang = mw.config.get('wgUserLanguage');
   return new Promise((resolve) => {
@@ -52,18 +32,12 @@ function getStrings() {
       // English strings are already in the script.
       resolve();
     } else {
-      $.get('https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/gadgets/ConvenientDiscussions/+/master/i18n/' + lang + '.json?format=text')
-        .then(
-          (data) => {
-            convenientDiscussions.strings = JSON.parse(decodeBase64(data));
-            resolve();
-          },
-          () => {
-            // We assume it's OK to fall back to English if the translation is unavailable for any
-            // reason. After all, something wrong could be with Gerrit.
-            resolve();
-          }
-        );
+      mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js&action=raw&ctype=text/javascript')
+        .catch(() => {
+          // We assume it's OK to fall back to English if the translation is unavailable for any
+          // reason. After all, something wrong could be with Gerrit.
+          resolve();
+        });
     }
   });
 }
@@ -88,8 +62,9 @@ if (!convenientDiscussions.running) {
 
 }());
 `;
-  fs.mkdirSync('dist/config', { recursive: true });
-  fs.writeFileSync(`dist/config/${config.name}${devSuffix}.js`, data);
+    fs.mkdirSync('dist/config', { recursive: true });
+    fs.writeFileSync(`dist/convenientDiscussions-config/${name}${devSuffix}.js`, data);
+  }
 });
 
 console.log('Project configs have been built successfully.');

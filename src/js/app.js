@@ -379,18 +379,12 @@ function getStrings() {
       // English strings are already in the build.
       resolve();
     } else {
-      $.get(`https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/gadgets/ConvenientDiscussions/+/master/i18n/${lang}.json?format=text`)
-        .then(
-          (data) => {
-            cd.strings = JSON.parse(decodeBase64(data));
-            resolve();
-          },
-          () => {
-            // We assume it's OK to fall back to English if the translation is unavailable for any
-            // reason. After all, something wrong could be with Gerrit.
-            resolve();
-          }
-        );
+      mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`)
+        .catch(() => {
+          // We assume it's OK to fall back to English if the translation is unavailable for any
+          // reason. After all, something wrong could be with Gerrit.
+          resolve();
+        });
     }
   });
 }
@@ -511,6 +505,7 @@ async function app() {
   try {
     await Promise.all([
       !cd.config && getConfig(),
+
       // cd.getStringsPromise may be set in the configuration file.
       !cd.strings && (cd.getStringsPromise || getStrings()),
     ].filter(defined));

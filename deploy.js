@@ -39,6 +39,12 @@ if (!files || !Array.isArray(files) || !files.length) {
   return;
 }
 
+files.forEach((file, i) => {
+  if (file.endsWith('/')) {
+    files.splice(i, 1, ...fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir));
+  }
+});
+
 const client = new Mw({
   protocol: config.protocol,
   server: config.server,
@@ -135,14 +141,14 @@ async function prepareEdits() {
     if (tildesMatch || substMatch) {
       const snippet = code(tildesMatch || substMatch);
       if (nowikiMatch) {
-        error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.`);
+        error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.\n`);
         return;
       } else {
-        warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.`);
+        warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.\n`);
       }
     }
     if (nowikiMatch) {
-      warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}`);
+      warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}\n`);
     }
 
     let summary = `Update to ${commits[0].hash} @ ${branch}`;
