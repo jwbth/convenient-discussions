@@ -3,6 +3,7 @@
 		"authors": [
 			"Abijeet Patro",
 			"IKhitron",
+			"Jack who built the house",
 			"דגש חזק"
 		]
 	},
@@ -268,6 +269,8 @@
 	"error-javascript": "התרחשה שגיאת JavaScript. ראו פרטים בקונסולת JavaScript (F12 → Console).",
 	"error-locatecomment": "לא ניתן למצוא את הפוסט בדף. זה יכול לקרות בגלל קוד מסובך, או בעיה בסקריפט עקב העובדה שהפוסט נמחק או נערך בצורה משמעותית. ניתן לנסות <a class=\"cd-message-reloadPage\">לטעון את הדף מחדש</a>.",
 	"error-locatesection": "לא ניתן למצוא את הנושא בדף. זה יכול לקרות בגלל קוד מסובך, או בעיה בסקריפט עקב העובדה שהנושא נמחק. ניתן לנסות <a class=\"cd-message-reloadPage\">לטעון את הדף מחדש</a>.",
+	"error-spamblacklist": "ניסיון להוסיף קישור חיצוני לאתר $1 מהרשימה השחורה. הדף לא נערך.",
+	"error-titleblacklist": "שם הדף נמצא ברשימה השחורה. הדף לא נערך.",
 	"error-abusefilter": "העריכה נדחתה אוטומטית עקב הפעלת מסנן השחתות \"$1\".",
 	"error-blocked": "החשבון חסום. הדף לא נערך.",
 	"error-pagedeleted": "הדף נמחק.",

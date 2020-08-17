@@ -2,10 +2,11 @@
 	"@metadata": {
 		"authors": [
 			"Abijeet Patro",
-			"Bjankuloski06"
+			"Bjankuloski06",
+			"Jack who built the house"
 		]
 	},
-	"script-name": "Згодни разговори",
+	"script-name": "„Згодни разговори“",
 	"script-name-short": "ЗР",
 	"cm-gotoparent-tooltip": "Оди на првичниот коментар",
 	"cm-gotochild-tooltip": "Назад на одговорниот коментар",
@@ -118,7 +119,7 @@
 	"cf-reaction-templateinheadline": "Не користете предлошки во заглавијата: ова ги расипува врските до одделите.",
 	"cf-reaction-signature": "Нема потреба да внесувате <kbd>$1</kbd>: потписот се појавува автоматски.",
 	"cf-reaction-pre": "Ознаките <code>&lt;pre&gt;</code> го расипуваат распоредот на страницата. Користете <code>&lt;syntaxhighlight&gt;</code>.",
-	"cf-reaction-mention-edit": "Бидејќи <em>уредувате</em> коментар, нема да биде испратено <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">известување за спомнување</a>.",
+	"cf-reaction-mention-edit": "Бидејќи <em>уредувате</em> коментар, нема да биде испратено <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">известување за спомнување</a>.",
 	"cf-reaction-mention-nosignature": "Бидејќи избравте да не си ги потпишувате коментарите, нема да биде испратено <a href=\"https://www.mediawiki.org/wiki/Help:Notifications/Mention#How_to_mention_another_editor_and_trigger_a_notification\" target=\"_blank\">известување за спомнување</a>.",
 	"cf-notice-nochanges": "Нема промени.",
 	"cf-notice-editconflict-retrying": "Се обидувам повторно…",
@@ -178,7 +179,6 @@
 	"navpanel-newcomments-unknowndate": "непознат датум",
 	"navpanel-newcomments-firstunseen": "Стиснете за да појдете на првиот непрочитан коментар.",
 	"navpanel-newcomments-refresh": "Стиснете за да ја превчитате страницата.",
-	"navpanel-elementhidden": "Елементот е скриен. Не можете да прејдете на него.",
 	"notification-toyou": "$1 {{gender:$2|ви одговори}} на коментарот$3.",
 	"notification-toyou-desktop": "$1 {{gender:$2|ви одговори}} на коментарот$3 на страницата „$4“.",
 	"notification-insection": "$1 {{gender:$2|одговори}} во одделот „$3“.",
@@ -294,6 +294,7 @@
 	"error-pagenotedited": "Страницата не е уредена.",
 	"error-diffnotfound": "Не можев да го најдам уредувањето со кое е додаден коментаров.",
 	"error-diffnotfound-history": "Можете самите да го побарате во <a href=\"$1\" target=\"_blank\">историјата на преработки</a>.",
+	"error-elementhidden": "Елементот е скриен. Не можете да прејдете на него.",
 	"wl-button-switchinteresting-tooltip": "Прикажи само коментари во оддели кои ги набљудувам и коментари упатени кон мене",
 	"wl-button-editwatchedsections-tooltip": "Уреди оддели што ги набљудувам",
 	"wl-button-scriptsettings-tooltip": "Нагодувања за „Згодни разговори“",
