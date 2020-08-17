@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Abijeet Patro",
+			"Jack who built the house",
 			"Robby"
 		]
 	},
@@ -83,6 +84,7 @@
 	"cf-confirm-delete-no": "Ofbriechen",
 	"cf-confirm-close-yes": "Zoumaachen",
 	"cf-confirm-close-no": "Ofbriechen",
+	"cf-mentions-tooltip": "E Benotzer ernimmen",
 	"dn-confirm-yes": "Jo",
 	"dn-confirm-no": "Neen",
 	"dn-grantpermission": "Dem Site eng Autorisatioun ginn.",
@@ -141,7 +143,9 @@
 	"error-api": "API Feeler: $1.",
 	"error-network": "Feeler vum Reseau.",
 	"error-unknown": "Onbekannte Feeler.",
+	"error-spamblacklist": "Adress $1 steet op der 'schwaarzer Lëscht'. D'Säit gouf net geännert.",
 	"error-abusefilter": "Är Ännerung gouf automatesch vum Mëssbrauchsfiler \"$1\" refuséiert.",
+	"error-editconflict": "Ännerungskonflikt.",
 	"error-blocked": "Dir sidd fir Ännerunge gespaart. D'Säit gouf net geännert.",
 	"error-pagedeleted": "D'Säit gouf geläscht.",
 	"error-pagenotedited": "D'Säit gouf net geännert.",
