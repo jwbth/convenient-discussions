@@ -2515,7 +2515,7 @@ export default class CommentForm {
   async tryEditPage(page, newPageCode, currentOperation) {
     let result;
     try {
-      result = this.targetPage.edit({
+      result = await this.targetPage.edit({
         text: newPageCode,
         summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
         tags: cd.config.tagName,
