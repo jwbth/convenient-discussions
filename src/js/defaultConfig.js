@@ -7,8 +7,8 @@ import cd from './cd';
 export default {
   /**
    * Object with the names and texts of the messages required by the script as keys and values. Used
-   * to avoid making additional requests. Get these messages by running
-   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js
+   * to avoid making additional requests. Get these messages by running {@link
+   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
    * @type {object}
@@ -26,8 +26,8 @@ export default {
   contribsPage: null,
 
   /**
-   * Local timezone offset in minutes. Get by running
-   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js
+   * Local timezone offset in minutes. Get by running {@link
+   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open. Leave `null` if your wiki uses
    * daylight saving time (summer time).
    *
