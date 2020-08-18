@@ -127,13 +127,6 @@ export default class CommentForm {
     // sudden.
     saveScrollPosition();
 
-    if (this.mode === 'replyInSection') {
-      this.target.$replyButton.hide();
-    }
-    if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
-      this.target.$addSubsectionButtonContainer.hide();
-    }
-
     this.addToPage();
 
     /**
@@ -1038,6 +1031,13 @@ export default class CommentForm {
    * Insert the form into the DOM.
    */
   addToPage() {
+    if (this.mode === 'replyInSection') {
+      this.target.$replyButton.hide();
+    }
+    if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
+      this.target.$addSubsectionButtonContainer.hide();
+    }
+
     // 'addSection'
     if (!mw.config.get('wgArticleId')) {
       cd.g.$root.empty();
