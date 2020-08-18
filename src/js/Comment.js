@@ -1789,13 +1789,14 @@ export default class Comment extends CommentSkeleton {
           this.backgroundColor = backgroundColor;
 
           offsetParent = treeWalker.currentNode;
-          offsetParent.classList.add('cd-commentLayersContainerParent');
+          offsetParent.classList.add('cd-commentLayersContainerParent-relative');
           break;
         }
       }
       if (!offsetParent) {
         offsetParent = document.body;
       }
+      offsetParent.classList.add('cd-commentLayersContainerParent');
       let container = offsetParent.firstElementChild;
       if (!container.classList.contains('cd-commentLayersContainer')) {
         container = document.createElement('div');

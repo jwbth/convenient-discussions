@@ -46,7 +46,7 @@ export default {
     // repositioned immediately and therefore not appearing as misplaced to this procedure. Two
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
-      const shouldBeHighlighted = (
+      const shouldBeHighlighted = Boolean(
         comment.newness ||
         (comment.own && cd.settings.highlightOwnComments) ||
         comment.target ||
@@ -81,9 +81,10 @@ export default {
         } else if (
           moved === false &&
 
-          // Nested containers shouldn't count, the positions of layers inside them may be OK,
-          // unlike layers preceding them.
-          !comment.getLayersContainer().parentNode.closest('.cd-commentLayersContainer')
+          // Nested containers shouldn't count, the positions of the layers inside them may be OK,
+          // unlike the layers preceding them.
+          !comment.getLayersContainer().parentNode.parentNode
+            .closest('.cd-commentLayersContainerParent')
         ) {
           notMovedCount++;
           if (notMovedCount === 2) {
