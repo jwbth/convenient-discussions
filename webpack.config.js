@@ -158,7 +158,7 @@ module.exports = {
           // Removed "\**!|" at the beginning not to extract the <nowiki> comment
           condition: /@preserve|@license|@cc_on/i,
 
-          filename: (filename) => `${filename}.LICENSE`,
+          filename: (filename) => `${filename}.LICENSE.js`,
           banner: (licenseFile) => `For license information please see ${getUrl(config.rootPath + licenseFile)}`,
         },
         sourceMap: true,

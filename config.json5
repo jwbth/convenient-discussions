@@ -16,7 +16,7 @@
   distFiles: {
     default: [
       'convenientDiscussions.js',
-      'convenientDiscussions.js.LICENSE',
+      'convenientDiscussions.js.LICENSE.js',
       'convenientDiscussions.js.map.json',
       'convenientDiscussions-worker.js.map.json',
       'convenientDiscussions-i18n/',
