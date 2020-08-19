@@ -141,6 +141,7 @@ export default class Page {
           break;
         }
       }
+      result = name;
     }
     return String(result || name);
   }
