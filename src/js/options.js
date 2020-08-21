@@ -8,6 +8,7 @@ import lzString from 'lz-string';
 
 import CdError from './CdError';
 import cd from './cd';
+import { firstCharToUpperCase } from './util';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
@@ -80,18 +81,81 @@ export function unpackWatchedSections(watchedSectionsString) {
 /**
  * Request the settings from the server.
  *
- * @param {boolean} [reuse=false]
+ * @param {object} [options={}]
+ * @param {object} [options.options] Options object.
+ * @param {boolean} [options.omitLocal=false] Whether to omit variables set via "cdLocal..."
+ *   variables (they don't need to be saved to the server).
+ * @param {boolean} [options.reuse=false] If `options` is not set, reuse the cached user info
+ *   request.
  * @returns {object}
  */
-export async function getSettings(reuse = false) {
-  const { options } = await getUserInfo(reuse);
-
-  let settings;
-  try {
-    settings = JSON.parse(options[cd.g.SETTINGS_OPTION_FULL_NAME]) || {};
-  } catch (e) {
-    settings = cd.settings;
+export async function getSettings({
+  options,
+  omitLocal = false,
+  reuse = false,
+} = {}) {
+  if (!options) {
+    ({ options } = await getUserInfo(reuse));
   }
+
+  let globalSettings;
+  try {
+    globalSettings = JSON.parse(options[cd.g.SETTINGS_OPTION_FULL_NAME]) || {};
+  } catch (e) {
+    globalSettings = {};
+  }
+
+  let localSettings;
+  try {
+    localSettings = JSON.parse(options[cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME]) || {};
+  } catch (e) {
+    localSettings = {};
+  }
+
+  let settings = {};
+
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
+      // Global settings override those set via personal JS.
+      if (
+        globalSettings[alias] !== undefined &&
+        typeof globalSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        settings[name] = globalSettings[alias];
+      }
+
+      // Local settings override global.
+      if (
+        localSettings[alias] !== undefined &&
+        typeof localSettings[alias] === typeof cd.defaultSettings[name]
+      ) {
+        settings[name] = localSettings[alias];
+      }
+    });
+  });
+
+  if (!omitLocal) {
+    Object.assign(settings, getLocalOverridingSettings(settings));
+  }
+
+  return settings;
+}
+
+/**
+ * Get settings set in common.js that are meant to override native settings.
+ *
+ * @returns {object}
+ */
+export function getLocalOverridingSettings() {
+  const settings = {};
+  Object.keys(cd.defaultSettings).forEach((name) => {
+    (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
+      const varLocalAlias = 'cdLocal' + firstCharToUpperCase(alias);
+      if (varLocalAlias in window && typeof varLocalAlias === typeof cd.defaultSettings[name]) {
+        settings[name] = window[alias];
+      }
+    });
+  });
   return settings;
 }
 
