@@ -57,6 +57,54 @@ function removeAlarmViaWorker() {
 }
 
 /**
+ * Process the current page in the worker context.
+ */
+export async function processPageInBackground() {
+  const { text } = await cd.g.CURRENT_PAGE.parse({
+    noTimers: true,
+    markAsRead: false,
+  }) || {};
+  if (text === undefined) {
+    console.error('No page text.');
+  } else {
+    cd.g.worker.postMessage({
+      type: 'parse',
+      text,
+      g: {
+        TIMESTAMP_REGEXP: cd.g.TIMESTAMP_REGEXP,
+        TIMESTAMP_REGEXP_NO_TIMEZONE: cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE,
+        TIMESTAMP_PARSER: cd.g.TIMESTAMP_PARSER.toString(),
+        TIMESTAMP_MATCHING_GROUPS: cd.g.TIMESTAMP_MATCHING_GROUPS,
+        TIMEZONE_REGEXP: cd.g.TIMEZONE_REGEXP,
+        DIGITS: cd.g.DIGITS,
+        LOCAL_TIMEZONE_OFFSET: cd.g.LOCAL_TIMEZONE_OFFSET,
+        MESSAGES: cd.g.MESSAGES,
+        CONTRIBS_PAGE: cd.g.CONTRIBS_PAGE,
+        CONTRIBS_PAGE_LINK_REGEXP: cd.g.CONTRIBS_PAGE_LINK_REGEXP,
+        ARTICLE_PATH_REGEXP: cd.g.ARTICLE_PATH_REGEXP,
+        USER_NAMESPACES_REGEXP: cd.g.USER_NAMESPACES_REGEXP,
+        UNHIGHLIGHTABLE_ELEMENTS_CLASSES: cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES,
+        CURRENT_USER_NAME: cd.g.CURRENT_USER_NAME,
+        CURRENT_USER_GENDER: cd.g.CURRENT_USER_GENDER,
+        CURRENT_PAGE_NAME: cd.g.CURRENT_PAGE.name,
+        CURRENT_NAMESPACE_NUMBER: cd.g.CURRENT_NAMESPACE_NUMBER,
+        PHP_CHAR_TO_UPPER_JSON: cd.g.PHP_CHAR_TO_UPPER_JSON,
+      },
+      config: {
+        customFloatingElementsSelectors: cd.config.customFloatingElementsSelectors,
+        closedDiscussionsClasses: cd.config.closedDiscussionsClasses,
+        elementsToExcludeClasses: cd.config.elementsToExcludeClasses,
+        signatureScanLimit: cd.config.signatureScanLimit,
+        foreignElementsInHeadlinesClasses: cd.config.foreignElementsInHeadlinesClasses,
+        checkForCustomForeignComponents: cd.config.checkForCustomForeignComponents ?
+          cd.config.checkForCustomForeignComponents.toString() :
+          cd.config.checkForCustomForeignComponents,
+      }
+    });
+  }
+}
+
+/**
  * Check for new comments in a web worker, update the navigation panel, and schedule the next check.
  *
  * @private
@@ -122,48 +170,7 @@ async function checkForNewComments() {
     newRevisions = newRevisions.filter(unique);
 
     if (addedNewRevisions.length) {
-      const { text } = await cd.g.CURRENT_PAGE.parse({
-        noTimers: true,
-        markAsRead: false,
-      }) || {};
-      if (text === undefined) {
-        console.error('No page text.');
-      } else {
-        cd.g.worker.postMessage({
-          type: 'parse',
-          text,
-          g: {
-            TIMESTAMP_REGEXP: cd.g.TIMESTAMP_REGEXP,
-            TIMESTAMP_REGEXP_NO_TIMEZONE: cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE,
-            TIMESTAMP_PARSER: cd.g.TIMESTAMP_PARSER.toString(),
-            TIMESTAMP_MATCHING_GROUPS: cd.g.TIMESTAMP_MATCHING_GROUPS,
-            TIMEZONE_REGEXP: cd.g.TIMEZONE_REGEXP,
-            DIGITS: cd.g.DIGITS,
-            LOCAL_TIMEZONE_OFFSET: cd.g.LOCAL_TIMEZONE_OFFSET,
-            MESSAGES: cd.g.MESSAGES,
-            CONTRIBS_PAGE: cd.g.CONTRIBS_PAGE,
-            CONTRIBS_PAGE_LINK_REGEXP: cd.g.CONTRIBS_PAGE_LINK_REGEXP,
-            ARTICLE_PATH_REGEXP: cd.g.ARTICLE_PATH_REGEXP,
-            USER_NAMESPACES_REGEXP: cd.g.USER_NAMESPACES_REGEXP,
-            UNHIGHLIGHTABLE_ELEMENTS_CLASSES: cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES,
-            CURRENT_USER_NAME: cd.g.CURRENT_USER_NAME,
-            CURRENT_USER_GENDER: cd.g.CURRENT_USER_GENDER,
-            CURRENT_PAGE_NAME: cd.g.CURRENT_PAGE.name,
-            CURRENT_NAMESPACE_NUMBER: cd.g.CURRENT_NAMESPACE_NUMBER,
-            PHP_CHAR_TO_UPPER_JSON: cd.g.PHP_CHAR_TO_UPPER_JSON,
-          },
-          config: {
-            customFloatingElementsSelectors: cd.config.customFloatingElementsSelectors,
-            closedDiscussionsClasses: cd.config.closedDiscussionsClasses,
-            elementsToExcludeClasses: cd.config.elementsToExcludeClasses,
-            signatureScanLimit: cd.config.signatureScanLimit,
-            foreignElementsInHeadlinesClasses: cd.config.foreignElementsInHeadlinesClasses,
-            checkForCustomForeignComponents: cd.config.checkForCustomForeignComponents ?
-              cd.config.checkForCustomForeignComponents.toString() :
-              cd.config.checkForCustomForeignComponents,
-          }
-        });
-      }
+      processPageInBackground();
     }
   } catch (e) {
     if (e?.data?.type !== 'network') {

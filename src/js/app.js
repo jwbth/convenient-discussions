@@ -28,6 +28,7 @@ import {
   setLoadingOverlay,
 } from './boot';
 import { loadData } from './dateFormat';
+import { processPageInBackground } from './navPanel';
 import { setVisits } from './options';
 
 let config;
@@ -462,6 +463,9 @@ async function app() {
    * @memberof module:cd~convenientDiscussions.util
    */
   cd.util.setVisits = setVisits;
+
+  // Useful for testing
+  cd.g.processPageInBackground = processPageInBackground;
 
   cd.debug.init();
   cd.debug.startTimer('total time');
