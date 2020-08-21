@@ -25,15 +25,15 @@ import {
   unhideText,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
+import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo, setLocalOption } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadData } from './dateFormat';
-import { setSettings } from './options';
 
 /**
  * Initiate user settings.
  */
-export function initSettings() {
+export async function initSettings() {
   /**
    * Script settings of the current user.
    *
@@ -43,6 +43,9 @@ export function initSettings() {
    */
   cd.settings = cd.settings || {};
 
+  // We fill the settings after the modules are loaded so that the settings set via common.js had
+  // less chance not to load.
+
   /**
    * Default settings.
    *
@@ -50,8 +53,6 @@ export function initSettings() {
    * @type {object}
    * @memberof module:cd~convenientDiscussions
    */
-  // We fill the settings after the modules are loaded so that the user settings had less chance not
-  // to load.
   cd.defaultSettings = {
     allowEditOthersComments: false,
     alwaysExpandSettings: false,
@@ -80,52 +81,36 @@ export function initSettings() {
 
   cd.localSettingNames = ['insertButtons', 'insertButtonsChanged'];
 
+  const options = {
+    [cd.g.SETTINGS_OPTION_FULL_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME),
+    [cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME]: mw.user.options.get(
+      cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME
+    ),
+  }
+
   // Aliases for seamless transition when changing a setting name.
-  const aliases = {
+  cd.settingAliases = {
     allowEditOthersMsgs: ['allowEditOthersComments'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySignature', 'mySig'],
   };
 
-  let nativeSettings;
-  try {
-    nativeSettings = JSON.parse(mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME)) || {};
-  } catch (e) {
-    nativeSettings = {};
-  }
-
-  let localSettings;
-  try {
-    localSettings = JSON.parse(mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME)) || {};
-  } catch (e) {
-    localSettings = {};
-  }
-
+  // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
+  // were implemented.
   Object.keys(cd.defaultSettings).forEach((name) => {
-    (aliases[name] || []).concat(name).forEach((alias) => {
-      // Settings in variables like "cdAlowEditOthersComments"
+    (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
       const varAlias = 'cd' + firstCharToUpperCase(alias);
       if (varAlias in window && typeof varAlias === typeof cd.defaultSettings[name]) {
         cd.settings[name] = window[alias];
       }
-
-      // Global settings override those set via personal JS.
-      if (
-        nativeSettings[alias] !== undefined &&
-        typeof nativeSettings[alias] === typeof cd.defaultSettings[name]
-      ) {
-        cd.settings[name] = nativeSettings[alias];
-      }
-
-      // Local settings override global.
-      if (
-        localSettings[alias] !== undefined &&
-        typeof localSettings[alias] === typeof cd.defaultSettings[name]
-      ) {
-        cd.settings[name] = localSettings[alias];
-      }
     });
   });
+
+  const remoteSettings = await getSettings({
+    options,
+    omitLocal: true,
+  });
+  cd.settings = Object.assign(cd.settings, remoteSettings);
 
   // Seamless transition from mySignature.
   if (cd.settings.signaturePrefix) {
@@ -135,17 +120,15 @@ export function initSettings() {
 
   if (
     !cd.settings.insertButtonsChanged &&
-    JSON.stringify(nativeSettings.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
+    JSON.stringify(cd.settings.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
   ) {
     cd.settings.insertButtons = cd.config.defaultInsertButtons;
   }
 
   cd.settings = Object.assign({}, cd.defaultSettings, cd.settings);
 
-  const remoteSettings = Object.assign({}, nativeSettings, localSettings);
-  const needToSetRemote = Object.keys(cd.settings).some((key) => (
-    JSON.stringify(cd.settings[key]) !== JSON.stringify(remoteSettings[key])
-  ));
+  const needToSetRemote = Object.keys(cd.settings)
+    .some((key) => JSON.stringify(cd.settings[key]) !== JSON.stringify(remoteSettings[key]));
   if (needToSetRemote) {
     setSettings().catch((e) => {
       console.warn('Couldn\'t save the settings to the server.', e);
@@ -157,15 +140,8 @@ export function initSettings() {
     setLocalOption('userjs-cd-settings', undefined);
   }
 
-  Object.keys(cd.defaultSettings).forEach((name) => {
-    (aliases[name] || []).concat(name).forEach((alias) => {
-      // Settings in variables like "cdLocal..." override all other and are not saved to the server.
-      const varLocalAlias = 'cdLocal' + firstCharToUpperCase(alias);
-      if (varLocalAlias in window && typeof varLocalAlias === typeof cd.defaultSettings[name]) {
-        cd.settings[name] = window[alias];
-      }
-    });
-  });
+  // Settings in variables like "cdLocal..." override all other and are not saved to the server.
+  Object.assign(cd.settings, getLocalOverridingSettings());
 }
 
 /**
@@ -527,7 +503,7 @@ export async function init({ messagesRequest }) {
 
   await (messagesRequest || loadData());
   initGlobals();
-  initSettings();
+  await initSettings();
   initTimestampParsingTools();
 
   /**
