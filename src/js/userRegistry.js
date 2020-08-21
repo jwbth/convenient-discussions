@@ -26,7 +26,11 @@ export default {
     if (name.includes('#')) {
       name = name.slice(0, name.indexOf('#'));
     }
-    name = underlinesToSpaces(firstCharToUpperCase(name)).trim();
+    if (mw.util.isIPv6Address(name)) {
+      name = name.toUpperCase().trim();
+    } else {
+      name = underlinesToSpaces(firstCharToUpperCase(name)).trim();
+    }
 
     if (!this.users[name]) {
       const options = name === cd.g.CURRENT_USER_NAME ? { gender: cd.g.CURRENT_USER_GENDER } : {};
