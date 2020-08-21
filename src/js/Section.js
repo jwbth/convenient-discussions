@@ -1086,7 +1086,7 @@ export default class Section extends SectionSkeleton {
         const lastComment = this.comments[this.comments.length - 1];
         if (
           lastComment &&
-          (this.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
+          (commentForm.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
         ) {
           try {
             lastComment.locateInCode();
@@ -1095,10 +1095,10 @@ export default class Section extends SectionSkeleton {
               lastComment.inCode &&
               (
                 !lastComment.inCode.indentationChars.startsWith('#') ||
-                // For now we use the workaround with this.containerListType to make sure "#" is a
-                // part of comments organized in a numbered list, not of a numbered list _in_ the
-                // target comment.
-                this.containerListType === 'ol'
+                // For now we use the workaround with commentForm.containerListType to make sure "#"
+                // is a part of comments organized in a numbered list, not of a numbered list _in_
+                // the target comment.
+                commentForm.containerListType === 'ol'
               )
             ) {
               this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
