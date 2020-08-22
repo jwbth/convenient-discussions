@@ -1526,7 +1526,7 @@ export default class CommentForm {
       });
       this.cancel(false);
     } else {
-      if (!(currentOperation && currentOperation.type === 'preview' && cd.settings.autopreview)) {
+      if (!(currentOperation && currentOperation.type === 'preview' && currentOperation.auto)) {
         this.showMessage(message, {
           type: messageType,
           isRaw: isRawMessage,
