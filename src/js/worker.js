@@ -147,6 +147,25 @@ function parse() {
 }
 
 /**
+ * Restore function from its code.
+ *
+ * @param {string} code
+ * @returns {Function}
+ */
+function restoreFunc(code) {
+  if (code) {
+    if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
+      code = 'function ' + code;
+    }
+    if (/^ *function *\(/.test(code)) {
+      code = '(' + code + ')';
+    }
+  }
+  // FIXME: Any idea how to avoid using eval() here?
+  return eval(code);
+}
+
+/**
  * Callback for messages from the window.
  *
  * @param {Event} e
@@ -174,14 +193,10 @@ function onMessageFromWindow(e) {
     Object.assign(cd.g, message.g);
     cd.config = message.config;
 
-    // FIXME: Any idea how to avoid using eval() here?
-    let checker = cd.config.checkForCustomForeignComponents;
-    if (checker && !/^ *function +/.test(checker) && !/^.+=>/.test(checker)) {
-      checker = 'function ' + checker;
-    }
-    cd.config.checkForCustomForeignComponents = eval(checker);
-
-    cd.g.TIMESTAMP_PARSER = eval(cd.g.TIMESTAMP_PARSER);
+    cd.config.checkForCustomForeignComponents = restoreFunc(
+      cd.config.checkForCustomForeignComponents
+    );
+    cd.g.TIMESTAMP_PARSER = restoreFunc(cd.g.TIMESTAMP_PARSER);
 
     cd.debug.startTimer('parse html');
 
