@@ -101,7 +101,7 @@ export async function initSettings() {
     (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
       const varAlias = 'cd' + firstCharToUpperCase(alias);
       if (varAlias in window && typeof window[varAlias] === typeof cd.defaultSettings[name]) {
-        cd.settings[name] = window[alias];
+        cd.settings[name] = window[varAlias];
       }
     });
   });

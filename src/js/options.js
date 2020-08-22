@@ -155,7 +155,7 @@ export function getLocalOverridingSettings() {
         varLocalAlias in window &&
         typeof window[varLocalAlias] === typeof cd.defaultSettings[name]
       ) {
-        settings[name] = window[alias];
+        settings[name] = window[varLocalAlias];
       }
     });
   });
