@@ -78,6 +78,9 @@ function getUserNameFromLink(element) {
     userName = match[1];
   } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
     userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
+    if (cd.g.IS_IPv6_ADDRESS(userName)) {
+      userName = userName.toUpperCase();
+    }
   }
   return userName && firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
 }

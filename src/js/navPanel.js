@@ -106,6 +106,7 @@ export async function processPageInBackground() {
       g: keepWorkerSafeValues(cd.g, [
         'MESSAGES',
         'PHP_CHAR_TO_UPPER_JSON',
+        'IS_IPv6_ADDRESS',
         'TIMESTAMP_PARSER',
       ]),
       config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
