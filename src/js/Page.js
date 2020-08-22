@@ -324,7 +324,7 @@ export default class Page {
     }
 
     const parse = (await request).parse;
-    if (parse === undefined) {
+    if (parse?.text === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',

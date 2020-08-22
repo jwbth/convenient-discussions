@@ -97,21 +97,17 @@ export async function processPageInBackground() {
     noTimers: true,
     markAsRead: false,
   }) || {};
-  if (text === undefined) {
-    console.error('No page text.');
-  } else {
-    cd.g.worker.postMessage({
-      type: 'parse',
-      text,
-      g: keepWorkerSafeValues(cd.g, [
-        'MESSAGES',
-        'PHP_CHAR_TO_UPPER_JSON',
-        'IS_IPv6_ADDRESS',
-        'TIMESTAMP_PARSER',
-      ]),
-      config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
-    });
-  }
+  cd.g.worker.postMessage({
+    type: 'parse',
+    text,
+    g: keepWorkerSafeValues(cd.g, [
+      'MESSAGES',
+      'PHP_CHAR_TO_UPPER_JSON',
+      'IS_IPv6_ADDRESS',
+      'TIMESTAMP_PARSER',
+    ]),
+    config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
+  });
 }
 
 /**
@@ -146,7 +142,7 @@ async function checkForNewComments() {
     mw.config.get('wgRevisionId');
 
   try {
-    const revisionsResp = await makeRequestNoTimers({
+    const resp = await makeRequestNoTimers({
       action: 'query',
       titles: cd.g.CURRENT_PAGE.name,
       prop: 'revisions',
@@ -158,7 +154,7 @@ async function checkForNewComments() {
       formatversion: 2,
     }).catch(handleApiReject);
 
-    const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
+    const revisions = resp?.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',

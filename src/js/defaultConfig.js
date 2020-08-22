@@ -174,6 +174,9 @@ export default {
   indentationCharMode: 'mimic',
 
   /**
+   * Text that is removed from the end of the comment text and transferred to the beginning of the
+   * signature text when editing a comment.
+   *
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
    * this:
    * ```
@@ -186,7 +189,7 @@ export default {
    * @type {RegExp}
    * @default
    */
-  signaturePrefixRegexp: /(?:\s+>+)?(?:·|-|–|—|―|~|\/|→|⇒|\s|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
+  signaturePrefixRegexp: /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
 
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
