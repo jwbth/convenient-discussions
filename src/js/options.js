@@ -151,7 +151,10 @@ export function getLocalOverridingSettings() {
   Object.keys(cd.defaultSettings).forEach((name) => {
     (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
       const varLocalAlias = 'cdLocal' + firstCharToUpperCase(alias);
-      if (varLocalAlias in window && typeof varLocalAlias === typeof cd.defaultSettings[name]) {
+      if (
+        varLocalAlias in window &&
+        typeof window[varLocalAlias] === typeof cd.defaultSettings[name]
+      ) {
         settings[name] = window[alias];
       }
     });
