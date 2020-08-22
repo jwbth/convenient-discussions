@@ -786,7 +786,7 @@ export async function settingsDialog() {
 
   // Make requests in advance.
   const preparationRequests = [
-    getSettings(),
+    getSettings({ omitLocal: true }),
     mw.loader.using('mediawiki.widgets.UsersMultiselectWidget'),
   ];
 
