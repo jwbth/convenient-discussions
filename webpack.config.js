@@ -117,7 +117,7 @@ module.exports = {
         use: ['style-loader', 'css-loader', 'less-loader'],
       },
       {
-        test: /worker-gate\.js$/,
+        test: /\bworker-gate\.js$/,
         use: {
           loader: 'worker-loader',
           options: {

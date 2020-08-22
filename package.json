@@ -60,7 +60,8 @@
     "yargs": "^15.4.1"
   },
   "sideEffects": [
-    "*.less"
+    "*.less",
+    "src/js/worker.js"
   ],
   "browserslist": [
     "> 1%",
