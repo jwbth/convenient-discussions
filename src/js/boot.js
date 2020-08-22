@@ -9,7 +9,7 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
 import Section from './Section';
-import Worker from './worker';
+import Worker from './worker-gate';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel, { updatePageTitle } from './navPanel';
