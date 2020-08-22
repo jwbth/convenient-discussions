@@ -1659,8 +1659,9 @@ export default class Comment extends CommentSkeleton {
         ')\\n)\\n*' +
         (searchedIndentationCharsLength > 0 ? `[:*#]{0,${searchedIndentationCharsLength}}` : '') +
 
-        // "\n" is here to avoid putting the reply on a casual empty line.
-        '(?![:*#\\n]|<!--)'
+        // "\n" is here to avoid putting the reply on a casual empty line. "{" is here to avoid
+        // putting the reply before a "closed discussion" template.
+        '(?![:*#\\n{]|<!--)'
       );
       const codeAfter = hideHtmlComments(pageCode).slice(currentIndex);
       let [, codeInBetween] = codeAfter.match(properPlaceRegexp) || [];
