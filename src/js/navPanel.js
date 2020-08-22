@@ -180,7 +180,7 @@ async function checkForNewComments() {
     newRevisions = newRevisions.filter(unique);
 
     if (addedNewRevisions.length) {
-      processPageInBackground();
+      await processPageInBackground();
     }
   } catch (e) {
     if (e?.data?.type !== 'network') {
