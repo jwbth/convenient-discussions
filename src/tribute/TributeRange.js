@@ -384,8 +384,11 @@ class TributeRange {
         })
 
         if (isFirefox) {
-            style.width = `${(parseInt(computed.width) - 2)}px`
-            if (element.scrollHeight > parseInt(computed.height))
+            // jwbth: replaced parseInt with parseFloat: can result in wrongly positioned menu (have
+            // seen an example when edited [[:en:Wikipedia:Village pump (proposals)#Allow fair use
+            // non-freely licensed photos of politicians]]).
+            style.width = `${(parseFloat(computed.width) - 2)}px`
+            if (element.scrollHeight > parseFloat(computed.height))
                 style.overflowY = 'scroll'
         } else {
             style.overflow = 'hidden'
