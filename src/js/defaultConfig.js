@@ -12,7 +12,7 @@ export default {
    * in your browser's console while the page of your wiki is open.
    *
    * @type {object}
-   * @default
+   * @default {}
    */
   messages: {},
 
@@ -61,7 +61,7 @@ export default {
    * specify entire namespaces in this value, e.g., /^Wikipedia:/.
    *
    * @type {RegExp[]}
-   * @default
+   * @default []
    */
   pageWhitelist: [],
 
@@ -69,7 +69,7 @@ export default {
    * Pages where the script shouldn't run.
    *
    * @type {RegExp[]}
-   * @default
+   * @default []
    */
   pageBlacklist: [],
 
@@ -123,7 +123,7 @@ export default {
    *
    *
    * @type {Array.<ArchivePathEntry|RegExp>}
-   * @default
+   * @default []
    */
   archivePaths: [],
 
@@ -133,7 +133,7 @@ export default {
    * search in the archives if the page name doesn't match one of these regexps.
    *
    * @type {RegExp[]}
-   * @default
+   * @default []
    */
   pagesWithoutArchives: [],
 
@@ -141,7 +141,7 @@ export default {
    * Fragments that shouldn't trigger the "Section not found" dialog.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   idleFragments: [],
 
@@ -150,7 +150,7 @@ export default {
    * used automatically in votings.
    *
    * @type {string}
-   * @default
+   * @default ':'
    */
   defaultIndentationChar: ':',
 
@@ -158,7 +158,7 @@ export default {
    * Whether to put a space between the indentation char and the comment text.
    *
    * @type {boolean}
-   * @default
+   * @default true
    */
   spaceAfterIndentationChars: true,
 
@@ -214,7 +214,7 @@ export default {
    * https://www.mediawiki.org/wiki/Extension:Thanks#API_documentation}.
    *
    * @type {string}
-   * @default null
+   * @default 'convenient-discussions'
    */
   scriptCodeName: 'convenient-discussions',
 
@@ -223,7 +223,7 @@ export default {
    * `userjs-`.
    *
    * @type {string}
-   * @default
+   * @default 'convenientDiscussions'
    */
   optionsPrefix: 'convenientDiscussions',
 
@@ -231,7 +231,7 @@ export default {
    * Wikilink to the script's page. Used in the watchlist and, if there is no tag, in summary.
    *
    * @type {string}
-   * @default
+   * @default 'c:User:JWBTH/CD'
    */
   scriptPageWikilink: 'c:User:JWBTH/CD',
 
@@ -242,7 +242,7 @@ export default {
    * substituted**. If they are, don't add them. Please include aliases.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   unsignedTemplates: [],
 
@@ -250,7 +250,6 @@ export default {
    * Name of the class that the unsigned templates set to its container element.
    *
    * @type {string}
-   * @default
    */
   unsignedClass: 'autosigned',
 
@@ -288,7 +287,7 @@ export default {
    * comments.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   paragraphTemplates: [],
 
@@ -297,7 +296,7 @@ export default {
    * (by the toolbar button or Ctrl+Alt+Q / Q).
    *
    * @type {string[]}
-   * @default <pre class="prettyprint source"><code>["> ''", "''\n"]</code></pre>
+   * @default ["> ''", "''\n"]
    */
   quoteFormatting: ["> ''", "''\n"],
 
@@ -308,7 +307,7 @@ export default {
    * wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   elementsToExcludeClasses: [],
 
@@ -317,7 +316,7 @@ export default {
    * lines containing these templates are ignored when searching for timestamps in the wikitext.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   templatesToExclude: [],
 
@@ -326,7 +325,7 @@ export default {
    * wikitext.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   commentAntipatterns: [],
 
@@ -337,7 +336,7 @@ export default {
    * with ` *\n*` or ` *\n*(?=[*:#])`.
    *
    * @type {RegExp[]}
-   * @default
+   * @default []
    */
   customBadCommentBeginnings: [],
 
@@ -361,7 +360,7 @@ export default {
    * link.
    *
    * @type {number}
-   * @default
+   * @default 80
    */
   signatureScanLimit: 80,
 
@@ -369,7 +368,7 @@ export default {
    * Classes of elements that should be ignored when extracting headline text.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   foreignElementsInHeadlinesClasses: [],
 
@@ -380,7 +379,7 @@ export default {
    * `cd.g.specialElements.floating` to help performance.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   customFloatingElementsSelectors: [],
 
@@ -388,7 +387,7 @@ export default {
    * Classes of elements that are wrapped around closed discussions.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   closedDiscussionsClasses: [],
 
@@ -396,7 +395,7 @@ export default {
    * Classes of elements that shouldn't be highlighted.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   customUnhighlightableElementsClasses: [],
 
@@ -404,7 +403,7 @@ export default {
    * Selectors of links (buttons) that are used to add topics on this wiki.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   customAddTopicLinkSelectors: [],
 
@@ -412,7 +411,7 @@ export default {
    * Default collection of insert buttons displayed under the text input in comment forms.
    *
    * @type {Array.<string|Array>}
-   * @default
+   * @default []
    */
   defaultInsertButtons: [],
 
@@ -421,6 +420,7 @@ export default {
    *
    * @type {string}
    * @default
+   * 'data:image/png;base64,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'
    */
   logoDataUrl: 'data:image/png;base64,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',
 
@@ -428,7 +428,7 @@ export default {
    * Width of the logo.
    *
    * @type {string}
-   * @default
+   * @default '324px'
    */
   logoWidth: '324px',
 
@@ -436,7 +436,7 @@ export default {
    * Height of the logo.
    *
    * @type {string}
-   * @default
+   * @default '40px'
    */
   logoHeight: '40px',
 
@@ -445,7 +445,7 @@ export default {
    * will need confirmation to be sent.
    *
    * @type {number}
-   * @default
+   * @default 10000
    */
   longCommentThreshold: 10000,
 
@@ -453,7 +453,7 @@ export default {
    * How many bytes need to be added to the page to deem an edit a new comment.
    *
    * @type {number}
-   * @default
+   * @default 50
    */
   bytesToDeemComment: 50,
 
@@ -461,7 +461,7 @@ export default {
    * How long a comment can be to put its whole context in the edit summary.
    *
    * @type {number}
-   * @default
+   * @default 50
    */
   summaryCommentTextLengthLimit: 50,
 
@@ -478,7 +478,7 @@ export default {
    * String to be put into a regular expression for matching indentation characters.
    *
    * @type {?string}
-   * @default
+   * @default '\\n*([:*#]*) *'
    */
   indentationCharsPattern: '\\n*([:*#]*) *',
 
@@ -488,7 +488,7 @@ export default {
    * wikitext. Take from MediaWiki:Undo-summary, MediaWiki:Revertpage.
    *
    * @type {string[]}
-   * @default
+   * @default []
    */
   undoTexts: [],
 
@@ -507,7 +507,7 @@ export default {
    * Custom reactions.
    *
    * @type {Reaction[]}
-   * @default
+   * @default []
    */
   customTextReactions: [],
 
@@ -523,7 +523,7 @@ export default {
    * `checkFunc` function is met.
    *
    * @type {Module[]}
-   * @default
+   * @default []
    */
   customCommentFormModules: [],
 
@@ -535,7 +535,7 @@ export default {
    * time to proceed hampering user experience).
    *
    * @type {boolean}
-   * @default
+   * @default true
    */
   showCommentInputPlaceholder: true,
 
