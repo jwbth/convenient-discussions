@@ -18,7 +18,7 @@ import {
   endWithTwoNewlines,
   extractSignatures,
   findFirstTimestamp,
-  hideHtmlComments,
+  hideDistractingCode,
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
@@ -1044,7 +1044,7 @@ export default class Section extends SectionSkeleton {
 
     const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
-    const adjustedPageCode = hideHtmlComments(pageCode);
+    const adjustedPageCode = hideDistractingCode(pageCode);
     const searchInput = { firstComment, headline, pageCode, adjustedPageCode };
 
     // Collect all possible matches

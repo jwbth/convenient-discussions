@@ -27,7 +27,7 @@ import { copyLink } from './modal.js';
 import {
   decodeHtmlEntities,
   extractSignatures,
-  hideHtmlComments,
+  hideDistractingCode,
   hideSensitiveCode,
   normalizeCode,
   removeWikiMarkup,
@@ -1663,7 +1663,7 @@ export default class Comment extends CommentSkeleton {
         // putting the reply before a "closed discussion" template.
         '(?![:*#\\n{]|<!--)'
       );
-      const codeAfter = hideHtmlComments(pageCode).slice(currentIndex);
+      const codeAfter = hideDistractingCode(pageCode).slice(currentIndex);
       let [, codeInBetween] = codeAfter.match(properPlaceRegexp) || [];
 
       if (codeInBetween === undefined) {

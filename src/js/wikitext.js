@@ -17,7 +17,7 @@ import {
 import { hideText } from './util';
 
 /**
- * Conceal HTML comments (`<!-- -->`) in the code.
+ * Conceal HTML comments (`<!-- -->`) and also newlines inside some tags (<br\n>) in the code.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.
@@ -25,9 +25,13 @@ import { hideText } from './util';
  * @param {string} code
  * @returns {string}
  */
-export function hideHtmlComments(code) {
+export function hideDistractingCode(code) {
   return code
-    .replace(/<!--([^]*?)-->/g, (s, content) => '<!--' + ' '.repeat(content.length) + '-->');
+    .replace(/<!--([^]*?)-->/g, (s, content) => '<!--' + ' '.repeat(content.length) + '-->')
+    .replace(
+      /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
+      (s, before, newline, after) => before + ' '.repeat(newline.length) + after
+    );
 }
 
 /**
@@ -271,12 +275,11 @@ function extractUnsigneds(code, signatures) {
  */
 export function extractSignatures(code, generateCommentAnchors) {
   // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = hideHtmlComments(code)
-    .replace(cd.g.QUOTE_REGEXP, (s, beginning, content, ending) => (
-      beginning +
-      ' '.repeat(content.length) +
-      ending
-    ))
+  const adjustedCode = hideDistractingCode(code)
+    .replace(
+      cd.g.QUOTE_REGEXP,
+      (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
+    )
     .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
 
   let signatures = extractRegularSignatures(adjustedCode);

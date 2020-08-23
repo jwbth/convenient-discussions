@@ -6,7 +6,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { findFirstTimestamp, hideHtmlComments } from './wikitext';
+import { findFirstTimestamp, hideDistractingCode } from './wikitext';
 import { handleApiReject, isProbablyTalkPage } from './util';
 import { makeRequestNoTimers, parseCode, unknownApiErrorText } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
@@ -349,7 +349,7 @@ export default class Page {
     let newPageCode;
     let codeBeforeInsertion;
     if (commentForm.isNewTopicOnTop) {
-      const adjustedPageCode = hideHtmlComments(pageCode);
+      const adjustedPageCode = hideDistractingCode(pageCode);
       const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*?\1/m);
       codeBeforeInsertion = pageCode.slice(0, firstSectionStartIndex);
       const codeAfterInsertion = pageCode.slice(firstSectionStartIndex);
@@ -478,7 +478,7 @@ export default class Page {
       areNewTopicsOnTop = cd.config.areNewTopicsOnTop(this.name, this.code);
     }
 
-    const adjustedCode = hideHtmlComments(this.code);
+    const adjustedCode = hideDistractingCode(this.code);
     const sectionHeadingRegexp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
     let firstSectionStartIndex;
     let sectionHeadingMatch;
