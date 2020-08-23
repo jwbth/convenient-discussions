@@ -617,6 +617,11 @@ export default {
    * @param {string} signature
    * @param {string} [timestamp]
    * @returns {string}
+   * @default <pre class="prettyprint source">
+   * <code>function (targetPageWikilink, signature, timestamp) {
+   *   return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
+   * }
+   * </code></pre>
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
     return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
@@ -632,6 +637,9 @@ export default {
    * @param {string} targetPageWikilink
    * @param {string} signature
    * @returns {string|Array<string, string>}
+   * @default <pre class="prettyprint source"><code>function (targetPageWikilink, signature) {
+   *   return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
+   * }</code></pre>
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
     return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
@@ -640,8 +648,15 @@ export default {
   /**
    * Code that creates an anchor on the page.
    *
+   * @type {Function}
+   * @kind function
    * @param {string} anchor
    * @returns {string}
+   * @default <pre class="prettyprint source"><code>function (anchor) {
+   *   return '&lt;span id="' + anchor + '>&lt;/span>';
+   * }</code></pre>
    */
-  getAnchorCode: (anchor) => `<span id="${anchor}"></span>`,
+  getAnchorCode: function (anchor) {
+    return '<span id="' + anchor + '></span>';
+  },
 };
