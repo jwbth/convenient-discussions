@@ -618,14 +618,14 @@ export default {
    * @param {string} [timestamp]
    * @returns {string}
    * @default <pre class="prettyprint source">
-   * <code>function (targetPageWikilink, signature, timestamp) {
-   *   return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
-   * }
+   * <code>(targetPageWikilink, signature, timestamp) => (
+   *   cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n'
+   * )
    * </code></pre>
    */
-  getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
-    return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
-  },
+  getMoveSourcePageCode: (targetPageWikilink, signature, timestamp) => (
+    cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n'
+  ),
 
   /**
    * Function that returns the code to insert in the beginning of the section moved from another
@@ -637,13 +637,13 @@ export default {
    * @param {string} targetPageWikilink
    * @param {string} signature
    * @returns {string|Array<string, string>}
-   * @default <pre class="prettyprint source"><code>function (targetPageWikilink, signature) {
-   *   return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
-   * }</code></pre>
+   * @default <pre class="prettyprint source"><code>(targetPageWikilink, signature) => (
+   *   cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n'
+   * )</code></pre>
    */
-  getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
-  },
+  getMoveTargetPageCode: (targetPageWikilink, signature) => (
+    cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n'
+  ),
 
   /**
    * Code that creates an anchor on the page.
@@ -652,11 +652,9 @@ export default {
    * @kind function
    * @param {string} anchor
    * @returns {string}
-   * @default <pre class="prettyprint source"><code>function (anchor) {
-   *   return '&lt;span id="' + anchor + '>&lt;/span>';
-   * }</code></pre>
+   * @default <pre class="prettyprint source">
+   * <code>(anchor) => '<span id="' + anchor + '></span>'
+   * </code></pre>
    */
-  getAnchorCode: function (anchor) {
-    return '<span id="' + anchor + '></span>';
-  },
+  getAnchorCode: (anchor) => '<span id="' + anchor + '></span>',
 };
