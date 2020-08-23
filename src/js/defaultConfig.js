@@ -187,7 +187,7 @@ export default {
    * End the regexp with "$".
    *
    * @type {RegExp}
-   * @default
+   * @default /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/
    */
   signaturePrefixRegexp: /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*'*$/,
 
