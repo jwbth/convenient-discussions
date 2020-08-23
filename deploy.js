@@ -151,9 +151,11 @@ async function prepareEdits() {
       warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}\n`);
     }
 
+    const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
+
     let summary = `Update to ${commits[0].hash} @ ${branch}`;
     if (i === 0 && newCommitsCount) {
-      summary += `. ${newCommitsCount} new commits: ${newCommitsSubjects.join('. ')}`;
+      summary += `. ${pluralize(newCommitsCount, 'new commit')}: ${newCommitsSubjects.join('. ')}`;
     }
 
     edits.push({
