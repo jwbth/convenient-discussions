@@ -182,6 +182,7 @@ export default class Page {
     // The page doesn't exist.
     if (!mw.config.get('wgArticleId')) {
       Object.assign(this, { code: '' });
+      return;
     }
 
     const resp = await cd.g.api.post({
