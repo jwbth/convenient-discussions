@@ -310,7 +310,7 @@ export default class CommentForm {
      *
      * @type {string}
      */
-    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : this.target;
+    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.g.CURRENT_PAGE;
   }
 
   /**
