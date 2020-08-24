@@ -171,8 +171,11 @@ export function initTalkPageCss() {
     '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
     '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
   });
-  cd.g.nanoCss.put('.cd-commentOverlay-gradient', {
+  cd.g.nanoCss.put('.mw-content-ltr .cd-commentOverlay-gradient', {
     backgroundImage: 'linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
+  });
+  cd.g.nanoCss.put('.mw-content-rtl .cd-commentOverlay-gradient', {
+    backgroundImage: 'linear-gradient(to right, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
     backgroundColor: bodyBackgroundColor,
