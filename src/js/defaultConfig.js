@@ -2,8 +2,6 @@
  * @module defaultConfig
  */
 
-import cd from './cd';
-
 export default {
   /**
    * Object with the names and texts of the messages required by the script as keys and values. Used
@@ -619,12 +617,18 @@ export default {
    * @returns {string}
    * @default <pre class="prettyprint source">
    * <code>function (targetPageWikilink, signature, timestamp) {
-   *   return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
+   *   return (
+   *     convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
+   *     '\n'
+   *   );
    * }
    * </code></pre>
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
-    return cd.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) + '\n';
+    return (
+      convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
+      '\n'
+    );
   },
 
   /**
@@ -638,11 +642,11 @@ export default {
    * @param {string} signature
    * @returns {string|Array<string, string>}
    * @default <pre class="prettyprint source"><code>function (targetPageWikilink, signature) {
-   *   return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
+   *   return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
    * }</code></pre>
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return cd.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
+    return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
   },
 
   /**
