@@ -39,11 +39,13 @@ if (IS_SNIPPET) {
 }
 
 /**
- * Get a language string. The last parameter, if boolean, may indicate if the message should be
- * returned in the plain, not substituted, form.
+ * Get a language string.
  *
- * @param {string} name
- * @param {...*} params
+ * @param {string} name String name.
+ * @param {...*} [params] String parameters (substituted strings, also {@link
+ *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ * @param {boolean} [plain] Whether the message should be returned in the plain, not substituted,
+ *   form.
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
@@ -94,6 +96,7 @@ function addCommentLinksOnSpecialSearch() {
  * Add a footer link to enable/disable CD.
  *
  * @param {boolean} enable
+ * @private
  */
 function addFooterLink(enable) {
   if (cd.g.CURRENT_NAMESPACE_NUMBER === -1) return;
@@ -115,7 +118,7 @@ function addFooterLink(enable) {
  */
 function go() {
   /**
-   * Script configuration. Default configuration is at {@link module:defaultConfig}.
+   * Script configuration. The default configuration is at {@link module:defaultConfig}.
    *
    * @name config
    * @type {object}

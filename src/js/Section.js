@@ -1490,8 +1490,8 @@ export default class Section extends SectionSkeleton {
    * @param {string} headline
    * @param {boolean} [options]
    * @param {boolean} [options.silent=false] Don't display a success notification.
-   * @param {Function} [options.successCallback]
-   * @param {Function} [options.errorCallback]
+   * @param {Function} [options.successCallback] Callback to run in case of success.
+   * @param {Function} [options.errorCallback] Callback to run in case of an error.
    */
   static async watchSection(headline, {
     silent = false,
@@ -1564,8 +1564,8 @@ export default class Section extends SectionSkeleton {
    * @param {string} headline
    * @param {boolean} [options]
    * @param {boolean} [options.silent=false] Don't display a success notification.
-   * @param {Function} [options.successCallback]
-   * @param {Function} [options.errorCallback]
+   * @param {Function} [options.successCallback] Callback to run in case of success.
+   * @param {Function} [options.errorCallback] Callback to run in case of an error.
    * @param {string} [options.watchedAncestorHeadline] Headline of the ancestor section that is
    *   watched.
    */

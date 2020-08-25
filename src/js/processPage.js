@@ -44,7 +44,7 @@ async function prepare({ messagesRequest }) {
   cd.g.rootElement = cd.g.$root.get(0);
 
   /**
-   * Collection of all comments on the page ordered the same way as they are ordered in the DOM.
+   * Collection of all comments on the page ordered the same way as in the DOM.
    *
    * @name comments
    * @type {Comment[]}
@@ -53,7 +53,7 @@ async function prepare({ messagesRequest }) {
   cd.comments = [];
 
   /**
-   * Collection of all sections on the page ordered the same way as they are ordered in the DOM.
+   * Collection of all sections on the page ordered the same way as in the DOM.
    *
    * @name sections
    * @type {Section[]}

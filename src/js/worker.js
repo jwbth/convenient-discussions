@@ -151,6 +151,7 @@ function parse() {
  *
  * @param {string} code
  * @returns {Function}
+ * @private
  */
 function restoreFunc(code) {
   if (code) {

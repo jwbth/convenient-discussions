@@ -93,7 +93,7 @@ export async function parseCode(code, options) {
 /**
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
- * @param {boolean} [reuse=false] Reuse the previous request if present.
+ * @param {boolean} [reuse=false] Whether to reuse a cached request.
  * @returns {Promise} Promise for an object containing the full options object, visits, watched
  *   sections, and rights.
  * @throws {CdError}

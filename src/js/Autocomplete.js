@@ -27,8 +27,8 @@ export default class Autocomplete {
    * settings apply.
    *
    * @param {object} options
-   * @param {string[]} options.types Can contain `'mentions'`, `'wikilinks'`, `'templates'`, and
-   *   `'tags'`.
+   * @param {string[]} options.types Which values should be autocompleted. Can contain `'mentions'`,
+   *   `'wikilinks'`, `'templates'`, and `'tags'`.
    * @param {OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
@@ -87,12 +87,13 @@ export default class Autocomplete {
   }
 
   /**
-   * Get a list of collection of specified types.
+   * Get a list of collections of specified types.
    *
    * @param {string[]} types
    * @param {string[]} comments
    * @param {string[]} defaultUserNames
    * @returns {object[]}
+   * @private
    */
   getCollections(types, comments, defaultUserNames) {
     const selectTemplate = (item) => {
@@ -481,10 +482,11 @@ export default class Autocomplete {
   }
 
   /**
-   * Get mentions autocomplete configuration.
+   * Get the mentions autocomplete configuration.
    *
    * @param {string[]} [defaultUserNames=[]]
    * @returns {object}
+   * @private
    */
   static getMentionsConfig(defaultUserNames = []) {
     const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
@@ -508,9 +510,10 @@ export default class Autocomplete {
   }
 
   /**
-   * Get wikilinks autocomplete configuration.
+   * Get the wikilinks autocomplete configuration.
    *
    * @returns {object}
+   * @private
    */
   static getWikilinksConfig() {
     return {
@@ -524,9 +527,10 @@ export default class Autocomplete {
   }
 
   /**
-   * Get templates autocomplete configuration.
+   * Get the templates autocomplete configuration.
    *
    * @returns {object}
+   * @private
    */
   static getTemplatesConfig() {
     return {
@@ -541,9 +545,10 @@ export default class Autocomplete {
   }
 
   /**
-   * Get tags autocomplete configuration.
+   * Get the tags autocomplete configuration.
    *
    * @returns {object}
+   * @private
    */
   static getTagsConfig() {
     const config = {
@@ -659,10 +664,11 @@ export default class Autocomplete {
   }
 
   /**
-   * Get comment links autocomplete configuration.
+   * Get the comment links autocomplete configuration.
    *
    * @param {string[]} [comments=[]]
    * @returns {object}
+   * @private
    */
   static getCommentLinksConfig(comments = []) {
     const config = {
@@ -683,6 +689,7 @@ export default class Autocomplete {
    * @param {string} s
    * @param {string[]} list
    * @returns {string[]} Matched results.
+   * @private
    */
   static search(s, list) {
     const containsRegexp = new RegExp(mw.util.escapeRegExp(s), 'i');

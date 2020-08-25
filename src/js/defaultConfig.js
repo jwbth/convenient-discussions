@@ -5,7 +5,7 @@
 export default {
   /**
    * Object with the names and texts of the messages required by the script as keys and values. Used
-   * to avoid making additional requests. Get these messages by running {@link
+   * to avoid making additional requests on every script run. Get these messages by running {@link
    * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
@@ -38,14 +38,14 @@ export default {
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
    * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
    *
-   * **Warning:** This value is overriden by the {@link module:defaultConfig.pageWhitelist} value:
+   * **Warning:** This value is overriden by {@link module:defaultConfig.pageWhitelist}:
    * `customTalkNamespaces` is used only if `pageWhitelist` is `[]` or `null`.
    *
    * Note that this value is used in the script as a "soft" value. I.e., the script can decide
    * (based on the presence of the "Add section" button, existence of comments on the page and
    * possibly other factors) that the page is not a talk page after all. Use {@link
    * module:defaultConfig.pageWhitelist} to indicate pages where the script should work in any
-   * circumstances. (For example, you can specify the entire namespace, e.g., /^Wikipedia:/).
+   * circumstances. (For example, you can specify the entire namespace, e.g., `/^Wikipedia:/`).
    *
    * @type {number[]}
    * @default mw.config.get('wgExtraSignatureNamespaces')
@@ -84,8 +84,7 @@ export default {
    *   `source` and `archive`. Note that the regexp should, if put into the `archive` pattern,
    *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
    *   in "Wikipedia:Discussion/Archive/General/2020/07", it should capture "General", but not
-   *   "General/2020/07". So, you probably shouldn't use `/.+/` here and use, for example, `/[^/]+/`
-   *   instead.
+   *   "General/2020/07". So, you shouldn't use `/.+/` here and use, for example, `/[^/]+/` instead.
    */
 
   /**
@@ -99,10 +98,10 @@ export default {
    * Each of the array elements can be an object with the defined structure (see {@link
    * module:defaultConfig~ArchivePathEntry} for details) or a regexp. In the latter case, if a page
    * name matches the regexp, it will be considered an archive page, and the name of the source page
-   * for that page is obtained by removing everything that starts with the pattern in the page name
-   * (i.e., the actually used regexp will end with `.*`).
+   * for that page will be obtained by removing everything that starts with the pattern in the page
+   * name (i.e., the actually used regexp will end with `.*`).
    *
-   * The entries are applied in the order or their precense in the array. So, if a page name fits
+   * The entries are applied in the order of their presence in the array. So, if a page name fits
    * two patterns, the one closer to the beginning of the array is used.
    *
    * Example:
@@ -126,9 +125,9 @@ export default {
   archivePaths: [],
 
   /**
-   * Pages that can never have archives on a subpage (page with a subtitle after "/"). If the
-   * section specified in the URL fragment will not be found, an error message will suggest to
-   * search in the archives if the page name doesn't match one of these regexps.
+   * Pages that can never have archives on a subpage (a subpage is a page with a subtitle after
+   * "/"). If the section specified in the URL fragment will not be found, an error message will
+   * suggest to search in the archives if the page name doesn't match one of these regexps.
    *
    * @type {RegExp[]}
    * @default []
@@ -144,8 +143,8 @@ export default {
   idleFragments: [],
 
   /**
-   * Character that should directly precede the comment text. Normally, `':'` or `'*'`. `'#'` is
-   * used automatically in votings.
+   * Character that should directly precede the comment text. Normally, `':'` or `'*'`. In votings,
+   * `'#'` is used automatically.
    *
    * @type {string}
    * @default ':'
@@ -182,16 +181,16 @@ export default {
    * ```
    * Here, `''` is not a part of the signature.
    *
-   * End the regexp with "$".
+   * End the regexp with `$`.
    *
    * @type {RegExp}
-   * @default /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*\(?'*$/
+   * @default /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;mdash;|&amp;ndash;|&amp;rarr;|&amp;middot;|&amp;nbsp;|&amp;#32;)*\(?'*$/
    */
   signaturePrefixRegexp: /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;)*\(?'*$/,
 
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
-   * not wikitext). End the regexp with "$".
+   * not wikitext). End the regexp with `$`.
    *
    * @type {?RegExp}
    * @default null
@@ -199,7 +198,7 @@ export default {
   signatureEndingRegexp: null,
 
   /**
-   * Convenient Discussions tag according to Special:Tags. Needs to be added manually. Set to null
+   * Convenient Discussions tag according to Special:Tags. Needs to be added manually. Set to `null`
    * of there is no tag.
    *
    * @type {?string}
@@ -208,7 +207,7 @@ export default {
   tagName: null,
 
   /**
-   * Script code name. For example, for the `source` parameter of the thank request: {@link
+   * Script code name. Used, for example, for the `source` parameter of the thank request: {@link
    * https://www.mediawiki.org/wiki/Extension:Thanks#API_documentation}.
    *
    * @type {string}
@@ -226,7 +225,8 @@ export default {
   optionsPrefix: 'convenientDiscussions',
 
   /**
-   * Wikilink to the script's page. Used in the watchlist and, if there is no tag, in summary.
+   * Wikilink to the script's page. Used in the watchlist and, if there is no {@link
+   * module:defaultConfig.tagName tag}, in summary.
    *
    * @type {string}
    * @default 'c:User:JWBTH/CD'
@@ -270,8 +270,8 @@ export default {
   /**
    * Name of the template that is an analog of {@link
    * https://ru.wikipedia.org/wiki/Шаблон:Block-small} / {@link
-   * https://en.wikipedia.org/wiki/Template:Smalldiv}. Used for the "In small font" checkbox (with
-   * some exceptions where `<small></small>` is used).
+   * https://en.wikipedia.org/wiki/Template:Smalldiv}. Used when the whole comment is wrapped in
+   * `<small></small>` (with some exceptions when that could break the layout).
    *
    * @type {?string}
    * @default null
@@ -329,9 +329,8 @@ export default {
 
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them). This is in an addition to {@link
-   * module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
-   * with ` *\n*` or ` *\n*(?=[*:#])`.
+   * them). This is in addition to {@link module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}.
+   * They begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
    *
    * @type {RegExp[]}
    * @default []
@@ -374,7 +373,7 @@ export default {
    * Selectors of floating elements. This is needed to display the comment's underlay and overlay
    * correctly. You can also add the `cd-floating` class to such elements. You can also add the
    * `cd-ignoreFloating` class to floating elements that never intersect comments but end up in
-   * `cd.g.specialElements.floating` to help performance.
+   * `convenientDiscussions.g.specialElements.floating` to help performance.
    *
    * @type {string[]}
    * @default []
@@ -439,8 +438,8 @@ export default {
   logoHeight: '40px',
 
   /**
-   * Comment having how many characters should be considered long. Comments having more characters
-   * will need confirmation to be sent.
+   * How many characters should a comment have to be considered long. Comments having more
+   * characters will need confirmation to be sent.
    *
    * @type {number}
    * @default 10000
@@ -448,7 +447,7 @@ export default {
   longCommentThreshold: 10000,
 
   /**
-   * How many bytes need to be added to the page to deem an edit a new comment.
+   * Lower limit of the number of bytes to be added to the page to deem an edit a new comment.
    *
    * @type {number}
    * @default 50
@@ -456,7 +455,7 @@ export default {
   bytesToDeemComment: 50,
 
   /**
-   * How long a comment can be to put its whole context in the edit summary.
+   * Upper limit of the length of a comment to put its whole content in the edit summary.
    *
    * @type {number}
    * @default 50
@@ -464,8 +463,8 @@ export default {
   summaryCommentTextLengthLimit: 50,
 
   /**
-   * Regular expression matching names of pages where an sending empty comment shouldn't be
-   * confirmed.
+   * Regular expression matching the names of the pages where an sending empty comment shouldn't be
+   * confirmed (e.g., voting pages).
    *
    * @type {?RegExp}
    * @default null
@@ -494,15 +493,15 @@ export default {
    * Object specifying messages to be displayed when the user enters text that matches a pattern.
    *
    * @typedef {object[]} Reaction
-   * @property {RegExp} pattern
-   * @property {string} message
+   * @property {RegExp} pattern Pattern to match.
+   * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.
    * @property {string} [type='notice'] For example, `notice`.
    * @property {Function} [checkFunc] If the function returns false, no message is displayed.
    */
 
   /**
-   * Custom reactions.
+   * Custom {@link module:defaultConfig~Reaction reactions}.
    *
    * @type {Reaction[]}
    * @default []
@@ -517,8 +516,8 @@ export default {
    */
 
   /**
-   * Load these modules on comment form creation, optionally if the condition specified inside the
-   * `checkFunc` function is met.
+   * Load these modules on comment form creation. See {@link module:defaultConfig~Module} for the
+   * object structure. If `checkFunc` is set, the module will be loaded if the condition is met.
    *
    * @type {Module[]}
    * @default []
@@ -526,7 +525,7 @@ export default {
   customCommentFormModules: [],
 
   /**
-   * Whether to show a placeholder in a comment input.
+   * Whether to show a placeholder in the comment input.
    *
    * If gender is needed to output the comment input placeholder, it could be better to set the
    * value to `false` to avoid displaying the placeholder altogether (a gender request would need

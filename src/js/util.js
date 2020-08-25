@@ -11,7 +11,7 @@ import cd from './cd';
 let keptScrollPosition = null;
 
 /**
- * Removes duplicated elements from an array. Callback for `Array#filter` functions.
+ * Callback for `Array#filter` to remove duplicated elements from an array.
  *
  * @param {*} item
  * @param {number} pos
@@ -52,7 +52,6 @@ export function isInline(node, countTextNodesAsInline) {
     return true;
   }
 
-  // Precaution
   if (node.nodeType !== Node.ELEMENT_NODE) {
     return null;
   }
@@ -97,7 +96,7 @@ export function caseInsensitiveFirstCharPattern(s) {
 }
 
 /**
- * Check if the provided page is probably a talk page. The namespace number is required.
+ * Check if a page is probably a talk page. The namespace number is required.
  *
  * This function exists mostly because we can't be sure the `mediawiki.Title` module is loaded when
  * the script has started executing (and can't use the {@link module:Page Page} constructor), and we
@@ -146,7 +145,7 @@ export function isUndo(summary) {
 }
 
 /**
- * Callback for `Array#filter` functions to keep only defined values in the array.
+ * Callback for `Array#filter` to keep only defined values in an array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -156,7 +155,7 @@ export function defined(el) {
 }
 
 /**
- * Callback for `Array#filter` functions to keep only not null values in the array.
+ * Callback for `Array#filter` to keep only not null values in an array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -204,7 +203,7 @@ export function flat(arr) {
  * @throws {CdError}
  */
 export function handleApiReject(code, data) {
-  // See parameters with which mw.Api() rejects:
+  // See the parameters with which mw.Api() rejects:
   // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
   throw code === 'http' ?
     new CdError({ type: 'network' }) :
@@ -250,12 +249,12 @@ export function removeDoubleSpaces(s) {
  * `<span>` element, and return the resultant jQuery object.
  *
  * @param {string|JQuery} html
- * @param {...Array.<string, Function>} classesToAnimate
+ * @param {...ClassToCallback[]} classesToCallbacks
  * @returns {JQuery}
  */
-export function animateLinks(html, ...classesToAnimate) {
+export function animateLinks(html, ...classesToCallbacks) {
   const $link = html instanceof $ ? html : cd.util.wrapInElement(html);
-  classesToAnimate.forEach(([className, callback]) => {
+  classesToCallbacks.forEach(([className, callback]) => {
     $link.find(`.${className}`).on('click', callback);
   });
   return $link;
@@ -398,8 +397,7 @@ export function restoreScrollPosition() {
  * Use a {@link
  * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
  * Promise.race()} workaround to get the state of a native promise. Note that it works _only_ with
- * native promises: it doesn't work with jQuery promises (for example, ones that `mw.Api()`
- * returne).
+ * native promises: it doesn't work with jQuery promises (for example, ones that `mw.Api()` return).
  *
  * @param {Promise} promise
  * @returns {string}
@@ -435,8 +433,8 @@ export function dealWithLoadingBug(moduleName) {
 }
 
 /**
- * Get top and bottom positions of the bounding client rectangle of an element including margins set
- * with `cdMarginTop` and `cdMarginBottom` properties.
+ * Get the top and bottom positions of the bounding client rectangle of an element including margins
+ * set with the `cdMarginTop` and `cdMarginBottom` properties.
  *
  * @param {Element} el
  * @returns {object}

@@ -56,7 +56,7 @@ export default class Page {
   }
 
   /**
-   * Get a URL of the page with the specified parameters.
+   * Get the URL of the page with the specified parameters.
    *
    * @param {object} parameters
    * @returns {string}
@@ -123,7 +123,7 @@ export default class Page {
    * Get the archive prefix for the page. If no prefix is found based on {@link
    * module:defaultConfig.archivePaths} and/or elements with the class `cd-archivingInfo` and
    * attribute `data-archive-prefix`, returns the current page's name. If the page is an archive
-   * page or can't have archives, returns `null`;
+   * page or can't have archives, returns `null`.
    *
    * @returns {?string}
    */
@@ -171,10 +171,9 @@ export default class Page {
 
   /**
    * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
-   * code of the specified page, together with a few revision properties: a timestamp, redirect
-   * target, and query timestamp (curtimestamp). Enrich the page instance with those properties.
-   * Also set the realName property that indicates either the redirect target if it's present or the
-   * page name.
+   * code of the page, together with a few revision properties: the timestamp, redirect target, and
+   * query timestamp (curtimestamp). Enrich the Page instance with those properties. Also set the
+   * `realName` property that indicates either the redirect target if it's present or the page name.
    *
    * @throws {CdError}
    */
@@ -340,7 +339,7 @@ export default class Page {
    *
    * @param {object} options
    * @param {string} options.pageCode
-   * @param {string} options.commentForm
+   * @param {CommentForm} options.commentForm
    * @returns {string}
    */
   modifyCode({ pageCode, commentForm }) {
@@ -366,7 +365,7 @@ export default class Page {
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
    * @param {object} options
-   * @returns {number} editTimestamp
+   * @returns {number|undefined} editTimestamp
    */
   async edit(options) {
     let resp;

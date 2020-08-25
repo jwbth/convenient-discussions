@@ -83,8 +83,8 @@ export function unpackWatchedSections(watchedSectionsString) {
  *
  * @param {object} [options={}]
  * @param {object} [options.options] Options object.
- * @param {boolean} [options.omitLocal=false] Whether to omit variables set via "cdLocal..."
- *   variables (they don't need to be saved to the server).
+ * @param {boolean} [options.omitLocal=false] Whether to omit variables set via `cdLocal...`
+ *   variables (they shouldn't need to be saved to the server).
  * @param {boolean} [options.reuse=false] If `options` is not set, reuse the cached user info
  *   request.
  * @returns {object}
@@ -166,7 +166,7 @@ export function getLocalOverridingSettings() {
  * Save the settings to the server. This function will split the settings into the global and local
  * ones and make two respective requests.
  *
- * @param {object} [settings]
+ * @param {object} [settings] Settings to save. Otherwise, `cd.settings` is used.
  */
 export async function setSettings(settings) {
   settings = settings || cd.settings;
@@ -204,11 +204,11 @@ export async function setSettings(settings) {
 /**
  * Request the pages visits data from the server.
  *
- * `mw.user.options` is not used even on first run because the script may not run immediately after
- * the page is loaded. In fact, when the page is loaded in a background tab, it can be throttled
- * until it is focused, so an indefinite amount of time can pass.
+ * `mw.user.options` is not used even on the first run because the script may not run immediately
+ * after the page has loaded. In fact, when the page is loaded in a background tab, it can be
+ * throttled until it is focused, so an indefinite amount of time can pass.
  *
- * @param {boolean} [reuse=false]
+ * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
  * @returns {GetVisitsReturn}
  */
 export async function getVisits(reuse = false) {
@@ -286,10 +286,13 @@ export async function setVisits(visits) {
  * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
  * can be critical for determining watched sections.
  *
- * @param {boolean} [reuse=false]
+ * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
  * @param {object} [keptData={}]
- * @param {string} [keptData.justWatchedSection]
- * @param {string} [keptData.justUnwatchedSection]
+ * @param {string} [keptData.justWatchedSection] Name of the section that was watched within seconds
+ *   before making this request (it could be not enough time for it to appear in the response).
+ * @param {string} [keptData.justUnwatchedSection] Name of the section that was unwatched within
+ *   seconds before making this request (it could be not enough time for it to appear in the
+ *   response).
  */
 export async function getWatchedSections(reuse = false, keptData = {}) {
   const watchedSections = await (

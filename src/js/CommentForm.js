@@ -75,7 +75,7 @@ export default class CommentForm {
    */
   constructor({ mode, target, $addSectionLink, dataToRestore, scrollIntoView, editintro }) {
     /**
-     * `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
+     * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
      * @type {string}
      */
@@ -97,7 +97,7 @@ export default class CommentForm {
     }
 
     /**
-     * The form ID.
+     * Form ID.
      *
      * @type {number}
      */
@@ -131,7 +131,8 @@ export default class CommentForm {
 
     /**
      * @typedef {object} Operation
-     * @property {string} type One of `'load'`, `'preview'`, `'viewChanges'`, and `'submit'`.
+     * @property {string} type Operation type. One of `'load'`, `'preview'`, `'viewChanges'`, and
+     *   `'submit'`.
      * @property {boolean} closed Is the operation closed (settled).
      * @property {boolean} delayed Is the operation delayed.
      */
@@ -376,8 +377,8 @@ export default class CommentForm {
         },
       });
 
-      // For some reason, in Chrome 84.0.4147.89, if you put this line to the top, the viewport
-      // will jump down. See also saveScrollPosition() call above.
+      // For some reason, in (starting with?) Chrome 84.0.4147.89, if you put this line to the top,
+      // the viewport will jump down. See also saveScrollPosition() call above.
       $toolbarPlaceholder.hide();
 
       /**
@@ -434,7 +435,7 @@ export default class CommentForm {
     } else {
       /**
        * Name of the tag used as a list whereof this comment form is an item. `'dl'`, `'ul'`,
-       * `'ol'`, or null.
+       * `'ol'`, or `null`.
        *
        * @type {?string}
        */
@@ -1556,7 +1557,7 @@ export default class CommentForm {
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a
    *   notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
-   * @param {object} [options.currentOperation] Operation the form is undergoing.
+   * @param {Operation} [options.currentOperation] Operation the form is undergoing.
    */
   async handleError({
     type,
@@ -2694,7 +2695,7 @@ export default class CommentForm {
     this.$element.remove();
 
     /**
-     * Comment form has been destroyed.
+     * Has the comment form been {@link module:CommentForm#destroy destroyed}.
      *
      * @type {boolean}
      */

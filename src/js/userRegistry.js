@@ -17,7 +17,7 @@ export default {
   users: {},
 
   /**
-   * Get a user object for the user with the given name (either a new one or already existing).
+   * Get the user object for a user with the specified name (either a new one or already existing).
    *
    * @param {string} name
    * @returns {User}
@@ -78,7 +78,7 @@ class User {
   }
 
   /**
-   * The user's gender (must be obtained using {@link module:apiWrappers.getUserGenders}).
+   * User's gender (must be obtained using {@link module:apiWrappers.getUserGenders}).
    *
    * @type {string}
    */

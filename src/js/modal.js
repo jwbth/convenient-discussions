@@ -97,7 +97,7 @@ export function confirmDestructive(messageName, options = {}) {
  */
 
 /**
- * Get selected item data if any item is selected, or null otherwise.
+ * Get selected item data if any item is selected, or `null` otherwise.
  *
  * @param {OoUiRadioSelectWidget} select
  * @returns {?*}
