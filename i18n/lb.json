@@ -143,7 +143,7 @@
 	"error-api": "API Feeler: $1.",
 	"error-network": "Feeler vum Reseau.",
 	"error-unknown": "Onbekannte Feeler.",
-	"error-spamblacklist": "Adress $1 steet op der 'schwaarzer Lëscht'. D'Säit gouf net geännert.",
+	"error-spamblacklist": "Dir probéiert eng URL mam Domaine-Numm $1 derbäi ze setzen, déi op der 'schwaarzer Lëscht' steet. D'Säit gouf net geännert.",
 	"error-abusefilter": "Är Ännerung gouf automatesch vum Mëssbrauchsfiler \"$1\" refuséiert.",
 	"error-editconflict": "Ännerungskonflikt.",
 	"error-blocked": "Dir sidd fir Ännerunge gespaart. D'Säit gouf net geännert.",
