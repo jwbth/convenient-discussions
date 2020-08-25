@@ -389,7 +389,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  closedDiscussionsClasses: [],
+  closedDiscussionClasses: [],
 
   /**
    * Classes of elements that shouldn't be highlighted.

@@ -108,7 +108,7 @@ export default {
     '.vertical-navbox',
   ],
 
-  closedDiscussionsClasses: [
+  closedDiscussionClasses: [
     'archived',
     'boilerplate',
   ],

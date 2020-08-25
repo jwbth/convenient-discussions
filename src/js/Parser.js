@@ -850,7 +850,7 @@ export function findSpecialElements() {
     el.cdMarginBottom = parseFloat(style.marginBottom);
   });
 
-  const closedDiscussionsSelector = cd.config.closedDiscussionsClasses
+  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
     .map((name) => `.${name}`)
     .join(', ');
   const closedDiscussions = cd.g.$root.find(closedDiscussionsSelector).get();

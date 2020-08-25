@@ -208,7 +208,7 @@ export default {
     '.vertical-navbox',
   ],
 
-  closedDiscussionsClasses: [
+  closedDiscussionClasses: [
     'ruwiki-closedDiscussion',
   ],
 
