@@ -559,7 +559,7 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      targetPage.analyzeNewTopicPlacement();
+      targetPage.inferNewTopicPlacement();
       const sectionWikilink = `${targetPage.realName}#${encodeWikilink(section.headline)}`;
       const sectionUrl = mw.util.getUrl(sectionWikilink);
 
@@ -715,7 +715,7 @@ export default class Section extends SectionSkeleton {
         () => {
           this.close();
           reloadPage();
-        }
+        },
       ]);
       this.showErrors(new OO.ui.Error($body, { recoverable }));
       this.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
@@ -1526,7 +1526,7 @@ export default class Section extends SectionSkeleton {
             (e) => {
               e.preventDefault();
               editWatchedSections();
-            }
+            },
           ]);
           mw.notify($body, {
             type: 'error',

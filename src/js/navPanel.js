@@ -410,7 +410,7 @@ async function sendNotifications(comments) {
         e.preventDefault();
         reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
         notification.close();
-      }
+      },
     ]);
     const notification = mw.notification.notify($body);
     notifications.push({

@@ -159,7 +159,6 @@ export default class CommentForm {
     } else {
       if (this.mode === 'edit') {
         const currentOperation = this.registerOperation({ type: 'load' });
-
         this.target.getCode(true).then(
           () => {
             let commentText = this.target.codeToText();

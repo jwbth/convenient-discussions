@@ -426,7 +426,7 @@ export function dealWithLoadingBug(moduleName) {
       'cd-notification-reloadPage',
       () => {
         location.reload();
-      }
+      },
     ]);
     mw.notify($body, { type: 'error' });
     return true;
