@@ -60,29 +60,30 @@ function removeAlarmViaWorker() {
  * Filter values of an object that can't be safely passed to worker.
  *
  * @param {object} obj
- * @param {Array} convertedFuncNames Names of functions to convert to string.
- * @param {Array} prefilteredNames Names of first-level properties containing DOM nodes and other
- *   things that {@link
- *   https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}
- *   disallows to filter them out.
+ * @param {Array} allowedObjectNames
  * @returns {object}
- * @private
  */
-function keepWorkerSafeValues(obj, convertedFuncNames = [], prefilteredNames = []) {
+function keepWorkerSafeValues(obj, allowedObjectNames = []) {
   const newObj = Object.assign({}, obj);
   Object.keys(newObj).forEach((key) => {
-    if (prefilteredNames.includes(key)) {
+    const val = newObj[key];
+    if (
+      (
+        typeof val === 'function' ||
+        (
+          typeof val === 'object' &&
+          val !== null &&
+          !(val instanceof RegExp) &&
+          !(val instanceof Date) &&
+          !Array.isArray(val)
+        )
+      ) &&
+      !allowedObjectNames.includes(key)
+    ) {
       delete newObj[key];
-    } else {
-      if (convertedFuncNames.includes(key)) {
-        newObj[key] = newObj[key].toString();
-      } else {
-        try {
-          newObj[key] = JSON.parse(JSON.stringify(newObj[key]));
-        } catch (e) {
-          delete newObj[key];
-        }
-      }
+    }
+    if (allowedObjectNames.includes(key) && typeof val === 'function') {
+      newObj[key] = val.toString();
     }
   });
   return newObj;
@@ -99,7 +100,12 @@ export async function processPageInBackground() {
   cd.g.worker.postMessage({
     type: 'parse',
     text,
-    g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER']),
+    g: keepWorkerSafeValues(cd.g, [
+      'MESSAGES',
+      'PHP_CHAR_TO_UPPER_JSON',
+      'IS_IPv6_ADDRESS',
+      'TIMESTAMP_PARSER',
+    ]),
     config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
   });
 }
