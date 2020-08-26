@@ -446,3 +446,40 @@ export function getTopAndBottomIncludingMargins(el) {
     bottom: nativeRect.bottom + el.cdMarginBottom,
   };
 }
+
+/**
+ * Whether two objects are the same by value. Doesn't handle complex cases.
+ *
+ * @param {object} object1
+ * @param {object} object2
+ * @returns {boolean}
+ */
+export function areObjectsEqual(object1, object2) {
+  const isMultipartObject = (val) => (
+    val !== null &&
+    typeof val === 'object' &&
+    !(
+      val instanceof RegExp ||
+      val instanceof Date ||
+      val instanceof Node ||
+      val instanceof Worker
+    )
+  );
+  const toPrimitiveValue = (val) => (
+    val instanceof RegExp || val instanceof Date ?
+    val.toString() :
+    val
+  );
+
+  if (!isMultipartObject(object1) || !isMultipartObject(object2)) {
+    return toPrimitiveValue(object1) === toPrimitiveValue(object2);
+  }
+
+  const keys1 = Object.keys(object1);
+  const keys2 = Object.keys(object2);
+
+  return (
+    keys1.length === keys2.length &&
+    keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
+  );
+}

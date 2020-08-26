@@ -15,6 +15,7 @@ import jqueryExtensions from './jqueryExtensions';
 import navPanel, { updatePageTitle } from './navPanel';
 import processPage from './processPage';
 import {
+  areObjectsEqual,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
   hideText,
@@ -127,9 +128,7 @@ export async function initSettings() {
 
   cd.settings = Object.assign({}, cd.defaultSettings, cd.settings);
 
-  const needToSetRemote = Object.keys(cd.settings)
-    .some((key) => JSON.stringify(cd.settings[key]) !== JSON.stringify(remoteSettings[key]));
-  if (needToSetRemote) {
+  if (!areObjectsEqual(cd.settings, remoteSettings)) {
     setSettings().catch((e) => {
       console.warn('Couldn\'t save the settings to the server.', e);
     });

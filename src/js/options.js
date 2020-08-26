@@ -113,7 +113,6 @@ export async function getSettings({
   }
 
   let settings = {};
-
   Object.keys(cd.defaultSettings).forEach((name) => {
     (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
       // Global settings override those set via personal JS.
