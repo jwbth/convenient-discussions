@@ -1955,7 +1955,7 @@ export default class CommentForm {
     // pseudolist's margin is made invisible by CSS.
     let imitateList;
     if (action === 'preview' && willCommentBeIndented && this.commentInput.getValue().trim()) {
-      code = code.replace(/^((?=.?))/gm, (s, after) => ':' + (after === ';' ? ' ' : ''));
+      code = code.replace(/^(?=(.?))/gm, (s, after) => ':' + (after === ';' ? ' ' : ''));
       imitateList = true;
     } else {
       imitateList = false;
