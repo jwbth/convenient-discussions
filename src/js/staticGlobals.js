@@ -170,6 +170,8 @@ export default {
     '.cd-floating',
     '.tright',
     '.floatright',
+    '.tleft',
+    '.floatleft',
     '*[style*="float:right"]',
     '*[style*="float: right"]',
     '*[style*="float:left"]',
