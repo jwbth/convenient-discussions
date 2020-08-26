@@ -1080,13 +1080,15 @@ export default class CommentForm {
       }
 
       case 'addSubsection': {
-        // In the following structure:
-        //   == Level 2 section ==
-        //   === Level 3 section ===
-        //   ==== Level 4 section ====
-        // ..."Add subsection" forms should go in the opposite order. So, if there are "Add
-        // subsection" forms for a level 4 and then a level 2 section, we need to put our form
-        // between them.
+        /*
+          In the following structure:
+            == Level 2 section ==
+            === Level 3 section ===
+            ==== Level 4 section ====
+          ..."Add subsection" forms should go in the opposite order. So, if there are "Add
+          subsection" forms for a level 4 and then a level 2 section, we need to put our form
+          between them.
+         */
         const headingLevelRegexp = new RegExp(
           `\\bcd-commentForm-addSubsection-[${this.target.level}-6]\\b`
         );
@@ -1096,7 +1098,7 @@ export default class CommentForm {
           $target = $tested;
           $tested = $tested.next();
         } while (
-          $tested.is('.cd-sectionButtonContainer') ||
+          $tested.is('.cd-sectionButtonContainer, .cd-commentForm-reply') ||
           ($tested.length && $tested.get(0).className.match(headingLevelRegexp))
         );
         this.$element.insertAfter($target);
