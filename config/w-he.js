@@ -371,18 +371,6 @@ export default {
   // customCommentFormModules: [],
 
   /**
-   * Whether to show a placeholder in the comment input.
-   *
-   * If gender is needed to output the comment input placeholder, it could be better to set the
-   * value to `false` to avoid displaying the placeholder altogether (a gender request would need
-   * time to proceed hampering user experience).
-   *
-   * @type {boolean}
-   * @default true
-   */
-  // showCommentInputPlaceholder: true,
-
-  /**
    * Function that transforms the automatically generated summary text.
    *
    * @type {?Function}
