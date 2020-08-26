@@ -11,6 +11,7 @@ import cd from './cd';
 import userRegistry from './userRegistry';
 import {
   animateLinks,
+  areObjectsEqual,
   defined,
   handleApiReject,
   isCommentEdit,
@@ -57,33 +58,37 @@ function removeAlarmViaWorker() {
 }
 
 /**
- * Filter values of an object that can't be safely passed to worker.
+ * Filter out values of an object that can't be safely passed to worker (see {@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}}).
  *
  * @param {object} obj
- * @param {Array} allowedObjectNames
+ * @param {Array} allowedFuncNames Names of the properties that should be passed to the worker
+ *   despite their values are functions (they are passed in a stringified form).
  * @returns {object}
+ * @private
  */
-function keepWorkerSafeValues(obj, allowedObjectNames = []) {
+function keepWorkerSafeValues(obj, allowedFuncNames = []) {
   const newObj = Object.assign({}, obj);
   Object.keys(newObj).forEach((key) => {
     const val = newObj[key];
     if (
-      (
-        typeof val === 'function' ||
-        (
-          typeof val === 'object' &&
-          val !== null &&
-          !(val instanceof RegExp) &&
-          !(val instanceof Date) &&
-          !Array.isArray(val)
-        )
-      ) &&
-      !allowedObjectNames.includes(key)
+      typeof val === 'object' &&
+      val !== null &&
+      !(val instanceof RegExp || val instanceof Date)
     ) {
-      delete newObj[key];
-    }
-    if (allowedObjectNames.includes(key) && typeof val === 'function') {
-      newObj[key] = val.toString();
+      try {
+        if (!areObjectsEqual(val, JSON.parse(JSON.stringify(val)))) {
+          delete newObj[key];
+        }
+      } catch (e) {
+        delete newObj[key];
+      }
+    } else if (typeof val === 'function') {
+      if (allowedFuncNames.includes(key)) {
+        newObj[key] = val.toString();
+      } else {
+        delete newObj[key];
+      }
     }
   });
   return newObj;
@@ -100,12 +105,7 @@ export async function processPageInBackground() {
   cd.g.worker.postMessage({
     type: 'parse',
     text,
-    g: keepWorkerSafeValues(cd.g, [
-      'MESSAGES',
-      'PHP_CHAR_TO_UPPER_JSON',
-      'IS_IPv6_ADDRESS',
-      'TIMESTAMP_PARSER',
-    ]),
+    g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER']),
     config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
   });
 }
