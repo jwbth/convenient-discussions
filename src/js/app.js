@@ -329,15 +329,27 @@ function go() {
 function getConfig() {
   return new Promise((resolve, reject) => {
     if (configUrls[location.host]) {
-      if (IS_DEV) {
-        configUrls[location.host] = configUrls[location.host].replace(/.js/, '-dev.js');
-      }
-      mw.loader.getScript(configUrls[location.host]).then(
+      const url = IS_DEV ?
+        configUrls[location.host].replace(/.js/, '-dev.js') :
+        configUrls[location.host];
+      const doReject = (e) => {
+        reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
+      };
+      mw.loader.getScript(url).then(
         () => {
           resolve();
         },
         (e) => {
-          reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
+          if (IS_DEV) {
+            mw.loader.getScript(configUrls[location.host]).then(
+              () => {
+                resolve();
+              },
+              doReject
+            );
+          } else {
+            doReject(e);
+          }
         }
       );
     } else {
