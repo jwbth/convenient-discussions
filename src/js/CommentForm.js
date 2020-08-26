@@ -2930,7 +2930,7 @@ export default class CommentForm {
   }
 
   /**
-   * Insert "@" into the comment input, activating the mention function.
+   * Insert "@" into the comment input, activating the mention autocomplete menu.
    */
   mention() {
     if (!this.autocomplete) return;

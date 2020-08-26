@@ -405,7 +405,7 @@ export default {
   customAddTopicLinkSelectors: [],
 
   /**
-   * Default collection of insert buttons displayed under the text input in comment forms.
+   * Default collection of insert buttons displayed under the comment input in comment forms.
    *
    * @type {Array.<string|Array>}
    * @default []

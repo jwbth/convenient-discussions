@@ -690,7 +690,10 @@ function cleanUpSessions(data) {
   Object.keys(data).forEach((key) => {
     if (
       !data[key].forms?.length ||
-      data[key].saveUnixTime < Date.now() - cd.g.SECONDS_IN_A_DAY * 1000 * 30
+      (
+        data[key].saveUnixTime < Date.now() -
+        cd.g.SECONDS_IN_A_DAY * (cd.g.MILLISECONDS_IN_A_MINUTE / 2)
+      )
     ) {
       delete data[key];
     }

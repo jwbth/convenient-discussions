@@ -549,83 +549,83 @@ async function processDiff() {
   const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
-  const areas = [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
-    .filter(notNull);
+  [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
+    .filter(notNull)
+    .forEach((area) => {
+      if (area.querySelector('.minoredit')) return;
 
-  areas.forEach((area) => {
-    if (area.querySelector('.minoredit')) return;
+      const summary = area.querySelector('.comment')?.textContent;
+      if (
+        summary &&
 
-    const summary = area.querySelector('.comment')?.textContent;
-    if (
-      summary &&
-
-      // Here, archivation can't be captured by looking at bytes added.
-      (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
-    ) {
-      return;
-    }
-
-    const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
-    if (!dateElement) return;
-    const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
-    if (!date) return;
-
-    const author = extractAuthor(area);
-    if (!author) return;
-
-    const anchor = generateCommentAnchor(date, author);
-
-    let comment = Comment.getCommentByAnchor(anchor);
-    if (!comment) {
-      let commentAnchorToCheck;
-      // There can be a time difference between the time we know (taken from the watchlist or
-      // generated in the script) and the time on the page. We take it to be not higher than 5
-      // minutes for the watchlist time and not higher than 1 minute for the script-generated time.
-      for (let gap = 1; !comment && gap <= 5; gap++) {
-        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
-        commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
-        comment = Comment.getCommentByAnchor(commentAnchorToCheck);
+        // Here, archivation can't be captured by looking at bytes added.
+        (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
+      ) {
+        return;
       }
-    }
 
-    if (comment) {
-      let wrapper;
-      if (summary && currentUserRegexp.test(` ${summary} `)) {
-        wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
-        wrapper.lastChild.lastChild.title = goToCommentToYou;
-      } else {
-        let watched = false;
-        if (summary && cd.g.thisPageWatchedSections.length) {
-          for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
-            // \u200E is the left-to-right mark.
-            if (summary.includes('→\u200E' + cd.g.thisPageWatchedSections[j])) {
-              watched = true;
-              break;
+      const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
+      if (!dateElement) return;
+      const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+      if (!date) return;
+
+      const author = extractAuthor(area);
+      if (!author) return;
+
+      const anchor = generateCommentAnchor(date, author);
+
+      let comment = Comment.getCommentByAnchor(anchor);
+      if (!comment) {
+        let commentAnchorToCheck;
+        // There can be a time difference between the time we know (taken from the watchlist or
+        // generated in the script) and the time on the page. We take it to be not higher than 5
+        // minutes for the watchlist time and not higher than 1 minute for the script-generated
+        // time.
+        for (let gap = 1; !comment && gap <= 5; gap++) {
+          const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
+          commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
+          comment = Comment.getCommentByAnchor(commentAnchorToCheck);
+        }
+      }
+
+      if (comment) {
+        let wrapper;
+        if (summary && currentUserRegexp.test(` ${summary} `)) {
+          wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+          wrapper.lastChild.lastChild.title = goToCommentToYou;
+        } else {
+          let watched = false;
+          if (summary && cd.g.thisPageWatchedSections.length) {
+            for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
+              // \u200E is the left-to-right mark.
+              if (summary.includes('→\u200E' + cd.g.thisPageWatchedSections[j])) {
+                watched = true;
+                break;
+              }
+            }
+            if (watched) {
+              wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+              wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
-          if (watched) {
-            wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
-            wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
+          if (!watched) {
+            wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
           }
         }
-        if (!watched) {
-          wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
-        }
+
+        const href = '#' + anchor;
+        wrapper.lastChild.lastChild.href = href;
+        wrapper.onclick = function (e) {
+          e.preventDefault();
+          comment.scrollToAndHighlightTarget(false);
+          history.pushState(history.state, '', href);
+        };
+
+        const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
+        if (!destination) return;
+        destination.appendChild(wrapper);
       }
-
-      const href = '#' + anchor;
-      wrapper.lastChild.lastChild.href = href;
-      wrapper.onclick = function (e) {
-        e.preventDefault();
-        comment.scrollToAndHighlightTarget(false);
-        history.pushState(history.state, '', href);
-      };
-
-      const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
-      if (!destination) return;
-      destination.appendChild(wrapper);
-    }
-  });
+    });
 
   /**
    * Comments links have been created.
