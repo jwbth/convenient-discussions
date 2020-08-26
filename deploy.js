@@ -15,6 +15,7 @@ const getUrl = require('./misc/util.js').getUrl;
   npm run deploy --dev
  */
 const dev = argv.dev || process.env.npm_config_dev;
+const noi18n = argv.noi18n || process.env.npm_config_noi18n;
 
 const warning = (text) => console.log(chalk.yellowBright(text));
 const error = (text) => console.log(chalk.red(text));
@@ -40,6 +41,10 @@ if (!files || !Array.isArray(files) || !files.length) {
 }
 
 files.forEach((file, i) => {
+  if (noi18n && file.endsWith('i18n/')) {
+    files.splice(i, i);
+    return;
+  }
   if (file.endsWith('/')) {
     files.splice(i, 1, ...fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir));
   }
