@@ -27,7 +27,7 @@ let parseTimestampRegexpNoTimezone;
  * Parse a timestamp, and return a date and the match object.
  *
  * @param {string} timestamp
- * @param {number} [timezoneOffset=0] Timezone offset in minutes.
+ * @param {number} [timezoneOffset] Timezone offset in minutes.
  * @returns {?ParseTimestampReturn}
  */
 export function parseTimestamp(timestamp, timezoneOffset) {
@@ -47,11 +47,7 @@ export function parseTimestamp(timestamp, timezoneOffset) {
   if (!match) {
     return null;
   }
-
-  let date = cd.g.TIMESTAMP_PARSER(match, cd);
-  if (timezoneOffset) {
-    date = new Date(date.getTime() - timezoneOffset * cd.g.MILLISECONDS_IN_A_MINUTE);
-  }
+  const date = cd.g.TIMESTAMP_PARSER(match, cd, timezoneOffset);
 
   return { date, match };
 }

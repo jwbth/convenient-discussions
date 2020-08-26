@@ -812,6 +812,10 @@ function setLocalTimestampParser() {
     }
   }
 
+  // We can't use the variables from the scope of the current function and have to accept the global
+  // object as a parameter because we need to use the function in a web worker which can receive
+  // functions only as strings, forgetting their scope.
+
   /**
    * Timestamp parser.
    *
@@ -819,13 +823,12 @@ function setLocalTimestampParser() {
    * @param {Array} match Regexp match data.
    * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker
    *   context) global object.
+   * @param {number} [timezoneOffset] User's timezone, if it should be used instead of the wiki's
+   *   timezone.
    * @returns {Date}
    * @memberof module:cd~convenientDiscussions.g
    */
-  // We can't use the variables from the scope of the current function and have to accept the global
-  // object as a parameter because we need to use the function in a web worker which can receive
-  // functions only as strings, forgetting their scope.
-  cd.g.TIMESTAMP_PARSER = (match, cd) => {
+  cd.g.TIMESTAMP_PARSER = (match, cd, timezoneOffset) => {
     const untransformDigits = (text) => {
       if (!cd.g.DIGITS) {
         return text;
@@ -893,9 +896,13 @@ function setLocalTimestampParser() {
       }
     }
 
+    if (timezoneOffset === undefined) {
+      timezoneOffset = cd.g.LOCAL_TIMEZONE_OFFSET;
+    }
+
     return new Date(
       Date.UTC(year, monthIdx, day, hour, minute) -
-      cd.g.LOCAL_TIMEZONE_OFFSET * 60 * 1000
+      timezoneOffset * cd.g.MILLISECONDS_IN_A_MINUTE
     );
   };
 
