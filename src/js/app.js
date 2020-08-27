@@ -329,29 +329,34 @@ function go() {
 function getConfig() {
   return new Promise((resolve, reject) => {
     if (configUrls[location.host]) {
-      const url = IS_DEV ?
-        configUrls[location.host].replace(/.js/, '-dev.js') :
-        configUrls[location.host];
       const doReject = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
       };
-      mw.loader.getScript(url).then(
-        () => {
-          resolve();
-        },
-        (e) => {
-          if (IS_DEV) {
-            mw.loader.getScript(configUrls[location.host]).then(
-              () => {
-                resolve();
-              },
-              doReject
-            );
-          } else {
-            doReject(e);
-          }
+      const getScript = (url, emptyResponseCallback) => {
+        mw.loader.getScript(url).then(
+          (data) => {
+            if (data === '') {
+              emptyResponseCallback();
+            } else {
+              resolve();
+            }
+          },
+          doReject
+        );
+      };
+
+      const url = IS_DEV ?
+        configUrls[location.host].replace(/.js/, '-dev.js') :
+        configUrls[location.host];
+      getScript(url, () => {
+        if (IS_DEV) {
+          getScript(configUrls[location.host], () => {
+            doReject('Empty response.');
+          });
+        } else {
+          doReject('Empty response.');
         }
-      );
+      });
     } else {
       resolve();
     }
