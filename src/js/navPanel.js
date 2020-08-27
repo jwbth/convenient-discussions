@@ -595,6 +595,7 @@ const navPanel = {
     this.$refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
+      .attr('dir', 'ltr')
       .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`)
       .on('click', () => {
         this.refreshClick();
