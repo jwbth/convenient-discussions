@@ -236,7 +236,7 @@ function generateTooltipText(comments, mode) {
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
-        tooltipText += author + mw.msg('comma-separator') + date;
+        tooltipText += author + (cd.g.IS_RTL ? '&rlm;' : '') + mw.msg('comma-separator') + date;
       });
     });
   } else if (mode === 'refresh') {
