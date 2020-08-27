@@ -661,7 +661,7 @@ const navPanel = {
    *
    * @param {Promise} visitsRequest
    * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
-   * @fires newCommentsMarked
+   * @fires newCommentsHighlighted
    * @memberof module:navPanel
    */
   async processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
@@ -722,12 +722,12 @@ const navPanel = {
     this.registerSeenComments();
 
     /**
-     * New comments have been marked.
+     * New comments have been highlighted.
      *
-     * @event newCommentsMarked
+     * @event newCommentsHighlighted
      * @type {module:cd~convenientDiscussions}
      */
-    mw.hook('convenientDiscussions.newCommentsMarked').fire(cd);
+    mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
   },
 
   /**
