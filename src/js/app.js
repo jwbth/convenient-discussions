@@ -132,17 +132,13 @@ function go() {
     mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
   });
 
-  cd.g.SETTINGS_OPTION_FULL_NAME = `userjs-convenientDiscussions-settings`;
-  cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
-  cd.g.VISITS_OPTION_FULL_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
+  cd.g.SETTINGS_OPTION_NAME = `userjs-convenientDiscussions-settings`;
+  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
+  cd.g.VISITS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
 
   // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-  const watchedSectionsOptionName = location.host === 'ru.wikipedia.org' ?
-    'watchedTopics' :
-    'watchedSections';
-  cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME = (
-    `userjs-${cd.config.optionsPrefix}-${watchedSectionsOptionName}`
-  );
+  const wsonEnding = location.host === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
+  cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-${wsonEnding}`;
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
   cd.g.CURRENT_PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));

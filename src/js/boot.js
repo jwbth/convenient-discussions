@@ -83,10 +83,8 @@ export async function initSettings() {
   cd.localSettingNames = ['insertButtons', 'insertButtonsChanged'];
 
   const options = {
-    [cd.g.SETTINGS_OPTION_FULL_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_FULL_NAME),
-    [cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME]: mw.user.options.get(
-      cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME
-    ),
+    [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
+    [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
   }
 
   // Aliases for seamless transition when changing a setting name.
@@ -470,6 +468,7 @@ function initOouiAndElementPrototypes() {
   cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
     // Will be replaced
     label: '',
+
     framed: false,
     classes: ['cd-button', 'cd-sectionButton'],
   }).$element.get(0);

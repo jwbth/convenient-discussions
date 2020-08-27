@@ -121,13 +121,13 @@ export function getUserInfo(reuse = false) {
         });
       }
 
-      const visitsCompressed = options[cd.g.VISITS_OPTION_FULL_NAME];
+      const visitsCompressed = options[cd.g.VISITS_OPTION_NAME];
       const visitsString = visitsCompressed ?
         lzString.decompressFromEncodedURIComponent(visitsCompressed) :
         '';
       const visits = unpackVisits(visitsString);
 
-      const watchedSectionsCompressed = options[cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME];
+      const watchedSectionsCompressed = options[cd.g.WATCHED_SECTIONS_OPTION_NAME];
       const watchedSectionsString = watchedSectionsCompressed ?
         lzString.decompressFromEncodedURIComponent(watchedSectionsCompressed) :
         '';

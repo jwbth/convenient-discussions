@@ -100,14 +100,14 @@ export async function getSettings({
 
   let globalSettings;
   try {
-    globalSettings = JSON.parse(options[cd.g.SETTINGS_OPTION_FULL_NAME]) || {};
+    globalSettings = JSON.parse(options[cd.g.SETTINGS_OPTION_NAME]) || {};
   } catch (e) {
     globalSettings = {};
   }
 
   let localSettings;
   try {
-    localSettings = JSON.parse(options[cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME]) || {};
+    localSettings = JSON.parse(options[cd.g.LOCAL_SETTINGS_OPTION_NAME]) || {};
   } catch (e) {
     localSettings = {};
   }
@@ -181,13 +181,13 @@ export async function setSettings(settings) {
 
   try {
     await Promise.all([
-      setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_FULL_NAME, JSON.stringify(localSettings)),
-      setGlobalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings))
+      setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, JSON.stringify(localSettings)),
+      setGlobalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings))
     ]);
   } catch (e) {
     // The site doesn't support global preferences.
     if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
-      setLocalOption(cd.g.SETTINGS_OPTION_FULL_NAME, JSON.stringify(globalSettings));
+      setLocalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings));
     } else {
       throw e;
     }
@@ -212,7 +212,7 @@ export async function setSettings(settings) {
  */
 export async function getVisits(reuse = false) {
   const visits = await (
-    cd.g.firstRun && mw.user.options.get(cd.g.VISITS_OPTION_FULL_NAME) === null ?
+    cd.g.firstRun && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.visits)
   );
@@ -263,7 +263,7 @@ export async function setVisits(visits) {
   const visitsString = packVisits(visits);
   const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
   try {
-    await setLocalOption(cd.g.VISITS_OPTION_FULL_NAME, visitsStringCompressed);
+    await setLocalOption(cd.g.VISITS_OPTION_NAME, visitsStringCompressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
@@ -295,7 +295,7 @@ export async function setVisits(visits) {
  */
 export async function getWatchedSections(reuse = false, keptData = {}) {
   const watchedSections = await (
-    cd.g.firstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME) === null ?
+    cd.g.firstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.watchedSections)
   );
@@ -334,5 +334,5 @@ export function setWatchedSections() {
   const watchedSectionsStringCompressed = (
     lzString.compressToEncodedURIComponent(watchedSectionsString)
   );
-  setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_FULL_NAME, watchedSectionsStringCompressed);
+  setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_NAME, watchedSectionsStringCompressed);
 }
