@@ -539,19 +539,11 @@ export function loadData() {
   const messagesRequests = [];
   for (let i = 0; i < messageNames.length; i += 50) {
     const nextNames = messageNames.slice(i, i + 50);
-    messagesRequests.push(
-      cd.g.api.loadMessagesIfMissing(nextNames, { amlang: mw.config.get('wgContentLanguage') })
-    );
-  }
-
-  Promise.all(messagesRequests).then(() => {
-    // We need this object to pass to the web worker.
-    cd.g.MESSAGES = {};
-    messageNames.forEach((name) => {
-      cd.g.MESSAGES[name] = mw.messages.get(name);
+    const request = cd.g.api.loadMessagesIfMissing(nextNames, {
+      amlang: mw.config.get('wgContentLanguage'),
     });
-  });
-  requests.push(...messagesRequests);
+    messagesRequests.push(request);
+  }
 
   if (!Object.keys(cd.config.messages).some((name) => name.startsWith('timezone-'))) {
     const request = cd.g.api.loadMessages(undefined, {
@@ -559,8 +551,20 @@ export function loadData() {
       amincludelocal: 1,
       amfilter: 'timezone-',
     });
-    requests.push(request);
+    messagesRequests.push(request);
   }
+
+  Promise.all(messagesRequests).then(() => {
+    // We need this object to pass to the web worker.
+    cd.g.MESSAGES = {};
+    messageNames.push(
+      ...Object.keys(mw.messages.get()).filter((name) => name.startsWith('timezone-'))
+    );
+    messageNames.forEach((name) => {
+      cd.g.MESSAGES[name] = mw.messages.get(name);
+    });
+  });
+  requests.push(...messagesRequests);
 
   if (!cd.g.CONTRIBS_PAGE || cd.g.LOCAL_TIMEZONE_OFFSET === null) {
     const request = cd.g.api.get({
@@ -713,7 +717,7 @@ function setLocalTimestampRegexps() {
     cd.g.DATE_FORMAT,
     cd.g.DIGITS ? `[${cd.g.DIGITS}]` : '\\d'
   );
-  const timezones = Object.keys(cd.config.messages)
+  const timezones = Object.keys(cd.g.MESSAGES)
     .filter((name) => name.startsWith('timezone-'))
     .map((name) => name.slice(9));
   const localizedTimezones = (timezones.length ? timezones : TIMEZONES).map((abbr) => {
