@@ -196,8 +196,9 @@ async function checkForNewComments() {
  * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
  * @param {CommentSkeleton[]|Comment[]} comments
- * @param {string} mode 'firstunseen' or 'refresh'. Code of action of the button.
+ * @param {string} mode Code of the action of the button: 'firstunseen' or 'refresh'.
  * @returns {?string}
+ * @private
  */
 function generateTooltipText(comments, mode) {
   let tooltipText = null;
