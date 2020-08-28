@@ -23,10 +23,10 @@ class TributeRange {
                 info.mentionPosition)
 
             this.tribute.menu.style.cssText = (
-                `top: ${coordinates.top}px; ` +
-                `left:${coordinates.left}px; ` +
-                `right: ${coordinates.right}px; ` +
-                `bottom: ${coordinates.bottom}px; ` +
+                `top: ${coordinates.top}${typeof coordinates.top === 'number' ? 'px' : ''}; ` +
+                `left:${coordinates.left}${typeof coordinates.left === 'number' ? 'px' : ''}; ` +
+                `right: ${coordinates.right}${typeof coordinates.right === 'number' ? 'px' : ''}; ` +
+                `bottom: ${coordinates.bottom}${typeof coordinates.bottom === 'number' ? 'px' : ''}; ` +
                 `position: absolute; ` +
                 `display: block;`
             );
@@ -34,14 +34,6 @@ class TributeRange {
             // jwbth: Added this block.
             if (coordinates.additionalStyles) {
                 this.tribute.menu.style.cssText += ' ' + coordinates.additionalStyles
-            }
-
-            if (coordinates.left === 'auto') {
-                this.tribute.menu.style.left = 'auto'
-            }
-
-            if (coordinates.top === 'auto') {
-                this.tribute.menu.style.top = 'auto'
             }
 
             if (scrollTo) this.scrollIntoView()
@@ -314,10 +306,18 @@ class TributeRange {
         let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
         let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
 
-        let menuTop = typeof coordinates.top === 'number' ? coordinates.top : windowTop + windowHeight - coordinates.bottom - menuDimensions.height
-        let menuRight = typeof coordinates.right === 'number' ? coordinates.right : coordinates.left + menuDimensions.width
-        let menuBottom = typeof coordinates.bottom === 'number' ? coordinates.bottom : coordinates.top + menuDimensions.height
-        let menuLeft = typeof coordinates.left === 'number' ? coordinates.left : windowLeft + windowWidth - coordinates.right - menuDimensions.width
+        let menuTop = typeof coordinates.top === 'number' ?
+            coordinates.top :
+            windowTop + windowHeight - coordinates.bottom - menuDimensions.height
+        let menuRight = typeof coordinates.right === 'number' ?
+            coordinates.right :
+            coordinates.left + menuDimensions.width
+        let menuBottom = typeof coordinates.bottom === 'number' ?
+            coordinates.bottom :
+            coordinates.top + menuDimensions.height
+        let menuLeft = typeof coordinates.left === 'number' ?
+            coordinates.left :
+            windowLeft + coordinates.right - menuDimensions.width
 
         return {
             top: menuTop < Math.floor(windowTop),
@@ -349,6 +349,7 @@ class TributeRange {
        return dimensions
     }
 
+    // jwbth: Added RTL support.
     getTextAreaOrInputUnderlinePosition(element, position) {
         let properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX',
             'overflowY', 'borderTopWidth', 'borderRightWidth',
@@ -404,8 +405,14 @@ class TributeRange {
         span.textContent = element.value.substring(position) || '.'
         div.appendChild(span)
 
-        let rect = element.getBoundingClientRect()
         let doc = document.documentElement
+
+        // jwbth: Replaced `window.innerWidth` with `document.documentElement.clientWidth` here and
+        // in other places to have the scrollbars counted.
+        let windowWidth = doc.clientWidth
+        let windowHeight = doc.clientHeight
+
+        let rect = element.getBoundingClientRect()
         let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
         let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
 
@@ -417,22 +424,31 @@ class TributeRange {
         }
 
         let coordinates = {
-            top: top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth) + parseInt(computed.fontSize) - element.scrollTop,
-            left: left + windowLeft + span.offsetLeft + parseInt(computed.borderLeftWidth)
+            top: top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth) +
+                parseInt(computed.fontSize) - element.scrollTop
         }
-
-        // jwbth: Replaced `window.innerWidth` with `document.documentElement.clientWidth` here and
-        // in other places to have the scrollbars counted.
-        let windowWidth = doc.clientWidth
-        let windowHeight = doc.clientHeight
+        if (doc.dir === 'rtl') {
+            coordinates.right = windowWidth - (windowLeft + left + span.offsetLeft +
+                span.offsetWidth + parseInt(computed.borderLeftWidth))
+        } else {
+            coordinates.left = windowLeft + left + span.offsetLeft +
+                parseInt(computed.borderLeftWidth)
+        }
 
         let menuDimensions = this.getMenuDimensions()
         let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
 
-        if (menuIsOffScreen.right) {
-            // jwbth: Simplified the positioning by putting `right` at 0.
-            coordinates.right = 0
-            coordinates.left = 'auto'
+        if (doc.dir === 'rtl') {
+            if (menuIsOffScreen.left) {
+                coordinates.left = 0
+                coordinates.right = 'auto'
+            }
+        } else {
+            if (menuIsOffScreen.right) {
+                // jwbth: Simplified the positioning by putting `right` at 0.
+                coordinates.right = 0
+                coordinates.left = 'auto'
+            }
         }
 
         if (menuIsOffScreen.bottom) {
