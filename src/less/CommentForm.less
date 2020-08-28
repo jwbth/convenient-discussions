@@ -378,34 +378,6 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
   pointer-events: none;
 }
 
-.tribute-container.cd-autocompleteContainer {
-  font-size: 14px;
-  margin-top: 3px;
-  line-height: 20px;
-  max-height: 500px;
-
-  // Make it look closer to the OOUI widget
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.25);
-  border: 1px solid #a2a9b1;
-
-  ul {
-    // Reset the default value
-    background-color: #fff;
-    margin: 0;
-  }
-
-  li {
-    padding: 5px 7px;
-    // Overwrite the standard Vector (and other skins?) value
-    margin: 0;
-
-    span {
-      font-weight: normal;
-    }
-  }
-
-  .highlight {
-    background-color: rgba(0, 23, 70, 0.086);
-    font-weight: normal;
-  }
+.tribute-container.cd-autocompleteContainer li.highlight {
+  font-weight: normal;
 }
