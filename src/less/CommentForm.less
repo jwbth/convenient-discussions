@@ -1,6 +1,7 @@
-// Modern replacement of clearfix
+// Modern replacement for clearfix
 .flow-root() {
   display: flow-root;
+
   // Hack for Edge
   -ms-display: grid;
 }
@@ -112,12 +113,9 @@
   }
 }
 
+// Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
+// content for which case the .sitedir-ltr and .sitedir-rtl classes are used).
 .ltr .cd-commentForm {
-  .cd-summaryInput {
-    margin-right: 8px;
-    margin-left: 0;
-  }
-
   .cd-checkboxesContainer {
     direction: ltr;
   }
@@ -131,7 +129,6 @@
     }
   }
 
-  // Use .ltr and .rtl classes to detect interface direction.
   .cd-buttonsContainer {
     direction: ltr;
   }
@@ -145,12 +142,17 @@
   }
 }
 
-.rtl .cd-commentForm {
-  .cd-summaryInput {
-    margin-left: 8px;
-    margin-right: 0;
-  }
+.sitedir-ltr .cd-summaryInput {
+  margin-right: 8px;
+  margin-left: 0;
+}
 
+.sitedir-rtl .cd-summaryInput {
+  margin-left: 8px;
+  margin-right: 0;
+}
+
+.rtl .cd-commentForm {
   .cd-checkboxesContainer {
     direction: rtl;
   }
@@ -164,7 +166,6 @@
     }
   }
 
-  // Use .ltr and .rtl classes to detect interface direction.
   .cd-buttonsContainer {
     direction: rtl;
   }
@@ -206,12 +207,12 @@ ol > li.cd-commentForm.cd-commentForm {
   }
 }
 
-.ltr .cd-commentInput {
+.sitedir-ltr .cd-commentInput {
   margin-right: 8px;
   margin-left: 0;
 }
 
-.rtl .cd-commentInput {
+.sitedir-rtl .cd-commentInput {
   margin-left: 8px;
   margin-right: 0;
 }
@@ -352,16 +353,24 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
     padding: 2px 0.5em 3px;
     white-space: nowrap;
     display: block;
-    float: left;
 
     &:hover,
     &:focus {
       text-decoration: none;
       color: #222;
+
       // As with toolbar buttons
       background-color: rgba(0, 23, 70, 0.086);
     }
   }
+}
+
+.ltr .cd-insertButtons-item {
+  float: left;
+}
+
+.rtl .cd-insertButtons-item {
+  float: right;
 }
 
 .cd-toolbarPlaceholder {

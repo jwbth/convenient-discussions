@@ -75,10 +75,7 @@
   }
 }
 
-// Comments overlay container is placed in the parent tag of the tag with .mw-content-ltr/rtl, so we
-// can't use .mw-content-ltr/rtl classes. To detect the direction we take the more general class
-// .sitedir-ltr/rtl.
-.sitedir-ltr .cd-commentOverlay {
+.ltr .cd-commentOverlay {
   &-content {
     .oo-ui-buttonWidget {
       margin-right: 0;
@@ -90,7 +87,7 @@
   }
 }
 
-.sitedir-rtl .cd-commentOverlay {
+.rtl .cd-commentOverlay {
   &-content {
     .oo-ui-buttonWidget {
       margin-left: 0;

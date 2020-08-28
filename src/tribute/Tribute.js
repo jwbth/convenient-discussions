@@ -54,7 +54,8 @@ class Tribute {
     positionMenu = true,
     searchOpts = {},
     menuItemLimit = null,
-    menuShowMinLength = 0
+    menuShowMinLength = 0,
+    isRtl = false
   }) {
     this.autocompleteSeparator = autocompleteSeparator;
     this.menuSelected = 0;
@@ -66,6 +67,7 @@ class Tribute {
     this.replaceTextSuffix = replaceTextSuffix;
     this.positionMenu = positionMenu;
     this.hasTrailingSpace = false;
+    this.isRtl = isRtl;
 
     if (values) {
       this.collection = [
@@ -254,6 +256,11 @@ class Tribute {
     let wrapper = document.createElement("div"),
       ul = document.createElement("ul");
     wrapper.className = containerClass;
+
+    if (this.isRtl) {
+      wrapper.className += ' tribute-rtl';
+    }
+
     wrapper.appendChild(ul);
 
     if (this.menuContainer) {
