@@ -113,8 +113,20 @@ module.exports = {
         },
       },
       {
-        test: /\.(less|css)$/,
-        use: ['style-loader', 'css-loader', 'less-loader'],
+        test: /\.less$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              plugins: [
+                require('cssnano')(),
+              ],
+            },
+          },
+          'less-loader',
+        ],
       },
       {
         test: /\bworker-gate\.js$/,
