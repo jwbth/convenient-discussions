@@ -280,13 +280,8 @@ export default {
     return code;
   },
 
-  checkForCustomForeignComponents(node, context) {
+  checkForCustomForeignComponents(node) {
     return (
-      cd.g.specialElements.pageHasOutdents &&
-      (
-        node.classList.contains('outdent-template') ||
-        context.getElementByClassName(node, 'outdent-template')
-      ) ||
       node.classList.contains('ts-Закрыто-header') ||
       // Talk page template
       (cd.g.CURRENT_NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
@@ -323,8 +318,8 @@ const cd = convenientDiscussions;
 mw.hook('convenientDiscussions.beforeParse').add(() => {
   // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
   // the parent list tag into two parts putting the comment in between.
-  $('.ruwiki-commentIndentation-minus1level').each(function () {
-    const $current = $(this).css('margin', 0);
+  $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
+    const $current = $(el).css('margin', 0);
     const $list = $current.parent('dd, li').parent('dl, ol, ul');
     while ($list.get(0).contains($current.get(0))) {
       const $parent = $current.parent();

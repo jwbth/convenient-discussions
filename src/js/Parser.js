@@ -508,10 +508,13 @@ export default class Parser {
             this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
           ) ||
 
+          cd.g.specialElements.pageHasOutdents &&
           (
-            cd.config.checkForCustomForeignComponents &&
-            cd.config.checkForCustomForeignComponents(node, this.context)
-          )
+            node.classList.contains('outdent-template') ||
+            this.context.getElementByClassName(node, 'outdent-template')
+          ) ||
+
+          cd.config.checkForCustomForeignComponents?.(node, this.context)
         ) {
           break;
         }
