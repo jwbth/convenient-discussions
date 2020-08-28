@@ -4,7 +4,8 @@
 			"Abijeet Patro",
 			"Nadine Siak",
 			"SomeyaMako",
-			"列维劳德"
+			"列维劳德",
+			"沈澄心"
 		]
 	},
 	"cm-copylink-tooltip-diff": "向差异复制链接。",
@@ -78,6 +79,7 @@
 	"cf-block-preview": "预览",
 	"cf-block-close": "关闭",
 	"cf-reaction-templateinheadline": "请不要在标题中使用模板，这会使指向该段落标题的链接失效。",
+	"cf-notice-editconflict-retrying": "再次尝试中……",
 	"cf-error-getpagecode": "无法获取页面代码。",
 	"cf-error-findplace": "在代码中无法找到可供插入评论的适当位置。",
 	"cf-error-delete-repliestocomment": "无法删除带有回复的评论。",
@@ -95,6 +97,7 @@
 	"cf-confirm-delete-no": "取消",
 	"cf-confirm-close-yes": "关闭",
 	"cf-confirm-close-no": "取消",
+	"cf-mentions-commentlinktext": "$1 @ $2",
 	"dn-confirm-no": "否",
 	"dn-grantpermission": "向该站点授予权限。",
 	"deadanchor-section-title": "无法找到段落",
@@ -165,6 +168,7 @@
 	"error-unknown": "未知错误。",
 	"error-javascript": "出现了一个JavaScript错误。若要查看详细信息，请前往JavaScript控制台（F12→控制台）。",
 	"error-abusefilter": "您刚才的编辑因滥用过滤器“$1”而被自动拒绝。",
+	"error-editconflict": "编辑冲突。",
 	"error-pagedeleted": "页面已删除。",
 	"wl-button-switchinteresting-tooltip": "只显示被我关注或被我评论过的页面下的评论",
 	"wl-button-editwatchedsections-tooltip": "编辑我监视的章节"
