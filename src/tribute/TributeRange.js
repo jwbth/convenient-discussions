@@ -336,11 +336,13 @@ class TributeRange {
             height: null
         }
 
-        this.tribute.menu.style.cssText = `top: 0px;
-                                 left: 0px;
-                                 position: fixed;
-                                 display: block;
-                                 visibility; hidden;`
+        // jwbth: Fixed "visibility(;) hidden;".
+        this.tribute.menu.style.cssText = `top: 0px;` +
+                                 `left: 0px;` +
+                                 `right: auto;` +
+                                 `position: fixed;` +
+                                 `display: block;` +
+                                 `visibility: hidden;`
        dimensions.width = this.tribute.menu.offsetWidth
        dimensions.height = this.tribute.menu.offsetHeight
 
@@ -455,23 +457,12 @@ class TributeRange {
             // jwbth: Removed the block setting `coordinates.bottom` as a reference point as well as
             // the `parentHeight` variable, added the block setting the height for the menu.
             const height = windowTop + windowHeight - coordinates.top -
-                Number(getComputedStyle(element).paddingTop.replace('px', ''))
-            coordinates.additionalStyles = 'height: ' + height + 'px; overflow-y: scroll;'
+                parseFloat(getComputedStyle(element).paddingTop)
+            coordinates.additionalStyles = `height: ${height}px; overflow-y: scroll;`
         }
 
-        menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
-
-        // jwbth: Added "coordinates.left === 'auto'" to avoid changing erroneously the position if
-        // the page is scrolled to the right and the menu is off the screen.
-        if (menuIsOffScreen.left && coordinates.left === 'auto') {
-            coordinates.left = windowWidth > menuDimensions.width
-                ? windowLeft + windowWidth - menuDimensions.width
-                : windowLeft
-            delete coordinates.right
-        }
-
-        // jwbth: Removed the `if (menuIsOffScreen.top)` block as it seems reduntant after we
-        // stopped basing the menu placement on the bottom position.
+        // jwbth: Removed the second check if the menu is off screen as it seems redundant after we
+        // stopped flipping the menu.
 
         document.body.removeChild(div)
         return coordinates
