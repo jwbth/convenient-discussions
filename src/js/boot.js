@@ -22,7 +22,6 @@ import {
   mergeRegexps,
   saveScrollPosition,
   transparentize,
-  underlinesToSpaces,
   unhideText,
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
@@ -223,29 +222,28 @@ function initGlobals() {
 function initPatterns() {
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
 
+  const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
+
   const namespaceIds = mw.config.get('wgNamespaceIds');
   const userNamespaces = Object.keys(namespaceIds)
     .filter((key) => [2, 3].includes(namespaceIds[key]));
-  const userNamespacesPattern = underlinesToSpaces(userNamespaces.join('|'));
+  const userNamespacesPattern = userNamespaces.map(anySpace).join('|');
   cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesPattern}):(.+)`, 'i');
 
-  const anySpace = (s) => s.replace(/:/g, ' : ').replace(/[ _]/g, '[ _]*');
-
   const allNamespaces = Object.keys(namespaceIds);
-  const allNamespacesPattern = anySpace(allNamespaces.join('|'));
+  const allNamespacesPattern = allNamespaces.join('|');
   cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${allNamespacesPattern}):`, 'i');
 
-  const userNamespacesPatternAnySpace = anySpace(userNamespaces.join('|'));
-  const contributionsPageAnySpace = anySpace(cd.g.CONTRIBS_PAGE);
+  const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
-    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesPatternAnySpace})[ _]*:[ _]*|` +
-    `(?:Special[ _]*:[ _]*Contributions|${contributionsPageAnySpace})\\/[ _]*)([^|\\]/]+)(/)?`
+    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesPattern})[ _]*:[ _]*|` +
+    `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
   const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
-  const userNamespaceAliasesPatternAnySpace = anySpace(userNamespaceAliases.join('|'));
+  const userNamespaceAliasesPattern = userNamespaceAliases.map(anySpace).join('|');
   cd.g.USER_NAMESPACE_ALIASES_REGEXP = new RegExp(
-    `^:?(?:${userNamespaceAliasesPatternAnySpace}):([^/]+)$`,
+    `^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`,
     'i'
   );
 
@@ -317,12 +315,18 @@ function initPatterns() {
   );
 
   const quoteBeginningsPattern = ['<blockquote>', '<q>']
-    .concat(cd.config.pairQuoteTemplates?.[0].map((template) => `{{ *${template}`) || [])
-    .map(mw.util.escapeRegExp)
+    .concat(
+      cd.config.pairQuoteTemplates?.[0]
+        .map((template) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(template))) ||
+      []
+    )
     .join('|');
   const quoteEndingsPattern = ['</blockquote>', '</q>']
-    .concat(cd.config.pairQuoteTemplates?.[1].map((template) => `{{ *${template}`) || [])
-    .map(mw.util.escapeRegExp)
+    .concat(
+      cd.config.pairQuoteTemplates?.[1]
+        .map((template) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(template))) ||
+      []
+    )
     .join('|');
   cd.g.QUOTE_REGEXP = new RegExp(
     `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
@@ -331,9 +335,11 @@ function initPatterns() {
 
   const closedDiscussionBeginningsPattern = (cd.config.closedDiscussionTemplates?.[0] || [])
     .map(mw.util.escapeRegExp)
+    .map(anySpace)
     .join('|');
   const closedDiscussionEndingsPattern = (cd.config.closedDiscussionTemplates?.[1] || [])
     .map(mw.util.escapeRegExp)
+    .map(anySpace)
     .join('|');
   if (closedDiscussionBeginningsPattern) {
     if (closedDiscussionEndingsPattern) {
@@ -352,8 +358,8 @@ function initPatterns() {
     .concat(cd.config.customUnhighlightableElementsClasses);
 
   const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
-  const fileNamespacesPatternAnySpace = anySpace(fileNamespaces.join('|'));
-  cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPatternAnySpace}):`;
+  const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');
+  cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPattern}):`;
 
   // Actually, only the text from "mini" format images should be captured, as in the standard
   // format, the text is not displayed. See "img_thumbnail" in
@@ -366,8 +372,8 @@ function initPatterns() {
 
   const colonNamespaces = Object.keys(namespaceIds)
     .filter((key) => [6, 14].includes(namespaceIds[key]));
-  const colonNamespacesPatternAnySpace = anySpace(colonNamespaces.join('|'));
-  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPatternAnySpace}):`, 'i');
+  const colonNamespacesPattern = colonNamespaces.map(anySpace).join('|');
+  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPattern}):`, 'i');
 
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
