@@ -238,7 +238,7 @@ function generateTooltipText(comments, mode) {
           cd.s('navpanel-newcomments-unknowndate');
         tooltipText += (
           author +
-          (document.documentElement.dir === 'rtl' ? '&rlm;' : '') +
+          (document.documentElement.dir === 'rtl' ? '\u200F' : '') +
           mw.msg('comma-separator') +
           date
         );
@@ -601,7 +601,6 @@ const navPanel = {
     this.$refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
-      .attr('dir', 'ltr')
       .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`)
       .on('click', () => {
         this.refreshClick();
@@ -990,8 +989,13 @@ const navPanel = {
    * @memberof module:navPanel
    */
   updateRefreshButton(newComments, areThereInteresting) {
+    // Can't set the attribute to $refreshButton as its tooltip may have another direction.
+    const $span = $('<span>')
+      .attr('dir', 'ltr')
+      .text(newComments.length ? `+${newComments.length}` : '');
     this.$refreshButton
-      .text(newComments.length ? `+${newComments.length}` : '')
+      .empty()
+      .append($span)
       .attr('title', generateTooltipText(newComments, 'refresh'));
     if (areThereInteresting) {
       this.$refreshButton.addClass('cd-navPanel-refreshButton-interesting');
