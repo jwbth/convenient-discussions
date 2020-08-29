@@ -331,6 +331,25 @@ function initPatterns() {
     'ig'
   );
 
+  const closedDiscussionBeginningsPattern = (cd.config.closedDiscussionTemplates?.[0] || [])
+    .map(mw.util.escapeRegExp)
+    .join('|');
+  const closedDiscussionEndingsPattern = (cd.config.closedDiscussionTemplates?.[1] || [])
+    .map(mw.util.escapeRegExp)
+    .join('|');
+  if (closedDiscussionBeginningsPattern) {
+    if (closedDiscussionEndingsPattern) {
+      cd.g.CLOSED_DISCUSSION_PAIR_REGEXP = new RegExp(
+        `\\{\\{ *(?:${closedDiscussionBeginningsPattern})[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern})[^}]*\\}\\}`,
+        'ig'
+      );
+    }
+    cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP = new RegExp(
+      `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *[|}]`,
+      'ig'
+    );
+  }
+
   cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES
     .concat(cd.config.customUnhighlightableElementsClasses);
 

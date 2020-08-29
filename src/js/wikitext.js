@@ -346,13 +346,59 @@ export function decodeHtmlEntities(s) {
  */
 
 /**
+ * Hide templates taking into account nested ones.
+ *
+ * @param {string} code
+ * @param {Array} [hidden] Array with texts replaced by markers. Not required if `concealFirstMode`
+ *   is `true`.
+ * @param {boolean} [concealFirstMode=false] Instead of putting markers in place of templates, fill
+ *   the space that the first met template occupies with spaces.
+ * @returns {HideSensitiveCodeReturn}
+ */
+export function hideTemplatesRecursively(code, hidden, concealFirstMode = false) {
+  let pos = 0;
+  const stack = [];
+  do {
+    let left = code.indexOf('{{', pos);
+    let right = code.indexOf('}}', pos);
+    if (left === -1 && right === -1 && !stack.length) break;
+    if (left !== -1 && (left < right || right === -1)) {
+      stack.push(left);
+      pos = left + 2;
+    } else {
+      left = stack.pop();
+      if (typeof left === 'undefined') {
+        if (right === -1) {
+          pos += 2;
+          continue;
+        } else {
+          left = 0;
+        }
+      }
+      if (right === -1) {
+        right = code.length;
+      }
+      right += 2;
+      const template = code.substring(left, right);
+      const replacement = concealFirstMode ?
+        '\x01' + ' '.repeat(template.length - 1) :
+        '\x01' + hidden.push(template) + '\x02';
+      code = code.substring(0, left) + replacement + code.substr(right);
+      pos = right - template.length;
+    }
+  } while (!concealFirstMode || stack.length);
+
+  return { code, hidden };
+}
+
+/**
  * Replace code that should not be modified when processing it with placeholders.
  *
  * @param {string} code
  * @returns {HideSensitiveCodeReturn}
  */
 export function hideSensitiveCode(code) {
-  const hidden = [];
+  let hidden = [];
 
   const hide = (regexp, isTable) => {
     code = hideText(code, regexp, hidden, isTable);
@@ -363,46 +409,7 @@ export function hideSensitiveCode(code) {
   const hideTemplates = () => {
     // Simple regexp for hiding templates that have no nested ones.
     hide(/\{\{(?:[^{]\{?)+?\}\}/g);
-
-    let pos = 0;
-    const stack = [];
-    let template;
-    let left;
-    let right;
-    while (true) {
-      left = code.indexOf('{{', pos);
-      right = code.indexOf('}}', pos);
-      if (left === -1 && right === -1 && !stack.length) {
-        break;
-      }
-      if (left !== -1 && (left < right || right === -1)) {
-        stack.push(left);
-        pos = left + 2;
-      } else {
-        left = stack.pop();
-        if (typeof left === 'undefined') {
-          if (right === -1) {
-            pos += 2;
-            continue;
-          } else {
-            left = 0;
-          }
-        }
-        if (right === -1) {
-          right = code.length;
-        }
-        right += 2;
-        template = code.substring(left, right);
-        code = (
-          code.substring(0, left) +
-          '\x01' +
-          hidden.push(template) +
-          '\x02' +
-          code.substr(right)
-        );
-        pos = right - template.length;
-      }
-    }
+    ({code, hidden} = hideTemplatesRecursively(code, hidden));
   };
 
   const hideTags = (...args) => {

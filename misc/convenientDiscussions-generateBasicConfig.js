@@ -59,6 +59,8 @@ mw.loader.using(['mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
     Q6721200: 'blockquotebottom',
     Q6388481: 'movedFrom',
     Q11102202: 'movedTo',
+    Q6537954: 'closed',
+    Q12109489: 'closedEnd',
   };
 
   const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php');
@@ -122,6 +124,17 @@ mw.loader.using(['mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
       (titles.blockquotebottom || []).map((title) => title.getMainText()),
     ]
   );
+  config.closedDiscussionTemplates = (
+    (titles.closed || titles.closedEnd) &&
+    [
+      (titles.closed || []).map((title) => title.getMainText()),
+      (titles.closedEnd || []).map((title) => title.getMainText()),
+    ]
+  );
 
-  console.log(JSON.stringify(config, null, '\t'));
+  let output = JSON.stringify(config, null, '\t');
+  output = output
+    .replace(/'/g, "\\'")
+    .replace(/"/g, "'");
+  console.log(output);
 });

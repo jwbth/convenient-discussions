@@ -208,6 +208,26 @@ export default {
     '.vertical-navbox',
   ],
 
+  closedDiscussionTemplates: [
+    [
+      'Закрыто',
+      'Closed',
+      'Начало закрытой секции',
+      'Close',
+    ],
+    [
+      'Конец закрытой секции',
+      'Закрыто-конец',
+      'Ecs',
+      'Конец',
+      'Esc',
+      'Кзс',
+      'Закрыто конец',
+      'ECS',
+      'Рано',
+    ],
+  ],
+
   closedDiscussionClasses: [
     'ruwiki-closedDiscussion',
   ],

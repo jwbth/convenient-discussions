@@ -381,6 +381,25 @@ export default {
   customFloatingElementsSelectors: [],
 
   /**
+   * Names of the closed discussion templates. They can be single templates like {@link
+   * https://en.wikipedia.org/wiki/Template:Closed} or pair templates like {@link
+   * https://ru.wikipedia.org/wiki/Template:Закрыто} / {@link
+   * https://ru.wikipedia.org/wiki/Template:Конец_закрытой_секции}. Include the closing part of the
+   * pair templates in the second array, and the rest of the templates in the first array. These
+   * templates are ignored when searching for a place to insert a comment in the wikitext.
+   *
+   * @type {Array.<Array.<string>>}
+   * @default <pre class="prettyprint source"><code>[
+   *   [],
+   *   [],
+   * ]</code></pre>
+   */
+  closedDiscussionTemplates: [
+    [],
+    [],
+  ],
+
+  /**
    * Classes of elements that are wrapped around closed discussions.
    *
    * @type {string[]}

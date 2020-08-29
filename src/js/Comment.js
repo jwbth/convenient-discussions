@@ -29,6 +29,7 @@ import {
   extractSignatures,
   hideDistractingCode,
   hideSensitiveCode,
+  hideTemplatesRecursively,
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
@@ -1648,6 +1649,21 @@ export default class Comment extends CommentSkeleton {
     if (action === 'reply') {
       currentIndex = thisInCode.endIndex;
 
+      let adjustedCode = hideDistractingCode(pageCode);
+      if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
+        adjustedCode = adjustedCode
+          .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s) => '\x01' + ' '.repeat(s.length - 1));
+      }
+      if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
+        const closedDiscussionMatch = adjustedCode.match(cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP);
+        if (closedDiscussionMatch) {
+          adjustedCode = adjustedCode.slice(
+            0,
+            closedDiscussionMatch.index + hideTemplatesRecursively(adjustedCode, null, true).code
+          );
+        }
+      }
+
       const searchedIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' +
@@ -1659,11 +1675,11 @@ export default class Comment extends CommentSkeleton {
         ')\\n)\\n*' +
         (searchedIndentationCharsLength > 0 ? `[:*#]{0,${searchedIndentationCharsLength}}` : '') +
 
-        // "\n" is here to avoid putting the reply on a casual empty line. "{" is here to avoid
-        // putting the reply before a "closed discussion" template.
-        '(?![:*#\\n{]|<!--)'
+        // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
+        // closed discussions.
+        '(?![:*#\\n\\x01]|<!--)'
       );
-      const codeAfter = hideDistractingCode(pageCode).slice(currentIndex);
+      const codeAfter = adjustedCode.slice(currentIndex);
       let [, codeInBetween] = codeAfter.match(properPlaceRegexp) || [];
 
       if (codeInBetween === undefined) {
