@@ -164,9 +164,10 @@ export default {
 
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
-   * can still be parts of comments; for a way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. When it comes to the
-   * wikitext, all lines containing these classes are ignored.
+   * can still be parts of comments; for the way to prevent certain elements from becoming comment
+   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}.
+   *
+   * When it comes to the wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
    * @default []

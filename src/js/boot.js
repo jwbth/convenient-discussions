@@ -316,16 +316,14 @@ function initPatterns() {
     mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace(mw.util.escapeRegExp('$1'), '(.*)')
   );
 
-  const quoteBeginnings = ['<blockquote>', '<q>'];
-  const quoteEndings = ['</blockquote>', '</q>'];
-  cd.config.pairQuoteTemplates?.[0].forEach((template) => {
-    quoteBeginnings.push(`{{${template}`);
-  });
-  cd.config.pairQuoteTemplates?.[1].forEach((template) => {
-    quoteEndings.push(`{{${template}`);
-  });
-  const quoteBeginningsPattern = quoteBeginnings.map(mw.util.escapeRegExp).join('|');
-  const quoteEndingsPattern = quoteEndings.map(mw.util.escapeRegExp).join('|');
+  const quoteBeginningsPattern = ['<blockquote>', '<q>']
+    .concat(cd.config.pairQuoteTemplates?.[0].map((template) => `{{ *${template}`) || [])
+    .map(mw.util.escapeRegExp)
+    .join('|');
+  const quoteEndingsPattern = ['</blockquote>', '</q>']
+    .concat(cd.config.pairQuoteTemplates?.[1].map((template) => `{{ *${template}`) || [])
+    .map(mw.util.escapeRegExp)
+    .join('|');
   cd.g.QUOTE_REGEXP = new RegExp(
     `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
     'ig'

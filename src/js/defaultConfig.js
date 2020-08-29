@@ -152,7 +152,7 @@ export default {
   defaultIndentationChar: ':',
 
   /**
-   * Whether to put a space between the indentation char and the comment text.
+   * Whether to put a space between the indentation chars and the comment text.
    *
    * @type {boolean}
    * @default true
@@ -269,7 +269,6 @@ export default {
 
   /**
    * Name of the template that is an analog of {@link
-   * https://ru.wikipedia.org/wiki/Шаблон:Block-small} / {@link
    * https://en.wikipedia.org/wiki/Template:Smalldiv}. Used when the whole comment is wrapped in
    * `<small></small>` (with some exceptions when that could break the layout).
    *
@@ -280,9 +279,8 @@ export default {
 
   /**
    * Names of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Paragraph_break} / {@link
-   * https://ru.wikipedia.org/wiki/Шаблон:Абзац}. The first string will be used when posting
-   * comments.
+   * https://en.wikipedia.org/wiki/Template:Paragraph_break}. The first string will be used when
+   * posting comments.
    *
    * @type {string[]}
    * @default []
@@ -300,9 +298,10 @@ export default {
 
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
-   * can still be parts of comments; for a way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. When it comes to the
-   * wikitext, all lines containing these classes are ignored.
+   * can still be parts of comments; for the way to prevent certain elements from becoming comment
+   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}.
+   *
+   * When it comes to the wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
    * @default []
