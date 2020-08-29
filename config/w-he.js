@@ -156,7 +156,7 @@ export default {
   //  [],
   // ],
 
-  blockSmallTemplate: null,
+  smallDivTemplate: null,
 
   paragraphTemplates: ['ש'],
 

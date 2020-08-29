@@ -162,7 +162,7 @@ export default {
     ['конец цитаты'],
   ],
 
-  blockSmallTemplate: 'block-small',
+  smallDivTemplate: 'block-small',
 
   paragraphTemplates: [
     'pb',

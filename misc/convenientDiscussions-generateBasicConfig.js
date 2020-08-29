@@ -108,7 +108,7 @@ mw.loader.using(['mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
     titles.paragraph &&
     titles.paragraph.map((title) => title.getMainText())
   );
-  config.blockSmallTemplate = titles.smallDiv && titles.smallDiv[0].getMainText();
+  config.smallDivTemplate = titles.smallDiv && titles.smallDiv[0].getMainText();
   config.templatesToExclude = (
     (titles.movedFrom || titles.movedTo) &&
     (titles.movedFrom || [])

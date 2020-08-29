@@ -276,7 +276,7 @@ export default {
    * @type {?string}
    * @default null
    */
-  blockSmallTemplate: null,
+  smallDivTemplate: null,
 
   /**
    * Names of the templates that are analogs of {@link

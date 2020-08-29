@@ -1918,9 +1918,9 @@ export default class CommentForm {
         (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
       );
       const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
-      if (cd.config.blockSmallTemplate && !/^[:*#]/m.test(code)) {
+      if (cd.config.smallDivTemplate && !/^[:*#]/m.test(code)) {
         const adjustedCode = code.replace(/\|/g, '{{!}}');
-        code = `{{${cd.config.blockSmallTemplate}|1=${adjustedCode}}}`;
+        code = `{{${cd.config.smallDivTemplate}|1=${adjustedCode}}}`;
       } else {
         code = `<small>${before}${code}</small>`;
       }

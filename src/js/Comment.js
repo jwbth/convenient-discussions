@@ -1503,9 +1503,9 @@ export default class Comment extends CommentSkeleton {
       start: /^<small>/,
       end: /<\/small>[ \u00A0\t]*$/,
     }];
-    if (cd.config.blockSmallTemplate) {
+    if (cd.config.smallDivTemplate) {
       smallWrappers.push({
-        start: new RegExp(`^(?:\\{\\{${cd.config.blockSmallTemplate}\\|1=)`),
+        start: new RegExp(`^(?:\\{\\{${cd.config.smallDivTemplate}\\|1=)`),
         end: /\}\}[ \u00A0\t]*$/,
       });
     }
