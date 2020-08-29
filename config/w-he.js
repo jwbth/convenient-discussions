@@ -179,7 +179,7 @@ export default {
    * All lines containing these patterns will be ignored when searching for comments in the
    * wikitext.
    *
-   * @type {string[]}
+   * @type {RegExp[]}
    * @default []
    */
   // commentAntipatterns: [],

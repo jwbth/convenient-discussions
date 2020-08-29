@@ -304,7 +304,9 @@ function initPatterns() {
       );
     }
     if (cd.config.commentAntipatterns) {
-      commentAntipatternsPatternParts.push(...cd.config.commentAntipatterns);
+      commentAntipatternsPatternParts.push(
+        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
+      );
     }
     const commentAntipatternPattern = commentAntipatternsPatternParts.join('|');
     cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${commentAntipatternPattern}).*$`, 'mg');

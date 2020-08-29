@@ -186,7 +186,7 @@ export default {
   ],
 
   commentAntipatterns: [
-    '--\u00A0?\\[\\[Участник:DimaBot\\|DimaBot\\]\\]',
+    /--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
   ],
 
   customBadCommentBeginnings: [
