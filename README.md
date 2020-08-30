@@ -4,7 +4,7 @@
 **Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://www.mediawiki.org/) discussion system that allows the user to post and edit comments without switching to a separate page.
 
 ## Features
-The full set of script features includes much more:
+The full set of the script features includes much more:
 * creating topics and subsections;
 * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
 * highlighting and navigating new comments;
