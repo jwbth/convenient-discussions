@@ -1817,7 +1817,7 @@ export default class CommentForm {
     }
 
     if (willCommentBeIndented) {
-      // Remove spaces in the beginning of lines if the comment is indented.
+      // Remove spaces in the beginning of the lines if the comment is indented.
       code = code.replace(/^ +/gm, '');
 
       const replacement = cd.config.paragraphTemplates.length ?
@@ -1842,8 +1842,9 @@ export default class CommentForm {
       `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
       'i'
     );
+    const headingRegexp = /^(=+).*\1$/;
     code = code.replace(
-      /^((?![:*#= ]).+)\n(?![\n:*#= \x03])(?=(.*))/gm,
+      /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
       (s, thisLine, nextLine) => {
         const br = (
           // We assume that if a tag/template occupies an entire line or multiple lines, it's a
@@ -1855,8 +1856,13 @@ export default class CommentForm {
           entireLineRegexp.test(thisLine) ||
           entireLineRegexp.test(nextLine) ||
 
+          (
+            !willCommentBeIndented &&
+            (headingRegexp.test(thisLine) || headingRegexp.test(nextLine))
+          ) ||
+
           // Removing <br>s after block elements is not a perfect solution as there would be no
-          // newlines when editing such comment, but this way we would avoid empty lines in cases
+          // newlines when editing such a comment, but this way we would avoid empty lines in cases
           // like "</div><br>".
           thisLineEndingRegexp.test(thisLine) ||
           nextLineBeginningRegexp.test(nextLine)

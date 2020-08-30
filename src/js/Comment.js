@@ -1106,12 +1106,15 @@ export default class Comment extends CommentSkeleton {
         `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
         'i'
       );
+      const headingRegexp = /^(=+).*\1$/;
       text = text.replace(
-        /^((?![:*#= ]).+)\n(?![\n:*#= \x03])(?=(.*))/gm,
+        /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
         (s, thisLine, nextLine) => {
           const newlineOrSpace = (
             entireLineRegexp.test(thisLine) ||
             entireLineRegexp.test(nextLine) ||
+            headingRegexp.test(thisLine) ||
+            headingRegexp.test(nextLine) ||
             thisLineEndingRegexp.test(thisLine) ||
             nextLineBeginningRegexp.test(nextLine)
           ) ?
@@ -1673,7 +1676,13 @@ export default class Comment extends CommentSkeleton {
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
         ')\\n)\\n*' +
-        (searchedIndentationCharsLength > 0 ? `[:*#]{0,${searchedIndentationCharsLength}}` : '') +
+
+        // "\x01" is from hiding closed discussions.
+        (
+          searchedIndentationCharsLength > 0 ?
+          `[:*#\\x01]{0,${searchedIndentationCharsLength}}` :
+          ''
+        ) +
 
         // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
         // closed discussions.
