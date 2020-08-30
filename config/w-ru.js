@@ -263,7 +263,9 @@ export default {
       message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
       name: 'closerTemplateNotNeeded',
       type: 'notice',
-      checkFunc: (commentForm) => commentForm.couldBeCloserClosing && commentForm.headlineInput.getValue().trim() === 'Итог',
+      checkFunc: function (commentForm) {
+        return commentForm.couldBeCloserClosing && commentForm.headlineInput.getValue().trim() === 'Итог';
+      },
     },
   ],
 
@@ -273,18 +275,20 @@ export default {
     },
     {
       name: 'ext.gadget.urldecoder',
-      checkFunc: () => mw.user.options.get('gadget-urldecoder'),
+      checkFunc: function () {
+        return mw.user.options.get('gadget-urldecoder');
+      },
     },
   ],
 
-  transformSummary(summary) {
+  transformSummary: function (summary) {
     return summary
       .replace(cd.s('es-new-subsection') + ': /* Итог */', 'итог')
       .replace(cd.s('es-new-subsection') + ': /* Предварительный итог */', 'предварительный итог')
       .replace(cd.s('es-new-subsection') + ': /* Предытог */', 'предытог');
   },
 
-  postTransformCode(code, commentForm) {
+  postTransformCode: function (code, commentForm) {
     // Add a closer template
     if (
       commentForm.couldBeCloserClosing &&
@@ -293,14 +297,16 @@ export default {
     ) {
       code = code.replace(
         /(\n?\n)$/,
-        (newlines) => '\n' + (cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}')) + newlines
+        function (newlines) {
+          return '\n' + (cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}')) + newlines;
+        }
       );
     }
 
     return code;
   },
 
-  checkForCustomForeignComponents(node) {
+  checkForCustomForeignComponents: function (node) {
     return (
       node.classList.contains('ts-Закрыто-header') ||
       // Talk page template
@@ -314,7 +320,7 @@ export default {
     );
   },
 
-  areNewTopicsOnTop(title, code) {
+  areNewTopicsOnTop: function (title, code) {
     if (/\{\{[нН]овые сверху/.test(code)) {
       return true;
     } else if (/^Википедия:(?:.* запросы|Запросы|Оспаривание |Форум[/ ])/.test(title)) {
@@ -335,7 +341,7 @@ export default {
 
 const cd = convenientDiscussions;
 
-mw.hook('convenientDiscussions.beforeParse').add(() => {
+mw.hook('convenientDiscussions.beforeParse').add(function () {
   // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
   // the parent list tag into two parts putting the comment in between.
   $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
@@ -358,11 +364,11 @@ mw.hook('convenientDiscussions.beforeParse').add(() => {
   });
 });
 
-mw.hook('convenientDiscussions.pageReady').add(() => {
+mw.hook('convenientDiscussions.pageReady').add(function () {
   if (cd.g.firstRun) {
-    const generateEditCommonJsLink = () => (
-      mw.util.getUrl('User:' + cd.g.CURRENT_USER_NAME + '/common.js', { action: 'edit' })
-    );
+    const generateEditCommonJsLink = function () {
+      return mw.util.getUrl('User:' + cd.g.CURRENT_USER_NAME + '/common.js', { action: 'edit' });
+    };
 
     const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
     if (cd.settings.highlightNew && isHlmEnabled) {
@@ -379,7 +385,7 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
           '.cd-commentPart[style="background-color: ' + dummyElement.style.color + ';"],' +
           '.cd-commentPart[style="background-color: ' + window.messagesHighlightColor + '"]'
         );
-        hlmStyledElements.forEach((el) => {
+        hlmStyledElements.forEach(function (el) {
           el.style.backgroundColor = null;
         });
       }
@@ -408,7 +414,7 @@ mw.hook('convenientDiscussions.pageReady').add(() => {
   }
 });
 
-mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
+mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
   commentForm.couldBeCloserClosing = (
     /^Википедия:К удалению/.test(cd.g.CURRENT_PAGE.name) &&
     commentForm.mode === 'addSubsection' &&
@@ -416,8 +422,8 @@ mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
   );
 });
 
-mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
-  const wikify = () => {
+mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentForm) {
+  const wikify = function () {
     window.Wikify(commentForm.commentInput.$input.get(0));
   };
 
@@ -442,7 +448,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
   commentForm.$element
     .find('.group-gadgets')
     .insertBefore(commentForm.$element.find('.section-main .group-format'));
-  commentForm.$form.on('keydown', (e) => {
+  commentForm.$form.on('keydown', function (e) {
     // Ctrl+Alt+W
     if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
       wikify();
@@ -460,7 +466,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
           icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
           action: {
             type: 'callback',
-            execute: () => {
+            execute: function () {
               window.urlDecoderRun(commentForm.commentInput.$input.get(0));
             },
           },

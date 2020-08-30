@@ -27,9 +27,9 @@ fs.readdirSync('./config/').forEach((file) => {
 
 function getStrings() {
   const lang = mw.config.get('wgUserLanguage');
-  return new Promise((resolve) => {
     if (lang === 'en') {
       // English strings are already in the script.
+  return new Promise(function (resolve) {
       resolve();
     } else {
       mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js&action=raw&ctype=text/javascript')
@@ -53,7 +53,7 @@ convenientDiscussions.config = ${content}
 if (!convenientDiscussions.running) {
   convenientDiscussions.getStringsPromise = getStrings();
   mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${devSuffix}.js&action=raw&ctype=text/javascript')
-    .catch((e) => {
+    .catch(function (e) {
       console.warn('Couldn\\'t load Convenient Discussions.', e);
     });
 }
