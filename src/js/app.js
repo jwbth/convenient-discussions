@@ -14,11 +14,11 @@ import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
 import debug from './debug';
 import defaultConfig from './defaultConfig';
-import enStrings from '../../i18n/en.json';
+import enI18n from '../../i18n/en.json';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces } from './util';
+import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces, unique } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
@@ -112,6 +112,38 @@ function addFooterLink(enable) {
 }
 
 /**
+ * Set the `cd.strings` object values.
+ *
+ * @private
+ */
+function setStrings() {
+  if (!IS_SNIPPET) {
+    // Strings that should be displayed in the site language, not the user language.
+    const contentStrings = [
+      'es-',
+      'cf-mentions-commentlinktext',
+      'move-',
+    ];
+
+    cd.i18n.en = enI18n;
+    cd.strings = {};
+    Object.keys(cd.i18n.en).forEach((name) => {
+      const relevantLang = contentStrings.some((contentStringName) => (
+        name === contentStringName ||
+        contentStringName.endsWith('-') && name.startsWith(contentStringName)
+      )) ?
+        mw.config.get('wgContentLanguage') :
+        mw.config.get('wgUserLanguage');
+      cd.strings[name] = cd.i18n[relevantLang][name] || cd.i18n.en[name];
+    });
+  }
+
+  Object.keys(cd.strings).forEach((name) => {
+    mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
+  });
+}
+
+/**
  * Function executed after the config and localization strings are ready.
  *
  * @private
@@ -126,11 +158,7 @@ function go() {
    */
   cd.config = Object.assign(defaultConfig, cd.config);
 
-  cd.strings = Object.assign({}, enStrings, cd.strings);
-
-  Object.keys(cd.strings).forEach((name) => {
-    mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
-  });
+  setStrings();
 
   cd.g.SETTINGS_OPTION_NAME = `userjs-convenientDiscussions-settings`;
   cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
@@ -193,8 +221,7 @@ function go() {
       });
     }
 
-    // We use a jQuery promise as there is no way to know the state of native promises.
-    $.when(...[
+    Promise.all([
       mw.loader.using([
         'jquery.color',
         'jquery.client',
@@ -366,16 +393,19 @@ function getConfig() {
  * @private
  */
 function getStrings() {
-  const lang = mw.config.get('wgUserLanguage');
+  const langs = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
+    .filter(unique);
   return new Promise((resolve) => {
-    if (lang === 'en') {
+    if (langs.length === 1 && langs[0] === 'en') {
       // English strings are already in the build.
       resolve();
     } else {
-      mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`)
+      Promise.all(langs.map((lang) => (
+        mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`)
+      )))
         // We assume it's OK to fall back to English if the translation is unavailable for any
         // reason.
-        .always(resolve);
+        .finally(resolve);
     }
   });
 }
