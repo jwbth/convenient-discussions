@@ -282,7 +282,13 @@ function addSectionNotifications(newComments) {
         .map((comment) => comment.author)
         .map(unique);
       const button = new OO.ui.ButtonWidget({
-        label: cd.s('section-newcomments', newComments.length, users.length, users.join(', ')),
+        label: cd.s(
+          'section-newcomments',
+          newComments.length,
+          users.length,
+          users.map((user) => user.name).join(', '),
+          users.length === 1 ? users[0] : null
+        ),
         framed: false,
         classes: ['cd-button', 'cd-sectionButton'],
       });
