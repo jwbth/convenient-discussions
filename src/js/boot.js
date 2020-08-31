@@ -729,39 +729,41 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
-  const forms = cd.commentForms.map((commentForm) => {
-    let targetData;
-    const target = commentForm.target;
-    if (commentForm.target instanceof Comment) {
-      targetData = { anchor: target.anchor };
-    } else if (target instanceof Section) {
-      targetData = {
-        headline: target.headline,
-        firstCommentAnchor: target.comments[0]?.anchor,
-        index: target.id,
+  const forms = cd.commentForms
+    .filter((commentForm) => commentForm.isAltered())
+    .map((commentForm) => {
+      let targetData;
+      const target = commentForm.target;
+      if (commentForm.target instanceof Comment) {
+        targetData = { anchor: target.anchor };
+      } else if (target instanceof Section) {
+        targetData = {
+          headline: target.headline,
+          firstCommentAnchor: target.comments[0]?.anchor,
+          index: target.id,
+        };
+      }
+      return {
+        mode: commentForm.mode,
+        targetData,
+        // OK, extracting a selector from an element would be too much, and likely unreliable, so we
+        // extract a href (the only property that we use in the CommentForm constructor) to put it
+        // onto a fake element when restoring the form.
+        addSectionLinkHref: commentForm.$addSectionLink?.attr('href'),
+        headline: commentForm.headlineInput?.getValue(),
+        comment: commentForm.commentInput.getValue(),
+        summary: commentForm.summaryInput.getValue(),
+        minor: commentForm.minorCheckbox?.isSelected(),
+        watch: commentForm.watchCheckbox?.isSelected(),
+        watchSection: commentForm.watchSectionCheckbox?.isSelected(),
+        noSignature: commentForm.noSignatureCheckbox?.isSelected(),
+        delete: commentForm.deleteCheckbox?.isSelected(),
+        originalHeadline: commentForm.originalHeadline,
+        originalComment: commentForm.originalComment,
+        summaryAltered: commentForm.summaryAltered,
+        lastFocused: commentForm.lastFocused,
       };
-    }
-    return {
-      mode: commentForm.mode,
-      targetData,
-      // OK, extracting a selector from an element would be too much, and likely unreliable, so we
-      // extract a href (the only property that we use in the CommentForm constructor) to put it
-      // onto a fake element when restoring the form.
-      addSectionLinkHref: commentForm.$addSectionLink?.attr('href'),
-      headline: commentForm.headlineInput?.getValue(),
-      comment: commentForm.commentInput.getValue(),
-      summary: commentForm.summaryInput.getValue(),
-      minor: commentForm.minorCheckbox?.isSelected(),
-      watch: commentForm.watchCheckbox?.isSelected(),
-      watchSection: commentForm.watchSectionCheckbox?.isSelected(),
-      noSignature: commentForm.noSignatureCheckbox?.isSelected(),
-      delete: commentForm.deleteCheckbox?.isSelected(),
-      originalHeadline: commentForm.originalHeadline,
-      originalComment: commentForm.originalComment,
-      summaryAltered: commentForm.summaryAltered,
-      lastFocused: commentForm.lastFocused,
-    };
-  });
+    });
   const saveUnixTime = Date.now();
   const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
 

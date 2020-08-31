@@ -174,7 +174,6 @@ export default class CommentForm {
               this.originalHeadline = headline;
             }
             this.commentInput.focus();
-            saveSession();
 
             this.closeOperation(currentOperation);
             this.preview();
@@ -201,9 +200,7 @@ export default class CommentForm {
           this.originalHeadline = '';
         }
 
-        if (this.target instanceof Page) {
-          saveSession();
-        } else {
+        if (!(this.target instanceof Page)) {
           this.checkCode();
         }
 
@@ -238,21 +235,16 @@ export default class CommentForm {
        *
        * @type {JQuery.Promise}
        */
-      this.checkCodeRequest = this.target.getCode(this).then(
-        () => {
-          saveSession();
-        },
-        (e) => {
-          if (e instanceof CdError) {
-            this.handleError(Object.assign({}, e.data));
-          } else {
-            this.handleError({
-              type: 'javascript',
-              logMessage: e,
-            });
-          }
+      this.checkCodeRequest = this.target.getCode(this).catch((e) => {
+        if (e instanceof CdError) {
+          this.handleError(Object.assign({}, e.data));
+        } else {
+          this.handleError({
+            type: 'javascript',
+            logMessage: e,
+          });
         }
-      );
+      });
     }
     return this.checkCodeRequest;
   }
