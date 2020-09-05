@@ -36,7 +36,7 @@ const plugins = [
   new webpack.DefinePlugin({
     IS_SNIPPET: snippet,
     CONFIG_FILE_NAME: JSON.stringify(fullCode),
-    LANG_FILE_NAME: JSON.stringify(lang + '.json'),
+    LANG_CODE: JSON.stringify(lang),
     IS_DEV: dev,
   }),
   new WebpackBuildNotifierPlugin({

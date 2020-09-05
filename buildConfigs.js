@@ -30,21 +30,14 @@ function unique(item, pos, arr) {
 }
 
 function getStrings() {
-  const langs = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
-    .filter(unique);
-  return new Promise(function (resolve) {
-    if (langs.length === 1 && langs[0] === 'en') {
-      // English strings are already in the build.
-      resolve();
-    } else {
-      Promise.all(langs.map(function (lang) {
-        return mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js&action=raw&ctype=text/javascript');
-      }))
-        // We assume it's OK to fall back to English if the translation is unavailable for any
-        // reason.
-        .finally(resolve);
-    }
-  });
+  const requests = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
+    .filter(unique)
+    .filter(function (lang) {
+      return lang !== 'en';
+    })
+    .map((lang) => mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js&action=raw&ctype=text/javascript'));
+  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
+  return Promise.all(requests).catch(function () {});
 }
 
 window.convenientDiscussions = window.convenientDiscussions || {};

@@ -35,7 +35,9 @@ let config;
 let strings;
 if (IS_SNIPPET) {
   config = require(`../../config/${CONFIG_FILE_NAME}`).default;
-  strings = require(`../../i18n/${LANG_FILE_NAME}`);
+
+  cd.i18n = {};
+  cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
 }
 
 /**
@@ -117,26 +119,25 @@ function addFooterLink(enable) {
  * @private
  */
 function setStrings() {
-  if (!IS_SNIPPET) {
-    // Strings that should be displayed in the site language, not the user language.
-    const contentStrings = [
-      'es-',
-      'cf-mentions-commentlinktext',
-      'move-',
-    ];
+  // Strings that should be displayed in the site language, not the user language.
+  const contentStrings = [
+    'es-',
+    'cf-mentions-commentlinktext',
+    'move-',
+  ];
 
-    cd.i18n.en = enI18n;
-    cd.strings = {};
-    Object.keys(cd.i18n.en).forEach((name) => {
-      const relevantLang = contentStrings.some((contentStringName) => (
-        name === contentStringName ||
-        contentStringName.endsWith('-') && name.startsWith(contentStringName)
-      )) ?
-        mw.config.get('wgContentLanguage') :
-        mw.config.get('wgUserLanguage');
-      cd.strings[name] = cd.i18n[relevantLang][name] || cd.i18n.en[name];
-    });
-  }
+  cd.i18n = cd.i18n || {};
+  cd.i18n.en = enI18n;
+  cd.strings = {};
+  Object.keys(cd.i18n.en).forEach((name) => {
+    const relevantLang = contentStrings.some((contentStringName) => (
+      name === contentStringName ||
+      contentStringName.endsWith('-') && name.startsWith(contentStringName)
+    )) ?
+      mw.config.get('wgContentLanguage') :
+      mw.config.get('wgUserLanguage');
+    cd.strings[name] = cd.i18n[relevantLang][name] || cd.i18n.en[name];
+  });
 
   Object.keys(cd.strings).forEach((name) => {
     mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
@@ -393,21 +394,12 @@ function getConfig() {
  * @private
  */
 function getStrings() {
-  const langs = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
-    .filter(unique);
-  return new Promise((resolve) => {
-    if (langs.length === 1 && langs[0] === 'en') {
-      // English strings are already in the build.
-      resolve();
-    } else {
-      Promise.all(langs.map((lang) => (
-        mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`)
-      )))
-        // We assume it's OK to fall back to English if the translation is unavailable for any
-        // reason.
-        .finally(resolve);
-    }
-  });
+  const requests = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
+    .filter(unique)
+    .filter((lang) => lang !== 'en')
+    .map((lang) => mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`));
+  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
+  return Promise.all(requests).catch(() => {});
 }
 
 /**
@@ -531,7 +523,7 @@ async function app() {
       !cd.config && getConfig(),
 
       // cd.getStringsPromise may be set in the configuration file.
-      !cd.strings && (cd.getStringsPromise || getStrings()),
+      !cd.i18n && (cd.getStringsPromise || getStrings()),
     ].filter(defined));
   } catch (e) {
     console.error(e);
