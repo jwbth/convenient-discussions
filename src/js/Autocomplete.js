@@ -6,6 +6,7 @@
 
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
+import userRegistry from './userRegistry';
 import { defined, firstCharToUpperCase, handleApiReject, removeDoubleSpaces, unique } from './util';
 import {
   getRelevantPageNames,
@@ -490,20 +491,19 @@ export default class Autocomplete {
    * @private
    */
   static getMentionsConfig(defaultUserNames = []) {
-    const userNamespace = mw.config.get('wgFormattedNamespaces')[2];
     const config = {
       byText: {},
       cache: [],
-      transform: (name) => {
-        name = name.trim();
+      transform: (item) => {
+        const name = item.trim();
+        const user = userRegistry.getUser(name);
+        const userNamespace = (
+          cd.config.userNamespacesByGender?.[user.getGender()] ||
+          mw.config.get('wgFormattedNamespaces')[2]
+        );
         return `@[[${userNamespace}:${name}|${name}]]`;
       },
-      removeSelf: (arr) => {
-        while (arr.includes(cd.g.CURRENT_USER_NAME)) {
-          arr.splice(arr.indexOf(cd.g.CURRENT_USER_NAME), 1);
-        }
-        return arr;
-      },
+      removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
     };
     config.default = config.removeSelf(defaultUserNames);
 

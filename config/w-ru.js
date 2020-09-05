@@ -107,6 +107,10 @@ export default {
     /^Википедия:Выборы арбитров\/.+\/Голосование\//,
   ],
 
+  userNamespacesByGender: {
+    female: 'Участница',
+  },
+
   archivePaths: [
     {
       source: 'Википедия:Форум/Географический',

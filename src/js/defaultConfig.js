@@ -72,6 +72,27 @@ export default {
   pageBlacklist: [],
 
   /**
+   * @typedef {object} UserNamespacesByGender
+   * @property {string} male
+   * @property {string} female
+   * @property {string} unknown
+   */
+
+  /**
+   * If the user namespace uses different aliases based on gender, you may include them here.
+   * Unfortunately, we can't get this using API, see {@link
+   * https://phabricator.wikimedia.org/T204610}.
+   *
+   * Example (if only the female form differs from the standard name):
+   * <pre class="prettyprint source"><code>{
+   *   female: 'Участница',
+   * }</code></pre>
+   *
+   * @type {?UserNamespacesByGender}
+   */
+  userNamespacesByGender: null,
+
+  /**
    * Object that connects active (source) talk page names with their archive pages prefixes and vice
    * versa: archive page names with their source page names.
    *
