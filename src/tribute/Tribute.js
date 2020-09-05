@@ -271,20 +271,6 @@ class Tribute {
   }
 
   showMenuFor(element, scrollTo) {
-    // create the menu if it doesn't exist.
-    if (!this.menu) {
-      this.menu = this.createMenu(this.current.collection.containerClass);
-      element.tributeMenu = this.menu;
-      this.menuEvents.bind(this.menu);
-    }
-
-    this.isActive = true;
-    this.menuSelected = 0;
-
-    if (!this.current.mentionText) {
-      this.current.mentionText = "";
-    }
-
     const processValues = values => {
       // Tribute may not be active any more by the time the value callback returns
       if (!this.isActive) {
@@ -363,6 +349,40 @@ class Tribute {
       // callback.
       this.range.positionMenuAtCaret(scrollTo);
     };
+
+    // jwbth: Only proceed if menu isn't already shown for the current element & mentionText. This
+    // behavior has issues, see
+    // https://github.com/jwbth/convenient-discussions/commit/14dc20cf1b23dff79c2592ff47431513890ab213,
+    // so here we have even more workarounds. But otherwise `values` is called 3 times, Carl. That's
+    // probably a problem of Tribute, but seems non-trivial to refactor it quickly.
+    if (
+      this.isActive &&
+      this.current.element === element &&
+      this.current.mentionText === this.snapshot.mentionText
+    ) {
+      if (this.current.element.selectionStart !== this.snapshot.selectionStart) {
+        processValues([]);
+      }
+      return;
+    }
+    this.snapshot = {
+      mentionText: this.current.mentionText,
+      selectionStart: this.current.element?.selectionStart,
+    };
+
+    // create the menu if it doesn't exist.
+    if (!this.menu) {
+      this.menu = this.createMenu(this.current.collection.containerClass);
+      element.tributeMenu = this.menu;
+      this.menuEvents.bind(this.menu);
+    }
+
+    this.isActive = true;
+    this.menuSelected = 0;
+
+    if (!this.current.mentionText) {
+      this.current.mentionText = "";
+    }
 
     if (typeof this.current.collection.values === "function") {
       this.current.collection.values(this.current.mentionText, processValues);
