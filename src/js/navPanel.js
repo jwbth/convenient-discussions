@@ -238,7 +238,7 @@ function generateTooltipText(comments, mode) {
           cd.s('navpanel-newcomments-unknowndate');
         tooltipText += (
           author +
-          (document.documentElement.dir === 'rtl' ? '\u200F' : '') +
+          (document.body.classList.contains('sitedir-rtl') ? '\u200F' : '') +
           mw.msg('comma-separator') +
           date
         );
