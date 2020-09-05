@@ -132,8 +132,8 @@ export default class Page {
       return null;
     }
     let result = $('.cd-archivingInfo').data('archivePrefix');
+    const name = this.realName || this.name;
     if (!result) {
-      const name = this.realName || this.name;
       const iterator = cd.g.ARCHIVE_PAGES_MAP.entries();
       for (const [sourceRegexp, replacement] of iterator) {
         if (sourceRegexp.test(name)) {
@@ -141,7 +141,6 @@ export default class Page {
           break;
         }
       }
-      result = name;
     }
     return String(result || name);
   }
