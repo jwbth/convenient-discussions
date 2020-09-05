@@ -16,10 +16,12 @@ import {
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
+  getFromLocalStorage,
   getTopAndBottomIncludingMargins,
   handleApiReject,
   notNull,
   reorderArray,
+  saveToLocalStorage,
   unhideText,
   unique,
 } from './util';
@@ -34,6 +36,8 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { getUserGenders } from './apiWrappers';
+
+let thanks;
 
 /**
  * Calculates the proportion of the number of words (3 characters long minimum) present in both
@@ -63,6 +67,23 @@ function calculateWordsOverlap(s1, s2) {
   });
 
   return overlap / total;
+}
+
+/**
+ * Remove thanks older than 60 days.
+ *
+ * @param {object[]} data
+ * @returns {object}
+ * @private
+ */
+function cleanUpThanks(data) {
+  const newData = Object.assign({}, data);
+  Object.keys(newData).forEach((key) => {
+    if (newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
+      delete newData[key];
+    }
+  });
+  return newData;
 }
 
 /**
@@ -332,15 +353,29 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (this.author.isRegistered() && this.date && !this.own) {
-      /**
-       * Thank button.
-       *
-       * @type {Element|undefined}
-       */
-      this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
-      this.thankButton.firstChild.onclick = () => {
-        this.thank();
-      };
+      if (!thanks) {
+        thanks = cleanUpThanks(getFromLocalStorage('convenientDiscussions-thanks') || {});
+        saveToLocalStorage('convenientDiscussions-thanks', thanks);
+      }
+
+      const thanked = Object.keys(thanks).some((key) => (
+        this.anchor === thanks[key].anchor &&
+        calculateWordsOverlap(this.getText(), thanks[key].text) > 0.66
+      ));
+
+      if (thanked) {
+        this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
+      } else {
+        /**
+         * Thank button.
+         *
+         * @type {Element|undefined}
+         */
+        this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
+        this.thankButton.firstChild.onclick = () => {
+          this.thank();
+        };
+      }
       this.overlayContent.appendChild(this.thankButton);
     }
 
@@ -944,9 +979,15 @@ export default class Comment extends CommentSkeleton {
       mw.notify(cd.s('thank-success'));
       this.replaceButton(
         this.thankButton,
-        this.elementPrototypes.disabledThankButton.cloneNode(true),
+        this.elementPrototypes.thankedButton.cloneNode(true),
         'thank'
       );
+
+      thanks[edit.revid] = {
+        anchor: this.anchor,
+        text: this.getText(),
+      };
+      saveToLocalStorage('convenientDiscussions-thanks', thanks);
     } else {
       this.replaceButton(this.thankButton, thankButton, 'thank');
     }

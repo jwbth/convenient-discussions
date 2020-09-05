@@ -774,6 +774,7 @@ export async function settingsDialog() {
       }
 
       localStorage.removeItem('convenientDiscussions-commentForms');
+      localStorage.removeItem('convenientDiscussions-thanks');
 
       this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');

@@ -466,9 +466,9 @@ function initOouiAndElementPrototypes() {
     disabled: true,
     classes: ['cd-button', 'cd-commentButton', 'cd-button-pending'],
   }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.disabledThankButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thank'),
-    title: cd.s('cm-thank-disabled-tooltip'),
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.thankedButton = new OO.ui.ButtonWidget({
+    label: cd.s('cm-thanked'),
+    title: cd.s('cm-thanked-tooltip'),
     framed: false,
     disabled: true,
     classes: ['cd-button', 'cd-commentButton'],
