@@ -248,7 +248,7 @@ class TributeRange {
                 - there is no valid trigger before the cursor position,
                 - typing a space after "@" or "##",
                 - there is a selection.
-            */
+             */
             if (
                 mostRecentTriggerCharPos === -1 ||
                 (currentTriggerSnippet && !currentTriggerSnippet[0].trim()) ||

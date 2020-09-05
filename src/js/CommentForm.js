@@ -1448,10 +1448,7 @@ export default class CommentForm {
       appendable = html;
     } else {
       const $label = html instanceof $ ? html : cd.util.wrapInElement(html);
-      const classes = [
-        'cd-message',
-        name && `cd-message-${name}`,
-      ].filter(defined);
+      const classes = ['cd-message'].concat(name ? [`cd-message-${name}`] : []);
       const message = new OO.ui.MessageWidget({
         type,
         inline: true,
@@ -1898,15 +1895,18 @@ export default class CommentForm {
     if (action === 'preview' && signature) {
       signature = `<span class="cd-commentForm-signature">${signature}</span>`;
     }
+
     // ">" is an ad hoc fix to Sdkb's signature:
     // https://en.wikipedia.org/w/index.php?diff=953603813.
     if (!/^\s/.test(signature) && code && !/[\s>]$/.test(code)) {
       code += ' ';
     }
+
     // Space in the beggining of the line, creating <pre>.
     if (/(?:^|\n) .*$/.test(code)) {
       code += '\n';
     }
+
     code += signature;
 
     // Process the small font wrappers

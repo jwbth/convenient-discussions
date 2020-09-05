@@ -571,7 +571,7 @@ async function processDiff() {
       if (
         summary &&
 
-        // Here, archivation can't be captured by looking at bytes added.
+        // In diffs, archivation can't be captured by looking at bytes added.
         (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
       ) {
         return;

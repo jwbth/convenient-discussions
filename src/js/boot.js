@@ -712,18 +712,16 @@ export async function reloadPage(keptData = {}) {
  * @private
  */
 function cleanUpSessions(data) {
-  Object.keys(data).forEach((key) => {
+  const newData = Object.assign({}, data);
+  Object.keys(newData).forEach((key) => {
     if (
-      !data[key].forms?.length ||
-      (
-        data[key].saveUnixTime < Date.now() -
-        cd.g.SECONDS_IN_A_DAY * (cd.g.MILLISECONDS_IN_A_MINUTE / 2)
-      )
+      !newData[key].forms?.length ||
+      newData[key].saveUnixTime < Date.now() - 30 * cd.g.SECONDS_IN_A_DAY * 1000
     ) {
-      delete data[key];
+      delete newData[key];
     }
   });
-  return data;
+  return newData;
 }
 
 /**
@@ -871,7 +869,7 @@ export function restoreCommentForms() {
         summary: commentForm.summaryInput.getValue(),
       });
       cd.commentForms.splice(cd.commentForms.indexOf(commentForm), 1);
-    }
+    };
 
     cd.commentForms.forEach((commentForm) => {
       commentForm.checkCodeRequest = null;

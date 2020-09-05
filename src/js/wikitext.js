@@ -145,7 +145,7 @@ function extractRegularSignatures(code) {
       6 - timestamp + small template ending characters / ending small tag
       7 - timestamp
       8 - new line characters or empty string
-    */
+     */
     `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(\n*|$)`,
     'igm'
   );

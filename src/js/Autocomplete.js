@@ -113,10 +113,13 @@ export default class Autocomplete {
         .map((item) => {
           let key;
           if (Array.isArray(item)) {
+            // Tags
             key = item[0];
           } else if (item.key) {
+            // Comment links
             key = item.key;
           } else {
+            // The rest
             key = item;
           }
           return {
@@ -168,10 +171,11 @@ export default class Autocomplete {
               // 5 spaces in a user name seem too many. "Jack who built the house" has 4 :-)
               (text.match(spacesRegexp) || []).length <= 4
             );
+
             if (makeRequest) {
-              // Logically, matched or this.mentions.cache should have zero length (a request is
-              // made only if there is no matches in the section; if there are, this.mentions.cache
-              // is an empty array).
+              // Logically, either `matched` or `this.mentions.cache` should have a zero length (a
+              // request is made only if there is no matches in the section; if there are,
+              // `this.mentions.cache` is an empty array).
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }
@@ -643,20 +647,16 @@ export default class Autocomplete {
         ['templatestyles', '<templatestyles src="+" />'],
         'timeline',
       ],
-      transform: (item) => {
-        if (Array.isArray(item)) {
-          return item[1].replace(/\+/, '');
-        } else {
-          return `<${item}></${item}>`;
-        }
-      },
-      getEndOffset: (item) => {
-        if (Array.isArray(item)) {
-          return item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0;
-        } else {
-          return item.length + 3;
-        }
-      },
+      transform: (item) => (
+        Array.isArray(item) ?
+        item[1].replace(/\+/, '') :
+        `<${item}></${item}>`
+      ),
+      getEndOffset: (item) => (
+        Array.isArray(item) ?
+        item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0 :
+        item.length + 3
+      ),
     };
     config.default.sort();
     config.withSpace = config.default.filter((tag) => tag.includes(' '));

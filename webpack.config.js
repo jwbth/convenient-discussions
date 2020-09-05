@@ -76,7 +76,7 @@ if (!snippet) {
           const content = fs.readFileSync(sourceMapFilename).toString();
           const newContent = content.replace(
             /(require\(\\"!!)[^"]+[^.\\/]([\\/]+node_modules[\\/]+worker-loader)/g,
-            (s, before, end) => before + '.' + end,
+            (s, before, end) => `${before}.${end}`,
           );
           fs.writeFileSync(sourceMapFilename, newContent);
         });
