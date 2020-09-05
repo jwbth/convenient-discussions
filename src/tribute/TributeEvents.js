@@ -145,7 +145,19 @@ class TributeEvents {
     }
 
     if (
-      (instance.tribute.current.trigger && instance.commandEvent === false) ||
+      /*
+        jwbth: "=== false" is replaced with "!== true" to fix the issue with the autocomplete menu
+        not appearing. This issue appears because of the check
+        "triggerChar !== this.tribute.current.trigger" I added to TributeRange.js to fix another
+        issue.
+          Steps to reproduce in Convenient Discussions: open a reply form, paste a wikilink using
+        the context menu, press "@".
+          Expected: An autocomplete menu appears.
+          Actual: Does not.
+          This is because "instance.commandEvent = false" is executed only on keydown event that
+        lacks when pasting from the context menu.
+       */
+      (instance.tribute.current.trigger && instance.commandEvent !== true) ||
       (instance.tribute.isActive && event.keyCode === 8)
     ) {
       instance.tribute.showMenuFor(this, true);
