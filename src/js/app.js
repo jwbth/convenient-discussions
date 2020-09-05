@@ -178,118 +178,125 @@ function go() {
 
   cd.g.$content = $('#mw-content-text');
 
+  const enabledInQuery = /[?&]cdTalkPage=(1|true|yes|y)(?=&|$)/.test(location.search);
+
   // Process the page as a talk page
-  if (
-    mw.config.get('wgIsArticle') &&
-    !/[?&]cdTalkPage=(0|false|no|n)(?=&|$)/.test(location.search) &&
-    !cd.g.$content.find('.cd-notTalkPage').length &&
-    (
-      isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
-      $('#ca-addsection').length ||
+  if (mw.config.get('wgIsArticle')) {
+    if (
+      !/[?&]cdTalkPage=(0|false|no|n)(?=&|$)/.test(location.search) &&
+      (!cd.g.$content.find('.cd-notTalkPage').length || enabledInQuery) &&
+      (
+        isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
+        $('#ca-addsection').length ||
 
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
-      cd.g.$content.find('.cd-talkPage').length ||
+        // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+        // the list of supported namespaces and page white/black list in the configuration. With this
+        // method, there won't be "comment" links for edits on pages that list revisions such as the
+        // watchlist.
+        cd.g.$content.find('.cd-talkPage').length ||
 
-      /[?&]cdTalkPage=(1|true|yes|y)(?=&|$)/.test(location.search)
-    )
-  ) {
-    cd.g.firstRun = true;
+        enabledInQuery
+      )
+    ) {
+      cd.g.firstRun = true;
 
-    cd.g.nanoCss = nanoCssCreate();
-    cd.g.nanoCss.put('.cd-loadingPopup', {
-      width: cd.config.logoWidth,
-    });
-    cd.g.nanoCss.put('.cd-loadingPopup-logo', {
-      width: cd.config.logoWidth,
-      height: cd.config.logoHeight,
-    });
-
-    setLoadingOverlay();
-
-    cd.debug.stopTimer('start');
-    cd.debug.startTimer('loading data');
-
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially.
-    let dataRequest;
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      dataRequest = loadData();
-      getUserInfo().catch((e) => {
-        console.warn(e);
+      cd.g.nanoCss = nanoCssCreate();
+      cd.g.nanoCss.put('.cd-loadingPopup', {
+        width: cd.config.logoWidth,
       });
-    }
+      cd.g.nanoCss.put('.cd-loadingPopup-logo', {
+        width: cd.config.logoWidth,
+        height: cd.config.logoHeight,
+      });
 
-    Promise.all([
-      mw.loader.using([
-        'jquery.color',
-        'jquery.client',
-        'mediawiki.Title',
-        'mediawiki.api',
-        'mediawiki.cookie',
-        'mediawiki.jqueryMsg',
-        'mediawiki.notification',
-        'mediawiki.user',
-        'mediawiki.util',
-        'mediawiki.widgets.visibleLengthLimit',
-        'oojs',
-        'oojs-ui',
-        'oojs-ui.styles.icons-alerts',
-        'oojs-ui.styles.icons-content',
-        'oojs-ui.styles.icons-interactions',
-        'user.options',
-      ]),
-      dataRequest,
-    ].filter(defined)).then(
-      () => {
-        try {
-          processPage({ dataRequest });
-        } catch (e) {
-          mw.notify(cd.s('error-processpage'), { type: 'error' });
+      setLoadingOverlay();
+
+      cd.debug.stopTimer('start');
+      cd.debug.startTimer('loading data');
+
+      // Make some requests in advance if the API module is ready in order not to make 2 requests
+      // sequentially.
+      let dataRequest;
+      if (mw.loader.getState('mediawiki.api') === 'ready') {
+        dataRequest = loadData();
+        getUserInfo().catch((e) => {
+          console.warn(e);
+        });
+      }
+
+      Promise.all([
+        mw.loader.using([
+          'jquery.color',
+          'jquery.client',
+          'mediawiki.Title',
+          'mediawiki.api',
+          'mediawiki.cookie',
+          'mediawiki.jqueryMsg',
+          'mediawiki.notification',
+          'mediawiki.user',
+          'mediawiki.util',
+          'mediawiki.widgets.visibleLengthLimit',
+          'oojs',
+          'oojs-ui',
+          'oojs-ui.styles.icons-alerts',
+          'oojs-ui.styles.icons-content',
+          'oojs-ui.styles.icons-interactions',
+          'user.options',
+        ]),
+        dataRequest,
+      ].filter(defined)).then(
+        () => {
+          try {
+            processPage({ dataRequest });
+          } catch (e) {
+            mw.notify(cd.s('error-processpage'), { type: 'error' });
+            removeLoadingOverlay();
+            console.error(e);
+          }
+        },
+        (e) => {
+          mw.notify(cd.s('error-loaddata'), { type: 'error' });
           removeLoadingOverlay();
           console.error(e);
         }
-      },
-      (e) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        removeLoadingOverlay();
-        console.error(e);
-      }
-    );
+      );
 
-    // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
-    // request was aborted"
-    setTimeout(() => {
-      if (isLoadingOverlayOn()) {
-        removeLoadingOverlay();
-        console.warn('The loading overlay stays for more than 10 seconds; removing it.');
-      }
-    }, 10000);
+      // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
+      // request was aborted"
+      setTimeout(() => {
+        if (isLoadingOverlayOn()) {
+          removeLoadingOverlay();
+          console.warn('The loading overlay stays for more than 10 seconds; removing it.');
+        }
+      }, 10000);
 
-    // Additions of CSS cause a reflow which delays operations dependent on rendering, so we run it
-    // now, not after the requests are fulfilled, to save time. The overall order is like this:
-    // 1. Make API requests (above).
-    // 2. Run operations dependent on rendering, such as window.getComputedStyle().
-    // 3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the API
-    // requests are already running, we don't lose time.
-    cd.g.REGULAR_LINE_HEIGHT = parseFloat(window.getComputedStyle(cd.g.$content.get(0)).lineHeight);
+      /*
+        Additions of CSS cause a reflow which delays operations dependent on rendering, so we run
+        it now, not after the requests are fulfilled, to save time. The overall order is like this:
+        1. Make API requests (above).
+        2. Run operations dependent on rendering, such as window.getComputedStyle().
+        3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the API
+        requests are already running, we don't lose time.
+       */
+      cd.g.REGULAR_LINE_HEIGHT = parseFloat(
+        window.getComputedStyle(cd.g.$content.get(0)).lineHeight
+      );
 
-    initTalkPageCss();
+      initTalkPageCss();
 
-    require('../less/global.less');
-    require('../less/Comment.less');
-    require('../less/CommentForm.less');
-    require('../less/Section.less');
-    require('../less/commentLayers.less');
-    require('../less/navPanel.less');
-    require('../less/skin.less');
-    require('../less/talkPage.less');
+      require('../less/global.less');
+      require('../less/Comment.less');
+      require('../less/CommentForm.less');
+      require('../less/Section.less');
+      require('../less/commentLayers.less');
+      require('../less/navPanel.less');
+      require('../less/skin.less');
+      require('../less/talkPage.less');
 
-    addFooterLink(false);
-  } else {
-    addFooterLink(true);
+      addFooterLink(false);
+    } else {
+      addFooterLink(true);
+    }
   }
 
   // Process the page as a log page
