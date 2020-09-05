@@ -105,7 +105,7 @@
 	"cf-cancel-short": "İptal",
 	"cf-settings": "Ayarlar",
 	"cf-scriptsettings-tooltip": "Kullanışlı Tartışmalar ayarları",
-	"cf-help-content": "<p>Bir kullancıya <kbd>@</kbd> ile <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention\" target=\"_blank\">bahsedin</a>. Bu bölümden bir yorumu bağlamak için <kbd>[[##</kbd> yazın.</p>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Yazılım belgelendirmesi</a></p>\n<p>Tuşlar:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — gönder</li>\n<li><b>Esc</b> — iptal</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — seçilen metni alıntı yap</li>\n</ul>",
+	"cf-help-content": "<p>Bir kullancıya <kbd>@</kbd> ile <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention\" target=\"_blank\">bahsedin</a>. Bu bölümden bir yorumu bağlamak için <kbd>[[##</kbd> yazın.</p>\n<p>Tuşlar:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — gönder</li>\n<li><b>Esc</b> — iptal</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — seçilen metni alıntı yap</li>\n</ul>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Yazılım belgelendirmesi</a></p>",
 	"cf-quote-tooltip": "Seçilen metni alıntıla",
 	"cf-quote-placeholder": "Alıntılanan metin",
 	"cf-minor": "Küçük değişiklik",

@@ -3,6 +3,7 @@
 		"authors": [
 			"Abijeet Patro",
 			"DraconicDark",
+			"Elliot",
 			"Umherirrender"
 		]
 	},
@@ -55,7 +56,7 @@
 	"cf-addsubsection-short": "Hinzufügen",
 	"cf-reply": "Antworten",
 	"cf-reply-short": "Antwort",
-	"cf-preview": "Vorschau anzeigen",
+	"cf-preview": "Vorschau",
 	"cf-preview-short": "Vorschau",
 	"cf-viewchanges": "Änderungen zeigen",
 	"cf-viewchanges-short": "Änderungen",
@@ -63,6 +64,7 @@
 	"cf-cancel-short": "Abbrechen",
 	"cf-settings": "Einstellungen",
 	"cf-scriptsettings-tooltip": "Bequeme Diskussionseinstellungen",
+	"cf-help-content": "<p>Type <kbd>@</kbd> to <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention\" target=\"_blank\">mention</a> a user. Type <kbd>[[#</kbd> um ein Kommentar in diesem Bereich zu verlinken. </p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Script documentation</a></p>",
 	"cf-quote-tooltip": "Den ausgewählten Text zitieren",
 	"cf-quote-placeholder": "Zitierter Text",
 	"cf-minor": "Kleine Änderung",
@@ -116,5 +118,6 @@
 	"error-blocked": "Sie sind für die Bearbeitung gesperrt. Die Seite wurde nicht bearbeitet.",
 	"error-pagedeleted": "Die Seite wurde gelöscht.",
 	"error-pagenotedited": "Die Seite wurde nicht bearbeitet.",
-	"lp-comment": "Kommentar"
+	"lp-comment": "Kommentar",
+	"loading-ellipsis": "Lädt..."
 }

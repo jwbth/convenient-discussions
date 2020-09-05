@@ -99,7 +99,7 @@
 	"navpanel-next": "Op déi nächst Bemierkung goen",
 	"navpanel-newcomments-insection": "Abschnitt \"$1\":",
 	"navpanel-newcomments-unknowndate": "onbekannten Datum",
-	"notification-reload": "D'Säit nei lueden",
+	"notification-reload": "<a href=\"$1\" class=\"cd-notification-reloadPage\">Nei luede vun der Säit</a> $2.",
 	"notification-part-insection": "am Abschnitt \"$1\"",
 	"notification-part-onthispage": "op dëser Säit",
 	"sd-save": "Späicheren",

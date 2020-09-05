@@ -103,5 +103,6 @@
 	"msd-error-sourcepagedeleted": "De huidige pagina is verwijderd.",
 	"msd-error-targetpagedoesntexist": "De doelpagina bestaat niet.",
 	"msd-error-invalidpagename": "Ongeldige paginanaam.",
+	"error-editconflict": "Bewerkingsconflict.",
 	"error-pagenotedited": "De pagina is niet bewerkt."
 }
