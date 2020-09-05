@@ -344,9 +344,11 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
         code: 'noData',
       });
     }
-    users.forEach((user) => {
-      userRegistry.getUser(user.name).setGender(user.gender);
-    });
+    users
+      .filter((user) => user.gender)
+      .forEach((user) => {
+        userRegistry.getUser(user.name).setGender(user.gender);
+      });
   }
 }
 
