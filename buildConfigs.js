@@ -41,6 +41,7 @@ function getStrings() {
 }
 
 window.convenientDiscussions = window.convenientDiscussions || {};
+if (convenientDiscussions.config) return;
 
 
 /* BEGINNING OF THE CONFIGURATION */
