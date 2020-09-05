@@ -485,6 +485,38 @@ export function areObjectsEqual(object1, object2) {
 }
 
 /**
+ * Helper to get a local storage item packed in JSON or an empty object in case or unexistent/falsy
+ * falues. Returns `null` in case of a corrupt value.
+ *
+ * @param {string} name
+ * @returns {?object}
+ */
+export function getFromLocalStorage(name) {
+  const json = localStorage.getItem(name);
+  let obj;
+  if (json) {
+    try {
+      // "||" in case of a falsy value.
+      obj = JSON.parse(json) || {};
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+  return obj || {};
+}
+
+/**
+ * Helper to set a local storage item.
+ *
+ * @param {string} name
+ * @param {object} obj
+ */
+export function saveToLocalStorage(name, obj) {
+  localStorage.setItem(name, JSON.stringify(obj));
+}
+
+/**
  * Remove left-to-right and right-to-left marks that sometimes are copied from the edit history to
  * the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518) and also appear
  * after →/← in edit summaries.

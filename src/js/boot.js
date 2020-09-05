@@ -18,9 +18,11 @@ import {
   areObjectsEqual,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
+  getFromLocalStorage,
   hideText,
   mergeRegexps,
   saveScrollPosition,
+  saveToLocalStorage,
   transparentize,
   unhideText,
 } from './util';
@@ -767,23 +769,9 @@ export function saveSession() {
   const saveUnixTime = Date.now();
   const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
 
-  const commentFormsDataAllPagesJson = localStorage.getItem('convenientDiscussions-commentForms');
-  let commentFormsDataAllPages;
-  try {
-    commentFormsDataAllPages = (
-      // "||" in case of a falsy value.
-      (commentFormsDataAllPagesJson && JSON.parse(commentFormsDataAllPagesJson)) ||
-      {}
-    );
-  } catch (e) {
-    console.error(e);
-    commentFormsDataAllPages = {};
-  }
-  commentFormsDataAllPages[mw.config.get('wgPageName')] = commentFormsData;
-  localStorage.setItem(
-    'convenientDiscussions-commentForms',
-    JSON.stringify(commentFormsDataAllPages)
-  );
+  const dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms') || {};
+  dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
+  saveToLocalStorage('convenientDiscussions-commentForms', dataAllPages);
 }
 
 /**
@@ -863,25 +851,16 @@ function restoreCommentFormsFromData(commentFormsData) {
  */
 export function restoreCommentForms() {
   if (cd.g.firstRun) {
-    const commentFormsDataAllPagesJson = localStorage.getItem('convenientDiscussions-commentForms');
-    if (commentFormsDataAllPagesJson) {
-      let commentFormsDataAllPages;
-      try {
-        // "||" in case of a falsy value.
-        commentFormsDataAllPages = JSON.parse(commentFormsDataAllPagesJson) || {};
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-      commentFormsDataAllPages = cleanUpSessions(commentFormsDataAllPages);
-      localStorage.setItem(
-        'convenientDiscussions-commentForms',
-        JSON.stringify(commentFormsDataAllPages)
-      );
-      const commentFormsData = commentFormsDataAllPages[mw.config.get('wgPageName')] || {};
-      if (commentFormsData.forms) {
-        restoreCommentFormsFromData(commentFormsData);
-      }
+    let dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms');
+
+    // Corrupt data
+    if (!dataAllPages) return;
+
+    dataAllPages = cleanUpSessions(dataAllPages);
+    saveToLocalStorage('convenientDiscussions-commentForms', dataAllPages);
+    const data = dataAllPages[mw.config.get('wgPageName')] || {};
+    if (data.forms) {
+      restoreCommentFormsFromData(data);
     }
   } else {
     const rescue = [];
