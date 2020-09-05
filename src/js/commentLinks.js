@@ -15,6 +15,7 @@ import {
   isProbablyTalkPage,
   isUndo,
   notNull,
+  removeDirMarks,
   spacesToUnderlines,
 } from './util';
 import { editWatchedSections, settingsDialog } from './modal';
@@ -271,6 +272,17 @@ function isArchiving(summary) {
 }
 
 /**
+ * Check by an edit summary if it is an edit in a section this given name.
+ *
+ * @param {string} summary
+ * @param {string} name
+ * @returns {boolean}
+ */
+function isInSection(summary, name) {
+  return summary.includes('→' + name) || summary.includes('←' + name);
+}
+
+/**
  * Add comment links to a watchlist or a recent changes page. Add a watchlist menu to the watchlist.
  *
  * @param {JQuery} $content
@@ -321,7 +333,8 @@ function processWatchlist($content) {
 
     if (line.querySelector('.minoredit')) return;
 
-    const summary = line.querySelector('.comment')?.textContent;
+    let summary = line.querySelector('.comment')?.textContent;
+    summary = summary && removeDirMarks(summary);
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -364,8 +377,7 @@ function processWatchlist($content) {
           const thisPageWatchedSections = cd.g.watchedSections?.[curId] || [];
           if (thisPageWatchedSections.length) {
             for (let j = 0; j < thisPageWatchedSections.length; j++) {
-              // \u200E is the left-to-right mark.
-              if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+              if (isInSection(summary, thisPageWatchedSections[j])) {
                 watched = true;
                 break;
               }
@@ -475,7 +487,8 @@ function processHistory($content) {
   lines.forEach((line) => {
     if (line.querySelector('.minoredit')) return;
 
-    const summary = line.querySelector('.comment')?.textContent;
+    let summary = line.querySelector('.comment')?.textContent;
+    summary = summary && removeDirMarks(summary);
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -506,8 +519,7 @@ function processHistory($content) {
         const thisPageWatchedSections = cd.g.watchedSections?.[mw.config.get('wgArticleId')] || [];
         if (thisPageWatchedSections.length) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
-            // \u200E is the left-to-right mark.
-            if (summary.includes('→\u200E' + thisPageWatchedSections[j])) {
+            if (isInSection(summary, cd.g.thisPageWatchedSections[j])) {
               watched = true;
               break;
             }
@@ -554,7 +566,8 @@ async function processDiff() {
     .forEach((area) => {
       if (area.querySelector('.minoredit')) return;
 
-      const summary = area.querySelector('.comment')?.textContent;
+      let summary = area.querySelector('.comment')?.textContent;
+      summary = summary && removeDirMarks(summary);
       if (
         summary &&
 
@@ -597,8 +610,7 @@ async function processDiff() {
           let watched = false;
           if (summary && cd.g.thisPageWatchedSections.length) {
             for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
-              // \u200E is the left-to-right mark.
-              if (summary.includes('→\u200E' + cd.g.thisPageWatchedSections[j])) {
+              if (isInSection(summary, cd.g.thisPageWatchedSections[j])) {
                 watched = true;
                 break;
               }

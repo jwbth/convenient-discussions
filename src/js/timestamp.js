@@ -12,7 +12,7 @@
  */
 
 import cd from './cd';
-import { getMessages, spacesToUnderlines } from './util';
+import { getMessages, removeDirMarks, spacesToUnderlines } from './util';
 
 let parseTimestampRegexp;
 let parseTimestampRegexpNoTimezone;
@@ -31,6 +31,10 @@ let parseTimestampRegexpNoTimezone;
  * @returns {?ParseTimestampReturn}
  */
 export function parseTimestamp(timestamp, timezoneOffset) {
+  // Remove left-to-right and right-to-left marks that sometimes are copied from the edit history to
+  // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
+  timestamp = removeDirMarks(timestamp);
+
   // Creating these regexps every time takes too long (say, 10 ms for 1000 runs on an average
   // machine), so we cache them.
   if (!parseTimestampRegexp) {

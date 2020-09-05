@@ -483,3 +483,15 @@ export function areObjectsEqual(object1, object2) {
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
 }
+
+/**
+ * Remove left-to-right and right-to-left marks that sometimes are copied from the edit history to
+ * the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518) and also appear
+ * after →/← in edit summaries.
+ *
+ * @param {string} text
+ * @returns {string}
+ */
+export function removeDirMarks(text) {
+  return text.replace(/[\u200E\u200F]/g, '');
+}
