@@ -250,7 +250,7 @@ function initPatterns() {
   if (cd.config.unsignedTemplates.length) {
     const unsignedTemplatesPattern = cd.config.unsignedTemplates.join('|');
     cd.g.UNSIGNED_TEMPLATES_PATTERN = (
-      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\|[ \\u200E]*([^}|]+?)[ \\u200E]*(?:\\|[ \\u200E]*([^}]+?)[ \\u200E]*)?\\}\\})`
+      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
     );
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
   }

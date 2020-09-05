@@ -17,7 +17,8 @@ import {
 import { hideText } from './util';
 
 /**
- * Conceal HTML comments (`<!-- -->`) and also newlines inside some tags (<br\n>) in the code.
+ * Conceal HTML comments (`<!-- -->`), left-to-right and right-to-left marks, and also newlines
+ * inside some tags (<br\n>) in the code.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.
@@ -28,6 +29,7 @@ import { hideText } from './util';
 export function hideDistractingCode(code) {
   return code
     .replace(/<!--([^]*?)-->/g, (s, content) => '<!--' + ' '.repeat(content.length) + '-->')
+    .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length))
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
       (s, before, newline, after) => before + ' '.repeat(newline.length) + after
