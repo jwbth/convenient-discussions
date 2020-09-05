@@ -288,6 +288,13 @@ export default {
   paragraphTemplates: [],
 
   /**
+   * Character used for user mentions (pings).
+   *
+   * @type {string}
+   */
+  mentionCharacter: '@',
+
+  /**
    * Array of two strings to insert before and after the selection when quote function is activated
    * (by the toolbar button or Ctrl+Alt+Q / Q).
    *

@@ -874,7 +874,7 @@ export default class CommentForm {
       classes: ['cd-button'],
       popup: {
         head: false,
-        $content: cd.util.wrapInElement(cd.s('cf-help-content'), 'div'),
+        $content: cd.util.wrapInElement(cd.s('cf-help-content', cd.config.mentionCharacter), 'div'),
         padded: true,
         align: 'center',
       },
@@ -1185,7 +1185,7 @@ export default class CommentForm {
       .on('change', preview)
       .on('change', saveSessionEventHandler);
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
-      if (e.detail.instance.trigger === '@') {
+      if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
           this.showMessage(cd.s('cf-reaction-mention-edit'), {
             type: 'notice',
@@ -2950,7 +2950,7 @@ export default class CommentForm {
 
     // And another workaround. The standard `Tribute#showMenuForCollection` method doesn't call
     // `values()`.
-    this.commentInput.insertContent('@');
+    this.commentInput.insertContent(cd.config.mentionCharacter);
     const element = this.commentInput.$input.get(0);
     element.dispatchEvent(new Event('keydown'));
     element.dispatchEvent(new Event('input'));

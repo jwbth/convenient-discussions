@@ -12,7 +12,8 @@
   "cm-copylink-tooltip-link": "Copy a link.",
   "cm-thank": "Thank",
   "cm-thank-tooltip": "Thank for the edit that added this comment",
-  "cm-thank-disabled-tooltip": "You have already thanked the user for this comment",
+  "cm-thanked": "Thanked",
+  "cm-thanked-tooltip": "You have already thanked the user for this comment",
   "cm-edit": "Edit",
   "cm-reply": "Reply",
 
@@ -111,7 +112,7 @@
   "cf-scriptsettings-tooltip": "Convenient Discussions settings",
   "cf-help": "?",
   "cf-help-short": "?",
-  "cf-help-content": "<p>Type <kbd>@</kbd> to <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention\" target=\"_blank\">mention</a> a user. Type <kbd>[[#</kbd> to link a comment in this section.</p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Script documentation</a></p>",
+  "cf-help-content": "<p>Type <kbd>$1</kbd> to <a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention\" target=\"_blank\">mention</a> a user. Type <kbd>[[#</kbd> to link a comment in this section.</p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p><a href=\"https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions\" target=\"_blank\">Script documentation</a></p>",
   "cf-quote-tooltip": "Quote the selected text",
   "cf-quote-placeholder": "Quoted text",
 

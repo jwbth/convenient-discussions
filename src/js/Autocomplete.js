@@ -135,7 +135,7 @@ export default class Autocomplete {
 
     const collectionsByType = {
       mentions: {
-        trigger: '@',
+        trigger: cd.config.mentionCharacter,
         searchOpts: {
           skip: true,
         },
