@@ -64,13 +64,17 @@ export default class Autocomplete {
         // Move the caret to the place we need.
         const caretIndex = input.getRange().to;
         const startPos = caretIndex - e.detail.item.original.value.length;
-        const value = input.getValue();
-        input.setValue(value.slice(0, caretIndex) + value.slice(caretIndex));
         const endOffset = e.detail.item.original.endOffset;
         const startOffset = e.detail.item.original.startOffset === null ?
           e.detail.item.original.value.length - endOffset :
           e.detail.item.original.startOffset;
         input.selectRange(startPos + startOffset, caretIndex - endOffset);
+
+        if (e.detail.instance.trigger === '@' && e.detail.event.shiftKey) {
+          const value = input.getValue();
+          input.setValue(value.slice(0, caretIndex) + ': ' + value.slice(caretIndex));
+          input.selectRange(startPos + startOffset + 2);
+        }
       });
       element.addEventListener('tribute-active-true', () => {
         cd.g.activeAutocompleteMenu = this.tribute.menu;
