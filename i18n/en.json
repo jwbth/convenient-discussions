@@ -257,7 +257,7 @@
   "sd-notificationsblacklist": "Don't notify about comments of these users",
   "sd-notificationsblacklist-multiselect-placeholder": "Add a user",
   "sd-signatureprefix": "Signature prefix",
-  "sd-signatureprefix-help": "Text that is added before the signature.",
+  "sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",
   "sd-showtoolbar": "Show the editing toolbar",
   "sd-defaultcommentlinktype": "Default link type to copy when clicking \"{{int:convenient-discussions-cm-copylink}}\" in a comment menu",
   "sd-defaultcommentlinktype-radio-diff": "Diff link",

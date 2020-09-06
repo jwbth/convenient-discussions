@@ -69,7 +69,7 @@ export async function initSettings() {
     // default configuration change.
     insertButtonsChanged: false,
 
-    signaturePrefix: '',
+    signaturePrefix: cd.config.defaultSignaturePrefix,
     notifications: 'all',
     notificationsBlacklist: [],
 
@@ -81,7 +81,7 @@ export async function initSettings() {
     watchSectionOnReply: true,
   };
 
-  cd.localSettingNames = ['insertButtons', 'insertButtonsChanged'];
+  cd.localSettingNames = ['insertButtons', 'insertButtonsChanged', 'signaturePrefix'];
 
   const options = {
     [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
@@ -116,6 +116,12 @@ export async function initSettings() {
   if (cd.settings.signaturePrefix) {
     // eslint-disable-next-line no-useless-escape
     cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
+  }
+
+  // FIXME: Temporary, remove after some time. Transition to including spaces into signaturePrefix.
+  if (!cd.settings.signaturePrefix.startsWith(' ')) {
+    // eslint-disable-next-line no-useless-escape
+    cd.settings.signaturePrefix = ' ';
   }
 
   if (

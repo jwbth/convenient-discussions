@@ -192,6 +192,14 @@ export default {
   indentationCharMode: 'mimic',
 
   /**
+   * Signature prefix (the text added before the signature) used by default, including a space at
+   * the beginning if it is needed.
+   *
+   * @type {string}
+   */
+  defaultSignaturePrefix: ' ',
+
+  /**
    * Text that is removed from the end of the comment text and transferred to the beginning of the
    * signature text when editing a comment.
    *
@@ -211,7 +219,8 @@ export default {
 
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
-   * not wikitext). End the regexp with `$`.
+   * not wikitext). Used to detect comments where the user has forgotten the forth tilde. For
+   * example: `/ \(talk\)$/`. End the regexp with `$`.
    *
    * @type {?RegExp}
    * @default null

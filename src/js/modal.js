@@ -521,7 +521,7 @@ export async function settingsDialog() {
     this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
       label: cd.s('sd-signatureprefix'),
       align: 'top',
-      help: cd.util.wrapInElement(cd.s('sd-signatureprefix-help')),
+      help: cd.util.wrapInElement(cd.s('sd-signatureprefix-help') + ' ' + cd.s('sd-localsetting')),
       helpInline: true,
     });
 

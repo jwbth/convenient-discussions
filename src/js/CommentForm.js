@@ -1770,10 +1770,6 @@ export default class CommentForm {
       /\n[:*#].*$/.test(code)
     ) {
       code += '\n';
-
-      if (this.mode === 'edit') {
-        signature = signature.replace(/^\s+/, '');
-      }
     }
 
     if (!isZeroLevel) {
@@ -1896,15 +1892,14 @@ export default class CommentForm {
       signature = `<span class="cd-commentForm-signature">${signature}</span>`;
     }
 
-    // ">" is an ad hoc fix to Sdkb's signature:
-    // https://en.wikipedia.org/w/index.php?diff=953603813.
-    if (!/^\s/.test(signature) && code && !/[\s>]$/.test(code)) {
-      code += ' ';
-    }
-
     // Space in the beggining of the line, creating <pre>.
     if (/(?:^|\n) .*$/.test(code)) {
       code += '\n';
+    }
+
+    // Remove starting spaces if the line starts with the signature.
+    if (code.endsWith('\n')) {
+      signature = signature.trimStart();
     }
 
     code += signature;
