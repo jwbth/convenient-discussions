@@ -287,7 +287,7 @@ function addSectionNotifications(newComments) {
           newComments.length,
           users.length,
           users.map((user) => user.name).join(', '),
-          users.length === 1 ? users[0] : null
+          users[0]
         ),
         framed: false,
         classes: ['cd-button', 'cd-sectionButton'],
