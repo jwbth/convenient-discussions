@@ -4,6 +4,7 @@
 			"Abijeet Patro",
 			"Iniquity",
 			"Jack who built the house",
+			"Nike",
 			"Robby"
 		]
 	},
@@ -19,7 +20,7 @@
 	"cm-copylink-tooltip-link": "One of the possible texts of the tooltip for the {{msg-wm|Convenient-discussions-cm-copylink|notext=1}} comment menu item.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-copylink-tooltip-diff}}\n* {{msg-wm|Convenient-discussions-cm-copylink-tooltip-wikilink}}\n* {{msg-wm|Convenient-discussions-cld-invitation}}",
 	"cm-thank": "Label of the comment menu item that thanks for the comment.",
 	"cm-thank-tooltip": "Text of the tooltip for the {{msg-wm|Convenient-discussions-cm-thank}} comment menu item.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-thank-disabled-tooltip}}",
-	"cm-thank-disabled-tooltip": "Text of the tooltip for the {{msg-wm|Convenient-discussions-cm-thank}} comment menu item in the disabled form.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-thank-tooltip}}",
+	"cm-thanked-tooltip": "Text of the tooltip for the {{msg-wm|Convenient-discussions-cm-thank}} comment menu item in the disabled form.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-thank-tooltip}}",
 	"cm-edit": "Label of the comment menu item that opens an edit form the comment.",
 	"cm-reply": "Label of the comment menu item that opens a reply form for the comment.",
 	"sm-editopeningcomment": "Label of the section menu item that opens the opening comment of the section for editing.",

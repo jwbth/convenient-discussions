@@ -14,7 +14,7 @@
 	"cm-copylink-tooltip-link": "Kopiera en länk.",
 	"cm-thank": "Tacka",
 	"cm-thank-tooltip": "Tack för redigeringen som gav den här kommentaren",
-	"cm-thank-disabled-tooltip": "Du har redan tackat användaren för den här kommentaren",
+	"cm-thanked-tooltip": "Du har redan tackat användaren för den här kommentaren",
 	"cm-edit": "Redigera",
 	"cm-reply": "Svara",
 	"sm-editopeningcomment": "redigera inledande kommentar",

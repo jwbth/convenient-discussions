@@ -17,7 +17,7 @@
 	"cm-copylink-tooltip-link": "Copiar um link.",
 	"cm-thank": "Obrigado",
 	"cm-thank-tooltip": "Obrigado pela edição que adicionou este comentário",
-	"cm-thank-disabled-tooltip": "Você já agradeceu ao usuário por este comentário",
+	"cm-thanked-tooltip": "Você já agradeceu ao usuário por este comentário",
 	"cm-edit": "Editar",
 	"cm-reply": "Responder",
 	"sm-editopeningcomment": "editar comentário de abertura",

@@ -17,7 +17,7 @@
 	"cm-copylink-tooltip-link": "Bir bağlantı kopyala.",
 	"cm-thank": "Teşekkür et",
 	"cm-thank-tooltip": "Bu yorumu ekleyen düzenleme için teşekkürler",
-	"cm-thank-disabled-tooltip": "Bu yorum için kullanıcıya zaten teşekkür ettiniz",
+	"cm-thanked-tooltip": "Bu yorum için kullanıcıya zaten teşekkür ettiniz",
 	"cm-edit": "Düzenle",
 	"cm-reply": "Yanıtla",
 	"sm-editopeningcomment": "açılış yorumunu düzenle",
