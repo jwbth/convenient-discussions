@@ -16,7 +16,7 @@
 	"cm-copylink-tooltip-link": "להעתיק קישור.",
 	"cm-thank": "להודות",
 	"cm-thank-tooltip": "להודות על עריכה שהוסיפה את התגובה",
-	"cm-thank-disabled-tooltip": "כבר הודיתם על התגובה הזאת למשתמש",
+	"cm-thanked-tooltip": "כבר הודיתם על התגובה הזאת למשתמש",
 	"cm-edit": "לערוך",
 	"cm-reply": "לענות",
 	"sm-editopeningcomment": "עריכת הפוסט הראשון",

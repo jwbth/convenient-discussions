@@ -16,7 +16,7 @@
 	"cm-copylink-tooltip-link": "リンクをコピーする。",
 	"cm-thank": "感謝",
 	"cm-thank-tooltip": "このコメントを寄せた編集に感謝を送る",
-	"cm-thank-disabled-tooltip": "このコメントについて既に利用者に感謝を送信済みです",
+	"cm-thanked-tooltip": "このコメントについて既に利用者に感謝を送信済みです",
 	"cm-edit": "編集",
 	"cm-reply": "返信",
 	"sm-editopeningcomment": "導入部のコメントを編集",

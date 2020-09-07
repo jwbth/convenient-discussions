@@ -15,7 +15,7 @@
 	"cm-copylink-tooltip-link": "複製連結。",
 	"cm-thank": "感謝",
 	"cm-thank-tooltip": "對添加此意見的編輯表示感謝",
-	"cm-thank-disabled-tooltip": "您已對表達此意見的使用者做出感謝",
+	"cm-thanked-tooltip": "您已對表達此意見的使用者做出感謝",
 	"cm-edit": "編輯",
 	"cm-reply": "回覆",
 	"sm-editopeningcomment": "編輯序言",
