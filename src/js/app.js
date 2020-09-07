@@ -136,7 +136,7 @@ function setStrings() {
     )) ?
       mw.config.get('wgContentLanguage') :
       mw.config.get('wgUserLanguage');
-    cd.strings[name] = cd.i18n[relevantLang][name] || cd.i18n.en[name];
+    cd.strings[name] = cd.i18n[relevantLang]?.[name] || cd.i18n.en[name];
   });
 
   Object.keys(cd.strings).forEach((name) => {
