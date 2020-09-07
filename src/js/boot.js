@@ -116,12 +116,12 @@ export async function initSettings() {
   if (cd.settings.signaturePrefix) {
     // eslint-disable-next-line no-useless-escape
     cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
-  }
 
-  // FIXME: Temporary, remove after some time. Transition to including spaces into signaturePrefix.
-  if (!cd.settings.signaturePrefix.startsWith(' ')) {
-    // eslint-disable-next-line no-useless-escape
-    cd.settings.signaturePrefix = ' ';
+    // FIXME: Temporary, remove after some time. Transition to including spaces into signaturePrefix.
+    if (!cd.settings.signaturePrefix.startsWith(' ')) {
+      // eslint-disable-next-line no-useless-escape
+      cd.settings.signaturePrefix = ' ';
+    }
   }
 
   if (
