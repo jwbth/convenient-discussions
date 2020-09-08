@@ -12,7 +12,6 @@ import userRegistry from './userRegistry';
 import {
   animateLinks,
   areObjectsEqual,
-  defined,
   handleApiReject,
   isCommentEdit,
   reorderArray,
@@ -347,13 +346,6 @@ async function sendNotifications(comments) {
     });
   }
 
-  const authors = notifyAboutOrdinary
-    .concat(notifyAboutDesktop)
-    .filter(unique)
-    .map((comment) => comment.author)
-    .filter(defined);
-  await getUserGenders(authors, { noTimers: true });
-
   if (notifyAboutOrdinary.length) {
     let html;
     let href;
@@ -562,6 +554,12 @@ async function processComments(comments) {
 
   navPanel.updateRefreshButton(newComments, interestingNewComments.length);
   updatePageTitle(newComments.length, interestingNewComments.length);
+
+  const authors = newComments
+    .map((comment) => comment.author)
+    .filter(unique);
+  await getUserGenders(authors, { noTimers: true });
+
   addSectionNotifications(newComments);
   sendNotifications(interestingNewComments);
 }
