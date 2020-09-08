@@ -280,7 +280,7 @@ function addSectionNotifications(newComments) {
 
       const users = newComments
         .map((comment) => comment.author)
-        .map(unique);
+        .filter(unique);
       const button = new OO.ui.ButtonWidget({
         label: cd.s(
           'section-newcomments',
