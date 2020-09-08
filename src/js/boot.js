@@ -113,7 +113,7 @@ export async function initSettings() {
   cd.settings = Object.assign(cd.settings, remoteSettings);
 
   // Seamless transition from mySignature.
-  if (cd.settings.signaturePrefix) {
+  if (cd.settings.signaturePrefix !== undefined) {
     // eslint-disable-next-line no-useless-escape
     cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
 
