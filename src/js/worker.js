@@ -134,16 +134,6 @@ function parse() {
   cd.debug.stopTimer('identifying replies');
 
   cd.debug.stopTimer('processing sections');
-  cd.debug.startTimer('post message from the worker');
-
-  postMessage({
-    type: 'parse',
-    comments: cd.comments,
-  });
-
-  cd.debug.stopTimer('post message from the worker');
-  cd.debug.stopTimer('worker operations');
-  cd.debug.logAndResetEverything();
 }
 
 /**
@@ -218,6 +208,17 @@ function onMessageFromWindow(e) {
     };
 
     parse();
+
+    cd.debug.startTimer('post message from the worker');
+
+    postMessage({
+      type: 'parse',
+      comments: cd.comments,
+    });
+
+    cd.debug.stopTimer('post message from the worker');
+    cd.debug.stopTimer('worker operations');
+    cd.debug.logAndResetEverything();
   }
 }
 
