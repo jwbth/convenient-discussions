@@ -34,3 +34,25 @@
 ol .cd-sectionButton {
   margin-top: -2px;
 }
+
+// Till the end: Override the default styles to make the section menu appear correctly on RTL wikis
+// with LTR interface and vice versa. We could omit the ".mw-content-" part but keep it for clarity.
+.ltr .mw-content-rtl .mw-editsection::before {
+  content: '\200B\200E';
+}
+
+.rtl .mw-content-ltr .mw-editsection::before {
+  content: '\200B\200F';
+}
+
+.client-js .ltr .mw-content-rtl .mw-editsection-bracket:first-of-type,
+.client-js .rtl .mw-content-ltr .mw-editsection-bracket:last-of-type {
+  margin-right: 0.25em;
+  margin-left: 0;
+}
+
+.client-js .rtl .mw-content-ltr .mw-editsection-bracket:first-of-type,
+.client-js .ltr .mw-content-rtl .mw-editsection-bracket:last-of-type {
+  margin-left: 0.25em;
+  margin-right: 0;
+}

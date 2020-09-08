@@ -65,7 +65,10 @@
   border-right-width: 1px;
 }
 
-.sitedir-rtl #cd-navPanel {
+.sitedir-rtl #cd-navPanel,
+
+// On LTR wikis with an RTL interface, the navigation panel on the left obstructs content.
+.sitedir-ltr.rtl #cd-navPanel {
   right: 0;
   left: unset;
   border-left-width: 1px;

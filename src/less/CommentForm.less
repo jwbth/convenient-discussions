@@ -118,6 +118,7 @@
 .ltr .cd-commentForm {
   .cd-checkboxesContainer {
     direction: ltr;
+    text-align: left;
   }
 
   .cd-checkboxesContainer .oo-ui-fieldLayout {
@@ -142,19 +143,10 @@
   }
 }
 
-.sitedir-ltr .cd-summaryInput {
-  margin-right: 8px;
-  margin-left: 0;
-}
-
-.sitedir-rtl .cd-summaryInput {
-  margin-left: 8px;
-  margin-right: 0;
-}
-
 .rtl .cd-commentForm {
   .cd-checkboxesContainer {
     direction: rtl;
+    text-align: right;
   }
 
   .cd-checkboxesContainer .oo-ui-fieldLayout {
@@ -177,7 +169,16 @@
   .cd-rightButtonsContainer {
     float: left;
   }
+}
 
+.sitedir-ltr .cd-summaryInput {
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+.sitedir-rtl .cd-summaryInput {
+  margin-left: 8px;
+  margin-right: 0;
 }
 
 // flow-root removes the number in numbered lists which is too bad when editing a numbered comment
