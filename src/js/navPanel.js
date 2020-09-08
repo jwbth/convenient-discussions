@@ -278,16 +278,17 @@ function addSectionNotifications(newComments) {
       const section = Section.getSectionByAnchor(anchor);
       if (!section) return;
 
-      const users = newComments
+      const authors = newComments
+        .filter((comment) => comment.section.anchor === anchor)
         .map((comment) => comment.author)
         .filter(unique);
       const button = new OO.ui.ButtonWidget({
         label: cd.s(
           'section-newcomments',
           newComments.length,
-          users.length,
-          users.map((user) => user.name).join(', '),
-          users[0]
+          authors.length,
+          authors.map((user) => user.name).join(', '),
+          authors[0]
         ),
         framed: false,
         classes: ['cd-button', 'cd-sectionButton'],
