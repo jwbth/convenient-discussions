@@ -159,14 +159,14 @@ module.exports = {
             // Otherwise messes with \x01 \x02 \x03 \x04.
             ascii_only: true,
 
-            comments: dev ? /^\**!|@preserve|@license|@cc_on/i : /^\**!/,
+            comments: /^\**!/,
           },
           mangle: {
             keep_classnames: true,
             reserved: ['cd'],
           },
         },
-        extractComments: !dev && {
+        extractComments: {
           // Removed "\**!|" at the beginning not to extract the <nowiki> comment
           condition: /@preserve|@license|@cc_on/i,
 
