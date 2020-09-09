@@ -10,6 +10,7 @@ import Comment from './Comment';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
+import navPanel from './navPanel';
 import {
   animateLinks,
   defined,
@@ -2710,8 +2711,8 @@ export default class CommentForm {
     if (cd.commentForms.includes(this)) {
       cd.commentForms.splice(cd.commentForms.indexOf(this), 1);
     }
-
     saveSession();
+    navPanel.updateCommentFormButton();
   }
 
   /**
@@ -2953,10 +2954,7 @@ export default class CommentForm {
       this.commentInput.selectRange(caretIndex);
     }
 
-    const lastChar = (
-      caretIndex &&
-      this.commentInput.getValue().slice(caretIndex - 1, caretIndex)
-    );
+    const lastChar = caretIndex && this.commentInput.getValue().slice(caretIndex - 1, caretIndex);
     if (caretIndex && lastChar !== ' ' && lastChar !== '\n') {
       this.commentInput.insertContent(' ');
     }
