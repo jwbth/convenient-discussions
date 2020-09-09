@@ -353,7 +353,7 @@ export default class Page {
       const codeAfterInsertion = pageCode.slice(firstSectionStartIndex);
       newPageCode = codeBeforeInsertion + commentCode + '\n' + codeAfterInsertion;
     } else {
-      codeBeforeInsertion = (pageCode + '\n').trimStart();
+      codeBeforeInsertion = (pageCode + '\n').trimLeft();
       newPageCode = codeBeforeInsertion + commentCode;
     }
 
