@@ -63,17 +63,9 @@ function parse() {
   cd.sections = [];
   resetCommentAnchors();
 
-  cd.debug.startTimer('processing comments');
-
   const parser = new Parser(context);
-
-  cd.debug.startTimer('find timestamps');
   const timestamps = parser.findTimestamps();
-  cd.debug.stopTimer('find timestamps');
-
-  cd.debug.startTimer('find signatures');
   const signatures = parser.findSignatures(timestamps);
-  cd.debug.stopTimer('find signatures');
 
   signatures.forEach((signature) => {
     try {
@@ -88,9 +80,6 @@ function parse() {
     }
   });
 
-  cd.debug.stopTimer('processing comments');
-  cd.debug.startTimer('processing sections');
-
   parser.findHeadings().forEach((heading) => {
     try {
       const section = parser.createSection(heading);
@@ -104,7 +93,6 @@ function parse() {
     }
   });
 
-  cd.debug.startTimer('identifying replies');
   cd.comments.forEach((comment) => {
     comment.getChildren().forEach((reply) => {
       reply.targetComment = comment;
@@ -131,9 +119,6 @@ function parse() {
     delete comment.cachedSection;
     delete comment.getChildren;
   });
-  cd.debug.stopTimer('identifying replies');
-
-  cd.debug.stopTimer('processing sections');
 }
 
 /**
@@ -190,14 +175,10 @@ function onMessageFromWindow(e) {
     cd.g.TIMESTAMP_PARSER = restoreFunc(cd.g.TIMESTAMP_PARSER);
     cd.g.IS_IPv6_ADDRESS = restoreFunc(cd.g.IS_IPv6_ADDRESS);
 
-    cd.debug.startTimer('parse html');
-
     const dom = parseDOM(message.text, {
       withStartIndices: true,
       withEndIndices: true,
     });
-
-    cd.debug.stopTimer('parse html');
 
     cd.g.rootElement = new Document(dom);
     context.document = cd.g.rootElement;
@@ -209,14 +190,11 @@ function onMessageFromWindow(e) {
 
     parse();
 
-    cd.debug.startTimer('post message from the worker');
-
     postMessage({
       type: 'parse',
       comments: cd.comments,
     });
 
-    cd.debug.stopTimer('post message from the worker');
     cd.debug.stopTimer('worker operations');
     cd.debug.logAndResetEverything();
   }
