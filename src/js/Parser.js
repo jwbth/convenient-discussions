@@ -210,10 +210,11 @@ export default class Parser {
           const cniaChildren = Array.from(
             closestNotInlineAncestor[this.context.childElementsProperty]
           );
-
           const treeWalker = new ElementsTreeWalker(timestamp.element);
+
           // Found other timestamp after this timestamp
           let found = false;
+
           while (
             !found &&
             treeWalker.nextNode() &&

@@ -2702,7 +2702,7 @@ export default class CommentForm {
 
   /**
    * Remove the references to the form and unload it from the session data thus making it not appear
-   * after the page reload.
+   * after a page reload.
    *
    * @private
    */

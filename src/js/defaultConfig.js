@@ -56,7 +56,8 @@ export default {
    * Pages where the script should run. If `[]`, all pages in the {@link
    * module:defaultConfig.customTalkNamespaces} namespaces will pass. If you add at least one value,
    * {@link module:defaultConfig.customTalkNamespaces} will not be used. In this case, you may
-   * specify entire namespaces in this value, e.g., /^Wikipedia:/.
+   * specify entire namespaces in this value, e.g., /^Wikipedia:/. The blacklist has priority over
+   * the whitelist.
    *
    * @type {RegExp[]}
    * @default []
@@ -64,7 +65,7 @@ export default {
   pageWhitelist: [],
 
   /**
-   * Pages where the script shouldn't run.
+   * Pages where the script shouldn't run. The blacklist has priority over the whitelist.
    *
    * @type {RegExp[]}
    * @default []
