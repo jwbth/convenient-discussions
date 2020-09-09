@@ -232,7 +232,19 @@ function extractUnsigneds(code, signatures) {
       } else {
         author = match[2];
       }
-      author = userRegistry.getUser(decodeHtmlEntities(author));
+      author = author && userRegistry.getUser(decodeHtmlEntities(author));
+
+      // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The
+      // timezone could be not UTC, but currently the timezone offset is taken from the wiki
+      // configuration, so doesn't have effect.
+      if (timestamp && !cd.g.TIMESTAMP_REGEXP.test(timestamp)) {
+        timestamp += ' (UTC)';
+
+        // Workaround for "undated" templates
+        if (!author) {
+          author = '<undated>';
+        }
+      }
 
       let startIndex = match.index;
       const endIndex = match.index + match[1].length;

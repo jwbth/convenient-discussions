@@ -159,6 +159,7 @@ export default {
     'unsignedIP2',
     'не подписано',
     'нпп',
+    'undated',
   ],
 
   pairQuoteTemplates: [

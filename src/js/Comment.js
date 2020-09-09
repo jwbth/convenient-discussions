@@ -1601,7 +1601,7 @@ export default class Comment extends CommentSkeleton {
     // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
     // templates (it may be present and may be not), but it appears on the page.
     const signatureMatches = signatures.filter((sig) => (
-      sig.author === this.author &&
+      (sig.author === this.author || sig.author === '<undated>') &&
       (
         this.timestamp === sig.timestamp ||
         (this.timestamp && this.timestamp.startsWith(sig.timestamp))

@@ -281,6 +281,10 @@ export default class Parser {
             }
           }
           signatureNodes.push(node);
+
+          // We may need using `previousNode()` here but currently the only known use case where it
+          // helps is the "undated" templates when those are not marked by the class specificied in
+          // the wiki configuration (which they should be).
         } while (treeWalker.previousSibling() && length < cd.config.signatureScanLimit);
 
         const firstSignatureElementIndex = signatureNodes.indexOf(firstSignatureElement);
