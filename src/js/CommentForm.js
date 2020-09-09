@@ -348,9 +348,7 @@ export default class CommentForm {
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/9/98/OOjs_UI_icon_userAvatar.svg',
                 action: {
                   type: 'callback',
-                  execute: () => {
-                    this.mention();
-                  },
+                  execute: () => {},
                 },
               },
               quote: {
@@ -368,6 +366,12 @@ export default class CommentForm {
           }
         },
       });
+      this.$element
+        .find('.tool-button[rel="mention"]')
+        .off('click')
+        .on('click', (e) => {
+          this.mention(e.shiftKey);
+        });
 
       // For some reason, in (starting with?) Chrome 84.0.4147.89, if you put this line to the top,
       // the viewport will jump down. See also saveScrollPosition() call above.
@@ -2924,9 +2928,23 @@ export default class CommentForm {
 
   /**
    * Insert "@" into the comment input, activating the mention autocomplete menu.
+   *
+   * @param {boolean} mentionAddressee Don't show the autocomplete menu, just insert a mention of
+   *   the addressee to the beginning of the comment input.
    */
-  mention() {
+  mention(mentionAddressee) {
     if (!this.autocomplete) return;
+
+    if (mentionAddressee && this.targetComment) {
+      const mentionText = (
+        Autocomplete.getMentionsConfig().transform(this.targetComment.author.name) +
+        ': '
+      );
+      const range = this.commentInput.getRange();
+      this.commentInput.setValue(mentionText + this.commentInput.getValue());
+      this.commentInput.selectRange(range.from + mentionText.length, range.to + mentionText.length);
+      return;
+    }
 
     const caretIndex = this.commentInput.getRange().to;
 
