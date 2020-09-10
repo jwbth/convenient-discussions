@@ -147,7 +147,7 @@ export default class CommentSkeleton {
         this.elements.shift();
       }
     } else {
-      this.followsHeading = true;
+      this.followsHeading = false;
     }
     if (this.parts[0].isHeading) {
       /**
