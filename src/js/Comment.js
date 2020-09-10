@@ -1389,8 +1389,8 @@ export default class Comment extends CommentSkeleton {
           text = text.replace(cd.config.signatureEndingRegexp, '');
         }
 
-        // FIXME: we use the same regexp for cleaning the wikitext and render. With the current
-        // default config value the side effects seem to be negligable, but who knows...
+        // FIXME: We use the same regexp to clean both wikitext and render. With the current default
+        // config value the side effects seem to be negligable, but who knows...
         if (cd.config.signaturePrefixRegexp) {
           text = text.replace(cd.config.signaturePrefixRegexp, '');
         }

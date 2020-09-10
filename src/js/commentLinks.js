@@ -14,7 +14,6 @@ import {
   isCommentEdit,
   isProbablyTalkPage,
   isUndo,
-  notNull,
   removeDirMarks,
   spacesToUnderlines,
 } from './util';
@@ -119,7 +118,7 @@ function switchInteresting() {
 
   if (switchInterestingButton.hasFlag('progressive')) {
     // Show all
-    // FIXME: old watchlist (no JS) + ?enhanced=1&urlversion=2
+    // FIXME: Old watchlist (no JS) + ?enhanced=1&urlversion=2
     if (isEnhanced) {
       $lines
         .filter('table')
@@ -562,7 +561,7 @@ async function processDiff() {
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
-    .filter(notNull)
+    .filter((el) => el !== null)
     .forEach((area) => {
       if (area.querySelector('.minoredit')) return;
 
