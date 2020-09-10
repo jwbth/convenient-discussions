@@ -116,12 +116,6 @@ export async function initSettings() {
   if (cd.settings.signaturePrefix !== undefined) {
     // eslint-disable-next-line no-useless-escape
     cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
-
-    // FIXME: Temporary, remove after some time. Transition to including spaces into
-    // signaturePrefix.
-    if (!cd.settings.signaturePrefix.startsWith(' ')) {
-      cd.settings.signaturePrefix = ' ' + cd.settings.signaturePrefix;
-    }
   }
 
   if (
@@ -137,11 +131,6 @@ export async function initSettings() {
     setSettings().catch((e) => {
       console.warn('Couldn\'t save the settings to the server.', e);
     });
-  }
-
-  // FIXME: Temporary, clean the setting with an old name for ruwiki beta version users.
-  if (mw.user.options.get('userjs-cd-settings')) {
-    setLocalOption('userjs-cd-settings', undefined);
   }
 
   // Settings in variables like "cdLocal..." override all other and are not saved to the server.
