@@ -456,8 +456,13 @@ export default class Autocomplete {
               } else {
                 snippet = getText();
               }
+              let authortimestamp = author.name;
+              if (timestamp) {
+                authortimestamp += mw.msg('comma-separator') + timestamp;
+              }
+              const key = authortimestamp + mw.msg('colon-separator') + snippet;
               this.commentLinks.default.push({
-                key: `${author.name}${mw.msg('comma-separator')}${timestamp}${mw.msg('colon-separator')}${snippet}`,
+                key,
                 anchor,
                 author: author.name,
                 timestamp,
