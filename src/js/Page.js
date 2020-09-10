@@ -404,7 +404,11 @@ export default class Page {
               case 'abusefilter-disallowed': {
                 await cd.g.api.loadMessagesIfMissing([code]);
                 const description = mw.message(code, error.abusefilter.description).plain();
-                ({ html: message } = await parseCode(description) || {});
+                try {
+                  message = (await parseCode(description)).html;
+                } catch (e) {
+                  console.warn('Couldn\'t parse the error code.');
+                }
                 if (message) {
                   isRawMessage = true;
                 } else {
