@@ -317,7 +317,7 @@ class TributeRange {
             coordinates.top + menuDimensions.height
         let menuLeft = typeof coordinates.left === 'number' ?
             coordinates.left :
-            windowLeft + coordinates.right - menuDimensions.width
+            windowLeft + windowWidth - coordinates.right - menuDimensions.width
 
         return {
             top: menuTop < Math.floor(windowTop),
@@ -403,8 +403,14 @@ class TributeRange {
             div.textContent = div.textContent.replace(/\s/g, ' ')
         }
 
+        let triggerSpan = document.createElement('span')
+        triggerSpan.textContent = this.tribute.current.trigger
+
         let span = document.createElement('span')
-        span.textContent = element.value.substring(position) || '.'
+        span.append(
+            triggerSpan,
+            element.value.substring(position + this.tribute.current.trigger.length) || '.'
+        )
         div.appendChild(span)
 
         let doc = document.documentElement
@@ -431,9 +437,9 @@ class TributeRange {
         }
         if (this.tribute.isRtl) {
             coordinates.right = windowWidth - (windowLeft + left + span.offsetLeft +
-                span.offsetWidth + parseInt(computed.borderLeftWidth))
+                span.offsetWidth + parseInt(computed.borderLeftWidth) - triggerSpan.offsetWidth)
         } else {
-            coordinates.left = windowLeft + left + span.offsetLeft +
+            coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth
                 parseInt(computed.borderLeftWidth)
         }
 
