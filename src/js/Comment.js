@@ -19,7 +19,6 @@ import {
   getFromLocalStorage,
   getTopAndBottomIncludingMargins,
   handleApiReject,
-  notNull,
   reorderArray,
   saveToLocalStorage,
   unhideText,
@@ -35,7 +34,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { getUserGenders } from './apiWrappers';
+import { getUserGenders, parseCode } from './apiWrappers';
 
 let thanks;
 
@@ -787,68 +786,80 @@ export default class Comment extends CommentSkeleton {
 
     const compareData = await Promise.all(compareRequests);
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
-    const thisTextAndSignature = this.getText(false) + ` ${this.$signature.get(0).innerText}`;
-    const matches = compareData.map((data, i) => {
+    let thisTextAndSignature = this.getText(false) + ' ' + this.$signature.get(0).innerText;
+    const matches = [];
+    for (let i = 0; i < compareData.length; i++) {
+      const data = compareData[i];
       const body = data?.compare?.body;
-      if (!body) {
-        return null;
-      }
+      if (!body) continue;
 
+      // Compare diff _parts_ with added text in case multiple comments were added with the edit.
       let match;
+      let originalText = '';
       let text = '';
       let bestDiffPartOverlap = 0;
       while ((match = regexp.exec(body))) {
         const diffPartText = removeWikiMarkup(decodeHtmlEntities(match[1]));
         const diffPartOverlap = calculateWordsOverlap(diffPartText, thisTextAndSignature);
-        if (
-          diffPartOverlap > 0.66 &&
-          (!bestDiffPartOverlap || diffPartOverlap > bestDiffPartOverlap)
-        ) {
+        if (diffPartOverlap > bestDiffPartOverlap) {
           bestDiffPartOverlap = diffPartOverlap;
         }
         text += diffPartText + '\n';
+        originalText += match[1] + '\n';
       }
-      text = text.trim();
-      if (!text) {
-        return null;
-      }
+      if (!originalText.trim()) continue;
 
       revisions[i].diffBody = body;
       const timestamp = new Date(revisions[i].timestamp).getTime();
+
       // Add 30 seconds to get better date proximity results since we don't see the seconds
       // number.
       const thisCommentTimestamp = this.date.getTime() + (30 * 1000);
-      const overlap = calculateWordsOverlap(text, thisTextAndSignature);
+
+      let overlap = Math.max(
+        calculateWordsOverlap(text, thisTextAndSignature),
+        bestDiffPartOverlap
+      );
       const timezoneMatch = text.match(cd.g.TIMEZONE_REGEXP);
 
-      return {
-        revision: revisions[i],
-        overlap: Math.max(bestDiffPartOverlap, overlap),
-        dateProximity: Math.abs(thisCommentTimestamp - timestamp),
-        minor: revisions[i].minor,
-        moreThanOneTimestamp: text.includes('\n') && timezoneMatch && timezoneMatch.length > 1,
-      };
-    });
+      if (overlap < 0.66 && originalText.includes('{{')) {
+        try {
+          const parsed = (await parseCode(originalText, { title: cd.g.CURRENT_PAGE.name })).html;
+          originalText = $('<div>').append(parsed).cdGetText();
+        } catch (e) {
+          throw new CdError({
+            type: 'parse',
+          });
+        }
+        overlap = calculateWordsOverlap(originalText, thisTextAndSignature);
+      }
+
+      if (overlap > 0.66) {
+        matches.push({
+          revision: revisions[i],
+          overlap,
+          dateProximity: Math.abs(thisCommentTimestamp - timestamp),
+          minor: revisions[i].minor,
+          moreThanOneTimestamp: text.includes('\n') && timezoneMatch && timezoneMatch.length > 1,
+        });
+      }
+    }
 
     let bestMatch;
-    matches
-      .filter(notNull)
-      .forEach((match) => {
-        if (match.overlap < 0.66) return;
-        if (!bestMatch || match.overlap > bestMatch.overlap) {
+    matches.forEach((match) => {
+      if (!bestMatch || match.overlap > bestMatch.overlap) {
+        bestMatch = match;
+      }
+      if (bestMatch && match.overlap === bestMatch.overlap) {
+        if (match.dateProximity > bestMatch.dateProximity) {
           bestMatch = match;
-        }
-        if (bestMatch && match.overlap === bestMatch.overlap) {
-          if (match.dateProximity > bestMatch.dateProximity) {
+        } else if (match.dateProximity === bestMatch.dateProximity) {
+          if (!match.minor && bestMatch.minor) {
             bestMatch = match;
           }
-          if (match.dateProximity === bestMatch.dateProximity) {
-            if (!match.minor && bestMatch.minor) {
-              bestMatch = match;
-            }
-          }
         }
-      });
+      }
+    });
 
     if (singleTimestamp && bestMatch?.moreThanOneTimestamp) {
       throw new CdError({
