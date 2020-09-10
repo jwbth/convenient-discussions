@@ -1693,14 +1693,22 @@ export default class Comment extends CommentSkeleton {
       let adjustedCode = hideDistractingCode(pageCode);
       if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
         adjustedCode = adjustedCode
-          .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s) => '\x01' + ' '.repeat(s.length - 1));
+          .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentationChars) => (
+            '\x01'.repeat(indentationChars.length) +
+            ' '.repeat(s.length - indentationChars.length - 1) +
+            '\x02'
+          ));
       }
       if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
-        const closedDiscussionMatch = adjustedCode.match(cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP);
-        if (closedDiscussionMatch) {
-          adjustedCode = adjustedCode.slice(
-            0,
-            closedDiscussionMatch.index + hideTemplatesRecursively(adjustedCode, null, true).code
+        let closedDiscussionMatch;
+        while ((closedDiscussionMatch = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
+          adjustedCode = (
+            adjustedCode.slice(0, closedDiscussionMatch.index) +
+            hideTemplatesRecursively(
+              adjustedCode.slice(closedDiscussionMatch.index),
+              null,
+              closedDiscussionMatch[1].length
+            ).code
           );
         }
       }
@@ -1713,9 +1721,9 @@ export default class Comment extends CommentSkeleton {
         cd.g.TIMESTAMP_REGEXP.source +
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
-        ')\\n)\\n*' +
 
-        // "\x01" is from hiding closed discussions.
+        // "\x01" and "\x02" is from hiding closed discussions.
+        '|\\x02)\\n)\\n*' +
         (
           searchedIndentationCharsLength > 0 ?
           `[:*#\\x01]{0,${searchedIndentationCharsLength}}` :

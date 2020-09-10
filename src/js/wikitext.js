@@ -365,11 +365,12 @@ export function decodeHtmlEntities(s) {
  * @param {string} code
  * @param {Array} [hidden] Array with texts replaced by markers. Not required if `concealFirstMode`
  *   is `true`.
- * @param {boolean} [concealFirstMode=false] Instead of putting markers in place of templates, fill
- *   the space that the first met template occupies with spaces.
+ * @param {boolean} [concealFirstMarkerLength] Instead of putting markers in place of templates,
+ *   fill the space that the first met template occupies with spaces, and put the specified number
+ *   of marker characters at the first positions.
  * @returns {HideSensitiveCodeReturn}
  */
-export function hideTemplatesRecursively(code, hidden, concealFirstMode = false) {
+export function hideTemplatesRecursively(code, hidden, concealFirstMarkerLength) {
   let pos = 0;
   const stack = [];
   do {
@@ -394,13 +395,17 @@ export function hideTemplatesRecursively(code, hidden, concealFirstMode = false)
       }
       right += 2;
       const template = code.substring(left, right);
-      const replacement = concealFirstMode ?
-        '\x01' + ' '.repeat(template.length - 1) :
-        '\x01' + hidden.push(template) + '\x02';
+      const replacement = concealFirstMarkerLength === undefined ?
+        '\x01' + hidden.push(template) + '\x02' :
+        (
+          '\x01'.repeat(concealFirstMarkerLength) +
+          ' '.repeat(template.length - concealFirstMarkerLength - 1) +
+          '\x02'
+        );
       code = code.substring(0, left) + replacement + code.substr(right);
       pos = right - template.length;
     }
-  } while (!concealFirstMode || stack.length);
+  } while (concealFirstMarkerLength === undefined || stack.length);
 
   return { code, hidden };
 }
