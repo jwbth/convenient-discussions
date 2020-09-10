@@ -2,11 +2,13 @@
 	"@metadata": {
 		"authors": [
 			"Abijeet Patro",
+			"Dark Loon",
 			"Mainframe98"
 		]
 	},
 	"cm-copylink-tooltip-link": "Een koppeling kopiëren.",
 	"cm-thank": "Bedanken",
+	"cm-thanked": "Bedankt",
 	"cm-thanked-tooltip": "U hebt al een bedankje verstuurd voor deze reactie",
 	"cm-edit": "Bewerken",
 	"cm-reply": "Reageren",
