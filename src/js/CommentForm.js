@@ -1903,7 +1903,7 @@ export default class CommentForm {
     }
 
     // Remove starting spaces if the line starts with the signature.
-    if (code.endsWith('\n')) {
+    if (!code || code.endsWith('\n')) {
       signature = signature.trimLeft();
     }
 
