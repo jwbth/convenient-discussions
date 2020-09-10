@@ -179,6 +179,7 @@ export default {
     'ruwiki-movedTemplate',
     'ambox',
     'NavFrame',
+    'ts-Закрыто-footer',
   ],
 
   templatesToExclude: [
