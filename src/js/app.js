@@ -417,7 +417,7 @@ function getStrings() {
  */
 async function app() {
   // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
-  if (location.host.endsWith('.m.wikipedia.org') || $('.flow-board-page').length) return;
+  if (/(^|\.)m\./.test(location.host) || $('.flow-board-page').length) return;
 
   if (cd.running) {
     console.warn('One instance of Convenient Discussions is already running.');
