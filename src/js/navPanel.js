@@ -277,14 +277,14 @@ function addSectionNotifications(newComments) {
       const section = Section.getSectionByAnchor(anchor);
       if (!section) return;
 
-      const authors = newComments
-        .filter((comment) => comment.section.anchor === anchor)
+      const sectionNewComments = newComments.filter((comment) => comment.section.anchor === anchor);
+      const authors = sectionNewComments
         .map((comment) => comment.author)
         .filter(unique);
       const button = new OO.ui.ButtonWidget({
         label: cd.s(
           'section-newcomments',
-          newComments.length,
+          sectionNewComments.length,
           authors.length,
           authors.map((user) => user.name).join(', '),
           authors[0]
@@ -299,7 +299,7 @@ function addSectionNotifications(newComments) {
       });
 
       const $lastElement = section.$replyButton ?
-        section.$replyButton.closest('ul, ol') :
+        section.$replyButton.closest('ul, ol, dl') :
         section.$elements[section.$elements.length - 1];
       $('<div>')
         .addClass('cd-refreshButtonContainer')
