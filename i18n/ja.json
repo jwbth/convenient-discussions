@@ -34,7 +34,7 @@
 	"sm-copylink-tooltip-link": "リンクをコピーする。",
 	"section-reply": "返信",
 	"section-addsubsection-to": "『$1」に小見出しを追加する",
-	"section-newcomments": "この節に新しいコメントがあります。クリックするとページを再読み込みします。",
+	"section-newcomments": "この節に{{plural:$2|{{gender:$4|利用者}}|利用者}} $3から{{plural:$1|新しいコメント}}があります。クリックするとページを再読み込みします。",
 	"section-watch-success": "「$1」節をウォッチリストに追加しました。",
 	"section-unwatch-success": "「$1」節をウォッチリストから除去しました。",
 	"section-unwatch-stillwatched": "<strong>注記：</strong>この節はウォッチ指定をした「$1」に含まれるため、ウォッチ状態が続いています。",
