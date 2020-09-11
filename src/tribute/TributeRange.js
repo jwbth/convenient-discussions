@@ -322,7 +322,7 @@ class TributeRange {
         return {
             top: menuTop < Math.floor(windowTop),
             right: menuRight > Math.ceil(windowLeft + windowWidth),
-            bottom: menuBottom > Math.ceil(windowTop + windowHeight),
+            bottom: menuBottom > Math.ceil(windowTop + windowHeight) - 3,
             left: menuLeft < Math.floor(windowLeft)
         }
     }
@@ -463,7 +463,7 @@ class TributeRange {
             // jwbth: Removed the block setting `coordinates.bottom` as a reference point as well as
             // the `parentHeight` variable, added the block setting the height for the menu.
             const height = windowTop + windowHeight - coordinates.top -
-                parseFloat(getComputedStyle(element).paddingTop)
+                parseFloat(getComputedStyle(element).paddingTop) - 3
             coordinates.additionalStyles = `height: ${height}px; overflow-y: scroll;`
         }
 
