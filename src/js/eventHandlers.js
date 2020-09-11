@@ -106,18 +106,28 @@ export function globalKeyDownHandler(e) {
 export function highlightFocused(e) {
   if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
-  const autocompleteMenuHovered = cd.g.activeAutocompleteMenu?.matches(':hover');
-  const navPanelHovered = navPanel.$element?.get(0).matches(':hover');
+  const obstructingElementHovered = (
+    cd.g.activeAutocompleteMenu?.matches(':hover') ||
 
+    // In case the user has moved the navigation panel to the right
+    navPanel.$element?.get(0).matches(':hover') ||
+
+    // WikiEditor dialog
+    $(document.body).children('.ui-widget-overlay').length ||
+
+    cd.g.$popupsOverlay
+      ?.get(0)
+      .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)')
+      ?.matches(':hover')
+  );
+
+  // TODO: Use Intersection Observer API instead of this?
   cd.comments
     .filter((comment) => comment.underlay)
     .forEach((comment) => {
       const layersContainerOffset = comment.getLayersContainerOffset();
       if (
-        // In case the user has moved the navigation panel to the right side.
-        !navPanelHovered &&
-
-        !autocompleteMenuHovered &&
+        !obstructingElementHovered &&
         e.pageY >= comment.layersTop + layersContainerOffset.top &&
         e.pageY <= comment.layersTop + comment.layersHeight + layersContainerOffset.top &&
         e.pageX >= comment.layersLeft + layersContainerOffset.left &&
