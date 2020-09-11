@@ -206,14 +206,20 @@ function generateTooltipText(comments, mode) {
     comments
       .slice(0, 30)
       .forEach((comment) => {
-        const section = comment.section || comment.getSection();
+        const section = comment.section === undefined ? comment.getSection() : comment.section;
         if (!commentsBySection[section.anchor]) {
           commentsBySection[section.anchor] = [];
         }
         commentsBySection[section.anchor].push(comment);
       });
 
-    tooltipText = `${cd.s('navpanel-newcomments-count', comments.length)} ${cd.s('navpanel-newcomments-' + mode)} ${mw.msg('parentheses', 'R')}`;
+    tooltipText = (
+      cd.s('navpanel-newcomments-count', comments.length) +
+      ' ' +
+      cd.s('navpanel-newcomments-' + mode) +
+      ' ' +
+      mw.msg('parentheses', 'R')
+    );
     Object.keys(commentsBySection).forEach((anchor) => {
       const section = (
         commentsBySection[anchor][0].section ||

@@ -97,13 +97,12 @@ function parse() {
     comment.getChildren().forEach((reply) => {
       reply.targetComment = comment;
     });
-    if (comment.getSection()) {
-      comment.section = {
+    comment.section = comment.getSection() ?
+      {
         headline: comment.getSection().headline,
         anchor: comment.getSection().anchor,
-      }
-      delete comment.getSection;
-    }
+      } :
+      null;
     if (comment.targetComment) {
       comment.targetCommentAuthorName = comment.targetComment.authorName;
       comment.toMe = comment.targetComment.own;
