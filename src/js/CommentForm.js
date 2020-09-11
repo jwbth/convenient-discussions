@@ -378,6 +378,16 @@ export default class CommentForm {
       // the viewport will jump down. See also saveScrollPosition() call above.
       $toolbarPlaceholder.hide();
 
+      // More Chrome scrolling bugs
+      this.$element
+        .find('.tool[rel="link"] a, .tool[rel="file"] a')
+        .on('mouseup', () => {
+          saveScrollPosition();
+        })
+        .on('click', () => {
+          restoreScrollPosition();
+        });
+
       /**
        * The comment form is ready (all requested modules have been loaded and executed).
        *
