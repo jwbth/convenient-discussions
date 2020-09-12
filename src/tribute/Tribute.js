@@ -462,12 +462,12 @@ class Tribute {
     index = parseInt(index);
     if (typeof index !== "number" || isNaN(index)) return;
     let item = this.current.filteredItems[index];
-    let content = this.current.collection.selectTemplate(item);
-    if (content !== null) this.replaceText(content, originalEvent, item);
+    let data = this.current.collection.selectTemplate(item, originalEvent);
+    if (data !== null) this.replaceText(data, originalEvent, item);
   }
 
-  replaceText(content, originalEvent, item) {
-    this.range.replaceTriggerText(content, true, true, originalEvent, item);
+  replaceText(data, originalEvent, item) {
+    this.range.replaceTriggerText(data, true, true, originalEvent, item);
   }
 
   _append(collection, newValues, replace) {

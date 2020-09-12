@@ -60,22 +60,6 @@ export default class Autocomplete {
       const element = input.$input.get(0);
       this.tribute.attach(element);
       element.cdInput = input;
-      element.addEventListener('tribute-replaced', (e) => {
-        // Move the caret to the place we need.
-        const caretIndex = input.getRange().to;
-        const startPos = caretIndex - e.detail.item.original.value.length;
-        const endOffset = e.detail.item.original.endOffset;
-        const startOffset = e.detail.item.original.startOffset === null ?
-          e.detail.item.original.value.length - endOffset :
-          e.detail.item.original.startOffset;
-        input.selectRange(startPos + startOffset, caretIndex - endOffset);
-
-        if (e.detail.instance.trigger === '@' && e.detail.event.shiftKey) {
-          const value = input.getValue();
-          input.setValue(value.slice(0, caretIndex) + ': ' + value.slice(caretIndex));
-          input.selectRange(startPos + startOffset + 2);
-        }
-      });
       element.addEventListener('tribute-active-true', () => {
         cd.g.activeAutocompleteMenu = this.tribute.menu;
       });
@@ -102,9 +86,15 @@ export default class Autocomplete {
    * @private
    */
   getCollections(types, comments, defaultUserNames) {
-    const selectTemplate = (item) => {
+    const selectTemplate = (item, event) => {
       if (item) {
-        return item.original.value;
+        if (event.shiftKey && item.original.shift) {
+          return item.original.shift;
+        } else if (event.ctrlKey && item.original.ctrl) {
+          return item.original.ctrl;
+        } else {
+          return item.original.regular;
+        }
       } else {
         return '';
       }
@@ -126,15 +116,12 @@ export default class Autocomplete {
             // The rest
             key = item;
           }
+          const regular = config.regular(item);
           return {
             key,
-            value: config.transform ? config.transform(item) : item,
-            // Start offset is calculated from the start position of the inserted text. `null` means
-            // the selection start position should match with the end position (i.e., no text should
-            // be selected).
-            startOffset: config.getStartOffset ? config.getStartOffset(item) : null,
-            // End offset is calculated from the end position of the inserted text.
-            endOffset: config.getEndOffset ? config.getEndOffset(item) : 0,
+            regular,
+            shift: config.shift ? config.shift(item) : regular,
+            ctrl: config.ctrl ? config.ctrl(item) : regular,
           };
         })
     );
@@ -294,66 +281,75 @@ export default class Autocomplete {
         searchOpts: {
           skip: true,
         },
-        selectTemplate: (item) => {
+        selectTemplate: (item, event) => {
           if (item) {
-            const input = this.tribute.current.element.cdInput;
+            if (cd.settings.useTemplateData && event.shiftKey) {
+              const input = this.tribute.current.element.cdInput;
 
-            input.setDisabled(true);
-            input.pushPending();
+              input.setDisabled(true);
+              input.pushPending();
 
-            cd.g.api.get({
-              action: 'templatedata',
-              titles: `Template:${item.original.key}`,
-              redirects: true,
-            })
-              .catch(handleApiReject)
-              .then(
-                (resp) => {
-                  const pages = resp?.pages;
-                  let s = '';
-                  let firstValueIndex = 0;
-                  Object.keys(pages).forEach((key) => {
-                    const template = pages[key];
-                    const params = template.params || [];
-                    const paramNames = template.paramOrder || Object.keys(params);
-                    paramNames
-                      .filter((param) => params[param].required || params[param].suggested)
-                      .forEach((param) => {
-                        if (template.format === 'block') {
-                          s += `\n| ${param} = `;
-                        } else {
-                          if (isNaN(param)) {
-                            s += `|${param}=`;
+              cd.g.api.get({
+                action: 'templatedata',
+                titles: `Template:${item.original.key}`,
+                redirects: true,
+              })
+                .catch(handleApiReject)
+                .then(
+                  (resp) => {
+                    const pages = resp?.pages;
+
+                    let paramsString = '';
+                    let firstValueIndex = 0;
+                    Object.keys(pages).forEach((key) => {
+                      const template = pages[key];
+                      const params = template.params || [];
+                      const paramNames = template.paramOrder || Object.keys(params);
+                      paramNames
+                        .filter((param) => params[param].required || params[param].suggested)
+                        .forEach((param) => {
+                          if (template.format === 'block') {
+                            paramsString += `\n| ${param} = `;
                           } else {
-                            s += `|`;
+                            if (isNaN(param)) {
+                              paramsString += `|${param}=`;
+                            } else {
+                              paramsString += `|`;
+                            }
                           }
-                        }
-                        if (!firstValueIndex) {
-                          firstValueIndex = s.length;
-                        }
-                      });
-                    if (template.format === 'block' && s) {
-                      s += '\n';
-                    }
-                  });
+                          if (!firstValueIndex) {
+                            firstValueIndex = paramsString.length;
+                          }
+                        });
+                      if (template.format === 'block' && paramsString) {
+                        paramsString += '\n';
+                      }
+                    });
 
-                  const caretIndex = input.getRange().to;
-                  const value = input.getValue();
-                  input.setValue(value.slice(0, caretIndex) + s + value.slice(caretIndex));
-                  input.selectRange(caretIndex + firstValueIndex);
-                },
-                (e) => {
-                  mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
-                  console.warn(e);
-                }
-              )
-              .always(() => {
-                input.setDisabled(false);
-                input.popPending();
-                input.focus();
-              });
+                    const caretIndex = input.getRange().to;
+                    const value = input.getValue();
+                    input.setValue(
+                      value.slice(0, caretIndex - 1) +
+                      paramsString +
+                      value.slice(caretIndex)
+                    );
+                    input.selectRange(caretIndex + firstValueIndex - 1);
+                  },
+                  (e) => {
+                    mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
+                    console.warn(e);
+                  }
+                )
+                .always(() => {
+                  input.setDisabled(false);
+                  input.popPending();
+                  input.focus();
+                });
+            }
 
-            return item.original.value;
+            return event.shiftKey && item.original.shift ?
+              item.original.shift :
+              item.original.regular;
           } else {
             return '';
           }
@@ -507,14 +503,33 @@ export default class Autocomplete {
     const config = {
       byText: {},
       cache: [],
-      transform: (item) => {
+      regular: (item) => {
         const name = item.trim();
-        const user = userRegistry.getUser(name);
         const userNamespace = (
-          cd.config.userNamespacesByGender?.[user.getGender()] ||
+          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
           mw.config.get('wgFormattedNamespaces')[2]
         );
-        return `@[[${userNamespace}:${name}|${name}]]`;
+        return { value: `@[[${userNamespace}:${name}|${name}]]` };
+      },
+      shift: (item) => {
+        const name = item.trim();
+        const userNamespace = (
+          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
+          mw.config.get('wgFormattedNamespaces')[2]
+        );
+        return {
+          value: `@[[${userNamespace}:${name}|${name}]]`,
+          startOffset: `@[[${userNamespace}:${name}|`.length,
+          endOffset: 2,
+        };
+      },
+      ctrl: (item) => {
+        const name = item.trim();
+        const userNamespace = (
+          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
+          mw.config.get('wgFormattedNamespaces')[2]
+        );
+        return { value: `@[[${userNamespace}:${name}|${name}]]${mw.msg('colon-separator')}` };
       },
       removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
     };
@@ -533,9 +548,17 @@ export default class Autocomplete {
     return {
       byText: {},
       cache: [],
-      transform: (name) => {
+      regular: (name) => {
         name = name.trim();
-        return `[[${name}]]`;
+        return { value: `[[${name}]]` };
+      },
+      shift: (name) => {
+        name = name.trim();
+        return {
+          value: `[[${name}|${name}]]`,
+          startOffset: `[[${name}|`.length,
+          endOffset: 2,
+        };
       },
     };
   }
@@ -550,11 +573,18 @@ export default class Autocomplete {
     return {
       byText: {},
       cache: [],
-      transform: (name) => {
+      regular: (name) => {
         name = name.trim();
-        return `{{${name}}}`;
+        return { value: `{{${name}}}` };
       },
-      getEndOffset: () => 2,
+      shift: (name) => {
+        name = name.trim();
+        return {
+          value: `{{${name}|}}`,
+          startOffset: `{{${name}|`.length,
+          endOffset: 2,
+        };
+      },
     };
   }
 
@@ -656,16 +686,12 @@ export default class Autocomplete {
         ['templatestyles', '<templatestyles src="+" />'],
         'timeline',
       ],
-      transform: (item) => (
-        Array.isArray(item) ?
-        item[1].replace(/\+/, '') :
-        `<${item}></${item}>`
-      ),
-      getEndOffset: (item) => (
-        Array.isArray(item) ?
-        item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0 :
-        item.length + 3
-      ),
+      regular: (item) => ({
+        value: Array.isArray(item) ? item[1].replace(/\+/, '') : `<${item}></${item}>`,
+        endOffset: Array.isArray(item) ?
+          item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0 :
+          item.length + 3,
+      }),
     };
     config.default.sort();
     config.withSpace = config.default.filter((tag) => tag.includes(' '));
@@ -683,11 +709,14 @@ export default class Autocomplete {
   static getCommentLinksConfig(comments = []) {
     const config = {
       comments,
-      transform: ({ anchor, author, timestamp }) => (
-        `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`
-      ),
-      getStartOffset: ({ anchor } = {}) => `[[#${anchor}|`.length,
-      getEndOffset: () => 2,
+      regular: ({ anchor, author, timestamp }) => ({
+        value: `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`
+      }),
+      shift: ({ anchor, author, timestamp }) => ({
+        value: `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`,
+        startOffset: `[[#${anchor}|`.length,
+        endOffset: 2,
+      }),
     };
 
     return config;

@@ -86,7 +86,7 @@ class TributeRange {
         targetElement.focus()
     }
 
-    replaceTriggerText(text, requireLeadingSpace, hasTrailingSpace, originalEvent, item) {
+    replaceTriggerText(data, requireLeadingSpace, hasTrailingSpace, originalEvent, item) {
         let info = this.getTriggerInfo(true, hasTrailingSpace, requireLeadingSpace, this.tribute.allowSpaces)
 
         if (info !== undefined) {
@@ -99,6 +99,12 @@ class TributeRange {
                     event: originalEvent,
                 }
             })
+
+            // jwbth: We use the `data` object instead of a string, to store offset data.
+            if (typeof data !== 'object') {
+                data = { value: data }
+            }
+            let text = data.value
 
             let myField = this.tribute.current.element
             let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
@@ -121,10 +127,23 @@ class TributeRange {
             if (ending.startsWith(context.collection.keepTextAfter)) {
                 ending = ending.slice(context.collection.keepTextAfter.length);
             }
+            myField.value = myField.value.substring(0, startPos) + text + ending
+
+            // End offset is calculated from the end position of the inserted text.
+            if (data.endOffset === undefined) {
+                data.endOffset = 0
+            }
+
+            // Start offset is calculated from the start position of the inserted text. Absent value
+            // means the selection start position should match with the end position (i.e., no text
+            // should be selected).
+            if (data.startOffset === undefined) {
+                data.startOffset = text.length - data.endOffset
+            }
             myField.value = myField.value.substring(0, startPos) + text + ending;
 
-            myField.selectionStart = startPos + text.length
-            myField.selectionEnd = startPos + text.length
+            myField.selectionStart = startPos + data.startOffset
+            myField.selectionEnd = startPos + text.length - data.endOffset
 
             context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
             context.element.dispatchEvent(replaceEvent)

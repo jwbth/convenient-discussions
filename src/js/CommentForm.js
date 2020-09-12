@@ -371,7 +371,7 @@ export default class CommentForm {
         .find('.tool-button[rel="mention"]')
         .off('click')
         .on('click', (e) => {
-          this.mention(e.shiftKey);
+          this.mention(e.ctrlKey);
         });
 
       // For some reason, in (starting with?) Chrome 84.0.4147.89, if you put this line to the top,
@@ -2948,8 +2948,7 @@ export default class CommentForm {
 
     if (mentionAddressee && this.targetComment) {
       const mentionText = (
-        Autocomplete.getMentionsConfig().transform(this.targetComment.author.name) +
-        ': '
+        Autocomplete.getMentionsConfig().ctrl(this.targetComment.author.name).value
       );
       const range = this.commentInput.getRange();
       this.commentInput.setValue(mentionText + this.commentInput.getValue());
