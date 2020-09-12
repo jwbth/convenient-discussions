@@ -29,7 +29,7 @@ class TributeRange {
                 `bottom: ${coordinates.bottom}${typeof coordinates.bottom === 'number' ? 'px' : ''}; ` +
                 `position: absolute; ` +
                 `display: block;`
-            );
+            )
 
             // jwbth: Added this block.
             if (coordinates.additionalStyles) {
@@ -46,7 +46,7 @@ class TributeRange {
     }
 
     get menuContainerIsBody() {
-        return this.tribute.menuContainer === document.body || !this.tribute.menuContainer;
+        return this.tribute.menuContainer === document.body || !this.tribute.menuContainer
     }
 
 
@@ -123,9 +123,9 @@ class TributeRange {
 
 
             // jwbth: Made alterations to make `keepTextAfter` config value work.
-            let ending = myField.value.substring(endPos, myField.value.length);
+            let ending = myField.value.substring(endPos, myField.value.length)
             if (ending.startsWith(context.collection.keepTextAfter)) {
-                ending = ending.slice(context.collection.keepTextAfter.length);
+                ending = ending.slice(context.collection.keepTextAfter.length)
             }
             myField.value = myField.value.substring(0, startPos) + text + ending
 
@@ -140,7 +140,6 @@ class TributeRange {
             if (data.startOffset === undefined) {
                 data.startOffset = text.length - data.endOffset
             }
-            myField.value = myField.value.substring(0, startPos) + text + ending;
 
             myField.selectionStart = startPos + data.startOffset
             myField.selectionEnd = startPos + text.length - data.endOffset
@@ -167,7 +166,7 @@ class TributeRange {
     getTextPrecedingCurrentSelection() {
         let text = ''
 
-        let textComponent = this.tribute.current.element;
+        let textComponent = this.tribute.current.element
         if (textComponent) {
             let startPos = textComponent.selectionStart
             if (textComponent.value && startPos >= 0) {
@@ -179,15 +178,15 @@ class TributeRange {
     }
 
     getLastWordInText(text) {
-        text = text.replace(/\u00A0/g, ' '); // https://stackoverflow.com/questions/29850407/how-do-i-replace-unicode-character-u00a0-with-a-space-in-javascript
-        var wordsArray;
+        text = text.replace(/\u00A0/g, ' ') // https://stackoverflow.com/questions/29850407/how-do-i-replace-unicode-character-u00a0-with-a-space-in-javascript
+        var wordsArray
         if (this.tribute.autocompleteSeparator) {
-            wordsArray = text.split(this.tribute.autocompleteSeparator);
+            wordsArray = text.split(this.tribute.autocompleteSeparator)
         } else {
-            wordsArray = text.split(/\s+/);
+            wordsArray = text.split(/\s+/)
         }
-        var worldsCount = wordsArray.length - 1;
-        return wordsArray[worldsCount].trim();
+        var worldsCount = wordsArray.length - 1
+        return wordsArray[worldsCount].trim()
     }
 
     getTriggerInfo(menuAlreadyActive, hasTrailingSpace, requireLeadingSpace, allowSpaces) {
@@ -256,9 +255,9 @@ class TributeRange {
                     currentTriggerSnippet = currentTriggerSnippet.trim()
                 }
 
-                regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g;
+                regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g
 
-                this.tribute.hasTrailingSpace = regex.test(currentTriggerSnippet);
+                this.tribute.hasTrailingSpace = regex.test(currentTriggerSnippet)
             }
 
             /*
@@ -276,8 +275,8 @@ class TributeRange {
                 // When pressed backspace in "[[#" and faced the trigger "[["
                 (this.tribute.current.trigger && triggerChar !== this.tribute.current.trigger)
             ) {
-                this.tribute.doDropMenu = true;
-                return;
+                this.tribute.doDropMenu = true
+                return
             }
 
             if (inputOk && !leadingSpace && (menuAlreadyActive || !regex.test(currentTriggerSnippet))) {
@@ -443,11 +442,11 @@ class TributeRange {
         let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
         let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
 
-        let top = 0;
-        let left = 0;
+        let top = 0
+        let left = 0
         if (this.menuContainerIsBody) {
-          top = rect.top;
-          left = rect.left;
+          top = rect.top
+          left = rect.left
         }
 
         let coordinates = {
@@ -499,7 +498,7 @@ class TributeRange {
         let maxScrollDisplacement = 100
         let e = this.menu
 
-        if (typeof e === 'undefined') return;
+        if (typeof e === 'undefined') return
 
         while (clientRect === undefined || clientRect.height === 0) {
             clientRect = e.getBoundingClientRect()

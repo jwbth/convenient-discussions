@@ -121,7 +121,6 @@ export function highlightFocused(e) {
       ?.matches(':hover')
   );
 
-  // TODO: Use Intersection Observer API instead of this?
   cd.comments
     .filter((comment) => comment.underlay)
     .forEach((comment) => {

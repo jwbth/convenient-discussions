@@ -28,7 +28,7 @@ import {
 } from './util';
 import { createWindowManager, rescueCommentFormsContent } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
-import { getUserInfo, setLocalOption } from './apiWrappers';
+import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadData } from './dateFormat';
 

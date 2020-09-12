@@ -68,9 +68,7 @@ export default class Autocomplete {
       });
       if (input instanceof OO.ui.MultilineTextInputWidget) {
         input.on('resize', () => {
-          if (this.tribute.menuEvents.windowResizeEvent) {
-            this.tribute.menuEvents.windowResizeEvent();
-          }
+          this.tribute.menuEvents.windowResizeEvent?.();
         });
       }
     });
@@ -131,9 +129,7 @@ export default class Autocomplete {
     const collectionsByType = {
       mentions: {
         trigger: cd.config.mentionCharacter,
-        searchOpts: {
-          skip: true,
-        },
+        searchOpts: { skip: true },
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
@@ -205,9 +201,7 @@ export default class Autocomplete {
       wikilinks: {
         trigger: '[[',
         keepTextAfter: ']]',
-        searchOpts: {
-          skip: true,
-        },
+        searchOpts: { skip: true },
         selectTemplate,
         values: async (text, callback) => {
           text = removeDoubleSpaces(text);
@@ -278,9 +272,7 @@ export default class Autocomplete {
       templates: {
         trigger: '{{',
         keepTextAfter: '}}',
-        searchOpts: {
-          skip: true,
-        },
+        searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
             if (cd.settings.useTemplateData && event.shiftKey) {
@@ -414,9 +406,7 @@ export default class Autocomplete {
       tags: {
         trigger: '<',
         keepTextAfter: '>',
-        searchOpts: {
-          skip: true,
-        },
+        searchOpts: { skip: true },
         selectTemplate,
         values: (text, callback) => {
           const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
