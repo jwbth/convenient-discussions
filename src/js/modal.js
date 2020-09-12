@@ -311,6 +311,7 @@ export async function settingsDialog() {
         settings.notificationsBlacklist = this.notificationsBlacklistMultiselect.getValue();
         settings.showToolbar = this.showToolbarCheckbox.isSelected();
         settings.signaturePrefix = this.signaturePrefixInput.getValue();
+        settings.useTemplateData = this.useTemplateDataCheckbox.isSelected();
         settings.watchOnReply = this.watchOnReplyCheckbox.isSelected();
         settings.watchSectionOnReply = this.watchSectionOnReplyCheckbox.isSelected();
 
@@ -525,6 +526,14 @@ export async function settingsDialog() {
       helpInline: true,
     });
 
+    [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({
+      value: 'useTemplateData',
+      selected: settings.useTemplateData,
+      label: cd.s('sd-usetemplatedata'),
+      help: cd.s('sd-usetemplatedata-help'),
+      helpInline: true,
+    });
+
     [this.watchOnReplyField, this.watchOnReplyCheckbox] = checkboxField({
       value: 'watchOnReply',
       selected: settings.watchOnReply,
@@ -554,6 +563,7 @@ export async function settingsDialog() {
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateActionsAvailability' });
     this.showToolbarCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.signaturePrefixInput.connect(this, { change: 'updateActionsAvailability' });
+    this.useTemplateDataCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.watchOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
 
@@ -609,6 +619,7 @@ export async function settingsDialog() {
         dialog.watchSectionOnReplyField.$element,
         dialog.showToolbarField.$element,
         dialog.alwaysExpandSettingsField.$element,
+        dialog.useTemplateDataField.$element,
         dialog.insertButtonsField.$element,
         dialog.signaturePrefixField.$element,
       );
@@ -713,6 +724,7 @@ export async function settingsDialog() {
       notificationsBlacklistJson !== JSON.stringify(this.settings.notificationsBlacklist) ||
       this.showToolbarCheckbox.isSelected() !== this.settings.showToolbar ||
       this.signaturePrefixInput.getValue() !== this.settings.signaturePrefix ||
+      this.useTemplateDataCheckbox.isSelected() !== this.settings.useTemplateData ||
       this.watchOnReplyCheckbox.isSelected() !== this.settings.watchOnReply ||
       this.watchSectionOnReplyCheckbox.isSelected() !== this.settings.watchSectionOnReply
     );
@@ -739,6 +751,7 @@ export async function settingsDialog() {
       notificationsBlacklistJson !== JSON.stringify(cd.defaultSettings.notificationsBlacklist) ||
       this.showToolbarCheckbox.isSelected() !== cd.defaultSettings.showToolbar ||
       this.signaturePrefixInput.getValue() !== cd.defaultSettings.signaturePrefix ||
+      this.useTemplateDataCheckbox.isSelected() !== cd.defaultSettings.useTemplateData ||
       this.watchOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchOnReply ||
       this.watchSectionOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchSectionOnReply
     );

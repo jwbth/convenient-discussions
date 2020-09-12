@@ -77,6 +77,7 @@ export async function initSettings() {
     showLoadingOverlay: true,
 
     showToolbar: true,
+    useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
   };
