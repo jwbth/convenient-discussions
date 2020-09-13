@@ -177,7 +177,7 @@ function addWatchlistMenu() {
     .appendTo($menu);
   $('<a>')
     .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
-    .html(cd.s('script-name-short'))
+    .text(cd.s('script-name-short'))
     .appendTo($legend);
 
   switchInterestingButton = new OO.ui.ButtonWidget({

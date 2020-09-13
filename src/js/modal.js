@@ -235,14 +235,14 @@ export async function settingsDialog() {
       expanded: true,
     });
 
-    const $settingsSaved = $('<p>').html(cd.s('sd-saved'));
+    const $settingsSaved = $('<p>').text(cd.s('sd-saved'));
     this.reloadPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
     this.reloadPanel.$element.append($settingsSaved);
 
-    const $dataRemoved = $('<p>').html(cd.s('sd-dataremoved'));
+    const $dataRemoved = $('<p>').text(cd.s('sd-dataremoved'));
     this.dataRemovedPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -867,7 +867,7 @@ export async function editWatchedSections() {
       expanded: false,
     });
 
-    const $watchedSectionsSaved = $('<p>').html(cd.s('ewsd-saved'));
+    const $watchedSectionsSaved = $('<p>').text(cd.s('ewsd-saved'));
     this.savedPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -1339,7 +1339,7 @@ export function rescueCommentFormsContent(content) {
 export async function notFound(decodedFragment, date) {
   const title = $('<span>')
     .addClass('cd-destructiveText')
-    .html(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
+    .text(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
   let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
   if (cd.g.CURRENT_PAGE.canHaveArchives()) {
     message += ' ' + cd.s('deadanchor-searchinarchive');
