@@ -896,7 +896,7 @@ export default class Section extends SectionSkeleton {
             return;
           }
 
-          this.reloadPanel.$element.html(
+          this.reloadPanel.$element.append(
             cd.util.wrapInElement(cd.s('msd-moved', target.sectionUrl), 'div')
           );
 
