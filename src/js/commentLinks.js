@@ -205,18 +205,18 @@ function addWatchlistMenu() {
   editWatchedSectionsButton.on('click', editWatchedSections);
   editWatchedSectionsButton.$element.appendTo($menu);
 
-  const scriptSettingsButton = new OO.ui.ButtonWidget({
+  const settingsButton = new OO.ui.ButtonWidget({
     framed: false,
     icon: 'settings',
-    label: cd.s('wl-button-scriptsettings-tooltip'),
+    label: cd.s('wl-button-settings-tooltip'),
     invisibleLabel: true,
-    title: cd.s('wl-button-scriptsettings-tooltip'),
+    title: cd.s('wl-button-settings-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-scriptSettings'],
   });
-  scriptSettingsButton.on('click', () => {
+  settingsButton.on('click', () => {
     settingsDialog();
   });
-  scriptSettingsButton.$element.appendTo($menu);
+  settingsButton.$element.appendTo($menu);
 
   // New watchlist, old watchlist
   cd.g.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);

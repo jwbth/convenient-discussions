@@ -596,11 +596,11 @@ export default class CommentForm {
     });
 
     /**
-     * Comment settings container.
+     * Advanced section container.
      *
      * @type {JQuery}
      */
-    this.$settings = $('<div>').addClass('cd-commentFormSettings')
+    this.$advanced = $('<div>').addClass('cd-commentFormAdvanced');
 
     /**
      * Edit summary input.
@@ -776,17 +776,17 @@ export default class CommentForm {
     /**
      * Script settings button.
      *
-     * @name scriptSettingsButton
+     * @name settingsButton
      * @type {Promise}
      * @instance module:CommentForm
      */
-    this.scriptSettingsButton = new OO.ui.ButtonWidget({
+    this.settingsButton = new OO.ui.ButtonWidget({
       framed: false,
       icon: 'settings',
-      label: cd.s('cf-scriptsettings-tooltip'),
+      label: cd.s('cf-settings-tooltip'),
       invisibleLabel: true,
-      title: cd.s('cf-scriptsettings-tooltip'),
-      classes: ['cd-button', 'cd-scriptSettingsButton'],
+      title: cd.s('cf-settings-tooltip'),
+      classes: ['cd-button', 'cd-settingsButton'],
       tabIndex: String(this.id) + '27',
     });
 
@@ -809,7 +809,7 @@ export default class CommentForm {
       this.watchSectionField,
       this.noSignatureField,
       this.deleteField,
-      this.scriptSettingsButton,
+      this.settingsButton,
     ].filter(defined));
 
     /**
@@ -856,14 +856,14 @@ export default class CommentForm {
      */
 
     /**
-     * Script settings button.
+     * Toggle advanced section button.
      *
      * @type {OoUiButtonWidget}
      */
-    this.settingsButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-settings'),
+    this.advancedButton = new OO.ui.ButtonWidget({
+      label: cd.s('cf-advanced'),
       framed: false,
-      classes: ['cd-button', 'cd-settingsButton'],
+      classes: ['cd-button', 'cd-advancedButton'],
       tabIndex: String(this.id) + '30',
     });
 
@@ -952,12 +952,12 @@ export default class CommentForm {
       this.updateFormOnDeleteCheckboxChange(true);
     }
 
-    this.$settings.append(
+    this.$advanced.append(
       this.summaryInput.$element,
       this.$summaryPreview,
       this.horizontalLayout.$element
     );
-    this.$leftButtonsContainer.append(this.settingsButton.$element, this.helpPopupButton.$element);
+    this.$leftButtonsContainer.append(this.advancedButton.$element, this.helpPopupButton.$element);
     this.$rightButtonsContainer.append(
       this.cancelButton.$element,
       this.viewChangesButton.$element,
@@ -969,13 +969,13 @@ export default class CommentForm {
     this.$form.append(...[
       this.headlineInput?.$element,
       this.commentInput.$element,
-      this.$settings,
+      this.$advanced,
       this.$buttonsContainer,
     ].filter(defined));
     this.$innerWrapper.append(this.$messageArea, this.$form);
 
-    if (this.mode !== 'edit' && !cd.settings.alwaysExpandSettings) {
-      this.$settings.hide();
+    if (this.mode !== 'edit' && !cd.settings.alwaysExpandAdvanced) {
+      this.$advanced.hide();
     }
 
     /**
@@ -1256,14 +1256,14 @@ export default class CommentForm {
         .on('change', saveSessionEventHandler);
     }
 
-    this.scriptSettingsButton
+    this.settingsButton
       .on('click', () => {
         settingsDialog();
       });
 
-    this.settingsButton
+    this.advancedButton
       .on('click', () => {
-        this.toggleSettings();
+        this.toggleAdvanced();
       });
 
     this.cancelButton
@@ -1337,14 +1337,14 @@ export default class CommentForm {
   }
 
   /**
-   * Show or hide the comment settings.
+   * Show or hide the advanced section.
    */
-  toggleSettings() {
+  toggleAdvanced() {
     saveScrollPosition();
-    if (this.$settings.is(':hidden')) {
-      this.$settings.show();
+    if (this.$advanced.is(':hidden')) {
+      this.$advanced.show();
     } else {
-      this.$settings.hide();
+      this.$advanced.hide();
     }
     restoreScrollPosition();
   }
@@ -1378,7 +1378,7 @@ export default class CommentForm {
           this.viewChangesButton.$element.outerWidth(true) :
           0
         ) +
-        this.settingsButton.$element.outerWidth(true) +
+        this.advancedButton.$element.outerWidth(true) +
         this.helpPopupButton.$element.outerWidth(true) +
         this.cancelButton.$element.outerWidth(true)
       );

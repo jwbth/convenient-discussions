@@ -297,7 +297,7 @@ export async function settingsDialog() {
 
         const settings = {};
         settings.allowEditOthersComments = this.allowEditOthersCommentsCheckbox.isSelected();
-        settings.alwaysExpandSettings = this.alwaysExpandSettingsCheckbox.isSelected();
+        settings.alwaysExpandAdvanced = this.alwaysExpandAdvancedCheckbox.isSelected();
         settings.autopreview = this.autopreviewCheckbox.isSelected();
         settings.desktopNotifications = (
           getSelectedItemData(this.desktopNotificationsSelect) ||
@@ -358,10 +358,10 @@ export async function settingsDialog() {
       label: cd.s('sd-alloweditotherscomments'),
     });
 
-    [this.alwaysExpandSettingsField, this.alwaysExpandSettingsCheckbox] = checkboxField({
-      value: 'alwaysExpandSettings',
-      selected: settings.alwaysExpandSettings,
-      label: cd.s('sd-alwaysexpandsettings'),
+    [this.alwaysExpandAdvancedField, this.alwaysExpandAdvancedCheckbox] = checkboxField({
+      value: 'alwaysExpandAdvanced',
+      selected: settings.alwaysExpandAdvanced,
+      label: cd.s('sd-alwaysexpandadvanced'),
     });
 
     [this.autopreviewField, this.autopreviewCheckbox] = checkboxField({
@@ -550,7 +550,7 @@ export async function settingsDialog() {
 
     this.insertButtonsMultiselect.connect(this, { change: 'updateActionsAvailability' });
     this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.alwaysExpandSettingsCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.autopreviewCheckbox.connect(this, { change: 'updateActionsAvailability' });
     this.desktopNotificationsSelect.connect(this, {
       select: 'updateActionsAvailability',
@@ -618,7 +618,7 @@ export async function settingsDialog() {
         dialog.watchOnReplyField.$element,
         dialog.watchSectionOnReplyField.$element,
         dialog.showToolbarField.$element,
-        dialog.alwaysExpandSettingsField.$element,
+        dialog.alwaysExpandAdvancedField.$element,
         dialog.useTemplateDataField.$element,
         dialog.insertButtonsField.$element,
         dialog.signaturePrefixField.$element,
@@ -714,7 +714,7 @@ export async function settingsDialog() {
     let save = (
       insertButtonsJson !== JSON.stringify(this.settings.insertButtons) ||
       this.allowEditOthersCommentsCheckbox.isSelected() !== this.settings.allowEditOthersComments ||
-      this.alwaysExpandSettingsCheckbox.isSelected() !== this.settings.alwaysExpandSettings ||
+      this.alwaysExpandAdvancedCheckbox.isSelected() !== this.settings.alwaysExpandAdvanced ||
       this.autopreviewCheckbox.isSelected() !== this.settings.autopreview ||
       desktopNotifications !== this.settings.desktopNotifications ||
       defaultCommentLinkType !== this.settings.defaultCommentLinkType ||
@@ -740,7 +740,7 @@ export async function settingsDialog() {
         this.allowEditOthersCommentsCheckbox.isSelected() !==
         cd.defaultSettings.allowEditOthersComments
       ) ||
-      this.alwaysExpandSettingsCheckbox.isSelected() !== cd.defaultSettings.alwaysExpandSettings ||
+      this.alwaysExpandAdvancedCheckbox.isSelected() !== cd.defaultSettings.alwaysExpandAdvanced ||
       this.autopreviewCheckbox.isSelected() !== cd.defaultSettings.autopreview ||
       desktopNotifications !== cd.defaultSettings.desktopNotifications ||
       defaultCommentLinkType !== cd.defaultSettings.defaultCommentLinkType ||

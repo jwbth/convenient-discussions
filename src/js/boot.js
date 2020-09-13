@@ -57,7 +57,7 @@ export async function initSettings() {
    */
   cd.defaultSettings = {
     allowEditOthersComments: false,
-    alwaysExpandSettings: false,
+    alwaysExpandAdvanced: false,
     autopreview: true,
     desktopNotifications: 'unknown',
     defaultCommentLinkType: 'diff',
@@ -91,9 +91,10 @@ export async function initSettings() {
 
   // Aliases for seamless transition when changing a setting name.
   cd.settingAliases = {
-    allowEditOthersMsgs: ['allowEditOthersComments'],
+    allowEditOthersComments: ['allowEditOthersMsgs'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySignature', 'mySig'],
+    alwaysExpandAdvanced: ['alwaysExpandSettings'],
   };
 
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
