@@ -2331,7 +2331,11 @@ export default class CommentForm {
         .append(parsedSummary);
       this.$summaryPreview.empty();
       if (parsedSummary) {
-        this.$summaryPreview.append(cd.s('cf-summary-preview'), ': ', $comment);
+        this.$summaryPreview.append(
+          cd.s('cf-summary-preview'),
+          mw.msg('colon-separator'),
+          $comment
+        );
       }
     }
 
