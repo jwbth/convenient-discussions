@@ -111,7 +111,7 @@ function getFirstVisibleElementData() {
  *
  * @param {Parser} parser
  * @param {object|undefined} firstVisibleElementData
- * @throws {CdError} If there is no comments.
+ * @throws {CdError} If there are no comments.
  * @private
  */
 function processComments(parser, firstVisibleElementData) {

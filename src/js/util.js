@@ -337,7 +337,7 @@ export function mergeRegexps(arr) {
  */
 export function hideText(text, regexp, hidden, useAlternativeMarker) {
   return text.replace(regexp, (s, pre, textToHide) => {
-    // If there is no groups, the offset is the second argument.
+    // If there are no groups, the offset is the second argument.
     if (typeof pre === 'number') {
       pre = '';
       textToHide = '';

@@ -555,13 +555,14 @@ export function loadData() {
   }
 
   Promise.all(messagesRequests).then(() => {
+    cd.g.messages = {};
+
     // We need this object to pass to the web worker.
-    cd.g.MESSAGES = {};
     messageNames.push(
       ...Object.keys(mw.messages.get()).filter((name) => name.startsWith('timezone-'))
     );
     messageNames.forEach((name) => {
-      cd.g.MESSAGES[name] = mw.messages.get(name);
+      cd.g.messages[name] = mw.messages.get(name);
     });
   });
   requests.push(...messagesRequests);
@@ -717,7 +718,7 @@ function setLocalTimestampRegexps() {
     cd.g.DATE_FORMAT,
     cd.g.DIGITS ? `[${cd.g.DIGITS}]` : '\\d'
   );
-  const timezones = Object.keys(cd.g.MESSAGES)
+  const timezones = Object.keys(cd.g.messages)
     .filter((name) => name.startsWith('timezone-'))
     .map((name) => name.slice(9))
     .filter((name) => !['local', 'useoffset-placeholder'].includes(name));
@@ -841,7 +842,8 @@ function setLocalTimestampParser() {
       return text.replace(new RegExp('[' + cd.g.DIGITS + ']', 'g'), (m) => cd.g.DIGITS.indexOf(m));
     };
 
-    const getMessages = (messages) => messages.map((name) => cd.g.MESSAGES[name]);
+    // Override the imported function to be able to use it in the worker context.
+    const getMessages = (messages) => messages.map((name) => cd.g.messages[name]);
 
     let year = 0;
     let monthIdx = 0;

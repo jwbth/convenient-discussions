@@ -54,7 +54,7 @@ export default class Section extends SectionSkeleton {
     /**
      * Wiki page that has the source code of the section (may be different from the current page if
      * the section is transcluded from another page). This property may also be wrong on old version
-     * pages where there is no edit section links.
+     * pages where there are no edit section links.
      *
      * @type {string}
      */

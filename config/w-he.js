@@ -358,7 +358,7 @@ export default {
   /**
    * Object specifying messages to be displayed when the user enters text that matches a pattern.
    *
-   * @typedef {object[]} Reaction
+   * @typedef {object} Reaction
    * @property {RegExp} pattern Pattern to match.
    * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.

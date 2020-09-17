@@ -26,7 +26,7 @@ let unseenCount;
 let lastFirstTimeSeenCommentId;
 let newRevisions = [];
 let notifiedAbout = [];
-let notifications = [];
+let notificationsData = [];
 let backgroundCheckArranged = false;
 let relevantNewCommentAnchor;
 
@@ -342,9 +342,9 @@ async function sendNotifications(comments) {
   if (cd.settings.notifications !== 'none' && notifyAboutOrdinary.length) {
     // Combine with content of notifications that were displayed but are still open (i.e., the
     // user most likely didn't see them because the tab is in the background).
-    notifications.slice().reverse().some((notification) => {
-      if (notification.notification.isOpen) {
-        notifyAboutOrdinary.push(...notification.comments);
+    notificationsData.slice().reverse().some((data) => {
+      if (data.notification.isOpen) {
+        notifyAboutOrdinary.push(...data.comments);
         return false;
       } else {
         return true;
@@ -427,7 +427,7 @@ async function sendNotifications(comments) {
       },
     ]);
     const notification = mw.notification.notify($body);
-    notifications.push({
+    notificationsData.push({
       notification,
       comments: notifyAboutOrdinary,
     });
@@ -850,11 +850,11 @@ const navPanel = {
    * @memberof module:navPanel
    */
   closeAllNotifications() {
-    notifications.forEach((notification) => {
-      notification.notification.$notification.hide();
-      notification.notification.close();
+    notificationsData.forEach((data) => {
+      data.notification.$notification.hide();
+      data.notification.close();
     });
-    notifications = [];
+    notificationsData = [];
   },
 
   /**
