@@ -7,16 +7,16 @@ const argv = require('yargs').argv;
 // npm run <command running this script> --dev
 const devSuffix = (argv.dev || process.env.npm_config_dev) ? '-dev' : '';
 
-fs.readdirSync('./config/').forEach((file) => {
-  if (path.extname(file) === '.js') {
-    const [fullName, name] = path.basename(file).match(/^(\w+-\w+)\.js$/) || [];
-    const content = fs.readFileSync(`./config/${fullName}`)
+fs.readdirSync('./config/').forEach((filename) => {
+  if (path.extname(filename) === '.js') {
+    const [, name] = path.basename(filename).match(/^(\w+-\w+)\.js$/) || [];
+    const content = fs.readFileSync(`./config/${filename}`)
       .toString()
       .trim()
       .replace(/[^]*?export default /, '');
     const data = `/**
  * This file was assembled automatically from the configuration at
- * https://github.com/jwbth/convenient-discussions/tree/master/config/${fullName} by running
+ * https://github.com/jwbth/convenient-discussions/tree/master/config/${filename} by running
  * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at
