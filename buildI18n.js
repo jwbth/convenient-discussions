@@ -68,6 +68,27 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
           stringName,
           lang,
         });
+
+        // Just in case dompurify or jsdom gets outdated or the repository gets compromised, we will
+        // just manually check that only allowed tags are present.
+        for (const [, tagName] of sanitized.matchAll(/<(\w+)/g)) {
+          if (!ALLOWED_TAGS.includes(tagName.toLowerCase())) {
+            warning(`Disallowed tag ${code(tagName)} found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
+            delete strings[stringName];
+            return;
+          }
+        }
+
+        // The same with suspicious strings containing what seems like the "javascript:" prefix or
+        // one of the "on..." attributes.
+        let test = sanitized.replace(/&#?\w+;|\s+/g, '');
+        if (/javascript:/i.test(test) || /\bon\w+\s*=/i.test(sanitized)) {
+          warning(`Suspicious code found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
+          delete strings[stringName];
+          return;
+        }
+
+        strings[stringName] = sanitized;
       });
     const data = `convenientDiscussions.i18n = convenientDiscussions.i18n || {};
 convenientDiscussions.i18n['${lang}'] = ${JSON.stringify(strings, null, '\t')};
