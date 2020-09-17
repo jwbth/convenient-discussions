@@ -724,7 +724,7 @@ function setLocalTimestampRegexps() {
     .filter((name) => !['local', 'useoffset-placeholder'].includes(name));
   const localizedTimezones = TIMEZONES.concat(timezones).map((abbr) => {
     const message = mw.message('timezone-' + abbr);
-    return message.exists() ? message.text() : abbr;
+    return message.exists() ? message.parse() : abbr;
   });
   const timezonePattern = (
     '\\((?:' +

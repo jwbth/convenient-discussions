@@ -61,10 +61,10 @@ async function prepare({ dataRequest }) {
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
     '::before': {
-      content: `"${mw.msg('parentheses-start')}"`,
+      content: `"${cd.mws('parentheses-start')}"`,
     },
     '::after': {
-      content: `"${mw.msg('parentheses-end')}"`,
+      content: `"${cd.mws('parentheses-end')}"`,
     },
   });
 
@@ -78,8 +78,8 @@ async function prepare({ dataRequest }) {
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
-  goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-toyou'))}`;
-  goToCommentWatchedSection = `${cd.s('lp-comment-tooltip')} ${mw.msg('parentheses', cd.s('lp-comment-watchedsection'))}`;
+  goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${cd.mws('parentheses', cd.s('lp-comment-toyou'))}`;
+  goToCommentWatchedSection = `${cd.s('lp-comment-tooltip')} ${cd.mws('parentheses', cd.s('lp-comment-watchedsection'))}`;
 
   const $aRegularPrototype = $('<a>')
     .text(cd.s('lp-comment'))

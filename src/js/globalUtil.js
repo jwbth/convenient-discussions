@@ -19,18 +19,42 @@ import { isLoadingOverlayOn } from './boot';
 
 export default {
   /**
-   * Generate a `<span>` (or other element) suitable as an argument for `mw.notify()` from HTML
-   * code.
+   * @typedef {object} Callbacks
+   * @property {Function} *
+   */
+
+  /**
+   * Generate a `<span>` (or other element) suitable as an argument for various methods for
+   * displaying HTML. Optionally, attach callback functions and `target="_blank"` attribute to links
+   * with the provided class names.
    *
-   * @param {string} html
-   * @param {string} tagName
+   * @param {string|JQuery} htmlOrJquery
+   * @param {object} [options={}]
+   * @param {Callbacks} [options.callbacks]
+   * @param {string} [options.tagName='span']
+   * @param {boolean} [options.targetBlank]
    * @returns {JQuery}
    * @memberof module:cd~convenientDiscussions.util
    */
-  wrapInElement(html, tagName = 'span') {
-    return $($.parseHTML(html))
-      .wrapAll(`<${tagName}>`)
+  wrap(htmlOrJquery, options = {}) {
+    const $wrapper = $(htmlOrJquery instanceof $ ? htmlOrJquery : $.parseHTML(htmlOrJquery))
+      .wrapAll(`<${options.tagName || 'span'}>`)
       .parent();
+    if (options) {
+      if (options.callbacks) {
+        Object.keys(options.callbacks).forEach((className) => {
+          const $linkWrapper = $wrapper.find(`.${className}`);
+          if (!$linkWrapper.find('a').length) {
+            $linkWrapper.wrapInner('<a>');
+          }
+          $linkWrapper.find('a').on('click', options.callbacks[className]);
+        });
+      }
+      if (options.targetBlank) {
+        $wrapper.find('a[href]').attr('target', '_blank');
+      }
+    }
+    return $wrapper;
   },
 
   /**

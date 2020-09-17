@@ -148,15 +148,19 @@ async function confirmCloseDialog(dialog, dialogCode) {
  */
 function handleError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {
-    dialog.showErrors(new OO.ui.Error(cd.s(messageName), { recoverable }));
+    const error = new OO.ui.Error(cd.sParse(messageName), { recoverable });
+    dialog.showErrors(error);
   } else {
-    dialog.showErrors(new OO.ui.Error(cd.s('error-javascript'), { recoverable: false }));
+    const error = new OO.ui.Error(cd.sParse('error-javascript'), { recoverable: false });
+    dialog.showErrors(error);
   }
   console.warn(e);
   if (!recoverable) {
-    dialog.$errors.find('.oo-ui-buttonElement-button').on('click', () => {
-      dialog.close();
-    });
+    dialog.$errors
+      .find('.oo-ui-buttonElement-button')
+      .on('click', () => {
+        dialog.close();
+      });
   }
 
   dialog.actions.setAbilities({ close: true });
@@ -466,7 +470,7 @@ export async function settingsDialog() {
       new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
         label: cd.s('sd-insertbuttons'),
         align: 'top',
-        help: cd.util.wrapInElement(cd.s('sd-insertbuttons-help') + ' ' + cd.s('sd-localsetting')),
+        help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
         helpInline: true,
       })
     );
@@ -522,7 +526,7 @@ export async function settingsDialog() {
     this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
       label: cd.s('sd-signatureprefix'),
       align: 'top',
-      help: cd.util.wrapInElement(cd.s('sd-signatureprefix-help') + ' ' + cd.s('sd-localsetting')),
+      help: cd.util.wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
       helpInline: true,
     });
 
@@ -574,9 +578,9 @@ export async function settingsDialog() {
     this.removeDataButton.connect(this, { click: 'removeData' });
 
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
-      label: cd.util.wrapInElement(cd.s('sd-removedata-description')),
-      align: "top",
-      help: cd.util.wrapInElement(cd.s('sd-removedata-help')),
+      label: cd.s('sd-removedata-description'),
+      align: 'top',
+      help: cd.util.wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
       helpInline: true,
     });
 
@@ -1012,15 +1016,22 @@ export async function editWatchedSections() {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;
             if (type === 'internal' && code === 'sizeLimit') {
-              this.showErrors(new OO.ui.Error(cd.s('ewsd-error-maxsize'), { recoverable: false }));
-            } else {
-              this.showErrors(
-                new OO.ui.Error(cd.s('ewsd-error-processing'), { recoverable: true })
+              const error = new OO.ui.Error(
+                cd.sParse('ewsd-error-maxsize'),
+                { recoverable: false }
               );
+              this.showErrors(error);
+            } else {
+              const error = new OO.ui.Error(
+                cd.sParse('ewsd-error-processing'),
+                { recoverable: true }
+              );
+              this.showErrors(error);
             }
             console.warn(type, code, apiData);
           } else {
-            this.showErrors(new OO.ui.Error(cd.s('error-javascript'), { recoverable: false }));
+            const error = new OO.ui.Error(cd.sParse('error-javascript'), { recoverable: false });
+            this.showErrors(error);
             console.warn(e);
           }
           this.popPending();
@@ -1065,7 +1076,8 @@ function copyLinkToClipboardAndNotify(text) {
 
   if (successful) {
     if (text.startsWith('http')) {
-      mw.notify(cd.util.wrapInElement(cd.s('copylink-copied-url', text)));
+      const $body = cd.util.wrap(cd.sParse('copylink-copied-url', text), { targetBlank: true });
+      mw.notify($body);
     } else {
       mw.notify(cd.s('copylink-copied'));
     }
@@ -1155,7 +1167,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       });
       diffField = new OO.ui.ActionFieldLayout(diffInput, diffButton, {
         align: 'top',
-        label: cd.util.wrapInElement(cd.s('cld-diff')),
+        label: cd.s('cld-diff'),
       });
     }
 
@@ -1174,7 +1186,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
     const wikilinkField = new OO.ui.ActionFieldLayout(wikilinkInput, wikilinkButton, {
       align: 'top',
-      label: cd.util.wrapInElement(cd.s('cld-wikilink')),
+      label: cd.s('cld-wikilink'),
       help: onlyCdWarning,
       helpInline: true,
     });
@@ -1194,7 +1206,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       anchorWikilinkInput,
       anchorWikilinkButton, {
         align: 'top',
-        label: cd.util.wrapInElement(cd.s('cld-currentpagewikilink')),
+        label: cd.s('cld-currentpagewikilink'),
       }
     );
 
@@ -1211,7 +1223,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     });
     const linkField = new OO.ui.ActionFieldLayout(linkInput, linkButton, {
       align: 'top',
-      label: cd.util.wrapInElement(cd.s('cld-link')),
+      label: cd.s('cld-link'),
       help: onlyCdWarning,
       helpInline: true,
     });
@@ -1251,19 +1263,20 @@ export async function copyLink(object, chooseLink, finallyCallback) {
         try {
           link = await object.getDiffLink(object);
         } catch (e) {
-          let text = cd.s('error-diffnotfound');
+          let text = cd.sParse('error-diffnotfound');
           if (e instanceof CdError) {
             const { type } = e.data;
             if (type === 'network') {
-              text += ' ' + cd.s('error-network');
+              text += ' ' + cd.sParse('error-network');
             } else {
               const url = object.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-              text += ' ' + cd.s('error-diffnotfound-history', url);
+              text += ' ' + cd.sParse('error-diffnotfound-history', url);
             }
           } else {
-            text += ' ' + cd.s('error-unknown');
+            text += ' ' + cd.sParse('error-unknown');
           }
-          mw.notify(cd.util.wrapInElement(text), { type: 'error' });
+          const $body = cd.util.wrap(text, { targetBlank: true });
+          mw.notify($body, { type: 'error' });
           object.linkBeingCopied = false;
           if (finallyCallback) {
             finallyCallback();

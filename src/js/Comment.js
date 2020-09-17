@@ -912,13 +912,18 @@ export default class Comment extends CommentSkeleton {
     switch (type) {
       case 'parse': {
         if (code === 'moreThanOneTimestamp') {
-          const url = this.getSourcePage().getArchivedPage().getUrl({ diff: data.edit.revid });
-          text = cd.util.wrapInElement(cd.s('thank-error-multipletimestamps', url));
+          text = cd.util.wrap(cd.sParse('thank-error-multipletimestamps', data.edit.revid), {
+            targetBlank: true,
+          });
           OO.ui.alert(text);
           return;
         } else {
           const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
+          text = (
+            cd.sParse('error-diffnotfound') +
+            ' ' +
+            cd.sParse('error-diffnotfound-history', url)
+          );
         }
         break;
       }
@@ -927,20 +932,24 @@ export default class Comment extends CommentSkeleton {
       default: {
         if (code === 'noData') {
           const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
+          text = (
+            cd.sParse('error-diffnotfound') +
+            ' ' +
+            cd.sParse('error-diffnotfound-history', url)
+          );
         } else {
-          text = cd.s('thank-error');
+          text = cd.sParse('thank-error');
           console.warn(e);
         }
         break;
       }
 
       case 'network': {
-        text = cd.s('error-diffnotfound') + ' ' + cd.s('error-network');
+        text = cd.sParse('error-diffnotfound') + ' ' + cd.sParse('error-network');
         break;
       }
     }
-    mw.notify(cd.util.wrapInElement(text), { type: 'error' });
+    mw.notify(cd.util.wrap(text, { targetBlank: true }), { type: 'error' });
     this.replaceButton(this.thankButton, thankButton, 'thank');
   }
 
@@ -969,10 +978,12 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
-    const $question = cd.util.wrapInElement(
-      cd.s('thank-confirm', this.author.name, this.author, url),
-      'div'
+    const $question = cd.util.wrap(
+      cd.sParse('thank-confirm', this.author.name, this.author, edit.revid),
+      {
+        tagName: 'div',
+        targetBlank: true,
+      }
     );
     const $text = $('<div>').append($question, cd.util.wrapDiffBody(edit.diffBody));
     if (await OO.ui.confirm($text, { size: 'larger' })) {

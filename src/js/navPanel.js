@@ -9,14 +9,7 @@ import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import {
-  animateLinks,
-  areObjectsEqual,
-  handleApiReject,
-  isCommentEdit,
-  reorderArray,
-  unique,
-} from './util';
+import { areObjectsEqual, handleApiReject, isCommentEdit, reorderArray, unique } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
 import { reloadPage } from './boot';
 import { setVisits } from './options';
@@ -218,7 +211,7 @@ function generateTooltipText(comments, mode) {
       ' ' +
       cd.s('navpanel-newcomments-' + mode) +
       ' ' +
-      mw.msg('parentheses', 'R')
+      cd.mws('parentheses', 'R')
     );
     Object.keys(commentsBySection).forEach((anchor) => {
       const section = (
@@ -227,7 +220,7 @@ function generateTooltipText(comments, mode) {
       );
       const headline = section.headline ?
         cd.s('navpanel-newcomments-insection', section.headline) :
-        mw.msg('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
+        cd.mws('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
       tooltipText += `\n\n${headline}`;
       commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
@@ -244,13 +237,13 @@ function generateTooltipText(comments, mode) {
         tooltipText += (
           author +
           (document.body.classList.contains('sitedir-rtl') ? '\u200F' : '') +
-          mw.msg('comma-separator') +
+          cd.mws('comma-separator') +
           date
         );
       });
     });
   } else if (mode === 'refresh') {
-    tooltipText = `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`;
+    tooltipText = `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`;
   }
 
   return tooltipText;
@@ -354,32 +347,35 @@ async function sendNotifications(comments) {
 
   if (notifyAboutOrdinary.length) {
     let html;
-    let href;
-    const formsDataWillNotBeLost = (
-      cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-      ' ' + mw.msg('parentheses', cd.s('notification-formdata')) :
-      ''
+    const formsDataWillNotBeLost = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+      ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
+      '';
+    const wikilink = (
+      cd.g.CURRENT_PAGE.name +
+      (notifyAboutOrdinary[0].anchor ? '#' + notifyAboutOrdinary[0].anchor : '')
     );
-    const reloadLinkHtml = cd.s('notification-reload', href, formsDataWillNotBeLost);
+    const reloadLinkHtml = cd.sParse(
+      'notification-reload',
+      wikilink,
+      formsDataWillNotBeLost
+    );
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
-      const wikilink = cd.g.CURRENT_PAGE.name + (comment.anchor ? '#' + comment.anchor : '');
-      href = mw.util.getUrl(wikilink);
       if (comment.toMe) {
         const where = comment.watchedSectionHeadline ?
           (
-            mw.msg('word-separator') +
+            cd.mws('word-separator') +
             cd.s('notification-part-insection', comment.watchedSectionHeadline)
           ) :
-          mw.msg('word-separator') + cd.s('notification-part-onthispage');
+          cd.mws('word-separator') + cd.s('notification-part-onthispage');
         html = (
-          cd.s('notification-toyou', comment.author.name, comment.author, where) +
+          cd.sParse('notification-toyou', comment.author.name, comment.author, where) +
           ' ' +
           reloadLinkHtml
         );
       } else {
         html = (
-          cd.s(
+          cd.sParse(
             'notification-insection',
             comment.author.name,
             comment.author,
@@ -394,14 +390,17 @@ async function sendNotifications(comments) {
         comment.watchedSectionHeadline === notifyAboutOrdinary[0].watchedSectionHeadline
       ));
       const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : undefined;
-      const wikilink = cd.g.CURRENT_PAGE.name + (section ? '#' + section : '');
-      href = mw.util.getUrl(wikilink);
-      const where = section ?
-        mw.msg('word-separator') + cd.s('notification-part-insection', section) :
-        mw.msg('word-separator') + cd.s('notification-part-onthispage');
+      const where = (
+        cd.mws('word-separator') +
+        (
+          section ?
+          cd.s('notification-part-insection', section) :
+          cd.s('notification-part-onthispage')
+        )
+      );
       let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
       if (!mayBeInterestingString.startsWith(',')) {
-        mayBeInterestingString = mw.msg('word-separator') + mayBeInterestingString;
+        mayBeInterestingString = cd.mws('word-separator') + mayBeInterestingString;
       }
 
       // "that may be interesting to you" text is not needed when the section is watched and the
@@ -411,21 +410,27 @@ async function sendNotifications(comments) {
         mayBeInterestingString;
 
       html = (
-        cd.s('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
+        cd.sParse(
+          'notification-newcomments',
+          notifyAboutOrdinary.length,
+          where,
+          mayBeInteresting
+        ) +
         ' ' +
         reloadLinkHtml
       );
     }
 
     navPanel.closeAllNotifications();
-    const $body = animateLinks(html, [
-      'cd-notification-reloadPage',
-      (e) => {
-        e.preventDefault();
-        reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
-        notification.close();
+    const $body = cd.util.wrap(html, {
+      callbacks: {
+        'cd-notification-reloadPage': (e) => {
+          e.preventDefault();
+          reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
+          notification.close();
+        },
       },
-    ]);
+    });
     const notification = mw.notification.notify($body);
     notificationsData.push({
       notification,
@@ -443,7 +448,7 @@ async function sendNotifications(comments) {
     if (notifyAboutDesktop.length === 1) {
       if (comment.toMe) {
         const where = comment.section.headline ?
-          mw.msg('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
+          cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
           '';
         body = cd.s(
           'notification-toyou-desktop',
@@ -467,11 +472,11 @@ async function sendNotifications(comments) {
       ));
       const section = isCommonSection ? notifyAboutDesktop[0].watchedSectionHeadline : undefined;
       const where = section ?
-        mw.msg('word-separator') + cd.s('notification-part-insection', section) :
+        cd.mws('word-separator') + cd.s('notification-part-insection', section) :
         '';
       let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
-      if (!mayBeInterestingString.startsWith(',')) {
-        mayBeInterestingString = mw.msg('word-separator') + mayBeInterestingString;
+      if (!mayBeInterestingString.startsWith(cd.mws('comma-separator'))) {
+        mayBeInterestingString = cd.mws('word-separator') + mayBeInterestingString;
       }
 
       // "that may be interesting to you" text is not needed when the section is watched and the
@@ -615,7 +620,7 @@ const navPanel = {
     this.$refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
-      .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`)
+      .attr('title', `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`)
       .on('click', () => {
         this.refreshClick();
       })
@@ -623,7 +628,7 @@ const navPanel = {
     this.$previousButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-previousButton')
-      .attr('title', `${cd.s('navpanel-previous')} ${mw.msg('parentheses', 'W')}`)
+      .attr('title', `${cd.s('navpanel-previous')} ${cd.mws('parentheses', 'W')}`)
       .on('click', () => {
         this.goToPreviousNewComment();
       })
@@ -632,7 +637,7 @@ const navPanel = {
     this.$nextButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-nextButton')
-      .attr('title', `${cd.s('navpanel-next')} ${mw.msg('parentheses', 'S')}`)
+      .attr('title', `${cd.s('navpanel-next')} ${cd.mws('parentheses', 'S')}`)
       .on('click', () => {
         this.goToNextNewComment();
       })
@@ -641,7 +646,7 @@ const navPanel = {
     this.$firstUnseenButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-firstUnseenButton')
-      .attr('title', `${cd.s('navpanel-firstunseen')} ${mw.msg('parentheses', 'F')}`)
+      .attr('title', `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`)
       .on('click', () => {
         this.goToFirstUnseenComment();
       })
@@ -768,7 +773,7 @@ const navPanel = {
 
     this.$refreshButton
       .empty()
-      .attr('title', `${cd.s('navpanel-refresh')} ${mw.msg('parentheses', 'R')}`);
+      .attr('title', `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`);
     this.$previousButton.hide();
     this.$nextButton.hide();
     this.$firstUnseenButton.hide();

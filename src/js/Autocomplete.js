@@ -124,7 +124,7 @@ export default class Autocomplete {
         })
     );
 
-    const spacesRegexp = new RegExp(mw.msg('word-separator'), 'g');
+    const spacesRegexp = new RegExp(cd.mws('word-separator'), 'g');
 
     const collectionsByType = {
       mentions: {
@@ -435,7 +435,7 @@ export default class Autocomplete {
               const snippetMaxLength = 80;
               if (getText().length > snippetMaxLength) {
                 snippet = getText().slice(0, snippetMaxLength);
-                const spacePos = snippet.lastIndexOf(mw.msg('word-separator'));
+                const spacePos = snippet.lastIndexOf(cd.mws('word-separator'));
                 if (spacePos !== -1) {
                   snippet = snippet.slice(0, spacePos);
                 }
@@ -444,9 +444,9 @@ export default class Autocomplete {
               }
               let authortimestamp = author.name;
               if (timestamp) {
-                authortimestamp += mw.msg('comma-separator') + timestamp;
+                authortimestamp += cd.mws('comma-separator') + timestamp;
               }
-              const key = authortimestamp + mw.msg('colon-separator') + snippet;
+              const key = authortimestamp + cd.mws('colon-separator') + snippet;
               this.commentLinks.default.push({
                 key,
                 anchor,
@@ -519,7 +519,7 @@ export default class Autocomplete {
           cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
           mw.config.get('wgFormattedNamespaces')[2]
         );
-        return { value: `@[[${userNamespace}:${name}|${name}]]${mw.msg('colon-separator')}` };
+        return { value: `@[[${userNamespace}:${name}|${name}]]${cd.mws('colon-separator')}` };
       },
       removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
     };

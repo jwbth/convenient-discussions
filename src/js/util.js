@@ -235,22 +235,6 @@ export function removeDoubleSpaces(s) {
 }
 
 /**
- * Attach callback functions to links with the provided class names given HTML code, wrap in a
- * `<span>` element, and return the resultant jQuery object.
- *
- * @param {string|JQuery} html
- * @param {...ClassToCallback[]} classesToCallbacks
- * @returns {JQuery}
- */
-export function animateLinks(html, ...classesToCallbacks) {
-  const $link = html instanceof $ ? html : cd.util.wrapInElement(html);
-  classesToCallbacks.forEach(([className, callback]) => {
-    $link.find(`.${className}`).on('click', callback);
-  });
-  return $link;
-}
-
-/**
  * Provide `mw.Title.phpCharToUpper` functionality for the web worker context.
  *
  * @param {string} char
@@ -410,12 +394,13 @@ export async function nativePromiseState(promise) {
  */
 export function dealWithLoadingBug(moduleName) {
   if (mw.loader.getState(moduleName) === 'loading') {
-    const $body = animateLinks(cd.s('error-needreloadpage'), [
-      'cd-notification-reloadPage',
-      () => {
-        location.reload();
+    const $body = cd.util.wrap(cd.sParse('error-needreloadpage'), {
+      callbacks: {
+        'cd-notification-reloadPage': () => {
+          location.reload();
+        },
       },
-    ]);
+    });
     mw.notify($body, { type: 'error' });
     return true;
   }

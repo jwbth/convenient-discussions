@@ -46,8 +46,12 @@ if (IS_SNIPPET) {
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
  *   module:userRegistry~User User} objects for the use in {{gender:}}).
- * @param {boolean} [plain] Whether the message should be returned in the plain, not substituted,
+ * @param {object} [options]
+ * @param {boolean} [options.plain] Should the message be returned in a plain, not substituted,
  *   form.
+ * @param {boolean} [options.parse] Should the message be returned in a parsed form. Wikilinks
+ *   are replaced with HTML tags, the code is sanitized. Use this for strings that have their raw
+ *   HTML inserted into the page.
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
@@ -57,14 +61,73 @@ function s(name, ...params) {
   }
   const fullName = `convenient-discussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
-    const message = mw.message(fullName, ...params.filter((param) => typeof param !== 'boolean'));
-    return typeof params[params.length - 1] === 'boolean' && params[params.length - 1] ?
-      message.plain() :
-      message.toString();
+    let options = {};
+    let lastParam = params[params.length - 1];
+    if (
+      typeof lastParam === 'object' &&
+
+      // `mw.user`-like object to provide to {{gender:}}
+      !lastParam.options
+    ) {
+      options = lastParam;
+      params.splice(params.length - 1);
+    }
+
+    const message = mw.message(fullName, ...params);
+    if (options.plain) {
+      return message.plain();
+    } else if (options.parse) {
+      return message.parse();
+    } else {
+      return message.text();
+    }
   } else {
     const paramsString = params.length ? `: ${params.join(', ')}` : '';
     return `(${fullName}${paramsString})`;
   }
+}
+
+/**
+ * Get a language string in the "parse" format. Wikilinks are replaced with HTML tags, the code is
+ * sanitized. Use this for strings that have their raw HTML inserted into the page.
+ *
+ *
+ * @param {string} name String name.
+ * @param {...*} [params] String parameters (substituted strings, also {@link
+ *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ * @returns {?string}
+ * @memberof module:cd~convenientDiscussions
+ */
+function sParse(...args) {
+  return s(...args, { parse: true });
+}
+
+/**
+ * Get a language string in the "plain" format, with no substitutions replace.
+ *
+ * @param {string} name String name.
+ * @returns {?string}
+ * @memberof module:cd~convenientDiscussions
+ */
+function sPlain(name) {
+  return s(name, { plain: true });
+}
+
+/**
+ * A foolproof method to access MediaWiki messages intended to be used instead of `mw.msg` to
+ * eliminate any possibility of an XSS injection. By a programmer's mistake some `mw.msg` value
+ * could be inserted into a page in a raw HTML form. To prevent it, this function should be used, so
+ * if the message contains an injection (for example, brought from Translatewiki or inserted by a
+ * user who doesn't have the `editsitejs` right, but does have the `editinterface` right), the
+ * function would sanitize the value.
+ *
+ * @param {string} name String name.
+ * @param {...*} [params] String parameters (substituted strings, also {@link
+ *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ * @param {object} [options]
+ */
+function mws(...args) {
+  return mw.message(...args).parse();
 }
 
 /**
@@ -81,11 +144,23 @@ function addCommentLinksOnSpecialSearch() {
         await loadData();
         $('.mw-search-result-heading').each((i, el) => {
           const $a = $('<a>')
-            .attr('href', $(el).find('a').first().attr('href') + '#' + commentAnchor)
+            .attr(
+              'href',
+              (
+                $(el)
+                  .find('a')
+                  .first()
+                  .attr('href') +
+                '#' +
+                commentAnchor
+              )
+            )
             .text(cd.s('deadanchor-search-gotocomment'));
+          const $start = $('<span>').text(cd.mws('parentheses-start'));
+          const $end = $('<span>').text(cd.mws('parentheses-end'));
           const $span = $('<span>')
             .addClass("cd-searchCommentLink")
-            .append(mw.msg('parentheses-start'), $a, mw.msg('parentheses-end'));
+            .append($start, $a, $end);
           $(el).append(' ', $span.clone());
         });
       },
@@ -448,6 +523,9 @@ async function app() {
 
   cd.g = g;
   cd.s = s;
+  cd.sParse = sParse;
+  cd.sPlain = sPlain;
+  cd.mws = mws;
   cd.util = util;
 
   /**

@@ -11,8 +11,9 @@ import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
+import { checkboxField } from './ooui';
+import { confirmDestructive, settingsDialog } from './modal';
 import {
-  animateLinks,
   defined,
   findLastIndex,
   handleApiReject,
@@ -25,8 +26,6 @@ import {
   unhideText,
   unique,
 } from './util';
-import { checkboxField } from './ooui';
-import { confirmDestructive, settingsDialog } from './modal';
 import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
@@ -181,10 +180,11 @@ export default class CommentForm {
           },
           (e) => {
             if (e instanceof CdError) {
-              this.handleError(Object.assign({}, e.data, {
+              const options = Object.assign({}, e.data, {
                 cancel: true,
                 currentOperation,
-              }));
+              });
+              this.handleError(options);
             } else {
               this.handleError({
                 type: 'javascript',
@@ -238,7 +238,8 @@ export default class CommentForm {
        */
       this.checkCodeRequest = this.target.getCode(this).catch((e) => {
         if (e instanceof CdError) {
-          this.handleError(Object.assign({}, e.data));
+          const options = Object.assign({}, e.data);
+          this.handleError(options);
         } else {
           this.handleError({
             type: 'javascript',
@@ -353,7 +354,7 @@ export default class CommentForm {
                 },
               },
               quote: {
-                label: `${cd.s('cf-quote-tooltip')} ${mw.msg('parentheses', `Q${mw.msg('comma-separator')}Ctrl+Alt+Q`)}`,
+                label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
                 type: 'button',
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/OOjs_UI_icon_quotes-ltr.svg',
                 action: {
@@ -419,8 +420,7 @@ export default class CommentForm {
     const $a = $('<a>')
       .text(displayedText)
       .addClass('cd-insertButtons-item')
-      .on('click', (e) => {
-        e.preventDefault();
+      .on('click', () => {
         this.commentInput.$input.textSelection('encapsulateSelection', {
           pre,
           peri: '',
@@ -889,7 +889,10 @@ export default class CommentForm {
       classes: ['cd-button'],
       popup: {
         head: false,
-        $content: cd.util.wrapInElement(cd.s('cf-help-content', cd.config.mentionCharacter), 'div'),
+        $content: cd.util.wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
+          tagName: 'div',
+          targetBlank: true,
+        }),
         padded: true,
         align: 'center',
       },
@@ -1133,13 +1136,13 @@ export default class CommentForm {
     const textReactions = [
       {
         pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
-        message: cd.s('cf-reaction-signature', cd.g.SIGN_CODE),
+        message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
         name: 'signatureNotNeeded',
         type: 'notice',
       },
       {
         pattern: /<pre/,
-        message: cd.s('cf-reaction-pre'),
+        message: cd.sParse('cf-reaction-pre'),
         name: 'dontUsePre',
         type: 'warning',
       },
@@ -1173,7 +1176,7 @@ export default class CommentForm {
           this.updateAutoSummary(true, true);
 
           if (headline.includes('{{')) {
-            this.showMessage(cd.s('cf-reaction-templateinheadline'), {
+            this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
               type: 'warning',
               name: 'templateInHeadline',
             });
@@ -1202,13 +1205,21 @@ export default class CommentForm {
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
       if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
-          this.showMessage(cd.s('cf-reaction-mention-edit'), {
+          const $message = cd.util.wrap(
+            cd.sParse('cf-reaction-mention-edit'),
+            { targetBlank: true }
+          );
+          this.showMessage($message, {
             type: 'notice',
             name: 'mentionEdit',
           });
         }
         if (this.noSignatureCheckbox?.isSelected()) {
-          this.showMessage(cd.s('cf-reaction-mention-nosignature'), {
+          const $message = cd.util.wrap(
+            cd.sParse('cf-reaction-mention-nosignature'),
+            { targetBlank: true }
+          );
+          this.showMessage($message, {
             type: 'notice',
             name: 'mentionNoSignature',
           });
@@ -1439,7 +1450,7 @@ export default class CommentForm {
   /**
    * Show a service message above the form.
    *
-   * @param {string|JQuery} html
+   * @param {string|JQuery} htmlOrJquery
    * @param {object} [options]
    * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
    *   {@link
@@ -1449,7 +1460,7 @@ export default class CommentForm {
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.
    */
-  showMessage(html, {
+  showMessage(htmlOrJquery, {
     type = 'notice',
     name,
     isRaw = false,
@@ -1460,9 +1471,9 @@ export default class CommentForm {
 
     let appendable;
     if (isRaw) {
-      appendable = html;
+      appendable = htmlOrJquery;
     } else {
-      const $label = html instanceof $ ? html : cd.util.wrapInElement(html);
+      const $label = htmlOrJquery instanceof $ ? htmlOrJquery : cd.util.wrap(htmlOrJquery);
       const classes = ['cd-message'].concat(name ? [`cd-message-${name}`] : []);
       const message = new OO.ui.MessageWidget({
         type,
@@ -1586,51 +1597,62 @@ export default class CommentForm {
                 action: 'edit',
                 section: 0,
               });
-            message = cd.s('error-locatecomment', editUrl);
+            message = cd.sParse('error-locatecomment', editUrl);
             break;
           case 'locateSection':
             editUrl = cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
-            message = cd.s('error-locatesection', editUrl);
+            message = cd.sParse('error-locatesection', editUrl);
             break;
           case 'numberedList-list':
-            message = cd.s('cf-error-numberedlist') + ' ' + cd.s('cf-error-numberedlist-list');
+            message = (
+              cd.sParse('cf-error-numberedlist') +
+              ' ' +
+              cd.sParse('cf-error-numberedlist-list')
+            );
             break;
           case 'numberedList-table':
-            message = cd.s('cf-error-numberedlist') + ' ' + cd.s('cf-error-numberedlist-table');
+            message = (
+              cd.sParse('cf-error-numberedlist') +
+              ' ' +
+              cd.sParse('cf-error-numberedlist-table')
+            );
             break;
           case 'findPlace':
-            message = cd.s('cf-error-findplace');
+            message = cd.sParse('cf-error-findplace');
             break;
           case 'findPlace-unexpectedHeading':
-            message = cd.s('cf-error-findplace-unexpectedheading');
+            message = cd.sParse('cf-error-findplace-unexpectedheading');
             break;
           case 'delete-repliesToComment':
-            message = cd.s('cf-error-delete-repliestocomment');
+            message = cd.sParse('cf-error-delete-repliestocomment');
             break;
           case 'delete-repliesInSection':
-            message = cd.s('cf-error-delete-repliesinsection');
+            message = cd.sParse('cf-error-delete-repliesinsection');
             break;
           case 'commentLinks-commentNotFound':
-            message = cd.s('cf-error-commentlinks-commentnotfound', details.anchor);
+            message = cd.sParse('cf-error-commentlinks-commentnotfound', details.anchor);
             break;
         }
         const navigateToEditUrl = async (e) => {
           e.preventDefault();
-          if (!(await this.confirmClose())) return;
-          this.forget();
-          location.assign(editUrl);
+          if (await this.confirmClose()) {
+            this.forget();
+            location.assign(editUrl);
+          }
         };
-        message = animateLinks(
+        message = cd.util.wrap(
           message,
-          [
-            'cd-message-reloadPage',
-            async () => {
-              if (!(await this.confirmClose())) return;
-              this.reloadPage();
+          {
+            callbacks: {
+              'cd-message-reloadPage': async () => {
+                if (await this.confirmClose()) {
+                  this.reloadPage();
+                }
+              },
+              'cd-message-editSection': navigateToEditUrl,
+              'cd-message-editPage': navigateToEditUrl,
             },
-          ],
-          [ 'cd-message-editSection', navigateToEditUrl ],
-          [ 'cd-message-editPage', navigateToEditUrl ]
+          }
         );
         break;
       }
@@ -1639,7 +1661,7 @@ export default class CommentForm {
         // Error messages related to error codes from API should rewrite our generic messages.
         switch (code) {
           case 'missing': {
-            message = cd.s('cf-error-pagedoesntexist');
+            message = cd.sParse('cf-error-pagedoesntexist');
             break;
           }
 
@@ -1650,7 +1672,7 @@ export default class CommentForm {
             } = apiData.error;
             switch (errorCode) {
               case 'missingtitle':
-                message = cd.s('cf-error-pagedoesntexist');
+                message = cd.sParse('cf-error-pagedoesntexist');
                 break;
               default:
                 message = await unknownApiErrorText(errorCode, errorInfo);
@@ -1659,7 +1681,7 @@ export default class CommentForm {
           }
         }
 
-        message = cd.util.wrapInElement(message);
+        message = cd.util.wrap(message);
         message.find('.mw-parser-output').css('display', 'inline');
         logMessage = logMessage || [code, apiData];
         break;
@@ -1667,7 +1689,7 @@ export default class CommentForm {
 
       case 'network':
       case 'javascript': {
-        message = (message ? message + ' ' : '') + cd.s(`error-${type}`);
+        message = (message ? message + ' ' : '') + cd.sParse(`error-${type}`);
         break;
       }
     }
@@ -2069,7 +2091,8 @@ export default class CommentForm {
       await this.targetPage.getCode();
     } catch (e) {
       if (e instanceof CdError) {
-        this.handleError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
+        const options = Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data);
+        this.handleError(options);
       } else {
         this.handleError({
           type: 'javascript',
@@ -2280,10 +2303,11 @@ export default class CommentForm {
       }));
     } catch (e) {
       if (e instanceof CdError) {
-        this.handleError(Object.assign({}, e.data, {
-          message: cd.s('cf-error-preview'),
+        const options = Object.assign({}, e.data, {
+          message: cd.sParse('cf-error-preview'),
           currentOperation,
-        }));
+        });
+        this.handleError(options);
       } else {
         this.handleError({
           type: 'javascript',
@@ -2331,11 +2355,9 @@ export default class CommentForm {
         .append(parsedSummary);
       this.$summaryPreview.empty();
       if (parsedSummary) {
-        this.$summaryPreview.append(
-          cd.s('cf-summary-preview'),
-          mw.msg('colon-separator'),
-          $comment
-        );
+        const $colon = $('<span>').text(cd.mws('colon-separator'));
+        const $previewLabel = $('<span>').text(cd.s('cf-summary-preview'));
+        this.$summaryPreview.append($previewLabel, $colon, $comment);
       }
     }
 
@@ -2387,10 +2409,11 @@ export default class CommentForm {
       resp = await cd.g.api.post(options).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
-        this.handleError(Object.assign({}, e.data, {
-          message: cd.s('cf-error-viewchanges'),
+        const options = Object.assign({}, e.data, {
+          message: cd.sParse('cf-error-viewchanges'),
           currentOperation,
-        }));
+        });
+        this.handleError(options);
       } else {
         this.handleError({
           type: 'javascript',
@@ -2416,7 +2439,7 @@ export default class CommentForm {
     } else {
       this.$previewArea.empty();
       if (html !== undefined) {
-        this.showMessage(cd.s('cf-notice-nochanges'));
+        this.showMessage(cd.sParse('cf-notice-nochanges'));
       }
     }
     if (cd.settings.autopreview) {
@@ -2445,11 +2468,12 @@ export default class CommentForm {
       await reloadPage(keptData);
     } catch (e) {
       if (e instanceof CdError) {
-        this.handleError(Object.assign({}, e.data, {
-          message: cd.s('error-reloadpage-saved'),
+        const options = Object.assign({}, e.data, {
+          message: cd.sParse('error-reloadpage-saved'),
           cancel: true,
           currentOperation,
-        }));
+        });
+        this.handleError(options);
       } else {
         this.handleError({
           type: 'javascript',
@@ -2542,14 +2566,14 @@ export default class CommentForm {
         if (type === 'network') {
           this.handleError({
             type,
-            message: cd.s('cf-error-couldntedit'),
+            message: cd.sParse('cf-error-couldntedit'),
             currentOperation,
           });
         } else {
           let messageType;
           let { code, message, isRawMessage, logMessage } = details;
           if (code === 'editconflict') {
-            message += ' ' + cd.s('cf-notice-editconflict-retrying');
+            message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
             messageType = 'notice';
             this.submit();
           }
