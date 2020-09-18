@@ -106,7 +106,7 @@ export function globalKeyDownHandler(e) {
 export function highlightFocused(e) {
   if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
-  const obstructingElementHovered = (
+  const isObstructingElementHovered = (
     cd.g.activeAutocompleteMenu?.matches(':hover') ||
 
     // In case the user has moved the navigation panel to the right
@@ -126,7 +126,7 @@ export function highlightFocused(e) {
     .forEach((comment) => {
       const layersContainerOffset = comment.getLayersContainerOffset();
       if (
-        !obstructingElementHovered &&
+        !isObstructingElementHovered &&
         e.pageY >= comment.layersTop + layersContainerOffset.top &&
         e.pageY <= comment.layersTop + comment.layersHeight + layersContainerOffset.top &&
         e.pageX >= comment.layersLeft + layersContainerOffset.left &&

@@ -105,7 +105,7 @@ function parse() {
       null;
     if (comment.targetComment) {
       comment.targetCommentAuthorName = comment.targetComment.authorName;
-      comment.toMe = comment.targetComment.own;
+      comment.toMe = comment.targetComment.isOwn;
       delete comment.targetComment;
     }
     delete comment.parser;

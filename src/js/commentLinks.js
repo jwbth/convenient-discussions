@@ -362,7 +362,7 @@ function processWatchlist($content) {
       wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
-      let watched = false;
+      let isWatched = false;
       if (summary) {
         const curLink = (
           // Expanded watchlist
@@ -377,18 +377,18 @@ function processWatchlist($content) {
           if (thisPageWatchedSections.length) {
             for (let j = 0; j < thisPageWatchedSections.length; j++) {
               if (isInSection(summary, thisPageWatchedSections[j])) {
-                watched = true;
+                isWatched = true;
                 break;
               }
             }
-            if (watched) {
+            if (isWatched) {
               wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
         }
       }
-      if (!watched) {
+      if (!isWatched) {
         wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
       }
     }
@@ -513,23 +513,23 @@ function processHistory($content) {
       wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
-      let watched = false;
+      let isWatched = false;
       if (summary) {
         const thisPageWatchedSections = cd.g.watchedSections?.[mw.config.get('wgArticleId')] || [];
         if (thisPageWatchedSections.length) {
           for (let j = 0; j < thisPageWatchedSections.length; j++) {
             if (isInSection(summary, cd.g.thisPageWatchedSections[j])) {
-              watched = true;
+              isWatched = true;
               break;
             }
           }
-          if (watched) {
+          if (isWatched) {
             wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
             wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
           }
         }
       }
-      if (!watched) {
+      if (!isWatched) {
         wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
       }
     }
@@ -606,20 +606,20 @@ async function processDiff() {
           wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
-          let watched = false;
+          let isWatched = false;
           if (summary && cd.g.thisPageWatchedSections.length) {
             for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
               if (isInSection(summary, cd.g.thisPageWatchedSections[j])) {
-                watched = true;
+                isWatched = true;
                 break;
               }
             }
-            if (watched) {
+            if (isWatched) {
               wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
-          if (!watched) {
+          if (!isWatched) {
             wrapper = $wrapperRegularPrototype.get(0).cloneNode(true);
           }
         }

@@ -67,10 +67,10 @@ class User {
    * @type {boolean}
    */
   isRegistered() {
-    if (this.cachedRegistered === undefined) {
-      this.cachedRegistered = !mw.util.isIPAddress(this.name);
+    if (this.cachedIsRegistered === undefined) {
+      this.cachedIsRegistered = !mw.util.isIPAddress(this.name);
     }
-    return this.cachedRegistered;
+    return this.cachedIsRegistered;
   }
 
   setGender(value) {

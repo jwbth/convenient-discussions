@@ -326,7 +326,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
 function highlightOwnComments() {
   if (!cd.settings.highlightOwnComments) return;
 
-  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.own));
+  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
 }
 
 /**

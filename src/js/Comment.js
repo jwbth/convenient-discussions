@@ -154,14 +154,14 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.target = false;
+    this.isTarget = false;
 
     /**
      * Is the comment currently focused.
      *
      * @type {boolean}
      */
-    this.focused = false;
+    this.isFocused = false;
   }
 
   /**
@@ -312,7 +312,7 @@ export default class Comment extends CommentSkeleton {
     if (this.newness) {
       this.underlay.classList.add('cd-commentUnderlay-new');
     }
-    if (cd.settings.highlightOwnComments && this.own) {
+    if (cd.settings.highlightOwnComments && this.isOwn) {
       this.underlay.classList.add('cd-commentUnderlay-own');
     }
     commentLayers.underlays.push(this.underlay);
@@ -351,18 +351,18 @@ export default class Comment extends CommentSkeleton {
       this.overlayContent.appendChild(this.linkButton);
     }
 
-    if (this.author.isRegistered() && this.date && !this.own) {
+    if (this.author.isRegistered() && this.date && !this.isOwn) {
       if (!thanks) {
         thanks = cleanUpThanks(getFromLocalStorage('convenientDiscussions-thanks') || {});
         saveToLocalStorage('convenientDiscussions-thanks', thanks);
       }
 
-      const thanked = Object.keys(thanks).some((key) => (
+      const isThanked = Object.keys(thanks).some((key) => (
         this.anchor === thanks[key].anchor &&
         calculateWordsOverlap(this.getText(), thanks[key].text) > 0.66
       ));
 
-      if (thanked) {
+      if (isThanked) {
         this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
       } else {
         /**
@@ -379,7 +379,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (this.actionable) {
-      if (this.own || cd.settings.allowEditOthersComments) {
+      if (this.isOwn || cd.settings.allowEditOthersComments) {
         /**
          * Edit button.
          *
@@ -543,16 +543,16 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
-    if (cd.util.isPageOverlayOn() || this.focused) return;
+    if (cd.util.isPageOverlayOn() || this.isFocused) return;
 
-    const moved = this.configureLayers();
+    const isMoved = this.configureLayers();
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again when the next event fires.
-    if (!moved && this.underlay) {
+    if (!isMoved && this.underlay) {
       this.underlay.classList.add('cd-commentUnderlay-focused');
       this.overlay.classList.add('cd-commentOverlay-focused');
-      this.focused = true;
+      this.isFocused = true;
     }
   }
 
@@ -560,12 +560,12 @@ export default class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightFocused() {
-    if (!this.focused) return;
+    if (!this.isFocused) return;
 
     this.underlay.classList.remove('cd-commentUnderlay-focused');
     this.overlay.classList.remove('cd-commentOverlay-focused');
     this.overlay.style.display = '';
-    this.focused = false;
+    this.isFocused = false;
   }
 
   /**
@@ -595,7 +595,7 @@ export default class Comment extends CommentSkeleton {
 
     this.$underlay.removeClass('cd-commentUnderlay-target');
 
-    this.target = true;
+    this.isTarget = true;
 
     $elementsToAnimate
       .stop()
@@ -611,7 +611,7 @@ export default class Comment extends CommentSkeleton {
         400,
         'swing',
         () => {
-          this.target = false;
+          this.isTarget = false;
           $elementsToAnimate
             .css('background-image', '')
             .css('background-color', '');
@@ -1045,16 +1045,16 @@ export default class Comment extends CommentSkeleton {
       if (
         (
           match.overlap > 0.66 ||
-          (this.id === 0 && match.previousCommentsMatched && match.headlineMatched)
+          (this.id === 0 && match.havePreviousCommentsMatched && match.hasHeadlineMatched)
         ) &&
         (
           !bestMatch ||
           match.overlap > bestMatch.overlap ||
-          (!bestMatch.headlineMatched && match.headlineMatched) ||
+          (!bestMatch.hasHeadlineMatched && match.hasHeadlineMatched) ||
           (
-            bestMatch.headlineMatched === match.headlineMatched &&
-            !bestMatch.previousCommentMatched &&
-            match.previousCommentMatched
+            bestMatch.hasHeadlineMatched === match.hasHeadlineMatched &&
+            !bestMatch.hasPreviousCommentMatched &&
+            match.hasPreviousCommentMatched
           )
         )
       ) {
@@ -1064,7 +1064,7 @@ export default class Comment extends CommentSkeleton {
 
     // The reserve method: by this & previous two dates & authors.
     if (!bestMatch) {
-      bestMatch = matches.find((match) => this.id !== 0 && match.previousCommentsMatched);
+      bestMatch = matches.find((match) => this.id !== 0 && match.havePreviousCommentsMatched);
     }
 
     if (!bestMatch) {
@@ -1537,7 +1537,7 @@ export default class Comment extends CommentSkeleton {
       return '';
     }
 
-    if (this.own && cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP) {
+    if (this.isOwn && cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP) {
       data.code = data.code.replace(cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
     }
 
@@ -1656,24 +1656,24 @@ export default class Comment extends CommentSkeleton {
         for (let i = 0; i < previousComments.length; i++) {
           const signature = signatures[match.id - 1 - i];
           // At least one coincided comment is enough if the second is unavailable.
-          match.previousCommentsMatched = (
+          match.havePreviousCommentsMatched = (
             signature &&
             signature.timestamp === previousComments[i].timestamp &&
             signature.author === previousComments[i].author
           );
           if (i === 0) {
-            match.previousCommentMatched = match.previousCommentsMatched;
+            match.hasPreviousCommentMatched = match.havePreviousCommentsMatched;
           }
-          if (!match.previousCommentsMatched) break;
+          if (!match.havePreviousCommentsMatched) break;
         }
       } else {
         // If there is no previous comment both on the page and in the code, it's a match.
-        match.previousCommentsMatched = match.id === 0;
-        match.previousCommentMatched = match.id === 0;
+        match.havePreviousCommentsMatched = match.id === 0;
+        match.hasPreviousCommentMatched = match.id === 0;
       }
 
       Object.assign(match, this.adjustCommentBeginning(match));
-      match.headlineMatched = this.followsHeading ?
+      match.hasHeadlineMatched = this.followsHeading ?
         (
           match.headingMatch &&
           this.getSection() &&

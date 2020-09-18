@@ -204,7 +204,7 @@ export default class Parser {
             closestNotInlineAncestor = el;
           }
         }
-        const unsigned = Boolean(unsignedElement);
+        const isUnsigned = Boolean(unsignedElement);
 
         if (closestNotInlineAncestor) {
           const cniaChildren = Array.from(
@@ -308,7 +308,7 @@ export default class Parser {
         // part of other comment but don't append to the list of signatures.
         if (!authorName) return;
 
-        return { element, timestampElement, timestampText, date, authorName, anchor, unsigned };
+        return { element, timestampElement, timestampText, date, authorName, anchor, isUnsigned };
       })
       .filter(defined);
 
@@ -322,8 +322,8 @@ export default class Parser {
               const authorName = getUserNameFromLink(link);
               if (authorName) {
                 element.classList.add('cd-signature');
-                const unsigned = true;
-                signatures.push({ element, authorName, unsigned });
+                const isUnsigned = true;
+                signatures.push({ element, authorName, isUnsigned });
                 return true;
               }
             });
@@ -446,15 +446,15 @@ export default class Parser {
 
         // Get the last not inline child of the current node.
         let previousNode;
-        let dived = false;
+        let haveDived = false;
         while ((previousNode = treeWalker.currentNode) && treeWalker.lastChild()) {
           if (isInline(treeWalker.currentNode, true)) {
             treeWalker.currentNode = previousNode;
             break;
           }
-          dived = true;
+          haveDived = true;
         }
-        if (dived) {
+        if (haveDived) {
           lastStep = 'dive';
         } else {
           break;

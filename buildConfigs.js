@@ -51,7 +51,7 @@ convenientDiscussions.config = ${content}
 /* END OF THE CONFIGURATION */
 
 
-if (!convenientDiscussions.running) {
+if (!convenientDiscussions.isRunning) {
   convenientDiscussions.getStringsPromise = getStrings();
   mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${devSuffix}.js&action=raw&ctype=text/javascript')
     .catch(function (e) {

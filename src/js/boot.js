@@ -62,14 +62,13 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: 'diff',
     defaultSectionLinkType: 'wikilink',
-    highlightOwnComments: true,
-    insertButtons: cd.config.defaultInsertButtons || [],
 
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
-    insertButtonsChanged: false,
+    areInsertButtonsAltered: false,
 
-    signaturePrefix: cd.config.defaultSignaturePrefix,
+    highlightOwnComments: true,
+    insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notificationsBlacklist: [],
 
@@ -77,12 +76,13 @@ export async function initSettings() {
     showLoadingOverlay: true,
 
     showToolbar: true,
+    signaturePrefix: cd.config.defaultSignaturePrefix,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
   };
 
-  cd.localSettingNames = ['insertButtons', 'insertButtonsChanged', 'signaturePrefix'];
+  cd.localSettingNames = ['areInsertButtonsAltered', 'insertButtons', 'signaturePrefix'];
 
   const options = {
     [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
@@ -92,9 +92,10 @@ export async function initSettings() {
   // Aliases for seamless transition when changing a setting name.
   cd.settingAliases = {
     allowEditOthersComments: ['allowEditOthersMsgs'],
+    alwaysExpandAdvanced: ['alwaysExpandSettings'],
+    areInsertButtonsAltered: ['insertButtonsChanged'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySignature', 'mySig'],
-    alwaysExpandAdvanced: ['alwaysExpandSettings'],
   };
 
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
@@ -121,7 +122,7 @@ export async function initSettings() {
   }
 
   if (
-    !cd.settings.insertButtonsChanged &&
+    !cd.settings.areInsertButtonsAltered &&
     JSON.stringify(cd.settings.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
   ) {
     cd.settings.insertButtons = cd.config.defaultInsertButtons;
@@ -754,7 +755,7 @@ export function saveSession() {
         delete: commentForm.deleteCheckbox?.isSelected(),
         originalHeadline: commentForm.originalHeadline,
         originalComment: commentForm.originalComment,
-        summaryAltered: commentForm.summaryAltered,
+        isSummaryAltered: commentForm.isSummaryAltered,
         lastFocused: commentForm.lastFocused,
       };
     });
@@ -773,7 +774,7 @@ export function saveSession() {
  * @private
  */
 function restoreCommentFormsFromData(commentFormsData) {
-  let restored = false;
+  let haveRestored = false;
   const rescue = [];
   commentFormsData.forms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
@@ -782,7 +783,7 @@ function restoreCommentFormsFromData(commentFormsData) {
       if (comment?.actionable && !comment[`${property}Form`]) {
         try {
           comment[property](data);
-          restored = true;
+          haveRestored = true;
         } catch (e) {
           console.warn(e);
           rescue.push(data);
@@ -799,7 +800,7 @@ function restoreCommentFormsFromData(commentFormsData) {
       if (section?.actionable && !section[`${property}Form`]) {
         try {
           section[property](data);
-          restored = true;
+          haveRestored = true;
         } catch (e) {
           console.warn(e);
           rescue.push(data);
@@ -816,13 +817,13 @@ function restoreCommentFormsFromData(commentFormsData) {
           $addSectionLink: $fakeA,
           dataToRestore: data,
         });
-        restored = true;
+        haveRestored = true;
       } else {
         rescue.push(data);
       }
     }
   });
-  if (restored) {
+  if (haveRestored) {
     saveSession();
     const notification = mw.notification.notify(cd.s('restore-restored-text'), {
       title: cd.s('restore-restored-title'),

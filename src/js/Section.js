@@ -300,7 +300,7 @@ export default class Section extends SectionSkeleton {
       this.comments.length &&
       this.comments[0].isOpeningSection &&
       this.comments[0].openingSectionOfLevel === this.level &&
-      (this.comments[0].own || cd.settings.allowEditOthersComments) &&
+      (this.comments[0].isOwn || cd.settings.allowEditOthersComments) &&
       this.comments[0].actionable
     ) {
       this.addMenuItem({
@@ -338,7 +338,7 @@ export default class Section extends SectionSkeleton {
         .then(
           () => {
             if (this.headline) {
-              this.watched = cd.g.thisPageWatchedSections.includes(this.headline);
+              this.isWatched = cd.g.thisPageWatchedSections.includes(this.headline);
               this.addMenuItem({
                 label: cd.s('sm-unwatch'),
                 tooltip: cd.s('sm-unwatch-tooltip'),
@@ -346,7 +346,7 @@ export default class Section extends SectionSkeleton {
                   this.unwatch();
                 },
                 class: 'cd-sectionLink-unwatch',
-                visible: this.watched,
+                visible: this.isWatched,
               });
               this.addMenuItem({
                 label: cd.s('sm-watch'),
@@ -355,7 +355,7 @@ export default class Section extends SectionSkeleton {
                   this.watch();
                 },
                 class: 'cd-sectionLink-watch',
-                visible: !this.watched,
+                visible: !this.isWatched,
               });
             }
           },
@@ -1270,7 +1270,7 @@ export default class Section extends SectionSkeleton {
     let sectionHeadingMatch;
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedPageCode))) {
       const thisHeadline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
-      const headlineMatched = thisHeadline === headline;
+      const hasHeadlineMatched = thisHeadline === headline;
 
       let numberOfPreviousHeadlinesToCheck = 3;
       const previousHeadlinesInCode = headlines
@@ -1280,13 +1280,13 @@ export default class Section extends SectionSkeleton {
         .slice(Math.max(0, this.id - numberOfPreviousHeadlinesToCheck), this.id)
         .reverse()
         .map((section) => section.headline);
-      const previousHeadlinesMatched = previousHeadlines
+      const havePreviousHeadlinesMatched = previousHeadlines
         .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
       headlines.push(thisHeadline);
 
       // Matching section index is one of the most unreliable ways to tell matching sections as
       // sections may be added and removed from the page, so we don't rely on it very much.
-      const sectionIndexMatched = this.id === sectionIndex;
+      const hasSectionIndexMatched = this.id === sectionIndex;
       sectionIndex++;
 
       // Get the section content
@@ -1347,9 +1347,9 @@ export default class Section extends SectionSkeleton {
       }
 
       const signatures = extractSignatures(code);
-      let firstCommentMatched;
+      let hasFirstCommentMatched;
       if (signatures.length) {
-        firstCommentMatched = (
+        hasFirstCommentMatched = (
           Boolean(firstComment) &&
           (
             signatures[0].timestamp === firstComment.timestamp ||
@@ -1358,15 +1358,15 @@ export default class Section extends SectionSkeleton {
         );
       } else {
         // There's no comments neither in the code nor on the page.
-        firstCommentMatched = !this.comments.length;
+        hasFirstCommentMatched = !this.comments.length;
       }
 
       const score = (
-        headlineMatched * 1 +
-        firstCommentMatched * 1 +
-        sectionIndexMatched * 0.5 +
+        hasHeadlineMatched * 1 +
+        hasFirstCommentMatched * 1 +
+        hasSectionIndexMatched * 0.5 +
         // Shouldn't give too high a weight to this factor as it is true for every first section.
-        previousHeadlinesMatched * 0.25
+        havePreviousHeadlinesMatched * 0.25
       );
       if (score <= 1) continue;
 
@@ -1406,10 +1406,10 @@ export default class Section extends SectionSkeleton {
       }
 
       matches.push({
-        headlineMatched,
-        firstCommentMatched,
-        sectionIndexMatched,
-        previousHeadlinesMatched,
+        hasHeadlineMatched,
+        hasFirstCommentMatched,
+        hasSectionIndexMatched,
+        havePreviousHeadlinesMatched,
         score,
         startIndex,
         endIndex,

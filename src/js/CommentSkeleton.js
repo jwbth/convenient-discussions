@@ -77,7 +77,7 @@ export default class CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.own = this.authorName === cd.g.CURRENT_USER_NAME;
+    this.isOwn = this.authorName === cd.g.CURRENT_USER_NAME;
 
     /**
      * Comment anchor.
@@ -93,7 +93,7 @@ export default class CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.unsigned = signature.unsigned;
+    this.isUnsigned = signature.isUnsigned;
 
     /**
      * Comment parts.

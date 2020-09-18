@@ -319,7 +319,7 @@ export async function settingsDialog() {
         settings.watchOnReply = this.watchOnReplyCheckbox.isSelected();
         settings.watchSectionOnReply = this.watchSectionOnReplyCheckbox.isSelected();
 
-        settings.insertButtonsChanged = (
+        settings.areInsertButtonsAltered = (
           JSON.stringify(settings.insertButtons) !==
           JSON.stringify(cd.defaultSettings.insertButtons)
         );
@@ -1094,13 +1094,13 @@ function copyLinkToClipboardAndNotify(text) {
  * @param {Function} [finallyCallback] Callback to execute on success or error.
  */
 export async function copyLink(object, chooseLink, finallyCallback) {
-  if (object.linkBeingCopied) return;
+  if (object.isLinkBeingCopied) return;
 
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
    * being made to get the diff).
    *
-   * @name linkBeingCopied
+   * @name isLinkBeingCopied
    * @type {boolean}
    * @instance module:Comment
    */
@@ -1108,11 +1108,11 @@ export async function copyLink(object, chooseLink, finallyCallback) {
   /**
    * Is a link to the section being copied right now (a copy link dialog is opened).
    *
-   * @name linkBeingCopied
+   * @name isLinkBeingCopied
    * @type {boolean}
    * @instance module:Section
    */
-  object.linkBeingCopied = true;
+  object.isLinkBeingCopied = true;
 
   let anchor = object instanceof Comment ? object.anchor : underlinesToSpaces(object.anchor);
   anchor = encodeWikilink(anchor);
@@ -1122,7 +1122,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
     decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
   } catch (e) {
     console.error(e);
-    object.linkBeingCopied = false;
+    object.isLinkBeingCopied = false;
     if (finallyCallback) {
       finallyCallback();
     }
@@ -1247,7 +1247,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       size: 'large',
     });
     windowInstance.closed.then(() => {
-      object.linkBeingCopied = false;
+      object.isLinkBeingCopied = false;
     });
   } else {
     let link;
@@ -1277,7 +1277,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
           }
           const $body = cd.util.wrap(text, { targetBlank: true });
           mw.notify($body, { type: 'error' });
-          object.linkBeingCopied = false;
+          object.isLinkBeingCopied = false;
           if (finallyCallback) {
             finallyCallback();
           }
@@ -1295,7 +1295,7 @@ export async function copyLink(object, chooseLink, finallyCallback) {
 
     copyLinkToClipboardAndNotify(link);
 
-    object.linkBeingCopied = false;
+    object.isLinkBeingCopied = false;
   }
 
   if (finallyCallback) {

@@ -48,9 +48,9 @@ export default {
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = Boolean(
         comment.newness ||
-        (comment.own && cd.settings.highlightOwnComments) ||
-        comment.target ||
-        comment.focused
+        (comment.isOwn && cd.settings.highlightOwnComments) ||
+        comment.isTarget ||
+        comment.isFocused
       );
       if (
         (
@@ -69,17 +69,18 @@ export default {
           floatingRects ||
           cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
         );
-        const moved = comment.configureLayers({
+        const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add it.
           doAdd: true,
+
           doUpdate: false,
           floatingRects,
         });
-        if (moved) {
+        if (isMoved) {
           notMovedCount = 0;
           comments.push(comment);
         } else if (
-          moved === false &&
+          isMoved === false &&
 
           // Nested containers shouldn't count, the positions of the layers inside them may be OK,
           // unlike the layers preceding them.

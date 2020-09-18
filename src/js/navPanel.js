@@ -20,7 +20,7 @@ let lastFirstTimeSeenCommentId;
 let newRevisions = [];
 let notifiedAbout = [];
 let notificationsData = [];
-let backgroundCheckArranged = false;
+let isBackgroundCheckArranged = false;
 let relevantNewCommentAnchor;
 
 /**
@@ -108,10 +108,10 @@ export async function processPageInBackground() {
  * @private
  */
 async function checkForNewComments() {
-  if (document.hidden && !backgroundCheckArranged) {
+  if (document.hidden && !isBackgroundCheckArranged) {
     const callback = () => {
       $(document).off('visibilitychange', callback);
-      backgroundCheckArranged = false;
+      isBackgroundCheckArranged = false;
       removeAlarmViaWorker();
       checkForNewComments();
     };
@@ -122,12 +122,12 @@ async function checkForNewComments() {
       cd.g.NEW_COMMENTS_CHECK_INTERVAL
     );
     setAlarmViaWorker(interval * 1000);
-    backgroundCheckArranged = true;
+    isBackgroundCheckArranged = true;
     return;
   }
 
   // Precaution
-  backgroundCheckArranged = false;
+  isBackgroundCheckArranged = false;
 
   const rvstartid = newRevisions.length ?
     newRevisions[newRevisions.length - 1] :
@@ -178,7 +178,7 @@ async function checkForNewComments() {
 
   if (document.hidden) {
     setAlarmViaWorker(cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL * 1000);
-    backgroundCheckArranged = true;
+    isBackgroundCheckArranged = true;
   } else {
     setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
   }
@@ -536,7 +536,7 @@ async function processComments(comments) {
     .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
   const interestingNewComments = newComments.filter((comment) => {
     if (
-      comment.own ||
+      comment.isOwn ||
       cd.settings.notificationsBlacklist.includes(comment.author.name) ||
       !cd.g.thisPageWatchedSections
     ) {
@@ -725,7 +725,7 @@ const navPanel = {
         const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
         if (commentUnixTime > thisPageVisits[0]) {
           comment.newness = (
-            (commentUnixTime > thisPageVisits[thisPageVisits.length - 1] && !comment.own) ||
+            (commentUnixTime > thisPageVisits[thisPageVisits.length - 1] && !comment.isOwn) ||
             isUnseen
           ) ?
             'unseen' :
@@ -769,7 +769,7 @@ const navPanel = {
 
     removeAlarmViaWorker();
     setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
-    backgroundCheckArranged = false;
+    isBackgroundCheckArranged = false;
 
     this.$refreshButton
       .empty()

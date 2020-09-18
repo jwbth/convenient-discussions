@@ -435,7 +435,7 @@ function go() {
 function getConfig() {
   return new Promise((resolve, reject) => {
     if (configUrls[location.host]) {
-      const doReject = (e) => {
+      const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
       };
       const getScript = (url, emptyResponseCallback) => {
@@ -447,7 +447,7 @@ function getConfig() {
               resolve();
             }
           },
-          doReject
+          rejectWithMsg
         );
       };
 
@@ -457,10 +457,10 @@ function getConfig() {
       getScript(url, () => {
         if (IS_DEV) {
           getScript(configUrls[location.host], () => {
-            doReject('Empty response.');
+            rejectWithMsg('Empty response.');
           });
         } else {
-          doReject('Empty response.');
+          rejectWithMsg('Empty response.');
         }
       });
     } else {
@@ -494,7 +494,7 @@ async function app() {
   // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
   if (/(^|\.)m\./.test(location.host) || $('.flow-board-page').length) return;
 
-  if (cd.running) {
+  if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
     return;
   }
@@ -502,11 +502,11 @@ async function app() {
   /**
    * Is the script running.
    *
-   * @name running
+   * @name isRunning
    * @type {boolean}
    * @memberof module:cd~convenientDiscussions
    */
-  cd.running = true;
+  cd.isRunning = true;
 
   if (IS_SNIPPET) {
     cd.config = Object.assign(defaultConfig, config);

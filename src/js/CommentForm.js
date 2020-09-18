@@ -108,7 +108,7 @@ export default class CommentForm {
      *
      * @type {boolean}
      */
-    this.summaryAltered = dataToRestore ? dataToRestore.summaryAltered : false;
+    this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (editintro) {
       parseCode(`{{${editintro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
@@ -133,8 +133,8 @@ export default class CommentForm {
      * @typedef {object} Operation
      * @property {string} type Operation type. One of `'load'`, `'preview'`, `'viewChanges'`, and
      *   `'submit'`.
-     * @property {boolean} closed Is the operation closed (settled).
-     * @property {boolean} delayed Is the operation delayed.
+     * @property {boolean} isClosed Is the operation closed (settled).
+     * @property {boolean} isDelayed Is the operation delayed.
      */
 
     /**
@@ -1230,7 +1230,7 @@ export default class CommentForm {
     this.summaryInput
       .on('change', () => {
         if (this.summaryInput.$input.is(':focus')) {
-          this.summaryAltered = true;
+          this.isSummaryAltered = true;
           this.dontAutopreviewOnSummaryChange = false;
         }
         if (!this.dontAutopreviewOnSummaryChange) {
@@ -1465,7 +1465,7 @@ export default class CommentForm {
     name,
     isRaw = false,
   } = {}) {
-    if (this.destroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
+    if (this.isDestroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
       return;
     }
 
@@ -1528,7 +1528,7 @@ export default class CommentForm {
       this.closeOperation(currentOperation);
     }
 
-    if (this.destroyed) return;
+    if (this.isDestroyed) return;
 
     if (logMessage) {
       console.warn(logMessage);
@@ -2128,7 +2128,7 @@ export default class CommentForm {
    */
   registerOperation(operation) {
     this.operations.push(operation);
-    operation.closed = false;
+    operation.isClosed = false;
     if (operation.type !== 'preview' || !operation.auto) {
       this.$messageArea.empty();
       this.pushPending(['load', 'submit'].includes(operation.type));
@@ -2143,8 +2143,8 @@ export default class CommentForm {
    * @param {Operation} operation
    */
   closeOperation(operation) {
-    if (operation.closed) return;
-    operation.closed = true;
+    if (operation.isClosed) return;
+    operation.isClosed = true;
     if (operation.type !== 'preview' || !operation.auto) {
       this.popPending(['load', 'submit'].includes(operation.type));
     }
@@ -2167,12 +2167,12 @@ export default class CommentForm {
    * @returns {boolean}
    */
   closeOperationIfNecessary(operation) {
-    if (operation.closed) {
+    if (operation.isClosed) {
       return true;
     }
     const otherOperationIndex = findLastIndex(
       this.operations,
-      (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.delayed
+      (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.isDelayed
     );
     if (otherOperationIndex !== null && otherOperationIndex > this.operations.indexOf(operation)) {
       this.closeOperation(operation);
@@ -2203,7 +2203,7 @@ export default class CommentForm {
    * @returns {boolean}
    */
   isBeingSubmitted() {
-    return this.operations.some((op) => op.type === 'submit' && !op.closed);
+    return this.operations.some((op) => op.type === 'submit' && !op.isClosed);
   }
 
   /**
@@ -2219,7 +2219,7 @@ export default class CommentForm {
    */
   async preview(maySummaryHaveChanged = true, auto = true, operation) {
     if (
-      this.operations.some((op) => !op.closed && op.type === 'load') ||
+      this.operations.some((op) => !op.isClosed && op.type === 'load') ||
       (
         !(this.target instanceof Page) &&
         !this.target.inCode &&
@@ -2248,12 +2248,12 @@ export default class CommentForm {
       if (
         isTooEarly ||
         this.operations
-          .some((op) => !op.closed && op.type === 'preview' && op !== currentOperation)
+          .some((op) => !op.isClosed && op.type === 'preview' && op !== currentOperation)
       ) {
         if (this.previewTimeout) {
           this.unregisterOperation(currentOperation);
         } else {
-          currentOperation.delayed = true;
+          currentOperation.isDelayed = true;
           this.previewTimeout = setTimeout(() => {
             this.previewTimeout = null;
             this.preview(maySummaryHaveChanged, true, currentOperation);
@@ -2278,7 +2278,7 @@ export default class CommentForm {
       if (!this.target.inCode) {
         this.closeOperation(currentOperation);
       }
-      if (currentOperation.closed) return;
+      if (currentOperation.isClosed) return;
     }
 
     // In case of an empty comment input, we in fact make this request for the sake of parsing
@@ -2386,7 +2386,7 @@ export default class CommentForm {
     if (newPageCode === undefined) {
       this.closeOperation(currentOperation);
     }
-    if (currentOperation.closed) return;
+    if (currentOperation.isClosed) return;
 
     mw.loader.load('mediawiki.diff.styles');
 
@@ -2606,7 +2606,7 @@ export default class CommentForm {
    * Submit the form.
    */
   async submit() {
-    if (this.operations.some((op) => !op.closed && op.type === 'load')) return;
+    if (this.operations.some((op) => !op.isClosed && op.type === 'load')) return;
 
     const doDelete = this.deleteCheckbox?.isSelected();
 
@@ -2725,7 +2725,7 @@ export default class CommentForm {
    */
   destroy() {
     this.operations
-      .filter((op) => !op.closed)
+      .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
     this.forget();
     this.$element.remove();
@@ -2735,7 +2735,7 @@ export default class CommentForm {
      *
      * @type {boolean}
      */
-    this.destroyed = true;
+    this.isDestroyed = true;
   }
 
   /**
@@ -2787,7 +2787,7 @@ export default class CommentForm {
    * @private
    */
   updateAutoSummary(set = true, dontAutopreviewOnSummaryChange = false) {
-    if (this.summaryAltered) return;
+    if (this.isSummaryAltered) return;
 
     this.dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
 
@@ -2842,7 +2842,7 @@ export default class CommentForm {
           return cd.s('es-reply');
         } else {
           this.target.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
-          return this.target.own ?
+          return this.target.isOwn ?
             cd.s('es-addition') :
             removeDoubleSpaces(cd.s('es-reply-to', this.target.author.name, this.target.author));
         }
@@ -2854,14 +2854,14 @@ export default class CommentForm {
         const editOrDeleteText = (action) => {
           let subject;
           let target = this.target;
-          if (this.target.own) {
+          if (this.target.isOwn) {
             const targetParent = this.target.getParent();
             if (targetParent) {
               if (targetParent.level === 0) {
                 subject = 'reply';
               } else {
                 targetParent.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
-                subject = targetParent.own ? 'addition' : 'reply-to';
+                subject = targetParent.isOwn ? 'addition' : 'reply-to';
                 target = targetParent;
               }
             } else {
