@@ -28,11 +28,25 @@ const ALLOWED_TAGS = [
   'nowiki',
   'ol',
   'p',
+  'pre',
   'span',
   'strong',
+  'syntaxhighlight',
   'ul',
   'var',
 ];
+
+function hideText(text, regexp, hidden) {
+  return text.replace(regexp, (s) => '\x01' + hidden.push(s) + '\x02');
+}
+
+function unhideText(text, hidden) {
+  while (text.match(/\x01\d+\x02/)) {
+    text = text.replace(/\x01(\d+)\x02/g, (s, num) => hidden[num - 1]);
+  }
+
+  return text;
+}
 
 DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
   if (!Object.keys(data.allowedTags).includes(data.tagName) && data.tagName !== 'body') {
@@ -54,7 +68,10 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
     Object.keys(strings)
       .filter((name) => typeof strings[name] === 'string')
       .forEach((stringName) => {
-        let sanitized = DOMPurify.sanitize(strings[stringName], {
+        const hidden = [];
+        let sanitized = hideText(strings[stringName], /<nowiki>([^]*?)<\/nowiki>/g, hidden);
+
+        sanitized = DOMPurify.sanitize(sanitized, {
           SAFE_FOR_JQUERY: true,
           ALLOWED_TAGS,
           ALLOWED_ATTR: [
@@ -68,6 +85,8 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
           stringName,
           lang,
         });
+
+        sanitized = unhideText(sanitized, hidden);
 
         // Just in case dompurify or jsdom gets outdated or the repository gets compromised, we will
         // just manually check that only allowed tags are present.
