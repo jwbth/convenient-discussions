@@ -320,15 +320,15 @@ export function mergeRegexps(arr) {
  * @returns {string}
  */
 export function hideText(text, regexp, hidden, useAlternativeMarker) {
-  return text.replace(regexp, (s, pre, textToHide) => {
+  return text.replace(regexp, (s, preText, textToHide) => {
     // If there are no groups, the offset is the second argument.
-    if (typeof pre === 'number') {
-      pre = '';
-      textToHide = '';
+    if (typeof preText === 'number') {
+      preText = null;
+      textToHide = null;
     }
     // Handle tables separately
     return (
-      (pre || '') +
+      (preText || '') +
       (useAlternativeMarker ? '\x03' : '\x01') +
       hidden.push(textToHide || s) +
       (useAlternativeMarker ? '\x04' : '\x02')
