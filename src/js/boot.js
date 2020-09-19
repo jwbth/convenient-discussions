@@ -58,15 +58,15 @@ export async function initSettings() {
   cd.defaultSettings = {
     allowEditOthersComments: false,
     alwaysExpandAdvanced: false,
-    autopreview: true,
-    desktopNotifications: 'unknown',
-    defaultCommentLinkType: 'diff',
-    defaultSectionLinkType: 'wikilink',
 
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
     areInsertButtonsAltered: false,
 
+    autopreview: true,
+    desktopNotifications: 'unknown',
+    defaultCommentLinkType: 'diff',
+    defaultSectionLinkType: 'wikilink',
     highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
