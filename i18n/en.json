@@ -58,9 +58,9 @@
   "copylink-copied-url": "[$1 The link] has been copied to the clipboard.",
   "copylink-error": "Couldn't copy the link.",
 
-  "thank-confirm": "Thank {{gender:$2|}} $1 for [[Special:Diff/$3|this edit]]?",
+  "thank-confirm": "Thank {{gender:$2|}} $1 for [$3 this edit]?",
   "thank-error": "Couldn't send the thank you.",
-  "thank-error-multipletimestamps": "Looks like [[Special:Diff/$1|the edit]] that added this comment has more than one comment in it. Please decide for yourself if you're gonna thank for it.",
+  "thank-error-multipletimestamps": "Looks like [$1 the edit] that added this comment has more than one comment in it. Please decide for yourself if you're gonna thank for it.",
   "thank-success": "\"Thank you\" notification has been sent.",
 
   "es-reply": "reply",

@@ -912,7 +912,8 @@ export default class Comment extends CommentSkeleton {
     switch (type) {
       case 'parse': {
         if (code === 'moreThanOneTimestamp') {
-          text = cd.util.wrap(cd.sParse('thank-error-multipletimestamps', data.edit.revid), {
+          const url = this.getSourcePage().getArchivedPage().getUrl({ diff: data.edit.revid });
+          text = cd.util.wrap(cd.sParse('thank-error-multipletimestamps', url), {
             targetBlank: true,
           });
           OO.ui.alert(text);
@@ -978,13 +979,11 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    const $question = cd.util.wrap(
-      cd.sParse('thank-confirm', this.author.name, this.author, edit.revid),
-      {
-        tagName: 'div',
-        targetBlank: true,
-      }
-    );
+    const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
+    const $question = cd.util.wrap(cd.sParse('thank-confirm', this.author.name, this.author, url), {
+      tagName: 'div',
+      targetBlank: true,
+    });
     const $text = $('<div>').append($question, cd.util.wrapDiffBody(edit.diffBody));
     if (await OO.ui.confirm($text, { size: 'larger' })) {
       try {
