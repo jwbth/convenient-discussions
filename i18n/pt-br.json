@@ -57,7 +57,7 @@
 	"copylink-copied": "O link foi copiado para a área de transferência.",
 	"copylink-copied-url": "[$1 O link] foi copiado para a área de transferência.",
 	"copylink-error": "Não foi possível copiar o link.",
-	"thank-confirm": "Obrigado {{gender:$2|}} $1 por fazer <a href=\"$3\" target=\"_blank\">essa edição/a>?",
+	"thank-confirm": "Obrigado {{gender:$2|}} $1 por fazer [$3 essa edição]?",
 	"thank-error": "Não foi possível enviar o agradecimento.",
 	"thank-error-multipletimestamps": "Parece que [$1 a edição] que adicionou este comentário tem mais de um comentário. Por favor, decida por si mesmo se você vai agradecer por isso.",
 	"thank-success": "A notificação de \"agradecimento\" foi enviada.",

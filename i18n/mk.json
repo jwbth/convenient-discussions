@@ -120,7 +120,7 @@
 	"cf-reaction-templateinheadline": "Не користете предлошки во заглавијата: ова ги расипува врските до одделите.",
 	"cf-reaction-signature": "Нема потреба да внесувате <kbd>$1</kbd>: потписот се појавува автоматски.",
 	"cf-reaction-pre": "Ознаките <code><nowiki><pre></nowiki></code> го расипуваат распоредот на страницата. Користете <code><nowiki><syntaxhighlight></nowiki></code>.",
-	"cf-reaction-mention-edit": "Бидејќи <em>уредувате</em> коментар<a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification\" target=\"_blank\"><a href=\"https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification\" target=\"_blank\"></a></a>, нема да биде испратено [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|известување за спомнување]].",
+	"cf-reaction-mention-edit": "Бидејќи <em>уредувате</em> коментар, нема да биде испратено [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|известување за спомнување]].",
 	"cf-reaction-mention-nosignature": "Бидејќи избравте да не си ги потпишувате коментарите, нема да биде испратено [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|известување за спомнување]].",
 	"cf-notice-nochanges": "Нема промени.",
 	"cf-notice-editconflict-retrying": "Се обидувам повторно…",
