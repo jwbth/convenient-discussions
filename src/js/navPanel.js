@@ -234,6 +234,7 @@ function generateTooltipText(comments, mode) {
           cd.util.formatDate(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
         tooltipText += (
+          (comment.interesting ? cd.mws('parentheses', '*') + ' ' : '') +
           author +
           (document.body.classList.contains('sitedir-rtl') ? '\u200F' : '') +
           cd.mws('comma-separator') +
@@ -535,6 +536,7 @@ async function processComments(comments) {
       return false;
     }
     if (comment.toMe) {
+      comment.interesting = true;
       return true;
     }
 
@@ -544,6 +546,7 @@ async function processComments(comments) {
       const watchedAncestor = section.getWatchedAncestor(true);
       if (watchedAncestor) {
         comment.watchedSectionHeadline = watchedAncestor.headline;
+        comment.interesting = true;
         return true;
       }
     }
