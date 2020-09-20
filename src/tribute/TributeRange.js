@@ -458,7 +458,7 @@ class TributeRange {
                 span.offsetWidth + parseInt(computed.borderLeftWidth) - triggerSpan.offsetWidth)
         } else {
             coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth
-                parseInt(computed.borderLeftWidth)
+                parseInt(computed.borderLeftWidth) + 1
         }
 
         let menuDimensions = this.getMenuDimensions()
