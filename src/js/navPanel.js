@@ -496,9 +496,14 @@ async function sendNotifications(comments) {
     });
     notification.onclick = () => {
       parent.focus();
+
       // Just in case, old browsers. TODO: delete?
       window.focus();
-      reloadPage({ commentAnchor: comment.anchor });
+
+      reloadPage({
+        commentAnchor: comment.anchor,
+        closeNotificationsSmoothly: false,
+      });
     };
   }
 

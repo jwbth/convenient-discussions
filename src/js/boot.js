@@ -655,7 +655,7 @@ export async function reloadPage(keptData = {}) {
 
   saveScrollPosition();
 
-  closeNotifications();
+  closeNotifications(keptData.closeNotificationsSmoothly ?? true);
 
   cd.debug.init();
   cd.debug.startTimer('total time');
