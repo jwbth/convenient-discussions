@@ -32,6 +32,8 @@ import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools } from './dateFormat';
 import { loadData } from './dateFormat';
 
+let notificationsData = [];
+
 /**
  * Initiate user settings.
  */
@@ -653,7 +655,7 @@ export async function reloadPage(keptData = {}) {
 
   saveScrollPosition();
 
-  navPanel.closeAllNotifications();
+  closeNotifications();
 
   cd.debug.init();
   cd.debug.startTimer('total time');
@@ -919,4 +921,41 @@ export function restoreCommentForms() {
   if (navPanel.isMounted()) {
     navPanel.updateCommentFormButton();
   }
+
+/**
+ * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
+ * notifications and close them all at once if needed.
+ *
+ * @param {Array} params Parameters to apply to `mw.notification.notify`.
+ * @param {object} [data={}] Additional data related to the notification.
+ */
+export function addNotification(params, data = {}) {
+  const notification = mw.notification.notify(...params);
+  notificationsData.push(Object.assign(data, { notification }));
+}
+
+/**
+ * Get all notifications added to the registry (including already hidden). The {@link
+ * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ Notification} object
+ * will be in the `notification` property.
+ *
+ * @returns {object[]}
+ */
+export function getNotifications() {
+  return notificationsData;
+}
+
+/**
+ * Close all notifications added to the registry immediately.
+ *
+ * @param {boolean} [smooth=true] Use a smooth animation.
+ */
+export function closeNotifications(smooth = true) {
+  notificationsData.forEach((data) => {
+    if (!smooth) {
+      data.notification.$notification.hide();
+    }
+    data.notification.close();
+  });
+  notificationsData = [];
 }

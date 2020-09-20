@@ -11,6 +11,7 @@ import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
+import { addNotification, reloadPage, removeLoadingOverlay, saveSession } from './boot';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
 import {
@@ -29,7 +30,6 @@ import {
 import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
-import { reloadPage, removeLoadingOverlay, saveSession } from './boot';
 
 let commentFormsCounter = 0;
 
@@ -1535,10 +1535,13 @@ export default class CommentForm {
     }
 
     if (cancel) {
-      mw.notify(message, {
-        type: 'error',
-        autoHideSeconds: 'long',
-      });
+      addNotification([
+        message,
+        {
+          type: 'error',
+          autoHideSeconds: 'long',
+        },
+      ]);
       this.cancel(false);
     } else {
       if (!(currentOperation && currentOperation.type === 'preview' && currentOperation.auto)) {
@@ -1634,6 +1637,7 @@ export default class CommentForm {
             break;
         }
         const navigateToEditUrl = async (e) => {
+          if (e.ctrlKey || e.shiftKey) return;
           e.preventDefault();
           if (await this.confirmClose()) {
             this.forget();

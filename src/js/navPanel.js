@@ -9,9 +9,9 @@ import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
 import userRegistry from './userRegistry';
+import { addNotification, closeNotifications, getNotifications, reloadPage } from './boot';
 import { areObjectsEqual, handleApiReject, isCommentEdit, reorderArray, unique } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
-import { reloadPage } from './boot';
 import { setVisits } from './options';
 
 let newCount;
@@ -19,7 +19,6 @@ let unseenCount;
 let lastFirstTimeSeenCommentId;
 let newRevisions = [];
 let notifiedAbout = [];
-let notificationsData = [];
 let isBackgroundCheckArranged = false;
 let relevantNewCommentAnchor;
 
@@ -333,16 +332,14 @@ async function sendNotifications(comments) {
     notifyAboutOrdinary = notifyAbout.filter((comment) => comment.toMe);
   }
   if (cd.settings.notifications !== 'none' && notifyAboutOrdinary.length) {
-    // Combine with content of notifications that were displayed but are still open (i.e., the
-    // user most likely didn't see them because the tab is in the background).
-    notificationsData.slice().reverse().some((data) => {
-      if (data.notification.isOpen) {
-        notifyAboutOrdinary.push(...data.comments);
-        return false;
-      } else {
-        return true;
-      }
-    });
+    // Combine with content of notifications that were displayed but are still open (i.e., the user
+    // most likely didn't see them because the tab is in the background). In the past there could be
+    // more than one notification, now there can be only one.
+    const openNotification = getNotifications()
+      .find((data) => data.comments && data.notification.isOpen);
+    if (openNotification) {
+      notifyAboutOrdinary.push(...openNotification.comments);
+    }
   }
 
   if (notifyAboutOrdinary.length) {
@@ -421,21 +418,16 @@ async function sendNotifications(comments) {
       );
     }
 
-    navPanel.closeAllNotifications();
+    closeNotifications(false);
     const $body = cd.util.wrap(html, {
       callbacks: {
         'cd-notification-reloadPage': (e) => {
           e.preventDefault();
           reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
-          notification.close();
         },
       },
     });
-    const notification = mw.notification.notify($body);
-    notificationsData.push({
-      notification,
-      comments: notifyAboutOrdinary,
-    });
+    addNotification([$body], { comments: notifyAboutOrdinary });
   }
 
   if (
@@ -847,19 +839,6 @@ const navPanel = {
     // There was reload confirmation here, but after session restore was introduced, the
     // confirmation seems to be no longer needed.
     reloadPage({ commentAnchor: relevantNewCommentAnchor });
-  },
-
-  /**
-   * Close all new comment notifications immediately.
-   *
-   * @memberof module:navPanel
-   */
-  closeAllNotifications() {
-    notificationsData.forEach((data) => {
-      data.notification.$notification.hide();
-      data.notification.close();
-    });
-    notificationsData = [];
   },
 
   /**
