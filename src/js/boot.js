@@ -918,9 +918,8 @@ export function restoreCommentForms() {
 
   // Navigation panel doesn't appear on non-existent pages, but sessions are saved and restored on
   // them.
-  if (navPanel.isMounted()) {
-    navPanel.updateCommentFormButton();
-  }
+  navPanel.updateCommentFormButton();
+}
 
 /**
  * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
