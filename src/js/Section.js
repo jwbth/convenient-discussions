@@ -952,7 +952,7 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   updateWatchMenuItems() {
-    if (this.watched) {
+    if (this.isWatched) {
       this.$heading.find('.cd-sectionLink-unwatch').parent().show();
       this.$heading.find('.cd-sectionLink-watch').parent().hide();
     } else {
@@ -981,7 +981,7 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.watched = true;
+          this.isWatched = true;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
@@ -1018,7 +1018,7 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.watched = false;
+          this.isWatched = false;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
@@ -1160,7 +1160,7 @@ export default class Section extends SectionSkeleton {
       otherSection;
       otherSection = otherSection.getParent()
     ) {
-      if (otherSection.watched) {
+      if (otherSection.isWatched) {
         return otherSection;
       }
     }

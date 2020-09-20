@@ -715,7 +715,7 @@ export default class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   copyLink(e) {
-    if (this.linkBeingCopied) return;
+    if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
     this.replaceButton(
       this.linkButton,

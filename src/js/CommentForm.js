@@ -695,7 +695,7 @@ export default class CommentForm {
       const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
       const selected = (
         (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
-        this.targetSection?.watched
+        this.targetSection?.isWatched
       );
 
       /**
@@ -2658,14 +2658,14 @@ export default class CommentForm {
           }
         } else {
           const section = this.targetSection;
-          if (section && !section.watched) {
+          if (section && !section.isWatched) {
             section.watch(true);
             keptData.justWatchedSection = section.headline;
           }
         }
       } else {
         const section = this.targetSection;
-        if (section?.watched) {
+        if (section?.isWatched) {
           section.unwatch(true);
           keptData.justUnwatchedSection = section.headline;
         }
