@@ -71,10 +71,8 @@ export default {
 
     const onComplete = () => {
       cd.g.autoScrollInProgress = false;
-      if (navPanel.isMounted()) {
-        navPanel.registerSeenComments();
-        navPanel.updateCommentFormButton();
-      }
+      navPanel.registerSeenComments();
+      navPanel.updateCommentFormButton();
     };
 
     if (smooth) {

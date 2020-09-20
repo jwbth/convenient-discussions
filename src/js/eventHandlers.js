@@ -17,9 +17,7 @@ const beforeUnloadHandlers = {};
  */
 export function windowResizeHandler() {
   commentLayers.redrawIfNecessary(true);
-  if (navPanel.isMounted()) {
-    navPanel.updateCommentFormButton();
-  }
+  navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();
   });

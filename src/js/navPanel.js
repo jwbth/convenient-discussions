@@ -962,7 +962,14 @@ const navPanel = {
     // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
     // wait before running, otherwise comments may be registered as seen after a press of Page
     // Down/Page Up.
-    if (!unseenCount || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
+    if (
+      !unseenCount ||
+      cd.g.dontHandleScroll ||
+      cd.g.autoScrollInProgress ||
+      !navPanel.isMounted()
+    ) {
+      return;
+    }
 
     cd.g.dontHandleScroll = true;
 
@@ -1029,7 +1036,7 @@ const navPanel = {
    * @memberof module:navPanel
    */
   updateCommentFormButton() {
-    if (cd.g.autoScrollInProgress) return;
+    if (cd.g.autoScrollInProgress || !navPanel.isMounted()) return;
 
     if (cd.commentForms.some((commentForm) => !commentForm.$element.cdIsInViewport(true))) {
       this.$commentFormButton.show();

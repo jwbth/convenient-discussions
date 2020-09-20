@@ -556,8 +556,7 @@ export default async function processPage(keptData = {}) {
     // This should be below the viewport position restoration and own comments highlighting as it
     // may rely on the elements that are made invisible during the comment forms restoration. It
     // should also be below the navPanel mount/reset methods as it runs
-    // navPanel.updateCommentFormButton() which would throw a error if the navigation panel is not
-    // mounted.
+    // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
     restoreCommentForms();
   }
 

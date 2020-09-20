@@ -829,9 +829,7 @@ function restoreCommentFormsFromData(commentFormsData) {
       title: cd.s('restore-restored-title'),
     });
     notification.$notification.on('click', () => {
-      if (navPanel.isMounted()) {
-        navPanel.goToNextCommentForm(true);
-      }
+      navPanel.goToNextCommentForm(true);
     });
   }
   if (rescue.length) {
