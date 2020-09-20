@@ -340,7 +340,8 @@ class Tribute {
         if (this.menuSelected === index) {
           li.classList.add(this.current.collection.selectClass);
         }
-        li.innerHTML = this.current.collection.menuItemTemplate(item);
+        // jwbth: Replaced innerHTML with textContent to prevent XSS injections.
+        li.textContent = this.current.collection.menuItemTemplate(item);
         fragment.appendChild(li);
       });
       ul.appendChild(fragment);
