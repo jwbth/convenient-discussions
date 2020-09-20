@@ -192,7 +192,7 @@
 	"notification-newcomments": "$1 nouveau{{plural:$1| commentaire|x commentaires}}$2$3.",
 	"notification-newcomments-desktop": "$1 {{plural:$1|nouveau commentaire|nouveaux commentaires}}$2 sur la page « $3 »$4.",
 	"notification-newcomments-maybeinteresting": "cela peut vous intéresser",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Recharger la page]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Recharger la page]]</span>$2.",
 	"notification-formdata": "les données du formulaire ne seront pas perdues",
 	"notification-part-insection": "dans la section « $1 »",
 	"notification-part-onthispage": "sur cette page",

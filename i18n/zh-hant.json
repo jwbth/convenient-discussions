@@ -187,7 +187,7 @@
 	"notification-newcomments": "$1 個新{{plural:$1|意見}}$2$3.",
 	"notification-newcomments-desktop": "$4頁面「$3」有 $1 個新{{plural:$1|意見}}$2。",
 	"notification-newcomments-maybeinteresting": "您可能會感興趣",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 重新載入頁面]</span>$2。",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|重新載入頁面]]</span>$2。",
 	"notification-formdata": "表單資料不會遺失",
 	"notification-part-insection": "在段落「$1」",
 	"notification-part-onthispage": "在此頁面",

@@ -185,7 +185,7 @@
 	"notification-newcomments": "$1 {{plural:$1|ny kommentar|nya kommentarer}}$2$3.",
 	"notification-newcomments-desktop": "$1 {{plural:$1|ny kommentar|nya kommentarer}}$2 på sidan \"$3\"$4.",
 	"notification-newcomments-maybeinteresting": "det här kanske intresserar dig",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Ladda om sidan]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Ladda om sidan]]</span>$2.",
 	"notification-formdata": "formulärdata kommer förloras",
 	"notification-part-insection": "i avsnitt \"$1\"",
 	"notification-part-onthispage": "på den här sidan",

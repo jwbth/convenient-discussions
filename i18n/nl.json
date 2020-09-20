@@ -78,7 +78,7 @@
 	"navpanel-newcomments-count": "$1 nieuwe {{plural:$1|reactie|reacties}}. Klik op de pagina bij te werken",
 	"navpanel-newcomments-unknowndate": "onbekende datum",
 	"navpanel-newcomments-firstunseen": "Ga naar de eerste ongelezen reactie",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 De pagina opnieuw laden]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|De pagina opnieuw laden]]</span>$2.",
 	"notification-part-onthispage": "op deze pagina",
 	"sd-save": "Opslaan",
 	"sd-reload": "Herladen",

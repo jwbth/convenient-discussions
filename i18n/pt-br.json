@@ -187,7 +187,7 @@
 	"notification-newcomments": "$1 {{plural:$1|novo comentário|novos comentários}}$2$3.",
 	"notification-newcomments-desktop": "$1 {{plural:$1|novo comentário|comentários}}$2 na página \"$3\"$4.",
 	"notification-newcomments-maybeinteresting": "isso pode ser interessante para você",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Recarregar a página]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Recarregar a página]]</span>$2.",
 	"notification-formdata": "dados do formulário não serão perdidos",
 	"notification-part-insection": "na seção \"$1\"",
 	"notification-part-onthispage": "nesta página",

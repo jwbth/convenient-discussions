@@ -208,7 +208,7 @@
   "notification-newcomments": "$1 new {{plural:$1|comment|comments}}$2$3.",
   "notification-newcomments-desktop": "$1 new {{plural:$1|comment|comments}}$2 on page \"$3\"$4.",
   "notification-newcomments-maybeinteresting": "that may be interesting to you",
-  "notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Reload the page]</span>$2.",
+  "notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Reload the page]]</span>$2.",
   "notification-formdata": "form data will not be lost",
   "notification-part-insection": "in section \"$1\"",
   "notification-part-onthispage": "on this page",

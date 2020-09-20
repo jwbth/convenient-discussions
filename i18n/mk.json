@@ -187,7 +187,7 @@
 	"notification-newcomments": "$1 {{plural:$1|нов коментар|нови коментари}}$2$3.",
 	"notification-newcomments-desktop": "$1 {{plural:$1|нов коментар|нови коментари}}$2 на страницата „$3“$4.",
 	"notification-newcomments-maybeinteresting": "ова може да ве интересира",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Превчитај ја страницата]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Превчитај ја страницата]]</span>$2.",
 	"notification-formdata": "податоците од обрасците ќе се изгубат",
 	"notification-part-insection": "во одделот „$1“",
 	"notification-part-onthispage": "на страницава",

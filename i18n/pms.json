@@ -187,7 +187,7 @@
 	"notification-newcomments": "$1 neuv {{plural:$1|coment}}$2$3.",
 	"notification-newcomments-desktop": "$1 neuv {{plural:$1|coment}} $2 an sla pàgina «$3» $4.",
 	"notification-newcomments-maybeinteresting": "sòn a peul anteresseje",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Carié torna la pàgina]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Carié torna la pàgina]]</span>$2.",
 	"notification-formdata": "ij dàit dël formolari a saran nen përdù",
 	"notification-part-insection": "ant la session «$1»",
 	"notification-part-onthispage": "su costa pàgina",

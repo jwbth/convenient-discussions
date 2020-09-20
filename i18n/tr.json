@@ -189,7 +189,7 @@
 	"notification-newcomments": "$1 yeni yorum$2$3.",
 	"notification-newcomments-desktop": "\"$3\" sayfasında $1 yeni yorum$2$4.",
 	"notification-newcomments-maybeinteresting": "bu sizin için ilginç olabilir",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 Sayfayı yeniden yükle]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|Sayfayı yeniden yükle]]</span>$2.",
 	"notification-formdata": "form verileri kaybolmayacak",
 	"notification-part-insection": "\"$1\" bölümünde",
 	"notification-part-onthispage": "bu sayfada",

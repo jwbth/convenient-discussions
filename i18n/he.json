@@ -187,7 +187,7 @@
 	"notification-newcomments": "{{plural:$1|תגובה חדשה אחת|$1 תגובות חדשות}}$2$3",
 	"notification-newcomments-desktop": "{{plural:$1|תגובה חדשה אחת|$1 תגובות חדשות}}$2 בדף \"$3\"$4.",
 	"notification-newcomments-maybeinteresting": "ייתכן שיעניין אתכם",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[$1 לטעון את הדף מחדש]</span>$2.",
+	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|לטעון את הדף מחדש]]</span>$2.",
 	"notification-formdata": "המידע בפוסטים ייאבד",
 	"notification-part-insection": "בנושא \"$1\"",
 	"notification-part-onthispage": "בדף הזה",
