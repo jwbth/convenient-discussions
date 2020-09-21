@@ -106,7 +106,7 @@
 	"cf-cancel-short": "İptal",
 	"cf-advanced": "Gelişmiş",
 	"cf-settings-tooltip": "Kullanışlı Tartışmalar ayarları",
-	"cf-help-content": "<ul>\n<li>Bir kullanıcıya <kbd>$1</kbd> yazarak [[mw:Special:MyLanguage/Help:Notifications/Mention|bahsedin]].</li>\n<li>Bu bölümdeki bir yorumu bağlamak için <kbd><nowiki>[[#</nowiki></kbd> yazın.</li>\n<li>İsteğe bağlı metin eklemek için bir otomatik tamamlama öğesi seçerken Shift tuşunu basılı tutun (örneğin, <code>[[Madde|<var>metin</var>]] </code>).</li>\n<li>Adın arkasına noktalama işareti eklemek için bir kullanıcı seçerken tıklayın.</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Yazılım belgelendirmesi]]</p>",
+	"cf-help-content": "<ul>\n<li>Bir kullanıcıya <kbd>$1</kbd> yazarak [[mw:Special:MyLanguage/Help:Notifications/Mention|bahsedin]].</li>\n<li>Bu bölümdeki bir yorumu bağlamak için <kbd><nowiki>[[#</nowiki></kbd> yazın.</li>\n<li>İsteğe bağlı metin eklemek için bir otomatik tamamlama öğesi seçerken Shift tuşunu basılı tutun (örneğin, <code><nowiki>[[Madde|</nowiki><var>metin</var><nowiki>]]</nowiki></code>).</li>\n<li>Adın arkasına noktalama işareti eklemek için bir kullanıcı seçerken tıklayın.</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Yazılım belgelendirmesi]]</p>",
 	"cf-quote-tooltip": "Seçilen metni alıntıla",
 	"cf-quote-placeholder": "Alıntılanan metin",
 	"cf-minor": "Küçük değişiklik",
