@@ -119,7 +119,7 @@
 	"cf-block-close": "關閉",
 	"cf-reaction-templateinheadline": "不要在標題使用模版，這會讓段落連結失效。",
 	"cf-reaction-signature": "不需輸入<kbd>$1</kbd>：會自動添加簽名。",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> 標籤會影響版面—最好使用 <code><nowiki><syntaxhighlight></nowiki></code>.",
+	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> 標籤會影響版面—最好使用 <code><nowiki><syntaxhighlight></nowiki></code>。",
 	"cf-reaction-mention-edit": "因為您<em>正在編輯</em>意見，將不會發送[[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|提及通知]]。",
 	"cf-reaction-mention-nosignature": "因為您已選用在意見裡不要包含簽名，將不會發送[[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|提及通知]]。",
 	"cf-notice-nochanges": "沒有更改。",
