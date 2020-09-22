@@ -1044,16 +1044,18 @@ export default class Comment extends CommentSkeleton {
       if (
         (
           match.overlap > 0.66 ||
-          (this.id === 0 && match.havePreviousCommentsMatched && match.hasHeadlineMatched)
+          (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
         ) &&
         (
           !bestMatch ||
           match.overlap > bestMatch.overlap ||
           (!bestMatch.hasHeadlineMatched && match.hasHeadlineMatched) ||
           (
-            bestMatch.hasHeadlineMatched === match.hasHeadlineMatched &&
-            !bestMatch.hasPreviousCommentMatched &&
-            match.hasPreviousCommentMatched
+            // null can be compared to false.
+            Boolean(bestMatch.hasHeadlineMatched) === Boolean(match.hasHeadlineMatched) &&
+
+            !bestMatch.hasPreviousCommentDataMatched &&
+            match.hasPreviousCommentDataMatched
           )
         )
       ) {
@@ -1061,9 +1063,15 @@ export default class Comment extends CommentSkeleton {
       }
     });
 
-    // The reserve method: by this & previous two dates & authors.
+    // The reserve method: by this & previous two dates & authors. If all dates and authors are the
+    // same, that shouldn't count (see [[Википедия:К удалению/22 сентября
+    // 2020#202009221158_Facenapalm_17]]).
     if (!bestMatch) {
-      bestMatch = matches.find((match) => this.id !== 0 && match.havePreviousCommentsMatched);
+      bestMatch = matches.find((match) => (
+        this.id !== 0 &&
+        match.hasPreviousCommentsDataMatched &&
+        !match.isPreviousCommentsDataEqual
+      ));
     }
 
     if (!bestMatch) {
@@ -1655,20 +1663,26 @@ export default class Comment extends CommentSkeleton {
         for (let i = 0; i < previousComments.length; i++) {
           const signature = signatures[match.id - 1 - i];
           // At least one coincided comment is enough if the second is unavailable.
-          match.havePreviousCommentsMatched = (
+          match.hasPreviousCommentsDataMatched = (
             signature &&
             signature.timestamp === previousComments[i].timestamp &&
             signature.author === previousComments[i].author
           );
-          if (i === 0) {
-            match.hasPreviousCommentMatched = match.havePreviousCommentsMatched;
+          if (match.isPreviousCommentsDataEqual !== false) {
+            match.isPreviousCommentsDataEqual = (
+              match.timestamp === signature.timestamp &&
+              match.author === signature.author
+            );
           }
-          if (!match.havePreviousCommentsMatched) break;
+          if (i === 0) {
+            match.hasPreviousCommentDataMatched = match.hasPreviousCommentsDataMatched;
+          }
+          if (!match.hasPreviousCommentsDataMatched) break;
         }
       } else {
         // If there is no previous comment both on the page and in the code, it's a match.
-        match.havePreviousCommentsMatched = match.id === 0;
-        match.hasPreviousCommentMatched = match.id === 0;
+        match.hasPreviousCommentsDataMatched = match.id === 0;
+        match.hasPreviousCommentDataMatched = match.id === 0;
       }
 
       Object.assign(match, this.adjustCommentBeginning(match));
