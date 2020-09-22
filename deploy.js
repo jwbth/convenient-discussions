@@ -134,26 +134,29 @@ async function prepareEdits() {
   files.forEach((file, i) => {
     let content;
     content = fs.readFileSync(`./dist/${file}`).toString();
-    const [tildesMatch] = content.match(/~~~~.{0,100}/) || [];
-    const [substMatch] = content.match(/\{\{(safe)?subst:.{0,100}/) || [];
-    const [nowikiMatch] = (
-      content
-        // Ignore the "// </nowiki>" piece, added from the both sides of the build.
-        .replace(/\/(?:\*!?|\/) <\/nowiki>/g, '')
-        .match(/<\/nowiki>.{0,100}/) ||
-      []
-    );
-    if (tildesMatch || substMatch) {
-      const snippet = code(tildesMatch || substMatch);
-      if (nowikiMatch) {
-        error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.\n`);
-        return;
-      } else {
-        warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.\n`);
+
+    if (!file.includes('i18n/')) {
+      const [tildesMatch] = content.match(/~~~~.{0,100}/) || [];
+      const [substMatch] = content.match(/\{\{(safe)?subst:.{0,100}/) || [];
+      const [nowikiMatch] = (
+        content
+          // Ignore the "// </nowiki>" piece, added from the both sides of the build.
+          .replace(/\/(?:\*!?|\/) <\/nowiki>/g, '')
+          .match(/<\/nowiki>.{0,100}/) ||
+        []
+      );
+      if (tildesMatch || substMatch) {
+        const snippet = code(tildesMatch || substMatch);
+        if (nowikiMatch) {
+          error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.\n`);
+          return;
+        } else {
+          warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.\n`);
+        }
       }
-    }
-    if (nowikiMatch) {
-      warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}\n`);
+      if (nowikiMatch) {
+        warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}\n`);
+      }
     }
 
     const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;

@@ -109,8 +109,15 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
 
         strings[stringName] = sanitized;
       });
+    let json = JSON.stringify(strings, null, '\t');
+
+    if (lang === 'en') {
+      // Prevent creating "</nowiki>" character sequences when building the main script file.
+      json = json.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
+    }
+
     const data = `convenientDiscussions.i18n = convenientDiscussions.i18n || {};
-convenientDiscussions.i18n['${lang}'] = ${JSON.stringify(strings, null, '\t')};
+convenientDiscussions.i18n['${lang}'] = ${json};
 `;
     fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
     fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);

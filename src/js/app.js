@@ -14,7 +14,6 @@ import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
 import debug from './debug';
 import defaultConfig from './defaultConfig';
-import enI18n from '../../i18n/en.json';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
@@ -37,6 +36,7 @@ if (IS_SNIPPET) {
   config = require(`../../config/${CONFIG_FILE_NAME}`).default;
 
   cd.i18n = {};
+  cd.i18n.en = require('../../i18n/en.json');
   cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
 }
 
@@ -201,8 +201,9 @@ function setStrings() {
     'move-',
   ];
 
-  cd.i18n = cd.i18n || {};
-  cd.i18n.en = enI18n;
+  if (!IS_SNIPPET) {
+    require('../../dist/convenientDiscussions-i18n/en.js');
+  }
   cd.strings = {};
   Object.keys(cd.i18n.en).forEach((name) => {
     const relevantLang = contentStrings.some((contentStringName) => (
