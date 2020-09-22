@@ -272,13 +272,18 @@ async function setOption(name, value, action) {
     });
   }
 
-  const resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
+  // Running the `postWithEditToken` method which involves timers seems to be the reason for the
+  // `setVisits()` call in `navPanel` to be postponed at least in Chrome until the tab is focused.
+  // That's my (jwbth) hypothesis which could be wrong. So I decided to test with
+  // `makeRequestNoTimers` and see if the issue with highlighting relatively old comments as new
+  // goes away.
+  const resp = await makeRequestNoTimers(cd.g.api.assertCurrentUser({
     action: action,
     optionname: name,
 
     // Global options can't be deleted because of the bug https://phabricator.wikimedia.org/T207448.
     optionvalue: value === undefined && action === 'globalpreferences' ? '' : value,
-  })).catch(handleApiReject);
+  }), 'postWithEditToken').catch(handleApiReject);
 
   if (!resp || resp[action] !== 'success') {
     throw new CdError({
