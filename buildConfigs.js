@@ -23,6 +23,8 @@ fs.readdirSync('./config/').forEach((filename) => {
  * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
  */
 
+// <nowiki>
+
 (function () {
 
 function unique(item, pos, arr) {
@@ -60,6 +62,8 @@ if (!convenientDiscussions.isRunning) {
 }
 
 }());
+
+// </nowiki>
 `;
     fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true });
     fs.writeFileSync(`dist/convenientDiscussions-config/${name}${devSuffix}.js`, data);
