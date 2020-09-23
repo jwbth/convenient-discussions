@@ -237,7 +237,7 @@
   "sd-localsetting": "<i>This setting is individual for each wiki.</i>",
 
   "sd-alloweditotherscomments": "Show a link to edit other users' comments",
-  "sd-alwaysexpandadvanced": "Expand the \"Advanced\" section when replying",
+  "sd-alwaysexpandadvanced": "Expand the \"{{int:convenient-discussions-cf-advanced}}\" section when replying",
   "sd-autopreview": "Preview the comment as I type",
   "sd-defaultcommentlinktype": "Default link type to copy when clicking \"{{int:convenient-discussions-cm-copylink}}\" in a comment menu",
   "sd-defaultcommentlinktype-radio-diff": "Diff link",
