@@ -27,7 +27,7 @@ jobs:
 
           # Create a tunnel in the background, delete the key,
           # and set a TRAP to kill the tunnel on exit
-          ssh -N -L ... &
+          ssh -N -L 8443:localhost:443 ${{ secrets.TOOLFORGE_USER }}@tools-login.wmflabs.org &
           rm ~/.ssh/id_rsa
           trap "kill $!" EXIT
 
