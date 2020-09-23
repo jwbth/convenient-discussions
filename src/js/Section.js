@@ -1710,27 +1710,44 @@ export default class Section extends SectionSkeleton {
 
       if (section.actionable) {
         // If the next section of the same level has another nesting level (e.g., is inside a <div>
-        // with a specific style), don't add the "Add subsection" button - it will appear in the
+        // with a specific style), don't add the "Add subsection" button - it would appear in the
         // wrong place.
         const nextSameLevelSection = cd.sections
           .slice(i + 1)
           .find((otherSection) => otherSection.level === section.level);
+        const isClosed = (
+          section.elements.length === 2 &&
+          cd.config.closedDiscussionClasses
+            ?.some((className) => section.elements[1].classList?.contains(className))
+        );
         if (
-          !nextSameLevelSection ||
-          nextSameLevelSection.headingNestingLevel === section.headingNestingLevel
+          !isClosed &&
+          (
+            !nextSameLevelSection ||
+            nextSameLevelSection.headingNestingLevel === section.headingNestingLevel
+          )
         ) {
           section.addAddSubsectionButton();
+        } else {
+          section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
         }
+
+        const isFirstChunkClosed = (
+          section.elements[1] === section.lastElementInFirstChunk &&
+          cd.config.closedDiscussionClasses
+            ?.some((className) => section.lastElementInFirstChunk.classList?.contains(className))
+        );
 
         // The same for the "Reply" button, but as this button is added to the end of the first
         // chunk, we look at just the next section, not necessarily of the same level.
         if (
-          !cd.sections[i + 1] ||
-          cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
+          !isFirstChunkClosed &&
+          (
+            !cd.sections[i + 1] ||
+            cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
+          )
         ) {
           section.addReplyButton();
-        } else {
-          section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
         }
       }
     });
