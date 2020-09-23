@@ -161,7 +161,12 @@ async function prepareEdits() {
 
     const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-    let summary = `Update to ${commits[0].hash} @ ${branch}`;
+    let summary;
+    if (process.env.CI) {
+      summary = `Update to ${commits[0].hash} @ ${branch}`;
+    } else {
+      summary = `Automatically update to ${commits[0].hash} @ ${branch}`;
+    }
     if (i === 0 && newCommitsCount) {
       summary += `. ${pluralize(newCommitsCount, 'new commit')}: ${newCommitsSubjects.join('. ')}`;
     }

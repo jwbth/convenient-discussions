@@ -15,8 +15,21 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run build --dev
-      - run: npm run deploy --dev
-        env:
+      - run: npm run build --dev --noi18n
+      - env:
+          SSH_KEY: ${{ secrets.TOOLFORGE_KEY }}
           USERNAME: ${{ secrets.WIKI_USERNAME }}
           PASSWORD: ${{ secrets.WIKI_PASSWORD }}
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "${SSH_KEY//_/\\n}" > ~/.ssh/id_rsa
+          chmod og-rwx ~/.ssh/id_rsa
+
+          # Create a tunnel in the background, delete the key,
+          # and set a TRAP to kill the tunnel on exit
+          ssh -N -L ... &
+          rm ~/.ssh/id_rsa
+          trap "kill $!" EXIT
+
+          # run user's own script to login and publish build results to pages
+          npm run deploy --dev
