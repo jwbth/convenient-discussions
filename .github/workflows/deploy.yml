@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run build --dev --noi18n
+      - run: npm run build --dev
       - env:
           SSH_KEY: ${{ secrets.TOOLFORGE_KEY }}
           USERNAME: ${{ secrets.WIKI_USERNAME }}
@@ -32,4 +32,4 @@ jobs:
           trap "kill $!" EXIT
 
           # run user's own script to login and publish build results to pages
-          npm run deploy --dev
+          npm run deploy --dev --noi18n
