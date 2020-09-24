@@ -104,7 +104,7 @@
 	"cf-cancel-short": "Anulé",
 	"cf-advanced": "Avansà",
 	"cf-settings-tooltip": "Paràmeter ëd Discussion Pràtiche",
-	"cf-help-content": "<ul>\n<li>Scrive <kbd>$1</kbd> për [[mw:Special:MyLanguage/Help:Notifications/Mention|massioné]] n'utent.</li>\n<li>Scrive <kbd><nowiki>[[#</nowiki></kbd> për coleghé un coment an costa session.</p>\n<li>Ten-e Majùscole sgnacà për serne n'element autocompletà për gionté dël test opsional (për esempi, <code><nowiki>[[Artìcol|</nowiki><var>test</var>]]</code>).</li>\n<li>Ten-e sgnacà për serne n'utent e gionteje dla pontegiadura apress ël nòm.</li>\n</ul>\n<p>Paròle ciav:</li>\n<ul>\n<li><b>Ctrl+Enter</b> — publiché</li>\n<li><b>Esc</b> — anulé</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — sité ël test selessionà</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Documentassion dël copion]]</p>",
+	"cf-help-content": "<ul>\n<li>Scrive <kbd>$1</kbd> për [[mw:Special:MyLanguage/Help:Notifications/Mention|massioné]] n'utent.</li>\n<li>Scrive <kbd><nowiki>[[#</nowiki></kbd> për coleghé un coment an costa session.</p>\n<li>Ten-e Majùscole sgnacà për serne n'element autocompletà për gionté dël test opsional (për esempi, <code><nowiki>[[Artìcol|</nowiki><var>test</var><nowiki>]]</nowiki></code>).</li>\n<li>Ten-e sgnacà për serne n'utent e gionteje dla pontegiadura apress ël nòm.</li>\n</ul>\n<p>Paròle ciav:</li>\n<ul>\n<li><b>Ctrl+Enter</b> — publiché</li>\n<li><b>Esc</b> — anulé</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — sité ël test selessionà</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Documentassion dël copion]]</p>",
 	"cf-quote-tooltip": "Sité ël test selessionà",
 	"cf-quote-placeholder": "Test sità",
 	"cf-minor": "Modìfica cita",
