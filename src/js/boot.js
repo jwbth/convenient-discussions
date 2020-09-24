@@ -572,6 +572,10 @@ async function updatePageContent(html, keptData) {
   cd.debug.startTimer('laying out HTML');
 
   cd.g.$content.children('.mw-parser-output').remove();
+  if (keptData.wasPageCreated) {
+    cd.g.$content.empty();
+  }
+
   cd.g.$content.append(html);
 
   // We could say "let it crash", but, well, unforeseen errors in processPage() are just too likely
