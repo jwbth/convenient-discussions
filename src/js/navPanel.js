@@ -352,11 +352,7 @@ async function sendNotifications(comments) {
       cd.g.CURRENT_PAGE.name +
       (notifyAboutOrdinary[0].anchor ? '#' + notifyAboutOrdinary[0].anchor : '')
     );
-    const reloadLinkHtml = cd.sParse(
-      'notification-reload',
-      wikilink,
-      formsDataWillNotBeLost
-    );
+    const reloadLinkHtml = cd.sParse('notification-reload', wikilink, formsDataWillNotBeLost);
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
       if (comment.toMe) {
@@ -408,12 +404,7 @@ async function sendNotifications(comments) {
         mayBeInterestingString;
 
       html = (
-        cd.sParse(
-          'notification-newcomments',
-          notifyAboutOrdinary.length,
-          where,
-          mayBeInteresting
-        ) +
+        cd.sParse('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
         ' ' +
         reloadLinkHtml
       );

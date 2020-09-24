@@ -2631,7 +2631,7 @@ export default class CommentForm {
     );
     if (!editTimestamp) return;
 
-    // Here we use a hack where we pass, in keptData, the name of the section that was set to be
+    // Here we use a trick where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
     let keptData = { didSubmitCommentForm: true };

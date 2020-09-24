@@ -25,7 +25,7 @@ const keyword = chalk.cyan;
 const important = chalk.greenBright;
 
 if (!config?.rootPath) {
-  error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}.`)
+  error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}.`);
   return;
 }
 
@@ -163,9 +163,9 @@ async function prepareEdits() {
 
     let summary;
     if (process.env.CI) {
-      summary = `Update to ${commits[0].hash} @ ${branch}`;
-    } else {
       summary = `Automatically update to ${commits[0].hash} @ ${branch}`;
+    } else {
+      summary = `Update to ${commits[0].hash} @ ${branch}`;
     }
     if (i === 0 && newCommitsCount) {
       summary += `. ${pluralize(newCommitsCount, 'new commit')}: ${newCommitsSubjects.join('. ')}`;
