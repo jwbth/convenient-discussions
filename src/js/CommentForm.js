@@ -2673,10 +2673,10 @@ export default class CommentForm {
     }
 
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {
-      $('#ca-watch').attr('id', 'cd-unwatch');
+      $('#ca-watch').attr('id', 'ca-unwatch');
     }
     if (!this.watchCheckbox.isSelected() && $('#ca-unwatch').length) {
-      $('#ca-unwatch').attr('id', 'cd-watch');
+      $('#ca-unwatch').attr('id', 'ca-watch');
     }
 
     if (!doDelete) {
