@@ -112,7 +112,7 @@
   "cf-settings-tooltip": "Convenient Discussions settings",
   "cf-help": "?",
   "cf-help-short": "?",
-  "cf-help-content": "<ul>\n<li>Type <kbd>$1</kbd> to [[mw:Special:MyLanguage/Help:Notifications/Mention|mention]] a user.</li>\n<li>Type <kbd><nowiki>[[#</nowiki></kbd> to link a comment in this section.</li>\n<li>Hold Shift while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).</li>\n<li>Hold Click while choosing a user to add punctiation after the name.</li>\n</ul>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Script documentation]]</p>",
+  "cf-help-content": "<ul>\n<li>Type <kbd>$1</kbd> to [[mw:Special:MyLanguage/Help:Notifications/Mention|mention]] a user.</li>\n<li>Type <kbd><nowiki>[[#</nowiki></kbd> to link a comment in this section.</li>\n<li>Hold Shift while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).</li>\n<li>Hold Ctrl while choosing a user to add punctiation after the name.</li>\n</ul>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Script documentation]]</p>",
   "cf-quote-tooltip": "Quote the selected text",
   "cf-quote-placeholder": "Quoted text",
 
