@@ -348,7 +348,7 @@ export default class Page {
     let codeBeforeInsertion;
     if (commentForm.isNewTopicOnTop) {
       const adjustedPageCode = hideDistractingCode(pageCode);
-      const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*?\1/m);
+      const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
       codeBeforeInsertion = pageCode.slice(0, firstSectionStartIndex);
       const codeAfterInsertion = pageCode.slice(firstSectionStartIndex);
       newPageCode = codeBeforeInsertion + commentCode + '\n' + codeAfterInsertion;
@@ -481,7 +481,7 @@ export default class Page {
     }
 
     const adjustedCode = hideDistractingCode(this.code);
-    const sectionHeadingRegexp = /^==[^=].*?==[ \t]*(?:<!--[^]*?-->[ \t]*)*\n/gm;
+    const sectionHeadingRegexp = /^==[^=].*?==[ \t\x01\x02]*\n/gm;
     let firstSectionStartIndex;
     let sectionHeadingMatch;
 

@@ -1176,7 +1176,7 @@ export default class Comment extends CommentSkeleton {
         `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
         'i'
       );
-      const headingRegexp = /^(=+).*\1$/;
+      const headingRegexp = /^(=+).*\1[ \t]*$/;
       text = text.replace(
         /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
         (s, thisLine, nextLine) => {
@@ -1433,7 +1433,7 @@ export default class Comment extends CommentSkeleton {
     let indentationChars = '';
     let lineStartIndex = startIndex;
 
-    const headingMatch = code.match(/(^[^]*(?:^|\n))((=+)(.*?)\3[ \t]*(?:<!--[^]*?-->[ \t]*)*\n)/);
+    const headingMatch = code.match(/(^[^]*(?:^|\n))((=+)(.*?)\3[ \t\x01\x02]*\n)/);
     let headingCode;
     let headingStartIndex;
     let headingLevel;
@@ -1748,6 +1748,20 @@ export default class Comment extends CommentSkeleton {
         }
       }
 
+      const adjustedCodeAfter = adjustedCode.slice(currentIndex);
+
+      const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*?\1[ \t\x01\x02]*\n|$/);
+      let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
+      let chunkCodeAfter = pageCode.slice(currentIndex, chunkCodeAfterEndIndex);
+      cd.config.keepInSectionEnding.forEach((regexp) => {
+        const match = chunkCodeAfter.match(regexp);
+        if (match) {
+          // "1" accounts for the first line break.
+          chunkCodeAfterEndIndex -= match[0].length - 1;
+        }
+      });
+      const adjustedChunkCodeAfter = adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
+
       const searchedIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' +
@@ -1757,7 +1771,7 @@ export default class Comment extends CommentSkeleton {
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
 
-        // "\x01" and "\x02" is from hiding closed discussions.
+        // "\x01" and "\x02" is from hiding closed discussions and HTML comments.
         '|\\x02)\\n)\\n*' +
         (
           searchedIndentationCharsLength > 0 ?
@@ -1767,26 +1781,20 @@ export default class Comment extends CommentSkeleton {
 
         // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
         // closed discussions.
-        '(?![:*#\\n\\x01]|<!--)'
+        '(?![:*#\\n\\x01])'
       );
-      const codeAfter = adjustedCode.slice(currentIndex);
-      let [, codeInBetween] = codeAfter.match(properPlaceRegexp) || [];
+      let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
-      if (codeInBetween === undefined) {
+      if (adjustedCodeInBetween === undefined) {
         throw new CdError({
           type: 'parse',
           code: 'findPlace',
         });
       }
 
-      const headingMatch = /\n+(=+).*?\1[ \t]*\n/.exec(codeInBetween);
-      if (headingMatch) {
-        codeInBetween = codeInBetween.slice(0, headingMatch.index + 1);
-      }
-
       // If the comment is to be put after a comment with different indentation characters, use
       // these.
-      const [, changedIndentationChars] = codeInBetween.match(/\n([:*#]{2,}).*\n$/) || [];
+      const [, changedIndentationChars] = adjustedCodeInBetween.match(/\n([:*#]{2,}).*\n$/) || [];
       if (changedIndentationChars) {
         // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
         // possible here when we used "slice(0, thisInCode.indentationChars.length + 1)".
@@ -1795,7 +1803,7 @@ export default class Comment extends CommentSkeleton {
           .replace(/:$/, cd.config.defaultIndentationChar);
       }
 
-      currentIndex += codeInBetween.length;
+      currentIndex += adjustedCodeInBetween.length;
     }
 
     if (!commentCode && commentForm && !doDelete) {

@@ -1263,7 +1263,8 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   searchInCode({ firstComment, headline, pageCode, adjustedPageCode }) {
-    const sectionHeadingRegexp = /^((=+)(.*?)\2[ \t]*(?:<!--[^]*?-->[ \t]*)*)\n/gm;
+    const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
+
     const matches = [];
     const headlines = [];
     let sectionIndex = 0;
@@ -1296,41 +1297,41 @@ export default class Section extends SectionSkeleton {
       const codeFromSection = pageCode.slice(sectionHeadingMatch.index);
       const adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingMatch.index);
       const sectionMatch = (
-        adjustedCodeFromSection.match(
+        adjustedCodeFromSection.match(new RegExp(
           // Will fail at "===" or the like.
           '(' +
           mw.util.escapeRegExp(fullHeadingMatch) +
-          '[^]*?\n)' +
+          '[^]*?\\n)' +
           equalSignsPattern +
-          '[^=].*?=+[ \t]*(?:<!--[^]*?-->[ \t]*)*\n'
-        ) ||
-        codeFromSection.match(
+          '[^=].*=+[ \\t\\x01\\x02]*\\n'
+        )) ||
+        codeFromSection.match(new RegExp(
           '(' +
           mw.util.escapeRegExp(fullHeadingMatch) +
           '[^]*$)'
-        )
+        ))
       );
 
       // To simplify the workings of the "replyInSection" mode we don't consider terminating line
       // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
       // the first heading).
       const firstChunkMatch = (
-        adjustedCodeFromSection.match(
+        adjustedCodeFromSection.match(new RegExp(
           // Will fail at "===" or the like.
           '(' +
           mw.util.escapeRegExp(fullHeadingMatch) +
-          '[^]*?\n)\n*' +
+          '[^]*?\\n)\\n*' +
 
           // Any next heading.
           '={1,6}' +
 
-          '[^=].*?=+[ \t]*(?:<!--[^]*?-->[ \t]*)*\n'
-        ) ||
-        codeFromSection.match(
+          '[^=].*=+[ \\t\\x01\\x02]*\n'
+        )) ||
+        codeFromSection.match(new RegExp(
           '(' +
           mw.util.escapeRegExp(fullHeadingMatch) +
           '[^]*$)'
-        )
+        ))
       );
       const code = (
         sectionMatch &&

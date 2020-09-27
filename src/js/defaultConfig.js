@@ -375,9 +375,9 @@ export default {
   customBadCommentBeginnings: [],
 
   /**
-   * Regexps for strings that should be kept in the section endings when adding a reply or
-   * subsection (so that this reply or subsection is added _before_ them, not after). Usually begin
-   * with `\n+`. The default value will keep HTML comments placed after an empty line in the section
+   * Regexps for strings that should be kept in section endings when adding a reply or subsection
+   * (so that this reply or subsection is added _before_ them, not after). Should begin with at
+   * least one `\n`. The default value will keep HTML comments placed after an empty line in section
    * endings.
    *
    * @type {RegExp[]}

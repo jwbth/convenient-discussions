@@ -28,7 +28,7 @@ import { hideText } from './util';
  */
 export function hideDistractingCode(code) {
   return code
-    .replace(/<!--([^]*?)-->/g, (s, content) => '<!--' + ' '.repeat(content.length) + '-->')
+    .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
     .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length))
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
@@ -60,6 +60,8 @@ export function removeWikiMarkup(code) {
   return code
     // Remove comments
     .replace(/<!--[^]*?-->/g, '')
+    // Remove text hidden by the script (for example, in wikitext.hideDistractingCode)
+    .replace(/\x01 *\x02/g, '')
     // Pipe trick
     .replace(/(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g, '$1$2$3')
     // Extract displayed text from file embeddings

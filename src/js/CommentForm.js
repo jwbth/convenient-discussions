@@ -1868,7 +1868,7 @@ export default class CommentForm {
       `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
       'i'
     );
-    const headingRegexp = /^(=+).*\1$/;
+    const headingRegexp = /^(=+).*\1[ \t]*$/;
     code = code.replace(
       /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
       (s, thisLine, nextLine) => {
