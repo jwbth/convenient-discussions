@@ -216,7 +216,7 @@
 	"sd-error-removedata": "Sunucudaki veriler kaldırılamadı.",
 	"sd-localsetting": "<i>Bu ayar her viki için ayrıdır.</i>",
 	"sd-alloweditotherscomments": "Diğer kullanıcıların yorumlarını düzenlemek için bir bağlantı göster",
-	"sd-alwaysexpandadvanced": "Yanıtlarken \"Gelişmiş\" bölümünü genişletin",
+	"sd-alwaysexpandadvanced": "Yanıtlarken \"{{int:convenient-discussions-cf-advanced}}\" bölümünü genişletin",
 	"sd-autopreview": "Yazarken yorumu önizle",
 	"sd-defaultcommentlinktype": "Bir yorum menüsünde \"{{int:convenient-discussions-cm-copylink}}\" tıklandığında kopyalanacak varsayılan bağlantı türü",
 	"sd-defaultcommentlinktype-radio-diff": "Farklı bağlantı",

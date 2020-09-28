@@ -35,6 +35,7 @@
 	"cld-copy": "Kopéieren",
 	"copylink-copied": "De Link gouf an den Tëschespäicher kopéiert.",
 	"copylink-error": "De Link konnt net kopéiert ginn.",
+	"thank-confirm": "Dem {{gender:$2|}} $1 fir [$3 dës Ännerung] Merci soen?",
 	"thank-error": "De Merci konnt net geschéckt ginn.",
 	"thank-success": "\"Merci soen\" Notifikatioun gouf geschéckt",
 	"es-reply": "äntweren",

@@ -216,7 +216,7 @@
 	"sd-error-removedata": "Não foi possível remover os dados no servidor.",
 	"sd-localsetting": "<i>Esta configuração é individual para cada wiki.</i>",
 	"sd-alloweditotherscomments": "Mostrar um link para editar os comentários de outros usuários",
-	"sd-alwaysexpandadvanced": "Expanda a seção \"Avançado\" ao responder",
+	"sd-alwaysexpandadvanced": "Expanda a seção \"{{int:convenient-discussions-cf-advanced}}\" ao responder",
 	"sd-autopreview": "Pré-visualizar o comentário enquanto digito",
 	"sd-defaultcommentlinktype": "Tipo de link padrão para copiar ao clicar \"{{int:convenient-discussions-cm-copylink}}\" em um menu de comentários",
 	"sd-defaultcommentlinktype-radio-diff": "Link de diff",
