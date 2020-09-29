@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
-    "build": "node buildConfigs && node buildI18n && webpack --progress",
-    "snippet": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --progress --snippet",
+    "build": "node buildConfigs && node buildI18n && webpack",
+    "snippet": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --snippet",
     "configs": "node buildConfigs",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
     "all": "npm run build & npm run docs",

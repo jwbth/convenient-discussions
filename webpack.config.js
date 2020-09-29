@@ -32,6 +32,8 @@ if (!config.protocol || !config.server || !config.rootPath || !config.articlePat
   throw new Error('No protocol/server/root path/article path found in config.json5.');
 }
 
+const progressPlugin = new webpack.ProgressPlugin();
+
 const plugins = [
   new webpack.DefinePlugin({
     IS_SNIPPET: snippet,
@@ -45,7 +47,9 @@ const plugins = [
   }),
 ];
 
-if (!snippet) {
+if (snippet) {
+  plugins.push(progressPlugin);
+} else {
   plugins.push(
     new webpack.SourceMapDevToolPlugin({
       filename: `[file]${sourceMapExt}`,
@@ -83,6 +87,9 @@ if (!snippet) {
       },
     },
   );
+  if (!process.env.CI) {
+    plugins.push(progressPlugin);
+  }
 }
 
 module.exports = {
