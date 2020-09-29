@@ -1,0 +1,34 @@
+name: Deploy documentation
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: npm ci
+      - run: npm run docs
+      - name: Deploy
+        uses: easingthemes/ssh-deploy@v2.1.1
+        env:
+            REMOTE_HOST: "tools-login.wmflabs.org"
+            REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
+            SSH_PRIVATE_KEY: ${{ secrets.TOOLFORGE_KEY }}
+            ARGS: "-rltgoDzvO --delete"
+            SOURCE: "docs/"
+            TARGET: "/data/project/convenient-discussions/www/static/docs"
+      - name: Take file ownership to the tool
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          host: "tools-login.wmflabs.org"
+          username: ${{ secrets.TOOLFORGE_USER }}
+          key: ${{ secrets.TOOLFORGE_KEY }}
+          script: become convenient-discussions bash -c 'cd www/static && take docs && chmod -R g+w docs'

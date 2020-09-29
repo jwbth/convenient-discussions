@@ -1,13 +1,14 @@
-name: Deploy to Commons
+name: Deploy i18n
 
 on:
-  release:
-    types:
-      - published
+  push:
+    paths:
+      - 'i18n/*'
+      - '!i18n/qqq.json'
   workflow_dispatch:
 
 jobs:
-  deploy:
+  i18n:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -15,7 +16,7 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run build --dev
+      - run: node buildI18n
       - name: Create a SSH tunnel
         env:
           SSH_USER: ${{ secrets.TOOLFORGE_USER }}
@@ -27,7 +28,7 @@ jobs:
 
           # Create a tunnel in the background, delete the key, and set a TRAP to kill the tunnel on
           # exit.
-          ssh -o StrictHostKeyChecking=no -N -D 1081 ${{ secrets.TOOLFORGE_USER }}@tools-login.wmflabs.org &
+          ssh -o StrictHostKeyChecking=no -N -D 1081 ${{ secrets.TOOLFORGE_USER }}@tools-dev.wmflabs.org &
           SSH_JOB="$!"
 
           # This trap will get overrided below, but also set it here just in case HPTS fails to
@@ -48,4 +49,4 @@ jobs:
           PASSWORD: ${{ secrets.WIKI_PASSWORD }}
         run: |
           # Run the user's own script to login and publish the build results to pages
-          npm run deploy --dev --noi18n
+          npm run deploy --i18nonly
