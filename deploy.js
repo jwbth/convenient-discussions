@@ -16,32 +16,43 @@ const getUrl = require('./misc/util.js').getUrl;
  */
 const dev = argv.dev || process.env.npm_config_dev;
 const noi18n = argv.noi18n || process.env.npm_config_noi18n;
+const i18nonly = argv.i18nonly || process.env.npm_config_i18nonly;
+const debug = argv.debug || process.env.npm_config_debug;
 
-const warning = (text) => console.log(chalk.yellowBright(text));
-const error = (text) => console.log(chalk.red(text));
-const success = (text) => console.log(chalk.green(text));
+const warning = (text) => {
+  console.log(chalk.yellowBright(text));
+};
+const error = (text) => {
+  throw chalk.red(text);
+};
+const success = (text) => {
+  console.log(chalk.green(text));
+};
 const code = chalk.inverse;
 const keyword = chalk.cyan;
 const important = chalk.greenBright;
 
 if (!config?.rootPath) {
   error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}.`);
-  return;
 }
 
 if (config.rootPath[config.rootPath.length - 1] !== '/') {
   error(`${keyword('rootPath')} should end with "${code('/')}".`);
-  return;
 }
 
 const files = config?.distFiles?.[dev ? 'dev' : 'default'];
 if (!files || !Array.isArray(files) || !files.length) {
   error(`File list not found in ${keyword('config.json5')}.`);
-  return;
 }
+
+const mainFile = files[0];
 
 files.forEach((file, i) => {
   if (noi18n && file.endsWith('i18n/')) {
+    files.splice(i, i);
+    return;
+  }
+  if (i18nonly && !file.endsWith('i18n/')) {
     files.splice(i, i);
     return;
   }
@@ -50,11 +61,24 @@ files.forEach((file, i) => {
   }
 });
 
+let version;
+if (process.env.CI) {
+  // HTTP proxy to use with the http-proxy-to-socks module, while the SOCKS proxy is created by the
+  // `ssh -D [port]` command as part of the SSH tunnel to Toolforge.
+  config.proxy = 'http://localhost:8080';
+
+  const eventJson = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH));
+
+  // Will be undefined if the event is workflow_dispatch.
+  version = eventJson.release?.tag_name;
+  version = version && 'v' + version;
+}
+
 const client = new Mw({
   protocol: config.protocol,
   server: config.server,
   path: config.scriptPath,
-  debug: false,
+  debug,
 });
 
 let branch;
@@ -67,13 +91,11 @@ exec('git rev-parse --abbrev-ref HEAD && git log --pretty=format:"%h %s"', parse
 
 function parseCmdOutput(err, stdout, stderr) {
   if (stdout === '') {
-    error('This does not look like a git repo.');
-    return;
+    error('parseCmdOutput(): This does not look like a git repo.');
   }
 
   if (stderr) {
     error(stderr);
-    return;
   }
 
   const lines = stdout.split('\n');
@@ -90,7 +112,7 @@ function requestComments() {
   client.api.call(
     {
       action: 'query',
-      titles: config.rootPath + files[0],
+      titles: config.rootPath + mainFile,
       prop: 'revisions',
       rvprop: ['comment'],
       rvlimit: 50,
@@ -99,7 +121,6 @@ function requestComments() {
     (e, info) => {
       if (e) {
         error(e);
-        return;
       }
       const revisions = info?.pages?.[0]?.revisions || [];
       if (revisions.length || info?.pages?.[0]?.missing) {
@@ -149,7 +170,6 @@ async function prepareEdits() {
         const snippet = code(tildesMatch || substMatch);
         if (nowikiMatch) {
           error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.\n`);
-          return;
         } else {
           warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.\n`);
         }
@@ -161,12 +181,10 @@ async function prepareEdits() {
 
     const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-    let summary;
-    if (process.env.CI) {
-      summary = `Automatically update to ${commits[0].hash} @ ${branch}`;
-    } else {
-      summary = `Update to ${commits[0].hash} @ ${branch}`;
-    }
+    const commitString = `${commits[0].hash} @ ${branch}`;
+    let summary = process.env.CI ?
+      `Automatically update to ${version || commitString}` :
+      `Update to ${commitString}`;
     if (i === 0 && newCommitsCount) {
       summary += `. ${pluralize(newCommitsCount, 'new commit')}: ${newCommitsSubjects.join('. ')}`;
     }
@@ -211,7 +229,6 @@ async function logIn() {
   const callback = (err) => {
     if (err) {
       error(err);
-      return;
     }
     deploy();
   }
@@ -257,7 +274,6 @@ function editNext() {
     client.edit(edit.title, edit.content, edit.summary, (e, info) => {
       if (e) {
         error(e);
-        return;
       }
       if (info && info.result === 'Success') {
         if (info.nochange === undefined) {
@@ -267,7 +283,7 @@ function editNext() {
         }
         editNext();
       } else {
-        error('Unknown error', info);
+        throw [chalk.red('Unknown error'), info];
       }
     });
   } else {
