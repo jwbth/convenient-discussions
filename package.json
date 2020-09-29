@@ -6,7 +6,7 @@
     "build": "node buildConfigs && node buildI18n && webpack --progress",
     "snippet": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --progress --snippet",
     "configs": "node buildConfigs",
-    "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
+    "docs": "rimraf docs && ./node_modules/.bin/jsdoc -c jsdoc.config.js",
     "all": "npm run build & npm run docs",
     "deploy": "node deploy",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions"
