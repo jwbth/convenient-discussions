@@ -210,7 +210,7 @@ function generateTooltipText(comments, mode) {
       ' ' +
       cd.s('navpanel-newcomments-' + mode) +
       ' ' +
-      cd.mws('parentheses', 'R')
+      cd.mws('parentheses', mode === 'refresh' ? 'R' : 'F')
     );
     Object.keys(commentsBySection).forEach((anchor) => {
       const section = (
@@ -637,7 +637,6 @@ const navPanel = {
     this.$firstUnseenButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-firstUnseenButton')
-      .attr('title', `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`)
       .on('click', () => {
         this.goToFirstUnseenComment();
       })
