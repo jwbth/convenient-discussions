@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run build --dev
+      - run: npm run build
       - name: Create a SSH tunnel and deploy
         env:
           SSH_USER: ${{ secrets.TOOLFORGE_USER }}
@@ -46,4 +46,4 @@ jobs:
           rm ~/.ssh/id_rsa
 
           # Run the user's own script to login and publish the build results to pages
-          npm run deploy --dev --noi18n
+          npm run deploy --noi18n
