@@ -1,4 +1,4 @@
-name: Deploy to Commons
+name: Deploy script
 
 on:
   release:
@@ -16,10 +16,12 @@ jobs:
           node-version: 14
       - run: npm ci
       - run: npm run build --dev
-      - name: Create a SSH tunnel
+      - name: Create a SSH tunnel and deploy
         env:
           SSH_USER: ${{ secrets.TOOLFORGE_USER }}
           SSH_KEY: ${{ secrets.TOOLFORGE_KEY }}
+          USERNAME: ${{ secrets.WIKI_USERNAME }}
+          PASSWORD: ${{ secrets.WIKI_PASSWORD }}
         run: |
           mkdir -p ~/.ssh
           echo -e "$SSH_KEY" > ~/.ssh/id_rsa
@@ -42,10 +44,6 @@ jobs:
 
           sleep 3
           rm ~/.ssh/id_rsa
-      - name: Deploy
-        env:
-          USERNAME: ${{ secrets.WIKI_USERNAME }}
-          PASSWORD: ${{ secrets.WIKI_PASSWORD }}
-        run: |
+
           # Run the user's own script to login and publish the build results to pages
           npm run deploy --dev --noi18n
