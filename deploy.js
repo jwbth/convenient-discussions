@@ -67,7 +67,6 @@ if (process.env.CI) {
 
   // Will be undefined if the event is workflow_dispatch.
   version = eventJson.release?.tag_name;
-  version = version && 'v' + version;
 }
 
 const client = new Mw({
