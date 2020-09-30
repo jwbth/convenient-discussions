@@ -2,6 +2,8 @@ name: Deploy i18n
 
 on:
   push:
+    branches:
+      - master
     paths:
       - 'i18n/*'
       - '!i18n/qqq.json'
