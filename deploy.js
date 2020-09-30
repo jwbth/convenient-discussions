@@ -40,24 +40,20 @@ if (config.rootPath[config.rootPath.length - 1] !== '/') {
   error(`${keyword('rootPath')} should end with "${code('/')}".`);
 }
 
-const files = config?.distFiles?.[dev ? 'dev' : 'default'];
-if (!files || !Array.isArray(files) || !files.length) {
+const distFiles = config?.distFiles?.[dev ? 'dev' : 'default'];
+if (!distFiles || !Array.isArray(distFiles) || !distFiles.length) {
   error(`File list not found in ${keyword('config.json5')}.`);
 }
 
-const mainFile = files[0];
+const mainFile = distFiles[0];
 
-files.forEach((file, i) => {
-  if (noi18n && file.endsWith('i18n/')) {
-    files.splice(i, i);
-    return;
-  }
-  if (i18nonly && !file.endsWith('i18n/')) {
-    files.splice(i, i);
-    return;
-  }
+const files = [];
+distFiles.forEach((file) => {
+  if (noi18n && file.endsWith('i18n/') || i18nonly && !file.endsWith('i18n/')) return;
   if (file.endsWith('/')) {
-    files.splice(i, 1, ...fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir));
+    files.push(...fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir));
+  } else {
+    files.push(file);
   }
 });
 
