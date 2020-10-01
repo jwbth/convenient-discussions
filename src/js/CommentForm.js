@@ -117,7 +117,7 @@ export default class CommentForm {
           .cdAddCloseButton();
 
         const commentForm = this;
-        this.$messageArea.find('mw-charinsert-item').on('click', function () {
+        this.$messageArea.find('.mw-charinsert-item').on('click', function () {
           commentForm.commentInput.$input.textSelection('encapsulateSelection', {
             pre: $(this).data('mw-charinsert-start'),
             peri: '',
