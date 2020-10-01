@@ -1,4 +1,4 @@
-name: Deploy development version of the script
+name: Deploy development version of script
 
 on:
   push:
