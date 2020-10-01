@@ -134,8 +134,8 @@ function getLastDeployedCommit(revisions) {
   let lastDeployedCommit;
   let lastDeployedVersion;
   revisions.some((revision) => {
-    [lastDeployedCommit] = revision.comment.match(/\b[0-9a-f]{7}(?= @ )/) || [];
-    [lastDeployedVersion] = revision.comment.match(/\bv\d+\.\d+\.\d+\b/) || [];
+    [, lastDeployedCommit] = revision.comment.match(/[uU]pdate to ([0-9a-f]{7})(?= @ )/) || [];
+    [, lastDeployedVersion] = revision.comment.match(/[uU]pdate to (v\d+\.\d+\.\d+\b)/) || [];
     return lastDeployedCommit || lastDeployedVersion;
   });
   if (lastDeployedCommit || lastDeployedVersion) {
