@@ -21,12 +21,22 @@ ol > .cd-replyWrapper:not(.cd-replyWrapper-hasCommentForm) {
 }
 
 // #cd-notExistingClass is used to override other possibly set "display" properties.
-.action-view .cd-hidden:not(#cd-notExistingClass) {
+.cd-hidden:not(#cd-notExistingClass),
+
+// "cd-hide" and "cd-show" classes are supposed to be used by users to mark elements on wiki pages
+// that should be hidden/shown in CD (for example, texts in editintros that are irrelevant/relevant
+// for CD).
+.action-view .cd-hide {
   display: none;
 }
 
-p.cd-shown {
+div.cd-show,
+p.cd-show {
   display: block !important;
+}
+
+span.cd-show {
+  display: inline !important;
 }
 
 .cd-destructiveText {
