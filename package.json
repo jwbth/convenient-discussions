@@ -6,7 +6,6 @@
     "snippet": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --snippet",
     "configs": "node buildConfigs",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
-    "all": "npm run build & npm run docs",
     "deploy": "node --unhandled-rejections=strict deploy",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions"
   },
