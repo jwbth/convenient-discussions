@@ -83,7 +83,7 @@ let newCommitsCount;
 let newCommitsSubjects;
 let edits = [];
 
-exec('git rev-parse --abbrev-ref HEAD && git log --pretty=format:"%h %s"', parseCmdOutput);
+exec('git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n"', parseCmdOutput);
 
 function parseCmdOutput(err, stdout, stderr) {
   if (stdout === '') {
@@ -94,11 +94,13 @@ function parseCmdOutput(err, stdout, stderr) {
     error(stderr);
   }
 
-  const lines = stdout.split('\n');
-  branch = lines[0];
-  commits = lines.slice(1).map((line) => {
-    const [, hash, subject] = line.match(/^([0-9a-f]{7}) (.+)/);
-    return { hash, subject };
+  branch = stdout.slice(0, stdout.indexOf('\n'));
+  stdout = stdout.slice(stdout.indexOf('\n') + 1);
+  const groups = stdout.split('\n\n');
+  commits = groups.map((line) => {
+    const [, hash, subject, refs] = line.match(/^(.+)\n(.+)\n(.+)/);
+    const [, tag] = refs.match(/tag: ([^,]+)/) || [null, null];
+    return { hash, subject, tag };
   });
 
   requestComments();
@@ -130,12 +132,17 @@ function requestComments() {
 
 function getLastDeployedCommit(revisions) {
   let lastDeployedCommit;
+  let lastDeployedVersion;
   revisions.some((revision) => {
-    [lastDeployedCommit] = revision.comment.match(/\b[0-9a-f]{7}(?= @)/) || [];
-    return lastDeployedCommit;
+    [lastDeployedCommit] = revision.comment.match(/\b[0-9a-f]{7}(?= @ )/) || [];
+    [lastDeployedVersion] = revision.comment.match(/\bv\d+\.\d+\.\d+\b/) || [];
+    return lastDeployedCommit || lastDeployedVersion;
   });
-  if (lastDeployedCommit) {
-    newCommitsCount = commits.findIndex((commit) => commit.hash === lastDeployedCommit);
+  if (lastDeployedCommit || lastDeployedVersion) {
+    newCommitsCount = commits.findIndex((commit) => (
+      commit.hash === lastDeployedCommit ||
+      commit.tag === lastDeployedVersion
+    ));
     if (newCommitsCount === -1) {
       newCommitsCount = 0;
     }
