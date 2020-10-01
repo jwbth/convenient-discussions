@@ -187,7 +187,7 @@ function connectToAddTopicLinks() {
 
       // Ignore buttons that open an edit page with the "preload" parameter. TODO: Should we include
       // the "preload" parameter functionality in the script?
-      if (e.ctrlKey || e.shiftKey || mw.util.getParamValue('preload', href)) return;
+      if (e.ctrlKey || e.shiftKey || e.metaKey || mw.util.getParamValue('preload', href)) return;
 
       e.preventDefault();
 

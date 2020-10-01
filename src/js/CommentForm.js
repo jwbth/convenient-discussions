@@ -1646,7 +1646,7 @@ export default class CommentForm {
             break;
         }
         const navigateToEditUrl = async (e) => {
-          if (e.ctrlKey || e.shiftKey) return;
+          if (e.ctrlKey || e.shiftKey || e.metaKey) return;
           e.preventDefault();
           if (await this.confirmClose()) {
             this.forget();
