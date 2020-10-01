@@ -115,6 +115,15 @@ export default class CommentForm {
         this.$messageArea
           .append(result.html)
           .cdAddCloseButton();
+
+        const commentForm = this;
+        this.$messageArea.find('mw-charinsert-item').on('click', function () {
+          commentForm.commentInput.$input.textSelection('encapsulateSelection', {
+            pre: $(this).data('mw-charinsert-start'),
+            peri: '',
+            post: $(this).data('mw-charinsert-end'),
+          });
+        });
       });
     }
 
