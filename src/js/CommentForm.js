@@ -64,16 +64,28 @@ export default class CommentForm {
    *   `'addSection'`.
    * @param {Comment|Section|Page} config.target Comment, section, or page that the form is related
    *   to.
-   * @param {JQuery} [config.$addSectionLink] When adding a section, the element the user clicked to
-   *   do it.
+   * @param {JQuery} [config.$addSectionButton] When adding a section, the element the user clicked
+   *   to do it.
    * @param {object} [config.dataToRestore] Data saved in the previous session.
    * @param {boolean} [config.scrollIntoView] Whether to scroll the form into view.
-   * @param {string} [config.editintro] Editintro wikilink.
+   * @param {string} [config.editIntro] Edit intro page name extracted from a button destination.
+   * @param {string} [config.preload] Preload page name extracted from a button destination.
+   * @param {string} [config.preloadTitle] Preloaded subject/headline extracted from a button
+   *   destination.
    * @throws {CdError}
    * @fires commentFormCreated
    * @fires commentFormToolbarReady
    */
-  constructor({ mode, target, $addSectionLink, dataToRestore, scrollIntoView, editintro }) {
+  constructor({
+    mode,
+    target,
+    $addSectionButton,
+    dataToRestore,
+    scrollIntoView,
+    editIntro,
+    preload,
+    preloadTitle,
+  }) {
     /**
      * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
@@ -84,11 +96,32 @@ export default class CommentForm {
     this.setTargets(target);
 
     /**
+     * Edit intro page name extracted from a button destination.
+     *
+     * @type {string}
+     */
+    this.editIntro = editIntro;
+
+    /**
+     * Preload page name extracted from a button destination.
+     *
+     * @type {string}
+     */
+    this.preload = preload;
+
+    /**
+     * Preloaded subject/headline extracted from a button destination.
+     *
+     * @type {string}
+     */
+    this.preloadTitle = preloadTitle;
+
+    /**
      * When adding a section, an element the user clicked to do it.
      *
      * @type {JQuery}
      */
-    this.$addSectionLink = $addSectionLink;
+    this.$addSectionButton = $addSectionButton;
 
     if (this.target instanceof Comment) {
       this.sectionHeadline = this.target.getSection() && this.target.getSection().headline;
@@ -110,8 +143,8 @@ export default class CommentForm {
      */
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
-    if (editintro) {
-      parseCode(`{{${editintro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
+    if (this.editIntro) {
+      parseCode(`{{${this.editIntro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
         this.$messageArea
           .append(result.html)
           .cdAddCloseButton();
@@ -142,8 +175,9 @@ export default class CommentForm {
      * @typedef {object} Operation
      * @property {string} type Operation type. One of `'load'`, `'preview'`, `'viewChanges'`, and
      *   `'submit'`.
-     * @property {boolean} isClosed Is the operation closed (settled).
-     * @property {boolean} isDelayed Is the operation delayed.
+     * @property {boolean} [affectHeadline=false] Should the headline input be shown as pending.
+     * @property {boolean} [isClosed] Is the operation closed (settled).
+     * @property {boolean} [isDelayed] Is the operation delayed.
      */
 
     /**
@@ -172,19 +206,84 @@ export default class CommentForm {
         this.target.getCode(true).then(
           () => {
             let commentText = this.target.codeToText();
-            const headline = this.target.inCode.headlineCode;
             if (this.target.inCode.inSmallFont) {
               commentText = `<small>${commentText}</small>`;
             }
+            const headline = this.target.inCode.headlineCode;
+
             this.commentInput.setValue(commentText);
             this.originalComment = commentText;
             if (this.headlineInput) {
               this.headlineInput.setValue(headline);
               this.originalHeadline = headline;
             }
-            this.commentInput.focus();
 
             this.closeOperation(currentOperation);
+
+            this.commentInput.focus();
+            this.preview();
+          },
+          (e) => {
+            if (e instanceof CdError) {
+              const options = Object.assign({}, e.data, {
+                cancel: true,
+                currentOperation,
+              });
+              this.handleError(options);
+            } else {
+              this.handleError({
+                type: 'javascript',
+                logMessage: e,
+                cancel: true,
+                currentOperation,
+              });
+            }
+          }
+        );
+      } else if (this.mode === 'addSection' && this.preload) {
+        if (scrollIntoView) {
+          this.$element.cdScrollIntoView('center');
+        }
+        this.headlineInput.setValue(this.preloadTitle || '');
+        this.originalHeadline = this.preloadTitle || '';
+        this.headlineInput.focus();
+
+        const currentOperation = this.registerOperation({
+          type: 'load',
+          affectHeadline: false,
+        });
+        const preloadPage = new Page(this.preload);
+        preloadPage.getCode().then(
+          () => {
+            let code = preloadPage.code.trim();
+            const [, onlyInclude] = (
+              code.match(
+                /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/
+              ) ||
+              []
+            );
+            if (onlyInclude) {
+              code = onlyInclude;
+            }
+            code = code
+              .replace(
+                /<includeonly(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/includeonly(?: \w+)? ?>/g,
+                '$1'
+              )
+              .replace(
+                /<noinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/noinclude(?: \w+)? ?>/g,
+                ''
+              );
+
+            this.commentInput.setValue(code);
+            this.originalComment = code;
+
+            if (code.includes(cd.g.SIGN_CODE)) {
+              this.noSignatureCheckbox.setSelected(true);
+            }
+
+            this.closeOperation(currentOperation);
+
             this.preview();
           },
           (e) => {
@@ -904,6 +1003,7 @@ export default class CommentForm {
         }),
         padded: true,
         align: 'center',
+        width: 400,
       },
       $overlay: cd.g.$popupsOverlay,
       tabIndex: String(this.id) + '31',
@@ -1087,8 +1187,8 @@ export default class CommentForm {
 
       case 'addSection': {
         this.isNewTopicOnTop = (
-          this.$addSectionLink &&
-          this.$addSectionLink.is('[href*="section=0"]')
+          this.$addSectionButton &&
+          this.$addSectionButton.is('[href*="section=0"]')
         );
         if (this.isNewTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
@@ -1416,13 +1516,15 @@ export default class CommentForm {
    * Push the pending status of the form inputs.
    *
    * @param {boolean} blockButtons Whether to block buttons.
+   * @param {boolean} affectHeadline Should the `pushPending` method be applied to the headline
+   *   input.
    * @see
    *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-pushPending
    */
-  pushPending(blockButtons = false) {
+  pushPending(blockButtons = false, affectHeadline = true) {
     this.commentInput.pushPending();
     this.summaryInput.pushPending();
-    if (this.headlineInput) {
+    if (this.headlineInput && affectHeadline) {
       this.headlineInput.pushPending();
     }
 
@@ -1437,14 +1539,16 @@ export default class CommentForm {
   /**
    * Pop the pending status of the form inputs.
    *
-   * @param {boolean} unblockButtons Whether to unblock buttons if they were blocked.
+   * @param {boolean} [unblockButtons=false] Whether to unblock buttons if they were blocked.
+   * @param {boolean} [affectHeadline=true] Should the `popPending` method be applied to the
+   *   headline input.
    * @see
    *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-popPending
    */
-  popPending(unblockButtons = false) {
+  popPending(unblockButtons = false, affectHeadline = true) {
     this.commentInput.popPending();
     this.summaryInput.popPending();
-    if (this.headlineInput) {
+    if (this.headlineInput && affectHeadline) {
       this.headlineInput.popPending();
     }
 
@@ -2144,7 +2248,7 @@ export default class CommentForm {
     operation.isClosed = false;
     if (operation.type !== 'preview' || !operation.auto) {
       this.$messageArea.empty();
-      this.pushPending(['load', 'submit'].includes(operation.type));
+      this.pushPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
     }
     return operation;
   }
@@ -2159,7 +2263,7 @@ export default class CommentForm {
     if (operation.isClosed) return;
     operation.isClosed = true;
     if (operation.type !== 'preview' || !operation.auto) {
-      this.popPending(['load', 'submit'].includes(operation.type));
+      this.popPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
     }
   }
 
@@ -2206,7 +2310,7 @@ export default class CommentForm {
     }
     // This was excessive at the time when it was written as the only use case is autopreview.
     if (operation.type !== 'preview' || !operation.auto) {
-      this.popPending(operation.type === 'submit');
+      this.popPending(operation.type === 'submit', operation.affectHeadline);
     }
   }
 
@@ -2906,8 +3010,8 @@ export default class CommentForm {
 
       case 'addSection': {
         let newTopicSummary;
-        if (this.$addSectionLink) {
-          const uri = new mw.Uri(this.$addSectionLink.attr('href'));
+        if (this.$addSectionButton) {
+          const uri = new mw.Uri(this.$addSectionButton.attr('href'));
           newTopicSummary = uri.query.summary?.replace(/^.+?\*\/ */, '');
         }
         return newTopicSummary || cd.s('es-new-topic');

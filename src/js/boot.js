@@ -378,7 +378,11 @@ function initPatterns() {
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
     .concat(cd.config.customBadCommentBeginnings);
 
-  cd.g.ADD_TOPIC_SELECTORS = ['#ca-addsection a']
+  cd.g.ADD_TOPIC_SELECTORS = [
+    '#ca-addsection a',
+    '.commentbox input[type="submit"]',
+    '.createbox input[type="submit"]',
+  ]
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
 
@@ -750,7 +754,7 @@ export function saveSession() {
         // OK, extracting a selector from an element would be too much, and likely unreliable, so we
         // extract a href (the only property that we use in the CommentForm constructor) to put it
         // onto a fake element when restoring the form.
-        addSectionLinkHref: commentForm.$addSectionLink?.attr('href'),
+        addSectionLinkButton: commentForm.$addSectionButton?.attr('href'),
         headline: commentForm.headlineInput?.getValue(),
         comment: commentForm.commentInput.getValue(),
         summary: commentForm.summaryInput.getValue(),
@@ -816,11 +820,11 @@ function restoreCommentFormsFromData(commentFormsData) {
       }
     } else if (data.mode === 'addSection') {
       if (!cd.g.CURRENT_PAGE.addSectionForm) {
-        const $fakeA = $('<a>').attr('href', data.addSectionLinkHref);
+        const $fakeA = $('<a>').attr('href', data.addSectionButtonHref);
         cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           target: cd.g.CURRENT_PAGE,
           mode: data.mode,
-          $addSectionLink: $fakeA,
+          $addSectionButton: $fakeA,
           dataToRestore: data,
         });
         haveRestored = true;

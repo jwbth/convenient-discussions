@@ -8,6 +8,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import Page from './Page';
 import Parser, { findSpecialElements, windowGetAllTextNodes } from './Parser';
 import Section from './Section';
 import cd from './cd';
@@ -183,18 +184,45 @@ function connectToAddTopicLinks() {
   $(cd.g.ADD_TOPIC_SELECTORS)
     .off('click.cd')
     .on('click.cd', function (e) {
-      const href = $(this).attr('href');
+      if (e.ctrlKey || e.shiftKey || e.metaKey) return;
 
-      // Ignore buttons that open an edit page with the "preload" parameter. TODO: Should we include
-      // the "preload" parameter functionality in the script?
-      if (e.ctrlKey || e.shiftKey || e.metaKey || mw.util.getParamValue('preload', href)) return;
+      const $button = $(this);
+      let editIntro;
+      let preload;
+      let preloadTitle;
+      if ($button.is('a')) {
+        const href = $button.attr('href');
+        editIntro = mw.util.getParamValue('editintro', href);
+        preload = mw.util.getParamValue('preload', href);
+        preloadTitle = mw.util.getParamValue('title', href);
+      } else {
+        // input
+        const $form = $button.closest('form');
+
+        const pageName = $form.find('input[name="title"]').val();
+        const page = new Page(pageName);
+        if (page.name !== cd.g.CURRENT_PAGE.name) return;
+
+        editIntro = $form.find('input[name="editintro"]').val();
+        preload = $form.find('input[name="preload"]').val();
+        preloadTitle = $form.find('input[name="preloadtitle"]').val();
+      }
 
       e.preventDefault();
 
-      const editintro = mw.util.getParamValue('editintro', href);
-
       const addSectionForm = cd.g.CURRENT_PAGE.addSectionForm;
       if (addSectionForm) {
+        // Sometimes there are more than one "Add section" button on the page, and they lead to
+        // opening forms with different content.
+        if (
+          addSectionForm.editIntro !== editIntro ||
+          addSectionForm.preload !== preload ||
+          addSectionForm.preloadTitle !== preloadTitle
+        ) {
+          mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
+          return;
+        }
+
         addSectionForm.$element.cdScrollIntoView('center');
         addSectionForm.headlineInput.focus();
       } else {
@@ -206,9 +234,11 @@ function connectToAddTopicLinks() {
         cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           mode: 'addSection',
           target: cd.g.CURRENT_PAGE,
-          $addSectionLink: $(this),
+          $addSectionButton: $button,
           scrollIntoView: true,
-          editintro,
+          editIntro,
+          preload,
+          preloadTitle,
         });
       }
     })
