@@ -935,7 +935,7 @@ export default class Section extends SectionSkeleton {
 
     if (dealWithLoadingBug('mediawiki.widgets')) return;
 
-    // Make requests in advance.
+    // Make requests in advance
     const preparationRequests = [
       this.getSourcePage().getCode(),
       mw.loader.using('mediawiki.widgets'),

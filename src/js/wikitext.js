@@ -60,31 +60,44 @@ export function removeWikiMarkup(code) {
   return code
     // Remove comments
     .replace(/<!--[^]*?-->/g, '')
+
     // Remove text hidden by the script (for example, in wikitext.hideDistractingCode)
     .replace(/\x01 *\x02/g, '')
+
     // Pipe trick
     .replace(/(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g, '$1$2$3')
+
     // Extract displayed text from file embeddings
     .replace(cd.g.FILE_LINK_REGEXP, '$1')
+
     // Extract displayed text from [[wikilinks]]
     .replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
+
     // For optimization purposes, remove template names
     .replace(/\{\{:?(?:[^|{}<>\n]+)(?:\|(.+?))?\}\}/g, '$1')
+
     // Extract displayed text from [links]
     .replace(/\[https?:\/\/[^[\]<>"\n ]+ *([^\]]*)\]/g, '$1')
+
     // Remove bold
     .replace(/'''(.+?)'''/g, '$1')
+
     // Remove italics
     .replace(/''(.+?)''/g, '$1')
+
     // Replace <br> with a space
     .replace(/<br ?\/?>/g, ' ')
+
     // Remove opening tags (won't work with <smth param=">">, but wikiparser fails too). This
     // includes tags containing spaces, like <math chem>.
     .replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>/g, '')
+
     // Remove closing tags
     .replace(/<\/\w+(?: \w+)? ?>/g, '')
+
     // Replace multiple spaces with one space
     .replace(/ {2,}/g, ' ')
+
     .trim();
 }
 
