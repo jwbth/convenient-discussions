@@ -194,7 +194,7 @@ function connectToAddTopicLinks() {
         const href = $button.attr('href');
         editIntro = mw.util.getParamValue('editintro', href);
         preload = mw.util.getParamValue('preload', href);
-        preloadTitle = mw.util.getParamValue('title', href);
+        preloadTitle = mw.util.getParamValue('preloadtitle', href);
       } else {
         // input
         const $form = $button.closest('form');

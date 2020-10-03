@@ -255,7 +255,7 @@ export default class CommentForm {
         const preloadPage = new Page(this.preload);
         preloadPage.getCode().then(
           () => {
-            let code = preloadPage.code.trim();
+            let code = preloadPage.code;
             const [, onlyInclude] = (
               code.match(
                 /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/
@@ -274,13 +274,14 @@ export default class CommentForm {
                 /<noinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/noinclude(?: \w+)? ?>/g,
                 ''
               );
-
-            this.commentInput.setValue(code);
-            this.originalComment = code;
+            code = code.trim();
 
             if (code.includes(cd.g.SIGN_CODE)) {
               this.noSignatureCheckbox.setSelected(true);
             }
+
+            this.commentInput.setValue(code);
+            this.originalComment = code;
 
             this.closeOperation(currentOperation);
 
@@ -1248,6 +1249,7 @@ export default class CommentForm {
         message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
         name: 'signatureNotNeeded',
         type: 'notice',
+        checkFunc: () => !this.noSignatureCheckbox?.isSelected(),
       },
       {
         pattern: /<pre/,
@@ -1284,7 +1286,7 @@ export default class CommentForm {
         .on('change', (headline) => {
           this.updateAutoSummary(true, true);
 
-          if (headline.includes('{{')) {
+          if (headline.includes('{{') && !this.preloadTitle) {
             this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
               type: 'warning',
               name: 'templateInHeadline',
@@ -2013,8 +2015,10 @@ export default class CommentForm {
       }
     );
 
-    // Remove signature tildes
-    code = code.replace(/\s*~{3,}$/, '');
+    if (!this.noSignatureCheckbox?.isSelected()) {
+      // Remove signature tildes
+      code = code.replace(/\s*~{3,}$/, '');
+    }
 
     // If the comment starts with a numbered list or table, replace all asterisks in the indentation
     // chars with colons to have the list or table form correctly.
