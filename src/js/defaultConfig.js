@@ -553,7 +553,7 @@ export default {
    * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.
    * @property {string} [type='notice'] For example, `notice`.
-   * @property {Function} [checkFunc] If the function returns false, no message is displayed.
+   * @property {Function} [checkFunc] If this function returns false, no message is displayed.
    */
 
   /**

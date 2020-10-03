@@ -124,4 +124,4 @@ convenientDiscussions.i18n['${lang}'] = ${json};
   }
 });
 
-console.log('Internationalization files has been built successfully.');
+console.log('Internationalization files have been built successfully.');
