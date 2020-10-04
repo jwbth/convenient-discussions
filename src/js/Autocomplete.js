@@ -410,10 +410,7 @@ export default class Autocomplete {
         selectTemplate,
         values: (text, callback) => {
           const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
-          if (
-            !text ||
-            (!/^[a-z]+$/i.test(text) && !this.tags.withSpace.some((tag) => regexp.test(tag)))
-          ) {
+          if (!text || !/^[a-z]+$/i.test(text)) {
             callback([]);
             return;
           }
@@ -664,7 +661,6 @@ export default class Autocomplete {
         'mapframe',
         'maplink',
         'math',
-        'math chem',
         'poem',
         'ref',
         ['references', '<references />'],
@@ -684,7 +680,6 @@ export default class Autocomplete {
       }),
     };
     config.default.sort();
-    config.withSpace = config.default.filter((tag) => tag.includes(' '));
 
     return config;
   }
