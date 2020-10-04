@@ -75,11 +75,11 @@ export default class Section extends SectionSkeleton {
          *
          * @type {URL}
          */
-        this.editUrl = new URL(editLink.href);
+        this.editUrl = new mw.Uri(editLink.getAttribute('href'));
         if (this.editUrl) {
-          const sectionNumber = this.editUrl.searchParams.get('section');
+          const sectionNumber = this.editUrl.query.section;
           if (sectionNumber.startsWith('T-')) {
-            this.sourcePage = new Page(this.editUrl.searchParams.get('title'));
+            this.sourcePage = new Page(this.editUrl.query.title);
           }
         }
       } else {
