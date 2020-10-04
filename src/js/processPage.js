@@ -26,7 +26,7 @@ import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
-import { isInline, restoreScrollPosition } from './util';
+import { areObjectsEqual, isInline, restoreScrollPosition } from './util';
 import { setSettings } from './options';
 
 /**
@@ -182,43 +182,63 @@ function processSections(parser, watchedSectionsRequest) {
  */
 function connectToAddTopicLinks() {
   $(cd.g.ADD_TOPIC_SELECTORS)
+    .filter(() => {
+      const $button = $(this);
+      if ($button.is('input')) {
+        const pageName = $button
+          .closest('form')
+          .find('input[name="title"]')
+          .val();
+        const page = new Page(pageName);
+        if (page.name !== cd.g.CURRENT_PAGE.name) {
+          return false;
+        }
+      }
+
+      return true;
+    })
     .off('click.cd')
     .on('click.cd', function (e) {
       if (e.ctrlKey || e.shiftKey || e.metaKey) return;
 
       const $button = $(this);
-      let editIntro;
-      let preload;
-      let preloadTitle;
+      let preloadConfig;
+      let isNewTopicOnTop = false;
       if ($button.is('a')) {
         const href = $button.attr('href');
-        editIntro = mw.util.getParamValue('editintro', href);
-        preload = mw.util.getParamValue('preload', href);
-        preloadTitle = mw.util.getParamValue('preloadtitle', href);
+        const query = new mw.Uri(href).query;
+        preloadConfig = {
+          editIntro: query.editintro,
+          commentTemplate: query.preload,
+          headline: query.preloadtitle,
+          summary: query.summary?.replace(/^.+?\*\/ */, ''),
+        };
+        isNewTopicOnTop = query.section === 0;
       } else {
-        // input
+        // <input>
         const $form = $button.closest('form');
-
-        const pageName = $form.find('input[name="title"]').val();
-        const page = new Page(pageName);
-        if (page.name !== cd.g.CURRENT_PAGE.name) return;
-
-        editIntro = $form.find('input[name="editintro"]').val();
-        preload = $form.find('input[name="preload"]').val();
-        preloadTitle = $form.find('input[name="preloadtitle"]').val();
+        preloadConfig = {
+          editIntro: $form.find('input[name="editintro"]').val(),
+          commentTemplate: $form.find('input[name="preload"]').val(),
+          headline: $form.find('input[name="preloadtitle"]').val(),
+          summary: $form.find('input[name="summary"]').val(),
+        };
       }
 
       e.preventDefault();
+
+      // Clean up preloadConfig keys for possible future comparison using util.areObjectsEqual.
+      Object.keys(preloadConfig).forEach((key) => {
+        if (preloadConfig[key] === undefined) {
+          delete preloadConfig[key];
+        }
+      });
 
       const addSectionForm = cd.g.CURRENT_PAGE.addSectionForm;
       if (addSectionForm) {
         // Sometimes there are more than one "Add section" button on the page, and they lead to
         // opening forms with different content.
-        if (
-          addSectionForm.editIntro !== editIntro ||
-          addSectionForm.preload !== preload ||
-          addSectionForm.preloadTitle !== preloadTitle
-        ) {
+        if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
           mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
           return;
         }
@@ -234,11 +254,9 @@ function connectToAddTopicLinks() {
         cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           mode: 'addSection',
           target: cd.g.CURRENT_PAGE,
-          $addSectionButton: $button,
           scrollIntoView: true,
-          editIntro,
-          preload,
-          preloadTitle,
+          preloadConfig,
+          isNewTopicOnTop,
         });
       }
     })

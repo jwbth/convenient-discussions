@@ -57,6 +57,17 @@ function lastFocused(commentForm1, commentForm2) {
 /** Class representing a comment form. */
 export default class CommentForm {
   /**
+   * Object specifying configuration to preload data into the comment form. It is extracted from the
+   * "Add section" link/button target.
+   *
+   * @typedef {object} PreloadConfig
+   * @property {string} [editIntro] Edit intro page name.
+   * @property {string} [commentTemplate] Comment template's page name.
+   * @property {string} [headline] Subject/headline.
+   * @property {string} [summary] Edit summary.
+   */
+
+  /**
    * Create a comment form.
    *
    * @param {object} config
@@ -68,24 +79,13 @@ export default class CommentForm {
    *   to do it.
    * @param {object} [config.dataToRestore] Data saved in the previous session.
    * @param {boolean} [config.scrollIntoView] Whether to scroll the form into view.
-   * @param {string} [config.editIntro] Edit intro page name extracted from a button destination.
-   * @param {string} [config.preload] Preload page name extracted from a button destination.
-   * @param {string} [config.preloadTitle] Preloaded subject/headline extracted from a button
-   *   destination.
+   * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
+   * @param {boolean} [config.isNewTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
    * @fires commentFormCreated
    * @fires commentFormToolbarReady
    */
-  constructor({
-    mode,
-    target,
-    $addSectionButton,
-    dataToRestore,
-    scrollIntoView,
-    editIntro,
-    preload,
-    preloadTitle,
-  }) {
+  constructor({ mode, target, dataToRestore, scrollIntoView, preloadConfig, isNewTopicOnTop }) {
     /**
      * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
@@ -96,32 +96,18 @@ export default class CommentForm {
     this.setTargets(target);
 
     /**
-     * Edit intro page name extracted from a button destination.
+     * Configuration to preload data into the form.
      *
-     * @type {string}
+     * @type {object|undefined}
      */
-    this.editIntro = editIntro;
+    this.preloadConfig = preloadConfig;
 
     /**
-     * Preload page name extracted from a button destination.
+     * When adding a topic, whether it should be on top.
      *
-     * @type {string}
+     * @type {boolean|undefined}
      */
-    this.preload = preload;
-
-    /**
-     * Preloaded subject/headline extracted from a button destination.
-     *
-     * @type {string}
-     */
-    this.preloadTitle = preloadTitle;
-
-    /**
-     * When adding a section, an element the user clicked to do it.
-     *
-     * @type {JQuery}
-     */
-    this.$addSectionButton = $addSectionButton;
+    this.isNewTopicOnTop = isNewTopicOnTop;
 
     if (this.target instanceof Comment) {
       this.sectionHeadline = this.target.getSection() && this.target.getSection().headline;
@@ -143,8 +129,8 @@ export default class CommentForm {
      */
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
-    if (this.editIntro) {
-      parseCode(`{{${this.editIntro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
+    if (this.preloadConfig?.editIntro) {
+      parseCode(`{{${this.preloadConfig.editIntro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
         this.$messageArea
           .append(result.html)
           .cdAddCloseButton();
@@ -240,74 +226,71 @@ export default class CommentForm {
             }
           }
         );
-      } else if (this.mode === 'addSection' && this.preload) {
-        if (scrollIntoView) {
-          this.$element.cdScrollIntoView('center');
-        }
-        this.headlineInput.setValue(this.preloadTitle || '');
-        this.originalHeadline = this.preloadTitle || '';
-        this.headlineInput.focus();
-
-        const currentOperation = this.registerOperation({
-          type: 'load',
-          affectHeadline: false,
-        });
-        const preloadPage = new Page(this.preload);
-        preloadPage.getCode().then(
-          () => {
-            let code = preloadPage.code;
-            const [, onlyInclude] = (
-              code.match(
-                /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/
-              ) ||
-              []
-            );
-            if (onlyInclude) {
-              code = onlyInclude;
-            }
-            code = code
-              .replace(
-                /<includeonly(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/includeonly(?: \w+)? ?>/g,
-                '$1'
-              )
-              .replace(
-                /<noinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/noinclude(?: \w+)? ?>/g,
-                ''
-              );
-            code = code.trim();
-
-            if (code.includes(cd.g.SIGN_CODE)) {
-              this.noSignatureCheckbox.setSelected(true);
-            }
-
-            this.commentInput.setValue(code);
-            this.originalComment = code;
-
-            this.closeOperation(currentOperation);
-
-            this.preview();
-          },
-          (e) => {
-            if (e instanceof CdError) {
-              const options = Object.assign({}, e.data, {
-                cancel: true,
-                currentOperation,
-              });
-              this.handleError(options);
-            } else {
-              this.handleError({
-                type: 'javascript',
-                logMessage: e,
-                cancel: true,
-                currentOperation,
-              });
-            }
-          }
-        );
       } else {
-        this.originalComment = '';
+        if (this.preloadConfig?.commentTemplate) {
+          const currentOperation = this.registerOperation({
+            type: 'load',
+            affectHeadline: false,
+          });
+          const preloadPage = new Page(this.preloadConfig.commentTemplate);
+          preloadPage.getCode().then(
+            () => {
+              let code = preloadPage.code;
+              const [, onlyInclude] = (
+                code.match(
+                  /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/
+                ) ||
+                []
+              );
+              if (onlyInclude) {
+                code = onlyInclude;
+              }
+              code = code
+                .replace(
+                  /<includeonly(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/includeonly(?: \w+)? ?>/g,
+                  '$1'
+                )
+                .replace(
+                  /<noinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/noinclude(?: \w+)? ?>/g,
+                  ''
+                );
+              code = code.trim();
+
+              if (code.includes(cd.g.SIGN_CODE)) {
+                this.noSignatureCheckbox.setSelected(true);
+              }
+
+              this.commentInput.setValue(code);
+              this.originalComment = code;
+
+              this.closeOperation(currentOperation);
+
+              this.preview();
+            },
+            (e) => {
+              if (e instanceof CdError) {
+                const options = Object.assign({}, e.data, {
+                  cancel: true,
+                  currentOperation,
+                });
+                this.handleError(options);
+              } else {
+                this.handleError({
+                  type: 'javascript',
+                  logMessage: e,
+                  cancel: true,
+                  currentOperation,
+                });
+              }
+            }
+          );
+        } else {
+          this.originalComment = '';
+        }
+
         if (this.headlineInput) {
-          this.originalHeadline = '';
+          this.headlineInput.setValue(this.preloadConfig?.headline || '');
+          this.originalHeadline = this.preloadConfig?.headline || '';
         }
 
         if (!(this.target instanceof Page)) {
@@ -1187,10 +1170,6 @@ export default class CommentForm {
       }
 
       case 'addSection': {
-        this.isNewTopicOnTop = (
-          this.$addSectionButton &&
-          this.$addSectionButton.is('[href*="section=0"]')
-        );
         if (this.isNewTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
         } else {
@@ -1206,8 +1185,8 @@ export default class CommentForm {
             === Level 3 section ===
             ==== Level 4 section ====
           ..."Add subsection" forms should go in the opposite order. So, if there are "Add
-          subsection" forms for a level 4 and then a level 2 section, we need to put our form
-          between them.
+          subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
+          subsection" for a level 3 section, we need to put our form between them.
          */
         const headingLevelRegexp = new RegExp(
           `\\bcd-commentForm-addSubsection-[${this.target.level}-6]\\b`
@@ -1286,7 +1265,7 @@ export default class CommentForm {
         .on('change', (headline) => {
           this.updateAutoSummary(true, true);
 
-          if (headline.includes('{{') && !this.preloadTitle) {
+          if (headline.includes('{{') && !this.preloadConfig?.headline) {
             this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
               type: 'warning',
               name: 'templateInHeadline',
@@ -3013,12 +2992,7 @@ export default class CommentForm {
       }
 
       case 'addSection': {
-        let newTopicSummary;
-        if (this.$addSectionButton) {
-          const uri = new mw.Uri(this.$addSectionButton.attr('href'));
-          newTopicSummary = uri.query.summary?.replace(/^.+?\*\/ */, '');
-        }
-        return newTopicSummary || cd.s('es-new-topic');
+        return this.preloadConfig?.summary || cd.s('es-new-topic');
       }
 
       case 'addSubsection': {

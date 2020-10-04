@@ -751,10 +751,8 @@ export function saveSession() {
       return {
         mode: commentForm.mode,
         targetData,
-        // OK, extracting a selector from an element would be too much, and likely unreliable, so we
-        // extract a href (the only property that we use in the CommentForm constructor) to put it
-        // onto a fake element when restoring the form.
-        addSectionLinkButton: commentForm.$addSectionButton?.attr('href'),
+        preloadConfig: commentForm.preloadConfig,
+        isNewTopicOnTop: commentForm.isNewTopicOnTop,
         headline: commentForm.headlineInput?.getValue(),
         comment: commentForm.commentInput.getValue(),
         summary: commentForm.summaryInput.getValue(),
@@ -820,12 +818,12 @@ function restoreCommentFormsFromData(commentFormsData) {
       }
     } else if (data.mode === 'addSection') {
       if (!cd.g.CURRENT_PAGE.addSectionForm) {
-        const $fakeA = $('<a>').attr('href', data.addSectionButtonHref);
         cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           target: cd.g.CURRENT_PAGE,
           mode: data.mode,
-          $addSectionButton: $fakeA,
           dataToRestore: data,
+          preloadConfig: data.preloadConfig,
+          isNewTopicOnTop: data.isNewTopicOnTop,
         });
         haveRestored = true;
       } else {
