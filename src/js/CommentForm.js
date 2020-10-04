@@ -236,15 +236,20 @@ export default class CommentForm {
           preloadPage.getCode().then(
             () => {
               let code = preloadPage.code;
-              const [, onlyInclude] = (
-                code.match(
-                  /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/
-                ) ||
-                []
-              );
-              if (onlyInclude) {
+
+              const regexp = /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/g;
+              let match;
+              let onlyInclude;
+              while ((match = regexp.exec(code))) {
+                if (onlyInclude === undefined) {
+                  onlyInclude = '';
+                }
+                onlyInclude += match[1];
+              }
+              if (onlyInclude !== undefined) {
                 code = onlyInclude;
               }
+
               code = code
                 .replace(
                   /<includeonly(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/includeonly(?: \w+)? ?>/g,
