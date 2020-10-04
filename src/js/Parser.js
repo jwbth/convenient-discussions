@@ -26,7 +26,7 @@ function getPageNameFromUrl(url) {
     typeof mw === 'undefined' ||
     (mw.config.get('wgArticlePath') === '/wiki/$1' && mw.config.get('wgScript') === '/w/index.php')
   ) {
-    url = url
+    let pageName = url
       .replace(/^(?:https?:)?\/\/[^/]+/, '')
       .replace(/^\/wiki\//, '')
       .replace(/^\/w\/index.php\?title=/, '')
@@ -34,13 +34,18 @@ function getPageNameFromUrl(url) {
       .replace(/#.*/, '')
       .replace(/_/g, ' ');
     try {
-      url = decodeURIComponent(url);
+      pageName = decodeURIComponent(pageName);
     } catch (e) {
       return null;
     }
-    return url;
+    return pageName;
   } else {
-    const uri = new mw.Uri(url);
+    let uri;
+    try {
+      uri = new mw.Uri(url);
+    } catch (e) {
+      return null;
+    }
     const match = uri.path.match(cd.g.ARTICLE_PATH_REGEXP);
     if (match) {
       try {
@@ -49,10 +54,7 @@ function getPageNameFromUrl(url) {
         return null;
       }
     }
-    if (uri.query.title) {
-      return uri.query.title;
-    }
-    return null;
+    return uri.query.title || null;
   }
 }
 
