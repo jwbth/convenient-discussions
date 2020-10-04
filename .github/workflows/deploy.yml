@@ -1,4 +1,4 @@
-name: Deploy script
+name: Deploy production build
 
 on:
   release:
