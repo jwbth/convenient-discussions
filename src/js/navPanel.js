@@ -187,11 +187,10 @@ async function checkForNewComments() {
  * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
  * @param {CommentSkeleton[]|Comment[]} comments
- * @param {string} mode Code of the action of the button: 'firstunseen' or 'refresh'.
  * @returns {?string}
  * @private
  */
-function generateTooltipText(comments, mode) {
+function generateTooltipText(comments) {
   let tooltipText = null;
   if (comments.length) {
     const commentsBySection = {};
@@ -208,9 +207,9 @@ function generateTooltipText(comments, mode) {
     tooltipText = (
       cd.s('navpanel-newcomments-count', comments.length) +
       ' ' +
-      cd.s('navpanel-newcomments-' + mode) +
+      cd.s('navpanel-newcomments-refresh') +
       ' ' +
-      cd.mws('parentheses', mode === 'refresh' ? 'R' : 'F')
+      cd.mws('parentheses', 'R')
     );
     Object.keys(commentsBySection).forEach((anchor) => {
       const section = (
@@ -242,7 +241,7 @@ function generateTooltipText(comments, mode) {
         );
       });
     });
-  } else if (mode === 'refresh') {
+  } else {
     tooltipText = `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`;
   }
 
@@ -637,6 +636,7 @@ const navPanel = {
     this.$firstUnseenButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-firstUnseenButton')
+      .attr('title', `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`)
       .on('click', () => {
         this.goToFirstUnseenComment();
       })
@@ -815,14 +815,7 @@ const navPanel = {
    */
   updateFirstUnseenButton() {
     if (unseenCount) {
-      const shownUnseenCommentsCount = Number(this.$firstUnseenButton.text());
-      if (unseenCount !== shownUnseenCommentsCount) {
-        const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
-        this.$firstUnseenButton
-          .show()
-          .text(unseenCount)
-          .attr('title', generateTooltipText(unseenComments, 'firstunseen'));
-      }
+      this.$firstUnseenButton.show().text(unseenCount);
     } else {
       this.$firstUnseenButton.hide();
     }
@@ -999,7 +992,7 @@ const navPanel = {
     this.$refreshButton
       .empty()
       .append($span)
-      .attr('title', generateTooltipText(newComments, 'refresh'));
+      .attr('title', generateTooltipText(newComments));
     if (areThereInteresting) {
       this.$refreshButton.addClass('cd-navPanel-refreshButton-interesting');
     } else {
