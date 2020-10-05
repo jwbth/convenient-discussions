@@ -174,15 +174,12 @@ export default class Page {
    * query timestamp (curtimestamp). Enrich the Page instance with those properties. Also set the
    * `realName` property that indicates either the redirect target if it's present or the page name.
    *
+   * @param {boolean} [tolerateMissing=true] Assign `''` to the `code` property if the page is
+   *   missing instead of throwing a error.
+   *
    * @throws {CdError}
    */
-  async getCode() {
-    // The page doesn't exist.
-    if (!mw.config.get('wgArticleId')) {
-      Object.assign(this, { code: '' });
-      return;
-    }
-
+  async getCode(tolerateMissing = true) {
     const resp = await cd.g.api.post({
       action: 'query',
       titles: this.name,
@@ -206,10 +203,19 @@ export default class Page {
       });
     }
     if (page.missing) {
-      throw new CdError({
-        type: 'api',
-        code: 'missing',
-      });
+      if (tolerateMissing) {
+        Object.assign(this, {
+          code: '',
+          realName: this.name,
+          queryTimestamp: resp.curtimestamp,
+        });
+        return;
+      } else {
+        throw new CdError({
+          type: 'api',
+          code: 'missing',
+        });
+      }
     }
     if (page.invalid) {
       throw new CdError({
@@ -472,20 +478,17 @@ export default class Page {
    */
   inferNewTopicPlacement() {
     if (this.code === undefined) {
-      throw new CdError('Can\'t infer if new topics are on top: Page#code is undefined.');
+      throw new CdError('Can\'t infer the new topics placement: Page#code is undefined.');
     }
 
-    let areNewTopicsOnTop;
-    if (cd.config.areNewTopicsOnTop) {
-      areNewTopicsOnTop = cd.config.areNewTopicsOnTop(this.name, this.code);
-    }
+    let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.name, this.code);
 
     const adjustedCode = hideDistractingCode(this.code);
     const sectionHeadingRegexp = /^==[^=].*?==[ \t\x01\x02]*\n/gm;
     let firstSectionStartIndex;
     let sectionHeadingMatch;
 
-    // Search for the first section's index. If areNewTopicsOnTop is true, we don't need it.
+    // Search for the first section's index. If areNewTopicsOnTop is false, we don't need it.
     if (areNewTopicsOnTop !== false) {
       sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode);
       firstSectionStartIndex = sectionHeadingMatch?.index;
@@ -494,7 +497,6 @@ export default class Page {
 
     if (areNewTopicsOnTop === undefined) {
       // Detect the topic order: newest first or newest last.
-      cd.debug.startTimer('areNewTopicsOnTop');
       let previousDate;
       let difference = 0;
       while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
@@ -508,7 +510,6 @@ export default class Page {
         }
       }
       areNewTopicsOnTop = difference === 0 ? this.namespace % 2 === 0 : difference > 0;
-      cd.debug.logAndResetTimer('areNewTopicsOnTop');
     }
 
     /**
