@@ -494,7 +494,7 @@ export default class Section extends SectionSkeleton {
 
     MoveSectionDialog.prototype.loadSourcePage = async function () {
       try {
-        await section.getSourcePage().getCode();
+        await section.getSourcePage().getCode(false);
       } catch (e) {
         if (e instanceof CdError) {
           const { type, code } = e.data;
@@ -543,9 +543,7 @@ export default class Section extends SectionSkeleton {
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'api') {
-            if (code === 'missing') {
-              throw [cd.sParse('msd-error-targetpagedoesntexist'), true];
-            } else if (code === 'invalid') {
+            if (code === 'invalid') {
               // Must be filtered before submit.
               throw [cd.sParse('msd-error-invalidpagename'), false];
             } else {

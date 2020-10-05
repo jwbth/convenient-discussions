@@ -291,7 +291,6 @@
   "msd-summaryending": "Edit summary (will be added to the standard one)",
   "msd-error-wrongpage": "Wrong page.",
   "msd-error-sourcepagedeleted": "The current page was deleted.",
-  "msd-error-targetpagedoesntexist": "The target page doesn't exist.",
   "msd-error-invalidpagename": "Invalid page name.",
   "msd-error-editconflict-retry": "Just click \"{{int:ooui-dialog-process-retry}}\".",
   "msd-error-editingtargetpage": "Couldn't edit the target page.",
