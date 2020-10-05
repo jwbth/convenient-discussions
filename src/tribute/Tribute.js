@@ -278,8 +278,10 @@ class Tribute {
       }
 
       let items = this.search.filter(this.current.mentionText, values, {
-        pre: this.current.collection.searchOpts.pre || "<span>",
-        post: this.current.collection.searchOpts.post || "</span>",
+        // jwbth: Replaced "<span>" and "</span>" as default values with empty strings. Tags are
+        // displayed as plain text currently anyway.
+        pre: this.current.collection.searchOpts.pre || "",
+        post: this.current.collection.searchOpts.post || "",
         skip: this.current.collection.searchOpts.skip,
         extract: el => {
           if (typeof this.current.collection.lookup === "string") {
