@@ -274,7 +274,6 @@
 	"msd-summaryending": "Label of the edit summary input in the move topic dialog.",
 	"msd-error-wrongpage": "Error message that appears in the move topic dialog. It means the page name is valid but not allowed here (compare to {{msg-wm|Convenient-discussions-msd-error-invalidpagename}}).",
 	"msd-error-sourcepagedeleted": "Error message that appears in the move topic dialog.",
-	"msd-error-targetpagedoesntexist": "Error message that appears in the move topic dialog.",
 	"msd-error-invalidpagename": "Error message that appears in the move topic dialog.\n\nSee also: {{msg-wm|Convenient-discussions-msd-error-wrongpage}}",
 	"msd-error-editconflict-retry": "Text added to the edit conflict error message ({{msg-wm|Convenient-discussions-error-editconflict}}) in the move section dialog.",
 	"msd-error-editingtargetpage": "Error message that appears in the move topic dialog.",

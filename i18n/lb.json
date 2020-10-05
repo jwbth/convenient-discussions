@@ -135,7 +135,6 @@
 	"msd-summaryending": "Resumé änneren (gëtt un de Standard-Resumé drugehaangen)",
 	"msd-error-wrongpage": "Falsch Säit.",
 	"msd-error-sourcepagedeleted": "Déi aktuell Säit gouf geläscht.",
-	"msd-error-targetpagedoesntexist": "D'Zilsäit gëtt et net.",
 	"move-sourcepagecode": "\"Geréckelt op [[$1]]. $2\"",
 	"move-targetpagecode": "\"Geréckelt vum [[$1]]. $2\"",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: D'Säit konnt net verschafft ginn.",

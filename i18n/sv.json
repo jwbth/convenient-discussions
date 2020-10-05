@@ -264,7 +264,6 @@
 	"msd-summaryending": "Redigeringssammanfattning (kommer läggas till i standarden)",
 	"msd-error-wrongpage": "Fel sida.",
 	"msd-error-sourcepagedeleted": "Den nuvarande sidan raderades.",
-	"msd-error-targetpagedoesntexist": "Målsidan finns inte.",
 	"msd-error-invalidpagename": "Ogiltig sidnamn.",
 	"msd-error-editconflict-retry": "Klicka bara på \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Kunde inte redigera målsidan.",

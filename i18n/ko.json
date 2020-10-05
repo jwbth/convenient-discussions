@@ -130,7 +130,6 @@
 	"msd-reload": "다시 불러오기",
 	"msd-error-wrongpage": "잘못된 페이지입니다.",
 	"msd-error-sourcepagedeleted": "현재 문서는 삭제되었습니다.",
-	"msd-error-targetpagedoesntexist": "대상 문서가 존재하지 않습니다.",
 	"msd-error-editconflict-retry": "\"{{int:ooui-dialog-process-retry}}\"를 클릭하십시오.",
 	"msd-error-editingtargetpage": "대상 문서를 편집하지 못했습니다.",
 	"msd-error-editingsourcepage": "원본 문서를 편집하지 못했습니다. 수동으로 편집해야 합니다.",
