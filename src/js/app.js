@@ -139,7 +139,7 @@ function mws(...args) {
 function addCommentLinksOnSpecialSearch() {
   const [, commentAnchor] = location.search.match(/[?&]cdComment=([^&]+)(?:&|$)/) || [];
   if (commentAnchor) {
-    mw.loader.using(['mediawiki.api']).then(
+    mw.loader.using('mediawiki.api').then(
       async () => {
         await loadData();
         $('.mw-search-result-heading').each((i, el) => {
