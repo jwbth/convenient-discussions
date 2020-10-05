@@ -267,7 +267,6 @@
 	"msd-summaryending": "תקציר עריכה (יתווסף לנוסח קבוע)",
 	"msd-error-wrongpage": "דף לא נכון.",
 	"msd-error-sourcepagedeleted": "הדף הנוכחי נמחק.",
-	"msd-error-targetpagedoesntexist": "דף היעד לא קיים.",
 	"msd-error-invalidpagename": "שם שגוי של דף.",
 	"msd-error-editconflict-retry": "לחצו \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "לא ניתן לערוך את דף היעד.",

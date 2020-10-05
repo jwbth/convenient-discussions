@@ -111,7 +111,6 @@
 	"msd-reload": "Neu laden",
 	"msd-error-wrongpage": "Falsche Seite.",
 	"msd-error-sourcepagedeleted": "Die aktuelle Seite wurde gelöscht.",
-	"msd-error-targetpagedoesntexist": "Die Zielseite existiert nicht.",
 	"msd-error-invalidpagename": "Ungültiger Seitenname",
 	"error-network": "Netzwerkfehler.",
 	"error-unknown": "Unbekannter Fehler.",

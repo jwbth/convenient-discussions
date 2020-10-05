@@ -272,7 +272,6 @@
 	"msd-summaryending": "Описание правки (будет добавлено к стандартному)",
 	"msd-error-wrongpage": "Неверно указана страница.",
 	"msd-error-sourcepagedeleted": "Текущая страница была удалена.",
-	"msd-error-targetpagedoesntexist": "Целевая страница не существует.",
 	"msd-error-invalidpagename": "Указано невозможное название страницы.",
 	"msd-error-editconflict-retry": "Просто нажмите «{{int:ooui-dialog-process-retry}}».",
 	"msd-error-editingtargetpage": "Не удалось отредактировать целевую страницу.",

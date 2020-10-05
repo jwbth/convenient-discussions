@@ -154,7 +154,6 @@
 	"msd-reload": "重新加载",
 	"msd-summaryending": "编辑摘要（这将会被添加到标准摘要中）",
 	"msd-error-wrongpage": "错误页面。",
-	"msd-error-targetpagedoesntexist": "目标页面不存在。",
 	"msd-error-invalidpagename": "无效的页面名称",
 	"msd-error-editingtargetpage": "不能编辑目标页面。",
 	"msd-error-editingsourcepage": "不能编辑源代码页。您需要手动进行更改。",
