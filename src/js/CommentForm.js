@@ -83,7 +83,7 @@ export default class CommentForm {
    * @param {boolean} [config.isNewTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
    * @fires commentFormCreated
-   * @fires commentFormToolbarReady
+   * @fires commentFormModulesReady
    */
   constructor({ mode, target, dataToRestore, scrollIntoView, preloadConfig, isNewTopicOnTop }) {
     /**
@@ -407,21 +407,17 @@ export default class CommentForm {
   /**
    * Add a WikiEditor toolbar to the comment input.
    *
+   * @param {string[]} moduleNames List of custom comment form modules to await loading of before
+   *   adding the toolbar.
+   * @fires commentFormToolbarReady
    * @private
    */
-  addToolbar() {
+  addToolbar(moduleNames) {
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
       .insertBefore(this.commentInput.$element);
 
-    const modules = ['ext.wikiEditor'];
-    cd.config.customCommentFormModules
-      .filter((module) => !module.checkFunc || module.checkFunc())
-      .forEach((module) => {
-        modules.push(module.name);
-      });
-
-    mw.loader.using(modules).then(() => {
+    mw.loader.using(['ext.wikiEditor'].concat(moduleNames)).then(() => {
       const $textarea = this.commentInput.$input;
       $textarea.wikiEditor(
         'addModule',
@@ -487,7 +483,8 @@ export default class CommentForm {
         });
 
       /**
-       * The comment form is ready (all requested modules have been loaded and executed).
+       * The comment form toolbar is ready; all requested custom comment form modules have been
+       * loaded and executed.
        *
        * @event commentFormToolbarReady
        * @type {module:CommentForm}
@@ -1105,8 +1102,22 @@ export default class CommentForm {
         .prependTo(this.$innerWrapper);
     }
 
+    const moduleNames = cd.config.customCommentFormModules
+      .filter((module) => !module.checkFunc || module.checkFunc())
+      .map((module) => module.name);
+    mw.loader.using(moduleNames).then(() => {
+      /**
+       * All requested custom comment form modules have been loaded and executed. (The comment form
+       * may not be ready yet, use {@link module:CommentForm~commentFormToolbarReady} for that.)
+       *
+       * @event commentFormModulesReady
+       * @type {module:CommentForm}
+       */
+      mw.hook('convenientDiscussions.commentFormModulesReady').fire(this);
+    });
+
     if (cd.settings.showToolbar) {
-      this.addToolbar();
+      this.addToolbar(moduleNames);
     }
 
     if (cd.settings.insertButtons.length) {

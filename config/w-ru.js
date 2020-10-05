@@ -430,11 +430,16 @@ mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
   );
 });
 
-mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentForm) {
-  const wikify = function () {
-    window.Wikify(commentForm.commentInput.$input.get(0));
-  };
+mw.hook('convenientDiscussions.commentFormModulesReady').add(function (commentForm) {
+  commentForm.$form.on('keydown', function (e) {
+    // Ctrl+Alt+W
+    if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
+      window.Wikify(commentForm.commentInput.$input.get(0))
+    }
+  });
+});
 
+mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentForm) {
   commentForm.commentInput.$input.wikiEditor('addToToolbar', {
     section: 'main',
     groups: {
@@ -446,7 +451,9 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
             icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
             action: {
               type: 'callback',
-              execute: wikify,
+              execute: () => {
+                window.Wikify(commentForm.commentInput.$input.get(0));
+              },
             },
           },
         },
@@ -456,12 +463,6 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
   commentForm.$element
     .find('.group-gadgets')
     .insertBefore(commentForm.$element.find('.section-main .group-format'));
-  commentForm.$form.on('keydown', function (e) {
-    // Ctrl+Alt+W
-    if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
-      wikify();
-    }
-  });
 
   if (mw.user.options.get('gadget-urldecoder')) {
     commentForm.commentInput.$input.wikiEditor('addToToolbar', {
