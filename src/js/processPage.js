@@ -213,7 +213,7 @@ function connectToAddTopicLinks() {
           headline: query.preloadtitle,
           summary: query.summary?.replace(/^.+?\*\/ */, ''),
         };
-        isNewTopicOnTop = query.section === 0;
+        isNewTopicOnTop = query.section === '0';
       } else {
         // <input>
         const $form = $button.closest('form');
