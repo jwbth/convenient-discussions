@@ -570,7 +570,11 @@ export default class CommentForm {
      */
     this.$element = $(document.createElement(tag))
       .addClass('cd-commentForm')
-      .addClass(`cd-commentForm-${this.mode}`);
+      .addClass(`cd-commentForm-${this.mode}`)
+
+      // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
+      // direction.
+      .attr('dir', cd.g.SITE_DIR);
     if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }

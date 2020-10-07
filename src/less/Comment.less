@@ -14,16 +14,25 @@ ol > li.cd-commentPart-last {
   margin-bottom: 0.1em;
 }
 
-// We need to override native styles and .cd-commentForm.cd-commentForm
+// We need to override the native styles and .cd-commentForm.cd-commentForm.
 .cd-commentLevel.cd-commentLevel:not(ol) {
   list-style-type: none;
   list-style-image: none;
-  padding-left: 1em;
-  margin: 0 0 0 1em;
-  border-left: 1px solid #c8ccd1;
+  margin: 0;
 }
 
-.mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol) {
+.mw-content-ltr .cd-commentLevel.cd-commentLevel:not(ol),
+.mw-content-rtl .mw-content-ltr .cd-commentLevel.cd-commentLevel:not(ol) {
+  padding-left: 1em;
+  padding-right: 0;
+  margin-left: 1em;
+  margin-right: 0;
+  border-left: 1px solid #c8ccd1;
+  border-right: 0;
+}
+
+.mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol),
+.mw-content-ltr .mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol) {
   padding-left: 0;
   padding-right: 1em;
   margin-left: 0;
@@ -36,11 +45,13 @@ dl.cd-commentLevel > dd {
   margin-left: 0;
 }
 
-.mw-content-ltr dl.cd-commentLevel > dd {
+.mw-content-ltr dl.cd-commentLevel > dd,
+.mw-content-rtl .mw-content-ltr dl.cd-commentLevel > dd {
   margin-left: 0;
 }
 
-.mw-content-rtl dl.cd-commentLevel > dd {
+.mw-content-rtl dl.cd-commentLevel > dd,
+.mw-content-ltr .mw-content-rtl dl.cd-commentLevel > dd {
   margin-right: 0;
 }
 
