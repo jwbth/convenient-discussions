@@ -208,6 +208,8 @@ function initGlobals() {
 
   cd.g.IS_IPv6_ADDRESS = mw.util.isIPv6Address;
 
+  cd.g.SITE_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;

@@ -234,8 +234,8 @@ function generateTooltipText(comments) {
           cd.s('navpanel-newcomments-unknowndate');
         tooltipText += (
           (comment.interesting ? cd.mws('parentheses', '*') + ' ' : '') +
-          author +
-          (document.body.classList.contains('sitedir-rtl') ? '\u200F' : '') +
+          names +
+          (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
           cd.mws('comma-separator') +
           date
         );
