@@ -11,7 +11,7 @@ import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug } from './util';
+import { dealWithLoadingBug, unique } from './util';
 import { editWatchedSections } from './modal';
 import {
   encodeWikilink,
@@ -1762,6 +1762,52 @@ export default class Section extends SectionSkeleton {
             .on('mouseenter', section.replyButtonHoverHandler)
             .on('mouseleave', section.replyButtonUnhoverHandler);
         }
+      });
+  }
+
+  /**
+   * Add new comments notifications to the end of each updated section.
+   *
+   * @param {CommentSkeleton[]} newComments
+   */
+  static addNewCommentsNotifications(newComments) {
+    $('.cd-refreshButtonContainer').remove();
+    newComments
+      .map((comment) => comment.section.anchor)
+      .filter(unique)
+      .forEach((anchor) => {
+        const section = Section.getSectionByAnchor(anchor);
+        if (!section) return;
+
+        const sectionNewComments = newComments.filter((comment) => comment.section.anchor === anchor);
+        const authors = sectionNewComments
+          .map((comment) => comment.author)
+          .filter(unique);
+        const button = new OO.ui.ButtonWidget({
+          label: cd.s(
+            'section-newcomments',
+            sectionNewComments.length,
+            authors.length,
+            authors.map((user) => user.name).join(', '),
+            authors[0]
+          ),
+          framed: false,
+          classes: ['cd-button', 'cd-sectionButton'],
+        });
+        button.on('click', () => {
+          const commentAnchor = newComments
+            .find((comment) => comment.section.anchor === anchor).anchor;
+          reloadPage({ commentAnchor });
+        });
+
+        const $lastElement = section.$replyButton ?
+          section.$replyButton.closest('ul, ol, dl') :
+          section.$elements[section.$elements.length - 1];
+        $('<div>')
+          .addClass('cd-refreshButtonContainer')
+          .addClass('cd-sectionButtonContainer')
+          .append(button.$element)
+          .insertAfter($lastElement);
       });
   }
 }

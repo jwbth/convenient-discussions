@@ -261,53 +261,6 @@ export function updatePageTitle(newCommentsCount, areThereInteresting) {
 }
 
 /**
- * Add new comments notifications to the end of each updated section.
- *
- * @param {CommentSkeleton[]} newComments
- * @private
- */
-function addSectionNotifications(newComments) {
-  $('.cd-refreshButtonContainer').remove();
-  newComments
-    .map((comment) => comment.section.anchor)
-    .filter(unique)
-    .forEach((anchor) => {
-      const section = Section.getSectionByAnchor(anchor);
-      if (!section) return;
-
-      const sectionNewComments = newComments.filter((comment) => comment.section.anchor === anchor);
-      const authors = sectionNewComments
-        .map((comment) => comment.author)
-        .filter(unique);
-      const button = new OO.ui.ButtonWidget({
-        label: cd.s(
-          'section-newcomments',
-          sectionNewComments.length,
-          authors.length,
-          authors.map((user) => user.name).join(', '),
-          authors[0]
-        ),
-        framed: false,
-        classes: ['cd-button', 'cd-sectionButton'],
-      });
-      button.on('click', () => {
-        const commentAnchor = newComments
-          .find((comment) => comment.section.anchor === anchor).anchor;
-        reloadPage({ commentAnchor });
-      });
-
-      const $lastElement = section.$replyButton ?
-        section.$replyButton.closest('ul, ol, dl') :
-        section.$elements[section.$elements.length - 1];
-      $('<div>')
-        .addClass('cd-refreshButtonContainer')
-        .addClass('cd-sectionButtonContainer')
-        .append(button.$element)
-        .insertAfter($lastElement);
-    });
-}
-
-/**
  * Send ordinary and desktop notifications to the user.
  *
  * @param {CommentSkeleton[]} comments
