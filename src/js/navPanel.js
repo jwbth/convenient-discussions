@@ -222,7 +222,7 @@ function generateTooltipText(comments) {
       tooltipText += `\n\n${headline}`;
       commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
-        const author = comment.targetCommentAuthor && comment.level > 1 ?
+        const names = comment.targetCommentAuthor && comment.level > 1 ?
           cd.s(
             'newpanel-newcomments-reply',
             comment.author.name,
@@ -335,7 +335,10 @@ async function sendNotifications(comments) {
       const isCommonSection = notifyAboutOrdinary.every((comment) => (
         comment.watchedSectionHeadline === notifyAboutOrdinary[0].watchedSectionHeadline
       ));
-      const section = isCommonSection ? notifyAboutOrdinary[0].watchedSectionHeadline : undefined;
+      let section;
+      if (isCommonSection) {
+        section = notifyAboutOrdinary[0].watchedSectionHeadline;
+      }
       const where = (
         cd.mws('word-separator') +
         (
@@ -406,7 +409,10 @@ async function sendNotifications(comments) {
       const isCommonSection = notifyAboutDesktop.every((comment) => (
         comment.watchedSectionHeadline === notifyAboutDesktop[0].watchedSectionHeadline
       ));
-      const section = isCommonSection ? notifyAboutDesktop[0].watchedSectionHeadline : undefined;
+      let section;
+      if (isCommonSection) {
+        section = notifyAboutDesktop[0].watchedSectionHeadline;
+      }
       const where = section ?
         cd.mws('word-separator') + cd.s('notification-part-insection', section) :
         '';
@@ -657,12 +663,10 @@ const navPanel = {
     }
 
     if (thisPageVisits.length) {
-      const newComments = cd.comments.filter((comment) => {
+      cd.comments.forEach((comment) => {
         comment.newness = null;
 
-        if (!comment.date) {
-          return false;
-        }
+        if (!comment.date) return;
 
         const isUnseen = memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor);
         const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
@@ -673,12 +677,11 @@ const navPanel = {
           ) ?
             'unseen' :
             'new';
-          return true;
         }
 
-        return false;
       });
 
+      const newComments = cd.comments.filter((comment) => comment.newness);
       Comment.configureAndAddLayers(newComments);
     }
 

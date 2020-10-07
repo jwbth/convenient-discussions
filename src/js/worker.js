@@ -97,10 +97,11 @@ function parse() {
     comment.getChildren().forEach((reply) => {
       reply.targetComment = comment;
     });
-    comment.section = comment.getSection() ?
+    const section = comment.getSection();
+    comment.section = section ?
       {
-        headline: comment.getSection().headline,
-        anchor: comment.getSection().anchor,
+        headline: section.headline,
+        anchor: section.anchor,
       } :
       null;
     if (comment.targetComment) {

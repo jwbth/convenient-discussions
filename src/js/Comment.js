@@ -667,7 +667,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    parent.scrollToAndHighlightTarget('center');
+    parent.scrollToAndHighlightTarget();
 
     const goToChildButton = new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
@@ -706,7 +706,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    this.childToScrollBackTo.scrollToAndHighlightTarget('center');
+    this.childToScrollBackTo.scrollToAndHighlightTarget();
   }
 
   /**
@@ -762,10 +762,11 @@ export default class Comment extends CommentSkeleton {
       formatversion: 2,
     }).catch(handleApiReject);
 
-    const [revisionsResp] = await Promise.all([
-      revisionsRequest,
-      requestGender && this.author.isRegistered() ? getUserGenders([this.author]) : undefined,
-    ].filter(defined));
+    let genderRequest;
+    if (requestGender && this.author.isRegistered()) {
+      genderRequest = getUserGenders([this.author]);
+    }
+    const [revisionsResp] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
 
     const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
     if (!revisions) {

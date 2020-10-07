@@ -22,11 +22,11 @@ import {
   windowResizeHandler,
 } from './eventHandlers';
 import { adjustDom } from './modifyDom';
+import { areObjectsEqual, isInline, restoreScrollPosition } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
-import { areObjectsEqual, isInline, restoreScrollPosition } from './util';
 import { setSettings } from './options';
 
 /**
@@ -487,7 +487,10 @@ export default async function processPage(keptData = {}) {
 
   await prepare(keptData);
 
-  const firstVisibleElementData = cd.g.firstRun ? getFirstVisibleElementData() : undefined;
+  let firstVisibleElementData;
+  if (cd.g.firstRun) {
+    firstVisibleElementData = getFirstVisibleElementData();
+  }
 
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
@@ -515,8 +518,11 @@ export default async function processPage(keptData = {}) {
     watchedSectionsRequest.catch((e) => {
       console.warn('Couldn\'t load the settings from the server.', e);
     });
+
+  let visitsRequest;
+  if (cd.g.isPageActive) {
+    visitsRequest = getVisits(true);
   }
-  const visitsRequest = cd.g.isPageActive ? getVisits(true) : undefined;
 
   /**
    * The script is going to parse the page.

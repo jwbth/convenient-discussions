@@ -1523,7 +1523,7 @@ export default class Section extends SectionSkeleton {
       return;
     }
 
-    // The section could be watched in another tab.
+    // The section could be added to the watchlist in another tab.
     if (!cd.g.thisPageWatchedSections.includes(headline)) {
       cd.g.thisPageWatchedSections.push(headline);
     }

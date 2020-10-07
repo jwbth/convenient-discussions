@@ -1171,7 +1171,10 @@ export async function copyLink(object, chooseLink, finallyCallback) {
       });
     }
 
-    const onlyCdWarning = object instanceof Comment ? cd.s('cld-help-onlycd') : undefined;
+    let onlyCdWarning;
+    if (object instanceof Comment) {
+      onlyCdWarning = cd.s('cld-help-onlycd');
+    }
 
     const wikilinkInput = new OO.ui.TextInputWidget({
       value: wikilink,
