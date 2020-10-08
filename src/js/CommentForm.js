@@ -1445,15 +1445,30 @@ export default class CommentForm {
       defaultUserNames: usersInSection,
     });
 
+    if (this.headlineInput) {
+      /**
+       * Autocomplete object for the headline input.
+       *
+       * @type {Autocomplete}
+       */
+      this.headlineAutocomplete = new Autocomplete({
+        types: ['mentions', 'wikilinks', 'tags'],
+        inputs: [this.headlineInput],
+        comments: commentsInSection,
+        defaultUserNames: usersInSection,
+      });
+    }
+
     /**
-     * Autocomplete object for the headline and summary inputs.
+     * Autocomplete object for the summary input.
      *
      * @type {Autocomplete}
      */
-    this.croppedAutocomplete = new Autocomplete({
+    this.summaryAutocomplete = new Autocomplete({
       types: ['mentions', 'wikilinks'],
-      inputs: [this.headlineInput, this.summaryInput].filter(defined),
+      inputs: [this.summaryInput],
       comments: commentsInSection,
+      defaultUserNames: usersInSection,
     });
   }
 
