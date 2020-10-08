@@ -9,6 +9,7 @@ import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
 import userRegistry from './userRegistry';
+import { addNewCommentsToToc } from './toc';
 import { addNotification, closeNotifications, getNotifications, reloadPage } from './boot';
 import { areObjectsEqual, handleApiReject, isCommentEdit, reorderArray, unique } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
@@ -184,50 +185,56 @@ async function checkForNewComments() {
 }
 
 /**
- * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
+ * Turn comment array into object with section anchors as keys.
  *
  * @param {CommentSkeleton[]|Comment[]} comments
+ * @returns {object}
+ * @private
+ */
+function sortCommentsBySection(comments) {
+  const commentsBySection = {};
+  comments.forEach((comment) => {
+    const section = comment instanceof Comment ? comment.getSection() : comment.section;
+
+    // "_" is an impossible id for a section. We assign it to the lead section.
+    const anchor = section === null ? '_' : section.anchor;
+
+    if (!commentsBySection[anchor]) {
+      commentsBySection[anchor] = [];
+    }
+    commentsBySection[anchor].push(comment);
+  });
+
+  return commentsBySection;
+}
+
+/**
+ * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
+ *
+ * @param {number} commentsCount
+ * @param {object} commentsBySection
  * @returns {?string}
  * @private
  */
-function generateTooltipText(comments) {
+function generateTooltipText(commentsCount, commentsBySection) {
   let tooltipText = null;
-  if (comments.length) {
-    const commentsBySection = {};
-    comments
-      .slice(0, 30)
-      .forEach((comment) => {
-        const section = comment.section === undefined ? comment.getSection() : comment.section;
-        if (!commentsBySection[section.anchor]) {
-          commentsBySection[section.anchor] = [];
-        }
-        commentsBySection[section.anchor].push(comment);
-      });
-
+  if (commentsCount) {
     tooltipText = (
-      cd.s('navpanel-newcomments-count', comments.length) +
+      cd.s('navpanel-newcomments-count', commentsCount) +
       ' ' +
       cd.s('navpanel-newcomments-refresh') +
       ' ' +
       cd.mws('parentheses', 'R')
     );
     Object.keys(commentsBySection).forEach((anchor) => {
-      const section = (
-        commentsBySection[anchor][0].section ||
-        commentsBySection[anchor][0].getSection()
-      );
-      const headline = section.headline ?
-        cd.s('navpanel-newcomments-insection', section.headline) :
-        cd.mws('parentheses', cd.s('navpanel-newcomments-outsideofsections'));
+      const headline = anchor === '_' ?
+        cd.mws('parentheses', cd.s('navpanel-newcomments-outsideofsections')) :
+        cd.s('navpanel-newcomments-insection', commentsBySection[anchor][0].section.headline);
       tooltipText += `\n\n${headline}`;
       commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
-        const names = comment.targetCommentAuthor && comment.level > 1 ?
-          cd.s(
-            'newpanel-newcomments-reply',
-            comment.author.name,
-            comment.targetCommentAuthor.name
-          ) :
+        const names = comment.parent?.author && comment.level > 1 ?
+          cd.s('newpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
           comment.author.name;
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
@@ -469,9 +476,11 @@ async function processComments(comments) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     delete comment.authorName;
-    if (comment.targetCommentAuthorName) {
-      comment.targetCommentAuthor = userRegistry.getUser(comment.targetCommentAuthorName);
-      delete comment.targetCommentAuthorName;
+    if (comment.parentAuthorName) {
+      comment.parent = {
+        author: userRegistry.getUser(comment.parentAuthorName),
+      };
+      delete comment.parentAuthorName;
     }
   });
 
@@ -512,15 +521,21 @@ async function processComments(comments) {
     relevantNewCommentAnchor = newComments[0].anchor;
   }
 
-  navPanel.updateRefreshButton(newComments, interestingNewComments.length);
-  updatePageTitle(newComments.length, interestingNewComments.length);
+  const newCommentsBySection = sortCommentsBySection(newComments);
+  navPanel.updateRefreshButton(
+    newComments.length,
+    newCommentsBySection,
+    Boolean(interestingNewComments.length)
+  );
+  updatePageTitle(newComments.length, Boolean(interestingNewComments.length));
+  addNewCommentsToToc(newCommentsBySection);
 
   const authors = newComments
     .map((comment) => comment.author)
     .filter(unique);
   await getUserGenders(authors, { noTimers: true });
 
-  addSectionNotifications(newComments);
+  Section.addNewCommentsNotifications(newComments);
   sendNotifications(interestingNewComments);
 }
 
@@ -678,11 +693,11 @@ const navPanel = {
             'unseen' :
             'new';
         }
-
       });
 
       const newComments = cd.comments.filter((comment) => comment.newness);
       Comment.configureAndAddLayers(newComments);
+      addNewCommentsToToc(sortCommentsBySection(newComments));
     }
 
     thisPageVisits.push(String(currentUnixTime));
@@ -935,20 +950,24 @@ const navPanel = {
   /**
    * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
-   * @param {CommentSkeleton[]} newComments
+   * @param {number} commentsCount
+   * @param {object} commentsBySection
    * @param {boolean} areThereInteresting
    * @private
    * @memberof module:navPanel
    */
-  updateRefreshButton(newComments, areThereInteresting) {
-    // Can't set the attribute to $refreshButton as its tooltip may have another direction.
-    const $span = $('<span>')
-      .attr('dir', 'ltr')
-      .text(newComments.length ? `+${newComments.length}` : '');
+  updateRefreshButton(commentsCount, commentsBySection, areThereInteresting) {
     this.$refreshButton
       .empty()
-      .append($span)
-      .attr('title', generateTooltipText(newComments));
+      .attr('title', generateTooltipText(commentsCount, commentsBySection));
+    if (commentsCount) {
+      $('<span>')
+        // Can't set the attribute to $refreshButton as its tooltip may have another direction.
+        .attr('dir', 'ltr')
+
+        .text(`+${commentsCount}`)
+        .appendTo(this.$refreshButton);
+    }
     if (areThereInteresting) {
       this.$refreshButton.addClass('cd-navPanel-refreshButton-interesting');
     } else {

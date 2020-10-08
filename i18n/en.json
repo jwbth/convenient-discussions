@@ -202,6 +202,9 @@
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-refresh": "Click to refresh the page",
 
+  "toc-more": "$1 more",
+  "toc-watched": "You watch this section",
+
   "notification-toyou": "$1 {{gender:$2|replied}} to your comment$3.",
   "notification-toyou-desktop": "$1 {{gender:$2|replied}} to your comment$3 on page \"$4\".",
   "notification-insection": "$1 {{gender:$2|replied}} in section \"$3\".",
@@ -335,6 +338,7 @@
   "lp-comment-toyou": "the comment is addressed to you",
   "lp-comment-watchedsection": "you are watching this section",
 
+  "bullet": "<b>•</b>",
   "loading-ellipsis": "Loading…",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",
   "footer-enablecd": "Enable Convenient Discussions on this page",

@@ -26,6 +26,7 @@ import { areObjectsEqual, isInline, restoreScrollPosition } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
+import { highlightWatchedSectionsInToc } from './toc';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
 import { setSettings } from './options';
 
@@ -515,9 +516,15 @@ export default async function processPage(keptData = {}) {
   let watchedSectionsRequest;
   if (mw.config.get('wgArticleId')) {
     watchedSectionsRequest = getWatchedSections(true, keptData);
-    watchedSectionsRequest.catch((e) => {
-      console.warn('Couldn\'t load the settings from the server.', e);
-    });
+    watchedSectionsRequest.then(
+      () => {
+        highlightWatchedSectionsInToc();
+      },
+      (e) => {
+        console.warn('Couldn\'t load the settings from the server.', e);
+      }
+    );
+  }
 
   let visitsRequest;
   if (cd.g.isPageActive) {

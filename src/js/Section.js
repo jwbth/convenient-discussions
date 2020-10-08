@@ -23,6 +23,7 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { getWatchedSections, setWatchedSections } from './options';
+import { highlightWatchedSectionsInToc } from './toc';
 import { reloadPage } from './boot';
 
 /**
@@ -986,6 +987,7 @@ export default class Section extends SectionSkeleton {
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.updateWatchMenuItems();
           });
+          highlightWatchedSectionsInToc();
         },
         errorCallback: () => {
           if ($link) {
@@ -1023,6 +1025,7 @@ export default class Section extends SectionSkeleton {
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.updateWatchMenuItems();
           });
+          highlightWatchedSectionsInToc();
         },
         errorCallback: () => {
           if ($link) {
