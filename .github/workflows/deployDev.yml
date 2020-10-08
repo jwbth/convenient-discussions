@@ -3,7 +3,7 @@ name: Deploy development build
 on:
   push:
     branches:
-      - master
+      - development
     paths:
       - 'src/**'
   workflow_dispatch:

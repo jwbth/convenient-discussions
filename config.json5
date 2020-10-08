@@ -26,7 +26,6 @@
       'convenientDiscussions-dev.js.LICENSE.js',
       'convenientDiscussions-dev.js.map.json',
       'convenientDiscussions-worker-dev.js.map.json',
-      'convenientDiscussions-i18n/',
     ],
   },
 }
