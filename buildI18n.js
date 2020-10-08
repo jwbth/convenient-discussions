@@ -2,7 +2,6 @@ const fs = require('fs');
 const path = require('path');
 
 const chalk = require('chalk');
-
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 

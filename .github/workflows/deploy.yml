@@ -27,8 +27,7 @@ jobs:
           echo -e "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Create a tunnel in the background, delete the key, and set a TRAP to kill the tunnel on
-          # exit.
+          # Create a tunnel in the background and set a TRAP to kill the tunnel on exit.
           ssh -o StrictHostKeyChecking=no -N -D 1081 ${{ secrets.TOOLFORGE_USER }}@tools-login.wmflabs.org &
           SSH_JOB="$!"
 
@@ -39,11 +38,11 @@ jobs:
           ./node_modules/.bin/hpts -s 127.0.0.1:1081 -p 8080 &
           HPTS_JOB="$!"
 
-          # Kill both background jobs on exit
+          # Kill both background jobs on exit.
           trap "kill $SSH_JOB; kill $HPTS_JOB" EXIT
 
           sleep 3
           rm ~/.ssh/id_rsa
 
-          # Run the user's own script to login and publish the build results to pages
+          # Run own script to login and publish the build results to pages.
           npm run deploy --noi18n

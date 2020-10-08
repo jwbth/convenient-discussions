@@ -198,7 +198,7 @@
   "navpanel-newcomments-count": "$1 new {{plural:$1|comment|comments}}.",
   "navpanel-newcomments-insection": "Section \"$1\":",
   "navpanel-newcomments-outsideofsections": "Outside of sections",
-  "newpanel-newcomments-reply": "$1 → $2",
+  "newpanel-newcomments-names": "$1 → $2",
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-refresh": "Click to refresh the page",
 

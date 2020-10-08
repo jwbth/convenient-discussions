@@ -95,7 +95,7 @@ function parse() {
 
   cd.comments.forEach((comment) => {
     comment.getChildren().forEach((reply) => {
-      reply.targetComment = comment;
+      reply.parent = comment;
     });
     const section = comment.getSection();
     comment.section = section ?
@@ -104,10 +104,10 @@ function parse() {
         anchor: section.anchor,
       } :
       null;
-    if (comment.targetComment) {
-      comment.targetCommentAuthorName = comment.targetComment.authorName;
-      comment.toMe = comment.targetComment.isOwn;
-      delete comment.targetComment;
+    if (comment.parent) {
+      comment.parentAuthorName = comment.parent.authorName;
+      comment.toMe = comment.parent.isOwn;
+      delete comment.parent;
     }
     delete comment.parser;
     delete comment.elements;
