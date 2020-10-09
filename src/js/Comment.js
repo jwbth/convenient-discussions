@@ -1669,12 +1669,15 @@ export default class Comment extends CommentSkeleton {
             signature.timestamp === previousComments[i].timestamp &&
             signature.author === previousComments[i].author
           );
-          if (match.isPreviousCommentsDataEqual !== false) {
+
+          // Many consecutive comments with the same author and timestamp.
+          if (match.isPreviousCommentsDataEqual !== false && signature) {
             match.isPreviousCommentsDataEqual = (
               match.timestamp === signature.timestamp &&
               match.author === signature.author
             );
           }
+
           if (i === 0) {
             match.hasPreviousCommentDataMatched = match.hasPreviousCommentsDataMatched;
           }
