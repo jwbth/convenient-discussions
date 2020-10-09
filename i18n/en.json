@@ -147,7 +147,7 @@
   "cf-error-delete-repliesinsection": "Can't delete the section because it has replies.",
   "cf-error-preview": "Couldn't preview the comment.",
   "cf-error-viewchanges": "Couldn't get the changes.",
-  "cf-error-couldntedit": "Couldn't edit the page.",
+  "cf-error-couldntedit": "The page may not have been edited.",
   "cf-error-pagedoesntexist": "The page doesn't exist.",
   "cf-error-formconflict": "There already is a form of a different type opened on the page. Close that form to open this one.",
 
