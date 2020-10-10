@@ -1726,7 +1726,7 @@ export default class CommentForm {
         switch (code) {
           case 'locateComment':
             editUrl = this.targetSection ?
-              this.targetSection.editUrl.href :
+              this.targetSection.editUrl.toString() :
               cd.g.CURRENT_PAGE.getUrl({
                 action: 'edit',
                 section: 0,
