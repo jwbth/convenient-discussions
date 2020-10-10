@@ -37,7 +37,10 @@ export default class Autocomplete {
    *   autocomplete.
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
-    types = types.filter((type) => cd.settings.autocompleteTypes.includes(type));
+    types = types
+      // The 'mentions' type is needed in any case, as it can be triggered from the toolbar. When it
+      // is not, we will suppress it specifically.
+      .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions')
 
     const collections = this.getCollections(types, comments, defaultUserNames);
 
@@ -135,6 +138,13 @@ export default class Autocomplete {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
+          if (
+            !cd.settings.autocompleteTypes.includes('mentions') &&
+            !this.tribute.current.externalTrigger
+          ) {
+            return;
+          }
+
           text = removeDoubleSpaces(text);
 
           if (!text.startsWith(this.mentions.snapshot)) {
