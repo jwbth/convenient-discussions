@@ -243,7 +243,6 @@ function generateTooltipText(commentsCount, commentsBySection) {
           cd.util.formatDate(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
         tooltipText += (
-          (comment.interesting ? cd.mws('parentheses', '*') + ' ' : '') +
           bullet +
           ' ' +
           names +
