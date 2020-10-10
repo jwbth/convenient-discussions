@@ -200,7 +200,7 @@
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-refresh": "Click to refresh the page",
 
-  "toc-more": "$1 more",
+  "toc-more": "…$1 more",
   "toc-watched": "You watch this section",
 
   "notification-toyou": "$1 {{gender:$2|replied}} to your comment$3.",

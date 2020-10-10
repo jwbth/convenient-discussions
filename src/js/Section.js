@@ -859,11 +859,11 @@ export default class Section extends SectionSkeleton {
           align: 'top',
         });
 
-        this.movePanel.$element.append(
+        this.movePanel.$element.append([
           this.titleField.$element,
           $sectionCodeNote,
-          this.summaryEndingField.$element
-        );
+          this.summaryEndingField.$element,
+        ]);
 
         this.stackLayout.setItem(this.movePanel);
         this.titleInput.focus();

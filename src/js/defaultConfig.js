@@ -319,7 +319,7 @@ export default {
   paragraphTemplates: [],
 
   /**
-   * Character used for user mentions (pings).
+   * Character used to trigger user mentions (pings).
    *
    * @type {string}
    */

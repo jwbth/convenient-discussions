@@ -594,12 +594,12 @@ export async function settingsDialog() {
      */
     function GeneralPageLayout(name, config) {
       GeneralPageLayout.super.call(this, name, config);
-      this.$element.append(
+      this.$element.append([
         dialog.highlightOwnCommentsField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.defaultCommentLinkTypeField.$element,
         dialog.defaultSectionLinkTypeField.$element,
-      );
+      ]);
     }
     OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
     GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
@@ -617,7 +617,7 @@ export async function settingsDialog() {
      */
     function CommentFormPageLayout(name, config) {
       CommentFormPageLayout.super.call(this, name, config);
-      this.$element.append(
+      this.$element.append([
         dialog.autopreviewField.$element,
         dialog.watchOnReplyField.$element,
         dialog.watchSectionOnReplyField.$element,
@@ -626,7 +626,7 @@ export async function settingsDialog() {
         dialog.useTemplateDataField.$element,
         dialog.insertButtonsField.$element,
         dialog.signaturePrefixField.$element,
-      );
+      ]);
     }
     OO.inheritClass(CommentFormPageLayout, OO.ui.PageLayout);
     CommentFormPageLayout.prototype.setupOutlineItem = function () {
@@ -643,11 +643,11 @@ export async function settingsDialog() {
      */
     function NotificationsPageLayout(name, config) {
       NotificationsPageLayout.super.call(this, name, config);
-      this.$element.append(
+      this.$element.append([
         dialog.notificationsField.$element,
         dialog.desktopNotificationsField.$element,
         dialog.notificationsBlacklistField.$element,
-      );
+      ]);
     }
     OO.inheritClass(NotificationsPageLayout, OO.ui.PageLayout);
     NotificationsPageLayout.prototype.setupOutlineItem = function () {

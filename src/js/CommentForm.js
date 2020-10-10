@@ -898,17 +898,17 @@ export default class CommentForm {
      *
      * @type {OoUiHorizontalLayout}
      */
-    this.horizontalLayout = new OO.ui.HorizontalLayout({
+    this.checkboxesLayout = new OO.ui.HorizontalLayout({
       classes: ['cd-checkboxesContainer'],
+      items: [
+        this.minorField,
+        this.watchField,
+        this.watchSectionField,
+        this.noSignatureField,
+        this.deleteField,
+        this.settingsButton,
+      ].filter(defined),
     });
-    this.horizontalLayout.addItems([
-      this.minorField,
-      this.watchField,
-      this.watchSectionField,
-      this.noSignatureField,
-      this.deleteField,
-      this.settingsButton,
-    ].filter(defined));
 
     /**
      * Form buttons container.
@@ -1042,8 +1042,7 @@ export default class CommentForm {
      *
      * @type {OoUiButtonWidget}
      */
-    this.submitButton = new OO.ui.ButtonInputWidget({
-      type: 'submit',
+    this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
       classes: ['cd-submitButton'],
@@ -1054,18 +1053,21 @@ export default class CommentForm {
       this.updateFormOnDeleteCheckboxChange(true);
     }
 
-    this.$advanced.append(
+    this.$advanced.append([
       this.summaryInput.$element,
       this.$summaryPreview,
-      this.horizontalLayout.$element
-    );
-    this.$leftButtonsContainer.append(this.advancedButton.$element, this.helpPopupButton.$element);
-    this.$rightButtonsContainer.append(
+      this.checkboxesLayout.$element,
+    ]);
+    this.$leftButtonsContainer.append([
+      this.advancedButton.$element,
+      this.helpPopupButton.$element,
+    ]);
+    this.$rightButtonsContainer.append([
       this.cancelButton.$element,
       this.viewChangesButton.$element,
       this.previewButton.$element,
-      this.submitButton.$element
-    );
+      this.submitButton.$element,
+    ]);
     this.$buttonsContainer.append(this.$leftButtonsContainer, this.$rightButtonsContainer);
     this.$form = $('<form>');
     this.$form.append(...[
