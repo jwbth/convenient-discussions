@@ -97,7 +97,7 @@ export async function initSettings() {
     alwaysExpandAdvanced: ['alwaysExpandSettings'],
     haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
     desktopNotifications: ['browserNotifications'],
-    signaturePrefix: ['mySignature', 'mySig'],
+    signaturePrefix: ['mySig', 'mySignature'],
   };
 
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings

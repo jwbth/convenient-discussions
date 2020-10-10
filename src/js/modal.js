@@ -427,14 +427,12 @@ export async function settingsDialog() {
       tagLimit: 100,
       selected: insertButtonsSelected,
     });
-    this.insertButtonsField = (
-      new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
-        label: cd.s('sd-insertbuttons'),
-        align: 'top',
-        help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
-        helpInline: true,
-      })
-    );
+    this.insertButtonsField = new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
+      label: cd.s('sd-insertbuttons'),
+      align: 'top',
+      help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+      helpInline: true,
+    });
 
     [
       this.notificationsField,
@@ -496,7 +494,6 @@ export async function settingsDialog() {
       selected: settings.useTemplateData,
       label: cd.s('sd-usetemplatedata'),
       help: cd.s('sd-usetemplatedata-help'),
-      helpInline: true,
     });
 
     [this.watchOnReplyField, this.watchOnReplyCheckbox] = checkboxField({
@@ -510,29 +507,30 @@ export async function settingsDialog() {
       selected: settings.watchSectionOnReply,
       label: cd.s('sd-watchsectiononreply'),
       help: cd.s('sd-watchsectiononreply-help'),
-      helpInline: true,
     });
 
-    this.insertButtonsMultiselect.connect(this, { change: 'updateActionsAvailability' });
-    this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.autopreviewCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.insertButtonsMultiselect.connect(this, { change: 'updateStates' });
+    this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateStates' });
+    this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateStates' });
+    this.autocompleteTypesMultiselect.connect(this, { select: 'updateStates' });
+    this.autopreviewCheckbox.connect(this, { change: 'updateStates' });
     this.desktopNotificationsSelect.connect(this, {
-      select: 'updateActionsAvailability',
+      select: 'updateStates',
       choose: 'changeDesktopNotifications',
     });
-    this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
-    this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
-    this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.notificationsSelect.connect(this, { select: 'updateActionsAvailability' });
-    this.notificationsBlacklistMultiselect.connect(this, { change: 'updateActionsAvailability' });
-    this.showToolbarCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.signaturePrefixInput.connect(this, { change: 'updateActionsAvailability' });
-    this.useTemplateDataCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.watchOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateStates' });
+    this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateStates' });
+    this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateStates' });
+    this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
+    this.notificationsSelect.connect(this, { select: 'updateStates' });
+    this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
+    this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
+    this.signaturePrefixInput.connect(this, { change: 'updateStates' });
+    this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
+    this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateStates' });
+    this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
 
-    this.removeDataButton = new OO.ui.ButtonInputWidget({
+    this.removeDataButton = new OO.ui.ButtonWidget({
       label: cd.s('sd-removedata'),
       flags: ['destructive'],
     });
@@ -644,7 +642,8 @@ export async function settingsDialog() {
 
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
-    this.updateActionsAvailability();
+    this.updateStates();
+  };
 
   SettingsDialog.prototype.collectSettings = function () {
     const settings = {
@@ -689,7 +688,7 @@ export async function settingsDialog() {
       .filter(defined);
   };
 
-  SettingsDialog.prototype.updateActionsAvailability = async function () {
+  SettingsDialog.prototype.updateStates = async function () {
     this.useTemplateDataCheckbox.setDisabled(
       !this.autocompleteTypesMultiselect.findItemFromData('templates').isSelected()
     );
