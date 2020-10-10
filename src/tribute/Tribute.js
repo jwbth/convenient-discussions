@@ -406,6 +406,10 @@ class Tribute {
     }
 
     this.current.collection = this.collection[collectionIndex || 0];
+
+    // jwbth: Added this to avert a JS error.
+    this.current.trigger = this.current.collection.trigger;
+
     this.current.externalTrigger = true;
     this.current.element = element;
 

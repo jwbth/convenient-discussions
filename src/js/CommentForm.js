@@ -3128,13 +3128,11 @@ export default class CommentForm {
       this.commentInput.insertContent(' ');
     }
 
-    // And another workaround. The standard `Tribute#showMenuForCollection` method doesn't call
-    // `values()`.
-    this.commentInput.insertContent(cd.config.mentionCharacter);
-    const element = this.commentInput.$input.get(0);
-    element.dispatchEvent(new Event('keydown'));
-    element.dispatchEvent(new Event('input'));
-    element.dispatchEvent(new Event('keyup'));
+    this.autocomplete.tribute.showMenuForCollection(
+      this.commentInput.$input.get(0),
+      this.autocomplete.tribute.collection
+        .findIndex((collection) => collection.trigger === cd.config.mentionCharacter)
+    );
   }
 
   /**
