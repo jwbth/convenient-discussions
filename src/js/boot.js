@@ -63,7 +63,7 @@ export async function initSettings() {
 
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
-    areInsertButtonsAltered: false,
+    haveInsertButtonsBeenAltered: false,
 
     autopreview: true,
     desktopNotifications: 'unknown',
@@ -84,7 +84,7 @@ export async function initSettings() {
     watchSectionOnReply: true,
   };
 
-  cd.localSettingNames = ['areInsertButtonsAltered', 'insertButtons', 'signaturePrefix'];
+  cd.localSettingNames = ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'];
 
   const options = {
     [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
@@ -95,7 +95,7 @@ export async function initSettings() {
   cd.settingAliases = {
     allowEditOthersComments: ['allowEditOthersMsgs'],
     alwaysExpandAdvanced: ['alwaysExpandSettings'],
-    areInsertButtonsAltered: ['insertButtonsChanged'],
+    haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySignature', 'mySig'],
   };
@@ -124,7 +124,7 @@ export async function initSettings() {
   }
 
   if (
-    !cd.settings.areInsertButtonsAltered &&
+    !cd.settings.haveInsertButtonsBeenAltered &&
     JSON.stringify(cd.settings.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
   ) {
     cd.settings.insertButtons = cd.config.defaultInsertButtons;
