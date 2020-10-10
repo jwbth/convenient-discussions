@@ -13,6 +13,7 @@ import { addNewCommentsToToc } from './toc';
 import { addNotification, closeNotifications, getNotifications, reloadPage } from './boot';
 import { areObjectsEqual, handleApiReject, isCommentEdit, reorderArray, unique } from './util';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
+import { removeWikiMarkup } from './wikitext';
 import { setVisits } from './options';
 
 let newCount;
@@ -226,11 +227,13 @@ function generateTooltipText(commentsCount, commentsBySection) {
       ' ' +
       cd.mws('parentheses', 'R')
     );
+    const bullet = removeWikiMarkup(cd.s('bullet'));
     Object.keys(commentsBySection).forEach((anchor) => {
-      const headline = anchor === '_' ?
-        cd.mws('parentheses', cd.s('navpanel-newcomments-outsideofsections')) :
-        cd.s('navpanel-newcomments-insection', commentsBySection[anchor][0].section.headline);
-      tooltipText += `\n\n${headline}`;
+      let headline;
+      if (anchor !== '_') {
+        headline = commentsBySection[anchor][0].section.headline;
+      }
+      tooltipText += headline ? `\n\n${headline}` : '\n';
       commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
         const names = comment.parent?.author && comment.level > 1 ?
@@ -241,6 +244,8 @@ function generateTooltipText(commentsCount, commentsBySection) {
           cd.s('navpanel-newcomments-unknowndate');
         tooltipText += (
           (comment.interesting ? cd.mws('parentheses', '*') + ' ' : '') +
+          bullet +
+          ' ' +
           names +
           (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
           cd.mws('comma-separator') +
