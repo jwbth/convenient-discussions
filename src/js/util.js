@@ -425,11 +425,13 @@ export function getTopAndBottomIncludingMargins(el) {
 /**
  * Whether two objects are the same by value. Doesn't handle complex cases.
  *
- * @param {object} object1
- * @param {object} object2
+ * @param {object} object1 First object.
+ * @param {object} object2 Second object.
+ * @param {boolean} [doesInclude=false] Test if all the values of the first object are contained in
+ *   the second object.
  * @returns {boolean}
  */
-export function areObjectsEqual(object1, object2) {
+export function areObjectsEqual(object1, object2, doesInclude = false) {
   const isMultipartObject = (val) => (
     val !== null &&
     typeof val === 'object' &&
@@ -454,7 +456,7 @@ export function areObjectsEqual(object1, object2) {
   const keys2 = Object.keys(object2);
 
   return (
-    keys1.length === keys2.length &&
+    (keys1.length === keys2.length || doesInclude) &&
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
 }
