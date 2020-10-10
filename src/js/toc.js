@@ -12,6 +12,8 @@ import { reloadPage } from './boot';
  * Highlight (bold) watched sections.
  */
 export function highlightWatchedSectionsInToc() {
+  if (!cd.settings.modifyToc) return;
+
   const $toc = $('.toc');
   if (!$toc.length) return;
 
@@ -38,6 +40,8 @@ export function highlightWatchedSectionsInToc() {
  * @param {object} commentsBySection
  */
 export function addNewCommentsToToc(commentsBySection) {
+  if (!cd.settings.modifyToc) return;
+
   const $toc = $('.toc');
   if (!$toc.length) return;
 
