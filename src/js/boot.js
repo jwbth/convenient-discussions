@@ -65,6 +65,11 @@ export async function initSettings() {
     // default configuration change.
     haveInsertButtonsBeenAltered: false,
 
+    // The order should coincide with the order of checkboxes in
+    // `SettingsDialog#autocompleteTypesMultiselect` in modal.js (otherwise the "Save" and "Reset"
+    // buttons in the settings dialog won't work properly.
+    autocompleteTypes: ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
+
     autopreview: true,
     desktopNotifications: 'unknown',
     defaultCommentLinkType: 'diff',
@@ -79,6 +84,7 @@ export async function initSettings() {
 
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
+    modifyToc: true,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,

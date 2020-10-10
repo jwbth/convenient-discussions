@@ -37,6 +37,8 @@ export default class Autocomplete {
    *   autocomplete.
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
+    types = types.filter((type) => cd.settings.autocompleteTypes.includes(type));
+
     const collections = this.getCollections(types, comments, defaultUserNames);
 
     require('../tribute/tribute.less');

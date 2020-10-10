@@ -329,6 +329,51 @@ export async function settingsDialog() {
       label: cd.s('sd-alwaysexpandadvanced'),
     });
 
+    const autocompleteMentionsOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'mentions',
+      selected: settings.autocompleteTypes.includes('mentions'),
+      label: cd.s('sd-autocompletetypes-mentions'),
+    });
+
+    const autocompleteCommentLinksOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'commentLinks',
+      selected: settings.autocompleteTypes.includes('commentLinks'),
+      label: cd.s('sd-autocompletetypes-commentlinks'),
+    });
+
+    const autocompleteWikilinksOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'wikilinks',
+      selected: settings.autocompleteTypes.includes('wikilinks'),
+      label: cd.s('sd-autocompletetypes-wikilinks'),
+    });
+
+    const autocompleteTemplatesOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'templates',
+      selected: settings.autocompleteTypes.includes('templates'),
+      label: cd.s('sd-autocompletetypes-templates'),
+    });
+
+    const autocompleteTagsOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'tags',
+      selected: settings.autocompleteTypes.includes('tags'),
+      label: cd.s('sd-autocompletetypes-tags'),
+    });
+
+    this.autocompleteTypesMultiselect = new OO.ui.CheckboxMultiselectWidget({
+      items: [
+        autocompleteMentionsOption,
+        autocompleteCommentLinksOption,
+        autocompleteWikilinksOption,
+        autocompleteTemplatesOption,
+        autocompleteTagsOption,
+      ],
+    });
+
+    this.autocompleteTypesField = new OO.ui.FieldLayout(this.autocompleteTypesMultiselect, {
+      label: cd.s('sd-autocompletetypes'),
+      align: 'top',
+    });
+
     [this.autopreviewField, this.autopreviewCheckbox] = checkboxField({
       value: 'autopreview',
       selected: settings.autopreview,
@@ -434,6 +479,13 @@ export async function settingsDialog() {
       helpInline: true,
     });
 
+    [this.modifyTocField, this.modifyTocCheckbox] = checkboxField({
+      value: 'modifyToc',
+      selected: settings.modifyToc,
+      label: cd.s('sd-modifytoc'),
+      help: cd.s('sd-modifytoc-help'),
+    });
+
     [
       this.notificationsField,
       this.notificationsSelect,
@@ -492,6 +544,7 @@ export async function settingsDialog() {
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({
       value: 'useTemplateData',
       selected: settings.useTemplateData,
+      disabled: !settings.autocompleteTypes.includes('templates'),
       label: cd.s('sd-usetemplatedata'),
       help: cd.s('sd-usetemplatedata-help'),
     });
@@ -556,6 +609,7 @@ export async function settingsDialog() {
       this.$element.append([
         dialog.highlightOwnCommentsField.$element,
         dialog.allowEditOthersCommentsField.$element,
+        dialog.modifyTocField.$element,
         dialog.defaultCommentLinkTypeField.$element,
         dialog.defaultSectionLinkTypeField.$element,
       ]);
@@ -582,6 +636,7 @@ export async function settingsDialog() {
         dialog.watchSectionOnReplyField.$element,
         dialog.showToolbarField.$element,
         dialog.alwaysExpandAdvancedField.$element,
+        dialog.autocompleteTypesField.$element,
         dialog.useTemplateDataField.$element,
         dialog.insertButtonsField.$element,
         dialog.signaturePrefixField.$element,
@@ -649,6 +704,7 @@ export async function settingsDialog() {
     const settings = {
       allowEditOthersComments: this.allowEditOthersCommentsCheckbox.isSelected(),
       alwaysExpandAdvanced: this.alwaysExpandAdvancedCheckbox.isSelected(),
+      autocompleteTypes: this.autocompleteTypesMultiselect.findSelectedItemsData(),
       autopreview: this.autopreviewCheckbox.isSelected(),
       desktopNotifications: (
         this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
@@ -658,6 +714,7 @@ export async function settingsDialog() {
       defaultSectionLinkType: this.defaultSectionLinkTypeSelect.findSelectedItem()?.getData(),
       highlightOwnComments: this.highlightOwnCommentsCheckbox.isSelected(),
       insertButtons: this.processInsertButtons(),
+      modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),
       notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
       showToolbar: this.showToolbarCheckbox.isSelected(),

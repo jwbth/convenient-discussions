@@ -32,8 +32,8 @@
  * @param {string} [options.title]
  * @returns {CheckboxFieldReturn}
  */
-export function checkboxField({ value, selected, label, help, tabIndex, title }) {
-  const checkbox = new OO.ui.CheckboxInputWidget({ value, selected, tabIndex });
+export function checkboxField({ value, selected, disabled, label, help, tabIndex, title }) {
+  const checkbox = new OO.ui.CheckboxInputWidget({ value, selected, disabled, tabIndex });
   const field = new OO.ui.FieldLayout(checkbox, {
     label,
     align: 'inline',
