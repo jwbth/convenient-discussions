@@ -516,14 +516,9 @@ export default async function processPage(keptData = {}) {
   let watchedSectionsRequest;
   if (mw.config.get('wgArticleId')) {
     watchedSectionsRequest = getWatchedSections(true, keptData);
-    watchedSectionsRequest.then(
-      () => {
-        highlightWatchedSectionsInToc();
-      },
-      (e) => {
-        console.warn('Couldn\'t load the settings from the server.', e);
-      }
-    );
+    watchedSectionsRequest.catch((e) => {
+      console.warn('Couldn\'t load the settings from the server.', e);
+    });
   }
 
   let visitsRequest;

@@ -5,7 +5,6 @@
  */
 
 import Comment from './Comment';
-import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { reloadPage } from './boot';
 
@@ -18,7 +17,7 @@ export function highlightWatchedSectionsInToc() {
 
   cd.sections.forEach((section) => {
     const anchor = section.anchor;
-    const $a = $toc.find(`a[href="#${anchor}"]`);
+    const $a = $toc.find(`a[href="#${$.escapeSelector(anchor)}"]`);
     if (!$a.length) return;
 
     if (section.isWatched) {
@@ -47,12 +46,12 @@ export function addNewCommentsToToc(commentsBySection) {
   Object.keys(commentsBySection)
     .filter((anchor) => anchor !== '_')
     .forEach((anchor) => {
-      const $sectionA = $toc.find(`a[href="#${anchor}"]`);
+      const $sectionA = $toc.find(`a[href="#${$.escapeSelector(anchor)}"]`);
       if (!$sectionA.length) return;
 
       let $target = $sectionA;
-      const $next = $sectionA.next('.cd-toc-newComments');
-      if ($next) {
+      const $next = $sectionA.next('.cd-toc-newCommentList');
+      if ($next.length) {
         $target = $next;
       }
 
@@ -102,12 +101,10 @@ export function addNewCommentsToToc(commentsBySection) {
               comment.scrollToAndHighlightTarget(false);
             });
           } else {
-            $a
-              .addClass('cd-toc-notLoadedComment')
-              .on('click', (e) => {
-                e.preventDefault();
-                reloadPage({ commentAnchor: comment.anchor });
-              });
+            $a.on('click', (e) => {
+              e.preventDefault();
+              reloadPage({ commentAnchor: comment.anchor });
+            });
           }
         });
 

@@ -359,6 +359,8 @@ export default class Section extends SectionSkeleton {
                 visible: !this.isWatched,
               });
             }
+
+            highlightWatchedSectionsInToc();
           },
           () => {}
         )
