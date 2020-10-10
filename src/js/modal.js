@@ -309,7 +309,9 @@ export async function settingsDialog() {
     } else if (action === 'reset') {
       return new OO.ui.Process(async () => {
         if (await OO.ui.confirm(cd.s('sd-reset-confirm'))) {
+          const currentPageName = this.bookletLayout.getCurrentPageName();
           this.renderForm(cd.defaultSettings);
+          this.bookletLayout.setPage(currentPageName);
         }
       });
     }
