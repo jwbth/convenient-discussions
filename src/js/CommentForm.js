@@ -1481,8 +1481,12 @@ export default class CommentForm {
     saveScrollPosition();
     if (this.$advanced.is(':hidden')) {
       this.$advanced.show();
+      const value = this.summaryInput.getValue();
+      const match = value.match(/^.+?\*\/ */);
+      this.summaryInput.selectRange(match ? match[0].length : 0, value.length);
     } else {
       this.$advanced.hide();
+      this.commentInput.focus();
     }
     restoreScrollPosition();
   }
@@ -3119,7 +3123,7 @@ export default class CommentForm {
 
     const caretIndex = this.commentInput.getRange().to;
 
-    // Prevent removing of text
+    // Prevent removal of text
     if (this.commentInput.getRange().from !== caretIndex) {
       this.commentInput.selectRange(caretIndex);
     }
