@@ -89,15 +89,9 @@ export default class Autocomplete {
    * @private
    */
   getCollections(types, comments, defaultUserNames) {
-    const selectTemplate = (item, event) => {
+    const selectTemplate = (item) => {
       if (item) {
-        if (event.shiftKey && item.original.shift) {
-          return item.original.shift;
-        } else if (event.ctrlKey && item.original.ctrl) {
-          return item.original.ctrl;
-        } else {
-          return item.original.regular;
-        }
+        return item.original.transform(item.original.item);
       } else {
         return '';
       }
@@ -119,13 +113,8 @@ export default class Autocomplete {
             // The rest
             key = item;
           }
-          const regular = config.regular(item);
-          return {
-            key,
-            regular,
-            shift: config.shift ? config.shift(item) : regular,
-            ctrl: config.ctrl ? config.ctrl(item) : regular,
-          };
+          const transform = config.transform;
+          return { key, item, transform };
         })
     );
 
@@ -293,7 +282,7 @@ export default class Autocomplete {
         searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
-            if (cd.settings.useTemplateData && event.shiftKey) {
+            if (cd.settings.useTemplateData && event.shiftKey && !event.altKey) {
               const input = this.tribute.current.element.cdInput;
 
               input.setDisabled(true);
@@ -357,9 +346,7 @@ export default class Autocomplete {
                 });
             }
 
-            return event.shiftKey && item.original.shift ?
-              item.original.shift :
-              item.original.regular;
+            return item.original.transform(item.original.item);
           } else {
             return '';
           }
@@ -511,33 +498,21 @@ export default class Autocomplete {
     const config = {
       byText: {},
       cache: [],
-      regular: (item) => {
-        const name = item.trim();
-        const userNamespace = (
-          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
-          mw.config.get('wgFormattedNamespaces')[2]
-        );
-        return { value: `@[[${userNamespace}:${name}|${name}]]` };
-      },
-      shift: (item) => {
+      transform: (item) => {
         const name = item.trim();
         const userNamespace = (
           cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
           mw.config.get('wgFormattedNamespaces')[2]
         );
         return {
-          value: `@[[${userNamespace}:${name}|${name}]]`,
-          startOffset: `@[[${userNamespace}:${name}|`.length,
-          endOffset: 2,
+          start: `@[[${userNamespace}:${name}|`,
+          end: ']]',
+          content: name,
+          ctrlModify: (data) => {
+            data.end += cd.mws('colon-separator');
+            return data;
+          },
         };
-      },
-      ctrl: (item) => {
-        const name = item.trim();
-        const userNamespace = (
-          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
-          mw.config.get('wgFormattedNamespaces')[2]
-        );
-        return { value: `@[[${userNamespace}:${name}|${name}]]${cd.mws('colon-separator')}` };
       },
       removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
     };
@@ -556,16 +531,17 @@ export default class Autocomplete {
     return {
       byText: {},
       cache: [],
-      regular: (name) => {
-        name = name.trim();
-        return { value: `[[${name}]]` };
-      },
-      shift: (name) => {
+      transform: (name) => {
         name = name.trim();
         return {
-          value: `[[${name}|${name}]]`,
-          startOffset: `[[${name}|`.length,
-          endOffset: 2,
+          start: '[[' + name,
+          end: ']]',
+          name,
+          shiftModify: (data) => {
+            data.start += '|';
+            data.content = data.name;
+            return data;
+          },
         };
       },
     };
@@ -581,16 +557,16 @@ export default class Autocomplete {
     return {
       byText: {},
       cache: [],
-      regular: (name) => {
-        name = name.trim();
-        return { value: `{{${name}}}` };
-      },
-      shift: (name) => {
+      transform: (name) => {
         name = name.trim();
         return {
-          value: `{{${name}|}}`,
-          startOffset: `{{${name}|`.length,
-          endOffset: 2,
+          start: '{{' + name,
+          end: '}}',
+          name,
+          shiftModify: (data) => {
+            data.start += '|';
+            return data;
+          },
         };
       },
     };
@@ -607,8 +583,8 @@ export default class Autocomplete {
       default: [
         // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
         // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags. Deprecated
-        // tags are not included. An element can be an array of a string to display and a string to
-        // insert, with "+" in the place where to put the caret.
+        // tags are not included. An element can be an array of a string to display and strings to
+        // insert before and after the caret.
         'abbr',
         'b',
         'bdi',
@@ -618,7 +594,7 @@ export default class Autocomplete {
         'caption',
         'cite',
         'code',
-        ['codenowiki', '<code><nowiki>+</'.concat('nowiki></code>')],
+        ['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
         'data',
         'dd',
         'del',
@@ -688,16 +664,15 @@ export default class Autocomplete {
         'score',
         'section',
         'syntaxhighlight',
-        ['syntaxhighlight lang=""', '<syntaxhighlight lang="+"></syntaxhighlight>'],
+        ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '"></syntaxhighlight>'],
         'templatedata',
-        ['templatestyles', '<templatestyles src="+" />'],
+        ['templatestyles', '<templatestyles src="', '" />'],
         'timeline',
       ],
-      regular: (item) => ({
-        value: Array.isArray(item) ? item[1].replace(/\+/, '') : `<${item}></${item}>`,
-        endOffset: Array.isArray(item) ?
-          item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0 :
-          item.length + 3,
+      transform: (item) => ({
+        start: Array.isArray(item) ? item[1] : `<${item}>`,
+        end: Array.isArray(item) ? item[2] : `</${item}>`,
+        typeContent: true,
       }),
     };
     config.default.sort();
@@ -715,13 +690,10 @@ export default class Autocomplete {
   static getCommentLinksConfig(comments = []) {
     const config = {
       comments,
-      regular: ({ anchor, author, timestamp }) => ({
-        value: `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`
-      }),
-      shift: ({ anchor, author, timestamp }) => ({
-        value: `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`,
-        startOffset: `[[#${anchor}|`.length,
-        endOffset: 2,
+      transform: ({ anchor, author, timestamp }) => ({
+        start: `[[#${anchor}|`,
+        end: ']]',
+        content: cd.s('cf-mentions-commentlinktext', author, timestamp),
       }),
     };
 

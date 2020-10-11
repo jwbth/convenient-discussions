@@ -100,49 +100,57 @@ class TributeRange {
                 }
             })
 
-            // jwbth: We use the `data` object instead of a string, to store offset data.
+            // jwbth: We use the `data` object instead of a string, to store the start/end/content
+            // data. The code processing these properties is added below.
             if (typeof data !== 'object') {
-                data = { value: data }
+                data = { start: data }
             }
-            let text = data.value
+            data.content = data.content || ''
+            data.end = data.end || ''
+            if (originalEvent.ctrlKey && data.ctrlModify) {
+                data = data.ctrlModify(data)
+            }
 
             let myField = this.tribute.current.element
+
+            // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
+            // than 1.
+            let endPos = info.mentionPosition + info.mentionText.length +
+                info.mentionTriggerChar.length
+            let ending = myField.value.substring(endPos, myField.value.length)
+
+            if ((originalEvent.shiftKey || originalEvent.altKey) && data.shiftModify) {
+                data = data.shiftModify(data)
+            }
+
+            if (originalEvent.altKey) {
+                data.content = ending
+                ending = ''
+            }
+            let text = data.start + data.content + data.end
+
             let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
                 ? this.tribute.replaceTextSuffix
                 : ' '
             text += textSuffix
             let startPos = info.mentionPosition
 
-            // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
-            // than 1.
-            let endPos = info.mentionPosition + info.mentionText.length
-
-            // jwbth: Fixed this line to make it work with `replaceTextSuffix`es of length other
-            // than 1.
-            endPos += info.mentionTriggerChar.length
-
-
-            // jwbth: Made alterations to make `keepTextAfter` config value work.
-            let ending = myField.value.substring(endPos, myField.value.length)
+            // jwbth: Made alterations to make the `keepTextAfter` config value work.
             if (ending.startsWith(context.collection.keepTextAfter)) {
                 ending = ending.slice(context.collection.keepTextAfter.length)
             }
             myField.value = myField.value.substring(0, startPos) + text + ending
 
-            // End offset is calculated from the end position of the inserted text.
-            if (data.endOffset === undefined) {
-                data.endOffset = 0
+            // jwbth: Start offset is calculated from the start position of the inserted text.
+            // Absent value means the selection start position should match with the end position
+            // (i.e., no text should be selected).
+            if (originalEvent.shiftKey || (data.typeContent && !data.content)) {
+                myField.selectionEnd = startPos + text.length - data.end.length
+                myField.selectionStart = startPos + data.start.length
+            } else {
+                myField.selectionEnd = startPos + text.length
+                myField.selectionStart = myField.selectionEnd
             }
-
-            // Start offset is calculated from the start position of the inserted text. Absent value
-            // means the selection start position should match with the end position (i.e., no text
-            // should be selected).
-            if (data.startOffset === undefined) {
-                data.startOffset = text.length - data.endOffset
-            }
-
-            myField.selectionStart = startPos + data.startOffset
-            myField.selectionEnd = startPos + text.length - data.endOffset
 
             context.element.dispatchEvent(new CustomEvent('input', { bubbles: true }))
             context.element.dispatchEvent(replaceEvent)
