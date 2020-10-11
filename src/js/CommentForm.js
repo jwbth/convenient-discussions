@@ -3107,12 +3107,13 @@ export default class CommentForm {
     if (!this.autocomplete) return;
 
     if (mentionAddressee && this.targetComment) {
-      const mentionText = (
-        Autocomplete.getMentionsConfig().ctrl(this.targetComment.author.name).value
-      );
+      let data = Autocomplete.getMentionsConfig()
+        .transform(this.targetComment.author.name);
+      data = data.ctrlModify(data);
+      const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
-      this.commentInput.setValue(mentionText + this.commentInput.getValue());
-      this.commentInput.selectRange(range.from + mentionText.length, range.to + mentionText.length);
+      this.commentInput.setValue(text + this.commentInput.getValue());
+      this.commentInput.selectRange(range.from + text.length, range.to + text.length);
       return;
     }
 
