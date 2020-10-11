@@ -431,7 +431,7 @@ mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
 });
 
 mw.hook('convenientDiscussions.commentFormModulesReady').add(function (commentForm) {
-  commentForm.$form.on('keydown', function (e) {
+  commentForm.$element.on('keydown', function (e) {
     // Ctrl+Alt+W
     if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
       window.Wikify(commentForm.commentInput.$input.get(0))

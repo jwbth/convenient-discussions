@@ -435,21 +435,21 @@ export default class CommentForm {
       .insertBefore(this.commentInput.$element);
 
     mw.loader.using(['ext.wikiEditor'].concat(moduleNames)).then(() => {
-      const $textarea = this.commentInput.$input;
-      $textarea.wikiEditor(
+      const $input = this.commentInput.$input;
+      $input.wikiEditor(
         'addModule',
         mw.loader.moduleRegistry['ext.wikiEditor']
           .packageExports['jquery.wikiEditor.toolbar.config.js']
       );
       const dialogsConfig = mw.loader.moduleRegistry['ext.wikiEditor']
         .packageExports['jquery.wikiEditor.dialogs.config.js'];
-      dialogsConfig.replaceIcons($textarea);
-      $textarea.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
+      dialogsConfig.replaceIcons($input);
+      $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
       this.commentInput.$element
         .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
 
-      $textarea.wikiEditor('addToToolbar', {
+      $input.wikiEditor('addToToolbar', {
         section: 'main',
         groups: {
           'convenient-discussions': {
@@ -485,9 +485,10 @@ export default class CommentForm {
           this.mention(e.ctrlKey);
         });
 
-      // For some reason, in (starting with?) Chrome 84.0.4147.89, if you put this line to the top,
-      // the viewport will jump down. See also saveScrollPosition() call above.
-      $toolbarPlaceholder.hide();
+      // For some reason, in (starting with?) Chrome 84.0.4147.89, if you put
+      // `$toolbarPlaceholder.hide();` to the top, the viewport will jump down. See also
+      // saveScrollPosition() call above.
+      $toolbarPlaceholder.remove();
 
       // More Chrome scrolling bug fixes
       this.$element
@@ -1086,14 +1087,13 @@ export default class CommentForm {
       this.submitButton.$element,
     ]);
     this.$buttonsContainer.append(this.$leftButtonsContainer, this.$rightButtonsContainer);
-    this.$form = $('<form>');
-    this.$form.append(...[
+    this.$innerWrapper.append([
+      this.$messageArea,
       this.headlineInput?.$element,
       this.commentInput.$element,
       this.$advanced,
       this.$buttonsContainer,
     ].filter(defined));
-    this.$innerWrapper.append(this.$messageArea, this.$form);
 
     if (this.mode !== 'edit' && !cd.settings.alwaysExpandAdvanced) {
       this.$advanced.hide();
@@ -1277,11 +1277,7 @@ export default class CommentForm {
       },
     ].concat(cd.config.customTextReactions);
 
-    this.$form
-      .on('submit', (e) => {
-        e.preventDefault();
-        this.submit();
-      })
+    this.$element
       // Hotkeys
       .on('keydown', (e) => {
         // Ctrl+Enter
@@ -1419,6 +1415,11 @@ export default class CommentForm {
     this.previewButton
       .on('click', () => {
         this.preview(true, false);
+      });
+
+    this.submitButton
+      .on('click', () => {
+        this.submit();
       });
   }
 
