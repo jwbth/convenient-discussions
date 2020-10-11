@@ -172,13 +172,12 @@ function addWatchlistMenu() {
   });
 
   const $menu = $('<fieldset>').addClass('cd-watchlistMenu');
-  const $legend = $('<legend>')
-    .addClass('cd-watchlistMenu-legend')
-    .appendTo($menu);
   $('<a>')
     .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
+    .attr('target', '_blank')
+    .addClass('cd-watchlistMenu-scriptPageLink')
     .text(cd.s('script-name-short'))
-    .appendTo($legend);
+    .appendTo($menu);
 
   switchInterestingButton = new OO.ui.ButtonWidget({
     framed: false,
