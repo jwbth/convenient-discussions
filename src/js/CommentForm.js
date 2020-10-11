@@ -129,21 +129,38 @@ export default class CommentForm {
      */
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
-    if (this.preloadConfig?.editIntro) {
-      parseCode(`{{${this.preloadConfig.editIntro}}}`, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
-        this.$messageArea
-          .append(result.html)
-          .cdAddCloseButton();
+    if (this.mode === 'addSection') {
+      let code = (
+        '<div class="cd-editnotice">' +
+        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}}}` +
+        '</div>\n' +
+        '<div class="cd-editnotice">' +
+        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}-${cd.g.CURRENT_PAGE.title}}}` +
+        '</div>\n'
+      );
+      if (this.preloadConfig?.editIntro) {
+        code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
+      }
+      parseCode(code, { title: cd.g.CURRENT_PAGE.name })
+        .then((result) => {
+          this.$messageArea
+            .append(result.html)
+            .cdAddCloseButton()
+            .find('.cd-editnotice > a.new[title^="MediaWiki:Editnotice-"]')
+            .parent()
+            .remove();
 
-        const commentForm = this;
-        this.$messageArea.find('.mw-charinsert-item').on('click', function () {
-          commentForm.commentInput.$input.textSelection('encapsulateSelection', {
-            pre: $(this).data('mw-charinsert-start'),
-            peri: '',
-            post: $(this).data('mw-charinsert-end'),
-          });
+          const commentForm = this;
+          this.$messageArea
+            .find('.mw-charinsert-item')
+            .on('click', function () {
+              commentForm.commentInput.$input.textSelection('encapsulateSelection', {
+                pre: $(this).data('mw-charinsert-start'),
+                peri: '',
+                post: $(this).data('mw-charinsert-end'),
+              });
+            });
         });
-      });
     }
 
     this.createContents(dataToRestore);
