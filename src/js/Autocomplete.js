@@ -194,6 +194,9 @@ export default class Autocomplete {
                 return;
               }
 
+              // Type "[[Text", then delete and type "<s" quickly.
+              if (!this.tribute.current || this.tribute.current.trigger !== '@') return;
+
               values = this.mentions.removeSelf(values);
               this.mentions.cache = values.slice();
 
@@ -265,6 +268,9 @@ export default class Autocomplete {
               } catch (e) {
                 return;
               }
+
+              // Type "[[Text", then delete and type "<s" quickly.
+              if (!this.tribute.current || this.tribute.current.trigger !== '[[') return;
 
               this.wikilinks.cache = values.slice();
 
@@ -399,6 +405,9 @@ export default class Autocomplete {
               } catch (e) {
                 return;
               }
+
+              // Type "[[Text", then delete and type "<s" quickly.
+              if (!this.tribute.current || this.tribute.current.trigger !== '{{') return;
 
               this.templates.cache = values.slice();
 
