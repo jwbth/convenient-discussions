@@ -262,7 +262,7 @@ export default class CommentForm {
               code = code.trim();
 
               if (code.includes(cd.g.SIGN_CODE)) {
-                this.noSignatureCheckbox.setSelected(true);
+                this.omitSignatureCheckbox.setSelected(true);
               }
 
               this.commentInput.setValue(code);
@@ -822,25 +822,25 @@ export default class CommentForm {
 
     if (this.headlineInput) {
       /**
-       * No signature checkbox field.
+       * Omit signature checkbox field.
        *
-       * @name noSignatureField
+       * @name omitSignatureField
        * @type {OoUiFieldLayout}
        * @instance module:CommentForm
        */
 
       /**
-       * No signature checkbox.
+       * Omit signature checkbox.
        *
-       * @name noSignatureCheckbox
+       * @name omitSignatureCheckbox
        * @type {OoUiCheckboxInputWidget}
        * @instance module:CommentForm
        */
 
-      [this.noSignatureField, this.noSignatureCheckbox] = checkboxField({
-        value: 'noSignature',
-        selected: dataToRestore ? dataToRestore.noSignature : false,
-        label: cd.s('cf-nosignature'),
+      [this.omitSignatureField, this.omitSignatureCheckbox] = checkboxField({
+        value: 'omitSignature',
+        selected: dataToRestore ? dataToRestore.omitSignature : false,
+        label: cd.s('cf-omitsignature'),
         tabIndex: String(this.id) + '25',
       });
     }
@@ -904,7 +904,7 @@ export default class CommentForm {
         this.minorField,
         this.watchField,
         this.watchSectionField,
-        this.noSignatureField,
+        this.omitSignatureField,
         this.deleteField,
         this.settingsButton,
       ].filter(defined),
@@ -1250,7 +1250,7 @@ export default class CommentForm {
         message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
         name: 'signatureNotNeeded',
         type: 'notice',
-        checkFunc: () => !this.noSignatureCheckbox?.isSelected(),
+        checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
       },
       {
         pattern: /<pre/,
@@ -1326,7 +1326,7 @@ export default class CommentForm {
             name: 'mentionEdit',
           });
         }
-        if (this.noSignatureCheckbox?.isSelected()) {
+        if (this.omitSignatureCheckbox?.isSelected()) {
           const $message = cd.util.wrap(
             cd.sParse('cf-reaction-mention-nosignature'),
             { targetBlank: true }
@@ -1363,8 +1363,8 @@ export default class CommentForm {
         .on('change', saveSessionEventHandler);
     }
 
-    if (this.noSignatureCheckbox) {
-      this.noSignatureCheckbox
+    if (this.omitSignatureCheckbox) {
+      this.omitSignatureCheckbox
         .on('change', previewFalse)
         .on('change', saveSessionEventHandler);
     }
@@ -1926,7 +1926,7 @@ export default class CommentForm {
       .replace(/^(?:[ \t\xA0\uFEFF]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\uFEFF\xA0]+/gm, ''));
 
     let signature;
-    if (this.noSignatureCheckbox?.isSelected()) {
+    if (this.omitSignatureCheckbox?.isSelected()) {
       signature = '';
     } else {
       signature = this.mode === 'edit' ?
@@ -2031,7 +2031,7 @@ export default class CommentForm {
       }
     );
 
-    if (!this.noSignatureCheckbox?.isSelected()) {
+    if (!this.omitSignatureCheckbox?.isSelected()) {
       // Remove signature tildes
       code = code.replace(/\s*~{3,}$/, '');
     }
@@ -3054,8 +3054,8 @@ export default class CommentForm {
         this.headlineInput.setDisabled(true);
       }
       this.minorCheckbox.setDisabled(true);
-      if (this.noSignatureCheckbox) {
-        this.noSignatureCheckbox.setDisabled(true);
+      if (this.omitSignatureCheckbox) {
+        this.omitSignatureCheckbox.setDisabled(true);
       }
 
       this.$element.addClass('cd-commentForm-disabled');
@@ -3078,8 +3078,8 @@ export default class CommentForm {
         this.headlineInput.setDisabled(false);
       }
       this.minorCheckbox.setDisabled(false);
-      if (this.noSignatureCheckbox) {
-        this.noSignatureCheckbox.setDisabled(false);
+      if (this.omitSignatureCheckbox) {
+        this.omitSignatureCheckbox.setDisabled(false);
       }
 
       this.$element.removeClass('cd-commentForm-disabled');
