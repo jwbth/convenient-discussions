@@ -428,7 +428,7 @@ export default class Autocomplete {
       },
       commentLinks: {
         trigger: '[[#',
-        requireLeadingSpace: true,
+        keepTextAfter: ']]',
         selectTemplate,
         values: async (text, callback) => {
           if (!this.commentLinks.default) {
