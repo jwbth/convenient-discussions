@@ -199,7 +199,7 @@ export default class CommentForm {
         /**
          * The date when the comment form was focused last time.
          *
-         * @type {Date}
+         * @type {Date|undefined}
          */
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
@@ -348,7 +348,7 @@ export default class CommentForm {
        * Request to test if a comment or section exists in the code made by {@link
        * module:CommentForm#checkCode}.
        *
-       * @type {JQuery.Promise}
+       * @type {JQuery.Promise|undefined}
        */
       this.checkCodeRequest = this.target.getCode(this).catch((e) => {
         if (e instanceof CdError) {
@@ -383,7 +383,7 @@ export default class CommentForm {
       /**
        * Target section.
        *
-       * @type {?Section}
+       * @type {?(Section|undefined)}
        */
       this.targetSection = this.target.getSection();
 
@@ -391,7 +391,7 @@ export default class CommentForm {
        * Target comment. This may be the comment the user replies to or the comment opening the
        * section.
        *
-       * @type {?(Comment|Section)}
+       * @type {?(Comment|Section|undefined)}
        */
       this.targetComment = this.target;
     } else if (this.target instanceof Section) {
@@ -698,7 +698,7 @@ export default class CommentForm {
       /**
        * Headline input.
        *
-       * @type {OoUiTextInputWidget}
+       * @type {OoUiTextInputWidget|undefined}
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
@@ -806,7 +806,7 @@ export default class CommentForm {
        * Minor change checkbox field.
        *
        * @name minorField
-       * @type {OoUiFieldLayout}
+       * @type {OoUiFieldLayout|undefined}
        * @instance module:CommentForm
        */
 
@@ -814,7 +814,7 @@ export default class CommentForm {
        * Minor change checkbox.
        *
        * @name minorCheckbox
-       * @type {OoUiCheckboxInputWidget}
+       * @type {OoUiCheckboxInputWidget|undefined}
        * @instance module:CommentForm
        */
       [this.minorField, this.minorCheckbox] = checkboxField({
@@ -868,7 +868,7 @@ export default class CommentForm {
        * Watch section checkbox field.
        *
        * @name watchSectionField
-       * @type {OoUiFieldLayout}
+       * @type {OoUiFieldLayout|undefined}
        * @instance module:CommentForm
        */
 
@@ -876,7 +876,7 @@ export default class CommentForm {
        * Watch section checkbox.
        *
        * @name watchSectionCheckbox
-       * @type {OoUiCheckboxInputWidget}
+       * @type {OoUiCheckboxInputWidget|undefined}
        * @instance module:CommentForm
        */
       [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
@@ -893,7 +893,7 @@ export default class CommentForm {
        * Omit signature checkbox field.
        *
        * @name omitSignatureField
-       * @type {OoUiFieldLayout}
+       * @type {OoUiFieldLayout|undefined}
        * @instance module:CommentForm
        */
 
@@ -901,7 +901,7 @@ export default class CommentForm {
        * Omit signature checkbox.
        *
        * @name omitSignatureCheckbox
-       * @type {OoUiCheckboxInputWidget}
+       * @type {OoUiCheckboxInputWidget|undefined}
        * @instance module:CommentForm
        */
 
@@ -920,7 +920,7 @@ export default class CommentForm {
        * Delete checkbox field.
        *
        * @name deleteField
-       * @type {OoUiFieldLayout}
+       * @type {OoUiFieldLayout|undefined}
        * @instance module:CommentForm
        */
 
@@ -928,7 +928,7 @@ export default class CommentForm {
        * Delete checkbox.
        *
        * @name deleteCheckbox
-       * @type {OoUiCheckboxInputWidget}
+       * @type {OoUiCheckboxInputWidget|undefined}
        * @instance module:CommentForm
        */
       [this.deleteField, this.deleteCheckbox] = checkboxField({
@@ -1197,7 +1197,7 @@ export default class CommentForm {
       /**
        * Text insert buttons.
        *
-       * @type {JQuery}
+       * @type {JQuery|undefined}
        */
       this.$insertButtons = $('<div>')
         .addClass('cd-insertButtons')
@@ -1524,7 +1524,7 @@ export default class CommentForm {
       /**
        * Autocomplete object for the headline input.
        *
-       * @type {Autocomplete}
+       * @type {Autocomplete|undefined}
        */
       this.headlineAutocomplete = new Autocomplete({
         types: ['mentions', 'wikilinks', 'tags'],

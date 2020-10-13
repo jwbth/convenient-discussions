@@ -240,7 +240,7 @@
 
   "sd-alloweditotherscomments": "Show a link to edit other users' comments",
   "sd-alwaysexpandadvanced": "Expand the \"{{int:convenient-discussions-cf-advanced}}\" section when replying",
-  "sd-autocompletetypes": "Enable autocomplete for:",
+  "sd-autocompletetypes": "Enable autocomplete for",
   "sd-autocompletetypes-mentions": "mentions",
   "sd-autocompletetypes-commentlinks": "comment links",
   "sd-autocompletetypes-wikilinks": "wikilinks",
