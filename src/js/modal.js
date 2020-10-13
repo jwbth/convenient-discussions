@@ -369,6 +369,7 @@ export async function settingsDialog() {
         autocompleteTemplatesOption,
         autocompleteTagsOption,
       ],
+      classes: ['cd-autocompleteTypesMultiselect'],
     });
 
     this.autocompleteTypesField = new OO.ui.FieldLayout(this.autocompleteTypesMultiselect, {

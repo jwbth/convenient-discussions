@@ -2,3 +2,23 @@
 a:not([href]) {
   cursor: pointer;
 }
+
+.cd-autocompleteTypesMultiselect {
+  .oo-ui-multioptionWidget.oo-ui-widget-enabled {
+    cursor: default;
+  }
+
+  .oo-ui-checkboxMultioptionWidget,
+  .oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget,
+  .oo-ui-checkboxMultioptionWidget.oo-ui-labelElement > .oo-ui-labelElement-label {
+    display: inline-block;
+  }
+
+  .oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget {
+    width: auto;
+  }
+
+  .oo-ui-checkboxMultioptionWidget:not(:last-child) {
+    padding-right: 1em;
+  }
+}
