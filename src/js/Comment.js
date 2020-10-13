@@ -1775,8 +1775,8 @@ export default class Comment extends CommentSkeleton {
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
 
-        // "\x01" and "\x02" is from hiding closed discussions and HTML comments.
-        '|\\x02)\\n)\\n*' +
+        // "\x01" and "\x02" are from hiding closed discussions and HTML comments.
+        '|(?:^|\\n)\\x01.+)\\n)\\n*' +
         (
           searchedIndentationCharsLength > 0 ?
           `[:*#\\x01]{0,${searchedIndentationCharsLength}}` :
