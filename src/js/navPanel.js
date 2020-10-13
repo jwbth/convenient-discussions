@@ -699,9 +699,10 @@ const navPanel = {
         }
       });
 
-      const newComments = cd.comments.filter((comment) => comment.newness);
-      Comment.configureAndAddLayers(newComments);
-      addNewCommentsToToc(sortCommentsBySection(newComments));
+      Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.newness));
+      addNewCommentsToToc(
+        sortCommentsBySection(cd.comments.filter((comment) => comment.newness === 'unseen'))
+      );
     }
 
     thisPageVisits.push(String(currentUnixTime));
