@@ -14,15 +14,14 @@ ol > li.cd-commentPart-last {
   margin-bottom: 0.1em;
 }
 
-// We need to override the native styles and .cd-commentForm.cd-commentForm.
-.cd-commentLevel.cd-commentLevel:not(ol) {
+.cd-commentLevel:not(ol) {
   list-style-type: none;
   list-style-image: none;
   margin: 0;
 }
 
-.mw-content-ltr .cd-commentLevel.cd-commentLevel:not(ol),
-.mw-content-rtl .mw-content-ltr .cd-commentLevel.cd-commentLevel:not(ol) {
+.mw-content-ltr .cd-commentLevel:not(ol),
+.mw-content-rtl .mw-content-ltr .cd-commentLevel:not(ol) {
   padding-left: 1em;
   padding-right: 0;
   margin-left: 1em;
@@ -31,8 +30,8 @@ ol > li.cd-commentPart-last {
   border-right: 0;
 }
 
-.mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol),
-.mw-content-ltr .mw-content-rtl .cd-commentLevel.cd-commentLevel:not(ol) {
+.mw-content-rtl .cd-commentLevel:not(ol),
+.mw-content-ltr .mw-content-rtl .cd-commentLevel:not(ol) {
   padding-left: 0;
   padding-right: 1em;
   margin-left: 0;

@@ -7,26 +7,9 @@
 }
 
 .cd-commentForm {
-  &.cd-commentForm {
-    .flow-root();
+  .flow-root();
 
-    margin: 0.5em 0;
-
-    // Need to override .cd-commentLevel.cd-commentLevel:not(ol).
-    &.cd-commentLevel {
-      margin-top: 0.5em;
-
-      // Indent from the ruwiki's "closed" template, for instance, that follows.
-      margin-bottom: 0.5em;
-    }
-  }
-
-  &.cd-commentForm-addSection,
-  &.cd-commentForm-addSubsection,
-  &.cd-commentForm-replyInSection:not(.cd-commentForm-inNumberedList),
-  &.cd-commentForm-sectionOpeningComment {
-    margin-top: 1em;
-  }
+  margin: 0.5em 0;
 
   .cd-headlineInput {
     margin-bottom: 0.25em;
@@ -77,17 +60,6 @@
     margin-bottom: 0.5em;
   }
 
-  & + .cd-commentLevel,
-  & + dd > .cd-commentLevel:first-child,
-  & + li > .cd-commentLevel:first-child {
-    // Neutralize the hole which would otherwise be created by the margin-top of a nested comment.
-    padding-top: 0.1px;
-  }
-
-  & + .cd-commentForm {
-    padding-top: 0.5em;
-  }
-
   .wikiEditor-ui-left {
     // Make a number in <ol> lists appear in front of the textarea, not below it.
     float: none;
@@ -114,6 +86,13 @@
   .oo-ui-textInputWidget .oo-ui-inputWidget-input {
     border-radius: 0;
   }
+}
+
+.cd-commentForm-addSection,
+.cd-commentForm-addSubsection,
+.cd-commentForm-replyInSection:not(.cd-commentForm-inNumberedList),
+.cd-commentForm-sectionOpeningComment {
+  margin-top: 1em;
 }
 
 // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
@@ -184,15 +163,14 @@
   margin-right: 0;
 }
 
-// flow-root removes the number in numbered lists which is too bad when editing a numbered comment
-// :-/
-ol > li.cd-commentForm.cd-commentForm {
+// "display: flow-root" removes the number in numbered lists which is too bad when editing a
+// numbered comment :-/
+ol > li.cd-commentForm {
   display: list-item;
   -ms-display: list-item;
 }
 
-.cd-replyWrapper,
-.cd-sectionButtonContainer .cd-commentForm.cd-commentForm {
+.cd-replyWrapper {
   margin-top: 0.5em;
 }
 

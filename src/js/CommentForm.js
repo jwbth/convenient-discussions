@@ -570,13 +570,13 @@ export default class CommentForm {
           .toLowerCase();
     }
 
-    let elementTag;
     let outerWrapperTag;
+    let createList = false;
     if (this.mode === 'reply') {
+      createList = true;
       const $lastOfTarget = this.target.$elements.last();
+      const $nextToTarget = $lastOfTarget.next();
       if ($lastOfTarget.is('li')) {
-        elementTag = 'ul';
-
         // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
         // in those cases. Which is unsemantic, yes :-(
         if (this.containerListType !== 'ol') {
@@ -585,48 +585,24 @@ export default class CommentForm {
           outerWrapperTag = 'div';
         }
       } else if ($lastOfTarget.is('dd')) {
-        elementTag = 'ul';
         outerWrapperTag = 'dd';
       } else {
-        const $nextToTarget = $lastOfTarget.next();
         if ($nextToTarget.is('ul')) {
-          elementTag = 'div';
+          createList = false;
           outerWrapperTag = 'li';
         } else if ($nextToTarget.is('dl')) {
-          elementTag = 'div';
+          createList = false;
           outerWrapperTag = 'dd';
-        } else {
-          elementTag = 'ul';
         }
       }
     } else if (this.mode === 'edit') {
       const $lastOfTarget = this.target.$elements.last();
       if ($lastOfTarget.is('li')) {
-        elementTag = 'li';
+        outerWrapperTag = 'li';
       } else if ($lastOfTarget.is('dd')) {
-        elementTag = 'dd';
+        outerWrapperTag = 'dd';
       }
-    } else {
-      // 'addSection', 'addSubsection', 'replyInSection'
-      elementTag = 'div';
     }
-
-    // let tag = 'div';
-    // if (['reply', 'edit'].includes(this.mode)) {
-    //   const $lastOfTarget = this.target.$elements.last();
-    //   const $nextToTarget = $lastOfTarget.next();
-    //   if ($lastOfTarget.is('li')) {
-    //     // We need to avoid a number appearing next to the form in numbered lists, so we keep <div>
-    //     // in those cases. Which is unsemantic, yes :-(
-    //     if (this.containerListType !== 'ol' || this.mode === 'edit') {
-    //       tag = 'li';
-    //     }
-    //   } else if ($lastOfTarget.is('dd')) {
-    //     tag = 'dd';
-    //   } else if (this.mode === 'reply' && !$nextToTarget.is('dl, ul')) {
-    //     tag = 'ul';
-    //   }
-    // }
 
     this.editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
 
@@ -635,7 +611,7 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$element = $(document.createElement(elementTag))
+    this.$element = $('<div>')
       .addClass('cd-commentForm')
       .addClass(`cd-commentForm-${this.mode}`)
 
@@ -651,15 +627,41 @@ export default class CommentForm {
     if (this.mode === 'addSubsection') {
       this.$element.addClass(`cd-commentForm-addSubsection-${this.target.level}`);
     }
-    if (elementTag === 'ul') {
-      this.$element.addClass('cd-commentLevel');
-    }
 
     if (outerWrapperTag) {
-      this.$outerWrapper = $(document.createElement(outerWrapperTag))
-      this.$element.appendTo(this.$outerWrapper);
-    } else {
-      this.$outerWrapper = this.$element;
+      /**
+       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
+       * comment form element} directly, or {@link module:CommentForm~$wrappingList the list} that
+       * wraps the item that wraps the comment form element.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$outerWrapper = $(`<${outerWrapperTag}>`);
+    }
+
+    if (this.mode === 'reply') {
+      if (createList) {
+        /**
+         * List that wraps the item that wraps the comment form element.
+         *
+         * @type {JQuery|undefined}
+         */
+        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
+
+        if (this.$outerWrapper) {
+          this.$wrappingList.appendTo(this.$outerWrapper);
+        }
+
+        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
+
+        this.$element.appendTo($wrappingItem);
+      } else {
+        this.$element.appendTo(this.$outerWrapper);
+      }
+    } else if (this.mode === 'edit') {
+      if (this.$outerWrapper) {
+        this.$element.appendTo(this.$outerWrapper);
+      }
     }
 
     /**
@@ -667,7 +669,7 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$innerWrapper = $(this.mode === 'reply' ? '<li>' : '<div>')
+    this.$innerWrapper = $('<div>')
       .addClass('cd-commentForm-innerWrapper')
       .appendTo(this.$element);
 
@@ -1236,38 +1238,43 @@ export default class CommentForm {
     switch (this.mode) {
       case 'reply': {
         const $lastOfTarget = this.target.$elements.last();
-        if ($lastOfTarget.next().is('ul, dl')) {
-          this.$outerWrapper.prependTo($lastOfTarget.next());
-        } else {
+        const $nextToTarget = $lastOfTarget.next();
+        if ($lastOfTarget.is('li, dd')) {
           this.$outerWrapper.insertAfter($lastOfTarget);
+        } else if ($nextToTarget.is('ul, dl')) {
+          this.$outerWrapper.prependTo($nextToTarget);
+        } else {
+          this.$wrappingList.insertAfter($lastOfTarget);
         }
         break;
       }
 
       case 'edit': {
+        const $element = this.$outerWrapper || this.$element;
+
         // We insert the form before the comment so that if the comment ends on a wrong level, the
         // form is on a right one. The exception is comments that open a section (otherwise a bug
         // will be introduced that will manifest when opening an "Add subsection" form of the
         // previous section).
         if (this.target.isOpeningSection) {
-          this.$outerWrapper.insertAfter(this.target.$elements.last());
+          $element.insertAfter(this.target.$elements.last());
         } else {
-          this.$outerWrapper.insertBefore(this.target.$elements.first());
+          $element.insertBefore(this.target.$elements.first());
         }
         break;
       }
 
       case 'replyInSection': {
-        this.$outerWrapper.appendTo(this.target.$replyWrapper);
+        this.$element.appendTo(this.target.$replyWrapper);
         this.target.$replyWrapper.addClass('cd-replyWrapper-hasCommentForm');
         break;
       }
 
       case 'addSection': {
         if (this.isNewTopicOnTop && cd.sections[0]) {
-          this.$outerWrapper.insertBefore(cd.sections[0].$heading);
+          this.$element.insertBefore(cd.sections[0].$heading);
         } else {
-          this.$outerWrapper.appendTo(cd.g.$root);
+          this.$element.appendTo(cd.g.$root);
         }
         break;
       }
@@ -1294,7 +1301,7 @@ export default class CommentForm {
           $tested.is('.cd-sectionButtonContainer, .cd-commentForm-reply') ||
           ($tested.length && $tested.get(0).className.match(headingLevelRegexp))
         );
-        this.$outerWrapper.insertAfter($target);
+        this.$element.insertAfter($target);
         break;
       }
     }
