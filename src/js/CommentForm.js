@@ -2546,7 +2546,7 @@ export default class CommentForm {
         this.$previewArea.empty();
       } else {
         const $label = $('<div>')
-          .addClass('cd-commentForm-blockLabel')
+          .addClass('cd-previewArea-label')
           .text(cd.s('cf-block-preview'));
         this.$previewArea
           .html(html)
@@ -2651,7 +2651,7 @@ export default class CommentForm {
     if (html) {
       html = cd.util.wrapDiffBody(html);
       const $label = $('<div>')
-        .addClass('cd-commentForm-blockLabel')
+        .addClass('cd-previewArea-label')
         .text(cd.s('cf-block-viewchanges'));
       this.$previewArea
         .html(html)
