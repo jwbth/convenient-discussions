@@ -394,7 +394,7 @@ export async function nativePromiseState(promise) {
  */
 export function dealWithLoadingBug(moduleName) {
   if (mw.loader.getState(moduleName) === 'loading') {
-    const $body = cd.util.wrap(cd.sParse('error-needreloadpage'), {
+    const $body = cd.util.wrap(cd.s('error-needreloadpage'), {
       callbacks: {
         'cd-notification-reloadPage': () => {
           location.reload();

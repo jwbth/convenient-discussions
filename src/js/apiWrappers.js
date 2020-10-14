@@ -154,7 +154,7 @@ export function getUserInfo(reuse = false) {
 export async function unknownApiErrorText(errorCode, errorInfo) {
   let text;
   if (errorCode) {
-    text = cd.sParse('error-api', errorCode) + ' ';
+    text = cd.s('error-api', errorCode) + ' ';
     if (errorInfo) {
       try {
         const { html } = await parseCode(errorInfo);

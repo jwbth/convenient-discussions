@@ -1057,7 +1057,7 @@ export default class CommentForm {
       classes: ['cd-button'],
       popup: {
         head: false,
-        $content: cd.util.wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
+        $content: cd.util.wrap(cd.s('cf-help-content', cd.config.mentionCharacter), {
           tagName: 'div',
           targetBlank: true,
         }),
@@ -1326,14 +1326,14 @@ export default class CommentForm {
     const textReactions = [
       {
         pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
-        message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
+        message: cd.s('cf-reaction-signature', cd.g.SIGN_CODE),
         name: 'signatureNotNeeded',
         type: 'notice',
         checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
       },
       {
         pattern: /<pre/,
-        message: cd.sParse('cf-reaction-pre'),
+        message: cd.s('cf-reaction-pre'),
         name: 'dontUsePre',
         type: 'warning',
       },
@@ -1363,7 +1363,7 @@ export default class CommentForm {
           this.updateAutoSummary(true, true);
 
           if (headline.includes('{{') && !this.preloadConfig?.headline) {
-            this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
+            this.showMessage(cd.s('cf-reaction-templateinheadline'), {
               type: 'warning',
               name: 'templateInHeadline',
             });
@@ -1392,10 +1392,7 @@ export default class CommentForm {
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
       if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
-          const $message = cd.util.wrap(
-            cd.sParse('cf-reaction-mention-edit'),
-            { targetBlank: true }
-          );
+          const $message = cd.util.wrap(cd.s('cf-reaction-mention-edit'), { targetBlank: true });
           this.showMessage($message, {
             type: 'notice',
             name: 'mentionEdit',
@@ -1403,7 +1400,7 @@ export default class CommentForm {
         }
         if (this.omitSignatureCheckbox?.isSelected()) {
           const $message = cd.util.wrap(
-            cd.sParse('cf-reaction-mention-nosignature'),
+            cd.s('cf-reaction-mention-nosignature'),
             { targetBlank: true }
           );
           this.showMessage($message, {
@@ -1815,40 +1812,32 @@ export default class CommentForm {
                 action: 'edit',
                 section: 0,
               });
-            message = cd.sParse('error-locatecomment', editUrl);
+            message = cd.s('error-locatecomment', editUrl);
             break;
           case 'locateSection':
             editUrl = cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
-            message = cd.sParse('error-locatesection', editUrl);
+            message = cd.s('error-locatesection', editUrl);
             break;
           case 'numberedList-list':
-            message = (
-              cd.sParse('cf-error-numberedlist') +
-              ' ' +
-              cd.sParse('cf-error-numberedlist-list')
-            );
+            message = cd.s('cf-error-numberedlist') + ' ' + cd.s('cf-error-numberedlist-list');
             break;
           case 'numberedList-table':
-            message = (
-              cd.sParse('cf-error-numberedlist') +
-              ' ' +
-              cd.sParse('cf-error-numberedlist-table')
-            );
+            message = cd.s('cf-error-numberedlist') + ' ' + cd.s('cf-error-numberedlist-table');
             break;
           case 'findPlace':
-            message = cd.sParse('cf-error-findplace');
+            message = cd.s('cf-error-findplace');
             break;
           case 'findPlace-unexpectedHeading':
-            message = cd.sParse('cf-error-findplace-unexpectedheading');
+            message = cd.s('cf-error-findplace-unexpectedheading');
             break;
           case 'delete-repliesToComment':
-            message = cd.sParse('cf-error-delete-repliestocomment');
+            message = cd.s('cf-error-delete-repliestocomment');
             break;
           case 'delete-repliesInSection':
-            message = cd.sParse('cf-error-delete-repliesinsection');
+            message = cd.s('cf-error-delete-repliesinsection');
             break;
           case 'commentLinks-commentNotFound':
-            message = cd.sParse('cf-error-commentlinks-commentnotfound', details.anchor);
+            message = cd.s('cf-error-commentlinks-commentnotfound', details.anchor);
             break;
         }
         const navigateToEditUrl = async (e) => {
@@ -1880,7 +1869,7 @@ export default class CommentForm {
         // Error messages related to error codes from API should rewrite our generic messages.
         switch (code) {
           case 'missing': {
-            message = cd.sParse('cf-error-pagedoesntexist');
+            message = cd.s('cf-error-pagedoesntexist');
             break;
           }
 
@@ -1891,7 +1880,7 @@ export default class CommentForm {
             } = apiData.error;
             switch (errorCode) {
               case 'missingtitle':
-                message = cd.sParse('cf-error-pagedoesntexist');
+                message = cd.s('cf-error-pagedoesntexist');
                 break;
               default:
                 message = await unknownApiErrorText(errorCode, errorInfo);
@@ -1908,7 +1897,7 @@ export default class CommentForm {
 
       case 'network':
       case 'javascript': {
-        message = (message ? message + ' ' : '') + cd.sParse(`error-${type}`);
+        message = (message ? message + ' ' : '') + cd.s(`error-${type}`);
         break;
       }
     }
@@ -2312,7 +2301,7 @@ export default class CommentForm {
       await this.targetPage.getCode();
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data);
+        const options = Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data);
         this.handleError(options);
       } else {
         this.handleError({
@@ -2525,7 +2514,7 @@ export default class CommentForm {
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
-          message: cd.sParse('cf-error-preview'),
+          message: cd.s('cf-error-preview'),
           currentOperation,
         });
         this.handleError(options);
@@ -2631,7 +2620,7 @@ export default class CommentForm {
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
-          message: cd.sParse('cf-error-viewchanges'),
+          message: cd.s('cf-error-viewchanges'),
           currentOperation,
         });
         this.handleError(options);
@@ -2660,7 +2649,7 @@ export default class CommentForm {
     } else {
       this.$previewArea.empty();
       if (html !== undefined) {
-        this.showMessage(cd.sParse('cf-notice-nochanges'));
+        this.showMessage(cd.s('cf-notice-nochanges'));
       }
     }
     if (cd.settings.autopreview) {
@@ -2690,7 +2679,7 @@ export default class CommentForm {
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
-          message: cd.sParse('error-reloadpage-saved'),
+          message: cd.s('error-reloadpage-saved'),
           cancel: true,
           currentOperation,
         });
@@ -2787,14 +2776,14 @@ export default class CommentForm {
         if (type === 'network') {
           this.handleError({
             type,
-            message: cd.sParse('cf-error-couldntedit'),
+            message: cd.s('cf-error-couldntedit'),
             currentOperation,
           });
         } else {
           let messageType;
           let { code, message, isRawMessage, logMessage } = details;
           if (code === 'editconflict') {
-            message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
+            message += ' ' + cd.s('cf-notice-editconflict-retrying');
             messageType = 'notice';
             this.submit();
           }

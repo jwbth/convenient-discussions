@@ -914,18 +914,12 @@ export default class Comment extends CommentSkeleton {
       case 'parse': {
         if (code === 'moreThanOneTimestamp') {
           const url = this.getSourcePage().getArchivedPage().getUrl({ diff: data.edit.revid });
-          text = cd.util.wrap(cd.sParse('thank-error-multipletimestamps', url), {
-            targetBlank: true,
-          });
+          text = cd.util.wrap(cd.s('thank-error-multipletimestamps', url), { targetBlank: true });
           OO.ui.alert(text);
           return;
         } else {
           const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-          text = (
-            cd.sParse('error-diffnotfound') +
-            ' ' +
-            cd.sParse('error-diffnotfound-history', url)
-          );
+          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         }
         break;
       }
@@ -934,20 +928,16 @@ export default class Comment extends CommentSkeleton {
       default: {
         if (code === 'noData') {
           const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-          text = (
-            cd.sParse('error-diffnotfound') +
-            ' ' +
-            cd.sParse('error-diffnotfound-history', url)
-          );
+          text = cd.s('error-diffnotfound') + ' ' + cd.s('error-diffnotfound-history', url);
         } else {
-          text = cd.sParse('thank-error');
+          text = cd.s('thank-error');
           console.warn(e);
         }
         break;
       }
 
       case 'network': {
-        text = cd.sParse('error-diffnotfound') + ' ' + cd.sParse('error-network');
+        text = cd.s('error-diffnotfound') + ' ' + cd.s('error-network');
         break;
       }
     }
@@ -981,7 +971,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
-    const $question = cd.util.wrap(cd.sParse('thank-confirm', this.author.name, this.author, url), {
+    const $question = cd.util.wrap(cd.s('thank-confirm', this.author.name, this.author, url), {
       tagName: 'div',
       targetBlank: true,
     });

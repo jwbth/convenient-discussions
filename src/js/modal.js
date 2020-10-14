@@ -132,10 +132,10 @@ async function confirmCloseDialog(dialog, dialogCode) {
  */
 function handleError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {
-    const error = new OO.ui.Error(cd.sParse(messageName), { recoverable });
+    const error = new OO.ui.Error(cd.s(messageName), { recoverable });
     dialog.showErrors(error);
   } else {
-    const error = new OO.ui.Error(cd.sParse('error-javascript'), { recoverable: false });
+    const error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
     dialog.showErrors(error);
   }
   console.warn(e);
@@ -478,7 +478,7 @@ export async function settingsDialog() {
     this.insertButtonsField = new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
       label: cd.s('sd-insertbuttons'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+      help: cd.util.wrap(cd.s('sd-insertbuttons-help') + ' ' + cd.s('sd-localsetting')),
       helpInline: true,
     });
 
@@ -540,7 +540,7 @@ export async function settingsDialog() {
     this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
       label: cd.s('sd-signatureprefix'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
+      help: cd.util.wrap(cd.s('sd-signatureprefix-help') + ' ' + cd.s('sd-localsetting')),
       helpInline: true,
     });
 
@@ -595,7 +595,7 @@ export async function settingsDialog() {
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
       label: cd.s('sd-removedata-description'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
+      help: cd.util.wrap(cd.s('sd-removedata-help'), { targetBlank: true }),
       helpInline: true,
     });
 
@@ -1013,21 +1013,15 @@ export async function editWatchedSections() {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;
             if (type === 'internal' && code === 'sizeLimit') {
-              const error = new OO.ui.Error(
-                cd.sParse('ewsd-error-maxsize'),
-                { recoverable: false }
-              );
+              const error = new OO.ui.Error(cd.s('ewsd-error-maxsize'), { recoverable: false });
               this.showErrors(error);
             } else {
-              const error = new OO.ui.Error(
-                cd.sParse('ewsd-error-processing'),
-                { recoverable: true }
-              );
+              const error = new OO.ui.Error(cd.s('ewsd-error-processing'), { recoverable: true });
               this.showErrors(error);
             }
             console.warn(type, code, apiData);
           } else {
-            const error = new OO.ui.Error(cd.sParse('error-javascript'), { recoverable: false });
+            const error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
             this.showErrors(error);
             console.warn(e);
           }
@@ -1073,7 +1067,7 @@ function copyLinkToClipboardAndNotify(text) {
 
   if (successful) {
     if (text.startsWith('http')) {
-      const $body = cd.util.wrap(cd.sParse('copylink-copied-url', text), { targetBlank: true });
+      const $body = cd.util.wrap(cd.s('copylink-copied-url', text), { targetBlank: true });
       mw.notify($body);
     } else {
       mw.notify(cd.s('copylink-copied'));
@@ -1263,17 +1257,17 @@ export async function copyLink(object, chooseLink, finallyCallback) {
         try {
           link = await object.getDiffLink(object);
         } catch (e) {
-          let text = cd.sParse('error-diffnotfound');
+          let text = cd.s('error-diffnotfound');
           if (e instanceof CdError) {
             const { type } = e.data;
             if (type === 'network') {
-              text += ' ' + cd.sParse('error-network');
+              text += ' ' + cd.s('error-network');
             } else {
               const url = object.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-              text += ' ' + cd.sParse('error-diffnotfound-history', url);
+              text += ' ' + cd.s('error-diffnotfound-history', url);
             }
           } else {
-            text += ' ' + cd.sParse('error-unknown');
+            text += ' ' + cd.s('error-unknown');
           }
           const $body = cd.util.wrap(text, { targetBlank: true });
           mw.notify($body, { type: 'error' });
