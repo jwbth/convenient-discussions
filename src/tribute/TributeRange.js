@@ -188,18 +188,6 @@ class TributeRange {
         return text
     }
 
-    getLastWordInText(text) {
-        text = text.replace(/\u00A0/g, ' ') // https://stackoverflow.com/questions/29850407/how-do-i-replace-unicode-character-u00a0-with-a-space-in-javascript
-        var wordsArray
-        if (this.tribute.autocompleteSeparator) {
-            wordsArray = text.split(this.tribute.autocompleteSeparator)
-        } else {
-            wordsArray = text.split(/\s+/)
-        }
-        var worldsCount = wordsArray.length - 1
-        return wordsArray[worldsCount].trim()
-    }
-
     getTriggerInfo(menuAlreadyActive, hasTrailingSpace, requireLeadingSpace, allowSpaces) {
         let selected, path, offset
 
@@ -428,9 +416,9 @@ class TributeRange {
 
         div.textContent = element.value.substring(0, position)
 
-        if (element.nodeName === 'INPUT') {
-            div.textContent = div.textContent.replace(/\s/g, ' ')
-        }
+        // jwbth: Removed replacing "\s" with ' ' as its function is unclear and negative effects
+        // are likely (say, when replacing the tab character with the space that has different
+        // width).
 
         let triggerSpan = document.createElement('span')
         triggerSpan.textContent = this.tribute.current.trigger

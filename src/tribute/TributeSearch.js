@@ -5,10 +5,6 @@ class TributeSearch {
         this.tribute.search = this
     }
 
-    test(pattern, string) {
-        return this.match(pattern, string) !== null
-    }
-
     match(pattern, string, opts) {
         opts = opts || {}
         let pre = opts.pre || '',
@@ -32,11 +28,6 @@ class TributeSearch {
     }
 
     traverse(string, pattern, stringIndex, patternIndex, patternCache) {
-        if (this.tribute.autocompleteSeparator) {
-            // if the pattern search at end
-            pattern = pattern.split(this.tribute.autocompleteSeparator).splice(-1)[0];
-        }
-
         if (pattern.length === patternIndex) {
 
             // calculate score and copy the cache containing the indices where it's found
