@@ -652,21 +652,17 @@ export default async function processPage(keptData = {}) {
       commentLayers.redrawIfNecessary();
     }, 1000);
 
-    // Mutation observer. Delay for 500ms (arbitrary value) to avoid firing too many mutation events
-    // while the script finishes to execute.
-    setTimeout(() => {
-      const observer = new MutationObserver((records) => {
-        const areLayers = records
-          .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (areLayers) return;
-        commentLayers.redrawIfNecessary();
-      });
-      observer.observe(cd.g.$content.get(0), {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-    }, 500);
+    const observer = new MutationObserver((records) => {
+      const areLayers = records
+        .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
+      if (areLayers) return;
+      commentLayers.redrawIfNecessary();
+    });
+    observer.observe(cd.g.$content.get(0), {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
   }
 
   let alwaysConfirmLeavingPage = false;
