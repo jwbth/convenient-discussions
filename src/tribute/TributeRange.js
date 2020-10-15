@@ -135,9 +135,12 @@ class TributeRange {
             text += textSuffix
             let startPos = info.mentionPosition
 
-            // jwbth: Made alterations to make the `keepTextAfter` config value work.
-            if (ending.startsWith(context.collection.keepTextAfter)) {
-                ending = ending.slice(context.collection.keepTextAfter.length)
+            // jwbth: Made alterations to make the `cutTextAfter` config value work.
+            if (
+                context.collection.cutTextAfter &&
+                ending.startsWith(context.collection.cutTextAfter)
+            ) {
+                ending = ending.slice(context.collection.cutTextAfter.length)
             }
             myField.value = myField.value.substring(0, startPos) + text + ending
 

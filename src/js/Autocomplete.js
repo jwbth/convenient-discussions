@@ -204,7 +204,7 @@ export default class Autocomplete {
       },
       wikilinks: {
         trigger: '[[',
-        keepTextAfter: ']]',
+        cutTextAfter: ']]',
         searchOpts: { skip: true },
         selectTemplate,
         values: async (text, callback) => {
@@ -278,7 +278,7 @@ export default class Autocomplete {
       },
       templates: {
         trigger: '{{',
-        keepTextAfter: '}}',
+        cutTextAfter: '}}',
         searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
@@ -413,7 +413,7 @@ export default class Autocomplete {
       },
       tags: {
         trigger: '<',
-        keepTextAfter: '>',
+        cutTextAfter: '>',
         searchOpts: { skip: true },
         selectTemplate,
         values: (text, callback) => {
@@ -428,7 +428,7 @@ export default class Autocomplete {
       },
       commentLinks: {
         trigger: '[[#',
-        keepTextAfter: ']]',
+        cutTextAfter: ']]',
         selectTemplate,
         values: async (text, callback) => {
           if (!this.commentLinks.default) {
