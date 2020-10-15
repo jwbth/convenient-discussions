@@ -99,7 +99,7 @@ function mws(...args) {
  *
  * @private
  */
-function addCommentLinksOnSpecialSearch() {
+function addCommentLinksToSpecialSearch() {
   const [, commentAnchor] = location.search.match(/[?&]cdComment=([^&]+)(?:&|$)/) || [];
   if (commentAnchor) {
     mw.loader.using('mediawiki.api').then(
@@ -386,7 +386,7 @@ function go() {
   }
 
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
-    addCommentLinksOnSpecialSearch();
+    addCommentLinksToSpecialSearch();
   }
 }
 
