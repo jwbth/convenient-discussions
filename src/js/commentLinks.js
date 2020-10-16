@@ -627,8 +627,7 @@ async function processDiff() {
         wrapper.lastChild.lastChild.href = href;
         wrapper.onclick = function (e) {
           e.preventDefault();
-          history.pushState(history.state, '', href);
-          comment.scrollToAndHighlightTarget(false);
+          comment.scrollToAndHighlightTarget(false, true);
         };
 
         const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');

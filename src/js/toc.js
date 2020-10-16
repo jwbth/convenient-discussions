@@ -101,8 +101,7 @@ export function addNewCommentsToToc(commentsBySection) {
           if (comment instanceof Comment) {
             $a.on('click', (e) => {
               e.preventDefault();
-              history.pushState(history.state, '', href);
-              comment.scrollToAndHighlightTarget(false);
+              comment.scrollToAndHighlightTarget(false, true);
             });
           } else {
             $a.on('click', (e) => {

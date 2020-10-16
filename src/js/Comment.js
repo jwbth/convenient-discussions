@@ -636,8 +636,13 @@ export default class Comment extends CommentSkeleton {
    * Scroll to the comment and highlight it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
+   * @param {boolean} [replaceUrl=false] Whether to push a state to the history.
    */
-  scrollToAndHighlightTarget(smooth = true) {
+  scrollToAndHighlightTarget(smooth = true, replaceUrl = false) {
+    if (replaceUrl) {
+      history.pushState(history.state, '', '#' + this.anchor);
+    }
+
     const $elements = this.editForm ? this.editForm.$element : this.$elements;
     $elements.cdScrollIntoView(this.isOpeningSection || this.editForm ? 'top' : 'center', smooth);
     this.highlightTarget();

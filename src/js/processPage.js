@@ -279,7 +279,7 @@ function connectToCommentLinks($content) {
       e.preventDefault();
       const comment = Comment.getCommentByAnchor($(this).attr('href').slice(1));
       if (comment) {
-        comment.scrollToAndHighlightTarget();
+        comment.scrollToAndHighlightTarget(true, true);
       }
     });
 }
