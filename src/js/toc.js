@@ -87,7 +87,7 @@ export function addNewCommentsToToc(commentsBySection) {
             .appendTo($ul);
           const href = `#${comment.anchor}`;
           $('<span>')
-            .html(cd.s('bullet'))
+            .html(cd.sParse('bullet'))
             .addClass('tocnumber')
             .addClass('cd-toc-bullet')
             .appendTo($li);

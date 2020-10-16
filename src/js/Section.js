@@ -503,15 +503,15 @@ export default class Section extends SectionSkeleton {
           const { type, code } = e.data;
           if (type === 'api') {
             if (code === 'missing') {
-              throw [cd.s('msd-error-sourcepagedeleted'), true];
+              throw [cd.sParse('msd-error-sourcepagedeleted'), true];
             } else {
-              throw [cd.s('error-api', code), true];
+              throw [cd.sParse('error-api', code), true];
             }
           } else if (type === 'network') {
-            throw [cd.s('error-network'), true];
+            throw [cd.sParse('error-network'), true];
           }
         } else {
-          throw [cd.s('error-javascript'), false];
+          throw [cd.sParse('error-javascript'), false];
         }
       }
 
@@ -522,13 +522,13 @@ export default class Section extends SectionSkeleton {
           const { code } = e.data;
           let message;
           if (code === 'locateSection') {
-            message = cd.s('error-locatesection');
+            message = cd.sParse('error-locatesection');
           } else {
-            message = cd.s('error-unknown');
+            message = cd.sParse('error-unknown');
           }
           throw [message, true];
         } else {
-          throw [cd.s('error-javascript'), false];
+          throw [cd.sParse('error-javascript'), false];
         }
       }
 
@@ -548,15 +548,15 @@ export default class Section extends SectionSkeleton {
           if (type === 'api') {
             if (code === 'invalid') {
               // Must be filtered before submit.
-              throw [cd.s('msd-error-invalidpagename'), false];
+              throw [cd.sParse('msd-error-invalidpagename'), false];
             } else {
-              throw [cd.s('error-api', code), true];
+              throw [cd.sParse('error-api', code), true];
             }
           } else if (type === 'network') {
-            throw [cd.s('error-network'), true];
+            throw [cd.sParse('error-network'), true];
           }
         } else {
-          throw [cd.s('error-javascript'), false];
+          throw [cd.sParse('error-javascript'), false];
         }
       }
 
@@ -630,18 +630,24 @@ export default class Section extends SectionSkeleton {
         if (e instanceof CdError) {
           const { type, details } = e.data;
           if (type === 'network') {
-            throw [cd.s('msd-error-editingtargetpage') + ' ' + cd.s('error-network'), true];
+            throw [
+              cd.sParse('msd-error-editingtargetpage') + ' ' + cd.sParse('error-network'),
+              true,
+            ];
           } else {
             let { code, message, logMessage } = details;
             if (code === 'editconflict') {
-              message += ' ' + cd.s('msd-error-editconflict-retry');
+              message += ' ' + cd.sParse('msd-error-editconflict-retry');
             }
             console.warn(logMessage);
-            throw [cd.s('msd-error-editingtargetpage') + ' ' + message, true];
+            throw [cd.sParse('msd-error-editingtargetpage') + ' ' + message, true];
           }
         } else {
           console.warn(e);
-          throw [cd.s('msd-error-editingtargetpage') + ' ' + cd.s('error-javascript'), true];
+          throw [
+            cd.sParse('msd-error-editingtargetpage') + ' ' + cd.sParse('error-javascript'),
+            true,
+          ];
         }
       }
     };
@@ -695,15 +701,21 @@ export default class Section extends SectionSkeleton {
         if (e instanceof CdError) {
           const { type, details } = e.data;
           if (type === 'network') {
-            throw [cd.s('msd-error-editingsourcepage') + ' ' + cd.s('error-network'), false];
+            throw [
+              cd.sParse('msd-error-editingsourcepage') + ' ' + cd.sParse('error-network'),
+              false,
+            ];
           } else {
             let { message, logMessage } = details;
             console.warn(logMessage);
-            throw [cd.s('msd-error-editingsourcepage') + ' ' + message, false];
+            throw [cd.sParse('msd-error-editingsourcepage') + ' ' + message, false];
           }
         } else {
           console.warn(e);
-          throw [cd.s('msd-error-editingsourcepage') + ' ' + cd.s('error-javascript'), false];
+          throw [
+            cd.sParse('msd-error-editingsourcepage') + ' ' + cd.sParse('error-javascript'),
+            false,
+          ];
         }
       }
     };
@@ -780,7 +792,7 @@ export default class Section extends SectionSkeleton {
         try {
           await Promise.all(preparationRequests);
         } catch (e) {
-          this.abort(cd.s('cf-error-getpagecode'), false);
+          this.abort(cd.sParse('cf-error-getpagecode'), false);
           return;
         }
 
@@ -790,11 +802,11 @@ export default class Section extends SectionSkeleton {
           if (e instanceof CdError) {
             const { data } = e.data;
             const message = data === 'locateSection' ?
-              cd.s('error-locatesection') :
-              cd.s('error-unknown');
+              cd.sParse('error-locatesection') :
+              cd.sParse('error-unknown');
             this.abort(message, false);
           } else {
-            this.abort(cd.s('error-javascript'), false);
+            this.abort(cd.sParse('error-javascript'), false);
           }
           return;
         }
@@ -881,7 +893,7 @@ export default class Section extends SectionSkeleton {
             targetPage.name === section.getSourcePage().name ||
             !targetPage.isProbablyTalkPage()
           ) {
-            this.abort(cd.s('msd-error-wrongpage'), false);
+            this.abort(cd.sParse('msd-error-wrongpage'), false);
             return;
           }
 
@@ -900,7 +912,7 @@ export default class Section extends SectionSkeleton {
           }
 
           this.reloadPanel.$element.append(
-            cd.util.wrap(cd.s('msd-moved', target.sectionWikilink), { tagName: 'div' })
+            cd.util.wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
           );
 
           this.stackLayout.setItem(this.reloadPanel);
@@ -1527,7 +1539,7 @@ export default class Section extends SectionSkeleton {
       if (e instanceof CdError) {
         const { type, code } = e.data;
         if (type === 'internal' && code === 'sizeLimit') {
-          const $body = cd.util.wrap(cd.s('section-watch-error-maxsize'), {
+          const $body = cd.util.wrap(cd.sParse('section-watch-error-maxsize'), {
             callbacks: {
               'cd-notification-editWatchedSections': () => {
                 editWatchedSections();
@@ -1551,10 +1563,10 @@ export default class Section extends SectionSkeleton {
     }
 
     if (!silent) {
-      let text = cd.s('section-watch-success', headline);
+      let text = cd.sParse('section-watch-success', headline);
       let autoHideSeconds;
       if ($('#ca-watch').length) {
-        text += ' ' + cd.s('section-watch-pagenotwatched');
+        text += ' ' + cd.sParse('section-watch-pagenotwatched');
         autoHideSeconds = 'long';
       }
       mw.notify(cd.util.wrap(text), { autoHideSeconds });
@@ -1611,10 +1623,10 @@ export default class Section extends SectionSkeleton {
       return;
     }
 
-    let text = cd.s('section-unwatch-success', headline);
+    let text = cd.sParse('section-unwatch-success', headline);
     let autoHideSeconds;
     if (watchedAncestorHeadline) {
-      text += ' ' + cd.s('section-unwatch-stillwatched', watchedAncestorHeadline);
+      text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
       autoHideSeconds = 'long';
     }
     if (!silent || watchedAncestorHeadline) {

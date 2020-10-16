@@ -41,13 +41,17 @@ if (IS_SNIPPET) {
 }
 
 /**
- * Get a language string. The string is returned in a parsed form. Wikilinks are replaced with HTML
- * tags, the code is sanitized.
+ * Get a language string.
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
  *   module:userRegistry~User User} objects for the use in {{gender:}}).
- * @param {boolean} [plain] Should the message be returned in a plain, not substituted, form.
+ * @param {object} [options]
+ * @param {boolean} [options.plain] Should the message be returned in a plain, not substituted,
+ *   form.
+ * @param {boolean} [options.parse] Should the message be returned in a parsed form. Wikilinks
+ *   are replaced with HTML tags, the code is sanitized. Use this for strings that have their raw
+ *   HTML inserted into the page.
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
@@ -57,23 +61,56 @@ function s(name, ...params) {
   }
   const fullName = `convenient-discussions-${name}`;
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
+    let options = {};
     let lastParam = params[params.length - 1];
-    let plain = false;
-    if (typeof lastParam === 'boolean') {
-      plain = lastParam;
+    if (
+      typeof lastParam === 'object' &&
+
+      // `mw.user`-like object to provide to {{gender:}}
+      !lastParam.options
+    ) {
+      options = lastParam;
       params.splice(params.length - 1);
     }
 
     const message = mw.message(fullName, ...params);
-    if (plain) {
+    if (options.plain) {
       return message.plain();
-    } else {
+    } else if (options.parse) {
       return message.parse();
+    } else {
+      return message.text();
     }
   } else {
     const paramsString = params.length ? `: ${params.join(', ')}` : '';
     return `(${fullName}${paramsString})`;
   }
+}
+
+/**
+ * Get a language string in the "parse" format. Wikilinks are replaced with HTML tags, the code is
+ * sanitized. Use this for strings that have their raw HTML inserted into the page.
+ *
+ *
+ * @param {string} name String name.
+ * @param {...*} [params] String parameters (substituted strings, also {@link
+ *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ * @returns {?string}
+ * @memberof module:cd~convenientDiscussions
+ */
+function sParse(...args) {
+  return s(...args, { parse: true });
+}
+
+/**
+ * Get a language string in the "plain" format, with no substitutions replace.
+ *
+ * @param {string} name String name.
+ * @returns {?string}
+ * @memberof module:cd~convenientDiscussions
+ */
+function sPlain(name) {
+  return s(name, { plain: true });
 }
 
 /**
@@ -487,6 +524,8 @@ async function app() {
 
   cd.g = g;
   cd.s = s;
+  cd.sParse = sParse;
+  cd.sPlain = sPlain;
   cd.mws = mws;
   cd.util = util;
 

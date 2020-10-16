@@ -397,12 +397,12 @@ export default class Page {
             code = error.code;
             switch (code) {
               case 'spamblacklist': {
-                message = cd.s('error-spamblacklist', error.spamblacklist.matches[0]);
+                message = cd.sParse('error-spamblacklist', error.spamblacklist.matches[0]);
                 break;
               }
 
               case 'titleblacklist': {
-                message = cd.s('error-titleblacklist');
+                message = cd.sParse('error-titleblacklist');
                 break;
               }
 
@@ -418,29 +418,29 @@ export default class Page {
                 if (message) {
                   isRawMessage = true;
                 } else {
-                  message = cd.s('error-abusefilter', error.abusefilter.description);
+                  message = cd.sParse('error-abusefilter', error.abusefilter.description);
                 }
                 break;
               }
 
               case 'editconflict': {
-                message = cd.s('error-editconflict');
+                message = cd.sParse('error-editconflict');
                 break;
               }
 
               case 'blocked': {
-                message = cd.s('error-blocked');
+                message = cd.sParse('error-blocked');
                 break;
               }
 
               case 'missingtitle': {
-                message = cd.s('error-pagedeleted');
+                message = cd.sParse('error-pagedeleted');
                 break;
               }
 
               default: {
                 message = (
-                  cd.s('error-pagenotedited') +
+                  cd.sParse('error-pagenotedited') +
                   ' ' +
                   (await unknownApiErrorText(code, error.info))
                 );

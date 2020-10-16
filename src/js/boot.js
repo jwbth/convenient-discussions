@@ -197,11 +197,7 @@ function initGlobals() {
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
   cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i
-    .test(
-      cd.s('es-reply-to', { plain: true }) +
-      cd.s('es-edit-comment-by', { plain: true }) +
-      cd.s('thank-confirm', { plain: true })
-    );
+    .test(cd.sPlain('es-reply-to') + cd.sPlain('es-edit-comment-by') + cd.sPlain('thank-confirm'));
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
