@@ -220,6 +220,8 @@ function initGlobals() {
 
   cd.g.SITE_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
 
+  cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
+
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
