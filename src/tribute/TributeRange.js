@@ -380,7 +380,7 @@ class TributeRange {
             'paddingRight', 'paddingBottom', 'paddingLeft',
             'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch',
             'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily',
-            'textAlign', 'textTransform', 'textIndent',
+            'tabSize', 'textAlign', 'textTransform', 'textIndent',
             'textDecoration', 'letterSpacing', 'wordSpacing'
         ]
 
