@@ -66,23 +66,23 @@ export function addNewCommentsToToc(commentsBySection) {
         'cd-toc-notLoadedCommentList'
       );
 
-      commentsBySection[anchor]
-        .slice(0, 5)
-        .forEach((comment) => {
-          const parent = comment instanceof Comment ? comment.getParent() : comment.parent;
-          const names = parent?.author && comment.level > 1 ?
-            cd.s('newpanel-newcomments-names', comment.author.name, parent.author.name) :
-            comment.author.name;
-          const date = comment.date ?
-            cd.util.formatDate(comment.date) :
-            cd.s('navpanel-newcomments-unknowndate');
-          const text = (
-            names +
-            (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
-            cd.mws('comma-separator') +
-            date
-          );
+      let moreTooltipText = '';
+      commentsBySection[anchor].forEach((comment, i) => {
+        const parent = comment instanceof Comment ? comment.getParent() : comment.parent;
+        const names = parent?.author && comment.level > 1 ?
+          cd.s('newpanel-newcomments-names', comment.author.name, parent.author.name) :
+          comment.author.name;
+        const date = comment.date ?
+          cd.util.formatDate(comment.date) :
+          cd.s('navpanel-newcomments-unknowndate');
+        const text = (
+          names +
+          (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
+          cd.mws('comma-separator') +
+          date
+        );
 
+        if (i <= 5) {
           const $li = $('<li>')
             .appendTo($ul);
           const href = `#${comment.anchor}`;
@@ -109,10 +109,15 @@ export function addNewCommentsToToc(commentsBySection) {
               reloadPage({ commentAnchor: comment.anchor });
             });
           }
-        });
+        } else {
+          moreTooltipText += text + '\n';
+        }
+      });
 
       if (commentsBySection[anchor].length > 5) {
         $('<li>')
+          .addClass('cd-toc-more')
+          .attr('title', moreTooltipText.trim())
           .text(cd.s('toc-more', commentsBySection[anchor].length - 5))
           .appendTo($ul);
       }
