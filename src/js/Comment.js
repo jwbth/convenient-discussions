@@ -602,8 +602,9 @@ export default class Comment extends CommentSkeleton {
       .css('background-color', targetColor);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
-      // We may not know from the beginning if the comment is new.
-      if (this.newness) {
+      if (this.focused) {
+        initialColor = cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR;
+      } else if (this.newness) {
         initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
       }
       $elementsToAnimate.animate(
