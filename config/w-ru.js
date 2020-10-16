@@ -169,7 +169,10 @@ export default {
     ['конец цитаты'],
   ],
 
-  smallDivTemplate: 'block-small',
+  smallDivTemplates: [
+    'block-small',
+    'smalldiv',
+  ],
 
   paragraphTemplates: [
     'pb',

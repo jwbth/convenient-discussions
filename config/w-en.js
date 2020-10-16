@@ -71,7 +71,9 @@ export default {
 
   signatureEndingRegexp: / \(talk\)$/,
 
-  smallDivTemplate: 'smalldiv',
+  smallDivTemplates: [
+    'smalldiv',
+  ],
 
   paragraphTemplates: [
     'pb',

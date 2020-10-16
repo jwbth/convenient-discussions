@@ -299,14 +299,14 @@ export default {
   ],
 
   /**
-   * Name of the template that is an analog of {@link
+   * Name of the templates that are analogs of {@link
    * https://en.wikipedia.org/wiki/Template:Smalldiv}. Used when the whole comment is wrapped in
    * `<small></small>` (with some exceptions when that could break the layout).
    *
    * @type {?string}
-   * @default null
+   * @default []
    */
-  smallDivTemplate: null,
+  smallDivTemplates: [],
 
   /**
    * Names of the templates that are analogs of {@link
