@@ -2647,7 +2647,7 @@ export default class CommentForm {
 
     if (this.closeOperationIfNecessary(currentOperation)) return;
 
-    let html = resp?.compare?.body;
+    let html = resp.compare?.body;
     if (html) {
       html = cd.util.wrapDiffBody(html);
       const $label = $('<div>')

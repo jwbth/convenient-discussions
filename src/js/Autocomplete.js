@@ -296,7 +296,7 @@ export default class Autocomplete {
                 .catch(handleApiReject)
                 .then(
                   (resp) => {
-                    const pages = resp?.pages;
+                    const pages = resp.pages;
 
                     let paramsString = '';
                     let firstValueIndex = 0;

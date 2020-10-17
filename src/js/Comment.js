@@ -774,7 +774,7 @@ export default class Comment extends CommentSkeleton {
     }
     const [revisionsResp] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
 
-    const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
+    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
