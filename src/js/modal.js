@@ -1372,7 +1372,7 @@ export async function notFound(decodedFragment, date) {
         profile: 'default',
         fulltext: 'Search',
         search: searchQuery,
-        cdComment: date && decodedFragment,
+        cdcomment: date && decodedFragment,
       });
       location.assign(mw.config.get('wgServer') + url);
     }
