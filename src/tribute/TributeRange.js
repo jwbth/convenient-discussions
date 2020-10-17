@@ -295,7 +295,7 @@ class TributeRange {
         }
     }
 
-    lastIndexWithLeadingSpace (str, trigger) {
+    lastIndexWithLeadingSpace(str, trigger) {
         let reversedStr = str.split('').reverse().join('')
         let index = -1
 
