@@ -4,8 +4,6 @@
  * @module app
  */
 
-import { create as nanoCssCreate } from 'nano-css';
-
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
@@ -275,15 +273,6 @@ function go() {
       )
     ) {
       cd.g.firstRun = true;
-
-      cd.g.nanoCss = nanoCssCreate();
-      cd.g.nanoCss.put('.cd-loadingPopup', {
-        width: cd.config.logoWidth,
-      });
-      cd.g.nanoCss.put('.cd-loadingPopup-logo', {
-        width: cd.config.logoWidth,
-        height: cd.config.logoHeight,
-      });
 
       setLoadingOverlay();
 
