@@ -149,7 +149,7 @@
   "cf-error-viewchanges": "Couldn't get the changes.",
   "cf-error-couldntedit": "The page may not have been edited.",
   "cf-error-pagedoesntexist": "The page doesn't exist.",
-  "cf-error-formconflict": "There already is a form of a different type opened on the page. Close that form to open this one.",
+  "cf-error-formconflict": "There already is a form of a different type open on the page. Close that form to open this one.",
 
   "cf-confirm-noheadline-topic": "You didn't enter the topic subject/headline.",
   "cf-confirm-noheadline-subsection": "You didn't enter the section subject/headline.",
