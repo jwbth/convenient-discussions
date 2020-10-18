@@ -82,7 +82,7 @@ export function addNewCommentsToToc(commentsBySection) {
           date
         );
 
-        if (i <= 5) {
+        if (i < 5) {
           const $li = $('<li>')
             .appendTo($ul);
           const href = `#${comment.anchor}`;
