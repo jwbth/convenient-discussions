@@ -7,7 +7,14 @@
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { defined, firstCharToUpperCase, handleApiReject, removeDoubleSpaces, unique } from './util';
+import {
+  defined,
+  firstCharToUpperCase,
+  handleApiReject,
+  insertText,
+  removeDoubleSpaces,
+  unique,
+} from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -285,65 +292,78 @@ export default class Autocomplete {
             if (cd.settings.useTemplateData && event.shiftKey && !event.altKey) {
               const input = this.tribute.current.element.cdInput;
 
-              input.setDisabled(true);
-              input.pushPending();
+              setTimeout(() => {
+                input.setDisabled(true);
+                input.pushPending();
 
-              cd.g.api.get({
-                action: 'templatedata',
-                titles: `Template:${item.original.key}`,
-                redirects: true,
-              })
-                .catch(handleApiReject)
-                .then(
-                  (resp) => {
-                    const pages = resp.pages;
-
-                    let paramsString = '';
-                    let firstValueIndex = 0;
-                    Object.keys(pages).forEach((key) => {
-                      const template = pages[key];
-                      const params = template.params || [];
-                      const paramNames = template.paramOrder || Object.keys(params);
-                      paramNames
-                        .filter((param) => params[param].required || params[param].suggested)
-                        .forEach((param) => {
-                          if (template.format === 'block') {
-                            paramsString += `\n| ${param} = `;
-                          } else {
-                            if (isNaN(param)) {
-                              paramsString += `|${param}=`;
-                            } else {
-                              paramsString += `|`;
-                            }
-                          }
-                          if (!firstValueIndex) {
-                            firstValueIndex = paramsString.length;
-                          }
-                        });
-                      if (template.format === 'block' && paramsString) {
-                        paramsString += '\n';
+                cd.g.api.get({
+                  action: 'templatedata',
+                  titles: `Template:${item.original.key}`,
+                  redirects: true,
+                })
+                  .then(
+                    (resp) => {
+                      if (!resp.pages) {
+                        throw 'No data.';
+                      } else if (!Object.keys(resp.pages).length) {
+                        throw 'Template missing.';
+                      } else {
+                        return resp;
                       }
-                    });
+                    },
+                    handleApiReject
+                  )
+                  .then(
+                    (resp) => {
+                      const pages = resp.pages;
 
-                    const caretIndex = input.getRange().to;
-                    const value = input.getValue();
-                    input.setValue(
-                      value.slice(0, caretIndex - 1) +
-                      paramsString +
-                      value.slice(caretIndex)
-                    );
-                    input.selectRange(caretIndex + firstValueIndex - 1);
-                  },
-                  (e) => {
-                    mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
-                    console.warn(e);
-                  }
-                )
-                .always(() => {
-                  input.setDisabled(false);
-                  input.popPending();
-                  input.focus();
-                });
+                      let paramsString = '';
+                      let firstValueIndex = 0;
+                      Object.keys(pages).forEach((key) => {
+                        const template = pages[key];
+                        const params = template.params || [];
+                        const paramNames = template.paramOrder || Object.keys(params);
+                        paramNames
+                          .filter((param) => params[param].required || params[param].suggested)
+                          .forEach((param) => {
+                            if (template.format === 'block') {
+                              paramsString += `\n| ${param} = `;
+                            } else {
+                              if (isNaN(param)) {
+                                paramsString += `|${param}=`;
+                              } else {
+                                paramsString += `|`;
+                              }
+                            }
+                            if (!firstValueIndex) {
+                              firstValueIndex = paramsString.length;
+                            }
+                          });
+                        if (template.format === 'block' && paramsString) {
+                          paramsString += '\n';
+                        }
+                      });
+
+                      // Remove leading "|".
+                      paramsString = paramsString.slice(1);
+
+                      input.setDisabled(false);
+
+                      const caretIndex = input.getRange().to;
+                      insertText(input, paramsString);
+                      input.selectRange(caretIndex + firstValueIndex - 1);
+                    },
+                    (e) => {
+                      input.setDisabled(false);
+                      input.focus();
+                      mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
+                      console.warn(e);
+                    }
+                  )
+                  .always(() => {
+                    input.popPending();
+                  });
+              });
             }
 
             return item.original.transform(item.original.item);

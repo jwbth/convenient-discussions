@@ -19,6 +19,7 @@ import {
   findLastIndex,
   handleApiReject,
   hideText,
+  insertText,
   isInputFocused,
   nativePromiseState,
   removeDoubleSpaces,
@@ -150,15 +151,16 @@ export default class CommentForm {
             .parent()
             .remove();
 
-          const commentForm = this;
           this.$messageArea
             .find('.mw-charinsert-item')
-            .on('click', function () {
-              commentForm.commentInput.$input.textSelection('encapsulateSelection', {
-                pre: $(this).data('mw-charinsert-start'),
-                peri: '',
-                post: $(this).data('mw-charinsert-end'),
-              });
+            .on('click', (e) => {
+              const $link = $(e.currentTarget);
+              const range = this.commentInput.getRange();
+              const selection = this.commentInput.getValue().substring(range.from, range.to);
+              insertText(
+                this.commentInput,
+                $link.data('mw-charinsert-start') + selection + $link.data('mw-charinsert-end')
+              );
             });
         });
     }
@@ -533,11 +535,9 @@ export default class CommentForm {
       .text(displayedText)
       .addClass('cd-insertButtons-item')
       .on('click', () => {
-        this.commentInput.$input.textSelection('encapsulateSelection', {
-          pre,
-          peri: '',
-          post,
-        });
+        const range = this.commentInput.getRange();
+        const selection = this.commentInput.getValue().substring(range.from, range.to);
+        insertText(this.commentInput, pre + selection + post);
       });
     this.$insertButtons.append($a, ' ');
   }
@@ -3188,15 +3188,14 @@ export default class CommentForm {
    *   the addressee to the beginning of the comment input.
    */
   mention(mentionAddressee) {
-    if (!this.autocomplete) return;
-
     if (mentionAddressee && this.targetComment) {
       let data = Autocomplete.getMentionsConfig()
         .transform(this.targetComment.author.name);
       data = data.ctrlModify(data);
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
-      this.commentInput.setValue(text + this.commentInput.getValue());
+      this.commentInput.selectRange(0);
+      insertText(this.commentInput, text);
       this.commentInput.selectRange(range.from + text.length, range.to + text.length);
       return;
     }
@@ -3209,8 +3208,8 @@ export default class CommentForm {
     }
 
     const lastChar = caretIndex && this.commentInput.getValue().slice(caretIndex - 1, caretIndex);
-    if (caretIndex && lastChar !== ' ' && lastChar !== '\n') {
-      this.commentInput.insertContent(' ');
+    if (caretIndex && !/\s/.test(lastChar)) {
+      insertText(this.commentInput, ' ');
     }
 
     this.autocomplete.tribute.showMenuForCollection(
@@ -3223,40 +3222,42 @@ export default class CommentForm {
   /**
    * Quote the selected text.
    *
-   * @param {boolean} [ignoreEmptySelection=false] If the selection is empty, do nothing.
+   * @param {boolean} [allowEmptySelection=true] Insert markup (with a placeholder text) even if the
+   *   selection is empty.
    */
-  quote(ignoreEmptySelection = false) {
+  quote(allowEmptySelection = true) {
     const selectionText = isInputFocused() ?
       document.activeElement.value
         .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd) :
       window.getSelection().toString().trim();
     // With just the "Q" hotkey, empty selection doesn't count.
-    if (selectionText || !ignoreEmptySelection) {
+    if (selectionText || allowEmptySelection) {
       // We don't use the native insertContent() function here in order to prevent harm from
       // replacing the selected text (when both the text in the input and on the page is
       // selected), and we don't use encapsulateContent() to insert exactly at the cursor position
-      // which can be in the beginning or in the end of the selection depending on where it
-      // started.
+      // which can be in the beginning and in the end of the selection depending on where it
+      // started. On top of that, we don't use setValue() by default because we want to keep the
+      // undo/redo functionality.
       const isCommentInputFocused = this.commentInput.$input.is(':focus');
       const range = this.commentInput.getRange();
       const caretIndex = range.to;
-      const rangeStart = Math.min(range.to, range.from);
-      const rangeEnd = Math.max(range.to, range.from);
-      const value = this.commentInput.getValue();
+      let rangeStart = Math.min(range.to, range.from);
+      let rangeEnd = Math.max(range.to, range.from);
+
+      // Reset the selection if the input is not focused to prevent losing text.
+      if (!isCommentInputFocused && rangeStart !== rangeEnd) {
+        this.commentInput.selectRange(caretIndex);
+        rangeStart = rangeEnd = caretIndex;
+      }
+
       const quotePre = cd.config.quoteFormatting[0];
       const quotePost = cd.config.quoteFormatting[1];
       const quotation = quotePre + (selectionText || cd.s('cf-quote-placeholder')) + quotePost;
-      const newRangeStart = (
-        (isCommentInputFocused ? rangeStart : caretIndex) +
-        (selectionText ? quotation.length : quotePre.length)
-      );
+      const newRangeStart = rangeStart + (selectionText ? quotation.length : quotePre.length);
       const newRangeEnd = selectionText ?
         newRangeStart :
         newRangeStart + cd.s('cf-quote-placeholder').length;
-      const newValue = isCommentInputFocused ?
-        value.slice(0, rangeStart) + quotation + value.slice(rangeEnd) :
-        value.slice(0, caretIndex) + quotation + value.slice(caretIndex);
-      this.commentInput.setValue(newValue);
+      insertText(this.commentInput, quotation);
       this.commentInput.selectRange(newRangeStart, newRangeEnd);
     }
   }

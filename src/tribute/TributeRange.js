@@ -137,14 +137,23 @@ class TributeRange {
             text += textSuffix
             let startPos = info.mentionPosition
 
+            myField.selectionStart = startPos
+            myField.selectionEnd = endPos
+
             // jwbth: Made alterations to make the `cutTextAfter` config value work.
             if (
                 context.collection.cutTextAfter &&
                 ending.startsWith(context.collection.cutTextAfter)
             ) {
                 ending = ending.slice(context.collection.cutTextAfter.length)
+                myField.selectionEnd += context.collection.cutTextAfter.length
             }
-            myField.value = myField.value.substring(0, startPos) + text + ending
+
+            // jwbth: Preserve the undo/redo functionality in browsers that support it.
+            myField.focus()
+            if (!document.execCommand('insertText', false, text)) {
+                myField.value = myField.value.substring(0, startPos) + text + ending
+            }
 
             // jwbth: Start offset is calculated from the start position of the inserted text.
             // Absent value means the selection start position should match with the end position

@@ -441,16 +441,20 @@ class Tribute {
     var scrollPos = textarea.scrollTop;
     var caretPos = textarea.selectionStart;
 
-    var front = textarea.value.substring(0, caretPos);
-    var back = textarea.value.substring(
-      textarea.selectionEnd,
-      textarea.value.length
-    );
-    textarea.value = front + text + back;
-    caretPos = caretPos + text.length;
-    textarea.selectionStart = caretPos;
-    textarea.selectionEnd = caretPos;
+    // jwbth: Preserve the undo/redo functionality in browsers that support it (Chrome does, Firefox
+    // doesn't: https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
     textarea.focus();
+    if (!document.execCommand('insertText', false, text)) {
+      var front = textarea.value.substring(0, caretPos);
+      var back = textarea.value.substring(
+        textarea.selectionEnd,
+        textarea.value.length
+      );
+      textarea.value = front + text + back;
+      caretPos += text.length;
+      textarea.selectionStart = caretPos;
+      textarea.selectionEnd = caretPos;
+    }
     textarea.scrollTop = scrollPos;
   }
 

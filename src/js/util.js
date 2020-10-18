@@ -504,3 +504,23 @@ export function saveToLocalStorage(name, obj) {
 export function removeDirMarks(text) {
   return text.replace(/[\u200E\u200F]/g, '');
 }
+
+/**
+ * @typedef {object} OoUiTextInputWidget
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+ */
+
+/**
+ * Replace the selected text (if any) in an input (input or textarea) with the provided text and
+ * keep the undo/redo functionality in browsers that support it (Chrome does, Firefox doesn't:
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
+ *
+ * @param {OoUiTextInputWidget} input Input to set replace the selection in.
+ * @param {string} text Text to replace the selection with.
+ */
+export function insertText(input, text) {
+  input.focus();
+  if (!document.execCommand('insertText', false, text)) {
+    input.insertContent(text);
+  }
+}

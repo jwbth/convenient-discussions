@@ -68,7 +68,7 @@ export function globalKeyDownHandler(e) {
     e.preventDefault();
     const commentForm = CommentForm.getLastActiveCommentForm();
     if (commentForm) {
-      commentForm.quote(!e.ctrlKey);
+      commentForm.quote(e.ctrlKey);
     }
   }
 
