@@ -9,6 +9,7 @@ import CdError from './CdError';
 import cd from './cd';
 
 let keptScrollPosition = null;
+let keptTocHeight = null;
 
 /**
  * Callback for `Array#filter` to remove duplicated elements from an array.
@@ -356,6 +357,10 @@ export function unhideText(text, hidden) {
  */
 export function saveScrollPosition() {
   keptScrollPosition = window.pageYOffset;
+  const $toc = $('.toc');
+  if ($toc.length && window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.height()) {
+    keptTocHeight = $toc.height();
+  }
 }
 
 /**
@@ -363,8 +368,14 @@ export function saveScrollPosition() {
  */
 export function restoreScrollPosition() {
   if (keptScrollPosition === null) return;
+
+  if (keptTocHeight) {
+    keptScrollPosition += ($('.toc').height() || 0) - keptTocHeight;
+  }
   window.scrollTo(0, keptScrollPosition);
+
   keptScrollPosition = null;
+  keptTocHeight = null;
 }
 
 /**
