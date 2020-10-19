@@ -287,11 +287,10 @@ function connectToCommentLinks($content) {
 /**
  * Perform fragment-related tasks, as well as comment anchor-related ones.
  *
- * @param {string} keptCommentAnchor
- * @param {string} keptSectionAnchor
+ * @param {object} keptData
  * @private
  */
-async function processFragment(keptCommentAnchor, keptSectionAnchor) {
+async function processFragment(keptData) {
   let fragment;
   let decodedFragment;
   let escapedFragment;
@@ -310,7 +309,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       commentAnchor = decodedFragment;
     }
   } else {
-    commentAnchor = keptCommentAnchor;
+    commentAnchor = keptData.commentAnchor;
   }
 
   let date;
@@ -320,7 +319,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getCommentByAnchor(commentAnchor);
 
-    if (!keptCommentAnchor && !comment) {
+    if (!keptData.commentAnchor && !comment) {
       let commentAnchorToCheck;
       // There can be a time difference between the time we know (taken from the watchlist) and the
       // time on the page. We take it to be not higher than 5 minutes for the watchlist.
@@ -335,14 +334,17 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.
       setTimeout(() => {
-        comment.scrollToAndHighlightTarget(false);
+        comment.scrollToAndHighlightTarget(false, keptData.pushState);
       });
     }
   }
 
-  if (keptSectionAnchor) {
-    const section = Section.getSectionByAnchor(keptSectionAnchor);
+  if (keptData.sectionAnchor) {
+    const section = Section.getSectionByAnchor(keptData.sectionAnchor);
     if (section) {
+      if (keptData.pushState) {
+        history.pushState(history.state, '', '#' + section.anchor);
+      }
       section.$elements.first().cdScrollTo('top', false);
     }
   }
@@ -461,21 +463,27 @@ function debugLog() {
 }
 
 /**
+ * @typedef {object} KeptData
+ * @property {string} [commentAnchor] Comment anchor to scroll to.
+ * @property {string} [sectionAnchor] Section anchor to scroll to.
+ * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
+ *   anchor to it if it's specified.
+ * @property {boolean} [wasPageCreated] Whether the page was created while it was in the
+ *   previous state. Affects navigation panel mounting and certain key press handlers adding.
+ * @property {number} [scrollPosition] Page Y offset.
+ * @property {object[]} [unseenCommentAnchors] Anchors of unseen comments on this page.
+ * @property {string} [justWatchedSection] Section just watched so that there could be not
+ *    enough time for it to be saved to the server.
+ * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
+ *    enough time for it to be saved to the server.
+ * @property {Promise} [messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadData}.
+ */
+
+/**
  * Process the current web page.
  *
- * @param {object} [keptData={}] Data passed from the previous page state or the main module.
- * @param {string} [keptData.commentAnchor] Comment anchor to scroll to.
- * @param {string} [keptData.sectionAnchor] Section anchor to scroll to.
- * @param {boolean} [keptData.wasPageCreated] Whether the page was created while it was in the
- *   previous state. Affects navigation panel mounting and certain key press handlers adding.
- * @param {number} [keptData.scrollPosition] Page Y offset.
- * @param {object[]} [keptData.unseenCommentAnchors] Anchors of unseen comments on this page.
- * @param {string} [keptData.justWatchedSection] Section just watched so that there could be not
- *    enough time for it to be saved to the server.
- * @param {string} [keptData.justUnwatchedSection] Section just unwatched so that there could be not
- *    enough time for it to be saved to the server.
- * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadData}.
+ * @param {KeptData} [keptData={}] Data passed from the previous page state or the main module.
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
@@ -594,7 +602,7 @@ export default async function processPage(keptData = {}) {
 
   highlightOwnComments();
 
-  processFragment(keptData.commentAnchor, keptData.sectionAnchor);
+  processFragment(keptData);
 
   if (cd.g.isPageActive) {
     if (cd.g.firstRun || keptData.wasPageCreated) {

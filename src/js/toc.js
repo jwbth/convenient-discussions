@@ -106,7 +106,10 @@ export function addNewCommentsToToc(commentsBySection) {
           } else {
             $a.on('click', (e) => {
               e.preventDefault();
-              reloadPage({ commentAnchor: comment.anchor });
+              reloadPage({
+                commentAnchor: comment.anchor,
+                pushState: true,
+              });
             });
           }
         } else {

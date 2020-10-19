@@ -636,10 +636,11 @@ export default class Comment extends CommentSkeleton {
    * Scroll to the comment and highlight it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
-   * @param {boolean} [replaceUrl=false] Whether to push a state to the history.
+   * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
+   *   anchor as a fragment.
    */
-  scrollToAndHighlightTarget(smooth = true, replaceUrl = false) {
-    if (replaceUrl) {
+  scrollToAndHighlightTarget(smooth = true, pushState = false) {
+    if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }
 
