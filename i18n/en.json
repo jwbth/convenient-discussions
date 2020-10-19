@@ -335,7 +335,7 @@
   "error-diffnotfound-history": "You can look for it in the [$1 revision history] for yourself.",
   "error-elementhidden": "The element is hidden. Can't scroll to it.",
 
-  "wl-button-switchinteresting-tooltip": "Show only comments in sections that I watch and comments addressed to me",
+  "wl-button-switchinteresting-tooltip": "Show only comments in sections that I watch and comments addressed to me. (Note: the detection is based on edit summaries, so some edits may be missing)",
   "wl-button-editwatchedsections-tooltip": "Edit sections that I watch",
   "wl-button-settings-tooltip": "Convenient Discussions settings",
 
