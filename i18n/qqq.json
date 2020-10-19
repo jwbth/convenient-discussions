@@ -145,6 +145,7 @@
 	"cf-error-viewchanges": "Error message outputted above the comment form.",
 	"cf-error-couldntedit": "Error message outputted above the comment form.",
 	"cf-error-pagedoesntexist": "Error message outputted above the comment form.",
+	"cf-error-formconflict": "Text of the error notification that is displayed when trying to open a second \"Add section\" comment form of a different type than the first comment form. For example, one button opens a comment form with one preloaded text, while another button opens a comment form with another preloaded text. So, we can't just send the user to the already open form.",
 	"cf-confirm-noheadline-topic": "First part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the topic headline.\n\nSecond part is the question: {{msg-wm|Convenient-discussions-cf-confirm-noheadline-question}}",
 	"cf-confirm-noheadline-subsection": "First part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the subsection headline.\n\nSecond part is the question: {{msg-wm|Convenient-discussions-cf-confirm-noheadline-question}}",
 	"cf-confirm-noheadline-question": "Second part of the text of the confirmation dialog that pops up when the user is trying to submit a comment form but hasn't entered the topic/subsection headline.\n\nFirst part is either:\n* {{msg-wm|Convenient-discussions-cf-confirm-noheadline-topic}} or:\n* {{msg-wm|Convenient-discussions-cf-confirm-noheadline-subsection}}",
