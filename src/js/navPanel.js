@@ -18,7 +18,6 @@ import { setVisits } from './options';
 
 let newCount;
 let unseenCount;
-let lastFirstTimeSeenCommentId;
 let newRevisions = [];
 let notifiedAbout = [];
 let isBackgroundCheckArranged = false;
@@ -208,6 +207,7 @@ function sortCommentsBySection(comments) {
 
   return commentsBySection;
 }
+let lastFirstUnseenCommentId;
 
 /**
  * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
@@ -728,7 +728,6 @@ const navPanel = {
    * @memberof module:navPanel
    */
   reset() {
-    lastFirstTimeSeenCommentId = null;
     newRevisions = [];
     notifiedAbout = [];
     relevantNewCommentAnchor = null;
@@ -736,6 +735,7 @@ const navPanel = {
     removeAlarmViaWorker();
     setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
     isBackgroundCheckArranged = false;
+    lastFirstUnseenCommentId = null;
 
     this.$refreshButton
       .empty()
@@ -861,14 +861,14 @@ const navPanel = {
     if (!unseenCount || cd.g.autoScrollInProgress) return;
 
     const comment = cd.comments
-      .slice(lastFirstTimeSeenCommentId || 0)
+      .slice(lastFirstUnseenCommentId || 0)
       .find((comment) => comment.newness === 'unseen');
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);
         this.updateFirstUnseenButton();
       });
-      lastFirstTimeSeenCommentId = comment.id;
+      lastFirstUnseenCommentId = comment.id;
     }
   },
 

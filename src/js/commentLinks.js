@@ -159,7 +159,7 @@ function switchInteresting() {
 }
 
 /**
- * Add watchlist menu (a fieldset with buttons).
+ * Add watchlist menu (a block with buttons).
  *
  * @private
  */
@@ -171,7 +171,7 @@ function addWatchlistMenu() {
     }
   });
 
-  const $menu = $('<fieldset>').addClass('cd-watchlistMenu');
+  const $menu = $('<div>').addClass('cd-watchlistMenu');
   $('<a>')
     .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
     .attr('target', '_blank')

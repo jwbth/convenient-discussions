@@ -158,15 +158,12 @@ export async function initSettings() {
 export function initTalkPageCss() {
   // Set the transparent color for the "focused" color. The user may override the CSS variable value
   // in his personal styles, so we get the existing value first.
-  const focusedColor = window.getComputedStyle(document.documentElement)
-    .getPropertyValue('--cd-comment-underlay-focused-color');
+  const focusedColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
 
   // Vector, Monobook, Minerva
-  const bodyBackgroundColor = $('#content').length ?
-    window.getComputedStyle($('#content').get(0)).backgroundColor :
-    'white';
+  const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
-  document.documentElement.style.setProperty(
+  $(document.documentElement).css(
     '--cd-comment-underlay-focused-transparent-color',
     transparentize(focusedColor || cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
   );
@@ -185,7 +182,7 @@ export function initTalkPageCss() {
     backgroundImage: 'linear-gradient(to right, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
-    backgroundColor: bodyBackgroundColor,
+    backgroundColor: contentBackgroundColor,
   });
 }
 
