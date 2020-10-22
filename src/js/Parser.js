@@ -263,7 +263,7 @@ export default class Parser {
                 }
               }
             } else {
-              const links = Array.from(node.getElementsByTagName('a'));
+              const links = Array.from(node.getElementsByTagName('a')).reverse();
               links.some((link) => {
                 const userName = getUserNameFromLink(link);
                 if (userName) {
