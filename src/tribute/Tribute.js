@@ -411,9 +411,9 @@ class Tribute {
     this.current.externalTrigger = true;
     this.current.element = element;
 
-    this.insertAtCaret(element, this.current.collection.trigger);
-
-    this.showMenuFor(element);
+    if (!this.insertAtCaret(element, this.current.collection.trigger)) {
+      this.showMenuFor(element);
+    }
   }
 
   // TODO: make sure this works for inputs/textareas
@@ -441,10 +441,12 @@ class Tribute {
     var scrollPos = textarea.scrollTop;
     var caretPos = textarea.selectionStart;
 
+    textarea.focus();
+
     // jwbth: Preserve the undo/redo functionality in browsers that support it (Chrome does, Firefox
     // doesn't: https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
-    textarea.focus();
-    if (!document.execCommand('insertText', false, text)) {
+    const insertedViaCommand = document.execCommand('insertText', false, text);
+    if (!insertedViaCommand) {
       var front = textarea.value.substring(0, caretPos);
       var back = textarea.value.substring(
         textarea.selectionEnd,
@@ -456,6 +458,8 @@ class Tribute {
       textarea.selectionEnd = caretPos;
     }
     textarea.scrollTop = scrollPos;
+
+    return insertedViaCommand;
   }
 
   hideMenu() {
