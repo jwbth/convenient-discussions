@@ -329,10 +329,10 @@ export async function getWatchedSections(reuse = false, keptData = {}) {
 /**
  * Save the watched sections kept in `convenientDiscussions.g.watchedSections` to the server.
  */
-export function setWatchedSections() {
+export async function setWatchedSections() {
   const watchedSectionsString = packWatchedSections(cd.g.watchedSections);
   const watchedSectionsStringCompressed = (
     lzString.compressToEncodedURIComponent(watchedSectionsString)
   );
-  setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_NAME, watchedSectionsStringCompressed);
+  await setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_NAME, watchedSectionsStringCompressed);
 }
