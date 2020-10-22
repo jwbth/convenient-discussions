@@ -14,8 +14,9 @@ import Section from './Section';
 import Worker from './worker-gate';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
-import navPanel, { updatePageTitle } from './navPanel';
+import navPanel from './navPanel';
 import processPage from './processPage';
+import updateChecker from './updateChecker';
 import {
   areObjectsEqual,
   caseInsensitiveFirstCharPattern,
@@ -221,6 +222,9 @@ function initGlobals() {
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
+
+  // Useful for testing
+  cd.g.processPageInBackground = updateChecker.processPage;
 }
 
 /**
@@ -721,7 +725,7 @@ export async function reloadPage(keptData = {}) {
   // Remove the fragment
   history.replaceState(history.state, '', location.pathname + location.search);
 
-  updatePageTitle(0, false);
+  updateChecker.updatePageTitle(0, false);
   updatePageContent(parseData.text, keptData);
 }
 

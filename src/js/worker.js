@@ -17,6 +17,7 @@ import cd from './cd';
 import debug from './debug';
 import g from './staticGlobals';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
+import { keepWorkerSafeValues } from './util';
 import { resetCommentAnchors } from './timestamp';
 
 let firstRun = true;
@@ -31,7 +32,6 @@ const context = {
     return elements[0] || null;
   },
 };
-
 let alarmTimeout;
 
 self.cd = cd;
@@ -106,17 +106,7 @@ function parse() {
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
       comment.toMe = comment.parent.isOwn;
-      delete comment.parent;
     }
-    delete comment.parser;
-    delete comment.elements;
-    delete comment.parts;
-    delete comment.highlightables;
-    delete comment.addAttributes;
-    delete comment.setLevels;
-    delete comment.getSection;
-    delete comment.cachedSection;
-    delete comment.getChildren;
   });
 }
 
@@ -191,7 +181,8 @@ function onMessageFromWindow(e) {
 
     postMessage({
       type: 'parse',
-      comments: cd.comments,
+      comments: cd.comments.map(keepWorkerSafeValues),
+      sections: cd.sections.map(keepWorkerSafeValues),
     });
 
     cd.debug.stopTimer('worker operations');

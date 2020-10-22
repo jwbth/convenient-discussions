@@ -10,6 +10,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
+import toc from './toc';
 import { copyLink } from './modal.js';
 import { dealWithLoadingBug, unique } from './util';
 import { editWatchedSections } from './modal';
@@ -23,7 +24,6 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { getWatchedSections, setWatchedSections } from './options';
-import { highlightWatchedSectionsInToc } from './toc';
 import { reloadPage } from './boot';
 
 /**
@@ -360,7 +360,7 @@ export default class Section extends SectionSkeleton {
               });
             }
 
-            highlightWatchedSectionsInToc();
+            toc.highlightWatchedSections();
           },
           () => {}
         )
@@ -989,7 +989,7 @@ export default class Section extends SectionSkeleton {
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.updateWatchMenuItems();
           });
-          highlightWatchedSectionsInToc();
+          toc.highlightWatchedSections();
         },
         errorCallback: () => {
           if ($link) {
@@ -1027,7 +1027,7 @@ export default class Section extends SectionSkeleton {
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.updateWatchMenuItems();
           });
-          highlightWatchedSectionsInToc();
+          toc.highlightWatchedSections();
         },
         errorCallback: () => {
           if ($link) {

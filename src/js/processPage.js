@@ -14,6 +14,8 @@ import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
+import toc from './toc';
+import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   addPreventUnloadCondition,
@@ -27,7 +29,7 @@ import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
-import { setSettings } from './options';
+import { setSettings, setVisits } from './options';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
@@ -285,6 +287,17 @@ function connectToCommentLinks($content) {
 }
 
 /**
+ * Highlight comments of the current user.
+ *
+ * @private
+ */
+function highlightOwnComments() {
+  if (!cd.settings.highlightOwnComments) return;
+
+  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
+}
+
+/**
  * Perform fragment-related tasks, as well as comment anchor-related ones.
  *
  * @param {object} keptData
@@ -369,14 +382,75 @@ async function processFragment(keptData) {
 }
 
 /**
- * Highlight comments of the current user.
+ * Highlight new comments and update the navigation panel. A promise obtained from {@link
+ * module:options.getVisits} should be provided.
  *
- * @private
+ * @param {Promise} visitsRequest
+ * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
+ * @fires newCommentsHighlighted
  */
-function highlightOwnComments() {
-  if (!cd.settings.highlightOwnComments) return;
+async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
+  let visits;
+  let thisPageVisits;
+  try {
+    ({ visits, thisPageVisits } = await visitsRequest);
+  } catch (e) {
+    console.warn('Couldn\'t load the settings from the server.', e);
+    navPanel.fill();
+    return;
+  }
 
-  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
+  // These variables are not used anywhere in the script but can be helpful for testing purposes.
+  cd.g.visits = visits;
+  cd.g.thisPageVisits = thisPageVisits;
+
+  const currentUnixTime = Math.floor(Date.now() / 1000);
+
+  // Cleanup
+  for (let i = thisPageVisits.length - 1; i >= 0; i--) {
+    if (thisPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL) {
+      thisPageVisits.splice(0, i);
+      break;
+    }
+  }
+
+  if (thisPageVisits.length) {
+    cd.comments.forEach((comment) => {
+      comment.newness = null;
+
+      if (!comment.date) return;
+
+      const isUnseen = memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor);
+      const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
+      if (commentUnixTime > thisPageVisits[0]) {
+        comment.newness = (
+          (commentUnixTime > thisPageVisits[thisPageVisits.length - 1] && !comment.isOwn) ||
+          isUnseen
+        ) ?
+          'unseen' :
+          'new';
+      }
+    });
+
+    Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.newness));
+    const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
+    toc.addNewComments(Comment.groupBySection(unseenComments));
+  }
+
+  thisPageVisits.push(String(currentUnixTime));
+
+  setVisits(visits);
+
+  navPanel.fill();
+  navPanel.registerSeenComments();
+
+  /**
+   * New comments have been highlighted.
+   *
+   * @event newCommentsHighlighted
+   * @type {module:cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
 }
 
 /**
@@ -609,9 +683,10 @@ export default async function processPage(keptData = {}) {
     } else {
       navPanel.reset();
     }
+    updateChecker.init();
 
     // New comments highlighting
-    navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
+    processVisits(visitsRequest, keptData.unseenCommentAnchors);
   }
 
   if (cd.g.isPageActive || isEmptyPage) {

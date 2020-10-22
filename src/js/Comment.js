@@ -2036,6 +2036,37 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web
+   * worker so its constuctor is lost.)
+   *
+   * @typedef {object} CommentSkeletonLike
+   */
+
+  /**
+   * Turn comment array into object with section anchors as keys.
+   *
+   * @param {CommentSkeletonLike[]|Comment[]} comments
+   * @returns {object}
+   * @private
+   */
+  static groupBySection(comments) {
+    const commentsBySection = {};
+    comments.forEach((comment) => {
+      const section = comment instanceof Comment ? comment.getSection() : comment.section;
+
+      // "_" is an impossible id for a section. We assign it to the lead section.
+      const anchor = section === null ? '_' : section.anchor;
+
+      if (!commentsBySection[anchor]) {
+        commentsBySection[anchor] = [];
+      }
+      commentsBySection[anchor].push(comment);
+    });
+
+    return commentsBySection;
+  }
+
+  /**
    * Find any one comment inside the viewport.
    *
    * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest

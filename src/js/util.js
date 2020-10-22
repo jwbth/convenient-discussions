@@ -449,8 +449,10 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
     !(
       val instanceof RegExp ||
       val instanceof Date ||
-      val instanceof Node ||
-      val instanceof Worker
+
+      // This can be used in the worker context, where Node is an object and Worker is undefined.
+      (typeof Node === 'function' && val instanceof Node) ||
+      (typeof Worker === 'function' && val instanceof Worker)
     )
   );
   const toPrimitiveValue = (val) => (
@@ -534,4 +536,41 @@ export function insertText(input, text) {
   if (!document.execCommand('insertText', false, text)) {
     input.insertContent(text);
   }
+}
+
+/**
+ * Filter out values of an object that can't be safely passed to worker (see {@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}}).
+ *
+ * @param {object} obj
+ * @param {Array} allowedFuncNames Names of the properties that should be passed to the worker
+ *   despite their values are functions (they are passed in a stringified form).
+ * @returns {object}
+ * @private
+ */
+export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
+  const newObj = Object.assign({}, obj);
+  Object.keys(newObj).forEach((key) => {
+    const val = newObj[key];
+    if (
+      typeof val === 'object' &&
+      val !== null &&
+      !(val instanceof RegExp || val instanceof Date)
+    ) {
+      try {
+        if (!areObjectsEqual(val, JSON.parse(JSON.stringify(val)))) {
+          delete newObj[key];
+        }
+      } catch (e) {
+        delete newObj[key];
+      }
+    } else if (typeof val === 'function') {
+      if (allowedFuncNames.includes(key)) {
+        newObj[key] = val.toString();
+      } else {
+        delete newObj[key];
+      }
+    }
+  });
+  return newObj;
 }
