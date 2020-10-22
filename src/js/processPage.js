@@ -589,13 +589,12 @@ export default async function processPage(keptData = {}) {
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
   if (firstVisibleElementData) {
-    window.scrollTo(
-      0,
-      (
-        window.pageYOffset + firstVisibleElementData.element.getBoundingClientRect().top -
-        firstVisibleElementData.top
-      )
+    const y = (
+      window.pageYOffset +
+      firstVisibleElementData.element.getBoundingClientRect().top -
+      firstVisibleElementData.top
     );
+    window.scrollTo(0, y);
   } else {
     restoreScrollPosition();
   }

@@ -19,13 +19,7 @@ import g from './staticGlobals';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
 import { resetCommentAnchors } from './timestamp';
 
-self.cd = cd;
-cd.g = g;
-cd.debug = debug;
-cd.debug.init();
-
 let firstRun = true;
-
 const context = {
   CommentClass: CommentSkeleton,
   SectionClass: SectionSkeleton,
@@ -39,6 +33,11 @@ const context = {
 };
 
 let alarmTimeout;
+
+self.cd = cd;
+cd.g = g;
+cd.debug = debug;
+cd.debug.init();
 
 /**
  * Send a "wake up" message to the window after the specified interval.

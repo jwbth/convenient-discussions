@@ -5,7 +5,6 @@ const webpack = require('webpack');
 const TerserPlugin = require('terser-webpack-plugin');
 const WebpackBuildNotifierPlugin = require('webpack-build-notifier');
 const BannerWebpackPlugin = require('banner-webpack-plugin');
-const argv = require('yargs').argv;
 require('json5/lib/register.js');
 
 const config = require('./config.json5');
@@ -13,7 +12,7 @@ const getUrl = require('./misc/util.js').getUrl;
 
 const lang = process.env.npm_config_lang || 'ru';
 const project = process.env.npm_config_project || 'w';
-const snippet = Boolean(argv.snippet || process.env.npm_config_snippet);
+const snippet = Boolean(process.env.npm_config_snippet);
 const dev = Boolean(process.env.npm_config_dev);
 
 const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
