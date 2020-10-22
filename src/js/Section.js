@@ -982,11 +982,11 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.isWatched = true;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
+            section.isWatched = true;
             section.updateWatchMenuItems();
           });
           toc.highlightWatchedSections();
@@ -1020,11 +1020,11 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.isWatched = false;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
+            section.isWatched = false;
             section.updateWatchMenuItems();
           });
           toc.highlightWatchedSections();
