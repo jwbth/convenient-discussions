@@ -140,7 +140,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.actionable = (
+    this.isActionable = (
       cd.g.isPageActive &&
       !cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
     );
@@ -378,7 +378,7 @@ export default class Comment extends CommentSkeleton {
       this.overlayContent.appendChild(this.thankButton);
     }
 
-    if (this.actionable) {
+    if (this.isActionable) {
       if (this.isOwn || cd.settings.allowEditOthersComments) {
         /**
          * Edit button.
@@ -980,7 +980,7 @@ export default class Comment extends CommentSkeleton {
     try {
       ([edit] = await Promise.all([
         this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING),
-        mw.loader.using('mediawiki.diff.styles')
+        mw.loader.using('mediawiki.diff.styles'),
       ]));
     } catch (e) {
       this.thankFail(e, thankButton);

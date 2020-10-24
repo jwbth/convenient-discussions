@@ -99,12 +99,12 @@ export default class Section extends SectionSkeleton {
        *
        * @type {boolean}
        */
-      this.actionable = (
+      this.isActionable = (
         cd.g.isPageActive &&
         !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
       );
 
-      if (this.actionable) {
+      if (this.isActionable) {
         this.extendSectionMenu(watchedSectionsRequest);
       }
     }
@@ -302,7 +302,7 @@ export default class Section extends SectionSkeleton {
       this.comments[0].isOpeningSection &&
       this.comments[0].openingSectionOfLevel === this.level &&
       (this.comments[0].isOwn || cd.settings.allowEditOthersComments) &&
-      this.comments[0].actionable
+      this.comments[0].isActionable
     ) {
       this.addMenuItem({
         label: cd.s('sm-editopeningcomment'),
@@ -1712,7 +1712,7 @@ export default class Section extends SectionSkeleton {
        */
       section.isLastSection = i === cd.sections.length - 1;
 
-      if (section.actionable) {
+      if (section.isActionable) {
         // If the next section of the same level has another nesting level (e.g., is inside a <div>
         // with a specific style), don't add the "Add subsection" button - it would appear in the
         // wrong place.
@@ -1757,7 +1757,7 @@ export default class Section extends SectionSkeleton {
     });
 
     cd.sections
-      .filter((section) => section.actionable && section.level === 2)
+      .filter((section) => section.isActionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
         const subsections = section.getChildren(true);
