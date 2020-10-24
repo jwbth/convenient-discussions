@@ -37,11 +37,6 @@
   }
 }
 
-.skin-timeless .mw-body-content,
-.skin-modern #mw-content-text {
-  position: relative;
-}
-
 // Reply to
 // https://ru.wikipedia.org/wiki/Википедия:Запросы_на_фотографии_и_иллюстрации/Архив/2019#201909161352_Igel_B_TyMaHe
 .skin-minerva {
@@ -53,5 +48,29 @@
     dd {
       margin-left: 1em;
     }
+  }
+}
+
+.skin-timeless {
+  .mw-body-content {
+    position: relative;
+  }
+
+  .cd-loadingPopup {
+    width: 15em;
+  }
+
+  .cd-loadingPopup-logo-partBackground {
+    background-color: #eaecf0 !important;
+  }
+}
+
+.skin-modern {
+  #mw-content-text {
+    position: relative;
+  }
+
+  .cd-loadingPopup {
+    width: 18.2em;
   }
 }

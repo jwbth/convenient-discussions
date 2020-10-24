@@ -14,7 +14,8 @@ ol > li.cd-commentPart-last {
   margin-bottom: 0.1em;
 }
 
-.cd-commentLevel:not(ol) {
+// Repeat the class to gain specificity in the Minerva Neue skin
+.cd-commentLevel.cd-commentLevel:not(ol) {
   list-style-type: none;
   list-style-image: none;
   margin: 0;
