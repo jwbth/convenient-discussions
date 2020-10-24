@@ -221,7 +221,7 @@ export default {
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
    * not wikitext). Used to detect comments where the user has forgotten the forth tilde. For
-   * example: `/ \(talk\)$/`. End the regexp with `$`.
+   * example: `/ \(talk\)/`.
    *
    * @type {?RegExp}
    * @default null
@@ -368,6 +368,8 @@ export default {
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of
    * them). This is in addition to {@link module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}.
    * They begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
+   *
+   * Example: 'new RegExp(' ^\\{\\{(?:-|clear)\\}\\} *\\n*')`.
    *
    * @type {RegExp[]}
    * @default []
