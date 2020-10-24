@@ -1771,13 +1771,21 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web worker
+   * so its constuctor is lost.)
+   *
+   * @typedef {object} CommentSkeletonLike
+   */
+
+  /**
    * Add new comments notifications to the end of each updated section.
    *
-   * @param {CommentSkeleton[]} newComments
+   * @param {CommentSkeletonLike[]} newComments
    */
   static addNewCommentsNotifications(newComments) {
     $('.cd-refreshButtonContainer').remove();
     newComments
+      .filter((comment) => comment.section)
       .map((comment) => comment.section.anchor)
       .filter(unique)
       .forEach((anchor) => {
