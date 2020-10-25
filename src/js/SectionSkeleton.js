@@ -157,6 +157,8 @@ export default class SectionSkeleton {
         ));
         this.commentsInFirstChunk = this.comments.slice(0, endIndex || 0);
       }
+
+      this.comments[0].followsHeading = true;
     }
 
     /**
