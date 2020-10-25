@@ -18,10 +18,12 @@ import { hideText } from './util';
 
 /**
  * Conceal HTML comments (`<!-- -->`), left-to-right and right-to-left marks, and also newlines
- * inside some tags (<br\n>) in the code.
+ * inside some tags (`<br\n>`) in the code.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.
+ *
+ * TODO: nowiki, syntaxhighlight, source, pre tags.
  *
  * @param {string} code
  * @returns {string}
@@ -344,7 +346,7 @@ export function extractSignatures(code, generateCommentAnchors) {
 /**
  * Decode HTML entities in a string.
  *
- * It should work as fast as possible, so we use String#indexOf, not String#includes.
+ * It should work as fast as possible, so we use `String#indexOf`, not `String#includes`.
  *
  * @param {string} s
  * @returns {string}

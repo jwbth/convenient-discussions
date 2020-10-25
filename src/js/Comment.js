@@ -1784,7 +1784,9 @@ export default class Comment extends CommentSkeleton {
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
 
-        // "\x01" and "\x02" are from hiding closed discussions and HTML comments.
+        // "\x01" is from hiding closed discussions and HTML comments. TODO: Line can start with a
+        // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
+        // need to change `wikitext.hideDistractingCode`.
         '|(?:^|\\n)\\x01.+)\\n)\\n*' +
         (
           searchedIndentationCharsLength > 0 ?
