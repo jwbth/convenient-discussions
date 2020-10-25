@@ -1039,48 +1039,12 @@ export default class Comment extends CommentSkeleton {
     // Collect matches
     const matches = this.searchInCode(pageCode || this.getSourcePage().code);
 
-    // The main method: by the current & previous author & date & section headline & comment text
-    // overlap. Necessary are the current author & date & comment text overlap.
     let bestMatch;
     matches.forEach((match) => {
-      // There are always problems with the first comments as there are no previous comments to
-      // compare to, and it's harder to tell the match, so we use a bit ugly solution here, although
-      // it should be quite reliable: the comment firstness, matching author, date and headline.
-      // Another option is to look for the next comments, not for the previous.
-      // TODO: At the same time it's not reliable when getting the comment code to edit it, so we
-      // need to come up a solution to it.
-      if (
-        (
-          match.overlap > 0.66 ||
-          (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
-        ) &&
-        (
-          !bestMatch ||
-          match.overlap > bestMatch.overlap ||
-          (!bestMatch.hasHeadlineMatched && match.hasHeadlineMatched) ||
-          (
-            // null can be compared to false.
-            Boolean(bestMatch.hasHeadlineMatched) === Boolean(match.hasHeadlineMatched) &&
-
-            !bestMatch.hasPreviousCommentDataMatched &&
-            match.hasPreviousCommentDataMatched
-          )
-        )
-      ) {
+      if (!bestMatch || match.score > bestMatch.score) {
         bestMatch = match;
       }
     });
-
-    // The reserve method: by this & previous two dates & authors. If all dates and authors are the
-    // same, that shouldn't count (see [[Википедия:К удалению/22 сентября
-    // 2020#202009221158_Facenapalm_17]]).
-    if (!bestMatch) {
-      bestMatch = matches.find((match) => (
-        this.id !== 0 &&
-        match.hasPreviousCommentsDataMatched &&
-        !match.isPreviousCommentsDataEqual
-      ));
-    }
 
     if (!bestMatch) {
       throw new CdError({
@@ -1661,7 +1625,7 @@ export default class Comment extends CommentSkeleton {
       .reverse();
 
     // Signature object to a comment match object
-    const matches = signatureMatches.map((match) => ({
+    let matches = signatureMatches.map((match) => ({
       id: match.id,
       author: match.author,
       timestamp: match.timestamp,
@@ -1675,6 +1639,8 @@ export default class Comment extends CommentSkeleton {
     // Collect data for every match
     matches.forEach((match) => {
       match.code = pageCode.slice(match.startIndex, match.endIndex);
+
+      match.idMatched = this.id === match.id;
 
       if (previousComments.length) {
         for (let i = 0; i < previousComments.length; i++) {
@@ -1720,7 +1686,34 @@ export default class Comment extends CommentSkeleton {
 
       const codeToCompare = removeWikiMarkup(match.code);
       match.overlap = calculateWordsOverlap(this.getText(), codeToCompare);
+
+      match.score = (
+        (
+          match.overlap > 0.66 ||
+
+          // The reserve method, if for some reason the text is not overlapping: by this and
+          // previous two dates and authors. If all dates and authors are the same, that shouldn't
+          // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
+          (
+            this.id !== 0 &&
+            match.hasPreviousCommentsDataMatched &&
+            !match.isPreviousCommentsDataEqual
+          ) ||
+
+          // There are always problems with first comments as there are no previous comments to
+          // compare the signatures of and it's harder to tell the match, so we use a bit ugly
+          // solution here, although it should be quite reliable: the comment's firstness, matching
+          // author, date, and headline. Another option is to look for next comments, not for
+          // previous.
+          (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
+        ) * 2 +
+        match.overlap +
+        match.hasHeadlineMatched * 1 +
+        match.hasPreviousCommentsDataMatched * 0.5 +
+        match.idMatched * 0.0001
+      );
     });
+    matches = matches.filter((match) => match.score > 2.5);
 
     return matches;
   }
