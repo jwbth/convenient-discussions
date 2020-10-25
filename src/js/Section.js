@@ -1073,6 +1073,7 @@ export default class Section extends SectionSkeleton {
         bestMatch = match;
       }
     });
+
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -1796,13 +1797,22 @@ export default class Section extends SectionSkeleton {
         const authors = sectionNewComments
           .map((comment) => comment.author)
           .filter(unique);
+        const genders = authors.map((author) => author.getGender());
+        let commonGender;
+        if (genders.every((gender) => gender === 'female')) {
+          commonGender = 'female';
+        } else if (genders.every((gender) => gender !== 'female')) {
+          commonGender = 'male';
+        } else {
+          commonGender = 'unknown';
+        }
         const button = new OO.ui.ButtonWidget({
           label: cd.s(
             'section-newcomments',
             sectionNewComments.length,
             authors.length,
             authors.map((user) => user.name).join(', '),
-            authors[0]
+            commonGender
           ),
           framed: false,
           classes: ['cd-button', 'cd-sectionButton'],
