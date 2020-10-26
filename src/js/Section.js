@@ -1494,11 +1494,19 @@ export default class Section extends SectionSkeleton {
    */
   getChildren(indirect = false) {
     const children = [];
+
+    let haveMetDirect = false;
     cd.sections
       .slice(this.id + 1)
       .some((section) => {
         if (section.level > this.level) {
-          if (indirect || section.level === this.level + 1) {
+          // If, say, a level 4 sections directly follows a level 2 section, it should be considered
+          // a child. This is why we need the haveMetDirect variable.
+          if (section.level === this.level + 1) {
+            haveMetDirect = true;
+          }
+
+          if (indirect || section.level === this.level + 1 || !haveMetDirect) {
             children.push(section);
           }
         } else {
