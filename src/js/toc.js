@@ -89,13 +89,30 @@ export default {
       1 Section 1
         1.1 Section 2
       2 Section 3
+
+      The other possible case when the level on the page is different from the level in the TOC
+      is when there is a gap between the levels on the page. For example:
+
+      == Section ==
+      ==== Subsection ====
+
+      will be displayed like this in the TOC:
+
+      1 Section
+        1.1 Subsection
      */
-    let baseSectionLevel;
+    sections.forEach((section, i) => {
+      section.parent = sections
+        .slice(0, i)
+        .reverse()
+        .find((otherSection) => otherSection.level < section.level);
+    });
     sections.forEach((section) => {
-      if (!baseSectionLevel || section.level < baseSectionLevel) {
-        baseSectionLevel = section.level;
+      if (section.parent) {
+        section.tocLevel = section.parent.tocLevel + 1;
+      } else {
+        section.tocLevel = 1;
       }
-      section.tocLevel = section.level - baseSectionLevel + 1;
     });
 
     let currentTree = [];
