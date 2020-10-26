@@ -272,9 +272,19 @@ export default {
    * substituted**. If they are, don't add them. Please include aliases.
    *
    * @type {string[]}
-   * @default []
+   * @default <pre class="prettyprint source"><code>[
+   *   'unsigned',
+   *   'unsignedIP',
+   *   'unsigned2',
+   *   'unsignedIP2',
+   * ]</code></pre>
    */
-  unsignedTemplates: [],
+  unsignedTemplates: [
+    'unsigned',
+    'unsignedIP',
+    'unsigned2',
+    'unsignedIP2',
+  ],
 
   /**
    * Name of the class that the unsigned templates set to its container element.
