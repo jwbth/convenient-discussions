@@ -1376,7 +1376,7 @@ export default class Comment extends CommentSkeleton {
       let text = $dummy.cdGetText();
       if (cleanUp) {
         if (cd.config.signatureEndingRegexp) {
-          text = text.replace(cd.config.signatureEndingRegexp, '');
+          text = text.replace(new RegExp(cd.config.signatureEndingRegexp.source + '$'), '');
         }
 
         // FIXME: We use the same regexp to clean both wikitext and render. With the current default
@@ -1427,6 +1427,7 @@ export default class Comment extends CommentSkeleton {
     // Exclude the text of the previous comment that is ended with 3/5 tildes instead of 4.
     [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
       .filter(defined)
+      .filter((regexp) => regexp !== null)
       .forEach((originalRegexp) => {
         const regexp = new RegExp(originalRegexp.source + '$', 'm');
         const linesRegexp = /^(.+)\n/gm;
@@ -1640,7 +1641,7 @@ export default class Comment extends CommentSkeleton {
     matches.forEach((match) => {
       match.code = pageCode.slice(match.startIndex, match.endIndex);
 
-      match.idMatched = this.id === match.id;
+      match.hasIdMatched = this.id === match.id;
 
       if (previousComments.length) {
         for (let i = 0; i < previousComments.length; i++) {
@@ -1710,7 +1711,7 @@ export default class Comment extends CommentSkeleton {
         match.overlap +
         match.hasHeadlineMatched * 1 +
         match.hasPreviousCommentsDataMatched * 0.5 +
-        match.idMatched * 0.0001
+        match.hasIdMatched * 0.0001
       );
     });
     matches = matches.filter((match) => match.score > 2.5);
