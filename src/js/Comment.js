@@ -1907,7 +1907,7 @@ export default class Comment extends CommentSkeleton {
       while (treeWalker.parentNode()) {
         let style = treeWalker.currentNode.cdStyle;
         if (!style) {
-          // window.getComputedStyle is expensive, so we save the result to a node's property.
+          // window.getComputedStyle is expensive, so we save the result to the node's property.
           style = window.getComputedStyle(treeWalker.currentNode);
           treeWalker.currentNode.cdStyle = style;
         }
@@ -1916,13 +1916,16 @@ export default class Comment extends CommentSkeleton {
           break;
         }
         const backgroundColor = style.backgroundColor;
-        if (backgroundColor.includes('rgb(')) {
-          /**
-           * Comment's background color if not default.
-           *
-           * @type {string|undefined}
-           */
-          this.backgroundColor = backgroundColor;
+        const backgroundImage = style.backgroundImage;
+        if (backgroundColor.includes('rgb(') || backgroundImage !== 'none') {
+          if (backgroundColor.includes('rgb(')) {
+            /**
+             * Comment's background color if not default.
+             *
+             * @type {string|undefined}
+             */
+            this.backgroundColor = backgroundColor;
+          }
 
           offsetParent = treeWalker.currentNode;
           offsetParent.classList.add('cd-commentLayersContainerParent-relative');
