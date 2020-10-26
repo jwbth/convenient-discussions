@@ -26,16 +26,20 @@ import { hideText } from './util';
  * TODO: nowiki, syntaxhighlight, source, pre tags.
  *
  * @param {string} code
+ * @param {boolean} [replaceMarks=true] Whether to replace left-to-right and right-to-left marks.
  * @returns {string}
  */
-export function hideDistractingCode(code) {
-  return code
+export function hideDistractingCode(code, replaceMarks = true) {
+  let newCode = code
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
-    .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length))
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
       (s, before, newline, after) => before + ' '.repeat(newline.length) + after
     );
+  if (replaceMarks) {
+    newCode = newCode.replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length));
+  }
+  return newCode;
 }
 
 /**
@@ -305,15 +309,19 @@ function extractUnsigneds(code, signatures) {
  */
 export function extractSignatures(code, generateCommentAnchors) {
   // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = hideDistractingCode(code)
+  const adjustedCode = hideDistractingCode(code, false)
     .replace(
       cd.g.QUOTE_REGEXP,
       (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
     )
     .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
 
+  // Custom user signatures can contain RTL marks, so we remove them only for unsigneds.
+  const adjustedCodeForUnsigneds = adjustedCode
+    .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length));
+
   let signatures = extractRegularSignatures(adjustedCode);
-  const unsigneds = extractUnsigneds(adjustedCode, signatures);
+  const unsigneds = extractUnsigneds(adjustedCodeForUnsigneds, signatures);
   signatures.push(...unsigneds);
 
   if (unsigneds.length) {
