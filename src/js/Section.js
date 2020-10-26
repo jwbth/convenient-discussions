@@ -314,14 +314,16 @@ export default class Section extends SectionSkeleton {
       });
     }
 
-    this.addMenuItem({
-      label: cd.s('sm-addsubsection'),
-      tooltip: cd.s('sm-addsubsection-tooltip'),
-      func: () => {
-        this.addSubsection();
-      },
-      class: 'cd-sectionLink-addSubsection',
-    });
+    if (this.level >= 2) {
+      this.addMenuItem({
+        label: cd.s('sm-addsubsection'),
+        tooltip: cd.s('sm-addsubsection-tooltip'),
+        func: () => {
+          this.addSubsection();
+        },
+        class: 'cd-sectionLink-addSubsection',
+      });
+    }
 
     if (this.level === 2) {
       this.addMenuItem({
@@ -1466,11 +1468,15 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the parent section of the section if the section is lower than level 2.
+   * Get the parent section of the section if the section's level is lower than 2 (i.e. the number
+   * is higher).
    *
    * @returns {?Section}
    */
   getParent() {
+    if (this.level <= 2) {
+      return null;
+    }
     return (
       cd.sections
         .slice(0, this.id)

@@ -811,6 +811,7 @@ export default class Parser {
   // The worker context doesn't support .querySelector(), so we have to use .getElementsByTagName().
   findHeadings() {
     const headings = [
+      ...cd.g.rootElement.getElementsByTagName('h1'),
       ...cd.g.rootElement.getElementsByTagName('h2'),
       ...cd.g.rootElement.getElementsByTagName('h3'),
       ...cd.g.rootElement.getElementsByTagName('h4'),
