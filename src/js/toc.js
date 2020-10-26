@@ -119,7 +119,10 @@ export default {
     const $topUl = $toc.children('ul');
     sections.forEach((section) => {
       let match = tocSections.find((tocSection) => (
-        tocSection.headline === section.headline &&
+        // Anchor check is included as a fallback in case of minor differences in how MediaWIki and
+        // we infer the headline.
+        (tocSection.headline === section.headline || tocSection.anchor === section.anchor) &&
+
         tocSection.level === section.tocLevel
       ));
 
