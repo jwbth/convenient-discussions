@@ -196,7 +196,7 @@
   "navpanel-firstunseen": "Go to the first unseen comment",
   "navpanel-commentform": "Go to the next comment form out of sight",
   "navpanel-newcomments-count": "$1 new {{plural:$1|comment|comments}}.",
-  "newpanel-newcomments-names": "$1 → $2",
+  "navpanel-newcomments-names": "$1 → $2",
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-refresh": "Click to refresh the page",
 

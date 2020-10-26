@@ -221,7 +221,7 @@ export default {
         commentsBySection[anchor].forEach((comment, i) => {
           const parent = comment instanceof Comment ? comment.getParent() : comment.parent;
           const names = parent?.author && comment.level > 1 ?
-            cd.s('newpanel-newcomments-names', comment.author.name, parent.author.name) :
+            cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
             comment.author.name;
           const date = comment.date ?
             cd.util.formatDate(comment.date) :

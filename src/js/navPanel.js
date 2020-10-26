@@ -43,7 +43,7 @@ function generateTooltipText(commentsCount, commentsBySection) {
       commentsBySection[anchor].forEach((comment) => {
         tooltipText += `\n`;
         const names = comment.parent?.author && comment.level > 1 ?
-          cd.s('newpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
+          cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
           comment.author.name;
         const date = comment.date ?
           cd.util.formatDate(comment.date) :
