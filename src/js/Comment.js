@@ -602,7 +602,7 @@ export default class Comment extends CommentSkeleton {
       .css('background-color', targetColor);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
-      if (this.focused) {
+      if (this.isFocused) {
         initialColor = cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR;
       } else if (this.newness) {
         initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
