@@ -314,7 +314,7 @@ export default class Section extends SectionSkeleton {
       });
     }
 
-    if (this.level >= 2) {
+    if (this.level >= 2 && this.level !== 6) {
       this.addMenuItem({
         label: cd.s('sm-addsubsection'),
         tooltip: cd.s('sm-addsubsection-tooltip'),
