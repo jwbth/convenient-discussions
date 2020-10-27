@@ -118,11 +118,7 @@ export default {
         .find((otherSection) => otherSection.level < section.level);
     });
     sections.forEach((section) => {
-      if (section.parent) {
-        section.tocLevel = section.parent.tocLevel + 1;
-      } else {
-        section.tocLevel = 1;
-      }
+      section.tocLevel = section.parent ? section.parent.tocLevel + 1 : 1;
     });
 
     let currentTree = [];
