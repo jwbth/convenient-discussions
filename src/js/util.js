@@ -15,12 +15,12 @@ let keptTocHeight = null;
  * Callback for `Array#filter` to remove duplicated elements from an array.
  *
  * @param {*} item
- * @param {number} pos
+ * @param {number} i
  * @param {Array} arr
  * @returns {boolean}
  */
-export function unique(item, pos, arr) {
-  return arr.indexOf(item) === pos;
+export function unique(item, i, arr) {
+  return arr.indexOf(item) === i;
 }
 
 /**

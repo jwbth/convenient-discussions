@@ -140,7 +140,7 @@ function onMessageFromWindow(e) {
   const message = e.data;
 
   if (firstRun) {
-    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link from the file name and line number to open the source code in your debug tool.');
+    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.');
     firstRun = false;
   }
 
