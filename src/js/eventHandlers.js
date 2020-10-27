@@ -68,7 +68,7 @@ export function globalKeyDownHandler(e) {
     e.preventDefault();
     const commentForm = CommentForm.getLastActiveCommentForm();
     if (commentForm) {
-      commentForm.quote(!e.ctrlKey);
+      commentForm.quote(e.ctrlKey);
     }
   }
 
@@ -105,9 +105,12 @@ export function highlightFocused(e) {
   if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
   const isObstructingElementHovered = (
+    Array.from(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification'))
+      .some((notification) => notification.matches(':hover')) ||
+
     cd.g.activeAutocompleteMenu?.matches(':hover') ||
 
-    // In case the user has moved the navigation panel to the right
+    // In case the user has moved the navigation panel to the other side.
     navPanel.$element?.get(0).matches(':hover') ||
 
     // WikiEditor dialog

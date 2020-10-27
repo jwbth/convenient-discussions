@@ -7,29 +7,13 @@
 }
 
 .cd-commentForm {
-  &.cd-commentForm {
-    .flow-root();
+  .flow-root();
 
-    margin: 0.5em 0;
-
-    // Need to override .cd-commentLevel.cd-commentLevel:not(ol).
-    &.cd-commentLevel {
-      margin-top: 0.5em;
-
-      // Indent from the ruwiki's "closed" template, for instance, that follows.
-      margin-bottom: 0.5em;
-    }
-  }
-
-  &.cd-commentForm-addSection,
-  &.cd-commentForm-addSubsection,
-  &.cd-commentForm-replyInSection:not(.cd-commentForm-inNumberedList),
-  &.cd-commentForm-sectionOpeningComment {
-    margin-top: 1em;
-  }
+  margin: 0.5em 0;
+  font-size: 14px;
 
   .cd-headlineInput {
-    margin-bottom: 0.25em;
+    margin-bottom: 0.214286em;
   }
 
   .oo-ui-textInputWidget {
@@ -37,7 +21,7 @@
   }
 
   .cd-summaryInput {
-    margin-top: 0.25em;
+    margin-top: 0.214286em;
   }
 
   .cd-checkboxesContainer {
@@ -65,10 +49,6 @@
     float: right;
   }
 
-  .cd-rightButtonsContainer > .oo-ui-buttonWidget:last-child {
-    margin-right: -0.3125em;
-  }
-
   .oo-ui-buttonElement-framed > .oo-ui-buttonElement-button {
     vertical-align: middle;
   }
@@ -79,17 +59,6 @@
 
   table.diff {
     margin-bottom: 0.5em;
-  }
-
-  & + .cd-commentLevel,
-  & + dd > .cd-commentLevel:first-child,
-  & + li > .cd-commentLevel:first-child {
-    // Neutralize the hole which would otherwise be created by the margin-top of a nested comment.
-    padding-top: 0.1px;
-  }
-
-  & + .cd-commentForm {
-    padding-top: 0.5em;
   }
 
   .wikiEditor-ui-left {
@@ -118,6 +87,13 @@
   .oo-ui-textInputWidget .oo-ui-inputWidget-input {
     border-radius: 0;
   }
+}
+
+.cd-commentForm-addSection,
+.cd-commentForm-addSubsection,
+.cd-commentForm-replyInSection:not(.cd-commentForm-inNumberedList),
+.cd-commentForm-sectionOpeningComment {
+  margin-top: 1em;
 }
 
 // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
@@ -178,25 +154,14 @@
   }
 }
 
-.sitedir-ltr .cd-summaryInput {
-  margin-right: 8px;
-  margin-left: 0;
-}
-
-.sitedir-rtl .cd-summaryInput {
-  margin-left: 8px;
-  margin-right: 0;
-}
-
-// flow-root removes the number in numbered lists which is too bad when editing a numbered comment
-// :-/
-ol > li.cd-commentForm.cd-commentForm {
+// "display: flow-root" removes the number in numbered lists which is too bad when editing a
+// numbered comment :-/
+ol > li.cd-commentForm {
   display: list-item;
   -ms-display: list-item;
 }
 
-.cd-replyWrapper,
-.cd-sectionButtonContainer .cd-commentForm.cd-commentForm {
+.cd-replyWrapper {
   margin-top: 0.5em;
 }
 
@@ -213,22 +178,12 @@ ol > li.cd-commentForm.cd-commentForm {
   .wikiEditor-ui .wikiEditor-ui-view {
     border: 0;
   }
-}
 
-.sitedir-ltr .cd-commentInput {
-  margin-right: 8px;
-  margin-left: 0;
-}
-
-.sitedir-rtl .cd-commentInput {
-  margin-left: 8px;
-  margin-right: 0;
-}
-
-.cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
-  width: calc(~"100% + 2px");
-  margin: -1px;
-  position: relative;
+  .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+    width: calc(~"100% + 2px");
+    margin: -1px;
+    position: relative;
+  }
 }
 
 body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
@@ -274,6 +229,11 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
     margin-left: 0;
     margin-bottom: 0;
   }
+
+  &-label {
+    color: #72777d;
+    margin-bottom: 0.5em;
+  }
 }
 
 .cd-messageArea {
@@ -305,11 +265,6 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
   + * {
     clear: both;
   }
-}
-
-.cd-commentForm-blockLabel {
-  color: #72777d;
-  margin-bottom: 0.5em;
 }
 
 .cd-closeButton {

@@ -140,7 +140,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.actionable = (
+    this.isActionable = (
       cd.g.isPageActive &&
       !cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
     );
@@ -378,7 +378,7 @@ export default class Comment extends CommentSkeleton {
       this.overlayContent.appendChild(this.thankButton);
     }
 
-    if (this.actionable) {
+    if (this.isActionable) {
       if (this.isOwn || cd.settings.allowEditOthersComments) {
         /**
          * Edit button.
@@ -602,8 +602,9 @@ export default class Comment extends CommentSkeleton {
       .css('background-color', targetColor);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
-      // We may not know from the beginning if the comment is new.
-      if (this.newness) {
+      if (this.isFocused) {
+        initialColor = cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR;
+      } else if (this.newness) {
         initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
       }
       $elementsToAnimate.animate(
@@ -635,8 +636,14 @@ export default class Comment extends CommentSkeleton {
    * Scroll to the comment and highlight it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
+   * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
+   *   anchor as a fragment.
    */
-  scrollToAndHighlightTarget(smooth = true) {
+  scrollToAndHighlightTarget(smooth = true, pushState = false) {
+    if (pushState) {
+      history.pushState(history.state, '', '#' + this.anchor);
+    }
+
     const $elements = this.editForm ? this.editForm.$element : this.$elements;
     $elements.cdScrollIntoView(this.isOpeningSection || this.editForm ? 'top' : 'center', smooth);
     this.highlightTarget();
@@ -768,7 +775,7 @@ export default class Comment extends CommentSkeleton {
     }
     const [revisionsResp] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
 
-    const revisions = revisionsResp?.query?.pages?.[0]?.revisions;
+    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
@@ -973,7 +980,7 @@ export default class Comment extends CommentSkeleton {
     try {
       ([edit] = await Promise.all([
         this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING),
-        mw.loader.using('mediawiki.diff.styles')
+        mw.loader.using('mediawiki.diff.styles'),
       ]));
     } catch (e) {
       this.thankFail(e, thankButton);
@@ -1032,48 +1039,12 @@ export default class Comment extends CommentSkeleton {
     // Collect matches
     const matches = this.searchInCode(pageCode || this.getSourcePage().code);
 
-    // The main method: by the current & previous author & date & section headline & comment text
-    // overlap. Necessary are the current author & date & comment text overlap.
     let bestMatch;
     matches.forEach((match) => {
-      // There are always problems with the first comments as there are no previous comments to
-      // compare to, and it's harder to tell the match, so we use a bit ugly solution here, although
-      // it should be quite reliable: the comment firstness, matching author, date and headline.
-      // Another option is to look for the next comments, not for the previous.
-      // TODO: At the same time it's not reliable when getting the comment code to edit it, so we
-      // need to come up a solution to it.
-      if (
-        (
-          match.overlap > 0.66 ||
-          (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
-        ) &&
-        (
-          !bestMatch ||
-          match.overlap > bestMatch.overlap ||
-          (!bestMatch.hasHeadlineMatched && match.hasHeadlineMatched) ||
-          (
-            // null can be compared to false.
-            Boolean(bestMatch.hasHeadlineMatched) === Boolean(match.hasHeadlineMatched) &&
-
-            !bestMatch.hasPreviousCommentDataMatched &&
-            match.hasPreviousCommentDataMatched
-          )
-        )
-      ) {
+      if (!bestMatch || match.score > bestMatch.score) {
         bestMatch = match;
       }
     });
-
-    // The reserve method: by this & previous two dates & authors. If all dates and authors are the
-    // same, that shouldn't count (see [[Википедия:К удалению/22 сентября
-    // 2020#202009221158_Facenapalm_17]]).
-    if (!bestMatch) {
-      bestMatch = matches.find((match) => (
-        this.id !== 0 &&
-        match.hasPreviousCommentsDataMatched &&
-        !match.isPreviousCommentsDataEqual
-      ));
-    }
 
     if (!bestMatch) {
       throw new CdError({
@@ -1405,7 +1376,7 @@ export default class Comment extends CommentSkeleton {
       let text = $dummy.cdGetText();
       if (cleanUp) {
         if (cd.config.signatureEndingRegexp) {
-          text = text.replace(cd.config.signatureEndingRegexp, '');
+          text = text.replace(new RegExp(cd.config.signatureEndingRegexp.source + '$'), '');
         }
 
         // FIXME: We use the same regexp to clean both wikitext and render. With the current default
@@ -1453,28 +1424,46 @@ export default class Comment extends CommentSkeleton {
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     }
 
-    // Exclude the text of the previous comment that is ended with 3 tildes instead of 4.
-    if (cd.config.signatureEndingRegexp) {
-      const regexp = new RegExp(cd.config.signatureEndingRegexp.source, 'm');
-      const linesRegexp = /^(.+)\n/gm;
-      let line;
-      let indent;
-      while ((line = linesRegexp.exec(code))) {
-        if (regexp.test(removeWikiMarkup(line[1]))) {
-          const testIndent = line.index + line[0].length;
-          if (testIndent === code.length) {
-            break;
-          } else {
-            indent = testIndent;
+    // Exclude the text of the previous comment that is ended with 3/5 tildes instead of 4.
+    [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
+      .filter(defined)
+      .filter((regexp) => regexp !== null)
+      .forEach((originalRegexp) => {
+        const regexp = new RegExp(originalRegexp.source + '$', 'm');
+        const linesRegexp = /^(.+)\n/gm;
+        let line;
+        let indent;
+        while ((line = linesRegexp.exec(code))) {
+          if (regexp.test(removeWikiMarkup(line[1]))) {
+            const testIndent = line.index + line[0].length;
+            if (testIndent === code.length) {
+              break;
+            } else {
+              indent = testIndent;
+            }
           }
         }
+        if (indent) {
+          code = code.slice(indent);
+          startIndex += indent;
+          lineStartIndex += indent;
+        }
+      });
+
+    // This should be before the "this.level > 0" block to account for cases like
+    // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp doesn't
+    // catch the comment because of a new line inside an "syntaxhighlight" element).
+    cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
+      if (pattern.source[0] !== '^') {
+        console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
       }
-      if (indent) {
-        code = code.slice(indent);
-        startIndex += indent;
-        lineStartIndex += indent;
+      const match = code.match(pattern);
+      if (match) {
+        code = code.slice(match[0].length);
+        startIndex += match[0].length;
+        lineStartIndex += match[0].lastIndexOf('\n') + 1;
       }
-    }
+    });
 
     // Exclude the indentation characters and any foreign code before them from the comment code.
     // Comments at the zero level sometimes start with ":" that is used to indent some side note. It
@@ -1482,8 +1471,8 @@ export default class Comment extends CommentSkeleton {
     if (this.level > 0) {
       const replaceIndentationChars = (s, before, chars) => {
         indentationChars = chars;
-        lineStartIndex += before.length;
         startIndex += s.length;
+        lineStartIndex += before.length;
         return '';
       };
 
@@ -1495,7 +1484,7 @@ export default class Comment extends CommentSkeleton {
       // See the comment "Without the following code, the section introduction..." in Parser.js.
       // Dangerous case: https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1.
       // This was actually a mistake to put a signature at the first level, but if it was legit,
-      // only the last sentence should be interpreted as the comment.
+      // only the last sentence should have been interpreted as the comment.
       if (indentationChars === '') {
         code = code.replace(
           new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
@@ -1503,17 +1492,6 @@ export default class Comment extends CommentSkeleton {
         );
       }
     }
-
-    cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
-      if (pattern.source[0] !== '^') {
-        console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
-      }
-      const match = code.match(pattern);
-      if (match) {
-        startIndex += match[0].length;
-        code = code.slice(match[0].length);
-      }
-    });
 
     return {
       code,
@@ -1575,9 +1553,12 @@ export default class Comment extends CommentSkeleton {
       start: /^<small>/,
       end: /<\/small>[ \u00A0\t]*$/,
     }];
-    if (cd.config.smallDivTemplate) {
+    if (cd.config.smallDivTemplates?.[0]) {
       smallWrappers.push({
-        start: new RegExp(`^(?:\\{\\{${cd.config.smallDivTemplate}\\|1=)`),
+        start: new RegExp(
+          `^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
+          'i'
+        ),
         end: /\}\}[ \u00A0\t]*$/,
       });
     }
@@ -1645,7 +1626,7 @@ export default class Comment extends CommentSkeleton {
       .reverse();
 
     // Signature object to a comment match object
-    const matches = signatureMatches.map((match) => ({
+    let matches = signatureMatches.map((match) => ({
       id: match.id,
       author: match.author,
       timestamp: match.timestamp,
@@ -1660,6 +1641,8 @@ export default class Comment extends CommentSkeleton {
     matches.forEach((match) => {
       match.code = pageCode.slice(match.startIndex, match.endIndex);
 
+      match.hasIdMatched = this.id === match.id;
+
       if (previousComments.length) {
         for (let i = 0; i < previousComments.length; i++) {
           const signature = signatures[match.id - 1 - i];
@@ -1669,12 +1652,15 @@ export default class Comment extends CommentSkeleton {
             signature.timestamp === previousComments[i].timestamp &&
             signature.author === previousComments[i].author
           );
-          if (match.isPreviousCommentsDataEqual !== false) {
+
+          // Many consecutive comments with the same author and timestamp.
+          if (match.isPreviousCommentsDataEqual !== false && signature) {
             match.isPreviousCommentsDataEqual = (
               match.timestamp === signature.timestamp &&
               match.author === signature.author
             );
           }
+
           if (i === 0) {
             match.hasPreviousCommentDataMatched = match.hasPreviousCommentsDataMatched;
           }
@@ -1701,7 +1687,34 @@ export default class Comment extends CommentSkeleton {
 
       const codeToCompare = removeWikiMarkup(match.code);
       match.overlap = calculateWordsOverlap(this.getText(), codeToCompare);
+
+      match.score = (
+        (
+          match.overlap > 0.66 ||
+
+          // The reserve method, if for some reason the text is not overlapping: by this and
+          // previous two dates and authors. If all dates and authors are the same, that shouldn't
+          // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
+          (
+            this.id !== 0 &&
+            match.hasPreviousCommentsDataMatched &&
+            !match.isPreviousCommentsDataEqual
+          ) ||
+
+          // There are always problems with first comments as there are no previous comments to
+          // compare the signatures of and it's harder to tell the match, so we use a bit ugly
+          // solution here, although it should be quite reliable: the comment's firstness, matching
+          // author, date, and headline. Another option is to look for next comments, not for
+          // previous.
+          (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
+        ) * 2 +
+        match.overlap +
+        match.hasHeadlineMatched * 1 +
+        match.hasPreviousCommentsDataMatched * 0.5 +
+        match.hasIdMatched * 0.0001
+      );
     });
+    matches = matches.filter((match) => match.score > 2.5);
 
     return matches;
   }
@@ -1772,8 +1785,10 @@ export default class Comment extends CommentSkeleton {
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
 
-        // "\x01" and "\x02" is from hiding closed discussions and HTML comments.
-        '|\\x02)\\n)\\n*' +
+        // "\x01" is from hiding closed discussions and HTML comments. TODO: Line can start with a
+        // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
+        // need to change `wikitext.hideDistractingCode`.
+        '|(?:^|\\n)\\x01.+)\\n)\\n*' +
         (
           searchedIndentationCharsLength > 0 ?
           `[:*#\\x01]{0,${searchedIndentationCharsLength}}` :
@@ -1785,6 +1800,11 @@ export default class Comment extends CommentSkeleton {
         '(?![:*#\\n\\x01])'
       );
       let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
+
+      // Hotfix for comments inside a table (barnstars, for example).
+      if (adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')) {
+        adjustedCodeInBetween += '|}\n';
+      }
 
       if (adjustedCodeInBetween === undefined) {
         throw new CdError({
@@ -1887,7 +1907,7 @@ export default class Comment extends CommentSkeleton {
       while (treeWalker.parentNode()) {
         let style = treeWalker.currentNode.cdStyle;
         if (!style) {
-          // window.getComputedStyle is expensive, so we save the result to a node's property.
+          // window.getComputedStyle is expensive, so we save the result to the node's property.
           style = window.getComputedStyle(treeWalker.currentNode);
           treeWalker.currentNode.cdStyle = style;
         }
@@ -1896,13 +1916,16 @@ export default class Comment extends CommentSkeleton {
           break;
         }
         const backgroundColor = style.backgroundColor;
-        if (backgroundColor.includes('rgb(')) {
-          /**
-           * Comment's background color if not default.
-           *
-           * @type {string|undefined}
-           */
-          this.backgroundColor = backgroundColor;
+        const backgroundImage = style.backgroundImage;
+        if (backgroundColor.includes('rgb(') || backgroundImage !== 'none') {
+          if (backgroundColor.includes('rgb(')) {
+            /**
+             * Comment's background color if not default.
+             *
+             * @type {string|undefined}
+             */
+            this.backgroundColor = backgroundColor;
+          }
 
           offsetParent = treeWalker.currentNode;
           offsetParent.classList.add('cd-commentLayersContainerParent-relative');
@@ -2020,6 +2043,37 @@ export default class Comment extends CommentSkeleton {
     comments.forEach((comment) => {
       comment.addLayers();
     });
+  }
+
+  /**
+   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web
+   * worker so its constuctor is lost.)
+   *
+   * @typedef {object} CommentSkeletonLike
+   */
+
+  /**
+   * Turn comment array into object with section anchors as keys.
+   *
+   * @param {CommentSkeletonLike[]|Comment[]} comments
+   * @returns {object}
+   * @private
+   */
+  static groupBySection(comments) {
+    const commentsBySection = {};
+    comments.forEach((comment) => {
+      const section = comment instanceof Comment ? comment.getSection() : comment.section;
+
+      // "_" is an impossible id for a section. We assign it to the lead section.
+      const anchor = section === null ? '_' : section.anchor;
+
+      if (!commentsBySection[anchor]) {
+        commentsBySection[anchor] = [];
+      }
+      commentsBySection[anchor].push(comment);
+    });
+
+    return commentsBySection;
   }
 
   /**

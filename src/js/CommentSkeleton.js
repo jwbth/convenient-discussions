@@ -134,22 +134,20 @@ export default class CommentSkeleton {
 
     this.setLevels();
 
-    if (this.parts[0].isHeading) {
-      /**
-       * Is the comment followed by a heading.
-       *
-       * @type {boolean}
-       */
-      this.followsHeading = true;
+    /**
+     * Is the comment followed by a heading. Set to `true` in the {@link SectionSkeleton}
+     * constructor.
+     *
+     * @type {boolean}
+     */
+    this.followsHeading = false;
 
+    if (this.parts[0].isHeading) {
       if (this.level !== 0) {
         this.parts.shift();
         this.elements.shift();
       }
-    } else {
-      this.followsHeading = false;
-    }
-    if (this.parts[0].isHeading) {
+
       /**
        * Does the comment open a section (has a heading as the first element and is placed at the
        * zeroth level).

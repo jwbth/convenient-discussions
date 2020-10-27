@@ -8,8 +8,8 @@ import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
+import { areObjectsEqual, dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
 import { checkboxField, radioField } from './ooui';
-import { dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
 import { encodeWikilink } from './wikitext';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
@@ -89,22 +89,6 @@ export function confirmDestructive(messageName, options = {}) {
   ];
   const defaultOptions = { actions };
   return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
-}
-
-/**
- * @typedef {object} OoUiRadioSelectWidget
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
- */
-
-/**
- * Get selected item data if any item is selected, or `null` otherwise.
- *
- * @param {OoUiRadioSelectWidget} select
- * @returns {?*}
- * @private
- */
-function getSelectedItemData(select) {
-  return select.findSelectedItem()?.getData();
 }
 
 /**
@@ -299,30 +283,7 @@ export async function settingsDialog() {
       return new OO.ui.Process(async () => {
         this.pushPending();
 
-        const settings = {};
-        settings.allowEditOthersComments = this.allowEditOthersCommentsCheckbox.isSelected();
-        settings.alwaysExpandAdvanced = this.alwaysExpandAdvancedCheckbox.isSelected();
-        settings.autopreview = this.autopreviewCheckbox.isSelected();
-        settings.desktopNotifications = (
-          getSelectedItemData(this.desktopNotificationsSelect) ||
-          'unknown'
-        );
-        settings.defaultCommentLinkType = getSelectedItemData(this.defaultCommentLinkTypeSelect);
-        settings.defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
-        settings.highlightOwnComments = this.highlightOwnCommentsCheckbox.isSelected();
-        settings.insertButtons = this.processInsertButtons();
-        settings.notifications = getSelectedItemData(this.notificationsSelect);
-        settings.notificationsBlacklist = this.notificationsBlacklistMultiselect.getValue();
-        settings.showToolbar = this.showToolbarCheckbox.isSelected();
-        settings.signaturePrefix = this.signaturePrefixInput.getValue();
-        settings.useTemplateData = this.useTemplateDataCheckbox.isSelected();
-        settings.watchOnReply = this.watchOnReplyCheckbox.isSelected();
-        settings.watchSectionOnReply = this.watchSectionOnReplyCheckbox.isSelected();
-
-        settings.areInsertButtonsAltered = (
-          JSON.stringify(settings.insertButtons) !==
-          JSON.stringify(cd.defaultSettings.insertButtons)
-        );
+        const settings = this.collectSettings();
 
         try {
           await setSettings(settings);
@@ -348,7 +309,9 @@ export async function settingsDialog() {
     } else if (action === 'reset') {
       return new OO.ui.Process(async () => {
         if (await OO.ui.confirm(cd.s('sd-reset-confirm'))) {
+          const currentPageName = this.bookletLayout.getCurrentPageName();
           this.renderForm(cd.defaultSettings);
+          this.bookletLayout.setPage(currentPageName);
         }
       });
     }
@@ -366,6 +329,52 @@ export async function settingsDialog() {
       value: 'alwaysExpandAdvanced',
       selected: settings.alwaysExpandAdvanced,
       label: cd.s('sd-alwaysexpandadvanced'),
+    });
+
+    const autocompleteMentionsOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'mentions',
+      selected: settings.autocompleteTypes.includes('mentions'),
+      label: cd.s('sd-autocompletetypes-mentions'),
+    });
+
+    const autocompleteCommentLinksOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'commentLinks',
+      selected: settings.autocompleteTypes.includes('commentLinks'),
+      label: cd.s('sd-autocompletetypes-commentlinks'),
+    });
+
+    const autocompleteWikilinksOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'wikilinks',
+      selected: settings.autocompleteTypes.includes('wikilinks'),
+      label: cd.s('sd-autocompletetypes-wikilinks'),
+    });
+
+    const autocompleteTemplatesOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'templates',
+      selected: settings.autocompleteTypes.includes('templates'),
+      label: cd.s('sd-autocompletetypes-templates'),
+    });
+
+    const autocompleteTagsOption = new OO.ui.CheckboxMultioptionWidget({
+      data: 'tags',
+      selected: settings.autocompleteTypes.includes('tags'),
+      label: cd.s('sd-autocompletetypes-tags'),
+    });
+
+    this.autocompleteTypesMultiselect = new OO.ui.CheckboxMultiselectWidget({
+      items: [
+        autocompleteMentionsOption,
+        autocompleteCommentLinksOption,
+        autocompleteWikilinksOption,
+        autocompleteTemplatesOption,
+        autocompleteTagsOption,
+      ],
+      classes: ['cd-autocompleteTypesMultiselect'],
+    });
+
+    this.autocompleteTypesField = new OO.ui.FieldLayout(this.autocompleteTypesMultiselect, {
+      label: cd.s('sd-autocompletetypes'),
+      align: 'top',
     });
 
     [this.autopreviewField, this.autopreviewCheckbox] = checkboxField({
@@ -466,14 +475,19 @@ export async function settingsDialog() {
       tagLimit: 100,
       selected: insertButtonsSelected,
     });
-    this.insertButtonsField = (
-      new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
-        label: cd.s('sd-insertbuttons'),
-        align: 'top',
-        help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
-        helpInline: true,
-      })
-    );
+    this.insertButtonsField = new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
+      label: cd.s('sd-insertbuttons'),
+      align: 'top',
+      help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+      helpInline: true,
+    });
+
+    [this.modifyTocField, this.modifyTocCheckbox] = checkboxField({
+      value: 'modifyToc',
+      selected: settings.modifyToc,
+      label: cd.s('sd-modifytoc'),
+      help: cd.s('sd-modifytoc-help'),
+    });
 
     [
       this.notificationsField,
@@ -533,9 +547,9 @@ export async function settingsDialog() {
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({
       value: 'useTemplateData',
       selected: settings.useTemplateData,
+      disabled: !settings.autocompleteTypes.includes('templates'),
       label: cd.s('sd-usetemplatedata'),
       help: cd.s('sd-usetemplatedata-help'),
-      helpInline: true,
     });
 
     [this.watchOnReplyField, this.watchOnReplyCheckbox] = checkboxField({
@@ -549,29 +563,30 @@ export async function settingsDialog() {
       selected: settings.watchSectionOnReply,
       label: cd.s('sd-watchsectiononreply'),
       help: cd.s('sd-watchsectiononreply-help'),
-      helpInline: true,
     });
 
-    this.insertButtonsMultiselect.connect(this, { change: 'updateActionsAvailability' });
-    this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.autopreviewCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.insertButtonsMultiselect.connect(this, { change: 'updateStates' });
+    this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateStates' });
+    this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateStates' });
+    this.autocompleteTypesMultiselect.connect(this, { select: 'updateStates' });
+    this.autopreviewCheckbox.connect(this, { change: 'updateStates' });
     this.desktopNotificationsSelect.connect(this, {
-      select: 'updateActionsAvailability',
+      select: 'updateStates',
       choose: 'changeDesktopNotifications',
     });
-    this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
-    this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateActionsAvailability' });
-    this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.notificationsSelect.connect(this, { select: 'updateActionsAvailability' });
-    this.notificationsBlacklistMultiselect.connect(this, { change: 'updateActionsAvailability' });
-    this.showToolbarCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.signaturePrefixInput.connect(this, { change: 'updateActionsAvailability' });
-    this.useTemplateDataCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
-    this.watchOnReplyCheckbox.connect(this, { change: 'updateActionsAvailability' });
+    this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateStates' });
+    this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateStates' });
+    this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateStates' });
+    this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
+    this.notificationsSelect.connect(this, { select: 'updateStates' });
+    this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
+    this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
+    this.signaturePrefixInput.connect(this, { change: 'updateStates' });
+    this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
+    this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateStates' });
+    this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
 
-    this.removeDataButton = new OO.ui.ButtonInputWidget({
+    this.removeDataButton = new OO.ui.ButtonWidget({
       label: cd.s('sd-removedata'),
       flags: ['destructive'],
     });
@@ -594,12 +609,13 @@ export async function settingsDialog() {
      */
     function GeneralPageLayout(name, config) {
       GeneralPageLayout.super.call(this, name, config);
-      this.$element.append(
+      this.$element.append([
         dialog.highlightOwnCommentsField.$element,
         dialog.allowEditOthersCommentsField.$element,
+        dialog.modifyTocField.$element,
         dialog.defaultCommentLinkTypeField.$element,
         dialog.defaultSectionLinkTypeField.$element,
-      );
+      ]);
     }
     OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
     GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
@@ -617,16 +633,17 @@ export async function settingsDialog() {
      */
     function CommentFormPageLayout(name, config) {
       CommentFormPageLayout.super.call(this, name, config);
-      this.$element.append(
+      this.$element.append([
         dialog.autopreviewField.$element,
         dialog.watchOnReplyField.$element,
         dialog.watchSectionOnReplyField.$element,
         dialog.showToolbarField.$element,
         dialog.alwaysExpandAdvancedField.$element,
+        dialog.autocompleteTypesField.$element,
         dialog.useTemplateDataField.$element,
         dialog.insertButtonsField.$element,
         dialog.signaturePrefixField.$element,
-      );
+      ]);
     }
     OO.inheritClass(CommentFormPageLayout, OO.ui.PageLayout);
     CommentFormPageLayout.prototype.setupOutlineItem = function () {
@@ -643,11 +660,11 @@ export async function settingsDialog() {
      */
     function NotificationsPageLayout(name, config) {
       NotificationsPageLayout.super.call(this, name, config);
-      this.$element.append(
+      this.$element.append([
         dialog.notificationsField.$element,
         dialog.desktopNotificationsField.$element,
         dialog.notificationsBlacklistField.$element,
-      );
+      ]);
     }
     OO.inheritClass(NotificationsPageLayout, OO.ui.PageLayout);
     NotificationsPageLayout.prototype.setupOutlineItem = function () {
@@ -683,7 +700,37 @@ export async function settingsDialog() {
 
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
-    this.updateActionsAvailability();
+    this.updateStates();
+  };
+
+  SettingsDialog.prototype.collectSettings = function () {
+    const settings = {
+      allowEditOthersComments: this.allowEditOthersCommentsCheckbox.isSelected(),
+      alwaysExpandAdvanced: this.alwaysExpandAdvancedCheckbox.isSelected(),
+      autocompleteTypes: this.autocompleteTypesMultiselect.findSelectedItemsData(),
+      autopreview: this.autopreviewCheckbox.isSelected(),
+      desktopNotifications: (
+        this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
+        'unknown'
+      ),
+      defaultCommentLinkType: this.defaultCommentLinkTypeSelect.findSelectedItem()?.getData(),
+      defaultSectionLinkType: this.defaultSectionLinkTypeSelect.findSelectedItem()?.getData(),
+      highlightOwnComments: this.highlightOwnCommentsCheckbox.isSelected(),
+      insertButtons: this.processInsertButtons(),
+      modifyToc: this.modifyTocCheckbox.isSelected(),
+      notifications: this.notificationsSelect.findSelectedItem()?.getData(),
+      notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
+      showToolbar: this.showToolbarCheckbox.isSelected(),
+      signaturePrefix: this.signaturePrefixInput.getValue(),
+      useTemplateData: this.useTemplateDataCheckbox.isSelected(),
+      watchOnReply: this.watchOnReplyCheckbox.isSelected(),
+      watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),
+    };
+    settings.haveInsertButtonsBeenAltered = (
+      JSON.stringify(settings.insertButtons) !==
+      JSON.stringify(cd.defaultSettings.insertButtons)
+    );
+    return settings;
   };
 
   SettingsDialog.prototype.processInsertButtons = function () {
@@ -701,64 +748,14 @@ export async function settingsDialog() {
       .filter(defined);
   };
 
-  SettingsDialog.prototype.updateActionsAvailability = async function () {
-    const insertButtonsJson = JSON.stringify(this.processInsertButtons());
-    this.insertButtonsMultiselect.toggleValid(insertButtonsJson.length <= 10000);
-
-    const notificationsBlacklistJson = JSON.stringify(
-      this.notificationsBlacklistMultiselect.getValue()
+  SettingsDialog.prototype.updateStates = async function () {
+    this.useTemplateDataCheckbox.setDisabled(
+      !this.autocompleteTypesMultiselect.findItemFromData('templates').isSelected()
     );
-    this.notificationsBlacklistMultiselect.toggleValid(notificationsBlacklistJson.length <= 10000);
 
-    const desktopNotifications = getSelectedItemData(this.desktopNotificationsSelect) || 'unknown';
-    const defaultCommentLinkType = getSelectedItemData(this.defaultCommentLinkTypeSelect);
-    const defaultSectionLinkType = getSelectedItemData(this.defaultSectionLinkTypeSelect);
-    const notifications = getSelectedItemData(this.notificationsSelect);
-
-    let save = (
-      insertButtonsJson !== JSON.stringify(this.settings.insertButtons) ||
-      this.allowEditOthersCommentsCheckbox.isSelected() !== this.settings.allowEditOthersComments ||
-      this.alwaysExpandAdvancedCheckbox.isSelected() !== this.settings.alwaysExpandAdvanced ||
-      this.autopreviewCheckbox.isSelected() !== this.settings.autopreview ||
-      desktopNotifications !== this.settings.desktopNotifications ||
-      defaultCommentLinkType !== this.settings.defaultCommentLinkType ||
-      defaultSectionLinkType !== this.settings.defaultSectionLinkType ||
-      this.highlightOwnCommentsCheckbox.isSelected() !== this.settings.highlightOwnComments ||
-      notifications !== this.settings.notifications ||
-      notificationsBlacklistJson !== JSON.stringify(this.settings.notificationsBlacklist) ||
-      this.showToolbarCheckbox.isSelected() !== this.settings.showToolbar ||
-      this.signaturePrefixInput.getValue() !== this.settings.signaturePrefix ||
-      this.useTemplateDataCheckbox.isSelected() !== this.settings.useTemplateData ||
-      this.watchOnReplyCheckbox.isSelected() !== this.settings.watchOnReply ||
-      this.watchSectionOnReplyCheckbox.isSelected() !== this.settings.watchSectionOnReply
-    );
-    save = save && this.insertButtonsMultiselect.isValid();
-    try {
-      await this.signaturePrefixInput.getValidity();
-    } catch (e) {
-      save = false;
-    }
-
-    const reset = (
-      (
-        this.allowEditOthersCommentsCheckbox.isSelected() !==
-        cd.defaultSettings.allowEditOthersComments
-      ) ||
-      this.alwaysExpandAdvancedCheckbox.isSelected() !== cd.defaultSettings.alwaysExpandAdvanced ||
-      this.autopreviewCheckbox.isSelected() !== cd.defaultSettings.autopreview ||
-      desktopNotifications !== cd.defaultSettings.desktopNotifications ||
-      defaultCommentLinkType !== cd.defaultSettings.defaultCommentLinkType ||
-      defaultSectionLinkType !== cd.defaultSettings.defaultSectionLinkType ||
-      this.highlightOwnCommentsCheckbox.isSelected() !== cd.defaultSettings.highlightOwnComments ||
-      insertButtonsJson !== JSON.stringify(cd.defaultSettings.insertButtons) ||
-      notifications !== cd.defaultSettings.notifications ||
-      notificationsBlacklistJson !== JSON.stringify(cd.defaultSettings.notificationsBlacklist) ||
-      this.showToolbarCheckbox.isSelected() !== cd.defaultSettings.showToolbar ||
-      this.signaturePrefixInput.getValue() !== cd.defaultSettings.signaturePrefix ||
-      this.useTemplateDataCheckbox.isSelected() !== cd.defaultSettings.useTemplateData ||
-      this.watchOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchOnReply ||
-      this.watchSectionOnReplyCheckbox.isSelected() !== cd.defaultSettings.watchSectionOnReply
-    );
+    const settings = this.collectSettings();
+    const save = !areObjectsEqual(settings, this.settings, true);
+    const reset = !areObjectsEqual(settings, cd.defaultSettings, true);
 
     this.actions.setAbilities({ save, reset });
   };
@@ -1375,7 +1372,7 @@ export async function notFound(decodedFragment, date) {
         profile: 'default',
         fulltext: 'Search',
         search: searchQuery,
-        cdComment: date && decodedFragment,
+        cdcomment: date && decodedFragment,
       });
       location.assign(mw.config.get('wgServer') + url);
     }

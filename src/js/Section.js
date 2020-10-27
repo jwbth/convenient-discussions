@@ -10,6 +10,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
+import toc from './toc';
 import { copyLink } from './modal.js';
 import { dealWithLoadingBug, unique } from './util';
 import { editWatchedSections } from './modal';
@@ -23,7 +24,6 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { getWatchedSections, setWatchedSections } from './options';
-import { highlightWatchedSectionsInToc } from './toc';
 import { reloadPage } from './boot';
 
 /**
@@ -99,12 +99,12 @@ export default class Section extends SectionSkeleton {
        *
        * @type {boolean}
        */
-      this.actionable = (
+      this.isActionable = (
         cd.g.isPageActive &&
         !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
       );
 
-      if (this.actionable) {
+      if (this.isActionable) {
         this.extendSectionMenu(watchedSectionsRequest);
       }
     }
@@ -302,7 +302,7 @@ export default class Section extends SectionSkeleton {
       this.comments[0].isOpeningSection &&
       this.comments[0].openingSectionOfLevel === this.level &&
       (this.comments[0].isOwn || cd.settings.allowEditOthersComments) &&
-      this.comments[0].actionable
+      this.comments[0].isActionable
     ) {
       this.addMenuItem({
         label: cd.s('sm-editopeningcomment'),
@@ -314,14 +314,16 @@ export default class Section extends SectionSkeleton {
       });
     }
 
-    this.addMenuItem({
-      label: cd.s('sm-addsubsection'),
-      tooltip: cd.s('sm-addsubsection-tooltip'),
-      func: () => {
-        this.addSubsection();
-      },
-      class: 'cd-sectionLink-addSubsection',
-    });
+    if (this.level >= 2) {
+      this.addMenuItem({
+        label: cd.s('sm-addsubsection'),
+        tooltip: cd.s('sm-addsubsection-tooltip'),
+        func: () => {
+          this.addSubsection();
+        },
+        class: 'cd-sectionLink-addSubsection',
+      });
+    }
 
     if (this.level === 2) {
       this.addMenuItem({
@@ -857,11 +859,11 @@ export default class Section extends SectionSkeleton {
           align: 'top',
         });
 
-        this.movePanel.$element.append(
+        this.movePanel.$element.append([
           this.titleField.$element,
           $sectionCodeNote,
-          this.summaryEndingField.$element
-        );
+          this.summaryEndingField.$element,
+        ]);
 
         this.stackLayout.setItem(this.movePanel);
         this.titleInput.focus();
@@ -980,14 +982,14 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.isWatched = true;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
+            section.isWatched = true;
             section.updateWatchMenuItems();
           });
-          highlightWatchedSectionsInToc();
+          toc.highlightWatchedSections();
         },
         errorCallback: () => {
           if ($link) {
@@ -1018,14 +1020,14 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          this.isWatched = false;
           if ($link) {
             $link.removeClass('cd-sectionLink-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
+            section.isWatched = false;
             section.updateWatchMenuItems();
           });
-          highlightWatchedSectionsInToc();
+          toc.highlightWatchedSections();
         },
         errorCallback: () => {
           if ($link) {
@@ -1071,6 +1073,7 @@ export default class Section extends SectionSkeleton {
         bestMatch = match;
       }
     });
+
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -1463,11 +1466,15 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the parent section of the section if the section is lower than level 2.
+   * Get the parent section of the section if the section's level is lower than 2 (i.e. the number
+   * is higher).
    *
    * @returns {?Section}
    */
   getParent() {
+    if (this.level <= 2) {
+      return null;
+    }
     return (
       cd.sections
         .slice(0, this.id)
@@ -1485,11 +1492,19 @@ export default class Section extends SectionSkeleton {
    */
   getChildren(indirect = false) {
     const children = [];
+
+    let haveMetDirect = false;
     cd.sections
       .slice(this.id + 1)
       .some((section) => {
         if (section.level > this.level) {
-          if (indirect || section.level === this.level + 1) {
+          // If, say, a level 4 sections directly follows a level 2 section, it should be considered
+          // a child. This is why we need the haveMetDirect variable.
+          if (section.level === this.level + 1) {
+            haveMetDirect = true;
+          }
+
+          if (indirect || section.level === this.level + 1 || !haveMetDirect) {
             children.push(section);
           }
         } else {
@@ -1710,7 +1725,7 @@ export default class Section extends SectionSkeleton {
        */
       section.isLastSection = i === cd.sections.length - 1;
 
-      if (section.actionable) {
+      if (section.isActionable) {
         // If the next section of the same level has another nesting level (e.g., is inside a <div>
         // with a specific style), don't add the "Add subsection" button - it would appear in the
         // wrong place.
@@ -1755,7 +1770,7 @@ export default class Section extends SectionSkeleton {
     });
 
     cd.sections
-      .filter((section) => section.actionable && section.level === 2)
+      .filter((section) => section.isActionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
         const subsections = section.getChildren(true);
@@ -1769,13 +1784,21 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web worker
+   * so its constuctor is lost.)
+   *
+   * @typedef {object} CommentSkeletonLike
+   */
+
+  /**
    * Add new comments notifications to the end of each updated section.
    *
-   * @param {CommentSkeleton[]} newComments
+   * @param {CommentSkeletonLike[]} newComments
    */
   static addNewCommentsNotifications(newComments) {
     $('.cd-refreshButtonContainer').remove();
     newComments
+      .filter((comment) => comment.section)
       .map((comment) => comment.section.anchor)
       .filter(unique)
       .forEach((anchor) => {
@@ -1786,13 +1809,22 @@ export default class Section extends SectionSkeleton {
         const authors = sectionNewComments
           .map((comment) => comment.author)
           .filter(unique);
+        const genders = authors.map((author) => author.getGender());
+        let commonGender;
+        if (genders.every((gender) => gender === 'female')) {
+          commonGender = 'female';
+        } else if (genders.every((gender) => gender !== 'female')) {
+          commonGender = 'male';
+        } else {
+          commonGender = 'unknown';
+        }
         const button = new OO.ui.ButtonWidget({
           label: cd.s(
             'section-newcomments',
             sectionNewComments.length,
             authors.length,
             authors.map((user) => user.name).join(', '),
-            authors[0]
+            commonGender
           ),
           framed: false,
           classes: ['cd-button', 'cd-sectionButton'],

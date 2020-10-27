@@ -59,7 +59,7 @@ export default class SectionSkeleton {
       .join('')
       .trim();
 
-    const levelMatch = headingElement.tagName.match(/^H([2-6])$/);
+    const levelMatch = headingElement.tagName.match(/^H([1-6])$/);
 
     /**
      * Section level. A level is a number representing the number of `=` characters in the section
@@ -98,7 +98,7 @@ export default class SectionSkeleton {
     while (treeWalker.nextSibling() && !levelRegexp.test(treeWalker.currentNode.tagName)) {
       if (
         this.lastElementInFirstChunk === undefined &&
-        /^H[3-6]$/.test(treeWalker.currentNode.tagName)
+        /^H[2-6]$/.test(treeWalker.currentNode.tagName)
       ) {
         hasSubsections = true;
         this.lastElementInFirstChunk = elements[elements.length - 1];
@@ -157,6 +157,8 @@ export default class SectionSkeleton {
         ));
         this.commentsInFirstChunk = this.comments.slice(0, endIndex || 0);
       }
+
+      this.comments[0].followsHeading = true;
     }
 
     /**

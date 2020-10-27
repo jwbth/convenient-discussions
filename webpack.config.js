@@ -14,7 +14,7 @@ const getUrl = require('./misc/util.js').getUrl;
 const lang = process.env.npm_config_lang || 'ru';
 const project = process.env.npm_config_project || 'w';
 const snippet = Boolean(argv.snippet || process.env.npm_config_snippet);
-const dev = Boolean(process.env.npm_config_dev);
+const dev = Boolean(argv.dev || process.env.npm_config_dev);
 
 const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
 const fullCode = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;

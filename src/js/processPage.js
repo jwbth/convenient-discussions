@@ -14,6 +14,8 @@ import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
+import toc from './toc';
+import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   addPreventUnloadCondition,
@@ -26,9 +28,8 @@ import { areObjectsEqual, isInline, restoreScrollPosition } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
-import { highlightWatchedSectionsInToc } from './toc';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
-import { setSettings } from './options';
+import { setSettings, setVisits } from './options';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
@@ -167,6 +168,10 @@ function processSections(parser, watchedSectionsRequest) {
 
   Section.adjustSections();
 
+  watchedSectionsRequest.then(() => {
+    toc.highlightWatchedSections();
+  });
+
   /**
    * The script has processed the sections.
    *
@@ -208,6 +213,9 @@ function connectToAddTopicLinks() {
       if ($button.is('a')) {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
+        const pageName = query.title;
+        const page = new Page(pageName);
+        if (page.name !== cd.g.CURRENT_PAGE.name) return;
         preloadConfig = {
           editIntro: query.editintro,
           commentTemplate: query.preload,
@@ -280,19 +288,29 @@ function connectToCommentLinks($content) {
       e.preventDefault();
       const comment = Comment.getCommentByAnchor($(this).attr('href').slice(1));
       if (comment) {
-        comment.scrollToAndHighlightTarget();
+        comment.scrollToAndHighlightTarget(true, true);
       }
     });
 }
 
 /**
- * Perform fragment-related tasks, as well as comment anchor-related ones.
+ * Highlight comments of the current user.
  *
- * @param {string} keptCommentAnchor
- * @param {string} keptSectionAnchor
  * @private
  */
-async function processFragment(keptCommentAnchor, keptSectionAnchor) {
+function highlightOwnComments() {
+  if (!cd.settings.highlightOwnComments) return;
+
+  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
+}
+
+/**
+ * Perform fragment-related tasks, as well as comment anchor-related ones.
+ *
+ * @param {object} keptData
+ * @private
+ */
+async function processFragment(keptData) {
   let fragment;
   let decodedFragment;
   let escapedFragment;
@@ -311,7 +329,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       commentAnchor = decodedFragment;
     }
   } else {
-    commentAnchor = keptCommentAnchor;
+    commentAnchor = keptData.commentAnchor;
   }
 
   let date;
@@ -321,7 +339,7 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getCommentByAnchor(commentAnchor);
 
-    if (!keptCommentAnchor && !comment) {
+    if (!keptData.commentAnchor && !comment) {
       let commentAnchorToCheck;
       // There can be a time difference between the time we know (taken from the watchlist) and the
       // time on the page. We take it to be not higher than 5 minutes for the watchlist.
@@ -336,14 +354,17 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.
       setTimeout(() => {
-        comment.scrollToAndHighlightTarget(false);
+        comment.scrollToAndHighlightTarget(false, keptData.pushState);
       });
     }
   }
 
-  if (keptSectionAnchor) {
-    const section = Section.getSectionByAnchor(keptSectionAnchor);
+  if (keptData.sectionAnchor) {
+    const section = Section.getSectionByAnchor(keptData.sectionAnchor);
     if (section) {
+      if (keptData.pushState) {
+        history.pushState(history.state, '', '#' + section.anchor);
+      }
       section.$elements.first().cdScrollTo('top', false);
     }
   }
@@ -368,14 +389,75 @@ async function processFragment(keptCommentAnchor, keptSectionAnchor) {
 }
 
 /**
- * Highlight comments of the current user.
+ * Highlight new comments and update the navigation panel. A promise obtained from {@link
+ * module:options.getVisits} should be provided.
  *
- * @private
+ * @param {Promise} visitsRequest
+ * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
+ * @fires newCommentsHighlighted
  */
-function highlightOwnComments() {
-  if (!cd.settings.highlightOwnComments) return;
+async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
+  let visits;
+  let thisPageVisits;
+  try {
+    ({ visits, thisPageVisits } = await visitsRequest);
+  } catch (e) {
+    console.warn('Couldn\'t load the settings from the server.', e);
+    navPanel.fill();
+    return;
+  }
 
-  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
+  // These variables are not used anywhere in the script but can be helpful for testing purposes.
+  cd.g.visits = visits;
+  cd.g.thisPageVisits = thisPageVisits;
+
+  const currentUnixTime = Math.floor(Date.now() / 1000);
+
+  // Cleanup
+  for (let i = thisPageVisits.length - 1; i >= 0; i--) {
+    if (thisPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL) {
+      thisPageVisits.splice(0, i);
+      break;
+    }
+  }
+
+  if (thisPageVisits.length) {
+    cd.comments.forEach((comment) => {
+      comment.newness = null;
+
+      if (!comment.date) return;
+
+      const isUnseen = memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor);
+      const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
+      if (commentUnixTime > thisPageVisits[0]) {
+        comment.newness = (
+          (commentUnixTime > thisPageVisits[thisPageVisits.length - 1] && !comment.isOwn) ||
+          isUnseen
+        ) ?
+          'unseen' :
+          'new';
+      }
+    });
+
+    Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.newness));
+    const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
+    toc.addNewComments(Comment.groupBySection(unseenComments));
+  }
+
+  thisPageVisits.push(String(currentUnixTime));
+
+  setVisits(visits);
+
+  navPanel.fill();
+  navPanel.registerSeenComments();
+
+  /**
+   * New comments have been highlighted.
+   *
+   * @event newCommentsHighlighted
+   * @type {module:cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
 }
 
 /**
@@ -462,21 +544,27 @@ function debugLog() {
 }
 
 /**
+ * @typedef {object} KeptData
+ * @property {string} [commentAnchor] Comment anchor to scroll to.
+ * @property {string} [sectionAnchor] Section anchor to scroll to.
+ * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
+ *   anchor to it if it's specified.
+ * @property {boolean} [wasPageCreated] Whether the page was created while it was in the
+ *   previous state. Affects navigation panel mounting and certain key press handlers adding.
+ * @property {number} [scrollPosition] Page Y offset.
+ * @property {object[]} [unseenCommentAnchors] Anchors of unseen comments on this page.
+ * @property {string} [justWatchedSection] Section just watched so that there could be not
+ *    enough time for it to be saved to the server.
+ * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
+ *    enough time for it to be saved to the server.
+ * @property {Promise} [messagesRequest] Promise returned by {@link
+ *   module:dateFormat.loadData}.
+ */
+
+/**
  * Process the current web page.
  *
- * @param {object} [keptData={}] Data passed from the previous page state or the main module.
- * @param {string} [keptData.commentAnchor] Comment anchor to scroll to.
- * @param {string} [keptData.sectionAnchor] Section anchor to scroll to.
- * @param {boolean} [keptData.wasPageCreated] Whether the page was created while it was in the
- *   previous state. Affects navigation panel mounting and certain key press handlers adding.
- * @param {number} [keptData.scrollPosition] Page Y offset.
- * @param {object[]} [keptData.unseenCommentAnchors] Anchors of unseen comments on this page.
- * @param {string} [keptData.justWatchedSection] Section just watched so that there could be not
- *    enough time for it to be saved to the server.
- * @param {string} [keptData.justUnwatchedSection] Section just unwatched so that there could be not
- *    enough time for it to be saved to the server.
- * @param {Promise} [keptData.messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadData}.
+ * @param {KeptData} [keptData={}] Data passed from the previous page state or the main module.
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
@@ -516,14 +604,9 @@ export default async function processPage(keptData = {}) {
   let watchedSectionsRequest;
   if (mw.config.get('wgArticleId')) {
     watchedSectionsRequest = getWatchedSections(true, keptData);
-    watchedSectionsRequest.then(
-      () => {
-        highlightWatchedSectionsInToc();
-      },
-      (e) => {
-        console.warn('Couldn\'t load the settings from the server.', e);
-      }
-    );
+    watchedSectionsRequest.catch((e) => {
+      console.warn('Couldn\'t load the settings from the server.', e);
+    });
   }
 
   let visitsRequest;
@@ -587,20 +670,19 @@ export default async function processPage(keptData = {}) {
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
   if (firstVisibleElementData) {
-    window.scrollTo(
-      0,
-      (
-        window.pageYOffset + firstVisibleElementData.element.getBoundingClientRect().top -
-        firstVisibleElementData.top
-      )
+    const y = (
+      window.pageYOffset +
+      firstVisibleElementData.element.getBoundingClientRect().top -
+      firstVisibleElementData.top
     );
+    window.scrollTo(0, y);
   } else {
     restoreScrollPosition();
   }
 
   highlightOwnComments();
 
-  processFragment(keptData.commentAnchor, keptData.sectionAnchor);
+  processFragment(keptData);
 
   if (cd.g.isPageActive) {
     if (cd.g.firstRun || keptData.wasPageCreated) {
@@ -608,9 +690,10 @@ export default async function processPage(keptData = {}) {
     } else {
       navPanel.reset();
     }
+    updateChecker.init();
 
     // New comments highlighting
-    navPanel.processVisits(visitsRequest, keptData.unseenCommentAnchors);
+    processVisits(visitsRequest, keptData.unseenCommentAnchors);
   }
 
   if (cd.g.isPageActive || isEmptyPage) {
@@ -657,21 +740,17 @@ export default async function processPage(keptData = {}) {
       commentLayers.redrawIfNecessary();
     }, 1000);
 
-    // Mutation observer. Delay for 500ms (arbitrary value) to avoid firing too many mutation events
-    // while the script finishes to execute.
-    setTimeout(() => {
-      const observer = new MutationObserver((records) => {
-        const areLayers = records
-          .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (areLayers) return;
-        commentLayers.redrawIfNecessary();
-      });
-      observer.observe(cd.g.$content.get(0), {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-    }, 500);
+    const observer = new MutationObserver((records) => {
+      const areLayers = records
+        .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
+      if (areLayers) return;
+      commentLayers.redrawIfNecessary();
+    });
+    observer.observe(cd.g.$content.get(0), {
+      attributes: true,
+      childList: true,
+      subtree: true,
+    });
   }
 
   let alwaysConfirmLeavingPage = false;

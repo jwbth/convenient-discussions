@@ -263,7 +263,7 @@ export default class Parser {
                 }
               }
             } else {
-              const links = Array.from(node.getElementsByTagName('a'));
+              const links = Array.from(node.getElementsByTagName('a')).reverse();
               links.some((link) => {
                 const userName = getUserNameFromLink(link);
                 if (userName) {
@@ -374,8 +374,15 @@ export default class Parser {
     // As an optimization, avoid adding every text node of the comment to the array of its parts if
     // possible. Add their common container instead.
     if (
-      firstForeignComponentAfter &&
-      signatureElement.parentNode.contains(firstForeignComponentAfter)
+      (
+        firstForeignComponentAfter &&
+        signatureElement.parentNode.contains(firstForeignComponentAfter)
+      ) ||
+
+      // Cases when the comment has no wrapper that contains only that comment (for example,
+      // https://ru.wikipedia.org/wiki/Википедия:Форум/Технический#202010140847_AndreiK). The second
+      // parameter of getElementsByClassName() is an optimization for the worker context.
+      signatureElement.parentNode.getElementsByClassName('cd-signature', 2).length > 1
     ) {
       // Collect inline parts after the signature
       treeWalker.currentNode = signatureElement;
@@ -528,7 +535,9 @@ export default class Parser {
 
         isHeading = /^H[1-6]$/.test(node.tagName);
         hasCurrentSignature = node.contains(signatureElement);
-        // The second parameter of getElementsByClassName is an optimization for the worker context.
+
+        // The second parameter of getElementsByClassName() is an optimization for the worker
+        // context.
         const signaturesCount = (
           node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length
         );
@@ -802,6 +811,7 @@ export default class Parser {
   // The worker context doesn't support .querySelector(), so we have to use .getElementsByTagName().
   findHeadings() {
     const headings = [
+      ...cd.g.rootElement.getElementsByTagName('h1'),
       ...cd.g.rootElement.getElementsByTagName('h2'),
       ...cd.g.rootElement.getElementsByTagName('h3'),
       ...cd.g.rootElement.getElementsByTagName('h4'),

@@ -159,7 +159,7 @@ function switchInteresting() {
 }
 
 /**
- * Add watchlist menu (a fieldset with buttons).
+ * Add watchlist menu (a block with buttons).
  *
  * @private
  */
@@ -171,14 +171,13 @@ function addWatchlistMenu() {
     }
   });
 
-  const $menu = $('<fieldset>').addClass('cd-watchlistMenu');
-  const $legend = $('<legend>')
-    .addClass('cd-watchlistMenu-legend')
-    .appendTo($menu);
+  const $menu = $('<div>').addClass('cd-watchlistMenu');
   $('<a>')
     .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
+    .attr('target', '_blank')
+    .addClass('cd-watchlistMenu-scriptPageLink')
     .text(cd.s('script-name-short'))
-    .appendTo($legend);
+    .appendTo($menu);
 
   switchInterestingButton = new OO.ui.ButtonWidget({
     framed: false,
@@ -628,8 +627,7 @@ async function processDiff() {
         wrapper.lastChild.lastChild.href = href;
         wrapper.onclick = function (e) {
           e.preventDefault();
-          history.pushState(history.state, '', href);
-          comment.scrollToAndHighlightTarget(false);
+          comment.scrollToAndHighlightTarget(false, true);
         };
 
         const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');

@@ -4,8 +4,6 @@
  * @module app
  */
 
-import { create as nanoCssCreate } from 'nano-css';
-
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
@@ -27,7 +25,6 @@ import {
   setLoadingOverlay,
 } from './boot';
 import { loadData } from './dateFormat';
-import { processPageInBackground } from './navPanel';
 import { setVisits } from './options';
 
 let config;
@@ -136,8 +133,8 @@ function mws(...args) {
  *
  * @private
  */
-function addCommentLinksOnSpecialSearch() {
-  const [, commentAnchor] = location.search.match(/[?&]cdComment=([^&]+)(?:&|$)/) || [];
+function addCommentLinksToSpecialSearch() {
+  const [, commentAnchor] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
   if (commentAnchor) {
     mw.loader.using('mediawiki.api').then(
       async () => {
@@ -178,7 +175,7 @@ function addCommentLinksOnSpecialSearch() {
 function addFooterLink(enable) {
   if (cd.g.CURRENT_NAMESPACE_NUMBER === -1) return;
   const uri = new mw.Uri();
-  uri.query.cdTalkPage = enable ? '1' : '0';
+  uri.query.cdtalkpage = enable ? '1' : '0';
   const $li = $('<li>').attr('id', enable ? 'footer-places-enablecd' : 'footer-places-disablecd');
   $('<a>')
     .attr('href', uri.toString())
@@ -254,12 +251,12 @@ function go() {
 
   cd.g.$content = $('#mw-content-text');
 
-  const enabledInQuery = /[?&]cdTalkPage=(1|true|yes|y)(?=&|$)/.test(location.search);
+  const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
   if (mw.config.get('wgIsArticle')) {
     if (
-      !/[?&]cdTalkPage=(0|false|no|n)(?=&|$)/.test(location.search) &&
+      !/[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search) &&
       (!cd.g.$content.find('.cd-notTalkPage').length || enabledInQuery) &&
       (
         isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
@@ -275,15 +272,6 @@ function go() {
       )
     ) {
       cd.g.firstRun = true;
-
-      cd.g.nanoCss = nanoCssCreate();
-      cd.g.nanoCss.put('.cd-loadingPopup', {
-        width: cd.config.logoWidth,
-      });
-      cd.g.nanoCss.put('.cd-loadingPopup-logo', {
-        width: cd.config.logoWidth,
-        height: cd.config.logoHeight,
-      });
 
       setLoadingOverlay();
 
@@ -423,7 +411,7 @@ function go() {
   }
 
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
-    addCommentLinksOnSpecialSearch();
+    addCommentLinksToSpecialSearch();
   }
 }
 
@@ -587,9 +575,6 @@ async function app() {
    * @memberof module:cd~convenientDiscussions.util
    */
   cd.util.setVisits = setVisits;
-
-  // Useful for testing
-  cd.g.processPageInBackground = processPageInBackground;
 
   cd.debug.init();
   cd.debug.startTimer('total time');

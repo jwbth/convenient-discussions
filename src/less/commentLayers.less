@@ -25,6 +25,7 @@
   display: none;
   pointer-events: none;
   justify-content: flex-end;
+  line-height: 1.357143em;
 
   &-focused {
     display: flex;
@@ -35,10 +36,6 @@
     z-index: 1;
     bottom: 0;
     font-size: 14px;
-
-    // At least, for the Timeless skin
-    line-height: normal;
-
     pointer-events: all;
     display: flex;
     flex-direction: row;
@@ -48,11 +45,8 @@
     width: 1.4em;
     display: inline-block;
 
-    // 1px is a compensation for 1px button borders.
-    padding: 0 1px 4px;
-
-    // As in OOUI buttons
-    line-height: 1.28571429em;
+    // 1px from the top and bottom is a compensation for 1px button borders.
+    padding: 1px 1px 2px;
 
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -61,7 +55,7 @@
 
   &-content {
     display: inline-flex;
-    padding: 0 0.5em 2px;
+    padding: 0 0.5em 1px;
     background-color: var(--cd-comment-underlay-focused-color);
     flex-direction: row;
 
@@ -77,6 +71,10 @@
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:active {
     background-color: transparent;
+  }
+
+  .oo-ui-buttonElement.oo-ui-labelElement > .oo-ui-buttonElement-button > .oo-ui-labelElement-label {
+    line-height: 1.357143em;
   }
 }
 

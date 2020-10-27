@@ -4,6 +4,8 @@
  * @module boot
  */
 
+import { create as nanoCssCreate } from 'nano-css';
+
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
@@ -12,8 +14,9 @@ import Section from './Section';
 import Worker from './worker-gate';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
-import navPanel, { updatePageTitle } from './navPanel';
+import navPanel from './navPanel';
 import processPage from './processPage';
+import updateChecker from './updateChecker';
 import {
   areObjectsEqual,
   caseInsensitiveFirstCharPattern,
@@ -63,7 +66,12 @@ export async function initSettings() {
 
     // If the user has never changed the insert buttons configuration, it should change with the
     // default configuration change.
-    areInsertButtonsAltered: false,
+    haveInsertButtonsBeenAltered: false,
+
+    // The order should coincide with the order of checkboxes in
+    // `SettingsDialog#autocompleteTypesMultiselect` in modal.js (otherwise the "Save" and "Reset"
+    // buttons in the settings dialog won't work properly.
+    autocompleteTypes: ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
     autopreview: true,
     desktopNotifications: 'unknown',
@@ -79,12 +87,13 @@ export async function initSettings() {
 
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
+    modifyToc: true,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
   };
 
-  cd.localSettingNames = ['areInsertButtonsAltered', 'insertButtons', 'signaturePrefix'];
+  cd.localSettingNames = ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'];
 
   const options = {
     [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
@@ -95,9 +104,9 @@ export async function initSettings() {
   cd.settingAliases = {
     allowEditOthersComments: ['allowEditOthersMsgs'],
     alwaysExpandAdvanced: ['alwaysExpandSettings'],
-    areInsertButtonsAltered: ['insertButtonsChanged'],
+    haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
     desktopNotifications: ['browserNotifications'],
-    signaturePrefix: ['mySignature', 'mySig'],
+    signaturePrefix: ['mySig', 'mySignature'],
   };
 
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
@@ -124,7 +133,7 @@ export async function initSettings() {
   }
 
   if (
-    !cd.settings.areInsertButtonsAltered &&
+    !cd.settings.haveInsertButtonsBeenAltered &&
     JSON.stringify(cd.settings.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
   ) {
     cd.settings.insertButtons = cd.config.defaultInsertButtons;
@@ -150,19 +159,17 @@ export async function initSettings() {
 export function initTalkPageCss() {
   // Set the transparent color for the "focused" color. The user may override the CSS variable value
   // in his personal styles, so we get the existing value first.
-  const focusedColor = window.getComputedStyle(document.documentElement)
-    .getPropertyValue('--cd-comment-underlay-focused-color');
+  const focusedColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
 
   // Vector, Monobook, Minerva
-  const bodyBackgroundColor = $('#content').length ?
-    window.getComputedStyle($('#content').get(0)).backgroundColor :
-    'white';
+  const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
-  document.documentElement.style.setProperty(
+  $(document.documentElement).css(
     '--cd-comment-underlay-focused-transparent-color',
     transparentize(focusedColor || cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
   );
 
+  cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-underlay-focused-color': cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR,
     '--cd-comment-underlay-target-color': cd.g.COMMENT_UNDERLAY_TARGET_COLOR,
@@ -176,7 +183,7 @@ export function initTalkPageCss() {
     backgroundImage: 'linear-gradient(to right, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
-    backgroundColor: bodyBackgroundColor,
+    backgroundColor: contentBackgroundColor,
   });
 }
 
@@ -210,9 +217,14 @@ function initGlobals() {
 
   cd.g.SITE_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
 
+  cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
+
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
+
+  // Useful for testing
+  cd.g.processPageInBackground = updateChecker.processPage;
 }
 
 /**
@@ -626,10 +638,16 @@ export function setLoadingOverlay() {
   if (isShowLoadingOverlaySettingOff()) return;
   if (!$loadingPopup) {
     $loadingPopup = $('<div>').addClass('cd-loadingPopup');
-    $('<img>')
+    const $logoContainer = $('<div>')
       .addClass('cd-loadingPopup-logo')
-      .attr('src', cd.config.logoDataUrl)
       .appendTo($loadingPopup);
+    $('<div>')
+      .addClass('cd-loadingPopup-logo-partBackground')
+      .css('background-color', $(document.body).css('background-color'))
+      .appendTo($logoContainer);
+    $('<img>')
+      .attr('src', 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADcAAAA3CAYAAACo29JGAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAewQAAHsEBw2lUUwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAK7SURBVGiB3Zq/axRBFMc/60VioQgW1yjEiwa0tdXiCkH9AwLaKCLY+Aek9CxUbGw9/wMbrYQgCIrEpEgUAimNmCAqapWAGL2wFrPr7R374739kZ3ZL7ziuHlv3mdndufN7MJQHaAPbAIDwK/ZBkEufeA4BXQB2LIAKMm2ghzV6lgOFgXsaOEeW5C41PpauE0LkpbahgbMw9y4LY1TjdoFJqSNPcwVcUmetOE+ZeA/wAqwhBnxvPoBvAY+FoghknS+vwNORPymgVWFf2h3gf1BDA+4Buwo/EuH+x3AjGsG+KtI7HlCDvfqhFtK8V9RJHY9IcaZKuCk99xOyn+aDtPiaNVlCJxYqkmn5bGYDk6iq0OfJSR6XxEjDi5qI6WaNOgyMBUJnveB0mN0rbqK7r7NggsBOxq4cAQXgQWK7Ry+Ai+BDzl8JXA+QamWN8G6TAq3oV3EXdLRJsO1pEXoe2C9ykyAi8ChsoNK5vmLsjsd02lMxV/mPecjDOgDZ6tj46kij1BdSVtp0E/AkQrAbipyqAzOB9YYXciL6gZmG2UFnA/8BG4x3Lbk0TS6qbhncKF9Ax4Cl4DDGTAecAozUvMUq27EcGUeM3wHvmBG1g+AJoE2ZiofKKmf8JihC7xKayg+bBGoHZg1cq1C2dU0dg3us6axa3DzmsYuwW0DDyK/J7McXIHbBmYxVVKoGYlj3vWmahtg3g08Iv793BtBDHFnPcmV2iNdQbjguwj2C0HekkX8DkO482VnKtQE5ij/MnBO45hGf1vR1kYTgzUGrhcDBnZ85VAILgkMzKO57oRzw6WBgTnFrTvhXHBZYGAWUxc+6xiBk4CFsv2DnP/WwuxsNXDrwBPMzroNHMSdGtV6zaGYli5KCuisJIBOKwvQeaUBNkJJgI1RHGCjNA7YOEUBG6k5gvKriXoLeP8AAFe0oEsY7eMAAAAASUVORK5CYII=')
+      .appendTo($logoContainer);
     $(document.body).append($loadingPopup);
   } else {
     $loadingPopup.show();
@@ -707,7 +725,7 @@ export async function reloadPage(keptData = {}) {
   // Remove the fragment
   history.replaceState(history.state, '', location.pathname + location.search);
 
-  updatePageTitle(0, false);
+  updateChecker.updatePageTitle(0, false);
   updatePageContent(parseData.text, keptData);
 }
 
@@ -761,7 +779,7 @@ export function saveSession() {
         minor: commentForm.minorCheckbox?.isSelected(),
         watch: commentForm.watchCheckbox?.isSelected(),
         watchSection: commentForm.watchSectionCheckbox?.isSelected(),
-        noSignature: commentForm.noSignatureCheckbox?.isSelected(),
+        omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
         delete: commentForm.deleteCheckbox?.isSelected(),
         originalHeadline: commentForm.originalHeadline,
         originalComment: commentForm.originalComment,
@@ -790,7 +808,7 @@ function restoreCommentFormsFromData(commentFormsData) {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData?.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
-      if (comment?.actionable && !comment[`${property}Form`]) {
+      if (comment?.isActionable && !comment[`${property}Form`]) {
         try {
           comment[property](data);
           haveRestored = true;
@@ -807,7 +825,7 @@ function restoreCommentFormsFromData(commentFormsData) {
         firstCommentAnchor: data.targetData.firstCommentAnchor,
         index: data.targetData.index,
       });
-      if (section?.actionable && !section[`${property}Form`]) {
+      if (section?.isActionable && !section[`${property}Form`]) {
         try {
           section[property](data);
           haveRestored = true;
@@ -880,7 +898,7 @@ export function restoreCommentForms() {
       if (target instanceof Comment) {
         if (target.anchor) {
           const comment = Comment.getCommentByAnchor(target.anchor);
-          if (comment?.actionable) {
+          if (comment?.isActionable) {
             try {
               commentForm.setTargets(comment);
               comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
@@ -901,7 +919,7 @@ export function restoreCommentForms() {
           firstCommentAnchor: target.comments[0]?.anchor,
           index: target.id,
         });
-        if (section?.actionable) {
+        if (section?.isActionable) {
           try {
             commentForm.setTargets(section);
             section[CommentForm.modeToProperty(commentForm.mode)](commentForm);

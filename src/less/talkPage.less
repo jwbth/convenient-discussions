@@ -45,28 +45,70 @@ span.cd-show {
 
 .cd-loadingPopup {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 1.5em;
+  bottom: 0;
+  width: 10em;
 
   // z-index of OOUI windows + 10
   z-index: 111;
+}
 
-  margin: 0 auto;
-  padding: 17px 17px 11px 17px;
-  background-color: #fff;
-  border: 1px solid #c8ccd1;
+.sitedir-ltr .cd-loadingPopup {
+  left: 0;
+}
+
+.sitedir-rtl .cd-loadingPopup {
+  right: 0;
+}
+
+@media screen and (min-width: 982px) {
+  .cd-loadingPopup {
+    width: 11em;
+  }
 }
 
 .cd-loadingPopup-logo {
   display: block;
-  margin: 0 auto;
+  margin: 0 auto 2em;
+  width: 55px;
+  position: relative;
 }
 
-.cd-toc-notLoadedComment {
-  color: #72777d;
+.cd-loadingPopup-logo-partBackground {
+  position: absolute;
+  left: 8px;
+  top: 6px;
+  width: 27px;
+  height: 21px;
+  z-index: -1;
+}
+
+.skin-vector-max-width .cd-loadingPopup {
+  width: 0;
+}
+
+.sitedir-ltr.skin-vector-max-width .cd-loadingPopup {
+  margin-left: 2em;
+}
+
+.sitedir-rtl.skin-vector-max-width .cd-loadingPopup {
+  margin-right: 2em;
 }
 
 .cd-toc-watched {
   font-weight: bold;
+}
+
+.cd-toc-notLoadedCommentList a,
+.cd-toc-notLoadedCommentList .cd-toc-bullet,
+.cd-toc-notLoadedCommentList .cd-toc-more,
+.cd-toc-notLoadedSection a {
+  color: #72777d;
+}
+
+.cd-toc-more {
+  cursor: help;
+}
+
+.cd-toc-hiddenTocNumber {
+  visibility: hidden;
 }

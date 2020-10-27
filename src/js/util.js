@@ -9,17 +9,18 @@ import CdError from './CdError';
 import cd from './cd';
 
 let keptScrollPosition = null;
+let keptTocHeight = null;
 
 /**
  * Callback for `Array#filter` to remove duplicated elements from an array.
  *
  * @param {*} item
- * @param {number} pos
+ * @param {number} i
  * @param {Array} arr
  * @returns {boolean}
  */
-export function unique(item, pos, arr) {
-  return arr.indexOf(item) === pos;
+export function unique(item, i, arr) {
+  return arr.indexOf(item) === i;
 }
 
 /**
@@ -356,6 +357,10 @@ export function unhideText(text, hidden) {
  */
 export function saveScrollPosition() {
   keptScrollPosition = window.pageYOffset;
+  const $toc = $('.toc');
+  if ($toc.length && window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.height()) {
+    keptTocHeight = $toc.height();
+  }
 }
 
 /**
@@ -363,8 +368,14 @@ export function saveScrollPosition() {
  */
 export function restoreScrollPosition() {
   if (keptScrollPosition === null) return;
+
+  if (keptTocHeight) {
+    keptScrollPosition += ($('.toc').height() || 0) - keptTocHeight;
+  }
   window.scrollTo(0, keptScrollPosition);
+
   keptScrollPosition = null;
+  keptTocHeight = null;
 }
 
 /**
@@ -425,19 +436,23 @@ export function getTopAndBottomIncludingMargins(el) {
 /**
  * Whether two objects are the same by value. Doesn't handle complex cases.
  *
- * @param {object} object1
- * @param {object} object2
+ * @param {object} object1 First object.
+ * @param {object} object2 Second object.
+ * @param {boolean} [doesInclude=false] Test if all the values of the first object are contained in
+ *   the second object.
  * @returns {boolean}
  */
-export function areObjectsEqual(object1, object2) {
+export function areObjectsEqual(object1, object2, doesInclude = false) {
   const isMultipartObject = (val) => (
     val !== null &&
     typeof val === 'object' &&
     !(
       val instanceof RegExp ||
       val instanceof Date ||
-      val instanceof Node ||
-      val instanceof Worker
+
+      // This can be used in the worker context, where Node is an object and Worker is undefined.
+      (typeof Node === 'function' && val instanceof Node) ||
+      (typeof Worker === 'function' && val instanceof Worker)
     )
   );
   const toPrimitiveValue = (val) => (
@@ -454,7 +469,7 @@ export function areObjectsEqual(object1, object2) {
   const keys2 = Object.keys(object2);
 
   return (
-    keys1.length === keys2.length &&
+    (keys1.length === keys2.length || doesInclude) &&
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
 }
@@ -501,4 +516,61 @@ export function saveToLocalStorage(name, obj) {
  */
 export function removeDirMarks(text) {
   return text.replace(/[\u200E\u200F]/g, '');
+}
+
+/**
+ * @typedef {object} OoUiTextInputWidget
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+ */
+
+/**
+ * Replace the selected text (if any) in an input (input or textarea) with the provided text and
+ * keep the undo/redo functionality in browsers that support it (Chrome does, Firefox doesn't:
+ * https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
+ *
+ * @param {OoUiTextInputWidget} input Input to set replace the selection in.
+ * @param {string} text Text to replace the selection with.
+ */
+export function insertText(input, text) {
+  input.focus();
+  if (!document.execCommand('insertText', false, text)) {
+    input.insertContent(text);
+  }
+}
+
+/**
+ * Filter out values of an object that can't be safely passed to worker (see {@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}}).
+ *
+ * @param {object} obj
+ * @param {Array} allowedFuncNames Names of the properties that should be passed to the worker
+ *   despite their values are functions (they are passed in a stringified form).
+ * @returns {object}
+ * @private
+ */
+export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
+  const newObj = Object.assign({}, obj);
+  Object.keys(newObj).forEach((key) => {
+    const val = newObj[key];
+    if (
+      typeof val === 'object' &&
+      val !== null &&
+      !(val instanceof RegExp || val instanceof Date)
+    ) {
+      try {
+        if (!areObjectsEqual(val, JSON.parse(JSON.stringify(val)))) {
+          delete newObj[key];
+        }
+      } catch (e) {
+        delete newObj[key];
+      }
+    } else if (typeof val === 'function') {
+      if (allowedFuncNames.includes(key)) {
+        newObj[key] = val.toString();
+      } else {
+        delete newObj[key];
+      }
+    }
+  });
+  return newObj;
 }

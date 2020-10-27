@@ -65,7 +65,7 @@ export async function parseCode(code, options) {
   };
   return cd.g.api.post(Object.assign({}, defaultOptions, options)).then(
     (resp) => {
-      const html = resp?.parse?.text;
+      const html = resp.parse?.text;
       if (html) {
         mw.loader.load(resp.parse.modules);
         mw.loader.load(resp.parse.modulestyles);
@@ -111,7 +111,7 @@ export function getUserInfo(reuse = false) {
     formatversion: 2,
   }).then(
     (resp) => {
-      const userinfo = resp?.query?.userinfo;
+      const userinfo = resp.query?.userinfo;
       const options = userinfo?.options;
       const rights = userinfo?.rights;
       if (!options || !rights) {
@@ -194,7 +194,7 @@ export async function getPageTitles(pageIds) {
       });
     }
 
-    const query = resp?.query;
+    const query = resp.query;
     const thisPages = query?.pages;
     if (!thisPages) {
       throw new CdError({
@@ -238,7 +238,7 @@ export async function getPageIds(pageTitles) {
       });
     }
 
-    const query = resp?.query;
+    const query = resp.query;
     const thisPages = query?.pages;
     if (!thisPages) {
       throw new CdError({
@@ -342,7 +342,7 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
     };
     const resp = await (noTimers ? makeRequestNoTimers(params) : cd.g.api.post(params))
       .catch(handleApiReject);
-    const users = resp?.query?.users;
+    const users = resp.query?.users;
     if (!users) {
       throw new CdError({
         type: 'api',
@@ -385,7 +385,7 @@ export function getRelevantUserNames(text) {
           formatversion: 2,
         }).then(
           (resp) => {
-            const users = resp?.[1]
+            const users = resp[1]
               ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
               .filter(defined)
               .filter((name) => !name.includes('/'));
@@ -446,7 +446,7 @@ export function getRelevantPageNames(text) {
         }).then(
           (resp) => {
             const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const pages = resp?.[1]?.map((name) => (
+            const pages = resp[1]?.map((name) => (
               name
                 .replace(regexp, () => text[0])
                 .replace(/^/, colonPrefix ? ':' : '')
@@ -503,7 +503,7 @@ export function getRelevantTemplateNames(text) {
         }).then(
           (resp) => {
             const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const templates = resp?.[1]
+            const templates = resp[1]
               ?.filter((name) => !name.endsWith('/doc'))
               .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
               .map((name) => name.replace(regexp, () => text[0]));

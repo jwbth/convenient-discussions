@@ -40,7 +40,6 @@ class Tribute {
     containerClass = "tribute-container",
     itemClass = "",
     trigger = "@",
-    autocompleteSeparator = null,
     selectTemplate = null,
     menuItemTemplate = null,
     lookup = "key",
@@ -57,7 +56,6 @@ class Tribute {
     menuShowMinLength = 0,
     isRtl = false
   }) {
-    this.autocompleteSeparator = autocompleteSeparator;
     this.menuSelected = 0;
     this.current = {};
     this.inputEvent = false;
@@ -134,7 +132,7 @@ class Tribute {
       this.collection = collection.map(item => {
         return {
           trigger: item.trigger || trigger,
-          keepTextAfter: item.keepTextAfter || null,
+          cutTextAfter: item.cutTextAfter || null,
           selectClass: item.selectClass || selectClass,
           containerClass: item.containerClass || containerClass,
           itemClass: item.itemClass || itemClass,
@@ -406,12 +404,16 @@ class Tribute {
     }
 
     this.current.collection = this.collection[collectionIndex || 0];
+
+    // jwbth: Added this to avert a JS error.
+    this.current.trigger = this.current.collection.trigger;
+
     this.current.externalTrigger = true;
     this.current.element = element;
 
-    this.insertAtCaret(element, this.current.collection.trigger);
-
-    this.showMenuFor(element);
+    if (!this.insertAtCaret(element, this.current.collection.trigger)) {
+      this.showMenuFor(element);
+    }
   }
 
   // TODO: make sure this works for inputs/textareas
@@ -439,17 +441,25 @@ class Tribute {
     var scrollPos = textarea.scrollTop;
     var caretPos = textarea.selectionStart;
 
-    var front = textarea.value.substring(0, caretPos);
-    var back = textarea.value.substring(
-      textarea.selectionEnd,
-      textarea.value.length
-    );
-    textarea.value = front + text + back;
-    caretPos = caretPos + text.length;
-    textarea.selectionStart = caretPos;
-    textarea.selectionEnd = caretPos;
     textarea.focus();
+
+    // jwbth: Preserve the undo/redo functionality in browsers that support it (Chrome does, Firefox
+    // doesn't: https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
+    const insertedViaCommand = document.execCommand('insertText', false, text);
+    if (!insertedViaCommand) {
+      var front = textarea.value.substring(0, caretPos);
+      var back = textarea.value.substring(
+        textarea.selectionEnd,
+        textarea.value.length
+      );
+      textarea.value = front + text + back;
+      caretPos += text.length;
+      textarea.selectionStart = caretPos;
+      textarea.selectionEnd = caretPos;
+    }
     textarea.scrollTop = scrollPos;
+
+    return insertedViaCommand;
   }
 
   hideMenu() {

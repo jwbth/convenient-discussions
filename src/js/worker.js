@@ -17,15 +17,10 @@ import cd from './cd';
 import debug from './debug';
 import g from './staticGlobals';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
+import { keepWorkerSafeValues } from './util';
 import { resetCommentAnchors } from './timestamp';
 
-self.cd = cd;
-cd.g = g;
-cd.debug = debug;
-cd.debug.init();
-
 let firstRun = true;
-
 const context = {
   CommentClass: CommentSkeleton,
   SectionClass: SectionSkeleton,
@@ -37,8 +32,12 @@ const context = {
     return elements[0] || null;
   },
 };
-
 let alarmTimeout;
+
+self.cd = cd;
+cd.g = g;
+cd.debug = debug;
+cd.debug.init();
 
 /**
  * Send a "wake up" message to the window after the specified interval.
@@ -107,17 +106,7 @@ function parse() {
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
       comment.toMe = comment.parent.isOwn;
-      delete comment.parent;
     }
-    delete comment.parser;
-    delete comment.elements;
-    delete comment.parts;
-    delete comment.highlightables;
-    delete comment.addAttributes;
-    delete comment.setLevels;
-    delete comment.getSection;
-    delete comment.cachedSection;
-    delete comment.getChildren;
   });
 }
 
@@ -151,7 +140,7 @@ function onMessageFromWindow(e) {
   const message = e.data;
 
   if (firstRun) {
-    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link from the file name and line number to open the source code in your debug tool.');
+    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.');
     firstRun = false;
   }
 
@@ -192,7 +181,8 @@ function onMessageFromWindow(e) {
 
     postMessage({
       type: 'parse',
-      comments: cd.comments,
+      comments: cd.comments.map(keepWorkerSafeValues),
+      sections: cd.sections.map(keepWorkerSafeValues),
     });
 
     cd.debug.stopTimer('worker operations');

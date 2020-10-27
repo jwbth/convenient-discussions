@@ -7,7 +7,14 @@
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { defined, firstCharToUpperCase, handleApiReject, removeDoubleSpaces, unique } from './util';
+import {
+  defined,
+  firstCharToUpperCase,
+  handleApiReject,
+  insertText,
+  removeDoubleSpaces,
+  unique,
+} from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -37,6 +44,11 @@ export default class Autocomplete {
    *   autocomplete.
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
+    types = types
+      // The 'mentions' type is needed in any case, as it can be triggered from the toolbar. When it
+      // is not, we will suppress it specifically.
+      .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions')
+
     const collections = this.getCollections(types, comments, defaultUserNames);
 
     require('../tribute/tribute.less');
@@ -84,15 +96,9 @@ export default class Autocomplete {
    * @private
    */
   getCollections(types, comments, defaultUserNames) {
-    const selectTemplate = (item, event) => {
+    const selectTemplate = (item) => {
       if (item) {
-        if (event.shiftKey && item.original.shift) {
-          return item.original.shift;
-        } else if (event.ctrlKey && item.original.ctrl) {
-          return item.original.ctrl;
-        } else {
-          return item.original.regular;
-        }
+        return item.original.transform(item.original.item);
       } else {
         return '';
       }
@@ -114,13 +120,8 @@ export default class Autocomplete {
             // The rest
             key = item;
           }
-          const regular = config.regular(item);
-          return {
-            key,
-            regular,
-            shift: config.shift ? config.shift(item) : regular,
-            ctrl: config.ctrl ? config.ctrl(item) : regular,
-          };
+          const transform = config.transform;
+          return { key, item, transform };
         })
     );
 
@@ -133,6 +134,13 @@ export default class Autocomplete {
         requireLeadingSpace: true,
         selectTemplate,
         values: async (text, callback) => {
+          if (
+            !cd.settings.autocompleteTypes.includes('mentions') &&
+            !this.tribute.current.externalTrigger
+          ) {
+            return;
+          }
+
           text = removeDoubleSpaces(text);
 
           if (!text.startsWith(this.mentions.snapshot)) {
@@ -182,6 +190,9 @@ export default class Autocomplete {
                 return;
               }
 
+              // Type "[[Text", then delete and type "<s" quickly.
+              if (!this.tribute.current || this.tribute.current.trigger !== '@') return;
+
               values = this.mentions.removeSelf(values);
               this.mentions.cache = values.slice();
 
@@ -200,7 +211,7 @@ export default class Autocomplete {
       },
       wikilinks: {
         trigger: '[[',
-        keepTextAfter: ']]',
+        cutTextAfter: ']]',
         searchOpts: { skip: true },
         selectTemplate,
         values: async (text, callback) => {
@@ -254,6 +265,9 @@ export default class Autocomplete {
                 return;
               }
 
+              // Type "[[Text", then delete and type "<s" quickly.
+              if (!this.tribute.current || this.tribute.current.trigger !== '[[') return;
+
               this.wikilinks.cache = values.slice();
 
               // Make the typed text always appear on the last, 10th place.
@@ -271,77 +285,88 @@ export default class Autocomplete {
       },
       templates: {
         trigger: '{{',
-        keepTextAfter: '}}',
+        cutTextAfter: '}}',
         searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
-            if (cd.settings.useTemplateData && event.shiftKey) {
+            if (cd.settings.useTemplateData && event.shiftKey && !event.altKey) {
               const input = this.tribute.current.element.cdInput;
 
-              input.setDisabled(true);
-              input.pushPending();
+              setTimeout(() => {
+                input.setDisabled(true);
+                input.pushPending();
 
-              cd.g.api.get({
-                action: 'templatedata',
-                titles: `Template:${item.original.key}`,
-                redirects: true,
-              })
-                .catch(handleApiReject)
-                .then(
-                  (resp) => {
-                    const pages = resp?.pages;
-
-                    let paramsString = '';
-                    let firstValueIndex = 0;
-                    Object.keys(pages).forEach((key) => {
-                      const template = pages[key];
-                      const params = template.params || [];
-                      const paramNames = template.paramOrder || Object.keys(params);
-                      paramNames
-                        .filter((param) => params[param].required || params[param].suggested)
-                        .forEach((param) => {
-                          if (template.format === 'block') {
-                            paramsString += `\n| ${param} = `;
-                          } else {
-                            if (isNaN(param)) {
-                              paramsString += `|${param}=`;
-                            } else {
-                              paramsString += `|`;
-                            }
-                          }
-                          if (!firstValueIndex) {
-                            firstValueIndex = paramsString.length;
-                          }
-                        });
-                      if (template.format === 'block' && paramsString) {
-                        paramsString += '\n';
+                cd.g.api.get({
+                  action: 'templatedata',
+                  titles: `Template:${item.original.key}`,
+                  redirects: true,
+                })
+                  .then(
+                    (resp) => {
+                      if (!resp.pages) {
+                        throw 'No data.';
+                      } else if (!Object.keys(resp.pages).length) {
+                        throw 'Template missing.';
+                      } else {
+                        return resp;
                       }
-                    });
+                    },
+                    handleApiReject
+                  )
+                  .then(
+                    (resp) => {
+                      const pages = resp.pages;
 
-                    const caretIndex = input.getRange().to;
-                    const value = input.getValue();
-                    input.setValue(
-                      value.slice(0, caretIndex - 1) +
-                      paramsString +
-                      value.slice(caretIndex)
-                    );
-                    input.selectRange(caretIndex + firstValueIndex - 1);
-                  },
-                  (e) => {
-                    mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
-                    console.warn(e);
-                  }
-                )
-                .always(() => {
-                  input.setDisabled(false);
-                  input.popPending();
-                  input.focus();
-                });
+                      let paramsString = '';
+                      let firstValueIndex = 0;
+                      Object.keys(pages).forEach((key) => {
+                        const template = pages[key];
+                        const params = template.params || [];
+                        const paramNames = template.paramOrder || Object.keys(params);
+                        paramNames
+                          .filter((param) => params[param].required || params[param].suggested)
+                          .forEach((param) => {
+                            if (template.format === 'block') {
+                              paramsString += `\n| ${param} = `;
+                            } else {
+                              if (isNaN(param)) {
+                                paramsString += `|${param}=`;
+                              } else {
+                                paramsString += `|`;
+                              }
+                            }
+                            if (!firstValueIndex) {
+                              firstValueIndex = paramsString.length;
+                            }
+                          });
+                        if (template.format === 'block' && paramsString) {
+                          paramsString += '\n';
+                        }
+                      });
+
+                      // Remove leading "|".
+                      paramsString = paramsString.slice(1);
+
+                      input.setDisabled(false);
+
+                      const caretIndex = input.getRange().to;
+                      insertText(input, paramsString);
+                      input.selectRange(caretIndex + firstValueIndex - 1);
+                    },
+                    (e) => {
+                      input.setDisabled(false);
+                      input.focus();
+                      mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
+                      console.warn(e);
+                    }
+                  )
+                  .always(() => {
+                    input.popPending();
+                  });
+              });
             }
 
-            return event.shiftKey && item.original.shift ?
-              item.original.shift :
-              item.original.regular;
+            return item.original.transform(item.original.item);
           } else {
             return '';
           }
@@ -388,6 +413,9 @@ export default class Autocomplete {
                 return;
               }
 
+              // Type "[[Text", then delete and type "<s" quickly.
+              if (!this.tribute.current || this.tribute.current.trigger !== '{{') return;
+
               this.templates.cache = values.slice();
 
               // Make the typed text always appear on the last, 10th place.
@@ -405,7 +433,7 @@ export default class Autocomplete {
       },
       tags: {
         trigger: '<',
-        keepTextAfter: '>',
+        cutTextAfter: '>',
         searchOpts: { skip: true },
         selectTemplate,
         values: (text, callback) => {
@@ -420,7 +448,7 @@ export default class Autocomplete {
       },
       commentLinks: {
         trigger: '[[#',
-        requireLeadingSpace: true,
+        cutTextAfter: ']]',
         selectTemplate,
         values: async (text, callback) => {
           if (!this.commentLinks.default) {
@@ -490,33 +518,21 @@ export default class Autocomplete {
     const config = {
       byText: {},
       cache: [],
-      regular: (item) => {
-        const name = item.trim();
-        const userNamespace = (
-          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
-          mw.config.get('wgFormattedNamespaces')[2]
-        );
-        return { value: `@[[${userNamespace}:${name}|${name}]]` };
-      },
-      shift: (item) => {
+      transform: (item) => {
         const name = item.trim();
         const userNamespace = (
           cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
           mw.config.get('wgFormattedNamespaces')[2]
         );
         return {
-          value: `@[[${userNamespace}:${name}|${name}]]`,
-          startOffset: `@[[${userNamespace}:${name}|`.length,
-          endOffset: 2,
+          start: `@[[${userNamespace}:${name}|`,
+          end: ']]',
+          content: name,
+          ctrlModify: (data) => {
+            data.end += cd.mws('colon-separator');
+            return data;
+          },
         };
-      },
-      ctrl: (item) => {
-        const name = item.trim();
-        const userNamespace = (
-          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
-          mw.config.get('wgFormattedNamespaces')[2]
-        );
-        return { value: `@[[${userNamespace}:${name}|${name}]]${cd.mws('colon-separator')}` };
       },
       removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
     };
@@ -535,16 +551,17 @@ export default class Autocomplete {
     return {
       byText: {},
       cache: [],
-      regular: (name) => {
-        name = name.trim();
-        return { value: `[[${name}]]` };
-      },
-      shift: (name) => {
+      transform: (name) => {
         name = name.trim();
         return {
-          value: `[[${name}|${name}]]`,
-          startOffset: `[[${name}|`.length,
-          endOffset: 2,
+          start: '[[' + name,
+          end: ']]',
+          name,
+          shiftModify: (data) => {
+            data.start += '|';
+            data.content = data.name;
+            return data;
+          },
         };
       },
     };
@@ -560,16 +577,16 @@ export default class Autocomplete {
     return {
       byText: {},
       cache: [],
-      regular: (name) => {
-        name = name.trim();
-        return { value: `{{${name}}}` };
-      },
-      shift: (name) => {
+      transform: (name) => {
         name = name.trim();
         return {
-          value: `{{${name}|}}`,
-          startOffset: `{{${name}|`.length,
-          endOffset: 2,
+          start: '{{' + name,
+          end: '}}',
+          name,
+          shiftModify: (data) => {
+            data.start += '|';
+            return data;
+          },
         };
       },
     };
@@ -586,8 +603,8 @@ export default class Autocomplete {
       default: [
         // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
         // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags. Deprecated
-        // tags are not included. An element can be an array of a string to display and a string to
-        // insert, with "+" in the place where to put the caret.
+        // tags are not included. An element can be an array of a string to display and strings to
+        // insert before and after the caret.
         'abbr',
         'b',
         'bdi',
@@ -597,7 +614,7 @@ export default class Autocomplete {
         'caption',
         'cite',
         'code',
-        ['codenowiki', '<code><nowiki>+</'.concat('nowiki></code>')],
+        ['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
         'data',
         'dd',
         'del',
@@ -667,16 +684,15 @@ export default class Autocomplete {
         'score',
         'section',
         'syntaxhighlight',
-        ['syntaxhighlight lang=""', '<syntaxhighlight lang="+"></syntaxhighlight>'],
+        ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '"></syntaxhighlight>'],
         'templatedata',
-        ['templatestyles', '<templatestyles src="+" />'],
+        ['templatestyles', '<templatestyles src="', '" />'],
         'timeline',
       ],
-      regular: (item) => ({
-        value: Array.isArray(item) ? item[1].replace(/\+/, '') : `<${item}></${item}>`,
-        endOffset: Array.isArray(item) ?
-          item[1].includes('+') ? item[1].length - 1 - item[1].indexOf('+') : 0 :
-          item.length + 3,
+      transform: (item) => ({
+        start: Array.isArray(item) ? item[1] : `<${item}>`,
+        end: Array.isArray(item) ? item[2] : `</${item}>`,
+        typeContent: true,
       }),
     };
     config.default.sort();
@@ -694,13 +710,10 @@ export default class Autocomplete {
   static getCommentLinksConfig(comments = []) {
     const config = {
       comments,
-      regular: ({ anchor, author, timestamp }) => ({
-        value: `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`
-      }),
-      shift: ({ anchor, author, timestamp }) => ({
-        value: `[[#${anchor}|${cd.s('cf-mentions-commentlinktext', author, timestamp)}]]`,
-        startOffset: `[[#${anchor}|`.length,
-        endOffset: 2,
+      transform: ({ anchor, author, timestamp }) => ({
+        start: `[[#${anchor}|`,
+        end: ']]',
+        content: cd.s('cf-mentions-commentlinktext', author, timestamp),
       }),
     };
 
