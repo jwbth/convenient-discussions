@@ -127,6 +127,7 @@ class TributeRange {
 
             if (originalEvent.altKey) {
                 data.content = ending
+                endPos += ending.length
                 ending = ''
             }
             let text = data.start + data.content + data.end
