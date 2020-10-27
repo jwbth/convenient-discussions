@@ -209,6 +209,9 @@ function connectToAddTopicLinks() {
       if ($button.is('a')) {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
+        const pageName = query.title;
+        const page = new Page(pageName);
+        if (page.name !== cd.g.CURRENT_PAGE.name) return;
         preloadConfig = {
           editIntro: query.editintro,
           commentTemplate: query.preload,
