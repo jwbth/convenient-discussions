@@ -43,7 +43,7 @@ export default class SectionSkeleton {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementsInHeadlinesClasses];
     const nodes = Array.from(this.headlineElement.childNodes).filter((node) => (
       node.nodeType !== Node.ELEMENT_NODE ||
-      !Array.from(node.classList).some((name) => classesToFilter.includes(name))
+      !classesToFilter.some((className) => node.classList.contains(className))
     ));
 
     /**
