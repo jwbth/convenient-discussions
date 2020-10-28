@@ -13,6 +13,8 @@ import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } from './util';
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
+let foreignComponentClasses;
+
 /**
  * Get the page name from a URL.
  *
@@ -99,6 +101,11 @@ export default class Parser {
    */
   constructor(context) {
     this.context = context;
+
+    foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
+    if (cd.g.specialElements.pageHasOutdents) {
+      foreignComponentClasses.push('outdent-template');
+    }
   }
 
   /**
@@ -511,7 +518,7 @@ export default class Parser {
       let hasForeignComponents = null;
       if (!isTextNode) {
         if (
-          node.classList.contains('cd-commentPart') ||
+          foreignComponentClasses.some((className) => node.classList.contains(className)) ||
           node.getAttribute('id') === 'toc' ||
           node.tagName === 'TD' ||
 
@@ -522,9 +529,8 @@ export default class Parser {
             this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
           ) ||
 
-          cd.g.specialElements.pageHasOutdents &&
           (
-            node.classList.contains('outdent-template') ||
+            cd.g.specialElements.pageHasOutdents &&
             this.context.getElementByClassName(node, 'outdent-template')
           ) ||
 
