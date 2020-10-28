@@ -1689,7 +1689,10 @@ export default class CommentForm {
       appendable = htmlOrJquery;
     } else {
       const $label = htmlOrJquery instanceof $ ? htmlOrJquery : cd.util.wrap(htmlOrJquery);
-      const classes = ['cd-message'].concat(name ? [`cd-message-${name}`] : []);
+      const classes = ['cd-message'];
+      if (name) {
+        classes.push(`cd-message-${name}`);
+      }
       const message = new OO.ui.MessageWidget({
         type,
         inline: true,

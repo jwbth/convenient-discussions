@@ -1369,9 +1369,11 @@ export default class Comment extends CommentSkeleton {
         .clone()
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
-      const selector = ['.cd-signature']
-        .concat(cd.config.unsignedClass ? [`.${cd.config.unsignedClass}`] : [])
-        .join(', ');
+      const classes = ['.cd-signature'];
+      if (cd.config.unsignedClass) {
+        classes.push(`.${cd.config.unsignedClass}`);
+      }
+      const selector = classes.join(', ');
       $dummy.find(selector).remove();
       let text = $dummy.cdGetText();
       if (cleanUp) {

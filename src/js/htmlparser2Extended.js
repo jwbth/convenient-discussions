@@ -267,6 +267,7 @@ Object.defineProperty(Element.prototype, 'classList', {
           if (!this._classList.movedFromClassAttr) {
             this._classList.moveFromClassAttr(classAttr);
           }
+
           // This can run tens of thousand times, so we microoptimize it (don't use template strings
           // and String#includes).
           const returnValue = (
