@@ -168,9 +168,11 @@ function processSections(parser, watchedSectionsRequest) {
 
   Section.adjustSections();
 
-  watchedSectionsRequest.then(() => {
-    toc.highlightWatchedSections();
-  });
+  if (watchedSectionsRequest) {
+    watchedSectionsRequest.then(() => {
+      toc.highlightWatchedSections();
+    });
+  }
 
   /**
    * The script has processed the sections.
