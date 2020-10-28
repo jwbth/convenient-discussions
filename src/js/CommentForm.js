@@ -2312,7 +2312,7 @@ export default class CommentForm {
    */
   async tryPrepareNewPageCode(action) {
     try {
-      await this.targetPage.getCode();
+      await this.targetPage.getCode(mw.config.get('wgArticleId') === 0);
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data);

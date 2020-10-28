@@ -196,12 +196,13 @@ export default class Page {
     const revision = page?.revisions?.[0];
     const content = revision?.slots?.main?.content;
 
-    if (!query || !page || !revision || content === undefined) {
+    if (!query || !page) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
+
     if (page.missing) {
       if (tolerateMissing) {
         Object.assign(this, {
@@ -221,6 +222,13 @@ export default class Page {
       throw new CdError({
         type: 'api',
         code: 'invalid',
+      });
+    }
+
+    if (!revision || content === undefined) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
       });
     }
 
