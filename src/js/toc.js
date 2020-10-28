@@ -76,15 +76,17 @@ export default {
       .find('li > a')
       .toArray()
       .map((el) => {
-        const headline = $(el).find('.toctext').text();
-        const $element = $(el).parent();
+        const $el = $(el);
+        const headline = $el.find('.toctext').text();
+        const anchor = $el.attr('href').slice(1);
+        const $element = $el.parent();
         let [, level] = $element.attr('class').match(/\btoclevel-(\d+)/);
         level = Number(level);
         const number = $element
           .children('a')
           .children('.tocnumber')
           .text();
-        return { headline, level, number, $element };
+        return { headline, anchor, level, number, $element };
       });
 
     /*
