@@ -14,7 +14,7 @@ The full set of the script features includes much more:
 * jumping to a specific comment from the watchlist and other pages that list revisions;
 * moving topics between talk pages;
 * autofilling the edit summary with the indication of the addressee of the comment;
-* saving comment drafts to restore the forms' content after unexpected events such as browser crashes, accidental jumps to a different page etc.;
+* saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
 * thanking for and copying links to edits that added comments;
 * slightly redesigned discussion threads that make it easier to follow which comment replies to which.
 
