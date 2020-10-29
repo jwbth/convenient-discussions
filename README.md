@@ -7,7 +7,7 @@
 The full set of the script features includes much more:
 * creating topics and subsections;
 * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
-* highlighting and navigating new comments;
+* highlighting and navigating new comments (via the navigation panel or the table of contents);
 * highlighting own comments;
 * desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in);
 * watching sections, which affects notifications and highlighting edits on pages that list revisions;
