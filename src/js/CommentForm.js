@@ -915,7 +915,14 @@ export default class CommentForm {
       });
     }
 
-    if (this.mode === 'edit' && !this.target.getChildren().length) {
+    if (
+      this.mode === 'edit' &&
+      (
+        this.target.isOpeningSection ?
+        this.targetSection.comments.length === 1 :
+        !this.target.getChildren().length
+      )
+    ) {
       const selected = dataToRestore ? dataToRestore.delete : false;
 
       /**
