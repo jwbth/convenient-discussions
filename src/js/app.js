@@ -239,7 +239,7 @@ function go() {
   cd.g.VISITS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
 
   // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-  const wsonEnding = location.host === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
+  const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
   cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-${wsonEnding}`;
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
@@ -423,7 +423,7 @@ function go() {
  */
 function getConfig() {
   return new Promise((resolve, reject) => {
-    if (configUrls[location.host]) {
+    if (configUrls[location.hostname]) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
       };
@@ -441,11 +441,11 @@ function getConfig() {
       };
 
       const url = IS_DEV ?
-        configUrls[location.host].replace(/.js/, '-dev.js') :
-        configUrls[location.host];
+        configUrls[location.hostname].replace(/.js/, '-dev.js') :
+        configUrls[location.hostname];
       getScript(url, () => {
         if (IS_DEV) {
-          getScript(configUrls[location.host], () => {
+          getScript(configUrls[location.hostname], () => {
             rejectWithMsg('Empty response.');
           });
         } else {
@@ -481,7 +481,7 @@ function getStrings() {
  */
 async function app() {
   // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
-  if (/(^|\.)m\./.test(location.host) || $('.flow-board-page').length) return;
+  if (/(^|\.)m\./.test(location.hostname) || $('.flow-board-page').length) return;
 
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');

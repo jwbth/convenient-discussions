@@ -406,7 +406,7 @@ export async function settingsDialog() {
       ],
       selected: settings.desktopNotifications,
       label: cd.s('sd-desktopnotifications'),
-      help: cd.s('sd-desktopnotifications-help', location.host),
+      help: cd.s('sd-desktopnotifications-help', location.hostname),
     });
 
     let defaultCommentLinkTypeHelp = (
