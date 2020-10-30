@@ -207,10 +207,10 @@ const navPanel = {
    */
   fill() {
     newCount = cd.comments.filter((comment) => comment.newness).length;
+    unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
     if (newCount) {
       this.$nextButton.show();
       this.$previousButton.show();
-      unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
       if (unseenCount) {
         this.updateFirstUnseenButton();
       }
