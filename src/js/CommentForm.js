@@ -144,10 +144,11 @@ export default class CommentForm {
       }
       parseCode(code, { title: cd.g.CURRENT_PAGE.name })
         .then((result) => {
+          const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
           this.$messageArea
             .append(result.html)
             .cdAddCloseButton()
-            .find('.cd-editnotice > a.new[title^="MediaWiki:Editnotice-"]')
+            .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
             .parent()
             .remove();
 
