@@ -212,7 +212,7 @@ export async function setSettings(settings) {
  */
 export async function getVisits(reuse = false) {
   const visits = await (
-    cd.g.firstRun && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?
+    cd.g.isFirstRun && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.visits)
   );
@@ -295,7 +295,7 @@ export async function setVisits(visits) {
  */
 export async function getWatchedSections(reuse = false, keptData = {}) {
   const watchedSections = await (
-    cd.g.firstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null ?
+    cd.g.isFirstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.watchedSections)
   );

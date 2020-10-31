@@ -370,7 +370,7 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
 });
 
 mw.hook('convenientDiscussions.pageReady').add(function () {
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     const generateEditCommonJsLink = function () {
       return mw.util.getUrl('User:' + cd.g.CURRENT_USER_NAME + '/common.js', { action: 'edit' });
     };

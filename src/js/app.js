@@ -272,7 +272,7 @@ function go() {
         enabledInQuery
       )
     ) {
-      cd.g.firstRun = true;
+      cd.g.isFirstRun = true;
 
       setLoadingOverlay();
 

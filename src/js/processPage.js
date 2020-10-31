@@ -64,7 +64,7 @@ async function prepare({ messagesRequest }) {
    */
   cd.sections = [];
 
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     await init({ messagesRequest });
   } else {
     resetCommentAnchors();
@@ -318,7 +318,7 @@ async function processFragment(keptData) {
   let escapedFragment;
   let escapedDecodedFragment;
   let commentAnchor;
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     fragment = location.hash.slice(1);
     try {
       decodedFragment = decodeURIComponent(fragment);
@@ -371,7 +371,7 @@ async function processFragment(keptData) {
     }
   }
 
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     const fragmentHasNoTarget = (
       decodedFragment &&
       !comment &&
@@ -587,13 +587,13 @@ function debugLog() {
  * @fires pageReady
  */
 export default async function processPage(keptData = {}) {
-  cd.debug.stopTimer(cd.g.firstRun ? 'loading data' : 'laying out HTML');
+  cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
   cd.debug.startTimer('preparations');
 
   await prepare(keptData);
 
   let firstVisibleElementData;
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     firstVisibleElementData = getFirstVisibleElementData();
   }
 
@@ -702,7 +702,7 @@ export default async function processPage(keptData = {}) {
   processFragment(keptData);
 
   if (cd.g.isPageActive) {
-    if (cd.g.firstRun || keptData.wasPageCreated) {
+    if (cd.g.isFirstRun || keptData.wasPageCreated) {
       navPanel.mount();
     } else {
       navPanel.reset();
@@ -725,7 +725,7 @@ export default async function processPage(keptData = {}) {
     restoreCommentForms();
   }
 
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
     $(document).on('mousemove mouseover', highlightFocused);
@@ -745,7 +745,7 @@ export default async function processPage(keptData = {}) {
     mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
   }
 
-  if ((cd.g.firstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
+  if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
     $(document)
       .on('keydown', globalKeyDownHandler)
       .on('scroll resize orientationchange', () => {
@@ -754,7 +754,7 @@ export default async function processPage(keptData = {}) {
       });
   }
 
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     // Mutation observer doesn't follow all possible cases (for example, initiated with adding new
     // CSS) of comment position changing unfortunately.
     setInterval(() => {
@@ -789,7 +789,7 @@ export default async function processPage(keptData = {}) {
     });
   }
 
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     confirmDesktopNotifications();
   }
 
@@ -803,7 +803,7 @@ export default async function processPage(keptData = {}) {
 
   removeLoadingOverlay();
 
-  cd.g.firstRun = false;
+  cd.g.isFirstRun = false;
 
   // The next line is needed to calculate the rendering time: it won't run until everything gets
   // rendered.

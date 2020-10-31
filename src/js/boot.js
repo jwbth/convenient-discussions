@@ -867,7 +867,7 @@ function restoreCommentFormsFromData(commentFormsData) {
  * Return saved comment forms to their places.
  */
 export function restoreCommentForms() {
-  if (cd.g.firstRun) {
+  if (cd.g.isFirstRun) {
     let dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms');
 
     // Corrupt data
