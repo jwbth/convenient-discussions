@@ -83,7 +83,7 @@ const navPanel = {
     /**
      * Navigation panel element.
      *
-     * @type {JQuery|undefined}
+     * @type {?(JQuery|undefined)}
      * @memberof module:navPanel
      */
     this.$element = $('<div>')
@@ -171,6 +171,15 @@ const navPanel = {
   },
 
   /**
+   * Remove the navigation panel.
+   */
+  unmount() {
+    this.$element.remove();
+    this.$element = null;
+    unseenCount = null;
+  },
+
+  /**
    * Check if the navigation panel is mounted. Is equivalent to checking the existence of {@link
    * module:navPanel.$element}, and for most of the practical purposes, does the same as the
    * `convenientDiscussions.g.isPageActive` check.
@@ -190,6 +199,7 @@ const navPanel = {
    */
   reset() {
     lastFirstUnseenCommentId = null;
+    unseenCount = null;
 
     this.$refreshButton
       .empty()
@@ -201,16 +211,16 @@ const navPanel = {
   },
 
   /**
-   * Count new and unseen comments on the page, and update the navigation panel to reflect that.
+   * Count the new and unseen comments on the page, and update the navigation panel to reflect that.
    *
    * @memberof module:navPanel
    */
   fill() {
     newCount = cd.comments.filter((comment) => comment.isNew).length;
-    unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
     if (newCount) {
       this.$nextButton.show();
       this.$previousButton.show();
+      unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
       if (unseenCount) {
         this.updateFirstUnseenButton();
       }
@@ -362,14 +372,7 @@ const navPanel = {
     // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
     // wait before running, otherwise comments may be registered as seen after a press of Page
     // Down/Page Up.
-    if (
-      !unseenCount ||
-      cd.g.dontHandleScroll ||
-      cd.g.autoScrollInProgress ||
-      !navPanel.isMounted()
-    ) {
-      return;
-    }
+    if (!unseenCount || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
 
     cd.g.dontHandleScroll = true;
 

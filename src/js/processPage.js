@@ -405,7 +405,6 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
     ({ visits, thisPageVisits } = await visitsRequest);
   } catch (e) {
     console.warn('Couldn\'t load the settings from the server.', e);
-    navPanel.fill();
     return;
   }
 
@@ -604,7 +603,8 @@ export default async function processPage(keptData = {}) {
   const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
-  // the user adds a topic to it, it will become active and get an ID.
+  // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
+  // rare occasion), an active page may become inactive if it becomes identified as an archive page.
   cd.g.isPageActive = !(
     isEmptyPage ||
     cd.g.CURRENT_PAGE.isArchivePage() ||
@@ -711,6 +711,10 @@ export default async function processPage(keptData = {}) {
 
     // New comments highlighting
     processVisits(visitsRequest, keptData.unseenCommentAnchors);
+  } else {
+    if (navPanel.isMounted()) {
+      navPanel.unmount();
+    }
   }
 
   if (cd.g.isPageActive || isEmptyPage) {
