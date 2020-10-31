@@ -1,4 +1,10 @@
-mw.loader.using(['mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
+console.log(`Collecting data for ${location.hostname}…`);
+
+mw.loader.using([
+  'mediawiki.util',
+  'mediawiki.ForeignApi',
+  'mediawiki.Title',
+]).then(async () => {
   const config = {
     messages: {},
   };
@@ -19,7 +25,10 @@ mw.loader.using(['mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
 
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
     'colon-separator',
+
+    'signature',
   ];
+
   for (let i = 0; i < messageNames.length; i += 50) {
     const nextNames = messageNames.slice(i, i + 50);
     const messages = await api.getMessages(nextNames, {
@@ -132,9 +141,77 @@ mw.loader.using(['mediawiki.ForeignApi', 'mediawiki.Title']).then(async () => {
     ]
   );
 
+  const signatureResp = await new mw.Api().post({
+    action: 'parse',
+    page: 'Mediawiki:Signature',
+    prop: ['text'],
+    formatversion: 2,
+  });
+  const parsedSignature = signatureResp && signatureResp.parse && signatureResp.parse.text;
+  const $signature = $(parsedSignature);
+  const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
+  if (signatureEnding) {
+    config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding));
+  }
+
   let output = JSON.stringify(config, null, '\t');
   output = output
     .replace(/'/g, "\\'")
-    .replace(/"/g, "'");
+    .replace(/"/g, "'")
+    .replace(
+      /'signatureEndingRegexp': \{\}/,
+      `'signatureEndingRegexp': ${config.signatureEndingRegexp}`
+    );
+
+  // When updating this code, update the code in buildConfigs.js as well.
+  output = `/**
+ * This configuration might get outdated as the script evolves, so it's best to keep it up to date
+ * by checking for the documentation updates from time to time. See the documentation at
+ * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
+ */
+
+// <nowiki>
+
+(function () {
+
+function unique(item, i, arr) {
+  return arr.indexOf(item) === i;
+}
+
+function getStrings() {
+  const requests = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
+    .filter(unique)
+    .filter(function (lang) {
+      return lang !== 'en';
+    })
+    .map((lang) => mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js&action=raw&ctype=text/javascript'));
+  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
+  return Promise.all(requests).catch(function () {});
+}
+
+window.convenientDiscussions = window.convenientDiscussions || {};
+if (convenientDiscussions.config) return;
+
+
+/* BEGINNING OF THE CONFIGURATION */
+
+convenientDiscussions.config = ${output};
+
+/* END OF THE CONFIGURATION */
+
+
+if (!convenientDiscussions.isRunning) {
+  convenientDiscussions.getStringsPromise = getStrings();
+  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript')
+    .catch(function (e) {
+      console.warn('Couldn\\'t load Convenient Discussions.', e);
+    });
+}
+
+}());
+
+// </nowiki>
+`;
+
   console.log(output);
 });
