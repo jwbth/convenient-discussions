@@ -309,7 +309,7 @@ export default class Comment extends CommentSkeleton {
    */
   createLayers() {
     this.underlay = this.elementPrototypes.underlay.cloneNode(true);
-    if (this.newness) {
+    if (this.isNew) {
       this.underlay.classList.add('cd-commentUnderlay-new');
     }
     if (cd.settings.highlightOwnComments && this.isOwn) {
@@ -502,7 +502,7 @@ export default class Comment extends CommentSkeleton {
     // Configure the layers only if they were unexistent or the comment position has changed, to
     // save time.
     if (this.underlay) {
-      if (this.newness && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
+      if (this.isNew && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
         this.underlay.classList.add('cd-commentUnderlay-new');
       }
       if (moved && options.doUpdate) {
@@ -604,7 +604,7 @@ export default class Comment extends CommentSkeleton {
     this.unhighlightTimeout = setTimeout(() => {
       if (this.isFocused) {
         initialColor = cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR;
-      } else if (this.newness) {
+      } else if (this.isNew) {
         initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
       }
       $elementsToAnimate.animate(
@@ -1226,14 +1226,10 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [highlight=false] Highlight the comment.
    */
   registerSeen(registerAllInDirection, highlight = false) {
-    if (this.newness === 'unseen') {
-      /**
-       * Comment's newness state: `undefined`, `'new'` or `'unseen'`.
-       *
-       * @type {string|undefined}
-       */
-      this.newness = 'new';
-      navPanel.decrementUnseenCommentCount();
+    if (this.isSeen === false) {
+      this.isSeen = true;
+
+      navPanel.decrementUnseenCount();
       if (highlight) {
         this.highlightTarget();
       }

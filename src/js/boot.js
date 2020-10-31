@@ -574,7 +574,7 @@ export async function init({ messagesRequest }) {
  */
 function getUnseenCommentAnchors() {
   return cd.comments
-    .filter((comment) => comment.newness === 'unseen')
+    .filter((comment) => comment.isSeen === false)
     .map((comment) => comment.anchor);
 }
 

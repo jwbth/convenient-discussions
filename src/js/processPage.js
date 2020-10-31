@@ -425,24 +425,39 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
 
   if (thisPageVisits.length) {
     cd.comments.forEach((comment) => {
-      comment.newness = null;
+      /**
+       * Is the comment new. Set only on active pages (not archived, not old diffs) excluding pages
+       * that are visited for the first time.
+       *
+       * @type {boolean|undefined}
+       * @memberof module:Comment
+       */
+      comment.isNew = false;
+
+      /**
+       * Has the comment been seen. Set only on active pages (not archived, not old diffs) excluding
+       * pages that are visited for the first time. Check using `=== false` if you need to know if
+       * the comment is highlighted as new and unseen.
+       *
+       * @type {boolean|undefined}
+       * @memberof module:Comment
+       */
+      comment.isSeen = true;
 
       if (!comment.date) return;
 
-      const isUnseen = memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor);
       const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
       if (commentUnixTime > thisPageVisits[0]) {
-        comment.newness = (
-          (commentUnixTime > thisPageVisits[thisPageVisits.length - 1] && !comment.isOwn) ||
-          isUnseen
-        ) ?
-          'unseen' :
-          'new';
+        comment.isNew = true;
+        comment.isSeen = (
+          (commentUnixTime <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
+          !memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor)
+        );
       }
     });
 
-    Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.newness));
-    const unseenComments = cd.comments.filter((comment) => comment.newness === 'unseen');
+    Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
+    const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
     toc.addNewComments(Comment.groupBySection(unseenComments));
   }
 

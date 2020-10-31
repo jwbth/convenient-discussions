@@ -206,8 +206,8 @@ const navPanel = {
    * @memberof module:navPanel
    */
   fill() {
-    newCount = cd.comments.filter((comment) => comment.newness).length;
-    unseenCount = cd.comments.filter((comment) => comment.newness === 'unseen').length;
+    newCount = cd.comments.filter((comment) => comment.isNew).length;
+    unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
     if (newCount) {
       this.$nextButton.show();
       this.$previousButton.show();
@@ -234,7 +234,7 @@ const navPanel = {
    *
    * @memberof module:navPanel
    */
-  decrementUnseenCommentCount() {
+  decrementUnseenCount() {
     unseenCount--;
   },
 
@@ -275,7 +275,7 @@ const navPanel = {
 
     // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id, true)
-      .find((comment) => comment.newness && comment.isInViewport(true) !== true);
+      .find((comment) => comment.isNew && comment.isInViewport(true) !== true);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('backward', true);
@@ -297,7 +297,7 @@ const navPanel = {
 
     // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id)
-      .find((comment) => comment.newness && comment.isInViewport(true) !== true);
+      .find((comment) => comment.isNew && comment.isInViewport(true) !== true);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);
@@ -316,7 +316,7 @@ const navPanel = {
 
     const comment = cd.comments
       .slice(lastFirstUnseenCommentId || 0)
-      .find((comment) => comment.newness === 'unseen');
+      .find((comment) => comment.isSeen === false);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);

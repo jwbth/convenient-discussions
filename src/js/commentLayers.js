@@ -47,7 +47,7 @@ export default {
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = Boolean(
-        comment.newness ||
+        comment.isNew ||
         (comment.isOwn && cd.settings.highlightOwnComments) ||
         comment.isTarget ||
         comment.isFocused
