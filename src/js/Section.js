@@ -77,6 +77,7 @@ export default class Section extends SectionSkeleton {
          * @type {URL}
          */
         this.editUrl = new mw.Uri(editLink.getAttribute('href'));
+
         if (this.editUrl) {
           const sectionNumber = this.editUrl.query.section;
           if (sectionNumber.startsWith('T-')) {

@@ -14,6 +14,9 @@ fs.readdirSync('./config/').forEach((filename) => {
       .toString()
       .trim()
       .replace(/[^]*?export default /, '');
+
+    // When updating this code, update the code in misc/convenientDiscussions-generateBasicConfig.js
+    // as well.
     const data = `/**
  * This file was assembled automatically from the configuration at
  * https://github.com/jwbth/convenient-discussions/tree/master/config/${filename} by running
@@ -27,8 +30,8 @@ fs.readdirSync('./config/').forEach((filename) => {
 
 (function () {
 
-function unique(item, pos, arr) {
-  return arr.indexOf(item) === pos;
+function unique(item, i, arr) {
+  return arr.indexOf(item) === i;
 }
 
 function getStrings() {
