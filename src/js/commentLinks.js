@@ -23,6 +23,7 @@ import { getWatchedSections } from './options';
 import { initSettings } from './boot';
 import { initTimestampParsingTools, loadData } from './dateFormat';
 
+let colon;
 let moveFromBeginning;
 let moveToBeginning;
 let goToCommentToYou;
@@ -75,6 +76,7 @@ async function prepare({ dataRequest }) {
 
   initTimestampParsingTools();
 
+  colon = cd.mws('colon-separator').trim();
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
@@ -277,7 +279,10 @@ function isArchiving(summary) {
  * @returns {boolean}
  */
 function isInSection(summary, name) {
-  return summary.includes('→' + name) || summary.includes('←' + name);
+  // This can run many thousand times, so we use the cheapest way.
+  return cd.g.SITE_DIR === 'ltr' ?
+    summary.includes(`→${name}${colon}`) || summary.endsWith(`→${name}`) :
+    summary.includes(`←${name}${colon}`) || summary.endsWith(`←${name}`);
 }
 
 /**
