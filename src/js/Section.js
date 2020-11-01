@@ -68,8 +68,10 @@ export default class Section extends SectionSkeleton {
         this.closingBracketElement = null;
       }
 
-      const editLink = this.editSectionElement
-        .querySelector('a[href*="&action=edit"], a[href*="&veaction=editsource"]');
+      // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
+      // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
+      // there's probably no harm in that.
+      const editLink = this.editSectionElement.querySelector('a[href*="action=edit"]');
       if (editLink) {
         /**
          * URL to edit the section.
