@@ -27,8 +27,8 @@ export default class SectionSkeleton {
      *
      * @type {Element}
      */
-    this.headlineElement = this.parser.context
-      .getElementByClassName(headingElement, 'mw-headline');
+    this.headlineElement = this.parser.context.getElementByClassName(headingElement, 'mw-headline');
+
     if (!this.headlineElement) {
       throw new CdError();
     }
@@ -113,10 +113,6 @@ export default class SectionSkeleton {
      * @type {Element}
      */
     this.lastElementInFirstChunk = this.lastElementInFirstChunk || elements[elements.length - 1];
-
-    if (!elements.length) {
-      throw new CdError();
-    }
 
     // We only need the first and the last comment parts to determine comments in the section.
     let firstCommentPart;

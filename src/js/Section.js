@@ -215,31 +215,26 @@ export default class Section extends SectionSkeleton {
   addAddSubsectionButton() {
     if (this.level !== 2) return;
 
-    const addSubsectionButton = this.elementPrototypes.addSubsectionButton.cloneNode(true);
-    const labelContainer = addSubsectionButton.querySelector('.oo-ui-labelElement-label');
+    const button = this.elementPrototypes.addSubsectionButton.cloneNode(true);
+    const labelContainer = button.querySelector('.oo-ui-labelElement-label');
     if (!labelContainer) return;
     labelContainer.innerHTML = '';
     labelContainer.appendChild(
       document.createTextNode(cd.s('section-addsubsection-to', this.headline))
     );
-    addSubsectionButton.firstChild.onclick = () => {
+    button.firstChild.onclick = () => {
       this.addSubsection();
     };
 
-    const addSubsectionButtonContainer = document.createElement('div');
-    addSubsectionButtonContainer.className = (
-      'cd-sectionButtonContainer cd-addSubsectionButtonContainer'
-    );
-    addSubsectionButtonContainer.style.display = 'none';
-    addSubsectionButtonContainer.appendChild(addSubsectionButton);
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'cd-sectionButtonContainer cd-addSubsectionButtonContainer';
+    buttonContainer.style.display = 'none';
+    buttonContainer.appendChild(button);
 
     const lastElement = this.elements[this.elements.length - 1];
-    lastElement.parentElement.insertBefore(
-      addSubsectionButtonContainer,
-      lastElement.nextElementSibling
-    );
+    lastElement.parentElement.insertBefore(buttonContainer, lastElement.nextElementSibling);
 
-    const deferAddSubsectionButtonHide = () => {
+    const deferButtonHide = () => {
       if (!this.hideAddSubsectionButtonTimeout) {
         this.hideAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.hide();
@@ -247,12 +242,12 @@ export default class Section extends SectionSkeleton {
       }
     };
 
-    addSubsectionButton.firstChild.onmouseenter = () => {
+    button.firstChild.onmouseenter = () => {
       clearTimeout(this.hideAddSubsectionButtonTimeout);
       this.hideAddSubsectionButtonTimeout = null;
     };
-    addSubsectionButton.firstChild.onmouseleave = () => {
-      deferAddSubsectionButtonHide();
+    button.firstChild.onmouseleave = () => {
+      deferButtonHide();
     };
 
     this.replyButtonHoverHandler = () => {
@@ -274,7 +269,7 @@ export default class Section extends SectionSkeleton {
       clearTimeout(this.showAddSubsectionButtonTimeout);
       this.showAddSubsectionButtonTimeout = null;
 
-      deferAddSubsectionButtonHide();
+      deferButtonHide();
     };
 
     /**
@@ -282,14 +277,14 @@ export default class Section extends SectionSkeleton {
      *
      * @type {JQuery|undefined}
      */
-    this.$addSubsectionButton = $(addSubsectionButton);
+    this.$addSubsectionButton = $(button);
 
     /**
      * Add subsection button container.
      *
      * @type {JQuery|undefined}
      */
-    this.$addSubsectionButtonContainer = $(addSubsectionButtonContainer);
+    this.$addSubsectionButtonContainer = $(buttonContainer);
   }
 
   /**
@@ -562,7 +557,7 @@ export default class Section extends SectionSkeleton {
         }
       }
 
-      targetPage.inferNewTopicPlacement();
+      targetPage.analyzeNewTopicPlacement();
       const sectionWikilink = `${targetPage.realName}#${encodeWikilink(section.headline)}`;
 
       return {

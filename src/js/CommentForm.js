@@ -2678,7 +2678,9 @@ export default class CommentForm {
     }
 
     this.$previewArea.cdScrollIntoView(
-      this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom'
+      this.$previewArea.hasClass('cd-previewArea-above') ?
+      'top' :
+      'bottom'
     );
 
     this.closeOperation(currentOperation);

@@ -498,9 +498,9 @@ export default class Page {
    *
    * @throws {CdError}
    */
-  inferNewTopicPlacement() {
+  analyzeNewTopicPlacement() {
     if (this.code === undefined) {
-      throw new CdError('Can\'t infer the new topics placement: Page#code is undefined.');
+      throw new CdError('Can\'t analyze the new topics placement: Page#code is undefined.');
     }
 
     let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.name, this.code);
@@ -536,7 +536,7 @@ export default class Page {
 
     /**
      * Whether new topics go on top on this page. Filled upon running {@link
-     * module:Page#inferNewTopicPlacement}.
+     * module:Page#analyzeNewTopicPlacement}.
      *
      * @name areNewTopicsOnTop
      * @type {boolean|undefined}
@@ -545,7 +545,7 @@ export default class Page {
 
     /**
      * The start index of the first section, if new topics are on top on this page. Filled upon
-     * running {@link module:Page#inferNewTopicPlacement}.
+     * running {@link module:Page#analyzeNewTopicPlacement}.
      *
      * @name firstSectionStartIndex
      * @type {number|undefined}
