@@ -75,8 +75,9 @@ export default class Page {
   }
 
   /**
-   * Whether the page is an archive page. Relies on {@link module:defaultConfig.archivePaths} and/or
-   * elements with the class `cd-archivingInfo` and attribute `data-is-archive-page`.
+   * Whether the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}
+   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
+   * `data-is-archive-page`.
    *
    * @returns {boolean}
    */
@@ -84,7 +85,10 @@ export default class Page {
     if (this.cachedIsArchivePage !== undefined) {
       return this.cachedIsArchivePage;
     }
-    let result = $('.cd-archivingInfo').data('isArchivePage');
+    let result;
+    if (this === cd.g.CURRENT_PAGE) {
+      result = $('.cd-archivingInfo').data('isArchivePage');
+    }
     if (result === undefined) {
       result = false;
       const name = this.realName || this.name;
@@ -103,7 +107,8 @@ export default class Page {
   /**
    * Whether this page can have archives. If the page is an archive page, returns `false`. Relies on
    * {@link module:defaultConfig.pagesWithoutArchives} and {@link module:defaultConfig.archivePaths}
-   * and/or elements with the class `cd-archivingInfo` and attribute `data-can-have-archives`.
+   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
+   * `data-can-have-archives`.
    *
    * @returns {?boolean}
    */
@@ -111,7 +116,10 @@ export default class Page {
     if (this.isArchivePage()) {
       return false;
     }
-    let result = $('.cd-archivingInfo').data('canHaveArchives');
+    let result;
+    if (this === cd.g.CURRENT_PAGE) {
+      result = $('.cd-archivingInfo').data('canHaveArchives');
+    }
     if (result === undefined) {
       const name = this.realName || this.name;
       result = !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP?.test(name);
@@ -121,9 +129,9 @@ export default class Page {
 
   /**
    * Get the archive prefix for the page. If no prefix is found based on {@link
-   * module:defaultConfig.archivePaths} and/or elements with the class `cd-archivingInfo` and
-   * attribute `data-archive-prefix`, returns the current page's name. If the page is an archive
-   * page or can't have archives, returns `null`.
+   * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * `cd-archivingInfo` and attribute `data-archive-prefix`, returns the current page's name. If the
+   * page is an archive page or can't have archives, returns `null`.
    *
    * @returns {?string}
    */
@@ -131,7 +139,10 @@ export default class Page {
     if (!this.canHaveArchives()) {
       return null;
     }
-    let result = $('.cd-archivingInfo').data('archivePrefix');
+    let result;
+    if (this === cd.g.CURRENT_PAGE) {
+      result = $('.cd-archivingInfo').data('archivePrefix');
+    }
     const name = this.realName || this.name;
     if (!result) {
       const iterator = cd.g.ARCHIVE_PAGES_MAP.entries();
@@ -148,13 +159,16 @@ export default class Page {
   /**
    * Get the source page for the page (i.e., the page from which the archiving is happening).
    * Returns the page itself if it is not an archive page. Relies on {@link
-   * module:defaultConfig.archivePaths} and/or elements with the class `cd-archivingInfo` and
-   * attribute `data-source-page`.
+   * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * `cd-archivingInfo` and attribute `data-archived-page`.
    *
    * @returns {Page}
    */
   getArchivedPage() {
-    let result = $('.cd-archivingInfo').data('sourcePage');
+    let result;
+    if (this === cd.g.CURRENT_PAGE) {
+      result = $('.cd-archivingInfo').data('archivedPage');
+    }
     if (!result) {
       const name = this.realName || this.name;
       const iterator = cd.g.SOURCE_PAGES_MAP.entries();
