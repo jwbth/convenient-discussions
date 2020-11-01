@@ -346,6 +346,7 @@
 
   "bullet": "<b>•</b>",
   "loading-ellipsis": "Loading…",
+  "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",
   "footer-enablecd": "Enable Convenient Discussions on this page",
   "footer-disablecd": "Disable Convenient Discussions on this page"

@@ -835,8 +835,8 @@ function restoreCommentFormsFromData(commentFormsData) {
         rescue.push(data);
       }
     } else if (data.mode === 'addSection') {
-      if (!cd.g.CURRENT_PAGE.addSectionForm) {
-        cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
+      if (!cd.g.addSectionForm) {
+        cd.g.addSectionForm = new CommentForm({
           target: cd.g.CURRENT_PAGE,
           mode: data.mode,
           dataToRestore: data,
@@ -931,7 +931,7 @@ export function restoreCommentForms() {
         }
       } else if (commentForm.mode === 'addSection') {
         commentForm.addToPage();
-        cd.g.CURRENT_PAGE.addSectionForm = commentForm;
+        cd.g.addSectionForm = commentForm;
       }
     });
     if (rescue.length) {

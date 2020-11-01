@@ -76,8 +76,6 @@ export default class CommentForm {
    *   `'addSection'`.
    * @param {Comment|Section|Page} config.target Comment, section, or page that the form is related
    *   to.
-   * @param {JQuery} [config.$addSectionButton] When adding a section, the element the user clicked
-   *   to do it.
    * @param {object} [config.dataToRestore] Data saved in the previous session.
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.isNewTopicOnTop] When adding a topic, whether it should be on top.
@@ -1231,9 +1229,10 @@ export default class CommentForm {
   addToPage() {
     if (this.mode === 'replyInSection') {
       this.target.$replyButton.hide();
-    }
-    if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
+    } else if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
       this.target.$addSubsectionButtonContainer.hide();
+    } else if (this.mode === 'addSection' && cd.g.$addSectionButtonContainer) {
+      cd.g.$addSectionButtonContainer.hide();
     }
 
     // 'addSection'
@@ -2947,6 +2946,8 @@ export default class CommentForm {
       this.target.$elements.removeClass('cd-hidden');
       this.target.scrollIntoView('top');
       this.target.configureLayers();
+    } else if (this.mode === 'addSection' && cd.g.$addSectionButtonContainer) {
+      cd.g.$addSectionButtonContainer.show();
     }
   }
 
@@ -2975,7 +2976,11 @@ export default class CommentForm {
    * @private
    */
   forget() {
-    delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
+    if (this.mode === 'addSection') {
+      delete cd.g.addSectionForm;
+    } else {
+      delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
+    }
     if (cd.commentForms.includes(this)) {
       cd.commentForms.splice(cd.commentForms.indexOf(this), 1);
     }

@@ -184,6 +184,63 @@ function processSections(parser, watchedSectionsRequest) {
 }
 
 /**
+ * Create an add section form if not existent.
+ *
+ * @param {object} [preloadConfig={}]
+ * @param {boolean} [isNewTopicOnTop=false]
+ * @private
+ */
+function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
+  const addSectionForm = cd.g.addSectionForm;
+  if (addSectionForm) {
+    // Sometimes there are more than one "Add section" button on the page, and they lead to
+    // opening forms with different content.
+    if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
+      mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
+      return;
+    }
+
+    addSectionForm.$element.cdScrollIntoView('center');
+    addSectionForm.headlineInput.focus();
+  } else {
+    /**
+     * Add section form.
+     *
+     * @type {CommentForm|undefined}
+     */
+    cd.g.addSectionForm = new CommentForm({
+      mode: 'addSection',
+      target: cd.g.CURRENT_PAGE,
+      preloadConfig,
+      isNewTopicOnTop,
+    });
+  }
+}
+
+/**
+ * Add "Add topic" button to the bottom of the page if there is an "Add topic" tab.
+ *
+ * @private
+ */
+function addAddTopicButton() {
+  if ($('#ca-addsection').length) {
+    cd.g.addSectionButton = new OO.ui.ButtonWidget({
+      label: cd.s('addtopic'),
+      framed: false,
+      classes: ['cd-button', 'cd-sectionButton'],
+    });
+    cd.g.addSectionButton.on('click', () => {
+      createAddSectionForm();
+    });
+    cd.g.$addSectionButtonContainer = $('<div>')
+      .addClass('cd-addTopicButtonContainer')
+      .addClass('cd-sectionButtonContainer')
+      .append(cd.g.addSectionButton.$element)
+      .appendTo(cd.g.rootElement);
+  }
+}
+
+/**
  * Bind a click handler to every known "Add new topic" button.
  *
  * @private
@@ -245,30 +302,7 @@ function connectToAddTopicLinks() {
         }
       });
 
-      const addSectionForm = cd.g.CURRENT_PAGE.addSectionForm;
-      if (addSectionForm) {
-        // Sometimes there are more than one "Add section" button on the page, and they lead to
-        // opening forms with different content.
-        if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
-          mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
-          return;
-        }
-
-        addSectionForm.$element.cdScrollIntoView('center');
-        addSectionForm.headlineInput.focus();
-      } else {
-        /**
-         * Add section form.
-         *
-         * @type {CommentForm|undefined}
-         */
-        cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
-          mode: 'addSection',
-          target: cd.g.CURRENT_PAGE,
-          preloadConfig,
-          isNewTopicOnTop,
-        });
-      }
+      createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));
 }
@@ -677,6 +711,7 @@ export default async function processPage(keptData = {}) {
 
   cd.debug.stopTimer('process sections');
 
+  addAddTopicButton();
   connectToAddTopicLinks();
 
   cd.debug.stopTimer('main code');
