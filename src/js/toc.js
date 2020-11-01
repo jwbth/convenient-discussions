@@ -156,7 +156,7 @@ export default {
             });
           })
           .appendTo($element);
-        if (cd.g.thisPageWatchedSections.includes(headline)) {
+        if (cd.g.thisPageWatchedSections?.includes(headline)) {
           $a
             .addClass('cd-toc-watched')
             .attr('title', cd.s('toc-watched'));

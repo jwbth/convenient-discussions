@@ -221,7 +221,7 @@ async function sendNotifications(comments) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && cd.g.thisPageWatchedSections.includes(section) ?
+      const mayBeInteresting = section && cd.g.thisPageWatchedSections?.includes(section) ?
         '' :
         mayBeInterestingString;
 
@@ -290,7 +290,7 @@ async function sendNotifications(comments) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && cd.g.thisPageWatchedSections.includes(section) ?
+      const mayBeInteresting = section && cd.g.thisPageWatchedSections?.includes(section) ?
         '' :
         mayBeInterestingString;
 
