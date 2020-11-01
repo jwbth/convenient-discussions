@@ -507,7 +507,7 @@ function initOouiAndElementPrototypes() {
 
   cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
     // Will be replaced
-    label: '',
+    label: ' ',
 
     framed: false,
     classes: ['cd-button', 'cd-sectionButton'],
