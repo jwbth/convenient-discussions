@@ -728,7 +728,7 @@ export default async function processPage(keptData = {}) {
     );
     window.scrollTo(0, y);
   } else {
-    restoreScrollPosition();
+    restoreScrollPosition(false);
   }
 
   highlightOwnComments();

@@ -354,19 +354,28 @@ export function unhideText(text, hidden) {
 
 /**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
+ *
+ * @param {boolean} [rewriteTocHeight=true]
  */
-export function saveScrollPosition() {
+export function saveScrollPosition(rewriteTocHeight = true) {
   keptScrollPosition = window.pageYOffset;
   const $toc = $('.toc');
-  if ($toc.length && window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.height()) {
+  if (
+    (rewriteTocHeight || keptTocHeight) &&
+    $toc.length &&
+    window.pageYOffset !== 0 &&
+    window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.height()
+  ) {
     keptTocHeight = $toc.height();
   }
 }
 
 /**
  * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
+ *
+ * @param {boolean} [resetTocHeight=true]
  */
-export function restoreScrollPosition() {
+export function restoreScrollPosition(resetTocHeight = true) {
   if (keptScrollPosition === null) return;
 
   if (keptTocHeight) {
@@ -375,7 +384,9 @@ export function restoreScrollPosition() {
   window.scrollTo(0, keptScrollPosition);
 
   keptScrollPosition = null;
-  keptTocHeight = null;
+  if (resetTocHeight) {
+    keptTocHeight = null;
+  }
 }
 
 /**

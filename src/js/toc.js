@@ -219,7 +219,12 @@ export default {
     const $toc = $('.toc');
     if (!$toc.length) return;
 
-    saveScrollPosition();
+    const firstAnchor = Object.keys(commentsBySection)[0];
+    if (!firstAnchor) return;
+
+    const areCommentsLoaded = commentsBySection[firstAnchor][0] instanceof Comment;
+
+    saveScrollPosition(!areCommentsLoaded);
 
     $toc
       .find('.cd-toc-notLoadedCommentList')
@@ -239,15 +244,11 @@ export default {
         }
 
         const $ul = $('<ul>').insertAfter($target);
-        $ul.addClass(
-          commentsBySection[anchor][0] instanceof Comment ?
-          'cd-toc-newCommentList' :
-          'cd-toc-notLoadedCommentList'
-        );
+        $ul.addClass(areCommentsLoaded ? 'cd-toc-newCommentList' : 'cd-toc-notLoadedCommentList');
 
         let moreTooltipText = '';
         commentsBySection[anchor].forEach((comment, i) => {
-          const parent = comment instanceof Comment ? comment.getParent() : comment.parent;
+          const parent = areCommentsLoaded ? comment.getParent() : comment.parent;
           const names = parent?.author && comment.level > 1 ?
             cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
             comment.author.name;
