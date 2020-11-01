@@ -444,7 +444,6 @@ export default class Section extends SectionSkeleton {
           mode: 'addSubsection',
           target: this,
           dataToRestore,
-          scrollIntoView: true,
         });
     }
   }

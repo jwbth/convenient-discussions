@@ -358,17 +358,17 @@ async function processComments(comments) {
   const newComments = comments
     .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
   const interestingNewComments = newComments.filter((comment) => {
-    if (
-      comment.isOwn ||
-      cd.settings.notificationsBlacklist.includes(comment.author.name) ||
-      !cd.g.thisPageWatchedSections
-    ) {
+    if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
     }
     if (comment.toMe) {
       comment.interesting = true;
       return true;
     }
+    if (!cd.g.thisPageWatchedSections) {
+      return false;
+    }
+
 
     // Is this section watched by means of an upper level section?
     const sections = Section.getSectionsByHeadline(comment.section.headline);

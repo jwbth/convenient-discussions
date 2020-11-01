@@ -79,14 +79,13 @@ export default class CommentForm {
    * @param {JQuery} [config.$addSectionButton] When adding a section, the element the user clicked
    *   to do it.
    * @param {object} [config.dataToRestore] Data saved in the previous session.
-   * @param {boolean} [config.scrollIntoView] Whether to scroll the form into view.
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.isNewTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
    * @fires commentFormCreated
    * @fires commentFormModulesReady
    */
-  constructor({ mode, target, dataToRestore, scrollIntoView, preloadConfig, isNewTopicOnTop }) {
+  constructor({ mode, target, dataToRestore, preloadConfig, isNewTopicOnTop }) {
     /**
      * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
@@ -322,11 +321,10 @@ export default class CommentForm {
           this.checkCode();
         }
 
-        if (scrollIntoView) {
-          this.$element.cdScrollIntoView('center');
-        }
         this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
       }
+
+      this.$element.cdScrollIntoView('center');
     }
 
     restoreScrollPosition();

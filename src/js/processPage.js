@@ -265,7 +265,6 @@ function connectToAddTopicLinks() {
         cd.g.CURRENT_PAGE.addSectionForm = new CommentForm({
           mode: 'addSection',
           target: cd.g.CURRENT_PAGE,
-          scrollIntoView: true,
           preloadConfig,
           isNewTopicOnTop,
         });
