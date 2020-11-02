@@ -148,7 +148,12 @@ function getLastDeployedCommit(revisions) {
     }
     newCommitsSubjects = commits
       .slice(0, newCommitsCount)
-      .map((commit) => commit.subject);
+      .map((commit) => commit.subject)
+      .filter((commit) => (
+        !commit.startsWith('Merge branch') &&
+        !commit.startsWith('Localisation updates')
+      ));
+    newCommitsCount = newCommitsSubjects.length;
   }
 
   prepareEdits();
