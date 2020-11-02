@@ -39,8 +39,7 @@ export default {
    * @param {string} [alignment='top'] Where the element should be positioned relative to the
    *   viewport. Possible values: `'top'`, `'center'`, and `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
-   * @param {Function} [callback] A callback to run after the animation has completed (works with
-   *   `smooth` set to `true`).
+   * @param {Function} [callback] A callback to run after the animation has completed.
    * @returns {JQuery}
    * @memberof $.fn
    */
@@ -54,7 +53,7 @@ export default {
     if (offsetTop === 0 || offsetTopLast === 0) {
       cd.g.autoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
-      return;
+      return this;
     }
 
     let offset;
@@ -87,6 +86,9 @@ export default {
     } else {
       window.scrollTo(0, offset);
       onComplete();
+      if (callback) {
+        callback();
+      }
     }
 
     return this;
@@ -133,12 +135,17 @@ export default {
    * @param {string} [alignment] One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
    *   `'center'`, or `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
+   * @param {Function} [callback] A callback to run after the animation has completed.
    * @returns {JQuery}
    * @memberof $.fn
    */
-  cdScrollIntoView(alignment, smooth = true) {
-    if (!this.cdIsInViewport()) {
-      this.cdScrollTo(alignment, smooth);
+  cdScrollIntoView(alignment, smooth = true, callback) {
+    if (this.cdIsInViewport()) {
+      if (callback) {
+        callback();
+      }
+    } else {
+      this.cdScrollTo(alignment, smooth, callback);
     }
 
     return this;
