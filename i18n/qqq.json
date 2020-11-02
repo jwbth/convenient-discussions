@@ -39,7 +39,7 @@
 	"sm-copylink-tooltip-wikilink": "One of the possible texts of the tooltip for the section menu item labeled with the {{msg-wm|Convenient-discussions-sm-copylink|notext=1}} message.\n\nSee also:\n* {{msg-wm|Convenient-discussions-sm-copylink-tooltip-link}}\n* {{msg-wm|Convenient-discussions-cld-invitation}}",
 	"sm-copylink-tooltip-link": "One of the possible texts of the tooltip for the section menu item labeled with the {{msg-wm|Convenient-discussions-sm-copylink|notext=1}} message.\n\nSee also:\n* {{msg-wm|Convenient-discussions-sm-copylink-tooltip-wikilink}}\n* {{msg-wm|Convenient-discussions-cld-invitation}}",
 	"section-reply": "Label of the button in the end of sections. It opens a reply form.",
-	"section-addsubsection-to": "Label of the button in the end of sections. It opens an \"Add subsection\" form.\n$1: the section name.",
+	"section-addsubsection-to": "Label of the button at the end of sections. It opens an \"Add subsection\" form.\n\n$1: the section name.",
 	"section-newcomments": "Label of the button that appears when there are new comments in the section.\n\n* $1: the number of new comments in the section.\n* $2: the number of authors of new comments.\n* $3: the list of authors.\n* $4 (optional): gender, for use with <nowiki>{{gender:}}</nowiki> (<code><nowiki>{{gender:</nowiki>$4|''male text''|''female text''|''text for unspecified''}}</code>).\n** If $1 is 1, $4 has the author's gender.\n** If $1 is >1, $4 has \"male\" if all the authors are male or of unknown gender, \"female\" if all the authors are female, and \"unknown\" if the gender is mixed.",
 	"section-watch-success": "Text of the notification that appears when adding a section to the in-script watchlist.\n\nSee also: {{msg-wm|Convenient-discussions-section-unwatch-stillwatched}}",
 	"section-unwatch-success": "Text of the notification that appears when removing a section from the in-script watchlist.",
@@ -323,6 +323,7 @@
 	"lp-comment-toyou": "Text that sometimes appears in parentheses (see {{msg-mw|parentheses}}) at the end of the tooltip for the link labeled with the {{msg-wm|Convenient-discussions-lp-comment}} message.",
 	"lp-comment-watchedsection": "Text that sometimes appears in parentheses (see {{msg-mw|parentheses}}) at the end of the tooltip for the link labeled with the {{msg-wm|Convenient-discussions-lp-comment}} message.",
 	"loading-ellipsis": "Text displayed in various OOUI process dialogs while their content is loading.",
+	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
 	"footer-enablecd": "Text of the link in the page footer allowing the user to enable the script on the current page.",
 	"footer-disablecd": "Text of the link in the page footer allowing the user to disable the script on the current page."
