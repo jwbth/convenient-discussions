@@ -2,7 +2,8 @@
 	"@metadata": {
 		"authors": [
 			"Linuxmetel",
-			"Omotecho"
+			"Omotecho",
+			"つぶあん派"
 		]
 	},
 	"script-name-short": "CD",
@@ -185,5 +186,6 @@
 	"wl-button-editwatchedsections-tooltip": "私がウォッチしている節を編集",
 	"lp-comment-tooltip": "コメントを表示",
 	"lp-comment-watchedsection": "この節をウォッチしています。",
+	"addtopic": "トピックを追加",
 	"addtopicbutton-tooltip": "新規トピックを作成するには、Convenient Discussions ではなく標準ページで新規タブを開きます"
 }
