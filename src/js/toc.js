@@ -224,7 +224,7 @@ export default {
 
     const areCommentsLoaded = commentsBySection[firstAnchor][0] instanceof Comment;
 
-    saveScrollPosition(!areCommentsLoaded);
+    saveScrollPosition(!areCommentsLoaded || !cd.g.hasPageBeenReloaded);
 
     $toc
       .find('.cd-toc-notLoadedCommentList')

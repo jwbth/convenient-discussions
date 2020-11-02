@@ -355,16 +355,17 @@ export function unhideText(text, hidden) {
 /**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
  *
- * @param {boolean} [rewriteTocHeight=true]
+ * @param {boolean} [saveTocHeight=true] Used for more fine control of scroll behavior after page
+ *   reloads and when visits are loaded.
  */
-export function saveScrollPosition(rewriteTocHeight = true) {
+export function saveScrollPosition(saveTocHeight = true) {
   keptScrollPosition = window.pageYOffset;
   const $toc = $('.toc');
   if (
-    (rewriteTocHeight || keptTocHeight) &&
+    (saveTocHeight || keptTocHeight) &&
     $toc.length &&
     window.pageYOffset !== 0 &&
-    window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.height()
+    window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.outerHeight()
   ) {
     keptTocHeight = $toc.height();
   }
@@ -373,7 +374,8 @@ export function saveScrollPosition(rewriteTocHeight = true) {
 /**
  * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
  *
- * @param {boolean} [resetTocHeight=true]
+ * @param {boolean} [resetTocHeight=true] Used for more fine control of scroll behavior after page
+ *   reloads and when visits are loaded.
  */
 export function restoreScrollPosition(resetTocHeight = true) {
   if (keptScrollPosition === null) return;

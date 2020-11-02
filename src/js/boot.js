@@ -220,6 +220,7 @@ function initGlobals() {
   cd.g.dontHandleScroll = false;
   cd.g.autoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
+  cd.g.hasPageBeenReloaded = false;
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
@@ -722,6 +723,8 @@ export async function reloadPage(keptData = {}) {
 
   // Remove the fragment
   history.replaceState(history.state, '', location.pathname + location.search);
+
+  cd.g.hasPageBeenReloaded = true;
 
   updateChecker.updatePageTitle(0, false);
   updatePageContent(parseData.text, keptData);
