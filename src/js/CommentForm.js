@@ -192,6 +192,8 @@ export default class CommentForm {
 
     cd.commentForms.push(this);
 
+    restoreScrollPosition();
+
     if (dataToRestore) {
       this.originalComment = dataToRestore.originalComment;
       this.originalHeadline = dataToRestore.originalHeadline;
@@ -204,6 +206,9 @@ export default class CommentForm {
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
     } else {
+      // This should be above .focus() to work.
+      this.$element.cdScrollIntoView('center');
+
       if (this.mode === 'edit') {
         const currentOperation = this.registerOperation({ type: 'load' });
         this.target.getCode(true).then(
@@ -321,11 +326,7 @@ export default class CommentForm {
 
         this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
       }
-
-      this.$element.cdScrollIntoView('center');
     }
-
-    restoreScrollPosition();
 
     /**
      * A comment form has been created.
