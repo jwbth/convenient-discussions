@@ -207,6 +207,7 @@ function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
      * Add section form.
      *
      * @type {CommentForm|undefined}
+     * @memberof module:cd~convenientDiscussions.g
      */
     cd.g.addSectionForm = new CommentForm({
       mode: 'addSection',

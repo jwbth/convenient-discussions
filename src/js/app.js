@@ -264,14 +264,21 @@ function go() {
         $('#ca-addsection').length ||
 
         // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-        // the list of supported namespaces and page white/black list in the configuration. With this
-        // method, there won't be "comment" links for edits on pages that list revisions such as the
-        // watchlist.
+        // the list of supported namespaces and page white/black list in the configuration. With
+        // this method, there won't be "comment" links for edits on pages that list revisions such
+        // as the watchlist.
         cd.g.$content.find('.cd-talkPage').length ||
 
         enabledInQuery
       )
     ) {
+      /**
+       * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
+       * script's refresh functionality).
+       *
+       * @type {CommentForm|undefined}
+       * @memberof module:cd~convenientDiscussions.g
+       */
       cd.g.isFirstRun = true;
 
       setLoadingOverlay();
