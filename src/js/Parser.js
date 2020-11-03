@@ -14,6 +14,8 @@ import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } fro
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
 let foreignComponentClasses;
+let timezoneRegexp;
+let signatureEndingRegexp;
 
 /**
  * Get the page name from a URL.
@@ -102,9 +104,17 @@ export default class Parser {
   constructor(context) {
     this.context = context;
 
-    foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
-    if (cd.g.specialElements.pageHasOutdents) {
-      foreignComponentClasses.push('outdent-template');
+    if (!foreignComponentClasses) {
+      foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
+      if (cd.g.specialElements.pageHasOutdents) {
+        foreignComponentClasses.push('outdent-template');
+      }
+
+      timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
+
+      if (cd.config.signatureEndingRegexp) {
+        signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
+      }
     }
   }
 
@@ -422,8 +432,6 @@ export default class Parser {
       lastStep: 'start',
     });
 
-    const timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
-
     // 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
     for (let i = 0; i < 500; i++) {
       // lastStep may be:
@@ -445,7 +453,7 @@ export default class Parser {
           // https://ru.wikipedia.org/w/index.php?diff=107487558
           !isInline(previousPart.node, true) &&
 
-          (timezoneRegexp.test(text) || cd.config.signatureEndingRegexp?.test(text))
+          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text))
         ) {
           previousPart.hasForeignComponents = true;
           break;
