@@ -1770,7 +1770,7 @@ export default class CommentForm {
       ]);
       this.cancel(false);
     } else {
-      if (!(currentOperation && currentOperation.type === 'preview' && currentOperation.auto)) {
+      if (!(currentOperation && currentOperation.type === 'preview' && currentOperation.isAuto)) {
         this.showMessage(message, {
           type: messageType,
           isRaw: isRawMessage,
@@ -2361,7 +2361,7 @@ export default class CommentForm {
   registerOperation(operation) {
     this.operations.push(operation);
     operation.isClosed = false;
-    if (operation.type !== 'preview' || !operation.auto) {
+    if (operation.type !== 'preview' || !operation.isAuto) {
       this.$messageArea.empty();
       this.pushPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
     }
@@ -2377,7 +2377,7 @@ export default class CommentForm {
   closeOperation(operation) {
     if (operation.isClosed) return;
     operation.isClosed = true;
-    if (operation.type !== 'preview' || !operation.auto) {
+    if (operation.type !== 'preview' || !operation.isAuto) {
       this.popPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
     }
   }
@@ -2424,7 +2424,7 @@ export default class CommentForm {
       this.operations.splice(this.operations.indexOf(operation), 1);
     }
     // This was excessive at the time when it was written as the only use case is autopreview.
-    if (operation.type !== 'preview' || !operation.auto) {
+    if (operation.type !== 'preview' || !operation.isAuto) {
       this.popPending(operation.type === 'submit', operation.affectHeadline);
     }
   }
@@ -2441,15 +2441,15 @@ export default class CommentForm {
   /**
    * Preview the comment.
    *
-   * @param {boolean} [maySummaryHaveChanged=false] If `false`, don't preview if the comment input
-   *   is empty.
-   * @param {boolean} [auto=true] Preview is initiated automatically (if the user has
+   * @param {boolean} [previewEmpty=true] If `false`, don't preview if the comment and headline
+   *   inputs are empty.
+   * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has
    *   `cd.settings.autopreview` as `true`).
    * @param {boolean} [operation] Operation object when the function is called from within itself,
    *   being delayed.
    * @fires previewReady
    */
-  async preview(maySummaryHaveChanged = true, auto = true, operation) {
+  async preview(previewEmpty = true, isAuto = true, operation) {
     if (
       this.operations.some((op) => !op.isClosed && op.type === 'load') ||
       (
@@ -2459,7 +2459,7 @@ export default class CommentForm {
         (await nativePromiseState(this.checkCodeRequest)) === 'resolved'
       ) ||
       this.isBeingSubmitted() ||
-      (auto && !cd.settings.autopreview)
+      (isAuto && !cd.settings.autopreview)
     ) {
       if (operation) {
         this.closeOperation(operation);
@@ -2471,11 +2471,11 @@ export default class CommentForm {
       operation ||
       this.registerOperation({
         type: 'preview',
-        auto,
+        isAuto,
       })
     );
 
-    if (auto) {
+    if (isAuto) {
       const isTooEarly = Date.now() - this.lastPreviewTimestamp < 1000;
       if (
         isTooEarly ||
@@ -2488,7 +2488,7 @@ export default class CommentForm {
           currentOperation.isDelayed = true;
           this.previewTimeout = setTimeout(() => {
             this.previewTimeout = null;
-            this.preview(maySummaryHaveChanged, true, currentOperation);
+            this.preview(previewEmpty, true, currentOperation);
           }, isTooEarly ? 1000 - (Date.now() - this.lastPreviewTimestamp) : 100);
         }
         return;
@@ -2513,14 +2513,15 @@ export default class CommentForm {
       if (currentOperation.isClosed) return;
     }
 
-    // In case of an empty comment input, we in fact make this request for the sake of parsing
-    // summary if there is a need.
-    const emptyPreview = (
+    // In case of an empty comment input, we in fact make this request for the sake of parsing the
+    // summary if there is a need. The other possibility is previewing by clicking the relevant
+    // button.
+    const areInputsEmpty = (
       !this.commentInput.getValue().trim() &&
       !this.headlineInput?.getValue().trim()
     );
 
-    if (emptyPreview && !maySummaryHaveChanged) {
+    if (areInputsEmpty && !previewEmpty) {
       this.closeOperation(currentOperation);
       return;
     }
@@ -2553,7 +2554,7 @@ export default class CommentForm {
     if (this.closeOperationIfNecessary(currentOperation)) return;
 
     if (html) {
-      if ((auto && emptyPreview) || (this.deleteCheckbox?.isSelected())) {
+      if ((isAuto && areInputsEmpty) || this.deleteCheckbox?.isSelected()) {
         this.$previewArea.empty();
       } else {
         const $label = $('<div>')
@@ -2577,7 +2578,7 @@ export default class CommentForm {
          */
         mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea);
 
-        if (!auto) {
+        if (!isAuto) {
           mw.hook('wikipage.content').fire(this.$previewArea);
         }
       }
@@ -2599,8 +2600,14 @@ export default class CommentForm {
       this.adjustLabels();
     }
 
-    if (this.$previewArea.hasClass('cd-previewArea-above')) {
-      this.$previewArea.cdScrollIntoView('top');
+    if (!isAuto) {
+      this.commentInput.focus();
+
+      this.$previewArea.cdScrollIntoView(
+        this.$previewArea.hasClass('cd-previewArea-above') ?
+        'top' :
+        'bottom'
+      );
     }
 
     this.closeOperation(currentOperation);
@@ -2674,6 +2681,7 @@ export default class CommentForm {
         this.showMessage(cd.sParse('cf-notice-nochanges'));
       }
     }
+
     if (cd.settings.autopreview) {
       this.viewChangesButton.$element.hide();
       this.previewButton.$element.show();
@@ -2685,6 +2693,8 @@ export default class CommentForm {
       'top' :
       'bottom'
     );
+
+    this.commentInput.focus();
 
     this.closeOperation(currentOperation);
   }

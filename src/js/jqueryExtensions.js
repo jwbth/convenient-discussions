@@ -49,7 +49,7 @@ export default {
     let $elements = this.cdRemoveNonElementNodes();
     const offsetTop = $elements.first().offset().top;
     const offsetTopLast = $elements.last().offset().top;
-    let offsetBottom = offsetTopLast + $elements.last().height();
+    let offsetBottom = offsetTopLast + $elements.last().outerHeight();
     if (offsetTop === 0 || offsetTopLast === 0) {
       cd.g.autoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
