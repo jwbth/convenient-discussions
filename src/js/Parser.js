@@ -71,24 +71,35 @@ function getPageNameFromUrl(url) {
  */
 function getUserNameFromLink(element) {
   const href = element.getAttribute('href');
-  if (!href) {
-    return null;
-  }
-  const pageName = getPageNameFromUrl(href);
-  if (!pageName) {
-    return null;
-  }
   let userName;
-  const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
-  if (match) {
-    userName = match[1];
-  } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
-    userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
-    if (cd.g.IS_IPv6_ADDRESS(userName)) {
-      userName = userName.toUpperCase();
+  if (href) {
+    const pageName = getPageNameFromUrl(href);
+    if (!pageName) {
+      return null;
+    }
+    const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
+    if (match) {
+      userName = match[1];
+    } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
+      userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
+      if (cd.g.IS_IPv6_ADDRESS(userName)) {
+        userName = userName.toUpperCase();
+      }
+    }
+    userName = (
+      userName &&
+      firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim()
+    );
+  } else {
+    if (element.classList.contains('mw-selflink') && cd.g.CURRENT_NAMESPACE_NUMBER === 3) {
+      // Comments of users that have only the user talk page link in their signature on their talk
+      // page.
+      userName = cd.g.CURRENT_PAGE_TITLE;
+    } else {
+      return null;
     }
   }
-  return userName && firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+  return userName;
 }
 
 /**

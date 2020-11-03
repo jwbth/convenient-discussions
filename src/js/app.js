@@ -244,6 +244,7 @@ function go() {
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
   cd.g.CURRENT_PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.CURRENT_PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
   cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
   cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
