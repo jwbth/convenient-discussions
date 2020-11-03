@@ -1327,9 +1327,6 @@ export default class CommentForm {
     const preview = () => {
       this.preview();
     };
-    const previewFalse = () => {
-      this.preview(false);
-    };
 
     const textReactions = [
       {
@@ -1448,7 +1445,9 @@ export default class CommentForm {
 
     if (this.omitSignatureCheckbox) {
       this.omitSignatureCheckbox
-        .on('change', previewFalse)
+        .on('change', () => {
+          this.preview(false);
+        })
         .on('change', saveSessionEventHandler);
     }
 
@@ -2594,7 +2593,7 @@ export default class CommentForm {
       }
     }
 
-    if (cd.settings.autopreview) {
+    if (cd.settings.autopreview && this.previewButton.$element.is(':visible')) {
       this.previewButton.$element.hide();
       this.viewChangesButton.$element.show();
       this.adjustLabels();

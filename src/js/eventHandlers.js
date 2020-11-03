@@ -61,9 +61,9 @@ export function globalKeyDownHandler(e) {
 
   if (
     // Ctrl+Alt+Q
-    (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 81) ||
+    (e.keyCode === 81 && e.ctrlKey && !e.shiftKey && e.altKey) ||
     // Q
-    (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 81 && !isInputFocused())
+    (e.keyCode === 81 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused())
   ) {
     e.preventDefault();
     const commentForm = CommentForm.getLastActiveCommentForm();
@@ -74,22 +74,22 @@ export function globalKeyDownHandler(e) {
 
   if (navPanel.isMounted()) {
     // R
-    if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 82 && !isInputFocused()) {
+    if (e.keyCode === 82 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
       navPanel.refreshClick();
     }
 
     // W
-    if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 87 && !isInputFocused()) {
+    if (e.keyCode === 87 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
       navPanel.goToPreviousNewComment();
     }
 
     // S
-    if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 83 && !isInputFocused()) {
+    if (e.keyCode === 83 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
       navPanel.goToNextNewComment();
     }
 
     // F
-    if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 70 && !isInputFocused()) {
+    if (e.keyCode === 70 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
       navPanel.goToFirstUnseenComment();
     }
   }

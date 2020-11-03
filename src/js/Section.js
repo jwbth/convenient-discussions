@@ -1054,15 +1054,8 @@ export default class Section extends SectionSkeleton {
   locateInCode() {
     this.inCode = null;
 
-    const pageCode = this.getSourcePage().code;
-
-    const firstComment = this.comments[0];
-    const headline = normalizeCode(this.headline);
-    const adjustedPageCode = hideDistractingCode(pageCode);
-    const searchInput = { firstComment, headline, pageCode, adjustedPageCode };
-
     // Collect all possible matches
-    const matches = this.searchInCode(searchInput);
+    const matches = this.searchInCode(this.getSourcePage().code);
 
     let bestMatch;
     matches.forEach((match) => {
@@ -1255,15 +1248,14 @@ export default class Section extends SectionSkeleton {
   /**
    * Search for the section in the source code and return possible matches.
    *
-   * @param {object} options
-   * @param {Comment} options.firstComment
-   * @param {string} options.headline
-   * @param {string} options.pageCode
-   * @param {string} options.adjustedPageCode
+   * @param {string} pageCode
    * @returns {object}
    * @private
    */
-  searchInCode({ firstComment, headline, pageCode, adjustedPageCode }) {
+  searchInCode(pageCode) {
+    const firstComment = this.comments[0];
+    const headline = normalizeCode(this.headline);
+    const adjustedPageCode = hideDistractingCode(pageCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
 
     const matches = [];

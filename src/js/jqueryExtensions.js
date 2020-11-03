@@ -36,10 +36,10 @@ export default {
   /**
    * Scroll to the element.
    *
-   * @param {string} [alignment='top'] Where the element should be positioned relative to the
+   * @param {string} [alignment='top'] Where should the element be positioned relative to the
    *   viewport. Possible values: `'top'`, `'center'`, and `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
-   * @param {Function} [callback] A callback to run after the animation has completed.
+   * @param {Function} [callback] Callback to run after the animation has completed.
    * @returns {JQuery}
    * @memberof $.fn
    */
@@ -135,7 +135,7 @@ export default {
    * @param {string} [alignment] One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
    *   `'center'`, or `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
-   * @param {Function} [callback] A callback to run after the animation has completed.
+   * @param {Function} [callback] Callback to run after the animation has completed.
    * @returns {JQuery}
    * @memberof $.fn
    */

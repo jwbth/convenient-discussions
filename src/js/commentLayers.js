@@ -46,7 +46,7 @@ export default {
     // repositioned immediately and therefore not appearing as misplaced to this procedure. Two
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
-      const shouldBeHighlighted = Boolean(
+      const shouldBeHighlighted = (
         comment.isNew ||
         (comment.isOwn && cd.settings.highlightOwnComments) ||
         comment.isTarget ||
