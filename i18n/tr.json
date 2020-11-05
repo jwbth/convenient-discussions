@@ -318,6 +318,6 @@
 	"loading-ellipsis": "Yükleniyor...",
 	"addtopic": "Konu ekle",
 	"addtopicbutton-tooltip": "Kullanışlı Tartışmalarda değil, standart sayfada yeni bir konu oluşturmak için yeni bir sekmede açın",
-	"footer-enablecd": "Bu sayfadaki Uygun Tartışmaları etkinleştirin",
-	"footer-disablecd": "Bu sayfadaki Uygun Tartışmaları devre dışı bırakın"
+	"footer-enablecd": "Bu sayfada Uygun Tartışmaları bir kez çalıştırın",
+	"footer-disablecd": "Bu sayfada Uygun Tartışmaları bir kez çalıştırmayın"
 }

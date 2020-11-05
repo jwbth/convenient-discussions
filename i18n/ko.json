@@ -153,5 +153,6 @@
 	"error-blocked": "편집이 차단되어 있습니다. 문서는 편집되지 않았습니다.",
 	"error-pagedeleted": "문서가 삭제되었습니다.",
 	"error-pagenotedited": "문서는 편집되지 않았습니다.",
-	"loading-ellipsis": "불러오는 중…"
+	"loading-ellipsis": "불러오는 중…",
+	"addtopic": "주제 추가"
 }

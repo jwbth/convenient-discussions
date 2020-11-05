@@ -318,6 +318,6 @@
 	"loading-ellipsis": "Carregando…",
 	"addtopic": "Adicionar tópico",
 	"addtopicbutton-tooltip": "Abra em uma nova guia para criar um novo tópico na página padrão, não em Discussões convenientes",
-	"footer-enablecd": "Ativar discussões convenientes nesta página",
-	"footer-disablecd": "Desativar discussões convenientes nesta página"
+	"footer-enablecd": "Executar discussões convenientes nesta página uma vez",
+	"footer-disablecd": "Não executar discussões convenientes nesta página uma vez"
 }
