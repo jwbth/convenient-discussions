@@ -30,7 +30,7 @@ jobs:
           echo -e "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Create a tunnel in the background.
+          # Create a SSH tunnel in the background.
           ssh -o StrictHostKeyChecking=no -N -D 1081 ${{ secrets.TOOLFORGE_USER }}@tools-login.wmflabs.org &
           SSH_JOB="$!"
 
@@ -38,6 +38,7 @@ jobs:
           # start.
           trap "kill $SSH_JOB" EXIT
 
+          # Run the converter of a HTTP proxy to SOCKS.
           ./node_modules/.bin/hpts -s 127.0.0.1:1081 -p 8080 &
           HPTS_JOB="$!"
 
