@@ -1,20 +1,21 @@
 # Convenient Discussions ![lic](https://img.shields.io/github/license/jwbth/convenient-discussions)
 <img align="right" width="200" src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Convenient_Discussions_logo_color_textless.svg/200px-Convenient_Discussions_logo_color_textless.svg.png" />
 
-**Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://www.mediawiki.org/) discussion system that allows the user to post and edit comments without switching to a separate page.
+**Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://www.mediawiki.org/) discussion system that enhances user experience with talk pages in multiple ways.
 
 ## Features
-The full set of the script features includes much more:
+The script features include:
+* posting and editing comments without switching to a separate page;
+** @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
+** autofilling the edit summary with indication of the addressee of the comment;
+** saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
 * creating topics and subsections;
-* @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
 * highlighting and navigating new comments (via the navigation panel or the table of contents);
 * highlighting own comments;
 * desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in);
 * watching sections, which affects notifications and highlighting edits on pages that list revisions;
 * jumping to a specific comment from the watchlist and other pages that list revisions;
 * moving topics between talk pages;
-* autofilling the edit summary with the indication of the addressee of the comment;
-* saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
 * thanking for and copying links to edits that added comments;
 * slightly redesigned discussion threads that make it easier to follow which comment replies to which.
 
