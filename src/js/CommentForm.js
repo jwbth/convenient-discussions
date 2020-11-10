@@ -165,6 +165,8 @@ export default class CommentForm {
               })
               .data('mw-charinsert-done', true);
           });
+
+        mw.hook('wikipage.content').fire(this.$messageArea);
       });
     }
 
