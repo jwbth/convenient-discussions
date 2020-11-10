@@ -139,28 +139,33 @@ export default class CommentForm {
       if (this.preloadConfig?.editIntro) {
         code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
       }
-      parseCode(code, { title: cd.g.CURRENT_PAGE.name })
-        .then((result) => {
-          const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
-          this.$messageArea
-            .append(result.html)
-            .cdAddCloseButton()
-            .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
-            .parent()
-            .remove();
+      parseCode(code, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
+        const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
+        this.$messageArea
+          .append(result.html)
+          .cdAddCloseButton()
+          .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
+          .parent()
+          .remove();
 
-          this.$messageArea
-            .find('.mw-charinsert-item')
-            .on('click', (e) => {
-              const $link = $(e.currentTarget);
-              const range = this.commentInput.getRange();
-              const selection = this.commentInput.getValue().substring(range.from, range.to);
-              insertText(
-                this.commentInput,
-                $link.data('mw-charinsert-start') + selection + $link.data('mw-charinsert-end')
-              );
-            });
-        });
+        // We mirror the functionality of the "ext.charinsert" module keeping the undo/redo
+        // functionality.
+        this.$messageArea
+          .find('.mw-charinsert-item')
+          .each((i, el) => {
+            const $el = $(el);
+            $el
+              .on('click', () => {
+                const range = this.commentInput.getRange();
+                const selection = this.commentInput.getValue().substring(range.from, range.to);
+                insertText(
+                  this.commentInput,
+                  $el.data('mw-charinsert-start') + selection + $el.data('mw-charinsert-end')
+                );
+              })
+              .data('mw-charinsert-done', true);
+          });
+      });
     }
 
     this.createContents(dataToRestore);
