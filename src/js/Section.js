@@ -11,8 +11,9 @@ import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import toc from './toc';
+import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, unique } from './util';
+import { dealWithLoadingBug, defined, unique } from './util';
 import { editWatchedSections } from './modal';
 import {
   encodeWikilink,
@@ -569,7 +570,7 @@ export default class Section extends SectionSkeleton {
     MoveSectionDialog.prototype.editTargetPage = async function (source, target) {
       let codeBeginning;
       let codeEnding;
-      if (cd.config.getMoveTargetPageCode) {
+      if (cd.config.getMoveTargetPageCode && this.keepLinkCheckbox.isSelected()) {
         const code = (
           cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE)
         );
@@ -653,17 +654,14 @@ export default class Section extends SectionSkeleton {
       const timestamp = findFirstTimestamp(source.sectionInCode.code) || cd.g.SIGN_CODE + '~';
 
       let newSectionCode;
-      if (cd.config.getMoveSourcePageCode) {
+      if (cd.config.getMoveSourcePageCode && this.keepLinkCheckbox.isSelected()) {
         const code = cd.config.getMoveSourcePageCode(
           target.sectionWikilink,
           cd.g.CURRENT_USER_SIGNATURE,
           timestamp
         );
         newSectionCode = (
-          source.sectionInCode.code.slice(
-            0,
-            source.sectionInCode.relativeContentStartIndex
-          ) +
+          source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
           code +
           '\n\n'
         );
@@ -833,6 +831,14 @@ export default class Section extends SectionSkeleton {
           },
         });
 
+        if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
+          [this.keepLinkField, this.keepLinkCheckbox] = checkboxField({
+            value: 'keepLink',
+            selected: true,
+            label: cd.s('msd-keeplink'),
+          });
+        }
+
         let $sectionCodeNote = $('<div>');
         $('<pre>')
           .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : ''))
@@ -858,9 +864,10 @@ export default class Section extends SectionSkeleton {
 
         this.movePanel.$element.append([
           this.titleField.$element,
+          this.keepLinkField?.$element,
           $sectionCodeNote,
           this.summaryEndingField.$element,
-        ]);
+        ].filter(defined));
 
         this.stackLayout.setItem(this.movePanel);
         this.titleInput.focus();

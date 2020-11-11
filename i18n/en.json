@@ -297,6 +297,7 @@
   "msd-move": "Move",
   "msd-reload": "Reload",
   "msd-targetpage": "Enter the name of the discussion page to move the topic to:",
+  "msd-keeplink": "Keep a link to the new location on the page",
   "msd-summaryending": "Edit summary (will be added to the standard one)",
   "msd-error-wrongpage": "Wrong page.",
   "msd-error-sourcepagedeleted": "The current page was deleted.",
