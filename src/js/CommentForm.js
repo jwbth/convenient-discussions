@@ -27,6 +27,7 @@ import {
   saveScrollPosition,
   unhideText,
   unique,
+  wrapTextWithTrim,
 } from './util';
 import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
@@ -154,14 +155,17 @@ export default class CommentForm {
           .find('.mw-charinsert-item')
           .each((i, el) => {
             const $el = $(el);
+            const pre = $el.data('mw-charinsert-start');
+            const post = $el.data('mw-charinsert-end');
             $el
               .on('click', () => {
                 const range = this.commentInput.getRange();
+                const startPos = Math.min(range.from, range.to);
                 const selection = this.commentInput.getValue().substring(range.from, range.to);
-                insertText(
-                  this.commentInput,
-                  $el.data('mw-charinsert-start') + selection + $el.data('mw-charinsert-end')
-                );
+                insertText(this.commentInput, wrapTextWithTrim(selection, pre, post));
+                if (!selection) {
+                  this.commentInput.selectRange(startPos + pre.length);
+                }
               })
               .data('mw-charinsert-done', true);
           });
@@ -544,7 +548,7 @@ export default class CommentForm {
       .on('click', () => {
         const range = this.commentInput.getRange();
         const selection = this.commentInput.getValue().substring(range.from, range.to);
-        insertText(this.commentInput, pre + selection + post);
+        insertText(this.commentInput, wrapTextWithTrim(selection, pre, post));
       });
     this.$insertButtons.append($a, ' ');
   }
