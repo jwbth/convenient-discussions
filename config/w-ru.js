@@ -336,11 +336,11 @@ export default {
   },
 
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
-    return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>';
+    return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>\n';
   },
 
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return '{{перенесено с|' + targetPageWikilink + '|' + signature + '}}';
+    return '{{перенесено с|' + targetPageWikilink + '|' + signature + '}}\n';
   },
 };
 

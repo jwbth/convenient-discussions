@@ -637,8 +637,8 @@ export default {
   areNewTopicsOnTop: null,
 
   /**
-   * Function that returns the code to insert in the place of a section moved to another page. If
-   * `null`, the section is just removed from the page.
+   * Function that returns the code to insert in the place of a section moved to another page. The
+   * string normally ends with `\n`. If `null`, the section is just removed from the page.
    *
    * @type {?Function}
    * @kind function
@@ -664,8 +664,8 @@ export default {
 
   /**
    * Function that returns the code to insert in the beginning of the section moved from another
-   * page *or* an array of two strings to insert in the beginning and the ending of the section
-   * respectively. If `null`, no code will be added.
+   * page *or* an array of two strings to insert in the beginning and ending of the section
+   * respectively. The strings normally end with `\n`. If `null`, no code will be added.
    *
    * @type {?Function}
    * @kind function
