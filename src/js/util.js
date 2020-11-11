@@ -553,7 +553,7 @@ export function insertText(input, text) {
 
 /**
  * Filter out values of an object that can't be safely passed to worker (see {@link
- * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}}).
+ * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
  *
  * @param {object} obj
  * @param {Array} allowedFuncNames Names of the properties that should be passed to the worker

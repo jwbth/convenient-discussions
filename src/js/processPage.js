@@ -776,18 +776,7 @@ export default async function processPage(keptData = {}) {
 
     mw.hook('wikipage.content').add(connectToCommentLinks);
     mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
-  }
 
-  if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
-    $(document)
-      .on('keydown', globalKeyDownHandler)
-      .on('scroll resize orientationchange', () => {
-        navPanel.registerSeenComments();
-        navPanel.updateCommentFormButton();
-      });
-  }
-
-  if (cd.g.isFirstRun) {
     // Mutation observer doesn't follow all possible cases (for example, initiated with adding new
     // CSS) of comment position changing unfortunately.
     setInterval(() => {
@@ -805,6 +794,15 @@ export default async function processPage(keptData = {}) {
       childList: true,
       subtree: true,
     });
+  }
+
+  if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
+    $(document)
+      .on('keydown', globalKeyDownHandler)
+      .on('scroll resize orientationchange', () => {
+        navPanel.registerSeenComments();
+        navPanel.updateCommentFormButton();
+      });
   }
 
   let alwaysConfirmLeavingPage = false;
