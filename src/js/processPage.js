@@ -24,7 +24,7 @@ import {
   windowResizeHandler,
 } from './eventHandlers';
 import { adjustDom } from './modifyDom';
-import { areObjectsEqual, isInline, restoreScrollPosition } from './util';
+import { areObjectsEqual, isInline } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
@@ -728,8 +728,6 @@ export default async function processPage(keptData = {}) {
       firstVisibleElementData.top
     );
     window.scrollTo(0, y);
-  } else {
-    restoreScrollPosition(false);
   }
 
   highlightOwnComments();

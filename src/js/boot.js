@@ -16,6 +16,7 @@ import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
+import toc from './toc';
 import updateChecker from './updateChecker';
 import {
   areObjectsEqual,
@@ -24,6 +25,7 @@ import {
   getFromLocalStorage,
   hideText,
   mergeRegexps,
+  restoreScrollPosition,
   saveScrollPosition,
   saveToLocalStorage,
   transparentize,
@@ -728,6 +730,10 @@ export async function reloadPage(keptData = {}) {
 
   updateChecker.updatePageTitle(0, false);
   updatePageContent(parseData.text, keptData);
+
+  toc.possiblyHide();
+
+  restoreScrollPosition(false);
 }
 
 /**

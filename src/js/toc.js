@@ -11,6 +11,21 @@ import { restoreScrollPosition, saveScrollPosition } from './util';
 
 export default {
   /**
+   * Hide the TOC if the relevant cookie is set. This method duplicates {@link
+   * https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js
+   * the native MediaWiki function} and exists because we may need to hide the TOC faster than the
+   * native method does it.
+   */
+  possiblyHide() {
+    const $toc = $('.toc');
+    if (!$toc.length) return;
+
+    if (mw.cookie.get('hidetoc') === '1') {
+      $toc.find('.toctogglecheckbox').prop('checked', true);
+    }
+  },
+
+  /**
    * Highlight (bold) watched sections.
    */
   highlightWatchedSections() {

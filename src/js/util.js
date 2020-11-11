@@ -361,14 +361,14 @@ export function unhideText(text, hidden) {
 export function saveScrollPosition(saveTocHeight = true) {
   keptScrollPosition = window.pageYOffset;
   const $toc = $('.toc');
-  if (
+  keptTocHeight = (
     (saveTocHeight || keptTocHeight) &&
     $toc.length &&
     window.pageYOffset !== 0 &&
     window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.outerHeight()
-  ) {
-    keptTocHeight = $toc.height();
-  }
+  ) ?
+    $toc.outerHeight() :
+    null;
 }
 
 /**
@@ -381,7 +381,7 @@ export function restoreScrollPosition(resetTocHeight = true) {
   if (keptScrollPosition === null) return;
 
   if (keptTocHeight) {
-    keptScrollPosition += ($('.toc').height() || 0) - keptTocHeight;
+    keptScrollPosition += ($('.toc').outerHeight() || 0) - keptTocHeight;
   }
   window.scrollTo(0, keptScrollPosition);
 
