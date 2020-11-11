@@ -11,11 +11,17 @@ import cd from './cd';
 import navPanel from './navPanel';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { addNotification, closeNotifications, getNotifications, reloadPage } from './boot';
+import {
+  addNotification,
+  closeNotifications,
+  getNotifications,
+  isLoadingOverlayOn,
+  reloadPage,
+} from './boot';
 import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
 import { handleApiReject, isCommentEdit, keepWorkerSafeValues, unique } from './util';
 
-let newRevisions;
+let lastCheckedRevisionId;
 let notifiedAbout;
 let isBackgroundCheckArranged;
 
@@ -72,10 +78,7 @@ async function checkForUpdates() {
   // Precaution
   isBackgroundCheckArranged = false;
 
-  const rvstartid = newRevisions.length ?
-    newRevisions[newRevisions.length - 1] :
-    mw.config.get('wgRevisionId');
-
+  const rvstartid = lastCheckedRevisionId || mw.config.get('wgRevisionId');
   try {
     const resp = await makeRequestNoTimers({
       action: 'query',
@@ -97,20 +100,13 @@ async function checkForUpdates() {
       });
     }
 
-    const addedNewRevisions = revisions
-      .filter((revision, i) => (
-        i !== 0 &&
-        !revision.minor &&
-        Math.abs(revision.size - revisions[i - 1].size) >= cd.config.bytesToDeemComment &&
-        !isCommentEdit(revision.comment)
-      ))
-      .map((revision) => revision.revid);
-    newRevisions.push(...addedNewRevisions);
-
-    // Precaution
-    newRevisions = newRevisions.filter(unique);
-
-    if (addedNewRevisions.length) {
+    const newRevisions = revisions.filter((revision, i) => (
+      i !== 0 &&
+      !revision.minor &&
+      Math.abs(revision.size - revisions[i - 1].size) >= cd.config.bytesToDeemComment &&
+      !isCommentEdit(revision.comment)
+    ));
+    if (newRevisions.length) {
       await updateChecker.processPage();
     }
   } catch (e) {
@@ -419,7 +415,12 @@ async function onMessageFromWorker(e) {
     checkForUpdates();
   }
 
-  if (message.type === 'parse') {
+  if (
+    message.type === 'parse' &&
+    message.revisionId > mw.config.get('wgRevisionId') &&
+    !isLoadingOverlayOn()
+  ) {
+    lastCheckedRevisionId = message.revisionId;
     const { comments, sections } = message;
     toc.addNewSections(sections);
     processComments(comments);
@@ -443,7 +444,7 @@ const updateChecker = {
   init() {
     if (!cd.g.worker) return;
 
-    newRevisions = [];
+    lastCheckedRevisionId = null;
     notifiedAbout = [];
     this.relevantNewCommentAnchor = null;
     isBackgroundCheckArranged = false;
@@ -463,12 +464,13 @@ const updateChecker = {
    * @memberof module:updateChecker
    */
   async processPage() {
-    const { text } = await cd.g.CURRENT_PAGE.parse({
+    const { text, revid } = await cd.g.CURRENT_PAGE.parse({
       noTimers: true,
       markAsRead: false,
     }) || {};
     cd.g.worker.postMessage({
       type: 'parse',
+      revisionId: revid,
       text,
       g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER']),
       config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),

@@ -181,6 +181,7 @@ function onMessageFromWindow(e) {
 
     postMessage({
       type: 'parse',
+      revisionId: message.revisionId,
       comments: cd.comments.map(keepWorkerSafeValues),
       sections: cd.sections.map(keepWorkerSafeValues),
     });
