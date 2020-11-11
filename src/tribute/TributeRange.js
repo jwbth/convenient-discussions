@@ -457,9 +457,11 @@ class TributeRange {
 
         let top = 0
         let left = 0
+        let right = 0
         if (this.menuContainerIsBody) {
           top = rect.top
           left = rect.left
+          right = rect.right
         }
 
         let coordinates = {
@@ -467,11 +469,12 @@ class TributeRange {
                 parseInt(computed.fontSize) - element.scrollTop
         }
         if (this.tribute.isRtl) {
-            coordinates.right = windowWidth - (windowLeft + left + span.offsetLeft +
-                span.offsetWidth + parseInt(computed.borderLeftWidth) - triggerSpan.offsetWidth)
+            coordinates.right = (windowWidth - right) +
+                (span.parentElement.offsetWidth - span.offsetLeft) +
+                parseInt(computed.borderLeftWidth)
         } else {
-            coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth
-                parseInt(computed.borderLeftWidth) + 1
+            coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth +
+                parseInt(computed.borderLeftWidth)
         }
 
         let menuDimensions = this.getMenuDimensions()
