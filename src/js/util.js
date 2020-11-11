@@ -360,14 +360,14 @@ export function unhideText(text, hidden) {
  */
 export function saveScrollPosition(saveTocHeight = true) {
   keptScrollPosition = window.pageYOffset;
-  const $toc = $('.toc');
   keptTocHeight = (
     (saveTocHeight || keptTocHeight) &&
-    $toc.length &&
+    cd.g.$toc.length &&
+    !cd.g.isTocFloating &&
     window.pageYOffset !== 0 &&
-    window.pageYOffset + window.innerHeight > $toc.offset().top + $toc.outerHeight()
+    window.pageYOffset + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
   ) ?
-    $toc.outerHeight() :
+    cd.g.$toc.outerHeight() :
     null;
 }
 
@@ -381,7 +381,7 @@ export function restoreScrollPosition(resetTocHeight = true) {
   if (keptScrollPosition === null) return;
 
   if (keptTocHeight) {
-    keptScrollPosition += ($('.toc').outerHeight() || 0) - keptTocHeight;
+    keptScrollPosition += (cd.g.$toc.outerHeight() || 0) - keptTocHeight;
   }
   window.scrollTo(0, keptScrollPosition);
 

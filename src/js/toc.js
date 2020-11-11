@@ -17,11 +17,10 @@ export default {
    * native method does it.
    */
   possiblyHide() {
-    const $toc = $('.toc');
-    if (!$toc.length) return;
+    if (!cd.g.$toc.length) return;
 
     if (mw.cookie.get('hidetoc') === '1') {
-      $toc.find('.toctogglecheckbox').prop('checked', true);
+      cd.g.$toc.find('.toctogglecheckbox').prop('checked', true);
     }
   },
 
@@ -29,13 +28,10 @@ export default {
    * Highlight (bold) watched sections.
    */
   highlightWatchedSections() {
-    if (!cd.settings.modifyToc) return;
-
-    const $toc = $('.toc');
-    if (!$toc.length) return;
+    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
     const headlines = cd.sections.map((section) => section.headline);
-    const $allLinks = $toc
+    const $allLinks = cd.g.$toc
       .find('a')
       .each((i, el) => {
         el.cdTocText = $(el).find('.toctext').text();
@@ -78,16 +74,13 @@ export default {
    * @param {SectionSkeletonLike[]} sections All sections on the page.
    */
   addNewSections(sections) {
-    if (!cd.settings.modifyToc) return;
+    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    const $toc = $('.toc');
-    if (!$toc.length) return;
-
-    $toc
+    cd.g.$toc
       .find('.cd-toc-notLoadedSectionList, .cd-toc-notLoadedSection')
       .remove();
 
-    const tocSections = $toc
+    const tocSections = cd.g.$toc
       .find('li > a')
       .toArray()
       .map((el) => {
@@ -139,7 +132,7 @@ export default {
     });
 
     let currentTree = [];
-    const $topUl = $toc.children('ul');
+    const $topUl = cd.g.$toc.children('ul');
     sections.forEach((section) => {
       let match = tocSections.find((tocSection) => (
         // Anchor check is included as a fallback in case of minor differences in how MediaWIki and
@@ -229,10 +222,7 @@ export default {
    * @param {CommentSkeletonLike[]|Comment[]} commentsBySection
    */
   addNewComments(commentsBySection) {
-    if (!cd.settings.modifyToc) return;
-
-    const $toc = $('.toc');
-    if (!$toc.length) return;
+    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
     const firstAnchor = Object.keys(commentsBySection)[0];
     if (!firstAnchor) return;
@@ -241,7 +231,7 @@ export default {
 
     saveScrollPosition(!areCommentsLoaded || !cd.g.hasPageBeenReloaded);
 
-    $toc
+    cd.g.$toc
       .find('.cd-toc-notLoadedCommentList')
       .remove();
 
@@ -249,7 +239,7 @@ export default {
       .filter((anchor) => anchor !== '_')
       .forEach((anchor) => {
         // .first() in case of a collision with a section we added above with toc.addNewSections().
-        const $sectionLink = $toc.find(`a[href="#${$.escapeSelector(anchor)}"]`).first();
+        const $sectionLink = cd.g.$toc.find(`a[href="#${$.escapeSelector(anchor)}"]`).first();
         if (!$sectionLink.length) return;
 
         let $target = $sectionLink;
