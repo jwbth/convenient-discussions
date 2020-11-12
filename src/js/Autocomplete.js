@@ -131,7 +131,7 @@ export default class Autocomplete {
       mentions: {
         trigger: cd.config.mentionCharacter,
         searchOpts: { skip: true },
-        requireLeadingSpace: true,
+        requireLeadingSpace: cd.config.mentionRequiresLeadingSpace,
         selectTemplate,
         values: async (text, callback) => {
           if (

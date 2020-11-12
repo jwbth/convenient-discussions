@@ -330,11 +330,19 @@ export default {
   paragraphTemplates: [],
 
   /**
-   * Character used to trigger user mentions (pings).
+   * Character used to trigger user mention (ping) autocomplete.
    *
    * @type {string}
    */
   mentionCharacter: '@',
+
+  /**
+   * There should be a leading space (or other punctuation) before {@link
+   * module:defaultConfig.mentionCharacter the mention character} to trigger autocomplete.
+   *
+   * @type {boolean}
+   */
+  mentionRequiresLeadingSpace: true,
 
   /**
    * Array of two strings to insert before and after the selection when quote function is activated
