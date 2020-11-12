@@ -587,24 +587,3 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
   });
   return newObj;
 }
-
-/**
- * Wrap text from both sides moving the leading and trailing spaces to the sides of the resulting
- * text.
- *
- * @param {string} text
- * @param {string} pre
- * @param {string} post
- * @returns {string}
- */
-export function wrapTextWithTrim(text, pre, post) {
-  const [leadingSpace] = text.match(/^ */);
-  const [trailingSpace] = text.match(/ *$/);
-  return (
-    leadingSpace +
-    pre +
-    text.slice(leadingSpace.length, text.length - trailingSpace.length) +
-    post +
-    trailingSpace
-  );
-}

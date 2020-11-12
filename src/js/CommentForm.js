@@ -27,7 +27,6 @@ import {
   saveScrollPosition,
   unhideText,
   unique,
-  wrapTextWithTrim,
 } from './util';
 import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
@@ -149,7 +148,7 @@ export default class CommentForm {
           .parent()
           .remove();
 
-        // We mirror the functionality of the "ext.charinsert" module keeping the undo/redo
+        // We mirror the functionality of the "ext.charinsert" module to keep the undo/redo
         // functionality.
         this.$messageArea
           .find('.mw-charinsert-item')
@@ -159,13 +158,7 @@ export default class CommentForm {
             const post = $el.data('mw-charinsert-end');
             $el
               .on('click', () => {
-                const range = this.commentInput.getRange();
-                const startPos = Math.min(range.from, range.to);
-                const selection = this.commentInput.getValue().substring(range.from, range.to);
-                insertText(this.commentInput, wrapTextWithTrim(selection, pre, post));
-                if (!selection) {
-                  this.commentInput.selectRange(startPos + pre.length);
-                }
+                this.encapsulateSelection({ pre, post });
               })
               .data('mw-charinsert-done', true);
           });
@@ -546,9 +539,7 @@ export default class CommentForm {
       .text(displayedText)
       .addClass('cd-insertButtons-item')
       .on('click', () => {
-        const range = this.commentInput.getRange();
-        const selection = this.commentInput.getValue().substring(range.from, range.to);
-        insertText(this.commentInput, wrapTextWithTrim(selection, pre, post));
+        this.encapsulateSelection({ pre, post });
       });
     this.$insertButtons.append($a, ' ');
   }
@@ -3265,18 +3256,13 @@ export default class CommentForm {
    *   selection is empty.
    */
   quote(allowEmptySelection = true) {
-    const selectionText = isInputFocused() ?
+    const selection = isInputFocused() ?
       document.activeElement.value
         .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd) :
-      window.getSelection().toString().trim();
-    // With just the "Q" hotkey, empty selection doesn't count.
-    if (selectionText || allowEmptySelection) {
-      // We don't use the native insertContent() function here in order to prevent harm from
-      // replacing the selected text (when both the text in the input and on the page is
-      // selected), and we don't use encapsulateContent() to insert exactly at the cursor position
-      // which can be in the beginning and in the end of the selection depending on where it
-      // started. On top of that, we don't use setValue() by default because we want to keep the
-      // undo/redo functionality.
+      window.getSelection().toString();
+
+    // With just "Q" pressed, empty selection doesn't count.
+    if (selection || allowEmptySelection) {
       const isCommentInputFocused = this.commentInput.$input.is(':focus');
       const range = this.commentInput.getRange();
       const caretIndex = range.to;
@@ -3289,20 +3275,59 @@ export default class CommentForm {
         rangeStart = rangeEnd = caretIndex;
       }
 
-      const quotePre = cd.config.quoteFormatting[0];
-      const quotePost = cd.config.quoteFormatting[1];
-      const quotation = quotePre + (selectionText || cd.s('cf-quote-placeholder')) + quotePost;
-      const newRangeStart = rangeStart + (selectionText ? quotation.length : quotePre.length);
-      const newRangeEnd = selectionText ?
-        newRangeStart :
-        newRangeStart + cd.s('cf-quote-placeholder').length;
-      insertText(this.commentInput, quotation);
-      this.commentInput.selectRange(newRangeStart, newRangeEnd);
+      this.encapsulateSelection({
+        pre: cd.config.quoteFormatting[0],
+        peri: cd.s('cf-quote-placeholder'),
+        post: cd.config.quoteFormatting[1],
+        selection,
+        trim: true,
+      });
     }
   }
 
   /**
-   * Get the name of the correlated property of the comment form target based on the comment for mode.
+   * Wrap the selected text in the comment input with other text, optionally falling back to the
+   * provided value if no text is selected.
+   *
+   * @param {object} options
+   * @param {string} options.pre Text to insert before the caret/selection.
+   * @param {string} [options.peri=''] Fallback value used instead of the selection.
+   * @param {string} options.post Text to insert after the caret/selection.
+   * @param {string} [options.selection] The selected text. Use if it is out of the input.
+   * @param {boolean} [options.trim] Trim the selection.
+   */
+  encapsulateSelection({ pre, peri = '', post, selection, trim }) {
+    let middleTextStartPos;
+    if (!selection) {
+      const range = this.commentInput.getRange();
+      middleTextStartPos = Math.min(range.from, range.to) + pre.length;
+      selection = this.commentInput.getValue().substring(range.from, range.to);
+    }
+    if (trim) {
+      selection = selection.trim();
+    }
+
+    // Wrap text moving the leading and trailing spaces to the sides of the resulting text.
+    const [leadingSpace] = selection.match(/^ */);
+    const [trailingSpace] = selection.match(/ *$/);
+    const middleText = selection || peri;
+    const text = (
+      leadingSpace +
+      pre +
+      middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
+      post +
+      trailingSpace
+    );
+
+    insertText(this.commentInput, text);
+    if (!selection) {
+      this.commentInput.selectRange(middleTextStartPos, middleTextStartPos + peri.length);
+    }
+  }
+
+  /**
+   * Get the name of the correlated property of the comment form target based on the comment for
+   * mode.
    *
    * @param {string} mode
    * @returns {string}
