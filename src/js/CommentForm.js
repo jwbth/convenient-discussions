@@ -667,15 +667,6 @@ export default class CommentForm {
     }
 
     /**
-     * A wrapper for other comment form elements placed inside the main element.
-     *
-     * @type {JQuery}
-     */
-    this.$innerWrapper = $('<div>')
-      .addClass('cd-commentForm-innerWrapper')
-      .appendTo(this.$element);
-
-    /**
      * The area where service messages are displayed.
      *
      * @type {JQuery}
@@ -1148,7 +1139,7 @@ export default class CommentForm {
       this.submitButton.$element,
     ]);
     this.$buttonsContainer.append(this.$leftButtonsContainer, this.$rightButtonsContainer);
-    this.$innerWrapper.append([
+    this.$element.append([
       this.$messageArea,
       this.headlineInput?.$element,
       this.commentInput.$element,
@@ -1169,11 +1160,11 @@ export default class CommentForm {
     if (cd.settings.autopreview) {
       this.$previewArea
         .addClass('cd-previewArea-below')
-        .appendTo(this.$innerWrapper);
+        .appendTo(this.$element);
     } else {
       this.$previewArea
         .addClass('cd-previewArea-above')
-        .prependTo(this.$innerWrapper);
+        .prependTo(this.$element);
     }
 
     if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
@@ -1183,7 +1174,7 @@ export default class CommentForm {
       $('<div>')
         .html('&nbsp;')
         .addClass('cd-commentForm-dummyElement')
-        .prependTo(this.$innerWrapper);
+        .prependTo(this.$element);
     }
 
     const moduleNames = cd.config.customCommentFormModules
@@ -1585,7 +1576,7 @@ export default class CommentForm {
    * shrink.
    */
   adjustLabels() {
-    let formWidth = this.$innerWrapper.width();
+    let formWidth = this.$element.width();
 
     if (this.$element.hasClass('cd-commentForm-short')) {
       if (formWidth >= this.buttonsTotalWidthStandard + 7) {
