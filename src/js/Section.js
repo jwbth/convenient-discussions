@@ -972,13 +972,13 @@ export default class Section extends SectionSkeleton {
    * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
    */
   watch(silent = false) {
-    let $link;
+    let $links;
     if (!silent) {
-      $link = this.$heading.find('.cd-sectionLink-watch');
-      if ($link.hasClass('cd-sectionLink-pending')) {
+      $links = $('.cd-sectionLink-watch, .cd-sectionLink-unwatch');
+      if ($links.hasClass('cd-sectionLink-pending')) {
         return;
       } else {
-        $link.addClass('cd-sectionLink-pending');
+        $links.addClass('cd-sectionLink-pending');
       }
     }
     Section.watchSection(
@@ -986,8 +986,8 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          if ($link) {
-            $link.removeClass('cd-sectionLink-pending');
+          if ($links) {
+            $links.removeClass('cd-sectionLink-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.isWatched = true;
@@ -996,8 +996,8 @@ export default class Section extends SectionSkeleton {
           toc.highlightWatchedSections();
         },
         errorCallback: () => {
-          if ($link) {
-            $link.removeClass('cd-sectionLink-pending');
+          if ($links) {
+            $links.removeClass('cd-sectionLink-pending');
           }
         },
     });
@@ -1009,13 +1009,13 @@ export default class Section extends SectionSkeleton {
    * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
    */
   unwatch(silent = false) {
-    let $link;
+    let $links;
     if (!silent) {
-      $link = this.$heading.find('.cd-sectionLink-unwatch');
-      if ($link.hasClass('cd-sectionLink-pending')) {
+      $links = $('.cd-sectionLink-watch, .cd-sectionLink-unwatch');
+      if ($links.hasClass('cd-sectionLink-pending')) {
         return;
       } else {
-        $link.addClass('cd-sectionLink-pending');
+        $links.addClass('cd-sectionLink-pending');
       }
     }
     const watchedAncestor = this.getWatchedAncestor();
@@ -1024,8 +1024,8 @@ export default class Section extends SectionSkeleton {
       {
         silent,
         successCallback: () => {
-          if ($link) {
-            $link.removeClass('cd-sectionLink-pending');
+          if ($links) {
+            $links.removeClass('cd-sectionLink-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.isWatched = false;
@@ -1034,8 +1034,8 @@ export default class Section extends SectionSkeleton {
           toc.highlightWatchedSections();
         },
         errorCallback: () => {
-          if ($link) {
-            $link.removeClass('cd-sectionLink-pending');
+          if ($links) {
+            $links.removeClass('cd-sectionLink-pending');
           }
         },
         watchedAncestorHeadline: watchedAncestor?.headline,
