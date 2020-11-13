@@ -496,7 +496,7 @@ class TributeRange {
         }
         if (this.tribute.isRtl) {
             coordinates.right = (windowWidth - right) +
-                (windowWidth - span.getBoundingClientRect().right) + triggerSpan.offsetWidth - 1
+                (windowWidth - span.getBoundingClientRect().right) + triggerSpan.offsetWidth
         } else {
             coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth + 1
         }
