@@ -384,14 +384,40 @@ class TributeRange {
 
     // jwbth: Added RTL support.
     getTextAreaOrInputUnderlinePosition(element, position) {
-        let properties = ['direction', 'boxSizing', 'width', 'height', 'overflowX',
-            'overflowY', 'borderTopWidth', 'borderRightWidth',
-            'borderBottomWidth', 'borderLeftWidth', 'paddingTop',
-            'paddingRight', 'paddingBottom', 'paddingLeft',
-            'fontStyle', 'fontVariant', 'fontWeight', 'fontStretch',
-            'fontSize', 'fontSizeAdjust', 'lineHeight', 'fontFamily',
-            'tabSize', 'textAlign', 'textTransform', 'textIndent',
-            'textDecoration', 'letterSpacing', 'wordSpacing'
+        let properties = [
+            'borderBottomStyle',
+            'borderBottomWidth',
+            'borderLeftStyle',
+            'borderLeftWidth',
+            'borderRightStyle',
+            'borderRightWidth',
+            'borderTopStyle',
+            'borderTopWidth',
+            'boxSizing',
+            'direction',
+            'fontFamily',
+            'fontSize',
+            'fontSizeAdjust',
+            'fontStretch',
+            'fontStyle',
+            'fontVariant',
+            'fontWeight',
+            'height',
+            'letterSpacing',
+            'lineHeight',
+            'overflowX',
+            'overflowY',
+            'paddingBottom',
+            'paddingLeft',
+            'paddingRight',
+            'paddingTop',
+            'tabSize',
+            'textAlign',
+            'textDecoration',
+            'textIndent',
+            'textTransform',
+            'width',
+            'wordSpacing'
         ]
 
         let isFirefox = (window.mozInnerScreenX !== null)
@@ -470,11 +496,9 @@ class TributeRange {
         }
         if (this.tribute.isRtl) {
             coordinates.right = (windowWidth - right) +
-                (span.parentElement.offsetWidth - span.offsetLeft) +
-                parseInt(computed.borderLeftWidth)
+                (windowWidth - span.getBoundingClientRect().right) + triggerSpan.offsetWidth - 1
         } else {
-            coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth +
-                parseInt(computed.borderLeftWidth)
+            coordinates.left = windowLeft + left + span.offsetLeft + triggerSpan.offsetWidth + 1
         }
 
         let menuDimensions = this.getMenuDimensions()
