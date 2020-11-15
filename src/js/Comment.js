@@ -543,7 +543,7 @@ export default class Comment extends CommentSkeleton {
    * Highlight the comment when it is focused.
    */
   highlightFocused() {
-    if (cd.util.isPageOverlayOn() || this.isFocused) return;
+    if (this.isFocused || cd.util.isPageOverlayOn()) return;
 
     const isMoved = this.configureLayers();
 

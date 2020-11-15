@@ -110,7 +110,7 @@ async function checkForUpdates() {
       await updateChecker.processPage();
     }
   } catch (e) {
-    if (e?.data?.type !== 'network') {
+    if (e?.data && e.data.type !== 'network') {
       console.warn(e);
     }
   }

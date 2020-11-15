@@ -1110,6 +1110,7 @@ export default class Section extends SectionSkeleton {
               lastComment.inCode &&
               (
                 !lastComment.inCode.indentationChars.startsWith('#') ||
+
                 // For now we use the workaround with commentForm.containerListType to make sure "#"
                 // is a part of comments organized in a numbered list, not of a numbered list _in_
                 // the target comment.
