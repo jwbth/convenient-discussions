@@ -712,7 +712,7 @@ export async function reloadPage(keptData = {}) {
   }
 
   cd.commentForms.forEach((commentForm) => {
-    (commentForm.$outerWrapper || commentForm.$wrappingList || commentForm.$element).detach();
+    commentForm.$outermostElement.detach();
   });
 
   mw.config.set({

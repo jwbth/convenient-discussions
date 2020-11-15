@@ -667,6 +667,15 @@ export default class CommentForm {
     }
 
     /**
+     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
+     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
+     * return the DOM to the original state, before the form was created.
+     *
+     * @type {JQuery}
+     */
+    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
+
+    /**
      * The area where service messages are displayed.
      *
      * @type {JQuery}
@@ -2966,7 +2975,7 @@ export default class CommentForm {
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
     this.forget();
-    this.$element.remove();
+    this.$outermostElement.remove();
 
     /**
      * Has the comment form been {@link module:CommentForm#destroy destroyed}.
