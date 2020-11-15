@@ -3191,13 +3191,9 @@ export default class CommentForm {
       this.minorCheckbox.setSelected(false);
 
       this.commentInput.setDisabled(true);
-      if (this.headlineInput) {
-        this.headlineInput.setDisabled(true);
-      }
+      this.headlineInput?.setDisabled(true);
       this.minorCheckbox.setDisabled(true);
-      if (this.omitSignatureCheckbox) {
-        this.omitSignatureCheckbox.setDisabled(true);
-      }
+      this.omitSignatureCheckbox?.setDisabled(true);
 
       this.$element.addClass('cd-commentForm-disabled');
 
@@ -3215,13 +3211,9 @@ export default class CommentForm {
       this.minorCheckbox.setSelected(this.initialMinorCheckboxSelected);
 
       this.commentInput.setDisabled(false);
-      if (this.headlineInput) {
-        this.headlineInput.setDisabled(false);
-      }
+      this.headlineInput?.setDisabled(false);
       this.minorCheckbox.setDisabled(false);
-      if (this.omitSignatureCheckbox) {
-        this.omitSignatureCheckbox.setDisabled(false);
-      }
+      this.omitSignatureCheckbox?.setDisabled(false);
 
       this.$element.removeClass('cd-commentForm-disabled');
 
