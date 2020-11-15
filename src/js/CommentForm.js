@@ -1364,28 +1364,30 @@ export default class CommentForm {
         this.lastFocused = new Date();
       });
 
-    this.headlineInput
-      ?.on('change', (headline) => {
-        this.updateAutoSummary(true, true);
+    if (this.headlineInput) {
+      this.headlineInput
+        .on('change', (headline) => {
+          this.updateAutoSummary(true, true);
 
-        if (headline.includes('{{') && !this.preloadConfig?.headline) {
-          this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
-            type: 'warning',
-            name: 'templateInHeadline',
-          });
-        } else {
-          this.hideMessage('templateInHeadline');
+          if (headline.includes('{{') && !this.preloadConfig?.headline) {
+            this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
+              type: 'warning',
+              name: 'templateInHeadline',
+            });
+          } else {
+            this.hideMessage('templateInHeadline');
+          }
+        })
+        .on('change', preview)
+        .on('change', saveSessionEventHandler);
+
+      this.headlineInput.$input.on('keydown', (e) => {
+        // Enter
+        if (e.keyCode === 13) {
+          this.submit();
         }
-      })
-      .on('change', preview)
-      .on('change', saveSessionEventHandler);
-
-    this.headlineInput.$input.on('keydown', (e) => {
-      // Enter
-      if (e.keyCode === 13) {
-        this.submit();
-      }
-    });
+      });
+    }
 
     this.commentInput
       .on('change', (text) => {
