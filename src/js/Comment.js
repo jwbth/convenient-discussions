@@ -1817,10 +1817,14 @@ export default class Comment extends CommentSkeleton {
 
       // If the comment is to be put after a comment with different indentation characters, use
       // these.
-      const [, changedIndentationChars] = adjustedCodeInBetween.match(/\n([:*#]{2,}).*\n$/) || [];
+      const [, changedIndentationChars] = (
+        adjustedCodeInBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) ||
+        []
+      );
       if (changedIndentationChars) {
-        // Note a bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used "slice(0, thisInCode.indentationChars.length + 1)".
+        // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
+        // possible here when we used ".slice(0, thisInCode.indentationChars.length + 1)" (due to
+        // "**" as indentation characters in Bsivko's comment).
         thisInCode.replyIndentationChars = changedIndentationChars
           .slice(0, thisInCode.replyIndentationChars.length)
           .replace(/:$/, cd.config.defaultIndentationChar);
