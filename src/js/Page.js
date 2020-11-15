@@ -392,7 +392,8 @@ export default class Page {
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
    * @param {object} options
-   * @returns {number|undefined} editTimestamp
+   * @returns {number|string} editTimestamp Unix time of the edit or `'nochange'`, if nothing has
+   *   changed.
    */
   async edit(options) {
     let resp;
@@ -488,7 +489,7 @@ export default class Page {
 
     this.pageId = resp.edit.pageid;
 
-    return resp.edit.newtimestamp;
+    return resp.edit.newtimestamp || 'nochange';
   }
 
   /**
