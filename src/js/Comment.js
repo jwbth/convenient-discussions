@@ -1774,7 +1774,7 @@ export default class Comment extends CommentSkeleton {
       });
       const adjustedChunkCodeAfter = adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
 
-      const searchedIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
+      const maxIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
       const properPlaceRegexp = new RegExp(
         '^([^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
@@ -1786,16 +1786,20 @@ export default class Comment extends CommentSkeleton {
         // "\x01" is from hiding closed discussions and HTML comments. TODO: Line can start with a
         // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
         // need to change `wikitext.hideDistractingCode`.
-        '|(?:^|\\n)\\x01.+)\\n)\\n*' +
-        (
-          searchedIndentationCharsLength > 0 ?
-          `[:*#\\x01]{0,${searchedIndentationCharsLength}}` :
-          ''
-        ) +
+        '|(?:^|\\n)\\x01.+)\\n)\\n*(?:' +
 
         // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
         // closed discussions.
-        '(?![:*#\\n\\x01])'
+        '(?![:*#\\n\\x01])' +
+
+        // This excludes the case where "#" is starting a numbered list inside a comment
+        // (https://ru.wikipedia.org/w/index.php?diff=110482717).
+        (
+          maxIndentationCharsLength > 0 ?
+          `|[:*#\\x01]{0,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
+          ''
+        ) +
+        ')'
       );
       let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
