@@ -1641,20 +1641,26 @@ export default class CommentForm {
   /**
    * Push the pending status of the form inputs.
    *
-   * @param {boolean} blockButtons Whether to block buttons.
+   * @param {boolean} setDisabled Whether to set buttons and inputs disabled.
    * @param {boolean} affectHeadline Should the `pushPending` method be applied to the headline
    *   input.
    * @see
    *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-pushPending
    */
-  pushPending(blockButtons = false, affectHeadline = true) {
+  pushPending(setDisabled = false, affectHeadline = true) {
     this.commentInput.pushPending();
     this.summaryInput.pushPending();
-    if (this.headlineInput && affectHeadline) {
-      this.headlineInput.pushPending();
+    if (affectHeadline) {
+      this.headlineInput?.pushPending();
     }
 
-    if (blockButtons) {
+    if (setDisabled) {
+      this.commentInput.setDisabled(true);
+      this.summaryInput.setDisabled(true);
+      if (affectHeadline) {
+        this.headlineInput?.setDisabled(true);
+      }
+
       this.submitButton.setDisabled(true);
       this.previewButton.setDisabled(true);
       this.viewChangesButton.setDisabled(true);
@@ -1665,20 +1671,26 @@ export default class CommentForm {
   /**
    * Pop the pending status of the form inputs.
    *
-   * @param {boolean} [unblockButtons=false] Whether to unblock buttons if they were blocked.
+   * @param {boolean} [setEnabled=false] Whether to set buttons and inputs enabled.
    * @param {boolean} [affectHeadline=true] Should the `popPending` method be applied to the
    *   headline input.
    * @see
    *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-popPending
    */
-  popPending(unblockButtons = false, affectHeadline = true) {
+  popPending(setEnabled = false, affectHeadline = true) {
     this.commentInput.popPending();
     this.summaryInput.popPending();
-    if (this.headlineInput && affectHeadline) {
-      this.headlineInput.popPending();
+    if (affectHeadline) {
+      this.headlineInput?.popPending();
     }
 
-    if (unblockButtons) {
+    if (setEnabled) {
+      this.commentInput.setDisabled(false);
+      this.summaryInput.setDisabled(false);
+      if (affectHeadline) {
+        this.headlineInput?.setDisabled(false);
+      }
+
       this.submitButton.setDisabled(false);
       this.previewButton.setDisabled(false);
       this.viewChangesButton.setDisabled(false);
