@@ -303,10 +303,12 @@ export default {
         });
 
         if (commentsBySection[anchor].length > 5) {
-          $('<li>')
+          const $span = $('<span>')
             .addClass('cd-toc-more')
             .attr('title', moreTooltipText.trim())
-            .text(cd.s('toc-more', commentsBySection[anchor].length - 5))
+            .text(cd.s('toc-more', commentsBySection[anchor].length - 5));
+          $('<li>')
+            .append($span)
             .appendTo($ul);
         }
       });
