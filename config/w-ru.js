@@ -481,11 +481,3 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
     });
   }
 });
-
-mw.loader.using('mediawiki.util').then(() => {
-  mw.util.addCSS(
-    '.ts-Закрыто {\n' +
-    '  margin-left: -1em;\n' +
-    '}\n'
-  );
-});
