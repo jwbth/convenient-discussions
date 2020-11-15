@@ -1378,13 +1378,14 @@ export default class CommentForm {
         }
       })
       .on('change', preview)
-      .on('change', saveSessionEventHandler)
-      .on('keydown', (e) => {
-        // Enter
-        if (e.keyCode === 13) {
-          this.submit();
-        }
-      });
+      .on('change', saveSessionEventHandler);
+
+    this.headlineInput.$input.on('keydown', (e) => {
+      // Enter
+      if (e.keyCode === 13) {
+        this.submit();
+      }
+    });
 
     this.commentInput
       .on('change', (text) => {
@@ -1436,13 +1437,14 @@ export default class CommentForm {
           preview();
         }
       })
-      .on('change', saveSessionEventHandler)
-      .on('keydown', (e) => {
-        // Enter
-        if (e.keyCode === 13) {
-          this.submit();
-        }
-      });
+      .on('change', saveSessionEventHandler);
+
+    this.summaryInput.$input.on('keydown', (e) => {
+      // Enter
+      if (e.keyCode === 13) {
+        this.submit();
+      }
+    });
 
     if (this.minorCheckbox) {
       this.minorCheckbox
