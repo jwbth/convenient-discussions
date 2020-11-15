@@ -1364,23 +1364,27 @@ export default class CommentForm {
         this.lastFocused = new Date();
       });
 
-    if (this.headlineInput) {
-      this.headlineInput
-        .on('change', (headline) => {
-          this.updateAutoSummary(true, true);
+    this.headlineInput
+      ?.on('change', (headline) => {
+        this.updateAutoSummary(true, true);
 
-          if (headline.includes('{{') && !this.preloadConfig?.headline) {
-            this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
-              type: 'warning',
-              name: 'templateInHeadline',
-            });
-          } else {
-            this.hideMessage('templateInHeadline');
-          }
-        })
-        .on('change', preview)
-        .on('change', saveSessionEventHandler);
-    }
+        if (headline.includes('{{') && !this.preloadConfig?.headline) {
+          this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
+            type: 'warning',
+            name: 'templateInHeadline',
+          });
+        } else {
+          this.hideMessage('templateInHeadline');
+        }
+      })
+      .on('change', preview)
+      .on('change', saveSessionEventHandler)
+      .on('keydown', (e) => {
+        // Enter
+        if (e.keyCode === 13) {
+          this.submit();
+        }
+      });
 
     this.commentInput
       .on('change', (text) => {
@@ -1396,6 +1400,7 @@ export default class CommentForm {
       })
       .on('change', preview)
       .on('change', saveSessionEventHandler);
+
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
       if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
@@ -1431,7 +1436,13 @@ export default class CommentForm {
           preview();
         }
       })
-      .on('change', saveSessionEventHandler);
+      .on('change', saveSessionEventHandler)
+      .on('keydown', (e) => {
+        // Enter
+        if (e.keyCode === 13) {
+          this.submit();
+        }
+      });
 
     if (this.minorCheckbox) {
       this.minorCheckbox
