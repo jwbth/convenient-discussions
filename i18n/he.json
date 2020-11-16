@@ -182,7 +182,7 @@
 	"navpanel-newcomments-names": "$1 ← $2",
 	"navpanel-newcomments-unknowndate": "תאריך לא ידוע",
 	"navpanel-newcomments-refresh": "לחצו לרענון הדף.",
-	"toc-more": "...$1 יותר",
+	"toc-more": "{{PLURAL:$1|תגובה אחת נוספת|$1 תגובות נוספות}}",
 	"toc-watched": "אתם עוקבים אחר הנושא הזה",
 	"notification-toyou": "$1 {{gender:$2|ענה|ענתה|ענה}} לפוסט $3 שלכם.",
 	"notification-toyou-desktop": "$1 {{gender:$2|ענה|ענתה|ענה}} לפוסט $3 שלכם בדף \"$4\".",
@@ -274,6 +274,7 @@
 	"msd-move": "העברה",
 	"msd-reload": "טעינה מחדש",
 	"msd-targetpage": "הקלידו את שם דף השיחה אליו יש להעביר את הנושא:",
+	"msd-keeplink": "להשאיר קישור למיקום החדש בדף.",
 	"msd-summaryending": "תקציר עריכה (יתווסף לנוסח קבוע)",
 	"msd-error-wrongpage": "דף לא נכון.",
 	"msd-error-sourcepagedeleted": "הדף הנוכחי נמחק.",
@@ -319,6 +320,6 @@
 	"loading-ellipsis": "טעינה...",
 	"addtopic": "הוספת נושא",
 	"addtopicbutton-tooltip": "פתחו טאב חדש ליצירת נושא בדף רגיל ולא באמצעות דיונים נוחים.",
-	"footer-enablecd": "להדליק את דיונים נוחים בדף הזה.",
-	"footer-disablecd": "לכבות את דיונים נוחים בדף הזה."
+	"footer-enablecd": "להריץ את דיונים נוחים בדף הזה באופן חד פעמי.",
+	"footer-disablecd": "לא להריץ את דיונים נוחים בדף הזה באופן חד פעמי."
 }

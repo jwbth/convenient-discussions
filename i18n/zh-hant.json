@@ -271,6 +271,7 @@
 	"msd-move": "移動",
 	"msd-reload": "重新載入",
 	"msd-targetpage": "輸入將話題移至的討論頁面名稱：",
+	"msd-keeplink": "保留指向頁面上新位置的連結",
 	"msd-summaryending": "編輯摘要（會添加在標準摘要）",
 	"msd-error-wrongpage": "錯誤頁面。",
 	"msd-error-sourcepagedeleted": "目前的頁面已被刪除。",
@@ -316,6 +317,6 @@
 	"loading-ellipsis": "載入中…",
 	"addtopic": "新增話題",
 	"addtopicbutton-tooltip": "開啟新分頁在標準頁面上建立新的話題，而不是在 Convenient Discussions",
-	"footer-enablecd": "在此頁面啟用 Convenient Discussions",
-	"footer-disablecd": "在此頁面停用 Convenient Discussions"
+	"footer-enablecd": "在此頁面執行一次 Convenient Discussions",
+	"footer-disablecd": "不要在此頁面執行一次 Convenient Discussions"
 }
