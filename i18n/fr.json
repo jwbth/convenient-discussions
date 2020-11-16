@@ -277,6 +277,7 @@
 	"msd-move": "Renommer",
 	"msd-reload": "Recharger",
 	"msd-targetpage": "Saisir le nom de la page de discussion vers laquelle déplacer le sujet :",
+	"msd-keeplink": "Conserver un lien vers le nouvel emplacement sur la page",
 	"msd-summaryending": "Modifier le résumé (sera ajouté au standard)",
 	"msd-error-wrongpage": "Mauvaise page.",
 	"msd-error-sourcepagedeleted": "La page actuelle a été supprimée.",

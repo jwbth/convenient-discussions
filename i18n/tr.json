@@ -273,6 +273,7 @@
 	"msd-move": "Taşı",
 	"msd-reload": "Yeniden yükle",
 	"msd-targetpage": "Konuyu taşımak için tartışma sayfasının adını girin:",
+	"msd-keeplink": "Sayfadaki yeni konumun bağlantısını saklayın",
 	"msd-summaryending": "Değişiklik özeti (standart olana eklenir)",
 	"msd-error-wrongpage": "Yanlış sayfa.",
 	"msd-error-sourcepagedeleted": "Geçerli sayfa silindi.",
