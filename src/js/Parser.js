@@ -539,6 +539,7 @@ export default class Parser {
       let hasForeignComponents = null;
       if (!isTextNode) {
         if (
+          node === treeWalker.root ||
           foreignComponentClasses.some((className) => node.classList.contains(className)) ||
           node.getAttribute('id') === 'toc' ||
           node.tagName === 'TD' ||
