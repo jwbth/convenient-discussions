@@ -446,6 +446,11 @@ export function hideSensitiveCode(code) {
   const hide = (regexp, isTable) => {
     code = hideText(code, regexp, hidden, isTable);
   };
+  const hideTags = (...args) => {
+    args.forEach((arg) => {
+      hide(new RegExp(`<${arg}(?: [^>]+)?>[\\s\\S]+?<\\/${arg}>`, 'gi'));
+    });
+  };
 
   // Taken from
   // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
@@ -455,18 +460,11 @@ export function hideSensitiveCode(code) {
     ({code, hidden} = hideTemplatesRecursively(code, hidden));
   };
 
-  const hideTags = (...args) => {
-    args.forEach((arg) => {
-      hide(new RegExp(`<${arg}(?: [^>]+)?>[\\s\\S]+?<\\/${arg}>`, 'gi'));
-    });
-  };
-
+  hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
   hideTemplates();
 
-  // Hide tables
+  // Tables
   hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, true);
-
-  hideTags('nowiki', 'pre', 'source', 'syntaxhighlight');
 
   return { code, hidden };
 }
