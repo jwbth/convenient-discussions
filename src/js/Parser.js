@@ -883,8 +883,8 @@ export function findSpecialElements() {
   // Describe all floating elements on the page in order to calculate the right border (temporarily
   // setting "overflow: hidden") for all comments that they intersect with.
   const floatingElementsSelector = [
-    ...cd.g.FLOATING_ELEMENTS_SELECTORS,
-    ...cd.config.customFloatingElementsSelectors,
+    ...cd.g.FLOATING_ELEMENT_SELECTORS,
+    ...cd.config.customFloatingElementSelectors,
   ]
     .join(', ');
   const floating = cd.g.$root

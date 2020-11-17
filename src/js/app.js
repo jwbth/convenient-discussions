@@ -180,7 +180,7 @@ function addFooterLink(enable) {
   $('<a>')
     .attr('href', uri.toString())
     .addClass('noprint')
-    .text(cd.s(enable ? 'footer-enablecd' : 'footer-disablecd'))
+    .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
   $('#footer-places').append($li);
 }

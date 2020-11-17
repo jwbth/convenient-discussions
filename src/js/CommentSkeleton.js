@@ -111,7 +111,7 @@ export default class CommentSkeleton {
 
     const isHighlightable = (el) => (
       !/^H[1-6]$/.test(el.tagName) &&
-      !cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES.some((name) => el.classList.contains(name)) &&
+      !cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES.some((name) => el.classList.contains(name)) &&
       !/float: *(?:left|right)|display: *none/.test(el.getAttribute('style'))
     );
 

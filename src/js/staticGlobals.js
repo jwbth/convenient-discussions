@@ -3,7 +3,7 @@
  * that are known from the beginning and can be safely imported in a web worker (that doesn't have
  * access to the window scope). We assume that there is no point to make these properties subject to
  * change by site administrators although that may be disputable. Some of them are extensible in the
- * config (such as `UNHIGHLIGHTABLE_ELEMENTS_CLASSES`).
+ * config (such as `UNHIGHLIGHTABLE_ELEMENT_CLASSES`).
  *
  * @module staticGlobals
  */
@@ -78,12 +78,12 @@ export default {
   HIGHLIGHT_NEW_COMMENTS_INTERVAL: 15,
 
   /**
-   * Number of seconds between new comments checks when the tab is not hidden.
+   * Number of seconds between checks for new comments when the tab is not hidden.
    *
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  NEW_COMMENTS_CHECK_INTERVAL: 15,
+  UPDATE_CHECK_INTERVAL: 15,
 
   /**
    * Number of seconds between new comments checks when the tab is hidden.
@@ -91,7 +91,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL: 60,
+  BACKGROUND_UPDATE_CHECK_INTERVAL: 60,
 
   /**
    * Number of seconds in a day.
@@ -138,7 +138,7 @@ export default {
    * @type {string[]}
    * @memberof module:cd~convenientDiscussions.g
    */
-  UNHIGHLIGHTABLE_ELEMENTS_CLASSES: [
+  UNHIGHLIGHTABLE_ELEMENT_CLASSES: [
     'mw-empty-elt',
     'tleft',
     'tright',
@@ -166,7 +166,7 @@ export default {
    * @type {string[]}
    * @memberof module:cd~convenientDiscussions.g
    */
-  FLOATING_ELEMENTS_SELECTORS: [
+  FLOATING_ELEMENT_SELECTORS: [
     '.cd-floating',
     '.tright',
     '.floatright',

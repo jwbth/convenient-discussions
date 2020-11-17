@@ -66,10 +66,7 @@ async function checkForUpdates() {
     };
     $(document).on('visibilitychange', callback);
 
-    const interval = Math.abs(
-      cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL -
-      cd.g.NEW_COMMENTS_CHECK_INTERVAL
-    );
+    const interval = Math.abs(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL - cd.g.UPDATE_CHECK_INTERVAL);
     setAlarmViaWorker(interval * 1000);
     isBackgroundCheckArranged = true;
     return;
@@ -116,10 +113,10 @@ async function checkForUpdates() {
   }
 
   if (document.hidden) {
-    setAlarmViaWorker(cd.g.BACKGROUND_NEW_COMMENTS_CHECK_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL * 1000);
     isBackgroundCheckArranged = true;
   } else {
-    setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
   }
 }
 
@@ -455,7 +452,7 @@ const updateChecker = {
       cd.g.worker.onmessage = onMessageFromWorker;
     }
 
-    setAlarmViaWorker(cd.g.NEW_COMMENTS_CHECK_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
   },
 
   /**

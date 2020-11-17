@@ -368,8 +368,8 @@ function initPatterns() {
     );
   }
 
-  cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENTS_CLASSES
-    .concat(cd.config.customUnhighlightableElementsClasses);
+  cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES
+    .concat(cd.config.customUnhighlightableElementClasses);
 
   const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
   const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');

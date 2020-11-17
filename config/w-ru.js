@@ -214,7 +214,7 @@ export default {
     'userflags-wrapper',
   ],
 
-  customFloatingElementsSelectors: [
+  customFloatingElementSelectors: [
     '.infobox',
     '.vertical-navbox',
   ],
@@ -243,7 +243,7 @@ export default {
     'ruwiki-closedDiscussion',
   ],
 
-  customUnhighlightableElementsClasses: [
+  customUnhighlightableElementClasses: [
     'infobox',
     'ruwiki-movedTemplate',
   ],
@@ -431,7 +431,7 @@ mw.hook('convenientDiscussions.commentFormModulesReady').add(function (commentFo
   commentForm.$element.on('keydown', function (e) {
     // Ctrl+Alt+W
     if (e.ctrlKey && !e.shiftKey && e.altKey && e.keyCode === 87) {
-      window.Wikify(commentForm.commentInput.$input.get(0))
+      window.Wikify(commentForm.commentInput.$input.get(0));
     }
   });
 });

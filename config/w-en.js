@@ -105,7 +105,7 @@ export default {
     /\n+(?:<!--[^]*?-->\s*)+$/,
   ],
 
-  customFloatingElementsSelectors: [
+  customFloatingElementSelectors: [
     '.infobox',
     '.vertical-navbox',
   ],
@@ -115,7 +115,7 @@ export default {
     'boilerplate',
   ],
 
-  customUnhighlightableElementsClasses: [
+  customUnhighlightableElementClasses: [
     'infobox',
     'unresolved',
     'resolved',

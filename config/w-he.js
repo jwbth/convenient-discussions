@@ -229,7 +229,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  // customFloatingElementsSelectors: [],
+  // customFloatingElementSelectors: [],
 
   /**
    * Names of the closed discussion templates. They can be single templates like {@link
@@ -264,7 +264,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  // customUnhighlightableElementsClasses: [],
+  // customUnhighlightableElementClasses: [],
 
   /**
    * Selectors of links (buttons) that are used to add topics on this wiki.
