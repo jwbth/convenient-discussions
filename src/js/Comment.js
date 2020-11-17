@@ -1790,13 +1790,13 @@ export default class Comment extends CommentSkeleton {
 
         // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
         // closed discussions.
-        '(?![:*#\\n\\x01])' +
+        `[:*#\\x01]{0,${maxIndentationCharsLength}}(?![:*#\\n\\x01])` +
 
         // This excludes the case where "#" is starting a numbered list inside a comment
         // (https://ru.wikipedia.org/w/index.php?diff=110482717).
         (
           maxIndentationCharsLength > 0 ?
-          `|[:*#\\x01]{0,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
+          `|[:*#\\x01]{1,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
           ''
         ) +
         ')'
