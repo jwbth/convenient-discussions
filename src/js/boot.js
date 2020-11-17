@@ -107,7 +107,6 @@ export async function initSettings() {
     allowEditOthersComments: ['allowEditOthersMsgs'],
     alwaysExpandAdvanced: ['alwaysExpandSettings'],
     haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
-    insertButtons: ['additionalInsertButtons'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySig', 'mySignature'],
   };
