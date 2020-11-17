@@ -226,6 +226,44 @@ function initGlobals() {
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
+
+
+  /* Some static methods for external use */
+
+  /**
+   * @see module:Comment.getCommentByAnchor
+   * @function getCommentByAnchor
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getCommentByAnchor = Comment.getCommentByAnchor;
+
+  /**
+   * @see module:Section.getSectionByAnchor
+   * @function getSectionByAnchor
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getSectionByAnchor = Section.getSectionByAnchor;
+
+  /**
+   * @see module:Section.getSectionsByHeadline
+   * @function getSectionsByHeadline
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getSectionsByHeadline = Section.getSectionsByHeadline;
+
+  /**
+   * @see module:CommentForm.getLastActiveCommentForm
+   * @function getLastActiveCommentForm
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getLastActiveCommentForm = CommentForm.getLastActiveCommentForm;
+
+  /**
+   * @see module:CommentForm.getLastActiveAlteredCommentForm
+   * @function getLastActiveAlteredCommentForm
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAlteredCommentForm;
 }
 
 /**
