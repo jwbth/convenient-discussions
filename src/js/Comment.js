@@ -1803,16 +1803,16 @@ export default class Comment extends CommentSkeleton {
       );
       let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
-      // Hotfix for comments inside a table (barnstars, for example).
-      if (adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')) {
-        adjustedCodeInBetween += '|}\n';
-      }
-
       if (adjustedCodeInBetween === undefined) {
         throw new CdError({
           type: 'parse',
           code: 'findPlace',
         });
+      }
+
+      // Hotfix for comments inside a table (barnstars, for example).
+      if (adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')) {
+        adjustedCodeInBetween += '|}\n';
       }
 
       // If the comment is to be put after a comment with different indentation characters, use
