@@ -1383,7 +1383,7 @@ export default class CommentForm {
 
       this.headlineInput.$input.on('keydown', (e) => {
         // Enter
-        if (e.keyCode === 13) {
+        if (e.keyCode === 13 && !cd.g.activeAutocompleteMenu) {
           this.submit();
         }
       });
@@ -1443,7 +1443,7 @@ export default class CommentForm {
 
     this.summaryInput.$input.on('keydown', (e) => {
       // Enter
-      if (e.keyCode === 13) {
+      if (e.keyCode === 13 && !cd.g.activeAutocompleteMenu) {
         this.submit();
       }
     });
