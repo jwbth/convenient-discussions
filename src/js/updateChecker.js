@@ -362,15 +362,16 @@ async function processComments(comments) {
       return false;
     }
 
-
-    // Is this section watched by means of an upper level section?
-    const sections = Section.getSectionsByHeadline(comment.section.headline);
-    for (const section of sections) {
-      const watchedAncestor = section.getWatchedAncestor(true);
-      if (watchedAncestor) {
-        comment.watchedSectionHeadline = watchedAncestor.headline;
-        comment.interesting = true;
-        return true;
+    if (comment.section) {
+      // Is this section watched by means of an upper level section?
+      const sections = Section.getSectionsByHeadline(comment.section.headline);
+      for (const section of sections) {
+        const watchedAncestor = section.getWatchedAncestor(true);
+        if (watchedAncestor) {
+          comment.watchedSectionHeadline = watchedAncestor.headline;
+          comment.interesting = true;
+          return true;
+        }
       }
     }
   });
