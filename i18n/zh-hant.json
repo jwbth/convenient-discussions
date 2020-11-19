@@ -317,6 +317,6 @@
 	"loading-ellipsis": "載入中…",
 	"addtopic": "新增話題",
 	"addtopicbutton-tooltip": "開啟新分頁在標準頁面上建立新的話題，而不是在 Convenient Discussions",
-	"footer-enablecd": "在此頁面執行一次 Convenient Discussions",
-	"footer-disablecd": "不要在此頁面執行一次 Convenient Discussions"
+	"footer-runcd": "在此頁面執行一次 Convenient Discussions",
+	"footer-dontruncd": "不要在此頁面執行一次 Convenient Discussions"
 }

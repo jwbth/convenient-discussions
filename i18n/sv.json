@@ -315,6 +315,6 @@
 	"loading-ellipsis": "Läser in...",
 	"addtopic": "Lägg till ämne",
 	"addtopicbutton-tooltip": "Öppna i en flik för att skapa ett nytt ämne på den vanliga sidan, inte i Angenäma diskussioner",
-	"footer-enablecd": "Kör Angenäma diskussioner på denna sida en gång",
-	"footer-disablecd": "Kör inte Angenäma diskussioner på denna sida en gång"
+	"footer-runcd": "Kör Angenäma diskussioner på denna sida en gång",
+	"footer-dontruncd": "Kör inte Angenäma diskussioner på denna sida en gång"
 }

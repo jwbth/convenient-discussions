@@ -323,6 +323,6 @@
 	"loading-ellipsis": "Chargement…",
 	"addtopic": "Ajouter un sujet",
 	"addtopicbutton-tooltip": "Ouvrir dans un nouvel onglet pour créer un nouveau sujet sur la page standard, et pas dans Discussions Pratiques.",
-	"footer-enablecd": "Exécuter les discussions pratiques sur cette page",
-	"footer-disablecd": "Ne pas exécuter les discussions pratiques sur cette page"
+	"footer-runcd": "Exécuter les discussions pratiques sur cette page",
+	"footer-dontruncd": "Ne pas exécuter les discussions pratiques sur cette page"
 }

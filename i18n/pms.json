@@ -317,6 +317,6 @@
 	"loading-ellipsis": "Cariament…",
 	"addtopic": "Gionté n'argoment",
 	"addtopicbutton-tooltip": "Duverté an na neuva scheda për creé un neuv argoment an sla pàgina stàndard, e pa an Discussion Pràtiche",
-	"footer-enablecd": "Fé andé Discussion pràtiche su costa pàgina na vira",
-	"footer-disablecd": "Nen fé marcé Discussion pràtiche su costa pàgina na vira"
+	"footer-runcd": "Fé andé Discussion pràtiche su costa pàgina na vira",
+	"footer-dontruncd": "Nen fé marcé Discussion pràtiche su costa pàgina na vira"
 }

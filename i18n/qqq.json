@@ -326,6 +326,6 @@
 	"loading-ellipsis": "Text displayed in various OOUI process dialogs while their content is loading.",
 	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
-	"footer-enablecd": "Text of the link in the page footer allowing the user to enable the script on the current page.",
-	"footer-disablecd": "Text of the link in the page footer allowing the user to disable the script on the current page."
+	"footer-runcd": "Text of the link in the page footer allowing the user to enable the script on the current page.",
+	"footer-dontruncd": "Text of the link in the page footer allowing the user to disable the script on the current page."
 }
