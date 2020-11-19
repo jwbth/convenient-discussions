@@ -1848,12 +1848,16 @@ export default class CommentForm {
         let editUrl;
         switch (code) {
           case 'locateComment':
-            editUrl = this.targetSection ?
-              this.targetSection.editUrl.toString() :
-              cd.g.CURRENT_PAGE.getUrl({
+            if (this.targetSection) {
+              editUrl = this.targetSection.editUrl ?
+                this.targetSection.editUrl.toString() :
+                cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
+            } else {
+              editUrl = cd.g.CURRENT_PAGE.getUrl({
                 action: 'edit',
                 section: 0,
               });
+            }
             message = cd.sParse('error-locatecomment', editUrl);
             break;
           case 'locateSection':
