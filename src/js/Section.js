@@ -90,32 +90,32 @@ export default class Section extends SectionSkeleton {
       } else {
         console.error('Edit link not found.', this);
       }
+    }
 
-      /**
-       * Section heading as a jQuery element.
-       *
-       * @type {JQuery}
-       */
-      this.$heading = $(headingElement);
+    /**
+     * Section heading as a jQuery element.
+     *
+     * @type {JQuery}
+     */
+    this.$heading = $(headingElement);
 
-      /**
-       * Is the section actionable (is in a closed discussion or on an old version page).
-       *
-       * @type {boolean}
-       */
-      this.isActionable = (
-        cd.g.isPageActive &&
-        !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
-      );
+    /**
+     * Is the section actionable (is in a closed discussion or on an old version page).
+     *
+     * @type {boolean}
+     */
+    this.isActionable = (
+      cd.g.isPageActive &&
+      !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
+    );
 
-      if (this.isActionable) {
-        this.extendSectionMenu(watchedSectionsRequest);
-      }
+    if (this.isActionable) {
+      this.extendSectionMenu(watchedSectionsRequest);
     }
   }
 
   /**
-   * Add the "Reply" button to the end of the first chunk of the section.
+   * Add a "Reply" button to the end of the first chunk of the section.
    */
   addReplyButton() {
     const replyButton = this.elementPrototypes.replyButton.cloneNode(true);
@@ -211,7 +211,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add the "Add subsection" button that appears when hovering over the "Reply" button.
+   * Add an "Add subsection" button that appears when hovering over a "Reply" button.
    */
   addAddSubsectionButton() {
     if (this.level !== 2) return;

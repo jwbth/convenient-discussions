@@ -224,7 +224,7 @@ function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
 }
 
 /**
- * Add "Add topic" button to the bottom of the page if there is an "Add topic" tab.
+ * Add an "Add topic" button to the bottom of the page if there is an "Add topic" tab.
  *
  * @private
  */
