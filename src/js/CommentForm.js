@@ -128,12 +128,13 @@ export default class CommentForm {
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (this.mode === 'addSection') {
+      const title = cd.g.CURRENT_PAGE.title.replace(/\//g, '-');
       let code = (
         '<div class="cd-editnotice">' +
         `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}}}` +
         '</div>\n' +
         '<div class="cd-editnotice">' +
-        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}-${cd.g.CURRENT_PAGE.title}}}` +
+        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}-${title}}}` +
         '</div>\n'
       );
       if (this.preloadConfig?.editIntro) {
