@@ -651,13 +651,11 @@ export default async function processPage(keptData = {}) {
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
 
-  const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
-
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
   cd.g.isPageActive = !(
-    isEmptyPage ||
+    !mw.config.get('wgArticleId') ||
     cd.g.CURRENT_PAGE.isArchivePage() ||
     (
       (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
@@ -768,7 +766,7 @@ export default async function processPage(keptData = {}) {
     }
   }
 
-  if (cd.g.isPageActive || isEmptyPage) {
+  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
     // This should be below the viewport position restoration and own comments highlighting as it
     // may rely on the elements that are made invisible during the comment forms restoration. It
     // should also be below the navPanel mount/reset methods as it runs

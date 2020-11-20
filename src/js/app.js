@@ -256,7 +256,7 @@ function go() {
   const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
-  if (mw.config.get('wgIsArticle')) {
+  if (mw.config.get('wgIsArticle') && !mw.config.get('wgIsRedirect')) {
     if (
       !/[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search) &&
       (!cd.g.$content.find('.cd-notTalkPage').length || enabledInQuery) &&
