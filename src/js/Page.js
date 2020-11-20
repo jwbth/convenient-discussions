@@ -554,4 +554,16 @@ export default class Page {
      */
     Object.assign(this, { areNewTopicsOnTop, firstSectionStartIndex });
   }
+
+  /**
+   * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
+   */
+  async purge() {
+    await cd.g.api.post({
+      action: 'purge',
+      titles: this.name,
+    }).catch(() => {
+      mw.notify(cd.s('error-purgecache'), { type: 'error' });
+    });
+  }
 }

@@ -2961,6 +2961,12 @@ export default class CommentForm {
         generateCommentAnchor(new Date(editTimestamp), cd.g.CURRENT_USER_NAME, true);
     }
 
+    // When the edit takes place on another page that is transcluded in the current one, we must
+    // purge the current page, otherwise we may get an old version without the submitted comment.
+    if (this.targetPage !== cd.g.CURRENT_PAGE) {
+      await cd.g.CURRENT_PAGE.purge();
+    }
+
     this.reloadPage(keptData, currentOperation);
   }
 
