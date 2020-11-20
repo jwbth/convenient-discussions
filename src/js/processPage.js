@@ -253,11 +253,19 @@ function addAddTopicButton() {
  *
  * @private
  */
-function connectToAddTopicLinks() {
+function connectToAddTopicButtons() {
   $(cd.g.ADD_TOPIC_SELECTORS)
-    .filter(() => {
+    .filter(function () {
       const $button = $(this);
-      if ($button.is('input')) {
+      if ($button.is('a')) {
+        const href = $button.attr('href');
+        const query = new mw.Uri(href).query;
+        const pageName = query.title;
+        const page = new Page(pageName);
+        if (page.name !== cd.g.CURRENT_PAGE.name) {
+          return false;
+        }
+      } else if ($button.is('input')) {
         const pageName = $button
           .closest('form')
           .find('input[name="title"]')
@@ -266,6 +274,8 @@ function connectToAddTopicLinks() {
         if (page.name !== cd.g.CURRENT_PAGE.name) {
           return false;
         }
+      } else {
+        return false;
       }
 
       return true;
@@ -280,9 +290,6 @@ function connectToAddTopicLinks() {
       if ($button.is('a')) {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
-        const pageName = query.title;
-        const page = new Page(pageName);
-        if (page.name !== cd.g.CURRENT_PAGE.name) return;
         preloadConfig = {
           editIntro: query.editintro,
           commentTemplate: query.preload,
@@ -723,9 +730,10 @@ export default async function processPage(keptData = {}) {
   cd.debug.stopTimer('process sections');
 
   addAddTopicButton();
-  connectToAddTopicLinks();
+  connectToAddTopicButtons();
 
   cd.debug.stopTimer('main code');
+
   // Operations that need reflow, such as getBoundingClientRect(), go in this section.
   cd.debug.startTimer('final code and rendering');
 
