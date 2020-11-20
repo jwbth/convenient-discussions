@@ -771,7 +771,10 @@ export async function reloadPage(keptData = {}) {
 
   toc.possiblyHide();
 
-  restoreScrollPosition(false);
+  // setTimeout for Firefox, to wait until the page is rendered.
+  setTimeout(() => {
+    restoreScrollPosition(false);
+  });
 }
 
 /**
