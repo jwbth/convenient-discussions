@@ -605,7 +605,7 @@ export default class Section extends SectionSkeleton {
           target.page.code.slice(target.page.firstSectionStartIndex)
         );
       } else {
-        newCode = target.page.code + '\n\n' + newSectionCode;
+        newCode = target.page.code + (target.page.code ? '\n\n' : '') + newSectionCode;
       }
 
       const summaryEnding = this.summaryEndingInput.getValue();
