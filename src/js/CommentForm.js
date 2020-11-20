@@ -292,7 +292,7 @@ export default class CommentForm {
                 );
               code = code.trim();
 
-              if (code.includes(cd.g.SIGN_CODE)) {
+              if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
                 this.omitSignatureCheckbox.setSelected(true);
               }
 

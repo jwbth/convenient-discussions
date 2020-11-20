@@ -289,6 +289,7 @@ function connectToAddTopicLinks() {
           headline: query.preloadtitle,
           summary: query.summary?.replace(/^.+?\*\/ */, ''),
           noHeadline: Boolean(query.nosummary),
+          omitSignature: Boolean(query.cdomitsignature),
         };
         isNewTopicOnTop = query.section === '0';
       } else {
