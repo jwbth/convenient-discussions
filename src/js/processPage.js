@@ -206,7 +206,9 @@ function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
     }
 
     addSectionForm.$element.cdScrollIntoView('center');
-    addSectionForm.headlineInput.focus();
+
+    // headlineInput may be missing if the "nosummary" preload parameter is truthy.
+    addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
   } else {
     /**
      * Add section form.
@@ -286,6 +288,7 @@ function connectToAddTopicLinks() {
           commentTemplate: query.preload,
           headline: query.preloadtitle,
           summary: query.summary?.replace(/^.+?\*\/ */, ''),
+          noHeadline: Boolean(query.nosummary),
         };
         isNewTopicOnTop = query.section === '0';
       } else {
@@ -296,6 +299,7 @@ function connectToAddTopicLinks() {
           commentTemplate: $form.find('input[name="preload"]').val(),
           headline: $form.find('input[name="preloadtitle"]').val(),
           summary: $form.find('input[name="summary"]').val(),
+          noHeadline: Boolean($form.find('input[name="nosummary"]').val()),
         };
       }
 

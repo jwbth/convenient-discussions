@@ -688,7 +688,10 @@ export default class CommentForm {
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
      */
 
-    if (['addSection', 'addSubsection'].includes(this.mode) || this.editingSectionOpeningComment) {
+    if (
+      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
+      this.editingSectionOpeningComment
+    ) {
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
       } else if (this.mode === 'edit' && this.targetSection.getParent()) {
@@ -893,7 +896,7 @@ export default class CommentForm {
       });
     }
 
-    if (this.headlineInput) {
+    if (['addSection', 'addSubsection'].includes(this.mode)) {
       /**
        * Omit signature checkbox field.
        *
