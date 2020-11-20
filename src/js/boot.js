@@ -1001,10 +1001,12 @@ export function restoreCommentForms() {
  *
  * @param {Array} params Parameters to apply to `mw.notification.notify`.
  * @param {object} [data={}] Additional data related to the notification.
+ * @returns {Notification}
  */
 export function addNotification(params, data = {}) {
   const notification = mw.notification.notify(...params);
   notificationsData.push(Object.assign(data, { notification }));
+  return notification;
 }
 
 /**

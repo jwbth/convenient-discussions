@@ -160,11 +160,7 @@ async function sendNotifications(comments) {
     const formsDataWillNotBeLost = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
       ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
       '';
-    const wikilink = (
-      cd.g.CURRENT_PAGE.name +
-      (notifyAboutOrdinary[0].anchor ? '#' + notifyAboutOrdinary[0].anchor : '')
-    );
-    const reloadLinkHtml = cd.sParse('notification-reload', wikilink, formsDataWillNotBeLost);
+    const reloadHtml = cd.sParse('notification-reload', formsDataWillNotBeLost);
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
       if (comment.toMe) {
@@ -177,7 +173,7 @@ async function sendNotifications(comments) {
         html = (
           cd.sParse('notification-toyou', comment.author.name, comment.author, where) +
           ' ' +
-          reloadLinkHtml
+          reloadHtml
         );
       } else {
         html = (
@@ -188,7 +184,7 @@ async function sendNotifications(comments) {
             comment.watchedSectionHeadline
           ) +
           ' ' +
-          reloadLinkHtml
+          reloadHtml
         );
       }
     } else {
@@ -221,20 +217,16 @@ async function sendNotifications(comments) {
       html = (
         cd.sParse('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
         ' ' +
-        reloadLinkHtml
+        reloadHtml
       );
     }
 
     closeNotifications(false);
-    const $body = cd.util.wrap(html, {
-      callbacks: {
-        'cd-notification-reloadPage': (e) => {
-          e.preventDefault();
-          reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
-        },
-      },
+    const $body = cd.util.wrap(html);
+    const notification = addNotification([$body], { comments: notifyAboutOrdinary });
+    notification.$notification.on('click', () => {
+      reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
     });
-    addNotification([$body], { comments: notifyAboutOrdinary });
   }
 
   if (
