@@ -320,6 +320,18 @@ async function sendNotifications(comments) {
 }
 
 /**
+ * Whether still an older revision of the page is displayed than that is retrieved or the content is
+ * loading.
+ *
+ * @param {number} newRevisionId
+ * @returns {boolean}
+ * @private
+ */
+function isPageStillOutdated(newRevisionId) {
+  return newRevisionId > mw.config.get('wgRevisionId') && !isLoadingOverlayOn();
+}
+
+/**
  * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web worker
  * so its constuctor is lost.)
  *
@@ -330,9 +342,10 @@ async function sendNotifications(comments) {
  * Process the comments retrieved by a web worker.
  *
  * @param {CommentSkeletonLike[]} comments
+ * @param {number} revisionId
  * @private
  */
-async function processComments(comments) {
+async function processComments(comments, revisionId) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     delete comment.authorName;
@@ -376,6 +389,13 @@ async function processComments(comments) {
     }
   });
 
+  const authors = newComments
+    .map((comment) => comment.author)
+    .filter(unique);
+  await getUserGenders(authors, { noTimers: true });
+
+  if (!isPageStillOutdated(revisionId)) return;
+
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
   } else if (newComments[0]) {
@@ -390,11 +410,6 @@ async function processComments(comments) {
   );
   updateChecker.updatePageTitle(newComments.length, Boolean(interestingNewComments.length));
   toc.addNewComments(newCommentsBySection);
-
-  const authors = newComments
-    .map((comment) => comment.author)
-    .filter(unique);
-  await getUserGenders(authors, { noTimers: true });
 
   Section.addNewCommentsNotifications(newComments);
   sendNotifications(interestingNewComments);
@@ -413,15 +428,11 @@ async function onMessageFromWorker(e) {
     checkForUpdates();
   }
 
-  if (
-    message.type === 'parse' &&
-    message.revisionId > mw.config.get('wgRevisionId') &&
-    !isLoadingOverlayOn()
-  ) {
+  if (message.type === 'parse' && isPageStillOutdated(message.revisionId)) {
     lastCheckedRevisionId = message.revisionId;
     const { comments, sections } = message;
     toc.addNewSections(sections);
-    processComments(comments);
+    processComments(comments, message.revisionId);
   }
 }
 
