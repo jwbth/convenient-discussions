@@ -436,7 +436,11 @@ async function processFragment(keptData) {
       if (keptData.pushState) {
         history.pushState(history.state, '', '#' + section.anchor);
       }
-      section.$elements.first().cdScrollTo('top', false);
+
+      // setTimeout for Firefox, as above
+      setTimeout(() => {
+        section.$elements.first().cdScrollTo('top', false);
+      });
     }
   }
 
