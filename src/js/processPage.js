@@ -27,7 +27,7 @@ import { adjustDom } from './modifyDom';
 import { areObjectsEqual, isInline } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getSettings, getVisits, getWatchedSections } from './options';
+import { getSettings, getVisits, getWatchedSections, setWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
 import { setSettings, setVisits } from './options';
 
@@ -151,6 +151,23 @@ function processComments(parser, firstVisibleElementData) {
 }
 
 /**
+ * Remove sections that can't be found on the page anymore from the watched sections list and save
+ * them to the server.
+ *
+ * @private
+ */
+function cleanUpWatchedSections() {
+  if (!cd.sections) return;
+  const initialSectionCount = cd.g.thisPageWatchedSections.length;
+  cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
+    .filter((headline) => cd.sections.some((section) => section.headline === headline));
+  cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;
+  if (cd.g.thisPageWatchedSections.length !== initialSectionCount) {
+    setWatchedSections();
+  }
+}
+
+/**
  * Parse sections and modify some parts of them.
  *
  * @param {Parser} parser
@@ -175,6 +192,7 @@ function processSections(parser, watchedSectionsRequest) {
 
   if (watchedSectionsRequest) {
     watchedSectionsRequest.then(() => {
+      cleanUpWatchedSections();
       toc.highlightWatchedSections();
     });
   }
