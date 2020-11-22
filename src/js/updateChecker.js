@@ -403,7 +403,7 @@ async function processComments(comments, revisionId) {
   updateChecker.updatePageTitle(newComments.length, Boolean(interestingNewComments.length));
   toc.addNewComments(newCommentsBySection);
 
-  Section.addNewCommentsNotifications(newComments);
+  Section.addNewCommentsNotifications(newCommentsBySection);
   sendNotifications(interestingNewComments);
 }
 

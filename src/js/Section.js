@@ -1672,7 +1672,7 @@ export default class Section extends SectionSkeleton {
 
   /**
    * Get a section by headline, first comment data, and/or index. At least two parameters must
-   * match.
+   * match. TODO: use parent sections list also?
    *
    * @param {object} options
    * @param {string} options.headline
@@ -1781,65 +1781,47 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web worker
-   * so its constuctor is lost.)
-   *
-   * @typedef {object} CommentSkeletonLike
-   */
-
-  /**
    * Add new comments notifications to the end of each updated section.
    *
-   * @param {CommentSkeletonLike[]} newComments
+   * @param {Map} newCommentsBySection
    */
-  static addNewCommentsNotifications(newComments) {
+  static addNewCommentsNotifications(newCommentsBySection) {
     $('.cd-refreshButtonContainer').remove();
-    newComments
-      .filter((comment) => comment.section)
-      .map((comment) => comment.section.anchor)
-      .filter(unique)
-      .forEach((anchor) => {
-        const section = Section.getSectionByAnchor(anchor);
-        if (!section) return;
 
-        const sectionNewComments = newComments.filter((comment) => comment.section.anchor === anchor);
-        const authors = sectionNewComments
-          .map((comment) => comment.author)
-          .filter(unique);
-        const genders = authors.map((author) => author.getGender());
-        let commonGender;
-        if (genders.every((gender) => gender === 'female')) {
-          commonGender = 'female';
-        } else if (genders.every((gender) => gender !== 'female')) {
-          commonGender = 'male';
-        } else {
-          commonGender = 'unknown';
-        }
-        const button = new OO.ui.ButtonWidget({
-          label: cd.s(
-            'section-newcomments',
-            sectionNewComments.length,
-            authors.length,
-            authors.map((user) => user.name).join(', '),
-            commonGender
-          ),
-          framed: false,
-          classes: ['cd-button', 'cd-sectionButton'],
-        });
-        button.on('click', () => {
-          const commentAnchor = newComments
-            .find((comment) => comment.section.anchor === anchor).anchor;
-          reloadPage({ commentAnchor });
-        });
+    newCommentsBySection.forEach((comments, section) => {
+      if (!section || typeof section === 'string') return;
 
-        const $lastElement = section.$replyButton ?
-          section.$replyButton.closest('ul, ol, dl') :
-          section.$elements[section.$elements.length - 1];
-        $('<div>')
-          .addClass('cd-refreshButtonContainer')
-          .addClass('cd-sectionButtonContainer')
-          .append(button.$element)
-          .insertAfter($lastElement);
+      const authors = comments
+        .map((comment) => comment.author)
+        .filter(unique);
+      const genders = authors.map((author) => author.getGender());
+      let commonGender;
+      if (genders.every((gender) => gender === 'female')) {
+        commonGender = 'female';
+      } else if (genders.every((gender) => gender !== 'female')) {
+        commonGender = 'male';
+      } else {
+        commonGender = 'unknown';
+      }
+      const userList = authors.map((user) => user.name).join(', ');
+      const button = new OO.ui.ButtonWidget({
+        label: cd.s('section-newcomments', comments.length, authors.length, userList, commonGender),
+        framed: false,
+        classes: ['cd-button', 'cd-sectionButton'],
       });
+      button.on('click', () => {
+        const commentAnchor = comments[0].anchor;
+        reloadPage({ commentAnchor });
+      });
+
+      const $lastElement = section.$replyButton ?
+        section.$replyButton.closest('ul, ol, dl') :
+        section.$elements[section.$elements.length - 1];
+      $('<div>')
+        .addClass('cd-refreshButtonContainer')
+        .addClass('cd-sectionButtonContainer')
+        .append(button.$element)
+        .insertAfter($lastElement);
+    });
   }
 }

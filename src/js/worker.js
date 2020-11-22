@@ -101,6 +101,8 @@ function parse() {
       {
         headline: section.headline,
         anchor: section.anchor,
+        firstCommentAnchor: section.comments[0]?.anchor,
+        index: section.id,
       } :
       null;
     if (comment.parent) {

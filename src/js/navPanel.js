@@ -19,7 +19,7 @@ let lastFirstUnseenCommentId;
  * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
  * @param {number} commentsCount
- * @param {object} commentsBySection
+ * @param {Map} commentsBySection
  * @returns {?string}
  * @private
  */
@@ -34,13 +34,15 @@ function generateTooltipText(commentsCount, commentsBySection) {
       cd.mws('parentheses', 'R')
     );
     const bullet = removeWikiMarkup(cd.s('bullet'));
-    Object.keys(commentsBySection).forEach((anchor) => {
+    commentsBySection.forEach((comments, sectionOrAnchor) => {
       let headline;
-      if (anchor !== '_') {
-        headline = commentsBySection[anchor][0].section.headline;
+      if (typeof sectionOrAnchor === 'string') {
+        headline = comments[0].section.headline;
+      } else if (sectionOrAnchor !== null) {
+        headline = sectionOrAnchor.headline;
       }
       tooltipText += headline ? `\n\n${headline}` : '\n';
-      commentsBySection[anchor].forEach((comment) => {
+      comments.forEach((comment) => {
         tooltipText += `\n`;
         const names = comment.parent?.author && comment.level > 1 ?
           cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
@@ -413,7 +415,7 @@ const navPanel = {
    * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
    * @param {number} commentsCount
-   * @param {object} commentsBySection
+   * @param {Map} commentsBySection
    * @param {boolean} areThereInteresting
    * @private
    * @memberof module:navPanel

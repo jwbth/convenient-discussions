@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
+import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
@@ -2062,21 +2063,25 @@ export default class Comment extends CommentSkeleton {
    * Turn comment array into object with section anchors as keys.
    *
    * @param {CommentSkeletonLike[]|Comment[]} comments
-   * @returns {object}
+   * @returns {Map}
    * @private
    */
   static groupBySection(comments) {
-    const commentsBySection = {};
+    const commentsBySection = new Map();
     comments.forEach((comment) => {
-      const section = comment instanceof Comment ? comment.getSection() : comment.section;
-
-      // "_" is an impossible id for a section. We assign it to the lead section.
-      const anchor = section === null ? '_' : section.anchor;
-
-      if (!commentsBySection[anchor]) {
-        commentsBySection[anchor] = [];
+      let sectionOrAnchor;
+      if (comment instanceof Comment) {
+        sectionOrAnchor = comment.getSection();
+      } else if (comment.section) {
+        sectionOrAnchor = Section.search(comment.section) || comment.section.anchor;
+      } else {
+        sectionOrAnchor = comment.section;
       }
-      commentsBySection[anchor].push(comment);
+
+      if (!commentsBySection.get(sectionOrAnchor)) {
+        commentsBySection.set(sectionOrAnchor, []);
+      }
+      commentsBySection.get(sectionOrAnchor).push(comment);
     });
 
     return commentsBySection;

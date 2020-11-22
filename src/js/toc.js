@@ -37,7 +37,9 @@ export default {
         el.cdTocText = $(el).find('.toctext').text();
       });
     cd.sections
+      // Only unique headlines
       .filter((section, i) => headlines.indexOf(section.headline) === i)
+
       .forEach((section) => {
         // Can be more than one section with that headline. (In that case, the same code will run
         // more than once, but there is no gain in filtering.)
@@ -77,7 +79,7 @@ export default {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
     cd.g.$toc
-      .find('.cd-toc-notLoadedSectionList, .cd-toc-notLoadedSection')
+      .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
       .remove();
 
     const tocSections = cd.g.$toc
@@ -152,7 +154,7 @@ export default {
         }
 
         const $element = $('<li>')
-          .addClass('cd-toc-notLoadedSection')
+          .addClass('cd-toc-notRenderedSection')
           .addClass(`toclevel-${level}`);
         const $a = $('<a>')
           .attr('href', '#' + section.anchor)
@@ -192,7 +194,7 @@ export default {
           currentLevelMatch.$element.after($element);
         } else if (upperLevelMatch) {
           $('<ul>')
-            .addClass('cd-toc-notLoadedSectionList')
+            .addClass('cd-toc-notRenderedSectionList')
             .addClass(`toclevel-${level}`)
             .append($element)
             .appendTo(upperLevelMatch.$element);
@@ -224,94 +226,100 @@ export default {
   addNewComments(commentsBySection) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    const firstAnchor = Object.keys(commentsBySection)[0];
-    if (!firstAnchor) return;
+    const firstComment = commentsBySection.values().next().value?.[0];
+    if (!firstComment) return;
 
-    const areCommentsLoaded = commentsBySection[firstAnchor][0] instanceof Comment;
+    const areCommentsRendered = firstComment instanceof Comment;
 
-    saveScrollPosition(!areCommentsLoaded || !cd.g.hasPageBeenReloaded);
+    saveScrollPosition(!areCommentsRendered || !cd.g.hasPageBeenReloaded);
 
     cd.g.$toc
-      .find('.cd-toc-notLoadedCommentList')
+      .find('.cd-toc-notRenderedCommentList')
       .remove();
 
-    Object.keys(commentsBySection)
-      .filter((anchor) => anchor !== '_')
-      .forEach((anchor) => {
-        // .first() in case of a collision with a section we added above with toc.addNewSections().
-        const $sectionLink = cd.g.$toc.find(`a[href="#${$.escapeSelector(anchor)}"]`).first();
-        if (!$sectionLink.length) return;
+    commentsBySection.forEach((comments, sectionOrAnchor) => {
+      if (!sectionOrAnchor) return;
 
-        let $target = $sectionLink;
-        const $next = $sectionLink.next('.cd-toc-newCommentList');
-        if ($next.length) {
-          $target = $next;
-        }
+      const anchor = typeof sectionOrAnchor === 'string' ? sectionOrAnchor : sectionOrAnchor.anchor;
 
-        const $ul = $('<ul>').insertAfter($target);
-        $ul.addClass(areCommentsLoaded ? 'cd-toc-newCommentList' : 'cd-toc-notLoadedCommentList');
+      // .first() in case of a collision with a section we added above with toc.addNewSections().
+      const $sectionLink = cd.g.$toc.find(`a[href="#${$.escapeSelector(anchor)}"]`).first();
+      if (!$sectionLink.length) return;
 
-        let moreTooltipText = '';
-        commentsBySection[anchor].forEach((comment, i) => {
-          const parent = areCommentsLoaded ? comment.getParent() : comment.parent;
-          const names = parent?.author && comment.level > 1 ?
-            cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
-            comment.author.name;
-          const date = comment.date ?
-            cd.util.formatDate(comment.date) :
-            cd.s('navpanel-newcomments-unknowndate');
-          const text = (
-            names +
-            (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
-            cd.mws('comma-separator') +
-            date
-          );
+      let $target = $sectionLink;
+      const $next = $sectionLink.next('.cd-toc-newCommentList');
+      if ($next.length) {
+        $target = $next;
+      }
 
-          if (i < 5) {
-            const $li = $('<li>')
-              .appendTo($ul);
-            const href = `#${comment.anchor}`;
-            $('<span>')
-              .html(cd.sParse('bullet'))
-              .addClass('tocnumber')
-              .addClass('cd-toc-bullet')
-              .appendTo($li);
-            const $text = $('<span>')
-              .addClass('toctext')
-              .appendTo($li);
-            const $a = $('<a>')
-              .text(text)
-              .attr('href', href)
-              .appendTo($text);
-            if (comment instanceof Comment) {
-              $a.on('click', (e) => {
-                e.preventDefault();
-                comment.scrollToAndHighlightTarget(false, true);
-              });
-            } else {
-              $a.on('click', (e) => {
-                e.preventDefault();
-                reloadPage({
-                  commentAnchor: comment.anchor,
-                  pushState: true,
-                });
-              });
-            }
-          } else {
-            moreTooltipText += text + '\n';
-          }
-        });
+      const $ul = $('<ul>').insertAfter($target);
+      $ul.addClass(
+        areCommentsRendered ?
+        'cd-toc-newCommentList' :
+        'cd-toc-notRenderedCommentList'
+      );
 
-        if (commentsBySection[anchor].length > 5) {
-          const $span = $('<span>')
-            .addClass('cd-toc-more')
-            .attr('title', moreTooltipText.trim())
-            .text(cd.s('toc-more', commentsBySection[anchor].length - 5));
-          $('<li>')
-            .append($span)
+      let moreTooltipText = '';
+      comments.forEach((comment, i) => {
+        const parent = areCommentsRendered ? comment.getParent() : comment.parent;
+        const names = parent?.author && comment.level > 1 ?
+          cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
+          comment.author.name;
+        const date = comment.date ?
+          cd.util.formatDate(comment.date) :
+          cd.s('navpanel-newcomments-unknowndate');
+        const text = (
+          names +
+          (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
+          cd.mws('comma-separator') +
+          date
+        );
+
+        if (i < 5) {
+          const $li = $('<li>')
             .appendTo($ul);
+          const href = `#${comment.anchor}`;
+          $('<span>')
+            .html(cd.sParse('bullet'))
+            .addClass('tocnumber')
+            .addClass('cd-toc-bullet')
+            .appendTo($li);
+          const $text = $('<span>')
+            .addClass('toctext')
+            .appendTo($li);
+          const $a = $('<a>')
+            .text(text)
+            .attr('href', href)
+            .appendTo($text);
+          if (comment instanceof Comment) {
+            $a.on('click', (e) => {
+              e.preventDefault();
+              comment.scrollToAndHighlightTarget(false, true);
+            });
+          } else {
+            $a.on('click', (e) => {
+              e.preventDefault();
+              reloadPage({
+                commentAnchor: comment.anchor,
+                pushState: true,
+              });
+            });
+          }
+        } else {
+          moreTooltipText += text + '\n';
         }
       });
+
+      if (comments.length > 5) {
+        const $span = $('<span>')
+          .addClass('cd-toc-more')
+          .attr('title', moreTooltipText.trim())
+          .text(cd.s('toc-more', comments.length - 5));
+        $('<li>')
+          .append($span)
+          .appendTo($ul);
+      }
+    });
 
     restoreScrollPosition();
   },
