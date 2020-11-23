@@ -270,6 +270,7 @@
 	"msd-move": "Flytta",
 	"msd-reload": "Ladda om",
 	"msd-targetpage": "Skriv in namnet på diskussionssidan för att flytta ämnet till:",
+	"msd-keeplink": "Behåll en länk till den nya platsen på sidan",
 	"msd-summaryending": "Redigeringssammanfattning (kommer läggas till i standarden)",
 	"msd-error-wrongpage": "Fel sida.",
 	"msd-error-sourcepagedeleted": "Den nuvarande sidan raderades.",

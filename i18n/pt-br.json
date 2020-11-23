@@ -273,6 +273,7 @@
 	"msd-move": "Mover",
 	"msd-reload": "Recarregar",
 	"msd-targetpage": "Digite o nome da página de discussão para mover o tópico para:",
+	"msd-keeplink": "Mantenha um link para o novo local na página",
 	"msd-summaryending": "Editar resumo (será adicionado ao padrão)",
 	"msd-error-wrongpage": "Página errada.",
 	"msd-error-sourcepagedeleted": "A página atual foi excluída.",
