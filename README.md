@@ -6,9 +6,9 @@
 ## Features
 The script features include:
 * posting and editing comments without switching to a separate page;
-** @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
-** autofilling the edit summary with indication of the addressee of the comment;
-** saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
+  * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
+  * autofilling the edit summary with indication of the addressee of the comment;
+  * saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
 * creating topics and subsections;
 * highlighting and navigating new comments (via the navigation panel or the table of contents);
 * highlighting own comments;
