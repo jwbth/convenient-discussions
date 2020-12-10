@@ -495,6 +495,7 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
     }
   }
 
+  let haveMatchedTimeWithComment = false;
   if (thisPageVisits.length) {
     cd.comments.forEach((comment) => {
       /**
@@ -519,10 +520,13 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
       if (!comment.date) return;
 
       const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
-      if (commentUnixTime > thisPageVisits[0]) {
+      if (commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60) {
+        haveMatchedTimeWithComment = true;
+      }
+      if (commentUnixTime + 60 > thisPageVisits[0]) {
         comment.isNew = true;
         comment.isSeen = (
-          (commentUnixTime <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
+          (commentUnixTime + 60 <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
           !memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor)
         );
       }
@@ -533,7 +537,11 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
     toc.addNewComments(Comment.groupBySection(unseenComments));
   }
 
-  thisPageVisits.push(String(currentUnixTime));
+  // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
+  // minute to the current time if there is a comment with matched time. (Previously, the comment
+  // time needed to be less than the current time which could result in missed comments if a comment
+  // was sent the same minute when the page was loaded but after that moment.)
+  thisPageVisits.push(String(currentUnixTime + haveMatchedTimeWithComment * 60));
 
   setVisits(visits);
 
