@@ -159,18 +159,6 @@ export async function initSettings() {
  * @private
  */
 export function initTalkPageCss() {
-  // Set the transparent color for the "focused" color. The user may override the CSS variable value
-  // in his personal styles, so we get the existing value first.
-  const focusedColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
-
-  // Vector, Monobook, Minerva
-  const contentBackgroundColor = $('#content').css('background-color') || '#fff';
-
-  $(document.documentElement).css(
-    '--cd-comment-underlay-focused-transparent-color',
-    transparentize(focusedColor || cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
-  );
-
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-underlay-focused-color': cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR,
@@ -178,12 +166,24 @@ export function initTalkPageCss() {
     '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
     '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
   });
+
+  // Set the transparent color for the "focused" color. The user may override the CSS variable value
+  // in their personal styles, so we get the existing value first.
+  const focusedColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
+  cd.g.nanoCss.put(':root', {
+    '--cd-comment-underlay-focused-transparent-color': transparentize(focusedColor),
+  });
+
   cd.g.nanoCss.put('.ltr .cd-commentOverlay-gradient', {
     backgroundImage: 'linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
   cd.g.nanoCss.put('.rtl .cd-commentOverlay-gradient', {
     backgroundImage: 'linear-gradient(to right, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
+
+  // Vector, Monobook, Minerva
+  const contentBackgroundColor = $('#content').css('background-color') || '#fff';
+
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
     backgroundColor: contentBackgroundColor,
   });
