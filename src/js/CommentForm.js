@@ -1669,6 +1669,12 @@ export default class CommentForm {
       this.previewButton.setDisabled(true);
       this.viewChangesButton.setDisabled(true);
       this.cancelButton.setDisabled(true);
+
+      this.minorCheckbox?.setDisabled(true);
+      this.watchCheckbox.setDisabled(true);
+      this.watchSectionCheckbox?.setDisabled(true);
+      this.omitSignatureCheckbox?.setDisabled(true);
+      this.deleteCheckbox?.setDisabled(true);
     }
   }
 
@@ -1699,6 +1705,17 @@ export default class CommentForm {
       this.previewButton.setDisabled(false);
       this.viewChangesButton.setDisabled(false);
       this.cancelButton.setDisabled(false);
+
+      this.minorCheckbox?.setDisabled(false);
+      this.watchCheckbox.setDisabled(false);
+      this.watchSectionCheckbox?.setDisabled(false);
+      this.omitSignatureCheckbox?.setDisabled(false);
+      this.deleteCheckbox?.setDisabled(false);
+
+      // Restore needed "disabled"s.
+      if (this.deleteCheckbox?.isSelected()) {
+        this.updateFormOnDeleteCheckboxChange(true);
+      }
     }
   }
 
