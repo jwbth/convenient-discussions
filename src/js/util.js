@@ -488,22 +488,22 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
 }
 
 /**
- * Helper to get a local storage item packed in JSON or an empty object in case or unexistent/falsy
- * falues. Returns `null` in case of a corrupt value.
+ * Helper to get the script's local storage item packed in JSON or an empty object in case of
+ * unexistent/falsy/corrupt values.
  *
  * @param {string} name
- * @returns {?object}
+ * @returns {object}
  */
 export function getFromLocalStorage(name) {
-  const json = localStorage.getItem(name);
+  const json = localStorage.getItem(`convenientDiscussions-${name}`);
   let obj;
   if (json) {
     try {
       // "||" in case of a falsy value.
       obj = JSON.parse(json) || {};
     } catch (e) {
-      console.error(e);
-      return null;
+      console.error(e, json);
+      return {};
     }
   }
   return obj || {};
@@ -516,7 +516,7 @@ export function getFromLocalStorage(name) {
  * @param {object} obj
  */
 export function saveToLocalStorage(name, obj) {
-  localStorage.setItem(name, JSON.stringify(obj));
+  localStorage.setItem(`convenientDiscussions-${name}`, JSON.stringify(obj));
 }
 
 /**

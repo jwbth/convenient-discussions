@@ -840,9 +840,9 @@ export function saveSession() {
   const saveUnixTime = Date.now();
   const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
 
-  const dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms') || {};
+  const dataAllPages = getFromLocalStorage('commentForms');
   dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
-  saveToLocalStorage('convenientDiscussions-commentForms', dataAllPages);
+  saveToLocalStorage('commentForms', dataAllPages);
 }
 
 /**
@@ -926,13 +926,8 @@ function restoreCommentFormsFromData(commentFormsData) {
  */
 export function restoreCommentForms() {
   if (cd.g.isFirstRun) {
-    let dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms');
-
-    // Corrupt data
-    if (!dataAllPages) return;
-
-    dataAllPages = cleanUpSessions(dataAllPages);
-    saveToLocalStorage('convenientDiscussions-commentForms', dataAllPages);
+    const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
+    saveToLocalStorage('commentForms', dataAllPages);
     const data = dataAllPages[mw.config.get('wgPageName')] || {};
     if (data.forms) {
       restoreCommentFormsFromData(data);

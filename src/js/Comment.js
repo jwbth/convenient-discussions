@@ -354,8 +354,8 @@ export default class Comment extends CommentSkeleton {
 
     if (this.author.isRegistered() && this.date && !this.isOwn) {
       if (!thanks) {
-        thanks = cleanUpThanks(getFromLocalStorage('convenientDiscussions-thanks') || {});
-        saveToLocalStorage('convenientDiscussions-thanks', thanks);
+        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
+        saveToLocalStorage('thanks', thanks);
       }
 
       const isThanked = Object.keys(thanks).some((key) => (
@@ -1017,7 +1017,7 @@ export default class Comment extends CommentSkeleton {
         anchor: this.anchor,
         text: this.getText(),
       };
-      saveToLocalStorage('convenientDiscussions-thanks', thanks);
+      saveToLocalStorage('thanks', thanks);
     } else {
       this.replaceButton(this.thankButton, thankButton, 'thank');
     }
