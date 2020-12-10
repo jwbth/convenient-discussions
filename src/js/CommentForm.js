@@ -2777,7 +2777,7 @@ export default class CommentForm {
   async runChecks({ doDelete }) {
     const checks = [
       {
-        condition: this.headlineInput?.getValue() === '',
+        condition: !doDelete && this.headlineInput?.getValue() === '',
         confirmation: async () => {
           const noHeadline = cd.s(
             'cf-confirm-noheadline-' +
@@ -2788,19 +2788,27 @@ export default class CommentForm {
       },
       {
         condition: (
+          !doDelete &&
           !this.commentInput.getValue().trim() &&
           !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.CURRENT_PAGE.name)
         ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
       },
       {
-        condition: this.commentInput.getValue().trim().length > cd.config.longCommentThreshold,
+        condition: (
+          !doDelete &&
+          this.commentInput.getValue().trim().length > cd.config.longCommentThreshold
+        ),
         confirmation: async () => (
           await OO.ui.confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold))
         ),
       },
       {
-        condition: /^==[^=]/m.test(this.commentInput.getValue()) && this.mode !== 'edit',
+        condition: (
+          !doDelete &&
+          /^==[^=]/m.test(this.commentInput.getValue()) &&
+          this.mode !== 'edit'
+        ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-secondlevelheading')),
       },
       {
