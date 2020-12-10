@@ -815,7 +815,7 @@ export function saveSession() {
         targetData = {
           headline: target.headline,
           firstCommentAnchor: target.comments[0]?.anchor,
-          index: target.id,
+          id: target.id,
         };
       }
       return {
@@ -873,7 +873,13 @@ function restoreCommentFormsFromData(commentFormsData) {
       const section = Section.search({
         headline: data.targetData.headline,
         firstCommentAnchor: data.targetData.firstCommentAnchor,
-        index: data.targetData.index,
+
+        // TODO: remove "data.targetData.index ||" after February 2021, when old values in users'
+        // local storages will die for good.
+        id: data.targetData.index || data.targetData.id,
+
+        // Can't provide parentTree as cd.sections has already changed; will need to add a
+        // workaround if parentTree proves needed.
       });
       if (section?.isActionable && !section[`${property}Form`]) {
         try {
@@ -967,7 +973,10 @@ export function restoreCommentForms() {
         const section = Section.search({
           headline: target.headline,
           firstCommentAnchor: target.comments[0]?.anchor,
-          index: target.id,
+          id: target.id,
+
+          // Can't provide parentTree as cd.sections has already changed; will need to add a
+          // workaround if parentTree proves needed.
         });
         if (section?.isActionable) {
           try {

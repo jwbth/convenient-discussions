@@ -136,13 +136,11 @@ export default {
     let currentTree = [];
     const $topUl = cd.g.$toc.children('ul');
     sections.forEach((section) => {
-      let match = tocSections.find((tocSection) => (
-        // Anchor check is included as a fallback in case of minor differences in how MediaWIki and
-        // we infer the headline.
-        (tocSection.headline === section.headline || tocSection.anchor === section.anchor) &&
-
-        tocSection.level === section.tocLevel
-      ));
+      const matchedSection = Section.search(section);
+      let match = (
+        matchedSection &&
+        tocSections.find((tocSection) => tocSection.anchor === matchedSection.anchor)
+      );
 
       if (!match) {
         const headline = section.headline;

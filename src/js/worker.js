@@ -92,19 +92,17 @@ function parse() {
     }
   });
 
+  cd.sections.forEach((section) => {
+    section.parentTree = section.getParentTree();
+    section.firstCommentAnchor = section.comments[0]?.anchor;
+  });
+
   cd.comments.forEach((comment) => {
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;
     });
     const section = comment.getSection();
-    comment.section = section ?
-      {
-        headline: section.headline,
-        anchor: section.anchor,
-        firstCommentAnchor: section.comments[0]?.anchor,
-        index: section.id,
-      } :
-      null;
+    comment.section = section ? keepWorkerSafeValues(section) : null;
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
       comment.toMe = comment.parent.isOwn;

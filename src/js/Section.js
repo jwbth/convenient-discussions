@@ -11,9 +11,9 @@ import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import toc from './toc';
+import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, defined, unique } from './util';
 import { editWatchedSections } from './modal';
 import {
   encodeWikilink,
@@ -1018,7 +1018,7 @@ export default class Section extends SectionSkeleton {
         $links.addClass('cd-sectionLink-pending');
       }
     }
-    const watchedAncestor = this.getWatchedAncestor();
+    const watchedAncestor = this.getClosestWatchedSection();
     Section.unwatchSection(
       this.headline,
       {
@@ -1153,10 +1153,10 @@ export default class Section extends SectionSkeleton {
   /**
    * Get the first upper level section relative to the current section that is watched.
    *
-   * @param {boolean} includeCurrent Check the current section too.
+   * @param {boolean} [includeCurrent=false] Check the current section too.
    * @returns {?Section}
    */
-  getWatchedAncestor(includeCurrent) {
+  getClosestWatchedSection([includeCurrent = false]) {
     for (
       let otherSection = includeCurrent ? this : this.getParent();
       otherSection;
@@ -1671,40 +1671,51 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get a section by headline, first comment data, and/or index. At least two parameters must
-   * match. TODO: use parent sections list also?
+   * Get a section by several parameters: id (index), headline, anchor, parent tree, first comment
+   * data. At least two parameters must match, not counting id and anchor.
    *
    * @param {object} options
+   * @param {number} options.id
    * @param {string} options.headline
-   * @param {string} options.firstCommentAnchor
-   * @param {number} options.index
+   * @param {string} options.anchor
+   * @param {string} [options.parentTree]
+   * @param {string} [options.firstCommentAnchor]
    * @returns {?Section}
    */
-  static search({ headline, firstCommentAnchor, index }) {
-    const matches = [
-      ...cd.sections.filter((section) => section.headline === headline),
-      ...cd.sections.filter((section) => (
-        section.comments[0] &&
-        section.comments[0].anchor === firstCommentAnchor
-      )),
-    ];
-    if (cd.sections[index]) {
-      matches.push(cd.sections[index]);
-    }
-    const scores = {};
+  static search({ id, headline, anchor, parentTree, firstCommentAnchor }) {
+    const matches = [];
+    cd.sections.some((section) => {
+      const hasIdMatched = section.id === id;
+      const hasHeadlineMatched = section.headline === headline;
+      const hasAnchorMatched = section.anchor === anchor;
+      let hasParentTreeMatched;
+      hasParentTreeMatched = parentTree ?
+        areObjectsEqual(section.getParentTree(), parentTree) :
+        0.5;
+      const hasFirstCommentMatched = section.comments[0]?.anchor === firstCommentAnchor;
+      const score = (
+        hasHeadlineMatched * 1 +
+        hasParentTreeMatched * 1 +
+        hasFirstCommentMatched * 1 +
+        hasAnchorMatched * 0.5 +
+        hasIdMatched * 0.25
+      );
+      if (score >= 2) {
+        matches.push({ section, score });
+      }
+
+      // Score bigger than 3.5 means it's the best match for sure. Two sections can't have
+      // coinciding anchors, so there can't be 2 sections with the score bigger than 3.5.
+      return score >= 3.5;
+    });
+
+    let bestMatch;
     matches.forEach((match) => {
-      if (!scores[match.id]) {
-        scores[match.id] = 0;
-      }
-      scores[match.id]++;
-    });
-    let bestMatchId = null;
-    Object.keys(scores).forEach((matchId) => {
-      if (scores[matchId] >= 2 && (bestMatchId === null || scores[matchId] > scores[bestMatchId])) {
-        bestMatchId = matchId;
+      if (!bestMatch || match.score > bestMatch.score) {
+        bestMatch = match;
       }
     });
-    return bestMatchId === null ? null : cd.sections[bestMatchId];
+    return bestMatch ? bestMatch.section : null;
   }
 
   /**

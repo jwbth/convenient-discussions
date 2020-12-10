@@ -372,11 +372,11 @@ async function processComments(comments, revisionId) {
 
     if (comment.section) {
       // Is this section watched by means of an upper level section?
-      const sections = Section.getSectionsByHeadline(comment.section.headline);
-      for (const section of sections) {
-        const watchedAncestor = section.getWatchedAncestor(true);
-        if (watchedAncestor) {
-          comment.watchedSectionHeadline = watchedAncestor.headline;
+      const section = Section.search(comment.section);
+      if (section) {
+        const closestWatchedSection = section.getClosestWatchedSection(true);
+        if (closestWatchedSection) {
+          comment.watchedSectionHeadline = closestWatchedSection.headline;
           comment.interesting = true;
           return true;
         }
