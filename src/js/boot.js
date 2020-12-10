@@ -767,15 +767,12 @@ export async function reloadPage(keptData = {}) {
   cd.g.hasPageBeenReloaded = true;
 
   updateChecker.updatePageTitle(0, false);
-  updatePageContent(parseData.text, keptData);
+  await updatePageContent(parseData.text, keptData);
 
   toc.possiblyHide();
 
   if (!keptData.commentAnchor && !keptData.sectionAnchor) {
-    // setTimeout for Firefox, to wait until the page is rendered.
-    setTimeout(() => {
-      restoreScrollPosition(false);
-    });
+    restoreScrollPosition(false);
   }
 }
 
