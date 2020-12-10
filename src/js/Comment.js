@@ -79,7 +79,10 @@ function calculateWordsOverlap(s1, s2) {
 function cleanUpThanks(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
-    if (newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
+    if (
+      !newData[key].thankUnixTime ||
+      newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
+    ) {
       delete newData[key];
     }
   });
@@ -1016,6 +1019,7 @@ export default class Comment extends CommentSkeleton {
       thanks[edit.revid] = {
         anchor: this.anchor,
         text: this.getText(),
+        thankUnixTime: Date.now(),
       };
       saveToLocalStorage('thanks', thanks);
     } else {
