@@ -57,7 +57,10 @@ function removeAlarmViaWorker() {
  * @private
  */
 async function checkForUpdates() {
-  if (document.hidden && !isBackgroundCheckArranged) {
+  // We need a value that wouldn't change during await's.
+  const documentHidden = document.hidden;
+
+  if (documentHidden && !isBackgroundCheckArranged) {
     const callback = () => {
       $(document).off('visibilitychange', callback);
       isBackgroundCheckArranged = false;
@@ -112,7 +115,7 @@ async function checkForUpdates() {
     }
   }
 
-  if (document.hidden) {
+  if (documentHidden) {
     setAlarmViaWorker(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL * 1000);
     isBackgroundCheckArranged = true;
   } else {
