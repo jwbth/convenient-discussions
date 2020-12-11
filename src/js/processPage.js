@@ -21,6 +21,7 @@ import {
   addPreventUnloadCondition,
   globalKeyDownHandler,
   highlightFocused,
+  registerSeenComments,
   windowResizeHandler,
 } from './eventHandlers';
 import { adjustDom } from './modifyDom';
@@ -546,7 +547,7 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
   setVisits(visits);
 
   navPanel.fill();
-  navPanel.registerSeenComments();
+  registerSeenComments();
 
   /**
    * New comments have been highlighted.
@@ -848,7 +849,7 @@ export default async function processPage(keptData = {}) {
     $(document)
       .on('keydown', globalKeyDownHandler)
       .on('scroll resize orientationchange', () => {
-        navPanel.registerSeenComments();
+        registerSeenComments();
         navPanel.updateCommentFormButton();
       });
   }

@@ -6,6 +6,7 @@
 
 import cd from './cd';
 import navPanel from './navPanel';
+import { registerSeenComments } from './eventHandlers';
 
 /**
  * jQuery. See {@link $.fn} for extensions.
@@ -70,7 +71,7 @@ export default {
 
     const onComplete = () => {
       cd.g.autoScrollInProgress = false;
-      navPanel.registerSeenComments();
+      registerSeenComments();
       navPanel.updateCommentFormButton();
     };
 

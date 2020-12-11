@@ -381,54 +381,6 @@ const navPanel = {
   },
 
   /**
-   * Mark comments that are currently in the viewport as read, and also {@link module:Comment#flash
-   * flash} comments that are prescribed to flash.
-   *
-   * @memberof module:navPanel
-   */
-  registerSeenComments() {
-    // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
-    // wait before running, otherwise comments may be registered as seen after a press of Page
-    // Down/Page Up.
-    if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
-
-    cd.g.dontHandleScroll = true;
-
-    // One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than 200ms, but
-    // 200ms proved to be not enough, so we try 300ms.
-    setTimeout(() => {
-      cd.g.dontHandleScroll = false;
-
-      const commentInViewport = Comment.findInViewport();
-      if (!commentInViewport) return;
-
-      const registerSeenIfInViewport = (comment) => {
-        const isInViewport = comment.isInViewport();
-        if (isInViewport) {
-          comment.registerSeen();
-          return false;
-        } else if (isInViewport === false) {
-          // isInViewport could also be null.
-          return true;
-        }
-      };
-
-      // Back
-      cd.comments
-        .slice(0, commentInViewport.id)
-        .reverse()
-        .some(registerSeenIfInViewport);
-
-      // Forward
-      cd.comments
-        .slice(commentInViewport.id)
-        .some(registerSeenIfInViewport);
-
-      this.updateFirstUnseenButton();
-    }, 300);
-  },
-
-  /**
    * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
    * @param {number} commentCount
