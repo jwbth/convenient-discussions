@@ -1428,27 +1428,24 @@ export default class Comment extends CommentSkeleton {
 
     if (registerAllInDirection && navPanel.getUnseenCount() !== 0) {
       const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
-      if (nextComment?.isInViewport(true)) {
+      if (nextComment?.isInViewport()) {
         nextComment.registerSeen(registerAllInDirection, highlight);
       }
     }
   }
 
   /**
-   * Determine if the comment is in the viewport. Return null if we couldn't get the comment
+   * Determine if the comment is in the viewport. Return `null` if we couldn't get the comment's
    * positions.
    *
-   * @param {boolean} updatePositions Update the comment positions before determining the result.
    * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
    * @returns {?boolean}
    */
-  isInViewport(updatePositions = false, partially = false) {
+  isInViewport(partially = false) {
     const viewportTop = window.pageYOffset;
     const viewportBottom = viewportTop + window.innerHeight;
 
-    if (updatePositions || !this.positions) {
-      this.getPositions();
-    }
+    this.getPositions();
 
     if (!this.positions) {
       return null;
@@ -2455,7 +2452,7 @@ export default class Comment extends CommentSkeleton {
     // margin and not practically reachable, unless when there is only few comments. Usually the
     // cycle finishes after a few steps.
     for (let i = 0; i < cd.comments.length; i++) {
-      if (currentComment.isInViewport(true)) {
+      if (currentComment.isInViewport()) {
         foundComment = currentComment;
         break;
       }
