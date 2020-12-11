@@ -587,3 +587,33 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
   });
   return newObj;
 }
+
+/**
+ * Calculates the proportion of the number of words (minimum 2 characters long) present in both
+ * strings to the total words count.
+ *
+ * @param {string} s1
+ * @param {string} s2
+ * @returns {number}
+ * @private
+ */
+export function calculateWordsOverlap(s1, s2) {
+  const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{2,}`, 'g');
+  const words1 = (s1.match(regexp) || []).filter(unique);
+  const words2 = (s2.match(regexp) || []).filter(unique);
+  if (!words1.length || !words2.length) {
+    return 0;
+  }
+
+  let total = words2.length;
+  let overlap = 0;
+  words1.forEach((word1) => {
+    if (words2.some((word2) => word2 === word1)) {
+      overlap++;
+    } else {
+      total++;
+    }
+  });
+
+  return overlap / total;
+}

@@ -50,7 +50,8 @@ export default {
         comment.isNew ||
         (comment.isOwn && cd.settings.highlightOwnComments) ||
         comment.isTarget ||
-        comment.isFocused
+        comment.isFocused ||
+        comment.isDeleted
       );
       if (
         (

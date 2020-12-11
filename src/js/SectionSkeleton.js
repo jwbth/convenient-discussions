@@ -187,4 +187,40 @@ export default class SectionSkeleton {
      */
     this.elements = elements;
   }
+
+  /**
+   * Get the parent section of the section.
+   *
+   * @param {boolean} [ignoreFirstLevel=true] Don't consider sections of the first level parent
+   *   sections; stop at second level sections.
+   * @returns {?SectionSkeleton}
+   */
+  getParent(ignoreFirstLevel = true) {
+    if (ignoreFirstLevel && this.level <= 2) {
+      return null;
+    }
+    return (
+      cd.sections
+        .slice(0, this.id)
+        .reverse()
+        .find((section) => section.level < this.level) ||
+      null
+    );
+  }
+
+  /**
+   * Get the ancestors of the section as an array, starting with the parent section.
+   *
+   * @returns {Array}
+   */
+  getParentTree() {
+    if (!this.cachedParentTree) {
+      this.cachedParentTree = [];
+      let section = this;
+      while ((section = section.getParent(false))) {
+        this.cachedParentTree.push(section);
+      }
+    }
+    return this.cachedParentTree;
+  }
 }

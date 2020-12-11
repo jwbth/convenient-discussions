@@ -57,6 +57,7 @@ export default {
     'word-separator': ' ',
     'comma-separator': ', ',
     'colon-separator': ': ',
+    'dot-separator': ' <b>·</b> ',
   },
 
   contribsPage: 'Special:Contributions',

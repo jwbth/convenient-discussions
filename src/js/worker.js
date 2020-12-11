@@ -105,8 +105,34 @@ function parse() {
     comment.section = section ? keepWorkerSafeValues(section) : null;
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
+      comment.parentAnchor = comment.parent.anchor;
       comment.toMe = comment.parent.isOwn;
     }
+    comment.text = comment.elements.map((element) => element.textContent).join('\n');
+    comment.elementHtmls = comment.elements
+      .map((element) => {
+        element.removeAttribute('id');
+        element.removeAttribute('data-comment-id');
+        return element.outerHTML;
+      });
+
+    /*
+      We can't use outerHTML for comparing comment revisions as the difference may be in div vs. dd
+      (li) tags in this case: This creates a dd tag.
+
+        : Comment. [signature]
+
+      This creates a div tag for the first comment.
+
+        : Comment. [signature]
+        :: Reply. [signature]
+
+      So the HTML is "<dd><div>...</div><dl>...</dl></dd>". A newline also appears before </div>, so
+      we need to trim.
+     */
+    comment.innerHtml = comment.elements.map((element) => element.innerHTML).join('\n').trim();
+
+    comment.elementTagNames = comment.elements.map((element) => element.tagName);
   });
 }
 
@@ -152,7 +178,7 @@ function onMessageFromWindow(e) {
     clearTimeout(alarmTimeout);
   }
 
-  if (message.type === 'parse') {
+  if (message.type.startsWith('parse')) {
     cd.debug.startTimer('worker operations');
 
     Object.assign(cd.g, message.g);
@@ -180,7 +206,7 @@ function onMessageFromWindow(e) {
     parse();
 
     postMessage({
-      type: 'parse',
+      type: message.type,
       revisionId: message.revisionId,
       comments: cd.comments.map(keepWorkerSafeValues),
       sections: cd.sections.map(keepWorkerSafeValues),

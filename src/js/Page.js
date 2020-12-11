@@ -326,11 +326,11 @@ export default class Page {
    * @returns {object}
    * @throws {CdError}
    */
-  async parse({
+  async parse(customOptions, {
     noTimers = false,
     markAsRead = false,
   } = {}) {
-    const params = {
+    const defaultOptions = {
       action: 'parse',
 
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
@@ -339,9 +339,16 @@ export default class Page {
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
       formatversion: 2,
     };
+    const options = Object.assign({}, defaultOptions, customOptions);
+
+    // "page" and "oldid" can not be used together.
+    if (customOptions.oldid) {
+      delete options.page;
+    }
+
     const request = noTimers ?
-      makeRequestNoTimers(params).catch(handleApiReject) :
-      cd.g.api.post(params).catch(handleApiReject);
+      makeRequestNoTimers(options).catch(handleApiReject) :
+      cd.g.api.post(options).catch(handleApiReject);
 
     // We make the GET request that marks the page as read at the same time with the parse request,
     // not after it, to minimize the chance that the page will get new revisions that we will
@@ -359,6 +366,40 @@ export default class Page {
     }
 
     return parse;
+  }
+
+  /**
+   * Get a list of revisions of the page ("redirects" is set to true by default).
+   *
+   * @param {object} [customOptions={}]
+   * @param {object} [options={}]
+   * @param {boolean} [options.noTimers=false]
+   * @returns {Array}
+   */
+  async getRevisions(customOptions = {}, { noTimers = false } = {}) {
+    const defaultOptions = {
+      action: 'query',
+      titles: cd.g.CURRENT_PAGE.name,
+      rvslots: 'main',
+      prop: 'revisions',
+      redirects: true,
+      formatversion: 2,
+    };
+    const options = Object.assign({}, defaultOptions, customOptions);
+
+    const request = noTimers ?
+      makeRequestNoTimers(options).catch(handleApiReject) :
+      cd.g.api.post(options).catch(handleApiReject);
+
+    const revisions = (await request).query?.pages?.[0]?.revisions;
+    if (!revisions) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    return revisions;
   }
 
   /**

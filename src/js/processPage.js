@@ -481,9 +481,9 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
     return;
   }
 
-  // These variables are not used anywhere in the script but can be helpful for testing purposes.
-  cd.g.visits = visits;
-  cd.g.thisPageVisits = thisPageVisits;
+  if (cd.g.thisPageVisits.length >= 1) {
+    cd.g.previousVisitUnixTime = Number(cd.g.thisPageVisits[cd.g.thisPageVisits.length - 1]);
+  }
 
   const currentUnixTime = Math.floor(Date.now() / 1000);
 
@@ -786,10 +786,12 @@ export default async function processPage(keptData = {}) {
     } else {
       navPanel.reset();
     }
-    updateChecker.init();
 
     // New comments highlighting
     processVisits(visitsRequest, keptData.unseenCommentAnchors);
+
+    // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
+    updateChecker.init(visitsRequest);
   } else {
     if (navPanel.isMounted()) {
       navPanel.unmount();

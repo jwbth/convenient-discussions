@@ -366,7 +366,8 @@ const navPanel = {
   },
 
   /**
-   * Mark comments that are currently in the viewport as read.
+   * Mark comments that are currently in the viewport as read, and also {@link module:Comment#flash
+   * flash} comments that are prescribed to flash.
    *
    * @memberof module:navPanel
    */
@@ -374,7 +375,7 @@ const navPanel = {
     // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
     // wait before running, otherwise comments may be registered as seen after a press of Page
     // Down/Page Up.
-    if (!unseenCount || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
+    if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
 
     cd.g.dontHandleScroll = true;
 

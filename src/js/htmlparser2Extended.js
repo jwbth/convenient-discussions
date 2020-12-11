@@ -111,6 +111,12 @@ Object.defineProperty(Element.prototype, 'textContent', {
   },
 });
 
+Object.defineProperty(Element.prototype, 'innerHTML', {
+  get: function () {
+    return DomUtils.getInnerHTML(this);
+  },
+});
+
 Object.defineProperty(Element.prototype, 'outerHTML', {
   get: function () {
     return DomUtils.getOuterHTML(this);
@@ -137,6 +143,10 @@ Element.prototype.setAttribute = function (name, value) {
     }
   }
   this.attribs[name] = value || '';
+};
+
+Element.prototype.removeAttribute = function (name) {
+  delete this.attribs[name];
 };
 
 Element.prototype.appendChild = function (node) {

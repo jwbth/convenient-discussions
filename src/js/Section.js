@@ -975,10 +975,10 @@ export default class Section extends SectionSkeleton {
     let $links;
     if (!silent) {
       $links = $('.cd-sectionLink-watch, .cd-sectionLink-unwatch');
-      if ($links.hasClass('cd-sectionLink-pending')) {
+      if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
-        $links.addClass('cd-sectionLink-pending');
+        $links.addClass('cd-link-pending');
       }
     }
     Section.watchSection(
@@ -987,7 +987,7 @@ export default class Section extends SectionSkeleton {
         silent,
         successCallback: () => {
           if ($links) {
-            $links.removeClass('cd-sectionLink-pending');
+            $links.removeClass('cd-link-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.isWatched = true;
@@ -997,7 +997,7 @@ export default class Section extends SectionSkeleton {
         },
         errorCallback: () => {
           if ($links) {
-            $links.removeClass('cd-sectionLink-pending');
+            $links.removeClass('cd-link-pending');
           }
         },
     });
@@ -1012,10 +1012,10 @@ export default class Section extends SectionSkeleton {
     let $links;
     if (!silent) {
       $links = $('.cd-sectionLink-watch, .cd-sectionLink-unwatch');
-      if ($links.hasClass('cd-sectionLink-pending')) {
+      if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
-        $links.addClass('cd-sectionLink-pending');
+        $links.addClass('cd-link-pending');
       }
     }
     const watchedAncestor = this.getClosestWatchedSection();
@@ -1025,7 +1025,7 @@ export default class Section extends SectionSkeleton {
         silent,
         successCallback: () => {
           if ($links) {
-            $links.removeClass('cd-sectionLink-pending');
+            $links.removeClass('cd-link-pending');
           }
           Section.getSectionsByHeadline(this.headline).forEach((section) => {
             section.isWatched = false;
@@ -1035,7 +1035,7 @@ export default class Section extends SectionSkeleton {
         },
         errorCallback: () => {
           if ($links) {
-            $links.removeClass('cd-sectionLink-pending');
+            $links.removeClass('cd-link-pending');
           }
         },
         watchedAncestorHeadline: watchedAncestor?.headline,
@@ -1367,6 +1367,7 @@ export default class Section extends SectionSkeleton {
         hasHeadlineMatched * 1 +
         hasFirstCommentMatched * 1 +
         hasSectionIndexMatched * 0.5 +
+
         // Shouldn't give too high a weight to this factor as it is true for every first section.
         havePreviousHeadlinesMatched * 0.25
       );
@@ -1459,25 +1460,6 @@ export default class Section extends SectionSkeleton {
         .reverse()
         .find((section) => section.level === 2) ||
       this
-    );
-  }
-
-  /**
-   * Get the parent section of the section if the section's level is lower than 2 (i.e. the number
-   * is higher).
-   *
-   * @returns {?Section}
-   */
-  getParent() {
-    if (this.level <= 2) {
-      return null;
-    }
-    return (
-      cd.sections
-        .slice(0, this.id)
-        .reverse()
-        .find((section) => section.level < this.level) ||
-      null
     );
   }
 

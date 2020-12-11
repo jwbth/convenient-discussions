@@ -31,6 +31,13 @@
   "sm-copylink-tooltip-wikilink": "Copy a wikilink.",
   "sm-copylink-tooltip-link": "Copy a link.",
 
+  "comment-edited": "The comment was edited.",
+  "comment-edited-refresh": "Refresh",
+  "comment-edited-diff": "Diff",
+  "comment-edited-diff-error": "Couldn't render the diff.",
+  "comment-deleted": "The comment was deleted.",
+  "comment-editedsince": "The comment was edited since your last visit.",
+
   "section-reply": "Reply",
   "section-addsubsection-to": "Add subsection to \"$1\"",
   "section-newcomments": "{{plural:$1|There is a new comment|There are new comments}} in this section from {{plural:$2|{{gender:$4|user}}|{{gender:$4|users}}}} $3. Click to refresh the page.",

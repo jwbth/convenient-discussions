@@ -165,6 +165,7 @@ export function initTalkPageCss() {
     '--cd-comment-underlay-target-color': cd.g.COMMENT_UNDERLAY_TARGET_COLOR,
     '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
     '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
+    '--cd-comment-underlay-deleted-color': cd.g.COMMENT_UNDERLAY_DELETED_COLOR,
   });
 
   // Set the transparent color for the "focused" color. The user may override the CSS variable value
