@@ -482,19 +482,29 @@ export default class Comment extends CommentSkeleton {
       this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
     options.layersContainerOffset = this.getLayersContainerOffset();
 
-    const moved = (
-      this.underlay &&
-      (
-        (
-          window.pageYOffset + options.rectTop.top - options.layersContainerOffset.top !==
-          this.layersTop
-        ) ||
-        options.rectBottom.bottom - options.rectTop.top !== this.layersHeight ||
-        this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
-      )
-    );
+    let isMoved = false;
+    if (this.underlay) {
+      // Firefox bug makes it possible for minor (~0.02) differences to manifest.
+      const topDifference = Math.abs(
+        window.pageYOffset +
+        options.rectTop.top -
+        options.layersContainerOffset.top -
+        this.layersTop
+      );
+      const heightDifference = Math.abs(
+        options.rectBottom.bottom -
+        options.rectTop.top -
+        this.layersHeight
+      );
 
-    if (!this.underlay || moved) {
+      isMoved = (
+        topDifference > 0.5 ||
+        heightDifference > 0.5 ||
+        this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
+      );
+    }
+
+    if (!this.underlay || isMoved) {
       Object.assign(this, this.calculateLayersPositions(options));
     }
 
@@ -509,10 +519,10 @@ export default class Comment extends CommentSkeleton {
       if (this.isNew && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
         this.underlay.classList.add('cd-commentUnderlay-new');
       }
-      if (moved && options.doUpdate) {
+      if (isMoved && options.doUpdate) {
         this.updateLayersPositions();
       }
-      return moved;
+      return isMoved;
     } else {
       this.createLayers();
       if (options.doAdd) {
