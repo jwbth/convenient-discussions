@@ -554,6 +554,7 @@ async function processComments(comments, revisionId) {
   // icon which means 0 new comments.
   const newComments = comments
     .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
+  cd.debug.startTimer('filter interesting');
   const interestingNewComments = newComments.filter((comment) => {
     if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
@@ -579,6 +580,7 @@ async function processComments(comments, revisionId) {
       }
     }
   });
+  cd.debug.stopTimer('filter interesting');
 
   const authors = newComments
     .map((comment) => comment.author)

@@ -92,6 +92,7 @@ function parse() {
     }
   });
 
+  cd.debug.startTimer('prepare comments and sections');
   cd.sections.forEach((section) => {
     section.parentTree = section.getParentTree();
     section.firstCommentAnchor = section.comments[0]?.anchor;
@@ -134,6 +135,7 @@ function parse() {
 
     comment.elementTagNames = comment.elements.map((element) => element.tagName);
   });
+  cd.debug.logAndResetTimer('prepare comments and sections');
 }
 
 /**
