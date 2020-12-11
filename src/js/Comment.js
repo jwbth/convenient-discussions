@@ -365,7 +365,6 @@ export default class Comment extends CommentSkeleton {
         this.anchor === thanks[key].anchor &&
         calculateWordsOverlap(this.getText(), thanks[key].text) > 0.66
       ));
-
       if (isThanked) {
         this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
       } else {
@@ -563,11 +562,11 @@ export default class Comment extends CommentSkeleton {
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again when the next event fires.
-    if (!isMoved && this.underlay) {
-      this.underlay.classList.add('cd-commentUnderlay-focused');
-      this.overlay.classList.add('cd-commentOverlay-focused');
-      this.isFocused = true;
-    }
+    if (isMoved || !this.underlay) return;
+
+    this.underlay.classList.add('cd-commentUnderlay-focused');
+    this.overlay.classList.add('cd-commentOverlay-focused');
+    this.isFocused = true;
   }
 
   /**
@@ -808,8 +807,8 @@ export default class Comment extends CommentSkeleton {
   /**
    * Scroll to the comment if it is not in the viewport.
    *
-   * @param {string} alignment One of the values that {@link $.fn.cdScrollTo}
-   *   accepts: `'top'`, `'center'`, or `'bottom'`.
+   * @param {string} alignment One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
+   *   `'center'`, or `'bottom'`.
    */
   scrollIntoView(alignment) {
     const $target = this.editForm ? this.editForm.$element : this.$elements;
@@ -928,8 +927,8 @@ export default class Comment extends CommentSkeleton {
    * @throws {CdError}
    */
   async findAddingEdit(singleTimestamp = false, requestGender = false) {
-    if (singleTimestamp && this.addingEditOneTimestamp) {
-      return this.addingEditOneTimestamp;
+    if (singleTimestamp && this.addingEditSingleTimestamp) {
+      return this.addingEditSingleTimestamp;
     }
     if (!singleTimestamp && this.addingEdit) {
       return this.addingEdit;
@@ -938,51 +937,36 @@ export default class Comment extends CommentSkeleton {
     // Search for the edit in the range of 2 minutes before to 2 minutes later.
     const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
     const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
-    const revisionsRequest = cd.g.api.get({
-      action: 'query',
-      titles: this.getSourcePage().getArchivedPage().name,
-      rvslots: 'main',
-      prop: 'revisions',
+    const revisionsRequest = this.getSourcePage().getArchivedPage().getRevisions({
       rvprop: ['ids', 'flags', 'comment', 'timestamp'],
       rvdir: 'newer',
       rvstart,
       rvend,
       rvuser: this.author.name,
       rvlimit: 500,
-      redirects: true,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     let genderRequest;
     if (requestGender && this.author.isRegistered()) {
       genderRequest = getUserGenders([this.author]);
     }
-    const [revisionsResp] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
+    const [revisions] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
 
-    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
-    if (!revisions) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    const compareRequests = revisions.map((revision) => cd.g.api.get({
+    const compareRequests = revisions.map((revision) => cd.g.api.post({
       action: 'compare',
       fromtitle: this.getSourcePage().getArchivedPage().name,
       fromrev: revision.revid,
       torelative: 'prev',
-      prop: 'diff|diffsize',
+      prop: ['diff'],
       formatversion: 2,
     }).catch(handleApiReject));
 
-    const compareData = await Promise.all(compareRequests);
+    const compareResps = await Promise.all(compareRequests);
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
     let thisTextAndSignature = this.getText(false) + ' ' + this.$signature.get(0).innerText;
     const matches = [];
-    for (let i = 0; i < compareData.length; i++) {
-      const data = compareData[i];
-      const body = data?.compare?.body;
+    for (let i = 0; i < compareResps.length; i++) {
+      const body = compareResps[i]?.compare?.body;
       if (!body) continue;
 
       // Compare diff _parts_ with added text in case multiple comments were added with the edit.
@@ -1070,17 +1054,13 @@ export default class Comment extends CommentSkeleton {
     const result = bestMatch.revision;
 
     // Cache successful results.
-    if (singleTimestamp) {
-      this.addingEditOneTimestamp = result;
-    } else {
-      this.addingEdit = result;
-    }
+    this[singleTimestamp ? 'addingEditSingleTimestamp' : 'addingEdit'] = result;
 
     return result;
   }
 
   /**
-   * Get a diff link for a comment.
+   * Get a diff link for the comment.
    *
    * @returns {string}
    * @private
@@ -1152,11 +1132,8 @@ export default class Comment extends CommentSkeleton {
    */
   async thank() {
     const thankButton = this.thankButton;
-    this.replaceButton(
-      this.thankButton,
-      this.elementPrototypes.pendingThankButton.cloneNode(true),
-      'thank'
-    );
+    const pendingThankButton = this.elementPrototypes.pendingThankButton.cloneNode(true);
+    this.replaceButton(this.thankButton, pendingThankButton, 'thank');
 
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
@@ -1172,7 +1149,8 @@ export default class Comment extends CommentSkeleton {
     }
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
-    const $question = cd.util.wrap(cd.sParse('thank-confirm', this.author.name, this.author, url), {
+    const question = cd.sParse('thank-confirm', this.author.name, this.author, url);
+    const $question = cd.util.wrap(question, {
       tagName: 'div',
       targetBlank: true,
     });
@@ -1190,11 +1168,8 @@ export default class Comment extends CommentSkeleton {
       }
 
       mw.notify(cd.s('thank-success'));
-      this.replaceButton(
-        this.thankButton,
-        this.elementPrototypes.thankedButton.cloneNode(true),
-        'thank'
-      );
+      const thankedButton = this.elementPrototypes.thankedButton.cloneNode(true);
+      this.replaceButton(this.thankButton, thankedButton, 'thank');
 
       thanks[edit.revid] = {
         anchor: this.anchor,
@@ -1464,11 +1439,11 @@ export default class Comment extends CommentSkeleton {
 
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
-    this.underlay.parentElement.removeChild(this.underlay);
+    this.underlay.parentNode.removeChild(this.underlay);
     this.underlay = null;
     this.$underlay = null;
 
-    this.overlay.parentElement.removeChild(this.overlay);
+    this.overlay.parentNode.removeChild(this.overlay);
     this.overlay = null;
     this.$overlay = null;
   }
@@ -1904,8 +1879,7 @@ export default class Comment extends CommentSkeleton {
         ) :
         !match.headingMatch;
 
-      const codeToCompare = removeWikiMarkup(match.code);
-      match.overlap = calculateWordsOverlap(this.getText(), codeToCompare);
+      match.overlap = calculateWordsOverlap(this.getText(), removeWikiMarkup(match.code));
 
       match.score = (
         (
@@ -2245,7 +2219,8 @@ export default class Comment extends CommentSkeleton {
    * @type {Page}
    */
   getSourcePage() {
-    return this.getSection() ? this.getSection().getSourcePage() : cd.g.CURRENT_PAGE;
+    const section = this.getSection();
+    return section ? section.getSourcePage() : cd.g.CURRENT_PAGE;
   }
 
   async showDiff(comparedRevisionId) {
@@ -2366,8 +2341,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web
-   * worker so its constuctor is lost.)
+   * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
+   * web worker so its constuctor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
    */

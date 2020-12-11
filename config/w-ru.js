@@ -153,8 +153,6 @@ export default {
 
   optionsPrefix: 'cd',
 
-  scriptPageWikilink: 'U:JWBTH/CD',
-
   unsignedTemplates: [
     'unsigned',
     'unsignedIP',

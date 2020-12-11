@@ -157,8 +157,8 @@ export default class Page {
   }
 
   /**
-   * Get the source page for the page (i.e., the page from which the archiving is happening).
-   * Returns the page itself if it is not an archive page. Relies on {@link
+   * Get the source page for the page (i.e., the page from which archiving is happening). Returns
+   * the page itself if it is not an archive page. Relies on {@link
    * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-archived-page`.
    *
@@ -319,6 +319,7 @@ export default class Page {
   /**
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
+   * @param {boolean} [customOptions]
    * @param {object} [options={}]
    * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
    *   background tabs if the browser throttles them).
@@ -432,20 +433,23 @@ export default class Page {
   /**
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
-   * @param {object} options
+   * @param {object} customOptions
    * @returns {number|string} editTimestamp Unix time of the edit or `'nochange'`, if nothing has
    *   changed.
    */
-  async edit(options) {
+  async edit(customOptions) {
+    const defaultOptions = {
+      // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
+      title: this.realName || this.name,
+
+      action: 'edit',
+      formatversion: 2,
+    };
+    const options = cd.g.api.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
+
     let resp;
     try {
-      resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser(Object.assign(options, {
-        // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
-        title: this.realName || this.name,
-
-        action: 'edit',
-        formatversion: 2,
-      }))).catch(handleApiReject);
+      resp = await cd.g.api.postWithEditToken(options).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, apiData } = e.data;

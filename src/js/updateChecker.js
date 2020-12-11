@@ -525,8 +525,8 @@ function isPageStillOutdated(newRevisionId) {
 }
 
 /**
- * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web worker
- * so its constuctor is lost.)
+ * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
+ * worker so its constuctor is lost.)
  *
  * @typedef {object} CommentSkeletonLike
  */

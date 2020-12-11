@@ -4,9 +4,6 @@
  * @module app
  */
 
-import Comment from './Comment';
-import CommentForm from './CommentForm';
-import Section from './Section';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';

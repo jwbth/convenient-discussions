@@ -173,7 +173,7 @@ export default class Section extends SectionSkeleton {
       replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
       replyContainer.appendChild(replyWrapper);
 
-      this.lastElementInFirstChunk.parentElement.insertBefore(
+      this.lastElementInFirstChunk.parentNode.insertBefore(
         replyContainer,
         this.lastElementInFirstChunk.nextElementSibling
       );
@@ -233,7 +233,7 @@ export default class Section extends SectionSkeleton {
     buttonContainer.appendChild(button);
 
     const lastElement = this.elements[this.elements.length - 1];
-    lastElement.parentElement.insertBefore(buttonContainer, lastElement.nextElementSibling);
+    lastElement.parentNode.insertBefore(buttonContainer, lastElement.nextElementSibling);
 
     const deferButtonHide = () => {
       if (!this.hideAddSubsectionButtonTimeout) {

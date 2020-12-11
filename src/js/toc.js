@@ -1,5 +1,5 @@
 /**
- * Table of contents related functions.
+ * Table of contents-related functions.
  *
  * @module toc
  */
@@ -13,7 +13,7 @@ export default {
   /**
    * Hide the TOC if the relevant cookie is set. This method duplicates {@link
    * https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js
-   * the native MediaWiki function} and exists because we may need to hide the TOC faster than the
+   * the native MediaWiki function} and exists because we may need to hide the TOC earlier than the
    * native method does it.
    */
   possiblyHide() {
@@ -63,14 +63,14 @@ export default {
   },
 
   /**
-   * Object with the same structure as {@link module:SectionSkeleton} has. (It comes from a web
-   * worker so its constuctor is lost.)
+   * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a
+   * web worker so its constuctor is lost.)
    *
    * @typedef {object} SectionSkeletonLike
    */
 
   /**
-   * Add links to new, not yet displayed sections (loaded in the background) to the table of
+   * Add links to new, not yet rendered sections (loaded in the background) to the table of
    * contents.
    *
    * @param {SectionSkeletonLike[]} sections All sections on the page.
@@ -209,8 +209,8 @@ export default {
   },
 
   /**
-   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web
-   * worker so its constuctor is lost.)
+   * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
+   * web worker so its constuctor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
    */
@@ -229,7 +229,7 @@ export default {
 
     const areCommentsRendered = firstComment instanceof Comment;
 
-    saveScrollPosition(!areCommentsRendered || !cd.g.hasPageBeenReloaded);
+    saveScrollPosition(!(cd.g.hasPageBeenReloaded && areCommentsRendered));
 
     cd.g.$toc
       .find('.cd-toc-notRenderedCommentList')

@@ -232,7 +232,7 @@ const navPanel = {
   /**
    * Get the number of comments on the page that haven't been seen.
    *
-   * @returns {boolean}
+   * @returns {number}
    * @memberof module:navPanel
    */
   getUnseenCount() {
@@ -256,6 +256,8 @@ const navPanel = {
    * @memberof module:navPanel
    */
   updateFirstUnseenButton() {
+    if (!navPanel.isMounted()) return;
+
     if (unseenCount) {
       this.$firstUnseenButton.show().text(unseenCount);
     } else {
@@ -339,15 +341,15 @@ const navPanel = {
   },
 
   /**
-   * Go to the next comment form out of sight, or just the first comment form, if `justFirst` is set
-   * to true.
+   * Go to the next comment form out of sight, or just the first comment form, if `first` is set to
+   * true.
    *
-   * @param {boolean} [justFirst=false]
+   * @param {boolean} [first=false]
    * @memberof module:navPanel
    */
-  goToNextCommentForm(justFirst = false) {
+  goToNextCommentForm(first = false) {
     const commentForm = cd.commentForms
-      .filter((commentForm) => justFirst || !commentForm.$element.cdIsInViewport(true))
+      .filter((commentForm) => first || !commentForm.$element.cdIsInViewport(true))
       .sort((commentForm1, commentForm2) => {
         let top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
         if (top1 < 0) {
@@ -391,6 +393,7 @@ const navPanel = {
         const isInViewport = comment.isInViewport();
         if (isInViewport) {
           comment.registerSeen();
+          return false;
         } else if (isInViewport === false) {
           // isInViewport could also be null.
           return true;
@@ -415,22 +418,22 @@ const navPanel = {
   /**
    * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
-   * @param {number} commentsCount
+   * @param {number} commentCount
    * @param {Map} commentsBySection
    * @param {boolean} areThereInteresting
    * @private
    * @memberof module:navPanel
    */
-  updateRefreshButton(commentsCount, commentsBySection, areThereInteresting) {
+  updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
     this.$refreshButton
       .empty()
-      .attr('title', generateTooltipText(commentsCount, commentsBySection));
-    if (commentsCount) {
+      .attr('title', generateTooltipText(commentCount, commentsBySection));
+    if (commentCount) {
       $('<span>')
         // Can't set the attribute to $refreshButton as its tooltip may have another direction.
         .attr('dir', 'ltr')
 
-        .text(`+${commentsCount}`)
+        .text(`+${commentCount}`)
         .appendTo(this.$refreshButton);
     }
     if (areThereInteresting) {
