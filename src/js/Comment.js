@@ -1390,7 +1390,6 @@ export default class Comment extends CommentSkeleton {
     if (this.isSeen === false) {
       this.isSeen = true;
 
-      navPanel.decrementUnseenCount();
       if (highlight) {
         this.highlightTarget();
       }
@@ -1401,7 +1400,9 @@ export default class Comment extends CommentSkeleton {
       this.flashNew();
     }
 
-    if (registerAllInDirection && navPanel.getUnseenCount() !== 0) {
+    const makesSenseToRegister = cd.comments
+      .some((comment) => comment.isSeen || comment.isFlashNewOnSightSet);
+    if (registerAllInDirection && makesSenseToRegister) {
       const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
       if (nextComment?.isInViewport()) {
         nextComment.registerSeen(registerAllInDirection, highlight);

@@ -12,7 +12,6 @@ import { removeWikiMarkup } from './wikitext';
 import { reorderArray } from './util';
 
 let newCount;
-let unseenCount;
 let lastFirstUnseenCommentId;
 
 /**
@@ -178,7 +177,6 @@ const navPanel = {
   unmount() {
     this.$element.remove();
     this.$element = null;
-    unseenCount = null;
   },
 
   /**
@@ -201,7 +199,6 @@ const navPanel = {
    */
   reset() {
     lastFirstUnseenCommentId = null;
-    unseenCount = null;
 
     this.$refreshButton
       .empty()
@@ -222,32 +219,8 @@ const navPanel = {
     if (newCount) {
       this.$nextButton.show();
       this.$previousButton.show();
-      unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
-      if (unseenCount) {
-        this.updateFirstUnseenButton();
-      }
+      this.updateFirstUnseenButton();
     }
-  },
-
-  /**
-   * Get the number of comments on the page that haven't been seen.
-   *
-   * @returns {number}
-   * @memberof module:navPanel
-   */
-  getUnseenCount() {
-    return unseenCount;
-  },
-
-  /**
-   * Update the unseen comments count without recounting. We try to avoid recounting mostly because
-   * {@link module:navPanel.registerSeenComments} that uses the unseen count is executed very
-   * frequently (up to a hundred times a second).
-   *
-   * @memberof module:navPanel
-   */
-  decrementUnseenCount() {
-    unseenCount--;
   },
 
   /**
@@ -258,6 +231,7 @@ const navPanel = {
   updateFirstUnseenButton() {
     if (!navPanel.isMounted()) return;
 
+    const unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
     if (unseenCount) {
       this.$firstUnseenButton.show().text(unseenCount);
     } else {
@@ -326,7 +300,7 @@ const navPanel = {
    * @memberof module:navPanel
    */
   goToFirstUnseenComment() {
-    if (!unseenCount || cd.g.autoScrollInProgress) return;
+    if (cd.g.autoScrollInProgress) return;
 
     const comment = cd.comments
       .slice(lastFirstUnseenCommentId || 0)
