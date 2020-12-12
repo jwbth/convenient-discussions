@@ -13,7 +13,6 @@ import { reorderArray } from './util';
 
 let newCount;
 let unseenCount;
-let notRenderedCount;
 let lastFirstUnseenCommentId;
 
 /**
@@ -180,7 +179,6 @@ const navPanel = {
     this.$element.remove();
     this.$element = null;
     unseenCount = null;
-    notRenderedCount = 0;
   },
 
   /**
@@ -204,7 +202,6 @@ const navPanel = {
   reset() {
     lastFirstUnseenCommentId = null;
     unseenCount = null;
-    notRenderedCount = 0;
 
     this.$refreshButton
       .empty()
@@ -240,16 +237,6 @@ const navPanel = {
    */
   getUnseenCount() {
     return unseenCount;
-  },
-
-  /**
-   * Get the number of comments that haven't been rendered yet.
-   *
-   * @returns {number}
-   * @memberof module:navPanel
-   */
-  getNotRenderedCount() {
-    return notRenderedCount;
   },
 
   /**
@@ -390,7 +377,6 @@ const navPanel = {
    * @memberof module:navPanel
    */
   updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
-    notRenderedCount = commentCount;
     this.$refreshButton
       .empty()
       .attr('title', generateTooltipText(commentCount, commentsBySection));
