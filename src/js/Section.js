@@ -1156,7 +1156,7 @@ export default class Section extends SectionSkeleton {
    * @param {boolean} [includeCurrent=false] Check the current section too.
    * @returns {?Section}
    */
-  getClosestWatchedSection([includeCurrent = false]) {
+  getClosestWatchedSection(includeCurrent = false) {
     for (
       let otherSection = includeCurrent ? this : this.getParent();
       otherSection;
