@@ -110,13 +110,60 @@ function parse() {
       comment.toMe = comment.parent.isOwn;
     }
     comment.text = comment.elements.map((element) => element.textContent).join('\n');
-    comment.elementHtmls = comment.elements
-      .map((element) => {
-        element.removeAttribute('id');
-        element.removeAttribute('data-comment-id');
-        return element.outerHTML;
+    comment.elements[0].removeAttribute('id');
+    comment.elementHtmls = comment.elements.map((element) => {
+      element.removeAttribute('data-comment-id');
+
+      if (/^H[1-6]$/.test(element.tagName)) {
+        // Keep only the headline, as other elements contain dynamic identificators.
+        const headlineElement = element.getElementsByClassName('mw-headline')[0];
+        if (headlineElement) {
+          headlineElement.getElementsByClassName('mw-headline-number')[0]?.remove();
+          element.children
+            .slice()
+            .reverse()
+            .forEach((element) => {
+              element.remove();
+            });
+          headlineElement.children.forEach((child) => {
+            element.appendChild(child);
+          });
+        }
+      }
+
+      element.getElementsByClassName('autonumber').forEach((element) => {
+        element.children[0]?.remove();
       });
 
+      comment.hiddenElementData = [];
+      const elementsToHide = [
+        ...element.getElementsByClassName('autonumber'),
+        ...element.getElementsByClassName('reference'),
+        ...element.getElementsByClassName('references'),
+        ...element.getElementsByTagName('style'),
+        ...element.getElementsByTagName('link'),
+      ];
+      elementsToHide.forEach((element) => {
+        let type;
+        if (element.classList.contains('reference')) {
+          type = 'reference';
+        } else if (element.classList.contains('references')) {
+          type = 'references';
+        } else if (element.classList.contains('autonumber')) {
+          type = 'autonumber';
+        }
+
+        const index = comment.hiddenElementData.push({
+          type,
+          tagName: element.tagName,
+          html: element.outerHTML,
+        });
+        element.insertBefore(cd.g.rootElement.createTextNode(`\x01${index}_${type}\x02`));
+        element.remove();
+      });
+
+      return element.outerHTML;
+    });
     /*
       We can't use outerHTML for comparing comment revisions as the difference may be in div vs. dd
       (li) tags in this case: This creates a dd tag.
