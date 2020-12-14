@@ -171,8 +171,8 @@ export default class CommentSkeleton {
     if (this.anchor && !this.elements[0].getAttribute('id')) {
       this.elements[0].setAttribute('id', this.anchor);
     }
-    this.elements[0].classList.add('cd-commentPart-first');
-    this.elements[this.elements.length - 1].classList.add('cd-commentPart-last');
+    this.highlightables[0].classList.add('cd-commentPart-first');
+    this.highlightables[this.highlightables.length - 1].classList.add('cd-commentPart-last');
     this.elements.forEach((el) => {
       el.classList.add('cd-commentPart');
       el.setAttribute('data-comment-id', String(this.id));
