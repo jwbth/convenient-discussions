@@ -703,11 +703,6 @@ export default class Comment extends CommentSkeleton {
         break;
 
       case 'deleted':
-        this.configureLayers();
-        if (!this.underlay) return;
-
-        this.underlay.classList.add('cd-commentUnderlay-deleted');
-
         this.isDeleted = true;
         stringName = 'comment-deleted';
         break;
@@ -765,6 +760,12 @@ export default class Comment extends CommentSkeleton {
 
     this.$elements.last().append($span);
 
+    if (type === 'deleted') {
+      this.configureLayers();
+      if (!this.underlay) return;
+
+      this.underlay.classList.add('cd-commentUnderlay-deleted');
+    }
     if (isNewVersionRendered) {
       this.flashNewOnSight();
     }

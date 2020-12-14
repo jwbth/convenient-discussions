@@ -7,6 +7,7 @@
 import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
+import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -280,6 +281,7 @@ function checkForNewEdits() {
 
   mapComments(currentComments, newComments);
 
+  let isEditMarkUpdated = false;
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     if (newComment) {
@@ -288,6 +290,7 @@ function checkForNewEdits() {
 
       if (comment.isDeleted) {
         comment.unmarkAsEdited('deleted');
+        isEditMarkUpdated = true;
       }
       if (newComment.innerHtml !== currentComment.innerHtml) {
         // The comment may have already been updated previously.
@@ -345,17 +348,23 @@ function checkForNewEdits() {
           } else {
             comment.markAsEdited('edited', false, lastCheckedRevisionId);
           }
+          isEditMarkUpdated = true;
         }
       } else if (comment.isEdited) {
         comment.unmarkAsEdited('edited');
+        isEditMarkUpdated = true;
       }
     } else if (!currentComment.hasPoorMatch) {
       const comment = Comment.getCommentByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsEdited('deleted');
+      isEditMarkUpdated = true;
     }
   });
+  if (isEditMarkUpdated) {
+    commentLayers.redrawIfNecessary(false, true);
+  }
 }
 
 /**
