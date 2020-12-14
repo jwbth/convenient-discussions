@@ -1673,14 +1673,14 @@ export default class Section extends SectionSkeleton {
       let hasParentTreeMatched;
       hasParentTreeMatched = parentTree ?
         areObjectsEqual(section.getParentTree(), parentTree) :
-        0.5;
+        0.25;
       const hasFirstCommentMatched = section.comments[0]?.anchor === firstCommentAnchor;
       const score = (
         hasHeadlineMatched * 1 +
         hasParentTreeMatched * 1 +
         hasFirstCommentMatched * 1 +
         hasAnchorMatched * 0.5 +
-        hasIdMatched * 0.25
+        hasIdMatched * 0.001
       );
       if (score >= 2) {
         matches.push({ section, score });
