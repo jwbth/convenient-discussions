@@ -387,7 +387,9 @@ export default class Comment extends CommentSkeleton {
          */
         this.editButton = this.elementPrototypes.editButton.cloneNode(true);
         this.editButton.firstChild.onclick = () => {
-          this.edit();
+          if (!this.editButton.classList.contains('oo-ui-widget-disabled')) {
+            this.edit();
+          }
         };
         this.overlayContent.appendChild(this.editButton);
       }
@@ -403,7 +405,9 @@ export default class Comment extends CommentSkeleton {
         if (this.replyForm) {
           this.replyForm.cancel();
         } else {
-          this.reply();
+          if (!this.replyButton.classList.contains('oo-ui-widget-disabled')) {
+            this.reply();
+          }
         }
       };
       this.overlayContent.appendChild(this.replyButton);
