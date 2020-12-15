@@ -1840,17 +1840,21 @@ export default class Comment extends CommentSkeleton {
       match.hasIdMatched = this.id === match.id;
 
       if (previousComments.length) {
+        match.hasPreviousCommentsDataMatched = false;
+        match.hasPreviousCommentDataMatched = false;
+
         for (let i = 0; i < previousComments.length; i++) {
           const signature = signatures[match.id - 1 - i];
+          if (!signature) break;
+
           // At least one coincided comment is enough if the second is unavailable.
           match.hasPreviousCommentsDataMatched = (
-            signature &&
             signature.timestamp === previousComments[i].timestamp &&
             signature.author === previousComments[i].author
           );
 
           // Many consecutive comments with the same author and timestamp.
-          if (match.isPreviousCommentsDataEqual !== false && signature) {
+          if (match.isPreviousCommentsDataEqual !== false) {
             match.isPreviousCommentsDataEqual = (
               match.timestamp === signature.timestamp &&
               match.author === signature.author
@@ -1868,6 +1872,7 @@ export default class Comment extends CommentSkeleton {
         match.hasPreviousCommentDataMatched = match.id === 0;
       }
 
+      match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
       Object.assign(match, this.adjustCommentBeginning(match));
       match.hasHeadlineMatched = this.followsHeading ?
         (
@@ -1899,8 +1904,8 @@ export default class Comment extends CommentSkeleton {
           // There are always problems with first comments as there are no previous comments to
           // compare the signatures of and it's harder to tell the match, so we use a bit ugly
           // solution here, although it should be quite reliable: the comment's firstness, matching
-          // author, date, and headline. Another option is to look for next comments, not for
-          // previous.
+          // author, date, and headline. A false negative will take place when the comment is no
+          // longer first. Another option is to look for next comments, not for previous.
           (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
         ) * 2 +
         match.overlap +
