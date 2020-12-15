@@ -182,7 +182,7 @@ function parse() {
 
     comment.elementTagNames = comment.elements.map((element) => element.tagName);
   });
-  cd.debug.logAndResetTimer('prepare comments and sections');
+  cd.debug.stopTimer('prepare comments and sections');
 }
 
 /**
@@ -201,6 +201,7 @@ function restoreFunc(code) {
       code = '(' + code + ')';
     }
   }
+
   // FIXME: Any idea how to avoid using eval() here?
   return eval(code);
 }

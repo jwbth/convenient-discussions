@@ -10,7 +10,6 @@ import CommentSkeleton from './CommentSkeleton';
 import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
-import navPanel from './navPanel';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
@@ -323,6 +322,7 @@ export default class Comment extends CommentSkeleton {
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
     this.overlayInnerWrapper = this.overlay.firstChild;
+
     // Hide the overlay on right click. It can block clicking the author page link.
     this.overlayInnerWrapper.oncontextmenu = (e) => {
       e.preventDefault();
@@ -338,6 +338,7 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.goToParentButton = this.elementPrototypes.goToParentButton.cloneNode(true);
+
       this.goToParentButton.firstChild.onclick = () => {
         this.goToParent();
       };
@@ -351,6 +352,7 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.linkButton = this.elementPrototypes.linkButton.cloneNode(true);
+
       this.linkButton.firstChild.onclick = this.copyLink.bind(this);
       this.overlayContent.appendChild(this.linkButton);
     }
@@ -374,6 +376,7 @@ export default class Comment extends CommentSkeleton {
          * @type {Element|undefined}
          */
         this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
+
         this.thankButton.firstChild.onclick = () => {
           this.thank();
         };
@@ -401,6 +404,7 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.replyButton = this.elementPrototypes.replyButton.cloneNode(true);
+
       this.replyButton.firstChild.onclick = () => {
         if (this.replyForm) {
           this.replyForm.cancel();
@@ -535,11 +539,11 @@ export default class Comment extends CommentSkeleton {
    * Add the comment's layers to the DOM.
    */
   addLayers() {
-    if (this.underlay) {
-      this.updateLayersPositions();
-      this.getLayersContainer().appendChild(this.underlay);
-      this.getLayersContainer().appendChild(this.overlay);
-    }
+    if (!this.underlay) return;
+
+    this.updateLayersPositions();
+    this.getLayersContainer().appendChild(this.underlay);
+    this.getLayersContainer().appendChild(this.overlay);
   }
 
   /**
@@ -908,11 +912,8 @@ export default class Comment extends CommentSkeleton {
   copyLink(e) {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
-    this.replaceButton(
-      this.linkButton,
-      this.elementPrototypes.pendingLinkButton.cloneNode(true),
-      'link'
-    );
+    const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
+    this.replaceButton(this.linkButton, pendingLinkButton, 'link');
     copyLink(this, e.shiftKey, () => {
       this.replaceButton(this.linkButton, linkButton, 'link');
     });
@@ -1877,15 +1878,13 @@ export default class Comment extends CommentSkeleton {
       match.hasHeadlineMatched = this.followsHeading ?
         (
           match.headingMatch &&
-          this.getSection() &&
-          this.getSection().headline &&
+          this.getSection()?.headline &&
           (
             normalizeCode(removeWikiMarkup(match.headlineCode)) ===
             normalizeCode(this.getSection().headline)
           )
         ) :
         !match.headingMatch;
-
       match.overlap = calculateWordsOverlap(this.getText(), removeWikiMarkup(match.code));
 
       match.score = (

@@ -53,17 +53,12 @@ export default {
         comment.isFocused ||
         comment.isDeleted
       );
-      if (
-        (
-          removeUnhighlighted ||
 
-          // Layers that ended up under the bottom of the page content and could be moving the page
-          // bottom down.
-          (comment.positions && comment.positions.bottom > rootBottom)
-        ) &&
-        !shouldBeHighlighted &&
-        comment.$underlay
-      ) {
+      // Layers that ended up under the bottom of the page content and could be moving the page
+      // bottom down.
+      const isUnderBottom = comment.positions && comment.positions.bottom > rootBottom;
+
+      if ((removeUnhighlighted || isUnderBottom) && !shouldBeHighlighted && comment.$underlay) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
         floatingRects = (

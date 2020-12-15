@@ -345,7 +345,7 @@ export function hideText(text, regexp, hidden, useAlternativeMarker) {
  * @returns {string}
  */
 export function unhideText(text, hidden) {
-  while (text.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
+  while (/(?:\x01|\x03)\d+(?:\x02|\x04)/.test(text)) {
     text = text.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
   }
 
