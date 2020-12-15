@@ -4,6 +4,7 @@
  * @module eventHandlers
  */
 
+import Comment from './Comment';
 import CommentForm from './CommentForm';
 import cd from './cd';
 import commentLayers from './commentLayers';
