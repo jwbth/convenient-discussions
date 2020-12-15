@@ -300,11 +300,14 @@ function checkForNewEdits() {
             .some((data) => data.type === 'reference');
 
           // If a style element is replaced with a link element, we can't replace HTML.
-          const areStyleTagsRemoved = newComment.hiddenElementData.every((data, i) => (
-            data.type !== 'templateStyles' ||
-            data.tagName === 'LINK' ||
-            currentComment.hiddenElementData[i] !== 'STYLE'
-          ));
+          const areStyleTagsRemoved = (
+            newComment.hiddenElementData.length &&
+            newComment.hiddenElementData.every((data, i) => (
+              data.type !== 'templateStyles' ||
+              data.tagName === 'LINK' ||
+              currentComment.hiddenElementData[i] !== 'STYLE'
+            ))
+          );
 
           if (
             !areThereReferences &&
