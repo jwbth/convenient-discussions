@@ -276,11 +276,15 @@ function checkForEditsSincePreviousVisit() {
  * @private
  */
 function checkForNewEdits() {
+  cd.debug.startTimer('checkForNewEdits');
   const newComments = revisionData[lastCheckedRevisionId].comments;
   const currentComments = revisionData[mw.config.get('wgRevisionId')].comments;
 
+  cd.debug.startTimer('checkForNewEdits mapComments');
   mapComments(currentComments, newComments);
+  cd.debug.stopTimer('checkForNewEdits mapComments');
 
+  cd.debug.startTimer('checkForNewEdits compare');
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     if (newComment) {
@@ -360,6 +364,8 @@ function checkForNewEdits() {
       comment.markAsEdited('deleted');
     }
   });
+  cd.debug.stopTimer('checkForNewEdits compare');
+  cd.debug.stopTimer('checkForNewEdits');
 }
 
 /**

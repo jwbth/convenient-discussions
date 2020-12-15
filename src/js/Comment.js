@@ -386,6 +386,7 @@ export default class Comment extends CommentSkeleton {
          * @type {Element|undefined}
          */
         this.editButton = this.elementPrototypes.editButton.cloneNode(true);
+
         this.editButton.firstChild.onclick = () => {
           if (!this.editButton.classList.contains('oo-ui-widget-disabled')) {
             this.edit();
