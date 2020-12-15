@@ -613,6 +613,14 @@ export default class Comment extends CommentSkeleton {
     });
   }
 
+  /**
+   * Change the comment's background color to the provided color for the given number of
+   * milliseconds, then smoothly change it back.
+   *
+   * @param {string} color
+   * @param {number} delay
+   * @param {Function} callback
+   */
   flash(color, delay, callback) {
     this.configureLayers();
     if (!this.$underlay) {
@@ -692,6 +700,15 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Update the comment's properties, add a small text next to the signature saying the comment has
+   * been edited or deleted, and flash the comment as updated if it has been.
+   *
+   * @param {string} type Type of the mark: `'edited'`, `'editedSince'`, or `'deleted'`.
+   * @param {boolean} isNewVersionRendered Has the new version of the comment been rendered.
+   * @param {number} comparedRevisionId ID of the revision to compare with when the user clicks to
+   *   see the diff.
+   */
   markAsEdited(type, isNewVersionRendered, comparedRevisionId) {
     let stringName;
     switch (type) {
@@ -775,6 +792,13 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Update the comment's properties, remove the edit mark added in {@link
+   * module:Comment#markAsEdited} and flash the comment as updated if it has been (reset to the
+   * original version, or unedited, in this case).
+   *
+   * @param {string} type Type of the mark: `'edited'` or `'deleted'`.
+   */
   unmarkAsEdited(type) {
     switch (type) {
       case 'edited':
@@ -2229,6 +2253,12 @@ export default class Comment extends CommentSkeleton {
     return section ? section.getSourcePage() : cd.g.CURRENT_PAGE;
   }
 
+  /**
+   * Show a diff of changes in the comment between the current revision ID and the provided one.
+   *
+   * @param {number} comparedRevisionId
+   * @throws {CdError}
+   */
   async showDiff(comparedRevisionId) {
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
