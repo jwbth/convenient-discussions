@@ -312,12 +312,6 @@ export default class Comment extends CommentSkeleton {
    */
   createLayers() {
     this.underlay = this.elementPrototypes.underlay.cloneNode(true);
-    if (this.isNew) {
-      this.underlay.classList.add('cd-commentUnderlay-new');
-    }
-    if (cd.settings.highlightOwnComments && this.isOwn) {
-      this.underlay.classList.add('cd-commentUnderlay-own');
-    }
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
@@ -415,6 +409,8 @@ export default class Comment extends CommentSkeleton {
       this.overlayContent.appendChild(this.replyButton);
     }
 
+    this.updateLayersStyles();
+
     /**
      * Comment's underlay.
      *
@@ -453,8 +449,43 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add the underlay and overlay if they are missing, recalculate their positions and redraw if
-   * they have been moved, or do nothing if everything is right.
+   * Update the styles of the layers according to the comment's properties.
+   */
+  updateLayersStyles() {
+    if (!this.underlay) return;
+
+    if (this.isNew) {
+      this.underlay.classList.add('cd-commentUnderlay-new');
+    }
+    if (cd.settings.highlightOwnComments && this.isOwn) {
+      this.underlay.classList.add('cd-commentUnderlay-own');
+    }
+    if (this.isDeleted) {
+      this.underlay.classList.add('cd-commentUnderlay-deleted');
+      if (this.replyButton) {
+        this.replyButton.classList.remove('oo-ui-widget-disabled');
+        this.replyButton.classList.add('oo-ui-widget-enabled');
+      }
+      if (this.editButton) {
+        this.editButton.classList.remove('oo-ui-widget-disabled');
+        this.editButton.classList.add('oo-ui-widget-enabled');
+      }
+    } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
+      this.underlay.classList.remove('cd-commentUnderlay-deleted');
+      if (this.replyButton) {
+        this.replyButton.classList.remove('oo-ui-widget-disabled');
+        this.replyButton.classList.add('oo-ui-widget-enabled');
+      }
+      if (this.editButton) {
+        this.editButton.classList.remove('oo-ui-widget-disabled');
+        this.editButton.classList.add('oo-ui-widget-enabled');
+      }
+    }
+  }
+
+  /**
+   * Add the underlay and overlay if they are missing, update their styles, recalculate their
+   * positions and redraw if the comment has been moved or do nothing if everything is right.
    *
    * @param {object} [options={}]
    * @param {boolean} [options.doAdd=true] Add the layers in case they are created. If set to
@@ -519,9 +550,7 @@ export default class Comment extends CommentSkeleton {
     // Configure the layers only if they were unexistent or the comment position has changed, to
     // save time.
     if (this.underlay) {
-      if (this.isNew && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
-        this.underlay.classList.add('cd-commentUnderlay-new');
-      }
+      this.updateLayersStyles();
       if (isMoved && options.doUpdate) {
         this.updateLayersPositions();
       }
@@ -781,15 +810,12 @@ export default class Comment extends CommentSkeleton {
 
     this.$elements.last().append($span);
 
-    if (type === 'deleted') {
-      this.configureLayers();
-      if (!this.underlay) return;
-
-      this.underlay.classList.add('cd-commentUnderlay-deleted');
-    }
     if (isNewVersionRendered) {
       this.flashNewOnSight();
     }
+
+    // Layers are supposed to be updated (deleted comments background, repositioning) separately,
+    // see updateChecker~checkForNewEdits, for example.
   }
 
   /**
@@ -806,8 +832,13 @@ export default class Comment extends CommentSkeleton {
         this.isEdited = false;
         break;
       case 'deleted':
-        this.underlay.classList.remove('cd-commentUnderlay-deleted');
         this.isDeleted = false;
+
+        // commentLayers.redrawIfNecessary(), that is called on DOM updates, could circumvent this
+        // comment if it has no property signalling that it should be highlighted, so we update its
+        // styles manually.
+        this.updateLayersStyles();
+
         break;
     }
 
