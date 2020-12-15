@@ -2272,8 +2272,11 @@ export default class Comment extends CommentSkeleton {
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
       const inCode = this.locateInCode(pageCode);
-      const newlinesBeforeComment = pageCode.slice(0, inCode.startIndex).match(/\n/g) || [];
-      const newlinesInComment = pageCode.slice(inCode.startIndex, inCode.endIndex).match(/\n/g) || [];
+      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
+      const newlinesInComment = (
+        pageCode.slice(inCode.lineStartIndex, inCode.endIndex).match(/\n/g) ||
+        []
+      );
       const startLineNumber = newlinesBeforeComment.length + 1;
       const endLineNumber = startLineNumber + newlinesInComment.length;
       for (let j = startLineNumber; j <= endLineNumber; j++) {
@@ -2296,7 +2299,8 @@ export default class Comment extends CommentSkeleton {
       const $tr = $(tr);
       const $lineNumbers = $tr.children('.diff-lineno');
       for (let j = 0; j < $lineNumbers.length; j++) {
-        currentLineNumbers[j] = Number(($lineNumbers.text().match(/\d+/) || [])[0]);
+        const match = $lineNumbers.eq(j).text().match(/\d+/);
+        currentLineNumbers[j] = Number((match || [])[0]);
         if (!currentLineNumbers[j]) {
           throw new CdError({
             type: 'parse',
