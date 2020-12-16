@@ -31,6 +31,7 @@ let lastCheckedRevisionId;
 let notifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
+let submittedCommentAnchor;
 
 const revisionData = {};
 const checkedForNewEdits = {};
@@ -254,6 +255,8 @@ function checkForEditsSincePreviousVisit() {
   const articleId = mw.config.get('wgArticleId');
 
   currentComments.forEach((currentComment) => {
+    if (currentComment.anchor === submittedCommentAnchor) return;
+
     const oldComment = currentComment.match;
     if (oldComment) {
       const seenInnerHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.innerHtml;
@@ -673,9 +676,10 @@ const updateChecker = {
    * Initialize the update checker.
    *
    * @param {Promise} visitsRequest
+   * @param {object} keptData
    * @memberof module:updateChecker
    */
-  async init(visitsRequest) {
+  async init(visitsRequest, keptData) {
     if (!cd.g.worker) return;
 
     notifiedAbout = [];
@@ -696,6 +700,9 @@ const updateChecker = {
 
     if (cd.g.previousVisitUnixTime) {
       processRevisionsIfNeeded();
+      if (keptData.didSubmitCommentForm && keptData.commentAnchor) {
+        submittedCommentAnchor = keptData.commentAnchor;
+      }
     }
   },
 

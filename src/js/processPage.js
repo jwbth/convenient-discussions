@@ -792,7 +792,7 @@ export default async function processPage(keptData = {}) {
     processVisits(visitsRequest, keptData.unseenCommentAnchors);
 
     // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
-    updateChecker.init(visitsRequest);
+    updateChecker.init(visitsRequest, keptData);
   } else {
     if (navPanel.isMounted()) {
       navPanel.unmount();
