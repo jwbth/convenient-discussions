@@ -19,7 +19,6 @@ import {
   reloadPage,
 } from './boot';
 import {
-  areObjectsEqual,
   calculateWordsOverlap,
   getFromLocalStorage,
   keepWorkerSafeValues,
@@ -300,65 +299,13 @@ function checkForNewEdits() {
       }
       if (newComment.innerHtml !== currentComment.innerHtml) {
         // The comment may have already been updated previously.
-        if (!comment.revisionId || comment.comparedHtml !== newComment.innerHtml) {
-          const elementTagNames = Array.from(comment.$elements).map((element) => element.tagName);
-
-          // References themselves may be out of the comment's HTML and might be edited.
-          const areThereReferences = newComment.hiddenElementData
-            .some((data) => data.type === 'reference');
-
-          // If a style element is replaced with a link element, we can't replace HTML.
-          const areStyleTagsRemoved = (
-            newComment.hiddenElementData.length &&
-            newComment.hiddenElementData.every((data, i) => (
-              data.type !== 'templateStyles' ||
-              data.tagName === 'LINK' ||
-              currentComment.hiddenElementData[i] !== 'STYLE'
-            ))
-          );
-
-          if (
-            !areThereReferences &&
-            !areStyleTagsRemoved &&
-            areObjectsEqual(elementTagNames, newComment.elementTagNames)
-          ) {
-            const match = comment.$elements.find('.autonumber').text().match(/\d+/) || [];
-            let currentAutonumber = match[0] || 1;
-            newComment.elementHtmls.forEach((html, i) => {
-              html = html.replace(
-                /\x01(\d+)_\w+\x02/g,
-                (s, num) => newComment.hiddenElementData[num - 1].html
-              );
-              if (/^H[1-6]$/.test(elementTagNames[i])) {
-                const $headline = comment.$elements.eq(i).find('.mw-headline');
-                if ($headline.length) {
-                  const $headlineNumber = $headline.find('mw-headline-number');
-                  $headline
-                    .html(html)
-                    .prepend($headlineNumber);
-                }
-              } else {
-                comment.replaceElement(comment.$elements.eq(i), html);
-              }
-            });
-            comment.$elements.find('.autonumber').each((i, el) => {
-              $(el).text(`[${currentAutonumber}]`);
-              currentAutonumber++;
-            });
-            comment.$elements
-              .attr('data-comment-id', comment.id)
-              .first()
-              .attr('id', comment.anchor);
-            delete comment.cachedText;
-            mw.hook('wikipage.content').add(comment.$elements);
-            comment.revisionId = lastCheckedRevisionId;
-            comment.comparedHtml = newComment.innerHtml;
-            comment.markAsEdited('edited', true, lastCheckedRevisionId);
-          } else {
-            comment.markAsEdited('edited', false, lastCheckedRevisionId);
-          }
+        if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
+          const success = comment.update(currentComment, newComment);
+          comment.markAsEdited('edited', success, lastCheckedRevisionId);
+          isEditMarkUpdated = true;
         }
       } else if (comment.isEdited) {
+        comment.update(currentComment, newComment);
         comment.unmarkAsEdited('edited');
       }
     } else if (!currentComment.hasPoorMatch) {

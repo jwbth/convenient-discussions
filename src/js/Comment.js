@@ -13,6 +13,7 @@ import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
+  areObjectsEqual,
   calculateWordsOverlap,
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
@@ -852,9 +853,7 @@ export default class Comment extends CommentSkeleton {
       .find('.cd-editMark')
       .remove();
 
-    if (this.revisionId) {
-      delete this.revisionId;
-
+    if (type === 'edited') {
       if (this.isFlashNewOnSightSet) {
         this.isFlashNewOnSightSet = false;
       } else {
@@ -866,6 +865,73 @@ export default class Comment extends CommentSkeleton {
 
         this.flashNewOnSight();
       }
+    }
+  }
+
+  /**
+   * Update the comment's content.
+   *
+   * @param {object} currentComment Data about the comment in the current revision as delivered by
+   *   the worker.
+   * @param {object} newComment Data about the comment in the new revision as delivered by the
+   *   worker.
+   * @returns {boolean} Was the update successful.
+   */
+  update(currentComment, newComment) {
+    const elementTagNames = Array.from(this.$elements).map((element) => element.tagName);
+
+    // References themselves may be out of the comment's HTML and might be edited.
+    const areThereReferences = newComment.hiddenElementData
+      .some((data) => data.type === 'reference');
+
+    // If a style element is replaced with a link element, we can't replace HTML.
+    const areStyleTagsKept = (
+      !newComment.hiddenElementData.length ||
+      newComment.hiddenElementData.every((data, i) => (
+        data.type !== 'templateStyles' ||
+        data.tagName === 'STYLE' ||
+        currentComment.hiddenElementData[i].tagName !== 'STYLE'
+      ))
+    );
+
+    if (
+      !areThereReferences &&
+      areStyleTagsKept &&
+      areObjectsEqual(elementTagNames, newComment.elementTagNames)
+    ) {
+      const match = this.$elements.find('.autonumber').text().match(/\d+/);
+      let currentAutonumber = match ? match[0] : 1;
+      newComment.elementHtmls.forEach((html, i) => {
+        html = html.replace(
+          /\x01(\d+)_\w+\x02/g,
+          (s, num) => newComment.hiddenElementData[num - 1].html
+        );
+        if (/^H[1-6]$/.test(elementTagNames[i])) {
+          const $headline = this.$elements.eq(i).find('.mw-headline');
+          if ($headline.length) {
+            const $headlineNumber = $headline.find('.mw-headline-number');
+            $headline
+              .html($(html).html())
+              .prepend($headlineNumber);
+          }
+        } else {
+          this.replaceElement(this.$elements.eq(i), html);
+        }
+      });
+      this.$elements.find('.autonumber').each((i, el) => {
+        $(el).text(`[${currentAutonumber}]`);
+        currentAutonumber++;
+      });
+      this.$elements
+        .attr('data-comment-id', this.id)
+        .first()
+        .attr('id', this.anchor);
+      delete this.cachedText;
+      mw.hook('wikipage.content').add(this.$elements);
+      this.comparedHtml = newComment.innerHtml;
+      return true;
+    } else {
+      return false;
     }
   }
 
