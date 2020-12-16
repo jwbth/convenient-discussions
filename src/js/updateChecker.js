@@ -199,7 +199,7 @@ function mapComments(currentComments, otherComments) {
             1 :
             calculateWordsOverlap(currentComment.text, otherComment.text);
           const score = (
-            hasParentAnchorMatched * 1 +
+            hasParentAnchorMatched * (currentComment.parentAnchor ? 1 : 0.75) +
             hasHeadlineMatched * 1 +
             hasHtmlMatched * 1 +
             overlap
@@ -209,7 +209,11 @@ function mapComments(currentComments, otherComments) {
             score,
           };
         })
-        .filter((match) => match.score > 1.66)
+
+        // This text overlap calculation is much more rough than in Comment#locateInSection (a lot
+        // of irrelevant elements), so we use a higher value.
+        .filter((match) => match.score >= 1.75)
+
         .sort((match1, match2) => {
           if (match2.score > match1.score) {
             return 1;
