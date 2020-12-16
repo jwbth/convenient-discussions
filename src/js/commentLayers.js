@@ -27,8 +27,9 @@ export default {
    * they've changed.
    *
    * @param {boolean} removeUnhighlighted Whether to remove the unhighlighted comments' layers.
+   * @param {boolean} redrawAll Whether to redraw all underlays and not stop at first two unmoved.
    */
-  redrawIfNecessary(removeUnhighlighted = false) {
+  redrawIfNecessary(removeUnhighlighted = false, redrawAll) {
     if (!this.underlays.length || document.hidden) return;
 
     this.layersContainers.forEach((container) => {
@@ -71,7 +72,7 @@ export default {
           doUpdate: false,
           floatingRects,
         });
-        if (isMoved) {
+        if (isMoved || redrawAll) {
           notMovedCount = 0;
           comments.push(comment);
         } else if (

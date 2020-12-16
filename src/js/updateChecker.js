@@ -288,6 +288,7 @@ function checkForNewEdits() {
   cd.debug.stopTimer('checkForNewEdits mapComments');
 
   cd.debug.startTimer('checkForNewEdits compare');
+  let isEditMarkUpdated = false;
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     if (newComment) {
@@ -296,6 +297,7 @@ function checkForNewEdits() {
 
       if (comment.isDeleted) {
         comment.unmarkAsEdited('deleted');
+        isEditMarkUpdated = true;
       }
       if (newComment.innerHtml !== currentComment.innerHtml) {
         // The comment may have already been updated previously.
@@ -307,15 +309,22 @@ function checkForNewEdits() {
       } else if (comment.isEdited) {
         comment.update(currentComment, newComment);
         comment.unmarkAsEdited('edited');
+        isEditMarkUpdated = true;
       }
     } else if (!currentComment.hasPoorMatch) {
       const comment = Comment.getCommentByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsEdited('deleted');
+      isEditMarkUpdated = true;
     }
   });
   cd.debug.stopTimer('checkForNewEdits compare');
+  cd.debug.startTimer('checkForNewEdits redraw');
+  if (isEditMarkUpdated) {
+    commentLayers.redrawIfNecessary(false, true);
+  }
+  cd.debug.stopTimer('checkForNewEdits redraw');
   cd.debug.stopTimer('checkForNewEdits');
 }
 
