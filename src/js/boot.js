@@ -636,12 +636,12 @@ async function updatePageContent(html, keptData) {
 
   cd.g.$content.append(html);
 
+  keptData = Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() });
+
   // We could say "let it crash", but, well, unforeseen errors in processPage() are just too likely
   // to go without a safeguard.
   try {
-    await processPage(
-      Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() })
-    );
+    await processPage(keptData);
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);

@@ -652,9 +652,10 @@ function debugLog() {
  * @property {number} [scrollPosition] Page Y offset.
  * @property {object[]} [unseenCommentAnchors] Anchors of unseen comments on this page.
  * @property {string} [justWatchedSection] Section just watched so that there could be not
- *    enough time for it to be saved to the server.
+ *   enough time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
- *    enough time for it to be saved to the server.
+ *   enough time for it to be saved to the server.
+ * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
  * @property {Promise} [messagesRequest] Promise returned by {@link
  *   module:dateFormat.loadData}.
  */

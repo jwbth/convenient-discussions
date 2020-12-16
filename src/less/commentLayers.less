@@ -2,11 +2,8 @@
   position: absolute;
   z-index: -1;
 
-  // Note that the specificity for focused and target underlays is higher than for new and own.
-  &-focused.cd-commentUnderlay-focused {
-    background-color: var(--cd-comment-underlay-focused-color);
-  }
-
+  // Note that the classes are in the order of their precedence if you go from the last to the
+  // first.
   &-new {
     background-color: var(--cd-comment-underlay-new-color);
   }
@@ -17,6 +14,10 @@
 
   &-deleted {
     background-color: var(--cd-comment-underlay-deleted-color);
+  }
+
+  &-focused {
+    background-color: var(--cd-comment-underlay-focused-color);
   }
 }
 
