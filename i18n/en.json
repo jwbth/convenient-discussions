@@ -35,6 +35,7 @@
   "comment-edited-refresh": "Refresh",
   "comment-edited-diff": "Diff",
   "comment-edited-diff-error": "Couldn't render the diff.",
+  "comment-edited-diff-empty": "The diff is empty. Perhaps the script was wrong, and the comment wasn't edited after all.",
   "comment-deleted": "The comment was deleted.",
   "comment-editedsince": "The comment was edited since your last visit.",
 

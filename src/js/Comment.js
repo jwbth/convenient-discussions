@@ -791,8 +791,10 @@ export default class Comment extends CommentSkeleton {
           } catch (e) {
             let text = cd.s('comment-edited-diff-error');
             if (e instanceof CdError) {
-              const { type } = e.data;
-              if (type === 'network') {
+              const { type, message } = e.data;
+              if (message) {
+                text = message;
+              } else if (type === 'network') {
                 text += ' ' + cd.sParse('error-network');
               }
             }
@@ -2455,6 +2457,13 @@ export default class Comment extends CommentSkeleton {
       }
     });
     const $cleanDiff = $(cd.util.wrapDiffBody(cleanDiffBody));
+    if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
+      throw new CdError({
+        type: 'parse',
+        message: cd.s('comment-edited-diff-empty'),
+      });
+    }
+
     OO.ui.alert($cleanDiff, { size: 'larger' });
   }
 
