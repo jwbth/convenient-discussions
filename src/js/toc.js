@@ -221,8 +221,9 @@ export default {
    * of contents.
    *
    * @param {CommentSkeletonLike[]|Comment[]} commentsBySection
+   * @param {object} keptData
    */
-  addNewComments(commentsBySection) {
+  addNewComments(commentsBySection, keptData) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
     const firstComment = commentsBySection.values().next().value?.[0];
@@ -230,7 +231,14 @@ export default {
 
     const areCommentsRendered = firstComment instanceof Comment;
 
-    saveScrollPosition(!(cd.g.hasPageBeenReloaded && areCommentsRendered));
+    const saveTocHeight = Boolean(
+      !(cd.g.hasPageBeenReloaded && areCommentsRendered) ||
+
+      // When the comment or section is opened by a link from the TOC
+      keptData.commentAnchor ||
+      keptData.sectionAnchor
+    );
+    saveScrollPosition(saveTocHeight);
 
     cd.g.$toc
       .find('.cd-toc-notRenderedCommentList')

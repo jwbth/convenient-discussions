@@ -469,10 +469,10 @@ async function processFragment(keptData) {
  * module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
- * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
+ * @param {object} keptData
  * @fires newCommentsHighlighted
  */
-async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
+async function processVisits(visitsRequest, keptData) {
   let visits;
   let thisPageVisits;
   try {
@@ -528,14 +528,14 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
         comment.isNew = true;
         comment.isSeen = (
           (commentUnixTime + 60 <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
-          !memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor)
+          !keptData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
         );
       }
     });
 
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
-    toc.addNewComments(Comment.groupBySection(unseenComments));
+    toc.addNewComments(Comment.groupBySection(unseenComments), keptData);
   }
 
   // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
@@ -790,7 +790,7 @@ export default async function processPage(keptData = {}) {
     }
 
     // New comments highlighting
-    processVisits(visitsRequest, keptData.unseenCommentAnchors);
+    processVisits(visitsRequest, keptData);
 
     // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
     updateChecker.init(visitsRequest, keptData);
