@@ -209,7 +209,7 @@
 	"sd-reset-confirm": "Ayarları sıfırlamak istediğinizden emin misiniz? (Sıfırladıktan sonra \"{{int:convenient-discussions-sd-save}}\" seçeneğini tıklayın.)",
 	"sd-removedata": "Tüm betik veriyi kaldır",
 	"sd-removedata-description": "Kullanışlı Tartışmaların topladığı verileri silin: ayarlarınız, konuşma sayfanızın son ziyaretleri, izlenen bölümler ve gönderilmemiş yorumların taslakları",
-	"sd-removedata-help": "Genel ayarlar dışındaki her şeyin yalnızca mevcut etki alanı için kaldırıldığını unutmayın. Diğer alanlarda Kullanışlı Tartışmalar kullandıysanız, verileri oradan da kaldırmanız gerekecektir.  Betiğin neyi, neden ve nasıl depoladığına ilişkin ayrıntılar ve her bir veri parçasını ayrı ayrı nasıl sileceğinizle ilgili talimatlar için [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|betiğin ana sayfasına]] bakın.",
+	"sd-removedata-help": "Küresel ayarlar dışındaki her şeyin yalnızca mevcut viki için kaldırıldığını unutmayın. Diğer vikilerde Kullanışlı Tartışmalar kullandıysanız ve bunlardaki verileri kaldırmak istiyorsanız, bu vikilerden kaldırmanız gerekecektir. Betiğin neyi, neden ve nasıl depoladığına ilişkin ayrıntılar ve her bir veri parçasını ayrı ayrı nasıl sileceğinizle ilgili talimatlar için [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|betiğin ana sayfasına]] bakın.",
 	"sd-removedata-confirm": "Bu, ayarlarınızı, tartışma sayfası son ziyaretlerini, izlenen bölümleri ve gönderilmemiş yorumların taslaklarını kalıcı olarak siler. Devam etmek istiyor musunuz?",
 	"sd-removedata-confirm-yes": "Evet",
 	"sd-removedata-confirm-no": "Hayır",
