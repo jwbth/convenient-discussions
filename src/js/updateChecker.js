@@ -291,7 +291,7 @@ function checkForNewEdits() {
   cd.debug.stopTimer('checkForNewEdits mapComments');
 
   cd.debug.startTimer('checkForNewEdits compare');
-  let isEditMarkUpdated = false;
+  let areThereDeleted = false;
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     if (newComment) {
@@ -300,35 +300,36 @@ function checkForNewEdits() {
 
       if (comment.isDeleted) {
         comment.unmarkAsEdited('deleted');
-        isEditMarkUpdated = true;
       }
       if (newComment.innerHtml !== currentComment.innerHtml) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
           const success = comment.update(currentComment, newComment);
           comment.markAsEdited('edited', success, lastCheckedRevisionId);
-          isEditMarkUpdated = true;
         }
       } else if (comment.isEdited) {
         comment.update(currentComment, newComment);
         comment.unmarkAsEdited('edited');
-        isEditMarkUpdated = true;
       }
     } else if (!currentComment.hasPoorMatch) {
       const comment = Comment.getCommentByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsEdited('deleted');
-      isEditMarkUpdated = true;
+      areThereDeleted = true;
     }
   });
   cd.debug.stopTimer('checkForNewEdits compare');
   cd.debug.startTimer('checkForNewEdits redraw');
-  if (isEditMarkUpdated) {
+  if (areThereDeleted) {
+    // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
+    // layers before them from being updated due to the "stop at the first two unmoved comments"
+    // optimization. So we better just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
   }
   cd.debug.stopTimer('checkForNewEdits redraw');
   cd.debug.stopTimer('checkForNewEdits');
+  cd.debug.logAndResetEverything();
 }
 
 /**
