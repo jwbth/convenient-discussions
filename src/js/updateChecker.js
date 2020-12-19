@@ -253,6 +253,8 @@ function mapComments(currentComments, otherComments) {
  * @private
  */
 function checkForEditsSincePreviousVisit() {
+  cd.debug.startTimer('checkForEditsSincePreviousVisit');
+
   const oldComments = revisionData[previousVisitRevisionId].comments;
   const revisionId = mw.config.get('wgRevisionId');
   const currentComments = revisionData[revisionId].comments;
@@ -282,6 +284,8 @@ function checkForEditsSincePreviousVisit() {
 
   delete seenRenderedEdits[articleId];
   saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+
+  cd.debug.logAndResetEverything();
 }
 
 /**
