@@ -337,7 +337,7 @@
   "error-titleblacklist": "The page name is blacklisted. The page was not edited.",
   "error-abusefilter": "Your edit was automatically rejected by abuse filter \"$1\".",
   "error-editconflict": "Edit conflict.",
-  "error-blocked": "You are blocked from editing. The page was not edited.",
+  "error-blocked": "You or your IP address is blocked from editing. The page was not edited.",
   "error-pagedeleted": "The page was deleted.",
   "error-pagenotedited": "The page was not edited.",
   "error-diffnotfound": "Couldn't find the edit that added this comment.",
