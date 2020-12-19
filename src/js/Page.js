@@ -339,7 +339,7 @@ export default class Page {
     const options = Object.assign({}, defaultOptions, customOptions);
 
     // "page" and "oldid" can not be used together.
-    if (customOptions.oldid) {
+    if (customOptions?.oldid) {
       delete options.page;
     }
 
