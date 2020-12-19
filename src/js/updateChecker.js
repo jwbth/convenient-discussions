@@ -614,6 +614,8 @@ async function processComments(comments, revisionId) {
 
   if (!isPageStillOutdated(revisionId)) return;
 
+  cd.debug.startTimer('processComments end');
+
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
   } else if (newComments[0]) {
@@ -634,6 +636,8 @@ async function processComments(comments, revisionId) {
   sendOrdinaryNotifications(commentsToNotifyAbout);
   sendDesktopNotifications(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
+
+  cd.debug.logAndResetEverything('processComments end');
 }
 
 /**
