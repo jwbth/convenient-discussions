@@ -72,6 +72,9 @@ export default class CommentSkeleton {
      */
     this.authorName = signature.authorName;
 
+    // This is for the worker context and quickly gets removed.
+    this.signatureElement = signature.element;
+
     /**
      * Does the comment belong to the current user.
      *

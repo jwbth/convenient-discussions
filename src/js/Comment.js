@@ -101,6 +101,8 @@ export default class Comment extends CommentSkeleton {
      */
     this.$signature = $(signature.element);
 
+    delete this.signatureElement;
+
     /**
      * Comment timestamp element as a jQuery object.
      *

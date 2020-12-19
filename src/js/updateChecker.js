@@ -194,26 +194,34 @@ function mapComments(currentComments, otherComments) {
           const hasHeadlineMatched = (
             currentComment.section?.headline === otherComment.section?.headline
           );
-          const hasHtmlMatched = currentComment.innerHtml === otherComment.innerHtml;
-          const overlap = hasHtmlMatched ?
+
+          // Taking matched ID into account makes sense only if the total number of comments
+          // coincides.
+          const hasIdMatched = (
+            currentComment.id === otherComment.id &&
+            currentComments.length === otherComments.length
+          );
+
+          const partsMatchedCount = currentComment.elementHtmls
+            .filter((html, i) => html === otherComment.elementHtmls[i])
+            .length;
+          const partsMatchedProportion = partsMatchedCount / currentComment.elementHtmls.length;
+          const overlap = partsMatchedProportion === 1 ?
             1 :
             calculateWordsOverlap(currentComment.text, otherComment.text);
           const score = (
             hasParentAnchorMatched * (currentComment.parentAnchor ? 1 : 0.75) +
             hasHeadlineMatched * 1 +
-            hasHtmlMatched * 1 +
-            overlap
+            partsMatchedProportion +
+            overlap +
+            hasIdMatched * 0.25
           );
           return {
             comment: currentComment,
             score,
           };
         })
-
-        // This text overlap calculation is much more rough than in Comment#locateInSection (a lot
-        // of irrelevant elements), so we use a higher value.
-        .filter((match) => match.score >= 1.75)
-
+        .filter((match) => match.score > 1.66)
         .sort((match1, match2) => {
           if (match2.score > match1.score) {
             return 1;

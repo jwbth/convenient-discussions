@@ -115,9 +115,6 @@ function parse() {
     }
     cd.debug.stopTimer('comment keepWorkerSafeValues');
     cd.debug.stopTimer('comment data');
-    cd.debug.startTimer('comment.text');
-    comment.text = comment.elements.map((element) => element.textContent).join('\n');
-    cd.debug.stopTimer('comment.text');
     comment.elements[0].removeAttribute('id');
     cd.debug.startTimer('comment.elementHtmls');
     comment.elementHtmls = comment.elements.map((element) => {
@@ -195,6 +192,11 @@ function parse() {
     cd.debug.startTimer('comment.innerHtml');
     comment.innerHtml = comment.elements.map((element) => element.innerHTML).join('\n').trim();
     cd.debug.stopTimer('comment.innerHtml');
+
+    cd.debug.startTimer('comment.text');
+    comment.signatureElement.remove();
+    comment.text = comment.elements.map((element) => element.textContent).join('\n');
+    cd.debug.stopTimer('comment.text');
 
     cd.debug.startTimer('comment.elementTagNames');
     comment.elementTagNames = comment.elements.map((element) => element.tagName);
