@@ -218,6 +218,7 @@ export async function getVisits(reuse = false) {
   );
   const articleId = mw.config.get('wgArticleId');
   let thisPageVisits;
+
   // This should always true; this check should be performed before.
   if (articleId) {
     visits[articleId] = visits[articleId] || [];

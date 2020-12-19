@@ -345,7 +345,7 @@ export function hideText(text, regexp, hidden, useAlternativeMarker) {
  * @returns {string}
  */
 export function unhideText(text, hidden) {
-  while (text.match(/(?:\x01|\x03)\d+(?:\x02|\x04)/)) {
+  while (/(?:\x01|\x03)\d+(?:\x02|\x04)/.test(text)) {
     text = text.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
   }
 
@@ -488,22 +488,22 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
 }
 
 /**
- * Helper to get a local storage item packed in JSON or an empty object in case or unexistent/falsy
- * falues. Returns `null` in case of a corrupt value.
+ * Helper to get the script's local storage item packed in JSON or an empty object in case of
+ * unexistent/falsy/corrupt values.
  *
  * @param {string} name
- * @returns {?object}
+ * @returns {object}
  */
 export function getFromLocalStorage(name) {
-  const json = localStorage.getItem(name);
+  const json = localStorage.getItem(`convenientDiscussions-${name}`);
   let obj;
   if (json) {
     try {
       // "||" in case of a falsy value.
       obj = JSON.parse(json) || {};
     } catch (e) {
-      console.error(e);
-      return null;
+      console.error(e, json);
+      return {};
     }
   }
   return obj || {};
@@ -516,7 +516,7 @@ export function getFromLocalStorage(name) {
  * @param {object} obj
  */
 export function saveToLocalStorage(name, obj) {
-  localStorage.setItem(name, JSON.stringify(obj));
+  localStorage.setItem(`convenientDiscussions-${name}`, JSON.stringify(obj));
 }
 
 /**
@@ -586,4 +586,34 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
     }
   });
   return newObj;
+}
+
+/**
+ * Calculates the proportion of the number of words (minimum 2 characters long) present in both
+ * strings to the total words count.
+ *
+ * @param {string} s1
+ * @param {string} s2
+ * @returns {number}
+ * @private
+ */
+export function calculateWordsOverlap(s1, s2) {
+  const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{2,}`, 'g');
+  const words1 = (s1.match(regexp) || []).filter(unique);
+  const words2 = (s2.match(regexp) || []).filter(unique);
+  if (!words1.length || !words2.length) {
+    return 0;
+  }
+
+  let total = words2.length;
+  let overlap = 0;
+  words1.forEach((word1) => {
+    if (words2.some((word2) => word2 === word1)) {
+      overlap++;
+    } else {
+      total++;
+    }
+  });
+
+  return overlap / total;
 }

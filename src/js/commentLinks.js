@@ -327,7 +327,7 @@ function processWatchlist($content) {
     if (nsNumber === null) return;
 
     const isNested = line.tagName === 'TR';
-    const linkElement = (isNested ? line.parentElement : line)
+    const linkElement = (isNested ? line.parentNode : line)
       .querySelector('.mw-changeslist-title');
     if (!linkElement) return;
 
@@ -401,7 +401,7 @@ function processWatchlist($content) {
 
     const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks');
     if (!destination) return;
-    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
+    destination.parentNode.insertBefore(wrapper, destination.nextSibling);
   });
 }
 
@@ -467,7 +467,7 @@ function processContributions($content) {
       destination = linkElement;
       destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '');
     }
-    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
+    destination.parentNode.insertBefore(wrapper, destination.nextSibling);
   });
 }
 
@@ -546,7 +546,7 @@ function processHistory($content) {
       destination = separators?.[separators.length - 1];
     }
     if (!destination) return;
-    destination.parentElement.insertBefore(wrapper, destination.nextSibling);
+    destination.parentNode.insertBefore(wrapper, destination.nextSibling);
   });
 }
 

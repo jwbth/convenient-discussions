@@ -2,21 +2,22 @@
   position: absolute;
   z-index: -1;
 
-  // Note that the specificity for focused and target underlays is higher than for new and own.
-  &-focused.cd-commentUnderlay-focused {
-    background-color: var(--cd-comment-underlay-focused-color);
-  }
-
-  &-target.cd-commentUnderlay-target {
-    background-color: var(--cd-comment-underlay-target-color);
-  }
-
+  // Note that the classes are in the order of their precedence if you go from the last to the
+  // first.
   &-new {
     background-color: var(--cd-comment-underlay-new-color);
   }
 
   &-own {
     background-color: var(--cd-comment-underlay-own-color);
+  }
+
+  &-deleted {
+    background-color: var(--cd-comment-underlay-deleted-color);
+  }
+
+  &-focused {
+    background-color: var(--cd-comment-underlay-focused-color);
   }
 }
 
@@ -58,14 +59,6 @@
     padding: 0 0.5em 1px;
     background-color: var(--cd-comment-underlay-focused-color);
     flex-direction: row;
-
-    .oo-ui-buttonWidget {
-      margin-right: 0;
-    }
-
-    .cd-commentButton:not(:first-child) {
-      margin-left: 1em;
-    }
   }
 
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,

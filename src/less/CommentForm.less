@@ -180,7 +180,7 @@ ol > li.cd-commentForm {
   }
 }
 
-body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input {
   border: 1px solid #a2a9b1;
   box-shadow: none;
 
@@ -188,6 +188,10 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
     outline: 2px solid #36c;
     outline-offset: -2px;
   }
+}
+
+body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-disabled .oo-ui-inputWidget-input {
+  border-color: #c8ccd1;
 }
 
 .cd-previewArea {
@@ -204,7 +208,10 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidg
     margin-bottom: 0;
   }
 
-  .mw-editsection {
+  .mw-editsection,
+
+  // Numbers appear when there is more than one header in the preview.
+  .mw-headline-number {
     display: none;
   }
 

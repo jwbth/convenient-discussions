@@ -28,18 +28,14 @@ function changeElementType(element, newType, firstVisibleElementData) {
   Array.from(element.attributes).forEach((attribute) => {
     newElement.setAttribute(attribute.name, attribute.value);
   });
-  element.parentNode.replaceChild(newElement, element);
 
   // If this element is a part of a comment, replace it in the Comment object instance.
   let commentId = element.getAttribute('data-comment-id');
   if (commentId !== null) {
     commentId = Number(commentId);
-    const comment = cd.comments[commentId];
-    comment.elements.splice(comment.elements.indexOf(element), 1, newElement);
-    if (comment.highlightables.includes(element)) {
-      comment.highlightables.splice(comment.highlightables.indexOf(element), 1, newElement);
-      comment.bindEvents(newElement);
-    }
+    cd.comments[commentId].replaceElement(element, newElement);
+  } else {
+    element.parentNode.replaceChild(newElement, element);
   }
 
   if (firstVisibleElementData && element === firstVisibleElementData.element) {

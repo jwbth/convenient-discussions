@@ -61,6 +61,14 @@ export default {
   COMMENT_UNDERLAY_OWN_COLOR: '#f7ebff',
 
   /**
+   * Underlay color for deleted comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_UNDERLAY_DELETED_COLOR: '#fee7e6',
+
+  /**
    * Size of the underlay's side margin in pixels.
    *
    * @type {string}

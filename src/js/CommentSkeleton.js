@@ -72,6 +72,9 @@ export default class CommentSkeleton {
      */
     this.authorName = signature.authorName;
 
+    // This is for the worker context and quickly gets removed.
+    this.signatureElement = signature.element;
+
     /**
      * Does the comment belong to the current user.
      *
@@ -171,8 +174,8 @@ export default class CommentSkeleton {
     if (this.anchor && !this.elements[0].getAttribute('id')) {
       this.elements[0].setAttribute('id', this.anchor);
     }
-    this.elements[0].classList.add('cd-commentPart-first');
-    this.elements[this.elements.length - 1].classList.add('cd-commentPart-last');
+    this.highlightables[0].classList.add('cd-commentPart-first');
+    this.highlightables[this.highlightables.length - 1].classList.add('cd-commentPart-last');
     this.elements.forEach((el) => {
       el.classList.add('cd-commentPart');
       el.setAttribute('data-comment-id', String(this.id));
@@ -218,6 +221,7 @@ export default class CommentSkeleton {
    * @private
    */
   getSection() {
+    cd.debug.startTimer('getSection');
     if (this.cachedSection === undefined) {
       this.cachedSection = (
         cd.sections
@@ -227,6 +231,7 @@ export default class CommentSkeleton {
         null
       );
     }
+    cd.debug.stopTimer('getSection');
     return this.cachedSection;
   }
 
@@ -240,6 +245,7 @@ export default class CommentSkeleton {
       return [];
     }
 
+    cd.debug.startTimer('getChildren');
     if (cd.g.specialElements.pageHasOutdents) {
       const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
       while (
@@ -269,6 +275,7 @@ export default class CommentSkeleton {
         }
       });
 
+    cd.debug.stopTimer('getChildren');
     return children;
   }
 }

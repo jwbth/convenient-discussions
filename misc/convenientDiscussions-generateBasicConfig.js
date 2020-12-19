@@ -166,7 +166,8 @@ mw.loader.using([
   // When updating this code, update the code in buildConfigs.js as well.
   output = `/**
  * This configuration might get outdated as the script evolves, so it's best to keep it up to date
- * by checking for the documentation updates from time to time. See the documentation at
+ * by checking for the generator script and documentation updates from time to time. See the
+ * documentation at
  * https://commons.wikimedia.org/wiki/Special:MyLanguage/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki.
  */
 

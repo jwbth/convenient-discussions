@@ -12,14 +12,13 @@ import { removeWikiMarkup } from './wikitext';
 import { reorderArray } from './util';
 
 let newCount;
-let unseenCount;
 let lastFirstUnseenCommentId;
 
 /**
  * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
  * @param {number} commentsCount
- * @param {object} commentsBySection
+ * @param {Map} commentsBySection
  * @returns {?string}
  * @private
  */
@@ -34,13 +33,15 @@ function generateTooltipText(commentsCount, commentsBySection) {
       cd.mws('parentheses', 'R')
     );
     const bullet = removeWikiMarkup(cd.s('bullet'));
-    Object.keys(commentsBySection).forEach((anchor) => {
+    commentsBySection.forEach((comments, sectionOrAnchor) => {
       let headline;
-      if (anchor !== '_') {
-        headline = commentsBySection[anchor][0].section.headline;
+      if (typeof sectionOrAnchor === 'string') {
+        headline = comments[0].section.headline;
+      } else if (sectionOrAnchor !== null) {
+        headline = sectionOrAnchor.headline;
       }
       tooltipText += headline ? `\n\n${headline}` : '\n';
-      commentsBySection[anchor].forEach((comment) => {
+      comments.forEach((comment) => {
         tooltipText += `\n`;
         const names = comment.parent?.author && comment.level > 1 ?
           cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
@@ -176,7 +177,6 @@ const navPanel = {
   unmount() {
     this.$element.remove();
     this.$element = null;
-    unseenCount = null;
   },
 
   /**
@@ -199,7 +199,6 @@ const navPanel = {
    */
   reset() {
     lastFirstUnseenCommentId = null;
-    unseenCount = null;
 
     this.$refreshButton
       .empty()
@@ -220,32 +219,8 @@ const navPanel = {
     if (newCount) {
       this.$nextButton.show();
       this.$previousButton.show();
-      unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
-      if (unseenCount) {
-        this.updateFirstUnseenButton();
-      }
+      this.updateFirstUnseenButton();
     }
-  },
-
-  /**
-   * Get the number of comments on the page that haven't been seen.
-   *
-   * @returns {boolean}
-   * @memberof module:navPanel
-   */
-  getUnseenCount() {
-    return unseenCount;
-  },
-
-  /**
-   * Update the unseen comments count without recounting. We try to avoid recounting mostly because
-   * {@link module:navPanel.registerSeenComments} that uses the unseen count is executed very
-   * frequently (up to a hundred times a second).
-   *
-   * @memberof module:navPanel
-   */
-  decrementUnseenCount() {
-    unseenCount--;
   },
 
   /**
@@ -254,6 +229,9 @@ const navPanel = {
    * @memberof module:navPanel
    */
   updateFirstUnseenButton() {
+    if (!navPanel.isMounted()) return;
+
+    const unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
     if (unseenCount) {
       this.$firstUnseenButton.show().text(unseenCount);
     } else {
@@ -285,7 +263,7 @@ const navPanel = {
 
     // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id, true)
-      .find((comment) => comment.isNew && comment.isInViewport(true) !== true);
+      .find((comment) => comment.isNew && comment.isInViewport() !== true);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('backward', true);
@@ -307,7 +285,7 @@ const navPanel = {
 
     // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id)
-      .find((comment) => comment.isNew && comment.isInViewport(true) !== true);
+      .find((comment) => comment.isNew && comment.isInViewport() !== true);
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);
@@ -322,7 +300,7 @@ const navPanel = {
    * @memberof module:navPanel
    */
   goToFirstUnseenComment() {
-    if (!unseenCount || cd.g.autoScrollInProgress) return;
+    if (cd.g.autoScrollInProgress) return;
 
     const comment = cd.comments
       .slice(lastFirstUnseenCommentId || 0)
@@ -337,15 +315,15 @@ const navPanel = {
   },
 
   /**
-   * Go to the next comment form out of sight, or just the first comment form, if `justFirst` is set
-   * to true.
+   * Go to the next comment form out of sight, or just the first comment form, if `first` is set to
+   * true.
    *
-   * @param {boolean} [justFirst=false]
+   * @param {boolean} [first=false]
    * @memberof module:navPanel
    */
-  goToNextCommentForm(justFirst = false) {
+  goToNextCommentForm(first = false) {
     const commentForm = cd.commentForms
-      .filter((commentForm) => justFirst || !commentForm.$element.cdIsInViewport(true))
+      .filter((commentForm) => first || !commentForm.$element.cdIsInViewport(true))
       .sort((commentForm1, commentForm2) => {
         let top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
         if (top1 < 0) {
@@ -364,70 +342,24 @@ const navPanel = {
   },
 
   /**
-   * Mark comments that are currently in the viewport as read.
-   *
-   * @memberof module:navPanel
-   */
-  registerSeenComments() {
-    // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
-    // wait before running, otherwise comments may be registered as seen after a press of Page
-    // Down/Page Up.
-    if (!unseenCount || cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
-
-    cd.g.dontHandleScroll = true;
-
-    // One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than 200ms, but
-    // 200ms proved to be not enough, so we try 300ms.
-    setTimeout(() => {
-      cd.g.dontHandleScroll = false;
-
-      const commentInViewport = Comment.findInViewport();
-      if (!commentInViewport) return;
-
-      const registerSeenIfInViewport = (comment) => {
-        const isInViewport = comment.isInViewport(true);
-        if (isInViewport) {
-          comment.registerSeen();
-        } else if (isInViewport === false) {
-          // isInViewport could also be null.
-          return true;
-        }
-      };
-
-      // Back
-      cd.comments
-        .slice(0, commentInViewport.id)
-        .reverse()
-        .some(registerSeenIfInViewport);
-
-      // Forward
-      cd.comments
-        .slice(commentInViewport.id)
-        .some(registerSeenIfInViewport);
-
-      this.updateFirstUnseenButton();
-    }, 300);
-  },
-
-  /**
    * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
-   * @param {number} commentsCount
-   * @param {object} commentsBySection
+   * @param {number} commentCount
+   * @param {Map} commentsBySection
    * @param {boolean} areThereInteresting
    * @private
    * @memberof module:navPanel
    */
-  updateRefreshButton(commentsCount, commentsBySection, areThereInteresting) {
+  updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
     this.$refreshButton
       .empty()
-      .attr('title', generateTooltipText(commentsCount, commentsBySection));
-    if (commentsCount) {
+      .attr('title', generateTooltipText(commentCount, commentsBySection));
+    if (commentCount) {
       $('<span>')
         // Can't set the attribute to $refreshButton as its tooltip may have another direction.
         .attr('dir', 'ltr')
 
-        .text(`+${commentsCount}`)
+        .text(`+${commentCount}`)
         .appendTo(this.$refreshButton);
     }
     if (areThereInteresting) {

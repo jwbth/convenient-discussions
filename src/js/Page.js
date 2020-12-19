@@ -157,8 +157,8 @@ export default class Page {
   }
 
   /**
-   * Get the source page for the page (i.e., the page from which the archiving is happening).
-   * Returns the page itself if it is not an archive page. Relies on {@link
+   * Get the source page for the page (i.e., the page from which archiving is happening). Returns
+   * the page itself if it is not an archive page. Relies on {@link
    * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-archived-page`.
    *
@@ -319,6 +319,7 @@ export default class Page {
   /**
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
+   * @param {boolean} [customOptions]
    * @param {object} [options={}]
    * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
    *   background tabs if the browser throttles them).
@@ -326,11 +327,11 @@ export default class Page {
    * @returns {object}
    * @throws {CdError}
    */
-  async parse({
+  async parse(customOptions, {
     noTimers = false,
     markAsRead = false,
   } = {}) {
-    const params = {
+    const defaultOptions = {
       action: 'parse',
 
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
@@ -339,9 +340,16 @@ export default class Page {
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
       formatversion: 2,
     };
+    const options = Object.assign({}, defaultOptions, customOptions);
+
+    // "page" and "oldid" can not be used together.
+    if (customOptions.oldid) {
+      delete options.page;
+    }
+
     const request = noTimers ?
-      makeRequestNoTimers(params).catch(handleApiReject) :
-      cd.g.api.post(params).catch(handleApiReject);
+      makeRequestNoTimers(options).catch(handleApiReject) :
+      cd.g.api.post(options).catch(handleApiReject);
 
     // We make the GET request that marks the page as read at the same time with the parse request,
     // not after it, to minimize the chance that the page will get new revisions that we will
@@ -359,6 +367,40 @@ export default class Page {
     }
 
     return parse;
+  }
+
+  /**
+   * Get a list of revisions of the page ("redirects" is set to true by default).
+   *
+   * @param {object} [customOptions={}]
+   * @param {object} [options={}]
+   * @param {boolean} [options.noTimers=false]
+   * @returns {Array}
+   */
+  async getRevisions(customOptions = {}, { noTimers = false } = {}) {
+    const defaultOptions = {
+      action: 'query',
+      titles: cd.g.CURRENT_PAGE.name,
+      rvslots: 'main',
+      prop: 'revisions',
+      redirects: true,
+      formatversion: 2,
+    };
+    const options = Object.assign({}, defaultOptions, customOptions);
+
+    const request = noTimers ?
+      makeRequestNoTimers(options).catch(handleApiReject) :
+      cd.g.api.post(options).catch(handleApiReject);
+
+    const revisions = (await request).query?.pages?.[0]?.revisions;
+    if (!revisions) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    return revisions;
   }
 
   /**
@@ -391,20 +433,23 @@ export default class Page {
   /**
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
-   * @param {object} options
+   * @param {object} customOptions
    * @returns {number|string} editTimestamp Unix time of the edit or `'nochange'`, if nothing has
    *   changed.
    */
-  async edit(options) {
+  async edit(customOptions) {
+    const defaultOptions = {
+      // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
+      title: this.realName || this.name,
+
+      action: 'edit',
+      formatversion: 2,
+    };
+    const options = cd.g.api.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
+
     let resp;
     try {
-      resp = await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser(Object.assign(options, {
-        // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
-        title: this.realName || this.name,
-
-        action: 'edit',
-        formatversion: 2,
-      }))).catch(handleApiReject);
+      resp = await cd.g.api.postWithEditToken(options).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, apiData } = e.data;
@@ -553,5 +598,17 @@ export default class Page {
      * @instance module:Page
      */
     Object.assign(this, { areNewTopicsOnTop, firstSectionStartIndex });
+  }
+
+  /**
+   * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
+   */
+  async purge() {
+    await cd.g.api.post({
+      action: 'purge',
+      titles: this.name,
+    }).catch(() => {
+      mw.notify(cd.s('error-purgecache'), { type: 'error' });
+    });
   }
 }

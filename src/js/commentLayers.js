@@ -26,11 +26,11 @@ export default {
    * Recalculate positions of the highlighted comments' (usually, new or own) layers and redraw if
    * they've changed.
    *
-   * @param {boolean} removeUnhighlighted Set to `true` to remove the unhighlighted comments'
-   *   layers.
+   * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
+   * @param {boolean} [redrawAll] Whether to redraw all underlays and not stop at first two unmoved.
    */
-  redrawIfNecessary(removeUnhighlighted = false) {
-    if (!this.underlays.length || document.hidden) return;
+  redrawIfNecessary(removeUnhighlighted = false, redrawAll = false) {
+    if (!this.underlays.length || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
@@ -50,19 +50,15 @@ export default {
         comment.isNew ||
         (comment.isOwn && cd.settings.highlightOwnComments) ||
         comment.isTarget ||
-        comment.isFocused
+        comment.isFocused ||
+        comment.isDeleted
       );
-      if (
-        (
-          removeUnhighlighted ||
 
-          // Layers that ended up under the bottom of the page content and could be moving the page
-          // bottom down.
-          (comment.positions && comment.positions.bottom > rootBottom)
-        ) &&
-        !shouldBeHighlighted &&
-        comment.$underlay
-      ) {
+      // Layers that ended up under the bottom of the page content and could be moving the page
+      // bottom down.
+      const isUnderBottom = comment.positions && comment.positions.bottom > rootBottom;
+
+      if ((removeUnhighlighted || isUnderBottom) && !shouldBeHighlighted && comment.$underlay) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
         floatingRects = (
@@ -70,13 +66,13 @@ export default {
           cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
         );
         const isMoved = comment.configureLayers({
-          // If a comment was hidden, then became visible, we need to add it.
+          // If a comment was hidden, then became visible, we need to add the layers.
           doAdd: true,
 
           doUpdate: false,
           floatingRects,
         });
-        if (isMoved) {
+        if (isMoved || redrawAll) {
           notMovedCount = 0;
           comments.push(comment);
         } else if (

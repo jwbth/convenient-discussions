@@ -111,6 +111,12 @@ Object.defineProperty(Element.prototype, 'textContent', {
   },
 });
 
+Object.defineProperty(Element.prototype, 'innerHTML', {
+  get: function () {
+    return DomUtils.getInnerHTML(this);
+  },
+});
+
 Object.defineProperty(Element.prototype, 'outerHTML', {
   get: function () {
     return DomUtils.getOuterHTML(this);
@@ -137,6 +143,10 @@ Element.prototype.setAttribute = function (name, value) {
     }
   }
   this.attribs[name] = value || '';
+};
+
+Element.prototype.removeAttribute = function (name) {
+  delete this.attribs[name];
 };
 
 Element.prototype.appendChild = function (node) {
@@ -227,7 +237,7 @@ Object.defineProperty(Element.prototype, 'tagName', {
 });
 
 // We have to create a getter as there is no way to access an object from a method of that object's
-// property (Element#classList.add() and such in this case).
+// property (Element#classList.add and such in this case).
 Object.defineProperty(Element.prototype, 'classList', {
   get: function () {
     if (this._classList) {
@@ -236,11 +246,11 @@ Object.defineProperty(Element.prototype, 'classList', {
       this._classList = {
         list: [],
 
-        movedFromClassAttr: false,
+        isMovedFromClassAttr: false,
 
         moveFromClassAttr(classAttr) {
           this.list = (classAttr || '').split(' ');
-          this.movedFromClassAttr = true;
+          this.isMovedFromClassAttr = true;
         },
 
         add: (...names) => {
@@ -251,7 +261,7 @@ Object.defineProperty(Element.prototype, 'classList', {
             }
             classAttr += name;
             this.setAttribute('class', classAttr);
-            if (this._classList.movedFromClassAttr) {
+            if (this._classList.isMovedFromClassAttr) {
               this._classList.list.push(name);
             } else {
               this._classList.moveFromClassAttr(classAttr);
@@ -264,7 +274,7 @@ Object.defineProperty(Element.prototype, 'classList', {
           if (!classAttr) {
             return false;
           }
-          if (!this._classList.movedFromClassAttr) {
+          if (!this._classList.isMovedFromClassAttr) {
             this._classList.moveFromClassAttr(classAttr);
           }
 
@@ -320,8 +330,9 @@ NodeConstructor.prototype.remove = function () {
 // other library if needed. Here, we also extend the prototype of the Element and DataNode classes
 // that htmlparser2 library uses. Note that the Element class already has the "children" property
 // containing all child nodes, which differs from what this property stands for in the browser DOM
-// representation (only element children), but we can't replace it as it would intervene in the
-// internal workings of the class. So we use the "childElements" property instead for this purpose.
+// representation (only children that are elements), but we can't replace it as it would intervene
+// in the internal workings of the class. So we use the "childElements" property instead for this
+// purpose.
 class Document extends Element {
   constructor(dom) {
     super('body', {});

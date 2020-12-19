@@ -6,12 +6,13 @@
 ## Features
 The script features include:
 * posting and editing comments without switching to a separate page;
-** @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
-** autofilling the edit summary with indication of the addressee of the comment;
-** saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
+  * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
+  * autofilling the edit summary with indication of the addressee of the comment;
+  * saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
 * creating topics and subsections;
 * highlighting and navigating new comments (via the navigation panel or the table of contents);
 * highlighting own comments;
+* checking for new comments in the background and automatically rendering simple comment edits;
 * desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in);
 * watching sections, which affects notifications and highlighting edits on pages that list revisions;
 * jumping to a specific comment from the watchlist and other pages that list revisions;

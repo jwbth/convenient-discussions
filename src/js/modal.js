@@ -71,10 +71,10 @@ export async function confirmDialog(message, options = {}) {
  * Show a confirmation message dialog with a destructive action.
  *
  * @param {string} messageName
- * @param {object} [options={}]
+ * @param {object} [customOptions={}]
  * @returns {Promise}
  */
-export function confirmDestructive(messageName, options = {}) {
+export function confirmDestructive(messageName, customOptions = {}) {
   const actions = [
     {
       label: cd.s(`${messageName}-yes`),
@@ -87,8 +87,8 @@ export function confirmDestructive(messageName, options = {}) {
       flags: 'safe',
     },
   ];
-  const defaultOptions = { actions };
-  return OO.ui.confirm(cd.s(messageName), Object.assign({}, defaultOptions, options));
+  const options = Object.assign({}, { actions }, customOptions);
+  return OO.ui.confirm(cd.s(messageName), options);
 }
 
 /**

@@ -4,9 +4,6 @@
  * @module app
  */
 
-import Comment from './Comment';
-import CommentForm from './CommentForm';
-import Section from './Section';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
@@ -256,7 +253,7 @@ function go() {
   const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
-  if (mw.config.get('wgIsArticle')) {
+  if (mw.config.get('wgIsArticle') && !mw.config.get('wgIsRedirect')) {
     if (
       !/[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search) &&
       (!cd.g.$content.find('.cd-notTalkPage').length || enabledInQuery) &&
@@ -288,36 +285,35 @@ function go() {
       cd.debug.startTimer('loading data');
 
       // Make some requests in advance if the API module is ready in order not to make 2 requests
-      // sequentially.
+      // sequentially. We don't make a userinfo request, because if there is more than one tab in
+      // the background, this request is made and the execution stops at mw.loader.using, which
+      // results in overriding the renewed visits setting of one tab by another tab (the visits are
+      // loaded by one tab, then another tab, then written by one tab, then by another tab).
       let dataRequest;
       if (mw.loader.getState('mediawiki.api') === 'ready') {
         dataRequest = loadData();
-        getUserInfo().catch((e) => {
-          console.warn(e);
-        });
       }
 
-      Promise.all([
-        mw.loader.using([
-          'jquery.color',
-          'jquery.client',
-          'mediawiki.Title',
-          'mediawiki.api',
-          'mediawiki.cookie',
-          'mediawiki.jqueryMsg',
-          'mediawiki.notification',
-          'mediawiki.user',
-          'mediawiki.util',
-          'mediawiki.widgets.visibleLengthLimit',
-          'oojs',
-          'oojs-ui',
-          'oojs-ui.styles.icons-alerts',
-          'oojs-ui.styles.icons-content',
-          'oojs-ui.styles.icons-interactions',
-          'user.options',
-        ]),
-        dataRequest,
-      ].filter(defined)).then(
+      let modulesRequest = mw.loader.using([
+        'jquery.color',
+        'jquery.client',
+        'mediawiki.Title',
+        'mediawiki.api',
+        'mediawiki.cookie',
+        'mediawiki.jqueryMsg',
+        'mediawiki.notification',
+        'mediawiki.user',
+        'mediawiki.util',
+        'mediawiki.widgets.visibleLengthLimit',
+        'oojs',
+        'oojs-ui',
+        'oojs-ui.styles.icons-alerts',
+        'oojs-ui.styles.icons-content',
+        'oojs-ui.styles.icons-interactions',
+        'user.options',
+      ]);
+
+      Promise.all([modulesRequest, dataRequest].filter(defined)).then(
         () => {
           try {
             processPage({ dataRequest });

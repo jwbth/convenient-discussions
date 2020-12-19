@@ -159,31 +159,32 @@ export async function initSettings() {
  * @private
  */
 export function initTalkPageCss() {
-  // Set the transparent color for the "focused" color. The user may override the CSS variable value
-  // in his personal styles, so we get the existing value first.
-  const focusedColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
-
-  // Vector, Monobook, Minerva
-  const contentBackgroundColor = $('#content').css('background-color') || '#fff';
-
-  $(document.documentElement).css(
-    '--cd-comment-underlay-focused-transparent-color',
-    transparentize(focusedColor || cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR)
-  );
-
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-underlay-focused-color': cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR,
     '--cd-comment-underlay-target-color': cd.g.COMMENT_UNDERLAY_TARGET_COLOR,
     '--cd-comment-underlay-new-color': cd.g.COMMENT_UNDERLAY_NEW_COLOR,
     '--cd-comment-underlay-own-color': cd.g.COMMENT_UNDERLAY_OWN_COLOR,
+    '--cd-comment-underlay-deleted-color': cd.g.COMMENT_UNDERLAY_DELETED_COLOR,
   });
+
+  // Set the transparent color for the "focused" color. The user may override the CSS variable value
+  // in their personal styles, so we get the existing value first.
+  const focusedColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
+  cd.g.nanoCss.put(':root', {
+    '--cd-comment-underlay-focused-transparent-color': transparentize(focusedColor),
+  });
+
   cd.g.nanoCss.put('.ltr .cd-commentOverlay-gradient', {
     backgroundImage: 'linear-gradient(to left, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
   cd.g.nanoCss.put('.rtl .cd-commentOverlay-gradient', {
     backgroundImage: 'linear-gradient(to right, var(--cd-comment-underlay-focused-color), var(--cd-comment-underlay-focused-transparent-color))',
   });
+
+  // Vector, Monobook, Minerva
+  const contentBackgroundColor = $('#content').css('background-color') || '#fff';
+
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
     backgroundColor: contentBackgroundColor,
   });
@@ -635,12 +636,12 @@ async function updatePageContent(html, keptData) {
 
   cd.g.$content.append(html);
 
+  keptData = Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() });
+
   // We could say "let it crash", but, well, unforeseen errors in processPage() are just too likely
   // to go without a safeguard.
   try {
-    await processPage(
-      Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() })
-    );
+    await processPage(keptData);
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
@@ -767,11 +768,13 @@ export async function reloadPage(keptData = {}) {
   cd.g.hasPageBeenReloaded = true;
 
   updateChecker.updatePageTitle(0, false);
-  updatePageContent(parseData.text, keptData);
+  await updatePageContent(parseData.text, keptData);
 
   toc.possiblyHide();
 
-  restoreScrollPosition(false);
+  if (!keptData.commentAnchor && !keptData.sectionAnchor) {
+    restoreScrollPosition(false);
+  }
 }
 
 /**
@@ -810,7 +813,7 @@ export function saveSession() {
         targetData = {
           headline: target.headline,
           firstCommentAnchor: target.comments[0]?.anchor,
-          index: target.id,
+          id: target.id,
         };
       }
       return {
@@ -835,9 +838,9 @@ export function saveSession() {
   const saveUnixTime = Date.now();
   const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
 
-  const dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms') || {};
+  const dataAllPages = getFromLocalStorage('commentForms');
   dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
-  saveToLocalStorage('convenientDiscussions-commentForms', dataAllPages);
+  saveToLocalStorage('commentForms', dataAllPages);
 }
 
 /**
@@ -868,7 +871,13 @@ function restoreCommentFormsFromData(commentFormsData) {
       const section = Section.search({
         headline: data.targetData.headline,
         firstCommentAnchor: data.targetData.firstCommentAnchor,
-        index: data.targetData.index,
+
+        // TODO: remove "data.targetData.index ||" after February 2021, when old values in users'
+        // local storages will die for good.
+        id: data.targetData.index || data.targetData.id,
+
+        // Can't provide parentTree as cd.sections has already changed; will need to add a
+        // workaround if parentTree proves needed.
       });
       if (section?.isActionable && !section[`${property}Form`]) {
         try {
@@ -915,13 +924,8 @@ function restoreCommentFormsFromData(commentFormsData) {
  */
 export function restoreCommentForms() {
   if (cd.g.isFirstRun) {
-    let dataAllPages = getFromLocalStorage('convenientDiscussions-commentForms');
-
-    // Corrupt data
-    if (!dataAllPages) return;
-
-    dataAllPages = cleanUpSessions(dataAllPages);
-    saveToLocalStorage('convenientDiscussions-commentForms', dataAllPages);
+    const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
+    saveToLocalStorage('commentForms', dataAllPages);
     const data = dataAllPages[mw.config.get('wgPageName')] || {};
     if (data.forms) {
       restoreCommentFormsFromData(data);
@@ -962,7 +966,10 @@ export function restoreCommentForms() {
         const section = Section.search({
           headline: target.headline,
           firstCommentAnchor: target.comments[0]?.anchor,
-          index: target.id,
+          id: target.id,
+
+          // Can't provide parentTree as cd.sections has already changed; will need to add a
+          // workaround if parentTree proves needed.
         });
         if (section?.isActionable) {
           try {
@@ -998,10 +1005,12 @@ export function restoreCommentForms() {
  *
  * @param {Array} params Parameters to apply to `mw.notification.notify`.
  * @param {object} [data={}] Additional data related to the notification.
+ * @returns {Notification}
  */
 export function addNotification(params, data = {}) {
   const notification = mw.notification.notify(...params);
   notificationsData.push(Object.assign(data, { notification }));
+  return notification;
 }
 
 /**

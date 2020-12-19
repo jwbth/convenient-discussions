@@ -4,10 +4,10 @@
  * @module updateChecker
  */
 
-import CdError from './CdError';
 import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
+import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -18,12 +18,23 @@ import {
   isLoadingOverlayOn,
   reloadPage,
 } from './boot';
-import { getUserGenders, makeRequestNoTimers } from './apiWrappers';
-import { handleApiReject, isCommentEdit, keepWorkerSafeValues, unique } from './util';
+import {
+  calculateWordsOverlap,
+  getFromLocalStorage,
+  keepWorkerSafeValues,
+  saveToLocalStorage,
+  unique,
+} from './util';
+import { getUserGenders } from './apiWrappers';
 
 let lastCheckedRevisionId;
 let notifiedAbout;
 let isBackgroundCheckArranged;
+let previousVisitRevisionId;
+let submittedCommentAnchor;
+
+const revisionData = {};
+const checkedForNewEdits = {};
 
 /**
  * Tell the worker to wake the script up after a given interval.
@@ -57,7 +68,10 @@ function removeAlarmViaWorker() {
  * @private
  */
 async function checkForUpdates() {
-  if (document.hidden && !isBackgroundCheckArranged) {
+  // We need a value that wouldn't change during await's.
+  const documentHidden = document.hidden;
+
+  if (documentHidden && !isBackgroundCheckArranged) {
     const callback = () => {
       $(document).off('visibilitychange', callback);
       isBackgroundCheckArranged = false;
@@ -75,36 +89,20 @@ async function checkForUpdates() {
   // Precaution
   isBackgroundCheckArranged = false;
 
-  const rvstartid = lastCheckedRevisionId || mw.config.get('wgRevisionId');
   try {
-    const resp = await makeRequestNoTimers({
-      action: 'query',
-      titles: cd.g.CURRENT_PAGE.name,
-      prop: 'revisions',
-      rvprop: ['ids', 'flags', 'size', 'comment'],
-      rvdir: 'newer',
-      rvstartid,
-      rvlimit: 500,
-      redirects: true,
-      formatversion: 2,
-    }).catch(handleApiReject);
+    const revisions = await cd.g.CURRENT_PAGE.getRevisions({
+      rvprop: ['ids'],
+      rvlimit: 1,
+    }, { noTimers: true });
 
-    const revisions = resp.query?.pages?.[0]?.revisions;
-    if (!revisions) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    const newRevisions = revisions.filter((revision, i) => (
-      i !== 0 &&
-      !revision.minor &&
-      Math.abs(revision.size - revisions[i - 1].size) >= cd.config.bytesToDeemComment &&
-      !isCommentEdit(revision.comment)
-    ));
-    if (newRevisions.length) {
+    if (
+      revisions.length &&
+      revisions[0].revid !== (lastCheckedRevisionId || mw.config.get('wgRevisionId'))
+    ) {
       await updateChecker.processPage();
+      if (!revisionData[mw.config.get('wgRevisionId')]) {
+        updateChecker.processPage(mw.config.get('wgRevisionId'));
+      }
     }
   } catch (e) {
     if (e?.data && e.data.type !== 'network') {
@@ -112,12 +110,241 @@ async function checkForUpdates() {
     }
   }
 
-  if (document.hidden) {
+  if (documentHidden) {
     setAlarmViaWorker(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL * 1000);
     isBackgroundCheckArranged = true;
   } else {
     setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
   }
+}
+
+/**
+ * If the revision of the current visit and previous visit are different, process the said
+ * revisions. (We need to process the current revision too to get the comments' inner HTML without
+ * any elements that may be added by scripts.) The revisions' data will finally processed by {@link
+ * module:updateChecker~checkForEditsSincePreviousVisit checkForEditsSincePreviousVisit()}.
+ *
+ * @private
+ */
+async function processRevisionsIfNeeded() {
+  const revisions = await cd.g.CURRENT_PAGE.getRevisions({
+    rvprop: ['ids'],
+    rvstart: new Date(cd.g.previousVisitUnixTime * 1000).toISOString(),
+    rvlimit: 1,
+  }, { noTimers: true });
+
+  previousVisitRevisionId = revisions[0]?.revid;
+
+  if (previousVisitRevisionId && previousVisitRevisionId !== mw.config.get('wgRevisionId')) {
+    await updateChecker.processPage(previousVisitRevisionId);
+    await updateChecker.processPage(mw.config.get('wgRevisionId'));
+  }
+}
+
+/**
+ * Remove seen rendered edits data older than 60 days.
+ *
+ * @param {object[]} data
+ * @returns {object}
+ * @private
+ */
+function cleanUpSeenRenderedEdits(data) {
+  const newData = Object.assign({}, data);
+  Object.keys(newData).forEach((key) => {
+    const seenUnixTime = Object.keys(newData[key])[0].seenUnixTime;
+    if (seenUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
+      delete newData[key];
+    }
+  });
+  return newData;
+}
+
+/**
+ * Map comments obtained from the current revision to the comments obtained from another revision
+ * (newer or older) by adding the `match` property to the first ones. The function also adds the
+ * `hasPoorMatch` property to the comments that have possible matches that are not good enough to
+ * confidently state a match.
+ *
+ * @param {CommentSkeleton[]} currentComments
+ * @param {CommentSkeleton[]} otherComments
+ * @private
+ */
+function mapComments(currentComments, otherComments) {
+  currentComments.forEach((currentComment) => {
+    delete currentComment.match;
+    delete currentComment.matchScore;
+    delete currentComment.hasPoorMatch;
+  });
+
+  otherComments.forEach((otherComment) => {
+    // Remove properties from the previous run.
+    let currentCommentsFiltered = currentComments.filter((currentComment) => (
+      currentComment.authorName === otherComment.authorName &&
+      currentComment.date &&
+      otherComment.date &&
+      currentComment.date.getTime() === otherComment.date.getTime()
+    ));
+    if (currentCommentsFiltered.length === 1) {
+      currentCommentsFiltered[0].match = otherComment;
+    } else if (currentCommentsFiltered.length > 1) {
+      let found;
+      currentCommentsFiltered
+        .map((currentComment) => {
+          const hasParentAnchorMatched = currentComment.parentAnchor === otherComment.parentAnchor;
+          const hasHeadlineMatched = (
+            currentComment.section?.headline === otherComment.section?.headline
+          );
+
+          // Taking matched ID into account makes sense only if the total number of comments
+          // coincides.
+          const hasIdMatched = (
+            currentComment.id === otherComment.id &&
+            currentComments.length === otherComments.length
+          );
+
+          const partsMatchedCount = currentComment.elementHtmls
+            .filter((html, i) => html === otherComment.elementHtmls[i])
+            .length;
+          const partsMatchedProportion = partsMatchedCount / currentComment.elementHtmls.length;
+          const overlap = partsMatchedProportion === 1 ?
+            1 :
+            calculateWordsOverlap(currentComment.text, otherComment.text);
+          const score = (
+            hasParentAnchorMatched * (currentComment.parentAnchor ? 1 : 0.75) +
+            hasHeadlineMatched * 1 +
+            partsMatchedProportion +
+            overlap +
+            hasIdMatched * 0.25
+          );
+          return {
+            comment: currentComment,
+            score,
+          };
+        })
+        .filter((match) => match.score > 1.66)
+        .sort((match1, match2) => {
+          if (match2.score > match1.score) {
+            return 1;
+          } else if (match2.score < match1.score) {
+            return -1;
+          } else {
+            return 0;
+          }
+        })
+        .forEach((match) => {
+          if (!found && (!match.comment.match || match.comment.matchScore < match.score)) {
+            match.comment.match = otherComment;
+            match.comment.matchScore = match.score;
+            delete match.comment.hasPoorMatch;
+            found = true;
+          } else {
+            if (!match.comment.match) {
+              match.comment.hasPoorMatch = true;
+            }
+          }
+        });
+    }
+  });
+}
+
+/**
+ * Check if there are changes made to the currently displayed comments since the previous visit.
+ *
+ * @private
+ */
+function checkForEditsSincePreviousVisit() {
+  cd.debug.startTimer('checkForEditsSincePreviousVisit');
+
+  const oldComments = revisionData[previousVisitRevisionId].comments;
+  const revisionId = mw.config.get('wgRevisionId');
+  const currentComments = revisionData[revisionId].comments;
+
+  mapComments(currentComments, oldComments);
+
+  const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
+  const articleId = mw.config.get('wgArticleId');
+
+  currentComments.forEach((currentComment) => {
+    if (currentComment.anchor === submittedCommentAnchor) return;
+
+    const oldComment = currentComment.match;
+    if (oldComment) {
+      const seenInnerHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.innerHtml;
+      if (
+        oldComment.innerHtml !== currentComment.innerHtml &&
+        seenInnerHtml !== currentComment.innerHtml
+      ) {
+        const comment = Comment.getCommentByAnchor(currentComment.anchor);
+        if (!comment) return;
+
+        comment.markAsEdited('editedSince', true, previousVisitRevisionId);
+      }
+    }
+  });
+
+  delete seenRenderedEdits[articleId];
+  saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+
+  cd.debug.logAndResetEverything();
+}
+
+/**
+ * Check if there are changes made to the currently displayed comments since they were rendered.
+ *
+ * @private
+ */
+function checkForNewEdits() {
+  cd.debug.startTimer('checkForNewEdits');
+  const newComments = revisionData[lastCheckedRevisionId].comments;
+  const currentComments = revisionData[mw.config.get('wgRevisionId')].comments;
+
+  cd.debug.startTimer('checkForNewEdits mapComments');
+  mapComments(currentComments, newComments);
+  cd.debug.stopTimer('checkForNewEdits mapComments');
+
+  cd.debug.startTimer('checkForNewEdits compare');
+  let isEditMarkUpdated = false;
+  currentComments.forEach((currentComment) => {
+    const newComment = currentComment.match;
+    if (newComment) {
+      const comment = Comment.getCommentByAnchor(currentComment.anchor);
+      if (!comment) return;
+
+      if (comment.isDeleted) {
+        comment.unmarkAsEdited('deleted');
+        isEditMarkUpdated = true;
+      }
+      if (newComment.innerHtml !== currentComment.innerHtml) {
+        // The comment may have already been updated previously.
+        if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
+          const success = comment.update(currentComment, newComment);
+          comment.markAsEdited('edited', success, lastCheckedRevisionId);
+          isEditMarkUpdated = true;
+        }
+      } else if (comment.isEdited) {
+        comment.update(currentComment, newComment);
+        comment.unmarkAsEdited('edited');
+        isEditMarkUpdated = true;
+      }
+    } else if (!currentComment.hasPoorMatch) {
+      const comment = Comment.getCommentByAnchor(currentComment.anchor);
+      if (!comment || comment.isDeleted) return;
+
+      comment.markAsEdited('deleted');
+      isEditMarkUpdated = true;
+    }
+  });
+  cd.debug.stopTimer('checkForNewEdits compare');
+  cd.debug.startTimer('checkForNewEdits redraw');
+  if (isEditMarkUpdated) {
+    // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
+    // layers before them from being updated due to the "stop at the first two unmoved comments"
+    // optimization. So we better just do the whole job here.
+    commentLayers.redrawIfNecessary(false, true);
+  }
+  cd.debug.stopTimer('checkForNewEdits redraw');
+  cd.debug.stopTimer('checkForNewEdits');
+  cd.debug.logAndResetEverything();
 }
 
 /**
@@ -160,11 +387,7 @@ async function sendNotifications(comments) {
     const formsDataWillNotBeLost = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
       ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
       '';
-    const wikilink = (
-      cd.g.CURRENT_PAGE.name +
-      (notifyAboutOrdinary[0].anchor ? '#' + notifyAboutOrdinary[0].anchor : '')
-    );
-    const reloadLinkHtml = cd.sParse('notification-reload', wikilink, formsDataWillNotBeLost);
+    const reloadHtml = cd.sParse('notification-reload', formsDataWillNotBeLost);
     if (notifyAboutOrdinary.length === 1) {
       const comment = notifyAboutOrdinary[0];
       if (comment.toMe) {
@@ -177,7 +400,7 @@ async function sendNotifications(comments) {
         html = (
           cd.sParse('notification-toyou', comment.author.name, comment.author, where) +
           ' ' +
-          reloadLinkHtml
+          reloadHtml
         );
       } else {
         html = (
@@ -188,7 +411,7 @@ async function sendNotifications(comments) {
             comment.watchedSectionHeadline
           ) +
           ' ' +
-          reloadLinkHtml
+          reloadHtml
         );
       }
     } else {
@@ -221,20 +444,16 @@ async function sendNotifications(comments) {
       html = (
         cd.sParse('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
         ' ' +
-        reloadLinkHtml
+        reloadHtml
       );
     }
 
     closeNotifications(false);
-    const $body = cd.util.wrap(html, {
-      callbacks: {
-        'cd-notification-reloadPage': (e) => {
-          e.preventDefault();
-          reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
-        },
-      },
+    const $body = cd.util.wrap(html);
+    const notification = addNotification([$body], { comments: notifyAboutOrdinary });
+    notification.$notification.on('click', () => {
+      reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
     });
-    addNotification([$body], { comments: notifyAboutOrdinary });
   }
 
   if (
@@ -246,7 +465,7 @@ async function sendNotifications(comments) {
     const comment = notifyAboutDesktop[0];
     if (notifyAboutDesktop.length === 1) {
       if (comment.toMe) {
-        const where = comment.section.headline ?
+        const where = comment.section?.headline ?
           cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
           '';
         body = cd.s(
@@ -261,7 +480,7 @@ async function sendNotifications(comments) {
           'notification-insection-desktop',
           comment.author.name,
           comment.author,
-          comment.section.headline,
+          comment.section?.headline,
           cd.g.CURRENT_PAGE.name
         );
       }
@@ -320,8 +539,20 @@ async function sendNotifications(comments) {
 }
 
 /**
- * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web worker
- * so its constuctor is lost.)
+ * Whether still an older revision of the page is displayed than that is retrieved or the content is
+ * loading.
+ *
+ * @param {number} newRevisionId
+ * @returns {boolean}
+ * @private
+ */
+function isPageStillOutdated(newRevisionId) {
+  return newRevisionId > mw.config.get('wgRevisionId') && !isLoadingOverlayOn();
+}
+
+/**
+ * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
+ * worker so its constuctor is lost.)
  *
  * @typedef {object} CommentSkeletonLike
  */
@@ -330,17 +561,16 @@ async function sendNotifications(comments) {
  * Process the comments retrieved by a web worker.
  *
  * @param {CommentSkeletonLike[]} comments
+ * @param {number} revisionId
  * @private
  */
-async function processComments(comments) {
+async function processComments(comments, revisionId) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
-    delete comment.authorName;
     if (comment.parentAuthorName) {
       comment.parent = {
         author: userRegistry.getUser(comment.parentAuthorName),
       };
-      delete comment.parentAuthorName;
     }
   });
 
@@ -350,6 +580,7 @@ async function processComments(comments) {
   // icon which means 0 new comments.
   const newComments = comments
     .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
+  cd.debug.startTimer('filter interesting');
   const interestingNewComments = newComments.filter((comment) => {
     if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
@@ -362,18 +593,27 @@ async function processComments(comments) {
       return false;
     }
 
-
-    // Is this section watched by means of an upper level section?
-    const sections = Section.getSectionsByHeadline(comment.section.headline);
-    for (const section of sections) {
-      const watchedAncestor = section.getWatchedAncestor(true);
-      if (watchedAncestor) {
-        comment.watchedSectionHeadline = watchedAncestor.headline;
-        comment.interesting = true;
-        return true;
+    if (comment.section) {
+      // Is this section watched by means of an upper level section?
+      const section = Section.search(comment.section);
+      if (section) {
+        const closestWatchedSection = section.getClosestWatchedSection(true);
+        if (closestWatchedSection) {
+          comment.watchedSectionHeadline = closestWatchedSection.headline;
+          comment.interesting = true;
+          return true;
+        }
       }
     }
   });
+  cd.debug.stopTimer('filter interesting');
+
+  const authors = newComments
+    .map((comment) => comment.author)
+    .filter(unique);
+  await getUserGenders(authors, { noTimers: true });
+
+  if (!isPageStillOutdated(revisionId)) return;
 
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
@@ -382,25 +622,19 @@ async function processComments(comments) {
   }
 
   const newCommentsBySection = Comment.groupBySection(newComments);
-  navPanel.updateRefreshButton(
-    newComments.length,
-    newCommentsBySection,
-    Boolean(interestingNewComments.length)
-  );
-  updateChecker.updatePageTitle(newComments.length, Boolean(interestingNewComments.length));
+  const areThereInteresting = Boolean(interestingNewComments.length);
+  navPanel.updateRefreshButton(newComments.length, newCommentsBySection, areThereInteresting);
+  updateChecker.updatePageTitle(newComments.length, areThereInteresting);
   toc.addNewComments(newCommentsBySection);
 
-  const authors = newComments
-    .map((comment) => comment.author)
-    .filter(unique);
-  await getUserGenders(authors, { noTimers: true });
-
-  Section.addNewCommentsNotifications(newComments);
+  Section.addNewCommentsNotifications(newCommentsBySection);
   sendNotifications(interestingNewComments);
 }
 
 /**
  * Callback for messages from the worker.
+ *
+ * TODO: rewrite worker tasks using promises (which could be tricky).
  *
  * @param {Event} e
  * @private
@@ -412,15 +646,36 @@ async function onMessageFromWorker(e) {
     checkForUpdates();
   }
 
-  if (
-    message.type === 'parse' &&
-    message.revisionId > mw.config.get('wgRevisionId') &&
-    !isLoadingOverlayOn()
-  ) {
+  if (message.type === 'parse' && isPageStillOutdated(message.revisionId)) {
     lastCheckedRevisionId = message.revisionId;
     const { comments, sections } = message;
     toc.addNewSections(sections);
-    processComments(comments);
+    await processComments(comments, message.revisionId);
+    revisionData[message.revisionId] = { comments, sections };
+  }
+
+  if (message.type === 'parseRevision' && !revisionData[message.revisionId]) {
+    const { comments, sections } = message;
+    revisionData[message.revisionId] = { comments, sections };
+
+    if (
+      previousVisitRevisionId &&
+      previousVisitRevisionId !== mw.config.get('wgRevisionId') &&
+      revisionData[previousVisitRevisionId] &&
+      revisionData[mw.config.get('wgRevisionId')]
+    ) {
+      checkForEditsSincePreviousVisit();
+    }
+  }
+
+  if (
+    lastCheckedRevisionId &&
+    revisionData[lastCheckedRevisionId] &&
+    revisionData[mw.config.get('wgRevisionId')] &&
+    !checkedForNewEdits[lastCheckedRevisionId]
+  ) {
+    checkForNewEdits();
+    checkedForNewEdits[lastCheckedRevisionId] = true;
   }
 }
 
@@ -436,15 +691,17 @@ const updateChecker = {
   /**
    * Initialize the update checker.
    *
+   * @param {Promise} visitsRequest
+   * @param {object} keptData
    * @memberof module:updateChecker
    */
-  init() {
+  async init(visitsRequest, keptData) {
     if (!cd.g.worker) return;
 
-    lastCheckedRevisionId = null;
     notifiedAbout = [];
     this.relevantNewCommentAnchor = null;
     isBackgroundCheckArranged = false;
+    previousVisitRevisionId = null;
 
     if (cd.g.worker.onmessage) {
       removeAlarmViaWorker();
@@ -453,21 +710,35 @@ const updateChecker = {
     }
 
     setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
+
+    // It is processed in processPage~processVisits.
+    await visitsRequest;
+
+    if (cd.g.previousVisitUnixTime) {
+      processRevisionsIfNeeded();
+      if (keptData.didSubmitCommentForm && keptData.commentAnchor) {
+        submittedCommentAnchor = keptData.commentAnchor;
+      }
+    }
   },
 
   /**
    * Process the current page in the worker context.
    *
+   * @param {number} [revisionToParseId]
    * @memberof module:updateChecker
    */
-  async processPage() {
-    const { text, revid } = await cd.g.CURRENT_PAGE.parse({
+  async processPage(revisionToParseId) {
+    const {
+      text,
+      revid: revisionId,
+    } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, {
       noTimers: true,
       markAsRead: false,
     }) || {};
     cd.g.worker.postMessage({
-      type: 'parse',
-      revisionId: revid,
+      type: revisionToParseId ? 'parseRevision' : 'parse',
+      revisionId,
       text,
       g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER']),
       config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),

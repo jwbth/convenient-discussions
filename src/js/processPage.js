@@ -21,13 +21,14 @@ import {
   addPreventUnloadCondition,
   globalKeyDownHandler,
   highlightFocused,
+  registerSeenComments,
   windowResizeHandler,
 } from './eventHandlers';
 import { adjustDom } from './modifyDom';
 import { areObjectsEqual, isInline } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getSettings, getVisits, getWatchedSections } from './options';
+import { getSettings, getVisits, getWatchedSections, setWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
 import { setSettings, setVisits } from './options';
 
@@ -151,6 +152,23 @@ function processComments(parser, firstVisibleElementData) {
 }
 
 /**
+ * Remove sections that can't be found on the page anymore from the watched sections list and save
+ * them to the server.
+ *
+ * @private
+ */
+function cleanUpWatchedSections() {
+  if (!cd.sections) return;
+  const initialSectionCount = cd.g.thisPageWatchedSections.length;
+  cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
+    .filter((headline) => cd.sections.some((section) => section.headline === headline));
+  cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;
+  if (cd.g.thisPageWatchedSections.length !== initialSectionCount) {
+    setWatchedSections();
+  }
+}
+
+/**
  * Parse sections and modify some parts of them.
  *
  * @param {Parser} parser
@@ -175,6 +193,7 @@ function processSections(parser, watchedSectionsRequest) {
 
   if (watchedSectionsRequest) {
     watchedSectionsRequest.then(() => {
+      cleanUpWatchedSections();
       toc.highlightWatchedSections();
     });
   }
@@ -206,7 +225,9 @@ function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
     }
 
     addSectionForm.$element.cdScrollIntoView('center');
-    addSectionForm.headlineInput.focus();
+
+    // headlineInput may be missing if the "nosummary" preload parameter is truthy.
+    addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
   } else {
     /**
      * Add section form.
@@ -224,7 +245,7 @@ function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
 }
 
 /**
- * Add "Add topic" button to the bottom of the page if there is an "Add topic" tab.
+ * Add an "Add topic" button to the bottom of the page if there is an "Add topic" tab.
  *
  * @private
  */
@@ -251,11 +272,19 @@ function addAddTopicButton() {
  *
  * @private
  */
-function connectToAddTopicLinks() {
+function connectToAddTopicButtons() {
   $(cd.g.ADD_TOPIC_SELECTORS)
-    .filter(() => {
+    .filter(function () {
       const $button = $(this);
-      if ($button.is('input')) {
+      if ($button.is('a')) {
+        const href = $button.attr('href');
+        const query = new mw.Uri(href).query;
+        const pageName = query.title;
+        const page = new Page(pageName);
+        if (page.name !== cd.g.CURRENT_PAGE.name) {
+          return false;
+        }
+      } else if ($button.is('input')) {
         const pageName = $button
           .closest('form')
           .find('input[name="title"]')
@@ -264,6 +293,8 @@ function connectToAddTopicLinks() {
         if (page.name !== cd.g.CURRENT_PAGE.name) {
           return false;
         }
+      } else {
+        return false;
       }
 
       return true;
@@ -278,14 +309,13 @@ function connectToAddTopicLinks() {
       if ($button.is('a')) {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
-        const pageName = query.title;
-        const page = new Page(pageName);
-        if (page.name !== cd.g.CURRENT_PAGE.name) return;
         preloadConfig = {
           editIntro: query.editintro,
           commentTemplate: query.preload,
           headline: query.preloadtitle,
           summary: query.summary?.replace(/^.+?\*\/ */, ''),
+          noHeadline: Boolean(query.nosummary),
+          omitSignature: Boolean(query.cdomitsignature),
         };
         isNewTopicOnTop = query.section === '0';
       } else {
@@ -296,6 +326,7 @@ function connectToAddTopicLinks() {
           commentTemplate: $form.find('input[name="preload"]').val(),
           headline: $form.find('input[name="preloadtitle"]').val(),
           summary: $form.find('input[name="summary"]').val(),
+          noHeadline: Boolean($form.find('input[name="nosummary"]').val()),
         };
       }
 
@@ -406,7 +437,11 @@ async function processFragment(keptData) {
       if (keptData.pushState) {
         history.pushState(history.state, '', '#' + section.anchor);
       }
-      section.$elements.first().cdScrollTo('top', false);
+
+      // setTimeout for Firefox, as above
+      setTimeout(() => {
+        section.$elements.first().cdScrollTo('top', false);
+      });
     }
   }
 
@@ -434,10 +469,10 @@ async function processFragment(keptData) {
  * module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
- * @param {Comment[]} [memorizedUnseenCommentAnchors=[]]
+ * @param {object} keptData
  * @fires newCommentsHighlighted
  */
-async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) {
+async function processVisits(visitsRequest, keptData) {
   let visits;
   let thisPageVisits;
   try {
@@ -447,9 +482,9 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
     return;
   }
 
-  // These variables are not used anywhere in the script but can be helpful for testing purposes.
-  cd.g.visits = visits;
-  cd.g.thisPageVisits = thisPageVisits;
+  if (cd.g.thisPageVisits.length >= 1) {
+    cd.g.previousVisitUnixTime = Number(cd.g.thisPageVisits[cd.g.thisPageVisits.length - 1]);
+  }
 
   const currentUnixTime = Math.floor(Date.now() / 1000);
 
@@ -461,6 +496,7 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
     }
   }
 
+  let haveMatchedTimeWithComment = false;
   if (thisPageVisits.length) {
     cd.comments.forEach((comment) => {
       /**
@@ -485,26 +521,33 @@ async function processVisits(visitsRequest, memorizedUnseenCommentAnchors = []) 
       if (!comment.date) return;
 
       const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
-      if (commentUnixTime > thisPageVisits[0]) {
+      if (commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60) {
+        haveMatchedTimeWithComment = true;
+      }
+      if (commentUnixTime + 60 > thisPageVisits[0]) {
         comment.isNew = true;
         comment.isSeen = (
-          (commentUnixTime <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
-          !memorizedUnseenCommentAnchors.some((anchor) => anchor === comment.anchor)
+          (commentUnixTime + 60 <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
+          !keptData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
         );
       }
     });
 
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
-    toc.addNewComments(Comment.groupBySection(unseenComments));
+    toc.addNewComments(Comment.groupBySection(unseenComments), keptData);
   }
 
-  thisPageVisits.push(String(currentUnixTime));
+  // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
+  // minute to the current time if there is a comment with matched time. (Previously, the comment
+  // time needed to be less than the current time which could result in missed comments if a comment
+  // was sent the same minute when the page was loaded but after that moment.)
+  thisPageVisits.push(String(currentUnixTime + haveMatchedTimeWithComment * 60));
 
   setVisits(visits);
 
   navPanel.fill();
-  navPanel.registerSeenComments();
+  registerSeenComments();
 
   /**
    * New comments have been highlighted.
@@ -609,9 +652,10 @@ function debugLog() {
  * @property {number} [scrollPosition] Page Y offset.
  * @property {object[]} [unseenCommentAnchors] Anchors of unseen comments on this page.
  * @property {string} [justWatchedSection] Section just watched so that there could be not
- *    enough time for it to be saved to the server.
+ *   enough time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
- *    enough time for it to be saved to the server.
+ *   enough time for it to be saved to the server.
+ * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
  * @property {Promise} [messagesRequest] Promise returned by {@link
  *   module:dateFormat.loadData}.
  */
@@ -639,13 +683,11 @@ export default async function processPage(keptData = {}) {
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
 
-  const isEmptyPage = !mw.config.get('wgArticleId') || mw.config.get('wgIsRedirect');
-
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
   cd.g.isPageActive = !(
-    isEmptyPage ||
+    !mw.config.get('wgArticleId') ||
     cd.g.CURRENT_PAGE.isArchivePage() ||
     (
       (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
@@ -718,9 +760,10 @@ export default async function processPage(keptData = {}) {
   cd.debug.stopTimer('process sections');
 
   addAddTopicButton();
-  connectToAddTopicLinks();
+  connectToAddTopicButtons();
 
   cd.debug.stopTimer('main code');
+
   // Operations that need reflow, such as getBoundingClientRect(), go in this section.
   cd.debug.startTimer('final code and rendering');
 
@@ -745,17 +788,19 @@ export default async function processPage(keptData = {}) {
     } else {
       navPanel.reset();
     }
-    updateChecker.init();
 
     // New comments highlighting
-    processVisits(visitsRequest, keptData.unseenCommentAnchors);
+    processVisits(visitsRequest, keptData);
+
+    // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
+    updateChecker.init(visitsRequest, keptData);
   } else {
     if (navPanel.isMounted()) {
       navPanel.unmount();
     }
   }
 
-  if (cd.g.isPageActive || isEmptyPage) {
+  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
     // This should be below the viewport position restoration and own comments highlighting as it
     // may rely on the elements that are made invisible during the comment forms restoration. It
     // should also be below the navPanel mount/reset methods as it runs
@@ -805,7 +850,7 @@ export default async function processPage(keptData = {}) {
     $(document)
       .on('keydown', globalKeyDownHandler)
       .on('scroll resize orientationchange', () => {
-        navPanel.registerSeenComments();
+        registerSeenComments();
         navPanel.updateCommentFormButton();
       });
   }

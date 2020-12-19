@@ -128,12 +128,13 @@ export default class CommentForm {
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (this.mode === 'addSection') {
+      const title = cd.g.CURRENT_PAGE.title.replace(/\//g, '-');
       let code = (
         '<div class="cd-editnotice">' +
         `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}}}` +
         '</div>\n' +
         '<div class="cd-editnotice">' +
-        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}-${cd.g.CURRENT_PAGE.title}}}` +
+        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}-${title}}}` +
         '</div>\n'
       );
       if (this.preloadConfig?.editIntro) {
@@ -291,7 +292,7 @@ export default class CommentForm {
                 );
               code = code.trim();
 
-              if (code.includes(cd.g.SIGN_CODE)) {
+              if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
                 this.omitSignatureCheckbox.setSelected(true);
               }
 
@@ -687,7 +688,10 @@ export default class CommentForm {
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
      */
 
-    if (['addSection', 'addSubsection'].includes(this.mode) || this.editingSectionOpeningComment) {
+    if (
+      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
+      this.editingSectionOpeningComment
+    ) {
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
       } else if (this.mode === 'edit' && this.targetSection.getParent()) {
@@ -892,7 +896,7 @@ export default class CommentForm {
       });
     }
 
-    if (this.headlineInput) {
+    if (['addSection', 'addSubsection'].includes(this.mode)) {
       /**
        * Omit signature checkbox field.
        *
@@ -1383,7 +1387,7 @@ export default class CommentForm {
 
       this.headlineInput.$input.on('keydown', (e) => {
         // Enter
-        if (e.keyCode === 13) {
+        if (e.keyCode === 13 && !cd.g.activeAutocompleteMenu) {
           this.submit();
         }
       });
@@ -1443,7 +1447,7 @@ export default class CommentForm {
 
     this.summaryInput.$input.on('keydown', (e) => {
       // Enter
-      if (e.keyCode === 13) {
+      if (e.keyCode === 13 && !cd.g.activeAutocompleteMenu) {
         this.submit();
       }
     });
@@ -1665,6 +1669,12 @@ export default class CommentForm {
       this.previewButton.setDisabled(true);
       this.viewChangesButton.setDisabled(true);
       this.cancelButton.setDisabled(true);
+
+      this.minorCheckbox?.setDisabled(true);
+      this.watchCheckbox.setDisabled(true);
+      this.watchSectionCheckbox?.setDisabled(true);
+      this.omitSignatureCheckbox?.setDisabled(true);
+      this.deleteCheckbox?.setDisabled(true);
     }
   }
 
@@ -1695,6 +1705,17 @@ export default class CommentForm {
       this.previewButton.setDisabled(false);
       this.viewChangesButton.setDisabled(false);
       this.cancelButton.setDisabled(false);
+
+      this.minorCheckbox?.setDisabled(false);
+      this.watchCheckbox.setDisabled(false);
+      this.watchSectionCheckbox?.setDisabled(false);
+      this.omitSignatureCheckbox?.setDisabled(false);
+      this.deleteCheckbox?.setDisabled(false);
+
+      // Restore needed "disabled"s.
+      if (this.deleteCheckbox?.isSelected()) {
+        this.updateFormOnDeleteCheckboxChange(true);
+      }
     }
   }
 
@@ -1848,12 +1869,16 @@ export default class CommentForm {
         let editUrl;
         switch (code) {
           case 'locateComment':
-            editUrl = this.targetSection ?
-              this.targetSection.editUrl.toString() :
-              cd.g.CURRENT_PAGE.getUrl({
+            if (this.targetSection) {
+              editUrl = this.targetSection.editUrl ?
+                this.targetSection.editUrl.toString() :
+                cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
+            } else {
+              editUrl = cd.g.CURRENT_PAGE.getUrl({
                 action: 'edit',
                 section: 0,
               });
+            }
             message = cd.sParse('error-locatecomment', editUrl);
             break;
           case 'locateSection':
@@ -2769,7 +2794,7 @@ export default class CommentForm {
   async runChecks({ doDelete }) {
     const checks = [
       {
-        condition: this.headlineInput?.getValue() === '',
+        condition: !doDelete && this.headlineInput?.getValue() === '',
         confirmation: async () => {
           const noHeadline = cd.s(
             'cf-confirm-noheadline-' +
@@ -2780,19 +2805,27 @@ export default class CommentForm {
       },
       {
         condition: (
+          !doDelete &&
           !this.commentInput.getValue().trim() &&
           !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.CURRENT_PAGE.name)
         ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
       },
       {
-        condition: this.commentInput.getValue().trim().length > cd.config.longCommentThreshold,
+        condition: (
+          !doDelete &&
+          this.commentInput.getValue().trim().length > cd.config.longCommentThreshold
+        ),
         confirmation: async () => (
           await OO.ui.confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold))
         ),
       },
       {
-        condition: /^==[^=]/m.test(this.commentInput.getValue()) && this.mode !== 'edit',
+        condition: (
+          !doDelete &&
+          /^==[^=]/m.test(this.commentInput.getValue()) &&
+          this.mode !== 'edit'
+        ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-secondlevelheading')),
       },
       {
@@ -2902,7 +2935,8 @@ export default class CommentForm {
     // Here we use a trick where we pass, in keptData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    let keptData = { didSubmitCommentForm: true };
+    const keptData = { didSubmitCommentForm: true };
+
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
       mw.config.set('wgArticleId', this.targetPage.pageId);
@@ -2951,6 +2985,12 @@ export default class CommentForm {
       keptData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
         generateCommentAnchor(new Date(editTimestamp), cd.g.CURRENT_USER_NAME, true);
+    }
+
+    // When the edit takes place on another page that is transcluded in the current one, we must
+    // purge the current page, otherwise we may get an old version without the submitted comment.
+    if (this.targetPage !== cd.g.CURRENT_PAGE) {
+      await cd.g.CURRENT_PAGE.purge();
     }
 
     this.reloadPage(keptData, currentOperation);

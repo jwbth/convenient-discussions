@@ -7,12 +7,14 @@
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
+import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
-import navPanel from './navPanel';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
+  areObjectsEqual,
+  calculateWordsOverlap,
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
@@ -22,7 +24,6 @@ import {
   reorderArray,
   saveToLocalStorage,
   unhideText,
-  unique,
 } from './util';
 import { copyLink } from './modal.js';
 import {
@@ -35,38 +36,9 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { getUserGenders, parseCode } from './apiWrappers';
+import { reloadPage } from './boot';
 
 let thanks;
-
-/**
- * Calculates the proportion of the number of words (3 characters long minimum) present in both
- * strings to the total words count.
- *
- * @param {string} s1
- * @param {string} s2
- * @returns {number}
- * @private
- */
-function calculateWordsOverlap(s1, s2) {
-  const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{3,}`, 'g');
-  const words1 = (s1.match(regexp) || []).filter(unique);
-  const words2 = (s2.match(regexp) || []).filter(unique);
-  if (!words1.length || !words2.length) {
-    return 0;
-  }
-
-  let total = words2.length;
-  let overlap = 0;
-  words1.forEach((word1) => {
-    if (words2.some((word2) => word2 === word1)) {
-      overlap++;
-    } else {
-      total++;
-    }
-  });
-
-  return overlap / total;
-}
 
 /**
  * Remove thanks older than 60 days.
@@ -78,7 +50,10 @@ function calculateWordsOverlap(s1, s2) {
 function cleanUpThanks(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
-    if (newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
+    if (
+      !newData[key].thankUnixTime ||
+      newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
+    ) {
       delete newData[key];
     }
   });
@@ -126,6 +101,8 @@ export default class Comment extends CommentSkeleton {
      */
     this.$signature = $(signature.element);
 
+    delete this.signatureElement;
+
     /**
      * Comment timestamp element as a jQuery object.
      *
@@ -162,6 +139,35 @@ export default class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.isFocused = false;
+
+    /**
+     * Was the comment edited since the previous visit.
+     *
+     * @type {?boolean}
+     */
+    this.isEditedSincePreviousVisit = null;
+
+    /**
+     * Was the comment edited while the page was idle. (The new version may be rendered or may be
+     * not, if the layout is too complex.)
+     *
+     * @type {?boolean}
+     */
+    this.isEdited = null;
+
+    /**
+     * Was the comment deleted while the page was idle.
+     *
+     * @type {?boolean}
+     */
+    this.isDeleted = null;
+
+    /**
+     * Should the comment be flashed as updated when it appears in sight.
+     *
+     * @type {?boolean}
+     */
+    this.isFlashNewOnSightSet = false;
   }
 
   /**
@@ -309,16 +315,11 @@ export default class Comment extends CommentSkeleton {
    */
   createLayers() {
     this.underlay = this.elementPrototypes.underlay.cloneNode(true);
-    if (this.isNew) {
-      this.underlay.classList.add('cd-commentUnderlay-new');
-    }
-    if (cd.settings.highlightOwnComments && this.isOwn) {
-      this.underlay.classList.add('cd-commentUnderlay-own');
-    }
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
     this.overlayInnerWrapper = this.overlay.firstChild;
+
     // Hide the overlay on right click. It can block clicking the author page link.
     this.overlayInnerWrapper.oncontextmenu = (e) => {
       e.preventDefault();
@@ -334,6 +335,7 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.goToParentButton = this.elementPrototypes.goToParentButton.cloneNode(true);
+
       this.goToParentButton.firstChild.onclick = () => {
         this.goToParent();
       };
@@ -347,21 +349,21 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.linkButton = this.elementPrototypes.linkButton.cloneNode(true);
+
       this.linkButton.firstChild.onclick = this.copyLink.bind(this);
       this.overlayContent.appendChild(this.linkButton);
     }
 
     if (this.author.isRegistered() && this.date && !this.isOwn) {
       if (!thanks) {
-        thanks = cleanUpThanks(getFromLocalStorage('convenientDiscussions-thanks') || {});
-        saveToLocalStorage('convenientDiscussions-thanks', thanks);
+        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
+        saveToLocalStorage('thanks', thanks);
       }
 
       const isThanked = Object.keys(thanks).some((key) => (
         this.anchor === thanks[key].anchor &&
         calculateWordsOverlap(this.getText(), thanks[key].text) > 0.66
       ));
-
       if (isThanked) {
         this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
       } else {
@@ -371,6 +373,7 @@ export default class Comment extends CommentSkeleton {
          * @type {Element|undefined}
          */
         this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
+
         this.thankButton.firstChild.onclick = () => {
           this.thank();
         };
@@ -386,8 +389,11 @@ export default class Comment extends CommentSkeleton {
          * @type {Element|undefined}
          */
         this.editButton = this.elementPrototypes.editButton.cloneNode(true);
+
         this.editButton.firstChild.onclick = () => {
-          this.edit();
+          if (!this.editButton.classList.contains('oo-ui-widget-disabled')) {
+            this.edit();
+          }
         };
         this.overlayContent.appendChild(this.editButton);
       }
@@ -398,15 +404,20 @@ export default class Comment extends CommentSkeleton {
        * @type {Element|undefined}
        */
       this.replyButton = this.elementPrototypes.replyButton.cloneNode(true);
+
       this.replyButton.firstChild.onclick = () => {
         if (this.replyForm) {
           this.replyForm.cancel();
         } else {
-          this.reply();
+          if (!this.replyButton.classList.contains('oo-ui-widget-disabled')) {
+            this.reply();
+          }
         }
       };
       this.overlayContent.appendChild(this.replyButton);
     }
+
+    this.updateLayersStyles();
 
     /**
      * Comment's underlay.
@@ -446,8 +457,43 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add the underlay and overlay if they are missing, recalculate their positions and redraw if
-   * they have been moved, or do nothing if everything is right.
+   * Update the styles of the layers according to the comment's properties.
+   */
+  updateLayersStyles() {
+    if (!this.underlay) return;
+
+    if (this.isNew) {
+      this.underlay.classList.add('cd-commentUnderlay-new');
+    }
+    if (cd.settings.highlightOwnComments && this.isOwn) {
+      this.underlay.classList.add('cd-commentUnderlay-own');
+    }
+    if (this.isDeleted) {
+      this.underlay.classList.add('cd-commentUnderlay-deleted');
+      if (this.replyButton) {
+        this.replyButton.classList.remove('oo-ui-widget-disabled');
+        this.replyButton.classList.add('oo-ui-widget-enabled');
+      }
+      if (this.editButton) {
+        this.editButton.classList.remove('oo-ui-widget-disabled');
+        this.editButton.classList.add('oo-ui-widget-enabled');
+      }
+    } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
+      this.underlay.classList.remove('cd-commentUnderlay-deleted');
+      if (this.replyButton) {
+        this.replyButton.classList.remove('oo-ui-widget-disabled');
+        this.replyButton.classList.add('oo-ui-widget-enabled');
+      }
+      if (this.editButton) {
+        this.editButton.classList.remove('oo-ui-widget-disabled');
+        this.editButton.classList.add('oo-ui-widget-enabled');
+      }
+    }
+  }
+
+  /**
+   * Add the underlay and overlay if they are missing, update their styles, recalculate their
+   * positions and redraw if the comment has been moved or do nothing if everything is right.
    *
    * @param {object} [options={}]
    * @param {boolean} [options.doAdd=true] Add the layers in case they are created. If set to
@@ -478,19 +524,29 @@ export default class Comment extends CommentSkeleton {
       this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
     options.layersContainerOffset = this.getLayersContainerOffset();
 
-    const moved = (
-      this.underlay &&
-      (
-        (
-          window.pageYOffset + options.rectTop.top - options.layersContainerOffset.top !==
-          this.layersTop
-        ) ||
-        options.rectBottom.bottom - options.rectTop.top !== this.layersHeight ||
-        this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
-      )
-    );
+    let isMoved = false;
+    if (this.underlay) {
+      // Firefox bug makes it possible for minor (~0.02) differences to manifest.
+      const topDifference = Math.abs(
+        window.pageYOffset +
+        options.rectTop.top -
+        options.layersContainerOffset.top -
+        this.layersTop
+      );
+      const heightDifference = Math.abs(
+        options.rectBottom.bottom -
+        options.rectTop.top -
+        this.layersHeight
+      );
 
-    if (!this.underlay || moved) {
+      isMoved = (
+        topDifference > 0.5 ||
+        heightDifference > 0.5 ||
+        this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
+      );
+    }
+
+    if (!this.underlay || isMoved) {
       Object.assign(this, this.calculateLayersPositions(options));
     }
 
@@ -502,13 +558,11 @@ export default class Comment extends CommentSkeleton {
     // Configure the layers only if they were unexistent or the comment position has changed, to
     // save time.
     if (this.underlay) {
-      if (this.isNew && !this.underlay.classList.contains('cd-commentUnderlay-new')) {
-        this.underlay.classList.add('cd-commentUnderlay-new');
-      }
-      if (moved && options.doUpdate) {
+      this.updateLayersStyles();
+      if (isMoved && options.doUpdate) {
         this.updateLayersPositions();
       }
-      return moved;
+      return isMoved;
     } else {
       this.createLayers();
       if (options.doAdd) {
@@ -522,11 +576,11 @@ export default class Comment extends CommentSkeleton {
    * Add the comment's layers to the DOM.
    */
   addLayers() {
-    if (this.underlay) {
-      this.updateLayersPositions();
-      this.getLayersContainer().appendChild(this.underlay);
-      this.getLayersContainer().appendChild(this.overlay);
-    }
+    if (!this.underlay) return;
+
+    this.updateLayersPositions();
+    this.getLayersContainer().appendChild(this.underlay);
+    this.getLayersContainer().appendChild(this.overlay);
   }
 
   /**
@@ -549,11 +603,11 @@ export default class Comment extends CommentSkeleton {
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
     // again when the next event fires.
-    if (!isMoved && this.underlay) {
-      this.underlay.classList.add('cd-commentUnderlay-focused');
-      this.overlay.classList.add('cd-commentOverlay-focused');
-      this.isFocused = true;
-    }
+    if (isMoved || !this.underlay) return;
+
+    this.underlay.classList.add('cd-commentUnderlay-focused');
+    this.overlay.classList.add('cd-commentOverlay-focused');
+    this.isFocused = true;
   }
 
   /**
@@ -569,63 +623,327 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get the comment's current background color, be it an underlay color or regular background
+   * color.
+   *
+   * @returns {string}
+   */
+  getCurrentBackgroundColor() {
+    let color = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
+    if (color === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
+      color = this.backgroundColor;
+    }
+    return color;
+  }
+
+  /**
    * Highlight the comment as a target (it is opened by a link, just posted, is the target of the
    * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
    */
   highlightTarget() {
+    this.isTarget = true;
+
+    // We don't take the color from cd.g.COMMENT_UNDERLAY_TARGET_COLOR as it may be overriden by the
+    // user in their personal CSS.
+    this.flash($(document.documentElement).css('--cd-comment-underlay-target-color'), 1500, () => {
+      this.isTarget = false;
+    });
+  }
+
+  /**
+   * Change the comment's background color to the provided color for the given number of
+   * milliseconds, then smoothly change it back.
+   *
+   * @param {string} color
+   * @param {number} delay
+   * @param {Function} callback
+   */
+  flash(color, delay, callback) {
     this.configureLayers();
-    if (!this.$underlay) return;
+    if (!this.$underlay) {
+      if (callback) {
+        callback();
+      }
+      return;
+    }
 
     const $elementsToAnimate = this.$underlay
       .add(this.$overlayContent)
       .add(this.$overlayGradient)
+      .stop()
       .css('background-image', 'none')
       .css('background-color', '');
+    let finalColor = this.getCurrentBackgroundColor();
 
-    let initialColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
-    if (initialColor === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
-      initialColor = this.backgroundColor;
-    }
-
-    this.$underlay.addClass('cd-commentUnderlay-target');
-
-    // We don't take the color from cd.g.COMMENT_UNDERLAY_TARGET_COLOR as it may be overriden by the
-    // user in their personal CSS.
-    const targetColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
-
-    this.$underlay.removeClass('cd-commentUnderlay-target');
-
-    this.isTarget = true;
-
-    $elementsToAnimate
-      .stop()
-      .css('background-color', targetColor);
+    $elementsToAnimate.css('background-color', color);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
+      // These comment properties may get assigned after the flash() call.
       if (this.isFocused) {
-        initialColor = cd.g.COMMENT_UNDERLAY_FOCUSED_COLOR;
-      } else if (this.isNew) {
-        initialColor = cd.g.COMMENT_UNDERLAY_NEW_COLOR;
+        finalColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
+      } else if (this.isNew && !this.isOwn) {
+        finalColor = $(document.documentElement).css('--cd-comment-underlay-new-color');
       }
-      $elementsToAnimate.animate(
-        { backgroundColor: initialColor },
-        400,
-        'swing',
-        () => {
-          this.isTarget = false;
-          $elementsToAnimate
-            .css('background-image', '')
-            .css('background-color', '');
+      if (finalColor === color) {
+        finalColor = this.backgroundColor || 'rgba(0, 0, 0, 0)';
+      }
+
+      $elementsToAnimate
+        .stop()
+        .css('background-image', 'none')
+        .css('background-color', color)
+        .animate(
+          { backgroundColor: finalColor },
+          400,
+          'swing',
+          () => {
+            if (callback) {
+              callback();
+            }
+            $elementsToAnimate
+              .css('background-image', '')
+              .css('background-color', '');
+          }
+        );
+    }, delay);
+  }
+
+  /**
+   * Flash the comment as updated and add it to the seen rendered edits list kept in the local
+   * storage.
+   */
+  flashNew() {
+    this.flash($(document.documentElement).css('--cd-comment-underlay-new-color'), 500);
+    if (this.isEdited) {
+      const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
+      const articleId = mw.config.get('wgArticleId');
+      seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
+      seenRenderedEdits[articleId][this.anchor] = {
+        innerHtml: this.innerHtml,
+        seenUnixTime: Date.now(),
+      };
+      saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+    }
+  }
+
+  /**
+   * Flash the comment as updated when it appears in sight.
+   */
+  flashNewOnSight() {
+    if (this.isInViewport()) {
+      this.flashNew();
+    } else {
+      this.isFlashNewOnSightSet = true;
+    }
+  }
+
+  /**
+   * Update the comment's properties, add a small text next to the signature saying the comment has
+   * been edited or deleted, and flash the comment as updated if it has been.
+   *
+   * @param {string} type Type of the mark: `'edited'`, `'editedSince'`, or `'deleted'`.
+   * @param {boolean} isNewVersionRendered Has the new version of the comment been rendered.
+   * @param {number} comparedRevisionId ID of the revision to compare with when the user clicks to
+   *   see the diff.
+   */
+  markAsEdited(type, isNewVersionRendered, comparedRevisionId) {
+    let stringName;
+    switch (type) {
+      case 'edited':
+      default:
+        this.isEdited = true;
+        stringName = 'comment-edited';
+        break;
+
+      case 'editedSince':
+        this.isEditedSincePreviousVisit = true;
+        stringName = 'comment-editedsince';
+        break;
+
+      case 'deleted':
+        this.isDeleted = true;
+        stringName = 'comment-deleted';
+        break;
+    }
+
+    this.$elements
+      .last()
+      .find('.cd-editMark')
+      .remove();
+
+    let $refreshLink;
+    if (!isNewVersionRendered) {
+      const keptData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
+      $refreshLink = $('<a>')
+        .text(cd.s('comment-edited-refresh'))
+        .on('click', () => {
+          reloadPage(keptData);
+        });
+    }
+
+    let $diffLink;
+    if (type !== 'deleted' && this.getSourcePage().name === cd.g.CURRENT_PAGE.name) {
+      $diffLink = $('<a>')
+        .text(cd.s('comment-edited-diff'))
+        .on('click', async (e) => {
+          e.preventDefault();
+          $diffLink.addClass('cd-link-pending');
+          try {
+            await this.showDiff(comparedRevisionId);
+          } catch (e) {
+            let text = cd.s('comment-edited-diff-error');
+            if (e instanceof CdError) {
+              const { type, message } = e.data;
+              if (message) {
+                text = message;
+              } else if (type === 'network') {
+                text += ' ' + cd.sParse('error-network');
+              }
+            }
+            mw.notify(text, { type: 'error' });
+          }
+          $diffLink.removeClass('cd-link-pending');
+        });
+    }
+
+    const $span = $('<span>')
+      .addClass('cd-editMark')
+      .append(cd.sParse(stringName));
+    if ($refreshLink) {
+      $span.append(' ', $refreshLink);
+    } else {
+      $span.addClass('cd-editMark-newVersionRendered');
+    }
+    if ($diffLink) {
+      $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
+    }
+
+    this.$elements.last().append($span);
+
+    if (isNewVersionRendered) {
+      this.flashNewOnSight();
+    }
+
+    // Layers are supposed to be updated (deleted comments background, repositioning) separately,
+    // see updateChecker~checkForNewEdits, for example.
+  }
+
+  /**
+   * Update the comment's properties, remove the edit mark added in {@link
+   * module:Comment#markAsEdited} and flash the comment as updated if it has been (reset to the
+   * original version, or unedited, in this case).
+   *
+   * @param {string} type Type of the mark: `'edited'` or `'deleted'`.
+   */
+  unmarkAsEdited(type) {
+    switch (type) {
+      case 'edited':
+      default:
+        this.isEdited = false;
+        break;
+      case 'deleted':
+        this.isDeleted = false;
+
+        // commentLayers.redrawIfNecessary(), that is called on DOM updates, could circumvent this
+        // comment if it has no property signalling that it should be highlighted, so we update its
+        // styles manually.
+        this.updateLayersStyles();
+
+        break;
+    }
+
+    this.$elements
+      .last()
+      .find('.cd-editMark')
+      .remove();
+
+    if (type === 'edited') {
+      if (this.isFlashNewOnSightSet) {
+        this.isFlashNewOnSightSet = false;
+      } else {
+        const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
+        const articleId = mw.config.get('wgArticleId');
+        seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
+        delete seenRenderedEdits[articleId][this.anchor];
+        saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+
+        this.flashNewOnSight();
+      }
+    }
+  }
+
+  /**
+   * Update the comment's content.
+   *
+   * @param {object} currentComment Data about the comment in the current revision as delivered by
+   *   the worker.
+   * @param {object} newComment Data about the comment in the new revision as delivered by the
+   *   worker.
+   * @returns {boolean} Was the update successful.
+   */
+  update(currentComment, newComment) {
+    const elementTagNames = Array.from(this.$elements).map((element) => element.tagName);
+
+    // References themselves may be out of the comment's HTML and might be edited.
+    const areThereReferences = newComment.hiddenElementData
+      .some((data) => data.type === 'reference');
+
+    // If a style element is replaced with a link element, we can't replace HTML.
+    const areStyleTagsKept = (
+      !newComment.hiddenElementData.length ||
+      newComment.hiddenElementData.every((data, i) => (
+        data.type !== 'templateStyles' ||
+        data.tagName === 'STYLE' ||
+        currentComment.hiddenElementData[i].tagName !== 'STYLE'
+      ))
+    );
+
+    if (
+      !areThereReferences &&
+      areStyleTagsKept &&
+      areObjectsEqual(elementTagNames, newComment.elementTagNames)
+    ) {
+      const match = this.$elements.find('.autonumber').text().match(/\d+/);
+      let currentAutonumber = match ? match[0] : 1;
+      newComment.elementHtmls.forEach((html, i) => {
+        html = html.replace(
+          /\x01(\d+)_\w+\x02/g,
+          (s, num) => newComment.hiddenElementData[num - 1].html
+        );
+        if (/^H[1-6]$/.test(elementTagNames[i])) {
+          const $headline = this.$elements.eq(i).find('.mw-headline');
+          if ($headline.length) {
+            const $headlineNumber = $headline.find('.mw-headline-number');
+            $headline
+              .html($(html).html())
+              .prepend($headlineNumber);
+          }
+        } else {
+          this.replaceElement(this.$elements.eq(i), html);
         }
-      );
-    }, 1500);
+      });
+      this.$elements.find('.autonumber').each((i, el) => {
+        $(el).text(`[${currentAutonumber}]`);
+        currentAutonumber++;
+      });
+      this.$elements
+        .attr('data-comment-id', this.id)
+        .first()
+        .attr('id', this.anchor);
+      delete this.cachedText;
+      mw.hook('wikipage.content').add(this.$elements);
+      this.comparedHtml = newComment.innerHtml;
+      return true;
+    } else {
+      return false;
+    }
   }
 
   /**
    * Scroll to the comment if it is not in the viewport.
    *
-   * @param {string} alignment One of the values that {@link $.fn.cdScrollTo}
-   *   accepts: `'top'`, `'center'`, or `'bottom'`.
+   * @param {string} alignment One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
+   *   `'center'`, or `'bottom'`.
    */
   scrollIntoView(alignment) {
     const $target = this.editForm ? this.editForm.$element : this.$elements;
@@ -724,11 +1042,8 @@ export default class Comment extends CommentSkeleton {
   copyLink(e) {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
-    this.replaceButton(
-      this.linkButton,
-      this.elementPrototypes.pendingLinkButton.cloneNode(true),
-      'link'
-    );
+    const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
+    this.replaceButton(this.linkButton, pendingLinkButton, 'link');
     copyLink(this, e.shiftKey, () => {
       this.replaceButton(this.linkButton, linkButton, 'link');
     });
@@ -744,8 +1059,8 @@ export default class Comment extends CommentSkeleton {
    * @throws {CdError}
    */
   async findAddingEdit(singleTimestamp = false, requestGender = false) {
-    if (singleTimestamp && this.addingEditOneTimestamp) {
-      return this.addingEditOneTimestamp;
+    if (singleTimestamp && this.addingEditSingleTimestamp) {
+      return this.addingEditSingleTimestamp;
     }
     if (!singleTimestamp && this.addingEdit) {
       return this.addingEdit;
@@ -754,51 +1069,36 @@ export default class Comment extends CommentSkeleton {
     // Search for the edit in the range of 2 minutes before to 2 minutes later.
     const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
     const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
-    const revisionsRequest = cd.g.api.get({
-      action: 'query',
-      titles: this.getSourcePage().getArchivedPage().name,
-      rvslots: 'main',
-      prop: 'revisions',
+    const revisionsRequest = this.getSourcePage().getArchivedPage().getRevisions({
       rvprop: ['ids', 'flags', 'comment', 'timestamp'],
       rvdir: 'newer',
       rvstart,
       rvend,
       rvuser: this.author.name,
       rvlimit: 500,
-      redirects: true,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     let genderRequest;
     if (requestGender && this.author.isRegistered()) {
       genderRequest = getUserGenders([this.author]);
     }
-    const [revisionsResp] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
+    const [revisions] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
 
-    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
-    if (!revisions) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    const compareRequests = revisions.map((revision) => cd.g.api.get({
+    const compareRequests = revisions.map((revision) => cd.g.api.post({
       action: 'compare',
       fromtitle: this.getSourcePage().getArchivedPage().name,
       fromrev: revision.revid,
       torelative: 'prev',
-      prop: 'diff|diffsize',
+      prop: ['diff'],
       formatversion: 2,
     }).catch(handleApiReject));
 
-    const compareData = await Promise.all(compareRequests);
+    const compareResps = await Promise.all(compareRequests);
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
     let thisTextAndSignature = this.getText(false) + ' ' + this.$signature.get(0).innerText;
     const matches = [];
-    for (let i = 0; i < compareData.length; i++) {
-      const data = compareData[i];
-      const body = data?.compare?.body;
+    for (let i = 0; i < compareResps.length; i++) {
+      const body = compareResps[i]?.compare?.body;
       if (!body) continue;
 
       // Compare diff _parts_ with added text in case multiple comments were added with the edit.
@@ -886,17 +1186,13 @@ export default class Comment extends CommentSkeleton {
     const result = bestMatch.revision;
 
     // Cache successful results.
-    if (singleTimestamp) {
-      this.addingEditOneTimestamp = result;
-    } else {
-      this.addingEdit = result;
-    }
+    this[singleTimestamp ? 'addingEditSingleTimestamp' : 'addingEdit'] = result;
 
     return result;
   }
 
   /**
-   * Get a diff link for a comment.
+   * Get a diff link for the comment.
    *
    * @returns {string}
    * @private
@@ -968,11 +1264,8 @@ export default class Comment extends CommentSkeleton {
    */
   async thank() {
     const thankButton = this.thankButton;
-    this.replaceButton(
-      this.thankButton,
-      this.elementPrototypes.pendingThankButton.cloneNode(true),
-      'thank'
-    );
+    const pendingThankButton = this.elementPrototypes.pendingThankButton.cloneNode(true);
+    this.replaceButton(this.thankButton, pendingThankButton, 'thank');
 
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
@@ -988,7 +1281,8 @@ export default class Comment extends CommentSkeleton {
     }
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
-    const $question = cd.util.wrap(cd.sParse('thank-confirm', this.author.name, this.author, url), {
+    const question = cd.sParse('thank-confirm', this.author.name, this.author, url);
+    const $question = cd.util.wrap(question, {
       tagName: 'div',
       targetBlank: true,
     });
@@ -1006,17 +1300,15 @@ export default class Comment extends CommentSkeleton {
       }
 
       mw.notify(cd.s('thank-success'));
-      this.replaceButton(
-        this.thankButton,
-        this.elementPrototypes.thankedButton.cloneNode(true),
-        'thank'
-      );
+      const thankedButton = this.elementPrototypes.thankedButton.cloneNode(true);
+      this.replaceButton(this.thankButton, thankedButton, 'thank');
 
       thanks[edit.revid] = {
         anchor: this.anchor,
         text: this.getText(),
+        thankUnixTime: Date.now(),
       };
-      saveToLocalStorage('convenientDiscussions-thanks', thanks);
+      saveToLocalStorage('thanks', thanks);
     } else {
       this.replaceButton(this.thankButton, thankButton, 'thank');
     }
@@ -1219,7 +1511,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Mark the comment as seen.
+   * Mark the comment as seen, and also {@link module:Comment#flash flash} comments that are
+   * prescribed to flash.
    *
    * @param {string} [registerAllInDirection] Mark all comments in the forward (`'forward'`) or
    *   backward (`'backward'`) direction from this comment as seen.
@@ -1229,35 +1522,38 @@ export default class Comment extends CommentSkeleton {
     if (this.isSeen === false) {
       this.isSeen = true;
 
-      navPanel.decrementUnseenCount();
       if (highlight) {
         this.highlightTarget();
       }
     }
 
-    if (registerAllInDirection && navPanel.getUnseenCount() !== 0) {
+    if (this.isFlashNewOnSightSet) {
+      this.isFlashNewOnSightSet = false;
+      this.flashNew();
+    }
+
+    const makesSenseToRegister = cd.comments
+      .some((comment) => comment.isSeen || comment.isFlashNewOnSightSet);
+    if (registerAllInDirection && makesSenseToRegister) {
       const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
-      if (nextComment?.isInViewport(true)) {
+      if (nextComment?.isInViewport()) {
         nextComment.registerSeen(registerAllInDirection, highlight);
       }
     }
   }
 
   /**
-   * Determine if the comment is in the viewport. Return null if we couldn't get the comment
+   * Determine if the comment is in the viewport. Return `null` if we couldn't get the comment's
    * positions.
    *
-   * @param {boolean} updatePositions Update the comment positions before determining the result.
    * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
    * @returns {?boolean}
    */
-  isInViewport(updatePositions = false, partially = false) {
+  isInViewport(partially = false) {
     const viewportTop = window.pageYOffset;
     const viewportBottom = viewportTop + window.innerHeight;
 
-    if (updatePositions || !this.positions) {
-      this.getPositions();
-    }
+    this.getPositions();
 
     if (!this.positions) {
       return null;
@@ -1276,11 +1572,11 @@ export default class Comment extends CommentSkeleton {
 
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
-    this.underlay.parentElement.removeChild(this.underlay);
+    this.underlay.parentNode.removeChild(this.underlay);
     this.underlay = null;
     this.$underlay = null;
 
-    this.overlay.parentElement.removeChild(this.overlay);
+    this.overlay.parentNode.removeChild(this.overlay);
     this.overlay = null;
     this.$overlay = null;
   }
@@ -1305,6 +1601,39 @@ export default class Comment extends CommentSkeleton {
   set $elements(value) {
     this.cached$elements = value;
     this.elements = value.get();
+  }
+
+  /**
+   * Replace an element that is one of the comment's elements with another element or HTML string.
+   *
+   * @param {Element|JQuery} element
+   * @param {Element|string} newElementOrHtml
+   */
+  replaceElement(element, newElementOrHtml) {
+    const nativeElement = element instanceof $ ? element.get(0) : element;
+    let newElement;
+    if (typeof newElementOrHtml === 'string') {
+      const index = Array.from(nativeElement.parentNode.children).indexOf(nativeElement);
+      const parentNode = nativeElement.parentNode;
+      nativeElement.outerHTML = newElementOrHtml;
+      newElement = parentNode.children[index];
+    } else {
+      newElement = newElementOrHtml;
+      nativeElement.parentNode.replaceChild(newElement, element);
+    }
+
+    if (element instanceof $) {
+      this.$elements = this.$elements
+        .not(nativeElement)
+        .add(newElement);
+    } else {
+      this.elements.splice(this.elements.indexOf(element), 1, newElementOrHtml);
+    }
+
+    if (this.highlightables.includes(nativeElement)) {
+      this.highlightables.splice(this.highlightables.indexOf(nativeElement), 1, newElement);
+      this.bindEvents(newElement);
+    }
   }
 
   /**
@@ -1365,11 +1694,11 @@ export default class Comment extends CommentSkeleton {
         .clone()
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
-      const classes = ['.cd-signature'];
+      const selectorParts = ['.cd-signature', '.cd-editMark'];
       if (cd.config.unsignedClass) {
-        classes.push(`.${cd.config.unsignedClass}`);
+        selectorParts.push(`.${cd.config.unsignedClass}`);
       }
-      const selector = classes.join(', ');
+      const selector = selectorParts.join(', ');
       $dummy.find(selector).remove();
       let text = $dummy.cdGetText();
       if (cleanUp) {
@@ -1642,17 +1971,21 @@ export default class Comment extends CommentSkeleton {
       match.hasIdMatched = this.id === match.id;
 
       if (previousComments.length) {
+        match.hasPreviousCommentsDataMatched = false;
+        match.hasPreviousCommentDataMatched = false;
+
         for (let i = 0; i < previousComments.length; i++) {
           const signature = signatures[match.id - 1 - i];
+          if (!signature) break;
+
           // At least one coincided comment is enough if the second is unavailable.
           match.hasPreviousCommentsDataMatched = (
-            signature &&
             signature.timestamp === previousComments[i].timestamp &&
             signature.author === previousComments[i].author
           );
 
           // Many consecutive comments with the same author and timestamp.
-          if (match.isPreviousCommentsDataEqual !== false && signature) {
+          if (match.isPreviousCommentsDataEqual !== false) {
             match.isPreviousCommentsDataEqual = (
               match.timestamp === signature.timestamp &&
               match.author === signature.author
@@ -1670,21 +2003,19 @@ export default class Comment extends CommentSkeleton {
         match.hasPreviousCommentDataMatched = match.id === 0;
       }
 
+      match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
       Object.assign(match, this.adjustCommentBeginning(match));
       match.hasHeadlineMatched = this.followsHeading ?
         (
           match.headingMatch &&
-          this.getSection() &&
-          this.getSection().headline &&
+          this.getSection()?.headline &&
           (
             normalizeCode(removeWikiMarkup(match.headlineCode)) ===
             normalizeCode(this.getSection().headline)
           )
         ) :
         !match.headingMatch;
-
-      const codeToCompare = removeWikiMarkup(match.code);
-      match.overlap = calculateWordsOverlap(this.getText(), codeToCompare);
+      match.overlap = calculateWordsOverlap(this.getText(), removeWikiMarkup(match.code));
 
       match.score = (
         (
@@ -1702,8 +2033,8 @@ export default class Comment extends CommentSkeleton {
           // There are always problems with first comments as there are no previous comments to
           // compare the signatures of and it's harder to tell the match, so we use a bit ugly
           // solution here, although it should be quite reliable: the comment's firstness, matching
-          // author, date, and headline. Another option is to look for next comments, not for
-          // previous.
+          // author, date, and headline. A false negative will take place when the comment is no
+          // longer first. Another option is to look for next comments, not for previous.
           (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
         ) * 2 +
         match.overlap +
@@ -1803,16 +2134,16 @@ export default class Comment extends CommentSkeleton {
       );
       let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
-      // Hotfix for comments inside a table (barnstars, for example).
-      if (adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')) {
-        adjustedCodeInBetween += '|}\n';
-      }
-
       if (adjustedCodeInBetween === undefined) {
         throw new CdError({
           type: 'parse',
           code: 'findPlace',
         });
+      }
+
+      // Hotfix for comments inside a table (barnstars, for example).
+      if (adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')) {
+        adjustedCodeInBetween += '|}\n';
       }
 
       // If the comment is to be put after a comment with different indentation characters, use
@@ -2024,7 +2355,118 @@ export default class Comment extends CommentSkeleton {
    * @type {Page}
    */
   getSourcePage() {
-    return this.getSection() ? this.getSection().getSourcePage() : cd.g.CURRENT_PAGE;
+    const section = this.getSection();
+    return section ? section.getSourcePage() : cd.g.CURRENT_PAGE;
+  }
+
+  /**
+   * Show a diff of changes in the comment between the current revision ID and the provided one.
+   *
+   * @param {number} comparedRevisionId
+   * @throws {CdError}
+   */
+  async showDiff(comparedRevisionId) {
+    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
+
+    let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
+    let revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
+
+    const revisionsRequest = cd.g.api.post({
+      action: 'query',
+      revids: [revisionIdLesser, revisionIdGreater],
+      prop: 'revisions',
+      rvslots: 'main',
+      rvprop: ['ids', 'content'],
+      redirects: true,
+      formatversion: 2,
+    }).catch(handleApiReject);
+
+    const compareRequest = cd.g.api.post({
+      action: 'compare',
+      fromtitle: this.getSourcePage().name,
+      fromrev: revisionIdLesser,
+      torev: revisionIdGreater,
+      prop: ['diff'],
+      formatversion: 2,
+    }).catch(handleApiReject);
+
+    let [revisionsResp, compareResp] = await Promise.all([
+      revisionsRequest,
+      compareRequest,
+      mw.loader.using('mediawiki.diff.styles'),
+    ]);
+
+    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
+    if (!revisions) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    const lineNumbers = [[], []];
+    revisions.forEach((revision, i) => {
+      const pageCode = revision.slots.main.content;
+      const inCode = this.locateInCode(pageCode);
+      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
+      const newlinesInComment = (
+        pageCode.slice(inCode.lineStartIndex, inCode.endIndex).match(/\n/g) ||
+        []
+      );
+      const startLineNumber = newlinesBeforeComment.length + 1;
+      const endLineNumber = startLineNumber + newlinesInComment.length;
+      for (let j = startLineNumber; j <= endLineNumber; j++) {
+        lineNumbers[i].push(j);
+      }
+    });
+
+    const body = compareResp?.compare?.body;
+    if (!body) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    const $diff = $(cd.util.wrapDiffBody(body));
+    let currentLineNumbers = [];
+    let cleanDiffBody = '';
+    $diff.find('tr').each((i, tr) => {
+      const $tr = $(tr);
+      const $lineNumbers = $tr.children('.diff-lineno');
+      for (let j = 0; j < $lineNumbers.length; j++) {
+        const match = $lineNumbers.eq(j).text().match(/\d+/);
+        currentLineNumbers[j] = Number((match || [])[0]);
+        if (!currentLineNumbers[j]) {
+          throw new CdError({
+            type: 'parse',
+          });
+        }
+        if (j === 1) return;
+      }
+      if (!$tr.children('.diff-marker').length) return;
+      let addToDiff = false;
+      for (let j = 0; j < 2; j++) {
+        if (!$tr.children().eq(j * 2).hasClass('diff-empty')) {
+          if (lineNumbers[j].includes(currentLineNumbers[j])) {
+            addToDiff = true;
+          }
+          currentLineNumbers[j]++;
+        }
+      }
+      if (addToDiff) {
+        cleanDiffBody += $tr.prop('outerHTML');
+      }
+    });
+    const $cleanDiff = $(cd.util.wrapDiffBody(cleanDiffBody));
+    if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
+      throw new CdError({
+        type: 'parse',
+        message: cd.s('comment-edited-diff-empty'),
+      });
+    }
+
+    OO.ui.alert($cleanDiff, { size: 'larger' });
   }
 
   /**
@@ -2052,8 +2494,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Object with the same structure as {@link module:CommentSkeleton} has. (It comes from a web
-   * worker so its constuctor is lost.)
+   * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
+   * web worker so its constuctor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
    */
@@ -2062,21 +2504,25 @@ export default class Comment extends CommentSkeleton {
    * Turn comment array into object with section anchors as keys.
    *
    * @param {CommentSkeletonLike[]|Comment[]} comments
-   * @returns {object}
+   * @returns {Map}
    * @private
    */
   static groupBySection(comments) {
-    const commentsBySection = {};
+    const commentsBySection = new Map();
     comments.forEach((comment) => {
-      const section = comment instanceof Comment ? comment.getSection() : comment.section;
-
-      // "_" is an impossible id for a section. We assign it to the lead section.
-      const anchor = section === null ? '_' : section.anchor;
-
-      if (!commentsBySection[anchor]) {
-        commentsBySection[anchor] = [];
+      let sectionOrAnchor;
+      if (comment instanceof Comment) {
+        sectionOrAnchor = comment.getSection();
+      } else if (comment.section) {
+        sectionOrAnchor = Section.search(comment.section) || comment.section.anchor;
+      } else {
+        sectionOrAnchor = comment.section;
       }
-      commentsBySection[anchor].push(comment);
+
+      if (!commentsBySection.get(sectionOrAnchor)) {
+        commentsBySection.set(sectionOrAnchor, []);
+      }
+      commentsBySection.get(sectionOrAnchor).push(comment);
     });
 
     return commentsBySection;
@@ -2134,7 +2580,7 @@ export default class Comment extends CommentSkeleton {
     // margin and not practically reachable, unless when there is only few comments. Usually the
     // cycle finishes after a few steps.
     for (let i = 0; i < cd.comments.length; i++) {
-      if (currentComment.isInViewport(true)) {
+      if (currentComment.isInViewport()) {
         foundComment = currentComment;
         break;
       }

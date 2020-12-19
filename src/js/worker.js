@@ -92,22 +92,117 @@ function parse() {
     }
   });
 
+  cd.debug.startTimer('prepare comments and sections');
+  cd.debug.startTimer('section data');
+  cd.sections.forEach((section) => {
+    section.parentTree = section.getParentTree();
+    section.firstCommentAnchor = section.comments[0]?.anchor;
+  });
+  cd.debug.stopTimer('section data');
+
   cd.comments.forEach((comment) => {
+    cd.debug.startTimer('comment data');
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;
     });
     const section = comment.getSection();
-    comment.section = section ?
-      {
-        headline: section.headline,
-        anchor: section.anchor,
-      } :
-      null;
+    cd.debug.startTimer('comment keepWorkerSafeValues');
+    comment.section = section ? keepWorkerSafeValues(section) : null;
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
+      comment.parentAnchor = comment.parent.anchor;
       comment.toMe = comment.parent.isOwn;
     }
+    cd.debug.stopTimer('comment keepWorkerSafeValues');
+    cd.debug.stopTimer('comment data');
+    comment.elements[0].removeAttribute('id');
+    cd.debug.startTimer('comment.elementHtmls');
+    comment.elementHtmls = comment.elements.map((element) => {
+      cd.debug.startTimer('hideDynamicComponents');
+      element.removeAttribute('data-comment-id');
+
+      if (/^H[1-6]$/.test(element.tagName)) {
+        // Keep only the headline, as other elements contain dynamic identificators.
+        const headlineElement = element.getElementsByClassName('mw-headline')[0];
+        if (headlineElement) {
+          headlineElement.getElementsByClassName('mw-headline-number')[0]?.remove();
+          element.children
+            .slice()
+            .reverse()
+            .forEach((element) => {
+              element.remove();
+            });
+          headlineElement.children.forEach((child) => {
+            element.appendChild(child);
+          });
+        }
+      }
+
+      element.getElementsByClassName('autonumber').forEach((element) => {
+        element.children[0]?.remove();
+      });
+
+      comment.hiddenElementData = [];
+      const elementsToHide = [
+        ...element.getElementsByClassName('autonumber'),
+        ...element.getElementsByClassName('reference'),
+        ...element.getElementsByClassName('references'),
+        ...element.getElementsByTagName('style'),
+        ...element.getElementsByTagName('link'),
+      ];
+      elementsToHide.forEach((element) => {
+        let type;
+        if (element.classList.contains('reference')) {
+          type = 'reference';
+        } else if (element.classList.contains('references')) {
+          type = 'references';
+        } else if (element.classList.contains('autonumber')) {
+          type = 'autonumber';
+        }
+
+        const index = comment.hiddenElementData.push({
+          type,
+          tagName: element.tagName,
+          html: element.outerHTML,
+        });
+        const textNode = cd.g.rootElement.createTextNode(`\x01${index}_${type}\x02`);
+        element.parentNode.insertBefore(textNode, element);
+        element.remove();
+      });
+      cd.debug.stopTimer('hideDynamicComponents');
+
+      return element.outerHTML;
+    });
+    cd.debug.stopTimer('comment.elementHtmls');
+
+    /*
+      We can't use outerHTML for comparing comment revisions as the difference may be in div vs. dd
+      (li) tags in this case: This creates a dd tag.
+
+        : Comment. [signature]
+
+      This creates a div tag for the first comment.
+
+        : Comment. [signature]
+        :: Reply. [signature]
+
+      So the HTML is "<dd><div>...</div><dl>...</dl></dd>". A newline also appears before </div>, so
+      we need to trim.
+     */
+    cd.debug.startTimer('comment.innerHtml');
+    comment.innerHtml = comment.elements.map((element) => element.innerHTML).join('\n').trim();
+    cd.debug.stopTimer('comment.innerHtml');
+
+    cd.debug.startTimer('comment.text');
+    comment.signatureElement.remove();
+    comment.text = comment.elements.map((element) => element.textContent).join('\n');
+    cd.debug.stopTimer('comment.text');
+
+    cd.debug.startTimer('comment.elementTagNames');
+    comment.elementTagNames = comment.elements.map((element) => element.tagName);
+    cd.debug.stopTimer('comment.elementTagNames');
   });
+  cd.debug.stopTimer('prepare comments and sections');
 }
 
 /**
@@ -126,6 +221,7 @@ function restoreFunc(code) {
       code = '(' + code + ')';
     }
   }
+
   // FIXME: Any idea how to avoid using eval() here?
   return eval(code);
 }
@@ -152,7 +248,7 @@ function onMessageFromWindow(e) {
     clearTimeout(alarmTimeout);
   }
 
-  if (message.type === 'parse') {
+  if (message.type.startsWith('parse')) {
     cd.debug.startTimer('worker operations');
 
     Object.assign(cd.g, message.g);
@@ -180,7 +276,7 @@ function onMessageFromWindow(e) {
     parse();
 
     postMessage({
-      type: 'parse',
+      type: message.type,
       revisionId: message.revisionId,
       comments: cd.comments.map(keepWorkerSafeValues),
       sections: cd.sections.map(keepWorkerSafeValues),

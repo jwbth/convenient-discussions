@@ -49,11 +49,11 @@ export function makeRequestNoTimers(params, method = 'post') {
  * shown, so we automatically load modules.
  *
  * @param {string} code
- * @param {object} [options]
+ * @param {object} [customOptions]
  * @returns {Promise}
  * @throws {CdError}
  */
-export async function parseCode(code, options) {
+export async function parseCode(code, customOptions) {
   const defaultOptions = {
     action: 'parse',
     text: code,
@@ -63,7 +63,8 @@ export async function parseCode(code, options) {
     disablelimitreport: true,
     formatversion: 2,
   };
-  return cd.g.api.post(Object.assign({}, defaultOptions, options)).then(
+  const options = Object.assign({}, defaultOptions, customOptions);
+  return cd.g.api.post(options).then(
     (resp) => {
       const html = resp.parse?.text;
       if (html) {
@@ -77,7 +78,7 @@ export async function parseCode(code, options) {
       }
 
       const parsedSummary = resp.parse.parsedsummary;
-      if (options?.summary && !parsedSummary) {
+      if (customOptions?.summary && !parsedSummary) {
         throw new CdError({
           type: 'api',
           code: 'noData',
@@ -333,14 +334,14 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
   const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;
   while ((nextUsers = usersToRequest.splice(0, limit).join('|'))) {
-    const params = {
+    const options = {
       action: 'query',
       list: 'users',
       ususers: nextUsers,
       usprop: 'gender',
       formatversion: 2,
     };
-    const resp = await (noTimers ? makeRequestNoTimers(params) : cd.g.api.post(params))
+    const resp = await (noTimers ? makeRequestNoTimers(options) : cd.g.api.post(options))
       .catch(handleApiReject);
     const users = resp.query?.users;
     if (!users) {
