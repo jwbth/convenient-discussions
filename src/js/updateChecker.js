@@ -458,7 +458,7 @@ async function sendNotifications(comments) {
     const comment = notifyAboutDesktop[0];
     if (notifyAboutDesktop.length === 1) {
       if (comment.toMe) {
-        const where = comment.section.headline ?
+        const where = comment.section?.headline ?
           cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
           '';
         body = cd.s(
@@ -473,7 +473,7 @@ async function sendNotifications(comments) {
           'notification-insection-desktop',
           comment.author.name,
           comment.author,
-          comment.section.headline,
+          comment.section?.headline,
           cd.g.CURRENT_PAGE.name
         );
       }
