@@ -471,12 +471,12 @@ export default class Comment extends CommentSkeleton {
     if (this.isDeleted) {
       this.underlay.classList.add('cd-commentUnderlay-deleted');
       if (this.replyButton) {
-        this.replyButton.classList.remove('oo-ui-widget-disabled');
-        this.replyButton.classList.add('oo-ui-widget-enabled');
+        this.replyButton.classList.add('oo-ui-widget-disabled');
+        this.replyButton.classList.remove('oo-ui-widget-enabled');
       }
       if (this.editButton) {
-        this.editButton.classList.remove('oo-ui-widget-disabled');
-        this.editButton.classList.add('oo-ui-widget-enabled');
+        this.editButton.classList.add('oo-ui-widget-disabled');
+        this.editButton.classList.remove('oo-ui-widget-enabled');
       }
     } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
       this.underlay.classList.remove('cd-commentUnderlay-deleted');
