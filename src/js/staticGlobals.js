@@ -34,7 +34,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_UNDERLAY_FOCUSED_COLOR: '#eaf3ff',
+  COMMENT_FOCUSED_COLOR: '#eaf3ff',
 
   /**
    * Underlay color for target comments.
@@ -42,7 +42,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_UNDERLAY_TARGET_COLOR: '#ffedb8',
+  COMMENT_TARGET_COLOR: '#ffedb8',
 
   /**
    * Underlay color for new comments.
@@ -50,7 +50,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_UNDERLAY_NEW_COLOR: '#e8ffd1',
+  COMMENT_NEW_COLOR: '#e8ffd1',
 
   /**
    * Underlay color for own comments.
@@ -58,7 +58,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_UNDERLAY_OWN_COLOR: '#f7ebff',
+  COMMENT_OWN_COLOR: '#f7ebff',
 
   /**
    * Underlay color for deleted comments.
@@ -66,7 +66,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_UNDERLAY_DELETED_COLOR: '#fee7e6',
+  COMMENT_DELETED_COLOR: '#fee7e6',
 
   /**
    * Size of the underlay's side margin in pixels.

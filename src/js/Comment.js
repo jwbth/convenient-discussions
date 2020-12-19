@@ -643,9 +643,9 @@ export default class Comment extends CommentSkeleton {
   highlightTarget() {
     this.isTarget = true;
 
-    // We don't take the color from cd.g.COMMENT_UNDERLAY_TARGET_COLOR as it may be overriden by the
-    // user in their personal CSS.
-    this.flash($(document.documentElement).css('--cd-comment-underlay-target-color'), 1500, () => {
+    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
+    // their personal CSS.
+    this.flash($(document.documentElement).css('--cd-comment-target-color'), 1500, () => {
       this.isTarget = false;
     });
   }
@@ -680,9 +680,9 @@ export default class Comment extends CommentSkeleton {
     this.unhighlightTimeout = setTimeout(() => {
       // These comment properties may get assigned after the flash() call.
       if (this.isFocused) {
-        finalColor = $(document.documentElement).css('--cd-comment-underlay-focused-color');
+        finalColor = $(document.documentElement).css('--cd-comment-focused-color');
       } else if (this.isNew && !this.isOwn) {
-        finalColor = $(document.documentElement).css('--cd-comment-underlay-new-color');
+        finalColor = $(document.documentElement).css('--cd-comment-new-color');
       }
       if (finalColor === color) {
         finalColor = this.backgroundColor || 'rgba(0, 0, 0, 0)';
@@ -713,7 +713,7 @@ export default class Comment extends CommentSkeleton {
    * storage.
    */
   flashNew() {
-    this.flash($(document.documentElement).css('--cd-comment-underlay-new-color'), 500);
+    this.flash($(document.documentElement).css('--cd-comment-new-color'), 500);
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
       const articleId = mw.config.get('wgArticleId');
