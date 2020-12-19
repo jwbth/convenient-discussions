@@ -8,7 +8,7 @@ import CdError from './CdError';
 import cd from './cd';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
 import { handleApiReject, isProbablyTalkPage } from './util';
-import { makeRequestNoTimers, parseCode, unknownApiErrorText } from './apiWrappers';
+import { makeBackgroundRequest, parseCode, unknownApiErrorText } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
 
 /**
@@ -320,17 +320,13 @@ export default class Page {
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
    * @param {boolean} [customOptions]
-   * @param {object} [options={}]
-   * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
-   *   background tabs if the browser throttles them).
-   * @param {boolean} [options.markAsRead=false] Mark the current page as read in the watchlist.
+   * @param {boolean} [doBackgroundRequest=false] Make a request that won't set the process on hold
+   *   when the tab is in the background.
+   * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
    * @returns {object}
    * @throws {CdError}
    */
-  async parse(customOptions, {
-    noTimers = false,
-    markAsRead = false,
-  } = {}) {
+  async parse(customOptions, doBackgroundRequest = false, markAsRead = false) {
     const defaultOptions = {
       action: 'parse',
 
@@ -347,8 +343,8 @@ export default class Page {
       delete options.page;
     }
 
-    const request = noTimers ?
-      makeRequestNoTimers(options).catch(handleApiReject) :
+    const request = doBackgroundRequest ?
+      makeBackgroundRequest(options).catch(handleApiReject) :
       cd.g.api.post(options).catch(handleApiReject);
 
     // We make the GET request that marks the page as read at the same time with the parse request,
@@ -373,11 +369,11 @@ export default class Page {
    * Get a list of revisions of the page ("redirects" is set to true by default).
    *
    * @param {object} [customOptions={}]
-   * @param {object} [options={}]
-   * @param {boolean} [options.noTimers=false]
+   * @param {boolean} [doBackgroundRequest=false] Make a request that won't set the process on hold
+   *   when the tab is in the background.
    * @returns {Array}
    */
-  async getRevisions(customOptions = {}, { noTimers = false } = {}) {
+  async getRevisions(customOptions = {}, doBackgroundRequest = false) {
     const defaultOptions = {
       action: 'query',
       titles: cd.g.CURRENT_PAGE.name,
@@ -388,8 +384,8 @@ export default class Page {
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    const request = noTimers ?
-      makeRequestNoTimers(options).catch(handleApiReject) :
+    const request = doBackgroundRequest ?
+      makeBackgroundRequest(options).catch(handleApiReject) :
       cd.g.api.post(options).catch(handleApiReject);
 
     const revisions = (await request).query?.pages?.[0]?.revisions;

@@ -93,7 +93,7 @@ async function checkForUpdates() {
     const revisions = await cd.g.CURRENT_PAGE.getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
-    }, { noTimers: true });
+    }, true);
 
     if (
       revisions.length &&
@@ -131,7 +131,7 @@ async function processRevisionsIfNeeded() {
     rvprop: ['ids'],
     rvstart: new Date(cd.g.previousVisitUnixTime * 1000).toISOString(),
     rvlimit: 1,
-  }, { noTimers: true });
+  }, true);
 
   previousVisitRevisionId = revisions[0]?.revid;
 
@@ -611,7 +611,7 @@ async function processComments(comments, revisionId) {
   const authors = newComments
     .map((comment) => comment.author)
     .filter(unique);
-  await getUserGenders(authors, { noTimers: true });
+  await getUserGenders(authors, true);
 
   if (!isPageStillOutdated(revisionId)) return;
 
@@ -732,10 +732,7 @@ const updateChecker = {
     const {
       text,
       revid: revisionId,
-    } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, {
-      noTimers: true,
-      markAsRead: false,
-    }) || {};
+    } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, true) || {};
     cd.g.worker.postMessage({
       type: revisionToParseId ? 'parseRevision' : 'parse',
       revisionId,
