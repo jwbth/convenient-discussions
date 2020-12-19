@@ -26,11 +26,11 @@ export default {
    * Recalculate positions of the highlighted comments' (usually, new or own) layers and redraw if
    * they've changed.
    *
-   * @param {boolean} removeUnhighlighted Whether to remove the unhighlighted comments' layers.
-   * @param {boolean} redrawAll Whether to redraw all underlays and not stop at first two unmoved.
+   * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
+   * @param {boolean} [redrawAll] Whether to redraw all underlays and not stop at first two unmoved.
    */
-  redrawIfNecessary(removeUnhighlighted = false, redrawAll) {
-    if (!this.underlays.length || document.hidden) return;
+  redrawIfNecessary(removeUnhighlighted = false, redrawAll = false) {
+    if (!this.underlays.length || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
@@ -66,7 +66,7 @@ export default {
           cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
         );
         const isMoved = comment.configureLayers({
-          // If a comment was hidden, then became visible, we need to add it.
+          // If a comment was hidden, then became visible, we need to add the layers.
           doAdd: true,
 
           doUpdate: false,
