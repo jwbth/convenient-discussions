@@ -637,7 +637,7 @@ async function processComments(comments, revisionId) {
   sendDesktopNotifications(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
 
-  cd.debug.logAndResetEverything('processComments end');
+  cd.debug.logAndResetEverything();
 }
 
 /**

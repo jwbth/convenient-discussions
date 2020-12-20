@@ -71,6 +71,9 @@ export default {
 	 * @param {string} label
 	 */
 	startTimer(label) {
+		if (this.timerTotal[label] === undefined) {
+			this.timerTotal[label] = 0;
+		}
 		this.timerStartTimestamps[label] = Date.now();
 	},
 
@@ -81,18 +84,15 @@ export default {
 	 */
 	stopTimer(label) {
 		if (this.timerStartTimestamps[label] === undefined) return;
-		if (this.timerTotal[label] === undefined) {
-			this.timerTotal[label] = 0;
-		}
-		const thisTime = Date.now() - this.timerStartTimestamps[label];
-		this.timerTotal[label] += thisTime;
+		const interval = Date.now() - this.timerStartTimestamps[label];
+		this.timerTotal[label] += interval;
 		delete this.timerStartTimestamps[label];
 
 		if (this.timerAllRunsTotal[label] === undefined) {
 			this.timerAllRunsTotal[label] = 0;
 			this.timerRunCount[label] = 0;
 		}
-		this.timerAllRunsTotal[label] += thisTime;
+		this.timerAllRunsTotal[label] += interval;
 		this.timerRunCount[label]++;
 	},
 

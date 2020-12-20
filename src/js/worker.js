@@ -282,7 +282,6 @@ function onMessageFromWindow(e) {
       sections: cd.sections.map(keepWorkerSafeValues),
     });
 
-    cd.debug.stopTimer('worker operations');
     cd.debug.logAndResetEverything();
   }
 }
