@@ -28,7 +28,7 @@ import {
 import { getUserGenders } from './apiWrappers';
 
 let lastCheckedRevisionId;
-let notifiedAbout;
+let commentsNotifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
 let submittedCommentAnchor;
@@ -93,7 +93,7 @@ async function checkForUpdates() {
     const revisions = await cd.g.CURRENT_PAGE.getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
-    }, { noTimers: true });
+    }, true);
 
     if (
       revisions.length &&
@@ -131,7 +131,7 @@ async function processRevisionsIfNeeded() {
     rvprop: ['ids'],
     rvstart: new Date(cd.g.previousVisitUnixTime * 1000).toISOString(),
     rvlimit: 1,
-  }, { noTimers: true });
+  }, true);
 
   previousVisitRevisionId = revisions[0]?.revid;
 
@@ -348,48 +348,38 @@ function checkForNewEdits() {
 }
 
 /**
- * Send ordinary and desktop notifications to the user.
+ * Send ordinary notifications to the user.
  *
  * @param {CommentSkeletonLike[]} comments
  * @private
  */
-async function sendNotifications(comments) {
-  const notifyAbout = comments.filter((comment) => (
-    !notifiedAbout.some((commentNotifiedAbout) => commentNotifiedAbout.anchor === comment.anchor)
-  ));
-
-  let notifyAboutDesktop = [];
-  if (cd.settings.desktopNotifications === 'all') {
-    notifyAboutDesktop = notifyAbout;
-  } else if (cd.settings.desktopNotifications === 'toMe') {
-    notifyAboutDesktop = notifyAbout.filter((comment) => comment.toMe);
-  }
-
-  let notifyAboutOrdinary = [];
+function sendOrdinaryNotifications(comments) {
+  let filteredComments = [];
   if (cd.settings.notifications === 'all') {
-    notifyAboutOrdinary = notifyAbout;
+    filteredComments = comments;
   } else if (cd.settings.notifications === 'toMe') {
-    notifyAboutOrdinary = notifyAbout.filter((comment) => comment.toMe);
+    filteredComments = comments.filter((comment) => comment.toMe);
   }
-  if (cd.settings.notifications !== 'none' && notifyAboutOrdinary.length) {
+
+  if (cd.settings.notifications !== 'none' && filteredComments.length) {
     // Combine with content of notifications that were displayed but are still open (i.e., the user
     // most likely didn't see them because the tab is in the background). In the past there could be
     // more than one notification, now there can be only one.
     const openNotification = getNotifications()
       .find((data) => data.comments && data.notification.isOpen);
     if (openNotification) {
-      notifyAboutOrdinary.push(...openNotification.comments);
+      filteredComments.push(...openNotification.comments);
     }
   }
 
-  if (notifyAboutOrdinary.length) {
+  if (filteredComments.length) {
     let html;
     const formsDataWillNotBeLost = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
       ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
       '';
     const reloadHtml = cd.sParse('notification-reload', formsDataWillNotBeLost);
-    if (notifyAboutOrdinary.length === 1) {
-      const comment = notifyAboutOrdinary[0];
+    if (filteredComments.length === 1) {
+      const comment = filteredComments[0];
       if (comment.toMe) {
         const where = comment.watchedSectionHeadline ?
           (
@@ -415,12 +405,12 @@ async function sendNotifications(comments) {
         );
       }
     } else {
-      const isCommonSection = notifyAboutOrdinary.every((comment) => (
-        comment.watchedSectionHeadline === notifyAboutOrdinary[0].watchedSectionHeadline
+      const isCommonSection = filteredComments.every((comment) => (
+        comment.watchedSectionHeadline === filteredComments[0].watchedSectionHeadline
       ));
       let section;
       if (isCommonSection) {
-        section = notifyAboutOrdinary[0].watchedSectionHeadline;
+        section = filteredComments[0].watchedSectionHeadline;
       }
       const where = (
         cd.mws('word-separator') +
@@ -442,7 +432,7 @@ async function sendNotifications(comments) {
         mayBeInterestingString;
 
       html = (
-        cd.sParse('notification-newcomments', notifyAboutOrdinary.length, where, mayBeInteresting) +
+        cd.sParse('notification-newcomments', filteredComments.length, where, mayBeInteresting) +
         ' ' +
         reloadHtml
       );
@@ -450,20 +440,31 @@ async function sendNotifications(comments) {
 
     closeNotifications(false);
     const $body = cd.util.wrap(html);
-    const notification = addNotification([$body], { comments: notifyAboutOrdinary });
+    const notification = addNotification([$body], { comments: filteredComments });
     notification.$notification.on('click', () => {
-      reloadPage({ commentAnchor: notifyAboutOrdinary[0].anchor });
+      reloadPage({ commentAnchor: filteredComments[0].anchor });
     });
   }
+}
 
-  if (
-    !document.hasFocus() &&
-    Notification.permission === 'granted' &&
-    notifyAboutDesktop.length
-  ) {
+/**
+ * Send desktop notifications to the user.
+ *
+ * @param {CommentSkeletonLike[]} comments
+ * @private
+ */
+function sendDesktopNotifications(comments) {
+  let filteredComments = [];
+  if (cd.settings.desktopNotifications === 'all') {
+    filteredComments = comments;
+  } else if (cd.settings.desktopNotifications === 'toMe') {
+    filteredComments = comments.filter((comment) => comment.toMe);
+  }
+
+  if (!document.hasFocus() && Notification.permission === 'granted' && filteredComments.length) {
     let body;
-    const comment = notifyAboutDesktop[0];
-    if (notifyAboutDesktop.length === 1) {
+    const comment = filteredComments[0];
+    if (filteredComments.length === 1) {
       if (comment.toMe) {
         const where = comment.section?.headline ?
           cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
@@ -485,12 +486,12 @@ async function sendNotifications(comments) {
         );
       }
     } else {
-      const isCommonSection = notifyAboutDesktop.every((comment) => (
-        comment.watchedSectionHeadline === notifyAboutDesktop[0].watchedSectionHeadline
+      const isCommonSection = filteredComments.every((comment) => (
+        comment.watchedSectionHeadline === filteredComments[0].watchedSectionHeadline
       ));
       let section;
       if (isCommonSection) {
-        section = notifyAboutDesktop[0].watchedSectionHeadline;
+        section = filteredComments[0].watchedSectionHeadline;
       }
       const where = section ?
         cd.mws('word-separator') + cd.s('notification-part-insection', section) :
@@ -508,7 +509,7 @@ async function sendNotifications(comments) {
 
       body = cd.s(
         'notification-newcomments-desktop',
-        notifyAboutDesktop.length,
+        filteredComments.length,
         where,
         cd.g.CURRENT_PAGE.name,
         mayBeInteresting
@@ -520,7 +521,7 @@ async function sendNotifications(comments) {
 
       // We use a tag so that there aren't duplicate notifications when the same page is opened in
       // two tabs. (Seems it doesn't work? :-/)
-      tag: 'convenient-discussions-' + notifyAboutDesktop[notifyAboutDesktop.length - 1].anchor,
+      tag: 'convenient-discussions-' + filteredComments[filteredComments.length - 1].anchor,
     });
     notification.onclick = () => {
       parent.focus();
@@ -534,8 +535,6 @@ async function sendNotifications(comments) {
       });
     };
   }
-
-  notifiedAbout.push(...notifyAbout);
 }
 
 /**
@@ -611,9 +610,11 @@ async function processComments(comments, revisionId) {
   const authors = newComments
     .map((comment) => comment.author)
     .filter(unique);
-  await getUserGenders(authors, { noTimers: true });
+  await getUserGenders(authors, true);
 
   if (!isPageStillOutdated(revisionId)) return;
+
+  cd.debug.startTimer('processComments end');
 
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
@@ -628,7 +629,15 @@ async function processComments(comments, revisionId) {
   toc.addNewComments(newCommentsBySection);
 
   Section.addNewCommentsNotifications(newCommentsBySection);
-  sendNotifications(interestingNewComments);
+
+  const commentsToNotifyAbout = interestingNewComments.filter((comment) => (
+    !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor)
+  ));
+  sendOrdinaryNotifications(commentsToNotifyAbout);
+  sendDesktopNotifications(commentsToNotifyAbout);
+  commentsNotifiedAbout.push(...commentsToNotifyAbout);
+
+  cd.debug.logAndResetEverything('processComments end');
 }
 
 /**
@@ -698,7 +707,7 @@ const updateChecker = {
   async init(visitsRequest, keptData) {
     if (!cd.g.worker) return;
 
-    notifiedAbout = [];
+    commentsNotifiedAbout = [];
     this.relevantNewCommentAnchor = null;
     isBackgroundCheckArranged = false;
     previousVisitRevisionId = null;
@@ -732,10 +741,7 @@ const updateChecker = {
     const {
       text,
       revid: revisionId,
-    } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, {
-      noTimers: true,
-      markAsRead: false,
-    }) || {};
+    } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, true) || {};
     cd.g.worker.postMessage({
       type: revisionToParseId ? 'parseRevision' : 'parse',
       revisionId,

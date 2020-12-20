@@ -20,14 +20,13 @@ let currentAutocompletePromise;
 const autocompleteTimeout = 100;
 
 /**
- * Make a request that isn't subject to throttling when the tab is in the background (google "Chrome
- * throttles background tabs").
+ * Make a request that won't set the process on hold when the tab is in the background.
  *
  * @param {object} params
  * @param {string} [method='post']
  * @returns {Promise}
  */
-export function makeRequestNoTimers(params, method = 'post') {
+export function makeBackgroundRequest(params, method = 'post') {
   return new Promise((resolve, reject) => {
     cd.g.api[method](params, {
       success: (resp) => {
@@ -273,12 +272,7 @@ async function setOption(name, value, action) {
     });
   }
 
-  // Running the `postWithEditToken` method which involves timers seems to be the reason for the
-  // `setVisits()` call in `navPanel` to be postponed at least in Chrome until the tab is focused.
-  // That's my (jwbth) hypothesis which could be wrong. So I decided to test with
-  // `makeRequestNoTimers` and see if the issue with highlighting relatively old comments as new
-  // goes away.
-  const resp = await makeRequestNoTimers(cd.g.api.assertCurrentUser({
+  const resp = await makeBackgroundRequest(cd.g.api.assertCurrentUser({
     action: action,
     optionname: name,
 
@@ -322,12 +316,11 @@ export async function setGlobalOption(name, value) {
  * Request genders of a list of users. A gender may be `'male'`, `'female'`, or `'unknown'`.
  *
  * @param {User[]} users
- * @param {object} [options={}]
- * @param {boolean} [options.noTimers=false] Don't use timers (they can set the process on hold in
- *   background tabs if the browser throttles them).
+ * @param {boolean} [doBackgroundRequest=false] Make a request that won't set the process on hold when
+ *   the tab is in the background.
  * @throws {CdError}
  */
-export async function getUserGenders(users, { noTimers = false } = {}) {
+export async function getUserGenders(users, doBackgroundRequest = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender())
     .map((user) => user.name);
@@ -341,7 +334,7 @@ export async function getUserGenders(users, { noTimers = false } = {}) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const resp = await (noTimers ? makeRequestNoTimers(options) : cd.g.api.post(options))
+    const resp = await (doBackgroundRequest ? makeBackgroundRequest(options) : cd.g.api.post(options))
       .catch(handleApiReject);
     const users = resp.query?.users;
     if (!users) {
