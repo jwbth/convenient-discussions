@@ -383,9 +383,11 @@ function go() {
     let dataRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       dataRequest = loadData();
-      getUserInfo(true).catch((e) => {
-        console.warn(e);
-      });
+      if (!cd.g.IS_DIFF_PAGE) {
+        getUserInfo(true).catch((e) => {
+          console.warn(e);
+        });
+      }
     }
 
     mw.loader.using([
