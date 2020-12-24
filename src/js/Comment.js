@@ -2228,15 +2228,10 @@ export default class Comment extends CommentSkeleton {
 
           newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
         } else {
-          const startIndex = (
-            this.isOpeningSection && thisInCode.headingStartIndex !== undefined ?
-            thisInCode.headingStartIndex :
-            thisInCode.lineStartIndex
-          );
+          const startIndex = thisInCode.lineStartIndex;
           codeBeforeInsertion = pageCode.slice(0, startIndex);
-          const codeAfterInsertion = (
-            pageCode.slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length)
-          );
+          const codeAfterInsertion = pageCode
+            .slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length);
           newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         }
         break;
