@@ -247,10 +247,12 @@ export default {
     commentsBySection.forEach((comments, sectionOrAnchor) => {
       if (!sectionOrAnchor) return;
 
-      const anchor = typeof sectionOrAnchor === 'string' ? sectionOrAnchor : sectionOrAnchor.anchor;
-
-      // .first() in case of a collision with a section we added above with toc.addNewSections().
-      const $sectionLink = cd.g.$toc.find(`a[href="#${$.escapeSelector(anchor)}"]`).first();
+      // There could be a collision of hrefs between the existing section and not yet rendered
+      // section, so we compose the selector carefully.
+      const selector = typeof sectionOrAnchor === 'string' ?
+        `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]` :
+        `a[href="#${$.escapeSelector(sectionOrAnchor.anchor)}"]:not(.cd-toc-notRenderedSection a)`;
+      const $sectionLink = cd.g.$toc.find(selector);
       if (!$sectionLink.length) return;
 
       let $target = $sectionLink;
