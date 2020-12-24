@@ -17,7 +17,6 @@ import cd from './cd';
 import debug from './debug';
 import g from './staticGlobals';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
-import { keepWorkerSafeValues } from './util';
 import { resetCommentAnchors } from './timestamp';
 
 let firstRun = true;
@@ -100,14 +99,41 @@ function parse() {
   });
   cd.debug.stopTimer('section data');
 
+  let commentDangerousKeys = [
+    'cachedSection',
+    'elements',
+    'highlightables',
+    'parent',
+    'parser',
+    'parts',
+    'signatureElement',
+  ];
+  let sectionDangerousKeys = [
+    'cachedParentTree',
+    'comments',
+    'commentsInFirstChunk',
+    'elements',
+    'headlineElement',
+    'lastElementInFirstChunk',
+    'parser',
+  ];
+  const keepSafeValues = (obj, dangerousKeys) => {
+    const newObj = Object.assign({}, obj);
+    Object.keys(newObj).forEach((key) => {
+      if (dangerousKeys.includes(key)) {
+        delete newObj[key];
+      }
+    });
+    return newObj;
+  };
+
   cd.comments.forEach((comment) => {
     cd.debug.startTimer('comment data');
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;
     });
     const section = comment.getSection();
-    cd.debug.startTimer('comment keepWorkerSafeValues');
-    comment.section = section ? keepWorkerSafeValues(section) : null;
+    comment.section = section ? keepSafeValues(section, sectionDangerousKeys) : null;
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
       comment.parentAnchor = comment.parent.anchor;
@@ -202,6 +228,10 @@ function parse() {
     comment.elementTagNames = comment.elements.map((element) => element.tagName);
     cd.debug.stopTimer('comment.elementTagNames');
   });
+
+  cd.comments = cd.comments.map((comment) => keepSafeValues(comment, commentDangerousKeys));
+  cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
+
   cd.debug.stopTimer('prepare comments and sections');
 }
 
@@ -278,8 +308,8 @@ function onMessageFromWindow(e) {
     postMessage({
       type: message.type,
       revisionId: message.revisionId,
-      comments: cd.comments.map(keepWorkerSafeValues),
-      sections: cd.sections.map(keepWorkerSafeValues),
+      comments: cd.comments,
+      sections: cd.sections,
     });
 
     cd.debug.logAndResetEverything();

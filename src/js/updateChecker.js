@@ -742,12 +742,21 @@ const updateChecker = {
       text,
       revid: revisionId,
     } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, true) || {};
+
+    const disallowedNames = [
+      '$content',
+      '$root',
+      '$toc',
+      'rootElement',
+      'visits',
+      'watchedSections',
+    ];
     cd.g.worker.postMessage({
       type: revisionToParseId ? 'parseRevision' : 'parse',
       revisionId,
       text,
-      g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER']),
-      config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
+      g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER'], disallowedNames),
+      config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents'], disallowedNames),
     });
   },
 

@@ -556,14 +556,20 @@ export function insertText(input, text) {
  * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
  *
  * @param {object} obj
- * @param {Array} allowedFuncNames Names of the properties that should be passed to the worker
+ * @param {Array} [allowedFuncNames=[]] Names of the properties that should be passed to the worker
  *   despite their values are functions (they are passed in a stringified form).
+ * @param {Array} [disallowedNames=[]] Names of the properties that should be filtered out without
+ *   checking (allows to save time on greedy operations).
  * @returns {object}
  * @private
  */
-export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
+export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames = []) {
   const newObj = Object.assign({}, obj);
   Object.keys(newObj).forEach((key) => {
+    if (disallowedNames.includes(key)) {
+      delete newObj[key];
+      return;
+    }
     const val = newObj[key];
     if (
       typeof val === 'object' &&
