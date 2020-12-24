@@ -324,6 +324,7 @@ function checkForNewEdits() {
           const commentsData = [currentComment, newComment];
           comment.markAsEdited('edited', success, lastCheckedRevisionId, commentsData);
           isEditMarkUpdated = true;
+          comment.comparedHtml = newComment.innerHtml;
         }
       } else if (comment.isEdited) {
         comment.update(currentComment, newComment);

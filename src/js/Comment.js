@@ -931,7 +931,6 @@ export default class Comment extends CommentSkeleton {
       mw.hook('wikipage.content').add(this.$elements);
 
       delete this.cachedText;
-      this.comparedHtml = newComment.innerHtml;
       return true;
     } else {
       return false;
