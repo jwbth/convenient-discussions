@@ -1777,7 +1777,7 @@ export default class Comment extends CommentSkeleton {
 
     // This should be before the "this.level > 0" block to account for cases like
     // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp doesn't
-    // catch the comment because of a new line inside an "syntaxhighlight" element).
+    // catch the comment because of a new line inside a "syntaxhighlight" element).
     cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
       if (pattern.source[0] !== '^') {
         console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
@@ -1785,8 +1785,8 @@ export default class Comment extends CommentSkeleton {
       const match = code.match(pattern);
       if (match) {
         code = code.slice(match[0].length);
+        lineStartIndex = startIndex + match[0].lastIndexOf('\n') + 1;
         startIndex += match[0].length;
-        lineStartIndex += match[0].lastIndexOf('\n') + 1;
       }
     });
 
@@ -1796,8 +1796,8 @@ export default class Comment extends CommentSkeleton {
     if (this.level > 0) {
       const replaceIndentationChars = (s, before, chars) => {
         indentationChars = chars;
+        lineStartIndex = startIndex + before.length;
         startIndex += s.length;
-        lineStartIndex += before.length;
         return '';
       };
 
