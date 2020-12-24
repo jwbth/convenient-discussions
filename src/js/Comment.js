@@ -811,7 +811,11 @@ export default class Comment extends CommentSkeleton {
       $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
     }
 
-    this.$elements.last().append($span);
+    let $last = this.$elements.last();
+    if ($last.is('ul, ol, dl')) {
+      $last = $last.last();
+    }
+    $last.append($span);
 
     if (isNewVersionRendered) {
       this.flashNewOnSight();
