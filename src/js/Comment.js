@@ -242,8 +242,8 @@ export default class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
 
       // If the comment intersects more than one floating block, we better keep `overflow: hidden`
-      // to avoid bugs like where there are two floating block to the right with different leftmost
-      // positions, and the layer is more narrow than the comment.
+      // to avoid bugs like where there are two floating blocks to the right with different leftmost
+      // positions and the layer is more narrow than the comment.
       if (intersectsFloatingCount === 1) {
         this.elements.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
@@ -705,6 +705,7 @@ export default class Comment extends CommentSkeleton {
    */
   flashNew() {
     this.flash($(document.documentElement).css('--cd-comment-new-color'), 500);
+
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
       const articleId = mw.config.get('wgArticleId');
@@ -927,8 +928,9 @@ export default class Comment extends CommentSkeleton {
         .attr('data-comment-id', this.id)
         .first()
         .attr('id', this.anchor);
-      delete this.cachedText;
       mw.hook('wikipage.content').add(this.$elements);
+
+      delete this.cachedText;
       this.comparedHtml = newComment.innerHtml;
       return true;
     } else {
@@ -1315,7 +1317,7 @@ export default class Comment extends CommentSkeleton {
    * Locate the comment in the page source code and, if no `pageCode` is passed, set the results to
    * the `inCode` property. Otherwise, return the result.
    *
-   * @param {string} [pageCode] Page code, if different from `code` property of {@link
+   * @param {string} [pageCode] Page code, if different from the `code` property of {@link
    *   Comment#getSourcePage()}.
    * @param {string} [commentData] Comment data for comparison (can be set together with pageCode).
    * @returns {string|undefined}
@@ -1679,11 +1681,10 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment's text without a signature.
+   * Get the comment's text.
    *
-   * @param {boolean} [cleanUp=true]
+   * @param {boolean} [cleanUp=true] Whether to clean up the signature.
    * @returns {string}
-   * @private
    */
   getText(cleanUp = true) {
     if (this.cachedText === undefined) {
@@ -2256,11 +2257,11 @@ export default class Comment extends CommentSkeleton {
       let offsetParent;
       const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
       while (treeWalker.parentNode()) {
-        let style = treeWalker.currentNode.cdStyle;
+        let style = treeWalker.currentNode.conveneintDiscussionsStyle;
         if (!style) {
           // window.getComputedStyle is expensive, so we save the result to the node's property.
           style = window.getComputedStyle(treeWalker.currentNode);
-          treeWalker.currentNode.cdStyle = style;
+          treeWalker.currentNode.conveneintDiscussionsStyle = style;
         }
         if (['absolute', 'relative'].includes(style.position)) {
           offsetParent = treeWalker.currentNode;
@@ -2531,7 +2532,7 @@ export default class Comment extends CommentSkeleton {
       } else if (comment.section) {
         sectionOrAnchor = Section.search(comment.section) || comment.section.anchor;
       } else {
-        sectionOrAnchor = comment.section;
+        sectionOrAnchor = null;
       }
 
       if (!commentsBySection.get(sectionOrAnchor)) {

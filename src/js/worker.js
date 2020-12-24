@@ -139,7 +139,6 @@ function parse() {
       comment.parentAnchor = comment.parent.anchor;
       comment.toMe = comment.parent.isOwn;
     }
-    cd.debug.stopTimer('comment keepWorkerSafeValues');
     cd.debug.stopTimer('comment data');
     comment.elements[0].removeAttribute('id');
     cd.debug.startTimer('comment.elementHtmls');
