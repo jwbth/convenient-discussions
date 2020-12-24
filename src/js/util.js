@@ -447,7 +447,9 @@ export function getTopAndBottomIncludingMargins(el) {
 }
 
 /**
- * Whether two objects are the same by value. Doesn't handle complex cases.
+ * Whether two objects are the same by value. Doesn't handle complex cases. `undefined` values are
+ * treated as unexistent (this helps to compare values retrieved from the local storage as JSON:
+ * `JSON.stringify()` removes all `undefined` values as well).
  *
  * @param {object} object1 First object.
  * @param {object} object2 Second object.
@@ -478,8 +480,8 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
     return toPrimitiveValue(object1) === toPrimitiveValue(object2);
   }
 
-  const keys1 = Object.keys(object1);
-  const keys2 = Object.keys(object2);
+  const keys1 = Object.keys(object1).filter((key) => object1[key] !== undefined);
+  const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
 
   return (
     (keys1.length === keys2.length || doesInclude) &&

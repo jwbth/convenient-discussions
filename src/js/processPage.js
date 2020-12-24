@@ -331,14 +331,6 @@ function connectToAddTopicButtons() {
       }
 
       e.preventDefault();
-
-      // Clean up preloadConfig keys for possible future comparison using util.areObjectsEqual.
-      Object.keys(preloadConfig).forEach((key) => {
-        if (preloadConfig[key] === undefined) {
-          delete preloadConfig[key];
-        }
-      });
-
       createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));
