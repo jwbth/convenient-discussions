@@ -162,9 +162,9 @@ export default {
    * @memberof module:cd~convenientDiscussions.g
    */
   BAD_COMMENT_BEGINNINGS: [
-    /^<!--[^]*?--> *\n*/,
-    /^(?:----+|<hr>) *\n*/,
-    /^\{\|.*?\|\} *\n*(?=[*:#])/,
+    /^<!--[^]*?--> *\n+/,
+    /^(?:----+|<hr>) *\n+/,
+    /^\{\|.*?\|\} *\n+(?=[*:#])/,
   ],
 
   /**
