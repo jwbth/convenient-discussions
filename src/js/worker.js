@@ -230,6 +230,15 @@ function parse() {
   });
 
   cd.comments = cd.comments.map((comment) => keepSafeValues(comment, commentDangerousKeys));
+
+  cd.debug.startTimer('comments previousComments');
+  cd.comments.forEach((comment, i) => {
+    comment.previousComments = cd.comments
+      .slice(Math.max(0, i - 2), i)
+      .reverse();
+  });
+  cd.debug.stopTimer('comments previousComments');
+
   cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
 
   cd.debug.stopTimer('prepare comments and sections');

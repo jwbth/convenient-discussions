@@ -277,7 +277,8 @@ function checkForEditsSincePreviousVisit() {
         const comment = Comment.getCommentByAnchor(currentComment.anchor);
         if (!comment) return;
 
-        comment.markAsEdited('editedSince', true, previousVisitRevisionId);
+        const commentsData = [oldComment, currentComment];
+        comment.markAsEdited('editedSince', true, previousVisitRevisionId, commentsData);
       }
     }
   });
@@ -318,7 +319,8 @@ function checkForNewEdits() {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
           const success = comment.update(currentComment, newComment);
-          comment.markAsEdited('edited', success, lastCheckedRevisionId);
+          const commentsData = [currentComment, newComment];
+          comment.markAsEdited('edited', success, lastCheckedRevisionId, commentsData);
           isEditMarkUpdated = true;
         }
       } else if (comment.isEdited) {
