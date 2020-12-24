@@ -94,7 +94,7 @@ function parse() {
   cd.debug.startTimer('prepare comments and sections');
   cd.debug.startTimer('section data');
   cd.sections.forEach((section) => {
-    section.parentTree = section.getParentTree();
+    section.parentTree = section.getParentTree().map((section) => section.headline);
     section.firstCommentAnchor = section.comments[0]?.anchor;
   });
   cd.debug.stopTimer('section data');
