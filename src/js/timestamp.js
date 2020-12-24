@@ -35,10 +35,10 @@ export function parseTimestamp(timestamp, timezoneOffset) {
   // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
   timestamp = removeDirMarks(timestamp);
 
-  // Creating these regexps every time takes too long (say, 10 ms for 1000 runs on an average
+  // Creating these regexps every time takes too long (say, 10ms for 1000 runs on an average
   // machine), so we cache them.
   if (!parseTimestampRegexp) {
-    parseTimestampRegexp = new RegExp(`^([^]*)(${cd.g.TIMESTAMP_REGEXP.source})`);
+    parseTimestampRegexp = new RegExp(`^([^]*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["'»)])`);
     parseTimestampRegexpNoTimezone = new RegExp(
       `^([^]*)(${cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.source})`
     );
