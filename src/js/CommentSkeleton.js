@@ -133,8 +133,6 @@ export default class CommentSkeleton {
       throw new CdError();
     }
 
-    this.addAttributes();
-
     this.setLevels();
 
     /**
@@ -163,6 +161,8 @@ export default class CommentSkeleton {
     } else {
       this.isOpeningSection = false;
     }
+
+    this.addAttributes();
   }
 
   /**
