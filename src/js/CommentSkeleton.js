@@ -145,12 +145,12 @@ export default class CommentSkeleton {
      */
     this.followsHeading = false;
 
-    if (this.parts[0].isHeading) {
-      if (this.level !== 0) {
-        this.parts.shift();
-        this.elements.shift();
-      }
+    if (this.parts[0].isHeading && this.level !== 0) {
+      this.parts.shift();
+      this.elements.shift();
+    }
 
+    if (this.parts[0].isHeading) {
       /**
        * Does the comment open a section (has a heading as the first element and is placed at the
        * zeroth level).
