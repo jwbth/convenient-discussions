@@ -1836,7 +1836,7 @@ export default class CommentForm {
    * @param {object} options
    * @param {string} options.type Type of the error: `'parse'` for parse errors defined in the
    *   script, `'api'` for MediaWiki API errors, `'network'` for network errors defined in the
-   *   script, `'javascript'` for JavaScript errors.
+   *   script, `'javascript'` for JavaScript errors, `'ui'` for UI errors.
    * @param {string} [options.code] Code of the error (either `code`, `apiData`, or `message`
    *   should be specified).
    * @param {object} [options.details] Additional details about an error.
@@ -2918,6 +2918,17 @@ export default class CommentForm {
     if (!(await this.runChecks({ doDelete }))) return;
 
     const currentOperation = this.registerOperation({ type: 'submit' });
+
+    const otherFormsSubmitted = cd.commentForms
+      .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
+    if (otherFormsSubmitted) {
+      this.handleError({
+        type: 'ui',
+        message: cd.sParse('cf-error-othersubmitted'),
+        currentOperation,
+      });
+      return;
+    }
 
     const newPageCode = await this.tryPrepareNewPageCode('submit');
     if (newPageCode === undefined) {
