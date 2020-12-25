@@ -1970,7 +1970,7 @@ export default class Comment extends CommentSkeleton {
     let sectionHeadline;
     if (commentData) {
       followsHeading = commentData.followsHeading;
-      sectionHeadline = commentData.section.headline;
+      sectionHeadline = commentData.section?.headline;
     } else {
       followsHeading = this.followsHeading;
       sectionHeadline = this.getSection()?.headline;
