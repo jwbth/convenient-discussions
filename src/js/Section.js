@@ -1810,9 +1810,14 @@ export default class Section extends SectionSkeleton {
         reloadPage({ commentAnchor });
       });
 
-      const $lastElement = section.$replyButton ?
-        section.$replyButton.closest('ul, ol, dl') :
-        section.$elements[section.$elements.length - 1];
+      let $lastElement;
+      if (section.$addSubsectionButtonContainer) {
+        $lastElement = section.$addSubsectionButtonContainer;
+      } else if (section.$replyButton) {
+        $lastElement = section.$replyButton.closest('ul, ol, dl')
+      } else {
+        $lastElement = section.$elements[section.$elements.length - 1];
+      }
       $('<div>')
         .addClass('cd-refreshButtonContainer')
         .addClass('cd-sectionButtonContainer')
