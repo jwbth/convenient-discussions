@@ -1411,20 +1411,18 @@ export default class CommentForm {
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
       if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
-          const $message = cd.util.wrap(
-            cd.sParse('cf-reaction-mention-edit'),
-            { targetBlank: true }
-          );
+          const $message = cd.util.wrap(cd.sParse('cf-reaction-mention-edit'), {
+            targetBlank: true,
+          });
           this.showMessage($message, {
             type: 'notice',
             name: 'mentionEdit',
           });
         }
         if (this.omitSignatureCheckbox?.isSelected()) {
-          const $message = cd.util.wrap(
-            cd.sParse('cf-reaction-mention-nosignature'),
-            { targetBlank: true }
-          );
+          const $message = cd.util.wrap(cd.sParse('cf-reaction-mention-nosignature'), {
+            targetBlank: true,
+          });
           this.showMessage($message, {
             type: 'notice',
             name: 'mentionNoSignature',
@@ -1836,10 +1834,10 @@ export default class CommentForm {
    * @param {object} options
    * @param {string} options.type Type of the error: `'parse'` for parse errors defined in the
    *   script, `'api'` for MediaWiki API errors, `'network'` for network errors defined in the
-   *   script, `'javascript'` for JavaScript errors.
+   *   script, `'javascript'` for JavaScript errors, `'ui'` for UI errors.
    * @param {string} [options.code] Code of the error (either `code`, `apiData`, or `message`
    *   should be specified).
-   * @param {object} [options.details] Additional details about an error.
+   * @param {object} [options.details] Additional details about the error.
    * @param {string} [options.apiData] Data object received from the MediaWiki server (either
    *   `code`, `apiData`, or `message` should be specified).
    * @param {string} [options.message] Text of the error (either `code`, `apiData`, or `message`
@@ -1923,20 +1921,17 @@ export default class CommentForm {
             location.assign(editUrl);
           }
         };
-        message = cd.util.wrap(
-          message,
-          {
-            callbacks: {
-              'cd-message-reloadPage': async () => {
-                if (await this.confirmClose()) {
-                  this.reloadPage();
-                }
-              },
-              'cd-message-editSection': navigateToEditUrl,
-              'cd-message-editPage': navigateToEditUrl,
+        message = cd.util.wrap(message, {
+          callbacks: {
+            'cd-message-reloadPage': async () => {
+              if (await this.confirmClose()) {
+                this.reloadPage();
+              }
             },
-          }
-        );
+            'cd-message-editSection': navigateToEditUrl,
+            'cd-message-editPage': navigateToEditUrl,
+          },
+        });
         break;
       }
 
@@ -2914,10 +2909,20 @@ export default class CommentForm {
     if (this.operations.some((op) => !op.isClosed && op.type === 'load')) return;
 
     const doDelete = this.deleteCheckbox?.isSelected();
-
     if (!(await this.runChecks({ doDelete }))) return;
 
     const currentOperation = this.registerOperation({ type: 'submit' });
+
+    const otherFormsSubmitted = cd.commentForms
+      .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
+    if (otherFormsSubmitted) {
+      this.handleError({
+        type: 'ui',
+        message: cd.sParse('cf-error-othersubmitted'),
+        currentOperation,
+      });
+      return;
+    }
 
     const newPageCode = await this.tryPrepareNewPageCode('submit');
     if (newPageCode === undefined) {

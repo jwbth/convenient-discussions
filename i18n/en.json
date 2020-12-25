@@ -35,7 +35,7 @@
   "comment-edited-refresh": "Refresh",
   "comment-edited-diff": "Diff",
   "comment-edited-diff-error": "Couldn't render the diff.",
-  "comment-edited-diff-empty": "The diff is empty. Perhaps the script was wrong, and the comment wasn't edited after all.",
+  "comment-edited-diff-empty": "The diff is empty. Perhaps the script is wrong, and the comment wasn't edited after all.",
   "comment-deleted": "The comment was deleted.",
   "comment-editedsince": "The comment was edited since your last visit.",
 
@@ -158,6 +158,7 @@
   "cf-error-couldntedit": "The page may not have been edited.",
   "cf-error-pagedoesntexist": "The page doesn't exist.",
   "cf-error-formconflict": "There already is a form of a different type open on the page. Close that form to open this one.",
+  "cf-error-othersubmitted": "Can't submit the form because another form is being submitted right now.",
 
   "cf-confirm-noheadline-topic": "You didn't enter the topic subject/headline.",
   "cf-confirm-noheadline-subsection": "You didn't enter the section subject/headline.",
@@ -180,7 +181,7 @@
   "dn-confirm-yes": "Yes",
   "dn-confirm-no": "No",
   "dn-grantpermission": "Grant a permission to the site.",
-  "dn-grantpermission-again": "You have the desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications or deny to prevent this message from showing up again.",
+  "dn-grantpermission-again": "You have desktop notifications switched on, but the site is not allowed to send them. Grant a permission to the site to receive notifications or deny to prevent this message from showing up again.",
 
   "deadanchor-section-title": "Section not found",
   "deadanchor-section-text": "It could be moved or archived.",

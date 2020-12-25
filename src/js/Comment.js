@@ -86,15 +86,6 @@ export default class Comment extends CommentSkeleton {
     this.author = userRegistry.getUser(this.authorName);
 
     /**
-     * Not used in the Comment class.
-     *
-     * @name authorName
-     * @type {undefined}
-     * @instance module:Comment
-     */
-    delete this.authorName;
-
-    /**
      * Comment signature element as a jQuery object.
      *
      * @type {JQuery}
@@ -251,8 +242,8 @@ export default class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
 
       // If the comment intersects more than one floating block, we better keep `overflow: hidden`
-      // to avoid bugs like where there are two floating block to the right with different leftmost
-      // positions, and the layer is more narrow than the comment.
+      // to avoid bugs like where there are two floating blocks to the right with different leftmost
+      // positions and the layer is more narrow than the comment.
       if (intersectsFloatingCount === 1) {
         this.elements.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
@@ -714,6 +705,7 @@ export default class Comment extends CommentSkeleton {
    */
   flashNew() {
     this.flash($(document.documentElement).css('--cd-comment-new-color'), 500);
+
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
       const articleId = mw.config.get('wgArticleId');
@@ -745,8 +737,10 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} isNewVersionRendered Has the new version of the comment been rendered.
    * @param {number} comparedRevisionId ID of the revision to compare with when the user clicks to
    *   see the diff.
+   * @param {string} commentsData Data of the comments as of the current revision and the revision
+   *   to compare with.
    */
-  markAsEdited(type, isNewVersionRendered, comparedRevisionId) {
+  markAsEdited(type, isNewVersionRendered, comparedRevisionId, commentsData) {
     let stringName;
     switch (type) {
       case 'edited':
@@ -789,7 +783,7 @@ export default class Comment extends CommentSkeleton {
           e.preventDefault();
           $diffLink.addClass('cd-link-pending');
           try {
-            await this.showDiff(comparedRevisionId);
+            await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
             let text = cd.s('comment-edited-diff-error');
             if (e instanceof CdError) {
@@ -818,7 +812,11 @@ export default class Comment extends CommentSkeleton {
       $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
     }
 
-    this.$elements.last().append($span);
+    let $last = this.$elements.last();
+    if ($last.is('ul, ol, dl')) {
+      $last = $last.last();
+    }
+    $last.append($span);
 
     if (isNewVersionRendered) {
       this.flashNewOnSight();
@@ -930,9 +928,9 @@ export default class Comment extends CommentSkeleton {
         .attr('data-comment-id', this.id)
         .first()
         .attr('id', this.anchor);
-      delete this.cachedText;
       mw.hook('wikipage.content').add(this.$elements);
-      this.comparedHtml = newComment.innerHtml;
+
+      delete this.cachedText;
       return true;
     } else {
       return false;
@@ -1318,18 +1316,19 @@ export default class Comment extends CommentSkeleton {
    * Locate the comment in the page source code and, if no `pageCode` is passed, set the results to
    * the `inCode` property. Otherwise, return the result.
    *
-   * @param {string} [pageCode] Page code, if different from `code` property of {@link
+   * @param {string} [pageCode] Page code, if different from the `code` property of {@link
    *   Comment#getSourcePage()}.
+   * @param {string} [commentData] Comment data for comparison (can be set together with pageCode).
    * @returns {string|undefined}
    * @throws {CdError}
    */
-  locateInCode(pageCode) {
+  locateInCode(pageCode, commentData) {
     if (!pageCode) {
       this.inCode = null;
     }
 
     // Collect matches
-    const matches = this.searchInCode(pageCode || this.getSourcePage().code);
+    const matches = this.searchInCode(pageCode || this.getSourcePage().code, commentData);
 
     let bestMatch;
     matches.forEach((match) => {
@@ -1681,11 +1680,10 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment's text without a signature.
+   * Get the comment's text.
    *
-   * @param {boolean} [cleanUp=true]
+   * @param {boolean} [cleanUp=true] Whether to clean up the signature.
    * @returns {string}
-   * @private
    */
   getText(cleanUp = true) {
     if (this.cachedText === undefined) {
@@ -1779,7 +1777,7 @@ export default class Comment extends CommentSkeleton {
 
     // This should be before the "this.level > 0" block to account for cases like
     // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp doesn't
-    // catch the comment because of a new line inside an "syntaxhighlight" element).
+    // catch the comment because of a new line inside a "syntaxhighlight" element).
     cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
       if (pattern.source[0] !== '^') {
         console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
@@ -1787,8 +1785,8 @@ export default class Comment extends CommentSkeleton {
       const match = code.match(pattern);
       if (match) {
         code = code.slice(match[0].length);
+        lineStartIndex = startIndex + match[0].lastIndexOf('\n') + 1;
         startIndex += match[0].length;
-        lineStartIndex += match[0].lastIndexOf('\n') + 1;
       }
     });
 
@@ -1798,8 +1796,8 @@ export default class Comment extends CommentSkeleton {
     if (this.level > 0) {
       const replaceIndentationChars = (s, before, chars) => {
         indentationChars = chars;
+        lineStartIndex = startIndex + before.length;
         startIndex += s.length;
-        lineStartIndex += before.length;
         return '';
       };
 
@@ -1931,10 +1929,11 @@ export default class Comment extends CommentSkeleton {
    * Search for the comment in the source code and return possible matches.
    *
    * @param {string} pageCode
+   * @param {string} commentData
    * @returns {object}
    * @private
    */
-  searchInCode(pageCode) {
+  searchInCode(pageCode, commentData) {
     const signatures = extractSignatures(pageCode);
     // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
     // templates (it may be present and may be not), but it appears on the page.
@@ -1945,12 +1944,6 @@ export default class Comment extends CommentSkeleton {
         (this.timestamp && this.timestamp.startsWith(sig.timestamp))
       )
     ));
-
-    // For the reserve method; the main method uses one date.
-    let previousTimestampsToCheckCount = 2;
-    const previousComments = cd.comments
-      .slice(Math.max(0, this.id - previousTimestampsToCheckCount), this.id)
-      .reverse();
 
     // Signature object to a comment match object
     let matches = signatureMatches.map((match) => ({
@@ -1964,11 +1957,30 @@ export default class Comment extends CommentSkeleton {
       endIndex: match.startIndex,
     }));
 
+    // For the reserve method; the main method uses one date.
+    const previousComments = commentData ?
+      commentData.previousComments :
+      cd.comments
+        .slice(Math.max(0, this.id - 2), this.id)
+        .reverse();
+
+    const id = commentData ? commentData.id : this.id;
+
+    let followsHeading;
+    let sectionHeadline;
+    if (commentData) {
+      followsHeading = commentData.followsHeading;
+      sectionHeadline = commentData.section.headline;
+    } else {
+      followsHeading = this.followsHeading;
+      sectionHeadline = this.getSection()?.headline;
+    }
+
     // Collect data for every match
     matches.forEach((match) => {
       match.code = pageCode.slice(match.startIndex, match.endIndex);
 
-      match.hasIdMatched = this.id === match.id;
+      match.hasIdMatched = id === match.id;
 
       if (previousComments.length) {
         match.hasPreviousCommentsDataMatched = false;
@@ -1981,7 +1993,10 @@ export default class Comment extends CommentSkeleton {
           // At least one coincided comment is enough if the second is unavailable.
           match.hasPreviousCommentsDataMatched = (
             signature.timestamp === previousComments[i].timestamp &&
-            signature.author === previousComments[i].author
+
+            // Previous comment object may come from the worker, where it has only the authorName
+            // property.
+            signature.author.name === previousComments[i].authorName
           );
 
           // Many consecutive comments with the same author and timestamp.
@@ -2005,17 +2020,16 @@ export default class Comment extends CommentSkeleton {
 
       match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
       Object.assign(match, this.adjustCommentBeginning(match));
-      match.hasHeadlineMatched = this.followsHeading ?
+      match.hasHeadlineMatched = followsHeading ?
         (
           match.headingMatch &&
-          this.getSection()?.headline &&
-          (
-            normalizeCode(removeWikiMarkup(match.headlineCode)) ===
-            normalizeCode(this.getSection().headline)
-          )
+          sectionHeadline &&
+          normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline)
         ) :
         !match.headingMatch;
-      match.overlap = calculateWordsOverlap(this.getText(), removeWikiMarkup(match.code));
+
+      const commentText = commentData ? commentData.text : this.getText();
+      match.overlap = calculateWordsOverlap(commentText, removeWikiMarkup(match.code));
 
       match.score = (
         (
@@ -2025,7 +2039,7 @@ export default class Comment extends CommentSkeleton {
           // previous two dates and authors. If all dates and authors are the same, that shouldn't
           // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
           (
-            this.id !== 0 &&
+            id !== 0 &&
             match.hasPreviousCommentsDataMatched &&
             !match.isPreviousCommentsDataEqual
           ) ||
@@ -2035,7 +2049,7 @@ export default class Comment extends CommentSkeleton {
           // solution here, although it should be quite reliable: the comment's firstness, matching
           // author, date, and headline. A false negative will take place when the comment is no
           // longer first. Another option is to look for next comments, not for previous.
-          (this.id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
+          (id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
         ) * 2 +
         match.overlap +
         match.hasHeadlineMatched * 1 +
@@ -2214,15 +2228,10 @@ export default class Comment extends CommentSkeleton {
 
           newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
         } else {
-          const startIndex = (
-            this.isOpeningSection && thisInCode.headingStartIndex !== undefined ?
-            thisInCode.headingStartIndex :
-            thisInCode.lineStartIndex
-          );
+          const startIndex = thisInCode.lineStartIndex;
           codeBeforeInsertion = pageCode.slice(0, startIndex);
-          const codeAfterInsertion = (
-            pageCode.slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length)
-          );
+          const codeAfterInsertion = pageCode
+            .slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length);
           newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         }
         break;
@@ -2242,11 +2251,11 @@ export default class Comment extends CommentSkeleton {
       let offsetParent;
       const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
       while (treeWalker.parentNode()) {
-        let style = treeWalker.currentNode.cdStyle;
+        let style = treeWalker.currentNode.conveneintDiscussionsStyle;
         if (!style) {
           // window.getComputedStyle is expensive, so we save the result to the node's property.
           style = window.getComputedStyle(treeWalker.currentNode);
-          treeWalker.currentNode.cdStyle = style;
+          treeWalker.currentNode.conveneintDiscussionsStyle = style;
         }
         if (['absolute', 'relative'].includes(style.position)) {
           offsetParent = treeWalker.currentNode;
@@ -2363,9 +2372,10 @@ export default class Comment extends CommentSkeleton {
    * Show a diff of changes in the comment between the current revision ID and the provided one.
    *
    * @param {number} comparedRevisionId
+   * @param {object} commentsData
    * @throws {CdError}
    */
-  async showDiff(comparedRevisionId) {
+  async showDiff(comparedRevisionId, commentsData) {
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
     let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
@@ -2407,7 +2417,7 @@ export default class Comment extends CommentSkeleton {
     const lineNumbers = [[], []];
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
-      const inCode = this.locateInCode(pageCode);
+      const inCode = this.locateInCode(pageCode, commentsData[i]);
       const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
       const newlinesInComment = (
         pageCode.slice(inCode.lineStartIndex, inCode.endIndex).match(/\n/g) ||
@@ -2516,7 +2526,7 @@ export default class Comment extends CommentSkeleton {
       } else if (comment.section) {
         sectionOrAnchor = Section.search(comment.section) || comment.section.anchor;
       } else {
-        sectionOrAnchor = comment.section;
+        sectionOrAnchor = null;
       }
 
       if (!commentsBySection.get(sectionOrAnchor)) {

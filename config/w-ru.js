@@ -203,7 +203,7 @@ export default {
   ],
 
   customBadCommentBeginnings: [
-    /^\{\{(?:-|clear)\}\} *\n*/,
+    /^\{\{(?:-|clear)\}\} *\n+/,
   ],
 
   keepInSectionEnding: [

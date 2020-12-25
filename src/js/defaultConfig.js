@@ -384,11 +384,13 @@ export default {
   commentAntipatterns: [],
 
   /**
-   * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them). This is in addition to {@link module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}.
-   * They begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
+   * Regexps for strings that should be cut out of comment beginnings (not considered parts of them)
+   * when editing comments. This is in addition to {@link
+   * module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
+   * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
+   * script to work properly.
    *
-   * Example: 'new RegExp(' ^\\{\\{(?:-|clear)\\}\\} *\\n*')`.
+   * Example: 'new RegExp(' ^\\{\\{(?:-|clear)\\}\\} *\\n+')`.
    *
    * @type {RegExp[]}
    * @default []

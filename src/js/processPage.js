@@ -217,8 +217,8 @@ function processSections(parser, watchedSectionsRequest) {
 function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
   const addSectionForm = cd.g.addSectionForm;
   if (addSectionForm) {
-    // Sometimes there are more than one "Add section" button on the page, and they lead to
-    // opening forms with different content.
+    // Sometimes there is more than one "Add section" button on the page, and they lead to opening
+    // forms with different content.
     if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
       mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
       return;
@@ -331,14 +331,6 @@ function connectToAddTopicButtons() {
       }
 
       e.preventDefault();
-
-      // Clean up preloadConfig keys for possible future comparison using util.areObjectsEqual.
-      Object.keys(preloadConfig).forEach((key) => {
-        if (preloadConfig[key] === undefined) {
-          delete preloadConfig[key];
-        }
-      });
-
       createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));

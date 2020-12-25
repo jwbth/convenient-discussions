@@ -447,7 +447,9 @@ export function getTopAndBottomIncludingMargins(el) {
 }
 
 /**
- * Whether two objects are the same by value. Doesn't handle complex cases.
+ * Whether two objects are the same by value. Doesn't handle complex cases. `undefined` values are
+ * treated as unexistent (this helps to compare values retrieved from the local storage as JSON:
+ * `JSON.stringify()` removes all `undefined` values as well).
  *
  * @param {object} object1 First object.
  * @param {object} object2 Second object.
@@ -478,8 +480,8 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
     return toPrimitiveValue(object1) === toPrimitiveValue(object2);
   }
 
-  const keys1 = Object.keys(object1);
-  const keys2 = Object.keys(object2);
+  const keys1 = Object.keys(object1).filter((key) => object1[key] !== undefined);
+  const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
 
   return (
     (keys1.length === keys2.length || doesInclude) &&
@@ -556,14 +558,20 @@ export function insertText(input, text) {
  * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
  *
  * @param {object} obj
- * @param {Array} allowedFuncNames Names of the properties that should be passed to the worker
+ * @param {Array} [allowedFuncNames=[]] Names of the properties that should be passed to the worker
  *   despite their values are functions (they are passed in a stringified form).
+ * @param {Array} [disallowedNames=[]] Names of the properties that should be filtered out without
+ *   checking (allows to save time on greedy operations).
  * @returns {object}
  * @private
  */
-export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
+export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames = []) {
   const newObj = Object.assign({}, obj);
   Object.keys(newObj).forEach((key) => {
+    if (disallowedNames.includes(key)) {
+      delete newObj[key];
+      return;
+    }
     const val = newObj[key];
     if (
       typeof val === 'object' &&
