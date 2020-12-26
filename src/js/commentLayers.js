@@ -27,7 +27,8 @@ export default {
    * they've changed.
    *
    * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
-   * @param {boolean} [redrawAll] Whether to redraw all underlays and not stop at first two unmoved.
+   * @param {boolean} [redrawAll] Whether to redraw all underlays and not stop at first three
+   *   unmoved.
    */
   redrawIfNecessary(removeUnhighlighted = false, redrawAll = false) {
     if (!this.underlays.length || (document.hidden && !redrawAll)) return;
@@ -43,7 +44,7 @@ export default {
 
     // We go from the end and stop at the first _two_ comments that have not been misplaced. A
     // quirky reason for this is that the mouse could be over some comment making its underlay to be
-    // repositioned immediately and therefore not appearing as misplaced to this procedure. Two
+    // repositioned immediately and therefore not appearing as misplaced to this procedure. Three
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
@@ -84,7 +85,7 @@ export default {
             .closest('.cd-commentLayersContainerParent')
         ) {
           notMovedCount++;
-          if (notMovedCount === 2) {
+          if (notMovedCount === 3) {
             return true;
           }
         }
