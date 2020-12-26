@@ -1313,7 +1313,7 @@ export default class CommentForm {
           $tested = $tested.next();
         } while (
           $tested.is('.cd-sectionButtonContainer:not(.cd-addTopicButtonContainer), .cd-commentForm-reply') ||
-          ($tested.length && $tested.get(0).className.match(headingLevelRegexp))
+          ($tested.get(0)?.className.match(headingLevelRegexp))
         );
         this.$element.insertAfter($target);
         break;

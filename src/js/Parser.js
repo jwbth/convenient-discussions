@@ -528,8 +528,7 @@ export default class Parser {
           )
         ) &&
 
-        previousPart.node[this.context.childElementsProperty].length &&
-        previousPart.node[this.context.childElementsProperty][0].contains(signatureElement)
+        previousPart.node[this.context.childElementsProperty][0]?.contains(signatureElement)
       ) {
         break;
       }
