@@ -221,7 +221,6 @@ export default class CommentSkeleton {
    * @private
    */
   getSection() {
-    cd.debug.startTimer('getSection');
     if (this.cachedSection === undefined) {
       this.cachedSection = (
         cd.sections
@@ -231,7 +230,6 @@ export default class CommentSkeleton {
         null
       );
     }
-    cd.debug.stopTimer('getSection');
     return this.cachedSection;
   }
 
@@ -245,7 +243,6 @@ export default class CommentSkeleton {
       return [];
     }
 
-    cd.debug.startTimer('getChildren');
     if (cd.g.specialElements.pageHasOutdents) {
       const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
       while (
@@ -275,7 +272,6 @@ export default class CommentSkeleton {
         }
       });
 
-    cd.debug.stopTimer('getChildren');
     return children;
   }
 }

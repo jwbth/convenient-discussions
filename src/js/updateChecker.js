@@ -253,8 +253,6 @@ function mapComments(currentComments, otherComments) {
  * @private
  */
 function checkForEditsSincePreviousVisit() {
-  cd.debug.startTimer('checkForEditsSincePreviousVisit');
-
   const oldComments = revisionData[previousVisitRevisionId].comments;
   const revisionId = mw.config.get('wgRevisionId');
   const currentComments = revisionData[revisionId].comments;
@@ -285,8 +283,6 @@ function checkForEditsSincePreviousVisit() {
 
   delete seenRenderedEdits[articleId];
   saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
-
-  cd.debug.logAndResetEverything();
 }
 
 /**
@@ -295,15 +291,11 @@ function checkForEditsSincePreviousVisit() {
  * @private
  */
 function checkForNewEdits() {
-  cd.debug.startTimer('checkForNewEdits');
   const newComments = revisionData[lastCheckedRevisionId].comments;
   const currentComments = revisionData[mw.config.get('wgRevisionId')].comments;
 
-  cd.debug.startTimer('checkForNewEdits mapComments');
   mapComments(currentComments, newComments);
-  cd.debug.stopTimer('checkForNewEdits mapComments');
 
-  cd.debug.startTimer('checkForNewEdits compare');
   let isEditMarkUpdated = false;
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
@@ -337,17 +329,12 @@ function checkForNewEdits() {
       isEditMarkUpdated = true;
     }
   });
-  cd.debug.stopTimer('checkForNewEdits compare');
-  cd.debug.startTimer('checkForNewEdits redraw');
   if (isEditMarkUpdated) {
     // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
     // layers before them from being updated due to the "stop at the first two unmoved comments"
     // optimization. So we better just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
   }
-  cd.debug.stopTimer('checkForNewEdits redraw');
-  cd.debug.stopTimer('checkForNewEdits');
-  cd.debug.logAndResetEverything();
 }
 
 /**
@@ -582,7 +569,6 @@ async function processComments(comments, revisionId) {
   // icon which means 0 new comments.
   const newComments = comments
     .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
-  cd.debug.startTimer('filter interesting');
   const interestingNewComments = newComments.filter((comment) => {
     if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
@@ -608,7 +594,6 @@ async function processComments(comments, revisionId) {
       }
     }
   });
-  cd.debug.stopTimer('filter interesting');
 
   const authors = newComments
     .map((comment) => comment.author)
@@ -617,7 +602,7 @@ async function processComments(comments, revisionId) {
 
   if (!isPageStillOutdated(revisionId)) return;
 
-  cd.debug.startTimer('processComments end');
+  cd.debug.startTimer('process updates');
 
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
@@ -640,6 +625,7 @@ async function processComments(comments, revisionId) {
   sendDesktopNotifications(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
 
+  cd.debug.stopTimer('process updates');
   cd.debug.logAndResetEverything();
 }
 

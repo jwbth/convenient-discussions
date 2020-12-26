@@ -92,12 +92,10 @@ function parse() {
   });
 
   cd.debug.startTimer('prepare comments and sections');
-  cd.debug.startTimer('section data');
   cd.sections.forEach((section) => {
     section.parentTree = section.getParentTree().map((section) => section.headline);
     section.firstCommentAnchor = section.comments[0]?.anchor;
   });
-  cd.debug.stopTimer('section data');
 
   let commentDangerousKeys = [
     'cachedSection',
@@ -128,7 +126,6 @@ function parse() {
   };
 
   cd.comments.forEach((comment) => {
-    cd.debug.startTimer('comment data');
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;
     });
@@ -139,11 +136,8 @@ function parse() {
       comment.parentAnchor = comment.parent.anchor;
       comment.toMe = comment.parent.isOwn;
     }
-    cd.debug.stopTimer('comment data');
     comment.elements[0].removeAttribute('id');
-    cd.debug.startTimer('comment.elementHtmls');
     comment.elementHtmls = comment.elements.map((element) => {
-      cd.debug.startTimer('hideDynamicComponents');
       element.removeAttribute('data-comment-id');
 
       if (/^H[1-6]$/.test(element.tagName)) {
@@ -194,12 +188,9 @@ function parse() {
         element.parentNode.insertBefore(textNode, element);
         element.remove();
       });
-      cd.debug.stopTimer('hideDynamicComponents');
 
       return element.outerHTML;
     });
-    cd.debug.stopTimer('comment.elementHtmls');
-
     /*
       We can't use outerHTML for comparing comment revisions as the difference may be in div vs. dd
       (li) tags in this case: This creates a dd tag.
@@ -214,29 +205,21 @@ function parse() {
       So the HTML is "<dd><div>...</div><dl>...</dl></dd>". A newline also appears before </div>, so
       we need to trim.
      */
-    cd.debug.startTimer('comment.innerHtml');
     comment.innerHtml = comment.elements.map((element) => element.innerHTML).join('\n').trim();
-    cd.debug.stopTimer('comment.innerHtml');
 
-    cd.debug.startTimer('comment.text');
     comment.signatureElement.remove();
     comment.text = comment.elements.map((element) => element.textContent).join('\n');
-    cd.debug.stopTimer('comment.text');
 
-    cd.debug.startTimer('comment.elementTagNames');
     comment.elementTagNames = comment.elements.map((element) => element.tagName);
-    cd.debug.stopTimer('comment.elementTagNames');
   });
 
   cd.comments = cd.comments.map((comment) => keepSafeValues(comment, commentDangerousKeys));
 
-  cd.debug.startTimer('comments previousComments');
   cd.comments.forEach((comment, i) => {
     comment.previousComments = cd.comments
       .slice(Math.max(0, i - 2), i)
       .reverse();
   });
-  cd.debug.stopTimer('comments previousComments');
 
   cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
 
