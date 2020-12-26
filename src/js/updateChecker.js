@@ -338,12 +338,12 @@ function checkForNewEdits() {
 }
 
 /**
- * Send ordinary notifications to the user.
+ * Show an ordinary notification (`mediawiki.notification`) to the user.
  *
  * @param {CommentSkeletonLike[]} comments
  * @private
  */
-function sendOrdinaryNotifications(comments) {
+function showOrdinaryNotification(comments) {
   let filteredComments = [];
   if (cd.settings.notifications === 'all') {
     filteredComments = comments;
@@ -438,12 +438,12 @@ function sendOrdinaryNotifications(comments) {
 }
 
 /**
- * Send desktop notifications to the user.
+ * Show a desktop notification to the user.
  *
  * @param {CommentSkeletonLike[]} comments
  * @private
  */
-function sendDesktopNotifications(comments) {
+function showDesktopNotification(comments) {
   let filteredComments = [];
   if (cd.settings.desktopNotifications === 'all') {
     filteredComments = comments;
@@ -621,8 +621,8 @@ async function processComments(comments, revisionId) {
   const commentsToNotifyAbout = interestingNewComments.filter((comment) => (
     !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor)
   ));
-  sendOrdinaryNotifications(commentsToNotifyAbout);
-  sendDesktopNotifications(commentsToNotifyAbout);
+  showOrdinaryNotification(commentsToNotifyAbout);
+  showDesktopNotification(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
 
   cd.debug.stopTimer('process updates');
