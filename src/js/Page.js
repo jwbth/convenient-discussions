@@ -347,19 +347,16 @@ export default class Page {
       makeBackgroundRequest(options).catch(handleApiReject) :
       cd.g.api.post(options).catch(handleApiReject);
 
-    // We make the GET request that marks the page as read at the same time with the parse request,
-    // not after it, to minimize the chance that the page will get new revisions that we will
-    // erroneously mark as read.
-    if (markAsRead) {
-      $.get(this.getUrl());
-    }
-
     const parse = (await request).parse;
     if (parse?.text === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
+    }
+
+    if (markAsRead) {
+      this.markAsRead(parse.revid);
     }
 
     return parse;
@@ -605,6 +602,20 @@ export default class Page {
       titles: this.name,
     }).catch(() => {
       mw.notify(cd.s('error-purgecache'), { type: 'error' });
+    });
+  }
+
+  /**
+   * Mark the page as read, optionally setting the revision to mark as read.
+   *
+   * @param {number} revisionId Revision to mark as read (setting all newer revisions unread).
+   */
+  async markAsRead(revisionId) {
+    await cd.g.api.postWithEditToken({
+      action: 'setnotificationtimestamp',
+      titles: this.name,
+      newerthanrevid: revisionId,
+      formatversion: 2,
     });
   }
 }
