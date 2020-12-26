@@ -264,7 +264,6 @@ function checkForEditsSincePreviousVisit() {
   const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
   const articleId = mw.config.get('wgArticleId');
 
-  cd.debug.startTimer('checkForEditsSincePreviousVisit cycle');
   currentComments.forEach((currentComment) => {
     if (currentComment.anchor === submittedCommentAnchor) return;
 
@@ -283,7 +282,6 @@ function checkForEditsSincePreviousVisit() {
       }
     }
   });
-  cd.debug.stopTimer('checkForEditsSincePreviousVisit cycle');
 
   delete seenRenderedEdits[articleId];
   saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
@@ -627,32 +625,21 @@ async function processComments(comments, revisionId) {
     updateChecker.relevantNewCommentAnchor = newComments[0].anchor;
   }
 
-  cd.debug.startTimer('processComments groupBySection');
   const newCommentsBySection = Comment.groupBySection(newComments);
-  cd.debug.stopTimer('processComments groupBySection');
   const areThereInteresting = Boolean(interestingNewComments.length);
-  cd.debug.startTimer('processComments update buttons, title');
   navPanel.updateRefreshButton(newComments.length, newCommentsBySection, areThereInteresting);
   updateChecker.updatePageTitle(newComments.length, areThereInteresting);
-  cd.debug.stopTimer('processComments update buttons, title');
-  cd.debug.startTimer('processComments addNewComments');
   toc.addNewComments(newCommentsBySection);
-  cd.debug.stopTimer('processComments addNewComments');
 
-  cd.debug.startTimer('processComments addNewCommentsNotifications');
   Section.addNewCommentsNotifications(newCommentsBySection);
-  cd.debug.stopTimer('processComments addNewCommentsNotifications');
 
-  cd.debug.startTimer('processComments send notifications');
   const commentsToNotifyAbout = interestingNewComments.filter((comment) => (
     !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor)
   ));
   sendOrdinaryNotifications(commentsToNotifyAbout);
   sendDesktopNotifications(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
-  cd.debug.stopTimer('processComments send notifications');
 
-  cd.debug.stopTimer('processComments end');
   cd.debug.logAndResetEverything();
 }
 
