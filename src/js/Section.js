@@ -839,12 +839,14 @@ export default class Section extends SectionSkeleton {
           });
         }
 
-        let $sectionCodeNote = $('<div>');
+        const $sectionCodeNote = $('<div>');
+        const code = sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '');
         $('<pre>')
-          .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : ''))
+          .addClass('cd-sectionMove-code')
+          .text(code)
           .appendTo($sectionCodeNote);
         $('<p>')
-          .css('font-size', '85%')
+          .addClass('cd-sectionMove-codeNote')
           .text(cd.s('msd-bottom'))
           .appendTo($sectionCodeNote);
 
