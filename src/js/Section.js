@@ -27,9 +27,7 @@ import {
 import { getWatchedSections, setWatchedSections } from './options';
 import { reloadPage } from './boot';
 
-let watchPromise = new Promise((resolve) => {
-  resolve();
-});
+let watchPromise = Promise.resolve();
 
 /**
  * Class representing a section.
@@ -989,26 +987,19 @@ export default class Section extends SectionSkeleton {
       }
     }
 
-    Section.watchSection(
-      this.headline,
-      {
-        silent,
-        successCallback: () => {
-          if ($links) {
-            $links.removeClass('cd-link-pending');
-          }
-          sections.forEach((section) => {
-            section.isWatched = true;
-            section.updateWatchMenuItems();
-          });
-          toc.highlightWatchedSections();
-        },
-        errorCallback: () => {
-          if ($links) {
-            $links.removeClass('cd-link-pending');
-          }
-        },
-    });
+    Section.watchSection(this.headline, silent)
+      .finally(() => {
+        if ($links) {
+          $links.removeClass('cd-link-pending');
+        }
+      })
+      .then(() => {
+        sections.forEach((section) => {
+          section.isWatched = true;
+          section.updateWatchMenuItems();
+        });
+        toc.highlightWatchedSections();
+      });
   }
 
   /**
@@ -1030,29 +1021,19 @@ export default class Section extends SectionSkeleton {
       }
     }
 
-    const watchedAncestor = this.getClosestWatchedSection();
-    Section.unwatchSection(
-      this.headline,
-      {
-        silent,
-        watchedAncestorHeadline: watchedAncestor?.headline,
-        successCallback: () => {
-          if ($links) {
-            $links.removeClass('cd-link-pending');
-          }
-          sections.forEach((section) => {
-            section.isWatched = false;
-            section.updateWatchMenuItems();
-          });
-          toc.highlightWatchedSections();
-        },
-        errorCallback: () => {
-          if ($links) {
-            $links.removeClass('cd-link-pending');
-          }
-        },
-      }
-    );
+    Section.unwatchSection(this.headline, silent, this.getClosestWatchedSection()?.headline)
+      .finally(() => {
+        if ($links) {
+          $links.removeClass('cd-link-pending');
+        }
+      })
+      .then(() => {
+        sections.forEach((section) => {
+          section.isWatched = false;
+          section.updateWatchMenuItems();
+        });
+        toc.highlightWatchedSections();
+      });
   }
 
   /**
@@ -1510,27 +1491,17 @@ export default class Section extends SectionSkeleton {
    * Add a section on the current page to the watched sections list.
    *
    * @param {string} headline
-   * @param {boolean} [options]
-   * @param {boolean} [options.silent=false] Don't display a success notification.
-   * @param {Function} [options.successCallback] Callback to run in case of success.
-   * @param {Function} [options.errorCallback] Callback to run in case of an error.
+   * @param {boolean} [silent=false] Don't display a success notification.
    */
-  static async watchSection(headline, {
-    silent = false,
-    successCallback,
-    errorCallback,
-  }) {
+  static async watchSection(headline, silent = false) {
     if (!headline) return;
 
-    watchPromise = watchPromise.finally(async () => {
+    const watch = async () => {
       try {
         await getWatchedSections();
       } catch (e) {
         mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
-        if (errorCallback) {
-          errorCallback();
-        }
-        return;
+        throw e;
       }
 
       // The section could be added to the watchlist in another tab.
@@ -1561,10 +1532,7 @@ export default class Section extends SectionSkeleton {
         } else {
           mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
         }
-        if (errorCallback) {
-          errorCallback();
-        }
-        return;
+        throw e;
       }
 
       if (!silent) {
@@ -1576,40 +1544,29 @@ export default class Section extends SectionSkeleton {
         }
         mw.notify(cd.util.wrap(text), { autoHideSeconds });
       }
-      if (successCallback) {
-        successCallback();
-      }
-    });
+    };
+
+    watchPromise = watchPromise.then(watch, watch);
+    return watchPromise;
   }
 
   /**
    * Add a section on the current page to the watched sections list.
    *
    * @param {string} headline
-   * @param {boolean} [options]
-   * @param {boolean} [options.silent=false] Don't display a success notification.
-   * @param {string} [options.watchedAncestorHeadline] Headline of the ancestor section that is
+   * @param {boolean} [silent=false] Don't display a success notification.
+   * @param {string} [watchedAncestorHeadline] Headline of the ancestor section that is
    *   watched.
-   * @param {Function} [options.successCallback] Callback to run in case of success.
-   * @param {Function} [options.errorCallback] Callback to run in case of an error.
    */
-  static async unwatchSection(headline, {
-    silent = false,
-    watchedAncestorHeadline,
-    successCallback,
-    errorCallback,
-  }) {
+  static async unwatchSection(headline, silent = false, watchedAncestorHeadline) {
     if (!headline) return;
 
-    watchPromise = watchPromise.finally(async () => {
+    const unwatch = async () => {
       try {
         await getWatchedSections();
       } catch (e) {
         mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
-        if (errorCallback) {
-          errorCallback();
-        }
-        return;
+        throw e;
       }
 
       // The section could be unwatched in another tab.
@@ -1624,10 +1581,7 @@ export default class Section extends SectionSkeleton {
         await setWatchedSections();
       } catch (e) {
         mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
-        if (errorCallback) {
-          errorCallback();
-        }
-        return;
+        throw e;
       }
 
       let text = cd.sParse('section-unwatch-success', headline);
@@ -1639,10 +1593,10 @@ export default class Section extends SectionSkeleton {
       if (!silent || watchedAncestorHeadline) {
         mw.notify(cd.util.wrap(text), { autoHideSeconds });
       }
-      if (successCallback) {
-        successCallback();
-      }
-    });
+    };
+
+    watchPromise = watchPromise.then(unwatch, unwatch);
+    return watchPromise;
   }
 
   /**
