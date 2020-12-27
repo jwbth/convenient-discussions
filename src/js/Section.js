@@ -27,6 +27,10 @@ import {
 import { getWatchedSections, setWatchedSections } from './options';
 import { reloadPage } from './boot';
 
+let watchPromise = new Promise((resolve) => {
+  resolve();
+});
+
 /**
  * Class representing a section.
  *
@@ -974,15 +978,17 @@ export default class Section extends SectionSkeleton {
    * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
    */
   watch(silent = false) {
+    const sections = Section.getSectionsByHeadline(this.headline);
     let $links;
     if (!silent) {
-      $links = $('.cd-sectionLink-watch, .cd-sectionLink-unwatch');
+      $links = $(sections.map((section) => section.$heading.find('.cd-sectionLink-watch').get(0)));
       if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
         $links.addClass('cd-link-pending');
       }
     }
+
     Section.watchSection(
       this.headline,
       {
@@ -991,7 +997,7 @@ export default class Section extends SectionSkeleton {
           if ($links) {
             $links.removeClass('cd-link-pending');
           }
-          Section.getSectionsByHeadline(this.headline).forEach((section) => {
+          sections.forEach((section) => {
             section.isWatched = true;
             section.updateWatchMenuItems();
           });
@@ -1011,25 +1017,30 @@ export default class Section extends SectionSkeleton {
    * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
    */
   unwatch(silent = false) {
+    const sections = Section.getSectionsByHeadline(this.headline);
     let $links;
     if (!silent) {
-      $links = $('.cd-sectionLink-watch, .cd-sectionLink-unwatch');
+      $links = $(
+        sections.map((section) => section.$heading.find('.cd-sectionLink-unwatch').get(0))
+      );
       if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
         $links.addClass('cd-link-pending');
       }
     }
+
     const watchedAncestor = this.getClosestWatchedSection();
     Section.unwatchSection(
       this.headline,
       {
         silent,
+        watchedAncestorHeadline: watchedAncestor?.headline,
         successCallback: () => {
           if ($links) {
             $links.removeClass('cd-link-pending');
           }
-          Section.getSectionsByHeadline(this.headline).forEach((section) => {
+          sections.forEach((section) => {
             section.isWatched = false;
             section.updateWatchMenuItems();
           });
@@ -1040,7 +1051,6 @@ export default class Section extends SectionSkeleton {
             $links.removeClass('cd-link-pending');
           }
         },
-        watchedAncestorHeadline: watchedAncestor?.headline,
       }
     );
   }
@@ -1512,62 +1522,64 @@ export default class Section extends SectionSkeleton {
   }) {
     if (!headline) return;
 
-    try {
-      await getWatchedSections();
-    } catch (e) {
-      mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
-      if (errorCallback) {
-        errorCallback();
+    watchPromise = watchPromise.finally(async () => {
+      try {
+        await getWatchedSections();
+      } catch (e) {
+        mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
+        if (errorCallback) {
+          errorCallback();
+        }
+        return;
       }
-      return;
-    }
 
-    // The section could be added to the watchlist in another tab.
-    if (!cd.g.thisPageWatchedSections.includes(headline)) {
-      cd.g.thisPageWatchedSections.push(headline);
-    }
+      // The section could be added to the watchlist in another tab.
+      if (!cd.g.thisPageWatchedSections.includes(headline)) {
+        cd.g.thisPageWatchedSections.push(headline);
+      }
 
-    try {
-      await setWatchedSections();
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type, code } = e.data;
-        if (type === 'internal' && code === 'sizeLimit') {
-          const $body = cd.util.wrap(cd.sParse('section-watch-error-maxsize'), {
-            callbacks: {
-              'cd-notification-editWatchedSections': () => {
-                editWatchedSections();
+      try {
+        await setWatchedSections();
+      } catch (e) {
+        if (e instanceof CdError) {
+          const { type, code } = e.data;
+          if (type === 'internal' && code === 'sizeLimit') {
+            const $body = cd.util.wrap(cd.sParse('section-watch-error-maxsize'), {
+              callbacks: {
+                'cd-notification-editWatchedSections': () => {
+                  editWatchedSections();
+                },
               },
-            },
-          });
-          mw.notify($body, {
-            type: 'error',
-            autoHideSeconds: 'long',
-          });
+            });
+            mw.notify($body, {
+              type: 'error',
+              autoHideSeconds: 'long',
+            });
+          } else {
+            mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+          }
         } else {
           mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
         }
-      } else {
-        mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+        if (errorCallback) {
+          errorCallback();
+        }
+        return;
       }
-      if (errorCallback) {
-        errorCallback();
-      }
-      return;
-    }
 
-    if (!silent) {
-      let text = cd.sParse('section-watch-success', headline);
-      let autoHideSeconds;
-      if ($('#ca-watch').length) {
-        text += ' ' + cd.sParse('section-watch-pagenotwatched');
-        autoHideSeconds = 'long';
+      if (!silent) {
+        let text = cd.sParse('section-watch-success', headline);
+        let autoHideSeconds;
+        if ($('#ca-watch').length) {
+          text += ' ' + cd.sParse('section-watch-pagenotwatched');
+          autoHideSeconds = 'long';
+        }
+        mw.notify(cd.util.wrap(text), { autoHideSeconds });
       }
-      mw.notify(cd.util.wrap(text), { autoHideSeconds });
-    }
-    if (successCallback) {
-      successCallback();
-    }
+      if (successCallback) {
+        successCallback();
+      }
+    });
   }
 
   /**
@@ -1576,59 +1588,61 @@ export default class Section extends SectionSkeleton {
    * @param {string} headline
    * @param {boolean} [options]
    * @param {boolean} [options.silent=false] Don't display a success notification.
-   * @param {Function} [options.successCallback] Callback to run in case of success.
-   * @param {Function} [options.errorCallback] Callback to run in case of an error.
    * @param {string} [options.watchedAncestorHeadline] Headline of the ancestor section that is
    *   watched.
+   * @param {Function} [options.successCallback] Callback to run in case of success.
+   * @param {Function} [options.errorCallback] Callback to run in case of an error.
    */
   static async unwatchSection(headline, {
     silent = false,
+    watchedAncestorHeadline,
     successCallback,
     errorCallback,
-    watchedAncestorHeadline,
   }) {
     if (!headline) return;
 
-    try {
-      await getWatchedSections();
-    } catch (e) {
-      mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
-      if (errorCallback) {
-        errorCallback();
+    watchPromise = watchPromise.finally(async () => {
+      try {
+        await getWatchedSections();
+      } catch (e) {
+        mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
+        if (errorCallback) {
+          errorCallback();
+        }
+        return;
       }
-      return;
-    }
 
-    // The section could be unwatched in another tab.
-    if (cd.g.thisPageWatchedSections.includes(headline)) {
-      cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
-    }
-    if (!cd.g.thisPageWatchedSections.length) {
-      delete cd.g.watchedSections[mw.config.get('wgArticleId')];
-    }
-
-    try {
-      await setWatchedSections();
-    } catch (e) {
-      mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
-      if (errorCallback) {
-        errorCallback();
+      // The section could be unwatched in another tab.
+      if (cd.g.thisPageWatchedSections.includes(headline)) {
+        cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
       }
-      return;
-    }
+      if (!cd.g.thisPageWatchedSections.length) {
+        delete cd.g.watchedSections[mw.config.get('wgArticleId')];
+      }
 
-    let text = cd.sParse('section-unwatch-success', headline);
-    let autoHideSeconds;
-    if (watchedAncestorHeadline) {
-      text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
-      autoHideSeconds = 'long';
-    }
-    if (!silent || watchedAncestorHeadline) {
-      mw.notify(cd.util.wrap(text), { autoHideSeconds });
-    }
-    if (successCallback) {
-      successCallback();
-    }
+      try {
+        await setWatchedSections();
+      } catch (e) {
+        mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+        if (errorCallback) {
+          errorCallback();
+        }
+        return;
+      }
+
+      let text = cd.sParse('section-unwatch-success', headline);
+      let autoHideSeconds;
+      if (watchedAncestorHeadline) {
+        text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
+        autoHideSeconds = 'long';
+      }
+      if (!silent || watchedAncestorHeadline) {
+        mw.notify(cd.util.wrap(text), { autoHideSeconds });
+      }
+      if (successCallback) {
+        successCallback();
+      }
+    });
   }
 
   /**
