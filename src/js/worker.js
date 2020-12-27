@@ -184,7 +184,7 @@ function parse() {
           tagName: element.tagName,
           html: element.outerHTML,
         });
-        const textNode = cd.g.rootElement.createTextNode(`\x01${index}_${type}\x02`);
+        const textNode = context.document.createTextNode(`\x01${index}_${type}\x02`);
         element.parentNode.insertBefore(textNode, element);
         element.remove();
       });
