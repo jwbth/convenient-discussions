@@ -356,7 +356,9 @@ export default {
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for the way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}.
+   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. This value can have a
+   * wikitext counterpart (although it may not be necessary), {@link
+   * module:defaultConfig.templatesToExclude}.
    *
    * When it comes to the wikitext, all lines containing these classes are ignored.
    *
@@ -368,6 +370,8 @@ export default {
   /**
    * Blocks with templates listed here won't be considered legit comment timestamp containers. All
    * lines containing these templates are ignored when searching for timestamps in the wikitext.
+   * This value can have a web page counterpart, {@link
+   * module:defaultConfig.elementsToExcludeClasses}.
    *
    * @type {string[]}
    * @default []

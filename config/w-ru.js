@@ -188,6 +188,7 @@ export default {
     'ambox',
     'NavFrame',
     'ts-Закрыто-footer',
+    'ts-Цитата-container',
   ],
 
   templatesToExclude: [
@@ -317,8 +318,10 @@ export default {
   checkForCustomForeignComponents: function (node) {
     return (
       node.classList.contains('ts-Закрыто-header') ||
+
       // Talk page template
       (cd.g.CURRENT_NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
+
       // {{clear}}
       (
         node.tagName === 'DIV' &&
