@@ -286,8 +286,8 @@ function onMessageFromWindow(e) {
       withEndIndices: true,
     });
 
-    cd.g.rootElement = new Document(dom);
-    context.document = cd.g.rootElement;
+    context.document = new Document(dom);
+    cd.g.rootElement = context.document.children[0];
     cd.g.specialElements = {
       pageHasOutdents: Boolean(
         cd.g.rootElement.getElementsByClassName('outdent-template', 1).length
