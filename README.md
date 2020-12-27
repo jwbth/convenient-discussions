@@ -4,21 +4,20 @@
 **Convenient Discussions** (**CD**) is a JavaScript tool providing a shell over the existing [MediaWiki](https://www.mediawiki.org/) discussion system that enhances user experience with talk pages in multiple ways.
 
 ## Features
-The script features include:
-* posting and editing comments without switching to a separate page;
-  * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete;
-  * autofilling the edit summary with indication of the addressee of the comment;
-  * saving comment drafts to restore the forms' content after unexpected events such as browser crashes;
-* creating topics and subsections;
-* highlighting and navigating new comments (via the navigation panel or the table of contents);
-* highlighting own comments;
-* checking for new comments in the background and automatically rendering simple comment edits;
-* desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in);
-* watching sections, which affects notifications and highlighting edits on pages that list revisions;
-* jumping to a specific comment from the watchlist and other pages that list revisions;
-* moving topics between talk pages;
-* thanking for and copying links to edits that added comments;
-* slightly redesigned discussion threads that make it easier to follow which comment replies to which.
+* Posting and editing comments without switching to a separate page
+  * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete
+  * Autofilling the edit summary with indication of the addressee of the comment
+  * Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
+* Creating topics and subsections
+* Highlighting and navigating new comments (via the navigation panel or the table of contents)
+* Highlighting own comments
+* Checking for new comments in the background and automatically rendering simple comment edits
+* Desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in)
+* Watching sections, which affects notifications and highlighting edits on pages that list revisions
+* Jumping to a specific comment from the watchlist and other pages that list revisions
+* Moving topics between talk pages
+* Thanking for and copying links to edits that added comments
+* Slightly redesigned discussion threads that make it easier to follow which comment replies to which
 
 The script makes the user forget about:
 * the need to search the code for a place for a comment, count colons, type tildes and other markup;
