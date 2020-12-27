@@ -244,15 +244,18 @@ export default {
       .find('.cd-toc-notRenderedCommentList')
       .remove();
 
+    cd.debug.startTimer('addNewComments sections cycle');
     commentsBySection.forEach((comments, sectionOrAnchor) => {
       if (!sectionOrAnchor) return;
 
       // There could be a collision of hrefs between the existing section and not yet rendered
       // section, so we compose the selector carefully.
+      cd.debug.startTimer('addNewComments sections selector');
       const selector = typeof sectionOrAnchor === 'string' ?
         `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]` :
         `a[href="#${$.escapeSelector(sectionOrAnchor.anchor)}"]:not(.cd-toc-notRenderedSection a)`;
       const $sectionLink = cd.g.$toc.find(selector);
+      cd.debug.stopTimer('addNewComments sections selector');
       if (!$sectionLink.length) return;
 
       let $target = $sectionLink;
@@ -266,6 +269,7 @@ export default {
 
       let moreTooltipText = '';
       comments.forEach((comment, i) => {
+        cd.debug.startTimer('addNewComments comments prepare');
         const parent = areCommentsRendered ? comment.getParent() : comment.parent;
         const names = parent?.author && comment.level > 1 ?
           cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
@@ -279,7 +283,9 @@ export default {
           cd.mws('comma-separator') +
           date
         );
+        cd.debug.stopTimer('addNewComments comments prepare');
 
+        cd.debug.startTimer('addNewComments comments DOM');
         if (i < 5) {
           const $li = $('<li>')
             .appendTo($ul);
@@ -313,8 +319,10 @@ export default {
         } else {
           moreTooltipText += text + '\n';
         }
+        cd.debug.stopTimer('addNewComments comments DOM');
       });
 
+      cd.debug.startTimer('addNewComments sections DOM');
       if (comments.length > 5) {
         const $span = $('<span>')
           .addClass('cd-toc-more')
@@ -324,7 +332,9 @@ export default {
           .append($span)
           .appendTo($ul);
       }
+      cd.debug.stopTimer('addNewComments sections DOM');
     });
+    cd.debug.stopTimer('addNewComments sections cycle');
 
     restoreScrollPosition();
   },
