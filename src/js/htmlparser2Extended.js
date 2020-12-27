@@ -52,8 +52,6 @@ const Element = dummyDom[0].constructor;
 const DataNode = dummyDom[0].childNodes[0].constructor;
 const NodeConstructor = Object.getPrototypeOf(DataNode);
 
-// We extend the prototype after parsing the html (parsing goes a bit faster with the default
-// setup).
 Object.defineProperty(Element.prototype, 'childElements', {
   get: function () {
     return this.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE);
@@ -213,9 +211,11 @@ Element.prototype.follows = function (node) {
     if (thisTree.includes(current)) {
       sharedParent = current;
       thisSharedParentChild = thisTree[thisTree.indexOf(current) + 1];
-      // nodeTree must have at least 2 elements, this is guaranteed by the check
-      // "current === node" above.
+
+      // nodeTree must have at least 2 elements, this is guaranteed by the check "current === node"
+      // above.
       nodeSharedParentChild = nodeTree[1];
+
       break;
     }
   }
@@ -226,7 +226,6 @@ Element.prototype.follows = function (node) {
       sharedParent.childNodes.indexOf(nodeSharedParentChild)
     )
   );
-  // const returnValue = null;
   return returnValue;
 };
 
@@ -330,9 +329,9 @@ NodeConstructor.prototype.remove = function () {
 // other library if needed. Here, we also extend the prototype of the Element and DataNode classes
 // that htmlparser2 library uses. Note that the Element class already has the "children" property
 // containing all child nodes, which differs from what this property stands for in the browser DOM
-// representation (only children that are elements), but we can't replace it as it would intervene
-// in the internal workings of the class. So we use the "childElements" property instead for this
-// purpose.
+// representation (only child nodes that are elements), but we can't replace it as it would
+// intervene in the internal workings of the class. So we use the "childElements" property instead
+// for this purpose.
 class Document extends Element {
   constructor(dom) {
     super('body', {});

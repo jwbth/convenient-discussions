@@ -262,11 +262,7 @@ export default {
       }
 
       const $ul = $('<ul>').insertAfter($target);
-      $ul.addClass(
-        areCommentsRendered ?
-        'cd-toc-newCommentList' :
-        'cd-toc-notRenderedCommentList'
-      );
+      $ul.addClass(areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-notRenderedCommentList');
 
       let moreTooltipText = '';
       comments.forEach((comment, i) => {
