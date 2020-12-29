@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			")8",
 			"Abijeet Patro",
 			"Nadine Siak",
 			"SomeyaMako",
@@ -23,6 +24,8 @@
 	"sm-unwatch": "取消监视",
 	"sm-copylink-tooltip-wikilink": "复制链接。",
 	"sm-copylink-tooltip-link": "复制链接。",
+	"comment-edited-refresh": "刷新",
+	"comment-edited-diff": "差异",
 	"section-reply": "回复",
 	"section-addsubsection-to": "向“$1”中添加新章节",
 	"section-newcomments": "此节中有新评论。点击以刷新页面。",
