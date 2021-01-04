@@ -31,35 +31,10 @@ export default {
   highlightWatchedSections() {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    const headlines = cd.sections.map((section) => section.headline);
-    const $allLinks = cd.g.$toc
-      .find('a')
-      .each((i, el) => {
-        el.cdTocText = $(el).find('.toctext').text();
-      });
     cd.sections
-      // Only unique headlines
-      .filter((section, i) => headlines.indexOf(section.headline) === i)
-
+      .filter((section) => section.isWatched)
       .forEach((section) => {
-        // Can be more than one section with that headline. (In that case, the same code will run
-        // more than once, but there is no gain in filtering.)
-        const $links = $allLinks.filter(function () {
-          // This can be expensive if there are very many sections on the page (with 150 sections,
-          // 22500 cycles would be completed), so we use a directly set property, not .data() or
-          // something.
-          return this.cdTocText === section.headline;
-        });
-        if (!$links.length) return;
-
-        if (section.isWatched) {
-          $links
-            .addClass('cd-toc-watched')
-            .attr('title', cd.s('toc-watched'));
-        } else {
-          $links
-            .removeClass('cd-toc-watched');
-        }
+        section.updateTocLink();
       });
   },
 

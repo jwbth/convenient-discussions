@@ -2956,13 +2956,13 @@ export default class CommentForm {
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
           const headline = removeWikiMarkup(this.headlineInput.getValue());
-          Section.watchSection(headline, true);
           keptData.justWatchedSection = headline;
+          let originalHeadline;
           if (isHeadlineAltered) {
-            const originalHeadline = removeWikiMarkup(this.originalHeadline);
-            Section.unwatchSection(originalHeadline, true);
+            originalHeadline = removeWikiMarkup(this.originalHeadline);
             keptData.justUnwatchedSection = originalHeadline;
           }
+          Section.watch(headline, originalHeadline).catch(() => {});
         } else {
           const section = this.targetSection;
           if (section && !section.isWatched) {

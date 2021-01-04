@@ -10,7 +10,6 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
-import toc from './toc';
 import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
@@ -973,9 +972,13 @@ export default class Section extends SectionSkeleton {
   /**
    * Add the section to the watched sections list.
    *
-   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
+   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is an
+   *   error.
+   * @param {string} [renamedFrom] If the section was renamed, the previous section headline. It is
+   *   unwatched together with watching the current headline if there is no other coinciding
+   *   headlines on the page.
    */
-  watch(silent = false) {
+  watch(silent = false, renamedFrom) {
     const sections = Section.getSectionsByHeadline(this.headline);
     let $links;
     if (!silent) {
@@ -987,25 +990,43 @@ export default class Section extends SectionSkeleton {
       }
     }
 
-    Section.watchSection(this.headline, silent)
+    let unwatchHeadline;
+    if (renamedFrom && !Section.getSectionsByHeadline(renamedFrom).length) {
+      unwatchHeadline = renamedFrom;
+    }
+
+    Section.watch(this.headline, unwatchHeadline)
       .finally(() => {
         if ($links) {
           $links.removeClass('cd-link-pending');
         }
       })
-      .then(() => {
-        sections.forEach((section) => {
-          section.isWatched = true;
-          section.updateWatchMenuItems();
-        });
-        toc.highlightWatchedSections();
-      });
+      .then(
+        () => {
+          sections.forEach((section) => {
+            section.isWatched = true;
+            section.updateWatchMenuItems();
+            section.updateTocLink();
+          });
+          if (!silent) {
+            let text = cd.sParse('section-watch-success', this.headline);
+            let autoHideSeconds;
+            if ($('#ca-watch').length) {
+              text += ' ' + cd.sParse('section-watch-pagenotwatched');
+              autoHideSeconds = 'long';
+            }
+            mw.notify(cd.util.wrap(text), { autoHideSeconds });
+          }
+        },
+        () => {}
+      );
   }
 
   /**
    * Remove the section from the watched sections list.
    *
-   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is a error.
+   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is an
+   *   error.
    */
   unwatch(silent = false) {
     const sections = Section.getSectionsByHeadline(this.headline);
@@ -1021,19 +1042,33 @@ export default class Section extends SectionSkeleton {
       }
     }
 
-    Section.unwatchSection(this.headline, silent, this.getClosestWatchedSection()?.headline)
+    Section.unwatch(this.headline)
       .finally(() => {
         if ($links) {
           $links.removeClass('cd-link-pending');
         }
       })
-      .then(() => {
-        sections.forEach((section) => {
-          section.isWatched = false;
-          section.updateWatchMenuItems();
-        });
-        toc.highlightWatchedSections();
-      });
+      .then(
+        () => {
+          sections.forEach((section) => {
+            section.isWatched = false;
+            section.updateWatchMenuItems();
+            section.updateTocLink();
+          });
+
+          const watchedAncestorHeadline = this.getClosestWatchedSection()?.headline;
+          if (!silent || watchedAncestorHeadline) {
+            let text = cd.sParse('section-unwatch-success', this.headline);
+            let autoHideSeconds;
+            if (watchedAncestorHeadline) {
+              text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
+              autoHideSeconds = 'long';
+            }
+            mw.notify(cd.util.wrap(text), { autoHideSeconds });
+          }
+        },
+        () => {}
+      );
   }
 
   /**
@@ -1488,14 +1523,56 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a section on the current page to the watched sections list.
+   * Get the TOC link to the section if present.
+   *
+   * @returns {?JQuery}
+   */
+  getTocLink() {
+    if (!cd.g.$toc.length) {
+      return null;
+    }
+
+    if (!this.cachedTocLink) {
+      const $link = cd.g.$toc.find(`a[href="#${$.escapeSelector(this.anchor)}"]`);
+      this.cachedTocLink = $link.length && !$link.closest('.cd-toc-notRenderedSection').length ?
+        $link :
+        null;
+    }
+
+    return this.cachedTocLink;
+  }
+
+  /**
+   * Bold/unbold the section's TOC link and update the `title` attribute.
+   */
+  updateTocLink() {
+    if (!cd.settings.modifyToc) return;
+
+    const tocLink = this.getTocLink();
+    if (!tocLink) return;
+
+    if (this.isWatched) {
+      tocLink
+        .addClass('cd-toc-watched')
+        .attr('title', cd.s('toc-watched'));
+    } else {
+      tocLink
+        .removeClass('cd-toc-watched')
+        .removeAttr('title');
+    }
+  }
+
+  /**
+   * Add a section present on the current page to the watched sections list.
    *
    * @param {string} headline
-   * @param {boolean} [silent=false] Don't display a success notification.
+   * @param {string} [unwatchHeadline] Section to unwatch together with watching the specified
+   *   section (used when a section is renamed on the fly in {@link module:Comment#update} or {@link
+   *   module:CommentForm#submit}).
+   * @returns {Promise}
+   * @throws {CdError}
    */
-  static async watchSection(headline, silent = false) {
-    if (!headline) return;
-
+  static watch(headline, unwatchHeadline) {
     const watch = async () => {
       try {
         await getWatchedSections();
@@ -1507,6 +1584,13 @@ export default class Section extends SectionSkeleton {
       // The section could be added to the watchlist in another tab.
       if (!cd.g.thisPageWatchedSections.includes(headline)) {
         cd.g.thisPageWatchedSections.push(headline);
+      }
+
+      if (unwatchHeadline && cd.g.thisPageWatchedSections.includes(unwatchHeadline)) {
+        cd.g.thisPageWatchedSections.splice(
+          cd.g.thisPageWatchedSections.indexOf(unwatchHeadline),
+          1
+        );
       }
 
       try {
@@ -1534,16 +1618,6 @@ export default class Section extends SectionSkeleton {
         }
         throw e;
       }
-
-      if (!silent) {
-        let text = cd.sParse('section-watch-success', headline);
-        let autoHideSeconds;
-        if ($('#ca-watch').length) {
-          text += ' ' + cd.sParse('section-watch-pagenotwatched');
-          autoHideSeconds = 'long';
-        }
-        mw.notify(cd.util.wrap(text), { autoHideSeconds });
-      }
     };
 
     watchPromise = watchPromise.then(watch, watch);
@@ -1551,14 +1625,13 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a section on the current page to the watched sections list.
+   * Add a section present on the current page to the watched sections list.
    *
    * @param {string} headline
-   * @param {boolean} [silent=false] Don't display a success notification.
-   * @param {string} [watchedAncestorHeadline] Headline of the ancestor section that is
-   *   watched.
+   * @returns {Promise}
+   * @throws {CdError}
    */
-  static async unwatchSection(headline, silent = false, watchedAncestorHeadline) {
+  static unwatch(headline) {
     const unwatch = async () => {
       try {
         await getWatchedSections();
@@ -1567,10 +1640,11 @@ export default class Section extends SectionSkeleton {
         throw e;
       }
 
-      // The section could be unwatched in another tab.
+      // The section could be removed from the watchlist in another tab.
       if (cd.g.thisPageWatchedSections.includes(headline)) {
         cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
       }
+
       if (!cd.g.thisPageWatchedSections.length) {
         delete cd.g.watchedSections[mw.config.get('wgArticleId')];
       }
@@ -1580,16 +1654,6 @@ export default class Section extends SectionSkeleton {
       } catch (e) {
         mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
         throw e;
-      }
-
-      let text = cd.sParse('section-unwatch-success', headline);
-      let autoHideSeconds;
-      if (watchedAncestorHeadline) {
-        text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
-        autoHideSeconds = 'long';
-      }
-      if (!silent || watchedAncestorHeadline) {
-        mw.notify(cd.util.wrap(text), { autoHideSeconds });
       }
     };
 
