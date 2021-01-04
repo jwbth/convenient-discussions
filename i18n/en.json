@@ -38,6 +38,7 @@
   "comment-edited-diff-empty": "The diff is empty. Perhaps the script is wrong, and the comment wasn't edited after all.",
   "comment-deleted": "The comment was deleted.",
   "comment-editedsince": "The comment was edited since your last visit.",
+  "comment-edited-history": "Edit history",
 
   "section-reply": "Reply",
   "section-addsubsection-to": "Add subsection to \"$1\"",

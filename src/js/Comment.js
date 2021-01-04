@@ -2468,7 +2468,16 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    OO.ui.alert($cleanDiff, { size: 'larger' });
+    const $historyLink = $('<a>')
+      .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
+      .attr('target', '_blank')
+      .text(cd.s('comment-edited-history'));
+    const $below = $('<div>')
+      .addClass('cd-commentDiffView-below')
+      .append($historyLink);
+
+    const $message = $('<div>').append($cleanDiff, $below);
+    OO.ui.alert($message, { size: 'larger' });
   }
 
   /**
