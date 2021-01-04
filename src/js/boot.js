@@ -787,8 +787,14 @@ export async function reloadPage(keptData = {}) {
 function cleanUpSessions(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
+    // TODO: remove 1 month after release
+    if (newData[key].forms) {
+      newData[key].commentForms = newData[key].forms;
+      delete newData[key].forms;
+    }
+
     if (
-      !newData[key].forms?.length ||
+      !newData[key].commentForms?.length ||
       newData[key].saveUnixTime < Date.now() - 30 * cd.g.SECONDS_IN_A_DAY * 1000
     ) {
       delete newData[key];
@@ -802,7 +808,7 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
-  const forms = cd.commentForms
+  const commentForms = cd.commentForms
     .filter((commentForm) => commentForm.isAltered())
     .map((commentForm) => {
       let targetData;
@@ -836,7 +842,7 @@ export function saveSession() {
       };
     });
   const saveUnixTime = Date.now();
-  const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
+  const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
 
   const dataAllPages = getFromLocalStorage('commentForms');
   dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
@@ -852,7 +858,7 @@ export function saveSession() {
 function restoreCommentFormsFromData(commentFormsData) {
   let haveRestored = false;
   const rescue = [];
-  commentFormsData.forms.forEach((data) => {
+  commentFormsData.commentForms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData?.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
@@ -927,7 +933,7 @@ export function restoreCommentForms() {
     const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
     saveToLocalStorage('commentForms', dataAllPages);
     const data = dataAllPages[mw.config.get('wgPageName')] || {};
-    if (data.forms) {
+    if (data.commentForms) {
       restoreCommentFormsFromData(data);
     }
   } else {
