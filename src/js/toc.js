@@ -54,9 +54,15 @@ export default {
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
+    cd.debug.startTimer('addNewSections');
+    cd.debug.startTimer('addNewSections remove');
+
     cd.g.$toc
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
       .remove();
+
+    cd.debug.stopTimer('addNewSections remove');
+    cd.debug.startTimer('addNewSections tocSections');
 
     const tocSections = cd.g.$toc
       .find('li > a')
@@ -74,6 +80,9 @@ export default {
           .text();
         return { headline, anchor, level, number, $element };
       });
+
+    cd.debug.stopTimer('addNewSections tocSections');
+    cd.debug.startTimer('addNewSections parent');
 
     /*
       Note the case when the page starts with sections of lower levels than the base level, like
@@ -108,6 +117,9 @@ export default {
     sections.forEach((section) => {
       section.tocLevel = section.parent ? section.parent.tocLevel + 1 : 1;
     });
+
+    cd.debug.stopTimer('addNewSections parent');
+    cd.debug.startTimer('addNewSections add');
 
     let currentTree = [];
     const $topUl = cd.g.$toc.children('ul');
@@ -182,6 +194,9 @@ export default {
       currentTree[section.tocLevel - 1] = match;
       currentTree.splice(section.tocLevel);
     });
+
+    cd.debug.stopTimer('addNewSections add');
+    cd.debug.stopTimer('addNewSections');
   },
 
   /**

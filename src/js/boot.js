@@ -817,6 +817,8 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
+  cd.debug.startTimer('saveSession');
+
   const commentForms = cd.commentForms
     .filter((commentForm) => commentForm.isAltered())
     .map((commentForm) => {
@@ -856,6 +858,8 @@ export function saveSession() {
   const dataAllPages = getFromLocalStorage('commentForms');
   dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
   saveToLocalStorage('commentForms', dataAllPages);
+
+  cd.debug.stopTimer('saveSession');
 }
 
 /**
