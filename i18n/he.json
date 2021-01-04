@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Abijeet Patro",
+			"Amire80",
 			"IKhitron",
 			"Jack who built the house",
 			"YaronSh",
@@ -210,7 +211,7 @@
 	"sd-reset-confirm": "האם ברצונכם לאפס את ההעדפות? (לחצו \"{{int:convenient-discussions-sd-save}}\" לאחר האיפוס.)",
 	"sd-removedata": "הסרת כל המידע של הסקריפט",
 	"sd-removedata-description": "מחיקת המידע שדיונים נוחים צבר: העדפותיכם, ביקורים אחרונים בדפי שיחות, נושאים במעקב וטיוטות הפוסטים שטרם נשמרו",
-	"sd-removedata-help": "קחו בחשבון שהכל למעט העדפות גלובליות מוסר עבור הדומיין הנוכחי. אם השתמשתם בדיונים נוחים בדומיינים אחרים תצטרכו להוריד את המידע גם משם. ראו את [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|דף הבית של הסקריפט]] לפרטים על מה, למה, ואיך הסקריפט שומר מידע ועל איך למחוק חלקים מסוימים ממנו.",
+	"sd-removedata-help": "קחו בחשבון שהכל למעט העדפות גלובליות מוסר עבור הוויקי הנוכחי. אם השתמשתם בדיונים נוחים באתרי ויקי אחרים ואתם רוצים למחוק את כל הנתונים בהם, תצטרכו להסיר את הנתונים משם. ר' את [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|דף הבית של הסקריפט]] לפרטים על מה, למה, ואיך הסקריפט שומר מידע ועל איך למחוק חלקים מסוימים ממנו.",
 	"sd-removedata-confirm": "זה ימחק לנצח את העדפותיכם, ביקורים אחרונים בדפי שיחות, נושאים במעקב וטיוטות הפוסטים שטרם נשמרו. האם ברצונכם להמשיך?",
 	"sd-removedata-confirm-yes": "כן",
 	"sd-removedata-confirm-no": "לא",
