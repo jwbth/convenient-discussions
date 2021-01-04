@@ -994,9 +994,11 @@ export default class Comment extends CommentSkeleton {
 
     const goToChildButton = new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
+      icon: 'downTriangle',
       title: cd.s('cm-gotochild-tooltip'),
       framed: false,
-      classes: ['cd-button', 'cd-commentButton'],
+      invisibleLabel: true,
+      classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
     });
     goToChildButton.on('click', () => {
       parent.goToChild();
