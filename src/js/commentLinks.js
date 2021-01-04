@@ -279,6 +279,10 @@ function isArchiving(summary) {
  * @returns {boolean}
  */
 function isInSection(summary, name) {
+  if (!name) {
+    return false;
+  }
+
   // This can run many thousand times, so we use the cheapest way.
   return cd.g.SITE_DIR === 'ltr' ?
     summary.includes(`→${name}${colon}`) || summary.endsWith(`→${name}`) :

@@ -341,42 +341,42 @@ export default class Section extends SectionSkeleton {
       watchedSectionsRequest
         .then(
           () => {
-            if (this.headline) {
-              this.isWatched = cd.g.thisPageWatchedSections.includes(this.headline);
-              this.addMenuItem({
-                label: cd.s('sm-unwatch'),
-                tooltip: cd.s('sm-unwatch-tooltip'),
-                func: () => {
-                  this.unwatch();
-                },
-                class: 'cd-sectionLink-unwatch',
-                visible: this.isWatched,
-              });
-              this.addMenuItem({
-                label: cd.s('sm-watch'),
-                tooltip: cd.s('sm-watch-tooltip'),
-                func: () => {
-                  this.watch();
-                },
-                class: 'cd-sectionLink-watch',
-                visible: !this.isWatched,
-              });
-            }
+            this.isWatched = cd.g.thisPageWatchedSections.includes(this.headline);
+            this.addMenuItem({
+              label: cd.s('sm-unwatch'),
+              tooltip: cd.s('sm-unwatch-tooltip'),
+              func: () => {
+                this.unwatch();
+              },
+              class: 'cd-sectionLink-unwatch',
+              visible: this.isWatched,
+            });
+            this.addMenuItem({
+              label: cd.s('sm-watch'),
+              tooltip: cd.s('sm-watch-tooltip'),
+              func: () => {
+                this.watch();
+              },
+              class: 'cd-sectionLink-watch',
+              visible: !this.isWatched,
+            });
           },
           () => {}
         )
         .finally(() => {
-          const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
+          if (this.headline) {
+            const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
 
-          // We put it here to make it appear always after the "watch" item.
-          this.addMenuItem({
-            label: cd.s('sm-copylink'),
-            // We need the event object to be passed to the function.
-            func: this.copyLink.bind(this),
-            class: 'cd-sectionLink-copyLink',
-            tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
-            href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
-          });
+            // We put it here to make it appear always after the "watch" item.
+            this.addMenuItem({
+              label: cd.s('sm-copylink'),
+              // We need the event object to be passed to the function.
+              func: this.copyLink.bind(this),
+              class: 'cd-sectionLink-copyLink',
+              tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
+              href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
+            });
+          }
 
           /**
            * Section menu has been extneded.
@@ -1559,8 +1559,6 @@ export default class Section extends SectionSkeleton {
    *   watched.
    */
   static async unwatchSection(headline, silent = false, watchedAncestorHeadline) {
-    if (!headline) return;
-
     const unwatch = async () => {
       try {
         await getWatchedSections();
