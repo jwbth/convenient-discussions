@@ -843,11 +843,11 @@ export default class Section extends SectionSkeleton {
         const $sectionCodeNote = $('<div>');
         const code = sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '');
         $('<pre>')
-          .addClass('cd-sectionMove-code')
+          .addClass('cd-moveSectionDialog-code')
           .text(code)
           .appendTo($sectionCodeNote);
         $('<p>')
-          .addClass('cd-sectionMove-codeNote')
+          .addClass('cd-moveSectionDialog-codeNote')
           .text(cd.s('msd-bottom'))
           .appendTo($sectionCodeNote);
 

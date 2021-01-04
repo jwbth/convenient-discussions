@@ -73,22 +73,19 @@ async function checkForUpdates() {
   const documentHidden = document.hidden;
 
   if (documentHidden && !isBackgroundCheckArranged) {
-    const callback = () => {
-      $(document).off('visibilitychange', callback);
+    const onDocumentVisible = () => {
+      $(document).off('visibilitychange', onDocumentVisible);
       isBackgroundCheckArranged = false;
       removeAlarmViaWorker();
       checkForUpdates();
     };
-    $(document).on('visibilitychange', callback);
+    $(document).on('visibilitychange', onDocumentVisible);
 
     const interval = Math.abs(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL - cd.g.UPDATE_CHECK_INTERVAL);
     setAlarmViaWorker(interval * 1000);
     isBackgroundCheckArranged = true;
     return;
   }
-
-  // Precaution
-  isBackgroundCheckArranged = false;
 
   try {
     const revisions = await cd.g.CURRENT_PAGE.getRevisions({

@@ -1258,11 +1258,12 @@ export default class Comment extends CommentSkeleton {
    * notification.
    */
   async thank() {
+    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
+
     const thankButton = this.thankButton;
     const pendingThankButton = this.elementPrototypes.pendingThankButton.cloneNode(true);
     this.replaceButton(this.thankButton, pendingThankButton, 'thank');
 
-    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
     let genderRequest;
     if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered()) {
       genderRequest = getUserGenders([this.author]);

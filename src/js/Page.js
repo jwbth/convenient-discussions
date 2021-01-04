@@ -189,7 +189,7 @@ export default class Page {
    * `realName` property that indicates either the redirect target if it's present or the page name.
    *
    * @param {boolean} [tolerateMissing=true] Assign `''` to the `code` property if the page is
-   *   missing instead of throwing a error.
+   *   missing instead of throwing an error.
    *
    * @throws {CdError}
    */

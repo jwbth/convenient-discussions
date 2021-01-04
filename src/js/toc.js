@@ -49,7 +49,7 @@ export default {
    * Add links to new, not yet rendered sections (loaded in the background) to the table of
    * contents.
    *
-   * @param {SectionSkeletonLike[]} sections All sections on the page.
+   * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
    */
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;

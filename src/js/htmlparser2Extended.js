@@ -98,13 +98,14 @@ Object.defineProperty(Element.prototype, 'lastElementChild', {
 
 Object.defineProperty(Element.prototype, 'textContent', {
   get: function () {
-    // const returnValue = DomUtils.getText(this);
-    // const returnValue = this.childNodes.map((node) => node.textContent).join('');
     let returnValue = '';
-    // This runs pretty often, so we microoptimize it.
+
+    // This runs pretty often, so we microoptimize it. Using DomUtils.getText or Array#map +
+    // Array#join would take longer.
     this.childNodes.forEach((node) => {
       returnValue += node.textContent;
     });
+
     return returnValue;
   },
 });

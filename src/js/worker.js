@@ -191,6 +191,7 @@ function parse() {
 
       return element.outerHTML;
     });
+
     /*
       We can't use outerHTML for comparing comment revisions as the difference may be in div vs. dd
       (li) tags in this case: This creates a dd tag.

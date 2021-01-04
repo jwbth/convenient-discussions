@@ -329,9 +329,7 @@ export default class Parser {
         const startElementNextSibling = startElement.nextSibling;
         const element = this.context.document.createElement('span');
         element.classList.add('cd-signature');
-        signatureNodes
-          .reverse()
-          .forEach(element.appendChild.bind(element));
+        signatureNodes.reverse().forEach(element.appendChild.bind(element));
         signatureContainer.insertBefore(element, startElementNextSibling);
 
         // If there is no author, we add the class to prevent the element from being considered a

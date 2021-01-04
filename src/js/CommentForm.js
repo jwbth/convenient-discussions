@@ -108,7 +108,7 @@ export default class CommentForm {
     this.isNewTopicOnTop = isNewTopicOnTop;
 
     if (this.target instanceof Comment) {
-      this.sectionHeadline = this.target.getSection() && this.target.getSection().headline;
+      this.sectionHeadline = this.target.getSection()?.headline;
     } else if (this.target instanceof Section) {
       this.sectionHeadline = this.target.headline;
     }

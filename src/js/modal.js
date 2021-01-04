@@ -1085,8 +1085,12 @@ function copyLinkToClipboardAndNotify(text) {
  * @param {boolean} chooseLink Allow the user to choose the type of a link.
  */
 export async function copyLink(object, chooseLink) {
-  const isComment = object instanceof Comment;
   if (object.isLinkBeingCopied) return;
+
+  const isComment = object instanceof Comment;
+  const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
+  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
+  const decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
 
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
@@ -1096,11 +1100,6 @@ export async function copyLink(object, chooseLink) {
    * @type {boolean}
    * @instance module:Comment
    */
-
-  const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
-  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
-  const decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
-
   /**
    * Is a link to the section being copied right now (a copy link dialog is opened).
    *
