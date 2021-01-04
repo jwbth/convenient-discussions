@@ -1949,6 +1949,7 @@ export default class Comment extends CommentSkeleton {
       signatureDirtyCode: match.dirtyCode,
       startIndex: match.commentStartIndex,
       endIndex: match.startIndex,
+      signatureEndIndex: match.startIndex + match.dirtyCode.length,
     }));
 
     // For the reserve method; the main method uses one date.
@@ -2202,7 +2203,7 @@ export default class Comment extends CommentSkeleton {
               ({ startIndex, contentEndIndex: endIndex } = this.getSection().inCode);
             }
           } else {
-            endIndex = thisInCode.endIndex + thisInCode.signatureDirtyCode.length + 1;
+            endIndex = thisInCode.signatureEndIndex + 1;
             const succeedingText = pageCode.slice(thisInCode.endIndex);
 
             const repliesRegexp = new RegExp(
@@ -2224,8 +2225,7 @@ export default class Comment extends CommentSkeleton {
         } else {
           const startIndex = thisInCode.lineStartIndex;
           codeBeforeInsertion = pageCode.slice(0, startIndex);
-          const codeAfterInsertion = pageCode
-            .slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length);
+          const codeAfterInsertion = pageCode.slice(thisInCode.signatureEndIndex);
           newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         }
         break;
@@ -2414,7 +2414,7 @@ export default class Comment extends CommentSkeleton {
       const inCode = this.locateInCode(pageCode, commentsData[i]);
       const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
       const newlinesInComment = (
-        pageCode.slice(inCode.lineStartIndex, inCode.endIndex).match(/\n/g) ||
+        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
         []
       );
       const startLineNumber = newlinesBeforeComment.length + 1;
