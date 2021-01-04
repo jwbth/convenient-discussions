@@ -299,6 +299,7 @@ function onMessageFromWindow(e) {
     postMessage({
       type: message.type,
       revisionId: message.revisionId,
+      resolverId: message.resolverId,
       comments: cd.comments,
       sections: cd.sections,
     });
