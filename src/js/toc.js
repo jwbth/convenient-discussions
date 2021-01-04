@@ -235,9 +235,13 @@ export default {
       if ($next.length) {
         $target = $next;
       }
+      const target = $target.get(0);
 
-      const $ul = $('<ul>').insertAfter($target);
-      $ul.addClass(areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-notRenderedCommentList');
+      // jQuery is too expensive here given that very many comments may be added.
+      const ul = document.createElement('ul');
+      ul.className = areCommentsRendered ?
+        'cd-toc-newCommentList' :
+        'cd-toc-notRenderedCommentList';
 
       let moreTooltipText = '';
       comments.forEach((comment, i) => {
@@ -255,35 +259,39 @@ export default {
           date
         );
 
-        if (i < 5) {
-          const $li = $('<li>')
-            .appendTo($ul);
-          const href = `#${comment.anchor}`;
-          $('<span>')
-            .html(cd.sParse('bullet'))
-            .addClass('tocnumber')
-            .addClass('cd-toc-bullet')
-            .appendTo($li);
-          const $text = $('<span>')
-            .addClass('toctext')
-            .appendTo($li);
-          const $a = $('<a>')
-            .text(text)
-            .attr('href', href)
-            .appendTo($text);
+        // If there are 5 comments or less, show all of them. If there are more, show 4 and "N
+        // more". (Because showing 4 and then "1 more" is stupid.)
+        if (i < 4 || comments.length === 5) {
+          const li = document.createElement('li');
+          ul.appendChild(li);
+
+          const bulletSpan = document.createElement('span');
+          bulletSpan.className = 'tocnumber cd-toc-bullet';
+          bulletSpan.innerHTML = cd.sParse('bullet');
+          li.appendChild(bulletSpan);
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'toctext';
+          li.appendChild(textSpan);
+
+          const a = document.createElement('a');
+          a.href = `#${comment.anchor}`;
+          a.textContent = text;
+          textSpan.appendChild(a);
+
           if (comment instanceof Comment) {
-            $a.on('click', (e) => {
+            a.onclick = (e) => {
               e.preventDefault();
               comment.scrollToAndHighlightTarget(false, true);
-            });
+            };
           } else {
-            $a.on('click', (e) => {
+            a.onclick = (e) => {
               e.preventDefault();
               reloadPage({
                 commentAnchor: comment.anchor,
                 pushState: true,
               });
-            });
+            };
           }
         } else {
           moreTooltipText += text + '\n';
@@ -291,14 +299,17 @@ export default {
       });
 
       if (comments.length > 5) {
-        const $span = $('<span>')
-          .addClass('cd-toc-more')
-          .attr('title', moreTooltipText.trim())
-          .text(cd.s('toc-more', comments.length - 5));
-        $('<li>')
-          .append($span)
-          .appendTo($ul);
+        const span = document.createElement('span');
+        span.className = 'cd-toc-more';
+        span.title = moreTooltipText.trim();
+        span.textContent = cd.s('toc-more', comments.length - 4);
+
+        const li = document.createElement('li');
+        li.appendChild(span);
+        ul.appendChild(li);
       }
+
+      target.parentNode.insertBefore(ul, target.nextSibling);
     });
 
     restoreScrollPosition();
