@@ -4,7 +4,8 @@
 			"Abijeet Patro",
 			"Ciencia Al Poder",
 			"Fitoschido",
-			"Jack who built the house"
+			"Jack who built the house",
+			"Rodney Araujo"
 		]
 	},
 	"script-name": "Discusiones Prácticas",
@@ -209,13 +210,13 @@
 	"error-settings-load": "No se pudieron cargar las configuraciones desde el servidor.",
 	"error-network": "Error de red.",
 	"error-unknown": "Error desconocido.",
-	"error-locatecomment": "No ha sido posible encontrar el comentario en el código. Esto puede deberse a la complejidad del código del comentario, el comentario se eliminó, o fue ampliamente editado. Puedes probar a <span class=\"cd-message-editSection\">[$1 editar el código de la sección de forma estándar]</span> o <span class=\"cd-message-reloadPage\">recargar la página</span>.",
+	"error-locatecomment": "No ha sido posible encontrar el comentario en el código. Esto puede deberse a la complejidad del código del comentario, el comentario se eliminó, o fue ampliamente editado. Puedes probar a <span class=\"cd-message-editSection\">[$1 editar el código de forma estándar]</span> o <span class=\"cd-message-reloadPage\">recargar la página</span>.",
 	"error-locatesection": "No ha sido posible encontrar el comentario en el código. Esto puede deberse a la complejidad del código del primer comentario de la sección, o a que el comentario se eliminó. Puedes probar a <span class=\"cd-message-editSection\">[$1 editar el código de la sección de forma estándar]</span> o <span class=\"cd-message-reloadPage\">recargar la página</span>.",
 	"error-spamblacklist": "Estás intentando añadir una URL con el nombre de dominio $1, que se encuentra bloqueado. La página no fue editada.",
 	"error-titleblacklist": "El nombre de página está restringido. La página no fue editada.",
 	"error-abusefilter": "El filtro antiabusos «$1» rechazó automáticamente tu edición.",
 	"error-editconflict": "Conflicto de edición.",
-	"error-blocked": "Estás bloqueado para editar. La página no fue editada.",
+	"error-blocked": "Tu cuenta o tu dirección IP está bloqueada de editar. La página no fue editada.",
 	"error-pagedeleted": "La página ha sido borrada.",
 	"error-pagenotedited": "No se editó la página",
 	"error-diffnotfound": "No ha sido posible encontrar la edición que añadió este comentario.",
