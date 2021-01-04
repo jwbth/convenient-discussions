@@ -4,6 +4,8 @@
  * @module ooui
  */
 
+import cd from './cd';
+
 /**
  * @typedef {object} OoUiFieldLayout
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
@@ -82,4 +84,44 @@ export function radioField({ label, selected, help, options }) {
   });
   select.selectItemByData(selected);
   return [field, select, ...items];
+}
+
+/**
+ * @typedef {object} OoUiActionFieldLayout
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ActionFieldLayout
+ */
+
+/**
+ * Create an action field for copying text from an input.
+ *
+ * @param {object} options
+ * @param {object} options.label
+ * @param {object} options.value
+ * @param {object} [options.disabled]
+ * @param {object} [options.help]
+ * @param {object} options.copyCallback
+ * @returns {OoUiActionFieldLayout}
+ */
+export function copyActionField({
+  label,
+  value,
+  disabled = false,
+  help,
+  copyCallback,
+}) {
+  const input = new OO.ui.TextInputWidget({ value, disabled });
+  const button = new OO.ui.ButtonWidget({
+    label: cd.s('copy'),
+    icon: 'articles',
+    disabled,
+  });
+  button.on('click', () => {
+    copyCallback(input.getValue());
+  });
+  return new OO.ui.ActionFieldLayout(input, button, {
+    align: 'top',
+    label,
+    help,
+    helpInline: Boolean(help),
+  });
 }

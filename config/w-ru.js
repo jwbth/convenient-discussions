@@ -58,6 +58,7 @@ export default {
     'comma-separator': ', ',
     'colon-separator': ': ',
     'dot-separator': ' • ',
+    'nextdiff': 'Следующая правка →',
   },
 
   contribsPage: 'Служебная:Вклад',

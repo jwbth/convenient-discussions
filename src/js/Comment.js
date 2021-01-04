@@ -1037,14 +1037,13 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {Event} e
    */
-  copyLink(e) {
+  async copyLink(e) {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
     const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
     this.replaceButton(this.linkButton, pendingLinkButton, 'link');
-    copyLink(this, e.shiftKey, () => {
-      this.replaceButton(this.linkButton, linkButton, 'link');
-    });
+    await copyLink(this, e.shiftKey);
+    this.replaceButton(this.linkButton, linkButton, 'link');
   }
 
   /**
@@ -1160,13 +1159,45 @@ export default class Comment extends CommentSkeleton {
   /**
    * Get a diff link for the comment.
    *
+   * @param {boolean} short Whether to return a short diff link.
    * @returns {string}
+   */
+  async getDiffLink(short) {
+    const edit = await this.findAddingEdit();
+    if (short) {
+      return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
+    } else {
+      const urlEnding = decodeURI(cd.g.CURRENT_PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
+      return `https:${mw.config.get('wgServer')}${urlEnding}`;
+    }
+  }
+
+  /**
+   * Generate a JQuery object containing an edit summary, diff body, and link to the next diff.
+   *
+   * @returns {JQuery}
    * @private
    */
-  async getDiffLink() {
+  async generateDiffView() {
     const edit = await this.findAddingEdit();
-    const urlEnding = decodeURI(cd.g.CURRENT_PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
-    return `https:${mw.config.get('wgServer')}${urlEnding}`;
+    const diffLink = await this.getDiffLink();
+    const $nextDiffLink = $('<a>')
+      .addClass('cd-diffView-nextDiffLink')
+      .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
+      .attr('target', '_blank')
+      .text(cd.mws('nextdiff'));
+    const $summaryText = cd.util.wrap(edit.parsedcomment, { targetBlank: true })
+      .addClass('comment');
+    const $above = $('<div>').append([
+      $nextDiffLink,
+      cd.sParse('cld-summary'),
+      cd.mws('colon-separator'),
+      $summaryText,
+    ]);
+    const $diffBody = cd.util.wrapDiffBody(edit.diffBody);
+    return $('<div>')
+      .addClass('cd-diffView-diff')
+      .append($above, $diffBody);
   }
 
   /**
@@ -1244,8 +1275,9 @@ export default class Comment extends CommentSkeleton {
       tagName: 'div',
       targetBlank: true,
     });
-    const $text = $('<div>').append($question, cd.util.wrapDiffBody(edit.diffBody));
-    if (await OO.ui.confirm($text, { size: 'larger' })) {
+    const $diff = await this.generateDiffView();
+    const $content = $('<div>').append($question, $diff);
+    if (await OO.ui.confirm($content, { size: 'larger' })) {
       try {
         await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
           action: 'thank',

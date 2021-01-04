@@ -51,19 +51,19 @@
   "section-watch-error-maxsize": "Couldn't update the settings: the size of the watched sections list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">Edit the sections list</span> to fix this.",
 
   "cld-invitation": "Click while holding Shift to choose a different type of link",
+  "cld-summary": "Edit summary",
   "cld-diff": "Diff link",
   "cld-diff-error": "Couldn't find",
   "cld-diff-error-network": "Couldn't find (network error)",
   "cld-diff-error-unknown": "Couldn't find (unknown error)",
+  "cld-shortdiff": "Short diff link",
   "cld-wikilink": "Wikilink",
   "cld-help-onlycd": "This link will work only for users that have Convenient Discussions installed.",
   "cld-currentpagewikilink": "Wikilink from the same page",
   "cld-link": "Regular link",
   "cld-close": "Close",
-  "cld-copy": "Copy",
 
   "copylink-copied": "The link has been copied to the clipboard.",
-  "copylink-copied-url": "[$1 The link] has been copied to the clipboard.",
   "copylink-error": "Couldn't copy the link.",
 
   "thank-confirm": "Thank {{gender:$2|}} $1 for [$3 this edit]?",
@@ -223,6 +223,9 @@
   "notification-part-insection": "in section \"$1\"",
   "notification-part-onthispage": "on this page",
 
+  "footer-runcd": "Run Convenient Discussions on this page once",
+  "footer-dontruncd": "Don't run Convenient Discussions on this page once",
+
   "sd-title": "Convenient Discussions settings",
   "sd-save": "Save",
   "sd-reload": "Reload",
@@ -358,6 +361,5 @@
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",
-  "footer-runcd": "Run Convenient Discussions on this page once",
-  "footer-dontruncd": "Don't run Convenient Discussions on this page once"
+  "copy": "Copy"
 }
