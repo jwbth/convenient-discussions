@@ -915,6 +915,15 @@ export default class Comment extends CommentSkeleton {
             $headline
               .html($(html).html())
               .prepend($headlineNumber);
+            const section = this.getSection();
+            if (section) {
+              const originalHeadline = section.headline;
+              section.parseHeadline();
+              if (section.isWatched && section.headline !== originalHeadline) {
+                section.watch(true, originalHeadline);
+              }
+              section.getTocLink()?.find('.toctext').text(section.headline);
+            }
           }
         } else {
           this.replaceElement(this.$elements.eq(i), html);
@@ -994,9 +1003,11 @@ export default class Comment extends CommentSkeleton {
 
     const goToChildButton = new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
+      icon: 'downTriangle',
       title: cd.s('cm-gotochild-tooltip'),
       framed: false,
-      classes: ['cd-button', 'cd-commentButton'],
+      invisibleLabel: true,
+      classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
     });
     goToChildButton.on('click', () => {
       parent.goToChild();
@@ -1037,50 +1048,37 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {Event} e
    */
-  copyLink(e) {
+  async copyLink(e) {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
     const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
     this.replaceButton(this.linkButton, pendingLinkButton, 'link');
-    copyLink(this, e.shiftKey, () => {
-      this.replaceButton(this.linkButton, linkButton, 'link');
-    });
+    await copyLink(this, e.shiftKey);
+    this.replaceButton(this.linkButton, linkButton, 'link');
   }
 
   /**
    * Find the edit that added the comment.
    *
-   * @param {boolean} [singleTimestamp=false] Whether the edit has to have not more than one
-   *   timestamp (used to detect edits adding more than one comment).
-   * @param {boolean} requestGender Request the gender of the edit's author (to save time).
-   * @returns {?object}
+   * @returns {object}
    * @throws {CdError}
    */
-  async findAddingEdit(singleTimestamp = false, requestGender = false) {
-    if (singleTimestamp && this.addingEditSingleTimestamp) {
-      return this.addingEditSingleTimestamp;
-    }
-    if (!singleTimestamp && this.addingEdit) {
+  async findAddingEdit() {
+    if (this.addingEdit) {
       return this.addingEdit;
     }
 
     // Search for the edit in the range of 2 minutes before to 2 minutes later.
     const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
     const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
-    const revisionsRequest = this.getSourcePage().getArchivedPage().getRevisions({
-      rvprop: ['ids', 'flags', 'comment', 'timestamp'],
+    const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
+      rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
       rvdir: 'newer',
       rvstart,
       rvend,
       rvuser: this.author.name,
       rvlimit: 500,
     }).catch(handleApiReject);
-
-    let genderRequest;
-    if (requestGender && this.author.isRegistered()) {
-      genderRequest = getUserGenders([this.author]);
-    }
-    const [revisions] = await Promise.all([revisionsRequest, genderRequest].filter(defined));
 
     const compareRequests = revisions.map((revision) => cd.g.api.post({
       action: 'compare',
@@ -1093,87 +1091,69 @@ export default class Comment extends CommentSkeleton {
 
     const compareResps = await Promise.all(compareRequests);
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
-    let thisTextAndSignature = this.getText(false) + ' ' + this.$signature.get(0).innerText;
+    const commentFullText = this.getText(false) + ' ' + this.$signature.get(0).innerText;
     const matches = [];
     for (let i = 0; i < compareResps.length; i++) {
-      const body = compareResps[i]?.compare?.body;
-      if (!body) continue;
+      const diffBody = compareResps[i]?.compare?.body;
+      if (!diffBody) continue;
+
+      const revision = revisions[i];
 
       // Compare diff _parts_ with added text in case multiple comments were added with the edit.
       let match;
-      let originalText = '';
-      let text = '';
+      let diffOriginalText = '';
+      let diffText = '';
       let bestDiffPartOverlap = 0;
-      while ((match = regexp.exec(body))) {
+      while ((match = regexp.exec(diffBody))) {
         const diffPartText = removeWikiMarkup(decodeHtmlEntities(match[1]));
-        const diffPartOverlap = calculateWordsOverlap(diffPartText, thisTextAndSignature);
+        const diffPartOverlap = calculateWordsOverlap(diffPartText, commentFullText);
         if (diffPartOverlap > bestDiffPartOverlap) {
           bestDiffPartOverlap = diffPartOverlap;
         }
-        text += diffPartText + '\n';
-        originalText += match[1] + '\n';
+        diffText += diffPartText + '\n';
+        diffOriginalText += match[1] + '\n';
       }
-      if (!originalText.trim()) continue;
+      if (!diffOriginalText.trim()) continue;
 
-      revisions[i].diffBody = body;
-      const timestamp = new Date(revisions[i].timestamp).getTime();
+      revision.diffBody = diffBody;
+      const timestamp = new Date(revision.timestamp).getTime();
 
       // Add 30 seconds to get better date proximity results since we don't see the seconds
       // number.
       const thisCommentTimestamp = this.date.getTime() + (30 * 1000);
 
-      let overlap = Math.max(
-        calculateWordsOverlap(text, thisTextAndSignature),
-        bestDiffPartOverlap
-      );
-      const timezoneMatch = text.match(cd.g.TIMEZONE_REGEXP);
+      const dateProximity = Math.abs(thisCommentTimestamp - timestamp);
+      let overlap = Math.max(calculateWordsOverlap(diffText, commentFullText), bestDiffPartOverlap);
 
-      if (overlap < 0.66 && originalText.includes('{{')) {
+      if (overlap < 1 && diffOriginalText.includes('{{')) {
         try {
-          const parsed = (await parseCode(originalText, { title: cd.g.CURRENT_PAGE.name })).html;
-          originalText = $('<div>').append(parsed).cdGetText();
+          const html = (await parseCode(diffOriginalText, { title: cd.g.CURRENT_PAGE.name })).html;
+          diffOriginalText = $('<div>').append(html).cdGetText();
         } catch (e) {
           throw new CdError({
             type: 'parse',
           });
         }
-        overlap = calculateWordsOverlap(originalText, thisTextAndSignature);
+        overlap = calculateWordsOverlap(diffOriginalText, commentFullText);
       }
 
-      if (overlap > 0.66) {
-        matches.push({
-          revision: revisions[i],
-          overlap,
-          dateProximity: Math.abs(thisCommentTimestamp - timestamp),
-          minor: revisions[i].minor,
-          moreThanOneTimestamp: text.includes('\n') && timezoneMatch && timezoneMatch.length > 1,
-        });
-      }
+      matches.push({ revision, overlap, dateProximity });
     }
 
     let bestMatch;
     matches.forEach((match) => {
-      if (!bestMatch || match.overlap > bestMatch.overlap) {
+      if (
+        !bestMatch ||
+        match.overlap > bestMatch.overlap ||
+        (
+          bestMatch &&
+          match.overlap === bestMatch.overlap &&
+          match.dateProximity > bestMatch.dateProximity
+        )
+      ) {
         bestMatch = match;
       }
-      if (bestMatch && match.overlap === bestMatch.overlap) {
-        if (match.dateProximity > bestMatch.dateProximity) {
-          bestMatch = match;
-        } else if (match.dateProximity === bestMatch.dateProximity) {
-          if (!match.minor && bestMatch.minor) {
-            bestMatch = match;
-          }
-        }
-      }
     });
-
-    if (singleTimestamp && bestMatch?.moreThanOneTimestamp) {
-      throw new CdError({
-        type: 'parse',
-        code: 'moreThanOneTimestamp',
-        data: { edit: bestMatch.revision },
-      });
-    }
 
     if (!bestMatch) {
       throw new CdError({
@@ -1181,24 +1161,54 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    const result = bestMatch.revision;
+    // Cache a successful result.
+    this.addingEdit = bestMatch.revision;
 
-    // Cache successful results.
-    this[singleTimestamp ? 'addingEditSingleTimestamp' : 'addingEdit'] = result;
-
-    return result;
+    return this.addingEdit;
   }
 
   /**
    * Get a diff link for the comment.
    *
+   * @param {boolean} short Whether to return a short diff link.
    * @returns {string}
+   */
+  async getDiffLink(short) {
+    const edit = await this.findAddingEdit();
+    if (short) {
+      return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
+    } else {
+      const urlEnding = decodeURI(cd.g.CURRENT_PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
+      return `https:${mw.config.get('wgServer')}${urlEnding}`;
+    }
+  }
+
+  /**
+   * Generate a JQuery object containing an edit summary, diff body, and link to the next diff.
+   *
+   * @returns {JQuery}
    * @private
    */
-  async getDiffLink() {
+  async generateDiffView() {
     const edit = await this.findAddingEdit();
-    const urlEnding = decodeURI(cd.g.CURRENT_PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
-    return `https:${mw.config.get('wgServer')}${urlEnding}`;
+    const diffLink = await this.getDiffLink();
+    const $nextDiffLink = $('<a>')
+      .addClass('cd-diffView-nextDiffLink')
+      .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
+      .attr('target', '_blank')
+      .text(cd.mws('nextdiff'));
+    const $summaryText = cd.util.wrap(edit.parsedcomment, { targetBlank: true })
+      .addClass('comment');
+    const $above = $('<div>').append([
+      $nextDiffLink,
+      cd.sParse('cld-summary'),
+      cd.mws('colon-separator'),
+      $summaryText,
+    ]);
+    const $diffBody = cd.util.wrapDiffBody(edit.diffBody);
+    return $('<div>')
+      .addClass('cd-diffView-diff')
+      .append($above, $diffBody);
   }
 
   /**
@@ -1209,25 +1219,12 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   thankFail(e, thankButton) {
-    const { type, code, data } = e.data;
+    const { type, code } = e.data;
     let text;
     switch (type) {
       case 'parse': {
-        if (code === 'moreThanOneTimestamp') {
-          const url = this.getSourcePage().getArchivedPage().getUrl({ diff: data.edit.revid });
-          text = cd.util.wrap(cd.sParse('thank-error-multipletimestamps', url), {
-            targetBlank: true,
-          });
-          OO.ui.alert(text);
-          return;
-        } else {
-          const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-          text = (
-            cd.sParse('error-diffnotfound') +
-            ' ' +
-            cd.sParse('error-diffnotfound-history', url)
-          );
-        }
+        const url = this.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
+        text = cd.sParse('error-diffnotfound') + ' ' + cd.sParse('error-diffnotfound-history', url);
         break;
       }
 
@@ -1261,18 +1258,24 @@ export default class Comment extends CommentSkeleton {
    * notification.
    */
   async thank() {
+    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
+
     const thankButton = this.thankButton;
     const pendingThankButton = this.elementPrototypes.pendingThankButton.cloneNode(true);
     this.replaceButton(this.thankButton, pendingThankButton, 'thank');
 
-    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
+    let genderRequest;
+    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered()) {
+      genderRequest = getUserGenders([this.author]);
+    }
 
     let edit;
     try {
       ([edit] = await Promise.all([
-        this.findAddingEdit(true, cd.g.GENDER_AFFECTS_USER_STRING),
+        this.findAddingEdit(),
+        genderRequest,
         mw.loader.using('mediawiki.diff.styles'),
-      ]));
+      ].filter(defined)));
     } catch (e) {
       this.thankFail(e, thankButton);
       return;
@@ -1284,8 +1287,9 @@ export default class Comment extends CommentSkeleton {
       tagName: 'div',
       targetBlank: true,
     });
-    const $text = $('<div>').append($question, cd.util.wrapDiffBody(edit.diffBody));
-    if (await OO.ui.confirm($text, { size: 'larger' })) {
+    const $diff = await this.generateDiffView();
+    const $content = $('<div>').append($question, $diff);
+    if (await OO.ui.confirm($content, { size: 'larger' })) {
       try {
         await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
           action: 'thank',
@@ -1955,6 +1959,7 @@ export default class Comment extends CommentSkeleton {
       signatureDirtyCode: match.dirtyCode,
       startIndex: match.commentStartIndex,
       endIndex: match.startIndex,
+      signatureEndIndex: match.startIndex + match.dirtyCode.length,
     }));
 
     // For the reserve method; the main method uses one date.
@@ -2208,7 +2213,7 @@ export default class Comment extends CommentSkeleton {
               ({ startIndex, contentEndIndex: endIndex } = this.getSection().inCode);
             }
           } else {
-            endIndex = thisInCode.endIndex + thisInCode.signatureDirtyCode.length + 1;
+            endIndex = thisInCode.signatureEndIndex + 1;
             const succeedingText = pageCode.slice(thisInCode.endIndex);
 
             const repliesRegexp = new RegExp(
@@ -2230,8 +2235,7 @@ export default class Comment extends CommentSkeleton {
         } else {
           const startIndex = thisInCode.lineStartIndex;
           codeBeforeInsertion = pageCode.slice(0, startIndex);
-          const codeAfterInsertion = pageCode
-            .slice(thisInCode.endIndex + thisInCode.signatureDirtyCode.length);
+          const codeAfterInsertion = pageCode.slice(thisInCode.signatureEndIndex);
           newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         }
         break;
@@ -2420,7 +2424,7 @@ export default class Comment extends CommentSkeleton {
       const inCode = this.locateInCode(pageCode, commentsData[i]);
       const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
       const newlinesInComment = (
-        pageCode.slice(inCode.lineStartIndex, inCode.endIndex).match(/\n/g) ||
+        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
         []
       );
       const startLineNumber = newlinesBeforeComment.length + 1;
@@ -2476,7 +2480,16 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    OO.ui.alert($cleanDiff, { size: 'larger' });
+    const $historyLink = $('<a>')
+      .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
+      .attr('target', '_blank')
+      .text(cd.s('comment-edited-history'));
+    const $below = $('<div>')
+      .addClass('cd-commentDiffView-below')
+      .append($historyLink);
+
+    const $message = $('<div>').append($cleanDiff, $below);
+    OO.ui.alert($message, { size: 'larger' });
   }
 
   /**

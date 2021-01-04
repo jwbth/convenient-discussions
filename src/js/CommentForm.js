@@ -108,7 +108,7 @@ export default class CommentForm {
     this.isNewTopicOnTop = isNewTopicOnTop;
 
     if (this.target instanceof Comment) {
-      this.sectionHeadline = this.target.getSection() && this.target.getSection().headline;
+      this.sectionHeadline = this.target.getSection()?.headline;
     } else if (this.target instanceof Section) {
       this.sectionHeadline = this.target.headline;
     }
@@ -2956,13 +2956,13 @@ export default class CommentForm {
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
           const headline = removeWikiMarkup(this.headlineInput.getValue());
-          Section.watchSection(headline, { silent: true });
           keptData.justWatchedSection = headline;
+          let originalHeadline;
           if (isHeadlineAltered) {
-            const originalHeadline = removeWikiMarkup(this.originalHeadline);
-            Section.unwatchSection(originalHeadline, { silent: true });
+            originalHeadline = removeWikiMarkup(this.originalHeadline);
             keptData.justUnwatchedSection = originalHeadline;
           }
+          Section.watch(headline, originalHeadline).catch(() => {});
         } else {
           const section = this.targetSection;
           if (section && !section.isWatched) {

@@ -9,7 +9,7 @@ import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { areObjectsEqual, dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
-import { checkboxField, radioField } from './ooui';
+import { checkboxField, copyActionField, radioField } from './ooui';
 import { encodeWikilink } from './wikitext';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
@@ -1072,12 +1072,7 @@ function copyLinkToClipboardAndNotify(text) {
   $textarea.remove();
 
   if (successful) {
-    if (text.startsWith('http')) {
-      const $body = cd.util.wrap(cd.sParse('copylink-copied-url', text), { targetBlank: true });
-      mw.notify($body);
-    } else {
-      mw.notify(cd.s('copylink-copied'));
-    }
+    mw.notify(cd.s('copylink-copied'));
   } else {
     mw.notify(cd.s('copylink-error'), { type: 'error' });
   }
@@ -1086,12 +1081,16 @@ function copyLinkToClipboardAndNotify(text) {
 /**
  * Copy a link to the object or show a copy link dialog.
  *
- * @param {Comment|Section} object Comment or section to copy the link to.
- * @param {boolean} chooseLink Allow the user to choose the type of the link.
- * @param {Function} [finallyCallback] Callback to execute on success or error.
+ * @param {Comment|Section} object Comment or section to copy a link to.
+ * @param {boolean} chooseLink Allow the user to choose the type of a link.
  */
-export async function copyLink(object, chooseLink, finallyCallback) {
+export async function copyLink(object, chooseLink) {
   if (object.isLinkBeingCopied) return;
+
+  const isComment = object instanceof Comment;
+  const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
+  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
+  const decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
 
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
@@ -1101,7 +1100,6 @@ export async function copyLink(object, chooseLink, finallyCallback) {
    * @type {boolean}
    * @instance module:Comment
    */
-
   /**
    * Is a link to the section being copied right now (a copy link dialog is opened).
    *
@@ -1111,130 +1109,103 @@ export async function copyLink(object, chooseLink, finallyCallback) {
    */
   object.isLinkBeingCopied = true;
 
-  let anchor = object instanceof Comment ? object.anchor : underlinesToSpaces(object.anchor);
-  anchor = encodeWikilink(anchor);
-  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
-  let decodedCurrentPageUrl;
-  try {
-    decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
-  } catch (e) {
-    console.error(e);
-    object.isLinkBeingCopied = false;
-    if (finallyCallback) {
-      finallyCallback();
-    }
-    return;
-  }
   const anchorWithUnderlines = spacesToUnderlines(anchor);
   const url = `https:${mw.config.get('wgServer')}${decodedCurrentPageUrl}#${anchorWithUnderlines}`;
-
-  if (chooseLink) {
-    let diffInput;
+  const defaultType = cd.settings[isComment ? 'defaultCommentLinkType' : 'defaultSectionLinkType'];
+  if (chooseLink || (isComment && defaultType === 'diff')) {
+    const copyCallback = (value) => {
+      copyLinkToClipboardAndNotify(value);
+      dialog.close();
+    };
     let diffField;
-    if (object instanceof Comment) {
+    let shortDiffField;
+    let $diff;
+    if (isComment) {
       let diffLink;
-      let value;
+      let shortDiffLink;
+      let errorText;
       try {
-        value = diffLink = await object.getDiffLink(object);
+        diffLink = await object.getDiffLink();
+        shortDiffLink = await object.getDiffLink(true);
+        $diff = await object.generateDiffView();
       } catch (e) {
         if (e instanceof CdError) {
           const { type } = e.data;
           if (type === 'network') {
-            value = cd.s('cld-diff-error-network');
+            errorText = cd.s('cld-diff-error-network');
           } else {
-            value = cd.s('cld-diff-error');
+            errorText = cd.s('cld-diff-error');
           }
         } else {
-          value = cd.s('cld-diff-error-unknown');
+          errorText = cd.s('cld-diff-error-unknown');
         }
       }
 
-      diffInput = new OO.ui.TextInputWidget({
-        value,
+      diffField = copyActionField({
+        value: diffLink || errorText,
         disabled: !diffLink,
-      });
-      const diffButton = new OO.ui.ButtonWidget({
-        label: cd.s('cld-copy'),
-        icon: 'articles',
-        disabled: !diffLink,
-      });
-      diffButton.on('click', () => {
-        copyLinkToClipboardAndNotify(diffInput.getValue());
-        dialog.close();
-      });
-      diffField = new OO.ui.ActionFieldLayout(diffInput, diffButton, {
-        align: 'top',
         label: cd.s('cld-diff'),
+        copyCallback,
       });
+
+      shortDiffField = copyActionField({
+        value: shortDiffLink || errorText,
+        disabled: !shortDiffLink,
+        label: cd.s('cld-shortdiff'),
+        copyCallback,
+      });
+
+      if (dealWithLoadingBug('mediawiki.diff.styles')) {
+        object.isLinkBeingCopied = false;
+        return;
+      }
+
+      await mw.loader.using('mediawiki.diff.styles');
     }
 
     let onlyCdWarning;
-    if (object instanceof Comment) {
+    if (isComment) {
       onlyCdWarning = cd.s('cld-help-onlycd');
     }
 
-    const wikilinkInput = new OO.ui.TextInputWidget({
+    const wikilinkField = copyActionField({
       value: wikilink,
-    });
-    const wikilinkButton = new OO.ui.ButtonWidget({
-      label: cd.s('cld-copy'),
-      icon: 'articles',
-    });
-    wikilinkButton.on('click', () => {
-      copyLinkToClipboardAndNotify(wikilinkInput.getValue());
-      dialog.close();
-    });
-    const wikilinkField = new OO.ui.ActionFieldLayout(wikilinkInput, wikilinkButton, {
-      align: 'top',
+      disabled: !wikilink,
       label: cd.s('cld-wikilink'),
+      copyCallback,
       help: onlyCdWarning,
-      helpInline: true,
     });
 
-    const anchorWikilinkInput = new OO.ui.TextInputWidget({
+    const currentPageWikilinkField = copyActionField({
       value: `[[#${anchor}]]`,
+      label: cd.s('cld-currentpagewikilink'),
+      copyCallback,
     });
-    const anchorWikilinkButton = new OO.ui.ButtonWidget({
-      label: cd.s('cld-copy'),
-      icon: 'articles',
-    });
-    anchorWikilinkButton.on('click', () => {
-      copyLinkToClipboardAndNotify(anchorWikilinkInput.getValue());
-      dialog.close();
-    });
-    const anchorWikilinkField = new OO.ui.ActionFieldLayout(
-      anchorWikilinkInput,
-      anchorWikilinkButton, {
-        align: 'top',
-        label: cd.s('cld-currentpagewikilink'),
-      }
-    );
 
-    const linkInput = new OO.ui.TextInputWidget({
+    const linkField = copyActionField({
       value: url,
-    });
-    const linkButton = new OO.ui.ButtonWidget({
-      label: cd.s('cld-copy'),
-      icon: 'articles',
-    });
-    linkButton.on('click', () => {
-      copyLinkToClipboardAndNotify(linkInput.getValue());
-      dialog.close();
-    });
-    const linkField = new OO.ui.ActionFieldLayout(linkInput, linkButton, {
-      align: 'top',
       label: cd.s('cld-link'),
+      copyCallback,
       help: onlyCdWarning,
-      helpInline: true,
     });
 
-    const $message = $('<div>')
-      .append(diffField?.$element)
-      .append(wikilinkField.$element)
-      .append(anchorWikilinkField.$element)
-      .append(linkField.$element);
+    // Workaround, because we don't want the first input to be focused on click almost anywhere in
+    // the dialog, which happens because the whole message is wrapped in the <label> element.
+    const $dummyInput = $('<input>').addClass('cd-hidden');
 
-    const dialog = new OO.ui.MessageDialog();
+    const $message = $('<div>').append([
+      diffField?.$element,
+      shortDiffField?.$element,
+      $diff,
+      wikilinkField.$element,
+      currentPageWikilinkField.$element,
+      linkField.$element,
+    ]);
+    $message.children().first().prepend($dummyInput);
+
+    const dialog = new OO.ui.MessageDialog({
+      classes: ['cd-copyLinkDialog'],
+    });
     cd.g.windowManager.addWindows([dialog]);
     const windowInstance = cd.g.windowManager.openWindow(dialog, {
       message: $message,
@@ -1244,62 +1215,15 @@ export async function copyLink(object, chooseLink, finallyCallback) {
           action: 'close',
         },
       ],
-      size: 'large',
+      size: isComment ? 'larger' : 'large',
     });
     windowInstance.closed.then(() => {
       object.isLinkBeingCopied = false;
     });
   } else {
-    let link;
-    const defaultType = cd.settings[
-      object instanceof Comment ? 'defaultCommentLinkType' : 'defaultSectionLinkType'
-    ];
-    switch (defaultType) {
-      case 'diff':
-        if (!(object instanceof Comment)) {
-          link = wikilink;
-          break;
-        }
-        try {
-          link = await object.getDiffLink(object);
-        } catch (e) {
-          let text = cd.sParse('error-diffnotfound');
-          if (e instanceof CdError) {
-            const { type } = e.data;
-            if (type === 'network') {
-              text += ' ' + cd.sParse('error-network');
-            } else {
-              const url = object.getSourcePage().getArchivedPage().getUrl({ action: 'history' });
-              text += ' ' + cd.sParse('error-diffnotfound-history', url);
-            }
-          } else {
-            text += ' ' + cd.sParse('error-unknown');
-          }
-          const $body = cd.util.wrap(text, { targetBlank: true });
-          mw.notify($body, { type: 'error' });
-          object.isLinkBeingCopied = false;
-          if (finallyCallback) {
-            finallyCallback();
-          }
-          return;
-        }
-        break;
-
-      case 'link':
-        link = url;
-        break;
-
-      default:
-        link = wikilink;
-    }
-
+    const link = defaultType === 'link' ? url : wikilink;
     copyLinkToClipboardAndNotify(link);
-
     object.isLinkBeingCopied = false;
-  }
-
-  if (finallyCallback) {
-    finallyCallback();
   }
 }
 

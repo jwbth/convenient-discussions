@@ -40,24 +40,7 @@ export default class SectionSkeleton {
      */
     this.anchor = this.headlineElement.getAttribute('id');
 
-    const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementsInHeadlinesClasses];
-    const nodes = Array.from(this.headlineElement.childNodes).filter((node) => (
-      node.nodeType !== Node.ELEMENT_NODE ||
-      !classesToFilter.some((className) => node.classList.contains(className))
-    ));
-
-    /**
-     * Section headline as it appears on the page.
-     *
-     * Foreign elements can get there, add the classes of these elements to {@link
-     * module:defaultConfig.foreignElementsInHeadlinesClasses} to filter them out.
-     *
-     * @type {string}
-     */
-    this.headline = nodes
-      .map((node) => node.textContent)
-      .join('')
-      .trim();
+    this.parseHeadline();
 
     const levelMatch = headingElement.tagName.match(/^H([1-6])$/);
 
@@ -186,6 +169,27 @@ export default class SectionSkeleton {
      * @type {Element[]}
      */
     this.elements = elements;
+  }
+
+  /**
+   * Parse the headline of the section and fill the `headline` property.
+   */
+  parseHeadline() {
+    const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementsInHeadlinesClasses];
+    const nodes = Array.from(this.headlineElement.childNodes).filter((node) => (
+      node.nodeType !== Node.ELEMENT_NODE ||
+      !classesToFilter.some((className) => node.classList.contains(className))
+    ));
+
+    /**
+     * Section headline as it appears on the page.
+     *
+     * Foreign elements can get there, add the classes of these elements to {@link
+     * module:defaultConfig.foreignElementsInHeadlinesClasses} to filter them out.
+     *
+     * @type {string}
+     */
+    this.headline = nodes.map((node) => node.textContent).join('').trim();
   }
 
   /**

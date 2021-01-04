@@ -484,28 +484,36 @@ function initOouiAndElementPrototypes() {
   // OOUI button prototypes. Creating every button using the constructor takes 15 times longer than
   // cloning which is critical when creating really many of them.
   cd.g.COMMENT_ELEMENT_PROTOTYPES = {};
-  cd.g.SECTION_ELEMENT_PROTOTYPES = {};
-
   cd.g.COMMENT_ELEMENT_PROTOTYPES.goToParentButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-gotoparent'),
+    icon: 'upTriangle',
     title: cd.s('cm-gotoparent-tooltip'),
     framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
+    invisibleLabel: true,
+    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
   }).$element.get(0);
 
-  const stringName = `cm-copylink-tooltip-${cd.settings.defaultCommentLinkType.toLowerCase()}`;
+  let title = cd.s(`cm-copylink-tooltip-${cd.settings.defaultCommentLinkType}`);
+  if (cd.settings.defaultCommentLinkType === 'diff') {
+    title += ' ' + cd.s('cld-invitation');
+  }
+
   cd.g.COMMENT_ELEMENT_PROTOTYPES.linkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
-    title: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
+    icon: 'link',
+    title,
     framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
+    invisibleLabel: true,
+    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
   }).$element.get(0);
   cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingLinkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
-    title: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
+    icon: 'link',
+    title,
     framed: false,
     disabled: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-button-pending'],
+    invisibleLabel: true,
+    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon', 'cd-button-pending'],
   }).$element.get(0);
 
   cd.g.COMMENT_ELEMENT_PROTOTYPES.thankButton = new OO.ui.ButtonWidget({
@@ -541,20 +549,6 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-commentButton'],
   }).$element.get(0);
 
-  cd.g.SECTION_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
-    label: cd.s('section-reply'),
-    framed: false,
-    classes: ['cd-button', 'cd-sectionButton'],
-  }).$element.get(0);
-
-  cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
-    // Will be replaced
-    label: ' ',
-
-    framed: false,
-    classes: ['cd-button', 'cd-sectionButton'],
-  }).$element.get(0);
-
   cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = document.createElement('div');
   cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay.className = 'cd-commentUnderlay';
 
@@ -573,6 +567,21 @@ function initOouiAndElementPrototypes() {
   const overlayContent = document.createElement('div');
   overlayContent.className = 'cd-commentOverlay-content';
   overlayInnerWrapper.appendChild(overlayContent);
+
+  cd.g.SECTION_ELEMENT_PROTOTYPES = {};
+  cd.g.SECTION_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
+    label: cd.s('section-reply'),
+    framed: false,
+    classes: ['cd-button', 'cd-sectionButton'],
+  }).$element.get(0);
+
+  cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
+    // Will be replaced
+    label: ' ',
+
+    framed: false,
+    classes: ['cd-button', 'cd-sectionButton'],
+  }).$element.get(0);
 }
 
 /**
@@ -787,8 +796,14 @@ export async function reloadPage(keptData = {}) {
 function cleanUpSessions(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
+    // TODO: remove 1 month after release
+    if (newData[key].forms) {
+      newData[key].commentForms = newData[key].forms;
+      delete newData[key].forms;
+    }
+
     if (
-      !newData[key].forms?.length ||
+      !newData[key].commentForms?.length ||
       newData[key].saveUnixTime < Date.now() - 30 * cd.g.SECONDS_IN_A_DAY * 1000
     ) {
       delete newData[key];
@@ -802,7 +817,7 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
-  const forms = cd.commentForms
+  const commentForms = cd.commentForms
     .filter((commentForm) => commentForm.isAltered())
     .map((commentForm) => {
       let targetData;
@@ -836,7 +851,7 @@ export function saveSession() {
       };
     });
   const saveUnixTime = Date.now();
-  const commentFormsData = forms.length ? { forms, saveUnixTime } : {};
+  const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
 
   const dataAllPages = getFromLocalStorage('commentForms');
   dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
@@ -852,7 +867,7 @@ export function saveSession() {
 function restoreCommentFormsFromData(commentFormsData) {
   let haveRestored = false;
   const rescue = [];
-  commentFormsData.forms.forEach((data) => {
+  commentFormsData.commentForms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData?.anchor) {
       const comment = Comment.getCommentByAnchor(data.targetData.anchor);
@@ -927,7 +942,7 @@ export function restoreCommentForms() {
     const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
     saveToLocalStorage('commentForms', dataAllPages);
     const data = dataAllPages[mw.config.get('wgPageName')] || {};
-    if (data.forms) {
+    if (data.commentForms) {
       restoreCommentFormsFromData(data);
     }
   } else {

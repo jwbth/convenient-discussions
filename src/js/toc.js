@@ -31,35 +31,10 @@ export default {
   highlightWatchedSections() {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    const headlines = cd.sections.map((section) => section.headline);
-    const $allLinks = cd.g.$toc
-      .find('a')
-      .each((i, el) => {
-        el.cdTocText = $(el).find('.toctext').text();
-      });
     cd.sections
-      // Only unique headlines
-      .filter((section, i) => headlines.indexOf(section.headline) === i)
-
+      .filter((section) => section.isWatched)
       .forEach((section) => {
-        // Can be more than one section with that headline. (In that case, the same code will run
-        // more than once, but there is no gain in filtering.)
-        const $links = $allLinks.filter(function () {
-          // This can be expensive if there are very many sections on the page (with 150 sections,
-          // 22500 cycles would be completed), so we use a directly set property, not .data() or
-          // something.
-          return this.cdTocText === section.headline;
-        });
-        if (!$links.length) return;
-
-        if (section.isWatched) {
-          $links
-            .addClass('cd-toc-watched')
-            .attr('title', cd.s('toc-watched'));
-        } else {
-          $links
-            .removeClass('cd-toc-watched');
-        }
+        section.updateTocLink();
       });
   },
 
@@ -74,7 +49,7 @@ export default {
    * Add links to new, not yet rendered sections (loaded in the background) to the table of
    * contents.
    *
-   * @param {SectionSkeletonLike[]} sections All sections on the page.
+   * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
    */
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -251,21 +226,26 @@ export default {
       // There could be a collision of hrefs between the existing section and not yet rendered
       // section, so we compose the selector carefully.
       cd.debug.startTimer('addNewComments sections selector');
-      const selector = typeof sectionOrAnchor === 'string' ?
-        `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]` :
-        `a[href="#${$.escapeSelector(sectionOrAnchor.anchor)}"]:not(.cd-toc-notRenderedSection a)`;
-      const $sectionLink = cd.g.$toc.find(selector);
-      cd.debug.stopTimer('addNewComments sections selector');
-      if (!$sectionLink.length) return;
+      const $sectionLink = typeof sectionOrAnchor === 'string' ?
+        cd.g.$toc.find(
+          `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`
+        ) :
+        sectionOrAnchor.getTocLink();
+      cd.debug.startTimer('addNewComments sections selector');
+      if (!$sectionLink?.length) return;
 
       let $target = $sectionLink;
       const $next = $sectionLink.next('.cd-toc-newCommentList');
       if ($next.length) {
         $target = $next;
       }
+      const target = $target.get(0);
 
-      const $ul = $('<ul>').insertAfter($target);
-      $ul.addClass(areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-notRenderedCommentList');
+      // jQuery is too expensive here given that very many comments may be added.
+      const ul = document.createElement('ul');
+      ul.className = areCommentsRendered ?
+        'cd-toc-newCommentList' :
+        'cd-toc-notRenderedCommentList';
 
       let moreTooltipText = '';
       comments.forEach((comment, i) => {
@@ -286,35 +266,40 @@ export default {
         cd.debug.stopTimer('addNewComments comments prepare');
 
         cd.debug.startTimer('addNewComments comments DOM');
-        if (i < 5) {
-          const $li = $('<li>')
-            .appendTo($ul);
-          const href = `#${comment.anchor}`;
-          $('<span>')
-            .html(cd.sParse('bullet'))
-            .addClass('tocnumber')
-            .addClass('cd-toc-bullet')
-            .appendTo($li);
-          const $text = $('<span>')
-            .addClass('toctext')
-            .appendTo($li);
-          const $a = $('<a>')
-            .text(text)
-            .attr('href', href)
-            .appendTo($text);
+
+        // If there are 5 comments or less, show all of them. If there are more, show 4 and "N
+        // more". (Because showing 4 and then "1 more" is stupid.)
+        if (i < 4 || comments.length === 5) {
+          const li = document.createElement('li');
+          ul.appendChild(li);
+
+          const bulletSpan = document.createElement('span');
+          bulletSpan.className = 'tocnumber cd-toc-bullet';
+          bulletSpan.innerHTML = cd.sParse('bullet');
+          li.appendChild(bulletSpan);
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'toctext';
+          li.appendChild(textSpan);
+
+          const a = document.createElement('a');
+          a.href = `#${comment.anchor}`;
+          a.textContent = text;
+          textSpan.appendChild(a);
+
           if (comment instanceof Comment) {
-            $a.on('click', (e) => {
+            a.onclick = (e) => {
               e.preventDefault();
               comment.scrollToAndHighlightTarget(false, true);
-            });
+            };
           } else {
-            $a.on('click', (e) => {
+            a.onclick = (e) => {
               e.preventDefault();
               reloadPage({
                 commentAnchor: comment.anchor,
                 pushState: true,
               });
-            });
+            };
           }
         } else {
           moreTooltipText += text + '\n';
@@ -324,15 +309,18 @@ export default {
 
       cd.debug.startTimer('addNewComments sections DOM');
       if (comments.length > 5) {
-        const $span = $('<span>')
-          .addClass('cd-toc-more')
-          .attr('title', moreTooltipText.trim())
-          .text(cd.s('toc-more', comments.length - 5));
-        $('<li>')
-          .append($span)
-          .appendTo($ul);
+        const span = document.createElement('span');
+        span.className = 'cd-toc-more';
+        span.title = moreTooltipText.trim();
+        span.textContent = cd.s('toc-more', comments.length - 4);
+
+        const li = document.createElement('li');
+        li.appendChild(span);
+        ul.appendChild(li);
       }
+
       cd.debug.stopTimer('addNewComments sections DOM');
+      target.parentNode.insertBefore(ul, target.nextSibling);
     });
     cd.debug.stopTimer('addNewComments sections cycle');
 

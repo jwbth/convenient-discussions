@@ -32,9 +32,10 @@ let commentsNotifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
 let submittedCommentAnchor;
+let resolverCount = 0;
 
 const revisionData = {};
-const checkedForNewEdits = {};
+const resolvers = {};
 
 /**
  * Tell the worker to wake the script up after a given interval.
@@ -72,13 +73,13 @@ async function checkForUpdates() {
   const documentHidden = document.hidden;
 
   if (documentHidden && !isBackgroundCheckArranged) {
-    const callback = () => {
-      $(document).off('visibilitychange', callback);
+    const onDocumentVisible = () => {
+      $(document).off('visibilitychange', onDocumentVisible);
       isBackgroundCheckArranged = false;
       removeAlarmViaWorker();
       checkForUpdates();
     };
-    $(document).on('visibilitychange', callback);
+    $(document).on('visibilitychange', onDocumentVisible);
 
     const interval = Math.abs(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL - cd.g.UPDATE_CHECK_INTERVAL);
     setAlarmViaWorker(interval * 1000);
@@ -86,22 +87,31 @@ async function checkForUpdates() {
     return;
   }
 
-  // Precaution
-  isBackgroundCheckArranged = false;
-
   try {
     const revisions = await cd.g.CURRENT_PAGE.getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
     }, true);
 
-    if (
-      revisions.length &&
-      revisions[0].revid !== (lastCheckedRevisionId || mw.config.get('wgRevisionId'))
-    ) {
-      await updateChecker.processPage();
-      if (!revisionData[mw.config.get('wgRevisionId')]) {
-        updateChecker.processPage(mw.config.get('wgRevisionId'));
+    const currentRevisionId = mw.config.get('wgRevisionId');
+    if (revisions.length && revisions[0].revid !== (lastCheckedRevisionId || currentRevisionId)) {
+      const { revisionId, comments, sections } = await updateChecker.processPage();
+
+      if (!revisionData[currentRevisionId] && isPageStillAtRevision(currentRevisionId)) {
+        await updateChecker.processPage(currentRevisionId);
+      }
+
+      lastCheckedRevisionId = revisionId;
+
+      // We check for new edits before notifying about new comments to notify about changes in a
+      // renamed section if it is watched.
+      if (isPageStillAtRevision(currentRevisionId)) {
+        checkForNewEdits();
+      }
+
+      if (isPageStillOutdated(revisionId)) {
+        toc.addNewSections(sections);
+        await processComments(comments, revisionId);
       }
     }
   } catch (e) {
@@ -134,10 +144,14 @@ async function processRevisionsIfNeeded() {
   }, true);
 
   previousVisitRevisionId = revisions[0]?.revid;
+  const revisionId = mw.config.get('wgRevisionId');
 
-  if (previousVisitRevisionId && previousVisitRevisionId !== mw.config.get('wgRevisionId')) {
+  if (previousVisitRevisionId && previousVisitRevisionId !== revisionId) {
     await updateChecker.processPage(previousVisitRevisionId);
-    await updateChecker.processPage(mw.config.get('wgRevisionId'));
+    await updateChecker.processPage(revisionId);
+    if (isPageStillAtRevision(revisionId)) {
+      checkForEditsSincePreviousVisit();
+    }
   }
 }
 
@@ -254,8 +268,7 @@ function mapComments(currentComments, otherComments) {
  */
 function checkForEditsSincePreviousVisit() {
   const oldComments = revisionData[previousVisitRevisionId].comments;
-  const revisionId = mw.config.get('wgRevisionId');
-  const currentComments = revisionData[revisionId].comments;
+  const currentComments = revisionData[mw.config.get('wgRevisionId')].comments;
 
   mapComments(currentComments, oldComments);
 
@@ -277,6 +290,32 @@ function checkForEditsSincePreviousVisit() {
 
         const commentsData = [oldComment, currentComment];
         comment.markAsEdited('editedSince', true, previousVisitRevisionId, commentsData);
+
+        if (comment.isOpeningSection) {
+          const section = comment.getSection();
+          if (
+            section &&
+            !section.isWatched &&
+            /^H[1-6]$/.test(currentComment.elementTagNames[0]) &&
+            oldComment.elementTagNames[0] === currentComment.elementTagNames[0]
+          ) {
+            const html = oldComment.elementHtmls[0].replace(
+              /\x01(\d+)_\w+\x02/g,
+              (s, num) => currentComment.hiddenElementData[num - 1].html
+            );
+            const $dummy = $('<span>').html($(html).html());
+            const oldSection = { headlineElement: $dummy.get(0) };
+            Section.prototype.parseHeadline.call(oldSection);
+            const newHeadline = section.headline;
+            if (
+              newHeadline &&
+              oldSection.headline !== newHeadline &&
+              cd.g.originalThisPageWatchedSections?.includes(oldSection.headline)
+            ) {
+              section.watch(true, oldSection.headline);
+            }
+          }
+        }
       }
     }
   });
@@ -528,8 +567,8 @@ function showDesktopNotification(comments) {
 }
 
 /**
- * Whether still an older revision of the page is displayed than that is retrieved or the content is
- * loading.
+ * Whether still an older revision of the page is displayed than that is retrieved and the content
+ * is not loading.
  *
  * @param {number} newRevisionId
  * @returns {boolean}
@@ -537,6 +576,17 @@ function showDesktopNotification(comments) {
  */
 function isPageStillOutdated(newRevisionId) {
   return newRevisionId > mw.config.get('wgRevisionId') && !isLoadingOverlayOn();
+}
+
+/**
+ * Whether the page is still at the specified revision and the content is not loading.
+ *
+ * @param {number} revisionId
+ * @returns {boolean}
+ * @private
+ */
+function isPageStillAtRevision(revisionId) {
+  return revisionId === mw.config.get('wgRevisionId') && !isLoadingOverlayOn();
 }
 
 /**
@@ -630,9 +680,22 @@ async function processComments(comments, revisionId) {
 }
 
 /**
- * Callback for messages from the worker.
+ * Perform a task in a web worker.
  *
- * TODO: rewrite worker tasks using promises (which could be tricky).
+ * @param {object} payload
+ * @returns {Promise}
+ */
+function runWorkerTask(payload) {
+  return new Promise((resolve) => {
+    const resolverId = resolverCount++;
+    Object.assign(payload, { resolverId });
+    cd.g.worker.postMessage(payload);
+    resolvers[resolverId] = resolve;
+  });
+}
+
+/**
+ * Callback for messages from the worker.
  *
  * @param {Event} e
  * @private
@@ -642,38 +705,9 @@ async function onMessageFromWorker(e) {
 
   if (message.type === 'wakeUp') {
     checkForUpdates();
-  }
-
-  if (message.type === 'parse' && isPageStillOutdated(message.revisionId)) {
-    lastCheckedRevisionId = message.revisionId;
-    const { comments, sections } = message;
-    toc.addNewSections(sections);
-    await processComments(comments, message.revisionId);
-    revisionData[message.revisionId] = { comments, sections };
-  }
-
-  if (message.type === 'parseRevision' && !revisionData[message.revisionId]) {
-    const { comments, sections } = message;
-    revisionData[message.revisionId] = { comments, sections };
-
-    if (
-      previousVisitRevisionId &&
-      previousVisitRevisionId !== mw.config.get('wgRevisionId') &&
-      revisionData[previousVisitRevisionId] &&
-      revisionData[mw.config.get('wgRevisionId')]
-    ) {
-      checkForEditsSincePreviousVisit();
-    }
-  }
-
-  if (
-    lastCheckedRevisionId &&
-    revisionData[lastCheckedRevisionId] &&
-    revisionData[mw.config.get('wgRevisionId')] &&
-    !checkedForNewEdits[lastCheckedRevisionId]
-  ) {
-    checkForNewEdits();
-    checkedForNewEdits[lastCheckedRevisionId] = true;
+  } else {
+    resolvers[message.resolverId](message);
+    delete resolvers[message.resolverId];
   }
 }
 
@@ -721,9 +755,10 @@ const updateChecker = {
   },
 
   /**
-   * Process the current page in the worker context.
+   * Process the current page in a web worker.
    *
    * @param {number} [revisionToParseId]
+   * @returns {object}
    * @memberof module:updateChecker
    */
   async processPage(revisionToParseId) {
@@ -740,13 +775,34 @@ const updateChecker = {
       'visits',
       'watchedSections',
     ];
-    cd.g.worker.postMessage({
+
+    const message = await runWorkerTask({
       type: revisionToParseId ? 'parseRevision' : 'parse',
       revisionId,
       text,
       g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER'], disallowedNames),
       config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents'], disallowedNames),
     });
+
+    if (!revisionData[message.revisionId]) {
+      const { comments, sections } = message;
+      revisionData[message.revisionId] = { comments, sections };
+    }
+
+    // Clean up revisionData as it may grow really big.
+    Object.keys(revisionData).forEach((key) => {
+      const revisionId = Number(key);
+      if (
+        revisionId !== message.revisionId &&
+        revisionId !== lastCheckedRevisionId &&
+        revisionId !== previousVisitRevisionId &&
+        revisionId !== mw.config.get('wgRevisionId')
+      ) {
+        delete revisionData[key];
+      }
+    });
+
+    return message;
   },
 
   /**

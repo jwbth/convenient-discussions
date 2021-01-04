@@ -309,7 +309,9 @@ function go() {
         'oojs-ui',
         'oojs-ui.styles.icons-alerts',
         'oojs-ui.styles.icons-content',
+        'oojs-ui.styles.icons-editing-core',
         'oojs-ui.styles.icons-interactions',
+        'oojs-ui.styles.icons-movement',
         'user.options',
       ]);
 
