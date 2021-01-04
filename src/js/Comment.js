@@ -915,6 +915,15 @@ export default class Comment extends CommentSkeleton {
             $headline
               .html($(html).html())
               .prepend($headlineNumber);
+            const section = this.getSection();
+            if (section) {
+              const originalHeadline = section.headline;
+              section.parseHeadline();
+              if (section.isWatched && section.headline !== originalHeadline) {
+                section.watch(true, originalHeadline);
+              }
+              section.getTocLink()?.find('.toctext').text(section.headline);
+            }
           }
         } else {
           this.replaceElement(this.$elements.eq(i), html);

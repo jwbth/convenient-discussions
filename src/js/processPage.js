@@ -160,6 +160,7 @@ function processComments(parser, firstVisibleElementData) {
 function cleanUpWatchedSections() {
   if (!cd.sections) return;
   const initialSectionCount = cd.g.thisPageWatchedSections.length;
+  cd.g.originalThisPageWatchedSections = cd.g.thisPageWatchedSections.slice();
   cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
     .filter((headline) => cd.sections.some((section) => section.headline === headline));
   cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;

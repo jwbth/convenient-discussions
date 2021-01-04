@@ -293,6 +293,32 @@ function checkForEditsSincePreviousVisit() {
 
         const commentsData = [oldComment, currentComment];
         comment.markAsEdited('editedSince', true, previousVisitRevisionId, commentsData);
+
+        if (comment.isOpeningSection) {
+          const section = comment.getSection();
+          if (
+            section &&
+            !section.isWatched &&
+            /^H[1-6]$/.test(currentComment.elementTagNames[0]) &&
+            oldComment.elementTagNames[0] === currentComment.elementTagNames[0]
+          ) {
+            const html = oldComment.elementHtmls[0].replace(
+              /\x01(\d+)_\w+\x02/g,
+              (s, num) => currentComment.hiddenElementData[num - 1].html
+            );
+            const $dummy = $('<span>').html($(html).html());
+            const oldSection = { headlineElement: $dummy.get(0) };
+            Section.prototype.parseHeadline.call(oldSection);
+            const newHeadline = section.headline;
+            if (
+              newHeadline &&
+              oldSection.headline !== newHeadline &&
+              cd.g.originalThisPageWatchedSections?.includes(oldSection.headline)
+            ) {
+              section.watch(true, oldSection.headline);
+            }
+          }
+        }
       }
     }
   });
