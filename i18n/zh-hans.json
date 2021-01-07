@@ -5,6 +5,7 @@
 			"Abijeet Patro",
 			"Nadine Siak",
 			"SomeyaMako",
+			"Wuqianye",
 			"列维劳德",
 			"沈澄心"
 		]
@@ -24,8 +25,10 @@
 	"sm-unwatch": "取消监视",
 	"sm-copylink-tooltip-wikilink": "复制链接。",
 	"sm-copylink-tooltip-link": "复制链接。",
+	"comment-edited": "评论已编辑",
 	"comment-edited-refresh": "刷新",
 	"comment-edited-diff": "差异",
+	"comment-deleted": "评论已删除",
 	"section-reply": "回复",
 	"section-addsubsection-to": "向“$1”中添加新章节",
 	"section-newcomments": "此节中有新评论。点击以刷新页面。",
@@ -114,6 +117,7 @@
 	"navpanel-newcomments-names": "$1 → $2",
 	"navpanel-newcomments-unknowndate": "未知日期",
 	"notification-newcomments-maybeinteresting": "对你来说可能很有趣",
+	"notification-reload": "点击刷新页面$1",
 	"notification-part-insection": "在段落“$1”中",
 	"notification-part-onthispage": "在这个页面上",
 	"sd-save": "保存",
