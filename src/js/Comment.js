@@ -658,7 +658,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    const $elementsToAnimate = this.$underlay
+    this.$elementsToAnimate = this.$underlay
       .add(this.$overlayContent)
       .add(this.$overlayGradient)
       .stop()
@@ -666,7 +666,7 @@ export default class Comment extends CommentSkeleton {
       .css('background-color', '');
     let finalColor = this.getCurrentBackgroundColor();
 
-    $elementsToAnimate.css('background-color', color);
+    this.$elementsToAnimate.css('background-color', color);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
       // These comment properties may get assigned after the flash() call.
@@ -679,7 +679,7 @@ export default class Comment extends CommentSkeleton {
         finalColor = this.backgroundColor || 'rgba(0, 0, 0, 0)';
       }
 
-      $elementsToAnimate
+      this.$elementsToAnimate
         .stop()
         .css('background-image', 'none')
         .css('background-color', color)
@@ -691,9 +691,10 @@ export default class Comment extends CommentSkeleton {
             if (callback) {
               callback();
             }
-            $elementsToAnimate
+            this.$elementsToAnimate
               .css('background-image', '')
               .css('background-color', '');
+            delete this.$elementsToAnimate;
           }
         );
     }, delay);
@@ -1577,6 +1578,7 @@ export default class Comment extends CommentSkeleton {
   removeLayers() {
     if (!this.underlay) return;
 
+    this.$elementsToAnimate?.stop();
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
     this.underlay.parentNode.removeChild(this.underlay);
