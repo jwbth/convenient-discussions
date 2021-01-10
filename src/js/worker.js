@@ -108,7 +108,7 @@ function parse() {
   ];
   let sectionDangerousKeys = [
     'cachedParentTree',
-    'comments',
+    // 'comments' property is removed below individually.
     'commentsInFirstChunk',
     'elements',
     'headlineElement',
@@ -125,12 +125,14 @@ function parse() {
     return newObj;
   };
 
+  cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
+
   cd.comments.forEach((comment) => {
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;
     });
     const section = comment.getSection();
-    comment.section = section ? keepSafeValues(section, sectionDangerousKeys) : null;
+    comment.section = section || null;
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
       comment.parentAnchor = comment.parent.anchor;
@@ -217,6 +219,9 @@ function parse() {
     comment.elementTagNames = comment.elements.map((element) => element.tagName);
   });
 
+  cd.sections.forEach((section) => {
+    delete section.comments;
+  });
   cd.comments = cd.comments.map((comment) => keepSafeValues(comment, commentDangerousKeys));
 
   cd.comments.forEach((comment, i) => {
@@ -224,8 +229,6 @@ function parse() {
       .slice(Math.max(0, i - 2), i)
       .reverse();
   });
-
-  cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
 
   cd.debug.stopTimer('prepare comments and sections');
 }
