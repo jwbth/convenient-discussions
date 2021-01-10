@@ -28,6 +28,20 @@ export default {
   },
 
   /**
+   * Reset TOC data (executed at each page reload).
+   */
+  reset() {
+    tocItems = null;
+    cd.g.$toc = cd.g.$root.find('.toc');
+    const $closestFloating = cd.g.$toc.closest(
+      '[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]'
+    );
+    cd.g.isTocFloating = Boolean(
+      $closestFloating.length && cd.g.$root.has($closestFloating).length
+    );
+  },
+
+  /**
    * Get a TOC item by anchor.
    *
    * @param {string} anchor

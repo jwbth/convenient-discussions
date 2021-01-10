@@ -47,10 +47,7 @@ async function prepare({ messagesRequest }) {
   }
   cd.g.rootElement = cd.g.$root.get(0);
 
-  cd.g.$toc = cd.g.$root.find('.toc');
-  const $closestFloating = cd.g.$toc
-    .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
-  cd.g.isTocFloating = Boolean($closestFloating.length && cd.g.$root.has($closestFloating).length);
+  toc.reset();
 
   /**
    * Collection of all comments on the page ordered the same way as in the DOM.
