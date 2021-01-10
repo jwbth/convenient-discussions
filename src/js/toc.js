@@ -163,23 +163,24 @@ export default {
           upperLevelMatch = currentTree[currentTree.length - 1];
         }
 
-        const $element = $('<li>')
-          .addClass('cd-toc-notRenderedSection')
-          .addClass(`toclevel-${level}`);
-        const $a = $('<a>')
-          .attr('href', '#' + section.anchor)
-          .on('click', (e) => {
-            e.preventDefault();
-            reloadPage({
-              sectionAnchor: section.anchor,
-              pushState: true,
-            });
-          })
-          .appendTo($element);
+        cd.debug.startTimer('addNewSections add vanilla');
+
+        const li = document.createElement('li');
+        li.className = `cd-toc-notRenderedSection toclevel-${level}`;
+
+        const a = document.createElement('a')
+        a.href = '#' + section.anchor;
+        a.onclick = (e) => {
+          e.preventDefault();
+          reloadPage({
+            sectionAnchor: section.anchor,
+            pushState: true,
+          });
+        };
+        li.appendChild(a);
         if (cd.g.thisPageWatchedSections?.includes(headline)) {
-          $a
-            .addClass('cd-toc-watched')
-            .attr('title', cd.s('toc-watched'));
+          a.className = 'cd-toc-watched';
+          a.title = cd.s('toc-watched');
         }
 
         let number;
@@ -190,29 +191,35 @@ export default {
         } else {
           number = '1';
         }
-        $('<span>')
-          .addClass('tocnumber cd-toc-hiddenTocNumber')
-          .text(number)
-          .appendTo($a);
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'tocnumber cd-toc-hiddenTocNumber';
+        numberSpan.textContent = number;
+        a.appendChild(numberSpan);
 
-        $('<span>')
-          .addClass('toctext')
-          .text(section.headline)
-          .appendTo($a);
+        const textSpan = document.createElement('span');
+        textSpan.className = 'toctext';
+        textSpan.textContent = section.headline;
+        a.appendChild(textSpan);
 
         if (currentLevelMatch) {
-          currentLevelMatch.$element.after($element);
+          currentLevelMatch.$element.after(li);
         } else if (upperLevelMatch) {
-          $('<ul>')
-            .addClass('cd-toc-notRenderedSectionList')
-            .addClass(`toclevel-${level}`)
-            .append($element)
-            .appendTo(upperLevelMatch.$element);
+          const ul = document.createElement('ul');
+          ul.className = `cd-toc-notRenderedSectionList toclevel-${level}`;
+          ul.appendChild(li);
+          upperLevelMatch.$element.append(ul);
         } else {
-          $topUl.prepend($element);
+          $topUl.prepend(li);
         }
 
-        match = { headline, level, number, $element };
+        cd.debug.stopTimer('addNewSections add vanilla');
+
+        item = {
+          headline,
+          level,
+          number,
+          $element: $(li),
+        };
       }
 
       currentTree[section.tocLevel - 1] = item;
