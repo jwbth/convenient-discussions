@@ -660,8 +660,8 @@ export default class Comment extends CommentSkeleton {
     }
 
     this.$elementsToAnimate = this.$underlay
-      .add(this.$overlayContent)
       .add(this.$overlayGradient)
+      .add(this.$overlayContent)
       .stop()
       .css('background-image', 'none')
       .css('background-color', '');
@@ -680,6 +680,7 @@ export default class Comment extends CommentSkeleton {
         finalColor = this.backgroundColor || 'rgba(0, 0, 0, 0)';
       }
 
+      const comment = this;
       this.$elementsToAnimate
         .stop()
         .css('background-image', 'none')
@@ -688,14 +689,16 @@ export default class Comment extends CommentSkeleton {
           { backgroundColor: finalColor },
           400,
           'swing',
-          () => {
+          function () {
+            if (this !== comment.$overlayContent.get(0)) return;
+
             if (callback) {
               callback();
             }
-            this.$elementsToAnimate
+            comment.$elementsToAnimate
               .css('background-image', '')
               .css('background-color', '');
-            delete this.$elementsToAnimate;
+            delete comment.$elementsToAnimate;
           }
         );
     }, delay);

@@ -77,7 +77,8 @@ export default {
 
     if (smooth) {
       $('body, html').animate({ scrollTop: offset }, {
-        complete: () => {
+        complete: function () {
+          if (this !== document.documentElement) return;
           onComplete();
           if (callback) {
             callback();
