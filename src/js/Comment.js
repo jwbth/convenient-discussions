@@ -2537,7 +2537,11 @@ export default class Comment extends CommentSkeleton {
       if (comment instanceof Comment) {
         sectionOrAnchor = comment.getSection();
       } else if (comment.section) {
-        sectionOrAnchor = Section.search(comment.section) || comment.section.anchor;
+        sectionOrAnchor = (
+          comment.section.match ||
+          Section.search(comment.section) ||
+          comment.section.anchor
+        );
       } else {
         sectionOrAnchor = null;
       }
