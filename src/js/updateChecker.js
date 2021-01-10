@@ -115,7 +115,7 @@ async function checkForUpdates() {
       }
     }
   } catch (e) {
-    if (e?.data && e.data.type !== 'network') {
+    if (!(e instanceof CdError) || (e.data && e.data.type !== 'network')) {
       console.warn(e);
     }
   }
