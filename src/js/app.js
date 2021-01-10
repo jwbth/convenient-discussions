@@ -553,7 +553,7 @@ async function app() {
   cd.debug.init();
   cd.debug.startTimer('total time');
   cd.debug.startTimer('start');
-  cd.debug.startTimer('load data');
+  cd.debug.startTimer('loading config and strings');
 
   /**
    * The script has launched.
@@ -575,7 +575,7 @@ async function app() {
     return;
   }
 
-  cd.debug.stopTimer('load data');
+  cd.debug.stopTimer('loading config and strings');
 
   go();
 }

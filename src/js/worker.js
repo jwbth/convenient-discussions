@@ -61,6 +61,7 @@ function parse() {
   cd.sections = [];
   resetCommentAnchors();
 
+  cd.debug.startTimer('worker: parse comments');
   const parser = new Parser(context);
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);
@@ -77,7 +78,9 @@ function parse() {
       }
     }
   });
+  cd.debug.stopTimer('worker: parse comments');
 
+  cd.debug.startTimer('worker: parse sections');
   parser.findHeadings().forEach((heading) => {
     try {
       const section = parser.createSection(heading);
@@ -90,8 +93,9 @@ function parse() {
       }
     }
   });
+  cd.debug.stopTimer('worker: parse sections');
 
-  cd.debug.startTimer('prepare comments and sections');
+  cd.debug.startTimer('worker: prepare comments and sections');
   cd.sections.forEach((section) => {
     section.parentTree = section.getParentTree().map((section) => section.headline);
     section.firstCommentAnchor = section.comments[0]?.anchor;
@@ -223,14 +227,13 @@ function parse() {
     delete section.comments;
   });
   cd.comments = cd.comments.map((comment) => keepSafeValues(comment, commentDangerousKeys));
-
   cd.comments.forEach((comment, i) => {
     comment.previousComments = cd.comments
       .slice(Math.max(0, i - 2), i)
       .reverse();
   });
 
-  cd.debug.stopTimer('prepare comments and sections');
+  cd.debug.stopTimer('worker: prepare comments and sections');
 }
 
 /**
@@ -277,7 +280,7 @@ function onMessageFromWindow(e) {
   }
 
   if (message.type.startsWith('parse')) {
-    cd.debug.startTimer('worker operations');
+    cd.debug.startTimer('worker');
 
     Object.assign(cd.g, message.g);
     cd.config = message.config;
@@ -311,6 +314,7 @@ function onMessageFromWindow(e) {
       sections: cd.sections,
     });
 
+    cd.debug.stopTimer('worker');
     cd.debug.logAndResetEverything();
   }
 }
