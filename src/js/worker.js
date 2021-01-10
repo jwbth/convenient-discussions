@@ -151,9 +151,12 @@ function parse() {
             .forEach((element) => {
               element.remove();
             });
-          headlineElement.children.forEach((child) => {
-            element.appendChild(child);
-          });
+          headlineElement.childNodes
+            .slice()
+            .reverse()
+            .forEach((child) => {
+              element.appendChild(child);
+            });
         }
       }
 
