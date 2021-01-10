@@ -21,6 +21,7 @@ import {
   getFromLocalStorage,
   getTopAndBottomIncludingMargins,
   handleApiReject,
+  isInline,
   reorderArray,
   saveToLocalStorage,
   unhideText,
