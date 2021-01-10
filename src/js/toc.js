@@ -10,6 +10,8 @@ import cd from './cd';
 import { reloadPage } from './boot';
 import { restoreScrollPosition, saveScrollPosition } from './util';
 
+let tocItems;
+
 export default {
   /**
    * Hide the TOC if the relevant cookie is set. This method duplicates {@link
@@ -23,6 +25,46 @@ export default {
     if (mw.cookie.get('hidetoc') === '1') {
       cd.g.$toc.find('.toctogglecheckbox').prop('checked', true);
     }
+  },
+
+  /**
+   * Get a TOC item by anchor.
+   *
+   * @param {string} anchor
+   * @returns {?object}
+   */
+  getItem(anchor) {
+    if (!cd.g.$toc.length) {
+      return null;
+    }
+
+    if (!tocItems) {
+      cd.debug.startTimer('tocItems');
+      // It is executed first time before not rendered (gray) sections are added to the TOC, so we
+      // use a simple algorithm to obtain items. We also expect that the number and text are the
+      // first two children of a <li> element.
+      tocItems = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a')).map((a) => {
+        const textSpan = a.children[1];
+        const headline = textSpan.textContent;
+        const anchor = a.getAttribute('href').slice(1);
+        const li = a.parentNode;
+        let [, level] = li.className.match(/\btoclevel-(\d+)/);
+        level = Number(level);
+        const number = a.children[0].textContent;
+        return {
+          headline,
+          anchor,
+          level,
+          number,
+          $element: $(li),
+          $link: $(a),
+          $text: $(textSpan),
+        };
+      });
+      cd.debug.stopTimer('tocItems');
+    }
+
+    return tocItems.find((item) => item.anchor === anchor) || null;
   },
 
   /**
@@ -49,6 +91,9 @@ export default {
    * Add links to new, not yet rendered sections (loaded in the background) to the table of
    * contents.
    *
+   * Note that this method may also add the `match` property to the section elements containing a
+   * matched `Section` object.
+   *
    * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
    */
   addNewSections(sections) {
@@ -62,26 +107,6 @@ export default {
       .remove();
 
     cd.debug.stopTimer('addNewSections remove');
-    cd.debug.startTimer('addNewSections tocSections');
-
-    const tocSections = cd.g.$toc
-      .find('li > a')
-      .toArray()
-      .map((el) => {
-        const $el = $(el);
-        const headline = $el.find('.toctext').text();
-        const anchor = $el.attr('href').slice(1);
-        const $element = $el.parent();
-        let [, level] = $element.attr('class').match(/\btoclevel-(\d+)/);
-        level = Number(level);
-        const number = $element
-          .children('a')
-          .children('.tocnumber')
-          .text();
-        return { headline, anchor, level, number, $element };
-      });
-
-    cd.debug.stopTimer('addNewSections tocSections');
     cd.debug.startTimer('addNewSections parent');
 
     /*
@@ -124,13 +149,12 @@ export default {
     let currentTree = [];
     const $topUl = cd.g.$toc.children('ul');
     sections.forEach((section) => {
-      const matchedSection = Section.search(section);
-      let match = (
-        matchedSection &&
-        tocSections.find((tocSection) => tocSection.anchor === matchedSection.anchor)
-      );
+      cd.debug.startTimer('addNewSections add search');
+      section.match = Section.search(section);
+      cd.debug.stopTimer('addNewSections add search');
+      let item = section.match?.getTocItem();
 
-      if (!match) {
+      if (!item) {
         const headline = section.headline;
         const level = section.tocLevel;
         const currentLevelMatch = currentTree[level - 1];
@@ -191,7 +215,7 @@ export default {
         match = { headline, level, number, $element };
       }
 
-      currentTree[section.tocLevel - 1] = match;
+      currentTree[section.tocLevel - 1] = item;
       currentTree.splice(section.tocLevel);
     });
 
@@ -245,8 +269,10 @@ export default {
         cd.g.$toc.find(
           `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`
         ) :
-        sectionOrAnchor.getTocLink();
-      cd.debug.startTimer('addNewComments sections selector');
+        sectionOrAnchor.getTocItem().$link;
+      cd.debug.stopTimer('addNewComments sections selector');
+
+      // Should never be the case
       if (!$sectionLink?.length) return;
 
       let $target = $sectionLink;

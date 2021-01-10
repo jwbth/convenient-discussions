@@ -922,7 +922,7 @@ export default class Comment extends CommentSkeleton {
               if (section.isWatched && section.headline !== originalHeadline) {
                 section.watch(true, originalHeadline);
               }
-              section.getTocLink()?.find('.toctext').text(section.headline);
+              section.getTocItem()?.$text.text(section.headline);
             }
           }
         } else {

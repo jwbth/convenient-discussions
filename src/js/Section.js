@@ -10,6 +10,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
+import toc from './toc';
 import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
@@ -1523,23 +1524,12 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the TOC link to the section if present.
+   * Get the TOC item for the section if present.
    *
-   * @returns {?JQuery}
+   * @returns {?object}
    */
-  getTocLink() {
-    if (!cd.g.$toc.length) {
-      return null;
-    }
-
-    if (!this.cachedTocLink) {
-      const $link = cd.g.$toc.find(`a[href="#${$.escapeSelector(this.anchor)}"]`);
-      this.cachedTocLink = $link.length && !$link.closest('.cd-toc-notRenderedSection').length ?
-        $link :
-        null;
-    }
-
-    return this.cachedTocLink;
+  getTocItem() {
+    return toc.getItem(this.anchor) || null;
   }
 
   /**
@@ -1548,15 +1538,15 @@ export default class Section extends SectionSkeleton {
   updateTocLink() {
     if (!cd.settings.modifyToc) return;
 
-    const tocLink = this.getTocLink();
-    if (!tocLink) return;
+    const tocItem = this.getTocItem();
+    if (!tocItem) return;
 
     if (this.isWatched) {
-      tocLink
+      tocItem.$element
         .addClass('cd-toc-watched')
         .attr('title', cd.s('toc-watched'));
     } else {
-      tocLink
+      tocItem.$element
         .removeClass('cd-toc-watched')
         .removeAttr('title');
     }
