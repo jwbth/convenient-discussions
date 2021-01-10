@@ -812,10 +812,14 @@ export default class Comment extends CommentSkeleton {
       $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
     }
 
-    let $last = this.$elements.last();
-    if ($last.is('ul, ol, dl')) {
-      $last = $last.last();
-    }
+    // Add the mark to the last block element, going as many nesting levels down as needed to avoid
+    // it appearing after a block element.
+    let $last;
+    let $tested = this.$elements.last();
+    do {
+      $last = $tested;
+      $tested = $last.children().last();
+    } while ($tested.length && !isInline($tested.get(0)));
     $last.append($span);
 
     if (isNewVersionRendered) {
