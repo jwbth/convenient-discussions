@@ -31,13 +31,13 @@
   "sm-copylink-tooltip-wikilink": "Copy a wikilink.",
   "sm-copylink-tooltip-link": "Copy a link.",
 
-  "comment-edited": "The comment was edited.",
+  "comment-edited": "The comment has changed.",
   "comment-edited-refresh": "Refresh",
   "comment-edited-diff": "Diff",
   "comment-edited-diff-error": "Couldn't render the diff.",
-  "comment-edited-diff-empty": "The diff is empty. Perhaps the script is wrong, and the comment wasn't edited after all.",
+  "comment-edited-diff-empty": "The diff is empty. Probably, the rendering of the comment has changed, but it wasn't edited.",
   "comment-deleted": "The comment was deleted.",
-  "comment-editedsince": "The comment was edited since your last visit.",
+  "comment-editedsince": "The comment has changed since your last visit.",
   "comment-edited-history": "Edit history",
 
   "section-reply": "Reply",
