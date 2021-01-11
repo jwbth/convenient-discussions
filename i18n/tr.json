@@ -46,7 +46,7 @@
 	"section-watch-success": "İzleme listenize \"$1\" bölümü eklendi.",
 	"section-unwatch-success": "\"$1\" bölümü izleme listenizden kaldırıldı.",
 	"section-unwatch-stillwatched": "<strong>Not:</strong> izlediğiniz \"$1\" bölümünde yer aldığından bu bölümü hala izliyorsunuz.",
-	"section-watch-pagenotwatched": "<strong>Not:</strong> bölümü izliyorsunuz ama sayfayı değil. İzleme listesi sayfanızda yeni yorumların vurgulanması için sayfayı izleme listesine eklenmesi gerekir.",
+	"section-watch-pagenotwatched": "<strong>Not:</strong> bölümü izliyorsunuz ancak sayfayı değil. İzleme listesi sayfanızda yeni yorumların vurgulanması için sayfayı izleme listesine eklenmesi gerekir.",
 	"section-watch-error-load": "Ayarlar sunucudan yüklenemedi.",
 	"section-watch-error-save": "Ayarlar sunucuya kaydedilemedi.",
 	"section-watch-error-maxsize": "Ayarlar güncellenemedi: izlenen bölümler listesinin boyutu maksimum boyutu aşıyor. Bunu düzeltmek için <span class=\"cd-notification-editWatchedSections\">bu bölüm listesini düzenleyin</span>.",
