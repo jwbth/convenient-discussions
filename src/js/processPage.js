@@ -609,7 +609,10 @@ async function confirmDesktopNotifications() {
     });
   }
 
-  if (cd.settings.desktopNotifications !== 'unknown' && Notification.permission === 'default') {
+  if (
+    !['unknown', 'none'].includes(cd.settings.desktopNotifications) &&
+    Notification.permission === 'default'
+  ) {
     await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
     Notification.requestPermission();
   }
