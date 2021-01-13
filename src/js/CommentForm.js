@@ -546,6 +546,23 @@ export default class CommentForm {
   }
 
   /**
+   * Utility to get the element used to determine where the comment form element is inserted in the
+   * DOM.
+   *
+   * @param {JQuery} $lastOfTarget
+   * @returns {JQuery}
+   * @private
+   */
+  get$other($lastOfTarget) {
+    let $other = $lastOfTarget.next();
+    const $nextToTargetFirstChild = $other.children().first();
+    if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
+      $other = $nextToTargetFirstChild;
+    }
+    return $other;
+  }
+
+  /**
    * Create the contents of the form.
    *
    * @param {object} dataToRestore
@@ -578,8 +595,14 @@ export default class CommentForm {
     if (this.mode === 'reply') {
       createList = true;
       const $lastOfTarget = this.target.$elements.last();
-      const $nextToTarget = $lastOfTarget.next();
-      if ($lastOfTarget.is('li')) {
+      const $other = this.get$other($lastOfTarget);
+      if ($other.is('ul')) {
+        createList = false;
+        outerWrapperTag = 'li';
+      } else if ($other.is('dl')) {
+        createList = false;
+        outerWrapperTag = 'dd';
+      } else if ($lastOfTarget.is('li')) {
         // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
         // in those cases. Which is unsemantic, yes :-(
         if (this.containerListType !== 'ol') {
@@ -589,14 +612,6 @@ export default class CommentForm {
         }
       } else if ($lastOfTarget.is('dd')) {
         outerWrapperTag = 'dd';
-      } else {
-        if ($nextToTarget.is('ul')) {
-          createList = false;
-          outerWrapperTag = 'li';
-        } else if ($nextToTarget.is('dl')) {
-          createList = false;
-          outerWrapperTag = 'dd';
-        }
       }
     } else if (this.mode === 'edit') {
       const $lastOfTarget = this.target.$elements.last();
@@ -1252,11 +1267,11 @@ export default class CommentForm {
     switch (this.mode) {
       case 'reply': {
         const $lastOfTarget = this.target.$elements.last();
-        const $nextToTarget = $lastOfTarget.next();
-        if ($lastOfTarget.is('li, dd')) {
+        const $other = this.get$other($lastOfTarget);
+        if ($other.is('ul, dl')) {
+          this.$outerWrapper.prependTo($other);
+        } else if ($lastOfTarget.is('li, dd')) {
           this.$outerWrapper.insertAfter($lastOfTarget);
-        } else if ($nextToTarget.is('ul, dl')) {
-          this.$outerWrapper.prependTo($nextToTarget);
         } else {
           this.$wrappingList.insertAfter($lastOfTarget);
         }
