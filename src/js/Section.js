@@ -1542,11 +1542,11 @@ export default class Section extends SectionSkeleton {
     if (!tocItem) return;
 
     if (this.isWatched) {
-      tocItem.$element
+      tocItem.$link
         .addClass('cd-toc-watched')
         .attr('title', cd.s('toc-watched'));
     } else {
-      tocItem.$element
+      tocItem.$link
         .removeClass('cd-toc-watched')
         .removeAttr('title');
     }
