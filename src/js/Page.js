@@ -373,7 +373,7 @@ export default class Page {
   async getRevisions(customOptions = {}, doBackgroundRequest = false) {
     const defaultOptions = {
       action: 'query',
-      titles: cd.g.CURRENT_PAGE.name,
+      titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
       redirects: true,
