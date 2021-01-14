@@ -127,25 +127,27 @@ class TributeRange {
                 endPos += ending.length
                 ending = ''
             }
-            let text = data.start + data.content + data.end
 
-            let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
-                ? this.tribute.replaceTextSuffix
-                : ' '
-            text += textSuffix
             let startPos = info.mentionPosition
 
             myField.selectionStart = startPos
             myField.selectionEnd = endPos
 
-            // jwbth: Made alterations to make the `cutTextAfter` config value work.
-            if (
-                context.collection.cutTextAfter &&
-                ending.startsWith(context.collection.cutTextAfter)
-            ) {
-                ending = ending.slice(context.collection.cutTextAfter.length)
-                myField.selectionEnd += context.collection.cutTextAfter.length
+            // jwbth: Made alterations to make the `keepAsEnd` config value work.
+            if (context.collection.keepAsEnd && !originalEvent.shiftKey) {
+                const [end] = ending.match(context.collection.keepAsEnd) || []
+                if (end) {
+                    ending = ending.slice(end.length)
+                    myField.selectionEnd += end.length
+                    data.end = end
+                }
             }
+
+            let text = data.start + data.content + data.end
+            let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
+                ? this.tribute.replaceTextSuffix
+                : ' '
+            text += textSuffix
 
             // jwbth: Preserve the undo/redo functionality in browsers that support it.
             myField.focus()

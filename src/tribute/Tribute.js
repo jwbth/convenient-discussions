@@ -132,7 +132,7 @@ class Tribute {
       this.collection = collection.map(item => {
         return {
           trigger: item.trigger || trigger,
-          cutTextAfter: item.cutTextAfter || null,
+          keepAsEnd: item.keepAsEnd || null,
           selectClass: item.selectClass || selectClass,
           containerClass: item.containerClass || containerClass,
           itemClass: item.itemClass || itemClass,
