@@ -409,57 +409,6 @@ export async function settingsDialog() {
       help: cd.s('sd-desktopnotifications-help', location.hostname),
     });
 
-    let defaultCommentLinkTypeHelp = (
-      cd.s('sd-defaultcommentlinktype-help') +
-      ' ' +
-      cd.s('sd-defaultcommentlinktype-help-notdifflinks')
-    );
-    [
-      this.defaultCommentLinkTypeField,
-      this.defaultCommentLinkTypeSelect,
-      this.defaultCommentLinkTypeRadioWikilink,
-      this.defaultCommentLinkTypeRadioLink,
-    ] = radioField({
-      options: [
-        {
-          label: cd.s('sd-defaultcommentlinktype-radio-diff'),
-          data: 'diff',
-        },
-        {
-          label: cd.s('sd-defaultcommentlinktype-radio-wikilink'),
-          data: 'wikilink',
-        },
-        {
-          label: cd.s('sd-defaultcommentlinktype-radio-link'),
-          data: 'link',
-        },
-      ],
-      selected: settings.defaultCommentLinkType,
-      label: cd.s('sd-defaultcommentlinktype', cd.s('cm-copylink')),
-      help: defaultCommentLinkTypeHelp,
-    });
-
-    [
-      this.defaultSectionLinkTypeField,
-      this.defaultSectionLinkTypeSelect,
-      this.defaultSectionLinkTypeRadioWikilink,
-      this.defaultSectionLinkTypeRadioLink,
-    ] = radioField({
-      options: [
-        {
-          label: cd.s('sd-defaultsectionlinktype-radio-wikilink'),
-          data: 'wikilink',
-        },
-        {
-          label: cd.s('sd-defaultsectionlinktype-radio-link'),
-          data: 'link',
-        },
-      ],
-      selected: settings.defaultSectionLinkType,
-      label: cd.s('sd-defaultsectionlinktype'),
-      help: cd.s('sd-defaultsectionlinktype-help'),
-    });
-
     [this.highlightOwnCommentsField, this.highlightOwnCommentsCheckbox] = checkboxField({
       value: 'highlightOwnComments',
       selected: settings.highlightOwnComments,
@@ -574,8 +523,6 @@ export async function settingsDialog() {
       select: 'updateStates',
       choose: 'changeDesktopNotifications',
     });
-    this.defaultCommentLinkTypeSelect.connect(this, { select: 'updateStates' });
-    this.defaultSectionLinkTypeSelect.connect(this, { select: 'updateStates' });
     this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
@@ -613,8 +560,6 @@ export async function settingsDialog() {
         dialog.highlightOwnCommentsField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
-        dialog.defaultCommentLinkTypeField.$element,
-        dialog.defaultSectionLinkTypeField.$element,
       ]);
     }
     OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
@@ -713,8 +658,6 @@ export async function settingsDialog() {
         this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
         'unknown'
       ),
-      defaultCommentLinkType: this.defaultCommentLinkTypeSelect.findSelectedItem()?.getData(),
-      defaultSectionLinkType: this.defaultSectionLinkTypeSelect.findSelectedItem()?.getData(),
       highlightOwnComments: this.highlightOwnCommentsCheckbox.isSelected(),
       insertButtons: this.processInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
@@ -1082,9 +1025,8 @@ function copyLinkToClipboardAndNotify(text) {
  * Copy a link to the object or show a copy link dialog.
  *
  * @param {Comment|Section} object Comment or section to copy a link to.
- * @param {boolean} chooseLink Allow the user to choose the type of a link.
  */
-export async function copyLink(object, chooseLink) {
+export async function copyLink(object) {
   if (object.isLinkBeingCopied) return;
 
   const isComment = object instanceof Comment;
@@ -1100,6 +1042,7 @@ export async function copyLink(object, chooseLink) {
    * @type {boolean}
    * @instance module:Comment
    */
+
   /**
    * Is a link to the section being copied right now (a copy link dialog is opened).
    *
@@ -1111,120 +1054,114 @@ export async function copyLink(object, chooseLink) {
 
   const anchorWithUnderlines = spacesToUnderlines(anchor);
   const url = `https:${mw.config.get('wgServer')}${decodedCurrentPageUrl}#${anchorWithUnderlines}`;
-  const defaultType = cd.settings[isComment ? 'defaultCommentLinkType' : 'defaultSectionLinkType'];
-  if (chooseLink || (isComment && defaultType === 'diff')) {
-    const copyCallback = (value) => {
-      copyLinkToClipboardAndNotify(value);
-      dialog.close();
-    };
-    let diffField;
-    let shortDiffField;
-    let $diff;
-    if (isComment) {
-      let diffLink;
-      let shortDiffLink;
-      let errorText;
-      try {
-        diffLink = await object.getDiffLink();
-        shortDiffLink = await object.getDiffLink(true);
-        $diff = await object.generateDiffView();
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type } = e.data;
-          if (type === 'network') {
-            errorText = cd.s('cld-diff-error-network');
-          } else {
-            errorText = cd.s('cld-diff-error');
-          }
+  const copyCallback = (value) => {
+    copyLinkToClipboardAndNotify(value);
+    dialog.close();
+  };
+  let diffField;
+  let shortDiffField;
+  let $diff;
+  if (isComment) {
+    let diffLink;
+    let shortDiffLink;
+    let errorText;
+    try {
+      diffLink = await object.getDiffLink();
+      shortDiffLink = await object.getDiffLink(true);
+      $diff = await object.generateDiffView();
+    } catch (e) {
+      if (e instanceof CdError) {
+        const { type } = e.data;
+        if (type === 'network') {
+          errorText = cd.s('cld-diff-error-network');
         } else {
-          errorText = cd.s('cld-diff-error-unknown');
+          errorText = cd.s('cld-diff-error');
         }
+      } else {
+        errorText = cd.s('cld-diff-error-unknown');
+        console.warn(e);
       }
-
-      diffField = copyActionField({
-        value: diffLink || errorText,
-        disabled: !diffLink,
-        label: cd.s('cld-diff'),
-        copyCallback,
-      });
-
-      shortDiffField = copyActionField({
-        value: shortDiffLink || errorText,
-        disabled: !shortDiffLink,
-        label: cd.s('cld-shortdiff'),
-        copyCallback,
-      });
-
-      if (dealWithLoadingBug('mediawiki.diff.styles')) {
-        object.isLinkBeingCopied = false;
-        return;
-      }
-
-      await mw.loader.using('mediawiki.diff.styles');
     }
 
-    let onlyCdWarning;
-    if (isComment) {
-      onlyCdWarning = cd.s('cld-help-onlycd');
-    }
-
-    const wikilinkField = copyActionField({
-      value: wikilink,
-      disabled: !wikilink,
-      label: cd.s('cld-wikilink'),
-      copyCallback,
-      help: onlyCdWarning,
-    });
-
-    const currentPageWikilinkField = copyActionField({
-      value: `[[#${anchor}]]`,
-      label: cd.s('cld-currentpagewikilink'),
+    diffField = copyActionField({
+      value: diffLink || errorText,
+      disabled: !diffLink,
+      label: cd.s('cld-diff'),
       copyCallback,
     });
 
-    const linkField = copyActionField({
-      value: url,
-      label: cd.s('cld-link'),
+    shortDiffField = copyActionField({
+      value: shortDiffLink || errorText,
+      disabled: !shortDiffLink,
+      label: cd.s('cld-shortdiff'),
       copyCallback,
-      help: onlyCdWarning,
     });
 
-    // Workaround, because we don't want the first input to be focused on click almost anywhere in
-    // the dialog, which happens because the whole message is wrapped in the <label> element.
-    const $dummyInput = $('<input>').addClass('cd-hidden');
-
-    const $message = $('<div>').append([
-      diffField?.$element,
-      shortDiffField?.$element,
-      $diff,
-      wikilinkField.$element,
-      currentPageWikilinkField.$element,
-      linkField.$element,
-    ]);
-    $message.children().first().prepend($dummyInput);
-
-    const dialog = new OO.ui.MessageDialog({
-      classes: ['cd-copyLinkDialog'],
-    });
-    cd.g.windowManager.addWindows([dialog]);
-    const windowInstance = cd.g.windowManager.openWindow(dialog, {
-      message: $message,
-      actions: [
-        {
-          label: cd.s('cld-close'),
-          action: 'close',
-        },
-      ],
-      size: isComment ? 'larger' : 'large',
-    });
-    windowInstance.closed.then(() => {
+    if (dealWithLoadingBug('mediawiki.diff.styles')) {
       object.isLinkBeingCopied = false;
-    });
-  } else {
-    const link = defaultType === 'link' ? url : wikilink;
-    copyLinkToClipboardAndNotify(link);
-    object.isLinkBeingCopied = false;
+      return;
+    }
+
+    await mw.loader.using('mediawiki.diff.styles');
   }
+
+  let onlyCdWarning;
+  if (isComment) {
+    onlyCdWarning = cd.s('cld-help-onlycd');
+  }
+
+  const wikilinkField = copyActionField({
+    value: wikilink,
+    disabled: !wikilink,
+    label: cd.s('cld-wikilink'),
+    copyCallback,
+    help: onlyCdWarning,
+  });
+
+  const currentPageWikilinkField = copyActionField({
+    value: `[[#${anchor}]]`,
+    label: cd.s('cld-currentpagewikilink'),
+    copyCallback,
+  });
+
+  const linkField = copyActionField({
+    value: url,
+    label: cd.s('cld-link'),
+    copyCallback,
+    help: onlyCdWarning,
+  });
+
+  // Workaround, because we don't want the first input to be focused on click almost anywhere in
+  // the dialog, which happens because the whole message is wrapped in the <label> element.
+  const $dummyInput = $('<input>').addClass('cd-hidden');
+
+  const $message = $('<div>').append([
+    diffField?.$element,
+    shortDiffField?.$element,
+    $diff,
+    wikilinkField.$element,
+    currentPageWikilinkField.$element,
+    linkField.$element,
+  ]);
+  $message.children().first().prepend($dummyInput);
+
+  const dialog = new OO.ui.MessageDialog({
+    classes: ['cd-copyLinkDialog'],
+  });
+  cd.g.windowManager.addWindows([dialog]);
+  const windowInstance = cd.g.windowManager.openWindow(dialog, {
+    message: $message,
+    actions: [
+      {
+        label: cd.s('cld-close'),
+        action: 'close',
+      },
+    ],
+    size: isComment ? 'larger' : 'large',
+  });
+  windowInstance.closed.then(() => {
+    object.isLinkBeingCopied = false;
+  });
 }
 
 /**

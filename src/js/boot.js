@@ -77,8 +77,11 @@ export async function initSettings() {
 
     autopreview: true,
     desktopNotifications: 'unknown',
+
+    // Not shown in the settings dialog. TODO: delete if proves unnecessary.
     defaultCommentLinkType: 'diff',
     defaultSectionLinkType: 'wikilink',
+
     highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
@@ -493,15 +496,10 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
   }).$element.get(0);
 
-  let title = cd.s(`cm-copylink-tooltip-${cd.settings.defaultCommentLinkType}`);
-  if (cd.settings.defaultCommentLinkType === 'diff') {
-    title += ' ' + cd.s('cld-invitation');
-  }
-
   cd.g.COMMENT_ELEMENT_PROTOTYPES.linkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
     icon: 'link',
-    title,
+    title: cd.s('cm-copylink-tooltip'),
     framed: false,
     invisibleLabel: true,
     classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
@@ -509,7 +507,7 @@ function initOouiAndElementPrototypes() {
   cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingLinkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
     icon: 'link',
-    title,
+    title: cd.s('cm-copylink-tooltip'),
     framed: false,
     disabled: true,
     invisibleLabel: true,

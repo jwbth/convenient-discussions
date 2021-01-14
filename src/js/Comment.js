@@ -1054,15 +1054,13 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Copy a link to the comment or open a copy link dialog.
-   *
-   * @param {Event} e
    */
-  async copyLink(e) {
+  async copyLink() {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
     const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
     this.replaceButton(this.linkButton, pendingLinkButton, 'link');
-    await copyLink(this, e.shiftKey);
+    await copyLink(this);
     this.replaceButton(this.linkButton, linkButton, 'link');
   }
 
