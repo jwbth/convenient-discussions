@@ -109,9 +109,6 @@ class TributeRange {
             }
             data.content = data.content || ''
             data.end = data.end || ''
-            if (originalEvent.ctrlKey && data.ctrlModify) {
-                data = data.ctrlModify(data)
-            }
 
             let myField = this.tribute.current.element
 
