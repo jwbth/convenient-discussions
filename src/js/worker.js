@@ -152,7 +152,7 @@ function parse() {
         const headlineElement = element.getElementsByClassName('mw-headline')[0];
         if (headlineElement) {
           headlineElement.getElementsByClassName('mw-headline-number')[0]?.remove();
-          element.children
+          element.childNodes
             .slice()
             .reverse()
             .forEach((element) => {
@@ -293,7 +293,7 @@ function onMessageFromWindow(e) {
     });
 
     context.document = new Document(dom);
-    cd.g.rootElement = context.document.children[0];
+    cd.g.rootElement = context.document.childNodes[0];
     cd.g.specialElements = {
       pageHasOutdents: Boolean(
         cd.g.rootElement.getElementsByClassName('outdent-template', 1).length

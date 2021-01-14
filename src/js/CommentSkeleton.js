@@ -25,10 +25,10 @@ export default class CommentSkeleton {
   constructor(parser, signature) {
     this.parser = parser;
 
-    // Identify all comment nodes and save the path to them.
+    // Identify all comment nodes and save a path to them.
     let parts = this.parser.collectParts(signature.element);
 
-    // Remove parts contained by other parts
+    // Remove parts contained by other parts.
     parts = this.parser.removeNestedParts(parts);
 
     // We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
@@ -122,7 +122,7 @@ export default class CommentSkeleton {
      * Comment elements that are highlightable.
      *
      * Keep in mind that the elements may be replaced, and the property values will need to be
-     * updated. See mergeAdjacentCommentLevels() in {@link module:modifyDom}.
+     * updated. See `mergeAdjacentCommentLevels()` in {@link module:modifyDom}.
      *
      * @type {Element[]}
      */
@@ -136,8 +136,8 @@ export default class CommentSkeleton {
     this.setLevels();
 
     /**
-     * Is the comment followed by a heading. Set to `true` in the {@link SectionSkeleton}
-     * constructor.
+     * Is the comment preceded by a heading. Set to `true` in the {@link SectionSkeleton}
+     * constructor if that's the case.
      *
      * @type {boolean}
      */
@@ -156,6 +156,7 @@ export default class CommentSkeleton {
        * @type {boolean}
        */
       this.isOpeningSection = true;
+
       const headingLevelMatch = this.parts[0].node.tagName.match(/^H([1-6])$/);
       this.openingSectionOfLevel = headingLevelMatch && Number(headingLevelMatch[1]);
     } else {
@@ -166,7 +167,7 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Add necessary attributes to the comment elements.
+   * Add the necessary attributes to the comment elements.
    *
    * @private
    */
@@ -183,7 +184,7 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Set necessary classes to parent elements of the comment elements to make a visible tree
+   * Set the necessary classes to parent elements of the comment elements to make a visible tree
    * structure.
    *
    * @private

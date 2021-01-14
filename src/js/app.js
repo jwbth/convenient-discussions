@@ -220,6 +220,8 @@ function setStrings() {
  * @private
  */
 function go() {
+  cd.debug.startTimer('start');
+
   /**
    * Script configuration. The default configuration is at {@link module:defaultConfig}.
    *
@@ -552,7 +554,6 @@ async function app() {
 
   cd.debug.init();
   cd.debug.startTimer('total time');
-  cd.debug.startTimer('start');
   cd.debug.startTimer('loading config and strings');
 
   /**
