@@ -526,7 +526,7 @@ export default class Autocomplete {
         );
         return {
           start: `@[[${userNamespace}:${name}|`,
-          end: ']]',
+          end: ']] ',
           content: name,
           ctrlModify: (data) => {
             data.end += cd.mws('colon-separator');
