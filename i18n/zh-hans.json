@@ -31,7 +31,7 @@
 	"comment-deleted": "评论已删除",
 	"section-reply": "回复",
 	"section-addsubsection-to": "向“$1”中添加新章节",
-	"section-newcomments": "此节中有新评论。点击以刷新页面。",
+	"section-newcomments": "此节中{{plural:$1|有来自 {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3 的新评论|有来自 {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3 的新评论}}。点击以刷新页面。",
 	"section-watch-success": "段落“$1”已加入您的监视列表。",
 	"section-unwatch-success": "段落“$1”已从您的监视列表移除。",
 	"section-watch-error-save": "无法将设置保存到服务器。",

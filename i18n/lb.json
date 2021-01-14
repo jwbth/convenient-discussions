@@ -24,7 +24,7 @@
 	"comment-edited-refresh": "Aktualiséieren",
 	"comment-deleted": "D'Bemierkung gouf geläscht.",
 	"section-reply": "Äntweren",
-	"section-newcomments": "Et gëtt nei Bemierkungen an dësem Abschnitt. Klickt hei fir d'Säit z'aktualiséieren.",
+	"section-newcomments": "Et gëtt {{plural:$1|eng nei Bemierkung|nei Bemierkungen}} an dësem Abschnitt vum {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. Klickt hei fir d'Säit z'aktualiséieren.",
 	"section-unwatch-success": "Den Abschnitt \"$1\" gouf vun Ärer Iwwerwaachungslëscht erofgeholl.",
 	"section-watch-error-save": "D'Astellunge konnten net um Server gespäichert ginn.",
 	"cld-diff": "Link op den Ënnerscheed",
