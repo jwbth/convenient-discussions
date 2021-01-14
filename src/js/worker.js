@@ -143,6 +143,7 @@ function parse() {
       comment.toMe = comment.parent.isOwn;
     }
     comment.elements[0].removeAttribute('id');
+    comment.hiddenElementData = [];
     comment.elementHtmls = comment.elements.map((element) => {
       element.removeAttribute('data-comment-id');
 
@@ -166,11 +167,6 @@ function parse() {
         }
       }
 
-      element.getElementsByClassName('autonumber').forEach((element) => {
-        element.children[0]?.remove();
-      });
-
-      comment.hiddenElementData = [];
       const elementsToHide = [
         ...element.getElementsByClassName('autonumber'),
         ...element.getElementsByClassName('reference'),
@@ -188,12 +184,12 @@ function parse() {
           type = 'autonumber';
         }
 
-        const index = comment.hiddenElementData.push({
+        const num = comment.hiddenElementData.push({
           type,
           tagName: element.tagName,
           html: element.outerHTML,
         });
-        const textNode = context.document.createTextNode(`\x01${index}_${type}\x02`);
+        const textNode = context.document.createTextNode(`\x01${num}_${type}\x02`);
         element.parentNode.insertBefore(textNode, element);
         element.remove();
       });
