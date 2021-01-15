@@ -13,6 +13,7 @@ import Parser, { findSpecialElements, windowGetAllTextNodes } from './Parser';
 import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
+import currentSection from './currentSection';
 import navPanel from './navPanel';
 import toc from './toc';
 import updateChecker from './updateChecker';
@@ -804,6 +805,8 @@ export default async function processPage(keptData = {}) {
   }
 
   if (cd.g.isFirstRun) {
+    currentSection.mount();
+
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
     $(document).on('mousemove mouseover', highlightFocused);
@@ -839,6 +842,8 @@ export default async function processPage(keptData = {}) {
       childList: true,
       subtree: true,
     });
+  } else {
+    currentSection.reset();
   }
 
   if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {

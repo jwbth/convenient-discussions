@@ -8,6 +8,7 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import cd from './cd';
 import commentLayers from './commentLayers';
+import currentSection from './currentSection';
 import navPanel from './navPanel';
 import { isInputFocused } from './util';
 
@@ -184,5 +185,6 @@ export function handleScroll() {
       .some(registerSeenIfInViewport);
 
     navPanel.updateFirstUnseenButton();
+    currentSection.update();
   }, 300);
 }

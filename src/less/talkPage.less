@@ -150,3 +150,55 @@ span.cd-show {
 .cd-commentDiffView-below {
   margin: 0.5em 0 0;
 }
+
+#cd-currentSection {
+  position: fixed;
+  width: 158px;
+  left: 6px;
+  background-color: #f6f6f6cc;
+  font-size: 12px;
+  padding: 0.25em;
+  top: 4px;
+  line-height: 1.2;
+  list-style-type: none;
+  list-style-image: none;
+  margin: 0;
+  color: #202122;
+
+  &:empty {
+    padding: 0;
+  }
+}
+
+.cd-currentSection-level {
+  margin: 0 0 0.25em;
+  cursor: pointer;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &-1 {
+    margin-left: 0.75em;
+  }
+
+  &-2 {
+    margin-left: 1.5em;
+  }
+
+  &-3 {
+    margin-left: 2.25em;
+  }
+
+  &-4 {
+    margin-left: 3em;
+  }
+
+  &-5 {
+    margin-left: 3.75em;
+  }
+
+  &-6 {
+    margin-left: 4.5em;
+  }
+}
