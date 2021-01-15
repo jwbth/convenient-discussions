@@ -203,8 +203,9 @@ export default class Comment extends CommentSkeleton {
       )
     );
 
-    // If the comment has 0 as the left position, it's probably invisible for some reason.
-    if (rectTop.left === 0) return;
+    // If the element has 0 as the left position and height, it's probably invisible for some
+    // reason.
+    if (rectTop.left === 0 && rectTop.height === 0) return;
 
     const top = window.pageYOffset + rectTop.top;
     const bottom = window.pageYOffset + rectBottom.bottom;
