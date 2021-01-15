@@ -300,6 +300,18 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Hide the comment menu (in fact, the comment overlay).
+   *
+   * @param {Event} [e]
+   */
+  hideMenu(e) {
+    if (e) {
+      e.preventDefault();
+    }
+    this.overlay.style.display = 'none';
+  }
+
+  /**
    * Create the comment's underlay and overlay.
    *
    * @fires commentLayersCreated
@@ -313,10 +325,23 @@ export default class Comment extends CommentSkeleton {
     this.overlayInnerWrapper = this.overlay.firstChild;
 
     // Hide the overlay on right click. It can block clicking the author page link.
-    this.overlayInnerWrapper.oncontextmenu = (e) => {
-      e.preventDefault();
-      this.overlay.style.display = 'none';
+    this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
+
+    let mouseUpTimeout;
+    const deferHideMenu = (e) => {
+      // Ignore other than left button clicks.
+      if (e.which !== 1) return;
+
+      mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1200);
     };
+    const dontHideMenu = () => {
+      clearTimeout(mouseUpTimeout);
+    };
+
+    // Hide the overlay on long click/tap.
+    this.overlayInnerWrapper.onmousedown = deferHideMenu;
+    this.overlayInnerWrapper.onmouseup = dontHideMenu;
+
     this.overlayGradient = this.overlayInnerWrapper.firstChild;
     this.overlayContent = this.overlayInnerWrapper.lastChild;
 
