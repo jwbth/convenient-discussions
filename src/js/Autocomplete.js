@@ -45,7 +45,7 @@ export default class Autocomplete {
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
     types = types
-      // The 'mentions' type is needed in any case, as it can be triggered from the toolbar. When it
+      // The "mentions" type is needed in any case, as it can be triggered from the toolbar. When it
       // is not, we will suppress it specifically.
       .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions')
 

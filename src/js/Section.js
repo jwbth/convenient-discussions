@@ -237,17 +237,18 @@ export default class Section extends SectionSkeleton {
     const lastElement = this.elements[this.elements.length - 1];
     lastElement.parentNode.insertBefore(buttonContainer, lastElement.nextElementSibling);
 
+    let hideAddSubsectionButtonTimeout;
     const deferButtonHide = () => {
-      if (!this.hideAddSubsectionButtonTimeout) {
-        this.hideAddSubsectionButtonTimeout = setTimeout(() => {
+      if (!hideAddSubsectionButtonTimeout) {
+        hideAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.hide();
         }, 1000);
       }
     };
 
     button.firstChild.onmouseenter = () => {
-      clearTimeout(this.hideAddSubsectionButtonTimeout);
-      this.hideAddSubsectionButtonTimeout = null;
+      clearTimeout(hideAddSubsectionButtonTimeout);
+      hideAddSubsectionButtonTimeout = null;
     };
     button.firstChild.onmouseleave = () => {
       deferButtonHide();
@@ -256,8 +257,8 @@ export default class Section extends SectionSkeleton {
     this.replyButtonHoverHandler = () => {
       if (this.addSubsectionForm) return;
 
-      clearTimeout(this.hideAddSubsectionButtonTimeout);
-      this.hideAddSubsectionButtonTimeout = null;
+      clearTimeout(hideAddSubsectionButtonTimeout);
+      hideAddSubsectionButtonTimeout = null;
 
       if (!this.showAddSubsectionButtonTimeout) {
         this.showAddSubsectionButtonTimeout = setTimeout(() => {
@@ -744,7 +745,7 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.getBodyHeight = function () {
-      return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+      return this.$errorItems ? this.$errors.get(0).scrollHeight : this.$body.get(0).scrollHeight;
     };
 
     MoveSectionDialog.prototype.initialize = function () {

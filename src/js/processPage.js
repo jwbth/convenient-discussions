@@ -19,10 +19,10 @@ import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   addPreventUnloadCondition,
-  globalKeyDownHandler,
+  handleGlobalKeyDown,
+  handleScroll,
+  handleWindowResize,
   highlightFocused,
-  registerSeenComments,
-  windowResizeHandler,
 } from './eventHandlers';
 import { adjustDom } from './modifyDom';
 import { areObjectsEqual, isInline } from './util';
@@ -539,7 +539,7 @@ async function processVisits(visitsRequest, keptData) {
   setVisits(visits);
 
   navPanel.fill();
-  registerSeenComments();
+  handleScroll();
 
   /**
    * New comments have been highlighted.
@@ -807,7 +807,7 @@ export default async function processPage(keptData = {}) {
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
     $(document).on('mousemove mouseover', highlightFocused);
-    $(window).on('resize orientationchange', windowResizeHandler);
+    $(window).on('resize orientationchange', handleWindowResize);
     addPreventUnloadCondition('commentForms', () => {
       saveSession();
       return (
@@ -843,9 +843,9 @@ export default async function processPage(keptData = {}) {
 
   if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
     $(document)
-      .on('keydown', globalKeyDownHandler)
+      .on('keydown', handleGlobalKeyDown)
       .on('scroll resize orientationchange', () => {
-        registerSeenComments();
+        handleScroll();
         navPanel.updateCommentFormButton();
       });
   }

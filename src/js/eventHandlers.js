@@ -16,7 +16,7 @@ const beforeUnloadHandlers = {};
 /**
  * Handles the window `resize` event as well as "orientationchange".
  */
-export function windowResizeHandler() {
+export function handleWindowResize() {
   commentLayers.redrawIfNecessary(true);
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
@@ -57,7 +57,7 @@ export function removePreventUnloadCondition(name) {
  *
  * @param {Event} e
  */
-export function globalKeyDownHandler(e) {
+export function handleGlobalKeyDown(e) {
   if (cd.util.isPageOverlayOn()) return;
 
   if (
@@ -142,10 +142,10 @@ export function highlightFocused(e) {
 }
 
 /**
- * Mark comments that are currently in the viewport as read, and also {@link module:Comment#flash
- * flash} comments that are prescribed to flash.
+ * Register seen comments, update the navigation panel's first unseen button, and update the current
+ * section block.
  */
-export function registerSeenComments() {
+export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
   // wait before running, otherwise comments may be registered as seen after a press of Page
   // Down/Page Up.

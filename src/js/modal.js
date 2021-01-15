@@ -791,7 +791,7 @@ export async function editWatchedSections() {
   EditWatchedSectionsDialog.static.size = 'large';
 
   EditWatchedSectionsDialog.prototype.getBodyHeight = function () {
-    return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+    return this.$errorItems ? this.$errors.get(0).scrollHeight : this.$body.get(0).scrollHeight;
   };
 
   EditWatchedSectionsDialog.prototype.initialize = async function () {
