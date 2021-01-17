@@ -594,7 +594,7 @@ async function processDiff() {
 
       const anchor = generateCommentAnchor(date, author);
 
-      let comment = Comment.getCommentByAnchor(anchor);
+      let comment = Comment.getByAnchor(anchor);
       if (!comment) {
         let commentAnchorToCheck;
         // There can be a time difference between the time we know (taken from the watchlist or
@@ -604,7 +604,7 @@ async function processDiff() {
         for (let gap = 1; !comment && gap <= 5; gap++) {
           const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
           commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
-          comment = Comment.getCommentByAnchor(commentAnchorToCheck);
+          comment = Comment.getByAnchor(commentAnchorToCheck);
         }
       }
 

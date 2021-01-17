@@ -281,7 +281,7 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
         oldComment.innerHtml !== currentComment.innerHtml &&
         seenInnerHtml !== currentComment.innerHtml
       ) {
-        const comment = Comment.getCommentByAnchor(currentComment.anchor);
+        const comment = Comment.getByAnchor(currentComment.anchor);
         if (!comment) return;
 
         const commentsData = [oldComment, currentComment];
@@ -331,7 +331,7 @@ function checkForNewEdits(mappedCurrentComments) {
   mappedCurrentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     if (newComment) {
-      const comment = Comment.getCommentByAnchor(currentComment.anchor);
+      const comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment) return;
 
       if (comment.isDeleted) {
@@ -353,7 +353,7 @@ function checkForNewEdits(mappedCurrentComments) {
         isEditMarkUpdated = true;
       }
     } else if (!currentComment.hasPoorMatch) {
-      const comment = Comment.getCommentByAnchor(currentComment.anchor);
+      const comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsEdited('deleted');
@@ -602,7 +602,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   cd.debug.stopTimer('processComments new');
 
   // const newComments = comments
-  //   .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
+  //   .filter((comment) => comment.anchor && !Comment.getByAnchor(comment.anchor));
 
   // Extract "interesting" comments (that would make the new comments counter purple and might
   // invoke notifications). Keep in mind that we should account for the case where comments have

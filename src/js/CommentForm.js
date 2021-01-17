@@ -7,6 +7,7 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import Comment from './Comment';
+import CommentFormStatic from './CommentFormStatic';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
@@ -33,27 +34,6 @@ import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
 
 let commentFormsCounter = 0;
-
-/**
- * Callback to be used in Array#sort() for comment forms.
- *
- * @param {CommentForm} commentForm1
- * @param {CommentForm} commentForm2
- * @returns {number}
- * @private
- */
-function lastFocused(commentForm1, commentForm2) {
-  const lastFocused1 = commentForm1.lastFocused || new Date(0);
-  const lastFocused2 = commentForm2.lastFocused || new Date(0);
-
-  if (lastFocused2 > lastFocused1) {
-    return 1;
-  } else if (lastFocused2 < lastFocused1) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
 
 /** Class representing a comment form. */
 export default class CommentForm {
@@ -2334,7 +2314,7 @@ export default class CommentForm {
       anchors.push(match[1]);
     }
     anchors.forEach((anchor) => {
-      const comment = Comment.getCommentByAnchor(anchor);
+      const comment = Comment.getByAnchor(anchor);
       if (comment) {
         const commentInCode = comment.locateInCode(newPageCode);
         const anchorCode = cd.config.getAnchorCode(anchor);
@@ -3401,46 +3381,6 @@ export default class CommentForm {
       this.commentInput.selectRange(middleTextStartPos, middleTextStartPos + peri.length);
     }
   }
-
-  /**
-   * Get the name of the correlated property of the comment form target based on the comment for
-   * mode.
-   *
-   * @param {string} mode
-   * @returns {string}
-   * @private
-   */
-  static modeToProperty(mode) {
-    return mode === 'replyInSection' ? 'addReply' : mode;
-  }
-
-  /**
-   * Get the last active comment form.
-   *
-   * @returns {?CommentForm}
-   */
-  static getLastActiveCommentForm() {
-    return (
-      cd.commentForms
-        .slice()
-        .sort(lastFocused)[0] ||
-      null
-    );
-  }
-
-  /**
-   * Get the last active comment form that has received an input. This includes altering text
-   * fields, not checkboxes.
-   *
-   * @returns {?CommentForm}
-   */
-  static getLastActiveAlteredCommentForm() {
-    return (
-      cd.commentForms
-        .slice()
-        .sort(lastFocused)
-        .find((commentForm) => commentForm.isAltered()) ||
-      null
-    );
-  }
 }
+
+Object.assign(CommentForm, CommentFormStatic);

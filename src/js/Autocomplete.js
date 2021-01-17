@@ -7,14 +7,7 @@
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import {
-  defined,
-  firstCharToUpperCase,
-  handleApiReject,
-  insertText,
-  removeDoubleSpaces,
-  unique,
-} from './util';
+import { defined, handleApiReject, insertText, removeDoubleSpaces, unique } from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,

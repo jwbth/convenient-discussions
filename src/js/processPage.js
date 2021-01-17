@@ -23,7 +23,6 @@ import {
   handleGlobalKeyDown,
   handleScroll,
   handleWindowResize,
-  highlightFocused,
 } from './eventHandlers';
 import { adjustDom } from './modifyDom';
 import { areObjectsEqual, isInline } from './util';
@@ -349,10 +348,8 @@ function connectToCommentLinks($content) {
     })
     .on('click', function (e) {
       e.preventDefault();
-      const comment = Comment.getCommentByAnchor($(this).attr('href').slice(1));
-      if (comment) {
-        comment.scrollToAndHighlightTarget(true, true);
-      }
+      const anchor = $(this).attr('href').slice(1);
+      Comment.getByAnchor(anchor)?.scrollToAndHighlightTarget(true, true);
     });
 }
 
@@ -400,7 +397,7 @@ async function processFragment(keptData) {
   let comment;
   if (commentAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
-    comment = Comment.getCommentByAnchor(commentAnchor);
+    comment = Comment.getByAnchor(commentAnchor);
 
     if (!keptData.commentAnchor && !comment) {
       let commentAnchorToCheck;
@@ -409,7 +406,7 @@ async function processFragment(keptData) {
       for (let gap = 1; !comment && gap <= 5; gap++) {
         const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
         commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
-        comment = Comment.getCommentByAnchor(commentAnchorToCheck);
+        comment = Comment.getByAnchor(commentAnchorToCheck);
       }
     }
 
@@ -423,7 +420,7 @@ async function processFragment(keptData) {
   }
 
   if (keptData.sectionAnchor) {
-    const section = Section.getSectionByAnchor(keptData.sectionAnchor);
+    const section = Section.getByAnchor(keptData.sectionAnchor);
     if (section) {
       if (keptData.pushState) {
         history.pushState(history.state, '', '#' + section.anchor);
@@ -809,16 +806,13 @@ export default async function processPage(keptData = {}) {
 
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
-    $(document).on('mousemove mouseover', highlightFocused);
+    $(document).on('mousemove mouseover', Comment.highlightFocused);
     $(window).on('resize orientationchange', handleWindowResize);
     addPreventUnloadCondition('commentForms', () => {
       saveSession();
       return (
         mw.user.options.get('useeditwarning') &&
-        (
-          CommentForm.getLastActiveAlteredCommentForm() ||
-          (alwaysConfirmLeavingPage && cd.commentForms.length)
-        )
+        (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
       );
     });
 

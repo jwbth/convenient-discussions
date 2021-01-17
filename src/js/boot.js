@@ -235,39 +235,39 @@ function initGlobals() {
   /* Some static methods for external use */
 
   /**
-   * @see module:Comment.getCommentByAnchor
+   * @see module:Comment.getByAnchor
    * @function getCommentByAnchor
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getCommentByAnchor = Comment.getCommentByAnchor;
+  cd.getCommentByAnchor = Comment.getByAnchor;
 
   /**
-   * @see module:Section.getSectionByAnchor
+   * @see module:Section.getByAnchor
    * @function getSectionByAnchor
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getSectionByAnchor = Section.getSectionByAnchor;
+  cd.getSectionByAnchor = Section.getByAnchor;
 
   /**
-   * @see module:Section.getSectionsByHeadline
+   * @see module:Section.getByHeadline
    * @function getSectionsByHeadline
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getSectionsByHeadline = Section.getSectionsByHeadline;
+  cd.getSectionsByHeadline = Section.getByHeadline;
 
   /**
-   * @see module:CommentForm.getLastActiveCommentForm
+   * @see module:CommentForm.getLastActive
    * @function getLastActiveCommentForm
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getLastActiveCommentForm = CommentForm.getLastActiveCommentForm;
+  cd.getLastActiveCommentForm = CommentForm.getLastActive;
 
   /**
-   * @see module:CommentForm.getLastActiveAlteredCommentForm
+   * @see module:CommentForm.getLastActiveAltered
    * @function getLastActiveAlteredCommentForm
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAlteredCommentForm;
+  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered;
 }
 
 /**
@@ -872,7 +872,7 @@ function restoreCommentFormsFromData(commentFormsData) {
   commentFormsData.commentForms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData?.anchor) {
-      const comment = Comment.getCommentByAnchor(data.targetData.anchor);
+      const comment = Comment.getByAnchor(data.targetData.anchor);
       if (comment?.isActionable && !comment[`${property}Form`]) {
         try {
           comment[property](data);
@@ -963,7 +963,7 @@ export function restoreCommentForms() {
       const target = commentForm.target;
       if (target instanceof Comment) {
         if (target.anchor) {
-          const comment = Comment.getCommentByAnchor(target.anchor);
+          const comment = Comment.getByAnchor(target.anchor);
           if (comment?.isActionable) {
             try {
               commentForm.setTargets(comment);
