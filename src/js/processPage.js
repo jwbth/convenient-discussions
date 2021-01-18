@@ -212,7 +212,10 @@ function processSections(parser, watchedSectionsRequest) {
  * @param {boolean} [isNewTopicOnTop=false]
  * @private
  */
-function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
+function createAddSectionForm(
+  preloadConfig = CommentForm.getDefaultPreloadConfig(),
+  isNewTopicOnTop = false
+) {
   const addSectionForm = cd.g.addSectionForm;
   if (addSectionForm) {
     // Sometimes there is more than one "Add section" button on the page, and they lead to opening
@@ -224,7 +227,7 @@ function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
 
     addSectionForm.$element.cdScrollIntoView('center');
 
-    // headlineInput may be missing if the "nosummary" preload parameter is truthy.
+    // Headline input may be missing if the "nosummary" preload parameter is truthy.
     addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
   } else {
     /**
@@ -325,6 +328,7 @@ function connectToAddTopicButtons() {
           headline: $form.find('input[name="preloadtitle"]').val(),
           summary: $form.find('input[name="summary"]').val(),
           noHeadline: Boolean($form.find('input[name="nosummary"]').val()),
+          omitSignature: false,
         };
       }
 

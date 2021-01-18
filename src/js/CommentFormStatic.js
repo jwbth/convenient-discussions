@@ -29,6 +29,22 @@ function lastFocused(commentForm1, commentForm2) {
 
 export default {
   /**
+   * Get default preload configuration for the `addSection` mode.
+   *
+   * @returns {object}
+   */
+  getDefaultPreloadConfig() {
+    return {
+      editIntro: undefined,
+      commentTemplate: undefined,
+      headline: undefined,
+      summary: undefined,
+      noHeadline: false,
+      omitSignature: false,
+    };
+  },
+
+  /**
    * Get the name of the correlated property of the comment form target based on the comment for
    * mode.
    *
