@@ -22,6 +22,7 @@
 	"sm-copylink-tooltip-link": "E Link kopéieren.",
 	"comment-edited": "D'Bemierkung gouf geännert.",
 	"comment-edited-refresh": "Aktualiséieren",
+	"comment-edited-diff": "Ënnerscheed",
 	"comment-deleted": "D'Bemierkung gouf geläscht.",
 	"section-reply": "Äntweren",
 	"section-newcomments": "Et gëtt {{plural:$1|eng nei Bemierkung|nei Bemierkungen}} an dësem Abschnitt vum {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. Klickt hei fir d'Säit z'aktualiséieren.",
