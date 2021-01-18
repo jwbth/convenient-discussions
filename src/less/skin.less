@@ -12,6 +12,16 @@
     line-height: 1.172em;
   }
 
+  .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+    padding: 0;
+
+    > .oo-ui-iconElement-icon {
+      margin: 0;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
   .cd-commentInput {
     border: 1px solid #ccc;
 
@@ -21,6 +31,15 @@
 
     .wikiEditor-ui-toolbar {
       z-index: auto;
+    }
+  }
+
+  .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-disabled {
+    border-color: #ccc;
+
+    .oo-ui-inputWidget-input,
+    .wikiEditor-ui-top {
+      border-color: #ccc;
     }
   }
 
