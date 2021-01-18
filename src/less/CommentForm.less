@@ -165,10 +165,6 @@ ol > li.cd-commentForm {
 
   border: 1px solid #a2a9b1;
 
-  .wikiEditor-ui .wikiEditor-ui-top {
-    border-color: #a2a9b1;
-  }
-
   .wikiEditor-ui .wikiEditor-ui-view {
     border: 0;
   }
@@ -178,20 +174,21 @@ ol > li.cd-commentForm {
     margin: -1px;
     position: relative;
   }
-}
 
-body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget .oo-ui-inputWidget-input {
-  border: 1px solid #a2a9b1;
-  box-shadow: none;
-
-  &:focus {
-    outline: 2px solid #36c;
-    outline-offset: -2px;
+  &.oo-ui-widget-disabled .wikiEditor-ui-top,
+  &.oo-ui-widget-disabled + .cd-insertButtons {
+    pointer-events: none;
   }
 }
 
-body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-disabled .oo-ui-inputWidget-input {
+body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-disabled {
   border-color: #c8ccd1;
+
+  .oo-ui-inputWidget-input,
+  .wikiEditor-ui-top,
+  + .cd-insertButtons {
+    border-color: #c8ccd1;
+  }
 }
 
 .cd-previewArea {
@@ -344,11 +341,6 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-dis
   border-style: solid;
   height: 32px;
   margin: 1px 0 -1px;
-}
-
-.cd-commentForm-disabled .wikiEditor-ui-top,
-.cd-commentForm-disabled .cd-insertButtons {
-  pointer-events: none;
 }
 
 .tribute-container.cd-autocompleteContainer li.highlight {

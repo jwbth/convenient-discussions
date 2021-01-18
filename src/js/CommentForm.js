@@ -3235,8 +3235,6 @@ export default class CommentForm {
       this.minorCheckbox.setDisabled(true);
       this.omitSignatureCheckbox?.setDisabled(true);
 
-      this.$element.addClass('cd-commentForm-disabled');
-
       this.submitButtonLabelStandard = cd.s('cf-delete-button');
       this.submitButtonLabelShort = cd.s('cf-delete-button-short');
       this.submitButton
@@ -3254,8 +3252,6 @@ export default class CommentForm {
       this.headlineInput?.setDisabled(false);
       this.minorCheckbox.setDisabled(false);
       this.omitSignatureCheckbox?.setDisabled(false);
-
-      this.$element.removeClass('cd-commentForm-disabled');
 
       this.submitButtonLabelStandard = cd.s('cf-save');
       this.submitButtonLabelShort = cd.s('cf-save-short');
