@@ -8,7 +8,7 @@ import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
-import { getTopAndBottomIncludingMargins, reorderArray } from './util';
+import { getExtendedRect, reorderArray } from './util';
 
 export default {
   /**
@@ -18,9 +18,10 @@ export default {
    * @memberof module:Comment
    */
   configureAndAddLayers(comments) {
-    const floatingRects = comments.length ?
-      cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins) :
-      undefined;
+    let floatingRects;
+    if (comments.length) {
+      floatingRects = cd.g.specialElements.floating.map(getExtendedRect);
+    }
 
     comments.forEach((comment) => {
       comment.configureLayers({

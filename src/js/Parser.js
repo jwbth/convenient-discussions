@@ -889,11 +889,6 @@ export function findSpecialElements() {
     .get()
     // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
-  floating.forEach((el) => {
-    const style = window.getComputedStyle(el);
-    el.cdMarginTop = parseFloat(style.marginTop);
-    el.cdMarginBottom = parseFloat(style.marginBottom);
-  });
 
   const closedDiscussionsSelector = cd.config.closedDiscussionClasses
     .map((name) => `.${name}`)

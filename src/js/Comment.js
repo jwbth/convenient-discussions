@@ -18,8 +18,8 @@ import {
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
+  getExtendedRect,
   getFromLocalStorage,
-  getTopAndBottomIncludingMargins,
   handleApiReject,
   isInline,
   saveToLocalStorage,
@@ -212,13 +212,13 @@ export default class Comment extends CommentSkeleton {
     if (options.considerFloating) {
       const floatingRects = (
         options.floatingRects ||
-        cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
+        cd.g.specialElements.floating.map(getExtendedRect)
       );
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
       floatingRects.forEach((rect) => {
-        const floatingTop = window.pageYOffset + rect.top;
-        const floatingBottom = window.pageYOffset + rect.bottom;
+        const floatingTop = window.pageYOffset + rect.outerTop;
+        const floatingBottom = window.pageYOffset + rect.outerBottom;
         if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }

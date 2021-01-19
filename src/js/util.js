@@ -432,17 +432,29 @@ export function dealWithLoadingBug(moduleName) {
 }
 
 /**
- * Get the top and bottom positions of the bounding client rectangle of an element including margins
- * set with the `cdMarginTop` and `cdMarginBottom` properties.
+ * Get the bounding client rectangle of an element, setting top and bottom values including top and
+ * bottom margins to the `outerTop` and `outerBottom` properties. The top and bottom margins are
+ * cached.
  *
  * @param {Element} el
  * @returns {object}
  */
-export function getTopAndBottomIncludingMargins(el) {
-  const nativeRect = el.getBoundingClientRect();
+export function getExtendedRect(el) {
+  if (el.convenientDiscussionsMarginTop === undefined) {
+    const style = window.getComputedStyle(el);
+    el.convenientDiscussionsMarginTop = parseFloat(style.marginTop);
+    el.convenientDiscussionsMarginBottom = parseFloat(style.marginBottom);
+  }
+  const rect = el.getBoundingClientRect();
   return {
-    top: nativeRect.top - el.cdMarginTop,
-    bottom: nativeRect.bottom + el.cdMarginBottom,
+    outerTop: rect.top - el.convenientDiscussionsMarginTop,
+    outerBottom: rect.bottom + el.convenientDiscussionsMarginBottom,
+    top: rect.top,
+    bottom: rect.top,
+    left: rect.left,
+    right: rect.right,
+    width: rect.width,
+    height: rect.height,
   };
 }
 
