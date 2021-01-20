@@ -16,6 +16,7 @@ import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './
 let foreignComponentClasses;
 let timezoneRegexp;
 let signatureEndingRegexp;
+let elementsToExclude;
 
 /**
  * Get the page name from a URL.
@@ -166,7 +167,7 @@ export default class Parser {
    * @returns {FindTimestampsReturn}
    */
   findTimestamps() {
-    const blocksToExclude = [
+    elementsToExclude = [
       ...Array.from(cd.g.rootElement.getElementsByTagName('blockquote')),
       ...flat(
         cd.config.elementsToExcludeClasses
@@ -178,7 +179,7 @@ export default class Parser {
       .map((node) => {
         const text = node.textContent;
         const { date, match } = parseTimestamp(text) || {};
-        if (date && !blocksToExclude.some((block) => block.contains(node))) {
+        if (date && !elementsToExclude.some((el) => el.contains(node))) {
           return { node, date, match };
         }
       })
@@ -464,7 +465,8 @@ export default class Parser {
           // https://ru.wikipedia.org/w/index.php?diff=107487558
           !isInline(previousPart.node, true) &&
 
-          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text))
+          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text)) &&
+          !elementsToExclude.some((el) => el.contains(previousPart.node))
         ) {
           previousPart.hasForeignComponents = true;
           break;
