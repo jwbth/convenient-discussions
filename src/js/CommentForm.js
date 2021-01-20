@@ -3274,7 +3274,8 @@ export default class CommentForm {
    */
   mention(mentionAddressee) {
     if (mentionAddressee && this.targetComment) {
-      const data = Autocomplete.getMentionsConfig().transform(this.targetComment.author.name);
+      let data = Autocomplete.getConfig('mentions').transform(this.targetComment.author.name);
+      data = data.ctrlModify(data);
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
       this.commentInput.selectRange(0);

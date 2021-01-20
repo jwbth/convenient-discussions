@@ -524,6 +524,10 @@ export default class Autocomplete {
               start: `@[[${userNamespace}:${name}|`,
               end: ']] ',
               content: name,
+              ctrlModify: (data) => {
+                data.end = data.end.trim() + cd.mws('colon-separator');
+                return data;
+              },
             };
           },
           removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
