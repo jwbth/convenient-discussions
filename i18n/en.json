@@ -278,8 +278,8 @@
   "sd-modifytoc-help": "Show new comments and sections and highlight watched sections.",
   "sd-usetemplatedata": "Use TemplateData in templates autocomplete",
   "sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
-  "sd-watchonreply": "Watch the page that I reply on",
-  "sd-watchsectiononreply": "Watch the section that I reply in",
+  "sd-watchonreply": "Watch the page that I comment on",
+  "sd-watchsectiononreply": "Watch the section that I comment in",
   "sd-watchsectiononreply-help": "This affects notifications and bolding in the watchlist.",
 
   "ewsd-title": "Edit watched sections list",
