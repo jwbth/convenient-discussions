@@ -147,7 +147,15 @@ export default {
         callback();
       }
     } else {
-      this.cdScrollTo(alignment, smooth, callback);
+      if (callback) {
+        // Wrap into setTimeout() for a more smooth animation in case there is .focus() in the
+        // callback.
+        setTimeout(() => {
+          this.cdScrollTo(alignment, smooth, callback);
+        });
+      } else {
+        this.cdScrollTo(alignment, smooth, callback);
+      }
     }
 
     return this;

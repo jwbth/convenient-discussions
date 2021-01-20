@@ -191,11 +191,8 @@ export default class CommentForm {
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
     } else {
-      // Wrap into setTimeout() for a more smooth animation.
-      setTimeout(() => {
-        this.$element.cdScrollIntoView('center', true, () => {
-          this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
-        });
+      this.$element.cdScrollIntoView('center', true, () => {
+        this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
       });
 
       if (this.mode === 'edit') {
