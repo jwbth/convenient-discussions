@@ -36,8 +36,8 @@ export function transparentize(color) {
   return color.includes('rgba') ?
     color.replace(/\d+(?=\))/, '0') :
     color
-      .replace(/rgb/, 'rgba')
-      .replace(/\)/, ', 0)');
+      .replace('rgb', 'rgba')
+      .replace(')', ', 0)');
 }
 
 /**

@@ -134,7 +134,7 @@ export async function initSettings() {
   // Seamless transition from mySignature.
   if (cd.settings.signaturePrefix !== undefined) {
     // eslint-disable-next-line no-useless-escape
-    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
+    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace('~~\~~', '');
   }
 
   if (
@@ -367,22 +367,15 @@ function initPatterns() {
   }
 
   cd.g.ARTICLE_PATH_REGEXP = new RegExp(
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace(mw.util.escapeRegExp('$1'), '(.*)')
+    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
   );
 
+  const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
   const quoteBeginningsPattern = ['<blockquote>', '<q>']
-    .concat(
-      cd.config.pairQuoteTemplates?.[0]
-        .map((template) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(template))) ||
-      []
-    )
+    .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
     .join('|');
   const quoteEndingsPattern = ['</blockquote>', '</q>']
-    .concat(
-      cd.config.pairQuoteTemplates?.[1]
-        .map((template) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(template))) ||
-      []
-    )
+    .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
     .join('|');
   cd.g.QUOTE_REGEXP = new RegExp(
     `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,

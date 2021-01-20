@@ -12,15 +12,15 @@ import cd from './cd';
  * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
  * that.
  *
- * Not a pure function; it alters `firstVisibleElementData`.
+ * Not a pure function; it alters `feivData`.
  *
  * @param {Element} element
  * @param {string} newType
- * @param {object|undefined} firstVisibleElementData
+ * @param {object|undefined} feivData
  * @returns {Element}
  * @private
  */
-function changeElementType(element, newType, firstVisibleElementData) {
+function changeElementType(element, newType, feivData) {
   const newElement = document.createElement(newType);
   while (element.firstChild) {
     newElement.appendChild(element.firstChild);
@@ -38,8 +38,8 @@ function changeElementType(element, newType, firstVisibleElementData) {
     element.parentNode.replaceChild(newElement, element);
   }
 
-  if (firstVisibleElementData && element === firstVisibleElementData.element) {
-    firstVisibleElementData.element = newElement;
+  if (feivData && element === feivData.element) {
+    feivData.element = newElement;
   }
 
   return newElement;
@@ -49,10 +49,10 @@ function changeElementType(element, newType, firstVisibleElementData) {
  * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
  * the nesting level.
  *
- * @param {object|undefined} firstVisibleElementData
+ * @param {object|undefined} feivData
  * @private
  */
-function mergeAdjacentCommentLevels(firstVisibleElementData) {
+function mergeAdjacentCommentLevels(feivData) {
   const levels = (
     cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
   );
@@ -86,11 +86,7 @@ function mergeAdjacentCommentLevels(firstVisibleElementData) {
           let child = currentBottomElement.firstChild;
           if (child.nodeType === Node.ELEMENT_NODE) {
             if (bottomInnerTags[child.tagName]) {
-              child = changeElementType(
-                child,
-                bottomInnerTags[child.tagName],
-                firstVisibleElementData
-              );
+              child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
             }
             if (firstMoved === undefined) {
               firstMoved = child;
@@ -129,11 +125,11 @@ function mergeAdjacentCommentLevels(firstVisibleElementData) {
 /**
  * Perform some DOM-related taskes after parsing comments.
  *
- * @param {object|undefined} firstVisibleElementData
+ * @param {object|undefined} feivData
  */
-export function adjustDom(firstVisibleElementData) {
-  mergeAdjacentCommentLevels(firstVisibleElementData);
-  mergeAdjacentCommentLevels(firstVisibleElementData);
+export function adjustDom(feivData) {
+  mergeAdjacentCommentLevels(feivData);
+  mergeAdjacentCommentLevels(feivData);
   if (cd.g.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')) {
     console.warn('.cd-commentLevel adjacencies have left.');
   }

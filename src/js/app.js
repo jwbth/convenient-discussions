@@ -452,7 +452,7 @@ function getConfig() {
       };
 
       const url = IS_DEV ?
-        configUrls[location.hostname].replace(/.js/, '-dev.js') :
+        configUrls[location.hostname].replace('.js', '-dev.js') :
         configUrls[location.hostname];
       getScript(url, () => {
         if (IS_DEV) {

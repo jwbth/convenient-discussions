@@ -76,19 +76,19 @@ async function prepare({ messagesRequest }) {
 }
 
 /**
- * @typedef {object} GetFirstVisibleElementDataReturn
+ * @typedef {object} GetFirstElementInViewportDataReturn
  * @property {Element} element
  * @property {number} top
  * @private
  */
 
 /**
- * Identify the first visible element from the top of the page and its top offset.
+ * Find the first element in the viewport looking from the top of the page and its top offset.
  *
- * @returns {?GetFirstVisibleElementDataReturn}
+ * @returns {?GetFirstElementInViewportDataReturn}
  * @private
  */
-function getFirstVisibleElementData() {
+function getFirstElementInViewportData() {
   let element;
   let top;
   if (window.pageYOffset !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
@@ -116,11 +116,11 @@ function getFirstVisibleElementData() {
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @param {object|undefined} firstVisibleElementData
+ * @param {object|undefined} feivData
  * @throws {CdError} If there are no comments.
  * @private
  */
-function processComments(parser, firstVisibleElementData) {
+function processComments(parser, feivData) {
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);
 
@@ -137,7 +137,7 @@ function processComments(parser, firstVisibleElementData) {
     }
   });
 
-  adjustDom(firstVisibleElementData);
+  adjustDom(feivData);
 
   /**
    * The script has processed the comments.
@@ -208,7 +208,7 @@ function processSections(parser, watchedSectionsRequest) {
 /**
  * Create an add section form if not existent.
  *
- * @param {object} [preloadConfig={}]
+ * @param {object} [preloadConfig]
  * @param {boolean} [isNewTopicOnTop=false]
  * @private
  */
@@ -672,9 +672,9 @@ export default async function processPage(keptData = {}) {
 
   await prepare(keptData);
 
-  let firstVisibleElementData;
+  let feivData;
   if (cd.g.isFirstRun) {
-    firstVisibleElementData = getFirstVisibleElementData();
+    feivData = getFirstElementInViewportData();
   }
 
   cd.debug.stopTimer('preparations');
@@ -732,7 +732,7 @@ export default async function processPage(keptData = {}) {
   });
 
   try {
-    processComments(parser, firstVisibleElementData);
+    processComments(parser, feivData);
   } catch (e) {
     console.error(e);
   }
@@ -766,12 +766,8 @@ export default async function processPage(keptData = {}) {
 
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
-  if (firstVisibleElementData) {
-    const y = (
-      window.pageYOffset +
-      firstVisibleElementData.element.getBoundingClientRect().top -
-      firstVisibleElementData.top
-    );
+  if (feivData) {
+    const y = window.pageYOffset + feivData.element.getBoundingClientRect().top - feivData.top;
     window.scrollTo(0, y);
   }
 
