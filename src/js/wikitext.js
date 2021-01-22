@@ -17,13 +17,12 @@ import {
 import { hideText } from './util';
 
 /**
- * Conceal HTML comments (`<!-- -->`), left-to-right and right-to-left marks, and also newlines
- * inside some tags (`<br\n>`) in the code.
+ * Conceal HTML comments (`<!-- -->`), &lt;nowiki&gt;, &lt;syntaxhighlight&gt;, &lt;source&gt;, and
+ * &lt;pre&gt; tags content, left-to-right and right-to-left marks, and also newlines inside some
+ * tags (`<br\n>`) in the code.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.
- *
- * TODO: nowiki, syntaxhighlight, source, pre tags.
  *
  * @param {string} code
  * @param {boolean} [replaceMarks=true] Whether to replace left-to-right and right-to-left marks.
@@ -31,6 +30,10 @@ import { hideText } from './util';
  */
 export function hideDistractingCode(code, replaceMarks = true) {
   let newCode = code
+    .replace(
+      /(<(?:nowiki|syntaxhighlight|source|pre)(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>)([^]*?)(<\/(?:nowiki|syntaxhighlight|source|pre)(?: \w+)? ?>)/g,
+      (s, before, content, after) => before + ' '.repeat(content.length) + after
+    )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
