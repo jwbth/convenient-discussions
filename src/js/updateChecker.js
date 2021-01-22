@@ -185,9 +185,7 @@ function cleanUpSeenRenderedEdits(data) {
  * @private
  */
 function mapComments(currentComments, otherComments) {
-  cd.debug.startTimer('mapComments - deep copy');
   const mappedCurrentComments = currentComments.map((comment) => Object.assign({}, comment));
-  cd.debug.stopTimer('mapComments - deep copy');
 
   otherComments.forEach((otherComment) => {
     let currentCommentsFiltered = mappedCurrentComments.filter((currentComment) => (
@@ -594,15 +592,10 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
     }
   });
 
-  cd.debug.startTimer('processComments new');
   const newComments = comments.filter((comment) => (
     comment.anchor &&
     !mappedCurrentComments.some((currentComment) => currentComment.match === comment)
   ));
-  cd.debug.stopTimer('processComments new');
-
-  // const newComments = comments
-  //   .filter((comment) => comment.anchor && !Comment.getByAnchor(comment.anchor));
 
   // Extract "interesting" comments (that would make the new comments counter purple and might
   // invoke notifications). Keep in mind that we should account for the case where comments have

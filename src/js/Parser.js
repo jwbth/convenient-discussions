@@ -859,6 +859,7 @@ export function windowGetAllTextNodes() {
   const result = document.evaluate(
     // './/text()' doesn't work in Edge.
     './/descendant::text()',
+
     cd.g.rootElement,
     null,
     XPathResult.ANY_TYPE,

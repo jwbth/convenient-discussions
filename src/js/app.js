@@ -191,7 +191,7 @@ function setStrings() {
   // Strings that should be displayed in the site language, not the user language.
   const contentStrings = [
     'es-',
-    'cf-mentions-commentlinktext',
+    'cf-autocomplete-commentlinktext',
     'move-',
   ];
 

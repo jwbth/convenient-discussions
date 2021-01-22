@@ -349,7 +349,7 @@ export default class Autocomplete {
                     (e) => {
                       input.setDisabled(false);
                       input.focus();
-                      mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
+                      mw.notify(cd.s('cf-autocomplete-notemplatedata'), { type: 'error' });
                       console.warn(e);
                     }
                   )
@@ -684,7 +684,7 @@ export default class Autocomplete {
           transform: ({ anchor, author, timestamp }) => ({
             start: `[[#${anchor}|`,
             end: ']]',
-            content: cd.s('cf-mentions-commentlinktext', author, timestamp),
+            content: cd.s('cf-autocomplete-commentlinktext', author, timestamp),
           }),
         };
         break;

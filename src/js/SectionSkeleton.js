@@ -172,7 +172,7 @@ export default class SectionSkeleton {
   }
 
   /**
-   * Parse the headline of the section and fill the `headline` property.
+   * Parse the headline of the section and fill the `headline` property, containing no HTML tags.
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementsInHeadlinesClasses];

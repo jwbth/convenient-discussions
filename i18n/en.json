@@ -178,8 +178,8 @@
   "cf-confirm-close-yes": "Close",
   "cf-confirm-close-no": "Cancel",
 
-  "cf-mentions-notemplatedata": "Couldn't load TemplateData for this template.",
-  "cf-mentions-commentlinktext": "$1 @ $2",
+  "cf-autocomplete-notemplatedata": "Couldn't load TemplateData for this template.",
+  "cf-autocomplete-commentlinktext": "$1 @ $2",
 
   "dn-confirm": "Do you want Convenient Discussions to send you desktop notifications about new comments on currently open pages if they are addressed to you or posted in sections that you watch? You can disable this feature in the settings.",
   "dn-confirm-yes": "Yes",
