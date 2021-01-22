@@ -38,7 +38,7 @@ export function parseTimestamp(timestamp, timezoneOffset) {
   // Creating these regexps every time takes too long (say, 10ms for 1000 runs on an average
   // machine), so we cache them.
   if (!parseTimestampRegexp) {
-    parseTimestampRegexp = new RegExp(`^([^]*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["'»)])`);
+    parseTimestampRegexp = new RegExp(`^([^]*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["'»])`);
     parseTimestampRegexpNoTimezone = new RegExp(
       `^([^]*)(${cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.source})`
     );
