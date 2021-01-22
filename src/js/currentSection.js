@@ -20,7 +20,7 @@ export default {
     if (
       currentSection &&
       (
-        document.body.scrollHeight === document.body.clientHeight ||
+        document.documentElement.scrollHeight === document.documentElement.clientHeight ||
         window.pageYOffset === 0 ||
         !cd.sections.length ||
         getExtendedRect(cd.sections[0].$heading.get(0)).outerTop >= 0

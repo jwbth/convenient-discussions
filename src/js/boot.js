@@ -191,6 +191,19 @@ export function initTalkPageCss() {
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
     backgroundColor: contentBackgroundColor,
   });
+
+  const sidebarColor = $('.skin-timeless').length ?
+    '#eaecf0' :
+    $(document.body)
+      // New Vector
+      .add('.mw-page-container')
+
+      .last()
+      .css('background-color');
+  cd.g.nanoCss.put('#cd-currentSection', {
+    backgroundColor: transparentize(sidebarColor).replace('0)', '0.8)'),
+    width: ($('.mw-body').get(0)?.getBoundingClientRect().left - 18) + 'px',
+  });
 }
 
 /**

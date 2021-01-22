@@ -153,17 +153,17 @@ span.cd-show {
 
 #cd-currentSection {
   position: fixed;
-  width: 158px;
-  left: 0;
-  background-color: #f6f6f6cc;
-  font-size: 12px;
-  padding: 7px 9px;
   top: 0;
+  left: 0;
+  z-index: 5;
+  font-size: 12px;
+  padding: 7px 9px 5px;
   line-height: 1.2;
   list-style-type: none;
   list-style-image: none;
   margin: 0;
   color: #202122;
+  overflow-wrap: break-word;
 
   &:empty {
     padding: 0;
@@ -196,9 +196,5 @@ span.cd-show {
 
   &-5 {
     margin-left: 3.75em;
-  }
-
-  &-6 {
-    margin-left: 4.5em;
   }
 }
