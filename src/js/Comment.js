@@ -2297,11 +2297,9 @@ export default class Comment extends CommentSkeleton {
         }
         if (['absolute', 'relative'].includes(style.position)) {
           offsetParent = treeWalker.currentNode;
-          break;
         }
         const backgroundColor = style.backgroundColor;
-        const backgroundImage = style.backgroundImage;
-        if (backgroundColor.includes('rgb(') || backgroundImage !== 'none') {
+        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none') {
           if (backgroundColor.includes('rgb(')) {
             /**
              * Comment's background color if not default.
@@ -2311,10 +2309,12 @@ export default class Comment extends CommentSkeleton {
             this.backgroundColor = backgroundColor;
           }
 
-          offsetParent = treeWalker.currentNode;
-          offsetParent.classList.add('cd-commentLayersContainerParent-relative');
-          break;
+          if (!offsetParent) {
+            offsetParent = treeWalker.currentNode;
+            offsetParent.classList.add('cd-commentLayersContainerParent-relative');
+          }
         }
+        if (offsetParent) break;
       }
       if (!offsetParent) {
         offsetParent = document.body;
