@@ -433,33 +433,111 @@ export default class CommentForm {
         .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
 
+      const lang = mw.config.get('wgUserLanguage');
+      $input.wikiEditor('addToToolbar', {
+        section: 'main',
+        group: 'format',
+        tools: {
+          smaller: {
+            label: cd.mws('wikieditor-toolbar-tool-small'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<small>',
+                peri: cd.mws('wikieditor-toolbar-tool-small-example'),
+                post: '</small>',
+              },
+            },
+          },
+          quote: {
+            label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
+            action: {
+              type: 'callback',
+              execute: () => {
+                this.quote();
+              },
+            },
+          },
+        },
+      });
+      $input.wikiEditor('addToToolbar', {
+        section: 'advanced',
+        group: 'format',
+        tools: {
+          code: {
+            label: cd.s('cf-code-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<code><nowiki>',
+                peri: cd.s('cf-code-placeholder'),
+                post: '</'.concat('nowiki></code>'),
+              },
+            },
+          },
+          codeBlock: {
+            label: cd.s('cf-codeblock-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<syntaxhighlight lang="">\n',
+                peri: cd.s('cf-codeblock-placeholder'),
+                post: '\n</syntaxhighlight>',
+              },
+            },
+          },
+          underline: {
+            label: cd.s('cf-underline-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<u>',
+                peri: cd.s('cf-underline-placeholder'),
+                post: '</u>',
+              },
+            },
+          },
+          strikethrough: {
+            label: cd.s('cf-strikethrough-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<s>',
+                peri: cd.s('cf-strikethrough-placeholder'),
+                post: '</s>',
+              },
+            },
+          },
+        },
+      });
       $input.wikiEditor('addToToolbar', {
         section: 'main',
         groups: {
           'convenient-discussions': {
             tools: {
               mention: {
-                label: cd.s('cf-mentions-tooltip'),
+                label: cd.s('cf-mention-tooltip'),
                 type: 'button',
-                icon: 'https://upload.wikimedia.org/wikipedia/commons/9/98/OOjs_UI_icon_userAvatar.svg',
+                icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
                 action: {
                   type: 'callback',
                   execute: () => {},
                 },
               },
-              quote: {
-                label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
-                type: 'button',
-                icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/OOjs_UI_icon_quotes-ltr.svg',
-                action: {
-                  type: 'callback',
-                  execute: () => {
-                    this.quote();
-                  },
-                },
-              },
             },
-          }
+          },
         },
       });
       this.$element
