@@ -1941,8 +1941,9 @@ export default class Comment extends CommentSkeleton {
     data.replyIndentationChars = data.indentationChars;
     if (!this.isOpeningSection) {
       // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
-      // comments in one, so we exclude such cases.
-      const match = data.code.match(/\n([:*#]*[:*]).*$/);
+      // comments in one, so we exclude such cases. The signature code is used because it may start
+      // with a newline.
+      const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*]).*$/);
       if (match) {
         data.replyIndentationChars = match[1];
 
