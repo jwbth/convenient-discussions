@@ -522,10 +522,10 @@ export default class Autocomplete {
             );
             return {
               start: `@[[${userNamespace}:${name}|`,
-              end: ']] ',
+              end: ']]',
               content: name,
               ctrlModify: (data) => {
-                data.end = data.end.trim() + cd.mws('colon-separator');
+                data.end += cd.mws('colon-separator');
                 return data;
               },
             };
