@@ -295,7 +295,7 @@ export default {
       });
 
       let $lastElement;
-      if (section.$addSubsectionButtonContainer) {
+      if (section.$addSubsectionButtonContainer && !section.getChildren().length) {
         $lastElement = section.$addSubsectionButtonContainer;
       } else if (section.$replyButton) {
         $lastElement = section.$replyButton.closest('ul, ol, dl')
