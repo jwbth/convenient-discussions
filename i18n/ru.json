@@ -42,7 +42,7 @@
 	"comment-edited-diff": "Дифф",
 	"comment-edited-diff-error": "Не удалось отобразить дифф.",
 	"comment-edited-diff-empty": "Дифф пуст. Вероятно, отображение сообщения изменилось, но оно не было отредактировано.",
-	"comment-deleted": "Сообщение было удалено.",
+	"comment-deleted": "Сообщение было удалено или подписано заново.",
 	"comment-editedsince": "Сообщение изменилось после вашего последнего посещения.",
 	"section-reply": "Ответить",
 	"section-addsubsection-to": "Добавить подраздел в тему «$1»",

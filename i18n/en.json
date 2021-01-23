@@ -33,7 +33,7 @@
   "comment-edited-diff": "Diff",
   "comment-edited-diff-error": "Couldn't render the diff.",
   "comment-edited-diff-empty": "The diff is empty. Probably, the rendering of the comment has changed, but it wasn't edited.",
-  "comment-deleted": "The comment was deleted.",
+  "comment-deleted": "The comment was deleted or re-signed.",
   "comment-editedsince": "The comment has changed since your last visit.",
   "comment-edited-history": "Edit history",
 
