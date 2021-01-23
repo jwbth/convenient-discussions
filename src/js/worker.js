@@ -182,6 +182,8 @@ function parse() {
           type = 'references';
         } else if (element.classList.contains('autonumber')) {
           type = 'autonumber';
+        } else {
+          type = 'templateStyles';
         }
 
         const num = comment.hiddenElementData.push({
