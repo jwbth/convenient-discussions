@@ -41,8 +41,9 @@ export function transparentize(color) {
 }
 
 /**
- * Check if a node is an element with `display: inline` in the default browser styles. As an option,
- * it can also treat text nodes as inline elements.
+ * Check if a node is an element with `display: inline` or `display: inline-block` in the default
+ * browser styles. The function also treats &lt;style&gt; and &lt;link&gt; elements as inline. As an
+ * option, it can also treat text nodes as inline elements.
  *
  * @param {Node} node
  * @param {boolean} countTextNodesAsInline
@@ -67,7 +68,7 @@ export function isInline(node, countTextNodesAsInline) {
       console.warn('Expensive operation: isInline() called for:', node);
 
       // This is very expensive. Avoid by any means.
-      return window.getComputedStyle(node).display === 'inline';
+      return window.getComputedStyle(node).display.startsWith('inline');
     } else {
       return null;
     }

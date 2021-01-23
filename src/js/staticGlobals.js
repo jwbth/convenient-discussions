@@ -136,7 +136,8 @@ export default {
    */
   POPULAR_INLINE_ELEMENTS: [
     'A', 'ABBR', 'B', 'BIG', 'BR', 'CENTER', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS',
-    'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U', 'VAR'
+    'KBD', 'LINK', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'STYLE', 'SUB', 'SUP',
+    'TT', 'U', 'VAR'
   ],
 
   /**
