@@ -8,6 +8,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
+import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
@@ -946,8 +947,9 @@ export default class Comment extends CommentSkeleton {
           const $headline = this.$elements.eq(i).find('.mw-headline');
           if ($headline.length) {
             const $headlineNumber = $headline.find('.mw-headline-number');
+            const $html = $(html);
             $headline
-              .html($(html).html())
+              .html($html.html())
               .prepend($headlineNumber);
             const section = this.getSection();
             if (section) {
@@ -956,7 +958,7 @@ export default class Comment extends CommentSkeleton {
               if (section.isWatched && section.headline !== originalHeadline) {
                 section.watch(true, originalHeadline);
               }
-              section.getTocItem()?.$text.text(section.headline);
+              section.getTocItem()?.$text.html(Section.generateTocItemHtml($html));
             }
           }
         } else {
