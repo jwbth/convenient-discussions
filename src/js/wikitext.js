@@ -17,9 +17,9 @@ import {
 import { hideText } from './util';
 
 /**
- * Conceal HTML comments (`<!-- -->`), &lt;nowiki&gt;, &lt;syntaxhighlight&gt;, &lt;source&gt;, and
- * &lt;pre&gt; tags content, left-to-right and right-to-left marks, and also newlines inside some
- * tags (`<br\n>`) in the code.
+ * Conceal HTML comments (`<!-- -->`), `&lt;nowiki&gt;`, `&lt;syntaxhighlight&gt;`,
+ * `&lt;source&gt;`, and `&lt;pre&gt;` tags content, left-to-right and right-to-left marks, and also
+ * newlines inside some tags (`<br\n>`) in the code.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.

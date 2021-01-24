@@ -298,7 +298,7 @@ export default {
       if (section.$addSubsectionButtonContainer && !section.getChildren().length) {
         $lastElement = section.$addSubsectionButtonContainer;
       } else if (section.$replyButton) {
-        $lastElement = section.$replyButton.closest('ul, ol, dl')
+        $lastElement = section.$replyButton.closest('ul, ol, dl');
       } else {
         $lastElement = section.$elements[section.$elements.length - 1];
       }

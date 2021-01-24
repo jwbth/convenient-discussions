@@ -109,7 +109,7 @@ function mergeAdjacentCommentLevels(feivData) {
           }
           currentTopElement.appendChild(child);
         }
-        currentBottomElement.parentNode.removeChild(currentBottomElement);
+        currentBottomElement.remove();
       }
 
       currentBottomElement = firstMoved;

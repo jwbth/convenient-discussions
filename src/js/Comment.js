@@ -1020,7 +1020,7 @@ export default class Comment extends CommentSkeleton {
    */
   replaceButton(button, replacement, buttonName) {
     this.overlayContent.insertBefore(replacement, button);
-    button.parentNode.removeChild(button);
+    button.remove();
     this[buttonName + 'Button'] = replacement;
   }
 
@@ -1610,11 +1610,11 @@ export default class Comment extends CommentSkeleton {
     this.$elementsToAnimate?.stop();
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
-    this.underlay.parentNode.removeChild(this.underlay);
+    this.underlay.remove();
     this.underlay = null;
     this.$underlay = null;
 
-    this.overlay.parentNode.removeChild(this.overlay);
+    this.overlay.remove();
     this.overlay = null;
     this.$overlay = null;
   }

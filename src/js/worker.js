@@ -152,18 +152,13 @@ function parse() {
         const headlineElement = element.getElementsByClassName('mw-headline')[0];
         if (headlineElement) {
           headlineElement.getElementsByClassName('mw-headline-number')[0]?.remove();
-          element.childNodes
-            .slice()
-            .reverse()
-            .forEach((element) => {
-              element.remove();
-            });
-          headlineElement.childNodes
-            .slice()
-            .reverse()
-            .forEach((child) => {
-              element.appendChild(child);
-            });
+
+          // Use Array.from, as childNodes is a live collection, and when element is removed or
+          // moved, indexes will change.
+          Array.from(element.childNodes).forEach((element) => {
+            element.remove();
+          });
+          Array.from(headlineElement.childNodes).forEach(element.appendChild.bind(element));
         }
       }
 

@@ -176,7 +176,7 @@ export default {
     });
     document.body.appendChild(dummyElement);
     text = dummyElement.innerText;
-    document.body.removeChild(dummyElement);
+    dummyElement.remove();
     return text;
   },
 

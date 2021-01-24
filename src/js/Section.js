@@ -445,7 +445,7 @@ export default class Section extends SectionSkeleton {
   /**
    * Show a move section dialog.
    */
-  async move() {
+  move() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
@@ -873,11 +873,11 @@ export default class Section extends SectionSkeleton {
         this.titleInput.focus();
         this.actions.setAbilities({ close: true });
 
-        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
+        // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
         // figure out a way to do this out of the box.
-        dialog.$body.css('overflow', 'hidden');
+        this.$body.css('overflow', 'hidden');
         setTimeout(() => {
-          dialog.$body.css('overflow', '');
+          this.$body.css('overflow', '');
         }, 500);
 
         cd.g.windowManager.updateWindowSize(this);
@@ -936,8 +936,6 @@ export default class Section extends SectionSkeleton {
       return MoveSectionDialog.parent.prototype.getActionProcess.call(this, action);
     };
 
-    const section = this;
-
     if (dealWithLoadingBug('mediawiki.widgets')) return;
 
     // Make requests in advance
@@ -946,6 +944,7 @@ export default class Section extends SectionSkeleton {
       mw.loader.using('mediawiki.widgets'),
     ];
 
+    const section = this;
     const dialog = new MoveSectionDialog();
     cd.g.windowManager.addWindows([dialog]);
     cd.g.windowManager.openWindow(dialog);
@@ -1502,7 +1501,7 @@ export default class Section extends SectionSkeleton {
       .slice(this.id + 1)
       .some((section) => {
         if (section.level > this.level) {
-          // If, say, a level 4 sections directly follows a level 2 section, it should be considered
+          // If, say, a level 4 section directly follows a level 2 section, it should be considered
           // a child. This is why we need the haveMetDirect variable.
           if (section.level === this.level + 1) {
             haveMetDirect = true;

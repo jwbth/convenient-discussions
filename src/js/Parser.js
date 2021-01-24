@@ -243,20 +243,14 @@ export default class Parser {
           );
           const treeWalker = new ElementsTreeWalker(timestamp.element);
 
-          // Found other timestamp after this timestamp
-          let found = false;
-
           while (
-            !found &&
             treeWalker.nextNode() &&
             closestNotInlineAncestor.contains(treeWalker.currentNode) &&
             (!cniaChildren.includes(treeWalker.currentNode) || isInline(treeWalker.currentNode))
           ) {
-            if (treeWalker.currentNode.classList.contains('cd-timestamp')) {
-              found = true;
-            }
+            // Found other timestamp after this timestamp
+            if (treeWalker.currentNode.classList.contains('cd-timestamp')) return;
           }
-          if (found) return;
         }
 
         const startElement = unsignedElement || timestamp.element;
@@ -292,20 +286,21 @@ export default class Parser {
                 }
               }
             } else {
-              const links = Array.from(node.getElementsByTagName('a')).reverse();
-              links.some((link) => {
-                const userName = getUserNameFromLink(link);
-                if (userName) {
-                  if (!authorName) {
-                    authorName = userName;
+              Array.from(node.getElementsByTagName('a'))
+                .reverse()
+                .some((link) => {
+                  const userName = getUserNameFromLink(link);
+                  if (userName) {
+                    if (!authorName) {
+                      authorName = userName;
+                    }
+                    if (authorName === userName) {
+                      // That's not some other user link that is not a part of the signature.
+                      hasAuthorLinks = true;
+                      return true;
+                    }
                   }
-                  if (authorName === userName) {
-                    // That's not some other user link that is not a part of the signature.
-                    hasAuthorLinks = true;
-                    return true;
-                  }
-                }
-              });
+                });
             }
 
             if (hasAuthorLinks) {
@@ -346,8 +341,7 @@ export default class Parser {
         .forEach((element) => {
           // Only templates with no timestamp interest us.
           if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
-            const links = Array.from(element.getElementsByTagName('a'));
-            links.some((link) => {
+            Array.from(element.getElementsByTagName('a')).some((link) => {
               const authorName = getUserNameFromLink(link);
               if (authorName) {
                 element.classList.add('cd-signature');
@@ -475,7 +469,7 @@ export default class Parser {
 
       if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
         // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
-        // that may be present. This happens with a code like this:
+        // that may be present. This happens with code like this:
         // :* Smth. [signature]
         // :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
         //               signature above. -->
@@ -649,7 +643,7 @@ export default class Parser {
           }
         }
 
-        // We should only enclose if there is a need: there is at least one inline or non-empty text
+        // We should only enclose if there is need: there is at least one inline or non-empty text
         // node in the sequence.
         if (
           !encloseThis &&

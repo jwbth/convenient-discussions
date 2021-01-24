@@ -877,17 +877,17 @@ export async function editWatchedSections() {
         this.input.focus();
         this.actions.setAbilities({ close: true });
 
-        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
+        // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
         // figure out a way to do this out of the box.
-        dialog.$body.css('overflow', 'hidden');
+        this.$body.css('overflow', 'hidden');
         setTimeout(() => {
-          dialog.$body.css('overflow', '');
+          this.$body.css('overflow', '');
         }, 500);
 
         cd.g.windowManager.updateWindowSize(this);
         this.popPending();
 
-        addPreventUnloadCondition('dialog', () => isUnsaved(dialog));
+        addPreventUnloadCondition('dialog', () => isUnsaved(this));
       });
   };
 
