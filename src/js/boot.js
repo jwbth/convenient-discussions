@@ -34,8 +34,7 @@ import {
 import { createWindowManager, rescueCommentFormsContent } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools } from './dateFormat';
-import { loadData } from './dateFormat';
+import { initTimestampParsingTools, loadData } from './siteSettings';
 
 let notificationsData = [];
 
@@ -593,7 +592,7 @@ function initOouiAndElementPrototypes() {
  * the first run.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:dateFormat.loadData}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
  */
 export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();

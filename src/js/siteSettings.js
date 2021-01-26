@@ -1,10 +1,11 @@
 /**
- * Timestamp regexp generator, timestamp parser generator, date formats, digits, and timezones.
+ * Timestamp regexp generator, timestamp parser generator, date formats, digits, timezones, and
+ * other siteSettings.
  *
  * The code is based on {@link
  * https://gerrit.wikimedia.org/r/#/c/mediawiki/core/+/539305/3/signaturedetector.js}.
  *
- * @module dateFormat
+ * @module siteSettings
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @license GPL-2.0-only
  */

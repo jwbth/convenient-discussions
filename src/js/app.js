@@ -21,7 +21,7 @@ import {
   removeLoadingOverlay,
   setLoadingOverlay,
 } from './boot';
-import { loadData } from './dateFormat';
+import { loadData } from './siteSettings';
 import { setVisits } from './options';
 
 let config;

@@ -37,7 +37,7 @@ import { setSettings, setVisits } from './options';
  * comment layers are also made here.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:dateFormat.loadData}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
  * @private
  */
 async function prepare({ messagesRequest }) {
@@ -653,8 +653,7 @@ function debugLog() {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
- * @property {Promise} [messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadData}.
+ * @property {Promise} [messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
  */
 
 /**
