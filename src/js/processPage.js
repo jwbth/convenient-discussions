@@ -24,12 +24,11 @@ import {
   handleScroll,
   handleWindowResize,
 } from './eventHandlers';
-import { adjustDom } from './modifyDom';
-import { areObjectsEqual, isInline } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getSettings, getVisits, getWatchedSections, setWatchedSections } from './options';
+import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
+import { isInline } from './util';
 import { setSettings, setVisits } from './options';
 
 /**
@@ -160,6 +159,143 @@ function findSpecialElements() {
 
   cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
 }
+
+/**
+ * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
+ * attributes, and some bound events to a new node, and also reassign references in some variables
+ * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
+ * that.
+ *
+ * Not a pure function; it alters `feivData`.
+ *
+ * @param {Element} element
+ * @param {string} newType
+ * @param {object|undefined} feivData
+ * @returns {Element}
+ * @private
+ */
+function changeElementType(element, newType, feivData) {
+  const newElement = document.createElement(newType);
+  while (element.firstChild) {
+    newElement.appendChild(element.firstChild);
+  }
+  Array.from(element.attributes).forEach((attribute) => {
+    newElement.setAttribute(attribute.name, attribute.value);
+  });
+
+  // If this element is a part of a comment, replace it in the Comment object instance.
+  let commentId = element.getAttribute('data-comment-id');
+  if (commentId !== null) {
+    commentId = Number(commentId);
+    cd.comments[commentId].replaceElement(element, newElement);
+  } else {
+    element.parentNode.replaceChild(newElement, element);
+  }
+
+  if (feivData && element === feivData.element) {
+    feivData.element = newElement;
+  }
+
+  return newElement;
+}
+
+/**
+ * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
+ * the nesting level.
+ *
+ * @param {object|undefined} feivData
+ * @private
+ */
+function mergeAdjacentCommentLevels(feivData) {
+  const levels = (
+    cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
+  );
+  if (!levels.length) return;
+
+  const isOrHasCommentLevel = (el) => (
+    (el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
+    el.querySelector('.cd-commentLevel:not(ol)')
+  );
+
+  Array.from(levels).forEach((bottomElement) => {
+    const topElement = bottomElement.previousElementSibling;
+    // If the previous element was removed in this cycle. (Or it could be absent for some other
+    // reason? I can confirm that I witnessed a case where the element was absent, but didn't pay
+    // attention why unfortunately.)
+    if (!topElement) return;
+    let currentTopElement = topElement;
+    let currentBottomElement = bottomElement;
+    do {
+      const topTag = currentTopElement.tagName;
+      const bottomInnerTags = {};
+      if (topTag === 'UL') {
+        bottomInnerTags.DD = 'LI';
+      } else if (topTag === 'DL') {
+        bottomInnerTags.LI = 'DD';
+      }
+
+      let firstMoved;
+      if (isOrHasCommentLevel(currentTopElement)) {
+        while (currentBottomElement.childNodes.length) {
+          let child = currentBottomElement.firstChild;
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            if (bottomInnerTags[child.tagName]) {
+              child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
+            }
+            if (firstMoved === undefined) {
+              firstMoved = child;
+            }
+          } else {
+            if (firstMoved === undefined && child.textContent.trim()) {
+              // Don't fill the "firstMoved" variable which is used further to merge elements if
+              // there is a non-empty text node between. (An example that is now fixed:
+              // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
+              // but other can be on the loose.) Instead, wrap the text node into an element to
+              // prevent it from being ignored when searching next time for adjacent .commentLevel
+              // elements. This could be seen only as an additional precaution, since it doesn't fix
+              // the source of the problem: the fact that a bare text node is (probably) a part of
+              // the reply. It shouldn't be happening.
+              firstMoved = null;
+              const newChild = document.createElement('span');
+              newChild.appendChild(child);
+              child = newChild;
+            }
+          }
+          currentTopElement.appendChild(child);
+        }
+        currentBottomElement.remove();
+      }
+
+      currentBottomElement = firstMoved;
+      currentTopElement = firstMoved?.previousElementSibling;
+    } while (
+      currentTopElement &&
+      currentBottomElement &&
+      isOrHasCommentLevel(currentBottomElement)
+    );
+  });
+}
+
+/**
+ * Perform some DOM-related taskes after parsing comments.
+ *
+ * @param {object|undefined} feivData
+ * @private
+ */
+function adjustDom(feivData) {
+  mergeAdjacentCommentLevels(feivData);
+  mergeAdjacentCommentLevels(feivData);
+  if (cd.g.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')) {
+    console.warn('.cd-commentLevel adjacencies have left.');
+  }
+
+  $('dl').has('dt').each((i, el) => {
+    Array.from(el.classList)
+      .filter((className) => className.startsWith('cd-commentLevel'))
+      .forEach((className) => el.classList.remove(className));
+  });
+}
+
 /**
  * Parse comments and modify related parts of the DOM.
  *
@@ -197,24 +333,6 @@ function processComments(parser, feivData) {
 }
 
 /**
- * Remove sections that can't be found on the page anymore from the watched sections list and save
- * them to the server.
- *
- * @private
- */
-function cleanUpWatchedSections() {
-  if (!cd.sections) return;
-  const initialSectionCount = cd.g.thisPageWatchedSections.length;
-  cd.g.originalThisPageWatchedSections = cd.g.thisPageWatchedSections.slice();
-  cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
-    .filter((headline) => cd.sections.some((section) => section.headline === headline));
-  cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;
-  if (cd.g.thisPageWatchedSections.length !== initialSectionCount) {
-    setWatchedSections();
-  }
-}
-
-/**
  * Parse sections and modify some parts of them.
  *
  * @param {Parser} parser
@@ -235,11 +353,11 @@ function processSections(parser, watchedSectionsRequest) {
     }
   });
 
-  Section.adjustSections();
+  Section.adjust();
 
   if (watchedSectionsRequest) {
     watchedSectionsRequest.then(() => {
-      cleanUpWatchedSections();
+      Section.cleanUpWatched();
       toc.highlightWatchedSections();
     });
   }
@@ -251,46 +369,6 @@ function processSections(parser, watchedSectionsRequest) {
    * @type {module:cd~convenientDiscussions.sections}
    */
   mw.hook('convenientDiscussions.sectionsReady').fire(cd.sections);
-}
-
-/**
- * Create an add section form if not existent.
- *
- * @param {object} [preloadConfig]
- * @param {boolean} [isNewTopicOnTop=false]
- * @private
- */
-function createAddSectionForm(
-  preloadConfig = CommentForm.getDefaultPreloadConfig(),
-  isNewTopicOnTop = false
-) {
-  const addSectionForm = cd.g.addSectionForm;
-  if (addSectionForm) {
-    // Sometimes there is more than one "Add section" button on the page, and they lead to opening
-    // forms with different content.
-    if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
-      mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
-      return;
-    }
-
-    addSectionForm.$element.cdScrollIntoView('center');
-
-    // Headline input may be missing if the "nosummary" preload parameter is truthy.
-    addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
-  } else {
-    /**
-     * Add section form.
-     *
-     * @type {CommentForm|undefined}
-     * @memberof module:cd~convenientDiscussions.g
-     */
-    cd.g.addSectionForm = new CommentForm({
-      mode: 'addSection',
-      target: cd.g.CURRENT_PAGE,
-      preloadConfig,
-      isNewTopicOnTop,
-    });
-  }
 }
 
 /**
@@ -306,7 +384,7 @@ function addAddTopicButton() {
       classes: ['cd-button', 'cd-sectionButton'],
     });
     cd.g.addSectionButton.on('click', () => {
-      createAddSectionForm();
+      CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
       .addClass('cd-addTopicButtonContainer')
@@ -381,7 +459,7 @@ function connectToAddTopicButtons() {
       }
 
       e.preventDefault();
-      createAddSectionForm(preloadConfig, isNewTopicOnTop);
+      CommentForm.createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));
 }

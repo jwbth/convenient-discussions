@@ -1,7 +1,6 @@
 /**
- * Web page (not wikitext) parsing module. Parsing here means "extracting meaningful parts from the
- * page". Functions that are more about modification of the DOM go in {@link module:modifyDom}.
- * Functions related to wikitext parsing go in {@link module:wikitext}.
+ * Web page (not wikitext) parsing class. Parsing here means "extracting meaningful parts from the
+ * page". Functions related to wikitext parsing go in {@link module:wikitext}.
  *
  * Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
  *

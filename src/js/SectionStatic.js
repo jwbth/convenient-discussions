@@ -191,7 +191,7 @@ export default {
    * Perform extra section-related tasks, including adding the `isLastSection` property, adding
    * buttons, and binding events.
    */
-  adjustSections() {
+  adjust() {
     cd.sections.forEach((section, i) => {
       /**
        * Is the section the last section on the page.
@@ -335,5 +335,22 @@ export default {
       })
       .end()
       .html();
+  },
+
+  /**
+   * Remove sections that can't be found on the page anymore from the watched sections list and save
+   * them to the server.
+   */
+  cleanUpWatched() {
+    if (!cd.sections) return;
+
+    const initialSectionCount = cd.g.thisPageWatchedSections.length;
+    cd.g.originalThisPageWatchedSections = cd.g.thisPageWatchedSections.slice();
+    cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
+      .filter((headline) => cd.sections.some((section) => section.headline === headline));
+    cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;
+    if (cd.g.thisPageWatchedSections.length !== initialSectionCount) {
+      setWatchedSections();
+    }
   },
 };

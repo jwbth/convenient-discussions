@@ -4,7 +4,9 @@
  * @module CommentFormStatic
  */
 
+import CommentForm from './CommentForm';
 import cd from './cd';
+import { areObjectsEqual } from './util';
 
 /**
  * Callback to be used in Array#sort() for comment forms.
@@ -84,5 +86,45 @@ export default {
         .find((commentForm) => commentForm.isAltered()) ||
       null
     );
+  },
+
+  /**
+   * Create an add section form if not existent.
+   *
+   * @param {object} [preloadConfig]
+   * @param {boolean} [isNewTopicOnTop=false]
+   * @private
+   */
+  createAddSectionForm(
+    preloadConfig = CommentForm.getDefaultPreloadConfig(),
+    isNewTopicOnTop = false
+  ) {
+    const addSectionForm = cd.g.addSectionForm;
+    if (addSectionForm) {
+      // Sometimes there is more than one "Add section" button on the page, and they lead to opening
+      // forms with different content.
+      if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
+        mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
+        return;
+      }
+
+      addSectionForm.$element.cdScrollIntoView('center');
+
+      // Headline input may be missing if the "nosummary" preload parameter is truthy.
+      addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
+    } else {
+      /**
+       * Add section form.
+       *
+       * @type {CommentForm|undefined}
+       * @memberof module:cd~convenientDiscussions.g
+       */
+      cd.g.addSectionForm = new CommentForm({
+        mode: 'addSection',
+        target: cd.g.CURRENT_PAGE,
+        preloadConfig,
+        isNewTopicOnTop,
+      });
+    }
   },
 };
