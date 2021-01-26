@@ -224,7 +224,7 @@ export default {
    * Selectors of floating elements. This is needed to display the comment's underlay and overlay
    * correctly. You can also add the `cd-floating` class to such elements. You can also add the
    * `cd-ignoreFloating` class to floating elements that never intersect comments but end up in
-   * `convenientDiscussions.g.specialElements.floating` to help performance.
+   * `convenientDiscussions.g.floatingElements` to help performance.
    *
    * @type {string[]}
    * @default []

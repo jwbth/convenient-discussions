@@ -9,7 +9,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
-import Parser, { findSpecialElements, windowGetAllTextNodes } from './Parser';
+import Parser, { getUserNameFromLink } from './Parser';
 import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
@@ -112,6 +112,54 @@ function getFirstElementInViewportData() {
   return element ? { element, top } : null;
 }
 
+/**
+ * Get all text nodes under the root element in the window (not worker) context.
+ *
+ * @returns {Node[]}
+ */
+function getAllTextNodes() {
+  const result = document.evaluate(
+    // './/text()' doesn't work in Edge.
+    './/descendant::text()',
+
+    cd.g.rootElement,
+    null,
+    XPathResult.ANY_TYPE,
+    null
+  );
+  const textNodes = [];
+  let node;
+  while ((node = result.iterateNext())) {
+    textNodes.push(node);
+  }
+  return textNodes;
+}
+
+/**
+ * Find some types of special elements on the page (floating elements, closed discussions, outdent
+ * templates).
+ */
+function findSpecialElements() {
+  // Describe all floating elements on the page in order to calculate the right border (temporarily
+  // setting "overflow: hidden") for all comments that they intersect with.
+  const floatingElementsSelector = [
+    ...cd.g.FLOATING_ELEMENT_SELECTORS,
+    ...cd.config.customFloatingElementSelectors,
+  ]
+    .join(', ');
+  cd.g.floatingElements = cd.g.$root
+    .find(floatingElementsSelector)
+    .get()
+    // Remove all known elements that never intersect comments from the collection.
+    .filter((el) => !el.classList.contains('cd-ignoreFloating'));
+
+  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
+    .map((name) => `.${name}`)
+    .join(', ');
+  cd.g.closedDiscussions = cd.g.$root.find(closedDiscussionsSelector).get();
+
+  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+}
 /**
  * Parse comments and modify related parts of the DOM.
  *
@@ -716,7 +764,7 @@ export default async function processPage(keptData = {}) {
    */
   mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-  cd.g.specialElements = findSpecialElements();
+  findSpecialElements();
 
   cd.debug.startTimer('process comments');
 
@@ -726,7 +774,7 @@ export default async function processPage(keptData = {}) {
     childElementsProperty: 'children',
     document,
     follows: (el1, el2) => el1.compareDocumentPosition(el2) & Node.DOCUMENT_POSITION_PRECEDING,
-    getAllTextNodes: windowGetAllTextNodes,
+    getAllTextNodes,
     getElementByClassName: (node, className) => node.querySelector(`.${className}`),
   });
 

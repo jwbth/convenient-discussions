@@ -105,7 +105,7 @@ export default class Section extends SectionSkeleton {
      */
     this.isActionable = (
       cd.g.isPageActive &&
-      !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
+      !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement))
     );
 
     if (this.isActionable) {

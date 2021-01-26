@@ -118,7 +118,7 @@ export default class Parser {
 
     if (!foreignComponentClasses) {
       foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
-      if (cd.g.specialElements.pageHasOutdents) {
+      if (cd.g.pageHasOutdents) {
         foreignComponentClasses.push('outdent-template');
       }
 
@@ -544,11 +544,7 @@ export default class Parser {
             this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
           ) ||
 
-          (
-            cd.g.specialElements.pageHasOutdents &&
-            this.context.getElementByClassName(node, 'outdent-template')
-          ) ||
-
+          (cd.g.pageHasOutdents && this.context.getElementByClassName(node, 'outdent-template')) ||
           cd.config.checkForCustomForeignComponents?.(node, this.context)
         ) {
           break;
@@ -842,57 +838,4 @@ export default class Parser {
     headings.sort((heading1, heading2) => this.context.follows(heading1, heading2) ? 1 : -1);
     return headings;
   }
-}
-
-/**
- * Get all text nodes under the root element in the window (not worker) context.
- *
- * @returns {Node[]}
- */
-export function windowGetAllTextNodes() {
-  const result = document.evaluate(
-    // './/text()' doesn't work in Edge.
-    './/descendant::text()',
-
-    cd.g.rootElement,
-    null,
-    XPathResult.ANY_TYPE,
-    null
-  );
-  const textNodes = [];
-  let node;
-  while ((node = result.iterateNext())) {
-    textNodes.push(node);
-  }
-  return textNodes;
-}
-
-/**
- * Find some types of special elements on the page (floating elements, closed discussions, outdent
- * templates).
- *
- * @returns {object}
- */
-export function findSpecialElements() {
-  // Describe all floating elements on the page in order to calculate the right border (temporarily
-  // setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementsSelector = [
-    ...cd.g.FLOATING_ELEMENT_SELECTORS,
-    ...cd.config.customFloatingElementSelectors,
-  ]
-    .join(', ');
-  const floating = cd.g.$root
-    .find(floatingElementsSelector)
-    .get()
-    // Remove all known elements that never intersect comments from the collection.
-    .filter((el) => !el.classList.contains('cd-ignoreFloating'));
-
-  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
-    .map((name) => `.${name}`)
-    .join(', ');
-  const closedDiscussions = cd.g.$root.find(closedDiscussionsSelector).get();
-
-  const pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
-
-  return { floating, closedDiscussions, pageHasOutdents };
 }

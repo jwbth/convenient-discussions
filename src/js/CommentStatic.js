@@ -20,7 +20,7 @@ export default {
   configureAndAddLayers(comments) {
     let floatingRects;
     if (comments.length) {
-      floatingRects = cd.g.specialElements.floating.map(getExtendedRect);
+      floatingRects = cd.g.floatingElements.map(getExtendedRect);
     }
 
     comments.forEach((comment) => {

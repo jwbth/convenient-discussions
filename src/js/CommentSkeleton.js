@@ -244,7 +244,7 @@ export default class CommentSkeleton {
       return [];
     }
 
-    if (cd.g.specialElements.pageHasOutdents) {
+    if (cd.g.pageHasOutdents) {
       const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
       while (
         treeWalker.nextNode() &&

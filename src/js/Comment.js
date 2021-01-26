@@ -111,7 +111,7 @@ export default class Comment extends CommentSkeleton {
      */
     this.isActionable = (
       cd.g.isPageActive &&
-      !cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
+      !cd.g.closedDiscussionElements.some((el) => el.contains(this.elements[0]))
     );
 
     this.highlightables.forEach((el) => {
@@ -211,10 +211,7 @@ export default class Comment extends CommentSkeleton {
     const bottom = window.pageYOffset + rectBottom.bottom;
 
     if (options.considerFloating) {
-      const floatingRects = (
-        options.floatingRects ||
-        cd.g.specialElements.floating.map(getExtendedRect)
-      );
+      const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
       floatingRects.forEach((rect) => {
@@ -1685,7 +1682,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Look for {{outdent}} templates
-    if (this.cachedParent === undefined && cd.g.specialElements.pageHasOutdents) {
+    if (this.cachedParent === undefined && cd.g.pageHasOutdents) {
       const treeWalker = new ElementsTreeWalker(this.elements[0]);
       while (
         treeWalker.previousNode() &&
