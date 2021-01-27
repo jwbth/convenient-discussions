@@ -62,7 +62,7 @@ export default {
       if ((removeUnhighlighted || isUnderBottom) && !shouldBeHighlighted && comment.$underlay) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
-        floatingRects = floatingRects || cd.g.specialElements.floating.map(getExtendedRect);
+        floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.
           doAdd: true,

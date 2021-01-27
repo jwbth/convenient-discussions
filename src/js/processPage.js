@@ -155,7 +155,7 @@ function findSpecialElements() {
   const closedDiscussionsSelector = cd.config.closedDiscussionClasses
     .map((name) => `.${name}`)
     .join(', ');
-  cd.g.closedDiscussions = cd.g.$root.find(closedDiscussionsSelector).get();
+  cd.g.closedDiscussionElements = cd.g.$root.find(closedDiscussionsSelector).get();
 
   cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
 }
