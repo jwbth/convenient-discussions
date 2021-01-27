@@ -961,17 +961,12 @@ export default async function processPage(keptData = {}) {
       childList: true,
       subtree: true,
     });
-  } else {
-    currentSection.reset();
-  }
 
-  if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
     $(document)
       .on('keydown', handleGlobalKeyDown)
-      .on('scroll resize orientationchange', () => {
-        handleScroll();
-        navPanel.updateCommentFormButton();
-      });
+      .on('scroll resize orientationchange', handleScroll);
+  } else {
+    currentSection.reset();
   }
 
   let alwaysConfirmLeavingPage = false;

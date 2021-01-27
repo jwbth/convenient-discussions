@@ -59,7 +59,7 @@ export function removePreventUnloadCondition(name) {
  * @param {Event} e
  */
 export function handleGlobalKeyDown(e) {
-  if (cd.util.isPageOverlayOn()) return;
+  if (!cd.g.isPageActive || cd.util.isPageOverlayOn()) return;
 
   if (
     // Ctrl+Alt+Q
@@ -111,8 +111,11 @@ export function handleScroll() {
   setTimeout(() => {
     cd.g.dontHandleScroll = false;
 
-    Comment.registerSeen();
-    navPanel.updateFirstUnseenButton();
+    if (cd.g.isPageActive) {
+      Comment.registerSeen();
+      navPanel.updateFirstUnseenButton();
+      navPanel.updateCommentFormButton();
+    }
     currentSection.update();
   }, 300);
 }
