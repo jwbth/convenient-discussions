@@ -31,7 +31,7 @@ import { hideText } from './util';
 export function hideDistractingCode(code, replaceMarks = true) {
   let newCode = code
     .replace(
-      /(<(?:nowiki|syntaxhighlight|source|pre)(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>)([^]*?)(<\/(?:nowiki|syntaxhighlight|source|pre)(?: \w+)? ?>)/g,
+      /(<(?:nowiki|syntaxhighlight|source|pre)(?: [\w ]+(?:=[^<>]+?)?| ?)>)([^]*?)(<\/(?:nowiki|syntaxhighlight|source|pre)(?: \w+)? ?>)/g,
       (s, before, content, after) => before + ' '.repeat(content.length) + after
     )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')

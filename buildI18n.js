@@ -68,7 +68,7 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
       .filter((name) => typeof strings[name] === 'string')
       .forEach((stringName) => {
         const hidden = [];
-        let sanitized = hideText(strings[stringName], /<nowiki(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/nowiki(?: \w+)? ?>/g, hidden);
+        let sanitized = hideText(strings[stringName], /<nowiki(?: [\w ]+(?:=[^<>]+?)?| ?)>([^]*?)<\/nowiki(?: \w+)? ?>/g, hidden);
 
         sanitized = DOMPurify.sanitize(sanitized, {
           SAFE_FOR_JQUERY: true,
