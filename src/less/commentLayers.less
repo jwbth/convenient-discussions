@@ -109,5 +109,8 @@ body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo
 .cd-commentLayersContainerParent-relative {
   position: relative;
   z-index: 0;
-  overflow: hidden;
+
+  // https://en.wikipedia.org/wiki/Template:Discussion_top has "overflow: hidden" in the style
+  // property, which can create a scrollbar in some cases.
+  overflow: hidden !important;
 }
