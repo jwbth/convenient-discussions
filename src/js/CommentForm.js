@@ -432,6 +432,9 @@ export default class CommentForm {
       this.commentInput.$element
         .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
+      if (!['addSection', 'addSubsection'].includes(this.mode)) {
+        this.commentInput.$element.find('.group-heading').remove();
+      }
 
       // Make the undo/redo functionality work in browsers that support it (Chrome).
       $input.textSelection('register', {
