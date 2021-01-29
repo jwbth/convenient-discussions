@@ -813,7 +813,7 @@ function cleanUpSessions(data) {
 
     if (
       !newData[key].commentForms?.length ||
-      newData[key].saveUnixTime < Date.now() - 30 * cd.g.SECONDS_IN_A_DAY * 1000
+      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
     ) {
       delete newData[key];
     }
