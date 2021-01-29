@@ -231,10 +231,14 @@ export default {
           cd.config.closedDiscussionClasses
             ?.some((className) => section.lastElementInFirstChunk.classList?.contains(className))
         );
+        const firstContentElement = section.$elements.get(1);
 
         // The same for the "Reply" button, but as this button is added to the end of the first
         // chunk, we look at just the next section, not necessarily of the same level.
         if (
+          // The first element is a heading of a subsection.
+          (!firstContentElement || !/^H[1-6]$/.test(firstContentElement.tagName)) &&
+
           !isFirstChunkClosed &&
           (
             !cd.sections[i + 1] ||
