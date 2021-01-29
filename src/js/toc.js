@@ -12,6 +12,64 @@ import { restoreScrollPosition, saveScrollPosition } from './util';
 
 let tocItems;
 
+/**
+ * Class representing a table of contents item.
+ */
+class TocItem {
+  /**
+   * Create a table of contents item object.
+   *
+   * @param {object} a
+   */
+  constructor(a) {
+    // We expect that the number and text are the first two children of a <li> element.
+    const textSpan = a.children[1];
+    const headline = textSpan.textContent;
+    const anchor = a.getAttribute('href').slice(1);
+    const li = a.parentNode;
+    let [, level] = li.className.match(/\btoclevel-(\d+)/);
+    level = Number(level);
+    const number = a.children[0].textContent;
+    Object.assign(this, {
+      headline,
+      anchor,
+      level,
+      number,
+      $element: $(li),
+      $link: $(a),
+      $text: $(textSpan),
+    });
+  }
+
+  /**
+   * Generate HTML to use it in the TOC for the section. Only a limited number of HTML elements is
+   * allowed in TOC.
+   *
+   * @param {JQuery} $headline
+   */
+  replaceText($headline) {
+    const html = $headline
+      .clone()
+      .find('*')
+      .each((i, el) => {
+        if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
+          Array.from(el.attributes).forEach((attr) => {
+            el.removeAttribute(attr.name);
+          });
+        } else {
+          Array.from(el.childNodes).forEach((child) => {
+            el.parentNode.insertBefore(child, el);
+          });
+          el.remove();
+        }
+      })
+      .end()
+      .html();
+    this.$text.html(html);
+    this.headline = this.$text.text().trim();
+  }
+}
+
 export default {
   /**
    * Hide the TOC if the relevant cookie is set. This method duplicates {@link
@@ -53,29 +111,9 @@ export default {
     }
 
     if (!tocItems) {
-      cd.debug.startTimer('tocItems');
       // It is executed first time before not rendered (gray) sections are added to the TOC, so we
-      // use a simple algorithm to obtain items. We also expect that the number and text are the
-      // first two children of a <li> element.
-      tocItems = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a')).map((a) => {
-        const textSpan = a.children[1];
-        const headline = textSpan.textContent;
-        const anchor = a.getAttribute('href').slice(1);
-        const li = a.parentNode;
-        let [, level] = li.className.match(/\btoclevel-(\d+)/);
-        level = Number(level);
-        const number = a.children[0].textContent;
-        return {
-          headline,
-          anchor,
-          level,
-          number,
-          $element: $(li),
-          $link: $(a),
-          $text: $(textSpan),
-        };
-      });
-      cd.debug.stopTimer('tocItems');
+      // use a simple algorithm to obtain items.
+      tocItems = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a')).map((a) => new TocItem(a));
     }
 
     return tocItems.find((item) => item.anchor === anchor) || null;

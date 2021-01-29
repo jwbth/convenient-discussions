@@ -8,7 +8,6 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
-import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
@@ -955,7 +954,7 @@ export default class Comment extends CommentSkeleton {
               if (section.isWatched && section.headline !== originalHeadline) {
                 section.watch(true, originalHeadline);
               }
-              section.getTocItem()?.$text.html(Section.generateTocItemHtml($html));
+              section.getTocItem()?.replaceText($html);
             }
           }
         } else {

@@ -311,33 +311,6 @@ export default {
   },
 
   /**
-   * Generate HTML to use it in the TOC for the section. Only a limited number of HTML elements is
-   * allowed in TOC.
-   *
-   * @param {JQuery} $headline
-   * @returns {string}
-   */
-  generateTocItemHtml($headline) {
-    return $headline
-      .clone()
-      .find('*')
-      .each((i, el) => {
-        if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
-          Array.from(el.attributes).forEach((attr) => {
-            el.removeAttribute(attr.name);
-          });
-        } else {
-          Array.from(el.childNodes).forEach((child) => {
-            el.parentNode.insertBefore(child, el);
-          });
-          el.remove();
-        }
-      })
-      .end()
-      .html();
-  },
-
-  /**
    * Remove sections that can't be found on the page anymore from the watched sections list and save
    * them to the server.
    */
