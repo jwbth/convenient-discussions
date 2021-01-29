@@ -37,6 +37,7 @@ import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools, loadData } from './siteSettings';
 
 let notificationsData = [];
+let isPageBeingReloaded = false;
 
 /**
  * Initiate user settings.
@@ -730,6 +731,9 @@ export function isLoadingOverlayOn() {
  * @throws {CdError|Error}
  */
 export async function reloadPage(keptData = {}) {
+  if (isPageBeingReloaded) return;
+  isPageBeingReloaded = true;
+
   // In case checkboxes were changed programmatically.
   saveSession();
 
@@ -787,6 +791,8 @@ export async function reloadPage(keptData = {}) {
   if (!keptData.commentAnchor && !keptData.sectionAnchor) {
     restoreScrollPosition(false);
   }
+
+  isPageBeingReloaded = false;
 }
 
 /**
