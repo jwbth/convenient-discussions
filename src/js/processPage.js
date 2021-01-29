@@ -495,6 +495,26 @@ function highlightOwnComments() {
 }
 
 /**
+ * Highlight mentions of the current user.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function highlightMentions($content) {
+  Array.from(
+    $content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.CURRENT_USER_NAME}"]`)
+  )
+    .filter((el) => (
+      cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
+      !el.parentNode.closest('.cd-signature') &&
+      getUserNameFromLink(el) === cd.g.CURRENT_USER_NAME
+    ))
+    .forEach((link) => {
+      link.classList.add('cd-currentUserLink');
+    });
+}
+
+/**
  * Perform fragment-related tasks, as well as comment anchor-related ones.
  *
  * @param {object} keptData
@@ -927,6 +947,8 @@ export default async function processPage(keptData = {}) {
   }
 
   if (cd.g.isFirstRun) {
+    mw.hook('wikipage.content').add(highlightMentions);
+
     currentSection.mount();
 
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the

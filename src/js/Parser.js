@@ -69,7 +69,7 @@ function getPageNameFromUrl(url) {
  * @returns {string}
  * @private
  */
-function getUserNameFromLink(element) {
+export function getUserNameFromLink(element) {
   const href = element.getAttribute('href');
   let userName;
   if (href) {
