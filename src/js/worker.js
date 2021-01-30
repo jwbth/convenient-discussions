@@ -155,8 +155,8 @@ function parse() {
 
           // Use Array.from, as childNodes is a live collection, and when element is removed or
           // moved, indexes will change.
-          Array.from(element.childNodes).forEach((element) => {
-            element.remove();
+          Array.from(element.childNodes).forEach((el) => {
+            el.remove();
           });
           Array.from(headlineElement.childNodes).forEach(element.appendChild.bind(element));
         }
@@ -169,13 +169,13 @@ function parse() {
         ...element.getElementsByTagName('style'),
         ...element.getElementsByTagName('link'),
       ];
-      elementsToHide.forEach((element) => {
+      elementsToHide.forEach((el) => {
         let type;
-        if (element.classList.contains('reference')) {
+        if (el.classList.contains('reference')) {
           type = 'reference';
-        } else if (element.classList.contains('references')) {
+        } else if (el.classList.contains('references')) {
           type = 'references';
-        } else if (element.classList.contains('autonumber')) {
+        } else if (el.classList.contains('autonumber')) {
           type = 'autonumber';
         } else {
           type = 'templateStyles';
@@ -183,12 +183,12 @@ function parse() {
 
         const num = comment.hiddenElementData.push({
           type,
-          tagName: element.tagName,
-          html: element.outerHTML,
+          tagName: el.tagName,
+          html: el.outerHTML,
         });
         const textNode = context.document.createTextNode(`\x01${num}_${type}\x02`);
-        element.parentNode.insertBefore(textNode, element);
-        element.remove();
+        el.parentNode.insertBefore(textNode, el);
+        el.remove();
       });
 
       return element.outerHTML;
@@ -225,9 +225,9 @@ function parse() {
     comment.headingInnerHtml = comment.headingInnerHtml.trim();
 
     comment.signatureElement.remove();
-    comment.text = comment.elements.map((element) => element.textContent).join('\n');
+    comment.text = comment.elements.map((el) => el.textContent).join('\n');
 
-    comment.elementTagNames = comment.elements.map((element) => element.tagName);
+    comment.elementTagNames = comment.elements.map((el) => el.tagName);
   });
 
   cd.sections.forEach((section) => {
@@ -286,7 +286,7 @@ function onMessageFromWindow(e) {
     clearTimeout(alarmTimeout);
   }
 
-  if (message.type.startsWith('parse')) {
+  if (message.type === 'parse') {
     cd.debug.startTimer('worker');
 
     Object.assign(cd.g, message.g);

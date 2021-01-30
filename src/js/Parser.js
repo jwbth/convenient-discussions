@@ -86,10 +86,9 @@ export function getUserNameFromLink(element) {
         userName = userName.toUpperCase();
       }
     }
-    userName = (
-      userName &&
-      firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim()
-    );
+    if (userName) {
+      userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+    }
   } else {
     if (element.classList.contains('mw-selflink') && cd.g.CURRENT_NAMESPACE_NUMBER === 3) {
       // Comments of users that have only the user talk page link in their signature on their talk

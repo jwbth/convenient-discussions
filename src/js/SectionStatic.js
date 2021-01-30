@@ -215,15 +215,15 @@ export default {
             ?.some((className) => section.elements[1].classList?.contains(className))
         );
         if (
-          !isClosed &&
+          isClosed ||
           (
-            !nextSameLevelSection ||
-            nextSameLevelSection.headingNestingLevel === section.headingNestingLevel
+            nextSameLevelSection &&
+            nextSameLevelSection.headingNestingLevel !== section.headingNestingLevel
           )
         ) {
-          section.addAddSubsectionButton();
-        } else {
           section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
+        } else {
+          section.addAddSubsectionButton();
         }
 
         const isFirstChunkClosed = (

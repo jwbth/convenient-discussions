@@ -1495,7 +1495,6 @@ export default class Section extends SectionSkeleton {
    */
   getChildren(indirect = false) {
     const children = [];
-
     let haveMetDirect = false;
     cd.sections
       .slice(this.id + 1)

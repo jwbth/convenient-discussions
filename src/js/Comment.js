@@ -911,7 +911,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {boolean} Was the update successful.
    */
   update(currentComment, newComment) {
-    const elementTagNames = Array.from(this.$elements).map((element) => element.tagName);
+    const elementTagNames = Array.from(this.$elements).map((el) => el.tagName);
 
     // References themselves may be out of the comment's HTML and might be edited.
     const areThereReferences = newComment.hiddenElementData
@@ -2129,15 +2129,11 @@ export default class Comment extends CommentSkeleton {
           ));
       }
       if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
-        let closedDiscussionMatch;
-        while ((closedDiscussionMatch = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
+        let match;
+        while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
           adjustedCode = (
-            adjustedCode.slice(0, closedDiscussionMatch.index) +
-            hideTemplatesRecursively(
-              adjustedCode.slice(closedDiscussionMatch.index),
-              null,
-              closedDiscussionMatch[1].length
-            ).code
+            adjustedCode.slice(0, match.index) +
+            hideTemplatesRecursively(adjustedCode.slice(match.index), null, match[1].length).code
           );
         }
       }

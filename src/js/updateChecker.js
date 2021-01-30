@@ -786,7 +786,7 @@ const updateChecker = {
     ];
 
     const message = await runWorkerTask({
-      type: revisionToParseId ? 'parseRevision' : 'parse',
+      type: 'parse',
       revisionId,
       text,
       g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER'], disallowedNames),

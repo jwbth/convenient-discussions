@@ -50,6 +50,22 @@ span.cd-show {
 
   // z-index of OOUI windows + 10
   z-index: 111;
+
+  &-logo {
+    display: block;
+    margin: 0 auto 2em;
+    width: 55px;
+    position: relative;
+
+    &-partBackground {
+      position: absolute;
+      left: 8px;
+      top: 6px;
+      width: 27px;
+      height: 21px;
+      z-index: -1;
+    }
+  }
 }
 
 .ltr .cd-loadingPopup {
@@ -64,22 +80,6 @@ span.cd-show {
   .cd-loadingPopup {
     width: 11em;
   }
-}
-
-.cd-loadingPopup-logo {
-  display: block;
-  margin: 0 auto 2em;
-  width: 55px;
-  position: relative;
-}
-
-.cd-loadingPopup-logo-partBackground {
-  position: absolute;
-  left: 8px;
-  top: 6px;
-  width: 27px;
-  height: 21px;
-  z-index: -1;
 }
 
 .skin-vector-max-width .cd-loadingPopup {

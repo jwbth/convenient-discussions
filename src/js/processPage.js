@@ -828,13 +828,10 @@ export default async function processPage(keptData = {}) {
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
-  cd.g.isPageActive = !(
-    !mw.config.get('wgArticleId') ||
-    cd.g.CURRENT_PAGE.isArchivePage() ||
-    (
-      (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
-      mw.config.get('wgRevisionId') !== mw.config.get('wgCurRevisionId')
-    )
+  cd.g.isPageActive = (
+    mw.config.get('wgArticleId') &&
+    !cd.g.CURRENT_PAGE.isArchivePage() &&
+    mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')
   );
 
   // For testing
