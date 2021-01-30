@@ -38,6 +38,8 @@ import { initTimestampParsingTools, loadData } from './siteSettings';
 
 let notificationsData = [];
 let isPageBeingReloaded = false;
+let saveSessionTimeout;
+let saveSessionLastTime;
 
 /**
  * Initiate user settings.
@@ -828,45 +830,51 @@ function cleanUpSessions(data) {
 export function saveSession() {
   cd.debug.startTimer('saveSession');
 
-  const commentForms = cd.commentForms
-    .filter((commentForm) => commentForm.isAltered())
-    .map((commentForm) => {
-      let targetData;
-      const target = commentForm.target;
-      if (commentForm.target instanceof Comment) {
-        targetData = { anchor: target.anchor };
-      } else if (target instanceof Section) {
-        targetData = {
-          headline: target.headline,
-          firstCommentAnchor: target.comments[0]?.anchor,
-          id: target.id,
+  const timeSinceLastSave = Date.now() - saveSessionLastTime;
+  clearTimeout(saveSessionTimeout);
+  saveSessionTimeout = setTimeout(() => {
+    const commentForms = cd.commentForms
+      .filter((commentForm) => commentForm.isAltered())
+      .map((commentForm) => {
+        let targetData;
+        const target = commentForm.target;
+        if (commentForm.target instanceof Comment) {
+          targetData = { anchor: target.anchor };
+        } else if (target instanceof Section) {
+          targetData = {
+            headline: target.headline,
+            firstCommentAnchor: target.comments[0]?.anchor,
+            id: target.id,
+          };
+        }
+        return {
+          mode: commentForm.mode,
+          targetData,
+          preloadConfig: commentForm.preloadConfig,
+          isNewTopicOnTop: commentForm.isNewTopicOnTop,
+          headline: commentForm.headlineInput?.getValue(),
+          comment: commentForm.commentInput.getValue(),
+          summary: commentForm.summaryInput.getValue(),
+          minor: commentForm.minorCheckbox?.isSelected(),
+          watch: commentForm.watchCheckbox?.isSelected(),
+          watchSection: commentForm.watchSectionCheckbox?.isSelected(),
+          omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
+          delete: commentForm.deleteCheckbox?.isSelected(),
+          originalHeadline: commentForm.originalHeadline,
+          originalComment: commentForm.originalComment,
+          isSummaryAltered: commentForm.isSummaryAltered,
+          lastFocused: commentForm.lastFocused,
         };
-      }
-      return {
-        mode: commentForm.mode,
-        targetData,
-        preloadConfig: commentForm.preloadConfig,
-        isNewTopicOnTop: commentForm.isNewTopicOnTop,
-        headline: commentForm.headlineInput?.getValue(),
-        comment: commentForm.commentInput.getValue(),
-        summary: commentForm.summaryInput.getValue(),
-        minor: commentForm.minorCheckbox?.isSelected(),
-        watch: commentForm.watchCheckbox?.isSelected(),
-        watchSection: commentForm.watchSectionCheckbox?.isSelected(),
-        omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
-        delete: commentForm.deleteCheckbox?.isSelected(),
-        originalHeadline: commentForm.originalHeadline,
-        originalComment: commentForm.originalComment,
-        isSummaryAltered: commentForm.isSummaryAltered,
-        lastFocused: commentForm.lastFocused,
-      };
-    });
-  const saveUnixTime = Date.now();
-  const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
+      });
+    const saveUnixTime = Date.now();
+    const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
 
-  const dataAllPages = getFromLocalStorage('commentForms');
-  dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
-  saveToLocalStorage('commentForms', dataAllPages);
+    const dataAllPages = getFromLocalStorage('commentForms');
+    dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
+    saveToLocalStorage('commentForms', dataAllPages);
+
+    saveSessionLastTime = Date.now();
+  }, Math.max(0, 5000 - timeSinceLastSave));
 
   cd.debug.stopTimer('saveSession');
 }
