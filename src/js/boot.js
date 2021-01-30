@@ -411,12 +411,12 @@ function initPatterns() {
   if (closedDiscussionBeginningsPattern) {
     if (closedDiscussionEndingsPattern) {
       cd.g.CLOSED_DISCUSSION_PAIR_REGEXP = new RegExp(
-        `\\s*\\{\\{ *(?:${closedDiscussionBeginningsPattern})[^]*?\\}\\}\\s*([:*#]*)[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern})[^}]*\\}\\}`,
+        ` *\\{\\{ *(?:${closedDiscussionBeginningsPattern})[^]*?\\}\\}\\s*([:*#]*)[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern})[^}]*\\}\\}`,
         'ig'
       );
     }
     cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP = new RegExp(
-      `\\s*\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^]*?=\\s*([:*#]*)`,
+      ` *\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
       'ig'
     );
   }
