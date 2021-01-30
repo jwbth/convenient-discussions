@@ -34,6 +34,7 @@ export default {
    * Get default preload configuration for the `addSection` mode.
    *
    * @returns {object}
+   * @memberof module:CommentForm
    */
   getDefaultPreloadConfig() {
     return {
@@ -53,6 +54,7 @@ export default {
    * @param {string} mode
    * @returns {string}
    * @private
+   * @memberof module:CommentForm
    */
   modeToProperty(mode) {
     return mode === 'replyInSection' ? 'addReply' : mode;
@@ -62,6 +64,7 @@ export default {
    * Get the last active comment form.
    *
    * @returns {?CommentForm}
+   * @memberof module:CommentForm
    */
   getLastActive() {
     return (
@@ -77,6 +80,7 @@ export default {
    * fields, not checkboxes.
    *
    * @returns {?CommentForm}
+   * @memberof module:CommentForm
    */
   getLastActiveAltered() {
     return (

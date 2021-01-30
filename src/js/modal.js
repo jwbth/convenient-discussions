@@ -1040,7 +1040,8 @@ export async function copyLink(object) {
    *
    * @name isLinkBeingCopied
    * @type {boolean}
-   * @instance module:Comment
+   * @memberof module:Comment
+   * @instance
    */
 
   /**
@@ -1048,7 +1049,8 @@ export async function copyLink(object) {
    *
    * @name isLinkBeingCopied
    * @type {boolean}
-   * @instance module:Section
+   * @memberof module:Section
+   * @instance
    */
   object.isLinkBeingCopied = true;
 

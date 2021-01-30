@@ -254,7 +254,7 @@ export default class Page {
      *
      * @name pageId
      * @type {number|undefined}
-     * @instance module:Page
+     * @instance
      */
 
     /**
@@ -262,7 +262,7 @@ export default class Page {
      *
      * @name code
      * @type {string|undefined}
-     * @instance module:Page
+     * @instance
      */
 
     /**
@@ -271,7 +271,7 @@ export default class Page {
      *
      * @name revisionId
      * @type {string|undefined}
-     * @instance module:Page
+     * @instance
      */
 
     /**
@@ -280,7 +280,7 @@ export default class Page {
      *
      * @name redirectTarget
      * @type {?(string|undefined)}
-     * @instance module:Page
+     * @instance
      */
 
     /**
@@ -290,7 +290,7 @@ export default class Page {
      *
      * @name realName
      * @type {string|undefined}
-     * @instance module:Page
+     * @instance
      */
 
     /**
@@ -299,7 +299,7 @@ export default class Page {
      *
      * @name queryTimestamp
      * @type {string|undefined}
-     * @instance module:Page
+     * @instance
      */
 
     Object.assign(this, {
@@ -583,7 +583,7 @@ export default class Page {
      *
      * @name areNewTopicsOnTop
      * @type {boolean|undefined}
-     * @instance module:Page
+     * @instance
      */
 
     /**
@@ -592,7 +592,7 @@ export default class Page {
      *
      * @name firstSectionStartIndex
      * @type {number|undefined}
-     * @instance module:Page
+     * @instance
      */
     Object.assign(this, { areNewTopicsOnTop, firstSectionStartIndex });
   }

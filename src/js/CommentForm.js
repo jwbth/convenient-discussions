@@ -895,7 +895,7 @@ export default class CommentForm {
        *
        * @name minorField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -903,7 +903,7 @@ export default class CommentForm {
        *
        * @name minorCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
       [this.minorField, this.minorCheckbox] = checkboxField({
         value: 'minor',
@@ -924,7 +924,7 @@ export default class CommentForm {
      *
      * @name watchField
      * @type {OoUiFieldLayout}
-     * @instance module:CommentForm
+     * @instance
      */
 
     /**
@@ -932,7 +932,7 @@ export default class CommentForm {
      *
      * @name watchCheckbox
      * @type {OoUiCheckboxInputWidget}
-     * @instance module:CommentForm
+     * @instance
      */
     [this.watchField, this.watchCheckbox] = checkboxField({
       value: 'watch',
@@ -957,7 +957,7 @@ export default class CommentForm {
        *
        * @name watchSectionField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -965,7 +965,7 @@ export default class CommentForm {
        *
        * @name watchSectionCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
       [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
         value: 'watchSection',
@@ -982,7 +982,7 @@ export default class CommentForm {
        *
        * @name omitSignatureField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -990,7 +990,7 @@ export default class CommentForm {
        *
        * @name omitSignatureCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       [this.omitSignatureField, this.omitSignatureCheckbox] = checkboxField({
@@ -1016,7 +1016,7 @@ export default class CommentForm {
        *
        * @name deleteField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -1024,7 +1024,7 @@ export default class CommentForm {
        *
        * @name deleteCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
       [this.deleteField, this.deleteCheckbox] = checkboxField({
         value: 'delete',
@@ -1039,7 +1039,7 @@ export default class CommentForm {
      *
      * @name settingsButton
      * @type {Promise}
-     * @instance module:CommentForm
+     * @instance
      */
     this.settingsButton = new OO.ui.ButtonWidget({
       framed: false,

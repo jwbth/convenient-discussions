@@ -23,6 +23,7 @@ export default {
    *   module:CommentForm#submit}).
    * @returns {Promise}
    * @throws {CdError}
+   * @memberof module:Section
    */
   watch(headline, unwatchHeadline) {
     const watch = async () => {
@@ -82,6 +83,7 @@ export default {
    * @param {string} headline
    * @returns {Promise}
    * @throws {CdError}
+   * @memberof module:Section
    */
   unwatch(headline) {
     const unwatch = async () => {
@@ -118,6 +120,7 @@ export default {
    *
    * @param {string} anchor
    * @returns {?Section}
+   * @memberof module:Section
    */
   getByAnchor(anchor) {
     if (!cd.sections || !anchor) {
@@ -131,6 +134,7 @@ export default {
    *
    * @param {string} headline
    * @returns {Section[]}
+   * @memberof module:Section
    */
   getByHeadline(headline) {
     return cd.sections.filter((section) => section.headline === headline);
@@ -147,6 +151,7 @@ export default {
    * @param {string} [options.parentTree]
    * @param {string} [options.firstCommentAnchor]
    * @returns {?Section}
+   * @memberof module:Section
    */
   search({ id, headline, anchor, parentTree, firstCommentAnchor }) {
     const matches = [];
@@ -188,8 +193,10 @@ export default {
   },
 
   /**
-   * Perform extra section-related tasks, including adding the `isLastSection` property, adding
-   * buttons, and binding events.
+   * Perform extra section-related tasks, including adding the {@link module:Section#isLastSection
+   * isLastSection} property, adding buttons, and binding events.
+   *
+   * @memberof module:Section
    */
   adjust() {
     cd.sections.forEach((section, i) => {
@@ -198,7 +205,8 @@ export default {
        *
        * @name isLastSection
        * @type {boolean}
-       * @instance module:Section
+       * @memberof module:Section
+       * @instance
        */
       section.isLastSection = i === cd.sections.length - 1;
 
@@ -268,6 +276,7 @@ export default {
    * Add new comments notifications to the end of each updated section.
    *
    * @param {Map} newCommentsBySection
+   * @memberof module:Section
    */
   addNewCommentsNotifications(newCommentsBySection) {
     $('.cd-refreshButtonContainer').remove();
@@ -317,6 +326,8 @@ export default {
   /**
    * Remove sections that can't be found on the page anymore from the watched sections list and save
    * them to the server.
+   *
+   * @memberof module:Section
    */
   cleanUpWatched() {
     if (!cd.sections) return;

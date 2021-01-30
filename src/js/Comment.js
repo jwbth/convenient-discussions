@@ -1058,7 +1058,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @name childToScrollBackTo
      * @type {Comment|undefined}
-     * @instance module:Comment
+     * @instance
      */
     parent.childToScrollBackTo = this;
   }
