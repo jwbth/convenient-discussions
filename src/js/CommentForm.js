@@ -2299,21 +2299,19 @@ export default class CommentForm {
       signature = signature.trimLeft();
     }
 
-    code += signature;
-
-    // Process the small font wrappers
-    if (!this.headlineInput && isWholeCommentInSmall) {
-      const indentation = (
-        newLineIndentationChars +
-        (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
-      );
+    // Process the small font wrappers, add the signature.
+    if (isWholeCommentInSmall && !this.headlineInput) {
+      const spaceOrNot = /^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ';
+      const indentation = newLineIndentationChars + spaceOrNot;
       const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
       if (cd.config.smallDivTemplates?.[0] && !/^[:*#]/m.test(code)) {
-        const adjustedCode = code.replace(/\|/g, '{{!}}');
+        const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
-        code = `<small>${before}${code}</small>`;
+        code = `<small>${before}${code}</small> ${signature}`;
       }
+    } else {
+      code += signature;
     }
 
     if (this.mode !== 'edit') {
