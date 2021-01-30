@@ -412,7 +412,11 @@ export default class Page {
     if (commentForm.isNewTopicOnTop) {
       const adjustedPageCode = hideDistractingCode(pageCode);
       const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
-      codeBeforeInsertion = pageCode.slice(0, firstSectionStartIndex);
+      if (firstSectionStartIndex === -1) {
+        codeBeforeInsertion = pageCode ? pageCode + '\n' : '';
+      } else {
+        codeBeforeInsertion = pageCode.slice(0, firstSectionStartIndex);
+      }
       const codeAfterInsertion = pageCode.slice(firstSectionStartIndex);
       newPageCode = codeBeforeInsertion + commentCode + '\n' + codeAfterInsertion;
     } else {
