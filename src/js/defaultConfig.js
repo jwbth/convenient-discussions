@@ -263,7 +263,7 @@ export default {
    * @type {string}
    * @default 'c:User:JWBTH/CD'
    */
-  scriptPageWikilink: 'c:User:JWBTH/CD',
+  scriptPageWikilink: 'c:Special:MyLanguage/User:JWBTH/CD',
 
   /**
    * Names of the templates that are analogs of {@link
