@@ -208,7 +208,21 @@ function parse() {
       So the HTML is "<dd><div>...</div><dl>...</dl></dd>". A newline also appears before </div>, so
       we need to trim.
      */
-    comment.innerHtml = comment.elements.map((element) => element.innerHTML).join('\n').trim();
+    comment.innerHtml = '';
+    comment.textInnerHtml = '';
+    comment.headingInnerHtml = '';
+    comment.elements.forEach((el) => {
+      const innerHtml = el.innerHTML;
+      comment.innerHtml += innerHtml + '\n';
+      if (/^H[1-6]$/.test(el.tagName)) {
+        comment.headingInnerHtml += innerHtml;
+      } else {
+        comment.textInnerHtml += innerHtml + '\n';
+      }
+    });
+    comment.innerHtml = comment.innerHtml.trim();
+    comment.textInnerHtml = comment.textInnerHtml.trim();
+    comment.headingInnerHtml = comment.headingInnerHtml.trim();
 
     comment.signatureElement.remove();
     comment.text = comment.elements.map((element) => element.textContent).join('\n');

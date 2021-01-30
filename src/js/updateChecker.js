@@ -260,6 +260,26 @@ function mapComments(currentComments, otherComments) {
 }
 
 /**
+ * Determine if the comment was edited based on the `textInnerHtml` and `headingInnerHtml`
+ * properties (the comment may lose its heading because technical comment is added between it and
+ * the heading).
+ *
+ * @param {CommentSkeletonLike[]} olderComment
+ * @param {CommentSkeletonLike[]} newerComment
+ * @returns {boolean}
+ * @private
+ */
+function isCommentEdited(olderComment, newerComment) {
+  return (
+    newerComment.textInnerHtml !== olderComment.textInnerHtml ||
+    (
+      newerComment.headingInnerHtml &&
+      newerComment.headingInnerHtml !== olderComment.headingInnerHtml
+    )
+  );
+}
+
+/**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
  * @param {CommentSkeletonLike[]} mappedCurrentComments
@@ -276,7 +296,7 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
     if (oldComment) {
       const seenInnerHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.innerHtml;
       if (
-        oldComment.innerHtml !== currentComment.innerHtml &&
+        isCommentEdited(oldComment, currentComment) &&
         seenInnerHtml !== currentComment.innerHtml
       ) {
         const comment = Comment.getByAnchor(currentComment.anchor);
@@ -336,7 +356,7 @@ function checkForNewEdits(mappedCurrentComments) {
         comment.unmarkAsEdited('deleted');
         isEditMarkUpdated = true;
       }
-      if (newComment.innerHtml !== currentComment.innerHtml) {
+      if (isCommentEdited(currentComment, newComment)) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
           const success = comment.update(currentComment, newComment);
