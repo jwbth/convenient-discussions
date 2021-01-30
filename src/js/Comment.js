@@ -1903,7 +1903,7 @@ export default class Comment extends CommentSkeleton {
       tagRegexp,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
-      /<small class="autosigned">.*$/,
+      new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
     ]);
