@@ -634,7 +634,7 @@ export default class CommentForm {
    * @private
    */
   createContents(dataToRestore) {
-    if (this.target instanceof Page) {
+    if (['addSection', 'addSubsection'].includes(this.mode)) {
       this.containerListType = null;
     } else {
       /**
@@ -3202,6 +3202,7 @@ export default class CommentForm {
       const commentText = this.commentInput.getValue()
         .trim()
         .replace(/\s+/g, ' ')
+
         // Remove user links to prevent sending a double notification.
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
           cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(wikilink) ? text : s
