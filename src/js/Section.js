@@ -1165,7 +1165,7 @@ export default class Section extends SectionSkeleton {
 
       case 'addSubsection': {
         codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, this.inCode.contentEndIndex));
-        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex);
+        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex).trim();
         newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         break;
       }
