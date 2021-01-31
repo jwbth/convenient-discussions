@@ -3419,6 +3419,7 @@ export default class CommentForm {
         post: cd.config.quoteFormatting[1],
         selection,
         trim: true,
+        leadingNewline: true,
       });
     }
   }
@@ -3433,13 +3434,22 @@ export default class CommentForm {
    * @param {string} options.post Text to insert after the caret/selection.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
    * @param {boolean} [options.trim] Trim the selection.
+   * @param {boolean} [options.leadingNewline] Put a newline before the resulting text to insert if
+   *   it is not already there.
    */
-  encapsulateSelection({ pre, peri = '', post, selection, trim }) {
-    let middleTextStartPos;
+  encapsulateSelection({ pre, peri = '', post, selection, trim, leadingNewline }) {
+    const range = this.commentInput.getRange();
+    const selectionStartPos = Math.min(range.from, range.to);
+    const value = this.commentInput.getValue();
+    const leadingNewlineChar = (
+      leadingNewline && !/(^|\n)$/.test(value.slice(0, selectionStartPos)) ?
+      '\n' :
+      ''
+    );
+    let periStartPos;
     if (!selection) {
-      const range = this.commentInput.getRange();
-      middleTextStartPos = Math.min(range.from, range.to) + pre.length;
-      selection = this.commentInput.getValue().substring(range.from, range.to);
+      periStartPos = selectionStartPos + leadingNewlineChar.length + pre.length;
+      selection = value.substring(range.from, range.to);
     }
     if (trim) {
       selection = selection.trim();
@@ -3450,6 +3460,7 @@ export default class CommentForm {
     const [trailingSpace] = selection.match(/ *$/);
     const middleText = selection || peri;
     const text = (
+      leadingNewlineChar +
       leadingSpace +
       pre +
       middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
@@ -3459,7 +3470,7 @@ export default class CommentForm {
 
     insertText(this.commentInput, text);
     if (!selection) {
-      this.commentInput.selectRange(middleTextStartPos, middleTextStartPos + peri.length);
+      this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
     }
   }
 }
