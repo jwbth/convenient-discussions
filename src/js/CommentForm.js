@@ -611,23 +611,6 @@ export default class CommentForm {
   }
 
   /**
-   * Utility to get the element used to determine where the comment form element is inserted in the
-   * DOM.
-   *
-   * @param {JQuery} $lastOfTarget
-   * @returns {JQuery}
-   * @private
-   */
-  get$other($lastOfTarget) {
-    let $other = $lastOfTarget.next();
-    const $nextToTargetFirstChild = $other.children().first();
-    if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
-      $other = $nextToTargetFirstChild;
-    }
-    return $other;
-  }
-
-  /**
    * Create the contents of the form.
    *
    * @param {object} dataToRestore
@@ -655,38 +638,6 @@ export default class CommentForm {
           .toLowerCase();
     }
 
-    let outerWrapperTag;
-    let createList = false;
-    if (this.mode === 'reply') {
-      createList = true;
-      const $lastOfTarget = this.target.$elements.last();
-      const $other = this.get$other($lastOfTarget);
-      if ($other.is('ul')) {
-        createList = false;
-        outerWrapperTag = 'li';
-      } else if ($other.is('dl')) {
-        createList = false;
-        outerWrapperTag = 'dd';
-      } else if ($lastOfTarget.is('li')) {
-        // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
-        // in those cases. Which is unsemantic, yes :-(
-        if (this.containerListType !== 'ol') {
-          outerWrapperTag = 'li';
-        } else {
-          outerWrapperTag = 'div';
-        }
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
-    } else if (this.mode === 'edit') {
-      const $lastOfTarget = this.target.$elements.last();
-      if ($lastOfTarget.is('li')) {
-        outerWrapperTag = 'li';
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
-    }
-
     this.editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
@@ -710,51 +661,6 @@ export default class CommentForm {
     if (this.mode === 'addSubsection') {
       this.$element.addClass(`cd-commentForm-addSubsection-${this.target.level}`);
     }
-
-    if (outerWrapperTag) {
-      /**
-       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
-       * comment form element} directly, or {@link module:CommentForm~$wrappingList the list} that
-       * wraps the item that wraps the comment form element.
-       *
-       * @type {JQuery|undefined}
-       */
-      this.$outerWrapper = $(`<${outerWrapperTag}>`);
-    }
-
-    if (this.mode === 'reply') {
-      if (createList) {
-        /**
-         * List that wraps the item that wraps the comment form element.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
-
-        if (this.$outerWrapper) {
-          this.$wrappingList.appendTo(this.$outerWrapper);
-        }
-
-        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
-
-        this.$element.appendTo($wrappingItem);
-      } else {
-        this.$element.appendTo(this.$outerWrapper);
-      }
-    } else if (this.mode === 'edit') {
-      if (this.$outerWrapper) {
-        this.$element.appendTo(this.$outerWrapper);
-      }
-    }
-
-    /**
-     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
-     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
-     * return the DOM to the original state, before the form was created.
-     *
-     * @type {JQuery}
-     */
-    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
 
     /**
      * The area where service messages are displayed.
@@ -1329,10 +1235,91 @@ export default class CommentForm {
       cd.g.$root.empty();
     }
 
+    let outerWrapperTag;
+    let createList = false;
+    let $lastOfTarget;
+    let $other;
+    if (this.mode === 'reply') {
+      createList = true;
+      $lastOfTarget = this.target.$elements.last();
+      $other = $lastOfTarget.next();
+      const $nextToTargetFirstChild = $other.children().first();
+      if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
+        $other = $nextToTargetFirstChild;
+      }
+      if ($other.is('ul')) {
+        createList = false;
+        outerWrapperTag = 'li';
+      } else if ($other.is('dl')) {
+        createList = false;
+        outerWrapperTag = 'dd';
+      } else if ($lastOfTarget.is('li')) {
+        // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
+        // in those cases. Which is unsemantic, yes :-(
+        if (this.containerListType !== 'ol') {
+          outerWrapperTag = 'li';
+        } else {
+          outerWrapperTag = 'div';
+        }
+      } else if ($lastOfTarget.is('dd')) {
+        outerWrapperTag = 'dd';
+      }
+    } else if (this.mode === 'edit') {
+      const $lastOfTarget = this.target.$elements.last();
+      if ($lastOfTarget.is('li')) {
+        outerWrapperTag = 'li';
+      } else if ($lastOfTarget.is('dd')) {
+        outerWrapperTag = 'dd';
+      }
+    }
+
+    if (outerWrapperTag) {
+      /**
+       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
+       * comment form element} directly, or {@link module:CommentForm~$wrappingList the list} that
+       * wraps the item that wraps the comment form element.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$outerWrapper = $(`<${outerWrapperTag}>`);
+    }
+
+    if (this.mode === 'reply') {
+      if (createList) {
+        /**
+         * List that wraps the item that wraps the comment form element.
+         *
+         * @type {JQuery|undefined}
+         */
+        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
+
+        if (this.$outerWrapper) {
+          this.$wrappingList.appendTo(this.$outerWrapper);
+        }
+
+        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
+
+        this.$element.appendTo($wrappingItem);
+      } else {
+        this.$element.appendTo(this.$outerWrapper);
+      }
+    } else if (this.mode === 'edit') {
+      if (this.$outerWrapper) {
+        this.$element.appendTo(this.$outerWrapper);
+      }
+    }
+
+    /**
+     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
+     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
+     * return the DOM to the original state, before the form was created.
+     *
+     * @type {JQuery}
+     */
+    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
+
     switch (this.mode) {
       case 'reply': {
-        const $lastOfTarget = this.target.$elements.last();
-        const $other = this.get$other($lastOfTarget);
         if ($other.is('ul, dl')) {
           this.$outerWrapper.prependTo($other);
         } else if ($lastOfTarget.is('li, dd')) {
