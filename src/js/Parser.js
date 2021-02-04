@@ -102,6 +102,25 @@ export function getUserNameFromLink(element) {
 }
 
 /**
+ * Determine whether the provided element is a cell of a table containing multiple signatures.
+ *
+ * @param {Element} element
+ * @returns {boolean}
+ */
+function isCellOfMultiCommentTable(element) {
+  if (element.tagName !== 'TD') {
+    return false;
+  }
+  let table;
+  for (let n = element; !table && n !== cd.g.rootElement; n = n.parentNode) {
+    if (n.tagName === 'TABLE') {
+      table = n;
+    }
+  }
+  return !table || table.getElementsByClassName('cd-signature', 2).length > 1;
+}
+
+/**
  * Generalization of a page parser for the window and worker contexts.
  */
 export default class Parser {
@@ -399,11 +418,11 @@ export default class Parser {
       ) ||
 
       // Cases when the comment has no wrapper that contains only that comment (for example,
-      // https://ru.wikipedia.org/wiki/Википедия:Форум/Технический#202010140847_AndreiK). The second
-      // parameter of getElementsByClassName() is an optimization for the worker context.
+      // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
+      // The second parameter of getElementsByClassName() is an optimization for the worker context.
       signatureElement.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
-      signatureElement.parentNode.tagName === 'TD'
+      isCellOfMultiCommentTable(signatureElement.parentNode)
     ) {
       // Collect inline parts after the signature
       treeWalker.currentNode = signatureElement;
@@ -533,7 +552,7 @@ export default class Parser {
           node === treeWalker.root ||
           foreignComponentClasses.some((className) => node.classList.contains(className)) ||
           node.getAttribute('id') === 'toc' ||
-          node.tagName === 'TD' ||
+          isCellOfMultiCommentTable(node) ||
 
           // Horizontal lines sometimes separate different section blocks.
           (
