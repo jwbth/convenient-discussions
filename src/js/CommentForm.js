@@ -1801,11 +1801,7 @@ export default class CommentForm {
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.
    */
-  showMessage(htmlOrJquery, {
-    type = 'notice',
-    name,
-    isRaw = false,
-  } = {}) {
+  showMessage(htmlOrJquery, { type = 'notice', name, isRaw = false } = {}) {
     if (this.isDestroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
       return;
     }

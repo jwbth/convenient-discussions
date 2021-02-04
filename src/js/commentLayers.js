@@ -65,9 +65,9 @@ export default {
         floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.
-          doAdd: true,
+          add: true,
 
-          doUpdate: false,
+          update: false,
           floatingRects,
         });
         if (isMoved || redrawAll) {

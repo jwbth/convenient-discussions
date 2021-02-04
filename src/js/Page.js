@@ -320,13 +320,13 @@ export default class Page {
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
    * @param {boolean} [customOptions]
-   * @param {boolean} [doBackgroundRequest=false] Make a request that won't set the process on hold
+   * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
    *   when the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
    * @returns {object}
    * @throws {CdError}
    */
-  async parse(customOptions, doBackgroundRequest = false, markAsRead = false) {
+  async parse(customOptions, requestInBackground = false, markAsRead = false) {
     const defaultOptions = {
       action: 'parse',
 
@@ -343,7 +343,7 @@ export default class Page {
       delete options.page;
     }
 
-    const request = doBackgroundRequest ?
+    const request = requestInBackground ?
       makeBackgroundRequest(options).catch(handleApiReject) :
       cd.g.api.post(options).catch(handleApiReject);
 
@@ -366,11 +366,11 @@ export default class Page {
    * Get a list of revisions of the page ("redirects" is set to true by default).
    *
    * @param {object} [customOptions={}]
-   * @param {boolean} [doBackgroundRequest=false] Make a request that won't set the process on hold
+   * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
    *   when the tab is in the background.
    * @returns {Array}
    */
-  async getRevisions(customOptions = {}, doBackgroundRequest = false) {
+  async getRevisions(customOptions = {}, requestInBackground = false) {
     const defaultOptions = {
       action: 'query',
       titles: this.name,
@@ -381,7 +381,7 @@ export default class Page {
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    const request = doBackgroundRequest ?
+    const request = requestInBackground ?
       makeBackgroundRequest(options).catch(handleApiReject) :
       cd.g.api.post(options).catch(handleApiReject);
 

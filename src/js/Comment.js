@@ -510,11 +510,11 @@ export default class Comment extends CommentSkeleton {
    * positions and redraw if the comment has been moved or do nothing if everything is right.
    *
    * @param {object} [options={}]
-   * @param {boolean} [options.doAdd=true] Add the layers in case they are created. If set to
-   *   false, it is expected that the layers created during this procedure, if any, will be added
+   * @param {boolean} [options.add=true] Add the layers in case they are created. If set to false,
+   *   it is expected that the layers created during this procedure, if any, will be added
    *   afterwards (otherwise there would be layers without a parent element which would lead to
    *   bugs).
-   * @param {boolean} [options.doUpdate=true] Update the layers' positions in case the comment is
+   * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
    *   moved. If set to false, it is expected that the positions will be updated afterwards.
    * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results. It may be
    *   calculated in advance for many elements in one sequence to save time.
@@ -525,11 +525,11 @@ export default class Comment extends CommentSkeleton {
       return null;
     }
 
-    if (options.doAdd === undefined) {
-      options.doAdd = true;
+    if (options.add === undefined) {
+      options.add = true;
     }
-    if (options.doUpdate === undefined) {
-      options.doUpdate = true;
+    if (options.update === undefined) {
+      options.update = true;
     }
 
     options.rectTop = this.highlightables[0].getBoundingClientRect();
@@ -573,13 +573,13 @@ export default class Comment extends CommentSkeleton {
     // save time.
     if (this.underlay) {
       this.updateLayersStyles();
-      if (isMoved && options.doUpdate) {
+      if (isMoved && options.update) {
         this.updateLayersPositions();
       }
       return isMoved;
     } else {
       this.createLayers();
-      if (options.doAdd) {
+      if (options.add) {
         this.addLayers();
       }
       return false;

@@ -450,8 +450,8 @@ class Tribute {
 
     // jwbth: Preserve the undo/redo functionality in browsers that support it (Chrome does, Firefox
     // doesn't: https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
-    const insertedViaCommand = document.execCommand('insertText', false, text);
-    if (!insertedViaCommand) {
+    const hasInsertedViaCommand = document.execCommand('insertText', false, text);
+    if (!hasInsertedViaCommand) {
       var front = textarea.value.substring(0, caretPos);
       var back = textarea.value.substring(
         textarea.selectionEnd,
@@ -464,7 +464,7 @@ class Tribute {
     }
     textarea.scrollTop = scrollPos;
 
-    return insertedViaCommand;
+    return hasInsertedViaCommand;
   }
 
   hideMenu() {

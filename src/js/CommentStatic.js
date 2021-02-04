@@ -25,8 +25,8 @@ export default {
 
     comments.forEach((comment) => {
       comment.configureLayers({
-        doAdd: false,
-        doUpdate: false,
+        add: false,
+        update: false,
         floatingRects,
       });
     });
