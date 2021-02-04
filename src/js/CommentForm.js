@@ -3420,15 +3420,25 @@ export default class CommentForm {
    * provided value if no text is selected.
    *
    * @param {object} options
-   * @param {string} options.pre Text to insert before the caret/selection.
+   * @param {string} [options.pre] Text to insert before the caret/selection.
    * @param {string} [options.peri=''] Fallback value used instead of the selection.
-   * @param {string} options.post Text to insert after the caret/selection.
+   * @param {string} [options.post] Text to insert after the caret/selection.
+   * @param {string} [options.replace] If there is a selection, replace it with peri instead of
+   *   leaving it alone.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
    * @param {boolean} [options.trim] Trim the selection.
    * @param {boolean} [options.leadingNewline] Put a newline before the resulting text to insert if
    *   it is not already there.
    */
-  encapsulateSelection({ pre, peri = '', post, selection, trim, leadingNewline }) {
+  encapsulateSelection({
+    pre = '',
+    peri = '',
+    post = '',
+    selection,
+    replace,
+    trim,
+    leadingNewline,
+  }) {
     const range = this.commentInput.getRange();
     const selectionStartPos = Math.min(range.from, range.to);
     const value = this.commentInput.getValue();
@@ -3438,9 +3448,12 @@ export default class CommentForm {
       ''
     );
     let periStartPos;
-    if (!selection) {
+    const getSelection = !selection && !(peri && replace);
+    if (getSelection) {
       periStartPos = selectionStartPos + leadingNewlineChar.length + pre.length;
       selection = value.substring(range.from, range.to);
+    } else {
+      selection = '';
     }
     if (trim) {
       selection = selection.trim();
@@ -3460,7 +3473,7 @@ export default class CommentForm {
     );
 
     insertText(this.commentInput, text);
-    if (!selection) {
+    if (getSelection) {
       this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
     }
   }
