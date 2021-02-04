@@ -421,9 +421,9 @@ export default {
    * link.
    *
    * @type {number}
-   * @default 80
+   * @default 100
    */
-  signatureScanLimit: 80,
+  signatureScanLimit: 100,
 
   /**
    * Classes of elements that should be ignored when extracting headline text.
