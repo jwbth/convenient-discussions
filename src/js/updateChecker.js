@@ -103,6 +103,7 @@ async function checkForUpdates() {
         const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
 
         if (isPageStillAtRevision(currentRevisionId)) {
+          mapSections(sections);
           toc.addNewSections(sections);
           const mappedCurrentComments = mapComments(currentComments, comments);
 
@@ -172,6 +173,48 @@ function cleanUpSeenRenderedEdits(data) {
   });
   return newData;
 }
+
+/**
+ * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a web
+ * worker so its constuctor is lost.)
+ *
+ * @typedef {object} SectionSkeletonLike
+ */
+
+/**
+ * Map sections obtained from a revision to the sections present on the page.
+ *
+ * @param {SectionSkeletonLike[]} sections
+ */
+function mapSections(sections) {
+  cd.debug.startTimer('mapSections');
+
+  // Reset from the previous run.
+  cd.sections.forEach((section) => {
+    delete section.match;
+  });
+
+  sections.forEach((section) => {
+    const { section: matchedSection, score } = Section.search(section, true) || {};
+    if (matchedSection && (!matchedSection.match || score > matchedSection.matchScore)) {
+      if (matchedSection.match) {
+        delete matchedSection.match.match;
+      }
+      matchedSection.match = section;
+      matchedSection.matchScore = score;
+      section.match = matchedSection;
+    }
+  });
+
+  cd.debug.stopTimer('mapSections');
+}
+
+/**
+ * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
+ * worker so its constuctor is lost.)
+ *
+ * @typedef {object} CommentSkeletonLike
+ */
 
 /**
  * Map comments obtained from the current revision to the comments obtained from another revision
@@ -588,13 +631,6 @@ function isPageStillAtRevision(revisionId) {
 }
 
 /**
- * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
- * worker so its constuctor is lost.)
- *
- * @typedef {object} CommentSkeletonLike
- */
-
-/**
  * Process the comments retrieved by a web worker.
  *
  * @param {CommentSkeletonLike[]} comments
@@ -635,7 +671,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
 
     if (comment.section) {
       // Is this section watched by means of an upper level section?
-      const section = comment.section.match || Section.search(comment.section);
+      const section = comment.section.match;
       if (section) {
         const closestWatchedSection = section.getClosestWatchedSection(true);
         if (closestWatchedSection) {

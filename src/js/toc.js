@@ -201,11 +201,7 @@ export default {
     let currentTree = [];
     const $topUl = cd.g.$toc.children('ul');
     sections.forEach((section) => {
-      cd.debug.startTimer('addNewSections add search');
-      section.match = Section.search(section);
-      cd.debug.stopTimer('addNewSections add search');
       let item = section.match?.getTocItem();
-
       if (!item) {
         const headline = section.headline;
         const level = section.tocLevel;

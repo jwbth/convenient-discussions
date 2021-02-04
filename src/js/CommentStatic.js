@@ -92,11 +92,7 @@ export default {
       if (comment instanceof Comment) {
         sectionOrAnchor = comment.getSection();
       } else if (comment.section) {
-        sectionOrAnchor = (
-          comment.section.match ||
-          Section.search(comment.section) ||
-          comment.section.anchor
-        );
+        sectionOrAnchor = comment.section.match || comment.section.anchor;
       } else {
         sectionOrAnchor = null;
       }

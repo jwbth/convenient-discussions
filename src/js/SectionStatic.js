@@ -150,10 +150,11 @@ export default {
    * @param {string} options.anchor
    * @param {string} [options.parentTree]
    * @param {string} [options.firstCommentAnchor]
+   * @param {boolean} [returnScore]
    * @returns {?Section}
    * @memberof module:Section
    */
-  search({ id, headline, anchor, parentTree, firstCommentAnchor }) {
+  search({ id, headline, anchor, parentTree, firstCommentAnchor }, returnScore) {
     const matches = [];
     cd.sections.some((section) => {
       const hasIdMatched = section.id === id;
@@ -189,7 +190,11 @@ export default {
         bestMatch = match;
       }
     });
-    return bestMatch ? bestMatch.section : null;
+    if (returnScore) {
+      return bestMatch || null;
+    } else {
+      return bestMatch ? bestMatch.section : null;
+    }
   },
 
   /**
