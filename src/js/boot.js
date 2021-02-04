@@ -762,6 +762,7 @@ export async function reloadPage(keptData = {}) {
     parseData = await cd.g.CURRENT_PAGE.parse(null, false, true);
   } catch (e) {
     removeLoadingOverlay();
+    isPageBeingReloaded = false;
     if (keptData.didSubmitCommentForm) {
       throw e;
     } else {
