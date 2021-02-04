@@ -103,8 +103,11 @@ class TributeEvents {
   }
 
   keyup(instance, event) {
+    // jwbth: Added this and replaces the usages below.
+    const tribute = instance.tribute;
+
     // jwbth: Added this to avoid appearing-disappearing of the menu when moving the caret.
-    if (!instance.inputEvent && !instance.tribute.isActive) return;
+    if (!instance.inputEvent && !tribute.isActive) return;
 
     if (instance.inputEvent) {
       instance.inputEvent = false;
@@ -113,36 +116,41 @@ class TributeEvents {
 
     if (event.keyCode === 27) return;
 
-    if (!instance.tribute.allowSpaces && instance.tribute.hasTrailingSpace) {
-      instance.tribute.hasTrailingSpace = false;
+    // jwbth: Added this.
+    if (
+      tribute.current.triggerPos === tribute.lastCanceledTriggerPos &&
+      tribute.current.triggerChar === tribute.lastCanceledTriggerChar
+    ) {
+      return;
+    }
+    tribute.lastCanceledTriggerPos = null;
+    tribute.lastCanceledTriggerChar = null;
+
+    if (!tribute.allowSpaces && tribute.hasTrailingSpace) {
+      tribute.hasTrailingSpace = false;
       instance.commandEvent = true;
       return;
     }
 
-    // jwbth: Added this block (search for `doDropMenu` for the explanation).
-    if (instance.tribute.doDropMenu || instance.tribute.current.mentionText === undefined) {
-      instance.tribute.isActive = false;
-      instance.tribute.hideMenu();
-      instance.tribute.doDropMenu = false;
+    // jwbth: Added this block (search for `dropMenu` for the explanation).
+    if (tribute.dropMenu || tribute.current.mentionText === undefined) {
+      tribute.isActive = false;
+      tribute.hideMenu();
+      tribute.dropMenu = false;
       return;
     }
 
-    if (!instance.tribute.isActive) {
+    if (!tribute.isActive) {
       // jwbth: Removed the block and made `trigger` be filled from `tribute.current.triggerChar`
       // to account for triggers with the same first character.
-      let trigger = instance.tribute.current.triggerChar;
+      let trigger = tribute.current.triggerChar;
 
       if (typeof trigger !== "undefined") {
         instance.callbacks().triggerChar(event, this, trigger);
       }
     }
 
-    if (
-      instance.tribute.current.mentionText.length <
-      instance.tribute.current.collection.menuShowMinLength
-    ) {
-      return;
-    }
+    if (tribute.current.mentionText.length < tribute.current.collection.menuShowMinLength) return;
 
     if (
       /*
@@ -157,10 +165,10 @@ class TributeEvents {
           This is because "instance.commandEvent = false" is executed only on keydown event that
         lacks when pasting from the context menu.
        */
-      (instance.tribute.current.trigger && instance.commandEvent !== true) ||
-      (instance.tribute.isActive && event.keyCode === 8)
+      (tribute.current.trigger && instance.commandEvent !== true) ||
+      (tribute.isActive && event.keyCode === 8)
     ) {
-      instance.tribute.showMenuFor(this, true);
+      tribute.showMenuFor(this, true);
     }
   }
 
@@ -192,6 +200,18 @@ class TributeEvents {
 
       // jwbth: Added this line to use this property in `keyup()`.
       this.tribute.current.triggerChar = info.mentionTriggerChar;
+
+      const current = this.tribute.current;
+      const pre = current.element.value.slice(0, current.element.selectionStart);
+      current.triggerPos = pre.lastIndexOf(current.triggerChar);
+    } else {
+      // jwbth: Added this block.
+      const current = this.tribute.current;
+      delete current.selectedPath;
+      delete current.mentionText;
+      delete current.selectedOffset;
+      delete current.triggerChar;
+      delete current.triggerPos;
     }
   }
 
@@ -231,6 +251,11 @@ class TributeEvents {
         if (this.tribute.isActive) {
           e.preventDefault();
           e.stopPropagation();
+
+          // jwbth: Added this block.
+          this.tribute.lastCanceledTriggerPos = this.tribute.current.triggerPos;
+          this.tribute.lastCanceledTriggerChar = this.tribute.current.triggerChar;
+
           this.tribute.isActive = false;
           this.tribute.hideMenu();
         }

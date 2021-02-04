@@ -290,7 +290,7 @@ class TributeRange {
                 // When pressed backspace in "[[#" and faced the trigger "[["
                 (this.tribute.current.trigger && triggerChar !== this.tribute.current.trigger)
             ) {
-                this.tribute.doDropMenu = true
+                this.tribute.dropMenu = true
                 return
             }
 
