@@ -441,6 +441,10 @@ export default class CommentForm {
         encapsulateSelection: (options) => {
           this.encapsulateSelection(options);
         },
+        setContents: (value) => {
+          this.commentInput.select();
+          insertText(this.commentInput, value);
+        },
       });
 
       const lang = mw.config.get('wgUserLanguage');
