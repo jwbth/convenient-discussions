@@ -414,7 +414,7 @@ class Tribute {
     this.current.element = element;
 
     // jwbth: Added this.
-    this.tribute.current.triggerPos = element.selectionStart;
+    this.current.triggerPos = element.selectionStart;
 
     if (!this.insertAtCaret(element, this.current.collection.trigger)) {
       this.showMenuFor(element);
