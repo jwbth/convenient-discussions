@@ -832,8 +832,6 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
-  cd.debug.startTimer('saveSession');
-
   const timeSinceLastSave = Date.now() - saveSessionLastTime;
   clearTimeout(saveSessionTimeout);
   saveSessionTimeout = setTimeout(() => {
@@ -879,8 +877,6 @@ export function saveSession() {
 
     saveSessionLastTime = Date.now();
   }, Math.max(0, 5000 - timeSinceLastSave));
-
-  cd.debug.stopTimer('saveSession');
 }
 
 /**

@@ -30,7 +30,6 @@ export default {
       return;
     }
 
-    cd.debug.startTimer('currentSection update');
     cd.sections
       .slice()
       .reverse()
@@ -63,7 +62,6 @@ export default {
         }
         return false;
       });
-    cd.debug.stopTimer('currentSection update');
   },
 
   reset() {

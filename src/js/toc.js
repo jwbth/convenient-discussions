@@ -151,15 +151,9 @@ export default {
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    cd.debug.startTimer('addNewSections');
-    cd.debug.startTimer('addNewSections remove');
-
     cd.g.$toc
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
       .remove();
-
-    cd.debug.stopTimer('addNewSections remove');
-    cd.debug.startTimer('addNewSections parent');
 
     /*
       Note the case when the page starts with sections of lower levels than the base level, like
@@ -195,9 +189,6 @@ export default {
       section.tocLevel = section.parent ? section.parent.tocLevel + 1 : 1;
     });
 
-    cd.debug.stopTimer('addNewSections parent');
-    cd.debug.startTimer('addNewSections add');
-
     let currentTree = [];
     const $topUl = cd.g.$toc.children('ul');
     sections.forEach((section) => {
@@ -210,8 +201,6 @@ export default {
         if (!currentLevelMatch) {
           upperLevelMatch = currentTree[currentTree.length - 1];
         }
-
-        cd.debug.startTimer('addNewSections add vanilla');
 
         const li = document.createElement('li');
         li.className = `cd-toc-notRenderedSection toclevel-${level}`;
@@ -260,8 +249,6 @@ export default {
           $topUl.prepend(li);
         }
 
-        cd.debug.stopTimer('addNewSections add vanilla');
-
         item = {
           headline,
           level,
@@ -273,9 +260,6 @@ export default {
       currentTree[section.tocLevel - 1] = item;
       currentTree.splice(section.tocLevel);
     });
-
-    cd.debug.stopTimer('addNewSections add');
-    cd.debug.stopTimer('addNewSections');
   },
 
   /**
@@ -313,19 +297,15 @@ export default {
       .find('.cd-toc-notRenderedCommentList')
       .remove();
 
-    cd.debug.startTimer('addNewComments sections cycle');
     commentsBySection.forEach((comments, sectionOrAnchor) => {
       if (!sectionOrAnchor) return;
 
       // There could be a collision of hrefs between the existing section and not yet rendered
       // section, so we compose the selector carefully.
-      cd.debug.startTimer('addNewComments sections selector');
       const $sectionLink = typeof sectionOrAnchor === 'string' ?
-        cd.g.$toc.find(
-          `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`
-        ) :
+        cd.g.$toc
+          .find(`.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`) :
         sectionOrAnchor.getTocItem().$link;
-      cd.debug.stopTimer('addNewComments sections selector');
 
       // Should never be the case
       if (!$sectionLink?.length) return;
@@ -345,7 +325,6 @@ export default {
 
       let moreTooltipText = '';
       comments.forEach((comment, i) => {
-        cd.debug.startTimer('addNewComments comments prepare');
         const parent = areCommentsRendered ? comment.getParent() : comment.parent;
         const names = parent?.author && comment.level > 1 ?
           cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
@@ -359,9 +338,6 @@ export default {
           cd.mws('comma-separator') +
           date
         );
-        cd.debug.stopTimer('addNewComments comments prepare');
-
-        cd.debug.startTimer('addNewComments comments DOM');
 
         // If there are 5 comments or less, show all of them. If there are more, show 4 and "N
         // more". (Because showing 4 and then "1 more" is stupid.)
@@ -400,10 +376,8 @@ export default {
         } else {
           moreTooltipText += text + '\n';
         }
-        cd.debug.stopTimer('addNewComments comments DOM');
       });
 
-      cd.debug.startTimer('addNewComments sections DOM');
       if (comments.length > 5) {
         const span = document.createElement('span');
         span.className = 'cd-toc-more';
@@ -415,10 +389,8 @@ export default {
         ul.appendChild(li);
       }
 
-      cd.debug.stopTimer('addNewComments sections DOM');
       target.parentNode.insertBefore(ul, target.nextSibling);
     });
-    cd.debug.stopTimer('addNewComments sections cycle');
 
     restoreScrollPosition();
   },

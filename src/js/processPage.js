@@ -674,8 +674,6 @@ async function processVisits(visitsRequest, keptData) {
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
     toc.addNewComments(Comment.groupBySection(unseenComments), keptData);
-
-    cd.debug.logAndResetEverything();
   }
 
   // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a

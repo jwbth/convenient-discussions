@@ -187,8 +187,6 @@ function cleanUpSeenRenderedEdits(data) {
  * @param {SectionSkeletonLike[]} sections
  */
 function mapSections(sections) {
-  cd.debug.startTimer('mapSections');
-
   // Reset from the previous run.
   cd.sections.forEach((section) => {
     delete section.match;
@@ -205,8 +203,6 @@ function mapSections(sections) {
       section.match = matchedSection;
     }
   });
-
-  cd.debug.stopTimer('mapSections');
 }
 
 /**
@@ -690,8 +686,6 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
-  cd.debug.startTimer('process updates');
-
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
   } else if (newComments[0]) {
@@ -712,9 +706,6 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   showOrdinaryNotification(commentsToNotifyAbout);
   showDesktopNotification(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
-
-  cd.debug.stopTimer('process updates');
-  cd.debug.logAndResetEverything();
 }
 
 /**
