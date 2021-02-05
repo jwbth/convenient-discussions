@@ -39,7 +39,7 @@
 	"comment-editedsince": "Kommentaren redigerades sedan ditt senaste besök.",
 	"section-reply": "Svara",
 	"section-addsubsection-to": "Lägg till underavsnitt i \"$1\"",
-	"section-newcomments": "{{plural:$1|Det finns en ny kommentar|Det finns nya kommentarer}} i det här avsnittet från {{plural:$2|{{gender:$4|användaren}}|{{gender:$4|användarna}}}} $3. Klicka för att uppdatera sidan.",
+	"section-newcomments": "{{plural:$1|Det finns en ny kommentar|Det finns nya kommentarer}} i det här avsnittet från {{plural:$2|{{gender:$4}}}} $3. Klicka för att uppdatera sidan.",
 	"section-watch-success": "Avsnittet \"$1\" har lagts till i din bevakningslista.",
 	"section-unwatch-success": "Avsnittet \"$1\" har tagits bort från din bevakningslista.",
 	"section-unwatch-stillwatched": "<strong>Obs:</strong> du bevakar fortfarande det här avsnittet då den ingår i avsnitt \"$1\" som du bevakar.",
