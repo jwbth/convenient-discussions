@@ -34,10 +34,12 @@ import {
 import { createWindowManager, rescueCommentFormsContent } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools } from './dateFormat';
-import { loadData } from './dateFormat';
+import { initTimestampParsingTools, loadData } from './siteSettings';
 
 let notificationsData = [];
+let isPageBeingReloaded = false;
+let saveSessionTimeout;
+let saveSessionLastTime;
 
 /**
  * Initiate user settings.
@@ -77,8 +79,11 @@ export async function initSettings() {
 
     autopreview: true,
     desktopNotifications: 'unknown',
+
+    // Not shown in the settings dialog. TODO: delete if proves unnecessary.
     defaultCommentLinkType: 'diff',
     defaultSectionLinkType: 'wikilink',
+
     highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
@@ -131,7 +136,7 @@ export async function initSettings() {
   // Seamless transition from mySignature.
   if (cd.settings.signaturePrefix !== undefined) {
     // eslint-disable-next-line no-useless-escape
-    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(/~~\~~/, '')
+    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace('~~\~~', '');
   }
 
   if (
@@ -188,6 +193,22 @@ export function initTalkPageCss() {
   cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
     backgroundColor: contentBackgroundColor,
   });
+
+  const sidebarColor = $('.skin-timeless').length ?
+    '#eaecf0' :
+    $(document.body)
+      // New Vector
+      .add('.mw-page-container')
+
+      .last()
+      .css('background-color');
+  cd.g.nanoCss.put('#cd-currentSection', {
+    backgroundColor: transparentize(sidebarColor).replace('0)', '0.8)'),
+    width: ($('.mw-body').get(0)?.getBoundingClientRect().left - 18) + 'px',
+  });
+  cd.g.nanoCss.put('#cd-currentSection:hover', {
+    backgroundColor: sidebarColor,
+  });
 }
 
 /**
@@ -232,39 +253,39 @@ function initGlobals() {
   /* Some static methods for external use */
 
   /**
-   * @see module:Comment.getCommentByAnchor
+   * @see module:Comment.getByAnchor
    * @function getCommentByAnchor
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getCommentByAnchor = Comment.getCommentByAnchor;
+  cd.getCommentByAnchor = Comment.getByAnchor;
 
   /**
-   * @see module:Section.getSectionByAnchor
+   * @see module:Section.getByAnchor
    * @function getSectionByAnchor
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getSectionByAnchor = Section.getSectionByAnchor;
+  cd.getSectionByAnchor = Section.getByAnchor;
 
   /**
-   * @see module:Section.getSectionsByHeadline
+   * @see module:Section.getByHeadline
    * @function getSectionsByHeadline
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getSectionsByHeadline = Section.getSectionsByHeadline;
+  cd.getSectionsByHeadline = Section.getByHeadline;
 
   /**
-   * @see module:CommentForm.getLastActiveCommentForm
+   * @see module:CommentForm.getLastActive
    * @function getLastActiveCommentForm
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getLastActiveCommentForm = CommentForm.getLastActiveCommentForm;
+  cd.getLastActiveCommentForm = CommentForm.getLastActive;
 
   /**
-   * @see module:CommentForm.getLastActiveAlteredCommentForm
+   * @see module:CommentForm.getLastActiveAltered
    * @function getLastActiveAlteredCommentForm
    * @memberof module:cd~convenientDiscussions
    */
-  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAlteredCommentForm;
+  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered;
 }
 
 /**
@@ -364,22 +385,15 @@ function initPatterns() {
   }
 
   cd.g.ARTICLE_PATH_REGEXP = new RegExp(
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace(mw.util.escapeRegExp('$1'), '(.*)')
+    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
   );
 
+  const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
   const quoteBeginningsPattern = ['<blockquote>', '<q>']
-    .concat(
-      cd.config.pairQuoteTemplates?.[0]
-        .map((template) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(template))) ||
-      []
-    )
+    .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
     .join('|');
   const quoteEndingsPattern = ['</blockquote>', '</q>']
-    .concat(
-      cd.config.pairQuoteTemplates?.[1]
-        .map((template) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(template))) ||
-      []
-    )
+    .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
     .join('|');
   cd.g.QUOTE_REGEXP = new RegExp(
     `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
@@ -397,12 +411,12 @@ function initPatterns() {
   if (closedDiscussionBeginningsPattern) {
     if (closedDiscussionEndingsPattern) {
       cd.g.CLOSED_DISCUSSION_PAIR_REGEXP = new RegExp(
-        `\\s*\\{\\{ *(?:${closedDiscussionBeginningsPattern})[^]*?\\}\\}\\s*([:*#]*)[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern})[^}]*\\}\\}`,
+        `\\{\\{ *(?:${closedDiscussionBeginningsPattern})[^]*?\\}\\}\\s*([:*#]*)[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern})[^}]*\\}\\}`,
         'ig'
       );
     }
     cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP = new RegExp(
-      `\\s*\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^]*?=\\s*([:*#]*)`,
+      `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
       'ig'
     );
   }
@@ -493,15 +507,10 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
   }).$element.get(0);
 
-  let title = cd.s(`cm-copylink-tooltip-${cd.settings.defaultCommentLinkType}`);
-  if (cd.settings.defaultCommentLinkType === 'diff') {
-    title += ' ' + cd.s('cld-invitation');
-  }
-
   cd.g.COMMENT_ELEMENT_PROTOTYPES.linkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
     icon: 'link',
-    title,
+    title: cd.s('cm-copylink-tooltip'),
     framed: false,
     invisibleLabel: true,
     classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
@@ -509,7 +518,7 @@ function initOouiAndElementPrototypes() {
   cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingLinkButton = new OO.ui.ButtonWidget({
     label: cd.s('cm-copylink'),
     icon: 'link',
-    title,
+    title: cd.s('cm-copylink-tooltip'),
     framed: false,
     disabled: true,
     invisibleLabel: true,
@@ -589,7 +598,7 @@ function initOouiAndElementPrototypes() {
  * the first run.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:dateFormat.loadData}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
  */
 export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
@@ -727,6 +736,9 @@ export function isLoadingOverlayOn() {
  * @throws {CdError|Error}
  */
 export async function reloadPage(keptData = {}) {
+  if (isPageBeingReloaded) return;
+  isPageBeingReloaded = true;
+
   // In case checkboxes were changed programmatically.
   saveSession();
 
@@ -750,6 +762,7 @@ export async function reloadPage(keptData = {}) {
     parseData = await cd.g.CURRENT_PAGE.parse(null, false, true);
   } catch (e) {
     removeLoadingOverlay();
+    isPageBeingReloaded = false;
     if (keptData.didSubmitCommentForm) {
       throw e;
     } else {
@@ -784,6 +797,8 @@ export async function reloadPage(keptData = {}) {
   if (!keptData.commentAnchor && !keptData.sectionAnchor) {
     restoreScrollPosition(false);
   }
+
+  isPageBeingReloaded = false;
 }
 
 /**
@@ -804,7 +819,7 @@ function cleanUpSessions(data) {
 
     if (
       !newData[key].commentForms?.length ||
-      newData[key].saveUnixTime < Date.now() - 30 * cd.g.SECONDS_IN_A_DAY * 1000
+      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
     ) {
       delete newData[key];
     }
@@ -817,49 +832,51 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
-  cd.debug.startTimer('saveSession');
-
-  const commentForms = cd.commentForms
-    .filter((commentForm) => commentForm.isAltered())
-    .map((commentForm) => {
-      let targetData;
-      const target = commentForm.target;
-      if (commentForm.target instanceof Comment) {
-        targetData = { anchor: target.anchor };
-      } else if (target instanceof Section) {
-        targetData = {
-          headline: target.headline,
-          firstCommentAnchor: target.comments[0]?.anchor,
-          id: target.id,
+  const timeSinceLastSave = Date.now() - saveSessionLastTime;
+  clearTimeout(saveSessionTimeout);
+  saveSessionTimeout = setTimeout(() => {
+    const commentForms = cd.commentForms
+      .filter((commentForm) => commentForm.isAltered())
+      .map((commentForm) => {
+        let targetData;
+        const target = commentForm.target;
+        if (commentForm.target instanceof Comment) {
+          targetData = { anchor: target.anchor };
+        } else if (target instanceof Section) {
+          targetData = {
+            headline: target.headline,
+            firstCommentAnchor: target.comments[0]?.anchor,
+            id: target.id,
+          };
+        }
+        return {
+          mode: commentForm.mode,
+          targetData,
+          preloadConfig: commentForm.preloadConfig,
+          isNewTopicOnTop: commentForm.isNewTopicOnTop,
+          headline: commentForm.headlineInput?.getValue(),
+          comment: commentForm.commentInput.getValue(),
+          summary: commentForm.summaryInput.getValue(),
+          minor: commentForm.minorCheckbox?.isSelected(),
+          watch: commentForm.watchCheckbox?.isSelected(),
+          watchSection: commentForm.watchSectionCheckbox?.isSelected(),
+          omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
+          delete: commentForm.deleteCheckbox?.isSelected(),
+          originalHeadline: commentForm.originalHeadline,
+          originalComment: commentForm.originalComment,
+          isSummaryAltered: commentForm.isSummaryAltered,
+          lastFocused: commentForm.lastFocused,
         };
-      }
-      return {
-        mode: commentForm.mode,
-        targetData,
-        preloadConfig: commentForm.preloadConfig,
-        isNewTopicOnTop: commentForm.isNewTopicOnTop,
-        headline: commentForm.headlineInput?.getValue(),
-        comment: commentForm.commentInput.getValue(),
-        summary: commentForm.summaryInput.getValue(),
-        minor: commentForm.minorCheckbox?.isSelected(),
-        watch: commentForm.watchCheckbox?.isSelected(),
-        watchSection: commentForm.watchSectionCheckbox?.isSelected(),
-        omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
-        delete: commentForm.deleteCheckbox?.isSelected(),
-        originalHeadline: commentForm.originalHeadline,
-        originalComment: commentForm.originalComment,
-        isSummaryAltered: commentForm.isSummaryAltered,
-        lastFocused: commentForm.lastFocused,
-      };
-    });
-  const saveUnixTime = Date.now();
-  const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
+      });
+    const saveUnixTime = Date.now();
+    const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
 
-  const dataAllPages = getFromLocalStorage('commentForms');
-  dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
-  saveToLocalStorage('commentForms', dataAllPages);
+    const dataAllPages = getFromLocalStorage('commentForms');
+    dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
+    saveToLocalStorage('commentForms', dataAllPages);
 
-  cd.debug.stopTimer('saveSession');
+    saveSessionLastTime = Date.now();
+  }, Math.max(0, 5000 - timeSinceLastSave));
 }
 
 /**
@@ -874,7 +891,7 @@ function restoreCommentFormsFromData(commentFormsData) {
   commentFormsData.commentForms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
     if (data.targetData?.anchor) {
-      const comment = Comment.getCommentByAnchor(data.targetData.anchor);
+      const comment = Comment.getByAnchor(data.targetData.anchor);
       if (comment?.isActionable && !comment[`${property}Form`]) {
         try {
           comment[property](data);
@@ -965,7 +982,7 @@ export function restoreCommentForms() {
       const target = commentForm.target;
       if (target instanceof Comment) {
         if (target.anchor) {
-          const comment = Comment.getCommentByAnchor(target.anchor);
+          const comment = Comment.getByAnchor(target.anchor);
           if (comment?.isActionable) {
             try {
               commentForm.setTargets(comment);

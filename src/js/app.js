@@ -21,7 +21,7 @@ import {
   removeLoadingOverlay,
   setLoadingOverlay,
 } from './boot';
-import { loadData } from './dateFormat';
+import { loadData } from './siteSettings';
 import { setVisits } from './options';
 
 let config;
@@ -191,7 +191,7 @@ function setStrings() {
   // Strings that should be displayed in the site language, not the user language.
   const contentStrings = [
     'es-',
-    'cf-mentions-commentlinktext',
+    'cf-autocomplete-commentlinktext',
     'move-',
   ];
 
@@ -220,6 +220,8 @@ function setStrings() {
  * @private
  */
 function go() {
+  cd.debug.startTimer('start');
+
   /**
    * Script configuration. The default configuration is at {@link module:defaultConfig}.
    *
@@ -450,7 +452,7 @@ function getConfig() {
       };
 
       const url = IS_DEV ?
-        configUrls[location.hostname].replace(/.js/, '-dev.js') :
+        configUrls[location.hostname].replace('.js', '-dev.js') :
         configUrls[location.hostname];
       getScript(url, () => {
         if (IS_DEV) {
@@ -552,8 +554,7 @@ async function app() {
 
   cd.debug.init();
   cd.debug.startTimer('total time');
-  cd.debug.startTimer('start');
-  cd.debug.startTimer('load data');
+  cd.debug.startTimer('loading config and strings');
 
   /**
    * The script has launched.
@@ -575,7 +576,7 @@ async function app() {
     return;
   }
 
-  cd.debug.stopTimer('load data');
+  cd.debug.stopTimer('loading config and strings');
 
   go();
 }

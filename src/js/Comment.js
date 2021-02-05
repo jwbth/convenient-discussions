@@ -7,7 +7,7 @@
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
-import Section from './Section';
+import CommentStatic from './CommentStatic';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
@@ -18,10 +18,10 @@ import {
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
+  getExtendedRect,
   getFromLocalStorage,
-  getTopAndBottomIncludingMargins,
   handleApiReject,
-  reorderArray,
+  isInline,
   saveToLocalStorage,
   unhideText,
 } from './util';
@@ -110,7 +110,7 @@ export default class Comment extends CommentSkeleton {
      */
     this.isActionable = (
       cd.g.isPageActive &&
-      !cd.g.specialElements.closedDiscussions.some((el) => el.contains(this.elements[0]))
+      !cd.g.closedDiscussionElements.some((el) => el.contains(this.elements[0]))
     );
 
     this.highlightables.forEach((el) => {
@@ -202,22 +202,20 @@ export default class Comment extends CommentSkeleton {
       )
     );
 
-    // If the comment has 0 as the left position, it's probably invisible for some reason.
-    if (rectTop.left === 0) return;
+    // If the element has 0 as the left position and height, it's probably invisible for some
+    // reason.
+    if (rectTop.left === 0 && rectTop.height === 0) return;
 
     const top = window.pageYOffset + rectTop.top;
     const bottom = window.pageYOffset + rectBottom.bottom;
 
     if (options.considerFloating) {
-      const floatingRects = (
-        options.floatingRects ||
-        cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins)
-      );
+      const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
       floatingRects.forEach((rect) => {
-        const floatingTop = window.pageYOffset + rect.top;
-        const floatingBottom = window.pageYOffset + rect.bottom;
+        const floatingTop = window.pageYOffset + rect.outerTop;
+        const floatingBottom = window.pageYOffset + rect.outerBottom;
         if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }
@@ -299,6 +297,18 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Hide the comment menu (in fact, the comment overlay).
+   *
+   * @param {Event} [e]
+   */
+  hideMenu(e) {
+    if (e) {
+      e.preventDefault();
+    }
+    this.overlay.style.display = 'none';
+  }
+
+  /**
    * Create the comment's underlay and overlay.
    *
    * @fires commentLayersCreated
@@ -312,10 +322,23 @@ export default class Comment extends CommentSkeleton {
     this.overlayInnerWrapper = this.overlay.firstChild;
 
     // Hide the overlay on right click. It can block clicking the author page link.
-    this.overlayInnerWrapper.oncontextmenu = (e) => {
-      e.preventDefault();
-      this.overlay.style.display = 'none';
+    this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
+
+    let mouseUpTimeout;
+    const deferHideMenu = (e) => {
+      // Ignore other than left button clicks.
+      if (e.which !== 1) return;
+
+      mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1000);
     };
+    const dontHideMenu = () => {
+      clearTimeout(mouseUpTimeout);
+    };
+
+    // Hide the overlay on long click/tap.
+    this.overlayInnerWrapper.onmousedown = deferHideMenu;
+    this.overlayInnerWrapper.onmouseup = dontHideMenu;
+
     this.overlayGradient = this.overlayInnerWrapper.firstChild;
     this.overlayContent = this.overlayInnerWrapper.lastChild;
 
@@ -487,11 +510,11 @@ export default class Comment extends CommentSkeleton {
    * positions and redraw if the comment has been moved or do nothing if everything is right.
    *
    * @param {object} [options={}]
-   * @param {boolean} [options.doAdd=true] Add the layers in case they are created. If set to
-   *   false, it is expected that the layers created during this procedure, if any, will be added
+   * @param {boolean} [options.add=true] Add the layers in case they are created. If set to false,
+   *   it is expected that the layers created during this procedure, if any, will be added
    *   afterwards (otherwise there would be layers without a parent element which would lead to
    *   bugs).
-   * @param {boolean} [options.doUpdate=true] Update the layers' positions in case the comment is
+   * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
    *   moved. If set to false, it is expected that the positions will be updated afterwards.
    * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results. It may be
    *   calculated in advance for many elements in one sequence to save time.
@@ -502,11 +525,11 @@ export default class Comment extends CommentSkeleton {
       return null;
     }
 
-    if (options.doAdd === undefined) {
-      options.doAdd = true;
+    if (options.add === undefined) {
+      options.add = true;
     }
-    if (options.doUpdate === undefined) {
-      options.doUpdate = true;
+    if (options.update === undefined) {
+      options.update = true;
     }
 
     options.rectTop = this.highlightables[0].getBoundingClientRect();
@@ -550,13 +573,13 @@ export default class Comment extends CommentSkeleton {
     // save time.
     if (this.underlay) {
       this.updateLayersStyles();
-      if (isMoved && options.doUpdate) {
+      if (isMoved && options.update) {
         this.updateLayersPositions();
       }
       return isMoved;
     } else {
       this.createLayers();
-      if (options.doAdd) {
+      if (options.add) {
         this.addLayers();
       }
       return false;
@@ -658,15 +681,15 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    const $elementsToAnimate = this.$underlay
-      .add(this.$overlayContent)
+    this.$elementsToAnimate = this.$underlay
       .add(this.$overlayGradient)
+      .add(this.$overlayContent)
       .stop()
       .css('background-image', 'none')
       .css('background-color', '');
     let finalColor = this.getCurrentBackgroundColor();
 
-    $elementsToAnimate.css('background-color', color);
+    this.$elementsToAnimate.css('background-color', color);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
       // These comment properties may get assigned after the flash() call.
@@ -679,7 +702,8 @@ export default class Comment extends CommentSkeleton {
         finalColor = this.backgroundColor || 'rgba(0, 0, 0, 0)';
       }
 
-      $elementsToAnimate
+      const comment = this;
+      this.$elementsToAnimate
         .stop()
         .css('background-image', 'none')
         .css('background-color', color)
@@ -687,13 +711,16 @@ export default class Comment extends CommentSkeleton {
           { backgroundColor: finalColor },
           400,
           'swing',
-          () => {
+          function () {
+            if (this !== comment.$overlayContent.get(0)) return;
+
             if (callback) {
               callback();
             }
-            $elementsToAnimate
+            comment.$elementsToAnimate
               .css('background-image', '')
               .css('background-color', '');
+            delete comment.$elementsToAnimate;
           }
         );
     }, delay);
@@ -812,10 +839,14 @@ export default class Comment extends CommentSkeleton {
       $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
     }
 
-    let $last = this.$elements.last();
-    if ($last.is('ul, ol, dl')) {
-      $last = $last.last();
-    }
+    // Add the mark to the last block element, going as many nesting levels down as needed to avoid
+    // it appearing after a block element.
+    let $last;
+    let $tested = this.$elements.last();
+    do {
+      $last = $tested;
+      $tested = $last.children().last();
+    } while ($tested.length && !isInline($tested.get(0)));
     $last.append($span);
 
     if (isNewVersionRendered) {
@@ -880,7 +911,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {boolean} Was the update successful.
    */
   update(currentComment, newComment) {
-    const elementTagNames = Array.from(this.$elements).map((element) => element.tagName);
+    const elementTagNames = Array.from(this.$elements).map((el) => el.tagName);
 
     // References themselves may be out of the comment's HTML and might be edited.
     const areThereReferences = newComment.hiddenElementData
@@ -912,8 +943,9 @@ export default class Comment extends CommentSkeleton {
           const $headline = this.$elements.eq(i).find('.mw-headline');
           if ($headline.length) {
             const $headlineNumber = $headline.find('.mw-headline-number');
+            const $html = $(html);
             $headline
-              .html($(html).html())
+              .html($html.html())
               .prepend($headlineNumber);
             const section = this.getSection();
             if (section) {
@@ -922,7 +954,7 @@ export default class Comment extends CommentSkeleton {
               if (section.isWatched && section.headline !== originalHeadline) {
                 section.watch(true, originalHeadline);
               }
-              section.getTocLink()?.find('.toctext').text(section.headline);
+              section.getTocItem()?.replaceText($html);
             }
           }
         } else {
@@ -984,7 +1016,7 @@ export default class Comment extends CommentSkeleton {
    */
   replaceButton(button, replacement, buttonName) {
     this.overlayContent.insertBefore(replacement, button);
-    button.parentNode.removeChild(button);
+    button.remove();
     this[buttonName + 'Button'] = replacement;
   }
 
@@ -1026,7 +1058,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @name childToScrollBackTo
      * @type {Comment|undefined}
-     * @instance module:Comment
+     * @instance
      */
     parent.childToScrollBackTo = this;
   }
@@ -1045,15 +1077,13 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Copy a link to the comment or open a copy link dialog.
-   *
-   * @param {Event} e
    */
-  async copyLink(e) {
+  async copyLink() {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
     const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
     this.replaceButton(this.linkButton, pendingLinkButton, 'link');
-    await copyLink(this, e.shiftKey);
+    await copyLink(this);
     this.replaceButton(this.linkButton, linkButton, 'link');
   }
 
@@ -1573,13 +1603,14 @@ export default class Comment extends CommentSkeleton {
   removeLayers() {
     if (!this.underlay) return;
 
+    this.$elementsToAnimate?.stop();
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
-    this.underlay.parentNode.removeChild(this.underlay);
+    this.underlay.remove();
     this.underlay = null;
     this.$underlay = null;
 
-    this.overlay.parentNode.removeChild(this.overlay);
+    this.overlay.remove();
     this.overlay = null;
     this.$overlay = null;
   }
@@ -1650,7 +1681,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Look for {{outdent}} templates
-    if (this.cachedParent === undefined && cd.g.specialElements.pageHasOutdents) {
+    if (this.cachedParent === undefined && cd.g.pageHasOutdents) {
       const treeWalker = new ElementsTreeWalker(this.elements[0]);
       while (
         treeWalker.previousNode() &&
@@ -1872,7 +1903,7 @@ export default class Comment extends CommentSkeleton {
       tagRegexp,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
-      /<small class="autosigned">.*$/,
+      new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
     ]);
@@ -1908,8 +1939,9 @@ export default class Comment extends CommentSkeleton {
     data.replyIndentationChars = data.indentationChars;
     if (!this.isOpeningSection) {
       // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
-      // comments in one, so we exclude such cases.
-      const match = data.code.match(/\n([:*#]*[:*]).*$/);
+      // comments in one, so we exclude such cases. The signature code is used because it may start
+      // with a newline.
+      const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*]).*$/);
       if (match) {
         data.replyIndentationChars = match[1];
 
@@ -2097,15 +2129,11 @@ export default class Comment extends CommentSkeleton {
           ));
       }
       if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
-        let closedDiscussionMatch;
-        while ((closedDiscussionMatch = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
+        let match;
+        while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
           adjustedCode = (
-            adjustedCode.slice(0, closedDiscussionMatch.index) +
-            hideTemplatesRecursively(
-              adjustedCode.slice(closedDiscussionMatch.index),
-              null,
-              closedDiscussionMatch[1].length
-            ).code
+            adjustedCode.slice(0, match.index) +
+            hideTemplatesRecursively(adjustedCode.slice(match.index), null, match[1].length).code
           );
         }
       }
@@ -2263,11 +2291,9 @@ export default class Comment extends CommentSkeleton {
         }
         if (['absolute', 'relative'].includes(style.position)) {
           offsetParent = treeWalker.currentNode;
-          break;
         }
         const backgroundColor = style.backgroundColor;
-        const backgroundImage = style.backgroundImage;
-        if (backgroundColor.includes('rgb(') || backgroundImage !== 'none') {
+        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none') {
           if (backgroundColor.includes('rgb(')) {
             /**
              * Comment's background color if not default.
@@ -2277,10 +2303,12 @@ export default class Comment extends CommentSkeleton {
             this.backgroundColor = backgroundColor;
           }
 
-          offsetParent = treeWalker.currentNode;
-          offsetParent.classList.add('cd-commentLayersContainerParent-relative');
-          break;
+          if (!offsetParent) {
+            offsetParent = treeWalker.currentNode;
+            offsetParent.classList.add('cd-commentLayersContainerParent-relative');
+          }
         }
+        if (offsetParent) break;
       }
       if (!offsetParent) {
         offsetParent = document.body;
@@ -2491,199 +2519,6 @@ export default class Comment extends CommentSkeleton {
     const $message = $('<div>').append($cleanDiff, $below);
     OO.ui.alert($message, { size: 'larger' });
   }
-
-  /**
-   * Configure and add underlayers for a group of comments.
-   *
-   * @param {Comment[]} comments
-   */
-  static configureAndAddLayers(comments) {
-    const floatingRects = comments.length ?
-      cd.g.specialElements.floating.map(getTopAndBottomIncludingMargins) :
-      undefined;
-
-    comments.forEach((comment) => {
-      comment.configureLayers({
-        doAdd: false,
-        doUpdate: false,
-        floatingRects,
-      });
-    });
-
-    // Faster to add them in one sequence.
-    comments.forEach((comment) => {
-      comment.addLayers();
-    });
-  }
-
-  /**
-   * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
-   * web worker so its constuctor is lost.)
-   *
-   * @typedef {object} CommentSkeletonLike
-   */
-
-  /**
-   * Turn comment array into object with section anchors as keys.
-   *
-   * @param {CommentSkeletonLike[]|Comment[]} comments
-   * @returns {Map}
-   * @private
-   */
-  static groupBySection(comments) {
-    const commentsBySection = new Map();
-    comments.forEach((comment) => {
-      let sectionOrAnchor;
-      if (comment instanceof Comment) {
-        sectionOrAnchor = comment.getSection();
-      } else if (comment.section) {
-        sectionOrAnchor = Section.search(comment.section) || comment.section.anchor;
-      } else {
-        sectionOrAnchor = null;
-      }
-
-      if (!commentsBySection.get(sectionOrAnchor)) {
-        commentsBySection.set(sectionOrAnchor, []);
-      }
-      commentsBySection.get(sectionOrAnchor).push(comment);
-    });
-
-    return commentsBySection;
-  }
-
-  /**
-   * Find any one comment inside the viewport.
-   *
-   * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
-   *   comment in the specified direction.
-   * @returns {?Comment}
-   */
-  static findInViewport(findClosestDirection) {
-    const viewportTop = window.pageYOffset;
-    const viewportBottom = viewportTop + window.innerHeight;
-
-    // Visibility in the sense that an element is visible on the page, not necessarily in the
-    // viewport.
-    const isVisible = (comment) => {
-      comment.getPositions();
-      return Boolean(comment.positions);
-    };
-    const findVisible = (direction, startIndex = 0) => {
-      const comments = reorderArray(cd.comments, startIndex, direction === 'backward');
-      return comments.find(isVisible) || null;
-    };
-
-    const firstVisibleComment = findVisible('forward');
-    const lastVisibleComment = findVisible('backward', cd.comments.length - 1);
-    if (!firstVisibleComment) {
-      return null;
-    }
-
-    let searchArea = {
-      top: firstVisibleComment,
-      bottom: lastVisibleComment,
-    };
-    let currentComment = searchArea.top;
-    let foundComment;
-
-    const findClosest = (direction, searchArea, reverse = false) => {
-      if (direction === 'forward') {
-        return findVisible(direction, reverse ? searchArea.top.id : searchArea.bottom.id);
-      } else if (direction === 'backward') {
-        return findVisible(direction, reverse ? searchArea.bottom.id : searchArea.top.id);
-      }
-      return null;
-    };
-
-    // Here, we don't iterate over cd.comments as it may look like. We narrow the search region by
-    // getting a proportion of the distance between far away comments and the viewport and
-    // calculating the ID of the next comment based on it; then, the position of that next comment
-    // is checked, and so on. cd.comments.length value is used as an upper boundary for the number
-    // of cycle steps. It's more of a protection against an infinite loop: the value is with a large
-    // margin and not practically reachable, unless when there is only few comments. Usually the
-    // cycle finishes after a few steps.
-    for (let i = 0; i < cd.comments.length; i++) {
-      if (currentComment.isInViewport()) {
-        foundComment = currentComment;
-        break;
-      }
-
-      if (
-        currentComment.positions &&
-
-        // The bottom edge of the viewport is above the first comment.
-        (
-          currentComment === firstVisibleComment &&
-          viewportBottom < currentComment.positions.downplayedBottom
-        ) ||
-
-        // The top edge of the viewport is below the last comment.
-        (currentComment === lastVisibleComment && viewportTop > currentComment.positions.top)
-      ) {
-        foundComment = findClosest(findClosestDirection, searchArea, true);
-        break;
-      }
-
-      if (searchArea.top === searchArea.bottom) {
-        foundComment = findClosest(findClosestDirection, searchArea);
-        break;
-      }
-
-      if (!currentComment.positions) {
-        // To avoid contriving a sophisticated algorithm for choosing which comment to pick next
-        // (and avoid picking any previously picked) we just pick the comment next to the beginning
-        // of the search area.
-        currentComment = cd.comments[searchArea.top.id + 1];
-        searchArea.top = currentComment;
-        continue;
-      }
-
-      if (currentComment === firstVisibleComment) {
-        currentComment = searchArea.bottom;
-      } else {
-        searchArea[viewportTop > currentComment.positions.top ? 'top' : 'bottom'] = currentComment;
-
-        // There's not a single comment in the viewport.
-        if (searchArea.bottom.id - searchArea.top.id <= 1) {
-          foundComment = findClosest(findClosestDirection, searchArea);
-          break;
-        }
-
-        // Determine the ID of the next comment to check.
-        const higherTop = searchArea.top.positions.top;
-        const lowerBottom = searchArea.bottom.positions.downplayedBottom;
-        const proportion = (
-          (viewportTop - higherTop) /
-          ((lowerBottom - viewportBottom) + (viewportTop - higherTop))
-        );
-        if (proportion < 0 || proportion >= 1) {
-          console.warn(
-            'The proportion shouldn\'t be more than 0 or less or equal to 1.',
-            'proportion', proportion,
-            'searchArea', searchArea
-          );
-        }
-        currentComment = cd.comments[Math.round(
-          (searchArea.bottom.id - searchArea.top.id - 1) * proportion +
-          searchArea.top.id +
-          0.5
-        )];
-      }
-    }
-
-    return foundComment || null;
-  }
-
-  /**
-   * Get a comment by anchor.
-   *
-   * @param {string} anchor
-   * @returns {?Comment}
-   */
-  static getCommentByAnchor(anchor) {
-    if (!cd.comments || !anchor) {
-      return null;
-    }
-    return cd.comments.find((comment) => comment.anchor === anchor) || null;
-  }
 }
+
+Object.assign(Comment, CommentStatic);

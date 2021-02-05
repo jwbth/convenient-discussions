@@ -68,19 +68,11 @@ function generateTooltipText(commentsCount, commentsBySection) {
 
 const navPanel = {
   /**
-   * Property indicating that the mouse is over the navigation panel.
-   *
-   * @type {boolean}
-   * @memberof module:navPanel
-   */
-  mouseOverNavPanel: false,
-
-  /**
    * Render the navigation panel. This is done when the page is first loaded or created.
    *
    * @memberof module:navPanel
    */
-  async mount() {
+  mount() {
     /**
      * Navigation panel element.
      *
@@ -181,7 +173,7 @@ const navPanel = {
 
   /**
    * Check if the navigation panel is mounted. Is equivalent to checking the existence of {@link
-   * module:navPanel.$element}, and for most of the practical purposes, does the same as the
+   * module:navPanel.$element}, and for the most of the practical purposes, does the same as the
    * `convenientDiscussions.g.isPageActive` check.
    *
    * @returns {boolean}

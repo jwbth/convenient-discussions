@@ -1,7 +1,6 @@
 /**
- * Web page (not wikitext) parsing module. Parsing here means "extracting meaningful parts from the
- * page". Functions that are more about modification of the DOM go in {@link module:modifyDom}.
- * Functions related to wikitext parsing go in {@link module:wikitext}.
+ * Web page (not wikitext) parsing class. Parsing here means "extracting meaningful parts from the
+ * page". Functions related to wikitext parsing go in {@link module:wikitext}.
  *
  * Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
  *
@@ -16,6 +15,7 @@ import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './
 let foreignComponentClasses;
 let timezoneRegexp;
 let signatureEndingRegexp;
+let elementsToExclude;
 
 /**
  * Get the page name from a URL.
@@ -69,7 +69,7 @@ function getPageNameFromUrl(url) {
  * @returns {string}
  * @private
  */
-function getUserNameFromLink(element) {
+export function getUserNameFromLink(element) {
   const href = element.getAttribute('href');
   let userName;
   if (href) {
@@ -86,10 +86,9 @@ function getUserNameFromLink(element) {
         userName = userName.toUpperCase();
       }
     }
-    userName = (
-      userName &&
-      firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim()
-    );
+    if (userName) {
+      userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+    }
   } else {
     if (element.classList.contains('mw-selflink') && cd.g.CURRENT_NAMESPACE_NUMBER === 3) {
       // Comments of users that have only the user talk page link in their signature on their talk
@@ -100,6 +99,25 @@ function getUserNameFromLink(element) {
     }
   }
   return userName;
+}
+
+/**
+ * Determine whether the provided element is a cell of a table containing multiple signatures.
+ *
+ * @param {Element} element
+ * @returns {boolean}
+ */
+function isCellOfMultiCommentTable(element) {
+  if (element.tagName !== 'TD') {
+    return false;
+  }
+  let table;
+  for (let n = element; !table && n !== cd.g.rootElement; n = n.parentNode) {
+    if (n.tagName === 'TABLE') {
+      table = n;
+    }
+  }
+  return !table || table.getElementsByClassName('cd-signature', 2).length > 1;
 }
 
 /**
@@ -117,7 +135,7 @@ export default class Parser {
 
     if (!foreignComponentClasses) {
       foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
-      if (cd.g.specialElements.pageHasOutdents) {
+      if (cd.g.pageHasOutdents) {
         foreignComponentClasses.push('outdent-template');
       }
 
@@ -166,7 +184,7 @@ export default class Parser {
    * @returns {FindTimestampsReturn}
    */
   findTimestamps() {
-    const blocksToExclude = [
+    elementsToExclude = [
       ...Array.from(cd.g.rootElement.getElementsByTagName('blockquote')),
       ...flat(
         cd.config.elementsToExcludeClasses
@@ -178,7 +196,7 @@ export default class Parser {
       .map((node) => {
         const text = node.textContent;
         const { date, match } = parseTimestamp(text) || {};
-        if (date && !blocksToExclude.some((block) => block.contains(node))) {
+        if (date && !elementsToExclude.some((el) => el.contains(node))) {
           return { node, date, match };
         }
       })
@@ -242,20 +260,14 @@ export default class Parser {
           );
           const treeWalker = new ElementsTreeWalker(timestamp.element);
 
-          // Found other timestamp after this timestamp
-          let found = false;
-
           while (
-            !found &&
             treeWalker.nextNode() &&
             closestNotInlineAncestor.contains(treeWalker.currentNode) &&
             (!cniaChildren.includes(treeWalker.currentNode) || isInline(treeWalker.currentNode))
           ) {
-            if (treeWalker.currentNode.classList.contains('cd-timestamp')) {
-              found = true;
-            }
+            // Found other timestamp after this timestamp
+            if (treeWalker.currentNode.classList.contains('cd-timestamp')) return;
           }
-          if (found) return;
         }
 
         const startElement = unsignedElement || timestamp.element;
@@ -291,20 +303,21 @@ export default class Parser {
                 }
               }
             } else {
-              const links = Array.from(node.getElementsByTagName('a')).reverse();
-              links.some((link) => {
-                const userName = getUserNameFromLink(link);
-                if (userName) {
-                  if (!authorName) {
-                    authorName = userName;
+              Array.from(node.getElementsByTagName('a'))
+                .reverse()
+                .some((link) => {
+                  const userName = getUserNameFromLink(link);
+                  if (userName) {
+                    if (!authorName) {
+                      authorName = userName;
+                    }
+                    if (authorName === userName) {
+                      // That's not some other user link that is not a part of the signature.
+                      hasAuthorLinks = true;
+                      return true;
+                    }
                   }
-                  if (authorName === userName) {
-                    // That's not some other user link that is not a part of the signature.
-                    hasAuthorLinks = true;
-                    return true;
-                  }
-                }
-              });
+                });
             }
 
             if (hasAuthorLinks) {
@@ -345,8 +358,7 @@ export default class Parser {
         .forEach((element) => {
           // Only templates with no timestamp interest us.
           if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
-            const links = Array.from(element.getElementsByTagName('a'));
-            links.some((link) => {
+            Array.from(element.getElementsByTagName('a')).some((link) => {
               const authorName = getUserNameFromLink(link);
               if (authorName) {
                 element.classList.add('cd-signature');
@@ -406,11 +418,11 @@ export default class Parser {
       ) ||
 
       // Cases when the comment has no wrapper that contains only that comment (for example,
-      // https://ru.wikipedia.org/wiki/Википедия:Форум/Технический#202010140847_AndreiK). The second
-      // parameter of getElementsByClassName() is an optimization for the worker context.
+      // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
+      // The second parameter of getElementsByClassName() is an optimization for the worker context.
       signatureElement.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
-      signatureElement.parentNode.tagName === 'TD'
+      isCellOfMultiCommentTable(signatureElement.parentNode)
     ) {
       // Collect inline parts after the signature
       treeWalker.currentNode = signatureElement;
@@ -464,7 +476,8 @@ export default class Parser {
           // https://ru.wikipedia.org/w/index.php?diff=107487558
           !isInline(previousPart.node, true) &&
 
-          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text))
+          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text)) &&
+          !elementsToExclude.some((el) => el.contains(previousPart.node))
         ) {
           previousPart.hasForeignComponents = true;
           break;
@@ -473,7 +486,7 @@ export default class Parser {
 
       if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
         // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
-        // that may be present. This happens with a code like this:
+        // that may be present. This happens with code like this:
         // :* Smth. [signature]
         // :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
         //               signature above. -->
@@ -539,7 +552,7 @@ export default class Parser {
           node === treeWalker.root ||
           foreignComponentClasses.some((className) => node.classList.contains(className)) ||
           node.getAttribute('id') === 'toc' ||
-          node.tagName === 'TD' ||
+          isCellOfMultiCommentTable(node) ||
 
           // Horizontal lines sometimes separate different section blocks.
           (
@@ -548,11 +561,7 @@ export default class Parser {
             this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
           ) ||
 
-          (
-            cd.g.specialElements.pageHasOutdents &&
-            this.context.getElementByClassName(node, 'outdent-template')
-          ) ||
-
+          (cd.g.pageHasOutdents && this.context.getElementByClassName(node, 'outdent-template')) ||
           cd.config.checkForCustomForeignComponents?.(node, this.context)
         ) {
           break;
@@ -647,7 +656,7 @@ export default class Parser {
           }
         }
 
-        // We should only enclose if there is a need: there is at least one inline or non-empty text
+        // We should only enclose if there is need: there is at least one inline or non-empty text
         // node in the sequence.
         if (
           !encloseThis &&
@@ -846,61 +855,4 @@ export default class Parser {
     headings.sort((heading1, heading2) => this.context.follows(heading1, heading2) ? 1 : -1);
     return headings;
   }
-}
-
-/**
- * Get all text nodes under the root element in the window (not worker) context.
- *
- * @returns {Node[]}
- */
-export function windowGetAllTextNodes() {
-  const result = document.evaluate(
-    // './/text()' doesn't work in Edge.
-    './/descendant::text()',
-    cd.g.rootElement,
-    null,
-    XPathResult.ANY_TYPE,
-    null
-  );
-  const textNodes = [];
-  let node;
-  while ((node = result.iterateNext())) {
-    textNodes.push(node);
-  }
-  return textNodes;
-}
-
-/**
- * Find some types of special elements on the page (floating elements, closed discussions, outdent
- * templates).
- *
- * @returns {object}
- */
-export function findSpecialElements() {
-  // Describe all floating elements on the page in order to calculate the right border (temporarily
-  // setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementsSelector = [
-    ...cd.g.FLOATING_ELEMENT_SELECTORS,
-    ...cd.config.customFloatingElementSelectors,
-  ]
-    .join(', ');
-  const floating = cd.g.$root
-    .find(floatingElementsSelector)
-    .get()
-    // Remove all known elements that never intersect comments from the collection.
-    .filter((el) => !el.classList.contains('cd-ignoreFloating'));
-  floating.forEach((el) => {
-    const style = window.getComputedStyle(el);
-    el.cdMarginTop = parseFloat(style.marginTop);
-    el.cdMarginBottom = parseFloat(style.marginBottom);
-  });
-
-  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
-    .map((name) => `.${name}`)
-    .join(', ');
-  const closedDiscussions = cd.g.$root.find(closedDiscussionsSelector).get();
-
-  const pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
-
-  return { floating, closedDiscussions, pageHasOutdents };
 }

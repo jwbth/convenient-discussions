@@ -263,7 +263,7 @@ export default {
    * @type {string}
    * @default 'c:User:JWBTH/CD'
    */
-  scriptPageWikilink: 'c:User:JWBTH/CD',
+  scriptPageWikilink: 'c:Special:MyLanguage/User:JWBTH/CD',
 
   /**
    * Names of the templates that are analogs of {@link
@@ -421,9 +421,9 @@ export default {
    * link.
    *
    * @type {number}
-   * @default 80
+   * @default 100
    */
-  signatureScanLimit: 80,
+  signatureScanLimit: 100,
 
   /**
    * Classes of elements that should be ignored when extracting headline text.

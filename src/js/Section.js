@@ -9,11 +9,12 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import Page from './Page';
 import SectionSkeleton from './SectionSkeleton';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
-import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
+import toc from './toc';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { editWatchedSections } from './modal';
+import { dealWithLoadingBug, defined } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -23,10 +24,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { getWatchedSections, setWatchedSections } from './options';
 import { reloadPage } from './boot';
-
-let watchPromise = Promise.resolve();
 
 /**
  * Class representing a section.
@@ -107,7 +105,7 @@ export default class Section extends SectionSkeleton {
      */
     this.isActionable = (
       cd.g.isPageActive &&
-      !cd.g.specialElements.closedDiscussions.some((el) => el.contains(headingElement))
+      !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement))
     );
 
     if (this.isActionable) {
@@ -236,17 +234,18 @@ export default class Section extends SectionSkeleton {
     const lastElement = this.elements[this.elements.length - 1];
     lastElement.parentNode.insertBefore(buttonContainer, lastElement.nextElementSibling);
 
+    let hideAddSubsectionButtonTimeout;
     const deferButtonHide = () => {
-      if (!this.hideAddSubsectionButtonTimeout) {
-        this.hideAddSubsectionButtonTimeout = setTimeout(() => {
+      if (!hideAddSubsectionButtonTimeout) {
+        hideAddSubsectionButtonTimeout = setTimeout(() => {
           this.$addSubsectionButtonContainer.hide();
         }, 1000);
       }
     };
 
     button.firstChild.onmouseenter = () => {
-      clearTimeout(this.hideAddSubsectionButtonTimeout);
-      this.hideAddSubsectionButtonTimeout = null;
+      clearTimeout(hideAddSubsectionButtonTimeout);
+      hideAddSubsectionButtonTimeout = null;
     };
     button.firstChild.onmouseleave = () => {
       deferButtonHide();
@@ -255,8 +254,8 @@ export default class Section extends SectionSkeleton {
     this.replyButtonHoverHandler = () => {
       if (this.addSubsectionForm) return;
 
-      clearTimeout(this.hideAddSubsectionButtonTimeout);
-      this.hideAddSubsectionButtonTimeout = null;
+      clearTimeout(hideAddSubsectionButtonTimeout);
+      hideAddSubsectionButtonTimeout = null;
 
       if (!this.showAddSubsectionButtonTimeout) {
         this.showAddSubsectionButtonTimeout = setTimeout(() => {
@@ -364,15 +363,13 @@ export default class Section extends SectionSkeleton {
         )
         .finally(() => {
           if (this.headline) {
-            const stringName = `sm-copylink-tooltip-${cd.settings.defaultSectionLinkType.toLowerCase()}`;
-
-            // We put it here to make it appear always after the "watch" item.
+            // We put this instruction here to make it always appear after the "watch" item.
             this.addMenuItem({
               label: cd.s('sm-copylink'),
               // We need the event object to be passed to the function.
               func: this.copyLink.bind(this),
               class: 'cd-sectionLink-copyLink',
-              tooltip: cd.s(stringName) + ' ' + cd.s('cld-invitation'),
+              tooltip: cd.s('sm-copylink-tooltip'),
               href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
             });
           }
@@ -448,7 +445,7 @@ export default class Section extends SectionSkeleton {
   /**
    * Show a move section dialog.
    */
-  async move() {
+  move() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
@@ -745,7 +742,7 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.getBodyHeight = function () {
-      return this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight;
+      return this.$errorItems ? this.$errors.get(0).scrollHeight : this.$body.get(0).scrollHeight;
     };
 
     MoveSectionDialog.prototype.initialize = function () {
@@ -876,11 +873,11 @@ export default class Section extends SectionSkeleton {
         this.titleInput.focus();
         this.actions.setAbilities({ close: true });
 
-        // A dirty workaround to avoid the scrollbar appearing when the window is loading. Couldn't
+        // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
         // figure out a way to do this out of the box.
-        dialog.$body.css('overflow', 'hidden');
+        this.$body.css('overflow', 'hidden');
         setTimeout(() => {
-          dialog.$body.css('overflow', '');
+          this.$body.css('overflow', '');
         }, 500);
 
         cd.g.windowManager.updateWindowSize(this);
@@ -939,8 +936,6 @@ export default class Section extends SectionSkeleton {
       return MoveSectionDialog.parent.prototype.getActionProcess.call(this, action);
     };
 
-    const section = this;
-
     if (dealWithLoadingBug('mediawiki.widgets')) return;
 
     // Make requests in advance
@@ -949,6 +944,7 @@ export default class Section extends SectionSkeleton {
       mw.loader.using('mediawiki.widgets'),
     ];
 
+    const section = this;
     const dialog = new MoveSectionDialog();
     cd.g.windowManager.addWindows([dialog]);
     cd.g.windowManager.openWindow(dialog);
@@ -979,7 +975,7 @@ export default class Section extends SectionSkeleton {
    *   headlines on the page.
    */
   watch(silent = false, renamedFrom) {
-    const sections = Section.getSectionsByHeadline(this.headline);
+    const sections = Section.getByHeadline(this.headline);
     let $links;
     if (!silent) {
       $links = $(sections.map((section) => section.$heading.find('.cd-sectionLink-watch').get(0)));
@@ -991,7 +987,7 @@ export default class Section extends SectionSkeleton {
     }
 
     let unwatchHeadline;
-    if (renamedFrom && !Section.getSectionsByHeadline(renamedFrom).length) {
+    if (renamedFrom && !Section.getByHeadline(renamedFrom).length) {
       unwatchHeadline = renamedFrom;
     }
 
@@ -1029,7 +1025,7 @@ export default class Section extends SectionSkeleton {
    *   error.
    */
   unwatch(silent = false) {
-    const sections = Section.getSectionsByHeadline(this.headline);
+    const sections = Section.getByHeadline(this.headline);
     let $links;
     if (!silent) {
       $links = $(
@@ -1078,7 +1074,7 @@ export default class Section extends SectionSkeleton {
    */
   copyLink(e) {
     e.preventDefault();
-    copyLink(this, e.shiftKey);
+    copyLink(this);
   }
 
   /**
@@ -1169,7 +1165,7 @@ export default class Section extends SectionSkeleton {
 
       case 'addSubsection': {
         codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, this.inCode.contentEndIndex));
-        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex);
+        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex).trim();
         newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
         break;
       }
@@ -1499,13 +1495,12 @@ export default class Section extends SectionSkeleton {
    */
   getChildren(indirect = false) {
     const children = [];
-
     let haveMetDirect = false;
     cd.sections
       .slice(this.id + 1)
       .some((section) => {
         if (section.level > this.level) {
-          // If, say, a level 4 sections directly follows a level 2 section, it should be considered
+          // If, say, a level 4 section directly follows a level 2 section, it should be considered
           // a child. This is why we need the haveMetDirect variable.
           if (section.level === this.level + 1) {
             haveMetDirect = true;
@@ -1523,23 +1518,12 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the TOC link to the section if present.
+   * Get the TOC item for the section if present.
    *
-   * @returns {?JQuery}
+   * @returns {?object}
    */
-  getTocLink() {
-    if (!cd.g.$toc.length) {
-      return null;
-    }
-
-    if (!this.cachedTocLink) {
-      const $link = cd.g.$toc.find(`a[href="#${$.escapeSelector(this.anchor)}"]`);
-      this.cachedTocLink = $link.length && !$link.closest('.cd-toc-notRenderedSection').length ?
-        $link :
-        null;
-    }
-
-    return this.cachedTocLink;
+  getTocItem() {
+    return toc.getItem(this.anchor) || null;
   }
 
   /**
@@ -1548,313 +1532,19 @@ export default class Section extends SectionSkeleton {
   updateTocLink() {
     if (!cd.settings.modifyToc) return;
 
-    const tocLink = this.getTocLink();
-    if (!tocLink) return;
+    const tocItem = this.getTocItem();
+    if (!tocItem) return;
 
     if (this.isWatched) {
-      tocLink
+      tocItem.$link
         .addClass('cd-toc-watched')
         .attr('title', cd.s('toc-watched'));
     } else {
-      tocLink
+      tocItem.$link
         .removeClass('cd-toc-watched')
         .removeAttr('title');
     }
   }
-
-  /**
-   * Add a section present on the current page to the watched sections list.
-   *
-   * @param {string} headline
-   * @param {string} [unwatchHeadline] Section to unwatch together with watching the specified
-   *   section (used when a section is renamed on the fly in {@link module:Comment#update} or {@link
-   *   module:CommentForm#submit}).
-   * @returns {Promise}
-   * @throws {CdError}
-   */
-  static watch(headline, unwatchHeadline) {
-    const watch = async () => {
-      try {
-        await getWatchedSections();
-      } catch (e) {
-        mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
-        throw e;
-      }
-
-      // The section could be added to the watchlist in another tab.
-      if (!cd.g.thisPageWatchedSections.includes(headline)) {
-        cd.g.thisPageWatchedSections.push(headline);
-      }
-
-      if (unwatchHeadline && cd.g.thisPageWatchedSections.includes(unwatchHeadline)) {
-        cd.g.thisPageWatchedSections.splice(
-          cd.g.thisPageWatchedSections.indexOf(unwatchHeadline),
-          1
-        );
-      }
-
-      try {
-        await setWatchedSections();
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, code } = e.data;
-          if (type === 'internal' && code === 'sizeLimit') {
-            const $body = cd.util.wrap(cd.sParse('section-watch-error-maxsize'), {
-              callbacks: {
-                'cd-notification-editWatchedSections': () => {
-                  editWatchedSections();
-                },
-              },
-            });
-            mw.notify($body, {
-              type: 'error',
-              autoHideSeconds: 'long',
-            });
-          } else {
-            mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
-          }
-        } else {
-          mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
-        }
-        throw e;
-      }
-    };
-
-    watchPromise = watchPromise.then(watch, watch);
-    return watchPromise;
-  }
-
-  /**
-   * Add a section present on the current page to the watched sections list.
-   *
-   * @param {string} headline
-   * @returns {Promise}
-   * @throws {CdError}
-   */
-  static unwatch(headline) {
-    const unwatch = async () => {
-      try {
-        await getWatchedSections();
-      } catch (e) {
-        mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
-        throw e;
-      }
-
-      // The section could be removed from the watchlist in another tab.
-      if (cd.g.thisPageWatchedSections.includes(headline)) {
-        cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
-      }
-
-      if (!cd.g.thisPageWatchedSections.length) {
-        delete cd.g.watchedSections[mw.config.get('wgArticleId')];
-      }
-
-      try {
-        await setWatchedSections();
-      } catch (e) {
-        mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
-        throw e;
-      }
-    };
-
-    watchPromise = watchPromise.then(unwatch, unwatch);
-    return watchPromise;
-  }
-
-  /**
-   * Get a section by anchor.
-   *
-   * @param {string} anchor
-   * @returns {?Section}
-   */
-  static getSectionByAnchor(anchor) {
-    if (!cd.sections || !anchor) {
-      return null;
-    }
-    return cd.sections.find((section) => section.anchor === anchor) || null;
-  }
-
-  /**
-   * Get sections by headline.
-   *
-   * @param {string} headline
-   * @returns {Section[]}
-   */
-  static getSectionsByHeadline(headline) {
-    return cd.sections.filter((section) => section.headline === headline);
-  }
-
-  /**
-   * Get a section by several parameters: id (index), headline, anchor, parent tree, first comment
-   * data. At least two parameters must match, not counting id and anchor.
-   *
-   * @param {object} options
-   * @param {number} options.id
-   * @param {string} options.headline
-   * @param {string} options.anchor
-   * @param {string} [options.parentTree]
-   * @param {string} [options.firstCommentAnchor]
-   * @returns {?Section}
-   */
-  static search({ id, headline, anchor, parentTree, firstCommentAnchor }) {
-    const matches = [];
-    cd.sections.some((section) => {
-      const hasIdMatched = section.id === id;
-      const hasHeadlineMatched = section.headline === headline;
-      const hasAnchorMatched = section.anchor === anchor;
-      let hasParentTreeMatched;
-      if (parentTree) {
-        const sectionParentTree = section.getParentTree().map((section) => section.headline);
-        hasParentTreeMatched = areObjectsEqual(sectionParentTree, parentTree);
-      } else {
-        hasParentTreeMatched = 0.25;
-      }
-      const hasFirstCommentMatched = section.comments[0]?.anchor === firstCommentAnchor;
-      const score = (
-        hasHeadlineMatched * 1 +
-        hasParentTreeMatched * 1 +
-        hasFirstCommentMatched * 1 +
-        hasAnchorMatched * 0.5 +
-        hasIdMatched * 0.001
-      );
-      if (score >= 2) {
-        matches.push({ section, score });
-      }
-
-      // Score bigger than 3.5 means it's the best match for sure. Two sections can't have
-      // coinciding anchors, so there can't be 2 sections with the score bigger than 3.5.
-      return score >= 3.5;
-    });
-
-    let bestMatch;
-    matches.forEach((match) => {
-      if (!bestMatch || match.score > bestMatch.score) {
-        bestMatch = match;
-      }
-    });
-    return bestMatch ? bestMatch.section : null;
-  }
-
-  /**
-   * Perform extra section-related tasks, including adding the `isLastSection` property, adding
-   * buttons, and binding events.
-   */
-  static adjustSections() {
-    cd.sections.forEach((section, i) => {
-      /**
-       * Is the section the last section on the page.
-       *
-       * @name isLastSection
-       * @type {boolean}
-       * @instance module:Section
-       */
-      section.isLastSection = i === cd.sections.length - 1;
-
-      if (section.isActionable) {
-        // If the next section of the same level has another nesting level (e.g., is inside a <div>
-        // with a specific style), don't add the "Add subsection" button - it would appear in the
-        // wrong place.
-        const nextSameLevelSection = cd.sections
-          .slice(i + 1)
-          .find((otherSection) => otherSection.level === section.level);
-        const isClosed = (
-          section.elements.length === 2 &&
-          cd.config.closedDiscussionClasses
-            ?.some((className) => section.elements[1].classList?.contains(className))
-        );
-        if (
-          !isClosed &&
-          (
-            !nextSameLevelSection ||
-            nextSameLevelSection.headingNestingLevel === section.headingNestingLevel
-          )
-        ) {
-          section.addAddSubsectionButton();
-        } else {
-          section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
-        }
-
-        const isFirstChunkClosed = (
-          section.elements[1] === section.lastElementInFirstChunk &&
-          cd.config.closedDiscussionClasses
-            ?.some((className) => section.lastElementInFirstChunk.classList?.contains(className))
-        );
-
-        // The same for the "Reply" button, but as this button is added to the end of the first
-        // chunk, we look at just the next section, not necessarily of the same level.
-        if (
-          !isFirstChunkClosed &&
-          (
-            !cd.sections[i + 1] ||
-            cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
-          )
-        ) {
-          section.addReplyButton();
-        }
-      }
-    });
-
-    cd.sections
-      .filter((section) => section.isActionable && section.level === 2)
-      .forEach((section) => {
-        // Section with the last reply button
-        const subsections = section.getChildren(true);
-        const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
-        if (targetSection.$replyButtonLink) {
-          targetSection.$replyButtonLink
-            .on('mouseenter', section.replyButtonHoverHandler)
-            .on('mouseleave', section.replyButtonUnhoverHandler);
-        }
-      });
-  }
-
-  /**
-   * Add new comments notifications to the end of each updated section.
-   *
-   * @param {Map} newCommentsBySection
-   */
-  static addNewCommentsNotifications(newCommentsBySection) {
-    $('.cd-refreshButtonContainer').remove();
-
-    newCommentsBySection.forEach((comments, section) => {
-      if (!section || typeof section === 'string') return;
-
-      const authors = comments
-        .map((comment) => comment.author)
-        .filter(unique);
-      const genders = authors.map((author) => author.getGender());
-      let commonGender;
-      if (genders.every((gender) => gender === 'female')) {
-        commonGender = 'female';
-      } else if (genders.every((gender) => gender !== 'female')) {
-        commonGender = 'male';
-      } else {
-        commonGender = 'unknown';
-      }
-      const userList = authors.map((user) => user.name).join(', ');
-      const button = new OO.ui.ButtonWidget({
-        label: cd.s('section-newcomments', comments.length, authors.length, userList, commonGender),
-        framed: false,
-        classes: ['cd-button', 'cd-sectionButton'],
-      });
-      button.on('click', () => {
-        const commentAnchor = comments[0].anchor;
-        reloadPage({ commentAnchor });
-      });
-
-      let $lastElement;
-      if (section.$addSubsectionButtonContainer) {
-        $lastElement = section.$addSubsectionButtonContainer;
-      } else if (section.$replyButton) {
-        $lastElement = section.$replyButton.closest('ul, ol, dl')
-      } else {
-        $lastElement = section.$elements[section.$elements.length - 1];
-      }
-      $('<div>')
-        .addClass('cd-refreshButtonContainer')
-        .addClass('cd-sectionButtonContainer')
-        .append(button.$element)
-        .insertAfter($lastElement);
-    });
-  }
 }
+
+Object.assign(Section, SectionStatic);

@@ -26,7 +26,7 @@
   display: none;
   pointer-events: none;
   justify-content: flex-end;
-  line-height: 1.357143em;
+  line-height: 1.4285714em;
 
   &-focused {
     display: flex;
@@ -66,50 +66,46 @@
     background-color: transparent;
   }
 
-  .oo-ui-buttonElement.oo-ui-labelElement > .oo-ui-buttonElement-button > .oo-ui-labelElement-label {
-    line-height: 1.357143em;
+  .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+    margin-left: 0;
   }
 }
 
 .ltr .cd-commentOverlay {
-  &-content {
-    .oo-ui-buttonWidget {
-      margin-right: 0;
-    }
+  .oo-ui-buttonWidget {
+    margin-right: 0;
+  }
 
-    .cd-commentButton:not(:first-child) {
-      margin-left: 1em;
-    }
+  .cd-commentButton:not(:first-child) {
+    margin-left: 1em;
   }
 }
 
 .rtl .cd-commentOverlay {
-  &-content {
-    .oo-ui-buttonWidget {
-      margin-left: 0;
-    }
+  .oo-ui-buttonWidget {
+    margin-left: 0;
+  }
 
-    .cd-commentButton:not(:first-child) {
-      margin-right: 1em;
-    }
+  .cd-commentButton:not(:first-child) {
+    margin-right: 1em;
   }
 }
 
-.cd-commentButton-icon {
-  &.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
-    padding-top: 1.4285714em;
-    padding-left: 1.4285714em;
-    min-width: unset;
-    margin-top: -1px;
+body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+  padding-top: 1.4285714em;
+  padding-left: 1.4285714em;
+  min-width: unset;
 
-    & > .oo-ui-iconElement-icon {
-      left: 0;
-    }
+  > .oo-ui-iconElement-icon {
+    left: 0;
   }
 }
 
 .cd-commentLayersContainerParent-relative {
   position: relative;
   z-index: 0;
-  overflow: hidden;
+
+  // https://en.wikipedia.org/wiki/Template:Discussion_top has "overflow: hidden" in the style
+  // property, which can create a scrollbar in some cases.
+  overflow: hidden !important;
 }

@@ -7,6 +7,7 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import Comment from './Comment';
+import CommentFormStatic from './CommentFormStatic';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
@@ -33,27 +34,6 @@ import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
 
 let commentFormsCounter = 0;
-
-/**
- * Callback to be used in Array#sort() for comment forms.
- *
- * @param {CommentForm} commentForm1
- * @param {CommentForm} commentForm2
- * @returns {number}
- * @private
- */
-function lastFocused(commentForm1, commentForm2) {
-  const lastFocused1 = commentForm1.lastFocused || new Date(0);
-  const lastFocused2 = commentForm2.lastFocused || new Date(0);
-
-  if (lastFocused2 > lastFocused1) {
-    return 1;
-  } else if (lastFocused2 < lastFocused1) {
-    return -1;
-  } else {
-    return 0;
-  }
-}
 
 /** Class representing a comment form. */
 export default class CommentForm {
@@ -198,6 +178,7 @@ export default class CommentForm {
     cd.commentForms.push(this);
 
     restoreScrollPosition();
+    navPanel.updateCommentFormButton();
 
     if (dataToRestore) {
       this.originalComment = dataToRestore.originalComment;
@@ -211,11 +192,8 @@ export default class CommentForm {
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
     } else {
-      // Wrap into setTimeout() for a more smooth animation.
-      setTimeout(() => {
-        this.$element.cdScrollIntoView('center', true, () => {
-          this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
-        });
+      this.$element.cdScrollIntoView('center', true, () => {
+        this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
       });
 
       if (this.mode === 'edit') {
@@ -455,34 +433,126 @@ export default class CommentForm {
       this.commentInput.$element
         .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
+      if (!['addSection', 'addSubsection'].includes(this.mode)) {
+        this.commentInput.$element.find('.group-heading').remove();
+      }
 
+      // Make the undo/redo functionality work in browsers that support it (Chrome).
+      $input.textSelection('register', {
+        encapsulateSelection: (options) => {
+          this.encapsulateSelection(options);
+        },
+        setContents: (value) => {
+          this.commentInput.select();
+          insertText(this.commentInput, value);
+        },
+      });
+
+      const lang = mw.config.get('wgUserLanguage');
+      $input.wikiEditor('addToToolbar', {
+        section: 'main',
+        group: 'format',
+        tools: {
+          smaller: {
+            label: cd.mws('wikieditor-toolbar-tool-small'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<small>',
+                peri: cd.mws('wikieditor-toolbar-tool-small-example'),
+                post: '</small>',
+              },
+            },
+          },
+          quote: {
+            label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
+            action: {
+              type: 'callback',
+              execute: () => {
+                this.quote();
+              },
+            },
+          },
+        },
+      });
+      $input.wikiEditor('addToToolbar', {
+        section: 'advanced',
+        group: 'format',
+        tools: {
+          code: {
+            label: cd.s('cf-code-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<code><nowiki>',
+                peri: cd.s('cf-code-placeholder'),
+                post: '</'.concat('nowiki></code>'),
+              },
+            },
+          },
+          codeBlock: {
+            label: cd.s('cf-codeblock-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<syntaxhighlight lang="">\n',
+                peri: cd.s('cf-codeblock-placeholder'),
+                post: '\n</syntaxhighlight>',
+              },
+            },
+          },
+          underline: {
+            label: cd.s('cf-underline-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<u>',
+                peri: cd.s('cf-underline-placeholder'),
+                post: '</u>',
+              },
+            },
+          },
+          strikethrough: {
+            label: cd.s('cf-strikethrough-tooltip'),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
+            action: {
+              type: 'encapsulate',
+              options: {
+                pre: '<s>',
+                peri: cd.s('cf-strikethrough-placeholder'),
+                post: '</s>',
+              },
+            },
+          },
+        },
+      });
       $input.wikiEditor('addToToolbar', {
         section: 'main',
         groups: {
           'convenient-discussions': {
             tools: {
               mention: {
-                label: cd.s('cf-mentions-tooltip'),
+                label: cd.s('cf-mention-tooltip'),
                 type: 'button',
-                icon: 'https://upload.wikimedia.org/wikipedia/commons/9/98/OOjs_UI_icon_userAvatar.svg',
+                icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
                 action: {
                   type: 'callback',
                   execute: () => {},
                 },
               },
-              quote: {
-                label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
-                type: 'button',
-                icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c0/OOjs_UI_icon_quotes-ltr.svg',
-                action: {
-                  type: 'callback',
-                  execute: () => {
-                    this.quote();
-                  },
-                },
-              },
             },
-          }
+          },
         },
       });
       this.$element
@@ -552,7 +622,7 @@ export default class CommentForm {
    * @private
    */
   createContents(dataToRestore) {
-    if (this.target instanceof Page) {
+    if (['addSection', 'addSubsection'].includes(this.mode)) {
       this.containerListType = null;
     } else {
       /**
@@ -571,40 +641,6 @@ export default class CommentForm {
           .parent()
           .prop('tagName')
           .toLowerCase();
-    }
-
-    let outerWrapperTag;
-    let createList = false;
-    if (this.mode === 'reply') {
-      createList = true;
-      const $lastOfTarget = this.target.$elements.last();
-      const $nextToTarget = $lastOfTarget.next();
-      if ($lastOfTarget.is('li')) {
-        // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
-        // in those cases. Which is unsemantic, yes :-(
-        if (this.containerListType !== 'ol') {
-          outerWrapperTag = 'li';
-        } else {
-          outerWrapperTag = 'div';
-        }
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      } else {
-        if ($nextToTarget.is('ul')) {
-          createList = false;
-          outerWrapperTag = 'li';
-        } else if ($nextToTarget.is('dl')) {
-          createList = false;
-          outerWrapperTag = 'dd';
-        }
-      }
-    } else if (this.mode === 'edit') {
-      const $lastOfTarget = this.target.$elements.last();
-      if ($lastOfTarget.is('li')) {
-        outerWrapperTag = 'li';
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
     }
 
     this.editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
@@ -630,51 +666,6 @@ export default class CommentForm {
     if (this.mode === 'addSubsection') {
       this.$element.addClass(`cd-commentForm-addSubsection-${this.target.level}`);
     }
-
-    if (outerWrapperTag) {
-      /**
-       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
-       * comment form element} directly, or {@link module:CommentForm~$wrappingList the list} that
-       * wraps the item that wraps the comment form element.
-       *
-       * @type {JQuery|undefined}
-       */
-      this.$outerWrapper = $(`<${outerWrapperTag}>`);
-    }
-
-    if (this.mode === 'reply') {
-      if (createList) {
-        /**
-         * List that wraps the item that wraps the comment form element.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
-
-        if (this.$outerWrapper) {
-          this.$wrappingList.appendTo(this.$outerWrapper);
-        }
-
-        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
-
-        this.$element.appendTo($wrappingItem);
-      } else {
-        this.$element.appendTo(this.$outerWrapper);
-      }
-    } else if (this.mode === 'edit') {
-      if (this.$outerWrapper) {
-        this.$element.appendTo(this.$outerWrapper);
-      }
-    }
-
-    /**
-     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
-     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
-     * return the DOM to the original state, before the form was created.
-     *
-     * @type {JQuery}
-     */
-    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
 
     /**
      * The area where service messages are displayed.
@@ -815,7 +806,7 @@ export default class CommentForm {
        *
        * @name minorField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -823,7 +814,7 @@ export default class CommentForm {
        *
        * @name minorCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
       [this.minorField, this.minorCheckbox] = checkboxField({
         value: 'minor',
@@ -844,7 +835,7 @@ export default class CommentForm {
      *
      * @name watchField
      * @type {OoUiFieldLayout}
-     * @instance module:CommentForm
+     * @instance
      */
 
     /**
@@ -852,7 +843,7 @@ export default class CommentForm {
      *
      * @name watchCheckbox
      * @type {OoUiCheckboxInputWidget}
-     * @instance module:CommentForm
+     * @instance
      */
     [this.watchField, this.watchCheckbox] = checkboxField({
       value: 'watch',
@@ -877,7 +868,7 @@ export default class CommentForm {
        *
        * @name watchSectionField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -885,7 +876,7 @@ export default class CommentForm {
        *
        * @name watchSectionCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
       [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
         value: 'watchSection',
@@ -902,7 +893,7 @@ export default class CommentForm {
        *
        * @name omitSignatureField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -910,7 +901,7 @@ export default class CommentForm {
        *
        * @name omitSignatureCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       [this.omitSignatureField, this.omitSignatureCheckbox] = checkboxField({
@@ -936,7 +927,7 @@ export default class CommentForm {
        *
        * @name deleteField
        * @type {OoUiFieldLayout|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
 
       /**
@@ -944,7 +935,7 @@ export default class CommentForm {
        *
        * @name deleteCheckbox
        * @type {OoUiCheckboxInputWidget|undefined}
-       * @instance module:CommentForm
+       * @instance
        */
       [this.deleteField, this.deleteCheckbox] = checkboxField({
         value: 'delete',
@@ -959,7 +950,7 @@ export default class CommentForm {
      *
      * @name settingsButton
      * @type {Promise}
-     * @instance module:CommentForm
+     * @instance
      */
     this.settingsButton = new OO.ui.ButtonWidget({
       framed: false,
@@ -1249,14 +1240,95 @@ export default class CommentForm {
       cd.g.$root.empty();
     }
 
+    let outerWrapperTag;
+    let createList = false;
+    let $lastOfTarget;
+    let $other;
+    if (this.mode === 'reply') {
+      createList = true;
+      $lastOfTarget = this.target.$elements.last();
+      $other = $lastOfTarget.next();
+      const $nextToTargetFirstChild = $other.children().first();
+      if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
+        $other = $nextToTargetFirstChild;
+      }
+      if ($other.is('ul')) {
+        createList = false;
+        outerWrapperTag = 'li';
+      } else if ($other.is('dl')) {
+        createList = false;
+        outerWrapperTag = 'dd';
+      } else if ($lastOfTarget.is('li')) {
+        // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
+        // in those cases. Which is unsemantic, yes :-(
+        if (this.containerListType !== 'ol') {
+          outerWrapperTag = 'li';
+        } else {
+          outerWrapperTag = 'div';
+        }
+      } else if ($lastOfTarget.is('dd')) {
+        outerWrapperTag = 'dd';
+      }
+    } else if (this.mode === 'edit') {
+      const $lastOfTarget = this.target.$elements.last();
+      if ($lastOfTarget.is('li')) {
+        outerWrapperTag = 'li';
+      } else if ($lastOfTarget.is('dd')) {
+        outerWrapperTag = 'dd';
+      }
+    }
+
+    if (outerWrapperTag) {
+      /**
+       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
+       * comment form element} directly, or {@link module:CommentForm~$wrappingList the list} that
+       * wraps the item that wraps the comment form element.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$outerWrapper = $(`<${outerWrapperTag}>`);
+    }
+
+    if (this.mode === 'reply') {
+      if (createList) {
+        /**
+         * List that wraps the item that wraps the comment form element.
+         *
+         * @type {JQuery|undefined}
+         */
+        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
+
+        if (this.$outerWrapper) {
+          this.$wrappingList.appendTo(this.$outerWrapper);
+        }
+
+        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
+
+        this.$element.appendTo($wrappingItem);
+      } else {
+        this.$element.appendTo(this.$outerWrapper);
+      }
+    } else if (this.mode === 'edit') {
+      if (this.$outerWrapper) {
+        this.$element.appendTo(this.$outerWrapper);
+      }
+    }
+
+    /**
+     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
+     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
+     * return the DOM to the original state, before the form was created.
+     *
+     * @type {JQuery}
+     */
+    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
+
     switch (this.mode) {
       case 'reply': {
-        const $lastOfTarget = this.target.$elements.last();
-        const $nextToTarget = $lastOfTarget.next();
-        if ($lastOfTarget.is('li, dd')) {
+        if ($other.is('ul, dl')) {
+          this.$outerWrapper.prependTo($other);
+        } else if ($lastOfTarget.is('li, dd')) {
           this.$outerWrapper.insertAfter($lastOfTarget);
-        } else if ($nextToTarget.is('ul, dl')) {
-          this.$outerWrapper.prependTo($nextToTarget);
         } else {
           this.$wrappingList.insertAfter($lastOfTarget);
         }
@@ -1730,11 +1802,7 @@ export default class CommentForm {
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.
    */
-  showMessage(htmlOrJquery, {
-    type = 'notice',
-    name,
-    isRaw = false,
-  } = {}) {
+  showMessage(htmlOrJquery, { type = 'notice', name, isRaw = false } = {}) {
     if (this.isDestroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
       return;
     }
@@ -2219,21 +2287,19 @@ export default class CommentForm {
       signature = signature.trimLeft();
     }
 
-    code += signature;
-
-    // Process the small font wrappers
-    if (!this.headlineInput && isWholeCommentInSmall) {
-      const indentation = (
-        newLineIndentationChars +
-        (/^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ')
-      );
+    // Process the small font wrappers, add the signature.
+    if (isWholeCommentInSmall && !this.headlineInput) {
+      const spaceOrNot = /^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ';
+      const indentation = newLineIndentationChars + spaceOrNot;
       const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
       if (cd.config.smallDivTemplates?.[0] && !/^[:*#]/m.test(code)) {
-        const adjustedCode = code.replace(/\|/g, '{{!}}');
+        const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
-        code = `<small>${before}${code}</small>`;
+        code = `<small>${before}${code}</small> ${signature}`;
       }
+    } else {
+      code += signature;
     }
 
     if (this.mode !== 'edit') {
@@ -2319,7 +2385,7 @@ export default class CommentForm {
       anchors.push(match[1]);
     }
     anchors.forEach((anchor) => {
-      const comment = Comment.getCommentByAnchor(anchor);
+      const comment = Comment.getByAnchor(anchor);
       if (comment) {
         const commentInCode = comment.locateInCode(newPageCode);
         const anchorCode = cd.config.getAnchorCode(anchor);
@@ -3043,11 +3109,11 @@ export default class CommentForm {
    * Remove the elements and other objects' properties related to the form.
    */
   destroy() {
+    this.$outermostElement.remove();
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
     this.forget();
-    this.$outermostElement.remove();
 
     /**
      * Has the comment form been {@link module:CommentForm#destroy destroyed}.
@@ -3124,6 +3190,7 @@ export default class CommentForm {
       const commentText = this.commentInput.getValue()
         .trim()
         .replace(/\s+/g, ' ')
+
         // Remove user links to prevent sending a double notification.
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
           cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(wikilink) ? text : s
@@ -3240,8 +3307,6 @@ export default class CommentForm {
       this.minorCheckbox.setDisabled(true);
       this.omitSignatureCheckbox?.setDisabled(true);
 
-      this.$element.addClass('cd-commentForm-disabled');
-
       this.submitButtonLabelStandard = cd.s('cf-delete-button');
       this.submitButtonLabelShort = cd.s('cf-delete-button-short');
       this.submitButton
@@ -3259,8 +3324,6 @@ export default class CommentForm {
       this.headlineInput?.setDisabled(false);
       this.minorCheckbox.setDisabled(false);
       this.omitSignatureCheckbox?.setDisabled(false);
-
-      this.$element.removeClass('cd-commentForm-disabled');
 
       this.submitButtonLabelStandard = cd.s('cf-save');
       this.submitButtonLabelShort = cd.s('cf-save-short');
@@ -3283,8 +3346,7 @@ export default class CommentForm {
    */
   mention(mentionAddressee) {
     if (mentionAddressee && this.targetComment) {
-      let data = Autocomplete.getMentionsConfig()
-        .transform(this.targetComment.author.name);
+      let data = Autocomplete.getConfig('mentions').transform(this.targetComment.author.name);
       data = data.ctrlModify(data);
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
@@ -3345,6 +3407,7 @@ export default class CommentForm {
         post: cd.config.quoteFormatting[1],
         selection,
         trim: true,
+        leadingNewline: true,
       });
     }
   }
@@ -3354,18 +3417,40 @@ export default class CommentForm {
    * provided value if no text is selected.
    *
    * @param {object} options
-   * @param {string} options.pre Text to insert before the caret/selection.
+   * @param {string} [options.pre] Text to insert before the caret/selection.
    * @param {string} [options.peri=''] Fallback value used instead of the selection.
-   * @param {string} options.post Text to insert after the caret/selection.
+   * @param {string} [options.post] Text to insert after the caret/selection.
+   * @param {string} [options.replace=false] If there is a selection, replace it with peri instead
+   *   of leaving it alone.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
    * @param {boolean} [options.trim] Trim the selection.
+   * @param {boolean} [options.leadingNewline] Put a newline before the resulting text to insert if
+   *   it is not already there.
    */
-  encapsulateSelection({ pre, peri = '', post, selection, trim }) {
-    let middleTextStartPos;
-    if (!selection) {
-      const range = this.commentInput.getRange();
-      middleTextStartPos = Math.min(range.from, range.to) + pre.length;
-      selection = this.commentInput.getValue().substring(range.from, range.to);
+  encapsulateSelection({
+    pre = '',
+    peri = '',
+    post = '',
+    selection,
+    replace = false,
+    trim,
+    leadingNewline,
+  }) {
+    const range = this.commentInput.getRange();
+    const selectionStartPos = Math.min(range.from, range.to);
+    const value = this.commentInput.getValue();
+    const leadingNewlineChar = (
+      leadingNewline && !/(^|\n)$/.test(value.slice(0, selectionStartPos)) ?
+      '\n' :
+      ''
+    );
+    let periStartPos;
+    const getSelection = !selection && !(peri && replace);
+    if (getSelection) {
+      periStartPos = selectionStartPos + leadingNewlineChar.length + pre.length;
+      selection = value.substring(range.from, range.to);
+    } else {
+      selection = selection || '';
     }
     if (trim) {
       selection = selection.trim();
@@ -3376,6 +3461,7 @@ export default class CommentForm {
     const [trailingSpace] = selection.match(/ *$/);
     const middleText = selection || peri;
     const text = (
+      leadingNewlineChar +
       leadingSpace +
       pre +
       middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
@@ -3384,50 +3470,10 @@ export default class CommentForm {
     );
 
     insertText(this.commentInput, text);
-    if (!selection) {
-      this.commentInput.selectRange(middleTextStartPos, middleTextStartPos + peri.length);
+    if (getSelection) {
+      this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
     }
   }
-
-  /**
-   * Get the name of the correlated property of the comment form target based on the comment for
-   * mode.
-   *
-   * @param {string} mode
-   * @returns {string}
-   * @private
-   */
-  static modeToProperty(mode) {
-    return mode === 'replyInSection' ? 'addReply' : mode;
-  }
-
-  /**
-   * Get the last active comment form.
-   *
-   * @returns {?CommentForm}
-   */
-  static getLastActiveCommentForm() {
-    return (
-      cd.commentForms
-        .slice()
-        .sort(lastFocused)[0] ||
-      null
-    );
-  }
-
-  /**
-   * Get the last active comment form that has received an input. This includes altering text
-   * fields, not checkboxes.
-   *
-   * @returns {?CommentForm}
-   */
-  static getLastActiveAlteredCommentForm() {
-    return (
-      cd.commentForms
-        .slice()
-        .sort(lastFocused)
-        .find((commentForm) => commentForm.isAltered()) ||
-      null
-    );
-  }
 }
+
+Object.assign(CommentForm, CommentFormStatic);

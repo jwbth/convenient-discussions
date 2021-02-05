@@ -102,13 +102,7 @@ export function radioField({ label, selected, help, options }) {
  * @param {object} options.copyCallback
  * @returns {OoUiActionFieldLayout}
  */
-export function copyActionField({
-  label,
-  value,
-  disabled = false,
-  help,
-  copyCallback,
-}) {
+export function copyActionField({ label, value, disabled = false, help, copyCallback }) {
   const input = new OO.ui.TextInputWidget({ value, disabled });
   const button = new OO.ui.ButtonWidget({
     label: cd.s('copy'),

@@ -4,6 +4,7 @@
  * @module updateChecker
  */
 
+import CdError from './CdError';
 import Comment from './Comment';
 import Section from './Section';
 import cd from './cd';
@@ -96,26 +97,26 @@ async function checkForUpdates() {
     const currentRevisionId = mw.config.get('wgRevisionId');
     if (revisions.length && revisions[0].revid !== (lastCheckedRevisionId || currentRevisionId)) {
       const { revisionId, comments, sections } = await updateChecker.processPage();
-
-      if (!revisionData[currentRevisionId] && isPageStillAtRevision(currentRevisionId)) {
-        await updateChecker.processPage(currentRevisionId);
-      }
-
       lastCheckedRevisionId = revisionId;
 
-      // We check for new edits before notifying about new comments to notify about changes in a
-      // renamed section if it is watched.
       if (isPageStillAtRevision(currentRevisionId)) {
-        checkForNewEdits();
-      }
+        const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
 
-      if (isPageStillOutdated(revisionId)) {
-        toc.addNewSections(sections);
-        await processComments(comments, revisionId);
+        if (isPageStillAtRevision(currentRevisionId)) {
+          mapSections(sections);
+          toc.addNewSections(sections);
+          const mappedCurrentComments = mapComments(currentComments, comments);
+
+          // We check for new edits before notifying about new comments to notify about changes in a
+          // renamed section if it is watched.
+          checkForNewEdits(mappedCurrentComments);
+
+          await processComments(comments, mappedCurrentComments, currentRevisionId);
+        }
       }
     }
   } catch (e) {
-    if (e?.data && e.data.type !== 'network') {
+    if (!(e instanceof CdError) || (e.data && e.data.type !== 'network')) {
       console.warn(e);
     }
   }
@@ -144,13 +145,13 @@ async function processRevisionsIfNeeded() {
   }, true);
 
   previousVisitRevisionId = revisions[0]?.revid;
-  const revisionId = mw.config.get('wgRevisionId');
+  const currentRevisionId = mw.config.get('wgRevisionId');
 
-  if (previousVisitRevisionId && previousVisitRevisionId !== revisionId) {
-    await updateChecker.processPage(previousVisitRevisionId);
-    await updateChecker.processPage(revisionId);
-    if (isPageStillAtRevision(revisionId)) {
-      checkForEditsSincePreviousVisit();
+  if (previousVisitRevisionId && previousVisitRevisionId < currentRevisionId) {
+    const { comments: oldComments } = await updateChecker.processPage(previousVisitRevisionId);
+    const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
+    if (isPageStillAtRevision(currentRevisionId)) {
+      checkForEditsSincePreviousVisit(mapComments(currentComments, oldComments));
     }
   }
 }
@@ -165,8 +166,8 @@ async function processRevisionsIfNeeded() {
 function cleanUpSeenRenderedEdits(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
-    const seenUnixTime = Object.keys(newData[key])[0].seenUnixTime;
-    if (seenUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
+    const seenUnixTime = Object.keys(newData[key])[0]?.seenUnixTime;
+    if (!seenUnixTime || seenUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
       delete newData[key];
     }
   });
@@ -174,25 +175,59 @@ function cleanUpSeenRenderedEdits(data) {
 }
 
 /**
+ * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a web
+ * worker so its constuctor is lost.)
+ *
+ * @typedef {object} SectionSkeletonLike
+ */
+
+/**
+ * Map sections obtained from a revision to the sections present on the page.
+ *
+ * @param {SectionSkeletonLike[]} sections
+ */
+function mapSections(sections) {
+  // Reset from the previous run.
+  cd.sections.forEach((section) => {
+    delete section.match;
+  });
+
+  sections.forEach((section) => {
+    const { section: matchedSection, score } = Section.search(section, true) || {};
+    if (matchedSection && (!matchedSection.match || score > matchedSection.matchScore)) {
+      if (matchedSection.match) {
+        delete matchedSection.match.match;
+      }
+      matchedSection.match = section;
+      matchedSection.matchScore = score;
+      section.match = matchedSection;
+    }
+  });
+}
+
+/**
+ * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
+ * worker so its constuctor is lost.)
+ *
+ * @typedef {object} CommentSkeletonLike
+ */
+
+/**
  * Map comments obtained from the current revision to the comments obtained from another revision
  * (newer or older) by adding the `match` property to the first ones. The function also adds the
  * `hasPoorMatch` property to the comments that have possible matches that are not good enough to
  * confidently state a match.
  *
- * @param {CommentSkeleton[]} currentComments
- * @param {CommentSkeleton[]} otherComments
+ * @param {CommentSkeletonLike[]} currentComments
+ * @param {CommentSkeletonLike[]} otherComments
+ * @returns {CommentSkeletonLike[]} Mapped current comments.
  * @private
  */
 function mapComments(currentComments, otherComments) {
-  currentComments.forEach((currentComment) => {
-    delete currentComment.match;
-    delete currentComment.matchScore;
-    delete currentComment.hasPoorMatch;
-  });
+  const mappedCurrentComments = currentComments.map((comment) => Object.assign({}, comment));
 
   otherComments.forEach((otherComment) => {
-    // Remove properties from the previous run.
-    let currentCommentsFiltered = currentComments.filter((currentComment) => (
+    let currentCommentsFiltered = mappedCurrentComments.filter((currentComment) => (
       currentComment.authorName === otherComment.authorName &&
       currentComment.date &&
       otherComment.date &&
@@ -213,7 +248,7 @@ function mapComments(currentComments, otherComments) {
           // coincides.
           const hasIdMatched = (
             currentComment.id === otherComment.id &&
-            currentComments.length === otherComments.length
+            mappedCurrentComments.length === otherComments.length
           );
 
           const partsMatchedCount = currentComment.elementHtmls
@@ -259,33 +294,51 @@ function mapComments(currentComments, otherComments) {
         });
     }
   });
+
+  return mappedCurrentComments;
+}
+
+/**
+ * Determine if the comment was edited based on the `textInnerHtml` and `headingInnerHtml`
+ * properties (the comment may lose its heading because technical comment is added between it and
+ * the heading).
+ *
+ * @param {CommentSkeletonLike[]} olderComment
+ * @param {CommentSkeletonLike[]} newerComment
+ * @returns {boolean}
+ * @private
+ */
+function isCommentEdited(olderComment, newerComment) {
+  return (
+    newerComment.textInnerHtml !== olderComment.textInnerHtml ||
+    (
+      newerComment.headingInnerHtml &&
+      newerComment.headingInnerHtml !== olderComment.headingInnerHtml
+    )
+  );
 }
 
 /**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
+ * @param {CommentSkeletonLike[]} mappedCurrentComments
  * @private
  */
-function checkForEditsSincePreviousVisit() {
-  const oldComments = revisionData[previousVisitRevisionId].comments;
-  const currentComments = revisionData[mw.config.get('wgRevisionId')].comments;
-
-  mapComments(currentComments, oldComments);
-
+function checkForEditsSincePreviousVisit(mappedCurrentComments) {
   const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
   const articleId = mw.config.get('wgArticleId');
 
-  currentComments.forEach((currentComment) => {
+  mappedCurrentComments.forEach((currentComment) => {
     if (currentComment.anchor === submittedCommentAnchor) return;
 
     const oldComment = currentComment.match;
     if (oldComment) {
       const seenInnerHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.innerHtml;
       if (
-        oldComment.innerHtml !== currentComment.innerHtml &&
+        isCommentEdited(oldComment, currentComment) &&
         seenInnerHtml !== currentComment.innerHtml
       ) {
-        const comment = Comment.getCommentByAnchor(currentComment.anchor);
+        const comment = Comment.getByAnchor(currentComment.anchor);
         if (!comment) return;
 
         const commentsData = [oldComment, currentComment];
@@ -327,26 +380,22 @@ function checkForEditsSincePreviousVisit() {
 /**
  * Check if there are changes made to the currently displayed comments since they were rendered.
  *
+ * @param {CommentSkeletonLike[]} mappedCurrentComments
  * @private
  */
-function checkForNewEdits() {
-  const newComments = revisionData[lastCheckedRevisionId].comments;
-  const currentComments = revisionData[mw.config.get('wgRevisionId')].comments;
-
-  mapComments(currentComments, newComments);
-
+function checkForNewEdits(mappedCurrentComments) {
   let isEditMarkUpdated = false;
-  currentComments.forEach((currentComment) => {
+  mappedCurrentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     if (newComment) {
-      const comment = Comment.getCommentByAnchor(currentComment.anchor);
+      const comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment) return;
 
       if (comment.isDeleted) {
         comment.unmarkAsEdited('deleted');
         isEditMarkUpdated = true;
       }
-      if (newComment.innerHtml !== currentComment.innerHtml) {
+      if (isCommentEdited(currentComment, newComment)) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
           const success = comment.update(currentComment, newComment);
@@ -361,7 +410,7 @@ function checkForNewEdits() {
         isEditMarkUpdated = true;
       }
     } else if (!currentComment.hasPoorMatch) {
-      const comment = Comment.getCommentByAnchor(currentComment.anchor);
+      const comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsEdited('deleted');
@@ -567,18 +616,6 @@ function showDesktopNotification(comments) {
 }
 
 /**
- * Whether still an older revision of the page is displayed than that is retrieved and the content
- * is not loading.
- *
- * @param {number} newRevisionId
- * @returns {boolean}
- * @private
- */
-function isPageStillOutdated(newRevisionId) {
-  return newRevisionId > mw.config.get('wgRevisionId') && !isLoadingOverlayOn();
-}
-
-/**
  * Whether the page is still at the specified revision and the content is not loading.
  *
  * @param {number} revisionId
@@ -590,20 +627,14 @@ function isPageStillAtRevision(revisionId) {
 }
 
 /**
- * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
- * worker so its constuctor is lost.)
- *
- * @typedef {object} CommentSkeletonLike
- */
-
-/**
  * Process the comments retrieved by a web worker.
  *
  * @param {CommentSkeletonLike[]} comments
- * @param {number} revisionId
+ * @param {CommentSkeletonLike[]} mappedCurrentComments
+ * @param {number} currentRevisionId
  * @private
  */
-async function processComments(comments, revisionId) {
+async function processComments(comments, mappedCurrentComments, currentRevisionId) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     if (comment.parentAuthorName) {
@@ -613,12 +644,15 @@ async function processComments(comments, revisionId) {
     }
   });
 
+  const newComments = comments.filter((comment) => (
+    comment.anchor &&
+    !mappedCurrentComments.some((currentComment) => currentComment.match === comment)
+  ));
+
   // Extract "interesting" comments (that would make the new comments counter purple and might
   // invoke notifications). Keep in mind that we should account for the case where comments have
   // been removed. For example, the counter could be "+1" but then go back to displaying the refresh
   // icon which means 0 new comments.
-  const newComments = comments
-    .filter((comment) => comment.anchor && !Comment.getCommentByAnchor(comment.anchor));
   const interestingNewComments = newComments.filter((comment) => {
     if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
@@ -633,7 +667,7 @@ async function processComments(comments, revisionId) {
 
     if (comment.section) {
       // Is this section watched by means of an upper level section?
-      const section = Section.search(comment.section);
+      const section = comment.section.match;
       if (section) {
         const closestWatchedSection = section.getClosestWatchedSection(true);
         if (closestWatchedSection) {
@@ -650,9 +684,7 @@ async function processComments(comments, revisionId) {
     .filter(unique);
   await getUserGenders(authors, true);
 
-  if (!isPageStillOutdated(revisionId)) return;
-
-  cd.debug.startTimer('process updates');
+  if (!isPageStillAtRevision(currentRevisionId)) return;
 
   if (interestingNewComments[0]) {
     updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
@@ -674,9 +706,6 @@ async function processComments(comments, revisionId) {
   showOrdinaryNotification(commentsToNotifyAbout);
   showDesktopNotification(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);
-
-  cd.debug.stopTimer('process updates');
-  cd.debug.logAndResetEverything();
 }
 
 /**
@@ -706,8 +735,11 @@ async function onMessageFromWorker(e) {
   if (message.type === 'wakeUp') {
     checkForUpdates();
   } else {
-    resolvers[message.resolverId](message);
-    delete resolvers[message.resolverId];
+    const resolverId = message.resolverId;
+    delete message.resolverId;
+    delete message.type;
+    resolvers[resolverId](message);
+    delete resolvers[resolverId];
   }
 }
 
@@ -762,6 +794,10 @@ const updateChecker = {
    * @memberof module:updateChecker
    */
   async processPage(revisionToParseId) {
+    if (revisionData[revisionToParseId]) {
+      return revisionData[revisionToParseId];
+    }
+
     const {
       text,
       revid: revisionId,
@@ -777,7 +813,7 @@ const updateChecker = {
     ];
 
     const message = await runWorkerTask({
-      type: revisionToParseId ? 'parseRevision' : 'parse',
+      type: 'parse',
       revisionId,
       text,
       g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER'], disallowedNames),
@@ -785,11 +821,12 @@ const updateChecker = {
     });
 
     if (!revisionData[message.revisionId]) {
-      const { comments, sections } = message;
-      revisionData[message.revisionId] = { comments, sections };
+      revisionData[message.revisionId] = message;
     }
 
-    // Clean up revisionData as it may grow really big.
+    // Clean up revisionData from values that can't be reused as it may grow really big. (The newest
+    // revision could be reused as the current revision; the current revision could be reused as the
+    // previous visit revision.)
     Object.keys(revisionData).forEach((key) => {
       const revisionId = Number(key);
       if (

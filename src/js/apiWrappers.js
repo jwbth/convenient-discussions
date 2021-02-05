@@ -316,11 +316,11 @@ export async function setGlobalOption(name, value) {
  * Request genders of a list of users. A gender may be `'male'`, `'female'`, or `'unknown'`.
  *
  * @param {User[]} users
- * @param {boolean} [doBackgroundRequest=false] Make a request that won't set the process on hold when
- *   the tab is in the background.
+ * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
+ *   when the tab is in the background.
  * @throws {CdError}
  */
-export async function getUserGenders(users, doBackgroundRequest = false) {
+export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender())
     .map((user) => user.name);
@@ -334,7 +334,7 @@ export async function getUserGenders(users, doBackgroundRequest = false) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const resp = await (doBackgroundRequest ? makeBackgroundRequest(options) : cd.g.api.post(options))
+    const resp = await (requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options))
       .catch(handleApiReject);
     const users = resp.query?.users;
     if (!users) {

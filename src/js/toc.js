@@ -10,6 +10,66 @@ import cd from './cd';
 import { reloadPage } from './boot';
 import { restoreScrollPosition, saveScrollPosition } from './util';
 
+let tocItems;
+
+/**
+ * Class representing a table of contents item.
+ */
+class TocItem {
+  /**
+   * Create a table of contents item object.
+   *
+   * @param {object} a
+   */
+  constructor(a) {
+    // We expect that the number and text are the first two children of a <li> element.
+    const textSpan = a.children[1];
+    const headline = textSpan.textContent;
+    const anchor = a.getAttribute('href').slice(1);
+    const li = a.parentNode;
+    let [, level] = li.className.match(/\btoclevel-(\d+)/);
+    level = Number(level);
+    const number = a.children[0].textContent;
+    Object.assign(this, {
+      headline,
+      anchor,
+      level,
+      number,
+      $element: $(li),
+      $link: $(a),
+      $text: $(textSpan),
+    });
+  }
+
+  /**
+   * Generate HTML to use it in the TOC for the section. Only a limited number of HTML elements is
+   * allowed in TOC.
+   *
+   * @param {JQuery} $headline
+   */
+  replaceText($headline) {
+    const html = $headline
+      .clone()
+      .find('*')
+      .each((i, el) => {
+        if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
+          Array.from(el.attributes).forEach((attr) => {
+            el.removeAttribute(attr.name);
+          });
+        } else {
+          Array.from(el.childNodes).forEach((child) => {
+            el.parentNode.insertBefore(child, el);
+          });
+          el.remove();
+        }
+      })
+      .end()
+      .html();
+    this.$text.html(html);
+    this.headline = this.$text.text().trim();
+  }
+}
+
 export default {
   /**
    * Hide the TOC if the relevant cookie is set. This method duplicates {@link
@@ -23,6 +83,40 @@ export default {
     if (mw.cookie.get('hidetoc') === '1') {
       cd.g.$toc.find('.toctogglecheckbox').prop('checked', true);
     }
+  },
+
+  /**
+   * Reset TOC data (executed at each page reload).
+   */
+  reset() {
+    tocItems = null;
+    cd.g.$toc = cd.g.$root.find('.toc');
+    const $closestFloating = cd.g.$toc.closest(
+      '[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]'
+    );
+    cd.g.isTocFloating = Boolean(
+      $closestFloating.length && cd.g.$root.has($closestFloating).length
+    );
+  },
+
+  /**
+   * Get a TOC item by anchor.
+   *
+   * @param {string} anchor
+   * @returns {?object}
+   */
+  getItem(anchor) {
+    if (!cd.g.$toc.length) {
+      return null;
+    }
+
+    if (!tocItems) {
+      // It is executed first time before not rendered (gray) sections are added to the TOC, so we
+      // use a simple algorithm to obtain items.
+      tocItems = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a')).map((a) => new TocItem(a));
+    }
+
+    return tocItems.find((item) => item.anchor === anchor) || null;
   },
 
   /**
@@ -49,40 +143,17 @@ export default {
    * Add links to new, not yet rendered sections (loaded in the background) to the table of
    * contents.
    *
+   * Note that this method may also add the `match` property to the section elements containing a
+   * matched `Section` object.
+   *
    * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
    */
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    cd.debug.startTimer('addNewSections');
-    cd.debug.startTimer('addNewSections remove');
-
     cd.g.$toc
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
       .remove();
-
-    cd.debug.stopTimer('addNewSections remove');
-    cd.debug.startTimer('addNewSections tocSections');
-
-    const tocSections = cd.g.$toc
-      .find('li > a')
-      .toArray()
-      .map((el) => {
-        const $el = $(el);
-        const headline = $el.find('.toctext').text();
-        const anchor = $el.attr('href').slice(1);
-        const $element = $el.parent();
-        let [, level] = $element.attr('class').match(/\btoclevel-(\d+)/);
-        level = Number(level);
-        const number = $element
-          .children('a')
-          .children('.tocnumber')
-          .text();
-        return { headline, anchor, level, number, $element };
-      });
-
-    cd.debug.stopTimer('addNewSections tocSections');
-    cd.debug.startTimer('addNewSections parent');
 
     /*
       Note the case when the page starts with sections of lower levels than the base level, like
@@ -118,19 +189,11 @@ export default {
       section.tocLevel = section.parent ? section.parent.tocLevel + 1 : 1;
     });
 
-    cd.debug.stopTimer('addNewSections parent');
-    cd.debug.startTimer('addNewSections add');
-
     let currentTree = [];
     const $topUl = cd.g.$toc.children('ul');
     sections.forEach((section) => {
-      const matchedSection = Section.search(section);
-      let match = (
-        matchedSection &&
-        tocSections.find((tocSection) => tocSection.anchor === matchedSection.anchor)
-      );
-
-      if (!match) {
+      let item = section.match?.getTocItem();
+      if (!item) {
         const headline = section.headline;
         const level = section.tocLevel;
         const currentLevelMatch = currentTree[level - 1];
@@ -139,23 +202,22 @@ export default {
           upperLevelMatch = currentTree[currentTree.length - 1];
         }
 
-        const $element = $('<li>')
-          .addClass('cd-toc-notRenderedSection')
-          .addClass(`toclevel-${level}`);
-        const $a = $('<a>')
-          .attr('href', '#' + section.anchor)
-          .on('click', (e) => {
-            e.preventDefault();
-            reloadPage({
-              sectionAnchor: section.anchor,
-              pushState: true,
-            });
-          })
-          .appendTo($element);
+        const li = document.createElement('li');
+        li.className = `cd-toc-notRenderedSection toclevel-${level}`;
+
+        const a = document.createElement('a')
+        a.href = '#' + section.anchor;
+        a.onclick = (e) => {
+          e.preventDefault();
+          reloadPage({
+            sectionAnchor: section.anchor,
+            pushState: true,
+          });
+        };
+        li.appendChild(a);
         if (cd.g.thisPageWatchedSections?.includes(headline)) {
-          $a
-            .addClass('cd-toc-watched')
-            .attr('title', cd.s('toc-watched'));
+          a.className = 'cd-toc-watched';
+          a.title = cd.s('toc-watched');
         }
 
         let number;
@@ -166,37 +228,38 @@ export default {
         } else {
           number = '1';
         }
-        $('<span>')
-          .addClass('tocnumber cd-toc-hiddenTocNumber')
-          .text(number)
-          .appendTo($a);
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'tocnumber cd-toc-hiddenTocNumber';
+        numberSpan.textContent = number;
+        a.appendChild(numberSpan);
 
-        $('<span>')
-          .addClass('toctext')
-          .text(section.headline)
-          .appendTo($a);
+        const textSpan = document.createElement('span');
+        textSpan.className = 'toctext';
+        textSpan.textContent = section.headline;
+        a.appendChild(textSpan);
 
         if (currentLevelMatch) {
-          currentLevelMatch.$element.after($element);
+          currentLevelMatch.$element.after(li);
         } else if (upperLevelMatch) {
-          $('<ul>')
-            .addClass('cd-toc-notRenderedSectionList')
-            .addClass(`toclevel-${level}`)
-            .append($element)
-            .appendTo(upperLevelMatch.$element);
+          const ul = document.createElement('ul');
+          ul.className = `cd-toc-notRenderedSectionList toclevel-${level}`;
+          ul.appendChild(li);
+          upperLevelMatch.$element.append(ul);
         } else {
-          $topUl.prepend($element);
+          $topUl.prepend(li);
         }
 
-        match = { headline, level, number, $element };
+        item = {
+          headline,
+          level,
+          number,
+          $element: $(li),
+        };
       }
 
-      currentTree[section.tocLevel - 1] = match;
+      currentTree[section.tocLevel - 1] = item;
       currentTree.splice(section.tocLevel);
     });
-
-    cd.debug.stopTimer('addNewSections add');
-    cd.debug.stopTimer('addNewSections');
   },
 
   /**
@@ -240,10 +303,11 @@ export default {
       // There could be a collision of hrefs between the existing section and not yet rendered
       // section, so we compose the selector carefully.
       const $sectionLink = typeof sectionOrAnchor === 'string' ?
-        cd.g.$toc.find(
-          `.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`
-        ) :
-        sectionOrAnchor.getTocLink();
+        cd.g.$toc
+          .find(`.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`) :
+        sectionOrAnchor.getTocItem().$link;
+
+      // Should never be the case
       if (!$sectionLink?.length) return;
 
       let $target = $sectionLink;

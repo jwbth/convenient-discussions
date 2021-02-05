@@ -130,25 +130,27 @@ class TributeRange {
                 endPos += ending.length
                 ending = ''
             }
-            let text = data.start + data.content + data.end
 
-            let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
-                ? this.tribute.replaceTextSuffix
-                : ' '
-            text += textSuffix
             let startPos = info.mentionPosition
 
             myField.selectionStart = startPos
             myField.selectionEnd = endPos
 
-            // jwbth: Made alterations to make the `cutTextAfter` config value work.
-            if (
-                context.collection.cutTextAfter &&
-                ending.startsWith(context.collection.cutTextAfter)
-            ) {
-                ending = ending.slice(context.collection.cutTextAfter.length)
-                myField.selectionEnd += context.collection.cutTextAfter.length
+            // jwbth: Made alterations to make the `keepAsEnd` config value work.
+            if (context.collection.keepAsEnd && !originalEvent.shiftKey) {
+                const [end] = ending.match(context.collection.keepAsEnd) || []
+                if (end) {
+                    ending = ending.slice(end.length)
+                    myField.selectionEnd += end.length
+                    data.end = end
+                }
             }
+
+            let text = data.start + data.content + data.end
+            let textSuffix = typeof this.tribute.replaceTextSuffix == 'string'
+                ? this.tribute.replaceTextSuffix
+                : ' '
+            text += textSuffix
 
             // jwbth: Preserve the undo/redo functionality in browsers that support it.
             myField.focus()
@@ -238,6 +240,7 @@ class TributeRange {
             })
 
             let currentTriggerSnippet
+            let originalCurrentTriggerSnippet
             let leadingSpace
             let regex
             let inputOk = (mostRecentTriggerCharPos >= 0 &&
@@ -256,6 +259,9 @@ class TributeRange {
             if (inputOk) {
                 currentTriggerSnippet = effectiveRange.substring(mostRecentTriggerCharPos + triggerChar.length,
                     effectiveRange.length)
+
+                // jwbth: Added this line and the declaration above.
+                originalCurrentTriggerSnippet = currentTriggerSnippet
 
                 triggerChar = effectiveRange.substring(mostRecentTriggerCharPos, mostRecentTriggerCharPos + triggerChar.length)
                 let firstSnippetChar = currentTriggerSnippet.substring(0, 1)
@@ -276,19 +282,21 @@ class TributeRange {
             /*
                 jwbth: Added this block, breaking the block starting with `inputOk` check into two
                 parts, as we need to have the menu removed when:
-                - there is no valid trigger before the cursor position,
+                - there is no valid trigger before the caret position,
                 - typing a space after "@" or "##",
+                - there are newlines before the caret position and the trigger position,
                 - there is a selection.
              */
             if (
                 mostRecentTriggerCharPos === -1 ||
-                (currentTriggerSnippet && !currentTriggerSnippet[0].trim()) ||
+                (originalCurrentTriggerSnippet && !originalCurrentTriggerSnippet[0].trim()) ||
+                originalCurrentTriggerSnippet.includes('\n') ||
                 selected.selectionStart !== selected.selectionEnd ||
 
                 // When pressed backspace in "[[#" and faced the trigger "[["
                 (this.tribute.current.trigger && triggerChar !== this.tribute.current.trigger)
             ) {
-                this.tribute.doDropMenu = true
+                this.tribute.dropMenu = true
                 return
             }
 

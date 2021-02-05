@@ -156,8 +156,7 @@ export class TreeWalker {
 }
 
 /**
- * Tree walker that walks only on element nodes of the current document and ignores "style" and
- * "link" elements.
+ * Tree walker that walks only on element nodes of the current document.
  *
  * @augments module:treeWalker.TreeWalker
  */
@@ -168,11 +167,7 @@ export class ElementsTreeWalker extends TreeWalker {
    * @param {Node} [startNode]
    */
   constructor(startNode) {
-    super(
-      cd.g.rootElement,
-      (node) => !['STYLE', 'LINK'].includes(node.tagName),
-      true
-    );
+    super(cd.g.rootElement, null, true);
     if (startNode) {
       this.currentNode = startNode;
     }
@@ -194,10 +189,7 @@ export class ElementsAndTextTreeWalker extends TreeWalker {
   constructor(startNode) {
     super(
       cd.g.rootElement,
-      (node) => (
-        node.nodeType === Node.TEXT_NODE ||
-        (node.nodeType === Node.ELEMENT_NODE && !['STYLE', 'LINK'].includes(node.tagName))
-      )
+      (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE
     );
     if (startNode) {
       this.currentNode = startNode;

@@ -175,7 +175,7 @@ export default {
 	 * @param {string} label
 	 */
 	averageTimerTime(label) {
-		if (!this.timerAllRunsTotal[label]) {
+		if (this.timerAllRunsTotal[label] === undefined) {
 			console.error(`No data for timer ${label}`);
 			return;
 		}

@@ -132,7 +132,7 @@ class Tribute {
       this.collection = collection.map(item => {
         return {
           trigger: item.trigger || trigger,
-          cutTextAfter: item.cutTextAfter || null,
+          keepAsEnd: item.keepAsEnd || null,
           selectClass: item.selectClass || selectClass,
           containerClass: item.containerClass || containerClass,
           itemClass: item.itemClass || itemClass,
@@ -351,8 +351,8 @@ class Tribute {
       this.range.positionMenuAtCaret(scrollTo);
     };
 
-    // jwbth: Only proceed if menu isn't already shown for the current element & mentionText. This
-    // behavior has issues, see
+    // jwbth: Only proceed if the menu isn't already shown for the current element & mentionText.
+    // This behavior has issues, see
     // https://github.com/jwbth/convenient-discussions/commit/14dc20cf1b23dff79c2592ff47431513890ab213,
     // so here we have even more workarounds. But otherwise `values` is called 3 times, Carl. That's
     // probably a problem of Tribute, but seems non-trivial to refactor it quickly.
@@ -380,6 +380,8 @@ class Tribute {
 
     this.isActive = true;
     this.menuSelected = 0;
+    this.lastCanceledTriggerChar = null;
+    this.lastCanceledTriggerPos = null;
 
     if (!this.current.mentionText) {
       this.current.mentionText = "";
@@ -410,6 +412,9 @@ class Tribute {
 
     this.current.externalTrigger = true;
     this.current.element = element;
+
+    // jwbth: Added this.
+    this.current.triggerPos = element.selectionStart;
 
     if (!this.insertAtCaret(element, this.current.collection.trigger)) {
       this.showMenuFor(element);
@@ -445,8 +450,8 @@ class Tribute {
 
     // jwbth: Preserve the undo/redo functionality in browsers that support it (Chrome does, Firefox
     // doesn't: https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
-    const insertedViaCommand = document.execCommand('insertText', false, text);
-    if (!insertedViaCommand) {
+    const hasInsertedViaCommand = document.execCommand('insertText', false, text);
+    if (!hasInsertedViaCommand) {
       var front = textarea.value.substring(0, caretPos);
       var back = textarea.value.substring(
         textarea.selectionEnd,
@@ -459,7 +464,7 @@ class Tribute {
     }
     textarea.scrollTop = scrollPos;
 
-    return insertedViaCommand;
+    return hasInsertedViaCommand;
   }
 
   hideMenu() {

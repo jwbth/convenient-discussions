@@ -8,6 +8,7 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import cd from './cd';
 import commentLayers from './commentLayers';
+import currentSection from './currentSection';
 import navPanel from './navPanel';
 import { isInputFocused } from './util';
 
@@ -16,7 +17,7 @@ const beforeUnloadHandlers = {};
 /**
  * Handles the window `resize` event as well as "orientationchange".
  */
-export function windowResizeHandler() {
+export function handleWindowResize() {
   commentLayers.redrawIfNecessary(true);
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
@@ -57,8 +58,8 @@ export function removePreventUnloadCondition(name) {
  *
  * @param {Event} e
  */
-export function globalKeyDownHandler(e) {
-  if (cd.util.isPageOverlayOn()) return;
+export function handleGlobalKeyDown(e) {
+  if (!cd.g.isPageActive || cd.util.isPageOverlayOn()) return;
 
   if (
     // Ctrl+Alt+Q
@@ -67,10 +68,7 @@ export function globalKeyDownHandler(e) {
     (e.keyCode === 81 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused())
   ) {
     e.preventDefault();
-    const commentForm = CommentForm.getLastActiveCommentForm();
-    if (commentForm) {
-      commentForm.quote(e.ctrlKey);
-    }
+    CommentForm.getLastActive()?.quote(e.ctrlKey);
   }
 
   if (navPanel.isMounted()) {
@@ -97,55 +95,10 @@ export function globalKeyDownHandler(e) {
 }
 
 /**
- * Handles the `mousemove` and `mouseover` events and highlights hovered comments even when the
- * cursor is between comment parts, not over them.
- *
- * @param {Event} e
+ * Register seen comments, update the navigation panel's first unseen button, and update the current
+ * section block.
  */
-export function highlightFocused(e) {
-  if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
-
-  const isObstructingElementHovered = (
-    Array.from(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification'))
-      .some((notification) => notification.matches(':hover')) ||
-
-    cd.g.activeAutocompleteMenu?.matches(':hover') ||
-
-    // In case the user has moved the navigation panel to the other side.
-    navPanel.$element?.get(0).matches(':hover') ||
-
-    // WikiEditor dialog
-    $(document.body).children('.ui-widget-overlay').length ||
-
-    cd.g.$popupsOverlay
-      ?.get(0)
-      .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)')
-      ?.matches(':hover')
-  );
-
-  cd.comments
-    .filter((comment) => comment.underlay)
-    .forEach((comment) => {
-      const layersContainerOffset = comment.getLayersContainerOffset();
-      if (
-        !isObstructingElementHovered &&
-        e.pageY >= comment.layersTop + layersContainerOffset.top &&
-        e.pageY <= comment.layersTop + comment.layersHeight + layersContainerOffset.top &&
-        e.pageX >= comment.layersLeft + layersContainerOffset.left &&
-        e.pageX <= comment.layersLeft + comment.layersWidth + layersContainerOffset.left
-      ) {
-        comment.highlightFocused();
-      } else {
-        comment.unhighlightFocused();
-      }
-    });
-}
-
-/**
- * Mark comments that are currently in the viewport as read, and also {@link module:Comment#flash
- * flash} comments that are prescribed to flash.
- */
-export function registerSeenComments() {
+export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
   // wait before running, otherwise comments may be registered as seen after a press of Page
   // Down/Page Up.
@@ -158,31 +111,11 @@ export function registerSeenComments() {
   setTimeout(() => {
     cd.g.dontHandleScroll = false;
 
-    const commentInViewport = Comment.findInViewport();
-    if (!commentInViewport) return;
-
-    const registerSeenIfInViewport = (comment) => {
-      const isInViewport = comment.isInViewport();
-      if (isInViewport) {
-        comment.registerSeen();
-        return false;
-      } else if (isInViewport === false) {
-        // isInViewport could also be null.
-        return true;
-      }
-    };
-
-    // Back
-    cd.comments
-      .slice(0, commentInViewport.id)
-      .reverse()
-      .some(registerSeenIfInViewport);
-
-    // Forward
-    cd.comments
-      .slice(commentInViewport.id)
-      .some(registerSeenIfInViewport);
-
-    navPanel.updateFirstUnseenButton();
+    if (cd.g.isPageActive) {
+      Comment.registerSeen();
+      navPanel.updateFirstUnseenButton();
+      navPanel.updateCommentFormButton();
+    }
+    currentSection.update();
   }, 300);
 }

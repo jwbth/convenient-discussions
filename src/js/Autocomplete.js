@@ -7,14 +7,7 @@
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import {
-  defined,
-  firstCharToUpperCase,
-  handleApiReject,
-  insertText,
-  removeDoubleSpaces,
-  unique,
-} from './util';
+import { defined, handleApiReject, insertText, removeDoubleSpaces, unique } from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -45,7 +38,7 @@ export default class Autocomplete {
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
     types = types
-      // The 'mentions' type is needed in any case, as it can be triggered from the toolbar. When it
+      // The "mentions" type is needed in any case, as it can be triggered from the toolbar. When it
       // is not, we will suppress it specifically.
       .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions')
 
@@ -211,7 +204,7 @@ export default class Autocomplete {
       },
       wikilinks: {
         trigger: '[[',
-        cutTextAfter: ']]',
+        keepAsEnd: /^(?:\||\]\])/,
         searchOpts: { skip: true },
         selectTemplate,
         values: async (text, callback) => {
@@ -285,7 +278,7 @@ export default class Autocomplete {
       },
       templates: {
         trigger: '{{',
-        cutTextAfter: '}}',
+        keepAsEnd: /^(?:\||\}\})/,
         searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
@@ -356,7 +349,7 @@ export default class Autocomplete {
                     (e) => {
                       input.setDisabled(false);
                       input.focus();
-                      mw.notify(cd.s('cf-mentions-notemplatedata'), { type: 'error' });
+                      mw.notify(cd.s('cf-autocomplete-notemplatedata'), { type: 'error' });
                       console.warn(e);
                     }
                   )
@@ -433,7 +426,7 @@ export default class Autocomplete {
       },
       tags: {
         trigger: '<',
-        cutTextAfter: '>',
+        keepAsEnd: /^>/,
         searchOpts: { skip: true },
         selectTemplate,
         values: (text, callback) => {
@@ -448,7 +441,7 @@ export default class Autocomplete {
       },
       commentLinks: {
         trigger: '[[#',
-        cutTextAfter: ']]',
+        keepAsEnd: /^\]\]/,
         selectTemplate,
         values: async (text, callback) => {
           if (!this.commentLinks.default) {
@@ -500,7 +493,7 @@ export default class Autocomplete {
     };
     const collections = [];
     types.forEach((type) => {
-      this[type] = Autocomplete[`get${firstCharToUpperCase(type)}Config`].call(null, params[type]);
+      this[type] = Autocomplete.getConfig(type, params[type]);
       collections.push(collectionsByType[type]);
     });
 
@@ -508,214 +501,195 @@ export default class Autocomplete {
   }
 
   /**
-   * Get the mentions autocomplete configuration.
+   * Get an autocomplete configuration for the specified type.
    *
-   * @param {string[]} [defaultUserNames=[]]
+   * @param {string} type
    * @returns {object}
    * @private
    */
-  static getMentionsConfig(defaultUserNames = []) {
-    const config = {
-      byText: {},
-      cache: [],
-      transform: (item) => {
-        const name = item.trim();
-        const userNamespace = (
-          cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
-          mw.config.get('wgFormattedNamespaces')[2]
-        );
-        return {
-          start: `@[[${userNamespace}:${name}|`,
-          end: ']]',
-          content: name,
-          ctrlModify: (data) => {
-            data.end += cd.mws('colon-separator');
-            return data;
+  static getConfig(type) {
+    let config;
+    switch (type) {
+      case 'mentions': {
+        config = {
+          byText: {},
+          cache: [],
+          transform: (item) => {
+            const name = item.trim();
+            const userNamespace = (
+              cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
+              mw.config.get('wgFormattedNamespaces')[2]
+            );
+            return {
+              start: `@[[${userNamespace}:${name}|`,
+              end: ']]',
+              content: name,
+              ctrlModify: (data) => {
+                data.end += cd.mws('colon-separator');
+                return data;
+              },
+            };
+          },
+          removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
+        };
+        config.default = config.removeSelf(arguments[1] || []);
+        break;
+      }
+
+      case 'wikilinks': {
+        config = {
+          byText: {},
+          cache: [],
+          transform: (name) => {
+            name = name.trim();
+            return {
+              start: '[[' + name,
+              end: ']]',
+              name,
+              shiftModify: (data) => {
+                data.start += '|';
+                data.content = data.name;
+                return data;
+              },
+            };
           },
         };
-      },
-      removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
-    };
-    config.default = config.removeSelf(defaultUserNames);
+        break;
+      }
 
-    return config;
-  }
-
-  /**
-   * Get the wikilinks autocomplete configuration.
-   *
-   * @returns {object}
-   * @private
-   */
-  static getWikilinksConfig() {
-    return {
-      byText: {},
-      cache: [],
-      transform: (name) => {
-        name = name.trim();
-        return {
-          start: '[[' + name,
-          end: ']]',
-          name,
-          shiftModify: (data) => {
-            data.start += '|';
-            data.content = data.name;
-            return data;
+      case 'templates': {
+        config = {
+          byText: {},
+          cache: [],
+          transform: (name) => {
+            name = name.trim();
+            return {
+              start: '{{' + name,
+              end: '}}',
+              name,
+              shiftModify: (data) => {
+                data.start += '|';
+                return data;
+              },
+            };
           },
         };
-      },
-    };
-  }
+        break;
+      }
 
-  /**
-   * Get the templates autocomplete configuration.
-   *
-   * @returns {object}
-   * @private
-   */
-  static getTemplatesConfig() {
-    return {
-      byText: {},
-      cache: [],
-      transform: (name) => {
-        name = name.trim();
-        return {
-          start: '{{' + name,
-          end: '}}',
-          name,
-          shiftModify: (data) => {
-            data.start += '|';
-            return data;
-          },
+      case 'tags': {
+        config = {
+          default: [
+            // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
+            // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags.
+            // Deprecated tags are not included. An element can be an array of a string to display
+            // and strings to insert before and after the caret.
+            'abbr',
+            'b',
+            'bdi',
+            'bdo',
+            'blockquote',
+            ['br', '<br>'],
+            'caption',
+            'cite',
+            'code',
+            ['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
+            'data',
+            'dd',
+            'del',
+            'dfn',
+            'div',
+            'dl',
+            'dt',
+            'em',
+            'h1',
+            'h2',
+            'h3',
+            'h4',
+            'h5',
+            'h6',
+            ['hr', '<hr>'],
+            'i',
+            'ins',
+            'kbd',
+            'li',
+            'link',
+            'mark',
+            'meta',
+            'ol',
+            'p',
+            'pre',
+            'q',
+            'rp',
+            'rt',
+            'rtc',
+            'ruby',
+            's',
+            'samp',
+            'small',
+            'span',
+            'strong',
+            'sub',
+            'sup',
+            'table',
+            'td',
+            'th',
+            'time',
+            'tr',
+            'u',
+            'ul',
+            'var',
+            ['wbr', '<wbr>'],
+            'gallery',
+            'includeonly',
+            'noinclude',
+            'nowiki',
+            'onlyinclude',
+            'categorytree',
+            'charinsert',
+            'chem',
+            'ce',
+            'graph',
+            'hiero',
+            'imagemap',
+            'indicator',
+            'inputbox',
+            'mapframe',
+            'maplink',
+            'math',
+            'poem',
+            'ref',
+            ['references', '<references />'],
+            'score',
+            'section',
+            'syntaxhighlight',
+            ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '"></syntaxhighlight>'],
+            'templatedata',
+            ['templatestyles', '<templatestyles src="', '" />'],
+            'timeline',
+          ],
+          transform: (item) => ({
+            start: Array.isArray(item) ? item[1] : `<${item}>`,
+            end: Array.isArray(item) ? item[2] : `</${item}>`,
+            typeContent: true,
+          }),
         };
-      },
-    };
-  }
+        config.default.sort();
+        break;
+      }
 
-  /**
-   * Get the tags autocomplete configuration.
-   *
-   * @returns {object}
-   * @private
-   */
-  static getTagsConfig() {
-    const config = {
-      default: [
-        // See https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
-        // https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags. Deprecated
-        // tags are not included. An element can be an array of a string to display and strings to
-        // insert before and after the caret.
-        'abbr',
-        'b',
-        'bdi',
-        'bdo',
-        'blockquote',
-        ['br', '<br>'],
-        'caption',
-        'cite',
-        'code',
-        ['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
-        'data',
-        'dd',
-        'del',
-        'dfn',
-        'div',
-        'dl',
-        'dt',
-        'em',
-        'h1',
-        'h2',
-        'h3',
-        'h4',
-        'h5',
-        'h6',
-        ['hr', '<hr>'],
-        'i',
-        'ins',
-        'kbd',
-        'li',
-        'link',
-        'mark',
-        'meta',
-        'ol',
-        'p',
-        'pre',
-        'q',
-        'rp',
-        'rt',
-        'rtc',
-        'ruby',
-        's',
-        'samp',
-        'small',
-        'span',
-        'strong',
-        'sub',
-        'sup',
-        'table',
-        'td',
-        'th',
-        'time',
-        'tr',
-        'u',
-        'ul',
-        'var',
-        ['wbr', '<wbr>'],
-        'gallery',
-        'includeonly',
-        'noinclude',
-        'nowiki',
-        'onlyinclude',
-        'categorytree',
-        'charinsert',
-        'chem',
-        'ce',
-        'graph',
-        'hiero',
-        'imagemap',
-        'indicator',
-        'inputbox',
-        'mapframe',
-        'maplink',
-        'math',
-        'poem',
-        'ref',
-        ['references', '<references />'],
-        'score',
-        'section',
-        'syntaxhighlight',
-        ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '"></syntaxhighlight>'],
-        'templatedata',
-        ['templatestyles', '<templatestyles src="', '" />'],
-        'timeline',
-      ],
-      transform: (item) => ({
-        start: Array.isArray(item) ? item[1] : `<${item}>`,
-        end: Array.isArray(item) ? item[2] : `</${item}>`,
-        typeContent: true,
-      }),
-    };
-    config.default.sort();
-
-    return config;
-  }
-
-  /**
-   * Get the comment links autocomplete configuration.
-   *
-   * @param {string[]} [comments=[]]
-   * @returns {object}
-   * @private
-   */
-  static getCommentLinksConfig(comments = []) {
-    const config = {
-      comments,
-      transform: ({ anchor, author, timestamp }) => ({
-        start: `[[#${anchor}|`,
-        end: ']]',
-        content: cd.s('cf-mentions-commentlinktext', author, timestamp),
-      }),
-    };
+      case 'commentLinks': {
+        config = {
+          comments: arguments[1] || [],
+          transform: ({ anchor, author, timestamp }) => ({
+            start: `[[#${anchor}|`,
+            end: ']]',
+            content: cd.s('cf-autocomplete-commentlinktext', author, timestamp),
+          }),
+        };
+        break;
+      }
+    }
 
     return config;
   }

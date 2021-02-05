@@ -36,13 +36,13 @@ export function transparentize(color) {
   return color.includes('rgba') ?
     color.replace(/\d+(?=\))/, '0') :
     color
-      .replace(/rgb/, 'rgba')
-      .replace(/\)/, ', 0)');
+      .replace('rgb', 'rgba')
+      .replace(')', ', 0)');
 }
 
 /**
- * Check if a node is an element with `display: inline` in the default browser styles. As an option,
- * it can also treat text nodes as inline elements.
+ * Check if a node is an element with `display: inline` or `display: inline-block` in the default
+ * browser styles. As an option, it can also treat text nodes as inline elements.
  *
  * @param {Node} node
  * @param {boolean} countTextNodesAsInline
@@ -67,7 +67,7 @@ export function isInline(node, countTextNodesAsInline) {
       console.warn('Expensive operation: isInline() called for:', node);
 
       // This is very expensive. Avoid by any means.
-      return window.getComputedStyle(node).display === 'inline';
+      return window.getComputedStyle(node).display.startsWith('inline');
     } else {
       return null;
     }
@@ -432,17 +432,29 @@ export function dealWithLoadingBug(moduleName) {
 }
 
 /**
- * Get the top and bottom positions of the bounding client rectangle of an element including margins
- * set with the `cdMarginTop` and `cdMarginBottom` properties.
+ * Get the bounding client rectangle of an element, setting top and bottom values including top and
+ * bottom margins to the `outerTop` and `outerBottom` properties. The top and bottom margins are
+ * cached.
  *
  * @param {Element} el
  * @returns {object}
  */
-export function getTopAndBottomIncludingMargins(el) {
-  const nativeRect = el.getBoundingClientRect();
+export function getExtendedRect(el) {
+  if (el.convenientDiscussionsMarginTop === undefined) {
+    const style = window.getComputedStyle(el);
+    el.convenientDiscussionsMarginTop = parseFloat(style.marginTop);
+    el.convenientDiscussionsMarginBottom = parseFloat(style.marginBottom);
+  }
+  const rect = el.getBoundingClientRect();
   return {
-    top: nativeRect.top - el.cdMarginTop,
-    bottom: nativeRect.bottom + el.cdMarginBottom,
+    outerTop: rect.top - el.convenientDiscussionsMarginTop,
+    outerBottom: rect.bottom + el.convenientDiscussionsMarginBottom,
+    top: rect.top,
+    bottom: rect.top,
+    left: rect.left,
+    right: rect.right,
+    width: rect.width,
+    height: rect.height,
   };
 }
 

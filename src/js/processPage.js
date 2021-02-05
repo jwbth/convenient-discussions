@@ -9,27 +9,26 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
-import Parser, { findSpecialElements, windowGetAllTextNodes } from './Parser';
+import Parser, { getUserNameFromLink } from './Parser';
 import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
+import currentSection from './currentSection';
 import navPanel from './navPanel';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   addPreventUnloadCondition,
-  globalKeyDownHandler,
-  highlightFocused,
-  registerSeenComments,
-  windowResizeHandler,
+  handleGlobalKeyDown,
+  handleScroll,
+  handleWindowResize,
 } from './eventHandlers';
-import { adjustDom } from './modifyDom';
-import { areObjectsEqual, isInline } from './util';
 import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getSettings, getVisits, getWatchedSections, setWatchedSections } from './options';
+import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
+import { isInline } from './util';
 import { setSettings, setVisits } from './options';
 
 /**
@@ -37,7 +36,7 @@ import { setSettings, setVisits } from './options';
  * comment layers are also made here.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:dateFormat.loadData}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
  * @private
  */
 async function prepare({ messagesRequest }) {
@@ -47,10 +46,7 @@ async function prepare({ messagesRequest }) {
   }
   cd.g.rootElement = cd.g.$root.get(0);
 
-  cd.g.$toc = cd.g.$root.find('.toc');
-  const $closestFloating = cd.g.$toc
-    .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
-  cd.g.isTocFloating = Boolean($closestFloating.length && cd.g.$root.has($closestFloating).length);
+  toc.reset();
 
   /**
    * Collection of all comments on the page ordered the same way as in the DOM.
@@ -79,19 +75,19 @@ async function prepare({ messagesRequest }) {
 }
 
 /**
- * @typedef {object} GetFirstVisibleElementDataReturn
+ * @typedef {object} GetFirstElementInViewportDataReturn
  * @property {Element} element
  * @property {number} top
  * @private
  */
 
 /**
- * Identify the first visible element from the top of the page and its top offset.
+ * Find the first element in the viewport looking from the top of the page and its top offset.
  *
- * @returns {?GetFirstVisibleElementDataReturn}
+ * @returns {?GetFirstElementInViewportDataReturn}
  * @private
  */
-function getFirstVisibleElementData() {
+function getFirstElementInViewportData() {
   let element;
   let top;
   if (window.pageYOffset !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
@@ -116,14 +112,199 @@ function getFirstVisibleElementData() {
 }
 
 /**
+ * Get all text nodes under the root element in the window (not worker) context.
+ *
+ * @returns {Node[]}
+ */
+function getAllTextNodes() {
+  const result = document.evaluate(
+    // './/text()' doesn't work in Edge.
+    './/descendant::text()',
+
+    cd.g.rootElement,
+    null,
+    XPathResult.ANY_TYPE,
+    null
+  );
+  const textNodes = [];
+  let node;
+  while ((node = result.iterateNext())) {
+    textNodes.push(node);
+  }
+  return textNodes;
+}
+
+/**
+ * Find some types of special elements on the page (floating elements, closed discussions, outdent
+ * templates).
+ */
+function findSpecialElements() {
+  // Describe all floating elements on the page in order to calculate the right border (temporarily
+  // setting "overflow: hidden") for all comments that they intersect with.
+  const floatingElementsSelector = [
+    ...cd.g.FLOATING_ELEMENT_SELECTORS,
+    ...cd.config.customFloatingElementSelectors,
+  ]
+    .join(', ');
+  cd.g.floatingElements = cd.g.$root
+    .find(floatingElementsSelector)
+    .get()
+    // Remove all known elements that never intersect comments from the collection.
+    .filter((el) => !el.classList.contains('cd-ignoreFloating'));
+
+  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
+    .map((name) => `.${name}`)
+    .join(', ');
+  cd.g.closedDiscussionElements = cd.g.$root.find(closedDiscussionsSelector).get();
+
+  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+}
+
+/**
+ * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
+ * attributes, and some bound events to a new node, and also reassign references in some variables
+ * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
+ * that.
+ *
+ * Not a pure function; it alters `feivData`.
+ *
+ * @param {Element} element
+ * @param {string} newType
+ * @param {object|undefined} feivData
+ * @returns {Element}
+ * @private
+ */
+function changeElementType(element, newType, feivData) {
+  const newElement = document.createElement(newType);
+  while (element.firstChild) {
+    newElement.appendChild(element.firstChild);
+  }
+  Array.from(element.attributes).forEach((attribute) => {
+    newElement.setAttribute(attribute.name, attribute.value);
+  });
+
+  // If this element is a part of a comment, replace it in the Comment object instance.
+  let commentId = element.getAttribute('data-comment-id');
+  if (commentId !== null) {
+    commentId = Number(commentId);
+    cd.comments[commentId].replaceElement(element, newElement);
+  } else {
+    element.parentNode.replaceChild(newElement, element);
+  }
+
+  if (feivData && element === feivData.element) {
+    feivData.element = newElement;
+  }
+
+  return newElement;
+}
+
+/**
+ * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
+ * the nesting level.
+ *
+ * @param {object|undefined} feivData
+ * @private
+ */
+function mergeAdjacentCommentLevels(feivData) {
+  const levels = (
+    cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
+  );
+  if (!levels.length) return;
+
+  const isOrHasCommentLevel = (el) => (
+    (el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
+    el.querySelector('.cd-commentLevel:not(ol)')
+  );
+
+  Array.from(levels).forEach((bottomElement) => {
+    const topElement = bottomElement.previousElementSibling;
+    // If the previous element was removed in this cycle. (Or it could be absent for some other
+    // reason? I can confirm that I witnessed a case where the element was absent, but didn't pay
+    // attention why unfortunately.)
+    if (!topElement) return;
+    let currentTopElement = topElement;
+    let currentBottomElement = bottomElement;
+    do {
+      const topTag = currentTopElement.tagName;
+      const bottomInnerTags = {};
+      if (topTag === 'UL') {
+        bottomInnerTags.DD = 'LI';
+      } else if (topTag === 'DL') {
+        bottomInnerTags.LI = 'DD';
+      }
+
+      let firstMoved;
+      if (isOrHasCommentLevel(currentTopElement)) {
+        while (currentBottomElement.childNodes.length) {
+          let child = currentBottomElement.firstChild;
+          if (child.nodeType === Node.ELEMENT_NODE) {
+            if (bottomInnerTags[child.tagName]) {
+              child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
+            }
+            if (firstMoved === undefined) {
+              firstMoved = child;
+            }
+          } else {
+            if (firstMoved === undefined && child.textContent.trim()) {
+              // Don't fill the "firstMoved" variable which is used further to merge elements if
+              // there is a non-empty text node between. (An example that is now fixed:
+              // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
+              // but other can be on the loose.) Instead, wrap the text node into an element to
+              // prevent it from being ignored when searching next time for adjacent .commentLevel
+              // elements. This could be seen only as an additional precaution, since it doesn't fix
+              // the source of the problem: the fact that a bare text node is (probably) a part of
+              // the reply. It shouldn't be happening.
+              firstMoved = null;
+              const newChild = document.createElement('span');
+              newChild.appendChild(child);
+              child = newChild;
+            }
+          }
+          currentTopElement.appendChild(child);
+        }
+        currentBottomElement.remove();
+      }
+
+      currentBottomElement = firstMoved;
+      currentTopElement = firstMoved?.previousElementSibling;
+    } while (
+      currentTopElement &&
+      currentBottomElement &&
+      isOrHasCommentLevel(currentBottomElement)
+    );
+  });
+}
+
+/**
+ * Perform some DOM-related taskes after parsing comments.
+ *
+ * @param {object|undefined} feivData
+ * @private
+ */
+function adjustDom(feivData) {
+  mergeAdjacentCommentLevels(feivData);
+  mergeAdjacentCommentLevels(feivData);
+  if (cd.g.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')) {
+    console.warn('.cd-commentLevel adjacencies have left.');
+  }
+
+  $('dl').has('dt').each((i, el) => {
+    Array.from(el.classList)
+      .filter((className) => className.startsWith('cd-commentLevel'))
+      .forEach((className) => el.classList.remove(className));
+  });
+}
+
+/**
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @param {object|undefined} firstVisibleElementData
+ * @param {object|undefined} feivData
  * @throws {CdError} If there are no comments.
  * @private
  */
-function processComments(parser, firstVisibleElementData) {
+function processComments(parser, feivData) {
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);
 
@@ -140,7 +321,7 @@ function processComments(parser, firstVisibleElementData) {
     }
   });
 
-  adjustDom(firstVisibleElementData);
+  adjustDom(feivData);
 
   /**
    * The script has processed the comments.
@@ -149,24 +330,6 @@ function processComments(parser, firstVisibleElementData) {
    * @type {module:cd~convenientDiscussions.comments}
    */
   mw.hook('convenientDiscussions.commentsReady').fire(cd.comments);
-}
-
-/**
- * Remove sections that can't be found on the page anymore from the watched sections list and save
- * them to the server.
- *
- * @private
- */
-function cleanUpWatchedSections() {
-  if (!cd.sections) return;
-  const initialSectionCount = cd.g.thisPageWatchedSections.length;
-  cd.g.originalThisPageWatchedSections = cd.g.thisPageWatchedSections.slice();
-  cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
-    .filter((headline) => cd.sections.some((section) => section.headline === headline));
-  cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;
-  if (cd.g.thisPageWatchedSections.length !== initialSectionCount) {
-    setWatchedSections();
-  }
 }
 
 /**
@@ -190,11 +353,11 @@ function processSections(parser, watchedSectionsRequest) {
     }
   });
 
-  Section.adjustSections();
+  Section.adjust();
 
   if (watchedSectionsRequest) {
     watchedSectionsRequest.then(() => {
-      cleanUpWatchedSections();
+      Section.cleanUpWatched();
       toc.highlightWatchedSections();
     });
   }
@@ -206,43 +369,6 @@ function processSections(parser, watchedSectionsRequest) {
    * @type {module:cd~convenientDiscussions.sections}
    */
   mw.hook('convenientDiscussions.sectionsReady').fire(cd.sections);
-}
-
-/**
- * Create an add section form if not existent.
- *
- * @param {object} [preloadConfig={}]
- * @param {boolean} [isNewTopicOnTop=false]
- * @private
- */
-function createAddSectionForm(preloadConfig = {}, isNewTopicOnTop = false) {
-  const addSectionForm = cd.g.addSectionForm;
-  if (addSectionForm) {
-    // Sometimes there is more than one "Add section" button on the page, and they lead to opening
-    // forms with different content.
-    if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
-      mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
-      return;
-    }
-
-    addSectionForm.$element.cdScrollIntoView('center');
-
-    // headlineInput may be missing if the "nosummary" preload parameter is truthy.
-    addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
-  } else {
-    /**
-     * Add section form.
-     *
-     * @type {CommentForm|undefined}
-     * @memberof module:cd~convenientDiscussions.g
-     */
-    cd.g.addSectionForm = new CommentForm({
-      mode: 'addSection',
-      target: cd.g.CURRENT_PAGE,
-      preloadConfig,
-      isNewTopicOnTop,
-    });
-  }
 }
 
 /**
@@ -258,7 +384,7 @@ function addAddTopicButton() {
       classes: ['cd-button', 'cd-sectionButton'],
     });
     cd.g.addSectionButton.on('click', () => {
-      createAddSectionForm();
+      CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
       .addClass('cd-addTopicButtonContainer')
@@ -328,11 +454,12 @@ function connectToAddTopicButtons() {
           headline: $form.find('input[name="preloadtitle"]').val(),
           summary: $form.find('input[name="summary"]').val(),
           noHeadline: Boolean($form.find('input[name="nosummary"]').val()),
+          omitSignature: false,
         };
       }
 
       e.preventDefault();
-      createAddSectionForm(preloadConfig, isNewTopicOnTop);
+      CommentForm.createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));
 }
@@ -351,10 +478,8 @@ function connectToCommentLinks($content) {
     })
     .on('click', function (e) {
       e.preventDefault();
-      const comment = Comment.getCommentByAnchor($(this).attr('href').slice(1));
-      if (comment) {
-        comment.scrollToAndHighlightTarget(true, true);
-      }
+      const anchor = $(this).attr('href').slice(1);
+      Comment.getByAnchor(anchor)?.scrollToAndHighlightTarget(true, true);
     });
 }
 
@@ -367,6 +492,26 @@ function highlightOwnComments() {
   if (!cd.settings.highlightOwnComments) return;
 
   Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
+}
+
+/**
+ * Highlight mentions of the current user.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function highlightMentions($content) {
+  Array.from(
+    $content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.CURRENT_USER_NAME}"]`)
+  )
+    .filter((el) => (
+      cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
+      !el.parentNode.closest('.cd-signature') &&
+      getUserNameFromLink(el) === cd.g.CURRENT_USER_NAME
+    ))
+    .forEach((link) => {
+      link.classList.add('cd-currentUserLink');
+    });
 }
 
 /**
@@ -402,7 +547,7 @@ async function processFragment(keptData) {
   let comment;
   if (commentAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
-    comment = Comment.getCommentByAnchor(commentAnchor);
+    comment = Comment.getByAnchor(commentAnchor);
 
     if (!keptData.commentAnchor && !comment) {
       let commentAnchorToCheck;
@@ -411,7 +556,7 @@ async function processFragment(keptData) {
       for (let gap = 1; !comment && gap <= 5; gap++) {
         const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
         commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
-        comment = Comment.getCommentByAnchor(commentAnchorToCheck);
+        comment = Comment.getByAnchor(commentAnchorToCheck);
       }
     }
 
@@ -425,7 +570,7 @@ async function processFragment(keptData) {
   }
 
   if (keptData.sectionAnchor) {
-    const section = Section.getSectionByAnchor(keptData.sectionAnchor);
+    const section = Section.getByAnchor(keptData.sectionAnchor);
     if (section) {
       if (keptData.pushState) {
         history.pushState(history.state, '', '#' + section.anchor);
@@ -540,7 +685,7 @@ async function processVisits(visitsRequest, keptData) {
   setVisits(visits);
 
   navPanel.fill();
-  registerSeenComments();
+  handleScroll();
 
   /**
    * New comments have been highlighted.
@@ -610,7 +755,10 @@ async function confirmDesktopNotifications() {
     });
   }
 
-  if (cd.settings.desktopNotifications !== 'unknown' && Notification.permission === 'default') {
+  if (
+    !['unknown', 'none'].includes(cd.settings.desktopNotifications) &&
+    Notification.permission === 'default'
+  ) {
     await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
     Notification.requestPermission();
   }
@@ -649,8 +797,7 @@ function debugLog() {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
- * @property {Promise} [messagesRequest] Promise returned by {@link
- *   module:dateFormat.loadData}.
+ * @property {Promise} [messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
  */
 
 /**
@@ -668,9 +815,9 @@ export default async function processPage(keptData = {}) {
 
   await prepare(keptData);
 
-  let firstVisibleElementData;
+  let feivData;
   if (cd.g.isFirstRun) {
-    firstVisibleElementData = getFirstVisibleElementData();
+    feivData = getFirstElementInViewportData();
   }
 
   cd.debug.stopTimer('preparations');
@@ -679,13 +826,10 @@ export default async function processPage(keptData = {}) {
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
-  cd.g.isPageActive = !(
-    !mw.config.get('wgArticleId') ||
-    cd.g.CURRENT_PAGE.isArchivePage() ||
-    (
-      (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) &&
-      mw.config.get('wgRevisionId') !== mw.config.get('wgCurRevisionId')
-    )
+  cd.g.isPageActive = (
+    mw.config.get('wgArticleId') &&
+    !cd.g.CURRENT_PAGE.isArchivePage() &&
+    mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')
   );
 
   // For testing
@@ -713,7 +857,7 @@ export default async function processPage(keptData = {}) {
    */
   mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-  cd.g.specialElements = findSpecialElements();
+  findSpecialElements();
 
   cd.debug.startTimer('process comments');
 
@@ -723,12 +867,12 @@ export default async function processPage(keptData = {}) {
     childElementsProperty: 'children',
     document,
     follows: (el1, el2) => el1.compareDocumentPosition(el2) & Node.DOCUMENT_POSITION_PRECEDING,
-    getAllTextNodes: windowGetAllTextNodes,
+    getAllTextNodes,
     getElementByClassName: (node, className) => node.querySelector(`.${className}`),
   });
 
   try {
-    processComments(parser, firstVisibleElementData);
+    processComments(parser, feivData);
   } catch (e) {
     console.error(e);
   }
@@ -762,12 +906,8 @@ export default async function processPage(keptData = {}) {
 
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
-  if (firstVisibleElementData) {
-    const y = (
-      window.pageYOffset +
-      firstVisibleElementData.element.getBoundingClientRect().top -
-      firstVisibleElementData.top
-    );
+  if (feivData) {
+    const y = window.pageYOffset + feivData.element.getBoundingClientRect().top - feivData.top;
     window.scrollTo(0, y);
   }
 
@@ -802,18 +942,19 @@ export default async function processPage(keptData = {}) {
   }
 
   if (cd.g.isFirstRun) {
+    mw.hook('wikipage.content').add(highlightMentions);
+
+    currentSection.mount();
+
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
-    $(document).on('mousemove mouseover', highlightFocused);
-    $(window).on('resize orientationchange', windowResizeHandler);
+    $(document).on('mousemove mouseover', Comment.highlightFocused);
+    $(window).on('resize orientationchange', handleWindowResize);
     addPreventUnloadCondition('commentForms', () => {
       saveSession();
       return (
         mw.user.options.get('useeditwarning') &&
-        (
-          CommentForm.getLastActiveAlteredCommentForm() ||
-          (alwaysConfirmLeavingPage && cd.commentForms.length)
-        )
+        (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
       );
     });
 
@@ -837,15 +978,12 @@ export default async function processPage(keptData = {}) {
       childList: true,
       subtree: true,
     });
-  }
 
-  if ((cd.g.isFirstRun && cd.g.isPageActive) || keptData.wasPageCreated) {
     $(document)
-      .on('keydown', globalKeyDownHandler)
-      .on('scroll resize orientationchange', () => {
-        registerSeenComments();
-        navPanel.updateCommentFormButton();
-      });
+      .on('keydown', handleGlobalKeyDown)
+      .on('scroll resize orientationchange', handleScroll);
+  } else {
+    currentSection.reset();
   }
 
   let alwaysConfirmLeavingPage = false;

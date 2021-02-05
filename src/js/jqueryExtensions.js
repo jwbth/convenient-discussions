@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import navPanel from './navPanel';
-import { registerSeenComments } from './eventHandlers';
+import { handleScroll } from './eventHandlers';
 
 /**
  * jQuery. See {@link $.fn} for extensions.
@@ -71,13 +71,14 @@ export default {
 
     const onComplete = () => {
       cd.g.autoScrollInProgress = false;
-      registerSeenComments();
+      handleScroll();
       navPanel.updateCommentFormButton();
     };
 
     if (smooth) {
       $('body, html').animate({ scrollTop: offset }, {
-        complete: () => {
+        complete: function () {
+          if (this !== document.documentElement) return;
           onComplete();
           if (callback) {
             callback();
@@ -146,7 +147,15 @@ export default {
         callback();
       }
     } else {
-      this.cdScrollTo(alignment, smooth, callback);
+      if (callback) {
+        // Wrap into setTimeout() for a more smooth animation in case there is .focus() in the
+        // callback.
+        setTimeout(() => {
+          this.cdScrollTo(alignment, smooth, callback);
+        });
+      } else {
+        this.cdScrollTo(alignment, smooth, callback);
+      }
     }
 
     return this;
@@ -167,7 +176,7 @@ export default {
     });
     document.body.appendChild(dummyElement);
     text = dummyElement.innerText;
-    document.body.removeChild(dummyElement);
+    dummyElement.remove();
     return text;
   },
 

@@ -56,6 +56,7 @@ export default class SectionSkeleton {
       cd.g.rootElement,
       (node) => (
         !['STYLE', 'LINK'].includes(node.tagName) &&
+
         // .cd-sectionButtonContainer elements are added to level 2 sections, which means they won't
         // have them as elements but their last subsections can if they are included. So we better
         // don't include them at all.
@@ -172,7 +173,7 @@ export default class SectionSkeleton {
   }
 
   /**
-   * Parse the headline of the section and fill the `headline` property.
+   * Parse the headline of the section and fill the `headline` property, containing no HTML tags.
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementsInHeadlinesClasses];
