@@ -21,7 +21,7 @@ import {
   removeLoadingOverlay,
   setLoadingOverlay,
 } from './boot';
-import { loadData } from './siteSettings';
+import { loadData } from './siteData';
 import { setVisits } from './options';
 
 let config;

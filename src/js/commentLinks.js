@@ -21,7 +21,7 @@ import { editWatchedSections, settingsDialog } from './modal';
 import { generateCommentAnchor, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
 import { initSettings } from './boot';
-import { initTimestampParsingTools, loadData } from './siteSettings';
+import { initTimestampParsingTools, loadData } from './siteData';
 
 let colon;
 let moveFromBeginning;
@@ -39,7 +39,7 @@ let processDiffFirstRun = true;
  * Prepare variables.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.dataRequest] Promise returned by {@link module:siteSettings.loadData}.
+ * @param {Promise} [data.dataRequest] Promise returned by {@link module:siteData.loadData}.
  * @private
  */
 async function prepare({ dataRequest }) {

@@ -1,11 +1,11 @@
 /**
- * Timestamp regexp generator, timestamp parser generator, date formats, digits, timezones, and
- * other siteSettings.
+ * Timestamp regexp generator, timestamp parser generator, date formats, digits, timezones,
+ * MediaWiki messages, and other site data.
  *
  * The code is based on {@link
  * https://gerrit.wikimedia.org/r/#/c/mediawiki/core/+/539305/3/signaturedetector.js}.
  *
- * @module siteSettings
+ * @module siteData
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @license GPL-2.0-only
  */
@@ -580,6 +580,7 @@ export function loadData() {
           return true;
         }
       });
+
       // TODO: Implement DST offsets
       cd.g.LOCAL_TIMEZONE_OFFSET = resp.query.general.timeoffset;
     });

@@ -1,7 +1,7 @@
 /**
  * Comment timestamp and author processing utilities. These are mostly format conversion utilities.
  * Listing of different formats of dates, digits, and timezones together with regexp and parser
- * generators go in {@link module:siteSettings}. Functions related to wikitext parsing go in {@link
+ * generators go in {@link module:siteData}. Functions related to wikitext parsing go in {@link
  * module:wikitext}.
  *
  * Terminology used here (and in other modules):

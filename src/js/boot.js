@@ -34,7 +34,7 @@ import {
 import { createWindowManager, rescueCommentFormsContent } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools, loadData } from './siteSettings';
+import { initTimestampParsingTools, loadData } from './siteData';
 
 let notificationsData = [];
 let isPageBeingReloaded = false;
@@ -598,7 +598,7 @@ function initOouiAndElementPrototypes() {
  * the first run.
  *
  * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteSettings.loadData}.
+ * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteData.loadData}.
  */
 export async function init({ messagesRequest }) {
   cd.g.api = cd.g.api || new mw.Api();
