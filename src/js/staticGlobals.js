@@ -125,7 +125,7 @@ export default {
    */
   POPULAR_NOT_INLINE_ELEMENTS: [
     'BLOCKQUOTE', 'DD', 'DIV', 'DL', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT',
-    'LI', 'OL', 'P', 'PRE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'
+    'LI', 'LINK', 'OL', 'P', 'PRE', 'STYLE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'
   ],
 
   /**
@@ -136,8 +136,7 @@ export default {
    */
   POPULAR_INLINE_ELEMENTS: [
     'A', 'ABBR', 'B', 'BIG', 'BR', 'CENTER', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS',
-    'KBD', 'LINK', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'STYLE', 'SUB', 'SUP',
-    'TT', 'U', 'VAR'
+    'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U', 'VAR'
   ],
 
   /**
