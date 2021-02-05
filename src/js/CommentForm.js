@@ -178,6 +178,7 @@ export default class CommentForm {
     cd.commentForms.push(this);
 
     restoreScrollPosition();
+    navPanel.updateCommentFormButton();
 
     if (dataToRestore) {
       this.originalComment = dataToRestore.originalComment;
@@ -3108,11 +3109,11 @@ export default class CommentForm {
    * Remove the elements and other objects' properties related to the form.
    */
   destroy() {
+    this.$outermostElement.remove();
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
     this.forget();
-    this.$outermostElement.remove();
 
     /**
      * Has the comment form been {@link module:CommentForm#destroy destroyed}.
