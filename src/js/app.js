@@ -318,9 +318,9 @@ function go() {
       ]);
 
       Promise.all([modulesRequest, dataRequest].filter(defined)).then(
-        () => {
+        async () => {
           try {
-            processPage({ dataRequest });
+            await processPage({ dataRequest });
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
             removeLoadingOverlay();
