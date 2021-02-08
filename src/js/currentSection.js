@@ -40,12 +40,23 @@ export default {
       (
         document.documentElement.scrollHeight === document.documentElement.clientHeight ||
         window.pageYOffset === 0 ||
-        !cd.sections.length ||
-        getExtendedRect(cd.sections[0].$heading.get(0)).outerTop >= 0
+        !cd.sections.length
       )
     ) {
       this.reset();
       return;
+    }
+
+    for (const section of cd.sections) {
+      const rect = getExtendedRect(section.$heading.get(0));
+      if (rect.left !== 0 || rect.height !== 0) {
+        if (rect.outerTop >= 0) {
+          this.reset();
+          return;
+        } else {
+          break;
+        }
+      }
     }
 
     cd.sections

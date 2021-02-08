@@ -446,9 +446,10 @@ export function getExtendedRect(el) {
     el.convenientDiscussionsMarginBottom = parseFloat(style.marginBottom);
   }
   const rect = el.getBoundingClientRect();
+  const invibile = rect.left === 0 && rect.height === 0;
   return {
-    outerTop: rect.top - el.convenientDiscussionsMarginTop,
-    outerBottom: rect.bottom + el.convenientDiscussionsMarginBottom,
+    outerTop: rect.top - (invibile ? 0 : el.convenientDiscussionsMarginTop),
+    outerBottom: rect.bottom + (invibile ? 0 : el.convenientDiscussionsMarginBottom),
     top: rect.top,
     bottom: rect.top,
     left: rect.left,
