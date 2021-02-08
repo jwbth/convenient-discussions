@@ -1,7 +1,6 @@
 {
 	"@metadata": {
 		"authors": [
-			"Abijeet Patro",
 			"DraconicDark",
 			"Elliot",
 			"Umherirrender"
@@ -11,9 +10,6 @@
 	"script-name-short": "BD",
 	"cm-gotoparent-tooltip": "Zum übergeordneten Kommentar gehen",
 	"cm-gotochild-tooltip": "Zum untergeordneten Kommentar gehen",
-	"cm-copylink-tooltip-diff": "Einen Link zum Versionsunterschied kopieren.",
-	"cm-copylink-tooltip-wikilink": "Einen Wikilink kopieren.",
-	"cm-copylink-tooltip-link": "Einen Link kopieren.",
 	"cm-thank": "Danken",
 	"cm-thank-tooltip": "Die Bearbeitung, die diesen Kommentar hinzugefügt hat, danken",
 	"cm-thanked": "Gedankt",
@@ -30,8 +26,6 @@
 	"sm-watch-tooltip": "Den Abschnitt zur Beobachtungsliste hinzufügen. Dies betrifft die Benachrichtigungen und die Fettschrift auf der Beobachtungsliste",
 	"sm-unwatch": "Nicht mehr beobachten",
 	"sm-unwatch-tooltip": "Den Abschnitt von der Beobachtungsliste entfernen",
-	"sm-copylink-tooltip-wikilink": "Einen Wikilink kopieren.",
-	"sm-copylink-tooltip-link": "Einen Link kopieren.",
 	"section-reply": "Antworten",
 	"section-addsubsection-to": "Unterabschnitt zu „$1“ hinzufügen",
 	"section-newcomments": "{{plural:$1|Es gibt einen neuen Kommentar|Es gibt neue Kommentare}} in diesem Abschnitt von {{plural:$2|{{gender:$4|Benutzer}}|{{gender:$4|Benutzern}}}} $3. Klicken Sie hier, um die Seite zu aktualisieren.",
@@ -42,7 +36,6 @@
 	"cld-wikilink": "Wikilink",
 	"cld-link": "Normaler Link",
 	"cld-close": "Schließen",
-	"cld-copy": "Kopieren",
 	"es-reply": "antworten",
 	"es-edit-reply": "die Antwort bearbeiten",
 	"cf-summary-placeholder": "Zusammenfassung bearbeiten",
@@ -67,6 +60,7 @@
 	"cf-help-content": "<p>Type <kbd>@</kbd> to [[mw:Special:MyLanguage/Help:Notifications/Mention|mention]] a user. Type <kbd><nowiki>[[#</nowiki></kbd> um ein Kommentar in diesem Bereich zu verlinken. </p>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Script documentation]]</p>",
 	"cf-quote-tooltip": "Den ausgewählten Text zitieren",
 	"cf-quote-placeholder": "Zitierter Text",
+	"cf-mention-tooltip": "Einen Benutzer erwähnen",
 	"cf-minor": "Kleine Änderung",
 	"cf-watch": "Diese Seite beobachten",
 	"cf-watchsection-topic": "Dieses Thema beobachten",
@@ -91,7 +85,6 @@
 	"cf-confirm-delete-no": "Abbrechen",
 	"cf-confirm-close-yes": "Schließen",
 	"cf-confirm-close-no": "Abbrechen",
-	"cf-mentions-tooltip": "Einen Benutzer erwähnen",
 	"dn-confirm-yes": "Ja",
 	"dn-confirm-no": "Nein",
 	"sd-save": "Speichern",
@@ -101,8 +94,6 @@
 	"sd-close-confirm-no": "Abbrechen",
 	"sd-removedata-confirm-yes": "Ja",
 	"sd-removedata-confirm-no": "Nein",
-	"sd-defaultsectionlinktype-radio-wikilink": "Wikilink",
-	"sd-defaultsectionlinktype-radio-link": "Normaler Link",
 	"sd-notifications-radio-none": "Nicht benachrichtigen",
 	"ewsd-save": "Speichern",
 	"ewsd-close-confirm-yes": "Schließen",
@@ -118,5 +109,6 @@
 	"error-pagedeleted": "Die Seite wurde gelöscht.",
 	"error-pagenotedited": "Die Seite wurde nicht bearbeitet.",
 	"lp-comment": "Kommentar",
-	"loading-ellipsis": "Lädt..."
+	"loading-ellipsis": "Lädt...",
+	"copy": "Kopieren"
 }

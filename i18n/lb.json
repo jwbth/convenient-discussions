@@ -1,14 +1,11 @@
 {
 	"@metadata": {
 		"authors": [
-			"Abijeet Patro",
 			"Jack who built the house",
 			"Robby"
 		]
 	},
 	"script-name-short": "CD",
-	"cm-copylink-tooltip-wikilink": "E Wiki-Link kopéieren.",
-	"cm-copylink-tooltip-link": "E Link kopéieren.",
 	"cm-thank": "Merci soen",
 	"cm-thanked": "Merci gesot",
 	"cm-thanked-tooltip": "Dir hutt dem Benotzer scho fir dës Bemierkung Merci gesot",
@@ -18,8 +15,6 @@
 	"sm-move-tooltip": "Thema op eng aner Säit réckelen",
 	"sm-watch": "iwwerwaachen",
 	"sm-unwatch": "net méi iwwerwaachen",
-	"sm-copylink-tooltip-wikilink": "E Wiki-Link kopéieren.",
-	"sm-copylink-tooltip-link": "E Link kopéieren.",
 	"comment-edited": "D'Bemierkung gouf geännert.",
 	"comment-edited-refresh": "Aktualiséieren",
 	"comment-edited-diff": "Ënnerscheed",
@@ -36,7 +31,6 @@
 	"cld-currentpagewikilink": "Wikilink vun derselwechter Säit",
 	"cld-link": "Normale Link",
 	"cld-close": "Zoumaachen",
-	"cld-copy": "Kopéieren",
 	"copylink-copied": "De Link gouf an den Tëschespäicher kopéiert.",
 	"copylink-error": "De Link konnt net kopéiert ginn.",
 	"thank-confirm": "Dem {{gender:$2|}} $1 fir [$3 dës Ännerung] Merci soen?",
@@ -71,6 +65,7 @@
 	"cf-cancel": "Ofbriechen",
 	"cf-cancel-short": "Ofbriechen",
 	"cf-advanced": "Erweidert",
+	"cf-mention-tooltip": "E Benotzer ernimmen",
 	"cf-minor": "Kleng Ännerung",
 	"cf-watch": "Dës Säit iwwerwaachen",
 	"cf-watchsection-topic": "Dëst Thema iwwerwaachen",
@@ -89,7 +84,6 @@
 	"cf-confirm-delete-no": "Ofbriechen",
 	"cf-confirm-close-yes": "Zoumaachen",
 	"cf-confirm-close-no": "Ofbriechen",
-	"cf-mentions-tooltip": "E Benotzer ernimmen",
 	"dn-confirm-yes": "Jo",
 	"dn-confirm-no": "Neen",
 	"dn-grantpermission": "Dem Site eng Autorisatioun ginn.",
@@ -118,10 +112,6 @@
 	"sd-removedata-confirm-yes": "Jo",
 	"sd-removedata-confirm-no": "Neen",
 	"sd-autocompletetypes-templates": "Schablounen",
-	"sd-defaultcommentlinktype-radio-wikilink": "Wikilink",
-	"sd-defaultcommentlinktype-radio-link": "Normale Link",
-	"sd-defaultsectionlinktype-radio-wikilink": "Wikilink",
-	"sd-defaultsectionlinktype-radio-link": "Normale Link",
 	"sd-desktopnotifications-radio-none": "Mech net informéieren",
 	"sd-highlightowncomments": "Meng Bemierkungen ervirhiewen",
 	"sd-insertbuttons-multiselect-placeholder": "E Knäppchen derbäisetzen",
@@ -159,5 +149,6 @@
 	"lp-comment-tooltip": "Op d'Bemierkung goen",
 	"lp-comment-toyou": "d'Bemierkung ass un Iech adresséiert",
 	"lp-comment-watchedsection": "Dir iwwerwaacht dësen Abschnitt",
-	"loading-ellipsis": "Lueden..."
+	"loading-ellipsis": "Lueden...",
+	"copy": "Kopéieren"
 }

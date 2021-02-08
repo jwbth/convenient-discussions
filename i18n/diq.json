@@ -3,6 +3,7 @@
 		"authors": [
 			"1917 Ekim Devrimi",
 			"Jack who built the house",
+			"Mirzali",
 			"Orbot707"
 		]
 	},
@@ -10,9 +11,7 @@
 	"script-name-short": "WF",
 	"cm-gotoparent-tooltip": "Ravêr vatışê serêni",
 	"cm-gotochild-tooltip": "Ravêr vatışê bınêni",
-	"cm-copylink-tooltip-diff": "Yewbina yew gıreyi kopya ke",
-	"cm-copylink-tooltip-wikilink": "Wikilinki kopya ke",
-	"cm-copylink-tooltip-link": "Linkê kopya ke",
+	"cm-copylink-tooltip": "Yew gıreyi kopya ke",
 	"cm-thank": "Teşekur bıkerê",
 	"cm-thanked": "Teşekur kerd",
 	"cm-edit": "Bıvurne",
@@ -26,8 +25,6 @@
 	"sm-watch": "Seyr ke",
 	"sm-unwatch": "Seyr meke",
 	"sm-unwatch-tooltip": "Letey lista temaşey ra wedarê",
-	"sm-copylink-tooltip-wikilink": "Wikilinki kopya ke",
-	"sm-copylink-tooltip-link": "Linkê kopya ke",
 	"comment-edited": "Vatış t biyo timar",
 	"comment-edited-refresh": "Anewe kerê",
 	"comment-edited-diff": "Ferq",
@@ -43,7 +40,6 @@
 	"cld-currentpagewikilink": "Eyni per ra wikilink",
 	"cld-link": "Gıreyo nizami",
 	"cld-close": "Kip ke",
-	"cld-copy": "Kopya kerê",
 	"copylink-error": "Linkê kopya nêbiyo",
 	"thank-confirm": "Seba [$3 nê vırnayışi] karber {{gender:$2|}} $1 wa teşekur bıkeriyo?",
 	"thank-error": "Teşekur nêrışiyao",
@@ -88,6 +84,10 @@
 	"cf-cancel-short": "Bıtexelne",
 	"cf-advanced": "Herayên",
 	"cf-help-content": "<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Dokumanê skripti]]</p>\n<p>Tuşi:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — bırışê</li>\n<li><b>Esc</b> — bıtexelne</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — gırotek</li>\n</ul>",
+	"cf-code-tooltip": "Kod",
+	"cf-code-placeholder": "Kod",
+	"cf-codeblock-tooltip": "Blokê kodi",
+	"cf-codeblock-placeholder": "Blokê kodi",
 	"cf-quote-placeholder": "Gêriyayen metin",
 	"cf-minor": "Vurriyayışo werdi",
 	"cf-watch": "Ena pele seyr ke",
@@ -105,7 +105,7 @@
 	"cf-confirm-delete-no": "Bıtexelne",
 	"cf-confirm-close-yes": "Kip ke",
 	"cf-confirm-close-no": "Bıtexelne",
-	"cf-mentions-commentlinktext": "$1 @ $2",
+	"cf-autocomplete-commentlinktext": "$1 @ $2",
 	"dn-confirm-yes": "Eya",
 	"dn-confirm-no": "Nê",
 	"deadanchor-section-title": "Lete nêvineya",
@@ -126,9 +126,6 @@
 	"sd-autocompletetypes-wikilinks": "wikilinki",
 	"sd-autocompletetypes-templates": "şabloni",
 	"sd-autocompletetypes-tags": "etiketi",
-	"sd-defaultcommentlinktype-radio-wikilink": "Wikilink",
-	"sd-defaultcommentlinktype-radio-link": "Gıreyo nizami",
-	"sd-defaultsectionlinktype-radio-wikilink": "Wikilink",
 	"ewsd-save": "Qeyd kerê",
 	"ewsd-close-confirm-yes": "Racın",
 	"ewsd-close-confirm-no": "Bıtexelne",
@@ -139,5 +136,6 @@
 	"msd-error-sourcepagedeleted": "Pela mewcud esteriyê",
 	"lp-comment": "Vatış",
 	"lp-comment-tooltip": "Ravêr vatışi",
-	"loading-ellipsis": "Bar beno..."
+	"loading-ellipsis": "Bar beno...",
+	"copy": "Kopya kerê"
 }

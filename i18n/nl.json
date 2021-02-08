@@ -1,23 +1,18 @@
 {
 	"@metadata": {
 		"authors": [
-			"Abijeet Patro",
 			"Dark Loon",
 			"Mainframe98"
 		]
 	},
-	"cm-copylink-tooltip-link": "Een koppeling kopiëren.",
 	"cm-thank": "Bedanken",
 	"cm-thanked": "Bedankt",
 	"cm-thanked-tooltip": "U hebt al een bedankje verstuurd voor deze reactie",
 	"cm-edit": "Bewerken",
 	"cm-reply": "Reageren",
-	"sm-copylink-tooltip-link": "Een koppeling kopiëren.",
 	"section-reply": "Reageren",
 	"cld-close": "Sluiten",
-	"cld-copy": "Kopiëren",
 	"copylink-copied": "De koppeling is naar het klembord gekopieerd.",
-	"copylink-copied-url": "[$1 De koppeling] is naar het klembord gekopieerd.",
 	"copylink-error": "Kon de koppeling niet kopiëren.",
 	"thank-confirm": "$1 voor [$3 deze bewerking] {{gender:$2|}} bedanken?",
 	"thank-error": "Kon geen bedankje versturen.",
@@ -88,7 +83,6 @@
 	"sd-close-confirm-no": "Annuleren",
 	"sd-removedata-confirm-yes": "Ja",
 	"sd-removedata-confirm-no": "Nee",
-	"sd-defaultcommentlinktype-radio-wikilink": "Wikikoppeling",
 	"sd-insertbuttons-multiselect-placeholder": "Een knop toevoegen",
 	"sd-notifications": "Gewone meldingen",
 	"sd-notificationsblacklist": "Stuur geen meldingen over reacties van deze gebruikers",
@@ -103,5 +97,6 @@
 	"msd-error-sourcepagedeleted": "De huidige pagina is verwijderd.",
 	"msd-error-invalidpagename": "Ongeldige paginanaam.",
 	"error-editconflict": "Bewerkingsconflict.",
-	"error-pagenotedited": "De pagina is niet bewerkt."
+	"error-pagenotedited": "De pagina is niet bewerkt.",
+	"copy": "Kopiëren"
 }
