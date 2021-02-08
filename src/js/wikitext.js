@@ -112,11 +112,12 @@ export function removeWikiMarkup(code) {
     // Replace <br> with a space
     .replace(/<br ?\/?>/g, ' ')
 
-    // Remove opening tags (won't work with <smth param=">">, but the native parser fails too).
-    .replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>/g, '')
+    // Remove opening and self-closing tags (won't work with <smth param=">">, but the native parser
+    // fails too).
+    .replace(/<\w+(?: [\w ]+(?:=[^<>]+?)?| *\/?)>/g, '')
 
     // Remove closing tags
-    .replace(/<\/\w+(?: \w+)? ?>/g, '')
+    .replace(/<\/\w+(?: [\w ]+)? *>/g, '')
 
     // Replace multiple spaces with one space
     .replace(/ {2,}/g, ' ')
