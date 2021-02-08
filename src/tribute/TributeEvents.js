@@ -118,6 +118,7 @@ class TributeEvents {
 
     // jwbth: Added this.
     if (
+      tribute.lastCanceledTriggerChar &&
       tribute.current.triggerPos === tribute.lastCanceledTriggerPos &&
       tribute.current.triggerChar === tribute.lastCanceledTriggerChar
     ) {

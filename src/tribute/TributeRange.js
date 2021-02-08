@@ -298,6 +298,8 @@ class TributeRange {
             ) {
                 this.tribute.dropMenu = true
                 return
+            } else {
+                this.tribute.dropMenu = false
             }
 
             if (inputOk && !leadingSpace && (menuAlreadyActive || !regex.test(currentTriggerSnippet))) {
