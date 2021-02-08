@@ -14,8 +14,16 @@ export default {
     this.$element = $('<ul>')
       .attr('id', 'cd-currentSection')
       .appendTo(document.body);
+    this.updateWidth();
   },
 
+  updateWidth() {
+    const mwBody = $('.mw-body').get(0);
+    const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
+      mwBody?.getBoundingClientRect().left - 18 :
+      $(window).width() - mwBody?.getBoundingClientRect().right - 18;
+    this.$element.css('width', width + 'px');
+  },
   update() {
     if (
       currentSection &&

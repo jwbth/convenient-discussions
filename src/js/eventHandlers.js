@@ -23,6 +23,7 @@ export function handleWindowResize() {
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();
   });
+  currentSection.updateWidth();
 }
 
 /**
