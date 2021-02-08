@@ -258,14 +258,14 @@ export default class CommentForm {
                 if (onlyInclude === undefined) {
                   onlyInclude = '';
                 }
-                onlyInclude += match[1];
+                onlyInclude += match[2];
               }
               if (onlyInclude !== undefined) {
                 code = onlyInclude;
               }
 
               code = code
-                .replace(generateTagsRegexp(['includeonly']), '$1')
+                .replace(generateTagsRegexp(['includeonly']), '$2')
                 .replace(generateTagsRegexp(['noinclude']), '');
               code = code.trim();
 
