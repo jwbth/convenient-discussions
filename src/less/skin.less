@@ -28,14 +28,15 @@
     .wikiEditor-ui-toolbar {
       z-index: auto;
     }
-  }
 
-  .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-disabled {
-    border-color: #ccc;
+    &.oo-ui-textInputWidget.oo-ui-widget-disabled {
+      border-color: #ddd;
 
-    .oo-ui-inputWidget-input,
-    .wikiEditor-ui-top {
-      border-color: #ccc;
+      .oo-ui-inputWidget-input,
+      .wikiEditor-ui-top,
+      + .cd-insertButtons {
+        border-color: #ddd;
+      }
     }
   }
 
@@ -46,6 +47,10 @@
 
   .cd-loadingPopup {
     width: 15.5em;
+  }
+
+  .cd-copyLinkDialog .oo-ui-textInputWidget input {
+    height: 35px;
   }
 }
 
