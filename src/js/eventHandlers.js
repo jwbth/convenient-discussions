@@ -15,7 +15,7 @@ import { isInputFocused } from './util';
 const beforeUnloadHandlers = {};
 
 /**
- * Handles the window `resize` event as well as "orientationchange".
+ * Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
   commentLayers.redrawIfNecessary(true);

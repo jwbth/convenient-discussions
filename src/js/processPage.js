@@ -1,6 +1,7 @@
 /**
- * Web page processing module. Its only export, `processPage()`, is executed after {@link module:app
- * the main module} on first run and as part of {@link module:boot.reloadPage} on subsequent runs.
+ * Talk page (DOM, not wikitext) processing module. Its only export, `processPage()`, is executed
+ * after {@link module:app the main module} on first run and as part of {@link
+ * module:boot.reloadPage} on subsequent runs.
  *
  * @module processPage
  */

@@ -1,5 +1,5 @@
 /**
- * Block displaying the current section and subsections.
+ * The block displaying the current section tree according to the scroll position.
  *
  * @module currentSection
  */
@@ -10,6 +10,9 @@ import { getExtendedRect } from './util';
 let currentSection;
 
 export default {
+  /**
+   * Render the current section block. This is done when the page is first loaded.
+   */
   mount() {
     this.$element = $('<ul>')
       .attr('id', 'cd-currentSection')
@@ -17,6 +20,9 @@ export default {
     this.updateWidth();
   },
 
+  /**
+   * Update or set the width of the current section block.
+   */
   updateWidth() {
     const mwBody = $('.mw-body').get(0);
     const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
@@ -24,6 +30,10 @@ export default {
       $(window).width() - mwBody?.getBoundingClientRect().right - 18;
     this.$element.css('width', width + 'px');
   },
+
+  /**
+   * Update the contents of the current section block.
+   */
   update() {
     if (
       currentSection &&
@@ -72,6 +82,9 @@ export default {
       });
   },
 
+  /**
+   * Reset the state and empty the contents of the current section block.
+   */
   reset() {
     currentSection = null;
     this.$element.empty();
