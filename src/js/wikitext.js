@@ -17,6 +17,21 @@ import {
 import { hideText } from './util';
 
 /**
+ * Generate a regular expression that searches for specified tags in the text (opening, closing, and
+ * content between them).
+ *
+ * @param {Array} tags
+ * @returns {RegExp}
+ */
+export function generateTagsRegexp(tags) {
+  const tagsJoined = tags.join('|');
+  return new RegExp(
+    `(<(?:${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *)>)([^]*?)(<\\/(?:${tagsJoined})(?: [\\w ]+)? *>)`,
+    'g'
+  );
+}
+
+/**
  * Conceal HTML comments (`<!-- -->`), `&lt;nowiki&gt;`, `&lt;syntaxhighlight&gt;`,
  * `&lt;source&gt;`, and `&lt;pre&gt;` tags content, left-to-right and right-to-left marks, and also
  * newlines inside some tags (`<br\n>`) in the code.
@@ -31,7 +46,7 @@ import { hideText } from './util';
 export function hideDistractingCode(code, replaceMarks = true) {
   let newCode = code
     .replace(
-      /(<(?:nowiki|syntaxhighlight|source|pre)(?: [\w ]+(?:=[^<>]+?)?| ?)>)([^]*?)(<\/(?:nowiki|syntaxhighlight|source|pre)(?: \w+)? ?>)/g,
+      generateTagsRegexp(['nowiki', 'syntaxhighlight', 'source', 'pre']),
       (s, before, content, after) => before + ' '.repeat(content.length) + after
     )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
@@ -130,8 +145,7 @@ export function normalizeCode(text) {
  */
 export function encodeWikilink(link) {
   return link
-    // Tags
-    .replace(/<(\w+(?: [\w ]+(?:=[^<>]+?)?| ?\/?)|\/\w+(?: \w+)? ?)>/g, '%3C$1%3E')
+    .replace(/<(\w+(?: [\w ]+(?:=[^<>]+?)?| *\/?)|\/\w+(?: [\w ]+)? *)>/g, '%3C$1%3E')
     .replace(/\[/g, '%5B')
     .replace(/\]/g, '%5D')
     .replace(/\{/g, '%7B')

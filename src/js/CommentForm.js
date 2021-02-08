@@ -29,7 +29,12 @@ import {
   unhideText,
   unique,
 } from './util';
-import { extractSignatures, hideSensitiveCode, removeWikiMarkup } from './wikitext';
+import {
+  extractSignatures,
+  generateTagsRegexp,
+  hideSensitiveCode,
+  removeWikiMarkup,
+} from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
 
@@ -246,7 +251,7 @@ export default class CommentForm {
             () => {
               let code = preloadPage.code;
 
-              const regexp = /<onlyinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/onlyinclude(?: \w+)? ?>/g;
+              const regexp = generateTagsRegexp(['onlyinclude']);
               let match;
               let onlyInclude;
               while ((match = regexp.exec(code))) {
@@ -260,14 +265,8 @@ export default class CommentForm {
               }
 
               code = code
-                .replace(
-                  /<includeonly(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/includeonly(?: \w+)? ?>/g,
-                  '$1'
-                )
-                .replace(
-                  /<noinclude(?: [\w ]+(?:=[^<>]+?)?| ?\/?)>([^]*?)<\/noinclude(?: \w+)? ?>/g,
-                  ''
-                );
+                .replace(generateTagsRegexp(['includeonly']), '$1')
+                .replace(generateTagsRegexp(['noinclude']), '');
               code = code.trim();
 
               if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
