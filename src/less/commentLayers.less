@@ -65,10 +65,6 @@
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:active {
     background-color: transparent;
   }
-
-  .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
-    margin-left: 0;
-  }
 }
 
 .ltr .cd-commentOverlay {
@@ -78,6 +74,10 @@
 
   .cd-commentButton:not(:first-child) {
     margin-left: 1em;
+  }
+
+  .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+    margin-left: 0;
   }
 }
 
@@ -89,16 +89,39 @@
   .cd-commentButton:not(:first-child) {
     margin-right: 1em;
   }
+
+  .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+    margin-right: 0;
+  }
 }
 
 body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
   padding-top: 1.4285714em;
-  padding-left: 1.4285714em;
   min-width: unset;
+}
+
+.ltr:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+  padding-left: 1.4285714em;
 
   > .oo-ui-iconElement-icon {
     left: 0;
   }
+}
+
+.rtl:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+  padding-right: 1.4285714em;
+
+  > .oo-ui-iconElement-icon {
+    right: 0;
+  }
+}
+
+.ltr .cd-commentLayersContainer {
+  direction: ltr;
+}
+
+.rtl .cd-commentLayersContainer {
+  direction: rtl;
 }
 
 .cd-commentLayersContainerParent-relative {

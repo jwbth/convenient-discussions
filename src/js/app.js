@@ -248,7 +248,7 @@ function go() {
   cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
   cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-  cd.g.SITE_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+  cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
 
   cd.g.$content = $('#mw-content-text');
 

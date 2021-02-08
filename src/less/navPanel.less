@@ -1,12 +1,10 @@
 #cd-navPanel {
   position: fixed;
   top: 41.5%;
-  left: 0;
   z-index: 5;
   width: 34px;
   background-color: #fff;
   border: 1px solid #a2a9b1;
-  border-left-width: 0;
 
   // Enough to make it pass AA level for contrast ratio on Vector in case of
   // .cd-navPanel-refreshButton-interesting (#7d00cc).
@@ -37,6 +35,11 @@
       align-items: center;
       font-weight: bold;
     }
+
+    > span {
+      // Can't set the attribute to the button as its tooltip may have another direction.
+      direction: ltr;
+    }
   }
 
   &-previousButton {
@@ -55,7 +58,6 @@
   }
 
   &-commentFormButton {
-    background-image: url(https://upload.wikimedia.org/wikipedia/commons/a/ac/OOjs_UI_icon_ongoingConversation-ltr.svg);
     background-size: 16px 16px;
 
     // ~1px lower
@@ -63,20 +65,24 @@
   }
 }
 
-.sitedir-ltr #cd-navPanel {
-  left: 0;
-  right: unset;
-  border-left-width: 0;
-  border-right-width: 1px;
+.sitedir-ltr #cd-navPanel-commentFormButton {
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/a/ac/OOjs_UI_icon_ongoingConversation-ltr.svg);
 }
 
-.sitedir-rtl #cd-navPanel,
+.sitedir-rtl #cd-navPanel-commentFormButton {
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/8/80/OOjs_UI_icon_ongoingConversation-rtl.svg);
+}
+
+.sitedir-ltr.ltr #cd-navPanel {
+  left: 0;
+  border-left-width: 0;
+}
 
 // On LTR wikis with an RTL interface, the navigation panel on the left obstructs content.
-.sitedir-ltr.rtl #cd-navPanel {
+.sitedir-ltr.rtl #cd-navPanel,
+
+.sitedir-rtl #cd-navPanel {
   right: 0;
-  left: unset;
-  border-left-width: 1px;
   border-right-width: 0;
 }
 

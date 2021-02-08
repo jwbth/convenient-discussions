@@ -58,7 +58,7 @@ export default class Autocomplete {
       noMatchTemplate: () => null,
       containerClass: 'tribute-container cd-autocompleteContainer',
       replaceTextSuffix: '',
-      isRtl: cd.g.SITE_DIR === 'rtl',
+      dir: cd.g.CONTENT_DIR,
     });
 
     inputs.forEach((input) => {

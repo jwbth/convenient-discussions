@@ -54,7 +54,7 @@ class Tribute {
     searchOpts = {},
     menuItemLimit = null,
     menuShowMinLength = 0,
-    isRtl = false
+    dir = 'ltr'
   }) {
     this.menuSelected = 0;
     this.current = {};
@@ -65,7 +65,7 @@ class Tribute {
     this.replaceTextSuffix = replaceTextSuffix;
     this.positionMenu = positionMenu;
     this.hasTrailingSpace = false;
-    this.isRtl = isRtl;
+    this.dir = dir;
 
     if (values) {
       this.collection = [
@@ -255,7 +255,7 @@ class Tribute {
       ul = document.createElement("ul");
     wrapper.className = containerClass;
 
-    if (this.isRtl) {
+    if (this.dir === 'rtl') {
       wrapper.className += ' tribute-rtl';
     }
 

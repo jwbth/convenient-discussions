@@ -68,12 +68,15 @@ span.cd-show {
   }
 }
 
-.ltr .cd-loadingPopup {
+.sitedir-ltr.ltr .cd-loadingPopup {
   left: 0;
+  direction: ltr;
 }
 
-.rtl .cd-loadingPopup {
+.sitedir-ltr.rtl .cd-loadingPopup,
+.sitedir-rtl .cd-loadingPopup {
   right: 0;
+  direction: rtl;
 }
 
 @media screen and (min-width: 982px) {
@@ -137,15 +140,18 @@ span.cd-show {
   }
 }
 
-.cd-diffView {
-  &-diff {
-    margin: 1em 0;
-  }
+.cd-diffView-diff {
+  margin: 1em 0;
+}
 
-  &-nextDiffLink {
-    float: right;
-    margin-left: 1em;
-  }
+.ltr .cd-diffView-nextDiffLink {
+  float: right;
+  margin-left: 1em;
+}
+
+.rtl .cd-diffView-nextDiffLink {
+  float: left;
+  margin-right: 1em;
 }
 
 .cd-commentDiffView-below {
@@ -155,7 +161,6 @@ span.cd-show {
 #cd-currentSection {
   position: fixed;
   top: 0;
-  left: 0;
   z-index: 5;
   font-size: 12px;
   padding: 7px 9px;
@@ -171,6 +176,17 @@ span.cd-show {
   }
 }
 
+.sitedir-ltr.ltr #cd-currentSection {
+  left: 0;
+  direction: ltr;
+}
+
+.sitedir-rtl.ltr #cd-currentSection,
+.rtl #cd-currentSection {
+  right: 0;
+  direction: rtl;
+}
+
 .cd-currentSection-level {
   margin: 0 0 0.25em;
   cursor: pointer;
@@ -178,7 +194,9 @@ span.cd-show {
   &:last-child {
     margin-bottom: 0;
   }
+}
 
+.sitedir-ltr.ltr .cd-currentSection-level {
   &-1 {
     margin-left: 0.75em;
   }
@@ -197,6 +215,29 @@ span.cd-show {
 
   &-5 {
     margin-left: 3.75em;
+  }
+}
+
+.sitedir-rtl.ltr .cd-currentSection-level,
+.rtl .cd-currentSection-level {
+  &-1 {
+    margin-right: 0.75em;
+  }
+
+  &-2 {
+    margin-right: 1.5em;
+  }
+
+  &-3 {
+    margin-right: 2.25em;
+  }
+
+  &-4 {
+    margin-right: 3em;
+  }
+
+  &-5 {
+    margin-right: 3.75em;
   }
 }
 

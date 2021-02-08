@@ -53,7 +53,7 @@ function generateTooltipText(commentsCount, commentsBySection) {
           bullet +
           ' ' +
           names +
-          (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
+          (cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '') +
           cd.mws('comma-separator') +
           date
         );
@@ -348,9 +348,6 @@ const navPanel = {
       .attr('title', generateTooltipText(commentCount, commentsBySection));
     if (commentCount) {
       $('<span>')
-        // Can't set the attribute to $refreshButton as its tooltip may have another direction.
-        .attr('dir', 'ltr')
-
         .text(`+${commentCount}`)
         .appendTo(this.$refreshButton);
     }

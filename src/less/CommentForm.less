@@ -93,6 +93,10 @@
 // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
 // content for which case the .sitedir-ltr and .sitedir-rtl classes are used).
 .ltr .cd-commentForm {
+  // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
+  // direction.
+  direction: ltr;
+
   .cd-checkboxesContainer {
     direction: ltr;
     text-align: left;
@@ -121,6 +125,8 @@
 }
 
 .rtl .cd-commentForm {
+  direction: rtl;
+
   .cd-checkboxesContainer {
     direction: rtl;
     text-align: right;
@@ -146,6 +152,16 @@
   .cd-rightButtonsContainer {
     float: left;
   }
+}
+
+.sitedir-ltr .cd-commentForm .tool-button {
+  // Otherwise, text may be visible in some combinations of content and interface language (for
+  // example, Russian Wikipedia and uselang=he).
+  direction: ltr;
+}
+
+.sitedir-rtl .cd-commentForm .tool-button {
+  direction: rtl;
 }
 
 // "display: flow-root" removes the number in numbered lists which is too bad when editing a
@@ -175,19 +191,19 @@ ol > li.cd-commentForm {
     position: relative;
   }
 
-  &.oo-ui-widget-disabled .wikiEditor-ui-top,
-  &.oo-ui-widget-disabled + .cd-insertButtons {
-    pointer-events: none;
-  }
-}
-
-body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-disabled {
-  border-color: #c8ccd1;
-
-  .oo-ui-inputWidget-input,
-  .wikiEditor-ui-top,
-  + .cd-insertButtons {
+  &.oo-ui-textInputWidget.oo-ui-widget-disabled {
     border-color: #c8ccd1;
+
+    .wikiEditor-ui-top,
+    + .cd-insertButtons {
+      pointer-events: none;
+    }
+
+    .oo-ui-inputWidget-input,
+    .wikiEditor-ui-top,
+    + .cd-insertButtons {
+      border-color: #c8ccd1;
+    }
   }
 }
 
@@ -224,13 +240,28 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-dis
   }
 
   &-indentedComment > .mw-parser-output > dl > dd {
-    margin-left: 0;
     margin-bottom: 0;
   }
 
   &-label {
     color: #72777d;
     margin-bottom: 0.5em;
+  }
+}
+
+.sitedir-ltr .cd-previewArea {
+  direction: ltr;
+
+  &-indentedComment > .mw-parser-output > dl > dd {
+    margin-left: 0;
+  }
+}
+
+.sitedir-rtl .cd-previewArea {
+  direction: rtl;
+
+  &-indentedComment > .mw-parser-output > dl > dd {
+    margin-right: 0;
   }
 }
 
@@ -269,7 +300,6 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-dis
   position: absolute;
   z-index: 1;
   top: 0;
-  right: 0;
   width: 20px;
   height: 20px;
   background-image: url(https://upload.wikimedia.org/wikipedia/commons/1/18/OOjs_UI_icon_close-ltr.svg);
@@ -277,6 +307,18 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-dis
   background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.2s ease-in;
+}
+
+.ltr .cd-closeButton,
+.sitedir-ltr .cd-previewArea .cd-closeButton {
+  right: 0;
+  left: unset;
+}
+
+.rtl .cd-closeButton,
+.sitedir-rtl .cd-previewArea .cd-closeButton {
+  left: 0;
+  right: unset;
 }
 
 .cd-message {
@@ -324,6 +366,14 @@ body:not(.skin-monobook) .cd-commentInput.oo-ui-textInputWidget.oo-ui-widget-dis
       background-color: rgba(0, 23, 70, 0.086);
     }
   }
+}
+
+.sitedir-ltr .cd-insertButtons {
+  direction: ltr;
+}
+
+.sitedir-rtl .cd-insertButtons {
+  direction: rtl;
 }
 
 .ltr .cd-insertButtons-item {

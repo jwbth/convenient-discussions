@@ -334,7 +334,7 @@ export default {
           cd.s('navpanel-newcomments-unknowndate');
         const text = (
           names +
-          (cd.g.SITE_DIR === 'rtl' ? '\u200F' : '') +
+          (cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '') +
           cd.mws('comma-separator') +
           date
         );
