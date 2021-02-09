@@ -609,9 +609,19 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Highlight the comment when it is focused.
+   *
+   * @param {Event} e
    */
-  highlightFocused() {
+  highlightFocused(e) {
     if (this.isFocused || cd.util.isPageOverlayOn()) return;
+
+    if (e && e.type === 'touchstart') {
+      cd.comments
+        .filter((comment) => comment.isFocused)
+        .forEach((comment) => {
+          comment.unhighlightFocused();
+        });
+    }
 
     const isMoved = this.configureLayers();
 
