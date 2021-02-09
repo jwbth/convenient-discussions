@@ -10,7 +10,7 @@ import cd from './cd';
 import commentLayers from './commentLayers';
 import currentSection from './currentSection';
 import navPanel from './navPanel';
-import { isInputFocused } from './util';
+import { isInputFocused, keyCombination } from './util';
 
 const beforeUnloadHandlers = {};
 
@@ -64,9 +64,9 @@ export function handleGlobalKeyDown(e) {
 
   if (
     // Ctrl+Alt+Q
-    (e.keyCode === 81 && e.ctrlKey && !e.shiftKey && e.altKey) ||
+    keyCombination(e, 81, ['ctrl', 'alt']) ||
     // Q
-    (e.keyCode === 81 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused())
+    (keyCombination(e, 81) && !isInputFocused())
   ) {
     e.preventDefault();
     CommentForm.getLastActive()?.quote(e.ctrlKey);
@@ -74,22 +74,22 @@ export function handleGlobalKeyDown(e) {
 
   if (navPanel.isMounted()) {
     // R
-    if (e.keyCode === 82 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
+    if (keyCombination(e, 82) && !isInputFocused()) {
       navPanel.refreshClick();
     }
 
     // W
-    if (e.keyCode === 87 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
+    if (keyCombination(e, 87) && !isInputFocused()) {
       navPanel.goToPreviousNewComment();
     }
 
     // S
-    if (e.keyCode === 83 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
+    if (keyCombination(e, 83) && !isInputFocused()) {
       navPanel.goToNextNewComment();
     }
 
     // F
-    if (e.keyCode === 70 && !e.ctrlKey && !e.shiftKey && !e.altKey && !isInputFocused()) {
+    if (keyCombination(e, 70) && !isInputFocused()) {
       navPanel.goToFirstUnseenComment();
     }
   }

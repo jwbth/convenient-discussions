@@ -22,6 +22,7 @@ import {
   hideText,
   insertText,
   isInputFocused,
+  keyCombination,
   nativePromiseState,
   removeDoubleSpaces,
   restoreScrollPosition,
@@ -1421,12 +1422,12 @@ export default class CommentForm {
       // Hotkeys
       .on('keydown', (e) => {
         // Ctrl+Enter
-        if (e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 13) {
+        if (keyCombination(e, 13, ['ctrl'])) {
           this.submit();
         }
 
         // Esc
-        if (!e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 27) {
+        if (keyCombination(e, 27)) {
           this.cancel();
         }
       })

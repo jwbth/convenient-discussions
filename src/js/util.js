@@ -638,3 +638,18 @@ export function calculateWordsOverlap(s1, s2) {
 
   return overlap / total;
 }
+
+/**
+ * Whether a provided key combination is pressed given an event.
+ *
+ * @param {Event} e
+ * @param {number} keyCode
+ * @param {Array} [modificators=[]]
+ * @returns {boolean}
+ */
+export function keyCombination(e, keyCode, modificators = []) {
+  return (
+    e.keyCode === keyCode &&
+    ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modificators.includes(mod) === e[mod + 'Key'])
+  );
+}
