@@ -250,6 +250,15 @@ function go() {
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
   cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
 
+  // Quite a rough check for mobile browsers, a mix of what is advised at
+  // https://stackoverflow.com/a/24600597 (sends to
+  // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
+  // https://stackoverflow.com/a/14301832.
+  cd.g.IS_MOBILE = (
+    /Mobi|Android/i.test(navigator.userAgent) ||
+    typeof window.orientation !== 'undefined'
+  );
+
   cd.g.$content = $('#mw-content-text');
 
   const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);

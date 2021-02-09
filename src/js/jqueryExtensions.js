@@ -142,7 +142,14 @@ export default {
    * @memberof $.fn
    */
   cdScrollIntoView(alignment, smooth = true, callback) {
-    if (this.cdIsInViewport()) {
+    const clientProfile = $.client.profile();
+    if (
+      this.cdIsInViewport() &&
+
+      // Fix Mobile Safari bug where you can't move the caret after the comment input is focused on
+      // form open.
+      !(cd.g.IS_MOBILE && clientProfile.name === 'safari' && clientProfile.platform === 'mac')
+    ) {
       if (callback) {
         callback();
       }
