@@ -2292,7 +2292,7 @@ export default class CommentForm {
         const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
-        code = `<small>${before}${code}</small> ${signature}`;
+        code = `<small>${before}${code}${signature}</small>`;
       }
     } else {
       code += signature;
