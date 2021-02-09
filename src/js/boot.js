@@ -831,7 +831,7 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  */
 export function saveSession() {
-  const timeSinceLastSave = Date.now() - saveSessionLastTime;
+  const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
   clearTimeout(saveSessionTimeout);
   saveSessionTimeout = setTimeout(() => {
     const commentForms = cd.commentForms
@@ -941,7 +941,6 @@ function restoreCommentFormsFromData(commentFormsData) {
     }
   });
   if (haveRestored) {
-    saveSession();
     const notification = mw.notification.notify(cd.s('restore-restored-text'), {
       title: cd.s('restore-restored-title'),
     });

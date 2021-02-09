@@ -106,7 +106,7 @@ export default class CommentSkeleton {
     this.parts = parts;
 
     /**
-     * Comment elements.
+     * Comment's elements.
      *
      * @type {Element[]}
      */
@@ -167,7 +167,7 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Add the necessary attributes to the comment elements.
+   * Add the necessary attributes to the comment's elements.
    *
    * @private
    */
@@ -184,19 +184,19 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Set the necessary classes to parent elements of the comment elements to make a visible tree
+   * Set the necessary classes to parent elements of the comment's elements to make a visible tree
    * structure.
    *
    * @private
    */
   setLevels() {
-    // We make sure the level on the top and on the bottom of the comment are the same, and add
-    // corresponding classes.
+    // Make sure the level on the top and on the bottom of the comment are the same and add
+    // appropriate classes.
     const levelElements = {};
     levelElements.top = this.parser.getLevelsUpTree(this.highlightables[0]);
-    levelElements.bottom = this.highlightables.length > 1 ?
-      this.parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1]) :
-      levelElements.top;
+    levelElements.bottom = this.highlightables.length === 1 ?
+      levelElements.top :
+      this.parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1]);
 
     /**
      * Comment level. A level is a number representing the number of indentation characters
@@ -205,6 +205,7 @@ export default class CommentSkeleton {
      * @type {number}
      */
     this.level = Math.min(levelElements.top.length, levelElements.bottom.length);
+
     for (let i = 0; i < this.level; i++) {
       if (levelElements.top[i]) {
         levelElements.top[i].classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);

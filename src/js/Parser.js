@@ -598,7 +598,7 @@ export default class Parser {
   }
 
   /**
-   * Remove the comment parts that are inside of other parts.
+   * Remove comment parts that are inside of other parts.
    *
    * @param {object[]} parts
    * @returns {object[]}
@@ -623,7 +623,7 @@ export default class Parser {
   }
 
   /**
-   * Wrap the text and inline nodes into block elements.
+   * Wrap text and inline nodes into block elements.
    *
    * @param {object[]} parts
    * @param {Element} signatureElement
@@ -720,7 +720,7 @@ export default class Parser {
   }
 
   /**
-   * Replace the list elements with collections of their items if appropriate.
+   * Replace list elements with collections of their items if appropriate.
    *
    * @param {object[]} parts
    * @param {Element} signatureElement
@@ -734,14 +734,20 @@ export default class Parser {
         // 'LI', 'DD' are in this list too for this kind of structures:
         // https://ru.wikipedia.org/w/index.php?diff=103584477.
         ['UL', 'DL', 'OL', 'LI', 'DD'].includes(part.node.tagName) &&
-        // The check for 'DD' rescues us here:
-        // https://ru.wikipedia.org/wiki/Википедия:Форум/Общий#201911201924_Vcohen.
-        // The check for 'DL' rescues us here:
-        // https://ru.wikipedia.org/wiki/Википедия:Форум/Общий#202003090945_Serhio_Magpie. The check
-        // for 'P' rescues us here:
-        // https://ru.wikipedia.org/wiki/Википедия:Форум/Правила#201910270736_S.m.46.
-        // The check for "!parts[i + 1]..." rescues us here:
-        // https://ru.wikipedia.org/wiki/Википедия:Технические_запросы#201912081049_Sunpriat.
+
+        /*
+          * The check for 'DD' rescues us here:
+            https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
+            * Complex case where it messes up things:
+              https://commons.wikimedia.org/wiki/Commons:Translators'_noticeboard/Archive/2020#202011151417_Ameisenigel
+          * The check for 'DL' rescues us here:
+            https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
+            (see the original HTML source)
+          * The check for 'P' rescues us here:
+            https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Правила/2019/12#201910270736_S.m.46
+          * The check for "!parts[i + 1]..." rescues us here:
+            https://ru.wikipedia.org/wiki/Википедия:Технические_запросы/Архив/2019#201912081049_Sunpriat
+         */
         (
           (part.lastStep === 'up' && (!parts[i - 1] || parts[i - 1].lastStep !== 'back')) ||
           (
@@ -811,7 +817,7 @@ export default class Parser {
   }
 
   /**
-   * Get the ".cd-commentLevel" elements up the DOM tree.
+   * Get the `.cd-commentLevel` elements up the DOM tree.
    *
    * @param {Element} initialElement
    * @returns {Element[]}
@@ -842,8 +848,9 @@ export default class Parser {
    *
    * @returns {Element[]}
    */
-  // The worker context doesn't support .querySelector(), so we have to use .getElementsByTagName().
   findHeadings() {
+    // The worker context doesn't support .querySelector(), so we have to use
+    // .getElementsByTagName().
     const headings = [
       ...cd.g.rootElement.getElementsByTagName('h1'),
       ...cd.g.rootElement.getElementsByTagName('h2'),

@@ -165,12 +165,12 @@ export default class Comment extends CommentSkeleton {
    * Bind the standard events to a comment part. Executed on comment object creation and DOM
    * modifications affecting comment parts.
    *
-   * @param {Element} el
+   * @param {Element} element
    */
-  bindEvents(el) {
-    el.onmouseenter = this.highlightFocused.bind(this);
-    el.onmouseleave = this.unhighlightFocused.bind(this);
-    el.ontouchstart = this.highlightFocused.bind(this);
+  bindEvents(element) {
+    element.onmouseenter = this.highlightFocused.bind(this);
+    element.onmouseleave = this.unhighlightFocused.bind(this);
+    element.ontouchstart = this.highlightFocused.bind(this);
   }
 
   /**

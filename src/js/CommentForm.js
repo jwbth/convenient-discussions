@@ -1431,6 +1431,7 @@ export default class CommentForm {
           this.cancel();
         }
       })
+
       // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
       .on('focusin', () => {
         this.lastFocused = new Date();
@@ -2713,11 +2714,8 @@ export default class CommentForm {
     if (!isAuto) {
       this.commentInput.focus();
 
-      this.$previewArea.cdScrollIntoView(
-        this.$previewArea.hasClass('cd-previewArea-above') ?
-        'top' :
-        'bottom'
-      );
+      this.$previewArea
+        .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
     }
 
     this.closeOperation(currentOperation);

@@ -1373,19 +1373,15 @@ export default class Section extends SectionSkeleton {
       }
 
       const signatures = extractSignatures(code);
-      let hasFirstCommentMatched;
-      if (signatures.length) {
-        hasFirstCommentMatched = (
-          Boolean(firstComment) &&
-          (
-            signatures[0].timestamp === firstComment.timestamp ||
-            signatures[0].author === firstComment.author
-          )
-        );
-      } else {
+      const hasFirstCommentMatched = signatures[0] ?
+        Boolean(
+          firstComment &&
+          signatures[0].timestamp === firstComment.timestamp ||
+          signatures[0].author === firstComment.author
+        ) :
+
         // There's no comments neither in the code nor on the page.
-        hasFirstCommentMatched = !this.comments.length;
-      }
+        !firstComment;
 
       const score = (
         hasHeadlineMatched * 1 +
