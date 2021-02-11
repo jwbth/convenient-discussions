@@ -53,7 +53,7 @@
 	"section-watch-error-load": "Text of the error notification that appears when adding or removing a section from the in-script watchlist.",
 	"section-watch-error-save": "Text of the error notification that appears when adding or removing a section from the in-script watchlist.",
 	"section-watch-error-maxsize": "Text of the error notification that appears when adding a section to the in-script watchlist.",
-	"cld-summary": "Label of the edit summary in the copy link dialog and thank dialog.",
+	"cld-summary": "A noun, the label of the edit summary in the copy link dialog and thank dialog.",
 	"cld-diff": "Label of the text input in the copy link dialog.",
 	"cld-diff-error": "Content of the text input in the copy link dialog. It is used when the edit wasn't found. The input is disabled in such cases.",
 	"cld-diff-error-network": "Content of the text input in the copy link dialog. It is used when the edit link wasn't found. The input is disabled in such cases.",
