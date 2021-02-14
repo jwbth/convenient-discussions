@@ -79,19 +79,13 @@ export async function initSettings() {
 
     autopreview: true,
     desktopNotifications: 'unknown',
-
-    // Not shown in the settings dialog. TODO: delete if proves unnecessary.
-    defaultCommentLinkType: 'diff',
-    defaultSectionLinkType: 'wikilink',
-
+    defaultCommentLinkType: null,
+    defaultSectionLinkType: null,
     highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notificationsBlacklist: [],
-
-    // Not shown in the settings dialog
     showLoadingOverlay: true,
-
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
     modifyToc: true,
@@ -100,12 +94,15 @@ export async function initSettings() {
     watchSectionOnReply: true,
   };
 
+  // Settings set for the current wiki only.
   cd.localSettingNames = ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'];
 
-  const options = {
-    [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
-    [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
-  }
+  // Settings not shown in the settings dialog.
+  cd.internalSettingNames = [
+    'defaultCommentLinkType',
+    'defaultSectionLinkType',
+    'showLoadingOverlay',
+  ];
 
   // Aliases for seamless transition when changing a setting name.
   cd.settingAliases = {
@@ -114,6 +111,11 @@ export async function initSettings() {
     haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySig', 'mySignature'],
+  };
+
+  const options = {
+    [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
+    [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
   };
 
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
@@ -131,7 +133,11 @@ export async function initSettings() {
     options,
     omitLocal: true,
   });
-  cd.settings = Object.assign(cd.settings, remoteSettings);
+  Object.keys(remoteSettings).forEach((name) => {
+    if (!cd.internalSettingNames.includes(name)) {
+      cd.settings[name] = remoteSettings[name];
+    }
+  });
 
   // Seamless transition from mySignature.
   if (cd.settings.signaturePrefix !== undefined) {

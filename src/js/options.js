@@ -118,7 +118,10 @@ export async function getSettings({
       // Global settings override those set via personal JS.
       if (
         globalSettings[alias] !== undefined &&
-        typeof globalSettings[alias] === typeof cd.defaultSettings[name]
+        (
+          typeof globalSettings[alias] === typeof cd.defaultSettings[name] ||
+          cd.defaultSettings[name] === null
+        )
       ) {
         settings[name] = globalSettings[alias];
       }
@@ -126,7 +129,10 @@ export async function getSettings({
       // Local settings override global.
       if (
         localSettings[alias] !== undefined &&
-        typeof localSettings[alias] === typeof cd.defaultSettings[name]
+        (
+          typeof localSettings[alias] === typeof cd.defaultSettings[name] ||
+          cd.defaultSettings[name] === null
+        )
       ) {
         settings[name] = localSettings[alias];
       }
