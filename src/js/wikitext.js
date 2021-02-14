@@ -164,7 +164,7 @@ export function encodeWikilink(link) {
  */
 function extractRegularSignatures(code) {
   const timestampRegexp = new RegExp(
-    `^((.*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["'»])(?:\\}\\}|</small>)?).*(?:\n*|$)`,
+    `^((.*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["»])(?:\\}\\}|</small>)?).*(?:\n*|$)`,
     'igm'
   );
 
