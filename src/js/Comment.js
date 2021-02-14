@@ -837,16 +837,17 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    const $span = $('<span>')
+    const $before = $('<span>').addClass('cd-beforeEditMark');
+    const $editMark = $('<span>')
       .addClass('cd-editMark')
       .append(cd.sParse(stringName));
     if ($refreshLink) {
-      $span.append(' ', $refreshLink);
+      $editMark.append(' ', $refreshLink);
     } else {
-      $span.addClass('cd-editMark-newVersionRendered');
+      $editMark.addClass('cd-editMark-newVersionRendered');
     }
     if ($diffLink) {
-      $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
+      $editMark.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
     }
 
     // Add the mark to the last block element, going as many nesting levels down as needed to avoid
@@ -857,7 +858,7 @@ export default class Comment extends CommentSkeleton {
       $last = $tested;
       $tested = $last.children().last();
     } while ($tested.length && !isInline($tested.get(0)));
-    $last.append($span);
+    $last.append(' ', $before, $editMark);
 
     if (isNewVersionRendered) {
       this.flashNewOnSight();
