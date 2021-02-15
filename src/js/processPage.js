@@ -14,8 +14,8 @@ import Parser, { getUserNameFromLink } from './Parser';
 import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
-import currentSection from './currentSection';
 import navPanel from './navPanel';
+import pageNav from './pageNav';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
@@ -945,7 +945,7 @@ export default async function processPage(keptData = {}) {
   if (cd.g.isFirstRun) {
     mw.hook('wikipage.content').add(highlightMentions);
 
-    currentSection.mount();
+    pageNav.mount();
 
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
@@ -984,7 +984,7 @@ export default async function processPage(keptData = {}) {
       .on('keydown', handleGlobalKeyDown)
       .on('scroll resize orientationchange', handleScroll);
   } else {
-    currentSection.reset();
+    pageNav.reset();
   }
 
   let alwaysConfirmLeavingPage = false;

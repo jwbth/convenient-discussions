@@ -208,10 +208,10 @@ export function initTalkPageCss() {
 
       .last()
       .css('background-color');
-  cd.g.nanoCss.put('#cd-currentSection', {
+  cd.g.nanoCss.put('.cd-pageNav', {
     backgroundColor: transparentize(sidebarColor).replace('0)', '0.8)'),
   });
-  cd.g.nanoCss.put('#cd-currentSection:hover', {
+  cd.g.nanoCss.put('.cd-pageNav:hover', {
     backgroundColor: sidebarColor,
   });
 }

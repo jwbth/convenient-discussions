@@ -8,8 +8,8 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import cd from './cd';
 import commentLayers from './commentLayers';
-import currentSection from './currentSection';
 import navPanel from './navPanel';
+import pageNav from './pageNav';
 import { isInputFocused, keyCombination } from './util';
 
 const beforeUnloadHandlers = {};
@@ -23,7 +23,7 @@ export function handleWindowResize() {
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();
   });
-  currentSection.updateWidth();
+  pageNav.updateWidth();
 }
 
 /**
@@ -112,11 +112,13 @@ export function handleScroll() {
   setTimeout(() => {
     cd.g.dontHandleScroll = false;
 
+    if (cd.g.autoScrollInProgress) return;
+
     if (cd.g.isPageActive) {
       Comment.registerSeen();
       navPanel.updateFirstUnseenButton();
       navPanel.updateCommentFormButton();
     }
-    currentSection.update();
+    pageNav.update();
   }, 300);
 }
