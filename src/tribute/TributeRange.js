@@ -343,15 +343,17 @@ class TributeRange {
     }
 
     isMenuOffScreen(coordinates, menuDimensions) {
-        let windowWidth = window.innerWidth
-        let windowHeight = window.innerHeight
+        // jwbth: Replaced window.innerWidth and window.innerHeight with doc.clientWidth and
+        // doc.clientHeight - the first ones include scrollbars. Removed some tweaks for
+        // compatibility with old browsers.
+
         let doc = document.documentElement
-        let windowLeft = (window.pageXOffset || doc.scrollLeft) - (doc.clientLeft || 0)
-        let windowTop = (window.pageYOffset || doc.scrollTop) - (doc.clientTop || 0)
+        let windowLeft = window.scrollX - (doc.clientLeft || 0)
+        let windowTop = window.scrollY - (doc.clientTop || 0)
 
         let menuTop = typeof coordinates.top === 'number' ?
             coordinates.top :
-            windowTop + windowHeight - coordinates.bottom - menuDimensions.height
+            windowTop + doc.clientHeight - coordinates.bottom - menuDimensions.height
         let menuRight = typeof coordinates.right === 'number' ?
             coordinates.right :
             coordinates.left + menuDimensions.width
@@ -360,12 +362,12 @@ class TributeRange {
             coordinates.top + menuDimensions.height
         let menuLeft = typeof coordinates.left === 'number' ?
             coordinates.left :
-            windowLeft + windowWidth - coordinates.right - menuDimensions.width
+            windowLeft + doc.clientWidth - coordinates.right - menuDimensions.width
 
         return {
             top: menuTop < Math.floor(windowTop),
-            right: menuRight > Math.ceil(windowLeft + windowWidth),
-            bottom: menuBottom > Math.ceil(windowTop + windowHeight) - 3,
+            right: menuRight > Math.ceil(windowLeft + doc.clientWidth),
+            bottom: menuBottom > Math.ceil(windowTop + doc.clientHeight) - 3,
             left: menuLeft < Math.floor(windowLeft)
         }
     }
