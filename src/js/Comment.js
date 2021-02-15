@@ -1473,7 +1473,7 @@ export default class Comment extends CommentSkeleton {
       // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
       // more comments are there.
       const entireLineRegexp = new RegExp(
-        `^(?:\\x01.+?\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
+        `^(?:\\x01\\d+_(block|template)\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
         'i'
       );
       const thisLineEndingRegexp = new RegExp(
@@ -1490,7 +1490,6 @@ export default class Comment extends CommentSkeleton {
         (s, thisLine, nextLine) => {
           const newlineOrSpace = (
             entireLineRegexp.test(thisLine) ||
-            entireLineRegexp.test(nextLine) ||
             headingRegexp.test(thisLine) ||
             headingRegexp.test(nextLine) ||
             thisLineEndingRegexp.test(thisLine) ||

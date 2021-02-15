@@ -2210,7 +2210,7 @@ export default class CommentForm {
     // mean the beginning and ending of a table. Note: This should be kept coordinated with the
     // reverse transformation code in Comment#codeToText.
     const entireLineRegexp = new RegExp(
-      `^(?:\\x01.+?\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
+      `^(?:\\x01\\d+_(block|template)\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
       'i'
     );
     const thisLineEndingRegexp = new RegExp(
@@ -2226,14 +2226,7 @@ export default class CommentForm {
       /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
       (s, thisLine, nextLine) => {
         const br = (
-          // We assume that if a tag/template occupies an entire line or multiple lines, it's a
-          // block tag/template and it doesn't need <br>s before or after it. A false positive is
-          // possible in case of <nowiki> occupying an entire line (as of May 2020, no other inline
-          // tags are hidden, see hideSensitiveCode() in wikitext.js).
-          // https://en.wikipedia.org/w/index.php?diff=946978893
-          // https://en.wikipedia.org/w/index.php?diff=941991985
           entireLineRegexp.test(thisLine) ||
-          entireLineRegexp.test(nextLine) ||
 
           (
             !willCommentBeIndented &&
