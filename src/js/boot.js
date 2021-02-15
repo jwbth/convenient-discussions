@@ -859,6 +859,7 @@ export function saveSession(force) {
             headline: target.headline,
             oldestCommentAnchor: target.oldestComment?.anchor,
             id: target.id,
+            anchor: target.anchor,
           };
         }
         return {
@@ -932,8 +933,7 @@ function restoreCommentFormsFromData(commentFormsData) {
         // local storages will die for good.
         id: data.targetData.index || data.targetData.id,
 
-        // Can't provide parentTree as cd.sections has already changed; will need to add a
-        // workaround if parentTree proves needed.
+        anchor: data.targetData.anchor,
       });
       if (section?.isActionable && !section[`${property}Form`]) {
         try {
@@ -1022,6 +1022,7 @@ export function restoreCommentForms() {
           headline: target.headline,
           oldestCommentAnchor: target.oldestComment?.anchor,
           id: target.id,
+          anchor: target.anchor,
 
           // Can't provide parentTree as cd.sections has already changed; will need to add a
           // workaround if parentTree proves needed.
