@@ -850,7 +850,7 @@ export function saveSession() {
         } else if (target instanceof Section) {
           targetData = {
             headline: target.headline,
-            firstCommentAnchor: target.comments[0]?.anchor,
+            oldestCommentAnchor: target.oldestComment?.anchor,
             id: target.id,
           };
         }
@@ -911,7 +911,7 @@ function restoreCommentFormsFromData(commentFormsData) {
     } else if (data.targetData?.headline) {
       const section = Section.search({
         headline: data.targetData.headline,
-        firstCommentAnchor: data.targetData.firstCommentAnchor,
+        oldestCommentAnchor: data.targetData.oldestCommentAnchor,
 
         // TODO: remove "data.targetData.index ||" after February 2021, when old values in users'
         // local storages will die for good.
@@ -1005,7 +1005,7 @@ export function restoreCommentForms() {
       } else if (target instanceof Section) {
         const section = Section.search({
           headline: target.headline,
-          firstCommentAnchor: target.comments[0]?.anchor,
+          oldestCommentAnchor: target.oldestComment?.anchor,
           id: target.id,
 
           // Can't provide parentTree as cd.sections has already changed; will need to add a

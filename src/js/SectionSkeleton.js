@@ -138,6 +138,16 @@ export default class SectionSkeleton {
         this.commentsInFirstChunk = this.comments.slice(0, endIndex || 0);
       }
 
+      this.comments.forEach((comment) => {
+        if (
+          !this.oldestComment ||
+          (!this.oldestComment.date && comment.date) ||
+          this.oldestComment.date > comment.date
+        ) {
+          this.oldestComment = comment;
+        }
+      });
+
       this.comments[0].followsHeading = true;
     }
 

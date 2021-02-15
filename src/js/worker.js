@@ -98,7 +98,7 @@ function parse() {
   cd.debug.startTimer('worker: prepare comments and sections');
   cd.sections.forEach((section) => {
     section.parentTree = section.getParentTree().map((section) => section.headline);
-    section.firstCommentAnchor = section.comments[0]?.anchor;
+    section.oldestCommentAnchor = section.oldestComment?.anchor;
   });
 
   let commentDangerousKeys = [
