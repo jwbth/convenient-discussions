@@ -123,7 +123,13 @@ export async function initSettings() {
   Object.keys(cd.defaultSettings).forEach((name) => {
     (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
       const varAlias = 'cd' + firstCharToUpperCase(alias);
-      if (varAlias in window && typeof window[varAlias] === typeof cd.defaultSettings[name]) {
+      if (
+        varAlias in window &&
+        (
+          typeof window[varAlias] === typeof cd.defaultSettings[name] ||
+          cd.defaultSettings[name] === null
+        )
+      ) {
         cd.settings[name] = window[varAlias];
       }
     });
