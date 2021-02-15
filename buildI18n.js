@@ -99,7 +99,7 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
 
         // The same with suspicious strings containing what seems like the "javascript:" prefix or
         // one of the "on..." attributes.
-        let test = sanitized.replace(/&#?\w+;|\s+/g, '');
+        let test = sanitized.replace(/&\w+;|\s+/g, '');
         if (/javascript:/i.test(test) || /\bon\w+\s*=/i.test(sanitized)) {
           warning(`Suspicious code found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
           delete strings[stringName];
@@ -108,7 +108,7 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
 
         strings[stringName] = sanitized;
       });
-    let json = JSON.stringify(strings, null, '\t');
+    let json = JSON.stringify(strings, null, '\t').replace(/&nbsp;/g, ' ');
 
     if (lang === 'en') {
       // Prevent creating "</nowiki>" character sequences when building the main script file.
