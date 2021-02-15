@@ -85,6 +85,7 @@ export default {
   ],
 
   elementsToExcludeClasses: [
+    'cd-moveMark',
     'unresolved',
     'resolved',
     'ambox',
