@@ -176,8 +176,6 @@ export default class CommentForm {
 
     cd.commentForms.push(this);
 
-    navPanel.updateCommentFormButton();
-
     if (dataToRestore) {
       this.originalComment = dataToRestore.originalComment;
       this.originalHeadline = dataToRestore.originalHeadline;
@@ -189,9 +187,12 @@ export default class CommentForm {
          */
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
+
+      navPanel.updateCommentFormButton();
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
+        navPanel.updateCommentFormButton();
       });
 
       if (this.mode === 'edit') {
