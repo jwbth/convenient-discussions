@@ -23,6 +23,7 @@
 	"section-newcomments": "Et gëtt {{plural:$1|eng nei Bemierkung|nei Bemierkungen}} an dësem Abschnitt vum {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. Klickt hei fir d'Säit z'aktualiséieren.",
 	"section-unwatch-success": "Den Abschnitt \"$1\" gouf vun Ärer Iwwerwaachungslëscht erofgeholl.",
 	"section-watch-error-save": "D'Astellunge konnten net um Server gespäichert ginn.",
+	"cld-summary": "Resumé vun der Ännerung",
 	"cld-diff": "Link op den Ënnerscheed",
 	"cld-diff-error": "Gouf net fonnt",
 	"cld-diff-error-network": "Gouf net fonnt (Feeler am Reseau)",
