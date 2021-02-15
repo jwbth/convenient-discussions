@@ -689,8 +689,8 @@ async function processVisits(visitsRequest, keptData) {
 
   setVisits(visits);
 
+  Comment.registerSeen();
   navPanel.fill();
-  handleScroll();
 
   /**
    * New comments have been highlighted.
