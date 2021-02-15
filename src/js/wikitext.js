@@ -342,7 +342,20 @@ export function extractSignatures(code, generateCommentAnchors) {
   const unsigneds = extractUnsigneds(adjustedCodeForUnsigneds, signatures);
   signatures.push(...unsigneds);
 
-  if (unsigneds.length) {
+  // This is for the procedure adding anchors to comments linked from the comment, see
+  // CommentForm#prepareNewPageCode.
+  const signatureIndex = adjustedCode.indexOf(cd.g.SIGN_CODE);
+  if (signatureIndex !== -1) {
+    const startIndex = signatureIndex;
+    const nextCommentOffset = adjustedCode.slice(startIndex).indexOf('\n') + 1;
+    signatures.push({
+      author: cd.g.CURRENT_USER_NAME,
+      startIndex,
+      nextCommentStartIndex: startIndex + nextCommentOffset,
+    });
+  }
+
+  if (unsigneds.length || signatureIndex !== -1) {
     signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
   }
 
