@@ -351,7 +351,7 @@ export default {
    * @type {string[]}
    * @default ["> ''", "''\n"]
    */
-  quoteFormatting: ["> ''", "''\n"],
+  quoteFormatting: ["> ''", "''"],
 
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They

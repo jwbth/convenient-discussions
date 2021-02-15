@@ -289,10 +289,10 @@ function extractUnsigneds(code, signatures) {
       let dirtyCode = match[1];
       const nextCommentStartIndex = match.index + match[0].length;
 
-      // "[5 tildes] {{unsigned|}}" cases. In these cases, both the signature and {{unsigned|}} are
-      // considered signatures and added to the array. We could combine them but that would need
-      // corresponding code in Parser.js which could be tricky, so for now we just remove the
-      // duplicate. That still allows to reply to the comment.
+      // "[5 tildes] {{unsigned|...}}" cases. In these cases, both the signature and
+      // {{unsigned|...}} are considered signatures and added to the array. We could combine them
+      // but that would need corresponding code in Parser.js which could be tricky, so for now we
+      // just remove the duplicate. That still allows to reply to the comment.
       const relevantSignatureIndex = (
         signatures.findIndex((sig) => sig.nextCommentStartIndex === nextCommentStartIndex)
       );
@@ -300,14 +300,7 @@ function extractUnsigneds(code, signatures) {
         signatures.splice(relevantSignatureIndex, 1);
       }
 
-      unsigneds.push({
-        author,
-        timestamp,
-        startIndex,
-        endIndex,
-        dirtyCode,
-        nextCommentStartIndex,
-      });
+      unsigneds.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });
     }
   }
 
@@ -322,10 +315,10 @@ function extractUnsigneds(code, signatures) {
  * module:Comment#adjustCommentBeginning}, called before that.
  *
  * @param {string} code Code to extract signatures from.
- * @param {boolean} generateCommentAnchors Whether to generate and register comment anchors.
+ * @param {boolean} [generateCommentAnchors=false] Whether to generate and register comment anchors.
  * @returns {object[]}
  */
-export function extractSignatures(code, generateCommentAnchors) {
+export function extractSignatures(code, generateCommentAnchors = false) {
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = hideDistractingCode(code, false)
     .replace(

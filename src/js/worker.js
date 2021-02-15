@@ -97,7 +97,7 @@ function parse() {
 
   cd.debug.startTimer('worker: prepare comments and sections');
   cd.sections.forEach((section) => {
-    section.parentTree = section.getParentTree().map((section) => section.headline);
+    section.ancestors = section.getAncestors().map((section) => section.headline);
     section.oldestCommentAnchor = section.oldestComment?.anchor;
   });
 
@@ -111,7 +111,7 @@ function parse() {
     'signatureElement',
   ];
   let sectionDangerousKeys = [
-    'cachedParentTree',
+    'cachedAncestors',
     // 'comments' property is removed below individually.
     'commentsInFirstChunk',
     'elements',

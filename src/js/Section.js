@@ -1285,7 +1285,6 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   searchInCode(pageCode) {
-    const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
     const adjustedPageCode = hideDistractingCode(pageCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;

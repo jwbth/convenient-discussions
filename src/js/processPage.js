@@ -91,7 +91,7 @@ async function prepare({ messagesRequest }) {
 function getFirstElementInViewportData() {
   let element;
   let top;
-  if (window.pageYOffset !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+  if (window.scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
     const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
     while (true) {
       if (!isInline(treeWalker.currentNode.tagName)) {
@@ -908,7 +908,7 @@ export default async function processPage(keptData = {}) {
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
   if (feivData) {
-    const y = window.pageYOffset + feivData.element.getBoundingClientRect().top - feivData.top;
+    const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
     window.scrollTo(0, y);
   }
 

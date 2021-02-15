@@ -155,8 +155,8 @@ export default {
             $sectionWithBackLink.detach();
           }
           this.$currentSection.empty();
-          const parentTree = [section, ...section.getParentTree()].reverse();
-          parentTree.forEach((sectionInTree, level) => {
+          const ancestors = [section, ...section.getAncestors()].reverse();
+          ancestors.forEach((sectionInTree, level) => {
             const $item = (
               $sectionWithBackLink &&
               $sectionWithBackLink.data('section') === sectionInTree

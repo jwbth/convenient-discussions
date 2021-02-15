@@ -149,29 +149,29 @@ export default {
    * @param {number} options.id
    * @param {string} options.headline
    * @param {string} options.anchor
-   * @param {string} [options.parentTree]
-   * @param {string} [options.oldestCommentAnchor]
+   * @param {Array} options.ancestors
+   * @param {string} options.oldestCommentAnchor
    * @param {boolean} [returnScore]
    * @returns {?Section}
    * @memberof module:Section
    */
-  search({ id, headline, anchor, parentTree, oldestCommentAnchor }, returnScore) {
+  search({ id, headline, anchor, ancestors, oldestCommentAnchor }, returnScore) {
     const matches = [];
     cd.sections.some((section) => {
       const hasIdMatched = section.id === id;
       const hasHeadlineMatched = section.headline === headline;
       const hasAnchorMatched = section.anchor === anchor;
-      let hasParentTreeMatched;
-      if (parentTree) {
-        const sectionParentTree = section.getParentTree().map((section) => section.headline);
-        hasParentTreeMatched = areObjectsEqual(sectionParentTree, parentTree);
+      let haveAncestorsMatched;
+      if (ancestors) {
+        const sectionAncestors = section.getAncestors().map((section) => section.headline);
+        haveAncestorsMatched = areObjectsEqual(sectionAncestors, ancestors);
       } else {
-        hasParentTreeMatched = 0.25;
+        haveAncestorsMatched = 0.25;
       }
       const hasOldestCommentMatched = section.oldestComment?.anchor === oldestCommentAnchor;
       const score = (
         hasHeadlineMatched * 1 +
-        hasParentTreeMatched * 1 +
+        haveAncestorsMatched * 1 +
         hasOldestCommentMatched * 1 +
         hasAnchorMatched * 0.5 +
         hasIdMatched * 0.001
@@ -181,7 +181,7 @@ export default {
       }
 
       // Score bigger than 3.5 means it's the best match for sure. Two sections can't have
-      // coinciding anchors, so there can't be 2 sections with the score bigger than 3.5.
+      // coinciding anchors, so there can't be two sections with the score bigger than 3.5.
       return score >= 3.5;
     });
 

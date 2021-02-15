@@ -361,13 +361,13 @@ export function unhideText(text, hidden) {
  *   reloads and when visits are loaded.
  */
 export function saveScrollPosition(saveTocHeight = true) {
-  keptScrollPosition = window.pageYOffset;
+  keptScrollPosition = window.scrollY;
   keptTocHeight = (
     (saveTocHeight || keptTocHeight) &&
     cd.g.$toc.length &&
     !cd.g.isTocFloating &&
-    window.pageYOffset !== 0 &&
-    window.pageYOffset + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
+    window.scrollY !== 0 &&
+    window.scrollY + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
   ) ?
     cd.g.$toc.outerHeight() :
     null;

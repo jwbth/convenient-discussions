@@ -206,16 +206,16 @@ export default class Comment extends CommentSkeleton {
     // reason.
     if (rectTop.left === 0 && rectTop.height === 0) return;
 
-    const top = window.pageYOffset + rectTop.top;
-    const bottom = window.pageYOffset + rectBottom.bottom;
+    const top = window.scrollY + rectTop.top;
+    const bottom = window.scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
       const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
       floatingRects.forEach((rect) => {
-        const floatingTop = window.pageYOffset + rect.outerTop;
-        const floatingBottom = window.pageYOffset + rect.outerBottom;
+        const floatingTop = window.scrollY + rect.outerTop;
+        const floatingBottom = window.scrollY + rect.outerBottom;
         if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }
@@ -248,8 +248,8 @@ export default class Comment extends CommentSkeleton {
         });
       }
     }
-    const left = window.pageXOffset + Math.min(rectTop.left, rectBottom.left);
-    const right = window.pageXOffset + Math.max(rectTop.right, rectBottom.right);
+    const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
+    const right = window.scrollX + Math.max(rectTop.right, rectBottom.right);
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
     // scrolling step is 40 pixels.
@@ -542,7 +542,7 @@ export default class Comment extends CommentSkeleton {
     if (this.underlay) {
       // Firefox bug makes it possible for minor (~0.02) differences to manifest.
       const topDifference = Math.abs(
-        window.pageYOffset +
+        window.scrollY +
         options.rectTop.top -
         options.layersContainerOffset.top -
         this.layersTop
@@ -1595,7 +1595,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {?boolean}
    */
   isInViewport(partially = false) {
-    const viewportTop = window.pageYOffset;
+    const viewportTop = window.scrollY;
     const viewportBottom = viewportTop + window.innerHeight;
 
     this.getPositions();

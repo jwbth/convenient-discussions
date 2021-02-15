@@ -5,7 +5,6 @@
  */
 
 import cd from './cd';
-import navPanel from './navPanel';
 import { handleScroll } from './eventHandlers';
 
 /**
@@ -50,12 +49,12 @@ export default {
     let $elements = this.cdRemoveNonElementNodes();
     const offsetTop = $elements.first().offset().top;
     const offsetTopLast = $elements.last().offset().top;
-    let offsetBottom = offsetTopLast + $elements.last().outerHeight();
     if (offsetTop === 0 || offsetTopLast === 0) {
       cd.g.autoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
     }
+    const offsetBottom = offsetTopLast + $elements.last().outerHeight();
 
     let offset;
     if (alignment === 'center') {
@@ -72,7 +71,6 @@ export default {
     const onComplete = () => {
       cd.g.autoScrollInProgress = false;
       handleScroll();
-      navPanel.updateCommentFormButton();
     };
 
     if (smooth) {
@@ -83,7 +81,7 @@ export default {
           if (callback) {
             callback();
           }
-        }
+        },
       });
     } else {
       window.scrollTo(0, offset);

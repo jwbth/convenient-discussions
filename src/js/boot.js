@@ -145,10 +145,9 @@ export async function initSettings() {
     }
   });
 
-  // Seamless transition from mySignature.
+  // Seamless transition from "mySignature". TODO: remove at some point.
   if (cd.settings.signaturePrefix !== undefined) {
-    // eslint-disable-next-line no-useless-escape
-    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace('~~\~~', '');
+    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(cd.g.SIGN_CODE, '');
   }
 
   if (
@@ -366,6 +365,9 @@ function initPatterns() {
   const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
   cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
 
+  // TODO: instead of removing only lines containing antipatterns from wikitext, hide entire
+  // templates (see the "markerLength" parameter in util.hideTemplatesRecursively) and tags? But
+  // keep in mind that this code may still be part of comments.
   const commentAntipatternsPatternParts = [];
   if (
     cd.config.elementsToExcludeClasses.length ||
@@ -1024,8 +1026,8 @@ export function restoreCommentForms() {
           id: target.id,
           anchor: target.anchor,
 
-          // Can't provide parentTree as cd.sections has already changed; will need to add a
-          // workaround if parentTree proves needed.
+          // Can't provide ancestors as cd.sections has already changed; will need to add a
+          // workaround if ancestors prove needed.
         });
         if (section?.isActionable) {
           try {
