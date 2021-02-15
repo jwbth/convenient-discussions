@@ -2202,7 +2202,7 @@ export default class CommentForm {
       const replacement = cd.config.paragraphTemplates.length ?
         `$1{{${cd.config.paragraphTemplates[0]}}}` :
         '$1<br><br>';
-      code = code.replace(/^((?![:*#= ]).*)\n\n(?![:*#=])/gm, replacement);
+      code = code.replace(/^((?![:*#]).*)\n\n(?![:*#])/gm, replacement);
     }
 
     // Process newlines by adding or not adding <br> and keeping or not keeping the newline. \x01
@@ -2281,8 +2281,8 @@ export default class CommentForm {
       signature = `<span class="cd-commentForm-signature">${signature}</span>`;
     }
 
-    // Space in the beggining of the line, creating <pre>.
-    if (/(?:^|\n) .*$/.test(code)) {
+    // A space in the beggining of the line, creating <pre>, or a heading.
+    if (!willCommentBeIndented && /(?:^|\n)[ =].*$/.test(code)) {
       code += '\n';
     }
 
