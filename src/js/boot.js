@@ -459,6 +459,7 @@ function initPatterns() {
 
   cd.g.ADD_TOPIC_SELECTORS = [
     '#ca-addsection a',
+    'a[href*="section=new"]',
     '.commentbox input[type="submit"]',
     '.createbox input[type="submit"]',
   ]
