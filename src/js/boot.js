@@ -913,20 +913,7 @@ function restoreCommentFormsFromData(commentFormsData) {
   const rescue = [];
   commentFormsData.commentForms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
-    if (data.targetData?.anchor) {
-      const comment = Comment.getByAnchor(data.targetData.anchor);
-      if (comment?.isActionable && !comment[`${property}Form`]) {
-        try {
-          comment[property](data);
-          haveRestored = true;
-        } catch (e) {
-          console.warn(e);
-          rescue.push(data);
-        }
-      } else {
-        rescue.push(data);
-      }
-    } else if (data.targetData?.headline) {
+    if (data.targetData?.headline) {
       const section = Section.search({
         headline: data.targetData.headline,
         oldestCommentAnchor: data.targetData.oldestCommentAnchor,
@@ -940,6 +927,19 @@ function restoreCommentFormsFromData(commentFormsData) {
       if (section?.isActionable && !section[`${property}Form`]) {
         try {
           section[property](data);
+          haveRestored = true;
+        } catch (e) {
+          console.warn(e);
+          rescue.push(data);
+        }
+      } else {
+        rescue.push(data);
+      }
+    } else if (data.targetData?.anchor) {
+      const comment = Comment.getByAnchor(data.targetData.anchor);
+      if (comment?.isActionable && !comment[`${property}Form`]) {
+        try {
+          comment[property](data);
           haveRestored = true;
         } catch (e) {
           console.warn(e);
