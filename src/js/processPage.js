@@ -502,12 +502,16 @@ function highlightOwnComments() {
  * @private
  */
 function highlightMentions($content) {
+  const selector = ['cd-signature']
+    .concat(cd.config.elementsToExcludeClasses)
+    .map((name) => `.${name}`)
+    .join(', ');
   Array.from(
     $content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.CURRENT_USER_NAME}"]`)
   )
     .filter((el) => (
       cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
-      !el.parentNode.closest('.cd-signature') &&
+      !el.parentNode.closest(selector) &&
       getUserNameFromLink(el) === cd.g.CURRENT_USER_NAME
     ))
     .forEach((link) => {
