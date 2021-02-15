@@ -842,11 +842,11 @@ function cleanUpSessions(data) {
 /**
  * Save comment form data to the local storage. (Session storage doesn't allow to restore when the
  * browser has crashed.)
+ *
+ * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
  */
-export function saveSession() {
-  const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
-  clearTimeout(saveSessionTimeout);
-  saveSessionTimeout = setTimeout(() => {
+export function saveSession(force) {
+  const save = () => {
     const commentForms = cd.commentForms
       .filter((commentForm) => commentForm.isAltered())
       .map((commentForm) => {
@@ -888,7 +888,15 @@ export function saveSession() {
     saveToLocalStorage('commentForms', dataAllPages);
 
     saveSessionLastTime = Date.now();
-  }, Math.max(0, 5000 - timeSinceLastSave));
+  };
+
+  const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
+  clearTimeout(saveSessionTimeout);
+  if (force) {
+    save();
+  } else {
+    saveSessionTimeout = setTimeout(save, Math.max(0, 5000 - timeSinceLastSave));
+  }
 }
 
 /**

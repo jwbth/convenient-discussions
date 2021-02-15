@@ -952,7 +952,7 @@ export default async function processPage(keptData = {}) {
     $(document).on('mousemove mouseover', Comment.highlightFocused);
     $(window).on('resize orientationchange', handleWindowResize);
     addPreventUnloadCondition('commentForms', () => {
-      saveSession();
+      saveSession(true);
       return (
         mw.user.options.get('useeditwarning') &&
         (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
