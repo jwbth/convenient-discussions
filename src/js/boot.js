@@ -459,7 +459,7 @@ function initPatterns() {
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
     .concat(cd.config.customBadCommentBeginnings);
 
-  cd.g.ADD_TOPIC_SELECTORS = [
+  cd.g.ADD_TOPIC_SELECTOR = [
     '#ca-addsection a',
     'a[href*="section=new"]',
     '.commentbox input[type="submit"]',

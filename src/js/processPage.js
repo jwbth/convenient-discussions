@@ -142,14 +142,15 @@ function getAllTextNodes() {
 function findSpecialElements() {
   // Describe all floating elements on the page in order to calculate the right border (temporarily
   // setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementsSelector = [
+  const floatingElementSelector = [
     ...cd.g.FLOATING_ELEMENT_SELECTORS,
     ...cd.config.customFloatingElementSelectors,
   ]
     .join(', ');
   cd.g.floatingElements = cd.g.$root
-    .find(floatingElementsSelector)
+    .find(floatingElementSelector)
     .get()
+
     // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
 
@@ -401,7 +402,7 @@ function addAddTopicButton() {
  * @private
  */
 function connectToAddTopicButtons() {
-  $(cd.g.ADD_TOPIC_SELECTORS)
+  $(cd.g.ADD_TOPIC_SELECTOR)
     .filter(function () {
       const $button = $(this);
       if ($button.is('a')) {

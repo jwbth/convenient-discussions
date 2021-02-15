@@ -183,7 +183,6 @@ export default {
   ],
 
   elementsToExcludeClasses: [
-    'botMessage',
     'ruwiki-movedTemplate',
     'ambox',
     'NavFrame',

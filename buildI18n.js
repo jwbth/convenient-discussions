@@ -71,7 +71,6 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
         let sanitized = hideText(strings[stringName], /<nowiki(?: [\w ]+(?:=[^<>]+?)?| *)>([^]*?)<\/nowiki *>/g, hidden);
 
         sanitized = DOMPurify.sanitize(sanitized, {
-          SAFE_FOR_JQUERY: true,
           ALLOWED_TAGS,
           ALLOWED_ATTR: [
             'class',
