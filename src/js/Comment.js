@@ -847,7 +847,7 @@ export default class Comment extends CommentSkeleton {
       $editMark.addClass('cd-editMark-newVersionRendered');
     }
     if ($diffLink) {
-      $editMark.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
+      $editMark.append($refreshLink ? cd.sParse('dot-separator') : ' ', $diffLink);
     }
 
     // Add the mark to the last block element, going as many nesting levels down as needed to avoid

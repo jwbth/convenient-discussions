@@ -358,6 +358,7 @@
   "lp-comment-watchedsection": "you are watching this section",
 
   "bullet": "<b>•</b>",
+  "dot-separator": " <b>·</b> ",
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",

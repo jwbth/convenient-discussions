@@ -221,7 +221,7 @@ export default {
         });
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
-        .append(cd.mws('dot-separator'), $backLink)
+        .append(cd.sParse('dot-separator'), $backLink)
         .appendTo($link);
       if ($link.parent().is('#cd-pageNav-currentSection')) {
         $sectionWithBackLink = $link;

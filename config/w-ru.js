@@ -57,7 +57,6 @@ export default {
     'word-separator': ' ',
     'comma-separator': ', ',
     'colon-separator': ': ',
-    'dot-separator': ' • ',
     'nextdiff': 'Следующая правка →',
   },
 
