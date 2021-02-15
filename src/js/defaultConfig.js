@@ -672,7 +672,7 @@ export default {
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
     return (
-      '<div cladd="cd-moveMark">' +
+      '<div class="cd-moveMark">' +
       convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
       '</div>\n'
     );
@@ -694,7 +694,7 @@ export default {
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
     return (
-      '<div cladd="cd-moveMark">' +
+      '<div class="cd-moveMark">' +
       convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) +
       '</div>\n'
     );
