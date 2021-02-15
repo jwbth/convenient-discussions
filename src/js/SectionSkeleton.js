@@ -144,6 +144,11 @@ export default class SectionSkeleton {
           (!this.oldestComment.date && comment.date) ||
           this.oldestComment.date > comment.date
         ) {
+          /**
+           * Oldest comment in the section.
+           *
+           * @type {CommentSkeleton}
+           */
           this.oldestComment = comment;
         }
       });

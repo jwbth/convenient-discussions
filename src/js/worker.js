@@ -117,6 +117,7 @@ function parse() {
     'elements',
     'headlineElement',
     'lastElementInFirstChunk',
+    'oldestComment',
     'parser',
   ];
   const keepSafeValues = (obj, dangerousKeys) => {
