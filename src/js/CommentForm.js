@@ -25,8 +25,6 @@ import {
   keyCombination,
   nativePromiseState,
   removeDoubleSpaces,
-  restoreScrollPosition,
-  saveScrollPosition,
   unhideText,
   unique,
 } from './util';
@@ -158,11 +156,6 @@ export default class CommentForm {
     this.addEvents();
     this.initAutocomplete();
 
-    // This call and the subsequent `restoreScrollPosition()` call is, first of all, for
-    // compensation of the Chrome 84.0.4147.89 behavior where the viewport jumps down all of a
-    // sudden.
-    saveScrollPosition();
-
     this.addToPage();
 
     /**
@@ -183,7 +176,6 @@ export default class CommentForm {
 
     cd.commentForms.push(this);
 
-    restoreScrollPosition();
     navPanel.updateCommentFormButton();
 
     if (dataToRestore) {
@@ -420,6 +412,8 @@ export default class CommentForm {
       .insertBefore(this.commentInput.$element);
 
     mw.loader.using(['ext.wikiEditor'].concat(moduleNames)).then(() => {
+      $toolbarPlaceholder.remove();
+
       const $input = this.commentInput.$input;
 
       $input.wikiEditor(
@@ -567,11 +561,6 @@ export default class CommentForm {
         .on('click', (e) => {
           this.mention(e.ctrlKey);
         });
-
-      // For some reason, in (starting with?) Chrome 84.0.4147.89, if you put
-      // `$toolbarPlaceholder.hide();` to the top, the viewport will jump down. See also
-      // saveScrollPosition() call above.
-      $toolbarPlaceholder.remove();
 
       this.$element
         .find('.tool[rel="link"] a, .tool[rel="file"] a')
@@ -1667,7 +1656,6 @@ export default class CommentForm {
    * Show or hide the advanced section.
    */
   toggleAdvanced() {
-    saveScrollPosition();
     if (this.$advanced.is(':hidden')) {
       this.$advanced.show();
       const value = this.summaryInput.getValue();
@@ -1677,7 +1665,6 @@ export default class CommentForm {
       this.$advanced.hide();
       this.commentInput.focus();
     }
-    restoreScrollPosition();
   }
 
   /**
