@@ -2017,10 +2017,10 @@ export default class Comment extends CommentSkeleton {
     let sectionHeadline;
     if (commentData) {
       followsHeading = commentData.followsHeading;
-      sectionHeadline = commentData.section?.headline;
+      sectionHeadline = commentData.section.headline;
     } else {
       followsHeading = this.followsHeading;
-      sectionHeadline = this.getSection()?.headline;
+      sectionHeadline = this.getSection().headline;
     }
 
     // Collect data for every match
@@ -2067,13 +2067,13 @@ export default class Comment extends CommentSkeleton {
 
       match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
       Object.assign(match, this.adjustCommentBeginning(match));
-      match.hasHeadlineMatched = followsHeading ?
-        (
-          match.headingMatch &&
-          sectionHeadline &&
-          normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline)
-        ) :
-        !match.headingMatch;
+      if (followsHeading) {
+        match.hasHeadlineMatched = match.headingMatch ?
+          normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline) :
+          -5;
+      } else {
+        match.hasHeadlineMatched = !match.headingMatch;
+      }
 
       const commentText = commentData ? commentData.text : this.getText();
       match.overlap = calculateWordsOverlap(commentText, removeWikiMarkup(match.code));
