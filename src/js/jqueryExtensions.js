@@ -5,7 +5,6 @@
  */
 
 import cd from './cd';
-import navPanel from './navPanel';
 import { handleScroll } from './eventHandlers';
 
 /**
@@ -50,12 +49,12 @@ export default {
     let $elements = this.cdRemoveNonElementNodes();
     const offsetTop = $elements.first().offset().top;
     const offsetTopLast = $elements.last().offset().top;
-    let offsetBottom = offsetTopLast + $elements.last().outerHeight();
     if (offsetTop === 0 || offsetTopLast === 0) {
       cd.g.autoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
     }
+    const offsetBottom = offsetTopLast + $elements.last().outerHeight();
 
     let offset;
     if (alignment === 'center') {
@@ -72,7 +71,6 @@ export default {
     const onComplete = () => {
       cd.g.autoScrollInProgress = false;
       handleScroll();
-      navPanel.updateCommentFormButton();
     };
 
     if (smooth) {
@@ -83,7 +81,7 @@ export default {
           if (callback) {
             callback();
           }
-        }
+        },
       });
     } else {
       window.scrollTo(0, offset);
@@ -142,20 +140,27 @@ export default {
    * @memberof $.fn
    */
   cdScrollIntoView(alignment, smooth = true, callback) {
-    const clientProfile = $.client.profile();
-    if (
-      this.cdIsInViewport() &&
+    const clientName = $.client.profile().name;
+    const isMobileSafari = cd.g.IS_MOBILE && ['crios', 'fxios', 'safari'].includes(clientName);
 
-      // Fix Mobile Safari bug where you can't move the caret after the comment input is focused on
-      // form open.
-      !(cd.g.IS_MOBILE && clientProfile.name === 'safari' && clientProfile.platform === 'mac')
-    ) {
+    if (this.cdIsInViewport()) {
       if (callback) {
-        callback();
+        // Fix a strange Mobile Safari bug where you can't move the caret after the comment input is
+        // focused on form open. Instead, if setTimeout is used, the focus doesn't work (see
+        // https://stackoverflow.com/questions/12204571,
+        // https://stackoverflow.com/questions/6287478), but that's probably a lesser evil. TODO:
+        // find a better solution.
+        if (isMobileSafari) {
+          setTimeout(() => {
+            callback();
+          });
+        } else {
+          callback();
+        }
       }
     } else {
-      if (callback) {
-        // Wrap into setTimeout() for a more smooth animation in case there is .focus() in the
+      if (callback || isMobileSafari) {
+        // Wrap in setTimeout() for a more smooth animation in case there is .focus() in the
         // callback.
         setTimeout(() => {
           this.cdScrollTo(alignment, smooth, callback);

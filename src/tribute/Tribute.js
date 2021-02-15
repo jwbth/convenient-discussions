@@ -133,6 +133,7 @@ class Tribute {
         return {
           trigger: item.trigger || trigger,
           keepAsEnd: item.keepAsEnd || null,
+          replaceEnd: item.replaceEnd === undefined ? true : item.replaceEnd,
           selectClass: item.selectClass || selectClass,
           containerClass: item.containerClass || containerClass,
           itemClass: item.itemClass || itemClass,

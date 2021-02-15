@@ -14,8 +14,8 @@ import Parser, { getUserNameFromLink } from './Parser';
 import Section from './Section';
 import cd from './cd';
 import commentLayers from './commentLayers';
-import currentSection from './currentSection';
 import navPanel from './navPanel';
+import pageNav from './pageNav';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
@@ -91,7 +91,7 @@ async function prepare({ messagesRequest }) {
 function getFirstElementInViewportData() {
   let element;
   let top;
-  if (window.pageYOffset !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+  if (window.scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
     const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
     while (true) {
       if (!isInline(treeWalker.currentNode.tagName)) {
@@ -142,14 +142,15 @@ function getAllTextNodes() {
 function findSpecialElements() {
   // Describe all floating elements on the page in order to calculate the right border (temporarily
   // setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementsSelector = [
+  const floatingElementSelector = [
     ...cd.g.FLOATING_ELEMENT_SELECTORS,
     ...cd.config.customFloatingElementSelectors,
   ]
     .join(', ');
   cd.g.floatingElements = cd.g.$root
-    .find(floatingElementsSelector)
+    .find(floatingElementSelector)
     .get()
+
     // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
 
@@ -401,7 +402,7 @@ function addAddTopicButton() {
  * @private
  */
 function connectToAddTopicButtons() {
-  $(cd.g.ADD_TOPIC_SELECTORS)
+  $(cd.g.ADD_TOPIC_SELECTOR)
     .filter(function () {
       const $button = $(this);
       if ($button.is('a')) {
@@ -502,12 +503,16 @@ function highlightOwnComments() {
  * @private
  */
 function highlightMentions($content) {
+  const selector = ['cd-signature']
+    .concat(cd.config.elementsToExcludeClasses)
+    .map((name) => `.${name}`)
+    .join(', ');
   Array.from(
     $content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.CURRENT_USER_NAME}"]`)
   )
     .filter((el) => (
       cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
-      !el.parentNode.closest('.cd-signature') &&
+      !el.parentNode.closest(selector) &&
       getUserNameFromLink(el) === cd.g.CURRENT_USER_NAME
     ))
     .forEach((link) => {
@@ -685,8 +690,8 @@ async function processVisits(visitsRequest, keptData) {
 
   setVisits(visits);
 
+  Comment.registerSeen();
   navPanel.fill();
-  handleScroll();
 
   /**
    * New comments have been highlighted.
@@ -908,7 +913,7 @@ export default async function processPage(keptData = {}) {
   // Restore the initial viewport position in terms of visible elements which is how the user sees
   // it.
   if (feivData) {
-    const y = window.pageYOffset + feivData.element.getBoundingClientRect().top - feivData.top;
+    const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
     window.scrollTo(0, y);
   }
 
@@ -945,14 +950,14 @@ export default async function processPage(keptData = {}) {
   if (cd.g.isFirstRun) {
     mw.hook('wikipage.content').add(highlightMentions);
 
-    currentSection.mount();
+    pageNav.mount();
 
     // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
     // element (for example, as a result of scrolling).
     $(document).on('mousemove mouseover', Comment.highlightFocused);
     $(window).on('resize orientationchange', handleWindowResize);
     addPreventUnloadCondition('commentForms', () => {
-      saveSession();
+      saveSession(true);
       return (
         mw.user.options.get('useeditwarning') &&
         (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
@@ -984,7 +989,7 @@ export default async function processPage(keptData = {}) {
       .on('keydown', handleGlobalKeyDown)
       .on('scroll resize orientationchange', handleScroll);
   } else {
-    currentSection.reset();
+    pageNav.reset();
   }
 
   let alwaysConfirmLeavingPage = false;

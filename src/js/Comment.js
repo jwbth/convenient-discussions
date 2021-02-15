@@ -206,16 +206,16 @@ export default class Comment extends CommentSkeleton {
     // reason.
     if (rectTop.left === 0 && rectTop.height === 0) return;
 
-    const top = window.pageYOffset + rectTop.top;
-    const bottom = window.pageYOffset + rectBottom.bottom;
+    const top = window.scrollY + rectTop.top;
+    const bottom = window.scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
       const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
       floatingRects.forEach((rect) => {
-        const floatingTop = window.pageYOffset + rect.outerTop;
-        const floatingBottom = window.pageYOffset + rect.outerBottom;
+        const floatingTop = window.scrollY + rect.outerTop;
+        const floatingBottom = window.scrollY + rect.outerBottom;
         if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }
@@ -248,8 +248,8 @@ export default class Comment extends CommentSkeleton {
         });
       }
     }
-    const left = window.pageXOffset + Math.min(rectTop.left, rectBottom.left);
-    const right = window.pageXOffset + Math.max(rectTop.right, rectBottom.right);
+    const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
+    const right = window.scrollX + Math.max(rectTop.right, rectBottom.right);
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
     // scrolling step is 40 pixels.
@@ -542,7 +542,7 @@ export default class Comment extends CommentSkeleton {
     if (this.underlay) {
       // Firefox bug makes it possible for minor (~0.02) differences to manifest.
       const topDifference = Math.abs(
-        window.pageYOffset +
+        window.scrollY +
         options.rectTop.top -
         options.layersContainerOffset.top -
         this.layersTop
@@ -837,16 +837,17 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    const $span = $('<span>')
+    const $before = $('<span>').addClass('cd-beforeEditMark');
+    const $editMark = $('<span>')
       .addClass('cd-editMark')
       .append(cd.sParse(stringName));
     if ($refreshLink) {
-      $span.append(' ', $refreshLink);
+      $editMark.append(' ', $refreshLink);
     } else {
-      $span.addClass('cd-editMark-newVersionRendered');
+      $editMark.addClass('cd-editMark-newVersionRendered');
     }
     if ($diffLink) {
-      $span.append($refreshLink ? cd.mws('dot-separator') : ' ', $diffLink);
+      $editMark.append($refreshLink ? cd.sParse('dot-separator') : ' ', $diffLink);
     }
 
     // Add the mark to the last block element, going as many nesting levels down as needed to avoid
@@ -857,7 +858,7 @@ export default class Comment extends CommentSkeleton {
       $last = $tested;
       $tested = $last.children().last();
     } while ($tested.length && !isInline($tested.get(0)));
-    $last.append($span);
+    $last.append(' ', $before, $editMark);
 
     if (isNewVersionRendered) {
       this.flashNewOnSight();
@@ -1087,13 +1088,15 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Copy a link to the comment or open a copy link dialog.
+   *
+   * @param {Event} e
    */
-  async copyLink() {
+  async copyLink(e) {
     if (this.isLinkBeingCopied) return;
     const linkButton = this.linkButton;
     const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
     this.replaceButton(this.linkButton, pendingLinkButton, 'link');
-    await copyLink(this);
+    await copyLink(this, e);
     this.replaceButton(this.linkButton, linkButton, 'link');
   }
 
@@ -1472,7 +1475,7 @@ export default class Comment extends CommentSkeleton {
       // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
       // more comments are there.
       const entireLineRegexp = new RegExp(
-        `^(?:\\x01.+?\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
+        `^(?:\\x01\\d+_(block|template)\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
         'i'
       );
       const thisLineEndingRegexp = new RegExp(
@@ -1489,7 +1492,6 @@ export default class Comment extends CommentSkeleton {
         (s, thisLine, nextLine) => {
           const newlineOrSpace = (
             entireLineRegexp.test(thisLine) ||
-            entireLineRegexp.test(nextLine) ||
             headingRegexp.test(thisLine) ||
             headingRegexp.test(nextLine) ||
             thisLineEndingRegexp.test(thisLine) ||
@@ -1593,7 +1595,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {?boolean}
    */
   isInViewport(partially = false) {
-    const viewportTop = window.pageYOffset;
+    const viewportTop = window.scrollY;
     const viewportBottom = viewportTop + window.innerHeight;
 
     this.getPositions();
@@ -2017,10 +2019,10 @@ export default class Comment extends CommentSkeleton {
     let sectionHeadline;
     if (commentData) {
       followsHeading = commentData.followsHeading;
-      sectionHeadline = commentData.section?.headline;
+      sectionHeadline = commentData.section.headline;
     } else {
       followsHeading = this.followsHeading;
-      sectionHeadline = this.getSection()?.headline;
+      sectionHeadline = this.getSection().headline;
     }
 
     // Collect data for every match
@@ -2067,13 +2069,13 @@ export default class Comment extends CommentSkeleton {
 
       match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
       Object.assign(match, this.adjustCommentBeginning(match));
-      match.hasHeadlineMatched = followsHeading ?
-        (
-          match.headingMatch &&
-          sectionHeadline &&
-          normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline)
-        ) :
-        !match.headingMatch;
+      if (followsHeading) {
+        match.hasHeadlineMatched = match.headingMatch ?
+          normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline) :
+          -5;
+      } else {
+        match.hasHeadlineMatched = !match.headingMatch;
+      }
 
       const commentText = commentData ? commentData.text : this.getText();
       match.overlap = calculateWordsOverlap(commentText, removeWikiMarkup(match.code));

@@ -5,7 +5,6 @@
  */
 
 import Comment from './Comment';
-import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
 import { getExtendedRect, reorderArray } from './util';
@@ -115,7 +114,7 @@ export default {
    * @memberof module:Comment
    */
   findInViewport(findClosestDirection) {
-    const viewportTop = window.pageYOffset;
+    const viewportTop = window.scrollY;
     const viewportBottom = viewportTop + window.innerHeight;
 
     // Visibility in the sense that an element is visible on the page, not necessarily in the

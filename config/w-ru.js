@@ -57,7 +57,6 @@ export default {
     'word-separator': ' ',
     'comma-separator': ', ',
     'colon-separator': ': ',
-    'dot-separator': ' • ',
     'nextdiff': 'Следующая правка →',
   },
 
@@ -184,7 +183,6 @@ export default {
   ],
 
   elementsToExcludeClasses: [
-    'botMessage',
     'ruwiki-movedTemplate',
     'ambox',
     'NavFrame',

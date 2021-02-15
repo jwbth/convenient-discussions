@@ -351,21 +351,21 @@ export default {
    * @type {string[]}
    * @default ["> ''", "''\n"]
    */
-  quoteFormatting: ["> ''", "''\n"],
+  quoteFormatting: ["> ''", "''"],
 
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for the way to prevent certain elements from becoming comment
    * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. This value can have a
    * wikitext counterpart (although it may not be necessary), {@link
-   * module:defaultConfig.templatesToExclude}.
+   * module:defaultConfig.templatesToExclude}, for classes that are specified inside templates.
    *
    * When it comes to the wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
-   * @default []
+   * @default ['cd-moveMark']
    */
-  elementsToExcludeClasses: [],
+  elementsToExcludeClasses: ['cd-moveMark'],
 
   /**
    * Blocks with templates listed here won't be considered legit comment timestamp containers. All
@@ -672,8 +672,9 @@ export default {
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
     return (
+      '<div class="cd-moveMark">' +
       convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
-      '\n'
+      '</div>\n'
     );
   },
 
@@ -692,7 +693,11 @@ export default {
    * }</code></pre>
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
+    return (
+      '<div class="cd-moveMark">' +
+      convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) +
+      '</div>\n'
+    );
   },
 
   /**

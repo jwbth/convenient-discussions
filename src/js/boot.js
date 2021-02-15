@@ -79,19 +79,13 @@ export async function initSettings() {
 
     autopreview: true,
     desktopNotifications: 'unknown',
-
-    // Not shown in the settings dialog. TODO: delete if proves unnecessary.
-    defaultCommentLinkType: 'diff',
-    defaultSectionLinkType: 'wikilink',
-
+    defaultCommentLinkType: null,
+    defaultSectionLinkType: null,
     highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notificationsBlacklist: [],
-
-    // Not shown in the settings dialog
     showLoadingOverlay: true,
-
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
     modifyToc: true,
@@ -100,12 +94,15 @@ export async function initSettings() {
     watchSectionOnReply: true,
   };
 
+  // Settings set for the current wiki only.
   cd.localSettingNames = ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'];
 
-  const options = {
-    [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
-    [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
-  }
+  // Settings not shown in the settings dialog.
+  cd.internalSettingNames = [
+    'defaultCommentLinkType',
+    'defaultSectionLinkType',
+    'showLoadingOverlay',
+  ];
 
   // Aliases for seamless transition when changing a setting name.
   cd.settingAliases = {
@@ -116,12 +113,23 @@ export async function initSettings() {
     signaturePrefix: ['mySig', 'mySignature'],
   };
 
+  const options = {
+    [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
+    [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
+  };
+
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
   // were implemented.
   Object.keys(cd.defaultSettings).forEach((name) => {
     (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
       const varAlias = 'cd' + firstCharToUpperCase(alias);
-      if (varAlias in window && typeof window[varAlias] === typeof cd.defaultSettings[name]) {
+      if (
+        varAlias in window &&
+        (
+          typeof window[varAlias] === typeof cd.defaultSettings[name] ||
+          cd.defaultSettings[name] === null
+        )
+      ) {
         cd.settings[name] = window[varAlias];
       }
     });
@@ -131,12 +139,15 @@ export async function initSettings() {
     options,
     omitLocal: true,
   });
-  cd.settings = Object.assign(cd.settings, remoteSettings);
+  Object.keys(remoteSettings).forEach((name) => {
+    if (!cd.internalSettingNames.includes(name)) {
+      cd.settings[name] = remoteSettings[name];
+    }
+  });
 
-  // Seamless transition from mySignature.
+  // Seamless transition from "mySignature". TODO: remove at some point.
   if (cd.settings.signaturePrefix !== undefined) {
-    // eslint-disable-next-line no-useless-escape
-    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace('~~\~~', '');
+    cd.settings.signaturePrefix = cd.settings.signaturePrefix.replace(cd.g.SIGN_CODE, '');
   }
 
   if (
@@ -202,10 +213,10 @@ export function initTalkPageCss() {
 
       .last()
       .css('background-color');
-  cd.g.nanoCss.put('#cd-currentSection', {
+  cd.g.nanoCss.put('.cd-pageNav', {
     backgroundColor: transparentize(sidebarColor).replace('0)', '0.8)'),
   });
-  cd.g.nanoCss.put('#cd-currentSection:hover', {
+  cd.g.nanoCss.put('.cd-pageNav:hover', {
     backgroundColor: sidebarColor,
   });
 }
@@ -354,6 +365,9 @@ function initPatterns() {
   const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
   cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
 
+  // TODO: instead of removing only lines containing antipatterns from wikitext, hide entire
+  // templates (see the "markerLength" parameter in util.hideTemplatesRecursively) and tags? But
+  // keep in mind that this code may still be part of comments.
   const commentAntipatternsPatternParts = [];
   if (
     cd.config.elementsToExcludeClasses.length ||
@@ -445,8 +459,9 @@ function initPatterns() {
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
     .concat(cd.config.customBadCommentBeginnings);
 
-  cd.g.ADD_TOPIC_SELECTORS = [
+  cd.g.ADD_TOPIC_SELECTOR = [
     '#ca-addsection a',
+    'a[href*="section=new"]',
     '.commentbox input[type="submit"]',
     '.createbox input[type="submit"]',
   ]
@@ -829,11 +844,11 @@ function cleanUpSessions(data) {
 /**
  * Save comment form data to the local storage. (Session storage doesn't allow to restore when the
  * browser has crashed.)
+ *
+ * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
  */
-export function saveSession() {
-  const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
-  clearTimeout(saveSessionTimeout);
-  saveSessionTimeout = setTimeout(() => {
+export function saveSession(force) {
+  const save = () => {
     const commentForms = cd.commentForms
       .filter((commentForm) => commentForm.isAltered())
       .map((commentForm) => {
@@ -844,8 +859,9 @@ export function saveSession() {
         } else if (target instanceof Section) {
           targetData = {
             headline: target.headline,
-            firstCommentAnchor: target.comments[0]?.anchor,
+            oldestCommentAnchor: target.oldestComment?.anchor,
             id: target.id,
+            anchor: target.anchor,
           };
         }
         return {
@@ -875,7 +891,15 @@ export function saveSession() {
     saveToLocalStorage('commentForms', dataAllPages);
 
     saveSessionLastTime = Date.now();
-  }, Math.max(0, 5000 - timeSinceLastSave));
+  };
+
+  const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
+  clearTimeout(saveSessionTimeout);
+  if (force) {
+    save();
+  } else {
+    saveSessionTimeout = setTimeout(save, Math.max(0, 5000 - timeSinceLastSave));
+  }
 }
 
 /**
@@ -889,11 +913,20 @@ function restoreCommentFormsFromData(commentFormsData) {
   const rescue = [];
   commentFormsData.commentForms.forEach((data) => {
     const property = CommentForm.modeToProperty(data.mode);
-    if (data.targetData?.anchor) {
-      const comment = Comment.getByAnchor(data.targetData.anchor);
-      if (comment?.isActionable && !comment[`${property}Form`]) {
+    if (data.targetData?.headline) {
+      const section = Section.search({
+        headline: data.targetData.headline,
+        oldestCommentAnchor: data.targetData.oldestCommentAnchor,
+
+        // TODO: remove "data.targetData.index ||" after February 2021, when old values in users'
+        // local storages will die for good.
+        id: data.targetData.index || data.targetData.id,
+
+        anchor: data.targetData.anchor,
+      });
+      if (section?.isActionable && !section[`${property}Form`]) {
         try {
-          comment[property](data);
+          section[property](data);
           haveRestored = true;
         } catch (e) {
           console.warn(e);
@@ -902,21 +935,11 @@ function restoreCommentFormsFromData(commentFormsData) {
       } else {
         rescue.push(data);
       }
-    } else if (data.targetData?.headline) {
-      const section = Section.search({
-        headline: data.targetData.headline,
-        firstCommentAnchor: data.targetData.firstCommentAnchor,
-
-        // TODO: remove "data.targetData.index ||" after February 2021, when old values in users'
-        // local storages will die for good.
-        id: data.targetData.index || data.targetData.id,
-
-        // Can't provide parentTree as cd.sections has already changed; will need to add a
-        // workaround if parentTree proves needed.
-      });
-      if (section?.isActionable && !section[`${property}Form`]) {
+    } else if (data.targetData?.anchor) {
+      const comment = Comment.getByAnchor(data.targetData.anchor);
+      if (comment?.isActionable && !comment[`${property}Form`]) {
         try {
-          section[property](data);
+          comment[property](data);
           haveRestored = true;
         } catch (e) {
           console.warn(e);
@@ -999,11 +1022,12 @@ export function restoreCommentForms() {
       } else if (target instanceof Section) {
         const section = Section.search({
           headline: target.headline,
-          firstCommentAnchor: target.comments[0]?.anchor,
+          oldestCommentAnchor: target.oldestComment?.anchor,
           id: target.id,
+          anchor: target.anchor,
 
-          // Can't provide parentTree as cd.sections has already changed; will need to add a
-          // workaround if parentTree proves needed.
+          // Can't provide ancestors as cd.sections has already changed; will need to add a
+          // workaround if ancestors prove needed.
         });
         if (section?.isActionable) {
           try {

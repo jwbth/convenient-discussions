@@ -116,8 +116,11 @@ span.cd-show {
   visibility: hidden;
 }
 
+.cd-beforeEditMark {
+  margin-right: 0.75em;
+}
+
 .cd-editMark {
-  margin-left: 1em;
   font-size: 85%;
   color: #72777d;
 }
@@ -158,16 +161,12 @@ span.cd-show {
   margin: 0.5em 0 0;
 }
 
-#cd-currentSection {
+.cd-pageNav {
   position: fixed;
-  top: 0;
   z-index: 5;
   font-size: 12px;
-  padding: 7px 9px;
+  padding: 7px 9px 3px;
   line-height: 1.2;
-  list-style-type: none;
-  list-style-image: none;
-  margin: 0;
   color: #202122;
   overflow-wrap: break-word;
 
@@ -176,27 +175,37 @@ span.cd-show {
   }
 }
 
-.sitedir-ltr.ltr #cd-currentSection {
+#cd-pageNav-top {
+  top: 0;
+}
+
+#cd-pageNav-bottom {
+  bottom: 0;
+}
+
+.cd-pageNav-list {
+  list-style-type: none;
+  list-style-image: none;
+  margin: 0;
+}
+
+.sitedir-ltr.ltr .cd-pageNav {
   left: 0;
   direction: ltr;
 }
 
-.sitedir-rtl.ltr #cd-currentSection,
-.rtl #cd-currentSection {
+.sitedir-rtl.ltr .cd-pageNav,
+.rtl .cd-pageNav {
   right: 0;
   direction: rtl;
 }
 
-.cd-currentSection-level {
+.cd-pageNav-item {
   margin: 0 0 0.25em;
   cursor: pointer;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 }
 
-.sitedir-ltr.ltr .cd-currentSection-level {
+.sitedir-ltr.ltr .cd-pageNav-level {
   &-1 {
     margin-left: 0.75em;
   }
@@ -218,8 +227,8 @@ span.cd-show {
   }
 }
 
-.sitedir-rtl.ltr .cd-currentSection-level,
-.rtl .cd-currentSection-level {
+.sitedir-rtl.ltr .cd-pageNav-level,
+.rtl .cd-pageNav-level {
   &-1 {
     margin-right: 0.75em;
   }

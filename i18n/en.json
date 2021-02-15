@@ -216,6 +216,11 @@
   "toc-more": "…$1 more",
   "toc-watched": "You watch this section",
 
+  "pagenav-pagetop": "Page top",
+  "pagenav-toc": "Table of contents",
+  "pagenav-pagebottom": "Page bottom",
+  "pagenav-back": "Back",
+
   "notification-toyou": "$1 {{gender:$2|replied}} to your comment$3.",
   "notification-toyou-desktop": "$1 {{gender:$2|replied}} to your comment$3 on page \"$4\".",
   "notification-insection": "$1 {{gender:$2|replied}} in section \"$3\".",
@@ -353,6 +358,7 @@
   "lp-comment-watchedsection": "you are watching this section",
 
   "bullet": "<b>•</b>",
+  "dot-separator": " <b>·</b> ",
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",

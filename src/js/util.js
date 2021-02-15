@@ -317,22 +317,24 @@ export function mergeRegexps(arr) {
  * @param {string} text
  * @param {RegExp} regexp
  * @param {string[]} hidden
- * @param {boolean} useAlternativeMarker
+ * @param {string} type
  * @returns {string}
  */
-export function hideText(text, regexp, hidden, useAlternativeMarker) {
+export function hideText(text, regexp, hidden, type) {
   return text.replace(regexp, (s, preText, textToHide) => {
     // If there are no groups, the offset is the second argument.
     if (typeof preText === 'number') {
       preText = null;
       textToHide = null;
     }
-    // Handle tables separately
+
+    // Handle tables separately.
     return (
       (preText || '') +
-      (useAlternativeMarker ? '\x03' : '\x01') +
+      (type === 'table' ? '\x03' : '\x01') +
       hidden.push(textToHide || s) +
-      (useAlternativeMarker ? '\x04' : '\x02')
+      (type ? '_' + type : '') +
+      (type === 'table' ? '\x04' : '\x02')
     );
   });
 }
@@ -345,8 +347,8 @@ export function hideText(text, regexp, hidden, useAlternativeMarker) {
  * @returns {string}
  */
 export function unhideText(text, hidden) {
-  while (/(?:\x01|\x03)\d+(?:\x02|\x04)/.test(text)) {
-    text = text.replace(/(?:\x01|\x03)(\d+)(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
+  while (/(?:\x01|\x03)\d+(_\w+)?(?:\x02|\x04)/.test(text)) {
+    text = text.replace(/(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
   }
 
   return text;
@@ -359,13 +361,13 @@ export function unhideText(text, hidden) {
  *   reloads and when visits are loaded.
  */
 export function saveScrollPosition(saveTocHeight = true) {
-  keptScrollPosition = window.pageYOffset;
+  keptScrollPosition = window.scrollY;
   keptTocHeight = (
     (saveTocHeight || keptTocHeight) &&
     cd.g.$toc.length &&
     !cd.g.isTocFloating &&
-    window.pageYOffset !== 0 &&
-    window.pageYOffset + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
+    window.scrollY !== 0 &&
+    window.scrollY + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
   ) ?
     cd.g.$toc.outerHeight() :
     null;

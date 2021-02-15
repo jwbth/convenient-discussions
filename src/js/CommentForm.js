@@ -421,6 +421,7 @@ export default class CommentForm {
 
     mw.loader.using(['ext.wikiEditor'].concat(moduleNames)).then(() => {
       const $input = this.commentInput.$input;
+
       $input.wikiEditor(
         'addModule',
         mw.loader.moduleRegistry['ext.wikiEditor']
@@ -430,6 +431,7 @@ export default class CommentForm {
         .packageExports['jquery.wikiEditor.dialogs.config.js'];
       dialogsConfig.replaceIcons($input);
       $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
+
       this.commentInput.$element
         .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
@@ -437,14 +439,18 @@ export default class CommentForm {
         this.commentInput.$element.find('.group-heading').remove();
       }
 
-      // Make the undo/redo functionality work in browsers that support it (Chrome).
+      // Make the undo/redo functionality work in browsers that support it (Chrome). Also, by
+      // default, for dialogs, text is inserted into the last opened form, not the current.
       $input.textSelection('register', {
         encapsulateSelection: (options) => {
-          this.encapsulateSelection(options);
+          // Seems like the methods are registered for all inputs instead of the one the method for
+          // which is called.
+          CommentForm.getLastActive().encapsulateSelection(options);
         },
         setContents: (value) => {
-          this.commentInput.select();
-          insertText(this.commentInput, value);
+          const commentForm = CommentForm.getLastActive();
+          commentForm.commentInput.select();
+          insertText(commentForm.commentInput, value);
         },
       });
 
@@ -567,14 +573,22 @@ export default class CommentForm {
       // saveScrollPosition() call above.
       $toolbarPlaceholder.remove();
 
-      // More Chrome scrolling bug fixes
       this.$element
         .find('.tool[rel="link"] a, .tool[rel="file"] a')
-        .on('mouseup', () => {
-          saveScrollPosition();
-        })
-        .on('click', () => {
-          restoreScrollPosition();
+        .on('click', (e) => {
+          // Fix text inserted in a wrong textarea.
+          const rel = e.currentTarget.parentNode.getAttribute('rel');
+          const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`);
+          if ($dialog.length) {
+            const context = $dialog.data('context');
+            if (context) {
+              context.$textarea = context.$focusedElem = this.commentInput.$input;
+            }
+
+            // Fix the error when trying to submit the dialog by pressing Enter after doing so by
+            // pressing a button.
+            $dialog.parent().data('dialogaction', false);
+          }
         });
 
       /**
@@ -2188,7 +2202,7 @@ export default class CommentForm {
       const replacement = cd.config.paragraphTemplates.length ?
         `$1{{${cd.config.paragraphTemplates[0]}}}` :
         '$1<br><br>';
-      code = code.replace(/^((?![:*#= ]).*)\n\n(?![:*#=])/gm, replacement);
+      code = code.replace(/^((?![:*#]).*)\n\n(?![:*#])/gm, replacement);
     }
 
     // Process newlines by adding or not adding <br> and keeping or not keeping the newline. \x01
@@ -2196,7 +2210,7 @@ export default class CommentForm {
     // mean the beginning and ending of a table. Note: This should be kept coordinated with the
     // reverse transformation code in Comment#codeToText.
     const entireLineRegexp = new RegExp(
-      `^(?:\\x01.+?\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
+      `^(?:\\x01\\d+_(block|template)\\x02|\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]) *$`,
       'i'
     );
     const thisLineEndingRegexp = new RegExp(
@@ -2212,14 +2226,7 @@ export default class CommentForm {
       /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
       (s, thisLine, nextLine) => {
         const br = (
-          // We assume that if a tag/template occupies an entire line or multiple lines, it's a
-          // block tag/template and it doesn't need <br>s before or after it. A false positive is
-          // possible in case of <nowiki> occupying an entire line (as of May 2020, no other inline
-          // tags are hidden, see hideSensitiveCode() in wikitext.js).
-          // https://en.wikipedia.org/w/index.php?diff=946978893
-          // https://en.wikipedia.org/w/index.php?diff=941991985
           entireLineRegexp.test(thisLine) ||
-          entireLineRegexp.test(nextLine) ||
 
           (
             !willCommentBeIndented &&
@@ -2274,8 +2281,8 @@ export default class CommentForm {
       signature = `<span class="cd-commentForm-signature">${signature}</span>`;
     }
 
-    // Space in the beggining of the line, creating <pre>.
-    if (/(?:^|\n) .*$/.test(code)) {
+    // A space in the beggining of the line, creating <pre>, or a heading.
+    if (!willCommentBeIndented && /(?:^|\n)[ =].*$/.test(code)) {
       code += '\n';
     }
 
@@ -3401,7 +3408,7 @@ export default class CommentForm {
         post: cd.config.quoteFormatting[1],
         selection,
         trim: true,
-        leadingNewline: true,
+        ownline: true,
       });
     }
   }
@@ -3411,15 +3418,15 @@ export default class CommentForm {
    * provided value if no text is selected.
    *
    * @param {object} options
-   * @param {string} [options.pre] Text to insert before the caret/selection.
-   * @param {string} [options.peri=''] Fallback value used instead of the selection.
-   * @param {string} [options.post] Text to insert after the caret/selection.
+   * @param {string} [options.pre=''] Text to insert before the caret/selection.
+   * @param {string} [options.peri=''] Fallback value used instead of a selection and selected
+   *   afterwards.
+   * @param {string} [options.post=''] Text to insert after the caret/selection.
    * @param {string} [options.replace=false] If there is a selection, replace it with peri instead
    *   of leaving it alone.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
-   * @param {boolean} [options.trim] Trim the selection.
-   * @param {boolean} [options.leadingNewline] Put a newline before the resulting text to insert if
-   *   it is not already there.
+   * @param {boolean} [options.trim=false] Trim the selection.
+   * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
    */
   encapsulateSelection({
     pre = '',
@@ -3427,21 +3434,27 @@ export default class CommentForm {
     post = '',
     selection,
     replace = false,
-    trim,
-    leadingNewline,
+    trim = false,
+    ownline = false,
   }) {
     const range = this.commentInput.getRange();
     const selectionStartPos = Math.min(range.from, range.to);
+    const selectionEndPos = Math.max(range.from, range.to);
     const value = this.commentInput.getValue();
-    const leadingNewlineChar = (
-      leadingNewline && !/(^|\n)$/.test(value.slice(0, selectionStartPos)) ?
+    const leadingNewline = (
+      ownline && !/(^|\n)$/.test(value.slice(0, selectionStartPos)) && !/^\n/.test(peri) ?
+      '\n' :
+      ''
+    );
+    const trailingNewline = (
+      ownline && !/^\n/.test(value.slice(selectionEndPos)) && !/\n$/.test(post) ?
       '\n' :
       ''
     );
     let periStartPos;
-    const getSelection = !selection && !(peri && replace);
+    const getSelection = !selection && !((peri || pre || post) && replace);
     if (getSelection) {
-      periStartPos = selectionStartPos + leadingNewlineChar.length + pre.length;
+      periStartPos = selectionStartPos + leadingNewline.length + pre.length;
       selection = value.substring(range.from, range.to);
     } else {
       selection = selection || '';
@@ -3455,12 +3468,13 @@ export default class CommentForm {
     const [trailingSpace] = selection.match(/ *$/);
     const middleText = selection || peri;
     const text = (
-      leadingNewlineChar +
+      leadingNewline +
       leadingSpace +
       pre +
       middleText.slice(leadingSpace.length, middleText.length - trailingSpace.length) +
       post +
-      trailingSpace
+      trailingSpace +
+      trailingNewline
     );
 
     insertText(this.commentInput, text);

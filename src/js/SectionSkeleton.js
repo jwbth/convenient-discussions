@@ -138,6 +138,16 @@ export default class SectionSkeleton {
         this.commentsInFirstChunk = this.comments.slice(0, endIndex || 0);
       }
 
+      this.comments.forEach((comment) => {
+        if (
+          !this.oldestComment ||
+          (!this.oldestComment.date && comment.date) ||
+          this.oldestComment.date > comment.date
+        ) {
+          this.oldestComment = comment;
+        }
+      });
+
       this.comments[0].followsHeading = true;
     }
 
@@ -214,18 +224,18 @@ export default class SectionSkeleton {
   }
 
   /**
-   * Get the ancestors of the section as an array, starting with the parent section.
+   * Get the chain of ancestors of the section as an array, starting with the parent section.
    *
    * @returns {Array}
    */
-  getParentTree() {
-    if (!this.cachedParentTree) {
-      this.cachedParentTree = [];
+  getAncestors() {
+    if (!this.cachedAncestors) {
+      this.cachedAncestors = [];
       let section = this;
       while ((section = section.getParent(false))) {
-        this.cachedParentTree.push(section);
+        this.cachedAncestors.push(section);
       }
     }
-    return this.cachedParentTree;
+    return this.cachedAncestors;
   }
 }

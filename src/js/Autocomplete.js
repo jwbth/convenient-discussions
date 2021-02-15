@@ -427,6 +427,7 @@ export default class Autocomplete {
       tags: {
         trigger: '<',
         keepAsEnd: /^>/,
+        replaceEnd: false,
         searchOpts: { skip: true },
         selectTemplate,
         values: (text, callback) => {

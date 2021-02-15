@@ -142,7 +142,9 @@ class TributeRange {
                 if (end) {
                     ending = ending.slice(end.length)
                     myField.selectionEnd += end.length
-                    data.end = end
+                    if (context.collection.replaceEnd) {
+                        data.end = end
+                    }
                 }
             }
 

@@ -603,7 +603,7 @@ export default class Section extends SectionSkeleton {
           target.page.code.slice(target.page.firstSectionStartIndex)
         );
       } else {
-        newCode = target.page.code + (target.page.code ? '\n\n' : '') + newSectionCode;
+        newCode = target.page.code + (target.page.code ? '\n' : '') + newSectionCode;
       }
 
       const summaryEnding = this.summaryEndingInput.getValue();
@@ -1074,7 +1074,7 @@ export default class Section extends SectionSkeleton {
    */
   copyLink(e) {
     e.preventDefault();
-    copyLink(this);
+    copyLink(this, e);
   }
 
   /**
@@ -1285,7 +1285,6 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   searchInCode(pageCode) {
-    const firstComment = this.comments[0];
     const headline = normalizeCode(this.headline);
     const adjustedPageCode = hideDistractingCode(pageCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
@@ -1373,19 +1372,31 @@ export default class Section extends SectionSkeleton {
       }
 
       const signatures = extractSignatures(code);
-      const hasFirstCommentMatched = signatures[0] ?
+      let oldestSignature;
+      signatures.forEach((sig) => {
+        if (
+          !oldestSignature ||
+          (!oldestSignature.date && sig.date) ||
+          oldestSignature.date > sig.date
+        ) {
+          oldestSignature = sig;
+        }
+      });
+      const hasOldestCommentMatched = oldestSignature ?
         Boolean(
-          firstComment &&
-          signatures[0].timestamp === firstComment.timestamp ||
-          signatures[0].author === firstComment.author
+          this.oldestComment &&
+          (
+            oldestSignature.timestamp === this.oldestComment.timestamp ||
+            oldestSignature.author === this.oldestComment.author
+          )
         ) :
 
         // There's no comments neither in the code nor on the page.
-        !firstComment;
+        !this.oldestComment;
 
       const score = (
+        hasOldestCommentMatched * 1.01 +
         hasHeadlineMatched * 1 +
-        hasFirstCommentMatched * 1 +
         hasSectionIndexMatched * 0.5 +
 
         // Shouldn't give too high a weight to this factor as it is true for every first section.
@@ -1430,7 +1441,7 @@ export default class Section extends SectionSkeleton {
 
       matches.push({
         hasHeadlineMatched,
-        hasFirstCommentMatched,
+        hasOldestCommentMatched,
         hasSectionIndexMatched,
         havePreviousHeadlinesMatched,
         score,

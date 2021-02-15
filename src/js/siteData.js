@@ -531,7 +531,7 @@ export function loadData() {
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'dot-separator', 'nextdiff',
+    'colon-separator', 'nextdiff',
   ];
 
   cd.g.api = cd.g.api || new mw.Api();
