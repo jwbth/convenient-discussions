@@ -1014,7 +1014,7 @@ function copyLinkToClipboardAndNotify(text) {
   const successful = document.execCommand('copy');
   $textarea.remove();
 
-  if (successful) {
+  if (text && successful) {
     mw.notify(cd.s('copylink-copied'));
   } else {
     mw.notify(cd.s('copylink-error'), { type: 'error' });
@@ -1025,8 +1025,9 @@ function copyLinkToClipboardAndNotify(text) {
  * Copy a link to the object or show a copy link dialog.
  *
  * @param {Comment|Section} object Comment or section to copy a link to.
+ * @param {Event} e
  */
-export async function copyLink(object) {
+export async function copyLink(object, e) {
   if (object.isLinkBeingCopied) return;
 
   const isComment = object instanceof Comment;
@@ -1055,7 +1056,7 @@ export async function copyLink(object) {
   object.isLinkBeingCopied = true;
 
   const anchorWithUnderlines = spacesToUnderlines(anchor);
-  const url = `https:${mw.config.get('wgServer')}${decodedCurrentPageUrl}#${anchorWithUnderlines}`;
+  const link = `https:${mw.config.get('wgServer')}${decodedCurrentPageUrl}#${anchorWithUnderlines}`;
   const copyCallback = (value) => {
     copyLinkToClipboardAndNotify(value);
     dialog.close();
@@ -1063,9 +1064,9 @@ export async function copyLink(object) {
   let diffField;
   let shortDiffField;
   let $diff;
+  let diffLink;
+  let shortDiffLink;
   if (isComment) {
-    let diffLink;
-    let shortDiffLink;
     let errorText;
     try {
       diffLink = await object.getDiffLink();
@@ -1107,6 +1108,26 @@ export async function copyLink(object) {
     await mw.loader.using('mediawiki.diff.styles');
   }
 
+  // Undocumented feature allowing to copy a link of a default type without opening a dialog.
+  const relevantSetting = isComment ?
+    cd.settings.defaultCommentLinkType :
+    cd.settings.defaultSectionLinkType;
+  if (!e.shiftKey && relevantSetting) {
+    switch (relevantSetting) {
+      case 'wikilink':
+        copyLinkToClipboardAndNotify(wikilink);
+        break;
+      case 'link':
+        copyLinkToClipboardAndNotify(link);
+        break;
+      case 'diff':
+        copyLinkToClipboardAndNotify(diffLink);
+        break;
+    }
+    object.isLinkBeingCopied = false;
+    return;
+  }
+
   let onlyCdWarning;
   if (isComment) {
     onlyCdWarning = cd.s('cld-help-onlycd');
@@ -1127,7 +1148,7 @@ export async function copyLink(object) {
   });
 
   const linkField = copyActionField({
-    value: url,
+    value: link,
     label: cd.s('cld-link'),
     copyCallback,
     help: onlyCdWarning,

@@ -1074,7 +1074,7 @@ export default class Section extends SectionSkeleton {
    */
   copyLink(e) {
     e.preventDefault();
-    copyLink(this);
+    copyLink(this, e);
   }
 
   /**
