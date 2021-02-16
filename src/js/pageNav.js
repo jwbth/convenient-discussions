@@ -54,50 +54,66 @@ export default {
       return;
     }
 
-    if (window.scrollY > 0 || backLinkLocation === 'top') {
-      if (!this.$linksToTop) {
-        this.$linksToTop = $('<ul>')
-          .attr('id', 'cd-pageNav-linksToTop')
+    let afterLeadPos;
+    let firstSectionOuterTop;
+    if (cd.g.$toc.length) {
+      afterLeadPos = cd.g.$toc.get(0).getBoundingClientRect().top;
+    }
+    if (window.scrollY > 0) {
+      cd.sections.some((section) => {
+        const rect = getExtendedRect(section.$heading.get(0));
+        if (rect.left === 0 && rect.height === 0) {
+          return false;
+        } else {
+          firstSectionOuterTop = rect.outerTop;
+          if (!afterLeadPos) {
+            afterLeadPos = rect.outerTop;
+          }
+          return true;
+        }
+      });
+    }
+
+    if (afterLeadPos < 0 || backLinkLocation === 'top') {
+      if (!this.$linksOnTop) {
+        this.$linksOnTop = $('<ul>')
+          .attr('id', 'cd-pageNav-linksOnTop')
+          .addClass('cd-pageNav-list')
+          .appendTo(this.$topElement);
+        this.$topLink = $('<li>')
+          .attr('id', 'cd-pageNav-topLink')
+          .text(cd.s('pagenav-pagetop'))
+          .addClass('cd-pageNav-item')
+          .on('click', () => {
+            this.jump(0, this.$topLink);
+          })
+          .appendTo(this.$linksOnTop);
+      }
+    } else {
+      if (this.$linksOnTop) {
+        this.reset('top');
+      }
+    }
+
+    if (this.$linksOnTop) {
+      if (cd.g.$toc.length && !this.$tocLink) {
+        this.$tocLink = $('<li>')
+          .attr('id', 'cd-pageNav-tocLink')
+          .text(cd.s('pagenav-toc'))
+          .addClass('cd-pageNav-item')
+          .on('click', () => {
+            this.jump(cd.g.$toc, this.$tocLink);
+          })
+          .appendTo(this.$linksOnTop);
+      }
+      if (!this.$currentSection) {
+        this.$currentSection = $('<ul>')
+          .attr('id', 'cd-pageNav-currentSection')
           .addClass('cd-pageNav-list')
           .appendTo(this.$topElement);
       }
-    } else {
-      if (this.$linksToTop) {
-        this.$topElement.empty();
-        this.$linksToTop = null;
-        this.$topLink = null;
-        this.$tocLink = null;
-        this.$currentSection = null;
-      }
-      return;
     }
 
-    if (!this.$topLink) {
-      this.$topLink = $('<li>')
-        .attr('id', 'cd-pageNav-topLink')
-        .text(cd.s('pagenav-pagetop'))
-        .addClass('cd-pageNav-item')
-        .on('click', () => {
-          this.jump(0, this.$topLink);
-        })
-        .appendTo(this.$linksToTop);
-    }
-    if (cd.g.$toc.length && !this.$tocLink) {
-      this.$tocLink = $('<li>')
-        .attr('id', 'cd-pageNav-tocLink')
-        .text(cd.s('pagenav-toc'))
-        .addClass('cd-pageNav-item')
-        .on('click', () => {
-          this.jump(cd.g.$toc, this.$tocLink);
-        })
-        .appendTo(this.$linksToTop);
-    }
-    if (!this.$currentSection) {
-      this.$currentSection = $('<ul>')
-        .attr('id', 'cd-pageNav-currentSection')
-        .addClass('cd-pageNav-list')
-        .appendTo(this.$topElement);
-    }
     if (
       window.scrollY + window.innerHeight < document.body.scrollHeight ||
       backLinkLocation === 'bottom'
@@ -114,26 +130,15 @@ export default {
       }
     } else {
       if (this.$bottomLink) {
-        this.$bottomLink.remove();
-        this.$bottomLink = null;
+        this.reset('bottom');
       }
     }
 
-    if (currentSection && (window.scrollY === 0 || !cd.sections.length)) {
-      this.resetSections();
+    if (firstSectionOuterTop === undefined || firstSectionOuterTop >= 0) {
+      if (currentSection) {
+        this.resetSections();
+      }
       return;
-    }
-
-    for (const section of cd.sections) {
-      const rect = getExtendedRect(section.$heading.get(0));
-      if (rect.left !== 0 || rect.height !== 0) {
-        if (rect.outerTop >= 0) {
-          this.resetSections();
-          return;
-        } else {
-          break;
-        }
-      }
     }
 
     cd.sections
@@ -179,18 +184,29 @@ export default {
       });
   },
 
-  reset() {
-    this.$topElement.empty();
-    this.$bottomElement.empty();
-    this.$linksToTop = null;
-    this.$topLink = null;
-    this.$tocLink = null;
-    this.$currentSection = null;
-    this.$bottomLink = null;
-    currentSection = null;
-    $backLinkContainer = null;
-    $sectionWithBackLink = null;
-    backLinkLocation = null;
+  /**
+   * Reset the page navigation state partly or completely.
+   *
+   * @param {string} [part]
+   */
+  reset(part) {
+    if (!part || part === 'top') {
+      this.$topElement.empty();
+      this.$linksOnTop = null;
+      this.$topLink = null;
+      this.$tocLink = null;
+      this.$currentSection = null;
+      currentSection = null;
+    }
+    if (!part || part === 'bottom') {
+      this.$bottomElement.empty();
+      this.$bottomLink = null;
+    }
+    if (!part) {
+      $backLinkContainer = null;
+      $sectionWithBackLink = null;
+      backLinkLocation = null;
+    }
   },
 
   /**
