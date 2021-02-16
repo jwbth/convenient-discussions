@@ -29,9 +29,25 @@ let strings;
 if (IS_SNIPPET) {
   config = require(`../../config/${CONFIG_FILE_NAME}`).default;
 
+  const replaceEntities = (s) => (
+    s
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&#32;/g, ' ')
+  );
+
   cd.i18n = {};
   cd.i18n.en = require('../../i18n/en.json');
-  cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
+  Object.keys(cd.i18n.en).forEach((name) => {
+    cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
+  });
+  if (LANG_CODE !== 'en') {
+    cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
+    Object.keys(cd.i18n[LANG_CODE])
+      .filter((name) => typeof cd.i18n[LANG_CODE][name] === 'string')
+      .forEach((name) => {
+        cd.i18n[LANG_CODE][name] = replaceEntities(cd.i18n[LANG_CODE][name]);
+      });
+  }
 }
 
 /**
