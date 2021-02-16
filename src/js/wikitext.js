@@ -481,6 +481,7 @@ export function hideSensitiveCode(code) {
   };
 
   hideTags(['pre', 'source', 'syntaxhighlight'], 'block');
+  hideTags(['gallery'], 'table');
   hideTags(['nowiki'], 'inline');
   hideTemplates();
 
