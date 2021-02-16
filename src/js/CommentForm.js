@@ -2099,22 +2099,14 @@ export default class CommentForm {
       default:
         indentationChars = '';
     }
-
-    const isZeroLevel = (
-      action === 'preview' ||
-      ['addSection', 'addSubsection'].includes(this.mode) ||
-      (this.mode === 'edit' && !indentationChars)
-    );
-
+    const indentNow = willCommentBeIndented && action !== 'preview';
     const newLineIndentationChars = indentationChars.replace(/\*/g, ':');
 
     // Work with the code
     let code = this.commentInput.getValue();
-
     if (cd.config.preTransformCode) {
       code = cd.config.preTransformCode(code, this);
     }
-
     code = code.trim();
 
     let hidden;
@@ -2154,7 +2146,7 @@ export default class CommentForm {
       code += '\n';
     }
 
-    if (!isZeroLevel) {
+    if (indentNow) {
       // Add intentation characters to the lines with the list markup.
       code = code.replace(/\n([:*#]+)/g, (s, chars) => '\n' + newLineIndentationChars + chars);
 
@@ -2239,9 +2231,13 @@ export default class CommentForm {
       code = code.replace(/\s*~{3,}$/, '');
     }
 
-    // If the comment starts with a numbered list or table, replace all asterisks in the indentation
-    // chars with colons to have the list or table form correctly.
-    if (!isZeroLevel && /^(#|.*\x03)/.test(code)) {
+    // If the comment starts with a numbered list or table, or is wrapped in <small> tags and starts
+    // with a list, replace all asterisks in the indentation chars with colons to have the list or
+    // table form correctly.
+    if (
+      willCommentBeIndented &&
+      (/^(#|.*\x03)/.test(code) || (isWholeCommentInSmall && /^[:*#]/.test(code)))
+    ) {
       indentationChars = newLineIndentationChars;
     }
 
@@ -2270,7 +2266,7 @@ export default class CommentForm {
     }
 
     // A space in the beggining of the line, creating <pre>, or a heading.
-    if (!willCommentBeIndented && /(?:^|\n)[ =].*$/.test(code)) {
+    if (!willCommentBeIndented && /(^|\n)[ =].*$/.test(code)) {
       code += '\n';
     }
 
@@ -2280,10 +2276,15 @@ export default class CommentForm {
     }
 
     // Process the small font wrappers, add the signature.
-    if (isWholeCommentInSmall && !this.headlineInput) {
-      const spaceOrNot = /^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ';
-      const indentation = newLineIndentationChars + spaceOrNot;
-      const before = /^[:*# ]/.test(code) ? `\n${indentation}` : '';
+    if (isWholeCommentInSmall) {
+      let before;
+      if (/^[:*# ]/.test(code)) {
+        const spaceOrNot = /^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ';
+        const indentation = (indentNow ? newLineIndentationChars : '') + spaceOrNot;
+        before = `\n${indentation}`;
+      } else {
+        before = '';
+      }
       if (cd.config.smallDivTemplates?.[0] && !/^[:*#]/m.test(code)) {
         const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;

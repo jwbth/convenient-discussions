@@ -787,7 +787,12 @@ export default class Parser {
           );
         } while (
           children.length &&
-          children.every((child) => ['UL', 'DL', 'OL', 'LI', 'DD'].includes(child.tagName)) &&
+          children.every((child) => (
+            ['UL', 'DL', 'OL', 'LI', 'DD'].includes(child.tagName) ||
+
+            // <small> wrapped around block tags can give that.
+            (!child.textContent.trim() && child.tagName === 'SMALL')
+          )) &&
           (
             children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
             partTextNoSpaces
