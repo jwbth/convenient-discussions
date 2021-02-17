@@ -989,7 +989,7 @@ export default async function processPage(keptData = {}) {
       .on('keydown', handleGlobalKeyDown)
       .on('scroll resize orientationchange', handleScroll);
   } else {
-    pageNav.reset();
+    pageNav.update();
   }
 
   let alwaysConfirmLeavingPage = false;
