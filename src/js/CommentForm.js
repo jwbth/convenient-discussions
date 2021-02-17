@@ -3413,8 +3413,8 @@ export default class CommentForm {
    * @param {string} [options.peri=''] Fallback value used instead of a selection and selected
    *   afterwards.
    * @param {string} [options.post=''] Text to insert after the caret/selection.
-   * @param {string} [options.replace=false] If there is a selection, replace it with peri instead
-   *   of leaving it alone.
+   * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
+   *   post instead of leaving it alone.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
    * @param {boolean} [options.trim=false] Trim the selection.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
@@ -3443,8 +3443,7 @@ export default class CommentForm {
       ''
     );
     let periStartPos;
-    const getSelection = !selection && !((peri || pre || post) && replace);
-    if (getSelection) {
+    if (!selection && !replace) {
       periStartPos = selectionStartPos + leadingNewline.length + pre.length;
       selection = value.substring(range.from, range.to);
     } else {
@@ -3469,7 +3468,7 @@ export default class CommentForm {
     );
 
     insertText(this.commentInput, text);
-    if (getSelection) {
+    if (!selection && !replace) {
       this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
     }
   }
