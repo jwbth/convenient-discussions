@@ -771,10 +771,10 @@ export default class Comment extends CommentSkeleton {
    * been edited or deleted, and flash the comment as updated if it has been.
    *
    * @param {string} type Type of the mark: `'edited'`, `'editedSince'`, or `'deleted'`.
-   * @param {boolean} isNewVersionRendered Has the new version of the comment been rendered.
-   * @param {number} comparedRevisionId ID of the revision to compare with when the user clicks to
+   * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
+   * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
    *   see the diff.
-   * @param {string} commentsData Data of the comments as of the current revision and the revision
+   * @param {string} [commentsData] Data of the comments as of the current revision and the revision
    *   to compare with.
    */
   markAsEdited(type, isNewVersionRendered, comparedRevisionId, commentsData) {
@@ -837,7 +837,6 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    const $before = $('<span>').addClass('cd-beforeEditMark');
     const $editMark = $('<span>')
       .addClass('cd-editMark')
       .append(cd.sParse(stringName));
@@ -858,7 +857,12 @@ export default class Comment extends CommentSkeleton {
       $last = $tested;
       $tested = $last.children().last();
     } while ($tested.length && !isInline($tested.get(0)));
-    $last.append(' ', $before, $editMark);
+
+    if (!$last.find('.cd-beforeEditMark').length) {
+      const $before = $('<span>').addClass('cd-beforeEditMark');
+      $last.append(' ', $before);
+    }
+    $last.append($editMark);
 
     if (isNewVersionRendered) {
       this.flashNewOnSight();
