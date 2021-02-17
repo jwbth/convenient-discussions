@@ -29,10 +29,15 @@
 
 .cd-watchlistMenu-button {
   margin: -1px 0;
+}
 
-  &-switchInteresting .oo-ui-iconElement-icon {
-    background-position-y: 7px;
-  }
+.skin-monobook .cd-watchlistMenu-button-switchInteresting .oo-ui-iconElement-icon {
+  margin-top: 4px;
+  margin-bottom: 0px;
+}
+
+body:not(.skin-monobook) .cd-watchlistMenu-button-switchInteresting .oo-ui-iconElement-icon {
+  background-position-y: 7px;
 }
 
 .cd-editWatchedSections-input {
