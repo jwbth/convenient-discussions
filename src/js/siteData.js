@@ -480,17 +480,17 @@ const TIMEZONES = [
   'hovst', 'hovt', 'hst', 'ict', 'iddt', 'idt', 'ihst', 'imt', 'iot', 'irdt', 'irst', 'isst', 'ist',
   'javt', 'jcst', 'jdt', 'jmt', 'jst', 'jwst', 'kart', 'kdt', 'kmt', 'kost', 'kst', 'kwat', 'lhdt',
   'lhst', 'lint', 'lkt', 'lrt', 'lst', 'madmt', 'madst', 'madt', 'malst', 'malt', 'mart', 'mddt',
-  'mdst', 'mdt', 'mest', 'met', 'mht', 'mist', 'mmt', 'most', 'mot', 'mpt', 'msd', 'msk', 'mst',
-  'must', 'mut', 'mvt', 'mwt', 'myt', 'ncst', 'nct', 'nddt', 'ndt', 'negt', 'nest', 'net', 'nfst',
-  'nft', 'nmt', 'npt', 'nrt', 'nst', 'nut', 'nwt', 'nzdt', 'nzmt', 'nzst', 'pddt', 'pdt', 'pest',
-  'pet', 'pgt', 'phot', 'phst', 'pht', 'pkst', 'pkt', 'plmt', 'pmdt', 'pmmt', 'pmst', 'pmt', 'pnt',
-  'pont', 'ppmt', 'ppt', 'pst', 'pwt', 'pyst', 'pyt', 'qmt', 'ret', 'rmt', 'sast', 'sbt', 'sct',
-  'sdmt', 'sdt', 'set', 'sgt', 'sjmt', 'smt', 'srt', 'sst', 'swat', 'taht', 'tbmt', 'tkt', 'tlt',
-  'tmt', 'tost', 'tot', 'tvt', 'uct', 'ulast', 'ulat', 'utc', 'uyhst', 'uyst', 'uyt', 'vet', 'vust',
-  'vut', 'wakt', 'warst', 'wart', 'wast', 'wat', 'wemt', 'west', 'wet', 'wft', 'wgst', 'wgt', 'wib',
-  'wita', 'wit', 'wmt', 'wsdt', 'wsst', 'xjt', 'yddt', 'ydt', 'ypt', 'yst', 'ywt', 'a', 'b', 'c',
-  'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w',
-  'x', 'y', 'z'
+  'mdst', 'mdt', 'mest', 'met', 'mez', 'mht', 'mist', 'mmt', 'most', 'mot', 'mpt', 'msd', 'msk',
+  'mst', 'must', 'mut', 'mvt', 'mwt', 'myt', 'ncst', 'nct', 'nddt', 'ndt', 'negt', 'nest', 'net',
+  'nfst', 'nft', 'nmt', 'npt', 'nrt', 'nst', 'nut', 'nwt', 'nzdt', 'nzmt', 'nzst', 'pddt', 'pdt',
+  'pest', 'pet', 'pgt', 'phot', 'phst', 'pht', 'pkst', 'pkt', 'plmt', 'pmdt', 'pmmt', 'pmst', 'pmt',
+  'pnt', 'pont', 'ppmt', 'ppt', 'pst', 'pwt', 'pyst', 'pyt', 'qmt', 'ret', 'rmt', 'sast', 'sbt',
+  'sct', 'sdmt', 'sdt', 'set', 'sgt', 'sjmt', 'smt', 'srt', 'sst', 'swat', 'taht', 'tbmt', 'tkt',
+  'tlt', 'tmt', 'tost', 'tot', 'tvt', 'uct', 'ulast', 'ulat', 'utc', 'uyhst', 'uyst', 'uyt', 'vet',
+  'vust', 'vut', 'wakt', 'warst', 'wart', 'wast', 'wat', 'wemt', 'west', 'wet', 'wft', 'wgst',
+  'wgt', 'wib', 'wita', 'wit', 'wmt', 'wsdt', 'wsst', 'xjt', 'yddt', 'ydt', 'ypt', 'yst', 'ywt',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+  'u', 'v', 'w', 'x', 'y', 'z'
 ];
 
 /**
