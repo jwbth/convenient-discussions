@@ -191,7 +191,9 @@ export default class CommentForm {
       navPanel.updateCommentFormButton();
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
-        this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
+        if (this.mode !== 'edit') {
+          this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
+        }
         navPanel.updateCommentFormButton();
       });
 
