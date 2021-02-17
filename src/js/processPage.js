@@ -902,8 +902,10 @@ export default async function processPage(keptData = {}) {
 
   cd.debug.stopTimer('process sections');
 
-  addAddTopicButton();
-  connectToAddTopicButtons();
+  if (cd.g.isPageActive) {
+    addAddTopicButton();
+    connectToAddTopicButtons();
+  }
 
   cd.debug.stopTimer('main code');
 
