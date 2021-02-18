@@ -115,7 +115,7 @@ export default {
     }
 
     if (
-      window.scrollY + window.innerHeight < document.body.scrollHeight ||
+      (cd.sections.length && window.scrollY + window.innerHeight < document.body.scrollHeight) ||
       backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {
