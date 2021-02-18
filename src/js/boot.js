@@ -314,7 +314,7 @@ function initPatterns() {
   const userNamespacesPattern = userNamespaces.map(anySpace).join('|');
   cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesPattern}):(.+)`, 'i');
 
-  const allNamespaces = Object.keys(namespaceIds);
+  const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
   const allNamespacesPattern = allNamespaces.join('|');
   cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${allNamespacesPattern}):`, 'i');
 
