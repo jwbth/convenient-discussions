@@ -50,6 +50,8 @@ export default class CommentForm {
    * @property {string} [commentTemplate] Comment template's page name.
    * @property {string} [headline] Subject/headline.
    * @property {string} [summary] Edit summary.
+   * @property {string} [noHeadline] Whether to include a headline.
+   * @property {string} [omitSignature] Whether to add the user's signature.
    */
 
   /**

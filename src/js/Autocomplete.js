@@ -141,11 +141,6 @@ export default class Autocomplete {
           }
           this.mentions.snapshot = text;
 
-          if (text.includes('[[')) {
-            callback([]);
-            return;
-          }
-
           if (this.mentions.byText[text]) {
             callback(prepareValues(this.mentions.byText[text], this.mentions));
           } else {
@@ -156,6 +151,7 @@ export default class Autocomplete {
               text &&
               text.length <= 85 &&
               !/[#<>[\]|{}/@:]/.test(text) &&
+
               // 5 spaces in a user name seem too many. "Jack who built the house" has 4 :-)
               (text.match(spacesRegexp) || []).length <= 4
             );
