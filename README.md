@@ -18,7 +18,7 @@
 * Moving topics between talk pages
 * Thanking for and copying links to edits that added comments
 * Slightly redesigned discussion threads that make it easier to follow which comment replies to which
-* Always seeing the current section and navigating page parts in one click
+* Always seeing the current section's name and navigating page parts in one click
 
 The script makes the user forget about:
 * the need to search the code for a place for a comment, count colons, type tildes and other markup;
