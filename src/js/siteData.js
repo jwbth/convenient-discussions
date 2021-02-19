@@ -499,7 +499,10 @@ const TIMEZONES = [
  * @private
  */
 function setFormats() {
-  const langCode = mw.config.get('wgContentLanguage');
+  let langCode = mw.config.get('wgPageContentLanguage');
+  if (!DATE_FORMATS[langCode]) {
+    langCode = mw.config.get('wgVisualEditor').pageVariantFallbacks;
+  }
   cd.g.DATE_FORMAT = DATE_FORMATS[langCode];
   cd.g.DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[langCode] : null;
 }
