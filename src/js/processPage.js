@@ -902,7 +902,7 @@ export default async function processPage(keptData = {}) {
 
   cd.debug.stopTimer('process sections');
 
-  if (cd.g.isPageActive) {
+  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
     addAddTopicButton();
     connectToAddTopicButtons();
   }
