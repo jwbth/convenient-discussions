@@ -73,9 +73,9 @@ export function findFirstTimestamp(code) {
 
 /**
  * Remove certain kinds of wiki markup from code, such as formatting, links, tags, and comments.
- * Also replace multiple spaces with one and trim the input. The product of this function is not for
- * display (for example, it just removes template names making the resulting code look silly), but
- * for comparing purposes.
+ * Also replace multiple spaces with one and trim the input. The product of this function is usually
+ * not for display (for example, it just removes template names making the resulting code look
+ * silly), but for comparing purposes.
  *
  * @param {string} code
  * @returns {string}

@@ -516,7 +516,7 @@ function getStrings() {
  * @private
  */
 async function app() {
-  // Doesn't work in mobile version, isn't needed on Structured Discussions pages.
+  // Doesn't work in the mobile version, isn't needed on Structured Discussions pages.
   if (/(^|\.)m\./.test(location.hostname) || $('.flow-board-page').length) return;
 
   if (cd.isRunning) {

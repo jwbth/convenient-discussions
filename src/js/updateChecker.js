@@ -299,9 +299,9 @@ function mapComments(currentComments, otherComments) {
 }
 
 /**
- * Determine if the comment was edited based on the `textInnerHtml` and `headingInnerHtml`
- * properties (the comment may lose its heading because technical comment is added between it and
- * the heading).
+ * Determine if the comment has changed (probably edited) based on the `textInnerHtml` and
+ * `headingInnerHtml` properties (the comment may lose its heading because technical comment is
+ * added between it and the heading).
  *
  * @param {CommentSkeletonLike[]} olderComment
  * @param {CommentSkeletonLike[]} newerComment
