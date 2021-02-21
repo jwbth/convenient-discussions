@@ -52,6 +52,41 @@ function setAlarm(interval) {
 }
 
 /**
+ * Replace a comment element with a marker.
+ *
+ * @param {Element} el
+ * @param {CommentSkeleton} comment
+ * @returns {DataNode|undefined}
+ * @private
+ */
+function hideElement(el, comment) {
+  let type;
+  if (el.classList.contains('reference')) {
+    type = 'reference';
+  } else if (el.classList.contains('references')) {
+    type = 'references';
+  } else if (el.classList.contains('autonumber')) {
+    type = 'autonumber';
+  } else {
+    type = 'templateStyles';
+  }
+
+  const num = comment.hiddenElementData.push({
+    type,
+    tagName: el.tagName,
+    html: el.outerHTML,
+  });
+  const textNode = context.document.createTextNode(`\x01${num}_${type}\x02`);
+  el.parentNode.insertBefore(textNode, el);
+  el.remove();
+
+  if (comment.elements.includes(el)) {
+    comment.elements[comment.elements.indexOf(el)] = textNode;
+    return textNode;
+  }
+}
+
+/**
  * Parse the page and send a message to the window.
  *
  * @private
@@ -163,36 +198,25 @@ function parse() {
         }
       }
 
-      const elementsToHide = [
-        ...element.getElementsByClassName('autonumber'),
-        ...element.getElementsByClassName('reference'),
-        ...element.getElementsByClassName('references'),
-        ...element.getElementsByTagName('style'),
-        ...element.getElementsByTagName('link'),
-      ];
-      elementsToHide.forEach((el) => {
-        let type;
-        if (el.classList.contains('reference')) {
-          type = 'reference';
-        } else if (el.classList.contains('references')) {
-          type = 'references';
-        } else if (el.classList.contains('autonumber')) {
-          type = 'autonumber';
-        } else {
-          type = 'templateStyles';
-        }
+      if (element.classList.contains('references') || ['STYLE', 'LINK'].includes(element.tagName)) {
+        const textNode = hideElement(element, comment);
+        return textNode.textContent;
+      } else {
+        const elementsToHide = [
+          ...element.getElementsByClassName('autonumber'),
+          ...element.getElementsByClassName('reference'),
+          ...element.getElementsByClassName('references'),
 
-        const num = comment.hiddenElementData.push({
-          type,
-          tagName: el.tagName,
-          html: el.outerHTML,
+          // Note that getElementsByTagName's range in this implementation of DOM includes the root
+          // element.
+          ...element.getElementsByTagName('style'),
+          ...element.getElementsByTagName('link'),
+        ];
+        elementsToHide.forEach((el) => {
+          hideElement(el, comment);
         });
-        const textNode = context.document.createTextNode(`\x01${num}_${type}\x02`);
-        el.parentNode.insertBefore(textNode, el);
-        el.remove();
-      });
-
-      return element.outerHTML;
+        return element.outerHTML;
+      }
     });
 
     /*
@@ -213,7 +237,7 @@ function parse() {
     comment.textInnerHtml = '';
     comment.headingInnerHtml = '';
     comment.elements.forEach((el) => {
-      const innerHtml = el.innerHTML;
+      const innerHtml = el.innerHTML || el.textContent;
       comment.innerHtml += innerHtml + '\n';
       if (/^H[1-6]$/.test(el.tagName)) {
         comment.headingInnerHtml += innerHtml;
