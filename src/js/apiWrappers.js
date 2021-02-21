@@ -498,7 +498,7 @@ export function getRelevantTemplateNames(text) {
           (resp) => {
             const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
             const templates = resp[1]
-              ?.filter((name) => !name.endsWith('/doc'))
+              ?.filter((name) => !/(\/doc|\.css)$/.test(name))
               .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
               .map((name) => name.replace(regexp, () => text[0]));
 
