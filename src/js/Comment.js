@@ -1800,18 +1800,19 @@ export default class Comment extends CommentSkeleton {
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     }
 
-    // Exclude the text of the previous comment that is ended with 3/5 tildes instead of 4.
+    // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
     [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
       .filter(defined)
       .filter((regexp) => regexp !== null)
       .forEach((originalRegexp) => {
         const regexp = new RegExp(originalRegexp.source + '$', 'm');
         const linesRegexp = /^(.+)\n/gm;
-        let line;
+        let lineMatch;
         let indent;
-        while ((line = linesRegexp.exec(code))) {
-          if (regexp.test(removeWikiMarkup(line[1]))) {
-            const testIndent = line.index + line[0].length;
+        while ((lineMatch = linesRegexp.exec(code))) {
+          const line = lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1');
+          if (regexp.test(line)) {
+            const testIndent = lineMatch.index + lineMatch[0].length;
             if (testIndent === code.length) {
               break;
             } else {
