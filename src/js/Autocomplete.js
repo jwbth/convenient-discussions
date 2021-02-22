@@ -658,9 +658,13 @@ export default class Autocomplete {
             'ref',
             ['references', '<references />'],
             'score',
-            'section',
-            'syntaxhighlight',
-            ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '"></syntaxhighlight>'],
+            ['section', '<section />'],
+            ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
+            ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
+            [
+              'syntaxhighlight inline lang=""',
+              '<syntaxhighlight inline lang="', '"></syntaxhighlight>',
+            ],
             'templatedata',
             ['templatestyles', '<templatestyles src="', '" />'],
             'timeline',
@@ -671,7 +675,11 @@ export default class Autocomplete {
             typeContent: true,
           }),
         };
-        config.default.sort();
+        config.default.sort((item1, item2) => {
+          const s1 = typeof item1 === 'string' ? item1 : item1[0];
+          const s2 = typeof item2 === 'string' ? item2 : item2[0];
+          return s1 < s2;
+        });
         break;
       }
 
