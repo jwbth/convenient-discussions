@@ -107,7 +107,9 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
 
         strings[stringName] = sanitized;
       });
-    let json = JSON.stringify(strings, null, '\t').replace(/&nbsp;/g, ' ');
+    let json = JSON.stringify(strings, null, '\t')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&#32;/g, ' ');
 
     if (lang === 'en') {
       // Prevent creating "</nowiki>" character sequences when building the main script file.
