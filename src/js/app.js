@@ -388,6 +388,7 @@ function go() {
       require('../less/Section.less');
       require('../less/commentLayers.less');
       require('../less/navPanel.less');
+      require('../less/pageNav.less');
       require('../less/skin.less');
       require('../less/talkPage.less');
 
