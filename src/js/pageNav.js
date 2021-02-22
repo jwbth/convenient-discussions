@@ -49,7 +49,7 @@ export default {
    * Update the contents of the page navigation blocks.
    */
   update() {
-    if (document.body.scrollHeight === document.body.clientHeight) {
+    if (document.documentElement.scrollHeight === document.documentElement.clientHeight) {
       this.reset();
       return;
     }
@@ -115,7 +115,10 @@ export default {
     }
 
     if (
-      (cd.sections.length && window.scrollY + window.innerHeight < document.body.scrollHeight) ||
+      (
+        cd.sections.length &&
+        window.scrollY + window.innerHeight < document.documentElement.scrollHeight
+      ) ||
       backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {
@@ -123,7 +126,7 @@ export default {
           .attr('id', 'cd-pageNav-bottomLink')
           .addClass('cd-pageNav-item')
           .on('click', () => {
-            this.jump(document.body.scrollHeight - window.innerHeight, this.$bottomLink);
+            this.jump(document.documentElement.scrollHeight - window.innerHeight, this.$bottomLink);
           })
           .text(cd.s('pagenav-pagebottom'))
           .appendTo(this.$bottomElement);
@@ -134,7 +137,9 @@ export default {
       }
     }
 
-    if (firstSectionOuterTop === undefined || firstSectionOuterTop >= 0) {
+    // 1 as a threshold (also below, in "extendedRect.outerTop < 1") world better for Monobook for
+    // some reason.
+    if (firstSectionOuterTop === undefined || firstSectionOuterTop >= 1) {
       if (currentSection) {
         this.resetSections();
       }
@@ -151,7 +156,7 @@ export default {
         // reason.
         if (extendedRect.left === 0 && extendedRect.height === 0) return;
 
-        if (extendedRect.outerTop < 0) {
+        if (extendedRect.outerTop < 1) {
           if (currentSection === section) {
             return true;
           }
