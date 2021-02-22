@@ -4,6 +4,7 @@
 			"Ailbeve",
 			"Iniquity",
 			"Jack who built the house",
+			"Kareyac",
 			"Rubin16"
 		]
 	},
@@ -200,6 +201,10 @@
 	"navpanel-newcomments-refresh": "Нажмите, чтобы обновить страницу",
 	"toc-more": "ещё $1",
 	"toc-watched": "Вы следите за этим разделом",
+	"pagenav-pagetop": "Начало страницы",
+	"pagenav-toc": "Содержание",
+	"pagenav-pagebottom": "Конец страницы",
+	"pagenav-back": "Назад",
 	"notification-toyou": "$1 {{gender:$2|ответил|ответила}} на ваше сообщение$3.",
 	"notification-toyou-desktop": "$1 {{gender:$2|ответил|ответила}} на ваше сообщение$3 на странице «$4».",
 	"notification-insection": "$1 {{gender:$2|ответил|ответила}} в разделе «$3».",
@@ -326,6 +331,7 @@
 	"lp-comment-tooltip": "Перейти к сообщению",
 	"lp-comment-toyou": "сообщение адресовано вам",
 	"lp-comment-watchedsection": "вы следите за этой темой",
+	"dot-separator": "&nbsp;•&#32;",
 	"loading-ellipsis": "Загрузка…",
 	"addtopic": "Добавить тему",
 	"addtopicbutton-tooltip": "Откройте в новой вкладке, чтобы создать тему на обычной странице, а не в «Удобных дискуссиях»",

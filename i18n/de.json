@@ -3,12 +3,13 @@
 		"authors": [
 			"DraconicDark",
 			"Elliot",
+			"Jack who built the house",
 			"Umherirrender",
 			"Wolfdietmann"
 		]
 	},
 	"script-name": "Bequeme Diskussionen",
-	"script-name-short": "BD",
+	"script-name-short": "CD",
 	"cm-gotoparent-tooltip": "Zum übergeordneten Kommentar gehen",
 	"cm-gotochild-tooltip": "Zum untergeordneten Kommentar gehen",
 	"cm-copylink-tooltip": "Einen Link kopieren.",
