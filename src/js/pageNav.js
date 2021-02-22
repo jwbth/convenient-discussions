@@ -82,8 +82,8 @@ export default {
           .appendTo(this.$topElement);
         this.$topLink = $('<li>')
           .attr('id', 'cd-pageNav-topLink')
-          .text(cd.s('pagenav-pagetop'))
           .addClass('cd-pageNav-item')
+          .text(cd.s('pagenav-pagetop'))
           .on('click', () => {
             this.jump(0, this.$topLink);
           })
@@ -99,8 +99,8 @@ export default {
       if (cd.g.$toc.length && !this.$tocLink) {
         this.$tocLink = $('<li>')
           .attr('id', 'cd-pageNav-tocLink')
-          .text(cd.s('pagenav-toc'))
           .addClass('cd-pageNav-item')
+          .text(cd.s('pagenav-toc'))
           .on('click', () => {
             this.jump(cd.g.$toc, this.$tocLink);
           })
@@ -156,10 +156,10 @@ export default {
             return true;
           }
           currentSection = section;
-          if ($sectionWithBackLink) {
-            // Keep the data
-            $sectionWithBackLink.detach();
-          }
+
+          // Keep the data
+          $sectionWithBackLink?.detach();
+
           this.$currentSection.empty();
           const ancestors = [section, ...section.getAncestors()].reverse();
           ancestors.forEach((sectionInTree, level) => {
@@ -191,6 +191,9 @@ export default {
    */
   reset(part) {
     if (!part || part === 'top') {
+      // Keep the data
+      $sectionWithBackLink?.detach();
+
       this.$topElement.empty();
       this.$linksOnTop = null;
       this.$topLink = null;
@@ -202,10 +205,10 @@ export default {
       this.$bottomElement.empty();
       this.$bottomLink = null;
     }
-    if (!part) {
+    if (!part || part === backLinkLocation) {
+      backLinkLocation = null;
       $backLinkContainer = null;
       $sectionWithBackLink = null;
-      backLinkLocation = null;
     }
   },
 
@@ -221,11 +224,11 @@ export default {
     const offset = $elementOrOffset instanceof $ ? $elementOrOffset.offset().top : $elementOrOffset;
     if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return;
 
-    if ($backLinkContainer) {
+    if (backLinkLocation) {
+      backLinkLocation = null;
       $backLinkContainer.remove();
       $backLinkContainer = null;
       $sectionWithBackLink = null;
-      backLinkLocation = null;
     }
     if (!isBackLink) {
       const scrollY = window.scrollY;
@@ -243,7 +246,13 @@ export default {
       if ($link.parent().is('#cd-pageNav-currentSection')) {
         $sectionWithBackLink = $link;
       }
-      backLinkLocation = $link === this.$bottomLink ? 'bottom' : 'top';
+      if ($link === this.$topLink || $link === this.$tocLink) {
+        backLinkLocation = 'top';
+      } else if ($link === this.$bottomLink) {
+        backLinkLocation = 'bottom';
+      } else {
+        backLinkLocation = 'section';
+      }
     }
     cd.g.autoScrollInProgress = true;
     $('body, html').animate({ scrollTop: offset }, {
