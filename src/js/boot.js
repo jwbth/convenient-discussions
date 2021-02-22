@@ -174,36 +174,18 @@ export async function initSettings() {
  *
  * @private
  */
-export function initTalkPageCss() {
+export function setTalkPageCssVariables() {
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
-    '--cd-comment-target-color': cd.g.COMMENT_TARGET_COLOR,
-    '--cd-comment-new-color': cd.g.COMMENT_NEW_COLOR,
-    '--cd-comment-own-color': cd.g.COMMENT_OWN_COLOR,
-    '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
   });
 
   // Set the transparent color for the "focused" color. The user may override the CSS variable value
   // in their personal styles, so we get the existing value first.
   const focusedColor = $(document.documentElement).css('--cd-comment-focused-color');
-  cd.g.nanoCss.put(':root', {
-    '--cd-comment-focused-transparent-color': transparentize(focusedColor),
-  });
-
-  cd.g.nanoCss.put('.ltr .cd-commentOverlay-gradient', {
-    backgroundImage: 'linear-gradient(to left, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color))',
-  });
-  cd.g.nanoCss.put('.rtl .cd-commentOverlay-gradient', {
-    backgroundImage: 'linear-gradient(to right, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color))',
-  });
 
   // Vector, Monobook, Minerva
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
-
-  cd.g.nanoCss.put('.cd-messageArea .cd-closeButton', {
-    backgroundColor: contentBackgroundColor,
-  });
 
   const sidebarColor = $('.skin-timeless').length ?
     '#eaecf0' :
@@ -213,11 +195,16 @@ export function initTalkPageCss() {
 
       .last()
       .css('background-color');
-  cd.g.nanoCss.put('.cd-pageNav', {
-    backgroundColor: transparentize(sidebarColor).replace('0)', '0.8)'),
-  });
-  cd.g.nanoCss.put('.cd-pageNav:hover', {
-    backgroundColor: sidebarColor,
+
+  cd.g.nanoCss.put(':root', {
+    '--cd-comment-target-color': cd.g.COMMENT_TARGET_COLOR,
+    '--cd-comment-new-color': cd.g.COMMENT_NEW_COLOR,
+    '--cd-comment-own-color': cd.g.COMMENT_OWN_COLOR,
+    '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
+    '--cd-comment-focused-transparent-color': transparentize(focusedColor),
+    '--cd-content-background-color': contentBackgroundColor,
+    '--cd-sidebar-color': sidebarColor,
+    '--cd-sidebar-transparent-color': transparentize(sidebarColor),
   });
 }
 

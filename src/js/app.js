@@ -16,10 +16,10 @@ import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces, unique }
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
-  initTalkPageCss,
   isLoadingOverlayOn,
   removeLoadingOverlay,
   setLoadingOverlay,
+  setTalkPageCssVariables,
 } from './boot';
 import { loadData } from './siteData';
 import { setVisits } from './options';
@@ -380,7 +380,7 @@ function go() {
         window.getComputedStyle(cd.g.$content.get(0)).lineHeight
       );
 
-      initTalkPageCss();
+      setTalkPageCssVariables();
 
       require('../less/global.less');
       require('../less/Comment.less');

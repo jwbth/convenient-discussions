@@ -228,6 +228,10 @@ ol > li.cd-commentForm {
     display: none;
   }
 
+  .cd-closeButton {
+    background-color: #f8f9fa;
+  }
+
   &:empty {
     margin: 0;
     padding: 0;
@@ -276,13 +280,13 @@ ol > li.cd-commentForm {
 
   clear: both;
 
-  .cd-closeButton {
-    background-color: #f8f9fa;
-  }
-
   &:hover .cd-closeButton {
     opacity: 1;
   }
+}
+
+.cd-messageArea .cd-closeButton {
+  background-color: var(--cd-content-background-color);
 }
 
 .cd-previewArea-above,

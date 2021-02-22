@@ -95,6 +95,14 @@
   }
 }
 
+.ltr .cd-commentOverlay-gradient {
+  background-image: linear-gradient(to left, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color));
+}
+
+.rtl .cd-commentOverlay-gradient {
+  background-image: linear-gradient(to right, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color));
+}
+
 body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
   padding-top: 1.4285714em;
   min-width: unset;
