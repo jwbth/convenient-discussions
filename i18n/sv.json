@@ -1,12 +1,13 @@
 {
 	"@metadata": {
 		"authors": [
+			"Jack who built the house",
 			"Sabelöga",
 			"WikiPhoenix"
 		]
 	},
 	"script-name": "Angenäma diskussioner",
-	"script-name-short": "AD",
+	"script-name-short": "CD",
 	"cm-gotoparent-tooltip": "Gå till den överordnade kommentaren",
 	"cm-gotochild-tooltip": "Gå till den underordnade kommentaren",
 	"cm-thank": "Tacka",

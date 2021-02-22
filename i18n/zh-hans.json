@@ -5,6 +5,7 @@
 			"Nadine Siak",
 			"SomeyaMako",
 			"Wuqianye",
+			"Zhang8569",
 			"列维劳德",
 			"沈澄心"
 		]
@@ -109,6 +110,10 @@
 	"navpanel-refresh": "刷新页面",
 	"navpanel-newcomments-names": "$1 → $2",
 	"navpanel-newcomments-unknowndate": "未知日期",
+	"pagenav-pagetop": "页面顶部",
+	"pagenav-toc": "目录",
+	"pagenav-pagebottom": "页面底部",
+	"pagenav-back": "返回",
 	"notification-newcomments-maybeinteresting": "对你来说可能很有趣",
 	"notification-reload": "点击刷新页面$1",
 	"notification-part-insection": "在段落“$1”中",
@@ -161,5 +166,6 @@
 	"error-editconflict": "编辑冲突。",
 	"error-pagedeleted": "页面已删除。",
 	"wl-button-switchinteresting-tooltip": "只显示被我关注或被我评论过的页面下的评论",
-	"wl-button-editwatchedsections-tooltip": "编辑我监视的章节"
+	"wl-button-editwatchedsections-tooltip": "编辑我监视的章节",
+	"dot-separator": "&nbsp;<b>·</b>&#32;"
 }

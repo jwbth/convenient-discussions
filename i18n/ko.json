@@ -105,6 +105,10 @@
 	"navpanel-newcomments-names": "$1 → $2",
 	"navpanel-newcomments-unknowndate": "알 수 없는 날짜",
 	"navpanel-newcomments-refresh": "문서를 새로 고치려면 클릭",
+	"pagenav-pagetop": "페이지 맨 위로",
+	"pagenav-toc": "목차",
+	"pagenav-pagebottom": "페이지 맨 아래로",
+	"pagenav-back": "뒤로",
 	"notification-reload": "페이지$1를 다시 로드하려면 클릭하십시오.",
 	"notification-part-onthispage": "이 페이지에서",
 	"sd-save": "저장",
@@ -163,6 +167,7 @@
 	"error-pagedeleted": "문서가 삭제되었습니다.",
 	"error-pagenotedited": "문서는 편집되지 않았습니다.",
 	"error-purgecache": "이 문서의 캐시를 새로 고치지 못했습니다.",
+	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"loading-ellipsis": "불러오는 중…",
 	"addtopic": "주제 추가",
 	"copy": "복사"
