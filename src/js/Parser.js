@@ -58,7 +58,11 @@ function getPageNameFromUrl(url) {
         return null;
       }
     }
-    return uri.query.title || null;
+    let title = uri.query.title;
+    if (typeof title === 'object') {
+      title = title[title.length - 1];
+    }
+    return title || null;
   }
 }
 

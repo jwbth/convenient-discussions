@@ -408,7 +408,10 @@ function connectToAddTopicButtons() {
       if ($button.is('a')) {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
-        const pageName = query.title;
+        let pageName = query.title;
+        if (typeof pageName === 'object') {
+          pageName = pageName[pageName.length - 1];
+        }
         const page = new Page(pageName);
         if (page.name !== cd.g.CURRENT_PAGE.name) {
           return false;
