@@ -2025,10 +2025,10 @@ export default class Comment extends CommentSkeleton {
     let sectionHeadline;
     if (commentData) {
       followsHeading = commentData.followsHeading;
-      sectionHeadline = commentData.section.headline;
+      sectionHeadline = commentData.section?.headline;
     } else {
       followsHeading = this.followsHeading;
-      sectionHeadline = this.getSection().headline;
+      sectionHeadline = this.getSection()?.headline;
     }
 
     // Collect data for every match
