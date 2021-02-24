@@ -57,7 +57,7 @@ export async function parseCode(code, customOptions) {
     action: 'parse',
     text: code,
     contentmodel: 'wikitext',
-    prop: ['text', 'modules'],
+    prop: ['text', 'modules', 'jsconfigvars'],
     pst: true,
     disablelimitreport: true,
     formatversion: 2,
