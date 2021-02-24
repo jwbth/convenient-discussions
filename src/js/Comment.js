@@ -2205,7 +2205,10 @@ export default class Comment extends CommentSkeleton {
       }
 
       // Hotfix for comments inside a table (barnstars, for example).
-      if (adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')) {
+      if (
+        this.isInSingleCommentTable &&
+        adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')
+      ) {
         adjustedCodeInBetween += '|}\n';
       }
 
