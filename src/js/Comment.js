@@ -1244,14 +1244,12 @@ export default class Comment extends CommentSkeleton {
       .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
       .attr('target', '_blank')
       .text(cd.mws('nextdiff'));
-    const $summaryText = cd.util.wrap(edit.parsedcomment, { targetBlank: true })
-      .addClass('comment');
-    const $above = $('<div>').append([
-      $nextDiffLink,
-      cd.sParse('cld-summary'),
-      cd.mws('colon-separator'),
-      $summaryText,
-    ]);
+    const $above = $('<div>').append($nextDiffLink);
+    if (edit.parsedcomment) {
+      const $summaryText = cd.util.wrap(edit.parsedcomment, { targetBlank: true })
+        .addClass('comment');
+      $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
+    }
     const $diffBody = cd.util.wrapDiffBody(edit.diffBody);
     return $('<div>')
       .addClass('cd-diffView-diff')
