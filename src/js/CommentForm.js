@@ -276,6 +276,7 @@ export default class CommentForm {
 
               this.closeOperation(currentOperation);
 
+              (this.headlineInput || this.commentInput).focus();
               this.preview();
             },
             (e) => {
