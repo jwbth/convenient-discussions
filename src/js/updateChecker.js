@@ -743,9 +743,8 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
 
   Section.addNewCommentsNotifications(newCommentsBySection);
 
-  const commentsToNotifyAbout = interestingNewComments.filter((comment) => (
-    !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor)
-  ));
+  const commentsToNotifyAbout = interestingNewComments
+    .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));
   showOrdinaryNotification(commentsToNotifyAbout);
   showDesktopNotification(commentsToNotifyAbout);
   commentsNotifiedAbout.push(...commentsToNotifyAbout);

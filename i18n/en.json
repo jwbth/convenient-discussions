@@ -174,7 +174,7 @@
   "cf-confirm-delete": "Are you sure you want to delete the comment?",
   "cf-confirm-delete-yes": "Delete",
   "cf-confirm-delete-no": "Cancel",
-  "cf-confirm-close": "Are you sure you want to close the form? The input will be lost.",
+  "cf-confirm-close": "Are you sure you want to close the form? The changes will be lost.",
   "cf-confirm-close-yes": "Close",
   "cf-confirm-close-no": "Cancel",
 

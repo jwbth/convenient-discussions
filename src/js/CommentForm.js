@@ -194,7 +194,7 @@ export default class CommentForm {
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
-          this[this.headlineInput ? 'headlineInput' : 'commentInput'].focus();
+          (this.headlineInput || this.commentInput).focus();
         }
         navPanel.updateCommentFormButton();
       });
@@ -770,7 +770,7 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$advanced = $('<div>').addClass('cd-commentFormAdvanced');
+    this.$advanced = $('<div>').addClass('cd-commentForm-advanced');
 
     /**
      * Edit summary input.

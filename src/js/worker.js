@@ -87,6 +87,23 @@ function hideElement(el, comment) {
 }
 
 /**
+ * Keep only those values of an object whose names are not in the "dangerous" names list.
+ *
+ * @param {object} obj
+ * @param {Array} dangerousKeys
+ * @returns {object}
+ */
+function keepSafeValues(obj, dangerousKeys) {
+  const newObj = Object.assign({}, obj);
+  Object.keys(newObj).forEach((key) => {
+    if (dangerousKeys.includes(key)) {
+      delete newObj[key];
+    }
+  });
+  return newObj;
+}
+
+/**
  * Remove the element's attributes whose names start with "data-".
  *
  * @param {Element} el
@@ -169,15 +186,6 @@ function parse() {
     'oldestComment',
     'parser',
   ];
-  const keepSafeValues = (obj, dangerousKeys) => {
-    const newObj = Object.assign({}, obj);
-    Object.keys(newObj).forEach((key) => {
-      if (dangerousKeys.includes(key)) {
-        delete newObj[key];
-      }
-    });
-    return newObj;
-  };
 
   cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
 
@@ -269,7 +277,7 @@ function parse() {
     comment.headingInnerHtml = comment.headingInnerHtml.trim();
 
     comment.signatureElement.remove();
-    comment.text = comment.elements.map((el) => el.textContent).join('\n');
+    comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();
 
     comment.elementTagNames = comment.elements.map((el) => el.tagName);
   });

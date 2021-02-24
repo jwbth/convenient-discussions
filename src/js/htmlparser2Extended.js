@@ -292,11 +292,10 @@ Object.defineProperty(Element.prototype, 'classList', {
   },
 });
 
-Element.prototype.getElementsByClassName = function (name, limit, our) {
+Element.prototype.getElementsByClassName = function (name, limit) {
   let nodes = [];
   walkThroughSubtree(this, (node) => {
-    if (node.nodeType !== Node.ELEMENT_NODE) return;
-    if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(name, our)) {
+    if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(name)) {
       nodes.push(node);
       if (limit && nodes.length === limit) {
         return true;
