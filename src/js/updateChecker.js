@@ -328,6 +328,7 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
   const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
   const articleId = mw.config.get('wgArticleId');
 
+  const editList = [];
   mappedCurrentComments.forEach((currentComment) => {
     if (currentComment.anchor === submittedCommentAnchor) return;
 
@@ -369,9 +370,25 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
             }
           }
         }
+
+        const commentData = {
+          old: oldComment,
+          current: currentComment,
+        };
+        editList.push({ comment, commentData });
       }
     }
   });
+
+  if (editList.length) {
+    /**
+     * Edits to the existing comments have been made since the previous visit.
+     *
+     * @event editsSincePreviousVisit
+     * @type {object}
+     */
+    mw.hook('convenientDiscussions.editsSincePreviousVisit').fire(editList);
+  }
 
   delete seenRenderedEdits[articleId];
   saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
@@ -385,43 +402,69 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
  */
 function checkForNewEdits(mappedCurrentComments) {
   let isEditMarkUpdated = false;
+  const editList = [];
   mappedCurrentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
+    let comment;
+    const events = {};
     if (newComment) {
-      const comment = Comment.getByAnchor(currentComment.anchor);
+      comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment) return;
 
       if (comment.isDeleted) {
         comment.unmarkAsEdited('deleted');
         isEditMarkUpdated = true;
+        events.undeleted = true;
       }
       if (isCommentEdited(currentComment, newComment)) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
-          const success = comment.update(currentComment, newComment);
+          const updateSuccess = comment.update(currentComment, newComment);
           const commentsData = [currentComment, newComment];
-          comment.markAsEdited('edited', success, lastCheckedRevisionId, commentsData);
+          comment.markAsEdited('edited', updateSuccess, lastCheckedRevisionId, commentsData);
           isEditMarkUpdated = true;
+          events.edited = { updateSuccess };
           comment.comparedHtml = newComment.innerHtml;
         }
       } else if (comment.isEdited) {
         comment.update(currentComment, newComment);
         comment.unmarkAsEdited('edited');
         isEditMarkUpdated = true;
+        events.unedited = true;
       }
     } else if (!currentComment.hasPoorMatch) {
-      const comment = Comment.getByAnchor(currentComment.anchor);
+      comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsEdited('deleted');
       isEditMarkUpdated = true;
+      events.deleted = true;
+    }
+
+    if (Object.keys(events).length) {
+      const commentData = {
+        current: currentComment,
+        new: newComment,
+      };
+      editList.push({ comment, events, commentData });
     }
   });
+
   if (isEditMarkUpdated) {
     // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
     // layers before them from being updated due to the "stop at the first two unmoved comments"
     // optimization. So we better just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
+  }
+
+  if (editList.length) {
+    /**
+     * Changes to the existing comments have been made.
+     *
+     * @event newEdits
+     * @type {object}
+     */
+    mw.hook('convenientDiscussions.newEdits').fire(editList);
   }
 }
 
