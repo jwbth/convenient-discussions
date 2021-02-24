@@ -87,6 +87,20 @@ function hideElement(el, comment) {
 }
 
 /**
+ * Remove the element's attributes whose names start with "data-".
+ *
+ * @param {Element} el
+ * @private
+ */
+function removeDataAttributes(el) {
+  Object.keys(el.attribs).forEach((name) => {
+    if (/^data-/.test(name)) {
+      el.removeAttribute(name);
+    }
+  });
+}
+
+/**
  * Parse the page and send a message to the window.
  *
  * @private
@@ -197,6 +211,11 @@ function parse() {
           Array.from(headlineElement.childNodes).forEach(element.appendChild.bind(element));
         }
       }
+
+      // Data attributes may include dynamic components, for example
+      // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
+      removeDataAttributes(element);
+      element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
 
       if (element.classList.contains('references') || ['STYLE', 'LINK'].includes(element.tagName)) {
         const textNode = hideElement(element, comment);

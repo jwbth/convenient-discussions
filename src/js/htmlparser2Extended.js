@@ -306,6 +306,17 @@ Element.prototype.getElementsByClassName = function (name, limit, our) {
   return nodes;
 };
 
+Element.prototype.getElementsByAttribute = function (regexp) {
+  let nodes = [];
+  walkThroughSubtree(this, (node) => {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      Object.keys(node.attribs).some((name) => regexp.test(name))
+      nodes.push(node);
+    }
+  });
+  return nodes;
+};
+
 Element.prototype.getElementsByTagName = function (name) {
   return DomUtils.getElementsByTagName(name, this);
 };
