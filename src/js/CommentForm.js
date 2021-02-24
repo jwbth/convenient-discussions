@@ -1749,6 +1749,10 @@ export default class CommentForm {
       this.omitSignatureCheckbox?.setDisabled(true);
       this.deleteCheckbox?.setDisabled(true);
     }
+
+    if (this.commentInput.isPending()) {
+      this.$element.addClass('cd-commentForm-pending');
+    }
   }
 
   /**
@@ -1789,6 +1793,10 @@ export default class CommentForm {
       if (this.deleteCheckbox?.isSelected()) {
         this.updateFormOnDeleteCheckboxChange(true);
       }
+    }
+
+    if (!this.commentInput.isPending()) {
+      this.$element.removeClass('cd-commentForm-pending');
     }
   }
 
