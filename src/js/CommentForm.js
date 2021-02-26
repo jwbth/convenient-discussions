@@ -2067,7 +2067,7 @@ export default class CommentForm {
     return (
       indentationChars +
       (
-        indentationChars && !/^[:*#]/.test(code) && cd.config.spaceAfterIndentationChars ?
+        indentationChars && !/^[:*#;]/.test(code) && cd.config.spaceAfterIndentationChars ?
         ' ' :
         ''
       ) +
@@ -2112,8 +2112,13 @@ export default class CommentForm {
       default:
         indentationChars = '';
     }
-    const indentNow = willCommentBeIndented && action !== 'preview';
-    const newLineIndentationChars = indentationChars.replace(/\*/g, ':');
+
+    let restLinesIndentationChars;
+    if (willCommentBeIndented) {
+      // In the preview mode, imitate a list so that the user will see where it would break on a
+      // real page. This pseudolist's margin is made invisible by CSS.
+      restLinesIndentationChars = action === 'preview' ? ':' : indentationChars.replace(/\*/g, ':');
+    }
 
     // Work with the code
     let code = this.commentInput.getValue();
@@ -2136,6 +2141,18 @@ export default class CommentForm {
       });
     }
 
+    let areThereInlineTagsAroundMultipleLines;
+    const findInlineTagsAroundMultipleLines = () => {
+      if (isWholeCommentInSmall && code.includes('\n')) {
+        return true;
+      }
+      const inlineMatches = code.match(new RegExp(`<(${cd.g.PIE_PATTERN})>[^]*?</\\1>`, 'ig'));
+      return Boolean(inlineMatches?.some((match) => match.includes('\n')));
+    };
+    if (willCommentBeIndented) {
+      areThereInlineTagsAroundMultipleLines = findInlineTagsAroundMultipleLines();
+    }
+
     // Remove spaces from empty lines except when they are a part of the syntax creating <pre>.
     code = code
       .replace(/^(?:[ \t\xA0\uFEFF]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\uFEFF\xA0]+/gm, ''));
@@ -2154,17 +2171,31 @@ export default class CommentForm {
     if (
       signature &&
       (this.mode !== 'edit' || !/^[ \t]*\n/.test(signature)) &&
-      /\n[:*#].*$/.test(code)
+      /(^|\n)[:*#;].*$/.test(code)
     ) {
       code += '\n';
     }
 
-    if (indentNow) {
-      // Add intentation characters to the lines with the list markup.
-      code = code.replace(/\n([:*#]+)/g, (s, chars) => '\n' + newLineIndentationChars + chars);
+    if (willCommentBeIndented) {
+      // Remove spaces in the beginning of the lines if the comment is indented.
+      code = code.replace(/^ +/gm, '');
 
-      if (willCommentBeIndented && (/^[:*#]/m.test(code) || code.includes('\x03'))) {
-        if (newLineIndentationChars === '#') {
+      if (!cd.config.paragraphTemplates.length) {
+        code = code.replace(/^\n/gm, '');
+      }
+
+      // Add intentation characters to the lines with the list and table markup.
+      code = code.replace(/(\n+)([:*#;\x03])/g, (s, newlines, nextLine) => {
+        // Many newlines will be replaced with a paragraph template below. If there is no
+        // paragraph template, there wouldn't be multiple newlines, as they would've been removed
+        // above.
+        const newlinesToAdd = newlines.length > 1 ? '\n\n\n' : '\n';
+
+        return newlinesToAdd + restLinesIndentationChars + nextLine;
+      });
+
+      if (/^[:*#;]/m.test(code) || code.includes('\x03')) {
+        if (restLinesIndentationChars === '#') {
           throw new CdError({
             type: 'parse',
             code: 'numberedList-list',
@@ -2172,30 +2203,46 @@ export default class CommentForm {
         }
 
         // Table markup is OK only with colons as indentation characters.
-        if (newLineIndentationChars.includes('#') && code.includes('\x03')) {
+        if (restLinesIndentationChars.includes('#') && code.includes('\x03')) {
           throw new CdError({
             type: 'parse',
             code: 'numberedList-table',
           });
         }
 
-        // Add intentation characters to the rest of the lines.
-        code = code.replace(/\n(?!:)/g, () => (
-          '\n' +
-          newLineIndentationChars +
-          (cd.config.spaceAfterIndentationChars ? ' ' : '')
-        ));
+        // Add intentation characters to the lines following the lines with the list and table
+        // markup.
+        const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
+        code = code.replace(/^([:*#;\x03].+)(\n+)(?!:)/mg, (s, previousLine, newlines) => {
+          // Many newlines will be replaced with a paragraph template below. If there is no
+          // paragraph template, there wouldn't be multiple newlines, as they would've been removed
+          // above.
+          const newlinesToAdd = newlines.length > 1 ? '\n\n' : '';
+
+          return (
+            previousLine +
+            '\n' +
+            restLinesIndentationChars +
+            spaceOrNot +
+            newlinesToAdd
+          );
+        });
       }
     }
 
     if (willCommentBeIndented) {
-      // Remove spaces in the beginning of the lines if the comment is indented.
-      code = code.replace(/^ +/gm, '');
-
-      const replacement = cd.config.paragraphTemplates.length ?
-        `$1{{${cd.config.paragraphTemplates[0]}}}` :
-        '$1<br><br>';
-      code = code.replace(/^((?![:*#]).*)\n\n(?![:*#])/gm, replacement);
+      let replacement;
+      if (cd.config.paragraphTemplates.length) {
+        replacement = `$1{{${cd.config.paragraphTemplates[0]}}}`;
+      } else if (areThereInlineTagsAroundMultipleLines) {
+        // If there are <small> tags around multple lines, we can't use the colon indentation, as
+        // this would bring bugs.
+        replacement = `$1<br>`;
+      } else {
+        const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
+        replacement = `$1\n${restLinesIndentationChars}${spaceOrNot}`;
+      }
+      code = code.replace(/^(.*)\n\n+(?!:)/gm, replacement);
     }
 
     // Process newlines by adding or not adding <br> and keeping or not keeping the newline. \x01
@@ -2213,46 +2260,59 @@ export default class CommentForm {
       'i'
     );
     const headingRegexp = /^(=+).*\1[ \t]*$/;
-    code = code.replace(
-      /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
-      (s, thisLine, nextLine) => {
-        const br = (
-          entireLineRegexp.test(thisLine) ||
-          entireLineRegexp.test(nextLine) ||
 
-          (
-            !willCommentBeIndented &&
-            (headingRegexp.test(thisLine) || headingRegexp.test(nextLine))
-          ) ||
-          fileRegexp.test(thisLine) ||
-          (!willCommentBeIndented && fileRegexp.test(nextLine)) ||
-
-          // Removing <br>s after block elements is not a perfect solution as there would be no
-          // newlines when editing such a comment, but this way we would avoid empty lines in cases
-          // like "</div><br>".
-          thisLineEndingRegexp.test(thisLine) ||
-          nextLineBeginningRegexp.test(nextLine)
+    const newlinesRegexp = willCommentBeIndented ?
+      /^(.+)\n(?!:)(?=(.*))/gm :
+      /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
+    code = code.replace(newlinesRegexp, (s, thisLine, nextLine) => {
+      const spaceOrNot = cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(nextLine) ?
+        ' ' :
+        '';
+      const lineBreak = (
+          willCommentBeIndented &&
+          !cd.config.paragraphTemplates.length &&
+          !areThereInlineTagsAroundMultipleLines
         ) ?
-          '' :
-          '<br>';
-        const newline = willCommentBeIndented ? '' : '\n';
-        return thisLine + br + newline;
-      }
-    );
+        `\n${restLinesIndentationChars}${spaceOrNot}` :
+        '<br>';
+      const lineBreakOrNot = (
+        entireLineRegexp.test(thisLine) ||
+        entireLineRegexp.test(nextLine) ||
+
+        (
+          !willCommentBeIndented &&
+          (headingRegexp.test(thisLine) || headingRegexp.test(nextLine))
+        ) ||
+        fileRegexp.test(thisLine) ||
+        (!willCommentBeIndented && fileRegexp.test(nextLine)) ||
+
+        // Removing <br>s after block elements is not a perfect solution as there would be no
+        // newlines when editing such a comment, but this way we would avoid empty lines in cases
+        // like "</div><br>".
+        thisLineEndingRegexp.test(thisLine) ||
+        nextLineBeginningRegexp.test(nextLine)
+      ) ?
+        '' :
+        lineBreak;
+      const newlineOrNot = willCommentBeIndented ? '' : '\n';
+      return thisLine + lineBreakOrNot + newlineOrNot;
+    });
 
     if (!this.omitSignatureCheckbox?.isSelected()) {
       // Remove signature tildes
       code = code.replace(/\s*~{3,}$/, '');
     }
 
-    // If the comment starts with a numbered list or table, or is wrapped in <small> tags and starts
-    // with a list, replace all asterisks in the indentation chars with colons to have the list or
-    // table form correctly.
-    if (
-      willCommentBeIndented &&
-      (/^(#|.*\x03)/.test(code) || (isWholeCommentInSmall && /^[:*#]/.test(code)))
-    ) {
-      indentationChars = newLineIndentationChars;
+    // If the comment starts with a list or table, or there are inline tags wrapping multiple lines,
+    // replace all asterisks in the indentation chars with colons to have the comment form
+    // correctly.
+    if (willCommentBeIndented && action !== 'preview') {
+      // Update the assessment
+      areThereInlineTagsAroundMultipleLines = findInlineTagsAroundMultipleLines();
+
+      if (/^[#*;\x03]/.test(code) || areThereInlineTagsAroundMultipleLines) {
+        indentationChars = restLinesIndentationChars;
+      }
     }
 
     // Add the headline
@@ -2292,14 +2352,13 @@ export default class CommentForm {
     // Process the small font wrappers, add the signature.
     if (isWholeCommentInSmall) {
       let before;
-      if (/^[:*# ]/.test(code)) {
-        const spaceOrNot = /^[:*#]/.test(code) || !cd.config.spaceAfterIndentationChars ? '' : ' ';
-        const indentation = (indentNow ? newLineIndentationChars : '') + spaceOrNot;
+      if (/^[:*#; ]/.test(code)) {
+        const indentation = willCommentBeIndented ? restLinesIndentationChars : '';
         before = `\n${indentation}`;
       } else {
         before = '';
       }
-      if (cd.config.smallDivTemplates?.[0] && !/^[:*#]/m.test(code)) {
+      if (cd.config.smallDivTemplates?.[0] && !/^[:*#;]/m.test(code)) {
         const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
@@ -2317,31 +2376,13 @@ export default class CommentForm {
     if (action === 'submit') {
       code = this.addIndentationChars(code, indentationChars);
 
-      // When an indented comment had been started with a list but the list has gone after editing.
-      // Really rare but possible (see
-      // https://ru.wikipedia.org/w/index.php?diff=next&oldid=105978713) case.
-      if (
-        willCommentBeIndented &&
-        this.mode === 'edit' &&
-        /^[:*]/.test(this.target.inCode.code) &&
-        !/^[:*]/.test(code)
-      ) {
-        code = ' ' + code;
-      }
-
       if (this.mode === 'addSubsection') {
         code += '\n';
       }
     }
 
-    // Imitate a list so that the user will see where it would break on a real page. This
-    // pseudolist's margin is made invisible by CSS.
-    let imitateList;
     if (action === 'preview' && willCommentBeIndented && this.commentInput.getValue().trim()) {
-      code = code.replace(/^(?=(.?))/gm, (s, after) => ':' + (after === ';' ? ' ' : ''));
-      imitateList = true;
-    } else {
-      imitateList = false;
+      code = this.addIndentationChars(code, ':');
     }
 
     code = unhideText(code, hidden);
@@ -2352,7 +2393,7 @@ export default class CommentForm {
 
     return {
       commentCode: code,
-      imitateList,
+      imitateList: willCommentBeIndented && action === 'preview',
     };
   }
 

@@ -794,8 +794,8 @@ export default class Parser {
           children.every((child) => (
             ['UL', 'DL', 'OL', 'LI', 'DD'].includes(child.tagName) ||
 
-            // <small> wrapped around block tags can give that.
-            (!child.textContent.trim() && child.tagName === 'SMALL')
+            // An inline (e.g., <small>) tag wrapped around block tags can give that.
+            (!child.textContent.trim() && isInline(child))
           )) &&
           (
             children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
