@@ -159,6 +159,13 @@ export default class Comment extends CommentSkeleton {
      * @type {?boolean}
      */
     this.isFlashNewOnSightSet = false;
+
+    /**
+     * Whether the comment (or its signature) is inside a table containing only one comment.
+     *
+     * @type {boolean}
+     */
+    this.isInSingleCommentTable = false;
   }
 
   /**

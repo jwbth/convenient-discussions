@@ -81,8 +81,9 @@ async function prepare({ dataRequest }) {
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
-  goToCommentToYou = `${cd.s('lp-comment-tooltip')} ${cd.mws('parentheses', cd.s('lp-comment-toyou'))}`;
-  goToCommentWatchedSection = `${cd.s('lp-comment-tooltip')} ${cd.mws('parentheses', cd.s('lp-comment-watchedsection'))}`;
+  goToCommentToYou = goToCommentWatchedSection = cd.s('lp-comment-tooltip') + ' ';
+  goToCommentToYou += cd.mws('parentheses', cd.s('lp-comment-toyou'));
+  goToCommentWatchedSection += cd.mws('parentheses', cd.s('lp-comment-watchedsection'));
 
   const $aRegularPrototype = $('<a>')
     .text(cd.s('lp-comment'))

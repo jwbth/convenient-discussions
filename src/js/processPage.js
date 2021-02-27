@@ -328,15 +328,6 @@ function processComments(parser, feivData) {
     .querySelectorAll('table.cd-commentPart .cd-signature')
     .forEach((signature) => {
       const commentId = signature.closest('.cd-commentPart').dataset.commentId;
-
-      /**
-       * Whether the comment (or its signature) is inside a table containing only one comment.
-       *
-       * @name isInSingleCommentTable
-       * @type {boolean}
-       * @memberof module:Comment
-       * @instance
-       */
       cd.comments[commentId].isInSingleCommentTable = true;
     });
 
