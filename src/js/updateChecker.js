@@ -95,7 +95,7 @@ async function checkForUpdates() {
     }, true);
 
     const currentRevisionId = mw.config.get('wgRevisionId');
-    if (revisions.length && revisions[0].revid !== (lastCheckedRevisionId || currentRevisionId)) {
+    if (revisions.length && revisions[0].revid > (lastCheckedRevisionId || currentRevisionId)) {
       const { revisionId, comments, sections } = await updateChecker.processPage();
       lastCheckedRevisionId = revisionId;
 
