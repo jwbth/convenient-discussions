@@ -517,9 +517,6 @@ function getStrings() {
  * @private
  */
 async function app() {
-  // Doesn't work in the mobile version, isn't needed on Structured Discussions pages.
-  if (/(^|\.)m\./.test(location.hostname) || $('.flow-board-page').length) return;
-
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
     return;
@@ -533,6 +530,15 @@ async function app() {
    * @memberof module:cd~convenientDiscussions
    */
   cd.isRunning = true;
+
+  // Doesn't work in the mobile version, isn't needed on Structured Discussions pages.
+  if (
+    /(^|\.)m\./.test(location.hostname) ||
+    mw.config.get('wgPageContentModel') !== 'wikitext' ||
+    $('.flow-board-page').length
+  ) {
+    return;
+  }
 
   if (IS_SNIPPET) {
     cd.config = Object.assign(defaultConfig, config);
