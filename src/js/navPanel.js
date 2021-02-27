@@ -18,11 +18,11 @@ let lastFirstUnseenCommentId;
  * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
  *
  * @param {number} commentsCount
- * @param {Map} commentsBySection
+ * @param {Map} [commentsBySection]
  * @returns {?string}
  * @private
  */
-function generateTooltipText(commentsCount, commentsBySection) {
+function generateRefreshButtonTooltipText(commentsCount, commentsBySection) {
   let tooltipText = null;
   if (commentsCount) {
     tooltipText = (
@@ -30,7 +30,9 @@ function generateTooltipText(commentsCount, commentsBySection) {
       ' ' +
       cd.s('navpanel-newcomments-refresh') +
       ' ' +
-      cd.mws('parentheses', 'R')
+      cd.mws('parentheses', 'R') +
+      '\n' +
+      cd.s('navpanel-markasread')
     );
     const bullet = removeWikiMarkup(cd.s('bullet'));
     commentsBySection.forEach((comments, sectionOrAnchor) => {
@@ -60,7 +62,13 @@ function generateTooltipText(commentsCount, commentsBySection) {
       });
     });
   } else {
-    tooltipText = `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`;
+    tooltipText = (
+      cd.s('navpanel-refresh') +
+      ' ' +
+      cd.mws('parentheses', 'R') +
+      '\n' +
+      cd.s('navpanel-markasread')
+    );
   }
 
   return tooltipText;
@@ -92,9 +100,9 @@ const navPanel = {
     this.$refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
-      .attr('title', `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`)
-      .on('click', () => {
-        this.refreshClick();
+      .attr('title', generateRefreshButtonTooltipText(0))
+      .on('click', (e) => {
+        this.refreshClick(e.ctrlKey);
       })
       .appendTo(this.$element);
 
@@ -194,7 +202,7 @@ const navPanel = {
 
     this.$refreshButton
       .empty()
-      .attr('title', `${cd.s('navpanel-refresh')} ${cd.mws('parentheses', 'R')}`);
+      .attr('title', generateRefreshButtonTooltipText(0));
     this.$previousButton.hide();
     this.$nextButton.hide();
     this.$firstUnseenButton.hide();
@@ -234,12 +242,17 @@ const navPanel = {
   /**
    * Perform routines at the refresh button click.
    *
+   * @param {boolean} markAsRead Whether to mark all comments as read.
+   *
    * @memberof module:navPanel
    */
-  refreshClick() {
+  refreshClick(markAsRead) {
     // There was reload confirmation here, but after session restore was introduced, the
     // confirmation seems to be no longer needed.
-    reloadPage({ commentAnchor: updateChecker.relevantNewCommentAnchor });
+    reloadPage({
+      commentAnchor: updateChecker.relevantNewCommentAnchor,
+      markAsRead,
+    });
   },
 
   /**
@@ -345,7 +358,7 @@ const navPanel = {
   updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
     this.$refreshButton
       .empty()
-      .attr('title', generateTooltipText(commentCount, commentsBySection));
+      .attr('title', generateRefreshButtonTooltipText(commentCount, commentsBySection));
     if (commentCount) {
       $('<span>')
         .text(`+${commentCount}`)

@@ -654,7 +654,10 @@ async function processVisits(visitsRequest, keptData) {
 
   // Cleanup
   for (let i = thisPageVisits.length - 1; i >= 0; i--) {
-    if (thisPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL) {
+    if (
+      thisPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL ||
+      keptData.markAsRead
+    ) {
       thisPageVisits.splice(0, i);
       break;
     }

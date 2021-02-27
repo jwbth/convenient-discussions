@@ -211,6 +211,7 @@
   "navpanel-newcomments-names": "$1 → $2",
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-refresh": "Click to refresh the page",
+  "navpanel-markasread": "Hold Ctrl to mark all comments as read",
 
   "toc-more": "…$1 more",
   "toc-watched": "You watch this section",
