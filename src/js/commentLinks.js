@@ -23,6 +23,7 @@ import { getWatchedSections } from './options';
 import { initSettings } from './boot';
 import { initTimestampParsingTools, loadData } from './siteData';
 
+let serverName;
 let colon;
 let moveFromBeginning;
 let moveToBeginning;
@@ -75,6 +76,7 @@ async function prepare({ dataRequest }) {
 
   initTimestampParsingTools();
 
+  serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator').trim();
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
@@ -224,6 +226,19 @@ function addWatchlistMenu() {
 }
 
 /**
+ * Whether the provided link element points to a Wikidata item.
+ *
+ * @param {Element} linkElement
+ * @returns {boolean}
+ */
+function isWikidataItem(linkElement) {
+  return (
+    serverName === 'www.wikidata.org' &&
+    linkElement.firstElementChild?.classList.contains('wb-itemlink')
+  )
+}
+
+/**
  * Extract an author given a revision line.
  *
  * @param {Element} line
@@ -330,9 +345,8 @@ function processWatchlist($content) {
     if (nsNumber === null) return;
 
     const isNested = line.tagName === 'TR';
-    const linkElement = (isNested ? line.parentNode : line)
-      .querySelector('.mw-changeslist-title');
-    if (!linkElement) return;
+    const linkElement = (isNested ? line.parentNode : line).querySelector('.mw-changeslist-title');
+    if (!linkElement || isWikidataItem(linkElement)) return;
 
     const pageName = linkElement.textContent;
     if (!isProbablyTalkPage(pageName, nsNumber)) return;
@@ -425,7 +439,7 @@ function processContributions($content) {
 
   lines.forEach((line) => {
     const linkElement = line.querySelector('.mw-contributions-title');
-    if (!linkElement) return;
+    if (!linkElement || isWikidataItem(linkElement)) return;
 
     const pageName = linkElement.textContent;
     const page = new Page(pageName);
