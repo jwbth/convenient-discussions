@@ -142,14 +142,14 @@ export default {
 
   /**
    * Search for a section on the page based on several parameters: id (index), headline, anchor,
-   * parent tree, oldest comment data. At least two parameters must match, not counting id and
-   * anchor. The section that matches best is returned.
+   * ancestor sections' headlines, oldest comment data. At least two parameters must match, not
+   * counting id and anchor. The section that matches best is returned.
    *
    * @param {object} options
    * @param {number} options.id
    * @param {string} options.headline
    * @param {string} options.anchor
-   * @param {Array} options.ancestors
+   * @param {string[]} options.ancestors
    * @param {string} options.oldestCommentAnchor
    * @param {boolean} [returnScore]
    * @returns {?Section}
@@ -166,7 +166,7 @@ export default {
         const sectionAncestors = section.getAncestors().map((section) => section.headline);
         haveAncestorsMatched = areObjectsEqual(sectionAncestors, ancestors);
       } else {
-        haveAncestorsMatched = 0.25;
+        haveAncestorsMatched = false;
       }
       const hasOldestCommentMatched = section.oldestComment?.anchor === oldestCommentAnchor;
       const score = (

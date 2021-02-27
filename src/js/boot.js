@@ -849,6 +849,7 @@ export function saveSession(force) {
             oldestCommentAnchor: target.oldestComment?.anchor,
             id: target.id,
             anchor: target.anchor,
+            ancestors: target.getAncestors().map((section) => section.headline),
           };
         }
         return {
@@ -910,6 +911,7 @@ function restoreCommentFormsFromData(commentFormsData) {
         id: data.targetData.index || data.targetData.id,
 
         anchor: data.targetData.anchor,
+        ancestors: data.targetData.ancestors,
       });
       if (section?.isActionable && !section[`${property}Form`]) {
         try {
@@ -1013,8 +1015,9 @@ export function restoreCommentForms() {
           id: target.id,
           anchor: target.anchor,
 
-          // Can't provide ancestors as cd.sections has already changed; will need to add a
-          // workaround if ancestors prove needed.
+          // We cache ancestors when saving the session, so this call will return the right value,
+          // despite cd.sections has already changed.
+          ancestors: target.getAncestors().map((section) => section.headline),
         });
         if (section?.isActionable) {
           try {
