@@ -145,7 +145,6 @@
 	"cf-notice-nochanges": "Изменений нет.",
 	"cf-notice-editconflict-retrying": "Пробуем ещё раз…",
 	"cf-error-getpagecode": "Не удалось получить код страницы.",
-	"cf-error-findplace": "Не удалось найти место в коде для вставки сообщения.",
 	"cf-error-commentlinks-commentnotfound": "Не удалось найти сообщение с ID $1, на которое поставлена ссылка в вашем сообщении, на странице.",
 	"cf-error-numberedlist": "Невозможно корректно сформировать сообщение, не исказив разметку нумерованного списка.",
 	"cf-error-numberedlist-list": "Удалите списки из сообщения.",

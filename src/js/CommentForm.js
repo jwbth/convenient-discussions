@@ -1977,9 +1977,6 @@ export default class CommentForm {
               cd.sParse('cf-error-numberedlist-table')
             );
             break;
-          case 'findPlace':
-            message = cd.sParse('cf-error-findplace');
-            break;
           case 'findPlace-unexpectedHeading':
             message = cd.sParse('cf-error-findplace-unexpectedheading');
             break;

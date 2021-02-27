@@ -2198,10 +2198,7 @@ export default class Comment extends CommentSkeleton {
       let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
       if (adjustedCodeInBetween === undefined) {
-        throw new CdError({
-          type: 'parse',
-          code: 'findPlace',
-        });
+        adjustedCodeInBetween = adjustedChunkCodeAfter;
       }
 
       // Hotfix for comments inside a table (barnstars, for example).
