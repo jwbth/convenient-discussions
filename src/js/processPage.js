@@ -600,20 +600,18 @@ async function processFragment(keptData) {
     }
   }
 
-  if (cd.g.isFirstRun) {
-    const fragmentHasNoTarget = (
-      decodedFragment &&
-      !comment &&
-      !cd.config.idleFragments.includes(decodedFragment) &&
-      !decodedFragment.startsWith('/media/') &&
-      !$(':target').length &&
-      !$(`a[name="${escapedDecodedFragment}"]`).length &&
-      !$(`*[id="${escapedDecodedFragment}"]`).length &&
-      !$(`a[name="${escapedFragment}"]`).length &&
-      !$(`*[id="${escapedFragment}"]`).length
+  if (cd.g.isFirstRun && cd.g.isPageActive && decodedFragment) {
+    const wasTargetFound = (
+      comment ||
+      cd.config.idleFragments.includes(decodedFragment) ||
+      decodedFragment.startsWith('/media/') ||
+      $(':target').length ||
+      $(`a[name="${escapedDecodedFragment}"]`).length ||
+      $(`*[id="${escapedDecodedFragment}"]`).length ||
+      $(`a[name="${escapedFragment}"]`).length ||
+      $(`*[id="${escapedFragment}"]`).length
     );
-
-    if (decodedFragment && fragmentHasNoTarget && cd.g.isPageActive) {
+    if (!wasTargetFound) {
       await notFound(decodedFragment, date);
     }
   }

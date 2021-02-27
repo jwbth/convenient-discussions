@@ -291,6 +291,9 @@ function initGlobals() {
  * @private
  */
 function initPatterns() {
+  // Fix the configuration value that is likely to be nullified.
+  cd.config.customTalkNamespaces = cd.config.customTalkNamespaces || [];
+
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
