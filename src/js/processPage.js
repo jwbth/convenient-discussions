@@ -899,152 +899,154 @@ export default async function processPage(keptData = {}) {
 
   cd.debug.stopTimer('process comments');
 
-  // We change the evaluation of cd.g.isPageActive if there is no comments and no "Add section"
-  // button.
-  if (
-    cd.g.isPageActive &&
-    !cd.comments.length &&
-    !$('#ca-addsection').length &&
-    !cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
-  ) {
-    cd.g.isPageActive = false;
-  }
+  // Reevaluate if this is likely a talk page.
+  const isLikelyTalkPage = (
+    !cd.g.isFirstRun ||
+    cd.comments.length ||
+    $('#ca-addsection').length ||
+    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
+  );
 
-  cd.debug.startTimer('process sections');
+  if (isLikelyTalkPage) {
+    cd.debug.startTimer('process sections');
 
-  processSections(parser, watchedSectionsRequest);
+    processSections(parser, watchedSectionsRequest);
 
-  cd.debug.stopTimer('process sections');
+    cd.debug.stopTimer('process sections');
 
-  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
-    addAddTopicButton();
-    connectToAddTopicButtons();
-  }
+    if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
+      addAddTopicButton();
+      connectToAddTopicButtons();
+    }
 
-  cd.debug.stopTimer('main code');
+    cd.debug.stopTimer('main code');
 
-  // Operations that need reflow, such as getBoundingClientRect(), go in this section.
-  cd.debug.startTimer('final code and rendering');
+    // Operations that need reflow, such as getBoundingClientRect(), go in this section.
+    cd.debug.startTimer('final code and rendering');
 
-  // Restore the initial viewport position in terms of visible elements which is how the user sees
-  // it.
-  if (feivData) {
-    const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
-    window.scrollTo(0, y);
-  }
+    // Restore the initial viewport position in terms of visible elements which is how the user sees
+    // it.
+    if (feivData) {
+      const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
+      window.scrollTo(0, y);
+    }
 
-  highlightOwnComments();
+    highlightOwnComments();
 
-  processFragment(keptData);
+    processFragment(keptData);
 
-  if (cd.g.isPageActive) {
-    if (cd.g.isFirstRun || keptData.wasPageCreated) {
-      navPanel.mount();
+    if (cd.g.isPageActive) {
+      if (cd.g.isFirstRun || keptData.wasPageCreated) {
+        navPanel.mount();
+      } else {
+        navPanel.reset();
+      }
+
+      // New comments highlighting
+      processVisits(visitsRequest, keptData);
+
+      // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
+      updateChecker.init(visitsRequest, keptData);
     } else {
-      navPanel.reset();
+      if (navPanel.isMounted()) {
+        navPanel.unmount();
+      }
     }
 
-    // New comments highlighting
-    processVisits(visitsRequest, keptData);
-
-    // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
-    updateChecker.init(visitsRequest, keptData);
-  } else {
-    if (navPanel.isMounted()) {
-      navPanel.unmount();
+    if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
+      // This should be below the viewport position restoration and own comments highlighting as it
+      // may rely on the elements that are made invisible during the comment forms restoration. It
+      // should also be below the navPanel mount/reset methods as it runs
+      // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
+      restoreCommentForms();
     }
-  }
 
-  if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
-    // This should be below the viewport position restoration and own comments highlighting as it
-    // may rely on the elements that are made invisible during the comment forms restoration. It
-    // should also be below the navPanel mount/reset methods as it runs
-    // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
-    restoreCommentForms();
-  }
+    if (cd.g.isFirstRun) {
+      mw.hook('wikipage.content').add(highlightMentions);
 
-  if (cd.g.isFirstRun) {
-    mw.hook('wikipage.content').add(highlightMentions);
+      pageNav.mount();
 
-    pageNav.mount();
+      // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
+      // element (for example, as a result of scrolling).
+      $(document).on('mousemove mouseover', Comment.highlightFocused);
+      $(window).on('resize orientationchange', handleWindowResize);
+      addPreventUnloadCondition('commentForms', () => {
+        saveSession(true);
+        return (
+          mw.user.options.get('useeditwarning') &&
+          (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
+        );
+      });
 
-    // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
-    // element (for example, as a result of scrolling).
-    $(document).on('mousemove mouseover', Comment.highlightFocused);
-    $(window).on('resize orientationchange', handleWindowResize);
-    addPreventUnloadCondition('commentForms', () => {
-      saveSession(true);
-      return (
-        mw.user.options.get('useeditwarning') &&
-        (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
-      );
-    });
+      mw.hook('wikipage.content').add(connectToCommentLinks);
+      mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
-    mw.hook('wikipage.content').add(connectToCommentLinks);
-    mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
+      // Mutation observer doesn't follow all possible cases (for example, initiated with adding new
+      // CSS) of comment position changing unfortunately.
+      setInterval(() => {
+        commentLayers.redrawIfNecessary();
+      }, 1000);
 
-    // Mutation observer doesn't follow all possible cases (for example, initiated with adding new
-    // CSS) of comment position changing unfortunately.
-    setInterval(() => {
-      commentLayers.redrawIfNecessary();
-    }, 1000);
+      const observer = new MutationObserver((records) => {
+        const areLayers = records
+          .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
+        if (areLayers) return;
+        commentLayers.redrawIfNecessary();
+      });
+      observer.observe(cd.g.$content.get(0), {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
 
-    const observer = new MutationObserver((records) => {
-      const areLayers = records
-        .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-      if (areLayers) return;
-      commentLayers.redrawIfNecessary();
-    });
-    observer.observe(cd.g.$content.get(0), {
-      attributes: true,
-      childList: true,
-      subtree: true,
-    });
+      $(document)
+        .on('keydown', handleGlobalKeyDown)
+        .on('scroll resize orientationchange', handleScroll);
+    } else {
+      pageNav.update();
+    }
 
-    $(document)
-      .on('keydown', handleGlobalKeyDown)
-      .on('scroll resize orientationchange', handleScroll);
+    let alwaysConfirmLeavingPage = false;
+    if (mw.user.options.get('editondblclick')) {
+      mw.loader.using('mediawiki.action.view.dblClickEdit').then(() => {
+        $('#ca-edit').off('click');
+        alwaysConfirmLeavingPage = true;
+      });
+    }
+
+    if (mw.user.options.get('editsectiononrightclick')) {
+      mw.loader.using('mediawiki.action.view.rightClickEdit').then(() => {
+        $('.mw-editsection a').off('click');
+        alwaysConfirmLeavingPage = true;
+      });
+    }
+
+    if (cd.g.isFirstRun) {
+      confirmDesktopNotifications();
+    }
+
+    /**
+     * The script has processed the page.
+     *
+     * @event pageReady
+     * @type {module:cd~convenientDiscussions}
+     */
+    mw.hook('convenientDiscussions.pageReady').fire(cd);
+
+    removeLoadingOverlay();
+
+    // The next line is needed to calculate the rendering time: it won't run until everything gets
+    // rendered.
+    cd.g.rootElement.getBoundingClientRect();
+
+    cd.debug.stopTimer('final code and rendering');
   } else {
-    pageNav.update();
+    cd.g.isPageActive = false;
+    removeLoadingOverlay();
   }
-
-  let alwaysConfirmLeavingPage = false;
-  if (mw.user.options.get('editondblclick')) {
-    mw.loader.using('mediawiki.action.view.dblClickEdit').then(() => {
-      $('#ca-edit').off('click');
-      alwaysConfirmLeavingPage = true;
-    });
-  }
-
-  if (mw.user.options.get('editsectiononrightclick')) {
-    mw.loader.using('mediawiki.action.view.rightClickEdit').then(() => {
-      $('.mw-editsection a').off('click');
-      alwaysConfirmLeavingPage = true;
-    });
-  }
-
-  if (cd.g.isFirstRun) {
-    confirmDesktopNotifications();
-  }
-
-  /**
-   * The script has processed the page.
-   *
-   * @event pageReady
-   * @type {module:cd~convenientDiscussions}
-   */
-  mw.hook('convenientDiscussions.pageReady').fire(cd);
-
-  removeLoadingOverlay();
 
   cd.g.isFirstRun = false;
 
-  // The next line is needed to calculate the rendering time: it won't run until everything gets
-  // rendered.
-  cd.g.rootElement.getBoundingClientRect();
-
-  cd.debug.stopTimer('final code and rendering');
   cd.debug.stopTimer('total time');
-
   debugLog();
 }

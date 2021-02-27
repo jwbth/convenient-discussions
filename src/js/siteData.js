@@ -571,7 +571,7 @@ export function loadData() {
   });
   requests.push(...messagesRequests);
 
-  if (!cd.g.CONTRIBS_PAGE || cd.g.LOCAL_TIMEZONE_OFFSET === null) {
+  if (!cd.g.CONTRIBS_PAGE || cd.g.LOCAL_TIMEZONE_OFFSET == null) {
     const request = cd.g.api.get({
       action: 'query',
       meta: 'siteinfo',
