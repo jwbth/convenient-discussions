@@ -2246,7 +2246,7 @@ export default class CommentForm {
     // and \x02 mean the beginning and ending of sensitive code except for tables. \x03 and \x04
     // mean the beginning and ending of a table. Note: This should be kept coordinated with the
     // reverse transformation code in Comment#codeToText.
-    const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_(block|template).*\\x02) *$`, 'i');
+    const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_block.*\\x02) *$`, 'i');
     const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
     const thisLineEndingRegexp = new RegExp(
       `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
