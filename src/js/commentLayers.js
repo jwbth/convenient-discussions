@@ -79,7 +79,7 @@ export default {
           // Nested containers shouldn't count, the positions of the layers inside them may be OK,
           // unlike the layers preceding them.
           !comment.getLayersContainer().parentNode.parentNode
-            .closest('.cd-commentLayersContainerParent')
+            .closest('.cd-commentLayersContainer-parent')
         ) {
           notMovedCount++;
           if (notMovedCount === 2) {

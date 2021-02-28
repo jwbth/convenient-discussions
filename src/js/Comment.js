@@ -2328,7 +2328,7 @@ export default class Comment extends CommentSkeleton {
 
           if (!offsetParent) {
             offsetParent = treeWalker.currentNode;
-            offsetParent.classList.add('cd-commentLayersContainerParent-relative');
+            offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
           }
         }
         if (offsetParent) break;
@@ -2336,7 +2336,7 @@ export default class Comment extends CommentSkeleton {
       if (!offsetParent) {
         offsetParent = document.body;
       }
-      offsetParent.classList.add('cd-commentLayersContainerParent');
+      offsetParent.classList.add('cd-commentLayersContainer-parent');
       let container = offsetParent.firstElementChild;
       if (!container.classList.contains('cd-commentLayersContainer')) {
         container = document.createElement('div');
