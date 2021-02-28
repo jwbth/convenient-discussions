@@ -9,7 +9,7 @@ import cd from './cd';
 import updateChecker from './updateChecker';
 import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
-import { reorderArray } from './util';
+import { focusInput, reorderArray } from './util';
 
 let newCount;
 let lastFirstUnseenCommentId;
@@ -342,7 +342,7 @@ const navPanel = {
       })[0];
     if (commentForm) {
       commentForm.$element.cdScrollIntoView('center');
-      commentForm.commentInput.focus();
+      focusInput(commentForm.commentInput);
     }
   },
 

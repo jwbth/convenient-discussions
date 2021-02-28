@@ -18,6 +18,7 @@ import { confirmDestructive, settingsDialog } from './modal';
 import {
   defined,
   findLastIndex,
+  focusInput,
   handleApiReject,
   hideText,
   insertText,
@@ -194,7 +195,7 @@ export default class CommentForm {
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
-          (this.headlineInput || this.commentInput).focus();
+          focusInput(this.headlineInput || this.commentInput);
         }
         navPanel.updateCommentFormButton();
       });
@@ -218,7 +219,7 @@ export default class CommentForm {
 
             this.closeOperation(currentOperation);
 
-            this.commentInput.focus();
+            focusInput(this.commentInput);
             this.preview();
           },
           (e) => {
@@ -276,7 +277,7 @@ export default class CommentForm {
 
               this.closeOperation(currentOperation);
 
-              (this.headlineInput || this.commentInput).focus();
+              focusInput(this.headlineInput || this.commentInput);
               this.preview();
             },
             (e) => {
@@ -585,6 +586,12 @@ export default class CommentForm {
             $dialog.parent().data('dialogaction', false);
           }
         });
+
+      // Fix a focus bug in Firefox 56.
+      if ($input.is(':focus')) {
+        $input.blur();
+        focusInput(this.commentInput);
+      }
 
       /**
        * The comment form toolbar is ready; all requested custom comment form modules have been
@@ -1666,10 +1673,14 @@ export default class CommentForm {
       this.$advanced.show();
       const value = this.summaryInput.getValue();
       const match = value.match(/^.+?\*\/ */);
+
+      // This is needed due to a bug in Firefox 56.
+      focusInput(this.summaryInput);
+
       this.summaryInput.selectRange(match ? match[0].length : 0, value.length);
     } else {
       this.$advanced.hide();
-      this.commentInput.focus();
+      focusInput(this.commentInput);
     }
   }
 
@@ -2759,14 +2770,13 @@ export default class CommentForm {
       this.adjustLabels();
     }
 
-    if (!isAuto) {
-      this.commentInput.focus();
+    this.closeOperation(currentOperation);
 
+    if (!isAuto) {
       this.$previewArea
         .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
+      focusInput(this.commentInput);
     }
-
-    this.closeOperation(currentOperation);
   }
 
   /**
@@ -2844,15 +2854,11 @@ export default class CommentForm {
       this.adjustLabels();
     }
 
-    this.$previewArea.cdScrollIntoView(
-      this.$previewArea.hasClass('cd-previewArea-above') ?
-      'top' :
-      'bottom'
-    );
-
-    this.commentInput.focus();
-
     this.closeOperation(currentOperation);
+
+    this.$previewArea
+      .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
+    focusInput(this.commentInput);
   }
 
   /**
@@ -2939,7 +2945,7 @@ export default class CommentForm {
 
     for (const check of checks) {
       if (check.condition && !(await check.confirmation())) {
-        this.commentInput.focus();
+        focusInput(this.commentInput);
         return false;
       }
     }
@@ -3127,7 +3133,7 @@ export default class CommentForm {
     if (cd.util.isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !(await this.confirmClose())) {
-      this.commentInput.focus();
+      focusInput(this.commentInput);
       return;
     }
 

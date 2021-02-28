@@ -11,9 +11,9 @@ import { addPreventUnloadCondition, removePreventUnloadCondition } from './event
 import { areObjectsEqual, dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
 import { checkboxField, copyActionField, radioField } from './ooui';
 import { encodeWikilink } from './wikitext';
+import { focusInput, hideText, underlinesToSpaces, unhideText } from './util';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
-import { hideText, underlinesToSpaces, unhideText } from './util';
 
 /**
  * Create an OOUI window manager. It is supposed to be reused across the script.
@@ -874,7 +874,7 @@ export async function editWatchedSections() {
         this.sectionsPanel.$element.append(this.input.$element);
 
         this.stackLayout.setItem(this.sectionsPanel);
-        this.input.focus();
+        focusInput(this.input);
         this.actions.setAbilities({ close: true });
 
         // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't

@@ -7,7 +7,14 @@
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { defined, handleApiReject, insertText, removeDoubleSpaces, unique } from './util';
+import {
+  defined,
+  focusInput,
+  handleApiReject,
+  insertText,
+  removeDoubleSpaces,
+  unique,
+} from './util';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -344,7 +351,7 @@ export default class Autocomplete {
                     },
                     (e) => {
                       input.setDisabled(false);
-                      input.focus();
+                      focusInput(input);
                       mw.notify(cd.s('cf-autocomplete-notemplatedata'), { type: 'error' });
                       console.warn(e);
                     }

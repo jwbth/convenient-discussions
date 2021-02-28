@@ -6,7 +6,7 @@
 
 import CommentForm from './CommentForm';
 import cd from './cd';
-import { areObjectsEqual } from './util';
+import { areObjectsEqual, focusInput } from './util';
 
 /**
  * Callback to be used in Array#sort() for comment forms.
@@ -115,7 +115,7 @@ export default {
       addSectionForm.$element.cdScrollIntoView('center');
 
       // Headline input may be missing if the "nosummary" preload parameter is truthy.
-      addSectionForm[addSectionForm.headlineInput ? 'headlineInput' : 'commentInput'].focus();
+      focusInput(addSectionForm.headlineInput || addSectionForm.commentInput);
     } else {
       /**
        * Add section form.

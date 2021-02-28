@@ -562,7 +562,7 @@ export function removeDirMarks(text) {
  * @param {string} text Text to replace the selection with.
  */
 export function insertText(input, text) {
-  input.focus();
+  focusInput(input);
   if (!document.execCommand('insertText', false, text)) {
     input.insertContent(text);
   }
@@ -654,4 +654,14 @@ export function keyCombination(e, keyCode, modificators = []) {
     e.keyCode === keyCode &&
     ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modificators.includes(mod) === e[mod + 'Key'])
   );
+}
+
+/**
+ * Get around Firefox 56 and probably some other browsers bug where the caret doesn't appear in the
+ * input after focusing.
+ *
+ * @param {OoUiTextInputWidget} input
+ */
+export function focusInput(input) {
+  input.$input.get(0).focus();
 }

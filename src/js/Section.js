@@ -14,7 +14,7 @@ import cd from './cd';
 import toc from './toc';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, defined } from './util';
+import { dealWithLoadingBug, defined, focusInput } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -425,7 +425,7 @@ export default class Section extends SectionSkeleton {
   addSubsection(dataToRestore) {
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
-      this.addSubsectionForm.headlineInput.focus();
+      focusInput(this.addSubsectionForm.headlineInput);
     } else {
       /**
        * Add subsection form related to the section.
@@ -870,7 +870,7 @@ export default class Section extends SectionSkeleton {
         ].filter(defined));
 
         this.stackLayout.setItem(this.movePanel);
-        this.titleInput.focus();
+        focusInput(this.titleInput);
         this.actions.setAbilities({ close: true });
 
         // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
