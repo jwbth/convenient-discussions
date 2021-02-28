@@ -132,10 +132,10 @@ async function confirmCloseDialog(dialog, dialogCode) {
  */
 function handleError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {
-    const error = new OO.ui.Error(cd.sParse(messageName), { recoverable });
+    const error = new OO.ui.Error(cd.s(messageName), { recoverable });
     dialog.showErrors(error);
   } else {
-    const error = new OO.ui.Error(cd.sParse('error-javascript'), { recoverable: false });
+    const error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
     dialog.showErrors(error);
   }
   console.warn(e);
@@ -956,21 +956,15 @@ export async function editWatchedSections() {
           if (e instanceof CdError) {
             const { type, code, apiData } = e.data;
             if (type === 'internal' && code === 'sizeLimit') {
-              const error = new OO.ui.Error(
-                cd.sParse('ewsd-error-maxsize'),
-                { recoverable: false }
-              );
+              const error = new OO.ui.Error(cd.s('ewsd-error-maxsize'), { recoverable: false });
               this.showErrors(error);
             } else {
-              const error = new OO.ui.Error(
-                cd.sParse('ewsd-error-processing'),
-                { recoverable: true }
-              );
+              const error = new OO.ui.Error(cd.s('ewsd-error-processing'), { recoverable: true });
               this.showErrors(error);
             }
             console.warn(type, code, apiData);
           } else {
-            const error = new OO.ui.Error(cd.sParse('error-javascript'), { recoverable: false });
+            const error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
             this.showErrors(error);
             console.warn(e);
           }
