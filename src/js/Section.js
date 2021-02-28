@@ -336,6 +336,28 @@ export default class Section extends SectionSkeleton {
     }
 
     if (watchedSectionsRequest) {
+      const finallyCallback = () => {
+        if (this.headline) {
+            // We put this instruction here to make it always appear after the "watch" item.
+            this.addMenuItem({
+              label: cd.s('sm-copylink'),
+              // We need the event object to be passed to the function.
+              func: this.copyLink.bind(this),
+              class: 'cd-sectionLink-copyLink',
+              tooltip: cd.s('sm-copylink-tooltip'),
+              href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
+            });
+          }
+
+          /**
+           * Section menu has been extneded.
+           *
+           * @event sectionMenuExtended
+           * @type {module:cd~convenientDiscussions}
+           */
+          mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+      }
+
       watchedSectionsRequest
         .then(
           () => {
@@ -361,27 +383,7 @@ export default class Section extends SectionSkeleton {
           },
           () => {}
         )
-        .finally(() => {
-          if (this.headline) {
-            // We put this instruction here to make it always appear after the "watch" item.
-            this.addMenuItem({
-              label: cd.s('sm-copylink'),
-              // We need the event object to be passed to the function.
-              func: this.copyLink.bind(this),
-              class: 'cd-sectionLink-copyLink',
-              tooltip: cd.s('sm-copylink-tooltip'),
-              href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
-            });
-          }
-
-          /**
-           * Section menu has been extneded.
-           *
-           * @event sectionMenuExtended
-           * @type {module:cd~convenientDiscussions}
-           */
-          mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
-        });
+        .then(finallyCallback, finallyCallback);
     }
   }
 
@@ -991,12 +993,14 @@ export default class Section extends SectionSkeleton {
       unwatchHeadline = renamedFrom;
     }
 
+    const finallyCallback = () => {
+      if ($links) {
+        $links.removeClass('cd-link-pending');
+      }
+    };
+
     Section.watch(this.headline, unwatchHeadline)
-      .finally(() => {
-        if ($links) {
-          $links.removeClass('cd-link-pending');
-        }
-      })
+      .then(finallyCallback, finallyCallback)
       .then(
         () => {
           sections.forEach((section) => {
@@ -1038,12 +1042,14 @@ export default class Section extends SectionSkeleton {
       }
     }
 
+    const finallyCallback = () => {
+      if ($links) {
+        $links.removeClass('cd-link-pending');
+      }
+    };
+
     Section.unwatch(this.headline)
-      .finally(() => {
-        if ($links) {
-          $links.removeClass('cd-link-pending');
-        }
-      })
+      .then(finallyCallback, finallyCallback)
       .then(
         () => {
           sections.forEach((section) => {
