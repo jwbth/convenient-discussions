@@ -136,7 +136,6 @@
 	"cf-notice-nochanges": "沒有更改。",
 	"cf-notice-editconflict-retrying": "再次嘗試中…",
 	"cf-error-getpagecode": "無法取得頁面代碼。",
-	"cf-error-findplace": "在代碼裡找不到可以插入意見的適當位置。",
 	"cf-error-commentlinks-commentnotfound": "在頁面上找不到與您的意見連結，ID 為 $1 的意見。",
 	"cf-error-numberedlist": "在不扭曲編號清單標記的情況下，會無法正確形成意見。",
 	"cf-error-numberedlist-list": "從意見移除清單。",

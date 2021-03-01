@@ -146,7 +146,6 @@
 	"cf-notice-nochanges": "Message outputted above the comment form when viewing changes in the source code and there is no.",
 	"cf-notice-editconflict-retrying": "Text added to the edit conflict notice ({{msg-wm|Convenient-discussions-error-editconflict}}) when the script automatically tries to resend the form.",
 	"cf-error-getpagecode": "Error message outputted above the comment form.",
-	"cf-error-findplace": "Error message outputted above the comment form.\n\nSee also {{msg-wm|Convenient-discussions-cf-error-findplace-unexpectedheading}}.",
 	"cf-error-commentlinks-commentnotfound": "Error message outputted above the comment form when linking a comment on the current page using <code><nowiki>[[#</nowiki></code>.",
 	"cf-error-numberedlist": "Error message outputted above the comment form.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cf-error-numberedlist-list}}\n* {{msg-wm|Convenient-discussions-cf-error-numberedlist-table}}",
 	"cf-error-numberedlist-list": "Text added to the {{msg-wm|Convenient-discussions-cf-error-numberedlist}} error message in part of the cases.",

@@ -125,7 +125,6 @@
 	"cf-notice-nochanges": "Sin cambios",
 	"cf-notice-editconflict-retrying": "Intentándolo de nuevo…",
 	"cf-error-getpagecode": "No se pudo obtener el código de la página.",
-	"cf-error-findplace": "No se pudo encontrar el sitio adecuado en el código donde insertar el comentario.",
 	"cf-error-commentlinks-commentnotfound": "No se pudo encontrar el comentario con $1, enlazado en tu comentario, en la página.",
 	"cf-error-numberedlist": "No se puede formatear el comentario correctamente sin deformar el marcado de la lista numerada.",
 	"cf-error-numberedlist-list": "Elimina las listas del comentario.",

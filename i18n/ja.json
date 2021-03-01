@@ -88,7 +88,6 @@
 	"cf-reaction-mention-edit": "コメントの<em>編集をする</em>場合、[[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|言及の通知]]は届きません。編集要約欄に相手のユーザー名のリンクを記入すると、通知を送ることができます。",
 	"cf-reaction-mention-nosignature": "コメントに署名を付けない選択をしてあるため、[[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|mention notification |相手への言及の通知]]は届きません。通知を送るには、編集要約欄に相手の名前をリンクさせる方法があります。",
 	"cf-error-getpagecode": "ページのコードを取得できませんでした。",
-	"cf-error-findplace": "コードにコメントを挿入する正しい位置が見つかりませんでした。",
 	"cf-error-commentlinks-commentnotfound": "ご自分のコメントにリンクしたID $1のコメントが見つかりませんでした。",
 	"cf-error-delete-repliesinsection": "返信がついたため節を削除できません。",
 	"cf-error-preview": "コメントのプレビューができませんでした。",

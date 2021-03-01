@@ -140,7 +140,6 @@
 	"cf-notice-nochanges": "אין שינוים.",
 	"cf-notice-editconflict-retrying": "ניסיון נוסף...",
 	"cf-error-getpagecode": "לא ניתן לקרוא את קוד הדף.",
-	"cf-error-findplace": "לא ניתן למצוא מיקום נכון בקוד להכנסת התגובה.",
 	"cf-error-commentlinks-commentnotfound": "אין אפשרות למצוא פוסט בעל מספר מזהה $1, המקושר מהפוסט שלכם, במסגרת הדף הנוכחי.",
 	"cf-error-numberedlist": "לא ניתן להציג את התגובה בצורה נכונה מבלי להרוס את הרשימה הממוספרת.",
 	"cf-error-numberedlist-list": "הורדת רשימות מהתגובות.",

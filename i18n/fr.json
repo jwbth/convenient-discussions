@@ -142,7 +142,6 @@
 	"cf-notice-nochanges": "Aucune modification.",
 	"cf-notice-editconflict-retrying": "Nouvel essai...",
 	"cf-error-getpagecode": "Impossible d’obtenir le code de la page.",
-	"cf-error-findplace": "Impossible de trouver le bon emplacement dans le code où insérer le commentaire.",
 	"cf-error-commentlinks-commentnotfound": "Impossible de trouver sur la page le commentaire avec l’ID $1, lié depuis votre commentaire.",
 	"cf-error-numberedlist": "Impossible de mettre correctement en forme le commentaire sans casser le marquage de la liste numérotée.",
 	"cf-error-numberedlist-list": "Supprimer les listes du commentaire.",
