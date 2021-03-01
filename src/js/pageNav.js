@@ -37,12 +37,14 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
-    const mwBody = $('.mw-body').get(0);
-    const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
-      mwBody?.getBoundingClientRect().left - 18 :
-      $(window).width() - mwBody?.getBoundingClientRect().right - 18;
-    this.$topElement.css('width', width + 'px');
-    this.$bottomElement.css('width', width + 'px');
+    const mwBody = $('.skin-timeless #mw-content, .mw-body').get(0);
+    if (mwBody) {
+      const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
+        mwBody.getBoundingClientRect().left - 18 :
+        $(window).width() - mwBody.getBoundingClientRect().right - 18;
+      this.$topElement.css('width', width + 'px');
+      this.$bottomElement.css('width', width + 'px');
+    }
   },
 
   /**
@@ -59,7 +61,7 @@ export default {
     if (cd.g.$toc.length) {
       afterLeadPos = cd.g.$toc.get(0).getBoundingClientRect().top;
     }
-    if (window.scrollY > 0) {
+    if (window.scrollY > cd.g.BODY_SCROLL_PADDING_TOP) {
       cd.sections.some((section) => {
         const rect = getExtendedRect(section.$heading.get(0));
         if (rect.left === 0 && rect.height === 0) {
@@ -74,7 +76,7 @@ export default {
       });
     }
 
-    if (afterLeadPos < 0 || backLinkLocation === 'top') {
+    if (afterLeadPos < cd.g.BODY_SCROLL_PADDING_TOP || backLinkLocation === 'top') {
       if (!this.$linksOnTop) {
         this.$linksOnTop = $('<ul>')
           .attr('id', 'cd-pageNav-linksOnTop')
@@ -137,9 +139,12 @@ export default {
       }
     }
 
-    // 1 as a threshold (also below, in "extendedRect.outerTop < 1") world better for Monobook for
-    // some reason.
-    if (firstSectionOuterTop === undefined || firstSectionOuterTop >= 1) {
+    // 1 as a threshold (also below, in "extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1") works
+    // better for Monobook for some reason.
+    if (
+      firstSectionOuterTop === undefined ||
+      firstSectionOuterTop >= cd.g.BODY_SCROLL_PADDING_TOP + 1
+    ) {
       if (currentSection) {
         this.resetSections();
       }
@@ -156,7 +161,7 @@ export default {
         // reason.
         if (extendedRect.left === 0 && extendedRect.height === 0) return;
 
-        if (extendedRect.outerTop < 1) {
+        if (extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1) {
           if (currentSection === section) {
             return true;
           }
@@ -226,7 +231,9 @@ export default {
   },
 
   jump($elementOrOffset, $link, isBackLink) {
-    const offset = $elementOrOffset instanceof $ ? $elementOrOffset.offset().top : $elementOrOffset;
+    const offset = $elementOrOffset instanceof $ ?
+      $elementOrOffset.offset().top - cd.g.BODY_SCROLL_PADDING_TOP :
+      $elementOrOffset;
     if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return;
 
     if (backLinkLocation) {

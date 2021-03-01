@@ -373,12 +373,13 @@ function go() {
         it now, not after the requests are fulfilled, to save time. The overall order is like this:
         1. Make API requests (above).
         2. Run operations dependent on rendering, such as window.getComputedStyle().
-        3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the API
-        requests are already running, we don't lose time.
+        3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the
+        API requests are already running, we don't lose time.
        */
-      cd.g.REGULAR_LINE_HEIGHT = parseFloat(
-        window.getComputedStyle(cd.g.$content.get(0)).lineHeight
-      );
+      cd.g.REGULAR_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
+
+      // For the Timeless skin
+      cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
 
       setTalkPageCssVariables();
 

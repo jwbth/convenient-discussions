@@ -259,7 +259,7 @@ export default class Comment extends CommentSkeleton {
     const right = window.scrollX + Math.max(rectTop.right, rectBottom.right);
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
-    // scrolling step is 40 pixels.
+    // scrolling step is 100 pixels.
     const downplayedBottom = bottom - top > (window.innerHeight - 200) ?
       top + (window.innerHeight - 200) :
       bottom;
@@ -1605,7 +1605,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {?boolean}
    */
   isInViewport(partially = false) {
-    const viewportTop = window.scrollY;
+    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
     const viewportBottom = viewportTop + window.innerHeight;
 
     this.getPositions();

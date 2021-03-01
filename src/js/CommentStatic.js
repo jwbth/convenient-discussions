@@ -114,7 +114,7 @@ export default {
    * @memberof module:Comment
    */
   findInViewport(findClosestDirection) {
-    const viewportTop = window.scrollY;
+    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
     const viewportBottom = viewportTop + window.innerHeight;
 
     // Visibility in the sense that an element is visible on the page, not necessarily in the
