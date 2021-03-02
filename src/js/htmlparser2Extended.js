@@ -49,9 +49,14 @@ function getAllTextNodes() {
 
 const dummyDom = parseDOM('<a>a</a>');
 const Element = dummyDom[0].constructor;
-const DataNode = dummyDom[0].childNodes[0].constructor;
-const NodeConstructor = Object.getPrototypeOf(DataNode);
+const Text = dummyDom[0].childNodes[0].constructor;
+const NodeConstructor = Object.getPrototypeOf(Object.getPrototypeOf(Text));
+const Document = dummyDom[0].parent.constructor;
 
+// Note that the Element class already has the "children" property containing all child nodes, which
+// differs from what this property stands for in the browser DOM representation (only child nodes
+// that are elements), but we can't replace it as it would intervene in the internal workings of the
+// class. So we use the "childElements" property instead for this purpose.
 Object.defineProperty(Element.prototype, 'childElements', {
   get: function () {
     return this.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE);
@@ -149,17 +154,11 @@ Element.prototype.removeAttribute = function (name) {
 };
 
 Element.prototype.appendChild = function (node) {
-  if (node.parentNode) {
-    node.remove();
-  }
   DomUtils.appendChild(this, node);
 };
 
 Element.prototype.insertBefore = function (node, referenceNode) {
   if (referenceNode) {
-    if (node.parentNode) {
-      node.remove();
-    }
     DomUtils.prepend(referenceNode, node);
   } else {
     this.appendChild(node);
@@ -188,9 +187,12 @@ Element.prototype.contains = function (node) {
 };
 
 Element.prototype.follows = function (node) {
+  // This optimization is based on the assumption that elements existing in the document from the
+  // beginning will never swap positions.
   if (this.startIndex && node.startIndex) {
     return this.startIndex > node.startIndex;
   }
+
   if (this === node) {
     return false;
   }
@@ -213,7 +215,7 @@ Element.prototype.follows = function (node) {
       sharedParent = current;
       thisSharedParentChild = thisTree[thisTree.indexOf(current) + 1];
 
-      // nodeTree must have at least 2 elements, this is guaranteed by the check "current === node"
+      // nodeTree must have at least 2 elements; this is guaranteed by the check "current === node"
       // above.
       nodeSharedParentChild = nodeTree[1];
 
@@ -320,7 +322,7 @@ Element.prototype.getElementsByTagName = function (name) {
   return DomUtils.getElementsByTagName(name, this);
 };
 
-Object.defineProperty(DataNode.prototype, 'textContent', {
+Object.defineProperty(Text.prototype, 'textContent', {
   get: function () {
     return decodeHtmlEntities(this.data);
   },
@@ -330,35 +332,18 @@ Object.defineProperty(DataNode.prototype, 'textContent', {
 });
 
 NodeConstructor.prototype.remove = function () {
-  // removeElement doesn't clean up "prev" and "next".
   DomUtils.removeElement(this);
-  this.prev = null;
-  this.next = null;
 };
 
 // We need the "Document" class to imitate window.document for the code to be more easily ported to
-// other library if needed. Here, we also extend the prototype of the Element and DataNode classes
-// that htmlparser2 library uses. Note that the Element class already has the "children" property
-// containing all child nodes, which differs from what this property stands for in the browser DOM
-// representation (only child nodes that are elements), but we can't replace it as it would
-// intervene in the internal workings of the class. So we use the "childElements" property instead
-// for this purpose.
-class Document extends Element {
-  constructor(dom) {
-    super('body', {});
-    for (const el of dom) {
-      this.appendChild(el);
-    }
-  }
+// other library if needed.
+Document.prototype.createElement = (name) => {
+  return new Element(name, {});
+};
 
-  createElement(name) {
-    return new Element(name, {});
-  }
-
-  createTextNode(content) {
-    return new DataNode('text', content);
-  }
-}
+Document.prototype.createTextNode = (content) => {
+  return new Text(content);
+};
 
 Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
 
