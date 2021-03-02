@@ -42,12 +42,8 @@
   }
 
   &-gradient {
-    width: 1.4em;
+    width: 1.5em;
     display: inline-block;
-
-    // 1px from the top and bottom is a compensation for 1px button borders.
-    padding: 1px 1px 2px;
-
     -moz-user-select: none;
     -webkit-user-select: none;
     user-select: none;
@@ -64,6 +60,10 @@
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:active {
     background-color: transparent;
+  }
+
+  .cd-commentButton.oo-ui-buttonElement > .oo-ui-buttonElement-button {
+    border-top: 0;
   }
 }
 
