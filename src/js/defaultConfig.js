@@ -337,7 +337,7 @@ export default {
   mentionCharacter: '@',
 
   /**
-   * There should be a leading space (or other punctuation) before {@link
+   * Whether there should be a leading space (or other punctuation) before {@link
    * module:defaultConfig.mentionCharacter the mention character} to trigger autocomplete.
    *
    * @type {boolean}
@@ -346,7 +346,9 @@ export default {
 
   /**
    * Array of two strings to insert before and after the selection when quote function is activated
-   * (by the toolbar button or Ctrl+Alt+Q / Q).
+   * (by the toolbar button or Ctrl+Alt+Q / Q). If you add template markup, you might want to use
+   * `1=` before the parameter content to allow the `=` character inside a quotation, for example
+   * `['{{tq|1=', '}}']`.
    *
    * @type {string[]}
    * @default ["> ''", "''\n"]
