@@ -289,16 +289,8 @@ export default class Comment extends CommentSkeleton {
 
     return {
       layersTop: this.positions.top - options.layersContainerOffset.top,
-      layersLeft: (
-        this.positions.left -
-        cd.g.COMMENT_UNDERLAY_SIDE_MARGIN -
-        options.layersContainerOffset.left
-      ),
-      layersWidth: (
-        this.positions.right -
-        this.positions.left +
-        cd.g.COMMENT_UNDERLAY_SIDE_MARGIN * 2
-      ),
+      layersLeft: this.positions.left - 5 - options.layersContainerOffset.left,
+      layersWidth: this.positions.right - this.positions.left + (5 * 2),
       layersHeight: this.positions.bottom - this.positions.top,
     };
   }
