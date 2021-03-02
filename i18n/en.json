@@ -22,7 +22,7 @@
   "sm-move": "move",
   "sm-move-tooltip": "Move the topic to another page",
   "sm-watch": "watch",
-  "sm-watch-tooltip": "Add the section to the watchlist. This affects notifications and bolding in the watchlist",
+  "sm-watch-tooltip": "Add the section to the watchlist. This affects notifications and bolding in the watchlist and the table of contents",
   "sm-unwatch": "unwatch",
   "sm-unwatch-tooltip": "Remove the section from the watchlist",
   "sm-copylink": "#",
