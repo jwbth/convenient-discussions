@@ -47,25 +47,25 @@ export default {
     cd.g.autoScrollInProgress = true;
 
     let $elements = this.cdRemoveNonElementNodes();
-    const offsetTop = $elements.first().offset().top;
-    const offsetTopLast = $elements.last().offset().top;
-    if (offsetTop === 0 || offsetTopLast === 0) {
+    const offset = $elements.first().offset();
+    const offsetLast = $elements.last().offset();
+    if ((offset.top === 0 || offsetLast.top === 0) && offset.left === 0) {
       cd.g.autoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
     }
-    const offsetBottom = offsetTopLast + $elements.last().outerHeight();
+    const offsetBottom = offsetLast.top + $elements.last().outerHeight();
 
-    let offset;
+    let top;
     if (alignment === 'center') {
-      offset = Math.min(
-        offsetTop,
-        offsetTop + ((offsetBottom - offsetTop) * 0.5) - $(window).height() * 0.5
+      top = Math.min(
+        offset.top,
+        offset.top + ((offsetBottom - offset.top) * 0.5) - $(window).height() * 0.5
       );
     } else if (alignment === 'bottom') {
-      offset = offsetBottom - $(window).height();
+      top = offsetBottom - $(window).height();
     } else {
-      offset = offsetTop;
+      top = offset.top - cd.g.BODY_SCROLL_PADDING_TOP;
     }
 
     const onComplete = () => {
@@ -74,7 +74,7 @@ export default {
     };
 
     if (smooth) {
-      $('body, html').animate({ scrollTop: offset }, {
+      $('body, html').animate({ scrollTop: top }, {
         complete: function () {
           if (this !== document.documentElement) return;
           onComplete();
@@ -84,7 +84,7 @@ export default {
         },
       });
     } else {
-      window.scrollTo(0, offset);
+      window.scrollTo(0, top);
       onComplete();
       if (callback) {
         callback();
@@ -121,7 +121,7 @@ export default {
       $elements.hide();
     }
 
-    const viewportTop = $(window).scrollTop();
+    const viewportTop = $(window).scrollTop() + cd.g.BODY_SCROLL_PADDING_TOP;
     const viewportBottom = viewportTop + $(window).height();
 
     return partially ?

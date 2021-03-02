@@ -1264,12 +1264,10 @@ export default class CommentForm {
       if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
         $other = $nextToTargetFirstChild;
       }
-      if ($other.is('ul')) {
+      if ($other.is('ul, dl')) {
         createList = false;
-        outerWrapperTag = 'li';
-      } else if ($other.is('dl')) {
-        createList = false;
-        outerWrapperTag = 'dd';
+        outerWrapperTag = $other.is('ul') ? 'li' : 'dd';
+        $other.addClass('cd-commentLevel');
       } else if ($lastOfTarget.is('li')) {
         // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
         // in those cases. Which is unsemantic, yes :-(

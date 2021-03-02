@@ -12,8 +12,8 @@
 * Highlighting and navigating new comments (via the navigation panel or the table of contents)
 * Highlighting own comments
 * Checking for new comments in the background and automatically rendering simple comment edits
-* Desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in)
 * Watching sections, which affects notifications and highlighting edits on pages that list revisions
+* Desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in)
 * Jumping to a specific comment from the watchlist and other pages that list revisions
 * Moving topics between talk pages
 * Thanking for and copying links to edits that added comments

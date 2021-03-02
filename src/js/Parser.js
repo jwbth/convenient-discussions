@@ -269,7 +269,7 @@ export default class Parser {
             closestNotInlineAncestor.contains(treeWalker.currentNode) &&
             (!cniaChildren.includes(treeWalker.currentNode) || isInline(treeWalker.currentNode))
           ) {
-            // Found other timestamp after this timestamp
+            // Found other timestamp after this timestamp.
             if (treeWalker.currentNode.classList.contains('cd-timestamp')) return;
           }
         }
@@ -279,7 +279,7 @@ export default class Parser {
         let authorName;
         let length = 0;
         let firstSignatureElement;
-        const signatureNodes = [];
+        let signatureNodes = [];
         if (unsignedElement) {
           firstSignatureElement = startElement;
         } else {
@@ -289,6 +289,7 @@ export default class Parser {
 
         // Unsigned template may be of the "undated" kind - containing a timestamp but no author
         // name, so we need to walk the tree anyway.
+        let newNode;
         do {
           const node = treeWalker.currentNode;
           length += node.textContent.length;
@@ -330,24 +331,34 @@ export default class Parser {
           }
           signatureNodes.push(node);
 
-          // We may need using `previousNode()` here but currently the only known use case where it
-          // helps is the "undated" templates when those are not marked by the class specificied in
-          // the wiki configuration (which they should be).
-        } while (treeWalker.previousSibling() && length < cd.config.signatureScanLimit);
+          newNode = treeWalker.previousSibling();
+          if (!newNode && !firstSignatureElement) {
+            newNode = treeWalker.parentNode();
+            if (!newNode || !isInline(treeWalker.currentNode)) break;
+            length = 0;
+            signatureNodes = [];
+          }
+        } while (newNode && length < cd.config.signatureScanLimit);
+
+        if (!signatureNodes.length) {
+          signatureNodes = [startElement];
+        }
 
         const firstSignatureElementIndex = signatureNodes.indexOf(firstSignatureElement);
         signatureNodes.splice(
-          firstSignatureElementIndex === -1 ? 1 : firstSignatureElementIndex + 1
+          firstSignatureElementIndex === -1 ?
+          1 :
+          firstSignatureElementIndex + 1
         );
 
         const anchor = generateCommentAnchor(timestamp.date, authorName, true);
         registerCommentAnchor(anchor);
-        const signatureContainer = startElement.parentNode;
-        const startElementNextSibling = startElement.nextSibling;
+        const referenceElement = signatureNodes[signatureNodes.length - 1].previousSibling;
+        const signatureContainer = signatureNodes[signatureNodes.length - 1].parentNode;
         const element = this.context.document.createElement('span');
         element.classList.add('cd-signature');
         signatureNodes.reverse().forEach(element.appendChild.bind(element));
-        signatureContainer.insertBefore(element, startElementNextSibling);
+        signatureContainer.insertBefore(element, referenceElement?.nextSibling);
 
         // If there is no author, we add the class to prevent the element from being considered a
         // part of other comment but don't append to the list of signatures.
@@ -376,7 +387,7 @@ export default class Parser {
     }
 
     // Sort signatures according to their position in the DOM. sig1 and sig2 are expected not to be
-    // the same elements.
+    // the same element.
     signatures.sort((sig1, sig2) => this.context.follows(sig1.element, sig2.element) ? 1 : -1);
 
     return signatures;

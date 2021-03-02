@@ -83,6 +83,8 @@ export default {
     'paragraph',
   ],
 
+  quoteFormatting: ["{{tq|1=", "}}"],
+
   elementsToExcludeClasses: [
     'cd-moveMark',
     'unresolved',
@@ -110,7 +112,7 @@ export default {
 
   customFloatingElementSelectors: [
     '.infobox',
-    '.vertical-navbox',
+    '.sidebar',
   ],
 
   closedDiscussionClasses: [

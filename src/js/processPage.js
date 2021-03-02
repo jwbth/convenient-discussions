@@ -417,6 +417,9 @@ function connectToAddTopicButtons() {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
         let pageName = query.title;
+        if (!pageName) {
+          return false;
+        }
         if (typeof pageName === 'object') {
           pageName = pageName[pageName.length - 1];
         }

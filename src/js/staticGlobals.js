@@ -69,14 +69,6 @@ export default {
   COMMENT_DELETED_COLOR: '#fee7e6',
 
   /**
-   * Size of the underlay's side margin in pixels.
-   *
-   * @type {string}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  COMMENT_UNDERLAY_SIDE_MARGIN: 5,
-
-  /**
    * How long a comment should be considered new and have a corresponding background on newly loaded
    * pages. In minutes.
    *
