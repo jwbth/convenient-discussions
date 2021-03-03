@@ -68,6 +68,13 @@ export default {
     /\/Archive/,
   ],
 
+  pageWhitelist: [
+    /^Wikipedia:Feature article candidates\//,
+    /^Wikipedia:Peer review\//,
+    /^Template:Did you know nominations\//,
+    /^Wikipedia:Bots\/Requests for approval\//
+  ],
+
   spaceAfterIndentationChars: false,
 
   signatureEndingRegexp: / \(talk\)/,
