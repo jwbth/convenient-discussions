@@ -306,7 +306,7 @@ function initPatterns() {
 
   const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
   const allNamespacesPattern = allNamespaces.join('|');
-  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${allNamespacesPattern}):`, 'i');
+  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^(?:${allNamespacesPattern}):`, 'i');
 
   const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
