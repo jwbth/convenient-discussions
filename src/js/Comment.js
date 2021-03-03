@@ -1536,6 +1536,10 @@ export default class Comment extends CommentSkeleton {
       text = text.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
     }
 
+    if (this.level !== 0) {
+      text = text.replace(/\n\n+/g, '\n\n');
+    }
+
     return text.trim();
   }
 
