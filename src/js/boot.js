@@ -431,12 +431,12 @@ function initPatterns() {
   const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPattern}):`;
 
-  // Actually, only text from "mini" format images should be captured, as in the standard format,
-  // the text is not displayed. See "img_thumbnail" in
+  // Actually, only text from "mini" format images should be captured, because in the standard
+  // format the text is not displayed. See "img_thumbnail" in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time.
-  cd.g.FILE_LINK_REGEXP = new RegExp(
-    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^]+?(?:\\|[^]+?\\|((?:\\[\\[[^]+?\\]\\]|[^|])+?))?\\]\\]`,
+  cd.g.FILE_EMBED_REGEXP = new RegExp(
+    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^\\]]+?(?:\\|[^\\]]+?\\|((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))?\\]\\]`,
     'ig'
   );
 
