@@ -532,11 +532,10 @@ async function app() {
    */
   cd.isRunning = true;
 
-  // Doesn't work in the mobile version, isn't needed on Structured Discussions pages.
   if (
     /(^|\.)m\./.test(location.hostname) ||
     mw.config.get('wgPageContentModel') !== 'wikitext' ||
-    $('.flow-board-page').length
+    mw.config.get('wgIsMainPage')
   ) {
     return;
   }
