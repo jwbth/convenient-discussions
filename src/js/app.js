@@ -8,7 +8,7 @@ import cd from './cd';
 import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
 import debug from './debug';
-import defaultConfig from './defaultConfig';
+import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
