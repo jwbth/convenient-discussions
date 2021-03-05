@@ -39,7 +39,7 @@ import {
 } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools, loadData } from './siteData';
+import { initTimestampParsingTools, loadSiteData } from './siteData';
 
 let notificationsData = [];
 let isPageBeingReloaded = false;
@@ -608,14 +608,13 @@ function initOouiAndElementPrototypes() {
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
  * the first run.
  *
- * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteData.loadData}.
+ * @param {Promise} siteDataRequest Promise returned by {@link module:siteData.loadSiteData}.
  */
-export async function init({ messagesRequest }) {
+export async function init(siteDataRequest) {
   cd.g.api = cd.g.api || new mw.Api();
   cd.g.worker = new Worker();
 
-  await (messagesRequest || loadData());
+  await (siteDataRequest || loadSiteData());
   initGlobals();
   await initSettings();
   initTimestampParsingTools();

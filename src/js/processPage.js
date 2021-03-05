@@ -36,11 +36,10 @@ import { setSettings, setVisits } from './options';
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
  *
- * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteData.loadData}.
+ * @param {Promise} siteDataRequest Promise returned by {@link module:siteData.loadSiteData}.
  * @private
  */
-async function prepare({ messagesRequest }) {
+async function prepare(siteDataRequest) {
   cd.g.$root = cd.g.$content.children('.mw-parser-output');
   if (!cd.g.$root.length) {
     cd.g.$root = cd.g.$content;
@@ -68,7 +67,9 @@ async function prepare({ messagesRequest }) {
   cd.sections = [];
 
   if (cd.g.isFirstRun) {
-    await init({ messagesRequest });
+    cd.debug.startTimer('init')
+    await init(siteDataRequest);
+    cd.debug.stopTimer('init')
   } else {
     resetCommentAnchors();
     commentLayers.reset();
@@ -815,23 +816,23 @@ function debugLog() {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
- * @property {Promise} [messagesRequest] Promise returned by {@link module:siteData.loadData}.
  */
 
 /**
  * Process the current web page.
  *
- * @param {KeptData} [keptData={}] Data passed from the previous page state or the main module.
+ * @param {KeptData} [keptData={}] Data passed from the previous page state.
+ * @param {Promise} [siteDataRequest] Promise returned by {@link module:siteData.loadSiteData}.
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
  */
-export default async function processPage(keptData = {}) {
+export default async function processPage(keptData = {}, siteDataRequest) {
   cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
   cd.debug.startTimer('preparations');
 
-  await prepare(keptData);
+  await prepare(siteDataRequest);
 
   let feivData;
   if (cd.g.isFirstRun) {

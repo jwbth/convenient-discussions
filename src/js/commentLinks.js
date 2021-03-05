@@ -21,7 +21,7 @@ import { editWatchedSections, settingsDialog } from './modal';
 import { generateCommentAnchor, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
 import { initSettings } from './boot';
-import { initTimestampParsingTools, loadData } from './siteData';
+import { initTimestampParsingTools, loadSiteData } from './siteData';
 
 let serverName;
 let colon;
@@ -39,11 +39,10 @@ let processDiffFirstRun = true;
 /**
  * Prepare variables.
  *
- * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.dataRequest] Promise returned by {@link module:siteData.loadData}.
+ * @param {Promise} [siteDataRequest] Promise returned by {@link module:siteData.loadSiteData}.
  * @private
  */
-async function prepare({ dataRequest }) {
+async function prepare(siteDataRequest) {
   cd.g.api = cd.g.api || new mw.Api();
 
   // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
@@ -51,10 +50,10 @@ async function prepare({ dataRequest }) {
   const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
     console.warn('Couldn\'t load the settings from the server.', e);
   });
-  dataRequest = dataRequest || loadData();
+  siteDataRequest = siteDataRequest || loadSiteData();
 
   try {
-    await Promise.all([watchedSectionsRequest, dataRequest]);
+    await Promise.all([watchedSectionsRequest, siteDataRequest]);
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
@@ -697,11 +696,11 @@ async function addCommentLinks($content) {
 /**
  * The entry function for the comment links adding mechanism.
  *
- * @param {object} [data] Data passed from the main module.
+ * @param {Promise} [siteDataRequest] Promise returned by {@link module:siteData.loadSiteData}.
  */
-export default async function commentLinks({ dataRequest }) {
+export default async function commentLinks(siteDataRequest) {
   try {
-    await prepare({ dataRequest });
+    await prepare(siteDataRequest);
   } catch (e) {
     console.warn(...e);
     return;

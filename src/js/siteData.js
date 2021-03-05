@@ -512,7 +512,7 @@ function setFormats() {
  *
  * @returns {Promise}
  */
-export function loadData() {
+export function loadSiteData() {
   const requests = [];
 
   mw.messages.set(cd.config.messages);
