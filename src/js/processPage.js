@@ -25,7 +25,7 @@ import {
   handleScroll,
   handleWindowResize,
 } from './eventHandlers';
-import { confirmDialog, editWatchedSections, notFound, settingsDialog } from './modal';
+import { confirmDialog, notFound } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
@@ -365,12 +365,10 @@ function processSections(parser, watchedSectionsRequest) {
 
   Section.adjust();
 
-  if (watchedSectionsRequest) {
-    watchedSectionsRequest.then(() => {
-      Section.cleanUpWatched();
-      toc.highlightWatchedSections();
-    });
-  }
+  watchedSectionsRequest.then(() => {
+    Section.cleanUpWatched();
+    toc.highlightWatchedSections();
+  });
 
   /**
    * The script has processed the sections.
@@ -844,61 +842,85 @@ export default async function processPage(keptData = {}) {
   cd.debug.stopTimer('preparations');
   cd.debug.startTimer('main code');
 
+  const articleId = mw.config.get('wgArticleId');
+
+  /*
+    To make things systematized, we have 4 possible assessments of page activeness as a talk page,
+    sorted by the scope of enabled features. Each level includes the next ones; 3 is the
+    intersection of 2.1 and 2.2.
+      1. The page is a wikitext page.
+      2. The page is likely a talk page. The "isLikelyTalkPage" variable is used to reflect that. We
+         may reevaluate page as being not a talk page if we don't find any comments on it and
+         several other criteria are not met.  Likely talk pages are divided into two categories:
+      2.1. The page is eligible to create comment forms on. (This includes 404 pages where the user
+           could create a section, but excludes archive pages and old revisions.) The
+           "isPageCommentable" variable is used to reflect this level.
+      2.2. The page exists (not a 404 page). (This includes archive pages and old revisions, which
+           are not eligible to create comment forms on.) Such pages are parsed, the page navigation
+           block is added to them.
+      3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
+         revision. The "cd.g.isPageActive" property is true when the page is of this level. The
+         navigation panel is added to such pages, new comments are highlighted.
+
+    We need to be accurate regarding which functionality should be turned on on which level. We
+    should also make sure we only add this functionality once. The "isPageFirstParsed" variable is
+    used to reflect the run at which the page is parsed for the first time.
+   */
+
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
   cd.g.isPageActive = (
-    mw.config.get('wgArticleId') &&
+    articleId &&
     !cd.g.CURRENT_PAGE.isArchivePage() &&
     mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')
   );
 
-  // For testing
-  cd.g.editWatchedSections = editWatchedSections;
-  cd.g.settingsDialog = settingsDialog;
-
   let watchedSectionsRequest;
-  if (mw.config.get('wgArticleId')) {
+  let visitsRequest;
+  let parser;
+  if (articleId) {
     watchedSectionsRequest = getWatchedSections(true, keptData);
     watchedSectionsRequest.catch((e) => {
       console.warn('Couldn\'t load the settings from the server.', e);
     });
+
+    if (cd.g.isPageActive) {
+      visitsRequest = getVisits(true);
+    }
+
+    /**
+     * The script is going to parse the page.
+     *
+     * @event beforeParse
+     * @type {module:cd~convenientDiscussions}
+     */
+    mw.hook('convenientDiscussions.beforeParse').fire(cd);
+
+    findSpecialElements();
+
+    cd.debug.startTimer('process comments');
+
+    parser = new Parser({
+      CommentClass: Comment,
+      SectionClass: Section,
+      childElementsProperty: 'children',
+      document,
+      follows: (el1, el2) => Boolean(
+        el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
+      ),
+      getAllTextNodes,
+      getElementByClassName: (node, className) => node.querySelector(`.${className}`),
+    });
+
+    try {
+      processComments(parser, feivData);
+    } catch (e) {
+      console.error(e);
+    }
+
+    cd.debug.stopTimer('process comments');
   }
-
-  let visitsRequest;
-  if (cd.g.isPageActive) {
-    visitsRequest = getVisits(true);
-  }
-
-  /**
-   * The script is going to parse the page.
-   *
-   * @event beforeParse
-   * @type {module:cd~convenientDiscussions}
-   */
-  mw.hook('convenientDiscussions.beforeParse').fire(cd);
-
-  findSpecialElements();
-
-  cd.debug.startTimer('process comments');
-
-  const parser = new Parser({
-    CommentClass: Comment,
-    SectionClass: Section,
-    childElementsProperty: 'children',
-    document,
-    follows: (el1, el2) => el1.compareDocumentPosition(el2) & Node.DOCUMENT_POSITION_PRECEDING,
-    getAllTextNodes,
-    getElementByClassName: (node, className) => node.querySelector(`.${className}`),
-  });
-
-  try {
-    processComments(parser, feivData);
-  } catch (e) {
-    console.error(e);
-  }
-
-  cd.debug.stopTimer('process comments');
 
   // Reevaluate if this is likely a talk page.
   const isLikelyTalkPage = (
@@ -908,14 +930,19 @@ export default async function processPage(keptData = {}) {
     cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
   );
 
+  const isPageCommentable = cd.g.isPageActive || !articleId;
+  const isPageFirstParsed = cd.g.isFirstRun || keptData.wasPageCreated;
+
   if (isLikelyTalkPage) {
-    cd.debug.startTimer('process sections');
+    if (articleId) {
+      cd.debug.startTimer('process sections');
 
-    processSections(parser, watchedSectionsRequest);
+      processSections(parser, watchedSectionsRequest);
 
-    cd.debug.stopTimer('process sections');
+      cd.debug.stopTimer('process sections');
+    }
 
-    if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
+    if (isPageCommentable) {
       addAddTopicButton();
       connectToAddTopicButtons();
     }
@@ -925,19 +952,21 @@ export default async function processPage(keptData = {}) {
     // Operations that need reflow, such as getBoundingClientRect(), go in this section.
     cd.debug.startTimer('final code and rendering');
 
-    // Restore the initial viewport position in terms of visible elements which is how the user sees
-    // it.
-    if (feivData) {
-      const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
-      window.scrollTo(0, y);
+    if (articleId) {
+      // Restore the initial viewport position in terms of visible elements which is how the user sees
+      // it.
+      if (feivData) {
+        const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
+        window.scrollTo(0, y);
+      }
+
+      highlightOwnComments();
+
+      processFragment(keptData);
     }
 
-    highlightOwnComments();
-
-    processFragment(keptData);
-
     if (cd.g.isPageActive) {
-      if (cd.g.isFirstRun || keptData.wasPageCreated) {
+      if (isPageFirstParsed) {
         navPanel.mount();
       } else {
         navPanel.reset();
@@ -954,32 +983,45 @@ export default async function processPage(keptData = {}) {
       }
     }
 
-    if (cd.g.isPageActive || !mw.config.get('wgArticleId')) {
+    if (isPageCommentable) {
       // This should be below the viewport position restoration and own comments highlighting as it
       // may rely on the elements that are made invisible during the comment forms restoration. It
       // should also be below the navPanel mount/reset methods as it runs
       // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
       restoreCommentForms();
+
+      if (isPageFirstParsed) {
+        const alwaysConfirmLeavingPage =  (
+          mw.user.options.get('editondblclick') ||
+          mw.user.options.get('editsectiononrightclick')
+        );
+        addPreventUnloadCondition('commentForms', () => {
+          saveSession(true);
+          return (
+            mw.user.options.get('useeditwarning') &&
+            (
+              CommentForm.getLastActiveAltered() ||
+              (alwaysConfirmLeavingPage && cd.commentForms.length)
+            )
+          );
+        });
+      }
     }
 
-    if (cd.g.isFirstRun) {
-      mw.hook('wikipage.content').add(highlightMentions);
-
+    // keptData.wasPageCreated? articleId? но resize + adjustLabels ok на 404. resize
+    // orientationchange у document + window
+    if (isPageFirstParsed) {
       pageNav.mount();
 
-      // `mouseover` allows to capture the event when the cursor is not moving but ends up above the
-      // element (for example, as a result of scrolling).
-      $(document).on('mousemove mouseover', Comment.highlightFocused);
-      $(window).on('resize orientationchange', handleWindowResize);
-      addPreventUnloadCondition('commentForms', () => {
-        saveSession(true);
-        return (
-          mw.user.options.get('useeditwarning') &&
-          (CommentForm.getLastActiveAltered() || (alwaysConfirmLeavingPage && cd.commentForms.length))
-        );
-      });
+      $(document)
+        // `mouseover` allows to capture the event when the cursor is not moving but ends up above
+        // the element (for example, as a result of scrolling).
+        .on('mousemove mouseover', Comment.highlightFocused)
 
-      mw.hook('wikipage.content').add(connectToCommentLinks);
+        .on('scroll', handleScroll);
+      $(window).on('resize orientationchange', handleWindowResize);
+
+      mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
       // Mutation observer doesn't follow all possible cases (for example, initiated with adding new
@@ -991,39 +1033,25 @@ export default async function processPage(keptData = {}) {
       const observer = new MutationObserver((records) => {
         const areLayers = records
           .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (areLayers) return;
-        commentLayers.redrawIfNecessary();
+        if (!areLayers) {
+          commentLayers.redrawIfNecessary();
+        }
       });
       observer.observe(cd.g.$content.get(0), {
         attributes: true,
         childList: true,
         subtree: true,
       });
-
-      $(document)
-        .on('keydown', handleGlobalKeyDown)
-        .on('scroll resize orientationchange', handleScroll);
     } else {
       pageNav.update();
     }
 
-    let alwaysConfirmLeavingPage = false;
-    if (mw.user.options.get('editondblclick')) {
-      mw.loader.using('mediawiki.action.view.dblClickEdit').then(() => {
-        $('#ca-edit').off('click');
-        alwaysConfirmLeavingPage = true;
-      });
-    }
-
-    if (mw.user.options.get('editsectiononrightclick')) {
-      mw.loader.using('mediawiki.action.view.rightClickEdit').then(() => {
-        $('.mw-editsection a').off('click');
-        alwaysConfirmLeavingPage = true;
-      });
-    }
-
     if (cd.g.isFirstRun) {
       confirmDesktopNotifications();
+    }
+
+    if (isPageCommentable) {
+      $(document).on('keydown', handleGlobalKeyDown);
     }
 
     /**

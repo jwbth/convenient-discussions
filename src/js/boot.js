@@ -31,7 +31,12 @@ import {
   transparentize,
   unhideText,
 } from './util';
-import { createWindowManager, rescueCommentFormsContent } from './modal';
+import {
+  createWindowManager,
+  editWatchedSections,
+  rescueCommentFormsContent,
+  settingsDialog,
+} from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools, loadData } from './siteData';
@@ -245,6 +250,8 @@ function initGlobals() {
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
+  cd.g.editWatchedSections = editWatchedSections;
+  cd.g.settingsDialog = settingsDialog;
 
 
   /* Some static methods for external use */

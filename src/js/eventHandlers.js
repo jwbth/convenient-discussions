@@ -24,6 +24,7 @@ export function handleWindowResize() {
     commentForm.adjustLabels();
   });
   pageNav.updateWidth();
+  handleScroll();
 }
 
 /**
