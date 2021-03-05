@@ -3428,10 +3428,11 @@ export default class CommentForm {
    *   selection is empty.
    */
   quote(allowEmptySelection = true) {
-    const selection = isInputFocused() ?
+    let selection = isInputFocused() ?
       document.activeElement.value
         .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd) :
       window.getSelection().toString();
+    selection = selection.trim();
 
     // With just "Q" pressed, empty selection doesn't count.
     if (selection || allowEmptySelection) {
@@ -3452,7 +3453,6 @@ export default class CommentForm {
         peri: cd.s('cf-quote-placeholder'),
         post: cd.config.quoteFormatting[1],
         selection,
-        trim: true,
         ownline: true,
       });
     }
@@ -3470,7 +3470,6 @@ export default class CommentForm {
    * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
    *   post instead of leaving it alone.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
-   * @param {boolean} [options.trim=false] Trim the selection.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
    */
   encapsulateSelection({
@@ -3479,7 +3478,6 @@ export default class CommentForm {
     post = '',
     selection,
     replace = false,
-    trim = false,
     ownline = false,
   }) {
     const range = this.commentInput.getRange();
@@ -3502,9 +3500,6 @@ export default class CommentForm {
       selection = value.substring(range.from, range.to);
     } else {
       selection = selection || '';
-    }
-    if (trim) {
-      selection = selection.trim();
     }
 
     // Wrap text moving the leading and trailing spaces to the sides of the resulting text.
