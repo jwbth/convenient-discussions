@@ -167,7 +167,7 @@ function cleanUpSeenRenderedEdits(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
     const seenUnixTime = Object.keys(newData[key])[0]?.seenUnixTime;
-    if (!seenUnixTime || seenUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000) {
+    if (!seenUnixTime || seenUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000) {
       delete newData[key];
     }
   });

@@ -914,7 +914,7 @@ function setLocalTimestampParser() {
 
     return new Date(
       Date.UTC(year, monthIdx, day, hour, minute) -
-      timezoneOffset * cd.g.MILLISECONDS_IN_A_MINUTE
+      timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE
     );
   };
 

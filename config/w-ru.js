@@ -406,7 +406,7 @@ mw.hook('convenientDiscussions.pageReady').add(function () {
       mw.notify($text, { autoHide: false } );
       mw.cookie.set('cd-hlmConflict', '1', {
         path: '/',
-        expires: cd.g.SECONDS_IN_A_DAY * 30,
+        expires: cd.g.SECONDS_IN_DAY * 30,
       });
     }
 
@@ -415,7 +415,7 @@ mw.hook('convenientDiscussions.pageReady').add(function () {
       mw.notify($text, { autoHide: false });
       mw.cookie.set('cd-ptaConflict', '1', {
         path: '/',
-        expires: cd.g.SECONDS_IN_A_DAY * 30,
+        expires: cd.g.SECONDS_IN_DAY * 30,
       });
     }
 

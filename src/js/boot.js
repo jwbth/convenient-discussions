@@ -830,7 +830,7 @@ function cleanUpSessions(data) {
 
     if (
       !newData[key].commentForms?.length ||
-      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
+      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000
     ) {
       delete newData[key];
     }
@@ -1051,9 +1051,6 @@ export function restoreCommentForms() {
     }
   }
   saveSession();
-
-  // Navigation panel doesn't appear on non-existent pages, but sessions are saved and restored on
-  // them.
   navPanel.updateCommentFormButton();
 }
 

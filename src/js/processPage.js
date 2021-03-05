@@ -395,8 +395,7 @@ function addAddTopicButton() {
       CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
-      .addClass('cd-addTopicButtonContainer')
-      .addClass('cd-sectionButtonContainer')
+      .addClass('cd-addTopicButtonContainer cd-sectionButtonContainer')
       .append(cd.g.addSectionButton.$element)
       .appendTo(cd.g.rootElement);
   }
@@ -572,7 +571,7 @@ async function processFragment(keptData) {
       // There can be a time difference between the time we know (taken from the watchlist) and the
       // time on the page. We take it to be not higher than 5 minutes for the watchlist.
       for (let gap = 1; !comment && gap <= 5; gap++) {
-        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
+        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
         commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
         comment = Comment.getByAnchor(commentAnchorToCheck);
       }

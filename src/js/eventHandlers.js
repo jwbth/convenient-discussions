@@ -66,6 +66,7 @@ export function handleGlobalKeyDown(e) {
   if (
     // Ctrl+Alt+Q
     keyCombination(e, 81, ['ctrl', 'alt']) ||
+
     // Q
     (keyCombination(e, 81) && !isInputFocused())
   ) {

@@ -4,8 +4,8 @@ import cd from './cd';
 import { decodeHtmlEntities } from './wikitext';
 
 self.Node = {
-  TEXT_NODE: 3,
   ELEMENT_NODE: 1,
+  TEXT_NODE: 3,
 };
 
 /**

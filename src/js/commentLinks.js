@@ -616,7 +616,7 @@ async function processDiff() {
         // minutes for the watchlist time and not higher than 1 minute for the script-generated
         // time.
         for (let gap = 1; !comment && gap <= 5; gap++) {
-          const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * gap);
+          const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
           commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
           comment = Comment.getByAnchor(commentAnchorToCheck);
         }

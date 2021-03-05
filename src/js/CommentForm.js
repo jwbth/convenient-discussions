@@ -666,9 +666,7 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$element = $('<div>')
-      .addClass('cd-commentForm')
-      .addClass(`cd-commentForm-${this.mode}`);
+    this.$element = $('<div>').addClass(`cd-commentForm cd-commentForm-${this.mode}`);
     if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }
@@ -2367,7 +2365,7 @@ export default class CommentForm {
       } else {
         before = '';
       }
-      if (cd.config.smallDivTemplates?.[0] && !/^[:*#;]/m.test(code)) {
+      if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(code)) {
         const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
@@ -2735,11 +2733,7 @@ export default class CommentForm {
           .html(html)
           .prepend($label)
           .cdAddCloseButton();
-        if (imitateList) {
-          this.$previewArea.addClass('cd-previewArea-indentedComment');
-        } else {
-          this.$previewArea.removeClass('cd-previewArea-indentedComment');
-        }
+        this.$previewArea.toggleClass('cd-previewArea-indentedComment', imitateList);
 
         /**
          * A comment preview has been rendered.

@@ -99,7 +99,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  SECONDS_IN_A_DAY: 60 * 60 * 24,
+  SECONDS_IN_DAY: 60 * 60 * 24,
 
   /**
    * Number of milliseconds in a minute.
@@ -107,7 +107,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  MILLISECONDS_IN_A_MINUTE: 1000 * 60,
+  MILLISECONDS_IN_MINUTE: 1000 * 60,
 
   /**
    * Popular elements that don't have the `display: inline` property in the default browser styles.
