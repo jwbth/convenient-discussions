@@ -659,7 +659,7 @@ export default class CommentForm {
           .toLowerCase();
     }
 
-    this.editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
+    this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
      * The main form element.
@@ -672,7 +672,7 @@ export default class CommentForm {
     if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }
-    if (this.editingSectionOpeningComment) {
+    if (this.isSectionOpeningCommentEdited) {
       this.$element.addClass('cd-commentForm-sectionOpeningComment');
     }
     if (this.mode === 'addSubsection') {
@@ -693,7 +693,7 @@ export default class CommentForm {
 
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
-      this.editingSectionOpeningComment
+      this.isSectionOpeningCommentEdited
     ) {
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
@@ -2323,21 +2323,24 @@ export default class CommentForm {
 
     // Add the headline
     if (this.headlineInput) {
-      let level;
-      if (this.mode === 'addSection') {
-        level = 2;
-      } else if (this.mode === 'addSubsection') {
-        level = this.target.level + 1;
-      } else {
-        level = this.target.inCode.headingLevel;
-      }
-      const equalSigns = '='.repeat(level);
+      const headline = this.headlineInput.getValue().trim();
+      if (headline) {
+        let level;
+        if (this.mode === 'addSection') {
+          level = 2;
+        } else if (this.mode === 'addSubsection') {
+          level = this.target.level + 1;
+        } else {
+          level = this.target.inCode.headingLevel;
+        }
+        const equalSigns = '='.repeat(level);
 
-      if (this.editingSectionOpeningComment && /^\n/.test(this.target.inCode.code)) {
-        // To have pretty diffs.
-        code = '\n' + code;
+        if (this.isSectionOpeningCommentEdited && /^\n/.test(this.target.inCode.code)) {
+          // To have pretty diffs.
+          code = '\n' + code;
+        }
+        code = `${equalSigns} ${headline} ${equalSigns}\n${code}`;
       }
-      code = `${equalSigns} ${this.headlineInput.getValue().trim()} ${equalSigns}\n${code}`;
     }
 
     // Add the signature
@@ -3063,7 +3066,7 @@ export default class CommentForm {
     if (this.watchSectionCheckbox) {
       if (this.watchSectionCheckbox.isSelected()) {
         const isHeadlineAltered = (
-          this.editingSectionOpeningComment &&
+          this.isSectionOpeningCommentEdited &&
           this.headlineInput.getValue() !== this.originalHeadline
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
