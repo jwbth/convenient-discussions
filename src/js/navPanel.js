@@ -7,78 +7,15 @@
 import Comment from './Comment';
 import cd from './cd';
 import updateChecker from './updateChecker';
+import { focusInput, reorderArray } from './util';
 import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
-import { focusInput, reorderArray } from './util';
 
-let newCount;
 let lastFirstUnseenCommentId;
 
-/**
- * Generate tooltip text displaying statistics of unseen or not yet displayed comments.
- *
- * @param {number} commentsCount
- * @param {Map} [commentsBySection]
- * @returns {?string}
- * @private
- */
-function generateRefreshButtonTooltipText(commentsCount, commentsBySection) {
-  let tooltipText = null;
-  if (commentsCount) {
-    tooltipText = (
-      cd.s('navpanel-newcomments-count', commentsCount) +
-      ' ' +
-      cd.s('navpanel-newcomments-refresh') +
-      ' ' +
-      cd.mws('parentheses', 'R') +
-      '\n' +
-      cd.s('navpanel-markasread')
-    );
-    const bullet = removeWikiMarkup(cd.s('bullet'));
-    commentsBySection.forEach((comments, sectionOrAnchor) => {
-      let headline;
-      if (typeof sectionOrAnchor === 'string') {
-        headline = comments[0].section.headline;
-      } else if (sectionOrAnchor !== null) {
-        headline = sectionOrAnchor.headline;
-      }
-      tooltipText += headline ? `\n\n${headline}` : '\n';
-      comments.forEach((comment) => {
-        tooltipText += `\n`;
-        const names = comment.parent?.author && comment.level > 1 ?
-          cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
-          comment.author.name;
-        const date = comment.date ?
-          cd.util.formatDate(comment.date) :
-          cd.s('navpanel-newcomments-unknowndate');
-        tooltipText += (
-          bullet +
-          ' ' +
-          names +
-          (cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '') +
-          cd.mws('comma-separator') +
-          date
-        );
-      });
-    });
-  } else {
-    tooltipText = (
-      cd.s('navpanel-refresh') +
-      ' ' +
-      cd.mws('parentheses', 'R') +
-      '\n' +
-      cd.s('navpanel-markasread')
-    );
-  }
-
-  return tooltipText;
-}
-
-const navPanel = {
+export default {
   /**
    * Render the navigation panel. This is done when the page is first loaded or created.
-   *
-   * @memberof module:navPanel
    */
   mount() {
     /**
@@ -100,11 +37,12 @@ const navPanel = {
     this.$refreshButton = $('<div>')
       .addClass('cd-navPanel-button')
       .attr('id', 'cd-navPanel-refreshButton')
-      .attr('title', generateRefreshButtonTooltipText(0))
       .on('click', (e) => {
         this.refreshClick(e.ctrlKey);
       })
       .appendTo(this.$element);
+
+    this.updateRefreshButtonTooltip(0);
 
     /**
      * "Go to the previous new comment" button element.
@@ -185,7 +123,6 @@ const navPanel = {
    * `convenientDiscussions.g.isPageActive` check.
    *
    * @returns {boolean}
-   * @memberof module:navPanel
    */
   isMounted() {
     return Boolean(this.$element);
@@ -194,15 +131,12 @@ const navPanel = {
   /**
    * Reset the navigation panel to the initial state. This is done after page refreshes. (Comment
    * forms are expected to be restored already.)
-   *
-   * @memberof module:navPanel
    */
   reset() {
     lastFirstUnseenCommentId = null;
 
-    this.$refreshButton
-      .empty()
-      .attr('title', generateRefreshButtonTooltipText(0));
+    this.$refreshButton.empty();
+    this.updateRefreshButtonTooltip(0);
     this.$previousButton.hide();
     this.$nextButton.hide();
     this.$firstUnseenButton.hide();
@@ -211,31 +145,13 @@ const navPanel = {
 
   /**
    * Count the new and unseen comments on the page, and update the navigation panel to reflect that.
-   *
-   * @memberof module:navPanel
    */
   fill() {
-    newCount = cd.comments.filter((comment) => comment.isNew).length;
-    if (newCount) {
-      this.$nextButton.show();
+    if (cd.comments.some((comment) => comment.isNew)) {
+      this.updateRefreshButtonTooltip(0);
       this.$previousButton.show();
+      this.$nextButton.show();
       this.updateFirstUnseenButton();
-    }
-  },
-
-  /**
-   * Update the state of the "Go to the first unseen comment" button.
-   *
-   * @memberof module:navPanel
-   */
-  updateFirstUnseenButton() {
-    if (!navPanel.isMounted()) return;
-
-    const unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
-    if (unseenCount) {
-      this.$firstUnseenButton.show().text(unseenCount);
-    } else {
-      this.$firstUnseenButton.hide();
     }
   },
 
@@ -243,8 +159,6 @@ const navPanel = {
    * Perform routines at the refresh button click.
    *
    * @param {boolean} markAsRead Whether to mark all comments as read.
-   *
-   * @memberof module:navPanel
    */
   refreshClick(markAsRead) {
     // There was reload confirmation here, but after session restore was introduced, the
@@ -257,8 +171,6 @@ const navPanel = {
 
   /**
    * Scroll to the previous new comment.
-   *
-   * @memberof module:navPanel
    */
   goToPreviousNewComment() {
     if (cd.g.autoScrollInProgress) return;
@@ -279,8 +191,6 @@ const navPanel = {
 
   /**
    * Scroll to the next new comment.
-   *
-   * @memberof module:navPanel
    */
   goToNextNewComment() {
     if (cd.g.autoScrollInProgress) return;
@@ -301,8 +211,6 @@ const navPanel = {
 
   /**
    * Scroll to the first unseen comment.
-   *
-   * @memberof module:navPanel
    */
   goToFirstUnseenComment() {
     if (cd.g.autoScrollInProgress) return;
@@ -324,7 +232,6 @@ const navPanel = {
    * true.
    *
    * @param {boolean} [first=false]
-   * @memberof module:navPanel
    */
   goToNextCommentForm(first = false) {
     const commentForm = cd.commentForms
@@ -352,32 +259,96 @@ const navPanel = {
    * @param {number} commentCount
    * @param {Map} commentsBySection
    * @param {boolean} areThereInteresting
-   * @private
-   * @memberof module:navPanel
    */
   updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
-    this.$refreshButton
-      .empty()
-      .attr('title', generateRefreshButtonTooltipText(commentCount, commentsBySection));
+    this.$refreshButton.empty();
+    this.updateRefreshButtonTooltip(commentCount, commentsBySection);
     if (commentCount) {
       $('<span>')
         .text(`+${commentCount}`)
         .appendTo(this.$refreshButton);
     }
-    if (areThereInteresting) {
-      this.$refreshButton.addClass('cd-navPanel-refreshButton-interesting');
+    this.$refreshButton.toggleClass('cd-navPanel-refreshButton-interesting', areThereInteresting);
+  },
+
+  /**
+   * Update the tooltip of the refresh button, displaying statistics of comments not yet displayed if
+   * there are such.
+   *
+   * @param {number} commentsCount
+   * @param {Map} [commentsBySection]
+   * @private
+   */
+  updateRefreshButtonTooltip(commentsCount, commentsBySection) {
+    let tooltipText = null;
+    const areThereNew = cd.comments.some((comment) => comment.isNew);
+    if (commentsCount) {
+      tooltipText = (
+        cd.s('navpanel-newcomments-count', commentsCount) +
+        ' ' +
+        cd.s('navpanel-newcomments-refresh') +
+        ' ' +
+        cd.mws('parentheses', 'R')
+      );
+      if (areThereNew) {
+        tooltipText += '\n' + cd.s('navpanel-markasread');
+      }
+      const bullet = removeWikiMarkup(cd.s('bullet'));
+      commentsBySection.forEach((comments, sectionOrAnchor) => {
+        let headline;
+        if (typeof sectionOrAnchor === 'string') {
+          headline = comments[0].section.headline;
+        } else if (sectionOrAnchor !== null) {
+          headline = sectionOrAnchor.headline;
+        }
+        tooltipText += headline ? `\n\n${headline}` : '\n';
+        comments.forEach((comment) => {
+          tooltipText += `\n`;
+          const names = comment.parent?.author && comment.level > 1 ?
+            cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
+            comment.author.name;
+          const date = comment.date ?
+            cd.util.formatDate(comment.date) :
+            cd.s('navpanel-newcomments-unknowndate');
+          tooltipText += (
+            bullet +
+            ' ' +
+            names +
+            (cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '') +
+            cd.mws('comma-separator') +
+            date
+          );
+        });
+      });
     } else {
-      this.$refreshButton.removeClass('cd-navPanel-refreshButton-interesting');
+      tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
+      if (areThereNew) {
+        tooltipText += '\n' + cd.s('navpanel-markasread');
+      }
+    }
+
+    this.$refreshButton.attr('title', tooltipText);
+  },
+
+  /**
+   * Update the state of the "Go to the first unseen comment" button.
+   */
+  updateFirstUnseenButton() {
+    if (!this.isMounted()) return;
+
+    const unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
+    if (unseenCount) {
+      this.$firstUnseenButton.show().text(unseenCount);
+    } else {
+      this.$firstUnseenButton.hide();
     }
   },
 
   /**
    * Update the "Go to the next comment form out of sight" button visibility.
-   *
-   * @memberof module:navPanel
    */
   updateCommentFormButton() {
-    if (cd.g.autoScrollInProgress || !navPanel.isMounted()) return;
+    if (cd.g.autoScrollInProgress || !this.isMounted()) return;
 
     if (cd.commentForms.some((commentForm) => !commentForm.$element.cdIsInViewport(true))) {
       this.$commentFormButton.show();
@@ -386,5 +357,3 @@ const navPanel = {
     }
   },
 };
-
-export default navPanel;
