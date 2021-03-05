@@ -25,8 +25,7 @@ export default {
       .appendTo(document.body);
     this.$bottomElement = $('<ul>')
       .attr('id', 'cd-pageNav-bottom')
-      .addClass('cd-pageNav')
-      .addClass('cd-pageNav-list')
+      .addClass('cd-pageNav cd-pageNav-list')
       .appendTo(document.body);
 
     this.updateWidth();
@@ -179,8 +178,7 @@ export default {
             ) ?
               $sectionWithBackLink :
               $('<li>')
-                .addClass('cd-pageNav-item')
-                .addClass(`cd-pageNav-level-${level}`)
+                .addClass(`cd-pageNav-item cd-pageNav-item-level-${level}`)
                 .data('section', sectionInTree)
                 .text(sectionInTree.headline)
                 .on('click', () => {

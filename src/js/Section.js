@@ -37,7 +37,7 @@ export default class Section extends SectionSkeleton {
    *
    * @param {Parser} parser A relevant instance of {@link module:Parser Parser}.
    * @param {Element} headingElement
-   * @param {Promise} [watchedSectionsRequest]
+   * @param {Promise} watchedSectionsRequest
    * @throws {CdError}
    */
   constructor(parser, headingElement, watchedSectionsRequest) {
@@ -108,9 +108,7 @@ export default class Section extends SectionSkeleton {
       !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement))
     );
 
-    if (this.isActionable) {
-      this.extendSectionMenu(watchedSectionsRequest);
-    }
+    this.extendSectionMenu(watchedSectionsRequest);
   }
 
   /**
@@ -296,68 +294,70 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   extendSectionMenu(watchedSectionsRequest) {
-    if (
-      this.comments.length &&
-      this.comments[0].isOpeningSection &&
-      this.comments[0].openingSectionOfLevel === this.level &&
-      (this.comments[0].isOwn || cd.settings.allowEditOthersComments) &&
-      this.comments[0].isActionable
-    ) {
-      this.addMenuItem({
-        label: cd.s('sm-editopeningcomment'),
-        tooltip: cd.s('sm-editopeningcomment-tooltip'),
-        func: () => {
-          this.comments[0].edit();
-        },
-        class: 'cd-sectionLink-editOpeningComment',
-      });
-    }
-
-    if (this.level >= 2 && this.level !== 6) {
-      this.addMenuItem({
-        label: cd.s('sm-addsubsection'),
-        tooltip: cd.s('sm-addsubsection-tooltip'),
-        func: () => {
-          this.addSubsection();
-        },
-        class: 'cd-sectionLink-addSubsection',
-      });
-    }
-
-    if (this.level === 2) {
-      this.addMenuItem({
-        label: cd.s('sm-move'),
-        tooltip: cd.s('sm-move-tooltip'),
-        func: () => {
-          this.move();
-        },
-        class: 'cd-sectionLink-moveSection',
-      });
-    }
-
-    if (watchedSectionsRequest) {
-      const finallyCallback = () => {
-        if (this.headline) {
-            // We put this instruction here to make it always appear after the "watch" item.
-            this.addMenuItem({
-              label: cd.s('sm-copylink'),
-              // We need the event object to be passed to the function.
-              func: this.copyLink.bind(this),
-              class: 'cd-sectionLink-copyLink',
-              tooltip: cd.s('sm-copylink-tooltip'),
-              href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
-            });
-          }
-
-          /**
-           * Section menu has been extneded.
-           *
-           * @event sectionMenuExtended
-           * @type {module:cd~convenientDiscussions}
-           */
-          mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+    if (this.isActionable) {
+      if (
+        this.comments.length &&
+        this.comments[0].isOpeningSection &&
+        this.comments[0].openingSectionOfLevel === this.level &&
+        (this.comments[0].isOwn || cd.settings.allowEditOthersComments) &&
+        this.comments[0].isActionable
+      ) {
+        this.addMenuItem({
+          label: cd.s('sm-editopeningcomment'),
+          tooltip: cd.s('sm-editopeningcomment-tooltip'),
+          func: () => {
+            this.comments[0].edit();
+          },
+          class: 'cd-sectionLink-editOpeningComment',
+        });
       }
 
+      if (this.level >= 2 && this.level !== 6) {
+        this.addMenuItem({
+          label: cd.s('sm-addsubsection'),
+          tooltip: cd.s('sm-addsubsection-tooltip'),
+          func: () => {
+            this.addSubsection();
+          },
+          class: 'cd-sectionLink-addSubsection',
+        });
+      }
+
+      if (this.level === 2) {
+        this.addMenuItem({
+          label: cd.s('sm-move'),
+          tooltip: cd.s('sm-move-tooltip'),
+          func: () => {
+            this.move();
+          },
+          class: 'cd-sectionLink-moveSection',
+        });
+      }
+    }
+
+    const addCopyLinkMenuItem = () => {
+      if (this.headline) {
+        // We put this instruction here to make it always appear after the "watch" item.
+        this.addMenuItem({
+          label: cd.s('sm-copylink'),
+          // We need the event object to be passed to the function.
+          func: this.copyLink.bind(this),
+          class: 'cd-sectionLink-copyLink',
+          tooltip: cd.s('sm-copylink-tooltip'),
+          href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
+        });
+      }
+
+      /**
+       * Section menu has been extneded.
+       *
+       * @event sectionMenuExtended
+       * @type {module:cd~convenientDiscussions}
+       */
+      mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+    }
+
+    if (this.isActionable) {
       watchedSectionsRequest
         .then(
           () => {
@@ -383,7 +383,9 @@ export default class Section extends SectionSkeleton {
           },
           () => {}
         )
-        .then(finallyCallback, finallyCallback);
+        .then(addCopyLinkMenuItem, addCopyLinkMenuItem);
+    } else {
+      addCopyLinkMenuItem();
     }
   }
 

@@ -31,10 +31,15 @@ import {
   transparentize,
   unhideText,
 } from './util';
-import { createWindowManager, rescueCommentFormsContent } from './modal';
+import {
+  createWindowManager,
+  editWatchedSections,
+  rescueCommentFormsContent,
+  settingsDialog,
+} from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools, loadData } from './siteData';
+import { initTimestampParsingTools, loadSiteData } from './siteData';
 
 let notificationsData = [];
 let isPageBeingReloaded = false;
@@ -245,6 +250,8 @@ function initGlobals() {
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
+  cd.g.editWatchedSections = editWatchedSections;
+  cd.g.settingsDialog = settingsDialog;
 
 
   /* Some static methods for external use */
@@ -306,7 +313,7 @@ function initPatterns() {
 
   const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
   const allNamespacesPattern = allNamespaces.join('|');
-  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${allNamespacesPattern}):`, 'i');
+  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^(?:${allNamespacesPattern}):`, 'i');
 
   const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
@@ -431,12 +438,12 @@ function initPatterns() {
   const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPattern}):`;
 
-  // Actually, only text from "mini" format images should be captured, as in the standard format,
-  // the text is not displayed. See "img_thumbnail" in
+  // Actually, only text from "mini" format images should be captured, because in the standard
+  // format the text is not displayed. See "img_thumbnail" in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time.
-  cd.g.FILE_LINK_REGEXP = new RegExp(
-    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^]+?(?:\\|[^]+?\\|((?:\\[\\[[^]+?\\]\\]|[^|])+?))?\\]\\]`,
+  cd.g.FILE_EMBED_REGEXP = new RegExp(
+    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^\\]]+?(?:\\|[^\\]]+?\\|((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))?\\]\\]`,
     'ig'
   );
 
@@ -601,14 +608,13 @@ function initOouiAndElementPrototypes() {
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
  * the first run.
  *
- * @param {object} [data] Data passed from the main module.
- * @param {Promise} [data.messagesRequest] Promise returned by {@link module:siteData.loadData}.
+ * @param {Promise} siteDataRequest Promise returned by {@link module:siteData.loadSiteData}.
  */
-export async function init({ messagesRequest }) {
+export async function init(siteDataRequest) {
   cd.g.api = cd.g.api || new mw.Api();
   cd.g.worker = new Worker();
 
-  await (messagesRequest || loadData());
+  await (siteDataRequest || loadSiteData());
   initGlobals();
   await initSettings();
   initTimestampParsingTools();
@@ -823,7 +829,7 @@ function cleanUpSessions(data) {
 
     if (
       !newData[key].commentForms?.length ||
-      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
+      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000
     ) {
       delete newData[key];
     }
@@ -1044,9 +1050,6 @@ export function restoreCommentForms() {
     }
   }
   saveSession();
-
-  // Navigation panel doesn't appear on non-existent pages, but sessions are saved and restored on
-  // them.
   navPanel.updateCommentFormButton();
 }
 

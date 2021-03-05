@@ -659,20 +659,18 @@ export default class CommentForm {
           .toLowerCase();
     }
 
-    this.editingSectionOpeningComment = this.mode === 'edit' && this.target.isOpeningSection;
+    this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
      * The main form element.
      *
      * @type {JQuery}
      */
-    this.$element = $('<div>')
-      .addClass('cd-commentForm')
-      .addClass(`cd-commentForm-${this.mode}`);
+    this.$element = $('<div>').addClass(`cd-commentForm cd-commentForm-${this.mode}`);
     if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }
-    if (this.editingSectionOpeningComment) {
+    if (this.isSectionOpeningCommentEdited) {
       this.$element.addClass('cd-commentForm-sectionOpeningComment');
     }
     if (this.mode === 'addSubsection') {
@@ -693,7 +691,7 @@ export default class CommentForm {
 
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
-      this.editingSectionOpeningComment
+      this.isSectionOpeningCommentEdited
     ) {
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
@@ -2323,21 +2321,24 @@ export default class CommentForm {
 
     // Add the headline
     if (this.headlineInput) {
-      let level;
-      if (this.mode === 'addSection') {
-        level = 2;
-      } else if (this.mode === 'addSubsection') {
-        level = this.target.level + 1;
-      } else {
-        level = this.target.inCode.headingLevel;
-      }
-      const equalSigns = '='.repeat(level);
+      const headline = this.headlineInput.getValue().trim();
+      if (headline) {
+        let level;
+        if (this.mode === 'addSection') {
+          level = 2;
+        } else if (this.mode === 'addSubsection') {
+          level = this.target.level + 1;
+        } else {
+          level = this.target.inCode.headingLevel;
+        }
+        const equalSigns = '='.repeat(level);
 
-      if (this.editingSectionOpeningComment && /^\n/.test(this.target.inCode.code)) {
-        // To have pretty diffs.
-        code = '\n' + code;
+        if (this.isSectionOpeningCommentEdited && /^\n/.test(this.target.inCode.code)) {
+          // To have pretty diffs.
+          code = '\n' + code;
+        }
+        code = `${equalSigns} ${headline} ${equalSigns}\n${code}`;
       }
-      code = `${equalSigns} ${this.headlineInput.getValue().trim()} ${equalSigns}\n${code}`;
     }
 
     // Add the signature
@@ -2364,7 +2365,7 @@ export default class CommentForm {
       } else {
         before = '';
       }
-      if (cd.config.smallDivTemplates?.[0] && !/^[:*#;]/m.test(code)) {
+      if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(code)) {
         const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
@@ -2732,11 +2733,7 @@ export default class CommentForm {
           .html(html)
           .prepend($label)
           .cdAddCloseButton();
-        if (imitateList) {
-          this.$previewArea.addClass('cd-previewArea-indentedComment');
-        } else {
-          this.$previewArea.removeClass('cd-previewArea-indentedComment');
-        }
+        this.$previewArea.toggleClass('cd-previewArea-indentedComment', imitateList);
 
         /**
          * A comment preview has been rendered.
@@ -3063,7 +3060,7 @@ export default class CommentForm {
     if (this.watchSectionCheckbox) {
       if (this.watchSectionCheckbox.isSelected()) {
         const isHeadlineAltered = (
-          this.editingSectionOpeningComment &&
+          this.isSectionOpeningCommentEdited &&
           this.headlineInput.getValue() !== this.originalHeadline
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
@@ -3428,10 +3425,11 @@ export default class CommentForm {
    *   selection is empty.
    */
   quote(allowEmptySelection = true) {
-    const selection = isInputFocused() ?
+    let selection = isInputFocused() ?
       document.activeElement.value
         .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd) :
       window.getSelection().toString();
+    selection = selection.trim();
 
     // With just "Q" pressed, empty selection doesn't count.
     if (selection || allowEmptySelection) {
@@ -3452,7 +3450,6 @@ export default class CommentForm {
         peri: cd.s('cf-quote-placeholder'),
         post: cd.config.quoteFormatting[1],
         selection,
-        trim: true,
         ownline: true,
       });
     }
@@ -3470,7 +3467,6 @@ export default class CommentForm {
    * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
    *   post instead of leaving it alone.
    * @param {string} [options.selection] The selected text. Use if it is out of the input.
-   * @param {boolean} [options.trim=false] Trim the selection.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
    */
   encapsulateSelection({
@@ -3479,7 +3475,6 @@ export default class CommentForm {
     post = '',
     selection,
     replace = false,
-    trim = false,
     ownline = false,
   }) {
     const range = this.commentInput.getRange();
@@ -3502,9 +3497,6 @@ export default class CommentForm {
       selection = value.substring(range.from, range.to);
     } else {
       selection = selection || '';
-    }
-    if (trim) {
-      selection = selection.trim();
     }
 
     // Wrap text moving the leading and trailing spaces to the sides of the resulting text.

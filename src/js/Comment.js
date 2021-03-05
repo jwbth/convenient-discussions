@@ -52,7 +52,7 @@ function cleanUpThanks(data) {
   Object.keys(newData).forEach((key) => {
     if (
       !newData[key].thankUnixTime ||
-      newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_A_DAY * 1000
+      newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000
     ) {
       delete newData[key];
     }
@@ -531,6 +531,8 @@ export default class Comment extends CommentSkeleton {
       options.update = true;
     }
 
+    // FIXME: it is possible that a floating element that is on above in the DOM is below spacially.
+    // In this case, rectTop and rectBottom will be swapped.
     options.rectTop = this.highlightables[0].getBoundingClientRect();
     options.rectBottom = this.elements.length === 1 ?
       options.rectTop :
@@ -1115,8 +1117,8 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Search for the edit in the range of 2 minutes before to 2 minutes later.
-    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
-    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_A_MINUTE * 2).toISOString();
+    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 2).toISOString();
+    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 2).toISOString();
     const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
       rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
       rvdir: 'newer',
@@ -1511,6 +1513,7 @@ export default class Comment extends CommentSkeleton {
       .replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
         s.replace(/<br[ \n]*\/?>\n? */gi, () => '\n')
       ))
+
       // Remove indentation characters
       .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
         const newChars = chars.slice(indentationChars.length);
@@ -1534,6 +1537,10 @@ export default class Comment extends CommentSkeleton {
       const regexp = new RegExp(pattern, 'g');
       const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
       text = text.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
+    }
+
+    if (this.level !== 0) {
+      text = text.replace(/\n\n+/g, '\n\n');
     }
 
     return text.trim();
@@ -1928,7 +1935,7 @@ export default class Comment extends CommentSkeleton {
       start: /^<small>/,
       end: /<\/small>[ \u00A0\t]*$/,
     }];
-    if (cd.config.smallDivTemplates?.[0]) {
+    if (cd.config.smallDivTemplates.length) {
       smallWrappers.push({
         start: new RegExp(
           `^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,

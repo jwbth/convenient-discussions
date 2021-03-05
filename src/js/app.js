@@ -8,7 +8,7 @@ import cd from './cd';
 import commentLinks from './commentLinks';
 import configUrls from './../../config/urls.json';
 import debug from './debug';
-import defaultConfig from './defaultConfig';
+import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
@@ -21,7 +21,7 @@ import {
   setLoadingOverlay,
   setTalkPageCssVariables,
 } from './boot';
-import { loadData } from './siteData';
+import { loadSiteData } from './siteData';
 import { setVisits } from './options';
 
 let config;
@@ -151,7 +151,7 @@ function addCommentLinksToSpecialSearch() {
   if (commentAnchor) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await loadData();
+        await loadSiteData();
         $('.mw-search-result-heading').each((i, el) => {
           const $a = $('<a>')
             .attr(
@@ -316,9 +316,9 @@ function go() {
       // the background, this request is made and the execution stops at mw.loader.using, which
       // results in overriding the renewed visits setting of one tab by another tab (the visits are
       // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      let dataRequest;
+      let siteDataRequest;
       if (mw.loader.getState('mediawiki.api') === 'ready') {
-        dataRequest = loadData();
+        siteDataRequest = loadSiteData();
       }
 
       let modulesRequest = mw.loader.using([
@@ -342,10 +342,10 @@ function go() {
         'user.options',
       ]);
 
-      Promise.all([modulesRequest, dataRequest].filter(defined)).then(
+      Promise.all([modulesRequest, siteDataRequest].filter(defined)).then(
         async () => {
           try {
-            await processPage({ dataRequest });
+            await processPage(undefined, siteDataRequest);
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
             removeLoadingOverlay();
@@ -411,9 +411,9 @@ function go() {
   ) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let dataRequest;
+    let siteDataRequest;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      dataRequest = loadData();
+      siteDataRequest = loadSiteData();
       if (!cd.g.IS_DIFF_PAGE) {
         getUserInfo(true).catch((e) => {
           console.warn(e);
@@ -435,7 +435,7 @@ function go() {
       'oojs-ui.styles.icons-alerts',
     ]).then(
       () => {
-        commentLinks({ dataRequest });
+        commentLinks(siteDataRequest);
 
         // See the comment above: "Additions of CSS...".
         require('../less/global.less');
@@ -532,11 +532,10 @@ async function app() {
    */
   cd.isRunning = true;
 
-  // Doesn't work in the mobile version, isn't needed on Structured Discussions pages.
   if (
     /(^|\.)m\./.test(location.hostname) ||
     mw.config.get('wgPageContentModel') !== 'wikitext' ||
-    $('.flow-board-page').length
+    mw.config.get('wgIsMainPage')
   ) {
     return;
   }

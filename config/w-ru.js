@@ -76,7 +76,7 @@ export default {
     /^Википедия:К объединению\//,
     /^Википедия:К оценке источников/,
     /^Википедия:К переименованию\//,
-    /^Википедия:К посредничеству\//,
+    /^Википедия:К посредничеству/,
     /^Википедия:К разделению\//,
     /^Википедия:К удалению\//,
     /^Википедия:К улучшению\//,
@@ -406,7 +406,7 @@ mw.hook('convenientDiscussions.pageReady').add(function () {
       mw.notify($text, { autoHide: false } );
       mw.cookie.set('cd-hlmConflict', '1', {
         path: '/',
-        expires: cd.g.SECONDS_IN_A_DAY * 30,
+        expires: cd.g.SECONDS_IN_DAY * 30,
       });
     }
 
@@ -415,7 +415,7 @@ mw.hook('convenientDiscussions.pageReady').add(function () {
       mw.notify($text, { autoHide: false });
       mw.cookie.set('cd-ptaConflict', '1', {
         path: '/',
-        expires: cd.g.SECONDS_IN_A_DAY * 30,
+        expires: cd.g.SECONDS_IN_DAY * 30,
       });
     }
 

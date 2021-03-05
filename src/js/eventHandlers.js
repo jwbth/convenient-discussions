@@ -24,6 +24,7 @@ export function handleWindowResize() {
     commentForm.adjustLabels();
   });
   pageNav.updateWidth();
+  handleScroll();
 }
 
 /**
@@ -60,16 +61,20 @@ export function removePreventUnloadCondition(name) {
  * @param {Event} e
  */
 export function handleGlobalKeyDown(e) {
-  if (!cd.g.isPageActive || cd.util.isPageOverlayOn()) return;
+  if (cd.util.isPageOverlayOn()) return;
 
   if (
     // Ctrl+Alt+Q
     keyCombination(e, 81, ['ctrl', 'alt']) ||
+
     // Q
     (keyCombination(e, 81) && !isInputFocused())
   ) {
-    e.preventDefault();
-    CommentForm.getLastActive()?.quote(e.ctrlKey);
+    const lastActiveCommentForm = CommentForm.getLastActive();
+    if (lastActiveCommentForm) {
+      e.preventDefault();
+      lastActiveCommentForm.quote(e.ctrlKey);
+    }
   }
 
   if (navPanel.isMounted()) {

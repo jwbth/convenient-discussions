@@ -313,19 +313,18 @@ export default {
         reloadPage({ commentAnchor });
       });
 
-      let $lastElement;
+      let $last;
       if (section.$addSubsectionButtonContainer && !section.getChildren().length) {
-        $lastElement = section.$addSubsectionButtonContainer;
+        $last = section.$addSubsectionButtonContainer;
       } else if (section.$replyButton) {
-        $lastElement = section.$replyButton.closest('ul, ol, dl');
+        $last = section.$replyButton.closest('ul, ol, dl');
       } else {
-        $lastElement = section.$elements[section.$elements.length - 1];
+        $last = section.$elements.last();
       }
       $('<div>')
-        .addClass('cd-refreshButtonContainer')
-        .addClass('cd-sectionButtonContainer')
+        .addClass('cd-refreshButtonContainer cd-sectionButtonContainer')
         .append(button.$element)
-        .insertAfter($lastElement);
+        .insertAfter($last);
     });
   },
 
