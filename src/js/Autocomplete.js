@@ -685,7 +685,7 @@ export default class Autocomplete {
         config.default.sort((item1, item2) => {
           const s1 = typeof item1 === 'string' ? item1 : item1[0];
           const s2 = typeof item2 === 'string' ? item2 : item2[0];
-          return s1 < s2;
+          return s1 > s2;
         });
         break;
       }
