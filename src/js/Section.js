@@ -63,10 +63,8 @@ export default class Section extends SectionSkeleton {
 
     this.editSectionElement = headingElement.querySelector('.mw-editsection');
     if (this.editSectionElement) {
-      this.closingBracketElement = this.editSectionElement.lastElementChild;
-      if (!this.closingBracketElement?.classList?.contains('mw-editsection-bracket')) {
-        this.closingBracketElement = null;
-      }
+      this.closingBracketElement = this.editSectionElement
+        .getElementsByClassName('mw-editsection-bracket')[1];
 
       // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
       // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
