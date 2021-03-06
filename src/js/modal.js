@@ -129,6 +129,7 @@ async function confirmCloseDialog(dialog, dialogCode) {
  * @param {CdError|Error} e
  * @param {string} messageName
  * @param {boolean} recoverable
+ * @private
  */
 function handleError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {

@@ -53,10 +53,15 @@ export default {
   customTalkNamespaces: mw.config.get('wgExtraSignatureNamespaces'),
 
   /**
-   * Pages where the script should run. If `[]`, all pages in the {@link
-   * module:defaultConfig.customTalkNamespaces} namespaces will pass. If you add at least one value,
-   * {@link module:defaultConfig.customTalkNamespaces} will not be used. You may specify entire
-   * namespaces in this value, e.g., /^Wikipedia:/. The blacklist has priority over the whitelist.
+   * Pages where the script should run. If `[]`, all pages in the namespaces listed in {@link
+   * module:defaultConfig.customTalkNamespaces} will pass.
+   *
+   * **If you add at least one value, {@link module:defaultConfig.customTalkNamespaces} will not be
+   * used.** This means you will probably need to specify the namespaces listed in that value here
+   * as regexps, partly or entirely. For example, to specify the entire "Wikipedia" namespace in
+   * this value, add `/^Wikipedia:/` to the array.
+   *
+   * The blacklist has priority over the whitelist.
    *
    * @type {RegExp[]}
    * @default []

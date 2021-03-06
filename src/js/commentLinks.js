@@ -230,6 +230,7 @@ function addWatchlistMenu() {
  *
  * @param {Element} linkElement
  * @returns {boolean}
+ * @private
  */
 function isWikidataItem(linkElement) {
   return (
@@ -291,6 +292,7 @@ function isArchiving(summary) {
  * @param {string} summary
  * @param {string} name
  * @returns {boolean}
+ * @private
  */
 function isInSection(summary, name) {
   if (!name) {

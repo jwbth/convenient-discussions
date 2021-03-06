@@ -215,6 +215,8 @@ export function setTalkPageCssVariables() {
 
 /**
  * Initialize a number of the global object properties.
+ *
+ * @private
  */
 function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script

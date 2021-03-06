@@ -135,6 +135,8 @@ function sPlain(name) {
  * @param {...*} [params] String parameters (substituted strings, also {@link
  *   module:userRegistry~User User} objects for the use in {{gender:}}).
  * @param {object} [options]
+ * @returns {string}
+ * @memberof module:cd~convenientDiscussions
  */
 function mws(...args) {
   return mw.message(...args).parse();

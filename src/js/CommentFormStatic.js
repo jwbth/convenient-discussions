@@ -97,7 +97,7 @@ export default {
    *
    * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
    * @param {boolean} [isNewTopicOnTop=false]
-   * @private
+   * @memberof module:CommentForm
    */
   createAddSectionForm(
     preloadConfig = CommentForm.getDefaultPreloadConfig(),

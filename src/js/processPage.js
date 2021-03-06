@@ -117,6 +117,7 @@ function getFirstElementInViewportData() {
  * Get all text nodes under the root element in the window (not worker) context.
  *
  * @returns {Node[]}
+ * @private
  */
 function getAllTextNodes() {
   const result = document.evaluate(
@@ -139,6 +140,8 @@ function getAllTextNodes() {
 /**
  * Find some types of special elements on the page (floating elements, closed discussions, outdent
  * templates).
+ *
+ * @private
  */
 function findSpecialElements() {
   // Describe all floating elements on the page in order to calculate the right border (temporarily
@@ -625,6 +628,7 @@ async function processFragment(keptData) {
  * @param {Promise} visitsRequest
  * @param {object} keptData
  * @fires newCommentsHighlighted
+ * @private
  */
 async function processVisits(visitsRequest, keptData) {
   let visits;

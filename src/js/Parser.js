@@ -110,6 +110,7 @@ export function getUserNameFromLink(element) {
  *
  * @param {Element} element
  * @returns {boolean}
+ * @private
  */
 function isCellOfMultiCommentTable(element) {
   if (element.tagName !== 'TD') {
