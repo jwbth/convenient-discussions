@@ -69,6 +69,8 @@ export default {
   ],
 
   pageWhitelist: [
+    /^Wikipedia:/,
+    /^Help:/,
     /^Template:Did you know nominations\//,
   ],
 
