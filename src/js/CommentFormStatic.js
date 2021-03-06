@@ -95,7 +95,7 @@ export default {
   /**
    * Create an add section form if not existent.
    *
-   * @param {object} [preloadConfig]
+   * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
    * @param {boolean} [isNewTopicOnTop=false]
    * @private
    */

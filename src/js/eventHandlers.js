@@ -1,5 +1,5 @@
 /**
- * Functions that handle events bound to the "window" and "document" objects.
+ * Functions that handle events bound to the `window` and `document` objects.
  *
  * @module eventHandlers
  */

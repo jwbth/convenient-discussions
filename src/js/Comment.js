@@ -158,7 +158,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {?boolean}
      */
-    this.isFlashNewOnSightSet = false;
+    this.willFlashNewOnSight = false;
 
     /**
      * Whether the comment (or its signature) is inside a table containing only one comment.
@@ -763,7 +763,7 @@ export default class Comment extends CommentSkeleton {
     if (this.isInViewport()) {
       this.flashNew();
     } else {
-      this.isFlashNewOnSightSet = true;
+      this.willFlashNewOnSight = true;
     }
   }
 
@@ -903,8 +903,8 @@ export default class Comment extends CommentSkeleton {
       .remove();
 
     if (type === 'edited') {
-      if (this.isFlashNewOnSightSet) {
-        this.isFlashNewOnSightSet = false;
+      if (this.willFlashNewOnSight) {
+        this.willFlashNewOnSight = false;
       } else {
         const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
         const articleId = mw.config.get('wgArticleId');
@@ -1581,13 +1581,13 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    if (this.isFlashNewOnSightSet) {
-      this.isFlashNewOnSightSet = false;
+    if (this.willFlashNewOnSight) {
+      this.willFlashNewOnSight = false;
       this.flashNew();
     }
 
     const makesSenseToRegister = cd.comments
-      .some((comment) => comment.isSeen || comment.isFlashNewOnSightSet);
+      .some((comment) => comment.isSeen || comment.willFlashNewOnSight);
     if (registerAllInDirection && makesSenseToRegister) {
       const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
       if (nextComment?.isInViewport()) {

@@ -425,6 +425,10 @@ export default class Section extends SectionSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   addSubsection(dataToRestore) {
+    if (!this.$heading.find('.cd-sectionLink-addSubsection').length) {
+      throw new CdError();
+    }
+
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
       focusInput(this.addSubsectionForm.headlineInput);
@@ -1236,32 +1240,32 @@ export default class Section extends SectionSkeleton {
     tooltip,
     visible = true,
   }) {
-    if (this.closingBracketElement) {
-      const wrapper = document.createElement('span');
-      wrapper.className = 'cd-sectionLinkWrapper';
-      if (!visible) {
-        wrapper.style.display = 'none';
-      }
+    if (!this.closingBracketElement) return;
 
-      const a = document.createElement('a');
-      a.textContent = label;
-      if (href) {
-        a.href = href;
-      }
-      if (func) {
-        a.onclick = func;
-      }
-      a.className = 'cd-sectionLink';
-      if (className) {
-        a.className += ' ' + className;
-      }
-      if (tooltip) {
-        a.title = tooltip;
-      }
-
-      wrapper.appendChild(a);
-      this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
+    const wrapper = document.createElement('span');
+    wrapper.className = 'cd-sectionLinkWrapper';
+    if (!visible) {
+      wrapper.style.display = 'none';
     }
+
+    const a = document.createElement('a');
+    a.textContent = label;
+    if (href) {
+      a.href = href;
+    }
+    if (func) {
+      a.onclick = func;
+    }
+    a.className = 'cd-sectionLink';
+    if (className) {
+      a.className += ' ' + className;
+    }
+    if (tooltip) {
+      a.title = tooltip;
+    }
+
+    wrapper.appendChild(a);
+    this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
   }
 
   /**
