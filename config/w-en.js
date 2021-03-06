@@ -68,6 +68,12 @@ export default {
     /\/Archive/,
   ],
 
+  pageWhitelist: [
+    /^Wikipedia:/,
+    /^Help:/,
+    /^Template:Did you know nominations\//,
+  ],
+
   spaceAfterIndentationChars: false,
 
   signatureEndingRegexp: / \(talk\)/,
