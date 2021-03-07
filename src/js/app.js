@@ -323,9 +323,9 @@ function go() {
         siteDataRequest = loadSiteData();
       }
 
-      let modulesRequest = mw.loader.using([
-        'jquery.color',
+      const modules = [
         'jquery.client',
+        'jquery.color',
         'mediawiki.Title',
         'mediawiki.api',
         'mediawiki.cookie',
@@ -342,7 +342,14 @@ function go() {
         'oojs-ui.styles.icons-interactions',
         'oojs-ui.styles.icons-movement',
         'user.options',
-      ]);
+      ];
+
+      // mw.loader.using delays execution even if all modules are ready (if CD is used as a gadget
+      // with preloaded dependencies, for example), so we use this trick.
+      let modulesRequest;
+      if (!modules.every((module) => mw.loader.getState(module) === 'ready')) {
+        modulesRequest = mw.loader.using(modules);
+      }
 
       Promise.all([modulesRequest, siteDataRequest].filter(defined)).then(
         async () => {
