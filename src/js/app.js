@@ -197,7 +197,7 @@ function addFooterLink(enable) {
     .addClass('noprint')
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
-  $('#footer-places, #f-list').append($li);
+  $('#footer-places, #f-list, .skin-modern #footer-info').append($li);
 }
 
 /**
