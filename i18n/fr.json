@@ -29,7 +29,7 @@
 	"sm-move": "renommer",
 	"sm-move-tooltip": "Déplacer le sujet sur une autre page.",
 	"sm-watch": "suivre",
-	"sm-watch-tooltip": "Ajouter la section à la liste de suivi. Cela affecte les notifications et la mise en évidence dans la liste de suivi.",
+	"sm-watch-tooltip": "Ajouter la section à la liste de suivi. Cela affecte les notifications et la mise en évidence dans la liste de suivi et le sommaire.",
 	"sm-unwatch": "ne plus suivre",
 	"sm-unwatch-tooltip": "Supprimer la section de la liste de suivi.",
 	"sm-copylink-tooltip": "Copier un lien",

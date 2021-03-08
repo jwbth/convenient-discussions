@@ -24,7 +24,7 @@
 	"sm-move": "flytta",
 	"sm-move-tooltip": "Flytta ämnet till en annan sida",
 	"sm-watch": "bevaka",
-	"sm-watch-tooltip": "Lägg till avsnittet i bevakningslistan. Detta påverkar notifikationer och fetskrift i bevakningslistan",
+	"sm-watch-tooltip": "Lägg till avsnittet i bevakningslistan. Detta påverkar notifikationer och fetskrift i bevakningslistan och innehållsförteckningen",
 	"sm-unwatch": "sluta bevaka",
 	"sm-unwatch-tooltip": "Ta bort avsnittet från bevakningslistan",
 	"sm-copylink-tooltip": "Kopiera en länk",
