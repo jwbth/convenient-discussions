@@ -182,18 +182,17 @@ function addCommentLinksToSpecialSearch() {
 }
 
 /**
- * Add a footer link to enable/disable CD.
+ * Add a footer link to enable/disable CD on this page once.
  *
  * @param {boolean} enable
  * @private
  */
 function addFooterLink(enable) {
-  if (cd.g.CURRENT_NAMESPACE_NUMBER === -1) return;
-  const uri = new mw.Uri();
-  uri.query.cdtalkpage = enable ? '1' : '0';
-  const $li = $('<li>').attr('id', enable ? 'footer-places-enablecd' : 'footer-places-disablecd');
+  const url = new URL(location.href);
+  url.searchParams.set('cdtalkpage', enable ? '1' : '0');
+  const $li = $('<li>').attr('id', 'footer-places-togglecd');
   $('<a>')
-    .attr('href', uri.toString())
+    .attr('href', url.toString())
     .addClass('noprint')
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
