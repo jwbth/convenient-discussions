@@ -12,7 +12,6 @@ import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces, unique } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
@@ -21,6 +20,14 @@ import {
   setLoadingOverlay,
   setTalkPageCssVariables,
 } from './boot';
+import {
+  isProbablyTalkPage,
+  mergeRegexps,
+  nativePromiseState,
+  skin$,
+  underlinesToSpaces,
+  unique,
+} from './util';
 import { loadSiteData } from './siteData';
 import { setVisits } from './options';
 
@@ -196,7 +203,11 @@ function addFooterLink(enable) {
     .addClass('noprint')
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
-  $('#footer-places, #f-list, .skin-modern #footer-info').append($li);
+  skin$({
+    monobook: '#f-list',
+    modern: '#footer-info',
+    default: '#footer-places',
+  }).append($li);
 }
 
 /**
@@ -353,7 +364,7 @@ function go() {
         modulesRequest = mw.loader.using(modules);
       }
 
-      Promise.all([modulesRequest, siteDataRequest].filter(defined)).then(
+      Promise.all([modulesRequest, siteDataRequests]).then(
         async () => {
           try {
             await processPage(undefined, siteDataRequest);
@@ -378,6 +389,11 @@ function go() {
           console.warn('The loading overlay stays for more than 10 seconds; removing it.');
         }
       }, 10000);
+
+      cd.g.SKIN = mw.config.get('skin');
+      if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
+        cd.g.SKIN = 'vector-legacy';
+      }
 
       /*
         Additions of CSS cause a reflow which delays operations dependent on rendering, so we run
@@ -613,7 +629,7 @@ async function app() {
 
       // cd.getStringsPromise may be set in the configuration file.
       !cd.i18n && (cd.getStringsPromise || getStrings()),
-    ].filter(defined));
+    ]);
   } catch (e) {
     console.error(e);
     return;
