@@ -36,10 +36,10 @@ import { setSettings, setVisits } from './options';
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
  *
- * @param {Promise} siteDataRequest Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
  * @private
  */
-async function prepare(siteDataRequest) {
+async function prepare(siteDataRequests) {
   cd.g.$root = cd.g.$content.children('.mw-parser-output');
   if (!cd.g.$root.length) {
     cd.g.$root = cd.g.$content;
@@ -67,9 +67,7 @@ async function prepare(siteDataRequest) {
   cd.sections = [];
 
   if (cd.g.isFirstRun) {
-    cd.debug.startTimer('init')
-    await init(siteDataRequest);
-    cd.debug.stopTimer('init')
+    await init(siteDataRequests);
   } else {
     resetCommentAnchors();
     commentLayers.reset();
@@ -827,22 +825,21 @@ function debugLog() {
  * Process the current web page.
  *
  * @param {KeptData} [keptData={}] Data passed from the previous page state.
- * @param {Promise} [siteDataRequest] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
  */
-export default async function processPage(keptData = {}, siteDataRequest, cachedScrollY) {
+export default async function processPage(keptData = {}, siteDataRequests, cachedScrollY) {
   cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
   cd.debug.startTimer('preparations');
 
-  await prepare(siteDataRequest);
+  await prepare(siteDataRequests);
 
   let feivData;
   if (cd.g.isFirstRun) {
-    feivData = getFirstElementInViewportData();
     feivData = getFirstElementInViewportData(cachedScrollY);
   }
 
