@@ -665,3 +665,15 @@ export function keyCombination(e, keyCode, modificators = []) {
 export function focusInput(input) {
   input.$input.get(0).focus();
 }
+
+/**
+ * Get elements using the right selector for the current skin given an object with skin names as
+ * keys and selectors as values. New Vector goes as `vector`, classic Vector goes as
+ * `vector-legacy`. If no value for the skin is provided, the `default` value is used.
+ *
+ * @param {object} selectors
+ * @returns {JQuery}
+ */
+export function skin$(selectors) {
+  return $(selectors[cd.g.SKIN] || selectors.default || selectors.vector);
+}

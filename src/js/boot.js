@@ -28,6 +28,7 @@ import {
   restoreScrollPosition,
   saveScrollPosition,
   saveToLocalStorage,
+  skin$,
   transparentize,
   unhideText,
 } from './util';
@@ -189,14 +190,12 @@ export function setTalkPageCssVariables() {
 
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
-  const sidebarColor = $('.skin-timeless').length ?
-    '#eaecf0' :
-    $(document.body)
-      // New Vector
-      .add('.mw-page-container')
-
-      .last()
-      .css('background-color');
+  const $backgrounded = skin$({
+    timeless: '#mw-content-container',
+    vector: '.mw-page-container',
+    default: 'body',
+  });
+  const sidebarColor = $backgrounded.css('background-color');
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {

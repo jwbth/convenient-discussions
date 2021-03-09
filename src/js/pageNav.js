@@ -6,7 +6,7 @@
  */
 
 import cd from './cd';
-import { getExtendedRect } from './util';
+import { getExtendedRect, skin$ } from './util';
 import { handleScroll } from './eventHandlers';
 
 let currentSection;
@@ -36,7 +36,11 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
-    const mwBody = $('.skin-timeless #mw-content, .skin-modern #content, .mw-body').get(0);
+    const mwBody = skin$({
+      timeless: '#mw-content',
+      minerva: '#bodyContent',
+      default: '#content',
+    }).get(0);
     if (mwBody) {
       const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
         mwBody.getBoundingClientRect().left - 18 :
