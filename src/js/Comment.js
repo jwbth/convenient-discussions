@@ -2441,7 +2441,7 @@ export default class Comment extends CommentSkeleton {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: true,
+      redirects: !(this === cd.g.CURRENT_PAGE && mw.config.get('wgIsRedirect')),
       formatversion: 2,
     }).catch(handleApiReject);
 
