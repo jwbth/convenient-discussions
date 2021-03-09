@@ -86,13 +86,14 @@ async function prepare(siteDataRequest) {
 /**
  * Find the first element in the viewport looking from the top of the page and its top offset.
  *
+ * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  * @returns {?GetFirstElementInViewportDataReturn}
  * @private
  */
-function getFirstElementInViewportData() {
+function getFirstElementInViewportData(scrollY = window.scrollY) {
   let element;
   let top;
-  if (window.scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
     const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
     while (true) {
       if (!isInline(treeWalker.currentNode.tagName)) {
@@ -827,12 +828,13 @@ function debugLog() {
  *
  * @param {KeptData} [keptData={}] Data passed from the previous page state.
  * @param {Promise} [siteDataRequest] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
  */
-export default async function processPage(keptData = {}, siteDataRequest) {
+export default async function processPage(keptData = {}, siteDataRequest, cachedScrollY) {
   cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
   cd.debug.startTimer('preparations');
 
@@ -841,6 +843,7 @@ export default async function processPage(keptData = {}, siteDataRequest) {
   let feivData;
   if (cd.g.isFirstRun) {
     feivData = getFirstElementInViewportData();
+    feivData = getFirstElementInViewportData(cachedScrollY);
   }
 
   cd.debug.stopTimer('preparations');

@@ -247,7 +247,7 @@ function setStrings() {
  *
  * @private
  */
-function go() {
+async function go() {
   cd.debug.startTimer('start');
 
   /**
@@ -360,14 +360,21 @@ function go() {
       // mw.loader.using delays execution even if all modules are ready (if CD is used as a gadget
       // with preloaded dependencies, for example), so we use this trick.
       let modulesRequest;
-      if (!modules.every((module) => mw.loader.getState(module) === 'ready')) {
+      let cachedScrollY;
+      if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
+        // If there is no data to load and, therefore, no period of time in which a reflow could
+        // happen without impeding performance, we cache the value so that it could be used in
+        // processPage~getFirstElementInViewportData without causing a reflow (layout thrashing).
+        if (siteDataRequest && await nativePromiseState(siteDataRequest) === 'resolved') {
+          cachedScrollY = window.scrollY;
+        }
+      } else {
         modulesRequest = mw.loader.using(modules);
       }
 
       Promise.all([modulesRequest, siteDataRequests]).then(
         async () => {
           try {
-            await processPage(undefined, siteDataRequest);
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
             removeLoadingOverlay();
