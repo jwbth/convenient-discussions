@@ -331,9 +331,9 @@ async function go() {
       // the background, this request is made and the execution stops at mw.loader.using, which
       // results in overriding the renewed visits setting of one tab by another tab (the visits are
       // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      let siteDataRequest;
+      let siteDataRequests;
       if (mw.loader.getState('mediawiki.api') === 'ready') {
-        siteDataRequest = loadSiteData();
+        siteDataRequests = loadSiteData();
       }
 
       const modules = [
@@ -365,7 +365,7 @@ async function go() {
         // If there is no data to load and, therefore, no period of time in which a reflow could
         // happen without impeding performance, we cache the value so that it could be used in
         // processPage~getFirstElementInViewportData without causing a reflow (layout thrashing).
-        if (siteDataRequest && await nativePromiseState(siteDataRequest) === 'resolved') {
+        if (siteDataRequests && await nativePromiseState(siteDataRequests) === 'resolved') {
           cachedScrollY = window.scrollY;
         }
       } else {
@@ -375,6 +375,7 @@ async function go() {
       Promise.all([modulesRequest, siteDataRequests]).then(
         async () => {
           try {
+            await processPage(undefined, siteDataRequests, cachedScrollY);
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
             removeLoadingOverlay();
@@ -408,7 +409,7 @@ async function go() {
         1. Make API requests (above).
         2. Run operations dependent on rendering, such as window.getComputedStyle().
         3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the
-        API requests are already running, we don't lose time.
+        API requests are already pending, we don't lose time.
        */
       cd.g.REGULAR_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
 
@@ -445,9 +446,9 @@ async function go() {
   ) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let siteDataRequest;
+    let siteDataRequests;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequest = loadSiteData();
+      siteDataRequests = loadSiteData();
       if (!cd.g.IS_DIFF_PAGE) {
         getUserInfo(true).catch((e) => {
           console.warn(e);
@@ -456,20 +457,20 @@ async function go() {
     }
 
     mw.loader.using([
-      'user.options',
       'mediawiki.Title',
       'mediawiki.api',
       'mediawiki.jqueryMsg',
-      'mediawiki.util',
       'mediawiki.user',
+      'mediawiki.util',
       'oojs',
       'oojs-ui',
-      'oojs-ui.styles.icons-interactions',
-      'oojs-ui.styles.icons-editing-list',
       'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-editing-list',
+      'oojs-ui.styles.icons-interactions',
+      'user.options',
     ]).then(
       () => {
-        commentLinks(siteDataRequest);
+        commentLinks(siteDataRequests);
 
         // See the comment above: "Additions of CSS...".
         require('../less/global.less');

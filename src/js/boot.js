@@ -298,7 +298,7 @@ function initGlobals() {
  * @private
  */
 function initPatterns() {
-  // Fix the configuration value that is likely to be nullified.
+  // Fix the configuration value that might be nullified.
   cd.config.customTalkNamespaces = cd.config.customTalkNamespaces || [];
 
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
@@ -608,13 +608,13 @@ function initOouiAndElementPrototypes() {
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
  * the first run.
  *
- * @param {Promise} siteDataRequest Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
  */
-export async function init(siteDataRequest) {
+export async function init(siteDataRequests) {
   cd.g.api = cd.g.api || new mw.Api();
   cd.g.worker = new Worker();
 
-  await (siteDataRequest || loadSiteData());
+  await (siteDataRequests || loadSiteData());
   initGlobals();
   await initSettings();
   initTimestampParsingTools();
