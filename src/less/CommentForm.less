@@ -208,10 +208,18 @@
 
   > .mw-parser-output > *:first-child {
     margin-top: 0;
+
+    > *:first-child {
+      margin-top: 0;
+    }
   }
 
   > .mw-parser-output > *:last-child {
     margin-bottom: 0;
+
+    > *:last-child {
+      margin-bottom: 0;
+    }
   }
 
   .mw-editsection,
@@ -245,16 +253,24 @@
 .sitedir-ltr .cd-previewArea {
   direction: ltr;
 
-  &-indentedComment > .mw-parser-output > dl > dd {
+  &-indentedComment > .mw-parser-output > dl {
     margin-left: 0;
+
+    > dd {
+      margin-left: 0;
+    }
   }
 }
 
 .sitedir-rtl .cd-previewArea {
   direction: rtl;
 
-  &-indentedComment > .mw-parser-output > dl > dd {
+  &-indentedComment > .mw-parser-output > dl {
     margin-right: 0;
+
+    > dd {
+      margin-right: 0;
+    }
   }
 }
 
