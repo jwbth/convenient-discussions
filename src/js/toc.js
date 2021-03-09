@@ -95,7 +95,8 @@ export default {
       '[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]'
     );
     cd.g.isTocFloating = Boolean(
-      $closestFloating.length && cd.g.$root.has($closestFloating).length
+      $closestFloating.length &&
+      cd.g.$root.has($closestFloating).length
     );
   },
 

@@ -12,7 +12,6 @@ import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { defined, isProbablyTalkPage, mergeRegexps, underlinesToSpaces, unique } from './util';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
@@ -21,6 +20,14 @@ import {
   setLoadingOverlay,
   setTalkPageCssVariables,
 } from './boot';
+import {
+  isProbablyTalkPage,
+  mergeRegexps,
+  nativePromiseState,
+  skin$,
+  underlinesToSpaces,
+  unique,
+} from './util';
 import { loadSiteData } from './siteData';
 import { setVisits } from './options';
 
@@ -182,22 +189,25 @@ function addCommentLinksToSpecialSearch() {
 }
 
 /**
- * Add a footer link to enable/disable CD.
+ * Add a footer link to enable/disable CD on this page once.
  *
  * @param {boolean} enable
  * @private
  */
 function addFooterLink(enable) {
-  if (cd.g.CURRENT_NAMESPACE_NUMBER === -1) return;
-  const uri = new mw.Uri();
-  uri.query.cdtalkpage = enable ? '1' : '0';
-  const $li = $('<li>').attr('id', enable ? 'footer-places-enablecd' : 'footer-places-disablecd');
+  const url = new URL(location.href);
+  url.searchParams.set('cdtalkpage', enable ? '1' : '0');
+  const $li = $('<li>').attr('id', 'footer-places-togglecd');
   $('<a>')
-    .attr('href', uri.toString())
+    .attr('href', url.toString())
     .addClass('noprint')
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
-  $('#footer-places, #f-list').append($li);
+  skin$({
+    monobook: '#f-list',
+    modern: '#footer-info',
+    default: '#footer-places',
+  }).append($li);
 }
 
 /**
@@ -237,7 +247,7 @@ function setStrings() {
  *
  * @private
  */
-function go() {
+async function go() {
   cd.debug.startTimer('start');
 
   /**
@@ -282,10 +292,13 @@ function go() {
   const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
-  if (mw.config.get('wgIsArticle') && !mw.config.get('wgIsRedirect')) {
+  if (mw.config.get('wgIsArticle')) {
     if (
       !/[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search) &&
-      (!cd.g.$content.find('.cd-notTalkPage').length || enabledInQuery) &&
+      (
+        (!mw.config.get('wgIsRedirect') && !cd.g.$content.find('.cd-notTalkPage').length) ||
+        enabledInQuery
+      ) &&
       (
         isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
         $('#ca-addsection').length ||
@@ -318,14 +331,14 @@ function go() {
       // the background, this request is made and the execution stops at mw.loader.using, which
       // results in overriding the renewed visits setting of one tab by another tab (the visits are
       // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      let siteDataRequest;
+      let siteDataRequests;
       if (mw.loader.getState('mediawiki.api') === 'ready') {
-        siteDataRequest = loadSiteData();
+        siteDataRequests = loadSiteData();
       }
 
-      let modulesRequest = mw.loader.using([
-        'jquery.color',
+      const modules = [
         'jquery.client',
+        'jquery.color',
         'mediawiki.Title',
         'mediawiki.api',
         'mediawiki.cookie',
@@ -342,12 +355,27 @@ function go() {
         'oojs-ui.styles.icons-interactions',
         'oojs-ui.styles.icons-movement',
         'user.options',
-      ]);
+      ];
 
-      Promise.all([modulesRequest, siteDataRequest].filter(defined)).then(
+      // mw.loader.using delays execution even if all modules are ready (if CD is used as a gadget
+      // with preloaded dependencies, for example), so we use this trick.
+      let modulesRequest;
+      let cachedScrollY;
+      if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
+        // If there is no data to load and, therefore, no period of time in which a reflow could
+        // happen without impeding performance, we cache the value so that it could be used in
+        // processPage~getFirstElementInViewportData without causing a reflow (layout thrashing).
+        if (siteDataRequests && await nativePromiseState(siteDataRequests) === 'resolved') {
+          cachedScrollY = window.scrollY;
+        }
+      } else {
+        modulesRequest = mw.loader.using(modules);
+      }
+
+      Promise.all([modulesRequest, siteDataRequests]).then(
         async () => {
           try {
-            await processPage(undefined, siteDataRequest);
+            await processPage(undefined, siteDataRequests, cachedScrollY);
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
             removeLoadingOverlay();
@@ -370,13 +398,18 @@ function go() {
         }
       }, 10000);
 
+      cd.g.SKIN = mw.config.get('skin');
+      if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
+        cd.g.SKIN = 'vector-legacy';
+      }
+
       /*
         Additions of CSS cause a reflow which delays operations dependent on rendering, so we run
         it now, not after the requests are fulfilled, to save time. The overall order is like this:
         1. Make API requests (above).
         2. Run operations dependent on rendering, such as window.getComputedStyle().
         3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the
-        API requests are already running, we don't lose time.
+        API requests are already pending, we don't lose time.
        */
       cd.g.REGULAR_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
 
@@ -413,9 +446,9 @@ function go() {
   ) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let siteDataRequest;
+    let siteDataRequests;
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequest = loadSiteData();
+      siteDataRequests = loadSiteData();
       if (!cd.g.IS_DIFF_PAGE) {
         getUserInfo(true).catch((e) => {
           console.warn(e);
@@ -424,20 +457,20 @@ function go() {
     }
 
     mw.loader.using([
-      'user.options',
       'mediawiki.Title',
       'mediawiki.api',
       'mediawiki.jqueryMsg',
-      'mediawiki.util',
       'mediawiki.user',
+      'mediawiki.util',
       'oojs',
       'oojs-ui',
-      'oojs-ui.styles.icons-interactions',
-      'oojs-ui.styles.icons-editing-list',
       'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-editing-list',
+      'oojs-ui.styles.icons-interactions',
+      'user.options',
     ]).then(
       () => {
-        commentLinks(siteDataRequest);
+        commentLinks(siteDataRequests);
 
         // See the comment above: "Additions of CSS...".
         require('../less/global.less');
@@ -604,7 +637,7 @@ async function app() {
 
       // cd.getStringsPromise may be set in the configuration file.
       !cd.i18n && (cd.getStringsPromise || getStrings()),
-    ].filter(defined));
+    ]);
   } catch (e) {
     console.error(e);
     return;

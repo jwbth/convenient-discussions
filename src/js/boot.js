@@ -28,6 +28,7 @@ import {
   restoreScrollPosition,
   saveScrollPosition,
   saveToLocalStorage,
+  skin$,
   transparentize,
   unhideText,
 } from './util';
@@ -180,32 +181,29 @@ export async function initSettings() {
  * @private
  */
 export function setTalkPageCssVariables() {
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put(':root', {
-    '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
-  });
+  // Get the "focused" color to infer a transparent color for it later. The user may override the
+  // CSS variable value in their personal styles, so we get the existing value first.
+  const focusedColor = (
+    $(document.documentElement).css('--cd-comment-focused-color') ||
+    cd.g.COMMENT_FOCUSED_COLOR
+  );
 
-  // Set the transparent color for the "focused" color. The user may override the CSS variable value
-  // in their personal styles, so we get the existing value first.
-  const focusedColor = $(document.documentElement).css('--cd-comment-focused-color');
-
-  // Vector, Monobook, Minerva
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
-  const sidebarColor = $('.skin-timeless').length ?
-    '#eaecf0' :
-    $(document.body)
-      // New Vector
-      .add('.mw-page-container')
+  const $backgrounded = skin$({
+    timeless: '#mw-content-container',
+    vector: '.mw-page-container',
+    default: 'body',
+  });
+  const sidebarColor = $backgrounded.css('background-color');
 
-      .last()
-      .css('background-color');
-
+  cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-target-color': cd.g.COMMENT_TARGET_COLOR,
     '--cd-comment-new-color': cd.g.COMMENT_NEW_COLOR,
     '--cd-comment-own-color': cd.g.COMMENT_OWN_COLOR,
     '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
+    '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
     '--cd-comment-focused-transparent-color': transparentize(focusedColor),
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-sidebar-color': sidebarColor,
@@ -300,7 +298,7 @@ function initGlobals() {
  * @private
  */
 function initPatterns() {
-  // Fix the configuration value that is likely to be nullified.
+  // Fix the configuration value that might be nullified.
   cd.config.customTalkNamespaces = cd.config.customTalkNamespaces || [];
 
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
@@ -610,16 +608,19 @@ function initOouiAndElementPrototypes() {
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
  * the first run.
  *
- * @param {Promise} siteDataRequest Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
  */
-export async function init(siteDataRequest) {
+export async function init(siteDataRequests) {
   cd.g.api = cd.g.api || new mw.Api();
   cd.g.worker = new Worker();
 
-  await (siteDataRequest || loadSiteData());
+  await (siteDataRequests || loadSiteData());
   initGlobals();
   await initSettings();
   initTimestampParsingTools();
+  initPatterns();
+  initOouiAndElementPrototypes();
+  $.fn.extend(jqueryExtensions);
 
   /**
    * Collection of all comment forms on the page in the order of their creation.
@@ -629,10 +630,6 @@ export async function init(siteDataRequest) {
    * @memberof module:cd~convenientDiscussions
    */
   cd.commentForms = [];
-
-  initPatterns();
-  initOouiAndElementPrototypes();
-  $.fn.extend(jqueryExtensions);
 }
 
 /**

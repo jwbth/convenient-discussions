@@ -456,7 +456,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
             icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
             action: {
               type: 'callback',
-              execute: () => {
+              execute: function () {
                 window.Wikify(commentForm.commentInput.$input.get(0));
               },
             },

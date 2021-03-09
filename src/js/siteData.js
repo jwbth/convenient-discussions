@@ -540,13 +540,13 @@ export function loadSiteData() {
   cd.g.api = cd.g.api || new mw.Api();
 
   // I hope we won't be scolded too much for making two message requests in parallel.
-  const messagesRequests = [];
+  const messageRequests = [];
   for (let i = 0; i < messageNames.length; i += 50) {
     const nextNames = messageNames.slice(i, i + 50);
     const request = cd.g.api.loadMessagesIfMissing(nextNames, {
       amlang: mw.config.get('wgContentLanguage'),
     });
-    messagesRequests.push(request);
+    messageRequests.push(request);
   }
 
   if (!Object.keys(cd.config.messages).some((name) => name.startsWith('timezone-'))) {
@@ -555,21 +555,21 @@ export function loadSiteData() {
       amincludelocal: 1,
       amfilter: 'timezone-',
     });
-    messagesRequests.push(request);
+    messageRequests.push(request);
   }
 
-  Promise.all(messagesRequests).then(() => {
-    cd.g.messages = {};
-
+  const populateMessages = () => {
     // We need this object to pass to the web worker.
+    cd.g.messages = {};
     messageNames.push(
       ...Object.keys(mw.messages.get()).filter((name) => name.startsWith('timezone-'))
     );
     messageNames.forEach((name) => {
       cd.g.messages[name] = mw.messages.get(name);
     });
-  });
-  requests.push(...messagesRequests);
+  };
+
+  requests.push(...messageRequests);
 
   if (!cd.g.CONTRIBS_PAGE || cd.g.LOCAL_TIMEZONE_OFFSET == null) {
     const request = cd.g.api.get({
@@ -590,7 +590,13 @@ export function loadSiteData() {
     requests.push(request);
   }
 
-  return Promise.all(requests);
+  if (requests.every((request) => request.state() === 'resolved')) {
+    populateMessages();
+    return Promise.all([]);
+  } else {
+    Promise.all(messageRequests).then(populateMessages);
+    return Promise.all(requests);
+  }
 }
 
 /**
