@@ -180,16 +180,13 @@ export async function initSettings() {
  * @private
  */
 export function setTalkPageCssVariables() {
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put(':root', {
-    '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
-  });
+  // Get the "focused" color to infer a transparent color for it later. The user may override the
+  // CSS variable value in their personal styles, so we get the existing value first.
+  const focusedColor = (
+    $(document.documentElement).css('--cd-comment-focused-color') ||
+    cd.g.COMMENT_FOCUSED_COLOR
+  );
 
-  // Set the transparent color for the "focused" color. The user may override the CSS variable value
-  // in their personal styles, so we get the existing value first.
-  const focusedColor = $(document.documentElement).css('--cd-comment-focused-color');
-
-  // Vector, Monobook, Minerva
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
   const sidebarColor = $('.skin-timeless').length ?
@@ -201,11 +198,13 @@ export function setTalkPageCssVariables() {
       .last()
       .css('background-color');
 
+  cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-target-color': cd.g.COMMENT_TARGET_COLOR,
     '--cd-comment-new-color': cd.g.COMMENT_NEW_COLOR,
     '--cd-comment-own-color': cd.g.COMMENT_OWN_COLOR,
     '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
+    '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
     '--cd-comment-focused-transparent-color': transparentize(focusedColor),
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-sidebar-color': sidebarColor,
@@ -620,6 +619,9 @@ export async function init(siteDataRequest) {
   initGlobals();
   await initSettings();
   initTimestampParsingTools();
+  initPatterns();
+  initOouiAndElementPrototypes();
+  $.fn.extend(jqueryExtensions);
 
   /**
    * Collection of all comment forms on the page in the order of their creation.
@@ -629,10 +631,6 @@ export async function init(siteDataRequest) {
    * @memberof module:cd~convenientDiscussions
    */
   cd.commentForms = [];
-
-  initPatterns();
-  initOouiAndElementPrototypes();
-  $.fn.extend(jqueryExtensions);
 }
 
 /**
