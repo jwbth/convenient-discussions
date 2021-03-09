@@ -558,10 +558,9 @@ export function loadSiteData() {
     messagesRequests.push(request);
   }
 
-  Promise.all(messagesRequests).then(() => {
-    cd.g.messages = {};
-
+  const populateMessages = () => {
     // We need this object to pass to the web worker.
+    cd.g.messages = {};
     messageNames.push(
       ...Object.keys(mw.messages.get()).filter((name) => name.startsWith('timezone-'))
     );
@@ -590,7 +589,13 @@ export function loadSiteData() {
     requests.push(request);
   }
 
-  return Promise.all(requests);
+  if (requests.every((request) => request.state() === 'resolved')) {
+    populateMessages();
+    return Promise.all([]);
+  } else {
+    Promise.all(messageRequests).then(populateMessages);
+    return Promise.all(requests);
+  }
 }
 
 /**
