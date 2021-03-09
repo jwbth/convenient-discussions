@@ -282,10 +282,13 @@ function go() {
   const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
-  if (mw.config.get('wgIsArticle') && !mw.config.get('wgIsRedirect')) {
+  if (mw.config.get('wgIsArticle')) {
     if (
       !/[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search) &&
-      (!cd.g.$content.find('.cd-notTalkPage').length || enabledInQuery) &&
+      (
+        (!mw.config.get('wgIsRedirect') && !cd.g.$content.find('.cd-notTalkPage').length) ||
+        enabledInQuery
+      ) &&
       (
         isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
         $('#ca-addsection').length ||
