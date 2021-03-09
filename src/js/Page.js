@@ -200,7 +200,7 @@ export default class Page {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: true,
+      redirects: !(this === cd.g.CURRENT_PAGE && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
       formatversion: 2,
     }).catch(handleApiReject);
@@ -376,7 +376,7 @@ export default class Page {
       titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
-      redirects: true,
+      redirects: !(this === cd.g.CURRENT_PAGE && mw.config.get('wgIsRedirect')),
       formatversion: 2,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
