@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import commentLinks from './commentLinks';
-import configUrls from './../../config/urls.json';
+import configUrls from '../../config/urls.json';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
@@ -496,7 +496,8 @@ async function go() {
  */
 function getConfig() {
   return new Promise((resolve, reject) => {
-    if (configUrls[location.hostname]) {
+    const configUrl = configUrls[location.hostname];
+    if (configUrl) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
       };
@@ -513,12 +514,19 @@ function getConfig() {
         );
       };
 
-      const url = IS_DEV ?
-        configUrls[location.hostname].replace('.js', '-dev.js') :
-        configUrls[location.hostname];
+      const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || [];
+      if (gadgetName && mw.user.options.get(`gadget-${gadgetName}`)) {
+        // A gadget is enabled on the wiki, and it should be loaded and executed without any
+        // additional requests; we just wait until it happens.
+        mw.loader.using(`ext.gadget.${gadgetName}`).then(() => {
+          resolve();
+        });
+        return;
+      }
+      const url = IS_DEV ? configUrl.replace('.js', '-dev.js') : configUrl;
       getScript(url, () => {
         if (IS_DEV) {
-          getScript(configUrls[location.hostname], () => {
+          getScript(configUrl, () => {
             rejectWithMsg('Empty response.');
           });
         } else {
