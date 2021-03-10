@@ -645,7 +645,7 @@ async function app() {
 
   cd.debug.stopTimer('loading config and strings');
 
-  go();
+  $(go);
 }
 
-$(app);
+app();
