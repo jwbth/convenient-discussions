@@ -34,7 +34,10 @@ import { setVisits } from './options';
 let config;
 let strings;
 if (IS_SNIPPET) {
-  config = require(`../../config/${CONFIG_FILE_NAME}`).default;
+  try {
+    config = require(`../../config/${CONFIG_FILE_NAME}`).default;
+    // eslint-disable-next-line no-empty
+  } catch (e) {}
 
   const replaceEntities = (s) => (
     s
