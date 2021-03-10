@@ -116,7 +116,8 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
       json = json.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
     }
 
-    const data = `convenientDiscussions.i18n = convenientDiscussions.i18n || {};
+    const data = `window.convenientDiscussions = window.convenientDiscussions || {};
+convenientDiscussions.i18n = convenientDiscussions.i18n || {};
 convenientDiscussions.i18n['${lang}'] = ${json};
 `;
     fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
