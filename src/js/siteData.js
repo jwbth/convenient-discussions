@@ -707,7 +707,7 @@ function getTimestampMainPartPattern(format, digits) {
         }
         break;
       default:
-        s += format[p];
+        s += mw.util.escapeRegExp(format[p]);
     }
     if (num !== false) {
       s += regexpGroup(digits + '{' + num + '}');
