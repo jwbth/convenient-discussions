@@ -2593,7 +2593,7 @@ export default class CommentForm {
   }
 
   /**
-   * Whether the form is being submitted right now.
+   * Is the form being submitted right now.
    *
    * @returns {boolean}
    */

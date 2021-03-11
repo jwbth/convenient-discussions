@@ -341,7 +341,7 @@ export default {
   mentionCharacter: '@',
 
   /**
-   * Whether there should be a leading space (or other punctuation) before {@link
+   * Should there be a leading space (or other punctuation) before {@link
    * module:defaultConfig.mentionCharacter the mention character} to trigger autocomplete.
    *
    * @type {boolean}

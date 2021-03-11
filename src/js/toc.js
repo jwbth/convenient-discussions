@@ -5,7 +5,6 @@
  */
 
 import Comment from './Comment';
-import Section from './Section';
 import cd from './cd';
 import { reloadPage } from './boot';
 import { restoreScrollPosition, saveScrollPosition } from './util';

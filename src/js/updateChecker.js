@@ -659,7 +659,7 @@ function showDesktopNotification(comments) {
 }
 
 /**
- * Whether the page is still at the specified revision and the content is not loading.
+ * Check if the page is still at the specified revision and the content is not loading.
  *
  * @param {number} revisionId
  * @returns {boolean}

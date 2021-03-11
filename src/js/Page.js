@@ -75,7 +75,7 @@ export default class Page {
   }
 
   /**
-   * Whether the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}
+   * Check if the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}
    * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
    * `data-is-archive-page`.
    *
@@ -105,10 +105,10 @@ export default class Page {
   }
 
   /**
-   * Whether this page can have archives. If the page is an archive page, returns `false`. Relies on
-   * {@link module:defaultConfig.pagesWithoutArchives} and {@link module:defaultConfig.archivePaths}
-   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
-   * `data-can-have-archives`.
+   * Check if this page can have archives. If the page is an archive page, returns `false`. Relies
+   * on {@link module:defaultConfig.pagesWithoutArchives} and {@link
+   * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * `cd-archivingInfo` and attribute `data-can-have-archives`.
    *
    * @returns {?boolean}
    */

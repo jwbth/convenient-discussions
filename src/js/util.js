@@ -462,7 +462,7 @@ export function getExtendedRect(el) {
 }
 
 /**
- * Whether two objects are the same by value. Doesn't handle complex cases. `undefined` values are
+ * Check if two objects are identical by value. Doesn't handle complex cases. `undefined` values are
  * treated as unexistent (this helps to compare values retrieved from the local storage as JSON:
  * `JSON.stringify()` removes all `undefined` values as well).
  *
@@ -642,7 +642,7 @@ export function calculateWordsOverlap(s1, s2) {
 }
 
 /**
- * Whether a provided key combination is pressed given an event.
+ * Check if the provided key combination is pressed given an event.
  *
  * @param {Event} e
  * @param {number} keyCode
