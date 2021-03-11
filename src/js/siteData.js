@@ -502,6 +502,10 @@ function setFormats() {
   let langCode = mw.config.get('wgPageContentLanguage');
   if (!DATE_FORMATS[langCode]) {
     langCode = mw.config.get('wgVisualEditor').pageVariantFallbacks;
+    if (!DATE_FORMATS[langCode]) {
+      // https://incubator.wikimedia.org/wiki/Talk:Wp/enm/Mayne_Page
+      langCode = mw.config.get('wgContentLanguage');
+    }
   }
   cd.g.DATE_FORMAT = DATE_FORMATS[langCode];
   cd.g.DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[langCode] : null;
