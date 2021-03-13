@@ -36,15 +36,11 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
-    const mwBody = skin$({
-      timeless: '#mw-content',
-      minerva: '#bodyContent',
-      default: '#content',
-    }).get(0);
-    if (mwBody) {
+    const contentColumn = cd.g.$contentColumn.get(0);
+    if (contentColumn) {
       const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
-        mwBody.getBoundingClientRect().left - 18 :
-        $(window).width() - mwBody.getBoundingClientRect().right - 18;
+        contentColumn.getBoundingClientRect().left - 18 :
+        $(window).width() - contentColumn.getBoundingClientRect().right - 18;
       this.$topElement.css('width', width + 'px');
       this.$bottomElement.css('width', width + 'px');
     }

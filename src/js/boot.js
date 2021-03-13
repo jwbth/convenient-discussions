@@ -95,6 +95,7 @@ export async function initSettings() {
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
     modifyToc: true,
+    useBackgroundHighlighting: false,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
@@ -108,6 +109,7 @@ export async function initSettings() {
     'defaultCommentLinkType',
     'defaultSectionLinkType',
     'showLoadingOverlay',
+    'useBackgroundHighlighting',
   ];
 
   // Aliases for seamless transition when changing a setting name.
@@ -176,6 +178,23 @@ export async function initSettings() {
 }
 
 /**
+ * Assign some important skin-specific values to the properties of the global object.
+ */
+export function getCssValues() {
+  cd.g.REGULAR_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
+  cd.g.REGULAR_FONT_SIZE = parseFloat(cd.g.$content.css('font-size'));
+
+  // For the Timeless skin
+  cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
+
+  const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
+  cd.g.CONTENT_START_MARGIN = (
+    parseFloat(cd.g.$contentColumn.css(property)) ||
+    cd.g.REGULAR_FONT_SIZE
+  );
+}
+
+/**
  * Set CSS for talk pages.
  *
  * @private
@@ -205,9 +224,18 @@ export function setTalkPageCssVariables() {
     '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
     '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
     '--cd-comment-focused-transparent-color': transparentize(focusedColor),
+    '--cd-comment-target-line-color': cd.g.COMMENT_TARGET_LINE_COLOR,
+    '--cd-comment-new-line-color': cd.g.COMMENT_NEW_LINE_COLOR,
+    '--cd-comment-own-line-color': cd.g.COMMENT_OWN_LINE_COLOR,
+    '--cd-comment-deleted-line-color': cd.g.COMMENT_DELETED_LINE_COLOR,
+    '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
+    '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
+    '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
+    '--cd-comment-focused-background-color': cd.g.COMMENT_FOCUSED_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-sidebar-color': sidebarColor,
     '--cd-sidebar-transparent-color': transparentize(sidebarColor),
+    '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
   });
 }
 
@@ -569,11 +597,21 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-commentButton'],
   }).$element.get(0);
 
+  const layersClassPostfix = cd.settings.useBackgroundHighlighting ? 'classic' : 'lined';
+
   cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = document.createElement('div');
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay.className = 'cd-commentUnderlay';
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay.className = (
+    `cd-commentUnderlay cd-commentUnderlay-${layersClassPostfix}`
+  );
 
   cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay = document.createElement('div');
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.className = 'cd-commentOverlay';
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.className = (
+    `cd-commentOverlay cd-commentOverlay-${layersClassPostfix}`
+  );
+
+  const overlayLine = document.createElement('div');
+  overlayLine.className = 'cd-commentOverlay-line';
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.appendChild(overlayLine);
 
   const overlayInnerWrapper = document.createElement('div');
   overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';

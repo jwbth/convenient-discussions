@@ -15,6 +15,7 @@ import util from './globalUtil';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
+  getCssValues,
   isLoadingOverlayOn,
   removeLoadingOverlay,
   setLoadingOverlay,
@@ -280,6 +281,10 @@ async function go() {
   cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
   cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+  cd.g.SKIN = mw.config.get('skin');
+  if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
+    cd.g.SKIN = 'vector-legacy';
+  }
 
   // Quite a rough check for mobile browsers, a mix of what is advised at
   // https://stackoverflow.com/a/24600597 (sends to
@@ -401,23 +406,30 @@ async function go() {
         }
       }, 10000);
 
-      cd.g.SKIN = mw.config.get('skin');
-      if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
-        cd.g.SKIN = 'vector-legacy';
+      cd.g.$contentColumn = skin$({
+        timeless: '#mw-content',
+        minerva: '#bodyContent',
+        default: '#content',
+      });
+
+      if (cd.g.SKIN === 'minerva') {
+        // Root level comments can't be highlighted without the center column element having side
+        // padding. The page navigation block will overlap content too.
+        cd.g.$contentColumn.css('padding', '0 1em');
       }
 
       /*
-        Additions of CSS cause a reflow which delays operations dependent on rendering, so we run
-        it now, not after the requests are fulfilled, to save time. The overall order is like this:
+        Additions of CSS set the stage for a future reflow which delays operations dependent on
+        rendering, so we run them now, not after the requests are fulfilled, to save time. The
+        overall order is like this:
         1. Make API requests (above).
-        2. Run operations dependent on rendering, such as window.getComputedStyle().
-        3. Run operations that initiate a reflow, such as adding CSS. Thanks to the fact that the
-        API requests are already pending, we don't lose time.
+        2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
+           .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
+           layout or added CSS yet, there is nothing to update.
+        3. Run operations that create prerequisites for a reflow, such as adding CSS. Thanks to the
+           fact that the API requests are already pending, we don't lose time.
        */
-      cd.g.REGULAR_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
-
-      // For the Timeless skin
-      cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
+      getCssValues();
 
       setTalkPageCssVariables();
 

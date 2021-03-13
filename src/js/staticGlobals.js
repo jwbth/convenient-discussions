@@ -69,6 +69,70 @@ export default {
   COMMENT_DELETED_COLOR: '#fee7e6',
 
   /**
+   * Line color for target comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_TARGET_LINE_COLOR: '#fc3',
+
+  /**
+   * Line color for new comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_NEW_LINE_COLOR: '#00af89',
+
+  /**
+   * Line color for own comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_OWN_LINE_COLOR: '#9f33cc',
+
+  /**
+   * Line color for deleted comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_DELETED_LINE_COLOR: '#d33',
+
+  /**
+   * Background color for target comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_TARGET_BACKGROUND_COLOR: '#fef6e7',
+
+  /**
+   * Background color used for _flashing_ new comments when they are updated.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_NEW_BACKGROUND_COLOR: '#d5fdf4',
+
+  /**
+   * Background color for focused (hovered) comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_FOCUSED_BACKGROUND_COLOR: '#f8f9fa',
+
+  /**
+   * Background color for deleted comments.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_DELETED_BACKGROUND_COLOR: '#fee7e6',
+
+  /**
    * How long a comment should be considered new and have a corresponding background on newly loaded
    * pages. In minutes.
    *

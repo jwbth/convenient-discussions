@@ -2,33 +2,83 @@
   position: absolute;
   z-index: -1;
 
-  // Note that the classes are in the order of their precedence if you go from the last to the
-  // first.
-  &-new {
-    background-color: var(--cd-comment-new-color);
+  &-classic {
+    &.cd-commentUnderlay {
+      // Note that the classes are in the order of their precedence if you go from the last to the
+      // first.
+      &-new {
+        background-color: var(--cd-comment-new-color);
+      }
+
+      &-own {
+        background-color: var(--cd-comment-own-color);
+      }
+
+      &-deleted {
+        background-color: var(--cd-comment-deleted-color);
+      }
+
+      &-focused {
+        background-color: var(--cd-comment-focused-color);
+      }
+    }
   }
 
-  &-own {
-    background-color: var(--cd-comment-own-color);
-  }
+  &-lined {
+    &.cd-commentUnderlay {
+      // Note that the classes are in the order of their precedence if you go from the last to the
+      // first.
+      &-deleted {
+        background-color: var(--cd-comment-deleted-background-color);
+      }
 
-  &-deleted {
-    background-color: var(--cd-comment-deleted-color);
-  }
-
-  &-focused {
-    background-color: var(--cd-comment-focused-color);
+      &-focused {
+        background-color: var(--cd-comment-focused-background-color);
+      }
+    }
   }
 }
 
 .cd-commentOverlay {
   position: absolute;
-  display: none;
   pointer-events: none;
-  justify-content: flex-end;
   line-height: 1.4285714em;
 
-  &-focused {
+  &-lined {
+    &.cd-commentOverlay {
+      &-new .cd-commentOverlay-line {
+        background-color: var(--cd-comment-new-line-color);
+      }
+
+      &-own .cd-commentOverlay-line {
+        background-color: var(--cd-comment-own-line-color);
+      }
+
+      &-deleted .cd-commentOverlay-line {
+        background-color: var(--cd-comment-deleted-line-color);
+      }
+
+      .cd-commentOverlay-line {
+        position: relative;
+        top: 0;
+        left: -1px;
+        width: 3px;
+        height: 100%;
+      }
+    }
+
+    .cd-commentOverlay-content {
+      background-color: var(--cd-comment-focused-background-color);
+    }
+  }
+
+  &-classic {
+    .cd-commentOverlay-content {
+      background-color: var(--cd-comment-focused-color);
+    }
+  }
+
+  &-focused .cd-commentOverlay-innerWrapper {
     display: flex;
   }
 
@@ -37,7 +87,7 @@
     z-index: 1;
     bottom: 0;
     font-size: 14px;
-    display: flex;
+    display: none;
     flex-direction: row;
   }
 
@@ -52,7 +102,6 @@
   &-content {
     display: inline-flex;
     padding: 0 0.5em;
-    background-color: var(--cd-comment-focused-color);
     flex-direction: row;
     pointer-events: all;
   }
@@ -75,6 +124,10 @@
   .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
     margin-left: 0;
   }
+
+  &.cd-commentOverlay-fullWidth .cd-commentOverlay-content {
+    padding-right: calc(~"var(--cd-content-start-margin) - 5px + 0.5em");
+  }
 }
 
 .rtl .cd-commentOverlay {
@@ -89,6 +142,10 @@
   .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
     margin-right: 0;
   }
+
+  &.cd-commentOverlay-fullWidth .cd-commentOverlay-content {
+    padding-left: calc(~"var(--cd-content-start-margin) - 5px + 0.5em");
+  }
 }
 
 .ltr .cd-commentOverlay-innerWrapper {
@@ -101,12 +158,20 @@
   left: 0;
 }
 
-.ltr .cd-commentOverlay-gradient {
+.ltr .cd-commentOverlay-classic .cd-commentOverlay-gradient {
   background-image: linear-gradient(to left, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color));
 }
 
-.rtl .cd-commentOverlay-gradient {
+.rtl .cd-commentOverlay-classic .cd-commentOverlay-gradient {
   background-image: linear-gradient(to right, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color));
+}
+
+.ltr .cd-commentOverlay-lined .cd-commentOverlay-gradient {
+  background-image: linear-gradient(to left, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+}
+
+.rtl .cd-commentOverlay-lined .cd-commentOverlay-gradient {
+  background-image: linear-gradient(to right, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
 }
 
 body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {

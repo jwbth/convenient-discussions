@@ -231,30 +231,71 @@ export default class Comment extends CommentSkeleton {
         }
       });
 
-      // We calculate the right border separately - in its case, we need to change the `overflow`
-      // property to get the desired value, otherwise floating elements are not taken into account.
-      const initialOverflows = [];
+      // We calculate the left and right borders separately - in its case, we need to change the
+      // `overflow` property to get the desired value, otherwise floating elements are not taken
+      // into account.
       if (bottomIntersectsFloating) {
+        const initialOverflows = [];
         this.elements.forEach((el, i) => {
           initialOverflows[i] = el.style.overflow;
           el.style.overflow = 'hidden';
         });
-      }
 
-      rectTop = this.highlightables[0].getBoundingClientRect();
-      rectBottom = this.elements.length === 1 ?
-        rectTop :
-        this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
+        const newRectTop = this.highlightables[0].getBoundingClientRect();
+        const newRectBottom = this.elements.length === 1 ?
+          newRectTop :
+          this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
 
-      // If the comment intersects more than one floating block, we better keep `overflow: hidden`
-      // to avoid bugs like where there are two floating blocks to the right with different leftmost
-      // positions and the layer is more narrow than the comment.
-      if (intersectsFloatingCount === 1) {
-        this.elements.forEach((el, i) => {
-          el.style.overflow = initialOverflows[i];
-        });
+        const startProperty = cd.g.CONTENT_DIR === 'ltr' ? 'left' : 'right';
+        const endProperty = cd.g.CONTENT_DIR === 'ltr' ? 'right' : 'left';
+
+        /**
+         * Is the start (left on LTR wikis, right on RTL wikis) side of the comment constrained by a
+         * floating element.
+         *
+         * @type {boolean|undefined}
+         */
+        this.isStartConstrained = (
+          this.isLayoutStabilized ||
+          newRectTop[startProperty] !== rectTop[startProperty]
+        );
+
+        /**
+         * Is the end (right on LTR wikis, left on RTL wikis) side of the comment constrained by a
+         * floating element.
+         *
+         * @type {boolean|undefined}
+         */
+        this.isEndConstrained = (
+          this.isLayoutStabilized ||
+          newRectTop[endProperty] !== rectTop[endProperty]
+        );
+
+        rectTop = newRectTop;
+        rectBottom = newRectBottom;
+
+        // If the comment intersects more than one floating block, we better keep `overflow: hidden`
+        // to avoid bugs like where there are two floating blocks to the right with different
+        // leftmost positions and the layer is more narrow than the comment.
+        if (intersectsFloatingCount === 1) {
+          this.elements.forEach((el, i) => {
+            el.style.overflow = initialOverflows[i];
+          });
+        } else {
+          /**
+           * Has the `overflow: hidden` style been added to the comment's elements to stabilize
+           * otherwise fluid layout.
+           *
+           * @type {boolean|undefined}
+           */
+          this.isLayoutStabilized = true;
+        }
+      } else {
+        this.isStartConstrained = false;
+        this.isEndConstrained = false;
       }
     }
+
     const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
     const right = window.scrollX + Math.max(rectTop.right, rectBottom.right);
 
@@ -287,10 +328,25 @@ export default class Comment extends CommentSkeleton {
     // This is to determine if the element has moved in future checks.
     this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
+    let startMargin;
+    let endMargin;
+    if (cd.settings.useBackgroundHighlighting) {
+      startMargin = 5;
+      endMargin = 5;
+    } else {
+      startMargin = this.isStartConstrained || this.level !== 0 ?
+        cd.g.REGULAR_FONT_SIZE :
+        cd.g.CONTENT_START_MARGIN;
+      endMargin = this.isEndConstrained || this.level !== 0 ? 5 : cd.g.CONTENT_START_MARGIN;
+    }
+
+    const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
+    const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
+
     return {
       layersTop: this.positions.top - options.layersContainerOffset.top,
-      layersLeft: this.positions.left - 5 - options.layersContainerOffset.left,
-      layersWidth: this.positions.right - this.positions.left + (5 * 2),
+      layersLeft: this.positions.left - leftMargin - options.layersContainerOffset.left,
+      layersWidth: this.positions.right - this.positions.left + leftMargin + rightMargin,
       layersHeight: this.positions.bottom - this.positions.top,
     };
   }
@@ -318,7 +374,8 @@ export default class Comment extends CommentSkeleton {
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
-    this.overlayInnerWrapper = this.overlay.firstChild;
+    this.line = this.overlay.firstChild;
+    this.overlayInnerWrapper = this.overlay.lastChild;
 
     // Hide the overlay on right click. It can block clicking the author page link.
     this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
@@ -447,6 +504,13 @@ export default class Comment extends CommentSkeleton {
     this.$overlay = $(this.overlay);
 
     /**
+     * Comment's side line.
+     *
+     * @type {?(JQuery|undefined)}
+     */
+    this.$line = $(this.line);
+
+    /**
      * Links container of the comment's overlay.
      *
      * @type {?(JQuery|undefined)}
@@ -477,12 +541,15 @@ export default class Comment extends CommentSkeleton {
 
     if (this.isNew) {
       this.underlay.classList.add('cd-commentUnderlay-new');
+      this.overlay.classList.add('cd-commentOverlay-new');
     }
     if (cd.settings.highlightOwnComments && this.isOwn) {
       this.underlay.classList.add('cd-commentUnderlay-own');
+      this.overlay.classList.add('cd-commentOverlay-own');
     }
     if (this.isDeleted) {
       this.underlay.classList.add('cd-commentUnderlay-deleted');
+      this.overlay.classList.add('cd-commentOverlay-deleted');
       if (this.replyButton) {
         this.replyButton.classList.add('oo-ui-widget-disabled');
         this.replyButton.classList.remove('oo-ui-widget-enabled');
@@ -493,6 +560,7 @@ export default class Comment extends CommentSkeleton {
       }
     } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
       this.underlay.classList.remove('cd-commentUnderlay-deleted');
+      this.overlay.classList.remove('cd-commentUnderlay-deleted');
       if (this.replyButton) {
         this.replyButton.classList.remove('oo-ui-widget-disabled');
         this.replyButton.classList.add('oo-ui-widget-enabled');
@@ -502,6 +570,13 @@ export default class Comment extends CommentSkeleton {
         this.editButton.classList.add('oo-ui-widget-enabled');
       }
     }
+
+    const isFullWidth = (
+      !cd.settings.useBackgroundHighlighting &&
+      this.level === 0 &&
+      !this.isEndConstrained
+    );
+    this.overlay.classList.toggle('cd-commentOverlay-fullWidth', isFullWidth);
   }
 
   /**
@@ -648,17 +723,18 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment's current background color, be it an underlay color or regular background
-   * color.
+   * Get the comment's current colors: the background color, be it an underlay color or regular
+   * background color, and the line color.
    *
-   * @returns {string}
+   * @returns {object}
    */
-  getCurrentBackgroundColor() {
-    let color = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
-    if (color === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
-      color = this.backgroundColor;
+  getCurrentColors() {
+    let line = window.getComputedStyle(this.$line.get(0)).backgroundColor;
+    let background = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
+    if (background === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
+      background = this.backgroundColor;
     }
-    return color;
+    return { line, background };
   }
 
   /**
@@ -670,20 +746,30 @@ export default class Comment extends CommentSkeleton {
 
     // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
     // their personal CSS.
-    this.flash($(document.documentElement).css('--cd-comment-target-color'), 1500, () => {
-      this.isTarget = false;
-    });
+    const $doc = $(document.documentElement);
+    this.flash(
+      {
+        background: $doc.css(`--cd-comment-target-background-color`),
+        line: $doc.css(`--cd-comment-target-line-color`),
+        classic: $doc.css(`--cd-comment-target-color`),
+      },
+      1500,
+      () => {
+        this.isTarget = false;
+      }
+    );
   }
 
   /**
    * Change the comment's background color to the provided color for the given number of
    * milliseconds, then smoothly change it back.
    *
-   * @param {string} color
+   * @param {object} colors Colors per each type of elements/styles (`line`, `background`,
+   *   `classic`). `background` is not required.
    * @param {number} delay
    * @param {Function} callback
    */
-  flash(color, delay, callback) {
+  flash(colors, delay, callback) {
     this.configureLayers();
     if (!this.$underlay) {
       if (callback) {
@@ -692,34 +778,58 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    this.$elementsToAnimate = this.$underlay
+    this.$backgroundToAnimate = this.$underlay
       .add(this.$overlayGradient)
       .add(this.$overlayContent)
-      .stop()
+      .stop();
+    this.$backgroundToAnimate
+      .add(this.$line)
       .css('background-image', 'none')
       .css('background-color', '');
-    let finalColor = this.getCurrentBackgroundColor();
+    let finalColors = this.getCurrentColors();
 
-    this.$elementsToAnimate.css('background-color', color);
+    if (!cd.settings.useBackgroundHighlighting) {
+      this.$line.css('background-color', colors.line);
+    }
+    const backgroundColor = cd.settings.useBackgroundHighlighting ?
+      colors.classic :
+      colors.background;
+    this.$backgroundToAnimate.css('background-color', backgroundColor);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
+      const $doc = $(document.documentElement);
+
       // These comment properties may get assigned after the flash() call.
+      const backgroundVarPostfix = cd.settings.useBackgroundHighlighting ?
+        'color' :
+        'background-color';
       if (this.isFocused) {
-        finalColor = $(document.documentElement).css('--cd-comment-focused-color');
+        finalColors.background = $doc.css(`--cd-comment-focused-${backgroundVarPostfix}`);
       } else if (this.isNew && !this.isOwn) {
-        finalColor = $(document.documentElement).css('--cd-comment-new-color');
+        finalColors.line = $doc.css(`--cd-comment-new-line-color`);
+        if (cd.settings.useBackgroundHighlighting) {
+          finalColors.background = $doc.css(`--cd-comment-new-color`);
+        }
       }
-      if (finalColor === color) {
-        finalColor = this.backgroundColor || 'rgba(0, 0, 0, 0)';
+      if (cd.settings.useBackgroundHighlighting && finalColors.background === backgroundColor) {
+        finalColors.background = this.backgroundColor || 'rgba(0, 0, 0, 0)';
       }
 
       const comment = this;
-      this.$elementsToAnimate
+      if (!cd.settings.useBackgroundHighlighting) {
+        this.$line
+          .stop()
+          .css('background-color', colors.line)
+          .animate({ backgroundColor: finalColors.line }, 400, 'swing', function () {
+            comment.$line.css('background-color', '');
+          });
+      }
+      this.$backgroundToAnimate
         .stop()
         .css('background-image', 'none')
-        .css('background-color', color)
+        .css('background-color', backgroundColor)
         .animate(
-          { backgroundColor: finalColor },
+          { backgroundColor: finalColors.background },
           400,
           'swing',
           function () {
@@ -728,10 +838,10 @@ export default class Comment extends CommentSkeleton {
             if (callback) {
               callback();
             }
-            comment.$elementsToAnimate
+            comment.$backgroundToAnimate
               .css('background-image', '')
               .css('background-color', '');
-            delete comment.$elementsToAnimate;
+            delete comment.$backgroundToAnimate;
           }
         );
     }, delay);
@@ -742,7 +852,12 @@ export default class Comment extends CommentSkeleton {
    * storage.
    */
   flashNew() {
-    this.flash($(document.documentElement).css('--cd-comment-new-color'), 500);
+    const $doc = $(document.documentElement);
+    this.flash({
+      background: $doc.css(`--cd-comment-new-background-color`),
+      line: $doc.css(`--cd-comment-new-line-color`),
+      classic: $doc.css(`--cd-comment-new-color`),
+    }, 500);
 
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
@@ -1624,7 +1739,8 @@ export default class Comment extends CommentSkeleton {
   removeLayers() {
     if (!this.underlay) return;
 
-    this.$elementsToAnimate?.stop();
+    this.$backgroundToAnimate?.stop();
+    this.$line.stop();
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
     this.underlay.remove();
