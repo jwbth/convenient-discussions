@@ -199,7 +199,7 @@
 	"navpanel-newcomments-names": "$1 → $2",
 	"navpanel-newcomments-unknowndate": "неизвестная дата",
 	"navpanel-newcomments-refresh": "Нажмите, чтобы обновить страницу",
-	"navpanel-markasread": "Удерживайте Ctrl, чтобы пометить все показанные сообщения как прочитанные",
+	"navpanel-markasread": "Удерживайте Ctrl, чтобы пометить все видимые сообщения как прочитанные",
 	"toc-more": "ещё $1",
 	"toc-watched": "Вы следите за этим разделом",
 	"pagenav-pagetop": "Начало страницы",
