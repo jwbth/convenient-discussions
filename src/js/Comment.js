@@ -616,22 +616,17 @@ export default class Comment extends CommentSkeleton {
 
     let isMoved = false;
     if (this.underlay) {
-      // Firefox bug makes it possible for minor (~0.02) differences to manifest.
-      const topDifference = Math.abs(
-        window.scrollY +
-        options.rectTop.top -
-        options.layersContainerOffset.top -
-        this.layersTop
+      const topDifference = (
+        (window.scrollY + options.rectTop.top) -
+        (options.layersContainerOffset.top + this.layersTop)
       );
-      const heightDifference = Math.abs(
-        options.rectBottom.bottom -
-        options.rectTop.top -
+      const heightDifference = (
+        (options.rectBottom.bottom - options.rectTop.top) -
         this.layersHeight
       );
-
       isMoved = (
-        topDifference > 0.5 ||
-        heightDifference > 0.5 ||
+        topDifference ||
+        heightDifference ||
         this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
       );
     }
