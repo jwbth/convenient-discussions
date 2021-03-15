@@ -186,7 +186,7 @@ export default {
   elementsToExcludeClasses: [
     'ruwiki-movedTemplate',
     'ambox',
-    'NavFrame',
+    'NavHead',
     'ts-Закрыто-footer',
     'ts-Цитата-container',
   ],
