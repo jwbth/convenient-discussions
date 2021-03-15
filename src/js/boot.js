@@ -188,10 +188,10 @@ export function getCssValues() {
   cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
 
   const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
-  cd.g.CONTENT_START_MARGIN = (
-    parseFloat(cd.g.$contentColumn.css(property)) ||
-    cd.g.REGULAR_FONT_SIZE
-  );
+  cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(property));
+  if (cd.g.CONTENT_START_MARGIN < cd.g.REGULAR_FONT_SIZE) {
+    cd.g.CONTENT_START_MARGIN = cd.g.REGULAR_FONT_SIZE;
+  }
 }
 
 /**

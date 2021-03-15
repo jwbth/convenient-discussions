@@ -412,12 +412,6 @@ async function go() {
         default: '#content',
       });
 
-      if (cd.g.SKIN === 'minerva') {
-        // Root level comments can't be highlighted without the center column element having side
-        // padding. The page navigation block will overlap content too.
-        cd.g.$contentColumn.css('padding', '0 1em');
-      }
-
       /*
         Additions of CSS set the stage for a future reflow which delays operations dependent on
         rendering, so we run them now, not after the requests are fulfilled, to save time. The

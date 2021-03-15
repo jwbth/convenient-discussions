@@ -38,9 +38,12 @@ export default {
   updateWidth() {
     const contentColumn = cd.g.$contentColumn.get(0);
     if (contentColumn) {
-      const width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
+      let width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
         contentColumn.getBoundingClientRect().left - 18 :
         $(window).width() - contentColumn.getBoundingClientRect().right - 18;
+      if (['vector', 'minerva'].includes(cd.g.SKIN)) {
+        width -= cd.g.CONTENT_START_MARGIN;
+      }
       this.$topElement.css('width', width + 'px');
       this.$bottomElement.css('width', width + 'px');
     }

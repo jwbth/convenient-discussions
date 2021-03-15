@@ -294,6 +294,28 @@ export default class Comment extends CommentSkeleton {
         this.isStartConstrained = false;
         this.isEndConstrained = false;
       }
+
+      const canBeStretched = (
+        !cd.settings.useBackgroundHighlighting &&
+        this.level === 0 &&
+        this.highlightables[0].parentNode === cd.g.rootElement
+      );
+
+      /**
+       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
+       * start of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isStartStretched = canBeStretched && !this.isStartConstrained;
+
+      /**
+       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
+       * of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isEndStretched = canBeStretched && !this.isEndConstrained;
     }
 
     const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
@@ -316,7 +338,7 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   calculateLayersPositions(options = {}) {
-    // getBoundingClientRect() calculation is a little costly, so we take the value that has already
+    // Getting getBoundingClientRect() is a little costly, so we take the value that has already
     // been calculated where possible.
 
     this.getPositions(Object.assign({}, options, { considerFloating: true }));
@@ -334,10 +356,11 @@ export default class Comment extends CommentSkeleton {
       startMargin = 5;
       endMargin = 5;
     } else {
-      startMargin = this.isStartConstrained || this.level !== 0 ?
-        cd.g.REGULAR_FONT_SIZE :
-        cd.g.CONTENT_START_MARGIN;
-      endMargin = this.isEndConstrained || this.level !== 0 ? 5 : cd.g.CONTENT_START_MARGIN;
+      startMargin = this.isStartStretched ? cd.g.CONTENT_START_MARGIN : cd.g.REGULAR_FONT_SIZE;
+      endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
+      if (this.highlightables[0].closest('ol.cd-commentLevel')) {
+        startMargin += cd.g.REGULAR_FONT_SIZE;
+      }
     }
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
@@ -571,12 +594,7 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    const isFullWidth = (
-      !cd.settings.useBackgroundHighlighting &&
-      this.level === 0 &&
-      !this.isEndConstrained
-    );
-    this.overlay.classList.toggle('cd-commentOverlay-fullWidth', isFullWidth);
+    this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);
   }
 
   /**
