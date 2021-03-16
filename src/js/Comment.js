@@ -2242,7 +2242,8 @@ export default class Comment extends CommentSkeleton {
 
       match.score = (
         (
-          match.overlap > 0.66 ||
+          matches.length === 1 ||
+          match.overlap > 0.5 ||
 
           // The reserve method, if for some reason the text is not overlapping: by this and
           // previous two dates and authors. If all dates and authors are the same, that shouldn't
