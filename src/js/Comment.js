@@ -408,7 +408,7 @@ export default class Comment extends CommentSkeleton {
       // Ignore other than left button clicks.
       if (e.which !== 1) return;
 
-      mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1200);
+      mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1500);
     };
     const dontHideMenu = () => {
       clearTimeout(mouseUpTimeout);
