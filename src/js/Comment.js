@@ -1256,7 +1256,7 @@ export default class Comment extends CommentSkeleton {
       rvend,
       rvuser: this.author.name,
       rvlimit: 500,
-    }).catch(handleApiReject);
+    });
 
     const compareRequests = revisions.map((revision) => cd.g.api.post({
       action: 'compare',
