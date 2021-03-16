@@ -13,6 +13,7 @@ import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
+  addToArrayIfAbsent,
   areObjectsEqual,
   calculateWordsOverlap,
   caseInsensitiveFirstCharPattern,
@@ -615,15 +616,15 @@ export default class Comment extends CommentSkeleton {
    * @returns {?boolean} Was the comment moved.
    */
   configureLayers(options = {}) {
-    if (this.editForm) {
-      return null;
-    }
-
     if (options.add === undefined) {
       options.add = true;
     }
     if (options.update === undefined) {
       options.update = true;
+    }
+
+    if (this.editForm) {
+      return null;
     }
 
     // FIXME: it is possible that a floating element that is on above in the DOM is below spacially.
@@ -944,7 +945,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     let $diffLink;
-    if (type !== 'deleted' && this.getSourcePage().name === cd.g.CURRENT_PAGE.name) {
+    if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
       $diffLink = $('<a>')
         .text(cd.s('comment-edited-diff'))
         .on('click', async (e) => {
@@ -1305,7 +1306,7 @@ export default class Comment extends CommentSkeleton {
 
       if (overlap < 1 && diffOriginalText.includes('{{')) {
         try {
-          const html = (await parseCode(diffOriginalText, { title: cd.g.CURRENT_PAGE.name })).html;
+          const html = (await parseCode(diffOriginalText, { title: cd.g.PAGE.name })).html;
           diffOriginalText = $('<div>').append(html).cdGetText();
         } catch (e) {
           throw new CdError({
@@ -1356,7 +1357,7 @@ export default class Comment extends CommentSkeleton {
     if (short) {
       return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
     } else {
-      const urlEnding = decodeURI(cd.g.CURRENT_PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
+      const urlEnding = decodeURI(cd.g.PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
       return `https:${mw.config.get('wgServer')}${urlEnding}`;
     }
   }
@@ -1609,7 +1610,7 @@ export default class Comment extends CommentSkeleton {
       // more comments are there.
       const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_block.*\\x02) *$`, 'i');
       const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
-      const thisLineEndingRegexp = new RegExp(
+      const currentLineEndingRegexp = new RegExp(
         `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
         'i'
       );
@@ -1620,20 +1621,20 @@ export default class Comment extends CommentSkeleton {
       const headingRegexp = /^(=+).*\1[ \t]*$/;
       text = text.replace(
         /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
-        (s, thisLine, nextLine) => {
+        (s, currentLine, nextLine) => {
           const newlineOrSpace = (
-            entireLineRegexp.test(thisLine) ||
+            entireLineRegexp.test(currentLine) ||
             entireLineRegexp.test(nextLine) ||
-            fileRegexp.test(thisLine) ||
+            fileRegexp.test(currentLine) ||
             fileRegexp.test(nextLine) ||
-            headingRegexp.test(thisLine) ||
+            headingRegexp.test(currentLine) ||
             headingRegexp.test(nextLine) ||
-            thisLineEndingRegexp.test(thisLine) ||
+            currentLineEndingRegexp.test(currentLine) ||
             nextLineBeginningRegexp.test(nextLine)
           ) ?
             '\n' :
             ' ';
-          return thisLine + newlineOrSpace;
+          return currentLine + newlineOrSpace;
         }
       );
     }
@@ -2036,8 +2037,8 @@ export default class Comment extends CommentSkeleton {
       return '';
     }
 
-    if (this.isOwn && cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP) {
-      data.code = data.code.replace(cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
+    if (this.isOwn && cd.g.USER_SIGNATURE_PREFIX_REGEXP) {
+      data.code = data.code.replace(cd.g.USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
     }
 
     const movePartsToSignature = (code, regexps) => {
@@ -2474,9 +2475,8 @@ export default class Comment extends CommentSkeleton {
         offsetParent.insertBefore(container, offsetParent.firstChild);
       }
       this.cachedLayersContainer = container;
-      if (!commentLayers.layersContainers.includes(container)) {
-        commentLayers.layersContainers.push(container);
-      }
+
+      addToArrayIfAbsent(commentLayers.layersContainers, container);
     }
     return this.cachedLayersContainer;
   }
@@ -2544,7 +2544,7 @@ export default class Comment extends CommentSkeleton {
    */
   getSourcePage() {
     const section = this.getSection();
-    return section ? section.getSourcePage() : cd.g.CURRENT_PAGE;
+    return section ? section.getSourcePage() : cd.g.PAGE;
   }
 
   /**
@@ -2566,7 +2566,7 @@ export default class Comment extends CommentSkeleton {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this === cd.g.CURRENT_PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
       formatversion: 2,
     }).catch(handleApiReject);
 

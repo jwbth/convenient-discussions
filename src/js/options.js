@@ -8,7 +8,7 @@ import lzString from 'lz-string';
 
 import CdError from './CdError';
 import cd from './cd';
-import { firstCharToUpperCase } from './util';
+import { addToArrayIfAbsent, firstCharToUpperCase, removeFromArrayIfPresent } from './util';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
@@ -203,7 +203,7 @@ export async function setSettings(settings) {
 /**
  * @typedef {object} GetVisitsReturn
  * @property {object} visits
- * @property {object} thisPageVisits
+ * @property {object} currentPageVisits
  */
 
 /**
@@ -223,19 +223,19 @@ export async function getVisits(reuse = false) {
     getUserInfo(reuse).then((options) => options.visits)
   );
   const articleId = mw.config.get('wgArticleId');
-  let thisPageVisits;
+  let currentPageVisits;
 
   // This should always true; this check should be performed before.
   if (articleId) {
     visits[articleId] = visits[articleId] || [];
-    thisPageVisits = visits[articleId];
+    currentPageVisits = visits[articleId];
   }
 
   // These variables are not used anywhere in the script but can be helpful for testing purposes.
   cd.g.visits = visits;
-  cd.g.thisPageVisits = thisPageVisits;
+  cd.g.currentPageVisits = currentPageVisits;
 
-  return { visits, thisPageVisits };
+  return { visits, currentPageVisits };
 }
 
 /**
@@ -308,29 +308,20 @@ export async function getWatchedSections(reuse = false, keptData = {}) {
   );
 
   const articleId = mw.config.get('wgArticleId');
-  let thisPageWatchedSections;
+  let currentPageWatchedSections;
   if (articleId) {
     watchedSections[articleId] = watchedSections[articleId] || [];
-    thisPageWatchedSections = watchedSections[articleId];
+    currentPageWatchedSections = watchedSections[articleId];
 
     // Manually add/remove a section that was added/removed at the same moment the page was
     // reloaded the last time, so when we requested watched sections from server, this section
     // wasn't there yet most probably.
-    if (keptData.justWatchedSection) {
-      if (!thisPageWatchedSections.includes(keptData.justWatchedSection)) {
-        thisPageWatchedSections.push(keptData.justWatchedSection);
-      }
-    }
-    if (keptData.justUnwatchedSection) {
-      if (thisPageWatchedSections.includes(keptData.justUnwatchedSection)) {
-        thisPageWatchedSections
-          .splice(thisPageWatchedSections.indexOf(keptData.justUnwatchedSection), 1);
-      }
-    }
+    addToArrayIfAbsent(currentPageWatchedSections, keptData.justWatchedSection);
+    removeFromArrayIfPresent(currentPageWatchedSections, keptData.justUnwatchedSection);
   }
 
   cd.g.watchedSections = watchedSections;
-  cd.g.thisPageWatchedSections = thisPageWatchedSections;
+  cd.g.currentPageWatchedSections = currentPageWatchedSections;
 }
 
 /**

@@ -86,7 +86,7 @@ export default class Page {
       return this.cachedIsArchivePage;
     }
     let result;
-    if (this === cd.g.CURRENT_PAGE) {
+    if (this === cd.g.PAGE) {
       result = $('.cd-archivingInfo').data('isArchivePage');
     }
     if (result === undefined) {
@@ -117,7 +117,7 @@ export default class Page {
       return false;
     }
     let result;
-    if (this === cd.g.CURRENT_PAGE) {
+    if (this === cd.g.PAGE) {
       result = $('.cd-archivingInfo').data('canHaveArchives');
     }
     if (result === undefined) {
@@ -140,7 +140,7 @@ export default class Page {
       return null;
     }
     let result;
-    if (this === cd.g.CURRENT_PAGE) {
+    if (this === cd.g.PAGE) {
       result = $('.cd-archivingInfo').data('archivePrefix');
     }
     const name = this.realName || this.name;
@@ -166,7 +166,7 @@ export default class Page {
    */
   getArchivedPage() {
     let result;
-    if (this === cd.g.CURRENT_PAGE) {
+    if (this === cd.g.PAGE) {
       result = $('.cd-archivingInfo').data('archivedPage');
     }
     if (!result) {
@@ -200,7 +200,7 @@ export default class Page {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this === cd.g.CURRENT_PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
       formatversion: 2,
     }).catch(handleApiReject);
@@ -343,9 +343,8 @@ export default class Page {
       delete options.page;
     }
 
-    const request = requestInBackground ?
-      makeBackgroundRequest(options).catch(handleApiReject) :
-      cd.g.api.post(options).catch(handleApiReject);
+    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options);
+    request = request.catch(handleApiReject);
 
     const parse = (await request).parse;
     if (parse?.text === undefined) {
@@ -376,14 +375,13 @@ export default class Page {
       titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
-      redirects: !(this === cd.g.CURRENT_PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
       formatversion: 2,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    const request = requestInBackground ?
-      makeBackgroundRequest(options).catch(handleApiReject) :
-      cd.g.api.post(options).catch(handleApiReject);
+    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options);
+    request = request.catch(handleApiReject);
 
     const revisions = (await request).query?.pages?.[0]?.revisions;
     if (!revisions) {

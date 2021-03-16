@@ -322,7 +322,7 @@ export default {
       node.classList.contains('ts-Закрыто-header') ||
 
       // Talk page template
-      (cd.g.CURRENT_NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
+      (cd.g.NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
 
       // {{clear}}
       (
@@ -380,7 +380,7 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
 mw.hook('convenientDiscussions.pageReady').add(function () {
   if (cd.g.isFirstRun) {
     const generateEditCommonJsLink = function () {
-      return mw.util.getUrl('User:' + cd.g.CURRENT_USER_NAME + '/common.js', { action: 'edit' });
+      return mw.util.getUrl('User:' + cd.g.USER_NAME + '/common.js', { action: 'edit' });
     };
 
     const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
@@ -429,7 +429,7 @@ mw.hook('convenientDiscussions.pageReady').add(function () {
 
 mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
   commentForm.couldBeCloserClosing = (
-    /^Википедия:К удалению/.test(cd.g.CURRENT_PAGE.name) &&
+    /^Википедия:К удалению/.test(cd.g.PAGE.name) &&
     commentForm.mode === 'addSubsection' &&
     mw.config.get('wgUserGroups').includes('closer')
   );

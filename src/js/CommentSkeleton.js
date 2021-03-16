@@ -80,7 +80,7 @@ export default class CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.isOwn = this.authorName === cd.g.CURRENT_USER_NAME;
+    this.isOwn = this.authorName === cd.g.USER_NAME;
 
     /**
      * Comment anchor.

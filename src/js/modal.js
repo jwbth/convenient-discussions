@@ -1027,8 +1027,8 @@ export async function copyLink(object, e) {
 
   const isComment = object instanceof Comment;
   const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
-  const wikilink = `[[${cd.g.CURRENT_PAGE.name}#${anchor}]]`;
-  const decodedCurrentPageUrl = decodeURI(cd.g.CURRENT_PAGE.getUrl());
+  const wikilink = `[[${cd.g.PAGE.name}#${anchor}]]`;
+  const decodedCurrentPageUrl = decodeURI(cd.g.PAGE.getUrl());
 
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
@@ -1233,7 +1233,7 @@ export async function notFound(decodedFragment, date) {
     .addClass('cd-destructiveText')
     .text(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
   let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
-  if (cd.g.CURRENT_PAGE.canHaveArchives()) {
+  if (cd.g.PAGE.canHaveArchives()) {
     message += ' ' + cd.s('deadanchor-searchinarchive');
     if (await OO.ui.confirm(message, { title })) {
       let text;
@@ -1245,7 +1245,7 @@ export async function notFound(decodedFragment, date) {
           .replace(/"/g, '')
           .trim();
       }
-      const archivePrefix = cd.g.CURRENT_PAGE.getArchivePrefix();
+      const archivePrefix = cd.g.PAGE.getArchivePrefix();
       const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {
         profile: 'default',

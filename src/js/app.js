@@ -274,10 +274,10 @@ async function go() {
   cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-${wsonEnding}`;
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
-  cd.g.CURRENT_PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
-  cd.g.CURRENT_PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
-  cd.g.CURRENT_NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
-  cd.g.CURRENT_USER_NAME = mw.config.get('wgUserName');
+  cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
+  cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
+  cd.g.USER_NAME = mw.config.get('wgUserName');
   cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
   cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
@@ -308,7 +308,7 @@ async function go() {
         enabledInQuery
       ) &&
       (
-        isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER) ||
+        isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER) ||
         $('#ca-addsection').length ||
 
         // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
@@ -449,7 +449,7 @@ async function go() {
       .includes(mw.config.get('wgCanonicalSpecialPageName')) ||
     (
       mw.config.get('wgAction') === 'history' &&
-      isProbablyTalkPage(cd.g.CURRENT_PAGE_NAME, cd.g.CURRENT_NAMESPACE_NUMBER)
+      isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
     ) ||
     cd.g.IS_DIFF_PAGE
   ) {

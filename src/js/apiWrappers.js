@@ -133,7 +133,7 @@ export function getUserInfo(reuse = false) {
         '';
       const watchedSections = unpackWatchedSections(watchedSectionsString);
 
-      cd.g.CURRENT_USER_RIGHTS = rights;
+      cd.g.USER_RIGHTS = rights;
 
       return { options, visits, watchedSections, rights };
     },
@@ -177,7 +177,7 @@ export async function unknownApiErrorText(errorCode, errorInfo) {
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
-  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
+  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
   while ((nextPageIds = pageIds.splice(0, limit).join('|'))) {
     const resp = await cd.g.api.post({
@@ -195,15 +195,15 @@ export async function getPageTitles(pageIds) {
     }
 
     const query = resp.query;
-    const thisPages = query?.pages;
-    if (!thisPages) {
+    const pagesToAdd = query?.pages;
+    if (!pagesToAdd) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    pages.push(...thisPages);
+    pages.push(...pagesToAdd);
   }
 
   return pages;
@@ -217,10 +217,10 @@ export async function getPageTitles(pageIds) {
  * @throws {CdError}
  */
 export async function getPageIds(pageTitles) {
-  const pages = [];
   const normalized = [];
   const redirects = [];
-  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
+  const pages = [];
+  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageTitles;
   while ((nextPageTitles = pageTitles.splice(0, limit).join('|'))) {
     const resp = await cd.g.api.post({
@@ -239,8 +239,8 @@ export async function getPageIds(pageTitles) {
     }
 
     const query = resp.query;
-    const thisPages = query?.pages;
-    if (!thisPages) {
+    const pagesToAdd = query?.pages;
+    if (!pagesToAdd) {
       throw new CdError({
         type: 'api',
         code: 'noData',
@@ -249,10 +249,10 @@ export async function getPageIds(pageTitles) {
 
     normalized.push(...query.normalized || []);
     redirects.push(...query.redirects || []);
-    pages.push(...thisPages);
+    pages.push(...pagesToAdd);
   }
 
-  return { pages, normalized, redirects };
+  return { normalized, redirects, pages };
 }
 
 /**
@@ -324,7 +324,7 @@ export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender())
     .map((user) => user.name);
-  const limit = cd.g.CURRENT_USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
+  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;
   while ((nextUsers = usersToRequest.splice(0, limit).join('|'))) {
     const options = {

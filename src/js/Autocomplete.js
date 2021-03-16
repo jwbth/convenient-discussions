@@ -534,7 +534,7 @@ export default class Autocomplete {
               },
             };
           },
-          removeSelf: (arr) => arr.filter((item) => item !== cd.g.CURRENT_USER_NAME),
+          removeSelf: (arr) => arr.filter((item) => item !== cd.g.USER_NAME),
         };
         config.default = config.removeSelf(arguments[1] || []);
         break;

@@ -70,7 +70,7 @@ async function prepare(siteDataRequests) {
 
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
-  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
+  cd.g.PAGE = new Page(cd.g.PAGE_NAME);
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   initTimestampParsingTools();
@@ -98,7 +98,7 @@ async function prepare(siteDataRequests) {
     .clone()
     .addClass('cd-commentLink-interesting');
 
-  const currentUserNamePattern = caseInsensitiveFirstCharPattern(cd.g.CURRENT_USER_NAME)
+  const currentUserNamePattern = caseInsensitiveFirstCharPattern(cd.g.USER_NAME)
     .replace(/ /g, '[ _]');
   currentUserRegexp = new RegExp(
     `(?:^|[^${cd.g.LETTER_PATTERN}])${currentUserNamePattern}(?![${cd.g.LETTER_PATTERN}])`
@@ -396,10 +396,10 @@ function processWatchlist($content) {
         const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const thisPageWatchedSections = cd.g.watchedSections?.[curId] || [];
-          if (thisPageWatchedSections.length) {
-            for (let j = 0; j < thisPageWatchedSections.length; j++) {
-              if (isInSection(summary, thisPageWatchedSections[j])) {
+          const currentPageWatchedSections = cd.g.watchedSections?.[curId] || [];
+          if (currentPageWatchedSections.length) {
+            for (let j = 0; j < currentPageWatchedSections.length; j++) {
+              if (isInSection(summary, currentPageWatchedSections[j])) {
                 isWatched = true;
                 break;
               }
@@ -504,7 +504,7 @@ function processHistory($content) {
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
-  const link = cd.g.CURRENT_PAGE.getUrl();
+  const link = cd.g.PAGE.getUrl();
 
   lines.forEach((line) => {
     if (line.querySelector('.minoredit')) return;
@@ -538,10 +538,13 @@ function processHistory($content) {
     } else {
       let isWatched = false;
       if (summary) {
-        const thisPageWatchedSections = cd.g.watchedSections?.[mw.config.get('wgArticleId')] || [];
-        if (thisPageWatchedSections.length) {
-          for (let j = 0; j < thisPageWatchedSections.length; j++) {
-            if (isInSection(summary, cd.g.thisPageWatchedSections[j])) {
+        const currentPageWatchedSections = (
+          cd.g.watchedSections?.[mw.config.get('wgArticleId')] ||
+          []
+        );
+        if (currentPageWatchedSections.length) {
+          for (let j = 0; j < currentPageWatchedSections.length; j++) {
+            if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
               isWatched = true;
               break;
             }
@@ -630,9 +633,9 @@ async function processDiff() {
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
-          if (summary && cd.g.thisPageWatchedSections.length) {
-            for (let j = 0; j < cd.g.thisPageWatchedSections.length; j++) {
-              if (isInSection(summary, cd.g.thisPageWatchedSections[j])) {
+          if (summary && cd.g.currentPageWatchedSections.length) {
+            for (let j = 0; j < cd.g.currentPageWatchedSections.length; j++) {
+              if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
                 isWatched = true;
                 break;
               }
@@ -688,7 +691,7 @@ async function addCommentLinks($content) {
     processWatchlist($content);
   } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
     processContributions($content);
-  } else if (mw.config.get('wgAction') === 'history' && cd.g.CURRENT_PAGE.isProbablyTalkPage()) {
+  } else if (mw.config.get('wgAction') === 'history' && cd.g.PAGE.isProbablyTalkPage()) {
     processHistory($content);
   }
 

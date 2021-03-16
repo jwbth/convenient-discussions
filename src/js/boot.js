@@ -247,8 +247,8 @@ export function setTalkPageCssVariables() {
 function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
-  cd.g.CURRENT_PAGE = new Page(cd.g.CURRENT_PAGE_NAME);
-  cd.g.CURRENT_USER_GENDER = mw.user.options.get('gender');
+  cd.g.PAGE = new Page(cd.g.PAGE_NAME);
+  cd.g.USER_GENDER = mw.user.options.get('gender');
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
   cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i
@@ -364,7 +364,7 @@ function initPatterns() {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
   }
 
-  cd.g.CURRENT_USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
+  cd.g.USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
 
   const signatureContent = mw.user.options.get('nickname');
   const authorInSignatureMatch = signatureContent.match(
@@ -377,7 +377,7 @@ function initPatterns() {
     const signatureBeginning = mw.util.escapeRegExp(
       signatureContent.slice(0, authorInSignatureMatch.index)
     );
-    cd.g.CURRENT_USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
+    cd.g.USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
       signaturePrefixPattern +
       signatureBeginning +
       '$'
@@ -391,7 +391,7 @@ function initPatterns() {
   cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
 
   // TODO: instead of removing only lines containing antipatterns from wikitext, hide entire
-  // templates (see the "markerLength" parameter in util.hideTemplatesRecursively) and tags? But
+  // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags? But
   // keep in mind that this code may still be part of comments.
   const commentAntipatternsPatternParts = [];
   if (
@@ -806,7 +806,7 @@ export async function reloadPage(keptData = {}) {
 
   let parseData;
   try {
-    parseData = await cd.g.CURRENT_PAGE.parse(null, false, true);
+    parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
     removeLoadingOverlay();
     isPageBeingReloaded = false;
@@ -986,7 +986,7 @@ function restoreCommentFormsFromData(commentFormsData) {
     } else if (data.mode === 'addSection') {
       if (!cd.g.addSectionForm) {
         cd.g.addSectionForm = new CommentForm({
-          target: cd.g.CURRENT_PAGE,
+          target: cd.g.PAGE,
           mode: data.mode,
           dataToRestore: data,
           preloadConfig: data.preloadConfig,

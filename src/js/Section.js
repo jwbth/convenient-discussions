@@ -59,7 +59,7 @@ export default class Section extends SectionSkeleton {
      *
      * @type {string}
      */
-    this.sourcePage = cd.g.CURRENT_PAGE;
+    this.sourcePage = cd.g.PAGE;
 
     this.editSectionElement = headingElement.querySelector('.mw-editsection');
     if (this.editSectionElement) {
@@ -342,7 +342,7 @@ export default class Section extends SectionSkeleton {
           func: this.copyLink.bind(this),
           class: 'cd-sectionLink-copyLink',
           tooltip: cd.s('sm-copylink-tooltip'),
-          href: `${cd.g.CURRENT_PAGE.getUrl()}#${this.anchor}`,
+          href: `${cd.g.PAGE.getUrl()}#${this.anchor}`,
         });
       }
 
@@ -359,7 +359,7 @@ export default class Section extends SectionSkeleton {
       watchedSectionsRequest
         .then(
           () => {
-            this.isWatched = cd.g.thisPageWatchedSections.includes(this.headline);
+            this.isWatched = cd.g.currentPageWatchedSections.includes(this.headline);
             this.addMenuItem({
               label: cd.s('sm-unwatch'),
               tooltip: cd.s('sm-unwatch-tooltip'),
@@ -575,9 +575,7 @@ export default class Section extends SectionSkeleton {
       let codeBeginning;
       let codeEnding;
       if (cd.config.getMoveTargetPageCode && this.keepLinkCheckbox.isSelected()) {
-        const code = (
-          cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.CURRENT_USER_SIGNATURE)
-        );
+        const code = cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.USER_SIGNATURE);
         if (Array.isArray(code)) {
           codeBeginning = code[0] + '\n';
           codeEnding = '\n' + code[1];
@@ -661,7 +659,7 @@ export default class Section extends SectionSkeleton {
       if (cd.config.getMoveSourcePageCode && this.keepLinkCheckbox.isSelected()) {
         const code = cd.config.getMoveSourcePageCode(
           target.sectionWikilink,
-          cd.g.CURRENT_USER_SIGNATURE,
+          cd.g.USER_SIGNATURE,
           timestamp
         );
         newSectionCode = (
@@ -1304,8 +1302,8 @@ export default class Section extends SectionSkeleton {
     let sectionIndex = 0;
     let sectionHeadingMatch;
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedPageCode))) {
-      const thisHeadline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
-      const hasHeadlineMatched = thisHeadline === headline;
+      const currentHeadline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
+      const hasHeadlineMatched = currentHeadline === headline;
 
       let numberOfPreviousHeadlinesToCheck = 3;
       const previousHeadlinesInCode = headlines
@@ -1317,7 +1315,7 @@ export default class Section extends SectionSkeleton {
         .map((section) => section.headline);
       const havePreviousHeadlinesMatched = previousHeadlines
         .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
-      headlines.push(thisHeadline);
+      headlines.push(currentHeadline);
 
       // Matching section index is one of the most unreliable ways to tell matching sections as
       // sections may be added and removed from the page, so we don't rely on it very much.
@@ -1377,7 +1375,7 @@ export default class Section extends SectionSkeleton {
       );
 
       if (!code || !firstChunkCode) {
-        console.log(`Couldn't read the "${thisHeadline}" section contents.`);
+        console.log(`Couldn't read the "${currentHeadline}" section contents.`);
         continue;
       }
 

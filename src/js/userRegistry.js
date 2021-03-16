@@ -33,7 +33,7 @@ export default {
     }
 
     if (!this.users[name]) {
-      const options = name === cd.g.CURRENT_USER_NAME ? { gender: cd.g.CURRENT_USER_GENDER } : {};
+      const options = name === cd.g.USER_NAME ? { gender: cd.g.USER_GENDER } : {};
       this.users[name] = new User(name, options);
     }
 

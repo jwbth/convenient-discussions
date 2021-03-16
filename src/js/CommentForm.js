@@ -26,6 +26,7 @@ import {
   keyCombination,
   nativePromiseState,
   removeDoubleSpaces,
+  removeFromArrayIfPresent,
   unhideText,
   unique,
 } from './util';
@@ -115,19 +116,19 @@ export default class CommentForm {
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (this.mode === 'addSection') {
-      const title = cd.g.CURRENT_PAGE.title.replace(/\//g, '-');
+      const title = cd.g.PAGE.title.replace(/\//g, '-');
       let code = (
         '<div class="cd-editnotice">' +
-        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}}}` +
+        `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}` +
         '</div>\n' +
         '<div class="cd-editnotice">' +
-        `{{MediaWiki:Editnotice-${cd.g.CURRENT_NAMESPACE_NUMBER}-${title}}}` +
+        `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}` +
         '</div>\n'
       );
       if (this.preloadConfig?.editIntro) {
         code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
       }
-      parseCode(code, { title: cd.g.CURRENT_PAGE.name }).then((result) => {
+      parseCode(code, { title: cd.g.PAGE.name }).then((result) => {
         const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
         this.$messageArea
           .append(result.html)
@@ -396,7 +397,7 @@ export default class CommentForm {
      *
      * @type {string}
      */
-    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.g.CURRENT_PAGE;
+    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.g.PAGE;
   }
 
   /**
@@ -1952,9 +1953,9 @@ export default class CommentForm {
             if (this.targetSection) {
               editUrl = this.targetSection.editUrl ?
                 this.targetSection.editUrl.toString() :
-                cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
+                cd.g.PAGE.getUrl({ action: 'edit' });
             } else {
-              editUrl = cd.g.CURRENT_PAGE.getUrl({
+              editUrl = cd.g.PAGE.getUrl({
                 action: 'edit',
                 section: 0,
               });
@@ -1962,7 +1963,7 @@ export default class CommentForm {
             message = cd.sParse('error-locatecomment', editUrl);
             break;
           case 'locateSection':
-            editUrl = cd.g.CURRENT_PAGE.getUrl({ action: 'edit' });
+            editUrl = cd.g.PAGE.getUrl({ action: 'edit' });
             message = cd.sParse('error-locatesection', editUrl);
             break;
           case 'numberedList-list':
@@ -2160,9 +2161,7 @@ export default class CommentForm {
     if (this.omitSignatureCheckbox?.isSelected()) {
       signature = '';
     } else {
-      signature = this.mode === 'edit' ?
-        this.target.inCode.signatureCode :
-        cd.g.CURRENT_USER_SIGNATURE;
+      signature = this.mode === 'edit' ? this.target.inCode.signatureCode : cd.g.USER_SIGNATURE;
     }
 
     // Make so that the signature doesn't turn out to be at the end of the last item of the list if
@@ -2250,7 +2249,7 @@ export default class CommentForm {
     // reverse transformation code in Comment#codeToText.
     const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_block.*\\x02) *$`, 'i');
     const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
-    const thisLineEndingRegexp = new RegExp(
+    const currentLineEndingRegexp = new RegExp(
       `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
       'i'
     );
@@ -2263,7 +2262,7 @@ export default class CommentForm {
     const newlinesRegexp = willCommentBeIndented ?
       /^(.+)\n(?!:)(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
-    code = code.replace(newlinesRegexp, (s, thisLine, nextLine) => {
+    code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
       const spaceOrNot = cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(nextLine) ?
         ' ' :
         '';
@@ -2275,26 +2274,26 @@ export default class CommentForm {
         `\n${restLinesIndentationChars}${spaceOrNot}` :
         '<br>';
       const lineBreakOrNot = (
-        entireLineRegexp.test(thisLine) ||
+        entireLineRegexp.test(currentLine) ||
         entireLineRegexp.test(nextLine) ||
 
         (
           !willCommentBeIndented &&
-          (headingRegexp.test(thisLine) || headingRegexp.test(nextLine))
+          (headingRegexp.test(currentLine) || headingRegexp.test(nextLine))
         ) ||
-        fileRegexp.test(thisLine) ||
+        fileRegexp.test(currentLine) ||
         (!willCommentBeIndented && fileRegexp.test(nextLine)) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
         // like "</div><br>".
-        thisLineEndingRegexp.test(thisLine) ||
+        currentLineEndingRegexp.test(currentLine) ||
         nextLineBeginningRegexp.test(nextLine)
       ) ?
         '' :
         lineBreak;
       const newlineOrNot = willCommentBeIndented ? '' : '\n';
-      return thisLine + lineBreakOrNot + newlineOrNot;
+      return currentLine + lineBreakOrNot + newlineOrNot;
     });
 
     if (!this.omitSignatureCheckbox?.isSelected()) {
@@ -2584,9 +2583,8 @@ export default class CommentForm {
    * @param {Operation} operation
    */
   unregisterOperation(operation) {
-    if (this.operations.includes(operation)) {
-      this.operations.splice(this.operations.indexOf(operation), 1);
-    }
+    removeFromArrayIfPresent(this.operations, operation);
+
     // This was excessive at the time when it was written as the only use case is autopreview.
     if (operation.type !== 'preview' || !operation.isAuto) {
       this.popPending(operation.type === 'submit', operation.affectHeadline);
@@ -2906,7 +2904,7 @@ export default class CommentForm {
         condition: (
           !doDelete &&
           !this.commentInput.getValue().trim() &&
-          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.CURRENT_PAGE.name)
+          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.PAGE.name)
         ),
         confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
       },
@@ -3093,13 +3091,13 @@ export default class CommentForm {
     if (!doDelete) {
       keptData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
-        generateCommentAnchor(new Date(editTimestamp), cd.g.CURRENT_USER_NAME, true);
+        generateCommentAnchor(new Date(editTimestamp), cd.g.USER_NAME, true);
     }
 
     // When the edit takes place on another page that is transcluded in the current one, we must
     // purge the current page, otherwise we may get an old version without the submitted comment.
-    if (this.targetPage !== cd.g.CURRENT_PAGE) {
-      await cd.g.CURRENT_PAGE.purge();
+    if (this.targetPage !== cd.g.PAGE) {
+      await cd.g.PAGE.purge();
     }
 
     this.reloadPage(keptData, currentOperation);
@@ -3173,9 +3171,7 @@ export default class CommentForm {
     } else {
       delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     }
-    if (cd.commentForms.includes(this)) {
-      cd.commentForms.splice(cd.commentForms.indexOf(this), 1);
-    }
+    removeFromArrayIfPresent(cd.commentForms, this);
     saveSession();
     navPanel.updateCommentFormButton();
   }

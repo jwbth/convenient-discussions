@@ -424,7 +424,7 @@ function connectToAddTopicButtons() {
           pageName = pageName[pageName.length - 1];
         }
         const page = new Page(pageName);
-        if (page.name !== cd.g.CURRENT_PAGE.name) {
+        if (page.name !== cd.g.PAGE.name) {
           return false;
         }
       } else if ($button.is('input')) {
@@ -433,7 +433,7 @@ function connectToAddTopicButtons() {
           .find('input[name="title"]')
           .val();
         const page = new Page(pageName);
-        if (page.name !== cd.g.CURRENT_PAGE.name) {
+        if (page.name !== cd.g.PAGE.name) {
           return false;
         }
       } else {
@@ -521,13 +521,11 @@ function highlightMentions($content) {
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
     .join(', ');
-  Array.from(
-    $content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.CURRENT_USER_NAME}"]`)
-  )
+  Array.from($content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.USER_NAME}"]`))
     .filter((el) => (
       cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
       !el.parentNode.closest(selector) &&
-      getUserNameFromLink(el) === cd.g.CURRENT_USER_NAME
+      getUserNameFromLink(el) === cd.g.USER_NAME
     ))
     .forEach((link) => {
       link.classList.add('cd-currentUserLink');
@@ -631,33 +629,33 @@ async function processFragment(keptData) {
  */
 async function processVisits(visitsRequest, keptData) {
   let visits;
-  let thisPageVisits;
+  let currentPageVisits;
   try {
-    ({ visits, thisPageVisits } = await visitsRequest);
+    ({ visits, currentPageVisits } = await visitsRequest);
   } catch (e) {
     console.warn('Couldn\'t load the settings from the server.', e);
     return;
   }
 
-  if (cd.g.thisPageVisits.length >= 1) {
-    cd.g.previousVisitUnixTime = Number(cd.g.thisPageVisits[cd.g.thisPageVisits.length - 1]);
+  if (cd.g.currentPageVisits.length >= 1) {
+    cd.g.previousVisitUnixTime = Number(cd.g.currentPageVisits[cd.g.currentPageVisits.length - 1]);
   }
 
   const currentUnixTime = Math.floor(Date.now() / 1000);
 
   // Cleanup
-  for (let i = thisPageVisits.length - 1; i >= 0; i--) {
+  for (let i = currentPageVisits.length - 1; i >= 0; i--) {
     if (
-      thisPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL ||
+      currentPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL ||
       keptData.markAsRead
     ) {
-      thisPageVisits.splice(0, i);
+      currentPageVisits.splice(0, i);
       break;
     }
   }
 
   let haveMatchedTimeWithComment = false;
-  if (thisPageVisits.length) {
+  if (currentPageVisits.length) {
     cd.comments.forEach((comment) => {
       /**
        * Is the comment new. Set only on active pages (not archived, not old diffs) excluding pages
@@ -684,10 +682,13 @@ async function processVisits(visitsRequest, keptData) {
       if (commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60) {
         haveMatchedTimeWithComment = true;
       }
-      if (commentUnixTime + 60 > thisPageVisits[0]) {
+      if (commentUnixTime + 60 > currentPageVisits[0]) {
         comment.isNew = true;
         comment.isSeen = (
-          (commentUnixTime + 60 <= thisPageVisits[thisPageVisits.length - 1] || comment.isOwn) &&
+          (
+            commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1] ||
+            comment.isOwn
+          ) &&
           !keptData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
         );
       }
@@ -702,7 +703,7 @@ async function processVisits(visitsRequest, keptData) {
   // minute to the current time if there is a comment with matched time. (Previously, the comment
   // time needed to be less than the current time which could result in missed comments if a comment
   // was sent the same minute when the page was loaded but after that moment.)
-  thisPageVisits.push(String(currentUnixTime + haveMatchedTimeWithComment * 60));
+  currentPageVisits.push(String(currentUnixTime + haveMatchedTimeWithComment * 60));
 
   setVisits(visits);
 
@@ -876,7 +877,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
   cd.g.isPageActive = (
     articleId &&
-    !cd.g.CURRENT_PAGE.isArchivePage() &&
+    !cd.g.PAGE.isArchivePage() &&
     mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')
   );
 
@@ -931,7 +932,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     !cd.g.isFirstRun ||
     cd.comments.length ||
     $('#ca-addsection').length ||
-    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.CURRENT_PAGE.name)
+    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE.name)
   );
 
   const isPageCommentable = cd.g.isPageActive || !articleId;

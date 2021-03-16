@@ -125,7 +125,7 @@ export default {
        */
       cd.g.addSectionForm = new CommentForm({
         mode: 'addSection',
-        target: cd.g.CURRENT_PAGE,
+        target: cd.g.PAGE,
         preloadConfig,
         isNewTopicOnTop,
       });

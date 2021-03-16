@@ -677,3 +677,29 @@ export function focusInput(input) {
 export function skin$(selectors) {
   return $(selectors[cd.g.SKIN] || selectors.default || selectors.vector);
 }
+
+/**
+ * Helper to add an element to the array if the array doesn't already include the element. Doesn't
+ * add `undefined` elements.
+ *
+ * @param {Array} arr
+ * @param {*} el
+ */
+export function addToArrayIfAbsent(arr, el) {
+  if (el !== undefined && !arr.includes(el)) {
+    arr.push(el);
+  }
+}
+
+/**
+ * Helper to remove an element from the array if the array includes the element. Doesn't remove
+ * `undefined` elements.
+ *
+ * @param {Array} arr
+ * @param {*} el
+ */
+export function removeFromArrayIfPresent(arr, el) {
+  if (el !== undefined && arr.includes(el)) {
+    arr.splice(arr.indexOf(el), 1);
+  }
+}

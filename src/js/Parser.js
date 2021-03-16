@@ -94,10 +94,10 @@ export function getUserNameFromLink(element) {
       userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
     }
   } else {
-    if (element.classList.contains('mw-selflink') && cd.g.CURRENT_NAMESPACE_NUMBER === 3) {
+    if (element.classList.contains('mw-selflink') && cd.g.NAMESPACE_NUMBER === 3) {
       // Comments of users that have only the user talk page link in their signature on their talk
       // page.
-      userName = cd.g.CURRENT_PAGE_TITLE;
+      userName = cd.g.PAGE_TITLE;
     } else {
       return null;
     }
@@ -189,6 +189,7 @@ export default class Parser {
    * @returns {FindTimestampsReturn}
    */
   findTimestamps() {
+    cd.debug.startTimer('elementsToExclude');
     elementsToExclude = [
       ...Array.from(cd.g.rootElement.getElementsByTagName('blockquote')),
       ...flat(
@@ -196,13 +197,19 @@ export default class Parser {
           .map((className) => Array.from(cd.g.rootElement.getElementsByClassName(className)))
       ),
     ];
-
+    cd.debug.stopTimer('elementsToExclude');
+    console.log(elementsToExclude);
     return this.context.getAllTextNodes()
       .map((node) => {
         const text = node.textContent;
         const { date, match } = parseTimestamp(text) || {};
-        if (date && !elementsToExclude.some((el) => el.contains(node))) {
-          return { node, date, match };
+        if (date) {
+          cd.debug.startTimer('isExcluded');
+          if (!elementsToExclude.some((el) => el.contains(node))) {
+            cd.debug.stopTimer('isExcluded');
+            return { node, date, match };
+          }
+          cd.debug.stopTimer('isExcluded');
         }
       })
       .filter(defined)

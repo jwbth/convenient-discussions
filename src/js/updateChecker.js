@@ -89,7 +89,7 @@ async function checkForUpdates() {
   }
 
   try {
-    const revisions = await cd.g.CURRENT_PAGE.getRevisions({
+    const revisions = await cd.g.PAGE.getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
     }, true);
@@ -138,7 +138,7 @@ async function checkForUpdates() {
  * @private
  */
 async function processRevisionsIfNeeded() {
-  const revisions = await cd.g.CURRENT_PAGE.getRevisions({
+  const revisions = await cd.g.PAGE.getRevisions({
     rvprop: ['ids'],
     rvstart: new Date(cd.g.previousVisitUnixTime * 1000).toISOString(),
     rvlimit: 1,
@@ -548,7 +548,7 @@ function showOrdinaryNotification(comments) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && cd.g.thisPageWatchedSections?.includes(section) ?
+      const mayBeInteresting = section && cd.g.currentPageWatchedSections?.includes(section) ?
         '' :
         mayBeInterestingString;
 
@@ -595,7 +595,7 @@ function showDesktopNotification(comments) {
           comment.author.name,
           comment.author,
           where,
-          cd.g.CURRENT_PAGE.name
+          cd.g.PAGE.name
         );
       } else {
         body = cd.s(
@@ -603,7 +603,7 @@ function showDesktopNotification(comments) {
           comment.author.name,
           comment.author,
           comment.section?.headline,
-          cd.g.CURRENT_PAGE.name
+          cd.g.PAGE.name
         );
       }
     } else {
@@ -624,7 +624,7 @@ function showDesktopNotification(comments) {
 
       // "that may be interesting to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && cd.g.thisPageWatchedSections?.includes(section) ?
+      const mayBeInteresting = section && cd.g.currentPageWatchedSections?.includes(section) ?
         '' :
         mayBeInterestingString;
 
@@ -632,7 +632,7 @@ function showDesktopNotification(comments) {
         'notification-newcomments-desktop',
         filteredComments.length,
         where,
-        cd.g.CURRENT_PAGE.name,
+        cd.g.PAGE.name,
         mayBeInteresting
       );
     }
@@ -704,7 +704,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
       comment.interesting = true;
       return true;
     }
-    if (!cd.g.thisPageWatchedSections) {
+    if (!cd.g.currentPageWatchedSections) {
       return false;
     }
 
@@ -843,7 +843,7 @@ const updateChecker = {
     const {
       text,
       revid: revisionId,
-    } = await cd.g.CURRENT_PAGE.parse({ oldid: revisionToParseId }, true) || {};
+    } = await cd.g.PAGE.parse({ oldid: revisionToParseId }, true) || {};
 
     const disallowedNames = [
       '$content',

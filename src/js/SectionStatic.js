@@ -6,7 +6,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { areObjectsEqual, unique } from './util';
+import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent, unique } from './util';
 import { editWatchedSections } from './modal';
 import { getWatchedSections, setWatchedSections } from './options';
 import { reloadPage } from './boot';
@@ -35,16 +35,8 @@ export default {
       }
 
       // The section could be added to the watchlist in another tab.
-      if (!cd.g.thisPageWatchedSections.includes(headline)) {
-        cd.g.thisPageWatchedSections.push(headline);
-      }
-
-      if (unwatchHeadline && cd.g.thisPageWatchedSections.includes(unwatchHeadline)) {
-        cd.g.thisPageWatchedSections.splice(
-          cd.g.thisPageWatchedSections.indexOf(unwatchHeadline),
-          1
-        );
-      }
+      addToArrayIfAbsent(cd.g.currentPageWatchedSections, headline);
+      removeFromArrayIfPresent(cd.g.currentPageWatchedSections, unwatchHeadline);
 
       try {
         await setWatchedSections();
@@ -95,11 +87,9 @@ export default {
       }
 
       // The section could be removed from the watchlist in another tab.
-      if (cd.g.thisPageWatchedSections.includes(headline)) {
-        cd.g.thisPageWatchedSections.splice(cd.g.thisPageWatchedSections.indexOf(headline), 1);
-      }
+      removeFromArrayIfPresent(cd.g.currentPageWatchedSections, headline);
 
-      if (!cd.g.thisPageWatchedSections.length) {
+      if (!cd.g.currentPageWatchedSections.length) {
         delete cd.g.watchedSections[mw.config.get('wgArticleId')];
       }
 
@@ -337,12 +327,12 @@ export default {
   cleanUpWatched() {
     if (!cd.sections) return;
 
-    const initialSectionCount = cd.g.thisPageWatchedSections.length;
-    cd.g.originalThisPageWatchedSections = cd.g.thisPageWatchedSections.slice();
-    cd.g.thisPageWatchedSections = cd.g.thisPageWatchedSections
+    const initialSectionCount = cd.g.currentPageWatchedSections.length;
+    cd.g.originalThisPageWatchedSections = cd.g.currentPageWatchedSections.slice();
+    cd.g.currentPageWatchedSections = cd.g.currentPageWatchedSections
       .filter((headline) => cd.sections.some((section) => section.headline === headline));
-    cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.thisPageWatchedSections;
-    if (cd.g.thisPageWatchedSections.length !== initialSectionCount) {
+    cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.currentPageWatchedSections;
+    if (cd.g.currentPageWatchedSections.length !== initialSectionCount) {
       setWatchedSections();
     }
   },

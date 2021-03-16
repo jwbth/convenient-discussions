@@ -215,7 +215,7 @@ export default {
           });
         };
         li.appendChild(a);
-        if (cd.g.thisPageWatchedSections?.includes(headline)) {
+        if (cd.g.currentPageWatchedSections?.includes(headline)) {
           a.className = 'cd-toc-watched';
           a.title = cd.s('toc-watched');
         }
