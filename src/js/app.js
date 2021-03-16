@@ -505,22 +505,14 @@ async function go() {
  */
 function getConfig() {
   return new Promise((resolve, reject) => {
-    const configUrl = configUrls[location.hostname];
+    let key = location.hostname;
+    if (IS_DEV) {
+      key += '-dev';
+    }
+    const configUrl = configUrls[key] || configUrls[location.hostname];
     if (configUrl) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
-      };
-      const getScript = (url, emptyResponseCallback) => {
-        mw.loader.getScript(url).then(
-          (data) => {
-            if (data === '') {
-              emptyResponseCallback();
-            } else {
-              resolve();
-            }
-          },
-          rejectWithMsg
-        );
       };
 
       const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || [];
@@ -532,16 +524,12 @@ function getConfig() {
         });
         return;
       }
-      const url = IS_DEV ? configUrl.replace('.js', '-dev.js') : configUrl;
-      getScript(url, () => {
-        if (IS_DEV) {
-          getScript(configUrl, () => {
-            rejectWithMsg('Empty response.');
-          });
-        } else {
-          rejectWithMsg('Empty response.');
-        }
-      });
+      mw.loader.getScript(configUrl).then(
+        () => {
+          resolve();
+        },
+        rejectWithMsg
+      );
     } else {
       resolve();
     }
