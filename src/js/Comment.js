@@ -747,9 +747,6 @@ export default class Comment extends CommentSkeleton {
   getCurrentColors() {
     let line = window.getComputedStyle(this.$line.get(0)).backgroundColor;
     let background = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
-    if (background === 'rgba(0, 0, 0, 0)' && this.backgroundColor) {
-      background = this.backgroundColor;
-    }
     return { line, background };
   }
 
@@ -796,16 +793,26 @@ export default class Comment extends CommentSkeleton {
 
     this.$backgroundToAnimate = this.$underlay
       .add(this.$overlayGradient)
-      .add(this.$overlayContent)
-      .stop();
+      .add(this.$overlayContent);
+
+    // Reset the animations, colors, and also set background-image to "none" to remove the gradient
+    // from the this.overlayGradient element.
     this.$backgroundToAnimate
       .add(this.$line)
-      .css('background-image', 'none')
-      .css('background-color', '');
+      .stop()
+      .css({
+        backgroundColor: '',
+        backgroundImage: 'none',
+        opacity: 1,
+      });
+
     let finalColors = this.getCurrentColors();
 
     if (!cd.settings.useBackgroundHighlighting) {
-      this.$line.css('background-color', colors.line);
+      this.$line.css({
+        backgroundColor: colors.line,
+        opacity: 1,
+      });
     }
     const backgroundColor = cd.settings.useBackgroundHighlighting ?
       colors.classic :
@@ -827,39 +834,50 @@ export default class Comment extends CommentSkeleton {
           finalColors.background = $doc.css(`--cd-comment-new-color`);
         }
       }
+
+      // That's basically if the flash color is green (new, when a comment is updated after an
+      // edit), and the comment itself is new and green, then animate to transparent, then set green
+      // back, so that there is any animation at all.
       if (cd.settings.useBackgroundHighlighting && finalColors.background === backgroundColor) {
-        finalColors.background = this.backgroundColor || 'rgba(0, 0, 0, 0)';
+        finalColors.background = 'rgba(0, 0, 0, 0)';
       }
+
+      const generateProperties = (backgroundColor) => {
+        const properties = { backgroundColor };
+
+        // jquery.color module can't animate to the transparent color.
+        if (properties.backgroundColor === 'rgba(0, 0, 0, 0)') {
+          properties.opacity = 0;
+        }
+
+        return properties;
+      };
+      const propertyDefaults = {
+        backgroundColor: '',
+        backgroundImage: '',
+        opacity: '',
+      };
 
       const comment = this;
       if (!cd.settings.useBackgroundHighlighting) {
-        this.$line
-          .stop()
-          .css('background-color', colors.line)
-          .animate({ backgroundColor: finalColors.line }, 400, 'swing', function () {
-            comment.$line.css('background-color', '');
-          });
+        this.$line.animate(generateProperties(finalColors.line), 400, 'swing', function () {
+          comment.$line.css(propertyDefaults);
+        });
       }
-      this.$backgroundToAnimate
-        .stop()
-        .css('background-image', 'none')
-        .css('background-color', backgroundColor)
-        .animate(
-          { backgroundColor: finalColors.background },
-          400,
-          'swing',
-          function () {
-            if (this !== comment.$overlayContent.get(0)) return;
+      this.$backgroundToAnimate.animate(
+        generateProperties(finalColors.background),
+        400,
+        'swing',
+        function () {
+          if (this !== comment.$overlayContent.get(0)) return;
 
-            if (callback) {
-              callback();
-            }
-            comment.$backgroundToAnimate
-              .css('background-image', '')
-              .css('background-color', '');
-            delete comment.$backgroundToAnimate;
+          if (callback) {
+            callback();
           }
-        );
+          comment.$backgroundToAnimate.css(propertyDefaults);
+          delete comment.$backgroundToAnimate;
+        }
+      );
     }, delay);
   }
 
@@ -2447,20 +2465,9 @@ export default class Comment extends CommentSkeleton {
           offsetParent = treeWalker.currentNode;
         }
         const backgroundColor = style.backgroundColor;
-        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none') {
-          if (backgroundColor.includes('rgb(')) {
-            /**
-             * Comment's background color if not default.
-             *
-             * @type {string|undefined}
-             */
-            this.backgroundColor = backgroundColor;
-          }
-
-          if (!offsetParent) {
-            offsetParent = treeWalker.currentNode;
-            offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
-          }
+        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none' && !offsetParent) {
+          offsetParent = treeWalker.currentNode;
+          offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
         }
         if (offsetParent) break;
       }
