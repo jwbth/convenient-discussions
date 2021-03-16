@@ -2257,7 +2257,7 @@ export default class CommentForm {
       `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
       'i'
     );
-    const headingRegexp = /^(=+).*\1[ \t]*$/;
+    const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
 
     const newlinesRegexp = willCommentBeIndented ?
       /^(.+)\n(?!:)(?=(.*))/gm :
@@ -2279,7 +2279,7 @@ export default class CommentForm {
 
         (
           !willCommentBeIndented &&
-          (headingRegexp.test(currentLine) || headingRegexp.test(nextLine))
+          (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
         ) ||
         fileRegexp.test(currentLine) ||
         (!willCommentBeIndented && fileRegexp.test(nextLine)) ||

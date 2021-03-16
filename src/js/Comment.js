@@ -1636,7 +1636,7 @@ export default class Comment extends CommentSkeleton {
         `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
         'i'
       );
-      const headingRegexp = /^(=+).*\1[ \t]*$/;
+      const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
       text = text.replace(
         /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
         (s, currentLine, nextLine) => {
@@ -1645,8 +1645,8 @@ export default class Comment extends CommentSkeleton {
             entireLineRegexp.test(nextLine) ||
             fileRegexp.test(currentLine) ||
             fileRegexp.test(nextLine) ||
-            headingRegexp.test(currentLine) ||
-            headingRegexp.test(nextLine) ||
+            entireLineFromStartRegexp.test(currentLine) ||
+            entireLineFromStartRegexp.test(nextLine) ||
             currentLineEndingRegexp.test(currentLine) ||
             nextLineBeginningRegexp.test(nextLine)
           ) ?
