@@ -158,11 +158,12 @@ export function encodeWikilink(link) {
 /**
  * Extract signatures that don't come from the unsigned templates from wikitext.
  *
- * @param {string} code
+ * @param {string} adjustedCode Adjusted page code.
+ * @param {string} code Page code.
  * @returns {object[]}
  * @private
  */
-function extractRegularSignatures(code) {
+function extractRegularSignatures(adjustedCode, code) {
   const timestampRegexp = new RegExp(
     `^((.*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["»])(?:\\}\\}|</small>)?).*(?:\n*|$)`,
     'igm'
@@ -177,7 +178,7 @@ function extractRegularSignatures(code) {
       Captures:
       1 - the whole line with the signature
       2 - text before the last user link
-      3 - unprocessed signature
+      3 - unprocessed signature (currently not used)
       4 - author name (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       6 - timestamp + small template ending characters / ending small tag
@@ -191,7 +192,7 @@ function extractRegularSignatures(code) {
 
   let signatures = [];
   let timestampMatch;
-  while ((timestampMatch = timestampRegexp.exec(code))) {
+  while ((timestampMatch = timestampRegexp.exec(adjustedCode))) {
     const line = timestampMatch[0];
     signatureRegexp.lastIndex = 0;
     const authorTimestampMatch = signatureRegexp.exec(line);
@@ -208,16 +209,18 @@ function extractRegularSignatures(code) {
       startIndex = timestampMatch.index + authorTimestampMatch[2].length;
       endIndex = timestampMatch.index + authorTimestampMatch[1].length;
       nextCommentStartIndex = timestampMatch.index + authorTimestampMatch[0].length;
-      dirtyCode = authorTimestampMatch[3];
+      dirtyCode = code.slice(startIndex, endIndex);
 
       // Find the first link to this author in the preceding text.
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
-      const commentEndingStartIndex = Math.max(
-        0,
-        authorTimestampMatch[0].length - authorTimestampMatch[6].length -
-        authorTimestampMatch[authorTimestampMatch.length - 1].length - signatureScanLimitWikitext
+      let commentEndingStartIndex = (
+        authorTimestampMatch[0].length -
+        authorTimestampMatch[6].length -
+        authorTimestampMatch[authorTimestampMatch.length - 1].length -
+        signatureScanLimitWikitext
       );
+      commentEndingStartIndex = Math.max(0, commentEndingStartIndex);
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
         // Slash can be present in authorLinkMatch[2]. It often indicates a link to a page in the
@@ -248,17 +251,18 @@ function extractRegularSignatures(code) {
 /**
  * Extract signatures that come from the unsigned templates from wikitext.
  *
+ * @param {string} adjustedCode Adjusted page code.
  * @param {string} code Page code.
  * @param {object[]} signatures Existing signatures.
  * @returns {object[]}
  * @private
  */
-function extractUnsigneds(code, signatures) {
+function extractUnsigneds(adjustedCode, code, signatures) {
   const unsigneds = [];
 
   if (cd.g.UNSIGNED_TEMPLATES_REGEXP) {
     let match;
-    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(code))) {
+    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(adjustedCode))) {
       let author;
       let timestamp;
       if (cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.test(match[2])) {
@@ -286,7 +290,7 @@ function extractUnsigneds(code, signatures) {
 
       let startIndex = match.index;
       const endIndex = match.index + match[1].length;
-      let dirtyCode = match[1];
+      let dirtyCode = code.slice(startIndex, endIndex);
       const nextCommentStartIndex = match.index + match[0].length;
 
       // "[5 tildes] {{unsigned|...}}" cases. In these cases, both the signature and
@@ -331,8 +335,8 @@ export function extractSignatures(code, generateCommentAnchors = false) {
   const adjustedCodeForUnsigneds = adjustedCode
     .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length));
 
-  let signatures = extractRegularSignatures(adjustedCode);
-  const unsigneds = extractUnsigneds(adjustedCodeForUnsigneds, signatures);
+  let signatures = extractRegularSignatures(adjustedCode, code);
+  const unsigneds = extractUnsigneds(adjustedCodeForUnsigneds, code, signatures);
   signatures.push(...unsigneds);
 
   // This is for the procedure adding anchors to comments linked from the comment, see
