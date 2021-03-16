@@ -358,7 +358,9 @@ export default class Comment extends CommentSkeleton {
     } else {
       startMargin = this.isStartStretched ? cd.g.CONTENT_START_MARGIN : cd.g.REGULAR_FONT_SIZE;
       endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
-      if (this.highlightables[0].closest('ol.cd-commentLevel')) {
+
+      const closestList = this.highlightables[0].closest('.cd-commentLevel');
+      if (closestList && closestList.tagName === 'OL') {
         startMargin += cd.g.REGULAR_FONT_SIZE;
       }
     }
