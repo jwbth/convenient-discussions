@@ -766,7 +766,7 @@ export default class Comment extends CommentSkeleton {
         line: $doc.css(`--cd-comment-target-line-color`),
         classic: $doc.css(`--cd-comment-target-color`),
       },
-      1500,
+      2000,
       () => {
         this.isTarget = false;
       }
