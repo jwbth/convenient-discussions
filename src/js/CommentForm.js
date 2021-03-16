@@ -763,6 +763,7 @@ export default class CommentForm {
       classes: ['cd-commentInput'],
       tabIndex: String(this.id) + '12',
     });
+    this.commentInput.$input.addClass('ime-position-inside');
 
     /**
      * Advanced section container.
