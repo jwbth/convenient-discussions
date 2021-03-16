@@ -57,14 +57,13 @@
       &-deleted .cd-commentOverlay-line {
         background-color: var(--cd-comment-deleted-line-color);
       }
+    }
 
-      .cd-commentOverlay-line {
-        position: relative;
-        top: 0;
-        left: -1px;
-        width: 3px;
-        height: 100%;
-      }
+    .cd-commentOverlay-line {
+      position: relative;
+      top: 0;
+      width: 3px;
+      height: 100%;
     }
 
     .cd-commentOverlay-content {
@@ -113,6 +112,14 @@
 }
 
 .ltr .cd-commentOverlay {
+  &.cd-commentOverlay-stretchedEnd .cd-commentOverlay-content {
+    padding-right: calc(~"var(--cd-content-start-margin) - 5px + 0.5em");
+  }
+
+  &.cd-commentOverlay-lined .cd-commentOverlay-line {
+    left: -1px;
+  }
+
   .oo-ui-buttonWidget {
     margin-right: 0;
   }
@@ -124,13 +131,17 @@
   .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
     margin-left: 0;
   }
-
-  &.cd-commentOverlay-stretchedEnd .cd-commentOverlay-content {
-    padding-right: calc(~"var(--cd-content-start-margin) - 5px + 0.5em");
-  }
 }
 
 .rtl .cd-commentOverlay {
+  &.cd-commentOverlay-stretchedEnd .cd-commentOverlay-content {
+    padding-left: calc(~"var(--cd-content-start-margin) - 5px + 0.5em");
+  }
+
+  &.cd-commentOverlay-lined .cd-commentOverlay-line {
+    right: -1px;
+  }
+
   .oo-ui-buttonWidget {
     margin-left: 0;
   }
@@ -141,10 +152,6 @@
 
   .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
     margin-right: 0;
-  }
-
-  &.cd-commentOverlay-stretchedEnd .cd-commentOverlay-content {
-    padding-left: calc(~"var(--cd-content-start-margin) - 5px + 0.5em");
   }
 }
 
