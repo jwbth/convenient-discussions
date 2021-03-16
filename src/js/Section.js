@@ -665,7 +665,7 @@ export default class Section extends SectionSkeleton {
         newSectionCode = (
           source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
           code +
-          '\n\n'
+          '\n'
         );
       } else {
         newSectionCode = '';

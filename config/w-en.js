@@ -138,10 +138,10 @@ export default {
   ],
 
   getMoveSourcePageCode: function (targetPageWikilink, signature) {
-    return '{{Moved discussion to|' + targetPageWikilink + '|' + signature + '}}';
+    return '{{Moved discussion to|' + targetPageWikilink + '|' + signature + '}}\n';
   },
 
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
-    return '{{Moved discussion from|' + targetPageWikilink + '|' + signature + '}}';
+    return '{{Moved discussion from|' + targetPageWikilink + '|' + signature + '}}\n';
   },
 };
