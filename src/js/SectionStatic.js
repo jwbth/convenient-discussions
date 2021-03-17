@@ -275,7 +275,7 @@ export default {
    * @memberof module:Section
    */
   addNewCommentsNotifications(newCommentsBySection) {
-    $('.cd-refreshButtonContainer').remove();
+    $('.cd-refreshButton-container').remove();
 
     newCommentsBySection.forEach((comments, section) => {
       if (!section || typeof section === 'string') return;
@@ -312,7 +312,7 @@ export default {
         $last = section.$elements.last();
       }
       $('<div>')
-        .addClass('cd-refreshButtonContainer cd-sectionButtonContainer')
+        .addClass('cd-refreshButton-container cd-sectionButton-container')
         .append(button.$element)
         .insertAfter($last);
     });

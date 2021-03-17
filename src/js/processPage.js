@@ -398,7 +398,7 @@ function addAddTopicButton() {
       CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
-      .addClass('cd-addTopicButtonContainer cd-sectionButtonContainer')
+      .addClass('cd-addTopicButton-container cd-sectionButton-container')
       .append(cd.g.addSectionButton.$element)
       .appendTo(cd.g.rootElement);
   }

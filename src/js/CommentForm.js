@@ -979,7 +979,7 @@ export default class CommentForm {
      * @type {OoUiHorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
-      classes: ['cd-checkboxesContainer'],
+      classes: ['cd-checkboxes'],
       items: [
         this.minorField,
         this.watchField,
@@ -995,21 +995,21 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$buttonsContainer = $('<div>').addClass('cd-buttonsContainer');
+    this.$buttons = $('<div>').addClass('cd-buttons');
 
     /**
-     * Left form buttons container.
+     * Start (left on LTR wikis, right on RTL wikis) form buttons container.
      *
      * @type {JQuery}
      */
-    this.$leftButtonsContainer = $('<div>').addClass('cd-leftButtonsContainer');
+    this.$buttonsStart = $('<div>').addClass('cd-buttons-start');
 
     /**
-     * Right form buttons container.
+     * End (right on LTR wikis, left on RTL wikis) form buttons container.
      *
      * @type {JQuery}
      */
-    this.$rightButtonsContainer = $('<div>').addClass('cd-rightButtonsContainer');
+    this.$buttonsEnd = $('<div>').addClass('cd-buttons-end');
 
     let message;
     switch (this.mode) {
@@ -1138,24 +1138,24 @@ export default class CommentForm {
       this.$summaryPreview,
       this.checkboxesLayout.$element,
     ]);
-    this.$leftButtonsContainer.append([
+    this.$buttonsStart.append([
       this.advancedButton.$element,
       this.helpPopupButton.$element,
     ]);
-    this.$rightButtonsContainer.append([
+    this.$buttonsEnd.append([
       this.cancelButton.$element,
       this.viewChangesButton.$element,
       this.previewButton.$element,
       this.submitButton.$element,
     ]);
-    this.$buttonsContainer.append(this.$leftButtonsContainer, this.$rightButtonsContainer);
+    this.$buttons.append(this.$buttonsStart, this.$buttonsEnd);
     this.$element.append([
       this.$messageArea,
       this.headlineInput?.$element,
       this.commentInput.$element,
       this.$advanced,
-      this.$buttonsContainer,
-    ].filter(defined));
+      this.$buttons,
+    ]);
 
     if (this.mode !== 'edit' && !cd.settings.alwaysExpandAdvanced) {
       this.$advanced.hide();
@@ -1388,7 +1388,7 @@ export default class CommentForm {
           $target = $tested;
           $tested = $tested.next();
         } while (
-          $tested.is('.cd-sectionButtonContainer:not(.cd-addTopicButtonContainer), .cd-commentForm-reply') ||
+          $tested.is('.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply') ||
           ($tested.get(0)?.className.match(headingLevelRegexp))
         );
         this.$element.insertAfter($target);

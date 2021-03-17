@@ -762,9 +762,9 @@ export default class Comment extends CommentSkeleton {
     const $doc = $(document.documentElement);
     this.flash(
       {
-        background: $doc.css(`--cd-comment-target-background-color`),
-        line: $doc.css(`--cd-comment-target-line-color`),
-        classic: $doc.css(`--cd-comment-target-color`),
+        background: $doc.css('--cd-comment-target-background-color'),
+        line: $doc.css('--cd-comment-target-line-color'),
+        classic: $doc.css('--cd-comment-target-color'),
       },
       2000,
       () => {
@@ -829,9 +829,9 @@ export default class Comment extends CommentSkeleton {
       if (this.isFocused) {
         finalColors.background = $doc.css(`--cd-comment-focused-${backgroundVarPostfix}`);
       } else if (this.isNew && !this.isOwn) {
-        finalColors.line = $doc.css(`--cd-comment-new-line-color`);
+        finalColors.line = $doc.css('--cd-comment-new-line-color');
         if (cd.settings.useBackgroundHighlighting) {
-          finalColors.background = $doc.css(`--cd-comment-new-color`);
+          finalColors.background = $doc.css('--cd-comment-new-color');
         }
       }
 
@@ -888,9 +888,9 @@ export default class Comment extends CommentSkeleton {
   flashNew() {
     const $doc = $(document.documentElement);
     this.flash({
-      background: $doc.css(`--cd-comment-new-background-color`),
-      line: $doc.css(`--cd-comment-new-line-color`),
-      classic: $doc.css(`--cd-comment-new-color`),
+      background: $doc.css('--cd-comment-new-background-color'),
+      line: $doc.css('--cd-comment-new-line-color'),
+      classic: $doc.css('--cd-comment-new-color'),
     }, 500);
 
     if (this.isEdited) {

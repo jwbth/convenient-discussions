@@ -14,7 +14,7 @@ import cd from './cd';
 import toc from './toc';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, defined, focusInput } from './util';
+import { dealWithLoadingBug, focusInput } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -165,9 +165,8 @@ export default class Section extends SectionSkeleton {
     let replyContainer;
     if (createUl) {
       replyContainer = document.createElement('ul');
-      replyContainer.className = 'cd-commentLevel cd-sectionButtonContainer';
+      replyContainer.className = 'cd-commentLevel cd-sectionButton-container';
       replyContainer.appendChild(replyWrapper);
-
       this.lastElementInFirstChunk.parentNode.insertBefore(
         replyContainer,
         this.lastElementInFirstChunk.nextElementSibling
@@ -214,16 +213,16 @@ export default class Section extends SectionSkeleton {
     const button = this.elementPrototypes.addSubsectionButton.cloneNode(true);
     const labelContainer = button.querySelector('.oo-ui-labelElement-label');
     if (!labelContainer) return;
+
     labelContainer.innerHTML = '';
-    labelContainer.appendChild(
-      document.createTextNode(cd.s('section-addsubsection-to', this.headline))
-    );
+    const label = document.createTextNode(cd.s('section-addsubsection-to', this.headline));
+    labelContainer.appendChild(label);
     button.firstChild.onclick = () => {
       this.addSubsection();
     };
 
     const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'cd-sectionButtonContainer cd-addSubsectionButtonContainer';
+    buttonContainer.className = 'cd-sectionButton-container cd-addSubsectionButton-container';
     buttonContainer.style.display = 'none';
     buttonContainer.appendChild(button);
 
@@ -871,7 +870,7 @@ export default class Section extends SectionSkeleton {
           this.keepLinkField?.$element,
           $sectionCodeNote,
           this.summaryEndingField.$element,
-        ].filter(defined));
+        ]);
 
         this.stackLayout.setItem(this.movePanel);
         focusInput(this.titleInput);
@@ -1241,7 +1240,7 @@ export default class Section extends SectionSkeleton {
     if (!this.closingBracketElement) return;
 
     const wrapper = document.createElement('span');
-    wrapper.className = 'cd-sectionLinkWrapper';
+    wrapper.className = 'cd-sectionLink-wrapper';
     if (!visible) {
       wrapper.style.display = 'none';
     }
