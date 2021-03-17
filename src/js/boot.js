@@ -29,7 +29,6 @@ import {
   saveScrollPosition,
   saveToLocalStorage,
   skin$,
-  transparentize,
   unhideText,
 } from './util';
 import {
@@ -223,7 +222,6 @@ export function setTalkPageCssVariables() {
     '--cd-comment-own-color': cd.g.COMMENT_OWN_COLOR,
     '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
     '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
-    '--cd-comment-focused-transparent-color': transparentize(focusedColor),
     '--cd-comment-target-line-color': cd.g.COMMENT_TARGET_LINE_COLOR,
     '--cd-comment-new-line-color': cd.g.COMMENT_NEW_LINE_COLOR,
     '--cd-comment-own-line-color': cd.g.COMMENT_OWN_LINE_COLOR,
@@ -234,7 +232,6 @@ export function setTalkPageCssVariables() {
     '--cd-comment-focused-background-color': cd.g.COMMENT_FOCUSED_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-sidebar-color': sidebarColor,
-    '--cd-sidebar-transparent-color': transparentize(sidebarColor),
     '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
   });
 }
