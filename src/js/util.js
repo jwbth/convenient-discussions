@@ -24,6 +24,23 @@ export function unique(item, i, arr) {
 }
 
 /**
+ * Generates a transparent color for the given color to use it in a gradient.
+ *
+ * @param {string} color
+ * @returns {string}
+ */
+export function transparentize(color) {
+  const dummyElement = document.createElement('span');
+  dummyElement.style.color = color;
+  color = dummyElement.style.color;
+  return color.includes('rgba') ?
+    color.replace(/\d+(?=\))/, '0') :
+    color
+      .replace('rgb', 'rgba')
+      .replace(')', ', 0)');
+}
+
+/**
  * Check if a node is an element with `display: inline` or `display: inline-block` in the default
  * browser styles. As an option, it can also treat text nodes as inline elements.
  *
