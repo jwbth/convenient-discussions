@@ -940,11 +940,7 @@ function restoreCommentFormsFromData(commentFormsData) {
       const section = Section.search({
         headline: data.targetData.headline,
         oldestCommentAnchor: data.targetData.oldestCommentAnchor,
-
-        // TODO: remove "data.targetData.index ||" after February 2021, when old values in users'
-        // local storages will die for good.
-        id: data.targetData.index || data.targetData.id,
-
+        id: data.targetData.id,
         anchor: data.targetData.anchor,
         ancestors: data.targetData.ancestors,
       });
