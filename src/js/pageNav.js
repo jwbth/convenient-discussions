@@ -36,14 +36,21 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
-    const contentColumn = cd.g.$contentColumn.get(0);
-    if (contentColumn) {
-      let width = cd.g.CONTENT_DIR === 'ltr' && document.body.classList.contains('ltr') ?
-        contentColumn.getBoundingClientRect().left - 18 :
-        $(window).width() - contentColumn.getBoundingClientRect().right - 18;
+    if (cd.g.$contentColumn.length) {
+      const left = cd.g.$contentColumn.offset().left;
+      let width = cd.g.CONTENT_DIR === 'ltr' && $(document.body).hasClass('ltr') ?
+        left - 18 :
+        $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - 18;
       if (['vector', 'minerva'].includes(cd.g.SKIN)) {
         width -= cd.g.CONTENT_START_MARGIN;
       }
+
+      // Timeless when narrowed
+      if (width <= 100) {
+        this.$topElement.hide();
+        this.$bottomElement.hide();
+      }
+
       this.$topElement.css('width', width + 'px');
       this.$bottomElement.css('width', width + 'px');
     }
