@@ -349,11 +349,9 @@ export default class Autocomplete {
                       insertText(input, paramsString);
                       input.selectRange(caretIndex + firstValueIndex - 1);
                     },
-                    (e) => {
+                    () => {
                       input.setDisabled(false);
                       focusInput(input);
-                      mw.notify(cd.s('cf-autocomplete-notemplatedata'), { type: 'error' });
-                      console.warn(e);
                     }
                   )
                   .always(() => {
