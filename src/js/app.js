@@ -13,14 +13,14 @@ import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
 import { formatDate, parseCommentAnchor } from './timestamp';
+import { getUserInfo } from './apiWrappers';
 import {
-  getCssValues,
   isLoadingOverlayOn,
+  memorizeCssValues,
   removeLoadingOverlay,
   setLoadingOverlay,
   setTalkPageCssVariables,
 } from './boot';
-import { getUserInfo } from './apiWrappers';
 import {
   isProbablyTalkPage,
   mergeRegexps,
@@ -423,7 +423,7 @@ async function go() {
         3. Run operations that create prerequisites for a reflow, such as adding CSS. Thanks to the
            fact that the API requests are already pending, we don't lose time.
        */
-      getCssValues();
+      memorizeCssValues();
 
       setTalkPageCssVariables();
 

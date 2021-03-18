@@ -242,38 +242,10 @@ export default class Comment extends CommentSkeleton {
           el.style.overflow = 'hidden';
         });
 
-        const newRectTop = this.highlightables[0].getBoundingClientRect();
-        const newRectBottom = this.elements.length === 1 ?
-          newRectTop :
+        rectTop = this.highlightables[0].getBoundingClientRect();
+        rectBottom = this.elements.length === 1 ?
+          rectTop :
           this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
-
-        const startProperty = cd.g.CONTENT_DIR === 'ltr' ? 'left' : 'right';
-        const endProperty = cd.g.CONTENT_DIR === 'ltr' ? 'right' : 'left';
-
-        /**
-         * Is the start (left on LTR wikis, right on RTL wikis) side of the comment constrained by a
-         * floating element.
-         *
-         * @type {boolean|undefined}
-         */
-        this.isStartConstrained = (
-          this.isLayoutStabilized ||
-          newRectTop[startProperty] !== rectTop[startProperty]
-        );
-
-        /**
-         * Is the end (right on LTR wikis, left on RTL wikis) side of the comment constrained by a
-         * floating element.
-         *
-         * @type {boolean|undefined}
-         */
-        this.isEndConstrained = (
-          this.isLayoutStabilized ||
-          newRectTop[endProperty] !== rectTop[endProperty]
-        );
-
-        rectTop = newRectTop;
-        rectBottom = newRectBottom;
 
         // If the comment intersects more than one floating block, we better keep `overflow: hidden`
         // to avoid bugs like where there are two floating blocks to the right with different
@@ -282,41 +254,8 @@ export default class Comment extends CommentSkeleton {
           this.elements.forEach((el, i) => {
             el.style.overflow = initialOverflows[i];
           });
-        } else {
-          /**
-           * Has the `overflow: hidden` style been added to the comment's elements to stabilize
-           * otherwise fluid layout.
-           *
-           * @type {boolean|undefined}
-           */
-          this.isLayoutStabilized = true;
         }
-      } else {
-        this.isStartConstrained = false;
-        this.isEndConstrained = false;
       }
-
-      const canBeStretched = (
-        !cd.settings.useBackgroundHighlighting &&
-        this.level === 0 &&
-        this.highlightables[0].parentNode === cd.g.rootElement
-      );
-
-      /**
-       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
-       * start of the content area.
-       *
-       * @type {boolean|undefined}
-       */
-      this.isStartStretched = canBeStretched && !this.isStartConstrained;
-
-      /**
-       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
-       * of the content area.
-       *
-       * @type {boolean|undefined}
-       */
-      this.isEndStretched = canBeStretched && !this.isEndConstrained;
     }
 
     const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
@@ -353,10 +292,38 @@ export default class Comment extends CommentSkeleton {
 
     let startMargin;
     let endMargin;
+
+    /**
+     * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
+     * start of the content area.
+     *
+     * @type {boolean|undefined}
+     */
+    this.isStartStretched = false;
+
+    /**
+     * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
+     * of the content area.
+     *
+     * @type {boolean|undefined}
+     */
+    this.isEndStretched = false;
+
     if (cd.settings.useBackgroundHighlighting) {
       startMargin = 5;
       endMargin = 5;
     } else {
+      if (!cd.settings.useBackgroundHighlighting && this.level === 0) {
+        this.isStartStretched = (
+          this.positions.left - cd.g.CONTENT_START_MARGIN <=
+          cd.g.CONTENT_COLUMN_START + 1
+        );
+        this.isEndStretched = (
+          this.positions.right + cd.g.CONTENT_START_MARGIN >=
+          cd.g.CONTENT_COLUMN_END
+        );
+      }
+
       startMargin = this.isStartStretched ? cd.g.CONTENT_START_MARGIN : cd.g.REGULAR_FONT_SIZE;
       endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
 
@@ -372,7 +339,7 @@ export default class Comment extends CommentSkeleton {
     return {
       layersTop: this.positions.top - options.layersContainerOffset.top,
       layersLeft: this.positions.left - leftMargin - options.layersContainerOffset.left,
-      layersWidth: this.positions.right - this.positions.left + leftMargin + rightMargin,
+      layersWidth: (this.positions.right + rightMargin) - (this.positions.left - leftMargin),
       layersHeight: this.positions.bottom - this.positions.top,
     };
   }
@@ -597,6 +564,7 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
+    this.overlay.classList.toggle('cd-commentOverlay-stretchedStart', this.isStartStretched);
     this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);
   }
 
@@ -2447,7 +2415,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get and sometimes create the container for the comment's underlay.
+   * Get and sometimes create the container for the comment's layers.
    *
    * @returns {Element}
    */

@@ -177,20 +177,32 @@ export async function initSettings() {
 }
 
 /**
+ * Assign the properties related to `cd.g.$contentColumn`.
+ */
+export function setContentColumnGlobals() {
+  const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
+  cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(property));
+  if (cd.g.CONTENT_START_MARGIN < cd.g.REGULAR_FONT_SIZE) {
+    cd.g.CONTENT_START_MARGIN = cd.g.REGULAR_FONT_SIZE;
+  }
+
+  const left = cd.g.$contentColumn.offset().left;
+  const width = cd.g.$contentColumn.outerWidth();
+  cd.g.CONTENT_COLUMN_START = cd.g.CONTENT_DIR === 'ltr' ? left : left + width;
+  cd.g.CONTENT_COLUMN_END = cd.g.CONTENT_DIR === 'ltr' ? left + width : left;
+}
+
+/**
  * Assign some important skin-specific values to the properties of the global object.
  */
-export function getCssValues() {
+export function memorizeCssValues() {
   cd.g.REGULAR_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
   cd.g.REGULAR_FONT_SIZE = parseFloat(cd.g.$content.css('font-size'));
 
   // For the Timeless skin
   cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
 
-  const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
-  cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(property));
-  if (cd.g.CONTENT_START_MARGIN < cd.g.REGULAR_FONT_SIZE) {
-    cd.g.CONTENT_START_MARGIN = cd.g.REGULAR_FONT_SIZE;
-  }
+  setContentColumnGlobals();
 }
 
 /**

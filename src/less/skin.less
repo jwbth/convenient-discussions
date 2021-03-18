@@ -70,6 +70,16 @@
   .cd-pageNav {
     font-size: 13px;
   }
+
+  // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+  // surrounding area from the design point of view.
+  .sitedir-ltr .cd-commentOverlay-stretchedStart .cd-commentOverlay-line {
+    left: 0;
+  }
+
+  .sitedir-rtl .cd-commentOverlay-stretchedStart .cd-commentOverlay-line {
+    right: 0;
+  }
 }
 
 .skin-modern {

@@ -11,6 +11,7 @@ import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import { isInputFocused, keyCombination } from './util';
+import { setContentColumnGlobals } from './boot';
 
 const beforeUnloadHandlers = {};
 
@@ -18,6 +19,7 @@ const beforeUnloadHandlers = {};
  * Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
+  setContentColumnGlobals();
   commentLayers.redrawIfNecessary(true);
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
