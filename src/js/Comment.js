@@ -1610,7 +1610,7 @@ export default class Comment extends CommentSkeleton {
       );
       const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
       text = text.replace(
-        /^((?![:*# ]).+)\n(?![\n:*# \x03])(?=(.*))/gm,
+        /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
         (s, currentLine, nextLine) => {
           const newlineOrSpace = (
             entireLineRegexp.test(currentLine) ||
