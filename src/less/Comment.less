@@ -21,8 +21,7 @@ ol > li.cd-commentPart-last {
   margin: 0;
 }
 
-.mw-content-ltr .cd-commentLevel:not(ol),
-.mw-content-rtl .mw-content-ltr .cd-commentLevel:not(ol) {
+.sitedir-ltr .cd-commentLevel:not(ol) {
   padding-left: 1em;
   padding-right: 0;
   margin-left: 1em;
@@ -31,8 +30,7 @@ ol > li.cd-commentPart-last {
   border-right: 0;
 }
 
-.mw-content-rtl .cd-commentLevel:not(ol),
-.mw-content-ltr .mw-content-rtl .cd-commentLevel:not(ol) {
+.sitedir-rtl .cd-commentLevel:not(ol) {
   padding-left: 0;
   padding-right: 1em;
   margin-left: 0;
@@ -41,17 +39,11 @@ ol > li.cd-commentPart-last {
   border-right: 1px solid #c8ccd1;
 }
 
-dl.cd-commentLevel > dd {
+.sitedir-ltr dl.cd-commentLevel > dd {
   margin-left: 0;
 }
 
-.mw-content-ltr dl.cd-commentLevel > dd,
-.mw-content-rtl .mw-content-ltr dl.cd-commentLevel > dd {
-  margin-left: 0;
-}
-
-.mw-content-rtl dl.cd-commentLevel > dd,
-.mw-content-ltr .mw-content-rtl dl.cd-commentLevel > dd {
+.sitedir-rtl dl.cd-commentLevel > dd {
   margin-right: 0;
 }
 

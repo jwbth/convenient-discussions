@@ -38,7 +38,7 @@ export default {
   updateWidth() {
     if (cd.g.$contentColumn.length) {
       const left = cd.g.$contentColumn.offset().left;
-      let width = cd.g.CONTENT_DIR === 'ltr' && $(document.body).hasClass('ltr') ?
+      let width = $(document.body).hasClass('ltr') ?
         left - 18 :
         $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - 18;
       if (['vector', 'minerva'].includes(cd.g.SKIN)) {

@@ -310,14 +310,14 @@ export default class Comment extends CommentSkeleton {
     this.isEndStretched = false;
 
     if (this.level === 0) {
-      this.isStartStretched = (
-        this.positions.left - cd.g.CONTENT_START_MARGIN <=
-        cd.g.CONTENT_COLUMN_START + 1
-      );
-      this.isEndStretched = (
-        this.positions.right + cd.g.CONTENT_START_MARGIN >=
-        cd.g.CONTENT_COLUMN_END
-      );
+      const leftPosition = this.positions.left - cd.g.CONTENT_START_MARGIN;
+      const rightPosition = this.positions.right + cd.g.CONTENT_START_MARGIN;
+      this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
+        leftPosition <= cd.g.CONTENT_COLUMN_START + 1 :
+        rightPosition >= cd.g.CONTENT_COLUMN_START - 1;
+      this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
+        rightPosition >= cd.g.CONTENT_COLUMN_END - 1 :
+        leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
     }
 
     if (this.isStartStretched) {
