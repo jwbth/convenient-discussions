@@ -438,7 +438,7 @@ function initPatterns() {
   );
 
   const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
-  const quoteBeginningsPattern = ['<blockquote>', '<q>']
+  const quoteBeginningsPattern = ['<blockquote', '<q']
     .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
     .join('|');
   const quoteEndingsPattern = ['</blockquote>', '</q>']
