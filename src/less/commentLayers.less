@@ -2,40 +2,14 @@
   position: absolute;
   z-index: -1;
 
-  &-classic {
-    &.cd-commentUnderlay {
-      // Note that the classes are in the order of their precedence if you go from the last to the
-      // first.
-      &-new {
-        background-color: var(--cd-comment-new-color);
-      }
-
-      &-own {
-        background-color: var(--cd-comment-own-color);
-      }
-
-      &-deleted {
-        background-color: var(--cd-comment-deleted-color);
-      }
-
-      &-focused {
-        background-color: var(--cd-comment-focused-color);
-      }
-    }
+  // Note that the classes are in the order of their precedence if you go from the last to the
+  // first.
+  &-deleted {
+    background-color: var(--cd-comment-deleted-background-color);
   }
 
-  &-lined {
-    &.cd-commentUnderlay {
-      // Note that the classes are in the order of their precedence if you go from the last to the
-      // first.
-      &-deleted {
-        background-color: var(--cd-comment-deleted-background-color);
-      }
-
-      &-focused {
-        background-color: var(--cd-comment-focused-background-color);
-      }
-    }
+  &-focused {
+    background-color: var(--cd-comment-focused-background-color);
   }
 }
 
@@ -44,37 +18,27 @@
   pointer-events: none;
   line-height: 1.4285714em;
 
-  &-lined {
-    &.cd-commentOverlay {
-      &-new .cd-commentOverlay-line {
-        background-color: var(--cd-comment-new-line-color);
-      }
-
-      &-own .cd-commentOverlay-line {
-        background-color: var(--cd-comment-own-line-color);
-      }
-
-      &-deleted .cd-commentOverlay-line {
-        background-color: var(--cd-comment-deleted-line-color);
-      }
-    }
-
-    .cd-commentOverlay-line {
-      position: relative;
-      top: 0;
-      width: 3px;
-      height: 100%;
-    }
-
-    .cd-commentOverlay-content {
-      background-color: var(--cd-comment-focused-background-color);
-    }
+  &-new .cd-commentOverlay-line {
+    background-color: var(--cd-comment-new-line-color);
   }
 
-  &-classic {
-    .cd-commentOverlay-content {
-      background-color: var(--cd-comment-focused-color);
-    }
+  &-own .cd-commentOverlay-line {
+    background-color: var(--cd-comment-own-line-color);
+  }
+
+  &-deleted .cd-commentOverlay-line {
+    background-color: var(--cd-comment-deleted-line-color);
+  }
+
+  .cd-commentOverlay-line {
+    position: relative;
+    top: 0;
+    width: 3px;
+    height: 100%;
+  }
+
+  .cd-commentOverlay-content {
+    background-color: var(--cd-comment-focused-background-color);
   }
 
   &-focused .cd-commentOverlay-innerWrapper {
@@ -147,11 +111,11 @@
   }
 }
 
-.sitedir-ltr .cd-commentOverlay-lined .cd-commentOverlay-line {
+.sitedir-ltr .cd-commentOverlay-line {
   left: -1px;
 }
 
-.sitedir-rtl .cd-commentOverlay-lined .cd-commentOverlay-line {
+.sitedir-rtl .cd-commentOverlay-line {
   right: -1px;
 }
 
@@ -165,19 +129,11 @@
   left: 0;
 }
 
-.ltr .cd-commentOverlay-classic .cd-commentOverlay-gradient {
-  background-image: linear-gradient(to left, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color));
-}
-
-.rtl .cd-commentOverlay-classic .cd-commentOverlay-gradient {
-  background-image: linear-gradient(to right, var(--cd-comment-focused-color), var(--cd-comment-focused-transparent-color));
-}
-
-.ltr .cd-commentOverlay-lined .cd-commentOverlay-gradient {
+.ltr .cd-commentOverlay-gradient {
   background-image: linear-gradient(to left, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
 }
 
-.rtl .cd-commentOverlay-lined .cd-commentOverlay-gradient {
+.rtl .cd-commentOverlay-gradient {
   background-image: linear-gradient(to right, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
 }
 

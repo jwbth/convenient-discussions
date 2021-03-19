@@ -212,12 +212,6 @@ export function memorizeCssValues() {
  * @private
  */
 export function setTalkPageCssVariables() {
-  // Get the "focused" color to infer a transparent color for it later. The user may override the
-  // CSS variable value in their personal styles, so we get the existing value first.
-  const focusedColor = (
-    $(document.documentElement).css('--cd-comment-focused-color') ||
-    cd.g.COMMENT_FOCUSED_COLOR
-  );
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
   const $backgrounded = skin$({
@@ -229,24 +223,19 @@ export function setTalkPageCssVariables() {
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
-    '--cd-comment-target-color': cd.g.COMMENT_TARGET_COLOR,
-    '--cd-comment-new-color': cd.g.COMMENT_NEW_COLOR,
-    '--cd-comment-own-color': cd.g.COMMENT_OWN_COLOR,
-    '--cd-comment-deleted-color': cd.g.COMMENT_DELETED_COLOR,
-    '--cd-comment-focused-color': cd.g.COMMENT_FOCUSED_COLOR,
-    '--cd-comment-focused-transparent-color': transparentize(focusedColor),
     '--cd-comment-target-line-color': cd.g.COMMENT_TARGET_LINE_COLOR,
     '--cd-comment-new-line-color': cd.g.COMMENT_NEW_LINE_COLOR,
     '--cd-comment-own-line-color': cd.g.COMMENT_OWN_LINE_COLOR,
     '--cd-comment-deleted-line-color': cd.g.COMMENT_DELETED_LINE_COLOR,
     '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
     '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
+    '--cd-comment-own-background-color': cd.g.COMMENT_OWN_BACKGROUND_COLOR,
     '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
     '--cd-comment-focused-background-color': cd.g.COMMENT_FOCUSED_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
+    '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
     '--cd-sidebar-color': sidebarColor,
     '--cd-sidebar-transparent-color': transparentize(sidebarColor),
-    '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
   });
 }
 
@@ -608,17 +597,11 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-commentButton'],
   }).$element.get(0);
 
-  const layersClassPostfix = cd.settings.useBackgroundHighlighting ? 'classic' : 'lined';
-
   cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = document.createElement('div');
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay.className = (
-    `cd-commentUnderlay cd-commentUnderlay-${layersClassPostfix}`
-  );
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay.className = 'cd-commentUnderlay';
 
   cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay = document.createElement('div');
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.className = (
-    `cd-commentOverlay cd-commentOverlay-${layersClassPostfix}`
-  );
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.className = 'cd-commentOverlay';
 
   const overlayLine = document.createElement('div');
   overlayLine.className = 'cd-commentOverlay-line';
@@ -670,6 +653,15 @@ export async function init(siteDataRequests) {
   initPatterns();
   initOouiAndElementPrototypes();
   $.fn.extend(jqueryExtensions);
+
+  if (cd.settings.useBackgroundHighlighting) {
+    cd.g.nanoCss.put('.cd-commentUnderlay-new', {
+      backgroundColor: 'var(--cd-comment-new-background-color)',
+    });
+    cd.g.nanoCss.put('.cd-commentUnderlay-own', {
+      backgroundColor: 'var(--cd-comment-own-background-color)',
+    });
+  }
 
   /**
    * Collection of all comment forms on the page in the order of their creation.

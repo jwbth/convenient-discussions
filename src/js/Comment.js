@@ -309,32 +309,27 @@ export default class Comment extends CommentSkeleton {
      */
     this.isEndStretched = false;
 
-    if (cd.settings.useBackgroundHighlighting) {
-      startMargin = 5;
-      endMargin = 5;
+    if (this.level === 0) {
+      this.isStartStretched = (
+        this.positions.left - cd.g.CONTENT_START_MARGIN <=
+        cd.g.CONTENT_COLUMN_START + 1
+      );
+      this.isEndStretched = (
+        this.positions.right + cd.g.CONTENT_START_MARGIN >=
+        cd.g.CONTENT_COLUMN_END
+      );
+    }
+
+    if (this.isStartStretched) {
+      startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
-      if (!cd.settings.useBackgroundHighlighting && this.level === 0) {
-        this.isStartStretched = (
-          this.positions.left - cd.g.CONTENT_START_MARGIN <=
-          cd.g.CONTENT_COLUMN_START + 1
-        );
-        this.isEndStretched = (
-          this.positions.right + cd.g.CONTENT_START_MARGIN >=
-          cd.g.CONTENT_COLUMN_END
-        );
-      }
+      startMargin = this.level === 0 ? 5 : cd.g.REGULAR_FONT_SIZE;
+    }
+    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
 
-      if (this.isStartStretched) {
-        startMargin = cd.g.CONTENT_START_MARGIN;
-      } else {
-        startMargin = this.level === 0 ? 5 : cd.g.REGULAR_FONT_SIZE;
-      }
-      endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
-
-      const closestList = this.highlightables[0].closest('.cd-commentLevel');
-      if (closestList && closestList.tagName === 'OL') {
-        startMargin += cd.g.REGULAR_FONT_SIZE;
-      }
+    const closestList = this.highlightables[0].closest('.cd-commentLevel');
+    if (closestList && closestList.tagName === 'OL') {
+      startMargin += cd.g.REGULAR_FONT_SIZE;
     }
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
@@ -711,18 +706,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment's current colors: the background color, be it an underlay color or regular
-   * background color, and the line color.
-   *
-   * @returns {object}
-   */
-  getCurrentColors() {
-    let line = window.getComputedStyle(this.$line.get(0)).backgroundColor;
-    let background = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
-    return { line, background };
-  }
-
-  /**
    * Highlight the comment as a target (it is opened by a link, just posted, is the target of the
    * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
    */
@@ -731,30 +714,20 @@ export default class Comment extends CommentSkeleton {
 
     // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
     // their personal CSS.
-    const $doc = $(document.documentElement);
-    this.flash(
-      {
-        background: $doc.css('--cd-comment-target-background-color'),
-        line: $doc.css('--cd-comment-target-line-color'),
-        classic: $doc.css('--cd-comment-target-color'),
-      },
-      2000,
-      () => {
-        this.isTarget = false;
-      }
-    );
+    this.flash('target', 2000, () => {
+      this.isTarget = false;
+    });
   }
 
   /**
    * Change the comment's background color to the provided color for the given number of
    * milliseconds, then smoothly change it back.
    *
-   * @param {object} colors Colors per each type of elements/styles (`line`, `background`,
-   *   `classic`). `background` is not required.
+   * @param {string} type
    * @param {number} delay
    * @param {Function} callback
    */
-  flash(colors, delay, callback) {
+  flash(type, delay, callback) {
     this.configureLayers();
     if (!this.$underlay) {
       if (callback) {
@@ -762,6 +735,10 @@ export default class Comment extends CommentSkeleton {
       }
       return;
     }
+
+    const $doc = $(document.documentElement);
+    const lineColor = $doc.css(`--cd-comment-${type}-line-color`);
+    const backgroundColor = $doc.css(`--cd-comment-${type}-background-color`);
 
     this.$backgroundToAnimate = this.$underlay
       .add(this.$overlayGradient)
@@ -778,40 +755,31 @@ export default class Comment extends CommentSkeleton {
         opacity: 1,
       });
 
-    let finalColors = this.getCurrentColors();
+    let finalLineColor = window.getComputedStyle(this.$line.get(0)).backgroundColor;
+    let finalBackgroundColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
 
-    if (!cd.settings.useBackgroundHighlighting) {
-      this.$line.css({
-        backgroundColor: colors.line,
-        opacity: 1,
-      });
-    }
-    const backgroundColor = cd.settings.useBackgroundHighlighting ?
-      colors.classic :
-      colors.background;
+    this.$line.css({
+      backgroundColor: lineColor,
+      opacity: 1,
+    });
     this.$backgroundToAnimate.css('background-color', backgroundColor);
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
-      const $doc = $(document.documentElement);
-
       // These comment properties may get assigned after the flash() call.
-      const backgroundVarPostfix = cd.settings.useBackgroundHighlighting ?
-        'color' :
-        'background-color';
       if (this.isFocused) {
-        finalColors.background = $doc.css(`--cd-comment-focused-${backgroundVarPostfix}`);
+        finalBackgroundColor = $doc.css('--cd-comment-focused-background-color');
       } else if (this.isNew && !this.isOwn) {
-        finalColors.line = $doc.css('--cd-comment-new-line-color');
+        finalLineColor = $doc.css('--cd-comment-new-line-color');
         if (cd.settings.useBackgroundHighlighting) {
-          finalColors.background = $doc.css('--cd-comment-new-color');
+          finalBackgroundColor = $doc.css('--cd-comment-new-background-color');
         }
       }
 
       // That's basically if the flash color is green (new, when a comment is updated after an
       // edit), and the comment itself is new and green, then animate to transparent, then set green
       // back, so that there is any animation at all.
-      if (cd.settings.useBackgroundHighlighting && finalColors.background === backgroundColor) {
-        finalColors.background = 'rgba(0, 0, 0, 0)';
+      if (cd.settings.useBackgroundHighlighting && finalBackgroundColor === backgroundColor) {
+        finalBackgroundColor = 'rgba(0, 0, 0, 0)';
       }
 
       const generateProperties = (backgroundColor) => {
@@ -831,13 +799,11 @@ export default class Comment extends CommentSkeleton {
       };
 
       const comment = this;
-      if (!cd.settings.useBackgroundHighlighting) {
-        this.$line.animate(generateProperties(finalColors.line), 400, 'swing', function () {
-          comment.$line.css(propertyDefaults);
-        });
-      }
+      this.$line.animate(generateProperties(finalLineColor), 400, 'swing', function () {
+        comment.$line.css(propertyDefaults);
+      });
       this.$backgroundToAnimate.animate(
-        generateProperties(finalColors.background),
+        generateProperties(finalBackgroundColor),
         400,
         'swing',
         function () {
@@ -858,12 +824,7 @@ export default class Comment extends CommentSkeleton {
    * storage.
    */
   flashNew() {
-    const $doc = $(document.documentElement);
-    this.flash({
-      background: $doc.css('--cd-comment-new-background-color'),
-      line: $doc.css('--cd-comment-new-line-color'),
-      classic: $doc.css('--cd-comment-new-color'),
-    }, 500);
+    this.flash('new', 500);
 
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
