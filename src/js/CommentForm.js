@@ -41,6 +41,111 @@ import { parseCode, unknownApiErrorText } from './apiWrappers';
 
 let commentFormsCounter = 0;
 
+/**
+ * Replace list markup (`:*#;`) with respective tags.
+ *
+ * @param {string} code
+ * @returns {string}
+ * @private
+ */
+function listMarkupToTags(code) {
+  const replaceLineWithList = (lines, i, list, isNested = false) => {
+    if (isNested) {
+      const previousItemIndex = i - list.items.length - 1;
+      if (previousItemIndex >= 0) {
+        const item = {
+          type: lines[previousItemIndex].type,
+          items: [lines[previousItemIndex], list],
+        };
+        lines.splice(previousItemIndex, list.items.length + 1, item);
+      } else {
+        const item = {
+          type: lines[0].type,
+          items: [list],
+        };
+        lines.splice(i - list.items.length, list.items.length, item);
+      }
+    } else {
+      lines.splice(i - list.items.length, list.items.length, list);
+    }
+    parseLines(list.items, true);
+  };
+
+  const parseLines = (lines, isNested = false) => {
+    let list = { items: [] };
+    for (let i = 0; i <= lines.length; i++) {
+      if (i === lines.length) {
+        if (list.type) {
+          replaceLineWithList(lines, i, list, isNested);
+        }
+      } else {
+        const text = lines[i].text;
+        const firstChar = text[0] || '';
+        const listType = listTags[firstChar];
+        if (list.type && listType !== list.type) {
+          const itemsCount = list.items.length;
+          replaceLineWithList(lines, i, list, isNested);
+          i -= itemsCount - 1;
+          list = { items: [] };
+        }
+        if (listType) {
+          list.type = listType;
+          list.items.push({
+            type: itemTags[firstChar],
+            text: text.slice(1),
+          });
+        }
+      }
+    }
+    return lines;
+  };
+
+  const listToTags = (lines, isNested = false) => {
+    let text = '';
+    lines.forEach((line, i) => {
+      if (line.text === undefined) {
+        const itemsText = line.items
+        .map((item) => {
+          const itemText = item.text === undefined ?
+            listToTags(item.items, true) :
+            item.text.trim();
+          return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
+        })
+        .join('');
+        text += `<${line.type}>${itemsText}</${line.type}>`;
+      } else {
+        text += isNested ? line.text.trim() : line.text;
+      }
+      if (i !== lines.length - 1) {
+        text += '\n';
+      }
+    });
+    return text;
+  };
+
+  const listTags = {
+    ':': 'dl',
+    ';': 'dl',
+    '*': 'ul',
+    '#': 'ol',
+  };
+  const itemTags = {
+    ':': 'dd',
+    ';': 'dt',
+    '*': 'li',
+    '#': 'li',
+  };
+
+  let lines = code
+    .split('\n')
+    .map((line) => ({
+      type: '',
+      text: line,
+    }));
+  parseLines(lines);
+  return listToTags(lines);
+}
+
 /** Class representing a comment form. */
 export default class CommentForm {
   /**
@@ -2127,6 +2232,24 @@ export default class CommentForm {
     }
     code = code.trim();
 
+    let areThereTagsAroundMultipleLines;
+    let areThereTagsAroundListMarkup;
+    const findTagsAroundPotentialMarkup = () => {
+      const tagMatches = code.match(new RegExp(`<([a-z]+)>[^]*?</\\1>`, 'ig')) || [];
+      const quoteMatches = code.match(cd.g.QUOTE_REGEXP) || [];
+      const matches = tagMatches.concat(quoteMatches);
+      return [
+        matches.some((match) => match.includes('\n')),
+        matches.some((match) => /\n[:*#;]/.test(match)),
+      ];
+    };
+    if (willCommentBeIndented) {
+      [
+        areThereTagsAroundMultipleLines,
+        areThereTagsAroundListMarkup,
+      ] = findTagsAroundPotentialMarkup();
+    }
+
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
 
@@ -2139,18 +2262,6 @@ export default class CommentForm {
         isWholeCommentInSmall = true;
         return content;
       });
-    }
-
-    let areThereInlineTagsAroundMultipleLines;
-    const findInlineTagsAroundMultipleLines = () => {
-      if (isWholeCommentInSmall && code.includes('\n')) {
-        return true;
-      }
-      const inlineMatches = code.match(new RegExp(`<(${cd.g.PIE_PATTERN})>[^]*?</\\1>`, 'ig'));
-      return Boolean(inlineMatches?.some((match) => match.includes('\n')));
-    };
-    if (willCommentBeIndented) {
-      areThereInlineTagsAroundMultipleLines = findInlineTagsAroundMultipleLines();
     }
 
     // Remove spaces from empty lines except when they are a part of the syntax creating <pre>.
@@ -2180,6 +2291,11 @@ export default class CommentForm {
 
       if (!cd.config.paragraphTemplates.length) {
         code = code.replace(/^\n/gm, '');
+      }
+
+      // Replace list markup (`:*#;`) with respective tags where otherwise layout will be broken.
+      if (/^[:*#;]/m.test(code) && areThereTagsAroundListMarkup) {
+        code = listMarkupToTags(code);
       }
 
       // Add intentation characters to the lines with the list and table markup.
@@ -2232,9 +2348,9 @@ export default class CommentForm {
       let replacement;
       if (cd.config.paragraphTemplates.length) {
         replacement = `$1{{${cd.config.paragraphTemplates[0]}}}`;
-      } else if (areThereInlineTagsAroundMultipleLines) {
-        // If there are <small> tags around multple lines, we can't use the colon indentation, as
-        // this would bring bugs.
+      } else if (areThereTagsAroundMultipleLines) {
+        // If there are tags around multple lines, we can't use the colon indentation, as this would
+        // bring about bugs.
         replacement = `$1<br>`;
       } else {
         const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
@@ -2267,10 +2383,10 @@ export default class CommentForm {
         ' ' :
         '';
       const lineBreak = (
-          willCommentBeIndented &&
-          !cd.config.paragraphTemplates.length &&
-          !areThereInlineTagsAroundMultipleLines
-        ) ?
+        willCommentBeIndented &&
+        !cd.config.paragraphTemplates.length &&
+        !areThereTagsAroundMultipleLines
+      ) ?
         `\n${restLinesIndentationChars}${spaceOrNot}` :
         '<br>';
       const lineBreakOrNot = (
@@ -2301,16 +2417,10 @@ export default class CommentForm {
       code = code.replace(/\s*~{3,}$/, '');
     }
 
-    // If the comment starts with a list or table, or there are inline tags wrapping multiple lines,
-    // replace all asterisks in the indentation chars with colons to have the comment form
-    // correctly.
-    if (willCommentBeIndented && action !== 'preview') {
-      // Update the assessment
-      areThereInlineTagsAroundMultipleLines = findInlineTagsAroundMultipleLines();
-
-      if (/^[#*;\x03]/.test(code) || areThereInlineTagsAroundMultipleLines) {
-        indentationChars = restLinesIndentationChars;
-      }
+    // If the comment starts with a list or table, replace all asterisks in the indentation
+    // characters with colons to have the comment form correctly.
+    if (willCommentBeIndented && action !== 'preview' && /^[*#;\x03]/.test(code)) {
+      indentationChars = restLinesIndentationChars;
     }
 
     // Add the headline
