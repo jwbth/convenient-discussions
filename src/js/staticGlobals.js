@@ -114,7 +114,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_NEW_BACKGROUND_COLOR: '#d5fdf4',
+  COMMENT_NEW_BACKGROUND_COLOR: '#e8ffd1',
 
   /**
    * Background color for focused (hovered) comments.
