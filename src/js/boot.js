@@ -212,6 +212,12 @@ export function memorizeCssValues() {
  * @private
  */
 export function setTalkPageCssVariables() {
+  // Get the "focused" color to infer a transparent color for it later. The user may override the
+  // CSS variable value in their personal styles, so we get the existing value first.
+  const focusedColor = (
+    $(document.documentElement).css('--cd-comment-focused-color') ||
+    cd.g.COMMENT_FOCUSED_COLOR
+  );
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
   const $backgrounded = skin$({
