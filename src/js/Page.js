@@ -403,7 +403,7 @@ export default class Page {
    * @returns {string}
    */
   modifyCode({ pageCode, commentForm }) {
-    const { commentCode } = commentForm.commentTextToCode('submit');
+    const commentCode = commentForm.commentTextToCode('submit');
 
     let newPageCode;
     let codeBeforeInsertion;

@@ -1157,7 +1157,7 @@ export default class Section extends SectionSkeleton {
 
     let commentCode;
     if (!commentCode && commentForm) {
-      ({ commentCode } = commentForm.commentTextToCode('submit'));
+      commentCode = commentForm.commentTextToCode('submit');
     }
 
     let newPageCode;

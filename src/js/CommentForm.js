@@ -2190,18 +2190,12 @@ export default class CommentForm {
   commentTextToCode(action) {
     let indentationChars;
 
-    // This is mostly to tell if inconvertible newlines would cause problems in the comment and
-    // reflect that in the comment preview.
-    let willCommentBeIndented = false;
-
     switch (this.mode) {
       case 'reply':
         indentationChars = this.target.inCode.replyIndentationChars;
-        willCommentBeIndented = true;
         break;
       case 'edit':
         indentationChars = this.target.inCode.indentationChars;
-        willCommentBeIndented = Boolean(indentationChars);
         break;
       case 'replyInSection':
         indentationChars = cd.config.defaultIndentationChar;
@@ -2212,14 +2206,26 @@ export default class CommentForm {
             indentationChars = this.target.inCode.lastCommentIndentationChars[0];
           }
         }
-        willCommentBeIndented = true;
         break;
       default:
         indentationChars = '';
     }
 
+    /**
+     * Will the comment be indented (is a reply or an edited reply).
+     *
+     * This is mostly to tell if unconverted newlines will cause problems in the comment layout and
+     * prevent it.
+     *
+     * @type {boolean|undefined}
+     */
+    this.willCommentBeIndented = (
+      ['reply', 'replyInSection'].includes(this.mode) ||
+      this.mode === 'edit' && Boolean(indentationChars)
+    );
+
     let restLinesIndentationChars;
-    if (willCommentBeIndented) {
+    if (this.willCommentBeIndented) {
       // In the preview mode, imitate a list so that the user will see where it would break on a
       // real page. This pseudolist's margin is made invisible by CSS.
       restLinesIndentationChars = action === 'preview' ? ':' : indentationChars.replace(/\*/g, ':');
@@ -2243,7 +2249,7 @@ export default class CommentForm {
         matches.some((match) => /\n[:*#;]/.test(match)),
       ];
     };
-    if (willCommentBeIndented) {
+    if (this.willCommentBeIndented) {
       [
         areThereTagsAroundMultipleLines,
         areThereTagsAroundListMarkup,
@@ -2285,10 +2291,11 @@ export default class CommentForm {
       code += '\n';
     }
 
-    if (willCommentBeIndented) {
-      // Remove spaces in the beginning of the lines if the comment is indented.
+    if (this.willCommentBeIndented) {
+      // Remove spaces in the beginning of the lines.
       code = code.replace(/^ +/gm, '');
 
+      // Remove paragraphs if the wiki has no paragraph template.
       if (!cd.config.paragraphTemplates.length) {
         code = code.replace(/^\n/gm, '');
       }
@@ -2342,9 +2349,7 @@ export default class CommentForm {
           );
         });
       }
-    }
 
-    if (willCommentBeIndented) {
       let replacement;
       if (cd.config.paragraphTemplates.length) {
         replacement = `$1{{${cd.config.paragraphTemplates[0]}}}`;
@@ -2375,7 +2380,7 @@ export default class CommentForm {
     );
     const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
 
-    const newlinesRegexp = willCommentBeIndented ?
+    const newlinesRegexp = this.willCommentBeIndented ?
       /^(.+)\n(?!:)(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
     code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
@@ -2383,7 +2388,7 @@ export default class CommentForm {
         ' ' :
         '';
       const lineBreak = (
-        willCommentBeIndented &&
+        this.willCommentBeIndented &&
         !cd.config.paragraphTemplates.length &&
         !areThereTagsAroundMultipleLines
       ) ?
@@ -2394,11 +2399,11 @@ export default class CommentForm {
         entireLineRegexp.test(nextLine) ||
 
         (
-          !willCommentBeIndented &&
+          !this.willCommentBeIndented &&
           (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
         ) ||
         fileRegexp.test(currentLine) ||
-        (!willCommentBeIndented && fileRegexp.test(nextLine)) ||
+        (!this.willCommentBeIndented && fileRegexp.test(nextLine)) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
@@ -2408,7 +2413,7 @@ export default class CommentForm {
       ) ?
         '' :
         lineBreak;
-      const newlineOrNot = willCommentBeIndented ? '' : '\n';
+      const newlineOrNot = this.willCommentBeIndented ? '' : '\n';
       return currentLine + lineBreakOrNot + newlineOrNot;
     });
 
@@ -2419,7 +2424,7 @@ export default class CommentForm {
 
     // If the comment starts with a list or table, replace all asterisks in the indentation
     // characters with colons to have the comment form correctly.
-    if (willCommentBeIndented && action !== 'preview' && /^[*#;\x03]/.test(code)) {
+    if (this.willCommentBeIndented && action !== 'preview' && /^[*#;\x03]/.test(code)) {
       indentationChars = restLinesIndentationChars;
     }
 
@@ -2450,8 +2455,8 @@ export default class CommentForm {
       signature = `<span class="cd-commentForm-signature">${signature}</span>`;
     }
 
-    // A space in the beggining of the line, creating <pre>, or a heading.
-    if (!willCommentBeIndented && /(^|\n)[ =].*$/.test(code)) {
+    // A space in the beggining of the last line, creating <pre>, or a heading.
+    if (!this.willCommentBeIndented && /(^|\n)[ =].*$/.test(code)) {
       code += '\n';
     }
 
@@ -2464,7 +2469,7 @@ export default class CommentForm {
     if (isWholeCommentInSmall) {
       let before;
       if (/^[:*#; ]/.test(code)) {
-        const indentation = willCommentBeIndented ? restLinesIndentationChars : '';
+        const indentation = this.willCommentBeIndented ? restLinesIndentationChars : '';
         before = `\n${indentation}`;
       } else {
         before = '';
@@ -2490,9 +2495,11 @@ export default class CommentForm {
       if (this.mode === 'addSubsection') {
         code += '\n';
       }
-    }
-
-    if (action === 'preview' && willCommentBeIndented && this.commentInput.getValue().trim()) {
+    } else if (
+      action === 'preview' &&
+      this.willCommentBeIndented &&
+      this.commentInput.getValue().trim()
+    ) {
       code = this.addIndentationChars(code, ':');
     }
 
@@ -2502,10 +2509,7 @@ export default class CommentForm {
       code = cd.config.postTransformCode(code, this);
     }
 
-    return {
-      commentCode: code,
-      imitateList: willCommentBeIndented && action === 'preview',
-    };
+    return code;
   }
 
   /**
@@ -2798,7 +2802,7 @@ export default class CommentForm {
       return;
     }
 
-    const { commentCode, imitateList } = this.commentTextToCode('preview');
+    const commentCode = this.commentTextToCode('preview');
     let html;
     let parsedSummary;
     try {
@@ -2836,7 +2840,7 @@ export default class CommentForm {
           .html(html)
           .prepend($label)
           .cdAddCloseButton();
-        this.$previewArea.toggleClass('cd-previewArea-indentedComment', imitateList);
+        this.$previewArea.toggleClass('cd-previewArea-indentedComment', this.willCommentBeIndented);
 
         /**
          * A comment preview has been rendered.

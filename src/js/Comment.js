@@ -2357,7 +2357,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (!commentCode && commentForm && !doDelete) {
-      ({ commentCode } = commentForm.commentTextToCode('submit'));
+      commentCode = commentForm.commentTextToCode('submit');
     }
 
     let newPageCode;
