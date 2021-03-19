@@ -265,7 +265,7 @@ async function go() {
 
   setStrings();
 
-  cd.g.SETTINGS_OPTION_NAME = `userjs-convenientDiscussions-settings`;
+  cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
   cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
   cd.g.VISITS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
 

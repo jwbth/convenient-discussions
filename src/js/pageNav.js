@@ -6,7 +6,7 @@
  */
 
 import cd from './cd';
-import { getExtendedRect, skin$ } from './util';
+import { getExtendedRect } from './util';
 import { handleScroll } from './eventHandlers';
 
 let currentSection;
@@ -45,10 +45,13 @@ export default {
         width -= cd.g.CONTENT_START_MARGIN;
       }
 
-      // Timeless when narrowed
+      // Some skins when the viewport narrowed
       if (width <= 100) {
         this.$topElement.hide();
         this.$bottomElement.hide();
+      } else {
+        this.$topElement.show();
+        this.$bottomElement.show();
       }
 
       this.$topElement.css('width', width + 'px');

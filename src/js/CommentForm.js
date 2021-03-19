@@ -2475,7 +2475,7 @@ export default class CommentForm {
         before = '';
       }
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(code)) {
-        const adjustedCode = code.replace(/\|/g, '{{!}}') + signature;
+        const adjustedCode = code.trim().replace(/\|/g, '{{!}}') + signature;
         code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
       } else {
         code = `<small>${before}${code}${signature}</small>`;
