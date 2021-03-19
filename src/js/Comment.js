@@ -324,7 +324,11 @@ export default class Comment extends CommentSkeleton {
         );
       }
 
-      startMargin = this.isStartStretched ? cd.g.CONTENT_START_MARGIN : cd.g.REGULAR_FONT_SIZE;
+      if (this.isStartStretched) {
+        startMargin = cd.g.CONTENT_START_MARGIN;
+      } else {
+        startMargin = this.level === 0 ? 5 : cd.g.REGULAR_FONT_SIZE;
+      }
       endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
 
       const closestList = this.highlightables[0].closest('.cd-commentLevel');
