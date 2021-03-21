@@ -192,11 +192,7 @@ export default class CommentSkeleton {
   setLevels() {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
-    const levelElements = {};
-    levelElements.top = this.parser.getLevelsUpTree(this.highlightables[0]);
-    levelElements.bottom = this.highlightables.length === 1 ?
-      levelElements.top :
-      this.parser.getLevelsUpTree(this.highlightables[this.highlightables.length - 1]);
+    const levelElements = this.highlightables.map(this.parser.getLevelsUpTree.bind(this.parser));
 
     /**
      * Comment level. A level is a number representing the number of indentation characters
@@ -204,15 +200,12 @@ export default class CommentSkeleton {
      *
      * @type {number}
      */
-    this.level = Math.min(levelElements.top.length, levelElements.bottom.length);
+    this.level = Math.min(...levelElements.map((els) => els.length));
 
     for (let i = 0; i < this.level; i++) {
-      if (levelElements.top[i]) {
-        levelElements.top[i].classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
-      }
-      if (levelElements.bottom[i] && levelElements.bottom[i] !== levelElements.top[i]) {
-        levelElements.bottom[i].classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
-      }
+      levelElements.forEach((els) => {
+        els[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
+      });
     }
   }
 
