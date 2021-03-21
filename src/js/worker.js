@@ -200,7 +200,6 @@ function parse() {
       comment.parentAnchor = comment.parent.anchor;
       comment.toMe = comment.parent.isOwn;
     }
-    comment.elements[0].removeAttribute('id');
     comment.hiddenElementData = [];
     comment.elementHtmls = comment.elements.map((element) => {
       element.removeAttribute('data-comment-id');
