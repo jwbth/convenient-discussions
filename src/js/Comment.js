@@ -323,7 +323,29 @@ export default class Comment extends CommentSkeleton {
     if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
-      startMargin = this.level === 0 ? 5 : cd.g.REGULAR_FONT_SIZE;
+      if (
+        ['LI', 'DD'].includes(this.highlightables[0].tagName) &&
+        (
+          options.rectTop.left === options.rectBottom.left ||
+
+          /*
+            Workaround to have neater highlighting is special cases
+            (https://ru.wikipedia.org/wiki/Википедия:Форум/Технический#202103091211_WindEwriX).
+
+            <li>Comment start</li>
+            <div>Some complex irrelevant markup</div>
+            <li>
+              <div>Comment end</div>
+              <li>Reply</li>
+            </li>
+           */
+          options.rectTop.left + cd.g.REGULAR_FONT_SIZE + 1 === options.rectBottom.left
+        )
+      ) {
+        startMargin = -1;
+      } else {
+        startMargin = this.level === 0 ? 5 : cd.g.REGULAR_FONT_SIZE;
+      }
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
 
@@ -366,7 +388,7 @@ export default class Comment extends CommentSkeleton {
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
-    this.line = this.overlay.firstChild;
+    this.marker = this.overlay.firstChild.nextSibling;
     this.overlayInnerWrapper = this.overlay.lastChild;
 
     // Hide the overlay on right click. It can block clicking the author page link.
@@ -496,11 +518,11 @@ export default class Comment extends CommentSkeleton {
     this.$overlay = $(this.overlay);
 
     /**
-     * Comment's side line.
+     * Comment's side marker.
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$line = $(this.line);
+    this.$marker = $(this.marker);
 
     /**
      * Links container of the comment's overlay.
@@ -562,7 +584,9 @@ export default class Comment extends CommentSkeleton {
         this.editButton.classList.add('oo-ui-widget-enabled');
       }
     }
-
+    if (this.highlightables.length > 1 && this.level > 0) {
+      this.overlay.classList.add('cd-commentOverlay-gapped');
+    }
     this.overlay.classList.toggle('cd-commentOverlay-stretchedStart', this.isStartStretched);
     this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);
   }
@@ -737,7 +761,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     const $doc = $(document.documentElement);
-    const lineColor = $doc.css(`--cd-comment-${type}-line-color`);
+    const markerColor = $doc.css(`--cd-comment-${type}-marker-color`);
     const backgroundColor = $doc.css(`--cd-comment-${type}-background-color`);
 
     this.$backgroundToAnimate = this.$underlay
@@ -747,7 +771,7 @@ export default class Comment extends CommentSkeleton {
     // Reset the animations, colors, and also set background-image to "none" to remove the gradient
     // from the this.overlayGradient element.
     this.$backgroundToAnimate
-      .add(this.$line)
+      .add(this.$marker)
       .stop()
       .css({
         backgroundColor: '',
@@ -755,11 +779,11 @@ export default class Comment extends CommentSkeleton {
         opacity: 1,
       });
 
-    let finalLineColor = window.getComputedStyle(this.$line.get(0)).backgroundColor;
+    let finalMarkerColor = window.getComputedStyle(this.$marker.get(0)).backgroundColor;
     let finalBackgroundColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
 
-    this.$line.css({
-      backgroundColor: lineColor,
+    this.$marker.css({
+      backgroundColor: markerColor,
       opacity: 1,
     });
     this.$backgroundToAnimate.css('background-color', backgroundColor);
@@ -769,7 +793,7 @@ export default class Comment extends CommentSkeleton {
       if (this.isFocused) {
         finalBackgroundColor = $doc.css('--cd-comment-focused-background-color');
       } else if (this.isNew && !this.isOwn) {
-        finalLineColor = $doc.css('--cd-comment-new-line-color');
+        finalMarkerColor = $doc.css('--cd-comment-new-marker-color');
         if (cd.settings.useBackgroundHighlighting) {
           finalBackgroundColor = $doc.css('--cd-comment-new-background-color');
         }
@@ -799,8 +823,8 @@ export default class Comment extends CommentSkeleton {
       };
 
       const comment = this;
-      this.$line.animate(generateProperties(finalLineColor), 400, 'swing', function () {
-        comment.$line.css(propertyDefaults);
+      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', function () {
+        comment.$marker.css(propertyDefaults);
       });
       this.$backgroundToAnimate.animate(
         generateProperties(finalBackgroundColor),
@@ -1707,7 +1731,7 @@ export default class Comment extends CommentSkeleton {
     if (!this.underlay) return;
 
     this.$backgroundToAnimate?.stop();
-    this.$line.stop();
+    this.$marker.stop();
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
     this.underlay.remove();
@@ -1723,9 +1747,8 @@ export default class Comment extends CommentSkeleton {
    * Comment elements as a jQuery object.
    *
    * Uses a getter because elements of a comment can be altered after creating an instance, for
-   * example with `mergeAdjacentCommentLevels()` in {@link module:modifyDom}. Using a getter also
-   * allows to save a little time on running `$()`, although that alone is perhaps not enough to
-   * create it.
+   * example with {@link module:Comment#replaceElement}. Using a getter also allows to save a little
+   * time on running `$()`, although that alone is perhaps not enough to create it.
    *
    * @type {JQuery}
    */
@@ -2389,6 +2412,9 @@ export default class Comment extends CommentSkeleton {
       let offsetParent;
       const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
       while (treeWalker.parentNode()) {
+        // These elements have "position: relative" for the purpose we know.
+        if (treeWalker.currentNode.classList.contains('cd-connectToPreviousItem')) continue;
+
         let style = treeWalker.currentNode.conveneintDiscussionsStyle;
         if (!style) {
           // window.getComputedStyle is expensive, so we save the result to the node's property.

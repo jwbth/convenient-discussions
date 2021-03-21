@@ -1396,6 +1396,18 @@ export default class CommentForm {
        * @type {JQuery|undefined}
        */
       this.$outerWrapper = $(`<${outerWrapperTag}>`);
+      if (
+        this.mode === 'reply' &&
+        $lastOfTarget.is('li, dd') &&
+
+        // Reply to a pseudo-comment added with this diff with a mistake:
+        // https://ru.wikipedia.org/?diff=113073013.
+        $lastOfTarget.parent().is('.cd-commentLevel') &&
+
+        this.containerListType !== 'ol'
+      ) {
+        this.$outerWrapper.addClass('cd-connectToPreviousItem');
+      }
     }
 
     if (this.mode === 'reply') {
@@ -1410,9 +1422,7 @@ export default class CommentForm {
         if (this.$outerWrapper) {
           this.$wrappingList.appendTo(this.$outerWrapper);
         }
-
         const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
-
         this.$element.appendTo($wrappingItem);
       } else {
         this.$element.appendTo(this.$outerWrapper);

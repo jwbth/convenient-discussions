@@ -52,7 +52,10 @@ export default {
         (comment.isOwn && cd.settings.highlightOwnComments) ||
         comment.isTarget ||
         comment.isFocused ||
-        comment.isDeleted
+        comment.isDeleted ||
+
+        // Need to generate the gray line to close the gaps between adjacent list item elements.
+        (comment.highlightables.length > 1 && comment.level > 0)
       );
 
       // Layers that ended up under the bottom of the page content and could be moving the page

@@ -241,34 +241,49 @@ function mergeAdjacentCommentLevels(feivData) {
 
       let firstMoved;
       if (isOrHasCommentLevel(currentTopElement)) {
-        while (currentBottomElement.childNodes.length) {
-          let child = currentBottomElement.firstChild;
-          if (child.nodeType === Node.ELEMENT_NODE) {
-            if (bottomInnerTags[child.tagName]) {
-              child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
+        const firstElementChild = currentBottomElement.firstElementChild;
+
+        /*
+          Avoid collapsing adjacent LIs and DDs if we deal with a structure like this:
+          <li>
+            <div>Comment</div>
+            <ul>Replies</ul>
+          </li>
+          <li>
+            <div>Comment</div>
+            <ul>Replies</ul>
+          </li>
+         */
+        if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
+          while (currentBottomElement.childNodes.length) {
+            let child = currentBottomElement.firstChild;
+            if (child.nodeType === Node.ELEMENT_NODE) {
+              if (bottomInnerTags[child.tagName]) {
+                child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
+              }
+              if (firstMoved === undefined) {
+                firstMoved = child;
+              }
+            } else {
+              if (firstMoved === undefined && child.textContent.trim()) {
+                // Don't fill the "firstMoved" variable which is used further to merge elements if
+                // there is a non-empty text node between. (An example that is now fixed:
+                // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
+                // but other can be on the loose.) Instead, wrap the text node into an element to
+                // prevent it from being ignored when searching next time for adjacent .commentLevel
+                // elements. This could be seen only as an additional precaution, since it doesn't fix
+                // the source of the problem: the fact that a bare text node is (probably) a part of
+                // the reply. It shouldn't be happening.
+                firstMoved = null;
+                const newChild = document.createElement('span');
+                newChild.appendChild(child);
+                child = newChild;
+              }
             }
-            if (firstMoved === undefined) {
-              firstMoved = child;
-            }
-          } else {
-            if (firstMoved === undefined && child.textContent.trim()) {
-              // Don't fill the "firstMoved" variable which is used further to merge elements if
-              // there is a non-empty text node between. (An example that is now fixed:
-              // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
-              // but other can be on the loose.) Instead, wrap the text node into an element to
-              // prevent it from being ignored when searching next time for adjacent .commentLevel
-              // elements. This could be seen only as an additional precaution, since it doesn't fix
-              // the source of the problem: the fact that a bare text node is (probably) a part of
-              // the reply. It shouldn't be happening.
-              firstMoved = null;
-              const newChild = document.createElement('span');
-              newChild.appendChild(child);
-              child = newChild;
-            }
+            currentTopElement.appendChild(child);
           }
-          currentTopElement.appendChild(child);
+          currentBottomElement.remove();
         }
-        currentBottomElement.remove();
       }
 
       currentBottomElement = firstMoved;
@@ -294,6 +309,14 @@ function adjustDom(feivData) {
     console.warn('.cd-commentLevel adjacencies have left.');
   }
 
+  cd.g.rootElement.querySelectorAll('li.cd-commentPart-last + li, dd.cd-commentPart-last + dd')
+    .forEach((el) => {
+      if (el.firstElementChild && ['UL', 'DL'].includes(el.firstElementChild.tagName)) {
+        el.classList.add('cd-connectToPreviousItem');
+      }
+    });
+
+  // TODO: Not sure it is needed or correct (changing the class without changing comment levels).
   $('dl').has('dt').each((i, el) => {
     Array.from(el.classList)
       .filter((className) => className.startsWith('cd-commentLevel'))
@@ -964,6 +987,15 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
         const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
         window.scrollTo(0, y);
       }
+
+      // Need to generate the gray line to close the gaps between adjacent list item elements. Do it
+      // here, not after the comments parsing, to group all operations requiring reflow together for
+      // performance reasons.
+      const commentsToAddLayers = cd.comments
+        .filter((comment) => comment.highlightables.length > 1 && comment.level > 0);
+      Comment.configureAndAddLayers(commentsToAddLayers);
+
+      Comment.reviewHighlightables();
 
       highlightOwnComments();
 

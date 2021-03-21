@@ -21,7 +21,8 @@ ol > li.cd-commentPart-last {
   margin: 0;
 }
 
-.sitedir-ltr .cd-commentLevel:not(ol) {
+.sitedir-ltr .cd-commentLevel:not(ol) > li,
+.sitedir-ltr .cd-commentLevel:not(ol) > dd {
   padding-left: 1em;
   padding-right: 0;
   margin-left: 1em;
@@ -39,12 +40,22 @@ ol > li.cd-commentPart-last {
   border-right: 1px solid #c8ccd1;
 }
 
-.sitedir-ltr dl.cd-commentLevel > dd {
-  margin-left: 0;
+.cd-connectToPreviousItem {
+  position: relative;
 }
 
-.sitedir-rtl dl.cd-commentLevel > dd {
-  margin-right: 0;
+// Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
+// need to avoid wrapping the contents of almost every comment into a <div>, which would increase
+// the parsing time significantly.
+.cd-connectToPreviousItem::before {
+  content: '';
+  position: absolute;
+  display: block;
+  top: -0.5em;
+  left: -1px;
+  width: 1px;
+  background-color: #c8ccd1;
+  height: 0.5em;
 }
 
 .cd-button-pending.cd-button-pending.cd-button-pending .oo-ui-buttonElement-button {

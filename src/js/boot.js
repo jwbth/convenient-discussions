@@ -223,10 +223,10 @@ export function setTalkPageCssVariables() {
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
-    '--cd-comment-target-line-color': cd.g.COMMENT_TARGET_LINE_COLOR,
-    '--cd-comment-new-line-color': cd.g.COMMENT_NEW_LINE_COLOR,
-    '--cd-comment-own-line-color': cd.g.COMMENT_OWN_LINE_COLOR,
-    '--cd-comment-deleted-line-color': cd.g.COMMENT_DELETED_LINE_COLOR,
+    '--cd-comment-target-marker-color': cd.g.COMMENT_TARGET_MARKER_COLOR,
+    '--cd-comment-new-marker-color': cd.g.COMMENT_NEW_MARKER_COLOR,
+    '--cd-comment-own-marker-color': cd.g.COMMENT_OWN_MARKER_COLOR,
+    '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
     '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
     '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
     '--cd-comment-own-background-color': cd.g.COMMENT_OWN_BACKGROUND_COLOR,
@@ -606,6 +606,10 @@ function initOouiAndElementPrototypes() {
   const overlayLine = document.createElement('div');
   overlayLine.className = 'cd-commentOverlay-line';
   cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.appendChild(overlayLine);
+
+  const overlayMarker = document.createElement('div');
+  overlayMarker.className = 'cd-commentOverlay-marker';
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.appendChild(overlayMarker);
 
   const overlayInnerWrapper = document.createElement('div');
   overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';

@@ -15,30 +15,35 @@
 
 .cd-commentOverlay {
   position: absolute;
+  z-index: 1;
   pointer-events: none;
   line-height: 1.4285714em;
 
-  &-new .cd-commentOverlay-line {
-    background-color: var(--cd-comment-new-line-color);
+  &-new .cd-commentOverlay-marker {
+    background-color: var(--cd-comment-new-marker-color);
   }
 
-  &-own .cd-commentOverlay-line {
-    background-color: var(--cd-comment-own-line-color);
+  &-own .cd-commentOverlay-marker {
+    background-color: var(--cd-comment-own-marker-color);
   }
 
-  &-deleted .cd-commentOverlay-line {
-    background-color: var(--cd-comment-deleted-line-color);
+  &-deleted .cd-commentOverlay-marker {
+    background-color: var(--cd-comment-deleted-marker-color);
   }
 
-  .cd-commentOverlay-line {
-    position: relative;
+  &-marker {
+    position: absolute;
     top: 0;
     width: 3px;
     height: 100%;
   }
 
-  .cd-commentOverlay-content {
-    background-color: var(--cd-comment-focused-background-color);
+  &-gapped .cd-commentOverlay-line {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background-color: #c8ccd1;
   }
 
   &-focused .cd-commentOverlay-innerWrapper {
@@ -67,6 +72,7 @@
     padding: 0 0.5em;
     flex-direction: row;
     pointer-events: all;
+    background-color: var(--cd-comment-focused-background-color);
   }
 
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
@@ -127,10 +133,12 @@
   margin-left: calc(~"var(--cd-content-start-margin) - 5px");
 }
 
+.sitedir-ltr .cd-commentOverlay-marker,
 .sitedir-ltr .cd-commentOverlay-line {
   left: -1px;
 }
 
+.sitedir-rtl .cd-commentOverlay-marker,
 .sitedir-rtl .cd-commentOverlay-line {
   right: -1px;
 }
