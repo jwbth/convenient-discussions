@@ -218,10 +218,9 @@ export default {
    * End the regexp with `$`.
    *
    * @type {RegExp}
-   * @default
-   *         /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;mdash;|&amp;ndash;|&amp;rarr;|&amp;middot;|&amp;nbsp;|&amp;#32;|&amp;rlm;)*\(?'*$/
+   * @default /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;\w+;|&amp;#\d+;)*\(?'*$/
    */
-  signaturePrefixRegexp: /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&mdash;|&ndash;|&rarr;|&middot;|&nbsp;|&#32;|&rlm;)*\(?'*$/,
+  signaturePrefixRegexp: /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
 
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
