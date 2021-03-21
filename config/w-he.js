@@ -218,7 +218,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  // foreignElementsInHeadlinesClasses: [],
+  // foreignElementInHeadlineClasses: [],
 
   /**
    * Selectors of floating elements. This is needed to display the comment's underlay and overlay

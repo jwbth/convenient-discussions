@@ -191,7 +191,7 @@ export default class SectionSkeleton {
    * Parse the headline of the section and fill the `headline` property, containing no HTML tags.
    */
   parseHeadline() {
-    const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementsInHeadlinesClasses];
+    const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
     const nodes = Array.from(this.headlineElement.childNodes).filter((node) => (
       node.nodeType !== Node.ELEMENT_NODE ||
       !classesToFilter.some((className) => node.classList.contains(className))
@@ -201,7 +201,7 @@ export default class SectionSkeleton {
      * Section headline as it appears on the page.
      *
      * Foreign elements can get there, add the classes of these elements to {@link
-     * module:defaultConfig.foreignElementsInHeadlinesClasses} to filter them out.
+     * module:defaultConfig.foreignElementInHeadlineClasses} to filter them out.
      *
      * @type {string}
      */

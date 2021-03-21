@@ -437,7 +437,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  foreignElementsInHeadlinesClasses: [],
+  foreignElementInHeadlineClasses: [],
 
   /**
    * Names of the closed discussion templates. They can be single templates like {@link

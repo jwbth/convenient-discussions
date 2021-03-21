@@ -214,7 +214,7 @@ export default {
     /\n+(?:<!--[^]*?-->\s*)*<\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^<>]+?)?)? *\/?>\s*(?:<!--[^]*?-->\s*)*$/i,
   ],
 
-  foreignElementsInHeadlinesClasses: [
+  foreignElementInHeadlineClasses: [
     'ch-helperText',
     'userflags-wrapper',
   ],
