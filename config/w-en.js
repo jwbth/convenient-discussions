@@ -116,11 +116,6 @@ export default {
     /\n+(?:<!--[^]*?-->\s*)*<\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^<>]+?)?)? *\/?>\s*(?:<!--[^]*?-->\s*)*$/i,
   ],
 
-  customFloatingElementSelectors: [
-    '.infobox',
-    '.sidebar',
-  ],
-
   closedDiscussionClasses: [
     'archived',
     'boilerplate',

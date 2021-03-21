@@ -219,11 +219,6 @@ export default {
     'userflags-wrapper',
   ],
 
-  customFloatingElementSelectors: [
-    '.infobox',
-    '.vertical-navbox',
-  ],
-
   closedDiscussionTemplates: [
     [
       'Закрыто',

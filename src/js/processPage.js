@@ -143,19 +143,35 @@ function getAllTextNodes() {
  * @private
  */
 function findSpecialElements() {
-  // Describe all floating elements on the page in order to calculate the right border (temporarily
-  // setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementSelector = [
-    ...cd.g.FLOATING_ELEMENT_SELECTORS,
-    ...cd.config.customFloatingElementSelectors,
-  ]
-    .join(', ');
-  cd.g.floatingElements = cd.g.$root
-    .find(floatingElementSelector)
-    .get()
+  cd.debug.startTimer('stylesheets');
+  const tsSelectors = [];
+  const filterRules = (rule) => {
+    if (rule instanceof CSSStyleRule && ['left', 'right'].includes(rule.style.float)) {
+      tsSelectors.push(rule.selectorText);
+    }
+  };
+  Array.from(document.styleSheets)
+    .filter((sheet) => sheet.href?.includes('site.styles'))
+    .forEach((el) => {
+      Array.from(el.cssRules).forEach(filterRules);
+    });
+  Array.from(cd.g.rootElement.querySelectorAll('style')).forEach((el) => {
+    Array.from(el.sheet.cssRules).forEach(filterRules);
+  });
+  cd.debug.stopTimer('stylesheets');
+
+  cd.debug.startTimer('floatingElements');
+  // Describe all floating elements on the page in order to calculate the correct border
+  // (temporarily setting "overflow: hidden") for all comments that they intersect with.
+  const floatingElementSelector = [...cd.g.FLOATING_ELEMENT_SELECTORS, ...tsSelectors].join(', ');
+
+  // Can't use jQuery here anyway, as .find() doesn't take into account ancestor elements, such as
+  // .mw-parser-output, in selectors.
+  cd.g.floatingElements = Array.from(cd.g.rootElement.querySelectorAll(floatingElementSelector))
 
     // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
+  cd.debug.stopTimer('floatingElements');
 
   const closedDiscussionsSelector = cd.config.closedDiscussionClasses
     .map((name) => `.${name}`)
