@@ -182,6 +182,39 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Filter out floating and hidden elements from the comment's {@link
+   * module:CommentSkeleton#highlightables}, change their attributes, and update the comment's level
+   * and parent elements' level classes.
+   */
+  reviewHighlightables() {
+    for (let i = 0; i < this.highlightables.length; i++) {
+      const el = this.highlightables[i];
+      if (Array.from(el.classList).some((name) => !name.startsWith('cd-'))) {
+        const style = window.getComputedStyle(el);
+        if (
+          // Currently we can't have comments with no highlightable elements.
+          this.highlightables.length > 1 &&
+
+          (['left', 'right'].includes(style.float) || style.display === 'none')
+        ) {
+          if (el.classList.contains('cd-commentPart-first')) {
+            el.classList.remove('cd-commentPart-first');
+            this.highlightables[i + 1].classList.add('cd-commentPart-first');
+          }
+          if (el.classList.contains('cd-commentPart-last')) {
+            el.classList.remove('cd-commentPart-last');
+            this.highlightables[i - 1].classList.add('cd-commentPart-last');
+          }
+          delete el.dataset.commentId;
+          this.highlightables.splice(i, 1);
+          i--;
+          this.setLevels();
+        }
+      }
+    }
+  }
+
+  /**
    * Get the comment coordinates and set them as the `positions` comment property. If the comment is
    * invisible, positions are unset.
    *

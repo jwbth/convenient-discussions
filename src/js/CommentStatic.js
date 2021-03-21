@@ -288,4 +288,15 @@ export default {
     }
     return cd.comments.find((comment) => comment.anchor === anchor) || null;
   },
+
+  /**
+   * Filter out floating and hidden elements from all the comments' {@link
+   * module:CommentSkeleton#highlightables}, change their attributes, and update the comments' level
+   * and parent elements' level classes.
+   */
+  reviewHighlightables() {
+    cd.comments.forEach((comment) => {
+      comment.reviewHighlightables();
+    });
+  },
 };

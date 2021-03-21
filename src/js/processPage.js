@@ -988,14 +988,14 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
         window.scrollTo(0, y);
       }
 
+      Comment.reviewHighlightables();
+
       // Need to generate the gray line to close the gaps between adjacent list item elements. Do it
       // here, not after the comments parsing, to group all operations requiring reflow together for
       // performance reasons.
       const commentsToAddLayers = cd.comments
         .filter((comment) => comment.highlightables.length > 1 && comment.level > 0);
       Comment.configureAndAddLayers(commentsToAddLayers);
-
-      Comment.reviewHighlightables();
 
       highlightOwnComments();
 

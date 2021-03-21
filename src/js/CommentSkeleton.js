@@ -115,6 +115,9 @@ export default class CommentSkeleton {
     const isHighlightable = (el) => (
       !/^(H[1-6]|STYLE|LINK)$/.test(el.tagName) &&
       !cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES.some((name) => el.classList.contains(name)) &&
+
+      // Can't access stylesheets from the worker context, so we do it only in
+      // Comment#reviewHighlightables, and here we look at the style attribute only.
       !/float: *(?:left|right)|display: *none/.test(el.getAttribute('style'))
     );
 
