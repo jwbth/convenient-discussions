@@ -42,9 +42,9 @@ export default {
     let notMovedCount = 0;
     let floatingRects;
 
-    // We go from the end and stop at the first _two_ comments that have not been misplaced. A
+    // We go from the end and stop at the first _three_ comments that have not been misplaced. A
     // quirky reason for this is that the mouse could be over some comment making its underlay to be
-    // repositioned immediately and therefore not appearing as misplaced to this procedure. Two
+    // repositioned immediately and therefore not appearing as misplaced to this procedure. Three
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
@@ -85,7 +85,7 @@ export default {
             .closest('.cd-commentLayersContainer-parent')
         ) {
           notMovedCount++;
-          if (notMovedCount === 2) {
+          if (notMovedCount === 3) {
             return true;
           }
         }
