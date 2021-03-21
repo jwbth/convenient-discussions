@@ -187,10 +187,10 @@ export default {
 
   /**
    * Should a new comment at the first level repeat the previous comment's indentation style
-   * (`'mimic'` mode), or should the script use the default indentation char in {@link
-   * module:defaultConfig.checkForCustomForeignComponents} in all cases (`'unify'` mode). Note that
-   * if the last comment of the section uses `#` as the first indentation character, the script will
-   * use it for the comment independent of this value.
+   * (`'mimic'` mode), or should the script use the default indentation character in {@link
+   * module:defaultConfig.defaultIndentationChar} in all cases (`'unify'` mode). Note that if the
+   * last comment of the section uses `#` as the first indentation character, the script will use it
+   * for the comment independent of this value.
    *
    * @type {string}
    */

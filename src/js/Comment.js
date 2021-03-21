@@ -114,9 +114,7 @@ export default class Comment extends CommentSkeleton {
       !cd.g.closedDiscussionElements.some((el) => el.contains(this.elements[0]))
     );
 
-    this.highlightables.forEach((el) => {
-      this.bindEvents(el);
-    });
+    this.highlightables.forEach(this.bindEvents.bind(this));
 
     /**
      * Is the comment currently highlighted as the target comment.

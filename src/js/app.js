@@ -37,8 +37,9 @@ let strings;
 if (IS_SNIPPET) {
   try {
     config = require(`../../config/${CONFIG_FILE_NAME}`).default;
-    // eslint-disable-next-line no-empty
-  } catch (e) {}
+  } catch (e) {
+    // empty
+  }
 
   const replaceEntities = (s) => (
     s

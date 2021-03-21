@@ -32,7 +32,7 @@ export default class CommentSkeleton {
     parts = this.parser.removeNestedParts(parts);
 
     // We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
-    // can't get bounding client rectangle for text nodes, can't specify margins for them etc.).
+    // can't get a bounding client rectangle for text nodes, can't specify margins for them etc.).
     parts = this.parser.encloseInlineParts(parts, signature.element);
 
     // At this point, we can safely remove unnecessary nodes.
@@ -125,7 +125,7 @@ export default class CommentSkeleton {
      * Comment elements that are highlightable.
      *
      * Keep in mind that the elements may be replaced, and the property values will need to be
-     * updated. See `mergeAdjacentCommentLevels()` in {@link module:modifyDom}.
+     * updated. See {@link module:Comment#replaceElement}.
      *
      * @type {Element[]}
      */

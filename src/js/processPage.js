@@ -240,10 +240,12 @@ function mergeAdjacentCommentLevels(feivData) {
 
   Array.from(levels).forEach((bottomElement) => {
     const topElement = bottomElement.previousElementSibling;
+
     // If the previous element was removed in this cycle. (Or it could be absent for some other
     // reason? I can confirm that I witnessed a case where the element was absent, but didn't pay
     // attention why unfortunately.)
     if (!topElement) return;
+
     let currentTopElement = topElement;
     let currentBottomElement = bottomElement;
     do {
@@ -365,7 +367,7 @@ function processComments(parser, feivData) {
     }
   });
 
-  // Faster than dping it for every individual comment.
+  // Faster than doing it for every individual comment.
   cd.g.rootElement
     .querySelectorAll('table.cd-commentPart .cd-signature')
     .forEach((signature) => {
@@ -997,8 +999,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     cd.debug.startTimer('final code and rendering');
 
     if (articleId) {
-      // Restore the initial viewport position in terms of visible elements which is how the user sees
-      // it.
+      // Restore the initial viewport position in terms of visible elements which is how the user
+      // sees it.
       if (feivData) {
         const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
         window.scrollTo(0, y);

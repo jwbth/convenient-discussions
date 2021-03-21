@@ -22,7 +22,7 @@ import { handleScroll } from './eventHandlers';
  */
 export default {
   /**
-   * Removes non-element and non-displayable (style, link) nodes from a jQuery collection.
+   * Remove non-element and non-displayable (style, link) nodes from a jQuery collection.
    *
    * @returns {JQuery}
    * @memberof $.fn
@@ -46,10 +46,10 @@ export default {
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     cd.g.autoScrollInProgress = true;
 
-    const offset = $elements.first().offset();
     let $elements = this.cdRemoveNotDisplayableElementNodes();
+    const offsetFirst = $elements.first().offset();
     const offsetLast = $elements.last().offset();
-    if ((offset.top === 0 || offsetLast.top === 0) && offset.left === 0) {
+    if ((offsetFirst.top === 0 || offsetLast.top === 0) && offsetFirst.left === 0) {
       cd.g.autoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
@@ -59,13 +59,13 @@ export default {
     let top;
     if (alignment === 'center') {
       top = Math.min(
-        offset.top,
-        offset.top + ((offsetBottom - offset.top) * 0.5) - $(window).height() * 0.5
+        offsetFirst.top,
+        offsetFirst.top + ((offsetBottom - offsetFirst.top) * 0.5) - $(window).height() * 0.5
       );
     } else if (alignment === 'bottom') {
       top = offsetBottom - $(window).height();
     } else {
-      top = offset.top - cd.g.BODY_SCROLL_PADDING_TOP;
+      top = offsetFirst.top - cd.g.BODY_SCROLL_PADDING_TOP;
     }
 
     const onComplete = () => {
