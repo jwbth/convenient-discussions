@@ -31,7 +31,8 @@ ol > li.cd-commentPart-last {
   border-right: 0;
 }
 
-.sitedir-rtl .cd-commentLevel:not(ol) {
+.sitedir-rtl .cd-commentLevel:not(ol) > li,
+.sitedir-rtl .cd-commentLevel:not(ol) > dd {
   padding-left: 0;
   padding-right: 1em;
   margin-left: 0;
@@ -52,10 +53,17 @@ ol > li.cd-commentPart-last {
   position: absolute;
   display: block;
   top: -0.5em;
-  left: -1px;
   width: 1px;
   background-color: #c8ccd1;
   height: 0.5em;
+}
+
+.sitedir-ltr .cd-connectToPreviousItem::before {
+  left: -1px;
+}
+
+.sitedir-rtl .cd-connectToPreviousItem::before {
+  right: -1px;
 }
 
 .cd-button-pending.cd-button-pending.cd-button-pending .oo-ui-buttonElement-button {
