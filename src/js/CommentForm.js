@@ -693,6 +693,10 @@ export default class CommentForm {
         focusInput(this.commentInput);
       }
 
+      // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
+      $input.data('wikiEditor-context').instance = 5;
+      $.wikiEditor.instances = Array(5);
+
       /**
        * The comment form toolbar is ready; all requested custom comment form modules have been
        * loaded and executed.
