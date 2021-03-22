@@ -245,16 +245,19 @@ export default class Comment extends CommentSkeleton {
     // reason.
     if (rectTop.left === 0 && rectTop.height === 0) return;
 
-    const top = window.scrollY + rectTop.top;
-    const bottom = window.scrollY + rectBottom.bottom;
+    // Seems like caching this value significantly helps performance in Chrome.
+    const scrollY = window.scrollY;
+
+    const top = scrollY + rectTop.top;
+    const bottom = scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
       const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
       floatingRects.forEach((rect) => {
-        const floatingTop = window.scrollY + rect.outerTop;
-        const floatingBottom = window.scrollY + rect.outerBottom;
+        const floatingTop = scrollY + rect.outerTop;
+        const floatingBottom = scrollY + rect.outerBottom;
         if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }
