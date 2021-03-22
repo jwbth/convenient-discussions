@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			")8",
+			"Hmgrmb",
 			"Nadine Siak",
 			"SomeyaMako",
 			"Wuqianye",
@@ -109,6 +110,7 @@
 	"navpanel-refresh": "刷新页面",
 	"navpanel-newcomments-names": "$1 → $2",
 	"navpanel-newcomments-unknowndate": "未知日期",
+	"navpanel-markasread": "长按Ctrl键去标志所有可见的评论已被阅读",
 	"pagenav-pagetop": "页面顶部",
 	"pagenav-toc": "目录",
 	"pagenav-pagebottom": "页面底部",
