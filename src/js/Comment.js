@@ -405,7 +405,7 @@ export default class Comment extends CommentSkeleton {
     if (e) {
       e.preventDefault();
     }
-    this.overlay.style.display = 'none';
+    this.overlayInnerWrapper.style.display = 'none';
   }
 
   /**
@@ -756,7 +756,7 @@ export default class Comment extends CommentSkeleton {
 
     this.underlay.classList.remove('cd-commentUnderlay-focused');
     this.overlay.classList.remove('cd-commentOverlay-focused');
-    this.overlay.style.display = '';
+    this.overlayInnerWrapper.style.display = '';
     this.isFocused = false;
   }
 
