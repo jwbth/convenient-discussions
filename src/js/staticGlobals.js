@@ -75,7 +75,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_NEW_BACKGROUND_COLOR: '#e8ffd1',
+  COMMENT_NEW_BACKGROUND_COLOR: '#edffdb',
 
   /**
    * Background color for own comments if enabled in the settings.
