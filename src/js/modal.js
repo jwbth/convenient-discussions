@@ -494,6 +494,12 @@ export async function settingsDialog() {
       helpInline: true,
     });
 
+    [this.useBackgroundHighlightingField, this.useBackgroundHighlightingCheckbox] = checkboxField({
+      value: 'useBackgroundHighlighting',
+      selected: settings.useBackgroundHighlighting,
+      label: cd.s('sd-usebackgroundhighlighting'),
+    });
+
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({
       value: 'useTemplateData',
       selected: settings.useTemplateData,
@@ -530,6 +536,7 @@ export async function settingsDialog() {
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
     this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
     this.signaturePrefixInput.connect(this, { change: 'updateStates' });
+    this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
     this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateStates' });
     this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
@@ -559,6 +566,7 @@ export async function settingsDialog() {
       GeneralPageLayout.super.call(this, name, config);
       this.$element.append([
         dialog.highlightOwnCommentsField.$element,
+        dialog.useBackgroundHighlightingField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
       ]);
@@ -666,6 +674,7 @@ export async function settingsDialog() {
       notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
       showToolbar: this.showToolbarCheckbox.isSelected(),
       signaturePrefix: this.signaturePrefixInput.getValue(),
+      useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
       useTemplateData: this.useTemplateDataCheckbox.isSelected(),
       watchOnReply: this.watchOnReplyCheckbox.isSelected(),
       watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),

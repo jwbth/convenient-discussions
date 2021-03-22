@@ -109,7 +109,6 @@ export async function initSettings() {
     'defaultCommentLinkType',
     'defaultSectionLinkType',
     'showLoadingOverlay',
-    'useBackgroundHighlighting',
   ];
 
   // Aliases for seamless transition when changing a setting name.
