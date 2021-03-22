@@ -1057,23 +1057,6 @@ export default class CommentForm {
     }
 
     /**
-     * Script settings button.
-     *
-     * @name settingsButton
-     * @type {Promise}
-     * @instance
-     */
-    this.settingsButton = new OO.ui.ButtonWidget({
-      framed: false,
-      icon: 'settings',
-      label: cd.s('cf-settings-tooltip'),
-      invisibleLabel: true,
-      title: cd.s('cf-settings-tooltip'),
-      classes: ['cd-button', 'cd-settingsButton'],
-      tabIndex: String(this.id) + '27',
-    });
-
-    /**
      * @typedef {object} OoUiHorizontalLayout
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
      */
@@ -1091,7 +1074,6 @@ export default class CommentForm {
         this.watchSectionField,
         this.omitSignatureField,
         this.deleteField,
-        this.settingsButton,
       ].filter(defined),
     });
 
@@ -1185,6 +1167,23 @@ export default class CommentForm {
     });
 
     /**
+     * Script settings button.
+     *
+     * @name settingsButton
+     * @type {Promise}
+     * @instance
+     */
+    this.settingsButton = new OO.ui.ButtonWidget({
+      framed: false,
+      icon: 'settings',
+      label: cd.s('cf-settings-tooltip'),
+      invisibleLabel: true,
+      title: cd.s('cf-settings-tooltip'),
+      classes: ['cd-button', 'cd-settingsButton'],
+      tabIndex: String(this.id) + '32',
+    });
+
+    /**
      * Cancel button.
      *
      * @type {OoUiButtonWidget}
@@ -1194,7 +1193,7 @@ export default class CommentForm {
       flags: 'destructive',
       framed: false,
       classes: ['cd-button', 'cd-cancelButton'],
-      tabIndex: String(this.id) + '32',
+      tabIndex: String(this.id) + '33',
     });
 
     /**
@@ -1205,7 +1204,7 @@ export default class CommentForm {
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
       classes: ['cd-viewChangesButton'],
-      tabIndex: String(this.id) + '33',
+      tabIndex: String(this.id) + '34',
     });
 
     /**
@@ -1216,7 +1215,7 @@ export default class CommentForm {
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
       classes: ['cd-previewButton'],
-      tabIndex: String(this.id) + '34',
+      tabIndex: String(this.id) + '35',
     });
     if (cd.settings.autopreview) {
       this.previewButton.$element.hide();
@@ -1231,7 +1230,7 @@ export default class CommentForm {
       label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
       classes: ['cd-submitButton'],
-      tabIndex: String(this.id) + '35',
+      tabIndex: String(this.id) + '36',
     });
 
     if (this.deleteCheckbox?.isSelected()) {
@@ -1246,6 +1245,7 @@ export default class CommentForm {
     this.$buttonsStart.append([
       this.advancedButton.$element,
       this.helpPopupButton.$element,
+      this.settingsButton.$element,
     ]);
     this.$buttonsEnd.append([
       this.cancelButton.$element,
@@ -1672,14 +1672,14 @@ export default class CommentForm {
         .on('change', saveSessionEventHandler);
     }
 
-    this.settingsButton
-      .on('click', () => {
-        settingsDialog();
-      });
-
     this.advancedButton
       .on('click', () => {
         this.toggleAdvanced();
+      });
+
+    this.settingsButton
+      .on('click', () => {
+        settingsDialog();
       });
 
     this.cancelButton
