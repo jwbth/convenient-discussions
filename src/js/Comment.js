@@ -866,7 +866,7 @@ export default class Comment extends CommentSkeleton {
    * storage.
    */
   flashNew() {
-    this.flash('new', 500);
+    this.flash('new', 1000);
 
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
