@@ -1046,6 +1046,10 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
       restoreCommentForms();
 
+      if (Number(new mw.Uri().query.cdaddtopic)) {
+        CommentForm.createAddSectionForm();
+      }
+
       if (isPageFirstParsed) {
         const alwaysConfirmLeavingPage =  (
           mw.user.options.get('editondblclick') ||

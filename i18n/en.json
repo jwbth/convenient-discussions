@@ -363,5 +363,6 @@
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",
-  "copy": "Copy"
+  "copy": "Copy",
+  "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please disable DiscussionTools on [[Special:Preferences#mw-prefsection-betafeatures|the beta features page]] to make Convenient Discussions work correctly."
 }

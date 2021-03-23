@@ -298,29 +298,25 @@ async function go() {
 
   cd.g.$content = $('#mw-content-text');
 
-  const enabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
-
   // Process the page as a talk page
+  const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
+  const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
+  const isPageEligible = (
+    !mw.config.get('wgIsRedirect') &&
+    !cd.g.$content.find('.cd-notTalkPage').length &&
+    (
+      isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER) ||
+      $('#ca-addsection').length ||
+
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // the list of supported namespaces and page white/black list in the configuration. With this
+      // method, there won't be "comment" links for edits on pages that list revisions such as the
+      // watchlist.
+      cd.g.$content.find('.cd-talkPage').length
+    )
+  );
   if (mw.config.get('wgIsArticle')) {
-    if (
-      !/[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search) &&
-      (
-        (!mw.config.get('wgIsRedirect') && !cd.g.$content.find('.cd-notTalkPage').length) ||
-        enabledInQuery
-      ) &&
-      (
-        isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER) ||
-        $('#ca-addsection').length ||
-
-        // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-        // the list of supported namespaces and page white/black list in the configuration. With
-        // this method, there won't be "comment" links for edits on pages that list revisions such
-        // as the watchlist.
-        cd.g.$content.find('.cd-talkPage').length ||
-
-        enabledInQuery
-      )
-    ) {
+    if (!isDisabledInQuery && (isEnabledInQuery || isPageEligible)) {
       /**
        * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
        * script's refresh functionality).
@@ -444,16 +440,27 @@ async function go() {
     }
   }
 
+  const isRedLink = /[?&]redlink=1/.test(location.search);
+  if (isPageEligible && mw.config.get('wgAction') === 'edit' && isRedLink) {
+    const $addTopicLink = $('#ca-addsection a');
+    const href = $addTopicLink.get(0).href;
+    if (href) {
+      const url = new URL(href);
+      url.searchParams.delete('action');
+      url.searchParams.delete('section');
+      url.searchParams.set('cdaddtopic', 1);
+      $addTopicLink.attr('href', url);
+    }
+  }
+
   // Process the page as a log page
-  if (
-    ['Watchlist', 'Contributions', 'Recentchanges']
-      .includes(mw.config.get('wgCanonicalSpecialPageName')) ||
-    (
-      mw.config.get('wgAction') === 'history' &&
-      isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
-    ) ||
-    cd.g.IS_DIFF_PAGE
-  ) {
+  const isEligibleSpecialPage = ['Watchlist', 'Contributions', 'Recentchanges']
+    .includes(mw.config.get('wgCanonicalSpecialPageName'));
+  const isEligibleHistoryPage = (
+    mw.config.get('wgAction') === 'history' &&
+    isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
+  );
+  if (isEligibleSpecialPage || isEligibleHistoryPage || cd.g.IS_DIFF_PAGE) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     let siteDataRequests;
