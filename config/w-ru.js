@@ -371,19 +371,18 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
   });
 });
 
-mw.hook('convenientDiscussions.pageReady').add(function () {
-  if (cd.g.isFirstRun) {
-    const generateEditCommonJsLink = function () {
-      return mw.util.getUrl('User:' + cd.g.USER_NAME + '/common.js', { action: 'edit' });
-    };
+mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
+  const generateEditCommonJsLink = function () {
+    return mw.util.getUrl('User:' + cd.g.USER_NAME + '/common.js', { action: 'edit' });
+  };
 
-    const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
-    if (cd.settings.highlightNew && isHlmEnabled) {
-      // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
-      window.highlightMessagesAfterLastVisit = false;
-      window.highlightMessages = 0;
-    }
-    if (isHlmEnabled && !mw.cookie.get('cd-hlmConflict')) {
+  const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
+  if (isHlmEnabled) {
+    // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
+    window.highlightMessagesAfterLastVisit = false;
+    window.highlightMessages = 0;
+
+    if (!mw.cookie.get('cd-hlmConflict')) {
       // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
       if (window.messagesHighlightColor !== undefined) {
         const dummyElement = document.createElement('span');
@@ -404,20 +403,20 @@ mw.hook('convenientDiscussions.pageReady').add(function () {
         expires: cd.g.SECONDS_IN_DAY * 30,
       });
     }
+  }
 
-    if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-      const $text = cd.util.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
-      mw.notify($text, { autoHide: false });
-      mw.cookie.set('cd-ptaConflict', '1', {
-        path: '/',
-        expires: cd.g.SECONDS_IN_DAY * 30,
-      });
-    }
+  if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
+    const $text = cd.util.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные дискуссии». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+    mw.notify($text, { autoHide: false });
+    mw.cookie.set('cd-ptaConflict', '1', {
+      path: '/',
+      expires: cd.g.SECONDS_IN_DAY * 30,
+    });
+  }
 
-    if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-      const $text = cd.util.wrap('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
-      mw.notify($text, { autoHide: false });
-    }
+  if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
+    const $text = cd.util.wrap('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные дискуссии», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
+    mw.notify($text, { autoHide: false });
   }
 });
 

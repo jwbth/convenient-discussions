@@ -873,6 +873,7 @@ function debugLog() {
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
+ * @fires pageReadyFirstTime
  */
 export default async function processPage(keptData = {}, siteDataRequests, cachedScrollY) {
   cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
@@ -1116,6 +1117,17 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
      * @type {module:cd~convenientDiscussions}
      */
     mw.hook('convenientDiscussions.pageReady').fire(cd);
+
+    if (cd.g.isFirstRun) {
+      /**
+       * The script has processed the page for the first time since the page load. Use this hook for
+       * operations that should run only once.
+       *
+       * @event pageReadyFirstTime
+       * @type {module:cd~convenientDiscussions}
+       */
+      mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
+    }
 
     removeLoadingOverlay();
 
