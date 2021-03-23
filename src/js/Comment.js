@@ -358,30 +358,14 @@ export default class Comment extends CommentSkeleton {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(this.highlightables[0].tagName) &&
-        (
-          options.rectTop.left === options.rectBottom.left ||
-
-          /*
-            Workaround to have neater highlighting is special cases
-            (https://ru.wikipedia.org/wiki/Википедия:Форум/Технический#202103091211_WindEwriX).
-
-            <li>Comment start</li>
-            <div>Some complex irrelevant markup</div>
-            <li>
-              <div>Comment end</div>
-              <li>Reply</li>
-            </li>
-           */
-          options.rectTop.left + cd.g.REGULAR_FONT_SIZE + 1 === options.rectBottom.left
-        )
+        ['LI', 'DD'].includes(this.highlightables[0].tagName)
       ) {
         startMargin = -1;
       } else {
-        startMargin = this.level === 0 ? 5 : cd.g.REGULAR_FONT_SIZE;
+        startMargin = this.level === 0 ? 8 : cd.g.REGULAR_FONT_SIZE;
       }
     }
-    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 5;
+    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
 
     const closestList = this.highlightables[0].closest('.cd-commentLevel');
     if (closestList && closestList.tagName === 'OL') {
