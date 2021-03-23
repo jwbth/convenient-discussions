@@ -702,9 +702,10 @@ export async function settingsDialog() {
   };
 
   SettingsDialog.prototype.updateStates = async function () {
-    this.useTemplateDataCheckbox.setDisabled(
-      !this.autocompleteTypesMultiselect.findItemFromData('templates').isSelected()
-    );
+    const useTemplateDataCheckboxDisabled = !this.autocompleteTypesMultiselect
+      .findItemFromData('templates')
+      .isSelected();
+    this.useTemplateDataCheckbox.setDisabled(useTemplateDataCheckboxDisabled);
 
     const settings = this.collectSettings();
     const save = !areObjectsEqual(settings, this.settings, true);

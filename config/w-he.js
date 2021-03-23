@@ -221,17 +221,6 @@ export default {
   // foreignElementInHeadlineClasses: [],
 
   /**
-   * Selectors of floating elements. This is needed to display the comment's underlay and overlay
-   * correctly. You can also add the `cd-floating` class to such elements. You can also add the
-   * `cd-ignoreFloating` class to floating elements that never intersect comments but end up in
-   * `convenientDiscussions.g.floatingElements` to help performance.
-   *
-   * @type {string[]}
-   * @default []
-   */
-  // customFloatingElementSelectors: [],
-
-  /**
    * Names of the closed discussion templates. They can be single templates like {@link
    * https://en.wikipedia.org/wiki/Template:Closed} or pair templates like {@link
    * https://ru.wikipedia.org/wiki/Template:Закрыто} / {@link

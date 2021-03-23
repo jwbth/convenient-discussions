@@ -1102,22 +1102,14 @@ export default class CommentForm {
      */
     this.$buttonsEnd = $('<div>').addClass('cd-buttons-end');
 
-    let message;
-    switch (this.mode) {
-      case 'edit':
-        message = 'save';
-        break;
-      case 'addSection':
-        message = 'addtopic';
-        break;
-      case 'addSubsection':
-        message = 'addsubsection';
-        break;
-      default:
-        message = 'reply';
-    }
-    this.submitButtonLabelStandard = cd.s(`cf-${message}`);
-    this.submitButtonLabelShort = cd.s(`cf-${message}-short`);
+    const modeToSubmitButtonMessageName = {
+      edit: 'save',
+      addSection: 'addtopic',
+      addSubsection: 'addsubsection',
+    };
+    const submitButtonMessageName = modeToSubmitButtonMessageName[this.mode] || 'reply';
+    this.submitButtonLabelStandard = cd.s(`cf-${submitButtonMessageName}`);
+    this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
 
     /**
      * @typedef {object} OoUiButtonWidget

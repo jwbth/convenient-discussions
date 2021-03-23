@@ -143,7 +143,6 @@ function getAllTextNodes() {
  * @private
  */
 function findSpecialElements() {
-  cd.debug.startTimer('stylesheets');
   const tsSelectors = [];
   const filterRules = (rule) => {
     if (rule instanceof CSSStyleRule && ['left', 'right'].includes(rule.style.float)) {
@@ -158,9 +157,7 @@ function findSpecialElements() {
   Array.from(cd.g.rootElement.querySelectorAll('style')).forEach((el) => {
     Array.from(el.sheet.cssRules).forEach(filterRules);
   });
-  cd.debug.stopTimer('stylesheets');
 
-  cd.debug.startTimer('floatingElements');
   // Describe all floating elements on the page in order to calculate the correct border
   // (temporarily setting "overflow: hidden") for all comments that they intersect with.
   const floatingElementSelector = [...cd.g.FLOATING_ELEMENT_SELECTORS, ...tsSelectors].join(', ');
@@ -171,7 +168,6 @@ function findSpecialElements() {
 
     // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
-  cd.debug.stopTimer('floatingElements');
 
   const closedDiscussionsSelector = cd.config.closedDiscussionClasses
     .map((name) => `.${name}`)
@@ -1040,9 +1036,9 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     }
 
     if (isPageCommentable) {
-      // This should be below the viewport position restoration and own comments highlighting as it
-      // may rely on the elements that are made invisible during the comment forms restoration. It
-      // should also be below the navPanel mount/reset methods as it runs
+      // This should be below the viewport position restoration and own comments highlighting as the
+      // latter may rely on elements that are made invisible during the comment forms restoration.
+      // It should also be below the navPanel mount/reset methods as it runs
       // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
       restoreCommentForms();
 
