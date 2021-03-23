@@ -1104,6 +1104,10 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
     if (cd.g.isFirstRun) {
       confirmDesktopNotifications();
+
+      if (mw.user.options.get('discussiontools-betaenable')) {
+        mw.notify(cd.util.wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
+      }
     }
 
     if (isPageCommentable) {
