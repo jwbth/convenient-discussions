@@ -724,6 +724,7 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
+    this.$backgroundToAnimate?.stop(false, true);
     const isMoved = this.configureLayers();
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
@@ -740,6 +741,8 @@ export default class Comment extends CommentSkeleton {
    */
   unhighlightFocused() {
     if (!this.isFocused) return;
+
+    this.$backgroundToAnimate?.stop(false, true);
 
     this.underlay.classList.remove('cd-commentUnderlay-focused');
     this.overlay.classList.remove('cd-commentOverlay-focused');
@@ -778,51 +781,59 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    const $doc = $(document.documentElement);
-    const markerColor = $doc.css(`--cd-comment-${type}-marker-color`);
-    const backgroundColor = $doc.css(`--cd-comment-${type}-background-color`);
-
     this.$backgroundToAnimate = this.$underlay
-      .add(this.$overlayGradient)
-      .add(this.$overlayContent);
+      .add(this.$overlayContent)
+      .add(this.$overlayGradient);
 
-    // Reset the animations, colors, and also set background-image to "none" to remove the gradient
-    // from the this.overlayGradient element.
+    // Reset the animations and colors
     this.$backgroundToAnimate
       .add(this.$marker)
       .stop()
       .css({
         backgroundColor: '',
-        backgroundImage: 'none',
         opacity: 1,
       });
 
-    let finalMarkerColor = window.getComputedStyle(this.$marker.get(0)).backgroundColor;
-    let finalBackgroundColor = window.getComputedStyle(this.$underlay.get(0)).backgroundColor;
+    // The "cd-commentUnderlay-forcedBackground" class helps to set background for a type even if
+    // they user has switched off background highlighting for this type ("new", for example).
+    this.underlay.classList.add(
+      `cd-commentUnderlay-${type}`,
+      'cd-commentUnderlay-forcedBackground'
+    );
+    this.overlay.classList.add(`cd-commentOverlay-${type}`, 'cd-commentOverlay-forcedBackground');
 
-    this.$marker.css({
-      backgroundColor: markerColor,
-      opacity: 1,
-    });
-    this.$backgroundToAnimate.css('background-color', backgroundColor);
+    this.$marker.css({ opacity: 1 });
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
-      // These comment properties may get assigned after the flash() call.
-      if (this.isFocused) {
-        finalBackgroundColor = $doc.css('--cd-comment-focused-background-color');
-      } else if (this.isNew && !this.isOwn) {
-        finalMarkerColor = $doc.css('--cd-comment-new-marker-color');
-        if (cd.settings.useBackgroundHighlighting) {
-          finalBackgroundColor = $doc.css('--cd-comment-new-background-color');
-        }
-      }
+      const markerColor = this.$marker.css('background-color');
+      const backgroundColor = this.$underlay.css('background-color');
 
-      // That's basically if the flash color is green (new, when a comment is updated after an
-      // edit), and the comment itself is new and green, then animate to transparent, then set green
-      // back, so that there is any animation at all.
-      if (cd.settings.useBackgroundHighlighting && finalBackgroundColor === backgroundColor) {
+      this.underlay.classList.remove(
+        `cd-commentUnderlay-${type}`,
+        'cd-commentUnderlay-forcedBackground'
+      );
+      this.overlay.classList.remove(
+        `cd-commentOverlay-${type}`,
+        'cd-commentOverlay-forcedBackground'
+      );
+      const finalMarkerColor = this.$marker.css('background-color');
+      let finalBackgroundColor = this.$underlay.css('background-color');
+
+      // That's basically if the flash color is green (new, when a comment is updated after an edit)
+      // and the comment itself is new and green, then animate to transparent, then set green back,
+      // so that there is any animation at all.
+      if (finalBackgroundColor === backgroundColor) {
         finalBackgroundColor = 'rgba(0, 0, 0, 0)';
       }
+
+      this.$marker.css({
+        backgroundColor: markerColor,
+        opacity: 1,
+      });
+      this.$backgroundToAnimate.css({
+        backgroundColor: backgroundColor,
+        backgroundImage: 'none',
+      });
 
       const generateProperties = (backgroundColor) => {
         const properties = { backgroundColor };

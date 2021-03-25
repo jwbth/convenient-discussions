@@ -69,13 +69,29 @@ export default {
   COMMENT_TARGET_BACKGROUND_COLOR: '#fef6e7',
 
   /**
+   * Background color for target comments when they are hovered.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_TARGET_HOVER_BACKGROUND_COLOR: '#fef2db',
+
+  /**
    * Background color used for _flashing_ new comments when they are updated and just new comments
    * if enabled in the settings.
    *
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_NEW_BACKGROUND_COLOR: '#edffdb',
+  COMMENT_NEW_BACKGROUND_COLOR: '#f0ffe5',
+
+  /**
+   * New comments color when they are hovered.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_NEW_HOVER_BACKGROUND_COLOR: '#e6ffd4',
 
   /**
    * Background color for own comments if enabled in the settings.
@@ -83,7 +99,15 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_OWN_BACKGROUND_COLOR: '#f7effb',
+  COMMENT_OWN_BACKGROUND_COLOR: '#f8effb',
+
+  /**
+   * Background color for own comments when they are hovered if enabled in the settings.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f4e7f9',
 
   /**
    * Background color for focused (hovered) comments.
@@ -100,6 +124,14 @@ export default {
    * @memberof module:cd~convenientDiscussions.g
    */
   COMMENT_DELETED_BACKGROUND_COLOR: '#fee7e6',
+
+  /**
+   * Background color for deleted comments when they are hovered.
+   *
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_DELETED_HOVER_BACKGROUND_COLOR: '#fddbd9',
 
   /**
    * How long a comment should be considered new and have a corresponding background on newly loaded

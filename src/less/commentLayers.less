@@ -1,16 +1,29 @@
 .cd-commentUnderlay {
   position: absolute;
   z-index: -1;
+}
 
-  // Note that the classes are in the order of their precedence if you go from the last to the
-  // first.
-  &-deleted {
-    background-color: var(--cd-comment-deleted-background-color);
-  }
+.cd-commentUnderlay-focused,
+.cd-commentOverlay-content {
+  background-color: var(--cd-comment-focused-background-color);
+}
 
-  &-focused {
-    background-color: var(--cd-comment-focused-background-color);
-  }
+.cd-commentUnderlay-deleted {
+  background-color: var(--cd-comment-deleted-background-color);
+}
+
+.cd-commentUnderlay-deleted.cd-commentUnderlay-focused,
+.cd-commentOverlay-deleted .cd-commentOverlay-content {
+  background-color: var(--cd-comment-deleted-hover-background-color);
+}
+
+.cd-commentUnderlay-target.cd-commentUnderlay-target {
+  background-color: var(--cd-comment-target-background-color);
+}
+
+.cd-commentUnderlay-target.cd-commentUnderlay-target.cd-commentUnderlay-focused,
+.cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-content {
+  background-color: var(--cd-comment-target-hover-background-color);
 }
 
 .cd-commentOverlay {
@@ -29,6 +42,15 @@
 
   &-deleted .cd-commentOverlay-marker {
     background-color: var(--cd-comment-deleted-marker-color);
+  }
+
+  &-target .cd-commentOverlay-marker {
+    background-color: var(--cd-comment-target-marker-color);
+  }
+
+  &-target.cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-gradient {
+    background-image: none;
+    background-color: var(--cd-comment-target-hover-background-color);
   }
 
   &-marker {
@@ -72,7 +94,6 @@
     padding: 0 0.5em;
     flex-direction: row;
     pointer-events: all;
-    background-color: var(--cd-comment-focused-background-color);
   }
 
   .cd-button.oo-ui-buttonElement-frameless.oo-ui-widget-enabled > .oo-ui-buttonElement-button:hover,
@@ -153,12 +174,24 @@
   left: 0;
 }
 
-.ltr .cd-commentOverlay-gradient {
-  background-image: linear-gradient(to left, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+.ltr {
+  .cd-commentOverlay-gradient {
+    background-image: linear-gradient(to left, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+  }
+
+  .cd-commentOverlay-deleted .cd-commentOverlay-gradient {
+    background-image: linear-gradient(to left, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
+  }
 }
 
-.rtl .cd-commentOverlay-gradient {
-  background-image: linear-gradient(to right, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+.rtl {
+  .cd-commentOverlay-gradient {
+    background-image: linear-gradient(to right, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+  }
+
+  .cd-commentOverlay-deleted .cd-commentOverlay-gradient {
+    background-image: linear-gradient(to right, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
+  }
 }
 
 body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {

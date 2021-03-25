@@ -223,13 +223,17 @@ export function setTalkPageCssVariables() {
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
     '--cd-comment-target-marker-color': cd.g.COMMENT_TARGET_MARKER_COLOR,
-    '--cd-comment-new-marker-color': cd.g.COMMENT_NEW_MARKER_COLOR,
-    '--cd-comment-own-marker-color': cd.g.COMMENT_OWN_MARKER_COLOR,
-    '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
     '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
+    '--cd-comment-target-hover-background-color': cd.g.COMMENT_TARGET_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-new-marker-color': cd.g.COMMENT_NEW_MARKER_COLOR,
     '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
+    '--cd-comment-new-hover-background-color': cd.g.COMMENT_NEW_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-own-marker-color': cd.g.COMMENT_OWN_MARKER_COLOR,
     '--cd-comment-own-background-color': cd.g.COMMENT_OWN_BACKGROUND_COLOR,
+    '--cd-comment-own-hover-background-color': cd.g.COMMENT_OWN_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
     '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
+    '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
     '--cd-comment-focused-background-color': cd.g.COMMENT_FOCUSED_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
@@ -640,6 +644,57 @@ function initOouiAndElementPrototypes() {
 }
 
 /**
+ * Add CSS rules related to background highlighting. It is contingent on the
+ * "useBackgroundHighlighting" setting.
+ *
+ * @private
+ */
+function addBackgroundHighlightingCss() {
+  let underlayPostfix = '';
+  let overlayPostfix = '';
+  if (!cd.settings.useBackgroundHighlighting) {
+    underlayPostfix = '.cd-commentUnderlay-forcedBackground';
+    overlayPostfix = '.cd-commentOverlay-forcedBackground';
+  }
+  cd.g.nanoCss.put(`.cd-commentUnderlay-new${underlayPostfix}`, {
+    backgroundColor: 'var(--cd-comment-new-background-color)',
+  });
+  cd.g.nanoCss.put(
+    `.cd-commentUnderlay-new.cd-commentUnderlay-focused${underlayPostfix}, ` +
+    `.cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-content`,
+    {
+      backgroundColor: 'var(--cd-comment-new-hover-background-color)',
+    }
+  );
+  // FIX TRANSPARENT
+  cd.g.nanoCss.put(`.ltr .cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-gradient`, {
+    backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
+  });
+  cd.g.nanoCss.put(`.rtl .cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-gradient`, {
+    backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
+  });
+
+  if (cd.settings.useBackgroundHighlighting) {
+    cd.g.nanoCss.put('.cd-commentUnderlay-own', {
+      backgroundColor: 'var(--cd-comment-own-background-color)',
+    });
+    cd.g.nanoCss.put(
+      '.cd-commentUnderlay-own.cd-commentUnderlay-focused, ' +
+      '.cd-commentOverlay-own .cd-commentOverlay-content',
+      {
+        backgroundColor: 'var(--cd-comment-own-hover-background-color)',
+      }
+    );
+    cd.g.nanoCss.put('.ltr .cd-commentOverlay-own .cd-commentOverlay-gradient', {
+      backgroundImage: 'linear-gradient(to left, var(--cd-comment-own-hover-background-color), rgba(255, 255, 255, 0))',
+    });
+    cd.g.nanoCss.put('.rtl .cd-commentOverlay-own .cd-commentOverlay-gradient', {
+      backgroundImage: 'linear-gradient(to right, var(--cd-comment-own-hover-background-color), rgba(255, 255, 255, 0))',
+    });
+  }
+}
+
+/**
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
  * the first run.
  *
@@ -655,16 +710,8 @@ export async function init(siteDataRequests) {
   initTimestampParsingTools();
   initPatterns();
   initOouiAndElementPrototypes();
+  addBackgroundHighlightingCss();
   $.fn.extend(jqueryExtensions);
-
-  if (cd.settings.useBackgroundHighlighting) {
-    cd.g.nanoCss.put('.cd-commentUnderlay-new', {
-      backgroundColor: 'var(--cd-comment-new-background-color)',
-    });
-    cd.g.nanoCss.put('.cd-commentUnderlay-own', {
-      backgroundColor: 'var(--cd-comment-own-background-color)',
-    });
-  }
 
   /**
    * Collection of all comment forms on the page in the order of their creation.
