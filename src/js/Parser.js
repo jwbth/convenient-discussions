@@ -762,6 +762,8 @@ export default class Parser {
             https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Правила/2019/12#201910270736_S.m.46
           * The check for "!parts[i + 1]..." rescues us here:
             https://ru.wikipedia.org/wiki/Википедия:Технические_запросы/Архив/2019#201912081049_Sunpriat
+          * The check for "part.lastStep === 'back'" helps in cases like
+            https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
          */
         (
           (part.lastStep === 'up' && (!parts[i - 1] || parts[i - 1].lastStep !== 'back')) ||
@@ -771,7 +773,11 @@ export default class Parser {
               lastPart.node.parentNode.tagName === 'DD' ||
               lastPart.node.tagName === 'DL'
             ) &&
-            !parts.slice(i + 1).some((part) => part.node.tagName === 'P')
+            !parts.slice(i + 1).some((part) => part.node.tagName === 'P') &&
+            !(
+              part.lastStep === 'back' &&
+              ['LI', 'DD'].includes(part.node.nextElementSibling.tagName)
+            )
           )
         )
       ) {
