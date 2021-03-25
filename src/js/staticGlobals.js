@@ -99,7 +99,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_OWN_BACKGROUND_COLOR: '#f8effb',
+  COMMENT_OWN_BACKGROUND_COLOR: '#f9f1fc',
 
   /**
    * Background color for own comments when they are hovered if enabled in the settings.
@@ -107,7 +107,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f4e7f9',
+  COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f5ebfa',
 
   /**
    * Background color for focused (hovered) comments.
