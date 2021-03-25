@@ -51,7 +51,7 @@ export default {
         comment.isNew ||
         (comment.isOwn && cd.settings.highlightOwnComments) ||
         comment.isTarget ||
-        comment.isFocused ||
+        comment.isHovered ||
         comment.isDeleted ||
 
         // Need to generate the gray line to close the gaps between adjacent list item elements.

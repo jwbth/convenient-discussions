@@ -236,7 +236,7 @@ export default {
    * @param {Event} e
    * @memberof module:Comment
    */
-  highlightFocused(e) {
+  highlightHovered(e) {
     if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
     const isObstructingElementHovered = (
@@ -268,9 +268,9 @@ export default {
           e.pageX >= comment.layersLeft + layersContainerOffset.left &&
           e.pageX <= comment.layersLeft + comment.layersWidth + layersContainerOffset.left
         ) {
-          comment.highlightFocused();
+          comment.highlightHovered();
         } else {
-          comment.unhighlightFocused();
+          comment.unhighlightHovered();
         }
       });
   },

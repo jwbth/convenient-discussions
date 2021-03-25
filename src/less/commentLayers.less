@@ -3,16 +3,16 @@
   z-index: -1;
 }
 
-.cd-commentUnderlay-focused,
+.cd-commentUnderlay-hover,
 .cd-commentOverlay-content {
-  background-color: var(--cd-comment-focused-background-color);
+  background-color: var(--cd-comment-hover-background-color);
 }
 
 .cd-commentUnderlay-deleted {
   background-color: var(--cd-comment-deleted-background-color);
 }
 
-.cd-commentUnderlay-deleted.cd-commentUnderlay-focused,
+.cd-commentUnderlay-deleted.cd-commentUnderlay-hover,
 .cd-commentOverlay-deleted .cd-commentOverlay-content {
   background-color: var(--cd-comment-deleted-hover-background-color);
 }
@@ -21,7 +21,7 @@
   background-color: var(--cd-comment-target-background-color);
 }
 
-.cd-commentUnderlay-target.cd-commentUnderlay-target.cd-commentUnderlay-focused,
+.cd-commentUnderlay-target.cd-commentUnderlay-target.cd-commentUnderlay-hover,
 .cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-content {
   background-color: var(--cd-comment-target-hover-background-color);
 }
@@ -31,98 +31,70 @@
   z-index: 1;
   pointer-events: none;
   line-height: 1.4285714em;
-
-  &-new .cd-commentOverlay-marker {
-    background-color: var(--cd-comment-new-marker-color);
-  }
-
-  &-own .cd-commentOverlay-marker {
-    background-color: var(--cd-comment-own-marker-color);
-  }
-
-  &-deleted .cd-commentOverlay-marker {
-    background-color: var(--cd-comment-deleted-marker-color);
-  }
-
-  &-target .cd-commentOverlay-marker {
-    background-color: var(--cd-comment-target-marker-color);
-  }
-
-  &-target.cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-gradient {
-    background-image: none;
-    background-color: var(--cd-comment-target-hover-background-color);
-  }
-
-  &-marker {
-    position: absolute;
-    top: 0;
-    width: 3px;
-    height: 100%;
-  }
-
-  &-gapped .cd-commentOverlay-line {
-    position: absolute;
-    top: 0;
-    width: 1px;
-    height: 100%;
-    background-color: #c8ccd1;
-  }
-
-  &-focused .cd-commentOverlay-innerWrapper {
-    display: flex;
-  }
-
-  &-innerWrapper {
-    position: absolute;
-    z-index: 1;
-    bottom: 0;
-    font-size: 14px;
-    display: none;
-    flex-direction: row;
-  }
-
-  &-gradient {
-    width: 1.5em;
-    display: inline-block;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  &-content {
-    display: inline-flex;
-    padding: 0 0.5em;
-    flex-direction: row;
-    pointer-events: all;
-  }
 }
 
-.ltr .cd-commentOverlay {
-  .oo-ui-buttonWidget {
-    margin-right: 0;
-  }
-
-  .cd-commentButton:not(:first-child) {
-    margin-left: 1em;
-  }
-
-  .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
-    margin-left: 0;
-  }
+.cd-commentOverlay-new .cd-commentOverlay-marker {
+  background-color: var(--cd-comment-new-marker-color);
 }
 
-.rtl .cd-commentOverlay {
-  .oo-ui-buttonWidget {
-    margin-left: 0;
-  }
+.cd-commentOverlay-own .cd-commentOverlay-marker {
+  background-color: var(--cd-comment-own-marker-color);
+}
 
-  .cd-commentButton:not(:first-child) {
-    margin-right: 1em;
-  }
+.cd-commentOverlay-deleted .cd-commentOverlay-marker {
+  background-color: var(--cd-comment-deleted-marker-color);
+}
 
-  .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
-    margin-right: 0;
-  }
+.cd-commentOverlay-target .cd-commentOverlay-marker {
+  background-color: var(--cd-comment-target-marker-color);
+}
+
+.cd-commentOverlay-target.cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-gradient {
+  background-image: none;
+  background-color: var(--cd-comment-target-hover-background-color);
+}
+
+.cd-commentOverlay-marker {
+  position: absolute;
+  top: 0;
+  width: 3px;
+  height: 100%;
+}
+
+.cd-commentOverlay-gapped .cd-commentOverlay-line {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background-color: #c8ccd1;
+}
+
+.cd-commentOverlay-hover .cd-commentOverlay-innerWrapper {
+  display: flex;
+}
+
+.cd-commentOverlay-innerWrapper {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  font-size: 14px;
+  display: none;
+  flex-direction: row;
+}
+
+.cd-commentOverlay-gradient {
+  width: 1.5em;
+  display: inline-block;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.cd-commentOverlay-content {
+  display: inline-flex;
+  padding: 0 0.5em;
+  flex-direction: row;
+  pointer-events: all;
 }
 
 .sitedir-rtl.ltr .cd-commentOverlay-content {
@@ -159,33 +131,65 @@
   right: -1px;
 }
 
-.ltr .cd-commentOverlay-innerWrapper {
-  // Fix for Firefox 56
-  right: 0;
-}
-
-.rtl .cd-commentOverlay-innerWrapper {
-  // Fix for Firefox 56
-  left: 0;
-}
-
 .ltr {
+  .cd-commentOverlay-innerWrapper {
+    direction: ltr;
+
+    // Fix for Firefox 56
+    right: 0;
+  }
+
   .cd-commentOverlay-gradient {
-    background-image: linear-gradient(to left, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(to left, var(--cd-comment-hover-background-color), rgba(255, 255, 255, 0));
   }
 
   .cd-commentOverlay-deleted .cd-commentOverlay-gradient {
     background-image: linear-gradient(to left, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
   }
+
+  .cd-commentOverlay {
+    .oo-ui-buttonWidget {
+      margin-right: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-left: 1em;
+    }
+
+    .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+      margin-left: 0;
+    }
+  }
 }
 
 .rtl {
+  .cd-commentOverlay-innerWrapper {
+    direction: rtl;
+
+    // Fix for Firefox 56
+    left: 0;
+  }
+
   .cd-commentOverlay-gradient {
-    background-image: linear-gradient(to right, var(--cd-comment-focused-background-color), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(to right, var(--cd-comment-hover-background-color), rgba(255, 255, 255, 0));
   }
 
   .cd-commentOverlay-deleted .cd-commentOverlay-gradient {
     background-image: linear-gradient(to right, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
+  }
+
+  .cd-commentOverlay {
+    .oo-ui-buttonWidget {
+      margin-left: 0;
+    }
+
+    .cd-commentButton:not(:first-child) {
+      margin-right: 1em;
+    }
+
+    .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+      margin-right: 0;
+    }
   }
 }
 
@@ -219,14 +223,6 @@ body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo
 }
 
 .sitedir-rtl .cd-commentLayersContainer {
-  direction: rtl;
-}
-
-.ltr .cd-commentOverlay-innerWrapper {
-  direction: ltr;
-}
-
-.rtl .cd-commentOverlay-innerWrapper {
   direction: rtl;
 }
 

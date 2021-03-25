@@ -234,7 +234,7 @@ export function setTalkPageCssVariables() {
     '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
     '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
     '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
-    '--cd-comment-focused-background-color': cd.g.COMMENT_FOCUSED_BACKGROUND_COLOR,
+    '--cd-comment-hover-background-color': cd.g.COMMENT_HOVER_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
     '--cd-sidebar-color': sidebarColor,
@@ -660,7 +660,7 @@ function addBackgroundHighlightingCss() {
     backgroundColor: 'var(--cd-comment-new-background-color)',
   });
   cd.g.nanoCss.put(
-    `.cd-commentUnderlay-new.cd-commentUnderlay-focused${underlayPostfix}, ` +
+    `.cd-commentUnderlay-new.cd-commentUnderlay-hover${underlayPostfix}, ` +
     `.cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-content`,
     {
       backgroundColor: 'var(--cd-comment-new-hover-background-color)',
@@ -679,7 +679,7 @@ function addBackgroundHighlightingCss() {
       backgroundColor: 'var(--cd-comment-own-background-color)',
     });
     cd.g.nanoCss.put(
-      '.cd-commentUnderlay-own.cd-commentUnderlay-focused, ' +
+      '.cd-commentUnderlay-own.cd-commentUnderlay-hover, ' +
       '.cd-commentOverlay-own .cd-commentOverlay-content',
       {
         backgroundColor: 'var(--cd-comment-own-hover-background-color)',

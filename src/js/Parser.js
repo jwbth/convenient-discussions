@@ -751,16 +751,16 @@ export default class Parser {
         ['UL', 'DL', 'OL', 'LI', 'DD'].includes(part.node.tagName) &&
 
         /*
-          * The check for 'DD' rescues us here:
+          * The check for 'DD' helps here:
             https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
-            * Complex case where it messes up things:
+            * A complex case where it messes up things:
               https://commons.wikimedia.org/wiki/Commons:Translators'_noticeboard/Archive/2020#202011151417_Ameisenigel
-          * The check for 'DL' rescues us here:
+          * The check for 'DL' helps here:
             https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
             (see the original HTML source)
-          * The check for 'P' rescues us here:
+          * The check for 'P' helps here:
             https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Правила/2019/12#201910270736_S.m.46
-          * The check for "!parts[i + 1]..." rescues us here:
+          * The check for "!parts[i + 1]..." helps here:
             https://ru.wikipedia.org/wiki/Википедия:Технические_запросы/Архив/2019#201912081049_Sunpriat
           * The check for "part.lastStep === 'back'" helps in cases like
             https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
@@ -788,19 +788,25 @@ export default class Parser {
         let current = [part.node];
         let children;
 
-        // With code like this:
-        // * Smth. [signature]
-        // :: Smth. [signature]
-        // ...one comment (preceded by :: in this case) creates its own list tree, not a subtree,
-        // even though it's a reply to a reply. So we dive to the bottom of the hierarchy of nested
-        // lists to get the bottom node (and therefore draw the comment layers more neatly). One of
-        // the most complex tree structures is this:
-        // * Smth. [signature]
-        // :* Smth.
-        // :: Smth. [signature]
-        // (seen here:
-        // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
-        // It has a branchy structure that requires a tricky algorithm to be parsed correctly.
+        /*
+          With code like this:
+
+            * Smth. [signature]
+            :: Smth. [signature]
+
+          one comment (preceded by :: in this case) creates its own list tree, not a subtree,
+          even though it's a reply to a reply. So we dive to the bottom of the hierarchy of nested
+          lists to get the bottom node (and therefore draw the comment layers more neatly). One of
+          the most complex tree structures is this:
+
+            * Smth. [signature]
+            :* Smth.
+            :: Smth. [signature]
+
+          (seen here:
+          https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
+          It has a branchy structure that requires a tricky algorithm to be parsed correctly.
+         */
         do {
           children = current.reduce(
             (arr, element) => arr.concat(Array.from(element[this.context.childElementsProperty])),

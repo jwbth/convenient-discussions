@@ -1072,7 +1072,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       $(document)
         // `mouseover` allows to capture the event when the cursor is not moving but ends up above
         // the element (for example, as a result of scrolling).
-        .on('mousemove mouseover', Comment.highlightFocused)
+        .on('mousemove mouseover', Comment.highlightHovered)
 
         .on('scroll', handleScroll);
       $(window).on('resize orientationchange', handleWindowResize);

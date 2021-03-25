@@ -124,11 +124,11 @@ export default class Comment extends CommentSkeleton {
     this.isTarget = false;
 
     /**
-     * Is the comment currently focused.
+     * Is the comment currently hovered.
      *
      * @type {boolean}
      */
-    this.isFocused = false;
+    this.isHovered = false;
 
     /**
      * Was the comment edited since the previous visit.
@@ -174,9 +174,9 @@ export default class Comment extends CommentSkeleton {
    * @param {Element} element
    */
   bindEvents(element) {
-    element.onmouseenter = this.highlightFocused.bind(this);
-    element.onmouseleave = this.unhighlightFocused.bind(this);
-    element.ontouchstart = this.highlightFocused.bind(this);
+    element.onmouseenter = this.highlightHovered.bind(this);
+    element.onmouseleave = this.unhighlightHovered.bind(this);
+    element.ontouchstart = this.highlightHovered.bind(this);
   }
 
   /**
@@ -709,18 +709,18 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Highlight the comment when it is focused.
+   * Highlight the comment when it is hovered.
    *
    * @param {Event} e
    */
-  highlightFocused(e) {
-    if (this.isFocused || cd.util.isPageOverlayOn()) return;
+  highlightHovered(e) {
+    if (this.isHovered || cd.util.isPageOverlayOn()) return;
 
     if (e && e.type === 'touchstart') {
       cd.comments
-        .filter((comment) => comment.isFocused)
+        .filter((comment) => comment.isHovered)
         .forEach((comment) => {
-          comment.unhighlightFocused();
+          comment.unhighlightHovered();
         });
     }
 
@@ -731,23 +731,23 @@ export default class Comment extends CommentSkeleton {
     // again when the next event fires.
     if (isMoved || !this.underlay) return;
 
-    this.underlay.classList.add('cd-commentUnderlay-focused');
-    this.overlay.classList.add('cd-commentOverlay-focused');
-    this.isFocused = true;
+    this.underlay.classList.add('cd-commentUnderlay-hover');
+    this.overlay.classList.add('cd-commentOverlay-hover');
+    this.isHovered = true;
   }
 
   /**
    * Unhighlight the comment when it has lost focus.
    */
-  unhighlightFocused() {
-    if (!this.isFocused) return;
+  unhighlightHovered() {
+    if (!this.isHovered) return;
 
     this.$backgroundToAnimate?.stop(false, true);
 
-    this.underlay.classList.remove('cd-commentUnderlay-focused');
-    this.overlay.classList.remove('cd-commentOverlay-focused');
+    this.underlay.classList.remove('cd-commentUnderlay-hover');
+    this.overlay.classList.remove('cd-commentOverlay-hover');
     this.overlayInnerWrapper.style.display = '';
-    this.isFocused = false;
+    this.isHovered = false;
   }
 
   /**

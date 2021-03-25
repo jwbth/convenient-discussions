@@ -110,12 +110,12 @@ export default {
   COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f5ebfa',
 
   /**
-   * Background color for focused (hovered) comments.
+   * Background color for hovered comments.
    *
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_FOCUSED_BACKGROUND_COLOR: '#f8f9fa',
+  COMMENT_HOVER_BACKGROUND_COLOR: '#f8f9fa',
 
   /**
    * Background color for deleted comments.
