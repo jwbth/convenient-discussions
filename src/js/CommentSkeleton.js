@@ -194,13 +194,17 @@ export default class CommentSkeleton {
     // appropriate classes.
     const levelElements = this.highlightables.map(this.parser.getLevelsUpTree.bind(this.parser));
 
+    // Use the first and last elements, not all elements, to determine the level to deal with cases
+    // like
+    // https://ru.wikipedia.org/wiki/Википедия:К_удалению/17_марта_2021#Анжуйские_короли_Англии.
+
     /**
      * Comment level. A level is a number representing the number of indentation characters
      * preceding the comment (no indentation means zeroth level).
      *
      * @type {number}
      */
-    this.level = Math.min(...levelElements.map((els) => els.length));
+    this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
 
     for (let i = 0; i < this.level; i++) {
       levelElements.forEach((els) => {
