@@ -358,7 +358,8 @@ export default class Comment extends CommentSkeleton {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(this.highlightables[0].tagName)
+        ['LI', 'DD'].includes(this.highlightables[0].tagName) &&
+        this.highlightables[0].parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
       } else {
