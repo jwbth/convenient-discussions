@@ -107,7 +107,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f5ebfa',
+  COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f5e9fa',
 
   /**
    * Background color for hovered comments.
