@@ -1,4 +1,3 @@
-// Modern replacement for clearfix
 .flow-root() {
   display: flow-root;
 
@@ -8,7 +7,7 @@
 
 .cd-commentForm {
   .flow-root();
-
+  clear: both;
   margin: 0.5em 0;
   font-size: 14px;
 
@@ -37,8 +36,8 @@
   }
 
   .cd-buttons {
-    margin-top: 0.5em;
     .flow-root();
+    margin-top: 0.5em;
   }
 
   .cd-buttons-start {
@@ -197,10 +196,10 @@
 }
 
 .cd-previewArea {
+  .flow-root();
   margin-top: 0.5em;
   padding: 0.5em 0.75em;
   background-color: #f8f9fa;
-  .flow-root();
 
   > .mw-parser-output > *:first-child {
     margin-top: 0;
