@@ -70,9 +70,9 @@ function cleanUpThanks(data) {
  */
 function getCommentPartRect(el) {
   let rect;
-  // In most skins, <ul> tags have markers in the margin, not padding, area, unlike in native
-  // browser styles, so we include margins in the coordinates for them.
-  if (el.tagName === 'UL') {
+  // In most skins, <ul> and <ol> tags have markers in the margin, not padding, area, unlike in
+  // native browser styles, so we include margins in the coordinates for them.
+  if (['UL', 'OL'].includes(el.tagName)) {
     rect = getExtendedRect(el);
     rect.left = rect.outerLeft;
     rect.right = rect.outerRight;
