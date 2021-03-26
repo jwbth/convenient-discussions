@@ -62,6 +62,27 @@ function cleanUpThanks(data) {
 }
 
 /**
+ * Get bounding client rectangle for a comment part.
+ *
+ * @param {Element} el
+ * @returns {object}
+ * @private
+ */
+function getCommentPartRect(el) {
+  let rect;
+  // In most skins, <ul> tags have markers in the margin, not padding, area, unlike in native
+  // browser styles, so we include margins in the coordinates for them.
+  if (el.tagName === 'UL') {
+    rect = getExtendedRect(el);
+    rect.left = rect.outerLeft;
+    rect.right = rect.outerRight;
+  } else {
+    rect = el.getBoundingClientRect();
+  }
+  return rect;
+}
+
+/**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
  * @augments module:CommentSkeleton
@@ -231,13 +252,13 @@ export default class Comment extends CommentSkeleton {
 
     if (this.editForm) return;
 
-    let rectTop = options.rectTop || this.highlightables[0].getBoundingClientRect();
+    let rectTop = options.rectTop || getCommentPartRect(this.highlightables[0]);
     let rectBottom = (
       options.rectBottom ||
       (
         this.elements.length === 1 ?
         rectTop :
-        this.highlightables[this.highlightables.length - 1].getBoundingClientRect()
+        getCommentPartRect(this.highlightables[this.highlightables.length - 1])
       )
     );
 
@@ -276,10 +297,10 @@ export default class Comment extends CommentSkeleton {
           el.style.overflow = 'hidden';
         });
 
-        rectTop = this.highlightables[0].getBoundingClientRect();
+        rectTop = getCommentPartRect(this.highlightables[0]);
         rectBottom = this.elements.length === 1 ?
           rectTop :
-          this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
+          getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
         // If the comment intersects more than one floating block, we better keep `overflow: hidden`
         // to avoid bugs like where there are two floating blocks to the right with different
@@ -621,8 +642,9 @@ export default class Comment extends CommentSkeleton {
    *   bugs).
    * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
    *   moved. If set to false, it is expected that the positions will be updated afterwards.
-   * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results. It may be
-   *   calculated in advance for many elements in one sequence to save time.
+   * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results for floating
+   *   elements from `cd.g.floatingElements`. It may be calculated in advance for many elements in
+   *   one sequence to save time.
    * @returns {?boolean} Was the comment moved.
    */
   configureLayers(options = {}) {
@@ -639,10 +661,10 @@ export default class Comment extends CommentSkeleton {
 
     // FIXME: it is possible that a floating element that is on above in the DOM is below spacially.
     // In this case, rectTop and rectBottom will be swapped.
-    options.rectTop = this.highlightables[0].getBoundingClientRect();
+    options.rectTop = getCommentPartRect(this.highlightables[0]);
     options.rectBottom = this.elements.length === 1 ?
       options.rectTop :
-      this.highlightables[this.highlightables.length - 1].getBoundingClientRect();
+      getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
     options.layersContainerOffset = this.getLayersContainerOffset();
 
     let isMoved = false;

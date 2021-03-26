@@ -434,9 +434,8 @@ export function dealWithLoadingBug(moduleName) {
 }
 
 /**
- * Get the bounding client rectangle of an element, setting top and bottom values including top and
- * bottom margins to the `outerTop` and `outerBottom` properties. The top and bottom margins are
- * cached.
+ * Get the bounding client rectangle of an element, setting values including margins to the
+ * `outerTop`, `outerBottom`, `outerLeft`, and `outerRight` properties. The margins are cached.
  *
  * @param {Element} el
  * @returns {object}
@@ -446,18 +445,22 @@ export function getExtendedRect(el) {
     const style = window.getComputedStyle(el);
     el.convenientDiscussionsMarginTop = parseFloat(style.marginTop);
     el.convenientDiscussionsMarginBottom = parseFloat(style.marginBottom);
+    el.convenientDiscussionsMarginLeft = parseFloat(style.marginLeft);
+    el.convenientDiscussionsMarginRight = parseFloat(style.marginRight);
   }
   const rect = el.getBoundingClientRect();
   const invibile = rect.left === 0 && rect.height === 0;
   return {
-    outerTop: rect.top - (invibile ? 0 : el.convenientDiscussionsMarginTop),
-    outerBottom: rect.bottom + (invibile ? 0 : el.convenientDiscussionsMarginBottom),
     top: rect.top,
-    bottom: rect.top,
+    bottom: rect.bottom,
     left: rect.left,
     right: rect.right,
     width: rect.width,
     height: rect.height,
+    outerTop: rect.top - (invibile ? 0 : el.convenientDiscussionsMarginTop),
+    outerBottom: rect.bottom + (invibile ? 0 : el.convenientDiscussionsMarginBottom),
+    outerLeft: rect.left - (invibile ? 0 : el.convenientDiscussionsMarginLeft),
+    outerRight: rect.right + (invibile ? 0 : el.convenientDiscussionsMarginRight),
   };
 }
 
