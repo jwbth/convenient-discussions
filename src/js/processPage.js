@@ -450,33 +450,33 @@ function connectToAddTopicButtons() {
   $(cd.g.ADD_TOPIC_SELECTOR)
     .filter(function () {
       const $button = $(this);
+      let pageName;
       if ($button.is('a')) {
         const href = $button.attr('href');
         const query = new mw.Uri(href).query;
-        let pageName = query.title;
-        if (!pageName) {
-          return false;
-        }
+        pageName = query.title;
+
+        // There is more than one "title" parameter.
         if (typeof pageName === 'object') {
           pageName = pageName[pageName.length - 1];
         }
-        const page = new Page(pageName);
-        if (page.name !== cd.g.PAGE.name) {
-          return false;
-        }
       } else if ($button.is('input')) {
-        const pageName = $button
+        pageName = $button
           .closest('form')
-          .find('input[name="title"]')
+          .find('input[name="title"][type="hidden"]')
           .val();
-        const page = new Page(pageName);
-        if (page.name !== cd.g.PAGE.name) {
-          return false;
-        }
       } else {
         return false;
       }
-
+      let page;
+      try {
+        page = new Page(pageName);
+      } catch (e) {
+        return false;
+      }
+      if (page.name !== cd.g.PAGE.name) {
+        return false;
+      }
       return true;
     })
     .off('click.cd')
