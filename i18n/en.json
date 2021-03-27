@@ -324,7 +324,7 @@
 
   "error-loaddata": "{{int:convenient-discussions-script-name}}: Couldn't load the data required by the script.",
   "error-needreloadpage": "API error. Please <span class=\"cd-notification-reloadPage\">reload the page</span> and try again.",
-  "error-processpage": "{{int:convenient-discussions-script-name}}: Couldn't process the page.",
+  "error-processpage": "{{int:convenient-discussions-script-name}}: Couldn't process the page. See the details in the JavaScript console (F12 → Console).",
   "error-settings-load": "Couldn't load the settings from the server.",
   "error-settings-save": "Couldn't save the settings to the server.",
   "error-reloadpage": "Couldn't reload the page.",

@@ -303,7 +303,7 @@
 	"move-targetpagecode": "''Перенесено с [[$1]]. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: не удалось загрузить данные, необходимые скрипту.",
 	"error-needreloadpage": "Ошибка API. Пожалуйста, <span class=\"cd-notification-reloadPage\">перезагрузите страницу</span> и попробуйте снова.",
-	"error-processpage": "{{int:convenient-discussions-script-name}}: не удалось обработать страницу.",
+	"error-processpage": "{{int:convenient-discussions-script-name}}: не удалось обработать страницу. Подробности см. в консоли JavaScript (F12 → Консоль).",
 	"error-settings-load": "Не удалось загрузить настройки с сервера.",
 	"error-settings-save": "Не удалось сохранить настройки на сервер.",
 	"error-reloadpage": "Не удалось обновить страницу.",
