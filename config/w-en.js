@@ -67,11 +67,11 @@ export default {
   archivePaths: [
     {
       source: "Wikipedia:Administrators' noticeboard/Incidents",
-      archive: "Wikipedia:Administrators' noticeboard/IncidentArchive"
+      archive: "Wikipedia:Administrators' noticeboard/IncidentArchive",
     },
     {
       source: "Wikipedia:Administrators' noticeboard/Edit warring",
-      archive: "Wikipedia:Administrators' noticeboard/3RRArchive"
+      archive: "Wikipedia:Administrators' noticeboard/3RRArchive",
     },
     /\/Archive/,
   ],
