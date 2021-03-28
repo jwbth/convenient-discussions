@@ -11,6 +11,7 @@
  */
 
 import cd from './cd';
+import { createApi } from './boot';
 import { getMessages } from './util';
 
 const DATE_FORMATS = {
@@ -541,7 +542,7 @@ export function loadSiteData() {
     'colon-separator', 'nextdiff',
   ];
 
-  cd.g.api = cd.g.api || new mw.Api();
+  createApi();
 
   // I hope we won't be scolded too much for making two message requests in parallel.
   const messageRequests = [];

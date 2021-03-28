@@ -17,10 +17,10 @@ import {
   removeDirMarks,
   spacesToUnderlines,
 } from './util';
+import { createApi, initSettings } from './boot';
 import { editWatchedSections, settingsDialog } from './modal';
 import { generateCommentAnchor, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
-import { initSettings } from './boot';
 import { initTimestampParsingTools, loadSiteData } from './siteData';
 
 let serverName;
@@ -43,7 +43,7 @@ let processDiffFirstRun = true;
  * @private
  */
 async function prepare(siteDataRequests) {
-  cd.g.api = cd.g.api || new mw.Api();
+  createApi();
 
   // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
   // error, not letting it be caught by the try/catch block.

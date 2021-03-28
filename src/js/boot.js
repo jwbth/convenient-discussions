@@ -243,6 +243,19 @@ export function setTalkPageCssVariables() {
 }
 
 /**
+ * Set a `mw.Api` instance to `convenientDiscussions.g.api` if it's not already set.
+ */
+export function createApi() {
+  cd.g.api = cd.g.api || new mw.Api({
+    ajax: {
+      headers: {
+        'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+      },
+    },
+  });
+}
+
+/**
  * Initialize a number of the global object properties.
  *
  * @private
@@ -701,7 +714,7 @@ function addBackgroundHighlightingCss() {
  * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
  */
 export async function init(siteDataRequests) {
-  cd.g.api = cd.g.api || new mw.Api();
+  createApi();
   cd.g.worker = new Worker();
 
   await (siteDataRequests || loadSiteData());

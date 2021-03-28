@@ -11,6 +11,7 @@ import lzString from 'lz-string';
 import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
+import { createApi } from './boot';
 import { defined, handleApiReject } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
 
@@ -103,7 +104,7 @@ export function getUserInfo(reuse = false) {
     return cachedUserInfoRequest;
   }
 
-  cd.g.api = cd.g.api || new mw.Api();
+  createApi();
   cachedUserInfoRequest = cd.g.api.post({
     action: 'query',
     meta: 'userinfo',
