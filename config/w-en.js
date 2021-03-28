@@ -68,11 +68,11 @@ export default {
     /\/Archive/,
   ],
 
-  pageWhitelist: [
+  /*pageWhitelist: [
     /^Wikipedia:/,
     /^Help:/,
     /^Template:Did you know nominations\//,
-  ],
+  ],*/
 
   spaceAfterIndentationChars: false,
 
