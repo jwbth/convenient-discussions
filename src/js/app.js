@@ -235,7 +235,7 @@ function setStrings() {
   Object.keys(cd.i18n.en).forEach((name) => {
     const relevantLang = contentStrings.some((contentStringName) => (
       name === contentStringName ||
-      contentStringName.endsWith('-') && name.startsWith(contentStringName)
+      (contentStringName.endsWith('-') && name.startsWith(contentStringName))
     )) ?
       mw.config.get('wgContentLanguage') :
       mw.config.get('wgUserLanguage');
@@ -383,14 +383,14 @@ async function go() {
             await processPage(undefined, siteDataRequests, cachedScrollY);
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
-            removeLoadingOverlay();
             console.error(e);
+            removeLoadingOverlay();
           }
         },
         (e) => {
           mw.notify(cd.s('error-loaddata'), { type: 'error' });
-          removeLoadingOverlay();
           console.error(e);
+          removeLoadingOverlay();
         }
       );
 

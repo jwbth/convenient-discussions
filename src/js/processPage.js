@@ -639,7 +639,7 @@ async function processFragment(keptData) {
   }
 
   if (cd.g.isFirstRun && cd.g.isPageActive && decodedFragment) {
-    const wasTargetFound = (
+    const isTargetFound = (
       comment ||
       cd.config.idleFragments.includes(decodedFragment) ||
       decodedFragment.startsWith('/media/') ||
@@ -649,7 +649,7 @@ async function processFragment(keptData) {
       $(`a[name="${escapedFragment}"]`).length ||
       $(`*[id="${escapedFragment}"]`).length
     );
-    if (!wasTargetFound) {
+    if (!isTargetFound) {
       await notFound(decodedFragment, date);
     }
   }
