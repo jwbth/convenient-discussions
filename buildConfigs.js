@@ -7,8 +7,8 @@ const argv = require('yargs').argv;
 const devSuffix = (argv.dev || process.env.npm_config_dev) ? '-dev' : '';
 
 fs.readdirSync('./config/').forEach((filename) => {
-  const [, name] = filename.match(/^(\w+-\w+)\.js$/) || [];
-  if (name) {
+  const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || [];
+  if (name && name !== 'default') {
     const content = fs.readFileSync(`./config/${filename}`)
       .toString()
       .trim()
