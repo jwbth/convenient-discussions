@@ -259,21 +259,35 @@ function parse() {
       So the HTML is "<dd><div>...</div><dl>...</dl></dd>". A newline also appears before </div>, so
       we need to trim.
      */
-    comment.innerHtml = '';
-    comment.textInnerHtml = '';
-    comment.headingInnerHtml = '';
+    comment.comparedHtml = '';
+    comment.textComparedHtml = '';
+    comment.headingComparedHtml = '';
     comment.elements.forEach((el) => {
-      const innerHtml = el.innerHTML || el.textContent;
-      comment.innerHtml += innerHtml + '\n';
-      if (/^H[1-6]$/.test(el.tagName)) {
-        comment.headingInnerHtml += innerHtml;
+      let comparedHtml;
+      if (el.tagName === 'DIV') {
+        // Workaround the bug where the {{block-small}} output (or any <div> wrapper around the
+        // comment) is treated differently depending on whether there are replies to that comment.
+        // When there are no, a <li>/<dd> element is the only comment part; when there is, the <div>
+        // wrapper element is.
+        el.classList.remove('cd-commentPart', 'cd-commentPart-first', 'cd-commentPart-last');
+        if (!el.getAttribute('class')) {
+          el.removeAttribute('class');
+        }
+        comparedHtml = Object.keys(el.attribs).length ? el.outerHTML : el.innerHTML;
       } else {
-        comment.textInnerHtml += innerHtml + '\n';
+        comparedHtml = el.innerHTML || el.textContent;
+      }
+
+      comment.comparedHtml += comparedHtml + '\n';
+      if (/^H[1-6]$/.test(el.tagName)) {
+        comment.headingComparedHtml += comparedHtml;
+      } else {
+        comment.textComparedHtml += comparedHtml + '\n';
       }
     });
-    comment.innerHtml = comment.innerHtml.trim();
-    comment.textInnerHtml = comment.textInnerHtml.trim();
-    comment.headingInnerHtml = comment.headingInnerHtml.trim();
+    comment.comparedHtml = comment.comparedHtml.trim();
+    comment.textComparedHtml = comment.textComparedHtml.trim();
+    comment.headingComparedHtml = comment.headingComparedHtml.trim();
 
     comment.signatureElement.remove();
     comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();

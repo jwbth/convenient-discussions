@@ -300,8 +300,8 @@ function mapComments(currentComments, otherComments) {
 }
 
 /**
- * Determine if the comment has changed (probably edited) based on the `textInnerHtml` and
- * `headingInnerHtml` properties (the comment may lose its heading because technical comment is
+ * Determine if the comment has changed (probably edited) based on the `textComparedHtml` and
+ * `headingComparedHtml` properties (the comment may lose its heading because technical comment is
  * added between it and the heading).
  *
  * @param {CommentSkeletonLike[]} olderComment
@@ -311,10 +311,10 @@ function mapComments(currentComments, otherComments) {
  */
 function isCommentEdited(olderComment, newerComment) {
   return (
-    newerComment.textInnerHtml !== olderComment.textInnerHtml ||
+    newerComment.textComparedHtml !== olderComment.textComparedHtml ||
     (
-      newerComment.headingInnerHtml &&
-      newerComment.headingInnerHtml !== olderComment.headingInnerHtml
+      newerComment.headingComparedHtml &&
+      newerComment.headingComparedHtml !== olderComment.headingComparedHtml
     )
   );
 }
@@ -335,10 +335,10 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
 
     const oldComment = currentComment.match;
     if (oldComment) {
-      const seenInnerHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.innerHtml;
+      const seenComparedHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.comparedHtml;
       if (
         isCommentEdited(oldComment, currentComment) &&
-        seenInnerHtml !== currentComment.innerHtml
+        seenComparedHtml !== currentComment.comparedHtml
       ) {
         const comment = Comment.getByAnchor(currentComment.anchor);
         if (!comment) return;
@@ -419,13 +419,13 @@ function checkForNewEdits(mappedCurrentComments) {
       }
       if (isCommentEdited(currentComment, newComment)) {
         // The comment may have already been updated previously.
-        if (!comment.comparedHtml || comment.comparedHtml !== newComment.innerHtml) {
+        if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
+          comment.comparedHtml = newComment.comparedHtml;
           const updateSuccess = comment.update(currentComment, newComment);
           const commentsData = [currentComment, newComment];
           comment.markAsEdited('edited', updateSuccess, lastCheckedRevisionId, commentsData);
           isEditMarkUpdated = true;
           events.edited = { updateSuccess };
-          comment.comparedHtml = newComment.innerHtml;
         }
       } else if (comment.isEdited) {
         comment.update(currentComment, newComment);

@@ -907,7 +907,7 @@ export default class Comment extends CommentSkeleton {
       const articleId = mw.config.get('wgArticleId');
       seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
       seenRenderedEdits[articleId][this.anchor] = {
-        innerHtml: this.innerHtml,
+        comparedHtml: this.comparedHtml,
         seenUnixTime: Date.now(),
       };
       saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);

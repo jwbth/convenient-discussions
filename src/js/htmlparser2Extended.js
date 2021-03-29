@@ -271,6 +271,25 @@ Object.defineProperty(Element.prototype, 'classList', {
           });
         },
 
+        remove: (...names) => {
+          cd.debug.startTimer('remove class');
+          names.forEach((name) => {
+            let classAttr = this.getAttribute('class') || '';
+            const index = ` ${classAttr} `.indexOf(` ${name} `);
+            if (index !== -1) {
+              classAttr = classAttr.slice(0, index) + classAttr.slice(index + name.length + 1);
+              classAttr = classAttr.trim();
+              this.setAttribute('class', classAttr);
+              if (this._classList.isMovedFromClassAttr) {
+                this._classList.list.splice(name, this._classList.list.indexOf(name), 1);
+              } else {
+                this._classList.moveFromClassAttr(classAttr);
+              }
+            }
+          });
+          cd.debug.stopTimer('remove class');
+        },
+
         contains: (name) => {
           const classAttr = this.getAttribute('class');
           if (!classAttr) {
