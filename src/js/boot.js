@@ -222,6 +222,7 @@ export function setTalkPageCssVariables() {
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
+    '--cd-comment-hover-background-color': cd.g.COMMENT_HOVER_BACKGROUND_COLOR,
     '--cd-comment-target-marker-color': cd.g.COMMENT_TARGET_MARKER_COLOR,
     '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
     '--cd-comment-target-hover-background-color': cd.g.COMMENT_TARGET_HOVER_BACKGROUND_COLOR,
@@ -234,7 +235,6 @@ export function setTalkPageCssVariables() {
     '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
     '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
     '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
-    '--cd-comment-hover-background-color': cd.g.COMMENT_HOVER_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
     '--cd-sidebar-color': sidebarColor,

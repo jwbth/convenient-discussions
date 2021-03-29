@@ -265,10 +265,10 @@ function parse() {
     comment.elements.forEach((el) => {
       let comparedHtml;
       if (el.tagName === 'DIV') {
-        // Workaround the bug where the {{block-small}} output (or any <div> wrapper around the
+        // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
         // comment) is treated differently depending on whether there are replies to that comment.
-        // When there are no, a <li>/<dd> element is the only comment part; when there is, the <div>
-        // wrapper element is.
+        // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
+        // part; when there is, the <div> wrapper is.
         el.classList.remove('cd-commentPart', 'cd-commentPart-first', 'cd-commentPart-last');
         if (!el.getAttribute('class')) {
           el.removeAttribute('class');
