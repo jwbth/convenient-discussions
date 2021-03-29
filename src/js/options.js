@@ -193,7 +193,7 @@ export async function setSettings(settings) {
   } catch (e) {
     // The site doesn't support global preferences.
     if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
-      setLocalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings));
+      await setLocalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings));
     } else {
       throw e;
     }
