@@ -133,7 +133,7 @@
   "cf-watch": "Watch this page",
   "cf-watchsection-topic": "Watch this topic",
   "cf-watchsection-subsection": "Watch this subsection",
-  "cf-watchsection-tooltip": "Add this section to the watchlist. This affects notifications and bolding in the watchlist",
+  "cf-watchsection-tooltip": "Add this section to the watchlist. This affects notifications and bolding in the watchlist and the table of contents",
   "cf-omitsignature": "Omit signature",
   "cf-delete": "Delete",
 
@@ -293,7 +293,7 @@
   "sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
   "sd-watchonreply": "Watch pages that I comment on",
   "sd-watchsectiononreply": "Watch sections that I comment in",
-  "sd-watchsectiononreply-help": "This affects notifications and bolding in the watchlist.",
+  "sd-watchsectiononreply-help": "This affects notifications and bolding in the watchlist and the table of contents.",
 
   "ewsd-title": "Edit watched sections list",
   "ewsd-save": "Save",
