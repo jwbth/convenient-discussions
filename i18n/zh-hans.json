@@ -3,6 +3,7 @@
 		"authors": [
 			")8",
 			"Hmgrmb",
+			"Lakejason0",
 			"Nadine Siak",
 			"SomeyaMako",
 			"Wuqianye",
@@ -156,7 +157,7 @@
 	"msd-error-editingtargetpage": "不能编辑目标页面。",
 	"msd-error-editingsourcepage": "不能编辑源代码页。您需要手动进行更改。",
 	"msd-bottom": "如果在窗口闲置的时候页面被更新，页面的代码跟之前会有不同。",
-	"error-processpage": "{{int:convenient-discussions-script-name}}： 无法处理页面。",
+	"error-processpage": "{{int:convenient-discussions-script-name}}：无法处理页面。请在JavaScript控制台查看细节（F12 → 控制台）。",
 	"error-settings-load": "无法加载来自服务器的设置。",
 	"error-reloadpage": "无法重新加载页面。",
 	"error-network": "网络错误。",
