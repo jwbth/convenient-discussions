@@ -3,6 +3,7 @@
 		"authors": [
 			"DraconicDark",
 			"Elliot",
+			"FF-11",
 			"FF11",
 			"Gebu",
 			"HajFunk",
@@ -89,7 +90,7 @@
 	"cf-cancel": "Abbrechen",
 	"cf-cancel-short": "Abbrechen",
 	"cf-settings-tooltip": "Bequeme Diskussionseinstellungen",
-	"cf-help-content": "<ul>\n<li>Gib <kbd>$1</kbd> ein und wähle einen Benutzer, um ihn zu [[mw:Special:MyLanguage/Help:Notifications/Mention|erwähnen]].</li>\n<li>Halte die Strg-Taste gedrückt, während du einen Benutzer auswählst, um eine Interpunktion nach dem Namen hinzuzufügen.</li>\n<li>Gib <kbd><nowiki>[[#</nowiki></kbd> ein, um einen Kommentar in diesem Abschnitt zu verlinken.</li>\n<li>Halte die Umschalttaste gedrückt, während du ein Element der automatischen Vervollständigung auswählst, um den angezeigten Text zu ändern (hzum Beispiel <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).</li>\n<li>Halte die Alt-Taste gedrückt, während du ein Element der automatischen Vervollständigung auswählst, um den Text hinter dem Einfügezeichen als angezeigten Text zu verwenden.</li>\n<li>Wenn das Kommentarmenü einen dahinter liegenden Link verdeckt, mache einen langen Klick/Tipp darauf - es wird verschwinden.</li>\n</ul>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — den ausgewählten Text zitieren</li>\n</ul>\n<p>[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Skript-Dokumentation]]</p>",
+	"cf-help-content": "<ul>\n<li>Gib <code>$1</code> ein und wähle einen Benutzer, um ihn zu [[mw:Special:MyLanguage/Help:Notifications/Mention|erwähnen]].</li>\n<li>Halte die Strg-Taste gedrückt, während du einen Benutzer auswählst, um eine Interpunktion nach dem Namen hinzuzufügen.</li>\n<li>Gib <code><nowiki>[[#</nowiki></code> ein, um einen Kommentar in diesem Abschnitt zu verlinken.</li>\n<li>Halte die Umschalt-Taste gedrückt, während du ein Element der automatischen Vervollständigung auswählst, um den angezeigten Text zu ändern (hzum Beispiel <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).</li>\n<li>Halte die Alt-Taste gedrückt, während du ein Element der automatischen Vervollständigung auswählst, um den Text hinter dem Einfügezeichen als angezeigten Text zu verwenden.</li>\n<li>Wenn das Kommentarmenü einen dahinter liegenden Link verdeckt, mache einen langen Klick/Tipp darauf - es wird verschwinden.</li>\n</ul>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — den ausgewählten Text zitieren</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Skript-Dokumentation]]</p>",
 	"cf-strikethrough-tooltip": "Durchstreichen",
 	"cf-strikethrough-placeholder": "Durchgestrichener Text",
 	"cf-code-tooltip": "Code",

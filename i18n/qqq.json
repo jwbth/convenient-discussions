@@ -6,7 +6,8 @@
 			"Jack who built the house",
 			"MuratTheTurkish",
 			"Nike",
-			"Robby"
+			"Robby",
+			"Verdy p"
 		]
 	},
 	"script-name": "Script name. Translate if you have a well-sounding name. '''Add quotation marks if appropriate.'''",
@@ -114,9 +115,9 @@
 	"cf-cancel-short": "Label of the \"Cancel\" button when there is too little horizontal space. It should be a short version (for example, one word instead of two) of the {{msg-wm|Convenient-discussions-cf-cancel}} message if possible.\n{{identical|Cancel}}",
 	"cf-advanced": "Label of the button in the comment form that expands/collapses the \"Advanced\" section (some additional inputs are there).\n\n{{identical|Advanced}}",
 	"cf-settings-tooltip": "Text of the tooltip for the script settings button (with the gear icon) in the comment form.",
-	"cf-help": "{{optional}}\n\nLabel of the button in the comment form that shows the help popup.\n\nSee also: {{msg-wm|Convenient-discussions-cf-help-content}}",
+	"cf-help": "{{optional}}\nLabel of the button in the comment form that shows the help popup.\n\nSee also: {{msg-wm|Convenient-discussions-cf-help-content}}",
 	"cf-help-short": "{{optional}}\n\nLabel of the help button when there is too little horizontal space. It should be a short version (for example, one word instead of two) of the {{msg-wm|Convenient-discussions-cf-help}} message if possible.",
-	"cf-help-content": "Content of the help popup opened by the button labeled {{msg-wm|Convenient-discussions-cf-help}} in the comment form.\n\n$1: the mention trigger character (\"@\" by default).\n\n\"…to add punctiation after the name\" — \"punctuation\" means colon and space in most languages (\": \").",
+	"cf-help-content": "Content of the help popup opened by the button labeled {{msg-wm|Convenient-discussions-cf-help}} in the comment form.\n\n$1: the mention trigger character (\"@\" by default).\n\n\"…to add punctuation after the name\" — \"punctuation\" means colon and space in most languages (\": \").",
 	"cf-strikethrough-tooltip": "Text of the tooltip for the strikethrough button in the editing toolbar.",
 	"cf-strikethrough-placeholder": "Text that appears in the comment input when clicking the strikethrough toolbar button. It is meant to be a placeholder replaced by the text the user inputs.",
 	"cf-code-tooltip": "Text of the tooltip for the code button in the editing toolbar.",
@@ -170,7 +171,6 @@
 	"cf-confirm-close": "Text of the confirmation dialog that pops up when the user is trying to close an ''altered'' comment form.",
 	"cf-confirm-close-yes": "Label of the button in the close confirmation dialog.\n\n{{identical|Close}}",
 	"cf-confirm-close-no": "Label of the button in the close confirmation dialog.\n\n{{identical|Cancel}}",
-	"cf-autocomplete-notemplatedata": "Text of the error notification that can appear when using the autocomplete function for a template.",
 	"cf-autocomplete-commentlinktext": "Text inserted into the comment input as a visible text of a link when linking other comment in the section using the autocomplete function.\n* $1 — author\n* $2 — date",
 	"dn-confirm": "Text of the confirmation message that pop ups on the first launch of the script.",
 	"dn-confirm-yes": "Label of the button in the dialog that suggests the user to switch on desktop notifications.\n\n{{identical|Yes}}",
@@ -271,6 +271,7 @@
 	"sd-signatureprefix-help": "Help text for the input labeled with the {{msg-wm|Convenient-discussions-sd-signatureprefix}} message in the settings dialog.",
 	"sd-modifytoc": "Label of the checkbox in the settings dialog. See also the help text: {{msg-wm|Convenient-discussions-sd-modifytoc-help}}.",
 	"sd-modifytoc-help": "Help text for the checkbox labeled with the {{msg-wm|Convenient-discussions-sd-modifytoc}} message in the settings dialog.",
+	"sd-usebackgroundhighlighting": "Label of the checkbox in the settings dialog.",
 	"sd-usetemplatedata": "Label of the checkbox in the settings dialog.\n\nExplanation: there is an autocomplete function for templates that is activated by typing \"{{\" and the name of a template. If this checkbox is checked, TemplateData would be used to insert the template's parameters into the input.",
 	"sd-usetemplatedata-help": "Help text for the button labeled with the {{msg-wm|Convenient-discussions-sd-usetemplatedata}} message in the script settings dialog.",
 	"sd-watchonreply": "Label of the checkbox in the settings dialog.",
@@ -336,5 +337,6 @@
 	"loading-ellipsis": "Text displayed in various OOUI process dialogs while their content is loading.",
 	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Text of the tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
-	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}"
+	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}",
+	"discussiontools-incompatible": "Text of the notification that appears when the user has the DiscussionTools beta feature enabled."
 }
