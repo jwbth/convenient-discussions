@@ -24,9 +24,7 @@ mw.loader.using([
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator',
-
-    'signature',
+    'colon-separator', 'nextdiff',
   ];
 
   for (let i = 0; i < messageNames.length; i += 50) {
@@ -103,9 +101,10 @@ mw.loader.using([
     const prop = Object.keys(titles)
       .find((prop) => titles[prop][0].getPrefixedText() === page.title);
 
-    // Should always be the case logically
+    // Should always be the case, logically
     if (prop) {
-      titles[prop].push(...page.redirects.map((redirect) => mw.Title.newFromText(redirect.title)));
+      const titlesToAdd = page.redirects.map((redirect) => mw.Title.newFromText(redirect.title));
+      titles[prop].push(...titlesToAdd);
     }
   });
 
@@ -115,11 +114,21 @@ mw.loader.using([
       .concat(titles.unsignedIp || [])
       .map((title) => title.getMainText())
   );
-  config.paragraphTemplates = (
-    titles.paragraph &&
-    titles.paragraph.map((title) => title.getMainText())
-  );
-  config.smallDivTemplate = titles.smallDiv && titles.smallDiv[0].getMainText();
+  config.paragraphTemplates = titles.paragraph
+      ?.map((title) => {
+        let titleText = title.getMainText();
+        return titleText[0].toLowerCase() + titleText.slice(1);
+      })
+      .sort((title1, title2) => {
+        if (title1 === 'pb') {
+          return -1;
+        } else if (title2 === 'pb') {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+  config.smallDivTemplate = titles.smallDiv?.[0].getMainText();
   config.templatesToExclude = (
     (titles.movedFrom || titles.movedTo) &&
     (titles.movedFrom || [])
@@ -143,15 +152,17 @@ mw.loader.using([
 
   const signatureResp = await new mw.Api().post({
     action: 'parse',
-    page: 'Mediawiki:Signature',
+    page: 'MediaWiki:Signature',
     prop: ['text'],
     formatversion: 2,
   });
-  const parsedSignature = signatureResp && signatureResp.parse && signatureResp.parse.text;
-  const $signature = $(parsedSignature);
-  const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
-  if (signatureEnding) {
-    config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding));
+  const parsedSignature = signatureResp?.parse?.text;
+  if (!parsedSignature.includes('{{')) {
+    const $signature = $(parsedSignature);
+    const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
+    if (signatureEnding) {
+      config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding));
+    }
   }
 
   let output = JSON.stringify(config, null, '\t');
