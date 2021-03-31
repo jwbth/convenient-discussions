@@ -391,7 +391,7 @@ export default class Comment extends CommentSkeleton {
 
     const closestList = this.highlightables[0].closest('.cd-commentLevel');
     if (closestList && closestList.tagName === 'OL') {
-      startMargin += cd.g.REGULAR_FONT_SIZE;
+      startMargin += cd.g.REGULAR_FONT_SIZE * 2.2;
     }
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
