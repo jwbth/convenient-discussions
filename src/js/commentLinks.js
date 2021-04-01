@@ -425,18 +425,31 @@ function processWatchlist($content) {
 }
 
 /**
+ * Returns the timezone per user preferences
+ *
+ * @returns {number} timezone offset in minutes
+ * @private
+ */
+function getUserTimezoneOffset() {
+  const timezone = mw.user.options.get('timecorrection');
+  const timezoneParts = timezone?.split('|');
+  return timezoneParts && Number(timezoneParts[1]);
+}
+
+/**
  * Add comment links to a contributions page.
  *
  * @param {JQuery} $content
  * @private
  */
 function processContributions($content) {
-  const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone?.split('|');
-  const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
+  const timezoneOffset = getUserTimezoneOffset();
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
+  if (!list) { // empty contributions list
+    return;
+  }
   const lines = Array.from(list.children);
 
   lines.forEach((line) => {
@@ -497,9 +510,7 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone?.split('|');
-  const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
+  const timezoneOffset = getUserTimezoneOffset();
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
@@ -581,9 +592,7 @@ function processHistory($content) {
 async function processDiff() {
   if (!processDiffFirstRun) return;
 
-  const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone?.split('|');
-  const timezoneOffset = timezoneParts && Number(timezoneParts[1]);
+  const timezoneOffset = getUserTimezoneOffset();
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
