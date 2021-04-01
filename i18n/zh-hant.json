@@ -260,6 +260,7 @@
 	"sd-signatureprefix-help": "會添加在簽名開頭前的文字，如有需要請在開頭<em>添加</em>一個空格。",
 	"sd-modifytoc": "變動目錄",
 	"sd-modifytoc-help": "顯示新意見與段落，並突顯已觀看過的段落。",
+	"sd-usebackgroundhighlighting": "對新的、與由我發布的意見使用背景突顯效果",
 	"sd-usetemplatedata": "在模板自動完成中使用 TemplateData",
 	"sd-usetemplatedata-help": "在挑選來自於自動完成選單的模板時，壓住 Shift 鍵可插入模板的必要參數與建議參數。",
 	"sd-watchonreply": "監視我發表過意見的頁面",
@@ -291,7 +292,7 @@
 	"move-targetpagecode": "''從[[$1]]移動。$2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}：無法載入腳本所需要的資料。",
 	"error-needreloadpage": "API 錯誤。請<span class=\"cd-notification-reloadPage\">重新整理頁面</span>並再次嘗試。",
-	"error-processpage": "{{int:convenient-discussions-script-name}}：無法處理頁面。",
+	"error-processpage": "{{int:convenient-discussions-script-name}}：無法處理頁面。要查看更多資訊請開啟 JavaScript 主控台（按 F12 鍵後 → 在 Console 分頁裡）。",
 	"error-settings-load": "無法載入來自伺服器的設定。",
 	"error-settings-save": "無法儲存設定到伺服器。",
 	"error-reloadpage": "無法重新載入頁面。",
@@ -325,5 +326,6 @@
 	"loading-ellipsis": "載入中…",
 	"addtopic": "新增話題",
 	"addtopicbutton-tooltip": "開啟新分頁在標準頁面上建立新的話題，而不是在 Convenient Discussions",
-	"copy": "複製"
+	"copy": "複製",
+	"discussiontools-incompatible": "Convenient Discussions 與 DiscussionTools 不相容。請在[[Special:Preferences#mw-prefsection-betafeatures|測試功能頁面]]停用 DiscussionTools 以讓 Convenient Discussions 能運作正常。"
 }
