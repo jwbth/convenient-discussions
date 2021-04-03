@@ -427,6 +427,7 @@ export default class Comment extends CommentSkeleton {
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
+    this.line = this.overlay.firstChild;
     this.marker = this.overlay.firstChild.nextSibling;
     this.overlayInnerWrapper = this.overlay.lastChild;
 
@@ -623,8 +624,8 @@ export default class Comment extends CommentSkeleton {
         this.editButton.classList.add('oo-ui-widget-enabled');
       }
     }
-    if (this.highlightables.length > 1 && this.level > 0) {
-      this.overlay.classList.add('cd-commentOverlay-gapped');
+    if (this.isLineGapped) {
+      this.line.classList.add('cd-commentOverlay-line-closingGap');
     }
     this.overlay.classList.toggle('cd-commentOverlay-stretchedStart', this.isStartStretched);
     this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);

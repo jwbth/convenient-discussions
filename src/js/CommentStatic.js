@@ -297,6 +297,7 @@ export default {
   reviewHighlightables() {
     cd.comments.forEach((comment) => {
       comment.reviewHighlightables();
+      comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0;
     });
   },
 };
