@@ -723,10 +723,12 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
     }
   });
 
-  const authors = newComments
-    .map((comment) => comment.author)
-    .filter(unique);
-  await getUserGenders(authors, true);
+  if (cd.g.GENDER_AFFECTS_USER_STRING) {
+    const authors = newComments
+      .map((comment) => comment.author)
+      .filter(unique);
+    await getUserGenders(authors, true);
+  }
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
