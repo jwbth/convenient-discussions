@@ -244,7 +244,8 @@ export function setTalkPageCssVariables() {
 }
 
 /**
- * Set a `mw.Api` instance to `convenientDiscussions.g.api` if it's not already set.
+ * Set a {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance to
+ * `convenientDiscussions.g.api` if it's not already set.
  */
 export function createApi() {
   cd.g.api = cd.g.api || new mw.Api({
@@ -713,7 +714,7 @@ function addBackgroundHighlightingCss() {
 }
 
 /**
- * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed at
+ * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed on
  * the first run.
  *
  * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
@@ -838,11 +839,12 @@ export function removeLoadingOverlay() {
 }
 
 /**
- * Is the loading overlay on. This runs very frequently, so we use the fastest way.
+ * Is the loading overlay on.
  *
  * @returns {boolean}
  */
 export function isLoadingOverlayOn() {
+  // This runs very frequently, so we use the fastest way.
   return Boolean($loadingPopup && $loadingPopup[0] && $loadingPopup[0].style.display === '');
 }
 

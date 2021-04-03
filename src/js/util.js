@@ -12,7 +12,9 @@ let keptScrollPosition = null;
 let keptTocHeight = null;
 
 /**
- * Callback for `Array#filter` to remove duplicated elements from an array.
+ * Callback for {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+ * Array#filter} to remove duplicated elements from an array.
  *
  * @param {*} item
  * @param {number} i
@@ -177,7 +179,9 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to `Array#flat(1)`. That method is not yet supported by major browsers.
+ * Alternative to {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
+ * Array#flat(1)}. That method is not yet supported by major browsers.
  *
  * @param {Array} arr
  * @returns {Array}
@@ -271,7 +275,9 @@ export function getMessages(messages) {
 }
 
 /**
- * `Array#findIndex` analog that looks for the _last_ index.
+ * {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
+ * Array#findIndex} analog that looks for the _last_ index.
  *
  * @param {Array} arr
  * @param {Function} callback
@@ -434,7 +440,7 @@ export function dealWithLoadingBug(moduleName) {
 }
 
 /**
- * Get the bounding client rectangle of an element, setting values including margins to the
+ * Get the bounding client rectangle of an element, setting values that include margins to the
  * `outerTop`, `outerBottom`, `outerLeft`, and `outerRight` properties. The margins are cached.
  *
  * @param {Element} el
@@ -660,8 +666,8 @@ export function keyCombination(e, keyCode, modificators = []) {
 }
 
 /**
- * Get around Firefox 56 and probably some other browsers bug where the caret doesn't appear in the
- * input after focusing.
+ * Get around the Firefox 56 and probably some other browsers bug where the caret doesn't appear in
+ * the input after focusing.
  *
  * @param {OoUiTextInputWidget} input
  */

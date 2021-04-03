@@ -187,6 +187,7 @@ function cleanUpSeenRenderedEdits(data) {
  * Map sections obtained from a revision to the sections present on the page.
  *
  * @param {SectionSkeletonLike[]} sections
+ * @private
  */
 function mapSections(sections) {
   // Reset from the previous run.
@@ -760,6 +761,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
  *
  * @param {object} payload
  * @returns {Promise}
+ * @private
  */
 function runWorkerTask(payload) {
   return new Promise((resolve) => {

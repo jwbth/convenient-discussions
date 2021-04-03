@@ -22,7 +22,8 @@ import { handleScroll } from './eventHandlers';
  */
 export default {
   /**
-   * Remove non-element and non-displayable (style, link) nodes from a jQuery collection.
+   * Remove non-element and also non-displayable (`'STYLE'`, `'LINK'`) nodes from a jQuery
+   * collection.
    *
    * @returns {JQuery}
    * @memberof $.fn

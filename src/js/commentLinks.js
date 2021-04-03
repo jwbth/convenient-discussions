@@ -1,5 +1,5 @@
 /**
- * Module loaded on pages where we need to add comment links to history entries (at minimum).
+ * Module loaded on pages where we add comment links to history entries (sometimes more).
  *
  * @module commentLinks
  */

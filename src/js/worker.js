@@ -92,6 +92,7 @@ function hideElement(el, comment) {
  * @param {object} obj
  * @param {Array} dangerousKeys
  * @returns {object}
+ * @private
  */
 function keepSafeValues(obj, dangerousKeys) {
   const newObj = Object.assign({}, obj);

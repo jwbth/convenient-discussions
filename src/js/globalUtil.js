@@ -21,6 +21,7 @@ export default {
   /**
    * @typedef {object} Callbacks
    * @property {Function} *
+   * @memberof module:cd~convenientDiscussions.util
    */
 
   /**

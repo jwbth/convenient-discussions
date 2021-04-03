@@ -182,7 +182,7 @@ export default class Comment extends CommentSkeleton {
     this.willFlashNewOnSight = false;
 
     /**
-     * Whether the comment (or its signature) is inside a table containing only one comment.
+     * Is the comment (or its signature) inside a table containing only one comment.
      *
      * @type {boolean}
      */
