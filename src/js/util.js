@@ -12,7 +12,9 @@ let keptScrollPosition = null;
 let keptTocHeight = null;
 
 /**
- * Callback for `Array#filter` to remove duplicated elements from an array.
+ * Callback for {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+ * Array#filter} to remove duplicated elements from an array.
  *
  * @param {*} item
  * @param {number} i
@@ -177,7 +179,9 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to `Array#flat(1)`. That method is not yet supported by major browsers.
+ * Alternative to {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
+ * Array#flat(1)}. That method is not yet supported by major browsers.
  *
  * @param {Array} arr
  * @returns {Array}
@@ -271,7 +275,9 @@ export function getMessages(messages) {
 }
 
 /**
- * `Array#findIndex` analog that looks for the _last_ index.
+ * {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
+ * Array#findIndex} analog that looks for the _last_ index.
  *
  * @param {Array} arr
  * @param {Function} callback
@@ -434,7 +440,7 @@ export function dealWithLoadingBug(moduleName) {
 }
 
 /**
- * Get the bounding client rectangle of an element, setting values including margins to the
+ * Get the bounding client rectangle of an element, setting values that include margins to the
  * `outerTop`, `outerBottom`, `outerLeft`, and `outerRight` properties. The margins are cached.
  *
  * @param {Element} el
@@ -449,7 +455,7 @@ export function getExtendedRect(el) {
     el.convenientDiscussionsMarginRight = parseFloat(style.marginRight);
   }
   const rect = el.getBoundingClientRect();
-  const invibile = rect.left === 0 && rect.height === 0;
+  const invibile = getVisibilityByRects(rect);
   return {
     top: rect.top,
     bottom: rect.bottom,
@@ -660,8 +666,8 @@ export function keyCombination(e, keyCode, modificators = []) {
 }
 
 /**
- * Get around Firefox 56 and probably some other browsers bug where the caret doesn't appear in the
- * input after focusing.
+ * Get around the Firefox 56 and probably some other browsers bug where the caret doesn't appear in
+ * the input after focusing.
  *
  * @param {OoUiTextInputWidget} input
  */
@@ -705,4 +711,15 @@ export function removeFromArrayIfPresent(arr, el) {
   if (el !== undefined && arr.includes(el)) {
     arr.splice(arr.indexOf(el), 1);
   }
+}
+
+/**
+ * Given bounding client rectangle(s), determine whether the element is visible.
+ *
+ * @param {...object} rects
+ * @returns {boolean}
+ */
+export function getVisibilityByRects(...rects) {
+  // If the element has 0 as the left position and height, it's probably invisible for some reason.
+  return !rects.some((rect) => rect.left === 0 && rect.height === 0);
 }

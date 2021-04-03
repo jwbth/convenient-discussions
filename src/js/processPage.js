@@ -12,6 +12,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import Parser, { getUserNameFromLink } from './Parser';
 import Section from './Section';
+import Thread from './Thread';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
@@ -537,17 +538,6 @@ function connectToCommentLinks($content) {
 }
 
 /**
- * Highlight comments of the current user.
- *
- * @private
- */
-function highlightOwnComments() {
-  if (!cd.settings.highlightOwnComments) return;
-
-  Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isOwn));
-}
-
-/**
  * Highlight mentions of the current user.
  *
  * @param {JQuery} $content
@@ -947,7 +937,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     parser = new Parser({
       CommentClass: Comment,
       SectionClass: Section,
-      childElementsProperty: 'children',
+      childElementsProp: 'children',
       document,
       follows: (el1, el2) => Boolean(
         el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
@@ -1005,14 +995,17 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
       Comment.reviewHighlightables();
 
-      // Need to generate the gray line to close the gaps between adjacent list item elements. Do it
-      // here, not after the comments parsing, to group all operations requiring reflow together for
-      // performance reasons.
-      const commentsToAddLayers = cd.comments
-        .filter((comment) => comment.highlightables.length > 1 && comment.level > 0);
+      const commentsToAddLayers = cd.comments.filter((comment) => (
+        (cd.settings.highlightOwnComments && comment.isOwn) ||
+
+        // Need to generate the gray line to close the gaps between adjacent list item elements. Do
+        // it here, not after the comments parsing, to group all operations requiring reflow
+        // together for performance reasons.
+        comment.isLineGapped
+      ));
       Comment.configureAndAddLayers(commentsToAddLayers);
 
-      highlightOwnComments();
+      Thread.init();
 
       processFragment(keptData);
     }
@@ -1084,14 +1077,16 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // CSS) of comment position changing unfortunately.
       setInterval(() => {
         commentLayers.redrawIfNecessary();
+        Thread.updateLines();
       }, 1000);
 
       const observer = new MutationObserver((records) => {
-        const areLayers = records
+        const areAllLayers = records
           .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (!areLayers) {
-          commentLayers.redrawIfNecessary();
-        }
+        if (areAllLayers) return;
+
+        commentLayers.redrawIfNecessary();
+        Thread.updateLines();
       });
       observer.observe(cd.g.$content.get(0), {
         attributes: true,

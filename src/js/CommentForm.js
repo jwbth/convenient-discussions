@@ -271,7 +271,7 @@ export default class CommentForm {
      * @typedef {object} Operation
      * @property {string} type Operation type. One of `'load'`, `'preview'`, `'viewChanges'`, and
      *   `'submit'`.
-     * @property {boolean} [affectHeadline=false] Should the headline input be shown as pending.
+     * @property {boolean} [affectHeadline=false] Should the headline input be displayed as pending.
      * @property {boolean} [isClosed] Is the operation closed (settled).
      * @property {boolean} [isDelayed] Is the operation delayed.
      */
@@ -1833,7 +1833,7 @@ export default class CommentForm {
   /**
    * Push the pending status of the form inputs.
    *
-   * @param {boolean} setDisabled Whether to set buttons and inputs disabled.
+   * @param {boolean} setDisabled Whether to set the buttons and inputs disabled.
    * @param {boolean} affectHeadline Should the `pushPending` method be applied to the headline
    *   input.
    * @see
@@ -2029,14 +2029,14 @@ export default class CommentForm {
    * @param {string} options.type Type of the error: `'parse'` for parse errors defined in the
    *   script, `'api'` for MediaWiki API errors, `'network'` for network errors defined in the
    *   script, `'javascript'` for JavaScript errors, `'ui'` for UI errors.
-   * @param {string} [options.code] Code of the error (either `code`, `apiData`, or `message`
-   *   should be specified).
+   * @param {string} [options.code] Code of the error. (Either `code`, `apiData`, or `message`
+   *   should be specified.)
    * @param {object} [options.details] Additional details about the error.
-   * @param {string} [options.apiData] Data object received from the MediaWiki server (either
-   *   `code`, `apiData`, or `message` should be specified).
-   * @param {string} [options.message] Text of the error (either `code`, `apiData`, or `message`
-   *   should be specified).
-   * @param {string} [options.messageType] Message type if not `'error'` (`'notice'` or
+   * @param {object} [options.apiData] Data object received from the MediaWiki server. (Either
+   *   `code`, `apiData`, or `message` should be specified.)
+   * @param {string} [options.message] Text of the error. (Either `code`, `apiData`, or `message`
+   *   should be specified.)
+   * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
    * @param {string} [options.logMessage] Data or text to display in the browser console.
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a
@@ -2050,7 +2050,7 @@ export default class CommentForm {
     details,
     apiData,
     message,
-    messageType,
+    messageType = 'error',
     logMessage,
     cancel = false,
     isRawMessage = false,
@@ -3493,7 +3493,8 @@ export default class CommentForm {
   }
 
   /**
-   * Insert "@" into the comment input, activating the mention autocomplete menu.
+   * Insert the contents of `cd.config.mentionCharacter` (usually `@`) into the comment input,
+   * activating the mention autocomplete menu.
    *
    * @param {boolean} mentionAddressee Don't show the autocomplete menu, just insert a mention of
    *   the addressee to the beginning of the comment input.
@@ -3577,7 +3578,7 @@ export default class CommentForm {
    * @param {string} [options.post=''] Text to insert after the caret/selection.
    * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
    *   post instead of leaving it alone.
-   * @param {string} [options.selection] The selected text. Use if it is out of the input.
+   * @param {string} [options.selection] Selected text. Use if it is outside of the input.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
    */
   encapsulateSelection({

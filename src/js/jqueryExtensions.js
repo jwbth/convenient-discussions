@@ -22,12 +22,13 @@ import { handleScroll } from './eventHandlers';
  */
 export default {
   /**
-   * Remove non-element and non-displayable (style, link) nodes from a jQuery collection.
+   * Remove non-element and also non-displayable (`'STYLE'`, `'LINK'`) nodes from a jQuery
+   * collection.
    *
    * @returns {JQuery}
    * @memberof $.fn
    */
-  cdRemoveNotDisplayableElementNodes: function () {
+  cdRemoveNonElementNodes: function () {
     return this.filter(function () {
       return this.nodeType === Node.ELEMENT_NODE && !['STYLE', 'LINK'].includes(this.tagName);
     });
@@ -46,7 +47,7 @@ export default {
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     cd.g.autoScrollInProgress = true;
 
-    let $elements = this.cdRemoveNotDisplayableElementNodes();
+    let $elements = this.cdRemoveNonElementNodes();
     const offsetFirst = $elements.first().offset();
     const offsetLast = $elements.last().offset();
     if ((offsetFirst.top === 0 || offsetLast.top === 0) && offsetFirst.left === 0) {
@@ -105,7 +106,7 @@ export default {
    * @memberof $.fn
    */
   cdIsInViewport(partially = false) {
-    const $elements = this.cdRemoveNotDisplayableElementNodes();
+    const $elements = this.cdRemoveNonElementNodes();
 
     // Workaround for hidden elements (use cases like checking if the add section form is in the
     // viewport).

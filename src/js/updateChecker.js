@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import Section from './Section';
+import Thread from './Thread';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
@@ -186,6 +187,7 @@ function cleanUpSeenRenderedEdits(data) {
  * Map sections obtained from a revision to the sections present on the page.
  *
  * @param {SectionSkeletonLike[]} sections
+ * @private
  */
 function mapSections(sections) {
   // Reset from the previous run.
@@ -453,9 +455,10 @@ function checkForNewEdits(mappedCurrentComments) {
 
   if (isEditMarkUpdated) {
     // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
-    // layers before them from being updated due to the "stop at the first two unmoved comments"
-    // optimization. So we better just do the whole job here.
+    // layers before them from being updated due to the "stop at the first three unmoved comments"
+    // optimization. So we just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
+    Thread.updateLines();
   }
 
   if (editList.length) {
@@ -723,10 +726,12 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
     }
   });
 
-  const authors = newComments
-    .map((comment) => comment.author)
-    .filter(unique);
-  await getUserGenders(authors, true);
+  if (cd.g.GENDER_AFFECTS_USER_STRING) {
+    const authors = newComments
+      .map((comment) => comment.author)
+      .filter(unique);
+    await getUserGenders(authors, true);
+  }
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
@@ -756,6 +761,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
  *
  * @param {object} payload
  * @returns {Promise}
+ * @private
  */
 function runWorkerTask(payload) {
   return new Promise((resolve) => {

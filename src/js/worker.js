@@ -23,7 +23,7 @@ let firstRun = true;
 const context = {
   CommentClass: CommentSkeleton,
   SectionClass: SectionSkeleton,
-  childElementsProperty: 'childElements',
+  childElementsProp: 'childElements',
   follows: (el1, el2) => el1.follows(el2),
   getAllTextNodes,
   getElementByClassName: (node, className) => {
@@ -92,6 +92,7 @@ function hideElement(el, comment) {
  * @param {object} obj
  * @param {Array} dangerousKeys
  * @returns {object}
+ * @private
  */
 function keepSafeValues(obj, dangerousKeys) {
   const newObj = Object.assign({}, obj);

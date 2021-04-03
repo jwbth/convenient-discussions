@@ -7,7 +7,9 @@
 import cd from './cd';
 
 /**
- * Generalization and simplification of the TreeWalker web API for the normal and worker contexts.
+ * Generalization and simplification of the {@link
+ * https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the normal
+ * and worker contexts.
  */
 export class TreeWalker {
   /**
@@ -156,7 +158,7 @@ export class TreeWalker {
 }
 
 /**
- * Tree walker that walks only on element nodes of the current document.
+ * Tree walker that walks only on element nodes of the current document under `cd.g.rootElement`.
  *
  * @augments module:treeWalker.TreeWalker
  */
@@ -175,8 +177,8 @@ export class ElementsTreeWalker extends TreeWalker {
 }
 
 /**
- * Tree walker that walks on both element and text nodes of the current document and ignores
- * "style" and "link" elements.
+ * Tree walker that walks on both element and text nodes of the current document under
+ * `cd.g.rootElement`.
  *
  * @augments module:treeWalker.TreeWalker
  */

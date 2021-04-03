@@ -48,21 +48,24 @@ export default {
     // comments threshold should be more reliable.
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
-        comment.isNew ||
-        (comment.isOwn && cd.settings.highlightOwnComments) ||
-        comment.isTarget ||
-        comment.isHovered ||
-        comment.isDeleted ||
+        !comment.isCollapsed &&
+        (
+          comment.isNew ||
+          (comment.isOwn && cd.settings.highlightOwnComments) ||
+          comment.isTarget ||
+          comment.isHovered ||
+          comment.isDeleted ||
 
-        // Need to generate the gray line to close the gaps between adjacent list item elements.
-        (comment.highlightables.length > 1 && comment.level > 0)
+          // Need to generate the gray line to close the gaps between adjacent list item elements.
+          comment.isLineGapped
+        )
       );
 
       // Layers that ended up under the bottom of the page content and could be moving the page
       // bottom down.
-      const isUnderBottom = comment.positions && comment.positions.bottom > rootBottom;
+      const isUnderRootBottom = comment.positions && comment.positions.bottom > rootBottom;
 
-      if ((removeUnhighlighted || isUnderBottom) && !shouldBeHighlighted && comment.$underlay) {
+      if ((removeUnhighlighted || isUnderRootBottom) && !shouldBeHighlighted && comment.underlay) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
         floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);

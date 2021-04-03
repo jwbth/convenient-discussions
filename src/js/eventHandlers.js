@@ -6,6 +6,7 @@
 
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import Thread from './Thread';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
@@ -21,6 +22,7 @@ const beforeUnloadHandlers = {};
 export function handleWindowResize() {
   setContentColumnGlobals();
   commentLayers.redrawIfNecessary(true);
+  Thread.updateLines();
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();

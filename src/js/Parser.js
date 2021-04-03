@@ -259,9 +259,7 @@ export default class Parser {
         const isUnsigned = Boolean(unsignedElement);
 
         if (closestNotInlineAncestor) {
-          const cniaChildren = Array.from(
-            closestNotInlineAncestor[this.context.childElementsProperty]
-          );
+          const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
           const treeWalker = new ElementsTreeWalker(timestamp.element);
 
           while (
@@ -554,7 +552,7 @@ export default class Parser {
           )
         ) &&
 
-        previousPart.node[this.context.childElementsProperty][0]?.contains(signatureElement)
+        previousPart.node[this.context.childElementsProp][0]?.contains(signatureElement)
       ) {
         break;
       }
@@ -809,7 +807,7 @@ export default class Parser {
          */
         do {
           children = current.reduce(
-            (arr, element) => arr.concat(Array.from(element[this.context.childElementsProperty])),
+            (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
             []
           );
         } while (
@@ -861,8 +859,7 @@ export default class Parser {
       const el = treeWalker.currentNode;
       if (['UL', 'DL', 'OL'].includes(el.tagName)) {
         if (el.classList.contains('cd-commentLevel')) {
-          const classAttr = el.getAttribute('class');
-          const match = classAttr.match(/cd-commentLevel-(\d+)/);
+          const match = el.getAttribute('class').match(/cd-commentLevel-(\d+)/);
           if (match) {
             levelElements.unshift(...Array(Number(match[1])));
           }

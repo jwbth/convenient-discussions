@@ -1,5 +1,5 @@
 /**
- * Module loaded on pages where we need to add comment links to history entries (at minimum).
+ * Module loaded on pages where we add comment links to history entries (sometimes more).
  *
  * @module commentLinks
  */
@@ -34,7 +34,7 @@ let $wrapperRegularPrototype;
 let $wrapperInterestingPrototype;
 let switchInterestingButton;
 
-let processDiffFirstRun = true;
+let isProcessDiffFirstRun = true;
 
 /**
  * Prepare variables.
@@ -356,13 +356,14 @@ function processWatchlist($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    summary = summary && removeDirMarks(summary);
-    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
+    if (!summary) return;
+
+    summary = removeDirMarks(summary);
+    if (isCommentEdit(summary) || isUndo(summary) || isMoved(summary)) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
-    if (!bytesAddedElement) {
-      return;
-    }
+    if (!bytesAddedElement) return;
+
     if (bytesAddedElement.tagName !== 'STRONG') {
       const bytesAddedMatch = bytesAddedElement.textContent.match(/\d+/);
       const bytesAdded = bytesAddedMatch && Number(bytesAddedMatch[0]);
@@ -420,6 +421,7 @@ function processWatchlist($content) {
 
     const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks');
     if (!destination) return;
+
     destination.parentNode.insertBefore(wrapper, destination.nextSibling);
   });
 }
@@ -470,6 +472,7 @@ function processContributions($content) {
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) return;
+
     if (bytesAddedElement.tagName !== 'STRONG') {
       const bytesAddedMatch = bytesAddedElement.textContent.match(/\d+/);
       const bytesAdded = bytesAddedMatch && Number(bytesAddedMatch[0]);
@@ -478,6 +481,7 @@ function processContributions($content) {
 
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
+
     const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
     if (!date) return;
 
@@ -521,11 +525,14 @@ function processHistory($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    summary = summary && removeDirMarks(summary);
-    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
+    if (!summary) return;
+
+    summary = removeDirMarks(summary);
+    if (isCommentEdit(summary) || isUndo(summary) || isMoved(summary)) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) return;
+
     if (bytesAddedElement.tagName !== 'STRONG') {
       const bytesAddedMatch = bytesAddedElement.textContent.match(/\d+/);
       const bytesAdded = bytesAddedMatch && Number(bytesAddedMatch[0]);
@@ -534,6 +541,7 @@ function processHistory($content) {
 
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
+
     const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
     if (!date) return;
 
@@ -579,6 +587,7 @@ function processHistory($content) {
       destination = separators?.[separators.length - 1];
     }
     if (!destination) return;
+
     destination.parentNode.insertBefore(wrapper, destination.nextSibling);
   });
 }
@@ -590,7 +599,7 @@ function processHistory($content) {
  * @private
  */
 async function processDiff() {
-  if (!processDiffFirstRun) return;
+  if (!isProcessDiffFirstRun) return;
 
   const timezoneOffset = getUserTimezoneOffset();
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
@@ -601,18 +610,18 @@ async function processDiff() {
       if (area.querySelector('.minoredit')) return;
 
       let summary = area.querySelector('.comment')?.textContent;
-      summary = summary && removeDirMarks(summary);
-      if (
-        summary &&
+      if (!summary) return;
 
-        // In diffs, archivation can't be captured by looking at bytes added.
-        (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
-      ) {
+      summary = removeDirMarks(summary);
+
+      // In diffs, archivation can't be captured by looking at bytes added.
+      if (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary)) {
         return;
       }
 
       const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
       if (!dateElement) return;
+
       const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
       if (!date) return;
 
@@ -668,6 +677,7 @@ async function processDiff() {
 
         const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
         if (!destination) return;
+
         destination.appendChild(wrapper);
       }
     });
@@ -680,7 +690,7 @@ async function processDiff() {
    */
   mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
 
-  processDiffFirstRun = false;
+  isProcessDiffFirstRun = false;
 }
 
 /**

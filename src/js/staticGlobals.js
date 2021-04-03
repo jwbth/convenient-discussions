@@ -1,9 +1,9 @@
 /**
  * To-be-properties of the {@link module:cd~convenientDiscussions.g} object. These are those of them
- * that are known from the beginning and can be safely imported in a web worker (that doesn't have
+ * that are known from the beginning and can be safely imported in a web worker (which doesn't have
  * access to the window scope). We assume that there is no point to make these properties subject to
  * change by site administrators although that may be disputable. Some of them are extensible in the
- * config (such as `UNHIGHLIGHTABLE_ELEMENT_CLASSES`).
+ * configuration file (such as `UNHIGHLIGHTABLE_ELEMENT_CLASSES`).
  *
  * @module staticGlobals
  */
@@ -212,8 +212,8 @@ export default {
   ],
 
   /**
-   * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them).
+   * Regexps for strings that should be cut out of comment beginnings (not considered parts of the
+   * comment).
    *
    * @type {RegExp[]}
    * @memberof module:cd~convenientDiscussions.g
@@ -244,9 +244,9 @@ export default {
   ],
 
   /**
-   * Auxiliary property to keep the sign code: "\~\~\~\~". If written as plain text, it gets
-   * transformed into the edit author's signature when saved. Note that the minifier translates
-   * "~\~\\~" and "'\~\~' + '\~'" into "\~\~\~".
+   * Auxiliary property to keep the sign code: `'\~\~\~\~'`. If written as plain text, it gets
+   * transformed into the revision author's signature when saved. Note that the minifier translates
+   * `'~\~\\~'` and `'\~\~' + '\~'` into `'\~\~\~'`.
    *
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g

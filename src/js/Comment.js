@@ -21,6 +21,7 @@ import {
   defined,
   getExtendedRect,
   getFromLocalStorage,
+  getVisibilityByRects,
   handleApiReject,
   isInline,
   saveToLocalStorage,
@@ -181,11 +182,18 @@ export default class Comment extends CommentSkeleton {
     this.willFlashNewOnSight = false;
 
     /**
-     * Whether the comment (or its signature) is inside a table containing only one comment.
+     * Is the comment (or its signature) inside a table containing only one comment.
      *
      * @type {boolean}
      */
     this.isInSingleCommentTable = false;
+
+    /**
+     * Is the comment a part of a collapsed thread.
+     *
+     * @type {boolean}
+     */
+    this.isCollapsed = false;
   }
 
   /**
@@ -262,11 +270,11 @@ export default class Comment extends CommentSkeleton {
       )
     );
 
-    // If the element has 0 as the left position and height, it's probably invisible for some
-    // reason.
-    if (rectTop.left === 0 && rectTop.height === 0) return;
+    if (!getVisibilityByRects(rectTop, rectBottom)) return;
 
-    // Seems like caching this value significantly helps performance in Chrome.
+    // Seems like caching this value significantly helps performance at least in Chrome. But need to
+    // be sure the viewport can't jump higher when it is at the bottom point of the page because
+    // some content becomes occupying less space.
     const scrollY = window.scrollY;
 
     const top = scrollY + rectTop.top;
@@ -279,10 +287,10 @@ export default class Comment extends CommentSkeleton {
       floatingRects.forEach((rect) => {
         const floatingTop = scrollY + rect.outerTop;
         const floatingBottom = scrollY + rect.outerBottom;
-        if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
+        if (bottom > floatingTop && bottom < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }
-        if (bottom > floatingTop && top < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
+        if (bottom > floatingTop && top < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
           intersectsFloatingCount++;
         }
       });
@@ -384,14 +392,14 @@ export default class Comment extends CommentSkeleton {
       ) {
         startMargin = -1;
       } else {
-        startMargin = this.level === 0 ? 8 : cd.g.REGULAR_FONT_SIZE;
+        startMargin = this.level === 0 ? 8 : cd.g.CONTENT_FONT_SIZE;
       }
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
 
     const closestList = this.highlightables[0].closest('.cd-commentLevel');
     if (closestList && closestList.tagName === 'OL') {
-      startMargin += cd.g.REGULAR_FONT_SIZE * 2.2;
+      startMargin += cd.g.CONTENT_FONT_SIZE * 2.2;
     }
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
@@ -428,6 +436,7 @@ export default class Comment extends CommentSkeleton {
     commentLayers.underlays.push(this.underlay);
 
     this.overlay = this.elementPrototypes.overlay.cloneNode(true);
+    this.line = this.overlay.firstChild;
     this.marker = this.overlay.firstChild.nextSibling;
     this.overlayInnerWrapper = this.overlay.lastChild;
 
@@ -624,8 +633,8 @@ export default class Comment extends CommentSkeleton {
         this.editButton.classList.add('oo-ui-widget-enabled');
       }
     }
-    if (this.highlightables.length > 1 && this.level > 0) {
-      this.overlay.classList.add('cd-commentOverlay-gapped');
+    if (this.isLineGapped) {
+      this.line.classList.add('cd-commentOverlay-line-closingGap');
     }
     this.overlay.classList.toggle('cd-commentOverlay-stretchedStart', this.isStartStretched);
     this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);
@@ -665,32 +674,29 @@ export default class Comment extends CommentSkeleton {
     options.rectBottom = this.elements.length === 1 ?
       options.rectTop :
       getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
+
+    if (!getVisibilityByRects(options.rectTop, options.rectBottom)) {
+      return null;
+    }
+
     options.layersContainerOffset = this.getLayersContainerOffset();
 
     let isMoved = false;
     if (this.underlay) {
-      const topDifference = (
-        (window.scrollY + options.rectTop.top) -
-        (options.layersContainerOffset.top + this.layersTop)
+      const topChanged = (
+        window.scrollY + options.rectTop.top !==
+        options.layersContainerOffset.top + this.layersTop
       );
-      const heightDifference = (
-        (options.rectBottom.bottom - options.rectTop.top) -
-        this.layersHeight
-      );
+      const heightChanged = options.rectBottom.bottom - options.rectTop.top !== this.layersHeight;
       isMoved = (
-        topDifference ||
-        heightDifference ||
+        topChanged ||
+        heightChanged ||
         this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
       );
     }
 
     if (!this.underlay || isMoved) {
       Object.assign(this, this.calculateLayersPositions(options));
-    }
-
-    // The comment is invisible.
-    if (this.layersLeft === undefined) {
-      return null;
     }
 
     // Configure the layers only if they were unexistent or the comment position has changed, to
@@ -828,6 +834,8 @@ export default class Comment extends CommentSkeleton {
     this.$marker.css({ opacity: 1 });
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
+      // TODO: disappeared check / animation / unhighlightTimeout stop()
+
       const markerColor = this.$marker.css('background-color');
       const backgroundColor = this.$underlay.css('background-color');
 
@@ -1793,6 +1801,8 @@ export default class Comment extends CommentSkeleton {
     this.overlay.remove();
     this.overlay = null;
     this.$overlay = null;
+
+    this.isHovered = false;
   }
 
   /**

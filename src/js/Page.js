@@ -429,8 +429,7 @@ export default class Page {
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
    * @param {object} customOptions
-   * @returns {number|string} editTimestamp Unix time of the edit or `'nochange'` if nothing has
-   *   changed.
+   * @returns {number|string} Unix time of the edit or `'nochange'` if nothing has changed.
    */
   async edit(customOptions) {
     const defaultOptions = {
