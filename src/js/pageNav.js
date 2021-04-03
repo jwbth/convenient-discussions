@@ -6,7 +6,7 @@
  */
 
 import cd from './cd';
-import { getExtendedRect } from './util';
+import { getExtendedRect, getVisibilityByRects } from './util';
 import { handleScroll } from './eventHandlers';
 
 let currentSection;
@@ -76,7 +76,7 @@ export default {
     if (window.scrollY > cd.g.BODY_SCROLL_PADDING_TOP) {
       cd.sections.some((section) => {
         const rect = getExtendedRect(section.$heading.get(0));
-        if (rect.left === 0 && rect.height === 0) {
+        if (!getVisibilityByRects(rect)) {
           return false;
         } else {
           firstSectionOuterTop = rect.outerTop;
@@ -169,9 +169,7 @@ export default {
       .some((section) => {
         const extendedRect = getExtendedRect(section.$heading.get(0));
 
-        // If the element has 0 as the left position and height, it's probably invisible for some
-        // reason.
-        if (extendedRect.left === 0 && extendedRect.height === 0) return;
+        if (!getVisibilityByRects(extendedRect)) return;
 
         if (extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1) {
           if (currentSection === section) {

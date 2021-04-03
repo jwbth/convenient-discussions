@@ -21,6 +21,7 @@ import {
   defined,
   getExtendedRect,
   getFromLocalStorage,
+  getVisibilityByRects,
   handleApiReject,
   isInline,
   saveToLocalStorage,
@@ -262,9 +263,7 @@ export default class Comment extends CommentSkeleton {
       )
     );
 
-    // If the element has 0 as the left position and height, it's probably invisible for some
-    // reason.
-    if (rectTop.left === 0 && rectTop.height === 0) return;
+    if (!getVisibilityByRects(rectTop, rectBottom)) return;
 
     // Seems like caching this value significantly helps performance in Chrome.
     const scrollY = window.scrollY;
@@ -665,6 +664,11 @@ export default class Comment extends CommentSkeleton {
     options.rectBottom = this.elements.length === 1 ?
       options.rectTop :
       getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
+
+    if (!getVisibilityByRects(options.rectTop, options.rectBottom)) {
+      return null;
+    }
+
     options.layersContainerOffset = this.getLayersContainerOffset();
 
     let isMoved = false;
@@ -686,11 +690,6 @@ export default class Comment extends CommentSkeleton {
 
     if (!this.underlay || isMoved) {
       Object.assign(this, this.calculateLayersPositions(options));
-    }
-
-    // The comment is invisible.
-    if (this.layersLeft === undefined) {
-      return null;
     }
 
     // Configure the layers only if they were unexistent or the comment position has changed, to
