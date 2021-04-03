@@ -55,9 +55,8 @@ class User {
   constructor(name, options = {}) {
     this.name = name;
     this.options = new mw.Map();
-
     Object.keys(options).forEach((name) => {
-      this[name] = options[name];
+      this.options.set(name, options[name]);
     });
   }
 
