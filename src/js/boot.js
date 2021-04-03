@@ -237,6 +237,7 @@ export function setTalkPageCssVariables() {
     '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
+    '--cd-content-font-size': cd.g.CONTENT_FONT_SIZE + 'px',
     '--cd-sidebar-color': sidebarColor,
     '--cd-sidebar-transparent-color': transparentize(sidebarColor),
   });
@@ -267,8 +268,12 @@ function initGlobals() {
   cd.g.USER_GENDER = mw.user.options.get('gender');
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
-  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i
-    .test(cd.sPlain('es-reply-to') + cd.sPlain('es-edit-comment-by') + cd.sPlain('thank-confirm'));
+  cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
+    cd.sPlain('es-reply-to') +
+    cd.sPlain('es-edit-comment-by') +
+    cd.sPlain('thank-confirm') +
+    cd.sPlain('thread-expand')
+  );
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 

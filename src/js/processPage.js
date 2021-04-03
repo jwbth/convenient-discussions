@@ -12,6 +12,7 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import Parser, { getUserNameFromLink } from './Parser';
 import Section from './Section';
+import Thread from './Thread';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
@@ -1004,6 +1005,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       ));
       Comment.configureAndAddLayers(commentsToAddLayers);
 
+      Thread.init();
 
       processFragment(keptData);
     }
@@ -1075,14 +1077,16 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // CSS) of comment position changing unfortunately.
       setInterval(() => {
         commentLayers.redrawIfNecessary();
+        Thread.updateLines();
       }, 1000);
 
       const observer = new MutationObserver((records) => {
-        const areLayers = records
+        const areAllLayers = records
           .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (!areLayers) {
-          commentLayers.redrawIfNecessary();
-        }
+        if (areAllLayers) return;
+
+        commentLayers.redrawIfNecessary();
+        Thread.updateLines();
       });
       observer.observe(cd.g.$content.get(0), {
         attributes: true,

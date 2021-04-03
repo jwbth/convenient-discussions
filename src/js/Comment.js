@@ -187,6 +187,13 @@ export default class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.isInSingleCommentTable = false;
+
+    /**
+     * Is the comment a part of a collapsed thread.
+     *
+     * @type {boolean}
+     */
+    this.isCollapsed = false;
   }
 
   /**
@@ -1793,6 +1800,8 @@ export default class Comment extends CommentSkeleton {
     this.overlay.remove();
     this.overlay = null;
     this.$overlay = null;
+
+    this.isHovered = false;
   }
 
   /**

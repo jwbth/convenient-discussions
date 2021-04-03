@@ -167,6 +167,14 @@ export default class CommentSkeleton {
     }
 
     this.addAttributes();
+
+    /**
+     * Section that the comment is directly in (the section with lowest level / the biggest level
+     * number).
+     *
+     * @type {?Section}
+     */
+    this.section = null;
   }
 
   /**
@@ -214,7 +222,8 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Get the lowest level (= with the biggest level number) section that the comment is in.
+   * Get the section that the comment is directly in (the section with lowest level / the biggest
+   * level number).
    *
    * @returns {?Section}
    * @private

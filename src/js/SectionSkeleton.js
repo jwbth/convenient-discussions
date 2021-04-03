@@ -179,6 +179,10 @@ export default class SectionSkeleton {
      */
     this.commentsInFirstChunk = this.commentsInFirstChunk || this.comments;
 
+    this.commentsInFirstChunk.forEach((comment) => {
+      comment.section = this;
+    });
+
     /**
      * Section elements.
      *

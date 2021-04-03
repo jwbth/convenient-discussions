@@ -15,6 +15,10 @@
   "cm-edit": "Edit",
   "cm-reply": "Reply",
 
+  "thread-tooltip": "Collapse/expand the thread",
+  "thread-expand-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}}), starting from the comment by $2",
+  "thread-expand": "Expand the thread ($1 {{plural:$1|comment|comments}}), starting from the comment by {{gender:$3|}} $2",
+
   "sm-editopeningcomment": "edit opening comment",
   "sm-editopeningcomment-tooltip": "Edit the comment opening the section",
   "sm-addsubsection": "add subsection",
