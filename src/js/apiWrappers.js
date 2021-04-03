@@ -323,7 +323,7 @@ export async function setGlobalOption(name, value) {
  */
 export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
-    .filter((user) => !user.getGender())
+    .filter((user) => user.isRegistered() && !user.getGender())
     .map((user) => user.name);
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;
