@@ -272,7 +272,9 @@ export default class Comment extends CommentSkeleton {
 
     if (!getVisibilityByRects(rectTop, rectBottom)) return;
 
-    // Seems like caching this value significantly helps performance in Chrome.
+    // Seems like caching this value significantly helps performance at least in Chrome. But need to
+    // be sure the viewport can't jump higher when it is at the bottom point of the page because
+    // some content becomes occupying less space.
     const scrollY = window.scrollY;
 
     const top = scrollY + rectTop.top;
@@ -285,10 +287,10 @@ export default class Comment extends CommentSkeleton {
       floatingRects.forEach((rect) => {
         const floatingTop = scrollY + rect.outerTop;
         const floatingBottom = scrollY + rect.outerBottom;
-        if (bottom > floatingTop && bottom < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
+        if (bottom > floatingTop && bottom < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
           bottomIntersectsFloating = true;
         }
-        if (bottom > floatingTop && top < floatingBottom + cd.g.REGULAR_LINE_HEIGHT) {
+        if (bottom > floatingTop && top < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
           intersectsFloatingCount++;
         }
       });
@@ -390,14 +392,14 @@ export default class Comment extends CommentSkeleton {
       ) {
         startMargin = -1;
       } else {
-        startMargin = this.level === 0 ? 8 : cd.g.REGULAR_FONT_SIZE;
+        startMargin = this.level === 0 ? 8 : cd.g.CONTENT_FONT_SIZE;
       }
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
 
     const closestList = this.highlightables[0].closest('.cd-commentLevel');
     if (closestList && closestList.tagName === 'OL') {
-      startMargin += cd.g.REGULAR_FONT_SIZE;
+      startMargin += cd.g.CONTENT_FONT_SIZE;
     }
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
@@ -681,17 +683,14 @@ export default class Comment extends CommentSkeleton {
 
     let isMoved = false;
     if (this.underlay) {
-      const topDifference = (
-        (window.scrollY + options.rectTop.top) -
-        (options.layersContainerOffset.top + this.layersTop)
+      const topChanged = (
+        window.scrollY + options.rectTop.top !==
+        options.layersContainerOffset.top + this.layersTop
       );
-      const heightDifference = (
-        (options.rectBottom.bottom - options.rectTop.top) -
-        this.layersHeight
-      );
+      const heightChanged = options.rectBottom.bottom - options.rectTop.top !== this.layersHeight;
       isMoved = (
-        topDifference ||
-        heightDifference ||
+        topChanged ||
+        heightChanged ||
         this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
       );
     }
@@ -835,6 +834,8 @@ export default class Comment extends CommentSkeleton {
     this.$marker.css({ opacity: 1 });
     clearTimeout(this.unhighlightTimeout);
     this.unhighlightTimeout = setTimeout(() => {
+      // TODO: disappeared check / animation / unhighlightTimeout stop()
+
       const markerColor = this.$marker.css('background-color');
       const backgroundColor = this.$underlay.css('background-color');
 

@@ -63,9 +63,9 @@ export default {
 
       // Layers that ended up under the bottom of the page content and could be moving the page
       // bottom down.
-      const isUnderBottom = comment.positions && comment.positions.bottom > rootBottom;
+      const isUnderRootBottom = comment.positions && comment.positions.bottom > rootBottom;
 
-      if ((removeUnhighlighted || isUnderBottom) && !shouldBeHighlighted && comment.$underlay) {
+      if ((removeUnhighlighted || isUnderRootBottom) && !shouldBeHighlighted && comment.underlay) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
         floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);

@@ -455,8 +455,8 @@ function checkForNewEdits(mappedCurrentComments) {
 
   if (isEditMarkUpdated) {
     // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
-    // layers before them from being updated due to the "stop at the first two unmoved comments"
-    // optimization. So we better just do the whole job here.
+    // layers before them from being updated due to the "stop at the first three unmoved comments"
+    // optimization. So we just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
     Thread.updateLines();
   }

@@ -937,7 +937,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     parser = new Parser({
       CommentClass: Comment,
       SectionClass: Section,
-      childElementsProperty: 'children',
+      childElementsProp: 'children',
       document,
       follows: (el1, el2) => Boolean(
         el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING

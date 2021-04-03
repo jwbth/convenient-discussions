@@ -23,7 +23,7 @@ let firstRun = true;
 const context = {
   CommentClass: CommentSkeleton,
   SectionClass: SectionSkeleton,
-  childElementsProperty: 'childElements',
+  childElementsProp: 'childElements',
   follows: (el1, el2) => el1.follows(el2),
   getAllTextNodes,
   getElementByClassName: (node, className) => {

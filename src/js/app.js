@@ -38,7 +38,7 @@ if (IS_SNIPPET) {
   try {
     config = require(`../../config/${CONFIG_FILE_NAME}`).default;
   } catch (e) {
-    // empty
+    // Empty
   }
 
   const replaceEntities = (s) => (
