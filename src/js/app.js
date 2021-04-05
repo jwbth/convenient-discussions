@@ -351,6 +351,7 @@ async function go() {
         'mediawiki.notification',
         'mediawiki.user',
         'mediawiki.util',
+        'mediawiki.Uri',
         'mediawiki.widgets.visibleLengthLimit',
         'oojs',
         'oojs-ui',

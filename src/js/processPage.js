@@ -311,7 +311,7 @@ function mergeAdjacentCommentLevels(feivData) {
 }
 
 /**
- * Perform some DOM-related taskes after parsing comments.
+ * Perform some DOM-related tasks after parsing comments.
  *
  * @param {object|undefined} feivData
  * @private
