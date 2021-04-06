@@ -1032,7 +1032,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       }
 
       if (isPageFirstParsed) {
-        const alwaysConfirmLeavingPage =  (
+        const alwaysConfirmLeavingPage = (
           mw.user.options.get('editondblclick') ||
           mw.user.options.get('editsectiononrightclick')
         );
@@ -1099,8 +1099,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
-      // Mutation observer doesn't follow all possible cases (for example, initiated with adding new
-      // CSS) of comment position changing unfortunately.
+      // Mutation observer doesn't follow all possible comment position changes (for example,
+      // initiated with adding new CSS) unfortunately.
       setInterval(() => {
         commentLayers.redrawIfNecessary();
         Thread.updateLines();

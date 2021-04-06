@@ -216,7 +216,7 @@ function addFooterLink(enable) {
 }
 
 /**
- * Set the `cd.strings` object values.
+ * Add the script's strings to `mw.messages`;
  *
  * @private
  */
@@ -231,7 +231,7 @@ function setStrings() {
   if (!IS_SNIPPET) {
     require('../../dist/convenientDiscussions-i18n/en.js');
   }
-  cd.strings = {};
+  const strings = {};
   Object.keys(cd.i18n.en).forEach((name) => {
     const relevantLang = contentStrings.some((contentStringName) => (
       name === contentStringName ||
@@ -239,11 +239,11 @@ function setStrings() {
     )) ?
       mw.config.get('wgContentLanguage') :
       mw.config.get('wgUserLanguage');
-    cd.strings[name] = cd.i18n[relevantLang]?.[name] || cd.i18n.en[name];
+    strings[name] = cd.i18n[relevantLang]?.[name] || cd.i18n.en[name];
   });
 
-  Object.keys(cd.strings).forEach((name) => {
-    mw.messages.set(`convenient-discussions-${name}`, cd.strings[name]);
+  Object.keys(strings).forEach((name) => {
+    mw.messages.set(`convenient-discussions-${name}`, strings[name]);
   });
 }
 
@@ -443,7 +443,7 @@ async function go() {
   const isRedLink = /[?&]redlink=1/.test(location.search);
   if (isPageEligible && mw.config.get('wgAction') === 'edit' && isRedLink) {
     const $addTopicLink = $('#ca-addsection a');
-    const href = $addTopicLink.get(0).href;
+    const href = $addTopicLink.prop('href');
     if (href) {
       const url = new URL(href);
       url.searchParams.delete('action');
@@ -590,7 +590,6 @@ async function app() {
 
   if (IS_SNIPPET) {
     cd.config = Object.assign(defaultConfig, config);
-    cd.strings = strings;
   }
 
   /**

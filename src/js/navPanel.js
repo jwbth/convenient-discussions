@@ -169,7 +169,7 @@ export default {
    * Scroll to the previous new comment.
    */
   goToPreviousNewComment() {
-    if (cd.g.autoScrollInProgress) return;
+    if (cd.g.isAutoScrollInProgress) return;
 
     const commentInViewport = Comment.findInViewport('backward');
     if (!commentInViewport) return;
@@ -189,7 +189,7 @@ export default {
    * Scroll to the next new comment.
    */
   goToNextNewComment() {
-    if (cd.g.autoScrollInProgress) return;
+    if (cd.g.isAutoScrollInProgress) return;
 
     const commentInViewport = Comment.findInViewport('forward');
     if (!commentInViewport) return;
@@ -209,7 +209,7 @@ export default {
    * Scroll to the first unseen comment.
    */
   goToFirstUnseenComment() {
-    if (cd.g.autoScrollInProgress) return;
+    if (cd.g.isAutoScrollInProgress) return;
 
     const candidates = cd.comments.filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => !comment.isCollapsed) || candidates[0];
@@ -344,7 +344,7 @@ export default {
    * Update the "Go to the next comment form out of sight" button visibility.
    */
   updateCommentFormButton() {
-    if (cd.g.autoScrollInProgress || !this.isMounted()) return;
+    if (cd.g.isAutoScrollInProgress || !this.isMounted()) return;
 
     if (cd.commentForms.some((commentForm) => !commentForm.$element.cdIsInViewport(true))) {
       this.$commentFormButton.show();

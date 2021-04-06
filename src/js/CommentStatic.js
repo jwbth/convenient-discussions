@@ -237,7 +237,7 @@ export default {
    * @memberof module:Comment
    */
   highlightHovered(e) {
-    if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress || cd.util.isPageOverlayOn()) return;
+    if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || cd.util.isPageOverlayOn()) return;
 
     const isObstructingElementHovered = (
       Array.from(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification'))

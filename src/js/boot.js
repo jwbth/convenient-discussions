@@ -292,8 +292,9 @@ function initGlobals() {
 
   cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
 
+  // Page states
   cd.g.dontHandleScroll = false;
-  cd.g.autoScrollInProgress = false;
+  cd.g.isAutoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
   cd.g.hasPageBeenReloaded = false;
   cd.g.isPageBeingReloaded = false;
@@ -920,7 +921,7 @@ export async function reloadPage(keptData = {}) {
 }
 
 /**
- * Remove sessions older than 30 days.
+ * Remove sessions older than 60 days.
  *
  * @param {object[]} data
  * @returns {object}
@@ -928,17 +929,9 @@ export async function reloadPage(keptData = {}) {
  */
 function cleanUpSessions(data) {
   const newData = Object.assign({}, data);
+  const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
-    // TODO: remove 1 month after release
-    if (newData[key].forms) {
-      newData[key].commentForms = newData[key].forms;
-      delete newData[key].forms;
-    }
-
-    if (
-      !newData[key].commentForms?.length ||
-      newData[key].saveUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000
-    ) {
+    if (!newData[key].commentForms?.length || newData[key].saveUnixTime < Date.now() - interval) {
       delete newData[key];
     }
   });
@@ -989,10 +982,10 @@ export function saveSession(force) {
         };
       });
     const saveUnixTime = Date.now();
-    const commentFormsData = commentForms.length ? { commentForms, saveUnixTime } : {};
+    const data = commentForms.length ? { commentForms, saveUnixTime } : {};
 
     const dataAllPages = getFromLocalStorage('commentForms');
-    dataAllPages[mw.config.get('wgPageName')] = commentFormsData;
+    dataAllPages[mw.config.get('wgPageName')] = data;
     saveToLocalStorage('commentForms', dataAllPages);
 
     saveSessionLastTime = Date.now();

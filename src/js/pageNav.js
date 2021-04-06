@@ -275,10 +275,10 @@ export default {
         backLinkLocation = 'section';
       }
     }
-    cd.g.autoScrollInProgress = true;
+    cd.g.isAutoScrollInProgress = true;
     $('body, html').animate({ scrollTop: offset }, {
       complete: () => {
-        cd.g.autoScrollInProgress = false;
+        cd.g.isAutoScrollInProgress = false;
         handleScroll();
       },
     });

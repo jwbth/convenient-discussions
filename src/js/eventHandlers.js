@@ -112,7 +112,7 @@ export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
   // wait before running, otherwise comments may be registered as seen after a press of Page
   // Down/Page Up.
-  if (cd.g.dontHandleScroll || cd.g.autoScrollInProgress) return;
+  if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress) return;
 
   cd.g.dontHandleScroll = true;
 
@@ -121,7 +121,7 @@ export function handleScroll() {
   setTimeout(() => {
     cd.g.dontHandleScroll = false;
 
-    if (cd.g.autoScrollInProgress) return;
+    if (cd.g.isAutoScrollInProgress) return;
 
     if (cd.g.isPageActive) {
       Comment.registerSeen();

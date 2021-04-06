@@ -45,13 +45,13 @@ export default {
    * @memberof $.fn
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
-    cd.g.autoScrollInProgress = true;
+    cd.g.isAutoScrollInProgress = true;
 
     let $elements = this.cdRemoveNonElementNodes();
     const offsetFirst = $elements.first().offset();
     const offsetLast = $elements.last().offset();
     if ((offsetFirst.top === 0 || offsetLast.top === 0) && offsetFirst.left === 0) {
-      cd.g.autoScrollInProgress = false;
+      cd.g.isAutoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
     }
@@ -70,7 +70,7 @@ export default {
     }
 
     const onComplete = () => {
-      cd.g.autoScrollInProgress = false;
+      cd.g.isAutoScrollInProgress = false;
       handleScroll();
     };
 
@@ -96,7 +96,8 @@ export default {
   },
 
   /**
-   * Check if the element is in the viewport. Hidden elements are checked as if they were visible.
+   * Check if the element is in the viewport. Elements hidden with `display: none` are checked as if
+   * they were visible. Elements inside other hidden elements return `false`.
    *
    * This method is not supposed to be used on element collections that are partially visible,
    * partially hidden, as it can't remember their state.
@@ -138,14 +139,14 @@ export default {
   /**
    * Scroll to the element if it is not in the viewport.
    *
-   * @param {string} [alignment] One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
-   *   `'center'`, or `'bottom'`.
+   * @param {string} [alignment='top'] One of the values that {@link $.fn.cdScrollTo} accepts:
+   *   `'top'`, `'center'`, or `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
    * @returns {JQuery}
    * @memberof $.fn
    */
-  cdScrollIntoView(alignment, smooth = true, callback) {
+  cdScrollIntoView(alignment = 'top', smooth = true, callback) {
     if (this.cdIsInViewport()) {
       if (callback) {
         callback();

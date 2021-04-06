@@ -167,8 +167,8 @@ async function processRevisionsIfNeeded() {
 function cleanUpSeenRenderedEdits(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
-    const currentPage = newData[key];
-    const seenUnixTime = currentPage[Object.keys(currentPage)[0]]?.seenUnixTime;
+    const page = newData[key];
+    const seenUnixTime = page[Object.keys(page)[0]]?.seenUnixTime;
     if (!seenUnixTime || seenUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000) {
       delete newData[key];
     }

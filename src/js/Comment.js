@@ -677,6 +677,10 @@ export default class Comment extends CommentSkeleton {
       getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
     if (!getVisibilityByRects(options.rectTop, options.rectBottom)) {
+      this.layersTop = null;
+      this.layersLeft = null;
+      this.layersWidth = null;
+      this.layersHeight = null;
       return null;
     }
 
@@ -718,7 +722,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add the comment's layers to the DOM.
+   * Add the (already existent) comment's layers to the DOM.
    */
   addLayers() {
     if (!this.underlay) return;
