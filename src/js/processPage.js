@@ -980,59 +980,48 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       connectToAddTopicButtons();
     }
 
-    cd.debug.stopTimer('main code');
-
-    // Operations that need reflow, such as getBoundingClientRect(), go in this section.
-    cd.debug.startTimer('final code and rendering');
-
-    if (articleId) {
-      // Restore the initial viewport position in terms of visible elements which is how the user
-      // sees it.
-      if (feivData) {
-        const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
-        window.scrollTo(0, y);
-      }
-
-      Comment.reviewHighlightables();
-
-      const commentsToAddLayers = cd.comments.filter((comment) => (
-        (cd.settings.highlightOwnComments && comment.isOwn) ||
-
-        // Need to generate the gray line to close the gaps between adjacent list item elements. Do
-        // it here, not after the comments parsing, to group all operations requiring reflow
-        // together for performance reasons.
-        comment.isLineGapped
-      ));
-      Comment.configureAndAddLayers(commentsToAddLayers);
-
-      Thread.init();
-
-      processFragment(keptData);
-    }
-
+    cd.debug.startTimer('mount navPanel');
     if (cd.g.isPageActive) {
       if (isPageFirstParsed) {
         navPanel.mount();
       } else {
         navPanel.reset();
       }
-
-      // New comments highlighting
-      processVisits(visitsRequest, keptData);
-
-      // This should be below processVisits() because of updateChecker.processRevisionsIfNeeded.
-      updateChecker.init(visitsRequest, keptData);
     } else {
       if (navPanel.isMounted()) {
         navPanel.unmount();
       }
     }
+    cd.debug.stopTimer('mount navPanel');
+
+    cd.debug.stopTimer('main code');
+
+    // Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
+    // in this section.
+    cd.debug.startTimer('final code and rendering');
+
+    if (articleId) {
+      // Restore the initial viewport position in terms of visible elements which is how the user
+      // sees it.
+      cd.debug.startTimer('restore scroll position');
+      if (feivData) {
+        const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
+        window.scrollTo(0, y);
+      }
+      cd.debug.stopTimer('restore scroll position');
+
+      cd.debug.startTimer('reviewHighlightables');
+      // Should be above all code that deals with comment highlightable elements and comment levels
+      // as this may alter that.
+      Comment.reviewHighlightables();
+      cd.debug.stopTimer('reviewHighlightables');
+    }
 
     if (isPageCommentable) {
-      // This should be below the viewport position restoration and own comments highlighting as the
-      // latter may rely on elements that are made invisible during the comment forms restoration.
-      // It should also be below the navPanel mount/reset methods as it runs
-      // navPanel.updateCommentFormButton() which depends on the navPanel being mounted.
+      // Should be below the viewport position restoration as it may rely on elements that are made
+      // invisible during the comment forms restoration. Should be below the navPanel mount/reset
+      // methods as it calls navPanel.updateCommentFormButton() which depends on the navigation
+      // panel being mounted.
       restoreCommentForms();
 
       if (Number(new mw.Uri().query.cdaddtopic)) {
@@ -1057,10 +1046,44 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       }
     }
 
+    if (articleId) {
+      // Should better be below the comment form restoration to avoid repositioning of layers after
+      // the addition of comment forms.
+      const commentsToAddLayers = cd.comments.filter((comment) => (
+        (cd.settings.highlightOwnComments && comment.isOwn) ||
+
+        // Need to generate the gray line to close the gaps between adjacent list item elements. Do
+        // it here, not after the comments parsing, to group all operations requiring reflow
+        // together for performance reasons.
+        comment.isLineGapped
+      ));
+      Comment.configureAndAddLayers(commentsToAddLayers);
+
+      // Should be below the comment form restoration for threads to be expanded correctly, and also
+      // to avoid repositioning of threads after the addition of comment forms. Should be below the
+      // viewport position restoration, as some elements may get hidden. Should be Should better be
+      // above comment highlighting (processVisits(), Comment.configureAndAddLayers()) to avoid
+      // spending time on comments in collapsed threads.
+      Thread.init();
+
+      // Should be below Thread.init() as it may want to scroll to a comment in a collapsed thread.
+      processFragment(keptData);
+    }
+
+    if (cd.g.isPageActive) {
+      processVisits(visitsRequest, keptData);
+
+      // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
+      // cd.g.previousVisitUnixTime to be set.
+      updateChecker.init(visitsRequest, keptData);
+    }
+
     // keptData.wasPageCreated? articleId? но resize + adjustLabels ok на 404. resize
     // orientationchange у document + window
     if (isPageFirstParsed) {
+      cd.debug.startTimer('pageNav mount');
       pageNav.mount();
+      cd.debug.stopTimer('pageNav mount');
 
       $(document)
         // `mouseover` allows to capture the event when the cursor is not moving but ends up above
