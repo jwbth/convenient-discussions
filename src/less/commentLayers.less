@@ -229,8 +229,10 @@ body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo
 .cd-commentLayersContainer-parent-relative {
   position: relative;
   z-index: 0;
+}
 
-  // https://en.wikipedia.org/wiki/Template:Discussion_top has "overflow: hidden" in the style
+.mw-parser-output .cd-commentLayersContainer-parent-relative {
+  // https://en.wikipedia.org/wiki/Template:Discussion_top has "overflow: auto" in the style
   // property, which can create a scrollbar in some cases.
   overflow: hidden !important;
 }
