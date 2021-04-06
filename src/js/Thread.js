@@ -9,9 +9,10 @@ import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
 import { getUserGenders } from './apiWrappers';
 import { getVisibilityByRects, removeFromArrayIfPresent } from './util';
+import { handleScroll } from './eventHandlers';
+import { isPageLoading } from './boot';
 
-let isInited = false;
-
+let isInited;
 let threadLinesContainer;
 let treeWalker;
 
@@ -100,7 +101,7 @@ export default class Thread {
   collapse() {
     const range = document.createRange();
     range.setStart(this.startItem, 0);
-    const rangeEnd = this.lastComment.replyForm ?
+    const rangeEnd = this.lastComment.replyForm?.$element.is(':visible') ?
       findItemElement(this.lastComment.replyForm.$element.get(0), this.lastComment.level) :
       this.endItem;
     range.setEnd(rangeEnd, rangeEnd.childNodes.length);
@@ -150,7 +151,12 @@ export default class Thread {
     this.isCollapsed = true;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
+      if (comment.isCollapsed) {
+        i = comment.thread.lastComment.id + 1;
+        continue;
+      }
       comment.isCollapsed = true;
+      comment.collapsedThread = this;
       comment.removeLayers();
     }
 
@@ -182,11 +188,15 @@ export default class Thread {
     this.$collapsedNote = $(`<${$(range.startContainer).prop('tagName')}>`)
       .addClass('cd-thread-collapsedNote')
       .append(button.$element)
-      .insertBefore(this.$collapsedRange.first())
-      .cdScrollIntoView();
+      .insertBefore(this.$collapsedRange.first());
+    if (isInited) {
+      this.$collapsedNote.cdScrollIntoView();
+    }
 
     // For use in Thread#updateLines where we don't use jQuery for performance reasons.
     this.collapsedNote = this.$collapsedNote.get(0);
+
+    handleScroll();
   }
 
   expand() {
@@ -203,13 +213,17 @@ export default class Thread {
     this.isCollapsed = false;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
-      if (comment.thread.isCollapsed) {
-        i = comment.thread.lastComment + 1;
+      if (comment.isCollapsed) {
+        i = comment.thread.lastComment.id + 1;
         continue;
       }
       comment.isCollapsed = false;
+      delete comment.collapsedThread;
+      comment.configureLayers();
     }
     this.$collapsedNote.remove();
+
+    handleScroll();
   }
 
   toggle() {
@@ -218,8 +232,9 @@ export default class Thread {
 
   static init() {
     cd.debug.startTimer('threads');
-    cd.debug.startTimer('traverse');
+    cd.debug.startTimer('threads traverse');
 
+    isInited = false;
     cd.comments
       .filter((comment) => comment.level)
       .forEach((rootComment) => {
@@ -230,26 +245,36 @@ export default class Thread {
         }
       });
 
-    cd.debug.stopTimer('traverse');
+    cd.debug.stopTimer('threads traverse');
 
-    if (threadLinesContainer) {
-      threadLinesContainer.innerHTML = '';
-    } else {
+    cd.debug.startTimer('threads reset');
+    if (cd.g.isFirstRun) {
       threadLinesContainer = document.createElement('div');
       threadLinesContainer.className = 'cd-threadLinesContainer';
+    } else {
+      threadLinesContainer.innerHTML = '';
+    }
+    cd.debug.stopTimer('threads reset');
+    Thread.updateLines();
+    cd.debug.startTimer('threads append container');
+    if (cd.g.isFirstRun) {
       document.body.appendChild(threadLinesContainer);
     }
-    Thread.updateLines();
+    cd.debug.stopTimer('threads append container');
+    cd.debug.startTimer('threads restore');
+    cd.debug.stopTimer('threads restore');
     isInited = true;
 
     cd.debug.stopTimer('threads');
   }
 
   static updateLines() {
+    if (isPageLoading() || (document.hidden && isInited)) return;
+
     cd.debug.startTimer('threads update');
     cd.debug.startTimer('threads calculate');
 
-    const elements = [];
+    const elementsToAdd = [];
     let lastAffectedComment;
     cd.comments
       .slice()
@@ -267,7 +292,7 @@ export default class Thread {
         if (thread.isCollapsed) {
           elementBottom = thread.collapsedNote;
         } else {
-          if (thread.lastComment.replyForm) {
+          if (thread.lastComment.replyForm?.$element.is(':visible')) {
             elementBottom = findItemElement(
               thread.lastComment.replyForm.$element.get(0),
               thread.lastComment.level
@@ -278,6 +303,7 @@ export default class Thread {
         }
 
         const rectBottom = elementBottom.getBoundingClientRect();
+        cd.debug.stopTimer('threads getBoundingClientRect');
 
         if (
           window.scrollY + rectTop.top === thread.lineTop &&
@@ -285,15 +311,11 @@ export default class Thread {
         ) {
           // Find the first comment counting from 0 that is affected by the change of positions and
           // stop at it.
-          if (
+          return (
             !lastAffectedComment ||
             comment.level === 1 ||
             comment.section !== lastAffectedComment.section
-          ) {
-            return true;
-          }
-          cd.debug.stopTimer('threads getBoundingClientRect');
-          return false;
+          );
         }
 
         if (!getVisibilityByRects(rectTop, rectBottom)) {
@@ -308,7 +330,6 @@ export default class Thread {
           return false;
         }
 
-        cd.debug.stopTimer('threads getBoundingClientRect');
         cd.debug.startTimer('threads createElement');
 
         thread.lineLeft = window.scrollX + rectTop.left - cd.g.CONTENT_FONT_SIZE;
@@ -323,10 +344,8 @@ export default class Thread {
         thread.clickArea.style.top = thread.lineTop + 'px';
         thread.clickArea.style.height = thread.lineHeight + 'px';
 
-        if (!isInited) {
-          elements.push(thread.clickArea);
-        } else if (!thread.clickArea.parentNode) {
-          threadLinesContainer.append(thread.clickArea);
+        if (!thread.clickArea.parentNode) {
+          elementsToAdd.push(thread.clickArea);
         }
 
         lastAffectedComment = comment;
@@ -339,8 +358,9 @@ export default class Thread {
     cd.debug.stopTimer('threads calculate');
     cd.debug.startTimer('threads append');
 
-    if (!isInited) {
-      threadLinesContainer.append(...elements);
+    // Faster to add all elements in one batch.
+    if (elementsToAdd.length) {
+      threadLinesContainer.append(...elementsToAdd);
     }
 
     cd.debug.stopTimer('threads append');
