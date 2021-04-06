@@ -1024,8 +1024,11 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // panel being mounted.
       restoreCommentForms();
 
-      if (Number(new mw.Uri().query.cdaddtopic)) {
+      const uri = new mw.Uri();
+      if (Number(uri.query.cdaddtopic)) {
         CommentForm.createAddSectionForm();
+        delete uri.query.cdaddtopic;
+        history.replaceState(history.state, '', uri.toString());
       }
 
       if (isPageFirstParsed) {
