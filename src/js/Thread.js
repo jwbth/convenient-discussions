@@ -213,10 +213,11 @@ export default class Thread {
         roots.push(this.rootComment);
         $el.data('cd-collapsed-thread-root-comments', roots);
       });
+
     this.isCollapsed = true;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
-      if (comment.isCollapsed) {
+      if (comment.isCollapsed && comment.thread !== this) {
         i = comment.thread.lastComment.id + 1;
         continue;
       }
@@ -279,7 +280,7 @@ export default class Thread {
     this.isCollapsed = false;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
-      if (comment.isCollapsed) {
+      if (comment.isCollapsed && comment.thread !== this) {
         i = comment.thread.lastComment.id + 1;
         continue;
       }
@@ -322,7 +323,12 @@ export default class Thread {
       threadLinesContainer.innerHTML = '';
     }
     cd.debug.stopTimer('threads reset');
+
+    // We might not update lines on initialization as it is a relatively costly operation that can
+    // be delayed, but not sure it makes any difference at which point the page is blocked for
+    // interactions.
     Thread.updateLines();
+
     cd.debug.startTimer('threads append container');
     if (cd.g.isFirstRun) {
       document.body.appendChild(threadLinesContainer);
@@ -337,7 +343,7 @@ export default class Thread {
   }
 
   static updateLines() {
-    if (isPageLoading() || (document.hidden && isInited)) return;
+    if ((isPageLoading() || document.hidden) && isInited) return;
 
     cd.debug.startTimer('threads update');
     cd.debug.startTimer('threads calculate');
