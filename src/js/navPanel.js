@@ -11,8 +11,6 @@ import { focusInput, reorderArray } from './util';
 import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
 
-let lastFirstUnseenCommentId;
-
 export default {
   /**
    * Render the navigation panel. This is done when the page is first loaded or created.
@@ -133,8 +131,6 @@ export default {
    * forms are expected to be restored already.)
    */
   reset() {
-    lastFirstUnseenCommentId = null;
-
     this.$refreshButton.empty();
     this.updateRefreshButtonTooltip(0);
     this.$previousButton.hide();
@@ -180,7 +176,7 @@ export default {
 
     // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id, true)
-      .find((comment) => comment.isNew && comment.isInViewport() !== true);
+      .find((comment) => comment.isNew && !comment.isCollapsed && !comment.isInViewport());
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('backward', true);
@@ -200,7 +196,7 @@ export default {
 
     // This will return invisible comments too in which case an error will be displayed.
     const comment = reorderArray(cd.comments, commentInViewport.id)
-      .find((comment) => comment.isNew && comment.isInViewport() !== true);
+      .find((comment) => comment.isNew && !comment.isCollapsed && !comment.isInViewport());
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);
@@ -215,15 +211,15 @@ export default {
   goToFirstUnseenComment() {
     if (cd.g.autoScrollInProgress) return;
 
-    const comment = cd.comments
-      .slice(lastFirstUnseenCommentId || 0)
-      .find((comment) => comment.isSeen === false);
+    const candidates = cd.comments.filter((comment) => comment.isSeen === false);
+    const comment = candidates.find((comment) => !comment.isCollapsed) || candidates[0];
     if (comment) {
-      comment.$elements.cdScrollTo('center', true, () => {
+      comment.scrollToAndHighlightTarget(true, false, () => {
+        // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
+        // a 300ms timeout, so we have a chance to have our callback executed first.
         comment.registerSeen('forward', true);
         this.updateFirstUnseenButton();
       });
-      lastFirstUnseenCommentId = comment.id;
     }
   },
 

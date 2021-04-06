@@ -24,6 +24,7 @@ import {
   getVisibilityByRects,
   handleApiReject,
   isInline,
+  reorderArray,
   saveToLocalStorage,
   unhideText,
 } from './util';
@@ -1177,15 +1178,22 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [smooth=true] Use a smooth animation.
    * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
    *   anchor as a fragment.
+   * @param {Function} [callback] Callback to run after the animation has completed.
    */
-  scrollToAndHighlightTarget(smooth = true, pushState = false) {
+  scrollToAndHighlightTarget(smooth = true, pushState = false, callback) {
     if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }
 
-    const $elements = this.editForm ? this.editForm.$element : this.$elements;
-    $elements.cdScrollIntoView(this.isOpeningSection || this.editForm ? 'top' : 'center', smooth);
-    this.highlightTarget();
+    if (this.isCollapsed) {
+      this.getVisibleCollapsedNote().cdScrollTo('top', smooth, callback);
+      mw.notify(cd.s('navpanel-firstunseen-hidden'));
+    } else {
+      const $elements = this.editForm ? this.editForm.$element : this.$elements;
+      const alignment = this.isOpeningSection || this.editForm ? 'top' : 'center';
+      $elements.cdScrollIntoView(alignment, smooth, callback);
+      this.highlightTarget();
+    }
   }
 
   /**
@@ -1731,8 +1739,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Mark the comment as seen, and also {@link module:Comment#flash flash} comments that are
-   * prescribed to flash.
+   * Mark the comment as seen, and also {@link module:Comment#flash flash} comments that are set to
+   * flash.
    *
    * @param {string} [registerAllInDirection] Mark all comments in the forward (`'forward'`) or
    *   backward (`'backward'`) direction from this comment as seen.
@@ -1755,9 +1763,12 @@ export default class Comment extends CommentSkeleton {
     const makesSenseToRegister = cd.comments
       .some((comment) => comment.isSeen || comment.willFlashNewOnSight);
     if (registerAllInDirection && makesSenseToRegister) {
-      const nextComment = cd.comments[this.id + (registerAllInDirection === 'forward' ? 1 : -1)];
-      if (nextComment?.isInViewport()) {
-        nextComment.registerSeen(registerAllInDirection, highlight);
+      const reverse = registerAllInDirection === 'backward';
+      const change = reverse ? -1 : 1;
+      const nextUncollapsedComment = reorderArray(cd.comments, this.id + change, reverse)
+        .find((comment) => !comment.isCollapsed);
+      if (nextUncollapsedComment?.isInViewport()) {
+        nextUncollapsedComment.registerSeen(registerAllInDirection, highlight);
       }
     }
   }
@@ -2694,6 +2705,26 @@ export default class Comment extends CommentSkeleton {
 
     const $message = $('<div>').append($cleanDiff, $below);
     OO.ui.alert($message, { size: 'larger' });
+  }
+
+  /**
+   * For a comment in a collapsed thread, get the visible collapsed note. (Collapsed threads may be
+   * nested, so there can be a number of invisible collapsed notes for a comment.) If the visible
+   * collapsed note is unavailable, return the top invisible collapsed note.
+   *
+   * @returns {?JQuery}
+   */
+  getVisibleCollapsedNote() {
+    if (!this.isCollapsed) {
+      return null;
+    }
+
+    let $note;
+    for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread) {
+      $note = t.$collapsedNote;
+      if ($note.is(':visible')) break;
+    }
+    return $note;
   }
 }
 
