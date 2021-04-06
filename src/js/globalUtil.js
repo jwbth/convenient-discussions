@@ -7,7 +7,7 @@
  */
 
 import cd from './cd';
-import { isLoadingOverlayOn } from './boot';
+import { isPageLoading } from './boot';
 
 /**
  * Properties of the `convenientDiscussions.util` object. Some of them are declared in {@link
@@ -117,10 +117,7 @@ export default {
    * @memberof module:cd~convenientDiscussions.util
    */
   isPageOverlayOn() {
-    return (
-      document.body.classList.contains('oo-ui-windowManager-modal-active') ||
-      isLoadingOverlayOn()
-    );
+    return document.body.classList.contains('oo-ui-windowManager-modal-active') || isPageLoading();
   },
 
   /**

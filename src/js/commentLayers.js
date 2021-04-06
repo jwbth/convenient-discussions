@@ -6,6 +6,7 @@
 
 import cd from './cd';
 import { getExtendedRect } from './util';
+import { isPageLoading } from './boot';
 
 export default {
   /**
@@ -31,7 +32,7 @@ export default {
    *   unmoved.
    */
   redrawIfNecessary(removeUnhighlighted = false, redrawAll = false) {
-    if (!this.underlays.length || (document.hidden && !redrawAll)) return;
+    if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;

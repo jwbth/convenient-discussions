@@ -17,7 +17,7 @@ import {
   addNotification,
   closeNotifications,
   getNotifications,
-  isLoadingOverlayOn,
+  isPageLoading,
   reloadPage,
 } from './boot';
 import {
@@ -670,7 +670,7 @@ function showDesktopNotification(comments) {
  * @private
  */
 function isPageStillAtRevision(revisionId) {
-  return revisionId === mw.config.get('wgRevisionId') && !isLoadingOverlayOn();
+  return revisionId === mw.config.get('wgRevisionId') && !isPageLoading();
 }
 
 /**

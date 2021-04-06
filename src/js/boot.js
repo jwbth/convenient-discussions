@@ -43,7 +43,6 @@ import { getUserInfo } from './apiWrappers';
 import { initTimestampParsingTools, loadSiteData } from './siteData';
 
 let notificationsData = [];
-let isPageBeingReloaded = false;
 let saveSessionTimeout;
 let saveSessionLastTime;
 
@@ -297,6 +296,7 @@ function initGlobals() {
   cd.g.autoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
   cd.g.hasPageBeenReloaded = false;
+  cd.g.isPageBeingReloaded = false;
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
@@ -839,13 +839,12 @@ export function removeLoadingOverlay() {
 }
 
 /**
- * Is the loading overlay on.
+ * Is page loading (the loading overlay is on).
  *
  * @returns {boolean}
  */
-export function isLoadingOverlayOn() {
-  // This runs very frequently, so we use the fastest way.
-  return Boolean($loadingPopup && $loadingPopup[0] && $loadingPopup[0].style.display === '');
+export function isPageLoading() {
+  return cd.g.isFirstRun || cd.g.isPageBeingReloaded;
 }
 
 /**
@@ -855,8 +854,8 @@ export function isLoadingOverlayOn() {
  * @throws {CdError|Error}
  */
 export async function reloadPage(keptData = {}) {
-  if (isPageBeingReloaded) return;
-  isPageBeingReloaded = true;
+  if (cd.g.isPageBeingReloaded) return;
+  cd.g.isPageBeingReloaded = true;
 
   // In case checkboxes were changed programmatically.
   saveSession();
@@ -881,7 +880,7 @@ export async function reloadPage(keptData = {}) {
     parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
     removeLoadingOverlay();
-    isPageBeingReloaded = false;
+    cd.g.isPageBeingReloaded = false;
     if (keptData.didSubmitCommentForm) {
       throw e;
     } else {
@@ -917,7 +916,7 @@ export async function reloadPage(keptData = {}) {
     restoreScrollPosition(false);
   }
 
-  isPageBeingReloaded = false;
+  cd.g.isPageBeingReloaded = false;
 }
 
 /**

@@ -15,7 +15,7 @@ import util from './globalUtil';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
-  isLoadingOverlayOn,
+  isPageLoading,
   memorizeCssValues,
   removeLoadingOverlay,
   setLoadingOverlay,
@@ -397,7 +397,7 @@ async function go() {
       // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
       // request was aborted"
       setTimeout(() => {
-        if (isLoadingOverlayOn()) {
+        if (isPageLoading()) {
           removeLoadingOverlay();
           console.warn('The loading overlay stays for more than 10 seconds; removing it.');
         }
