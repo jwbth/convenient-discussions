@@ -99,10 +99,10 @@ export default {
    * Check if the element is in the viewport. Hidden elements are checked as if they were visible.
    *
    * This method is not supposed to be used on element collections that are partially visible,
-   * partially hidden, as it can not remember their state.
+   * partially hidden, as it can't remember their state.
    *
-   * @param {boolean} partially Return true even if only a part of the element is in the viewport.
-   * @returns {JQuery}
+   * @param {boolean} partially Return `true` even if only a part of the element is in the viewport.
+   * @returns {?boolean}
    * @memberof $.fn
    */
   cdIsInViewport(partially = false) {
@@ -117,6 +117,11 @@ export default {
 
     const elementTop = $elements.first().offset().top;
     const elementBottom = $elements.last().offset().top + $elements.last().height();
+
+    // The element is hidden.
+    if (elementTop === 0 && elementBottom === 0) {
+      return false;
+    }
 
     if (wasHidden) {
       $elements.hide();
