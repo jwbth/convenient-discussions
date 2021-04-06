@@ -5,10 +5,16 @@
  */
 
 import CdError from './CdError';
+import Comment from './Comment';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
+import {
+  getFromLocalStorage,
+  getVisibilityByRects,
+  removeFromArrayIfPresent,
+  saveToLocalStorage,
+} from './util';
 import { getUserGenders } from './apiWrappers';
-import { getVisibilityByRects, removeFromArrayIfPresent } from './util';
 import { handleScroll } from './eventHandlers';
 import { isPageLoading } from './boot';
 
@@ -43,6 +49,65 @@ function findItemElement(commentPartElement, level) {
   } while (treeWalker.parentNode());
 
   return item;
+}
+
+/**
+ * Save collapsed threads to the local storage.
+ *
+ * @private
+ */
+function saveCollapsedThreads() {
+  const collapsedThreads = cd.comments
+    .filter((comment) => comment.thread?.isCollapsed)
+    .map((comment) => comment.anchor);
+  const saveUnixTime = Date.now();
+  const data = collapsedThreads.length ? { collapsedThreads, saveUnixTime } : {};
+
+  const dataAllPages = getFromLocalStorage('collapsedThreads');
+  dataAllPages[mw.config.get('wgArticleId')] = data;
+  saveToLocalStorage('collapsedThreads', dataAllPages);
+}
+
+/**
+ * Save collapsed threads to the local storage.
+ *
+ * @private
+ */
+function restoreCollapsedThreads() {
+  const dataAllPages = cleanUpCollapsedThreads(getFromLocalStorage('collapsedThreads'));
+  const data = dataAllPages[mw.config.get('wgArticleId')] || {};
+
+  // Reverse order is used for threads to be expanded correctly.
+  data.collapsedThreads?.reverse().forEach((anchor) => {
+    const comment = Comment.getByAnchor(anchor);
+    if (comment?.thread) {
+      comment.thread.collapse();
+    } else {
+      // Remove anchors that have no corresponding comments or threads from data.
+      data.collapsedThreads.splice(data.collapsedThreads.indexOf(anchor), 1);
+    }
+  });
+
+  saveToLocalStorage('collapsedThreads', dataAllPages);
+}
+
+/**
+ * Clean up collapsed threads data older than 60 days.
+ *
+ * @param {object[]} data
+ * @returns {object}
+ * @private
+ */
+function cleanUpCollapsedThreads(data) {
+  const newData = Object.assign({}, data);
+  const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
+  Object.keys(newData).forEach((key) => {
+    const page = newData[key];
+    if (!page.collapsedThreads?.length || page.saveUnixTime < Date.now() - interval) {
+      delete newData[key];
+    }
+  });
+  return newData;
 }
 
 export default class Thread {
@@ -196,6 +261,7 @@ export default class Thread {
     // For use in Thread#updateLines where we don't use jQuery for performance reasons.
     this.collapsedNote = this.$collapsedNote.get(0);
 
+    saveCollapsedThreads();
     handleScroll();
   }
 
@@ -223,6 +289,7 @@ export default class Thread {
     }
     this.$collapsedNote.remove();
 
+    saveCollapsedThreads();
     handleScroll();
   }
 
@@ -262,6 +329,7 @@ export default class Thread {
     }
     cd.debug.stopTimer('threads append container');
     cd.debug.startTimer('threads restore');
+    restoreCollapsedThreads();
     cd.debug.stopTimer('threads restore');
     isInited = true;
 
