@@ -217,7 +217,7 @@ export default class Thread {
     this.isCollapsed = true;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
-      if (comment.isCollapsed && comment.thread !== this) {
+      if (comment.thread?.isCollapsed && comment.thread !== this) {
         i = comment.thread.lastComment.id + 1;
         continue;
       }
@@ -280,7 +280,7 @@ export default class Thread {
     this.isCollapsed = false;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
-      if (comment.isCollapsed && comment.thread !== this) {
+      if (comment.thread?.isCollapsed) {
         i = comment.thread.lastComment.id + 1;
         continue;
       }
