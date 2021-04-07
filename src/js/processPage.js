@@ -896,8 +896,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
          navigation panel is added to such pages, new comments are highlighted.
 
     We need to be accurate regarding which functionality should be turned on on which level. We
-    should also make sure we only add this functionality once. The "isPageFirstParsed" variable is
-    used to reflect the run at which the page is parsed for the first time.
+    should also make sure we only add this functionality once. The "cd.g.isPageFirstParsed" property
+    is used to reflect the run at which the page is parsed for the first time.
    */
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
@@ -964,7 +964,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   );
 
   const isPageCommentable = cd.g.isPageActive || !articleId;
-  const isPageFirstParsed = cd.g.isFirstRun || keptData.wasPageCreated;
+  cd.g.isPageFirstParsed = cd.g.isFirstRun || keptData.wasPageCreated;
 
   if (isLikelyTalkPage) {
     if (articleId) {
@@ -982,7 +982,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
     cd.debug.startTimer('mount navPanel');
     if (cd.g.isPageActive) {
-      if (isPageFirstParsed) {
+      if (cd.g.isPageFirstParsed) {
         navPanel.mount();
       } else {
         navPanel.reset();
@@ -1031,7 +1031,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
         history.replaceState(history.state, '', uri.toString());
       }
 
-      if (isPageFirstParsed) {
+      if (cd.g.isPageFirstParsed) {
         const alwaysConfirmLeavingPage = (
           mw.user.options.get('editondblclick') ||
           mw.user.options.get('editsectiononrightclick')
@@ -1083,7 +1083,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
     // keptData.wasPageCreated? articleId? но resize + adjustLabels ok на 404. resize
     // orientationchange у document + window
-    if (isPageFirstParsed) {
+    if (cd.g.isPageFirstParsed) {
       cd.debug.startTimer('pageNav mount');
       pageNav.mount();
       cd.debug.stopTimer('pageNav mount');
@@ -1167,6 +1167,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   }
 
   cd.g.isFirstRun = false;
+  cd.g.isPageFirstParsed = false;
 
   cd.debug.stopTimer('total time');
   debugLog();

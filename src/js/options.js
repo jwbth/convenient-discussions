@@ -217,11 +217,10 @@ export async function setSettings(settings) {
  * @returns {GetVisitsReturn}
  */
 export async function getVisits(reuse = false) {
-  const visits = await (
-    cd.g.isFirstRun && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?
+  const promise = cd.g.isPageFirstParsed && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?
     Promise.resolve({}) :
-    getUserInfo(reuse).then((options) => options.visits)
-  );
+    getUserInfo(reuse).then((options) => options.visits);
+  const visits = await promise;
   const articleId = mw.config.get('wgArticleId');
   let currentPageVisits;
 
@@ -301,11 +300,11 @@ export async function setVisits(visits) {
  *   response).
  */
 export async function getWatchedSections(reuse = false, keptData = {}) {
-  const watchedSections = await (
-    cd.g.isFirstRun && mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null ?
+  const isOptionUnset = mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null;
+  const promise = cd.g.isPageFirstParsed && isOptionUnset ?
     Promise.resolve({}) :
-    getUserInfo(reuse).then((options) => options.watchedSections)
-  );
+    getUserInfo(reuse).then((options) => options.watchedSections);
+  const watchedSections = await promise;
 
   const articleId = mw.config.get('wgArticleId');
   let currentPageWatchedSections;

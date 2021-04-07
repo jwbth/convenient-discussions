@@ -316,7 +316,7 @@ export default class Thread {
     cd.debug.stopTimer('threads traverse');
 
     cd.debug.startTimer('threads reset');
-    if (cd.g.isFirstRun) {
+    if (cd.g.isPageFirstParsed) {
       threadLinesContainer = document.createElement('div');
       threadLinesContainer.className = 'cd-threadLinesContainer';
     } else {
@@ -330,7 +330,7 @@ export default class Thread {
     Thread.updateLines();
 
     cd.debug.startTimer('threads append container');
-    if (cd.g.isFirstRun) {
+    if (cd.g.isPageFirstParsed) {
       document.body.appendChild(threadLinesContainer);
     }
     cd.debug.stopTimer('threads append container');
