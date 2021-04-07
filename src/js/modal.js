@@ -416,6 +416,12 @@ export async function settingsDialog() {
       label: cd.s('sd-highlightowncomments'),
     });
 
+    [this.localTimeCommentsField, this.localTimeCommentsCheckbox] = checkboxField({
+      value: 'localTimeComments',
+      selected: settings.localTimeComments,
+      label: cd.s('sd-localtimecomments')
+    });
+
     const insertButtonsSelected = settings.insertButtons
       .map((button) => Array.isArray(button) ? button.join(';') : button);
     this.insertButtonsMultiselect = new OO.ui.TagMultiselectWidget({
@@ -531,6 +537,7 @@ export async function settingsDialog() {
       choose: 'changeDesktopNotifications',
     });
     this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateStates' });
+    this.localTimeCommentsCheckbox.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
@@ -566,6 +573,7 @@ export async function settingsDialog() {
       GeneralPageLayout.super.call(this, name, config);
       this.$element.append([
         dialog.highlightOwnCommentsField.$element,
+        dialog.localTimeCommentsField.$element,
         dialog.useBackgroundHighlightingField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
@@ -668,6 +676,7 @@ export async function settingsDialog() {
         'unknown'
       ),
       highlightOwnComments: this.highlightOwnCommentsCheckbox.isSelected(),
+      localTimeComments: this.localTimeCommentsCheckbox.isSelected(),
       insertButtons: this.processInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),

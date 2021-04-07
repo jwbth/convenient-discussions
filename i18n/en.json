@@ -276,6 +276,7 @@
   "sd-insertbuttons": "Text insert buttons",
   "sd-insertbuttons-multiselect-placeholder": "Add a button",
   "sd-insertbuttons-help": "Use <code>+</code> to specify a place where the caret should be put after inserting the text; for example, <code><nowiki>{{+}}</nowiki></code>. Use <code>;</code> to specify displayed text if you want it to be different from the one inserted; for example, <code><nowiki><code>+</code>;<code /></nowiki></code>. Use <code><nowiki>\\</nowiki></code> before the aforementioned characters to insert them as is; for example, <code><nowiki>2\\+2</nowiki></code>. The buttons can be dragged and dropped.",
+  "sd-localtimecomments": "Show comment timestamps in my system time zone",
   "sd-notifications": "Ordinary notifications",
   "sd-notifications-radio-all": "Notify me about replies to my comments and comments in sections that I watch",
   "sd-notifications-radio-tome": "Notify me about replies to my comments only",

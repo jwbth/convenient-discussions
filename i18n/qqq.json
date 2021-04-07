@@ -259,6 +259,7 @@
 	"sd-insertbuttons": "Label of the [https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#demo-section-tagMultiselect tag multiselect input] in the settings dialog.",
 	"sd-insertbuttons-multiselect-placeholder": "Placeholder of the tag multiselect input labeled with the {{msg-wm|Convenient-discussions-sd-insertbuttons}} message in the settings dialog.",
 	"sd-insertbuttons-help": "Help text for the tag multiselect input labeled with the {{msg-wm|Convenient-discussions-sd-insertbuttons}} message in the settings dialog.\n\nThis text explains the feature that works in a similar way to [[mw:MediaWiki:Edittools]] (the <nowiki><charinsert></nowiki> tag).",
+	"sd-localtimecomments": "Label of the checkbox in the settings dialog",
 	"sd-notifications": "Label of the radio select in the settings dialog.",
 	"sd-notifications-radio-all": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-notifications}} message in the settings dialog.",
 	"sd-notifications-radio-tome": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-notifications}} message in the settings dialog.",

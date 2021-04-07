@@ -88,6 +88,7 @@ export async function initSettings() {
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
     highlightOwnComments: true,
+    localTimeComments: false,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notificationsBlacklist: [],

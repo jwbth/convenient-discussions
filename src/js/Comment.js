@@ -38,6 +38,7 @@ import {
 } from './wikitext';
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
+import {formatDate} from "./timestamp";
 
 let thanks;
 
@@ -122,6 +123,8 @@ export default class Comment extends CommentSkeleton {
      * @type {JQuery}
      */
     this.$timestamp = $(signature.timestampElement);
+
+    this.localizeTimestamp();
 
     /**
      * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
@@ -231,6 +234,23 @@ export default class Comment extends CommentSkeleton {
         }
       }
     }
+  }
+
+  /**
+   * Turn the timestamp in comments to the user's local time. The original timestamp is
+   * retained in the title attribute, displayed as a tooltip on hover.
+   */
+  localizeTimestamp() {
+    if (!cd.settings.localTimeComments) {
+      return;
+    }
+    let modifiedDate = new Date(this.date.getTime());
+    modifiedDate.setMinutes(modifiedDate.getMinutes() - modifiedDate.getTimezoneOffset());
+    let localTs = formatDate(modifiedDate);
+    let offset = this.date.getTimezoneOffset() / 60; // not necessarily an integer
+    let sign = offset > 0 ? '-' : '+';
+    this.$timestamp.attr('title', this.$timestamp.text());
+    this.$timestamp.text(localTs + ` (UTC${sign}${Math.abs(offset)})`);
   }
 
   /**
