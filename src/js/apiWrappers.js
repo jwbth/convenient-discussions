@@ -310,7 +310,16 @@ export async function setLocalOption(name, value) {
  * @throws {CdError}
  */
 export async function setGlobalOption(name, value) {
-  await setOption(name, value, 'globalpreferences');
+  try {
+    await setOption(name, value, 'globalpreferences');
+  } catch (e) {
+    // The site doesn't support global preferences.
+    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
+      await setLocalOption(name, value);
+    } else {
+      throw e;
+    }
+  }
 }
 
 /**
