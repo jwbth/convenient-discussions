@@ -32,13 +32,13 @@ export function makeBackgroundRequest(params, method = 'post') {
     cd.g.api[method](params, {
       success: (resp) => {
         if (resp.error) {
-          reject('api', resp);
+          reject(['api', resp]);
         } else {
           resolve(resp);
         }
       },
       error: (jqXHR, textStatus) => {
-        reject('http', textStatus);
+        reject(['http', textStatus]);
       },
     });
   });
