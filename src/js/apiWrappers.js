@@ -310,6 +310,9 @@ export async function setLocalOption(name, value) {
  * @throws {CdError}
  */
 export async function setGlobalOption(name, value) {
+  if (!cd.config.useGlobalPreferences) {
+    return;
+  }
   try {
     await setOption(name, value, 'globalpreferences');
   } catch (e) {

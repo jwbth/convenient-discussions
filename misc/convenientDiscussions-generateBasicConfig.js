@@ -47,7 +47,7 @@ mw.loader.using([
   const siteInfoResp = await api.get({
     action: 'query',
     meta: 'siteinfo',
-    siprop: ['specialpagealiases', 'general'],
+    siprop: ['specialpagealiases', 'general', 'extensions'],
   });
   siteInfoResp.query.specialpagealiases.some((alias) => {
     if (alias.realname === 'Contributions') {
@@ -56,6 +56,7 @@ mw.loader.using([
     }
   });
   config.localTimezoneOffset = siteInfoResp.query.general.timeoffset;
+  config.useGlobalPreferences = !!siteInfoResp.query.extensions.find(e => e.name === 'GlobalPreferences');
 
   const idsToProps = {
     Q5573785: 'unsigned',
