@@ -71,7 +71,9 @@ mw.loader.using([
     Q12109489: 'closedEnd',
   };
 
-  const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php');
+  const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php', {
+    anonymous: true
+  });
   const dbName = mw.config.get('wgDBname');
   const wikidataData = (await foreignApi.get({
     action: 'wbgetentities',
@@ -96,18 +98,21 @@ mw.loader.using([
     rdlimit: 500,
     formatversion: 2,
   });
-  redirectsResp.query.pages.forEach((page) => {
-    if (!page.redirects) return;
 
-    const prop = Object.keys(titles)
-      .find((prop) => titles[prop][0].getPrefixedText() === page.title);
+  if (redirectsResp.query?.pages) {
+    redirectsResp.query.pages.forEach((page) => {
+      if (!page.redirects) return;
 
-    // Should always be the case, logically
-    if (prop) {
-      const titlesToAdd = page.redirects.map((redirect) => mw.Title.newFromText(redirect.title));
-      titles[prop].push(...titlesToAdd);
-    }
-  });
+      const prop = Object.keys(titles)
+          .find((prop) => titles[prop][0].getPrefixedText() === page.title);
+
+      // Should always be the case, logically
+      if (prop) {
+        const titlesToAdd = page.redirects.map((redirect) => mw.Title.newFromText(redirect.title));
+        titles[prop].push(...titlesToAdd);
+      }
+    });
+  }
 
   config.unsignedTemplates = (
     (titles.unsigned || titles.unsignedIp) &&
@@ -151,13 +156,11 @@ mw.loader.using([
     ]
   );
 
-  const signatureResp = await new mw.Api().post({
-    action: 'parse',
-    page: 'MediaWiki:Signature',
-    prop: ['text'],
-    formatversion: 2,
-  });
-  const parsedSignature = signatureResp?.parse?.text;
+  const signatureMessage = (await api.getMessages('Signature', {
+    amlang: mw.config.get('wgContentLanguage'),
+    amincludelocal: 1
+  })).Signature;
+  const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true });
   if (!parsedSignature.includes('{{')) {
     const $signature = $(parsedSignature);
     const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
