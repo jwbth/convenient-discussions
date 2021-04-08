@@ -32,13 +32,13 @@ export function makeBackgroundRequest(params, method = 'post') {
     cd.g.api[method](params, {
       success: (resp) => {
         if (resp.error) {
-          reject('api', resp);
+          reject(['api', resp]);
         } else {
           resolve(resp);
         }
       },
       error: (jqXHR, textStatus) => {
-        reject('http', textStatus);
+        reject(['http', textStatus]);
       },
     });
   });
@@ -310,7 +310,19 @@ export async function setLocalOption(name, value) {
  * @throws {CdError}
  */
 export async function setGlobalOption(name, value) {
-  await setOption(name, value, 'globalpreferences');
+  if (!cd.config.useGlobalPreferences) {
+    return;
+  }
+  try {
+    await setOption(name, value, 'globalpreferences');
+  } catch (e) {
+    // The site doesn't support global preferences.
+    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
+      await setLocalOption(name, value);
+    } else {
+      throw e;
+    }
+  }
 }
 
 /**
