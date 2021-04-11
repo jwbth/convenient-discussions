@@ -60,69 +60,86 @@ DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent, config) => {
   }
 });
 
-fs.readdirSync('./i18n/').forEach((fileName) => {
-  if (path.extname(fileName) === '.json' && fileName !== 'qqq.json') {
-    const [, lang] = path.basename(fileName).match(/^(.+)\.json$/) || [];
-    const strings = require(`./i18n/${fileName}`);
-    Object.keys(strings)
-      .filter((name) => typeof strings[name] === 'string')
-      .forEach((stringName) => {
-        const hidden = [];
-        let sanitized = hideText(strings[stringName], /<nowiki(?: [\w ]+(?:=[^<>]+?)?| *)>([^]*?)<\/nowiki *>/g, hidden);
+const i18n = {};
 
-        sanitized = DOMPurify.sanitize(sanitized, {
-          ALLOWED_TAGS,
-          ALLOWED_ATTR: [
-            'class',
-            'dir',
-            'href',
-            'target',
-          ],
-          ALLOW_DATA_ATTR: false,
-          fileName,
-          stringName,
-          lang,
-        });
+fs.readdirSync('./i18n/').filter(fileName => path.extname(fileName) === '.json' && fileName !== 'qqq.json').forEach((fileName) => {
+  const [, lang] = path.basename(fileName).match(/^(.+)\.json$/) || [];
+  const strings = require(`./i18n/${fileName}`);
+  Object.keys(strings)
+    .filter((name) => typeof strings[name] === 'string')
+    .forEach((stringName) => {
+      const hidden = [];
+      let sanitized = hideText(strings[stringName], /<nowiki(?: [\w ]+(?:=[^<>]+?)?| *)>([^]*?)<\/nowiki *>/g, hidden);
 
-        sanitized = unhideText(sanitized, hidden);
+      sanitized = DOMPurify.sanitize(sanitized, {
+        ALLOWED_TAGS,
+        ALLOWED_ATTR: [
+          'class',
+          'dir',
+          'href',
+          'target',
+        ],
+        ALLOW_DATA_ATTR: false,
+        fileName,
+        stringName,
+        lang,
+      });
 
-        // Just in case dompurify or jsdom gets outdated or the repository gets compromised, we will
-        // just manually check that only allowed tags are present.
-        for (const [, tagName] of sanitized.matchAll(/<(\w+)/g)) {
-          if (!ALLOWED_TAGS.includes(tagName.toLowerCase())) {
-            warning(`Disallowed tag ${code(tagName)} found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
-            delete strings[stringName];
-            return;
-          }
-        }
+      sanitized = unhideText(sanitized, hidden);
 
-        // The same with suspicious strings containing what seems like the "javascript:" prefix or
-        // one of the "on..." attributes.
-        let test = sanitized.replace(/&\w+;|\s+/g, '');
-        if (/javascript:/i.test(test) || /\bon\w+\s*=/i.test(sanitized)) {
-          warning(`Suspicious code found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
+      // Just in case dompurify or jsdom gets outdated or the repository gets compromised, we will
+      // just manually check that only allowed tags are present.
+      for (const [, tagName] of sanitized.matchAll(/<(\w+)/g)) {
+        if (!ALLOWED_TAGS.includes(tagName.toLowerCase())) {
+          warning(`Disallowed tag ${code(tagName)} found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
           delete strings[stringName];
           return;
         }
+      }
 
-        strings[stringName] = sanitized;
-      });
-    let json = JSON.stringify(strings, null, '\t')
+      // The same with suspicious strings containing what seems like the "javascript:" prefix or
+      // one of the "on..." attributes.
+      let test = sanitized.replace(/&\w+;|\s+/g, '');
+      if (/javascript:/i.test(test) || /\bon\w+\s*=/i.test(sanitized)) {
+        warning(`Suspicious code found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
+        delete strings[stringName];
+        return;
+      }
+
+      strings[stringName] = sanitized;
+    });
+
+  i18n[lang] = strings;
+});
+
+const i18nWithFallbacks = {};
+
+const fallbackData = require('./fallbacks.json');
+Object.keys(i18n).forEach(lang => {
+  const fallbacks = fallbackData[lang];
+  if (!fallbacks) {
+    i18nWithFallbacks[lang] = i18n[lang];
+  } else {
+    const fallbackMessages = fallbacks.map(fbLang => i18n[fbLang]).reverse();
+    i18nWithFallbacks[lang] = Object.assign({}, ...fallbackMessages, i18n[lang]);
+  }
+});
+
+for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
+  let jsonText = JSON.stringify(json, null, '\t')
       .replace(/&nbsp;/g, ' ')
       .replace(/&#32;/g, ' ');
 
-    if (lang === 'en') {
-      // Prevent creating "</nowiki>" character sequences when building the main script file.
-      json = json.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
-    }
-
-    const data = `window.convenientDiscussions = window.convenientDiscussions || {};
-convenientDiscussions.i18n = convenientDiscussions.i18n || {};
-convenientDiscussions.i18n['${lang}'] = ${json};
-`;
-    fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
-    fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);
+  if (lang === 'en') {
+    // Prevent creating "</nowiki>" character sequences when building the main script file.
+    jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
   }
-});
+  const data = `window.convenientDiscussions = window.convenientDiscussions || {};
+convenientDiscussions.i18n = convenientDiscussions.i18n || {};
+convenientDiscussions.i18n['${lang}'] = ${jsonText};
+`;
+  fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
+  fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);
+}
 
 console.log('Internationalization files have been built successfully.');
