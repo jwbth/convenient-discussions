@@ -42,7 +42,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_TARGET_MARKER_COLOR: '#fc3',
+  COMMENT_TARGET_MARKER_COLOR: '#36c',
 
   /**
    * Background color for target comments.
@@ -50,7 +50,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_TARGET_BACKGROUND_COLOR: '#fef6e7',
+  COMMENT_TARGET_BACKGROUND_COLOR: '#eaf3ff',
 
   /**
    * Background color for target comments when they are hovered.
@@ -58,7 +58,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_TARGET_HOVER_BACKGROUND_COLOR: '#fef2db',
+  COMMENT_TARGET_HOVER_BACKGROUND_COLOR: '#dfedff',
 
   /**
    * Marker color for new comments.

@@ -33,8 +33,7 @@ import { loadSiteData } from './siteData';
 import { setVisits } from './options';
 
 let config;
-let strings;
-if (IS_SNIPPET) {
+if (IS_SINGLE) {
   try {
     config = require(`../../config/${CONFIG_FILE_NAME}`).default;
   } catch (e) {
@@ -67,7 +66,7 @@ if (IS_SNIPPET) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ *   module:userRegistry~User User} objects for use in {{gender:}}).
  * @param {object} [options]
  * @param {boolean} [options.plain] Should the message be returned in a plain, not substituted,
  *   form.
@@ -116,7 +115,7 @@ function s(name, ...params) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ *   module:userRegistry~User User} objects for use in {{gender:}}).
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
@@ -145,7 +144,7 @@ function sPlain(name) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ *   module:userRegistry~User User} objects for use in {{gender:}}).
  * @param {object} [options]
  * @returns {string}
  * @memberof module:cd~convenientDiscussions
@@ -228,7 +227,7 @@ function setStrings() {
     'move-',
   ];
 
-  if (!IS_SNIPPET) {
+  if (!IS_SINGLE) {
     require('../../dist/convenientDiscussions-i18n/en.js');
   }
   const strings = {};
@@ -266,9 +265,13 @@ async function go() {
 
   setStrings();
 
+  // For historical reasons, ru.wikipedia.org has 'cd'.
+  const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
+    'cd' :
+    'convenientDiscussions';
   cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
-  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
-  cd.g.VISITS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
+  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
+  cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
 
   // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
   const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
@@ -514,8 +517,8 @@ async function go() {
 function getConfig() {
   return new Promise((resolve, reject) => {
     let key = location.hostname;
-    if (IS_DEV) {
-      key += '-dev';
+    if (IS_TEST) {
+      key += '-test';
     }
     const configUrl = configUrls[key] || configUrls[location.hostname];
     if (configUrl) {
@@ -588,7 +591,7 @@ async function app() {
     return;
   }
 
-  if (IS_SNIPPET) {
+  if (IS_SINGLE) {
     cd.config = Object.assign(defaultConfig, config);
   }
 

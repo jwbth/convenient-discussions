@@ -198,6 +198,11 @@ export function flat(arr) {
  * @throws {CdError}
  */
 export function handleApiReject(code, data) {
+  // Native promises support only one parameter.
+  if (Array.isArray(code)) {
+    [code, data] = code;
+  }
+
   // See the parameters with which mw.Api() rejects:
   // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
   throw code === 'http' ?
@@ -455,7 +460,7 @@ export function getExtendedRect(el) {
     el.convenientDiscussionsMarginRight = parseFloat(style.marginRight);
   }
   const rect = el.getBoundingClientRect();
-  const invibile = getVisibilityByRects(rect);
+  const isVisible = getVisibilityByRects(rect);
   return {
     top: rect.top,
     bottom: rect.bottom,
@@ -463,10 +468,10 @@ export function getExtendedRect(el) {
     right: rect.right,
     width: rect.width,
     height: rect.height,
-    outerTop: rect.top - (invibile ? 0 : el.convenientDiscussionsMarginTop),
-    outerBottom: rect.bottom + (invibile ? 0 : el.convenientDiscussionsMarginBottom),
-    outerLeft: rect.left - (invibile ? 0 : el.convenientDiscussionsMarginLeft),
-    outerRight: rect.right + (invibile ? 0 : el.convenientDiscussionsMarginRight),
+    outerTop: rect.top - (isVisible ? el.convenientDiscussionsMarginTop : 0),
+    outerBottom: rect.bottom + (isVisible ? el.convenientDiscussionsMarginBottom : 0),
+    outerLeft: rect.left - (isVisible ? el.convenientDiscussionsMarginLeft : 0),
+    outerRight: rect.right + (isVisible ? el.convenientDiscussionsMarginRight : 0),
   };
 }
 

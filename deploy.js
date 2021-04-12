@@ -11,13 +11,13 @@ const config = require('./config.json5');
 const getUrl = require('./misc/util.js').getUrl;
 
 /*
-  node deploy --dev
-  npm run deploy --dev
+  node deploy --test
+  npm run deploy --test
  */
-const dev = argv.dev || process.env.npm_config_dev;
-const noi18n = argv.noi18n || process.env.npm_config_noi18n;
-const i18nonly = argv.i18nonly || process.env.npm_config_i18nonly;
-const debug = argv.debug || process.env.npm_config_debug;
+const test = Boolean(argv.test || process.env.npm_config_test);
+const noi18n = Boolean(argv.noi18n || process.env.npm_config_noi18n);
+const i18nonly = Boolean(argv.i18nonly || process.env.npm_config_i18nonly);
+const debug = Boolean(argv.debug || process.env.npm_config_debug);
 
 const warning = (text) => {
   console.log(chalk.yellowBright(text));
@@ -36,19 +36,17 @@ if (!config?.rootPath) {
   error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}.`);
 }
 
-if (config.rootPath[config.rootPath.length - 1] !== '/') {
-  error(`${keyword('rootPath')} should end with "${code('/')}".`);
-}
+const pathPrefix = config.rootPath + '/';
 
-const distFiles = config?.distFiles?.[dev ? 'dev' : 'default'];
-if (!distFiles || !Array.isArray(distFiles) || !distFiles.length) {
+const assets = config?.assets?.[test ? 'test' : 'default'];
+if (!assets || !Array.isArray(assets) || !assets.length) {
   error(`File list not found in ${keyword('config.json5')}.`);
 }
 
-const mainFile = distFiles[0];
+const mainFile = assets[0];
 
 const files = [];
-distFiles.forEach((file) => {
+assets.forEach((file) => {
   if (noi18n && file.endsWith('i18n/') || i18nonly && !file.endsWith('i18n/')) return;
   if (file.endsWith('/')) {
     files.push(...fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir));
@@ -110,7 +108,7 @@ function requestComments() {
   client.api.call(
     {
       action: 'query',
-      titles: config.rootPath + mainFile,
+      titles: pathPrefix + mainFile,
       prop: 'revisions',
       rvprop: ['comment'],
       rvlimit: 50,
@@ -151,6 +149,7 @@ function getLastDeployedCommit(revisions) {
       .map((commit) => commit.subject)
       .filter((commit) => (
         !commit.startsWith('Merge branch') &&
+        !commit.startsWith('Merge pull request') &&
         !commit.startsWith('Localisation updates')
       ));
     newCommitsCount = newCommitsSubjects.length;
@@ -198,8 +197,8 @@ async function prepareEdits() {
     }
 
     edits.push({
-      title: config.rootPath + file,
-      url: getUrl(config.rootPath + file),
+      title: pathPrefix + file,
+      url: getUrl(pathPrefix + file),
       content,
       contentSnippet: content.slice(0, 300) + (content.length > 300 ? '...' : ''),
       summary,

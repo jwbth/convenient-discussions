@@ -557,7 +557,7 @@ export function loadSiteData() {
   if (!Object.keys(cd.config.messages).some((name) => name.startsWith('timezone-'))) {
     const request = cd.g.api.loadMessages(undefined, {
       amlang: mw.config.get('wgContentLanguage'),
-      amincludelocal: 1,
+      amincludelocal: true,
       amfilter: 'timezone-',
     });
     messageRequests.push(request);

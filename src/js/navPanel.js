@@ -194,9 +194,12 @@ export default {
     const commentInViewport = Comment.findInViewport('forward');
     if (!commentInViewport) return;
 
-    // This will return invisible comments too in which case an error will be displayed.
-    const comment = reorderArray(cd.comments, commentInViewport.id)
-      .find((comment) => comment.isNew && !comment.isCollapsed && !comment.isInViewport());
+    const reorderedComments = reorderArray(cd.comments, commentInViewport.id);
+    const candidates = reorderedComments.filter((comment) => comment.isNew);
+    const comment = (
+      candidates.find((comment) => !comment.isCollapsed && !comment.isInViewport()) ||
+      candidates[0]
+    );
     if (comment) {
       comment.$elements.cdScrollTo('center', true, () => {
         comment.registerSeen('forward', true);

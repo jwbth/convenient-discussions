@@ -620,23 +620,25 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-commentButton'],
   }).$element.get(0);
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = document.createElement('div');
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay.className = 'cd-commentUnderlay';
+  const commentUnderlay = document.createElement('div');
+  commentUnderlay.className = 'cd-commentUnderlay';
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = commentUnderlay;
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay = document.createElement('div');
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.className = 'cd-commentOverlay';
+  const commentOverlay = document.createElement('div');
+  commentOverlay.className = 'cd-commentOverlay';
 
   const overlayLine = document.createElement('div');
   overlayLine.className = 'cd-commentOverlay-line';
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.appendChild(overlayLine);
+  commentOverlay.appendChild(overlayLine);
 
   const overlayMarker = document.createElement('div');
   overlayMarker.className = 'cd-commentOverlay-marker';
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.appendChild(overlayMarker);
+  commentOverlay.appendChild(overlayMarker);
 
   const overlayInnerWrapper = document.createElement('div');
   overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay.appendChild(overlayInnerWrapper);
+  commentOverlay.appendChild(overlayInnerWrapper);
+  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay = commentOverlay;
 
   const overlayGradient = document.createElement('div');
   overlayGradient.textContent = '\u00A0';
@@ -661,6 +663,23 @@ function initOouiAndElementPrototypes() {
     framed: false,
     classes: ['cd-button', 'cd-sectionButton'],
   }).$element.get(0);
+
+  cd.g.THREAD_ELEMENT_PROTOTYPES = {};
+  cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton = new OO.ui.ButtonWidget({
+    // Isn't displayed
+    label: 'Expand the thread',
+
+    framed: false,
+    classes: ['cd-button', 'cd-threadButton', 'cd-threadButton-invisible'],
+  }).$element.get(0);
+
+  const threadClickArea = document.createElement('div');
+  threadClickArea.className = 'cd-threadLine-clickArea';
+  threadClickArea.title = cd.s('thread-tooltip');
+  const line = document.createElement('div');
+  line.className = 'cd-threadLine';
+  threadClickArea.appendChild(line);
+  cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea = threadClickArea;
 }
 
 /**

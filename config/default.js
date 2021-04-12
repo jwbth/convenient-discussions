@@ -251,15 +251,6 @@ export default {
   scriptCodeName: 'convenient-discussions',
 
   /**
-   * Prefix for the script options saved to the MediaWiki server in addition to the standard
-   * `userjs-`.
-   *
-   * @type {string}
-   * @default 'convenientDiscussions'
-   */
-  optionsPrefix: 'convenientDiscussions',
-
-  /**
    * Wikilink to the script's page. Used in the watchlist and, if there is no {@link
    * module:defaultConfig.tagName tag}, in summary.
    *
