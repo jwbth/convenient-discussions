@@ -328,7 +328,10 @@ export default class Thread {
     cd.debug.stopTimer('thread collapse button');
 
     if (this.rootComment.isOpeningSection) {
-      this.rootComment.section.menu.editOpeningComment.wrapper.style.display = 'none';
+      const menu = this.rootComment.section.menu;
+      if (menu) {
+        menu.editOpeningComment.wrapper.style.display = 'none';
+      }
     }
 
     cd.debug.startTimer('thread collapse end');
@@ -362,7 +365,10 @@ export default class Thread {
     this.collapsedNote.remove();
 
     if (this.rootComment.isOpeningSection) {
-      this.rootComment.section.menu.editOpeningComment.wrapper.style.display = '';
+      const menu = this.rootComment.section.menu;
+      if (menu) {
+        menu.editOpeningComment.wrapper.style.display = '';
+      }
     }
 
     saveCollapsedThreads();
@@ -496,11 +502,9 @@ export default class Thread {
 
         // Find the top comment that has its positions changed and stop at it.
         if (lineTop === thread.lineTop && lineHeight === thread.lineHeight) {
-          return (
-            !lastAffectedComment ||
-            comment.level === 0 ||
-            comment.section !== lastAffectedComment.section
-          );
+          // Opened/closed "reply in section" comment form will change the thread line height, so we
+          // use only this condition.
+          return comment.level === 0;
         }
 
         cd.debug.startTimer('threads createElement');

@@ -558,6 +558,7 @@ function getStrings() {
     .filter(unique)
     .filter((lang) => lang !== 'en')
     .map((lang) => mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`));
+
   // We assume it's OK to fall back to English if the translation is unavailable for any reason.
   return Promise.all(requests).catch(() => {});
 }

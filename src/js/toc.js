@@ -362,7 +362,7 @@ export default {
           if (comment instanceof Comment) {
             a.onclick = (e) => {
               e.preventDefault();
-              comment.scrollToAndHighlightTarget(false, true);
+              comment.scrollTo(false, true);
             };
           } else {
             a.onclick = (e) => {

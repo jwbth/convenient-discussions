@@ -61,7 +61,7 @@ module.exports = (env) => {
   if (single) {
     devtool = 'eval';
   } else if (dev) {
-    devtool = 'eval-cheap-module-source-map';
+    devtool = 'eval-source-map';
   } else {
     // SourceMapDevToolPlugin is used.
     devtool = false;

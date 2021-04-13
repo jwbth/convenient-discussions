@@ -834,10 +834,14 @@ export default class Comment extends CommentSkeleton {
 
     // Reset the animations and colors
     this.$backgroundToAnimate
-      .add(this.$marker)
+      .add(this.$marker, this.$overlayGradient)
       .stop()
       .css({
         backgroundColor: '',
+
+        // For the gradient
+        backgroundImage: 'none',
+
         opacity: 1,
       });
 
@@ -900,10 +904,10 @@ export default class Comment extends CommentSkeleton {
         opacity: '',
       };
 
-      const comment = this;
-      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', function () {
-        comment.$marker.css(propertyDefaults);
+      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', () => {
+        this.$marker.css(propertyDefaults);
       });
+      const comment = this;
       this.$backgroundToAnimate.animate(
         generateProperties(finalBackgroundColor),
         400,
@@ -914,7 +918,7 @@ export default class Comment extends CommentSkeleton {
           if (callback) {
             callback();
           }
-          comment.$backgroundToAnimate.css(propertyDefaults);
+          comment.$backgroundToAnimate.add(this.$overlayGradient).css(propertyDefaults);
           delete comment.$backgroundToAnimate;
         }
       );
@@ -1190,14 +1194,15 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the comment and highlight it as a target.
+   * Scroll to the comment and (by default) highlight it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
    * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
    *   anchor as a fragment.
+   * @param {boolean} highlight Whether to highlight the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
-  scrollToAndHighlightTarget(smooth = true, pushState = false, callback) {
+  scrollTo(smooth = true, pushState = false, highlight = true, callback) {
     if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }
@@ -1208,8 +1213,15 @@ export default class Comment extends CommentSkeleton {
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
       const alignment = this.isOpeningSection || this.editForm ? 'top' : 'center';
-      $elements.cdScrollIntoView(alignment, smooth, callback);
-      this.highlightTarget();
+      const combinedCallback = () => {
+        if (highlight) {
+          this.highlightTarget();
+        }
+        if (callback) {
+          callback();
+        }
+      };
+      $elements.cdScrollIntoView(alignment, smooth, combinedCallback);
     }
   }
 
@@ -1238,7 +1250,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    parent.scrollToAndHighlightTarget();
+    parent.scrollTo();
 
     const goToChildButton = new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
@@ -1279,7 +1291,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    this.childToScrollBackTo.scrollToAndHighlightTarget();
+    this.childToScrollBackTo.scrollTo();
   }
 
   /**
@@ -1764,7 +1776,7 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [highlight=false] Highlight the comment.
    */
   registerSeen(registerAllInDirection, highlight = false) {
-    if (this.isSeen === false) {
+    if (this.isInViewport() && this.isSeen === false) {
       this.isSeen = true;
 
       if (highlight) {

@@ -106,14 +106,16 @@ export default class Section extends SectionSkeleton {
       !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement))
     );
 
-    /**
-     * Section menu object.
-     *
-     * @type {object}
-     */
-    this.menu = {};
+    if (this.closingBracketElement) {
+      /**
+       * Section menu object.
+       *
+       * @type {object}
+       */
+      this.menu = {};
 
-    this.extendSectionMenu(watchedSectionsRequest);
+      this.extendSectionMenu(watchedSectionsRequest);
+    }
   }
 
   /**
@@ -630,7 +632,6 @@ export default class Section extends SectionSkeleton {
             text: summary,
             section: section.headline,
           }),
-          tags: cd.config.tagName,
           baserevid: target.page.revisionId,
           starttimestamp: target.page.queryTimestamp,
         });
@@ -698,7 +699,6 @@ export default class Section extends SectionSkeleton {
             text: summary,
             section: section.headline,
           }),
-          tags: cd.config.tagName,
           baserevid: source.page.revisionId,
           starttimestamp: source.page.queryTimestamp,
         });
@@ -968,8 +968,10 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   updateWatchMenuItems() {
-    this.menu.unwatch.wrapper.style.display = this.isWatched ? '' : 'none';
-    this.menu.watch.wrapper.style.display = this.isWatched ? 'none' : '';
+    if (this.menu) {
+      this.menu.unwatch.wrapper.style.display = this.isWatched ? '' : 'none';
+      this.menu.watch.wrapper.style.display = this.isWatched ? 'none' : '';
+    }
   }
 
   /**
@@ -985,7 +987,7 @@ export default class Section extends SectionSkeleton {
     const sections = Section.getByHeadline(this.headline);
     let $links;
     if (!silent) {
-      $links = $(sections.map((section) => section.menu.watch.link));
+      $links = $(sections.map((section) => section.menu?.watch.link));
       if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
@@ -1037,7 +1039,7 @@ export default class Section extends SectionSkeleton {
     const sections = Section.getByHeadline(this.headline);
     let $links;
     if (!silent) {
-      $links = $(sections.map((section) => section.menu.unwatch.link));
+      $links = $(sections.map((section) => section.menu?.unwatch.link));
       if ($links.hasClass('cd-link-pending')) {
         return;
       } else {

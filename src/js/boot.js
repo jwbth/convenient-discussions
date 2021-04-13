@@ -18,6 +18,7 @@ import navPanel from './navPanel';
 import processPage from './processPage';
 import toc from './toc';
 import updateChecker from './updateChecker';
+import userRegistry from './userRegistry';
 import {
   areObjectsEqual,
   caseInsensitiveFirstCharPattern,
@@ -265,6 +266,7 @@ function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
   cd.g.PAGE = new Page(cd.g.PAGE_NAME);
+  cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
   cd.g.USER_GENDER = mw.user.options.get('gender');
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
@@ -277,7 +279,7 @@ function initGlobals() {
 
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
-  if (cd.config.tagName) {
+  if (cd.config.tagName && cd.g.USER.isRegistered()) {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
   } else {
