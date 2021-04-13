@@ -60,8 +60,11 @@ DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent, config) => {
   }
 });
 
-fs.readdirSync('./i18n/').forEach((fileName) => {
-  if (path.extname(fileName) === '.json' && fileName !== 'qqq.json') {
+const i18n = {};
+
+fs.readdirSync('./i18n/')
+  .filter(fileName => path.extname(fileName) === '.json' && fileName !== 'qqq.json')
+  .forEach((fileName) => {
     const [, lang] = path.basename(fileName).match(/^(.+)\.json$/) || [];
     const strings = require(`./i18n/${fileName}`);
     Object.keys(strings)
@@ -107,22 +110,38 @@ fs.readdirSync('./i18n/').forEach((fileName) => {
 
         strings[stringName] = sanitized;
       });
-    let json = JSON.stringify(strings, null, '\t')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&#32;/g, ' ');
 
-    if (lang === 'en') {
-      // Prevent creating "</nowiki>" character sequences when building the main script file.
-      json = json.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
-    }
+    i18n[lang] = strings;
+  });
 
-    const data = `window.convenientDiscussions = window.convenientDiscussions || {};
-convenientDiscussions.i18n = convenientDiscussions.i18n || {};
-convenientDiscussions.i18n['${lang}'] = ${json};
-`;
-    fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
-    fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);
+const i18nWithFallbacks = {};
+
+const fallbackData = require('./fallbacks.json');
+Object.keys(i18n).forEach((lang) => {
+  const fallbacks = fallbackData[lang];
+  if (!fallbacks) {
+    i18nWithFallbacks[lang] = i18n[lang];
+  } else {
+    const fallbackMessages = fallbacks.map(fbLang => i18n[fbLang]).reverse();
+    i18nWithFallbacks[lang] = Object.assign({}, ...fallbackMessages, i18n[lang]);
   }
 });
+
+for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
+  let jsonText = JSON.stringify(json, null, '\t')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#32;/g, ' ');
+
+  if (lang === 'en') {
+    // Prevent creating "</nowiki>" character sequences when building the main script file.
+    jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
+  }
+  const data = `window.convenientDiscussions = window.convenientDiscussions || {};
+convenientDiscussions.i18n = convenientDiscussions.i18n || {};
+convenientDiscussions.i18n['${lang}'] = ${jsonText};
+`;
+  fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
+  fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);
+}
 
 console.log('Internationalization files have been built successfully.');
