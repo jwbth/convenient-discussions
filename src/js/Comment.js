@@ -1213,15 +1213,13 @@ export default class Comment extends CommentSkeleton {
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
       const alignment = this.isOpeningSection || this.editForm ? 'top' : 'center';
-      const combinedCallback = () => {
-        if (highlight) {
-          this.highlightTarget();
-        }
-        if (callback) {
-          callback();
-        }
-      };
-      $elements.cdScrollIntoView(alignment, smooth, combinedCallback);
+      if (callback) {
+        callback();
+      }
+      $elements.cdScrollIntoView(alignment, smooth, callback);
+      if (highlight) {
+        this.highlightTarget();
+      }
     }
   }
 
@@ -1776,15 +1774,15 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [highlight=false] Highlight the comment.
    */
   registerSeen(registerAllInDirection, highlight = false) {
-    if (this.isInViewport() && this.isSeen === false) {
+    const isInVewport = !registerAllInDirection || this.isInViewport();
+    if (this.isSeen === false && isInVewport) {
       this.isSeen = true;
-
       if (highlight) {
         this.highlightTarget();
       }
     }
 
-    if (this.willFlashNewOnSight) {
+    if (this.willFlashNewOnSight && isInVewport) {
       this.willFlashNewOnSight = false;
       this.flashNew();
     }
@@ -1792,12 +1790,10 @@ export default class Comment extends CommentSkeleton {
     const makesSenseToRegister = cd.comments
       .some((comment) => comment.isSeen || comment.willFlashNewOnSight);
     if (registerAllInDirection && makesSenseToRegister) {
-      const reverse = registerAllInDirection === 'backward';
-      const change = reverse ? -1 : 1;
-      const nextUncollapsedComment = reorderArray(cd.comments, this.id + change, reverse)
-        .find((comment) => !comment.isCollapsed);
-      if (nextUncollapsedComment?.isInViewport()) {
-        nextUncollapsedComment.registerSeen(registerAllInDirection, highlight);
+      const change = registerAllInDirection === 'backward' ? -1 : 1;
+      const nextComment = cd.comments[this.id + change];
+      if (nextComment && nextComment.isInViewport() !== false) {
+        nextComment.registerSeen(registerAllInDirection, highlight);
       }
     }
   }

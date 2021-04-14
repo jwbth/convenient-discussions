@@ -181,8 +181,8 @@ export default {
    * @memberof module:cd~convenientDiscussions.g
    */
   POPULAR_NOT_INLINE_ELEMENTS: [
-    'BLOCKQUOTE', 'DD', 'DIV', 'DL', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT',
-    'LI', 'LINK', 'OL', 'P', 'PRE', 'STYLE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'
+    'BLOCKQUOTE', 'DD', 'DIV', 'DL', 'DT', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR',
+    'INPUT', 'LI', 'LINK', 'OL', 'P', 'PRE', 'STYLE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'
   ],
 
   /**

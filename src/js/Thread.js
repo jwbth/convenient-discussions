@@ -143,12 +143,12 @@ export default class Thread {
     let startItem;
     let endItem;
     if (this.rootComment.level === 0) {
-      let commonAncestor = this.rootComment.highlightables[0];
+      startItem = this.rootComment.highlightables[0];
+      let commonAncestor = startItem;
       const lastHighlightable = this.lastComment
         .highlightables[this.lastComment.highlightables.length - 1];
       endItem = lastHighlightable;
       do {
-        startItem = commonAncestor;
         commonAncestor = commonAncestor.parentNode;
       } while (!commonAncestor.contains(lastHighlightable));
       while (endItem.parentNode !== commonAncestor) {
@@ -428,7 +428,6 @@ export default class Thread {
     cd.debug.startTimer('threads calculate');
 
     const elementsToAdd = [];
-    let lastAffectedComment;
     cd.comments
       .slice()
       .reverse()
@@ -446,7 +445,10 @@ export default class Thread {
           rectTop = thread.collapsedNote.getBoundingClientRect();
           if (comment.level === 0) {
             const [leftMargin] = comment.getLayersMargins();
-            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1) - cd.g.CONTENT_FONT_SIZE;
+            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
+            if (!comment.isStartStretched) {
+              lineLeft -= cd.g.CONTENT_FONT_SIZE;
+            }
             lineTop = window.scrollY + rectTop.top;
           }
         } else {
@@ -454,7 +456,10 @@ export default class Thread {
             comment.getPositions();
             if (comment.positions) {
               const [leftMargin] = comment.getLayersMargins();
-              lineLeft = comment.positions.left - (leftMargin + 1) - cd.g.CONTENT_FONT_SIZE;
+              lineLeft = comment.positions.left - (leftMargin + 1);
+              if (!comment.isStartStretched) {
+                lineLeft -= cd.g.CONTENT_FONT_SIZE;
+              }
               lineTop = comment.positions.top;
             }
           } else {
@@ -524,8 +529,6 @@ export default class Thread {
         if (!thread.clickArea.parentNode) {
           elementsToAdd.push(thread.clickArea);
         }
-
-        lastAffectedComment = comment;
 
         cd.debug.stopTimer('threads createElement');
 

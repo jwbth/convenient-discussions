@@ -63,27 +63,37 @@ export default {
    * Update the contents of the page navigation blocks.
    */
   update() {
-    if (document.documentElement.scrollHeight === document.documentElement.clientHeight) {
+    const htmlElement = document.documentElement;
+    if (htmlElement.scrollHeight === htmlElement.clientHeight) {
       this.reset();
       return;
     }
 
+    // The top position of TOC or the first section
     let afterLeadPos;
+
     let firstSectionOuterTop;
     if (cd.g.$toc.length) {
       afterLeadPos = cd.g.$toc.get(0).getBoundingClientRect().top;
     }
-    if (window.scrollY > cd.g.BODY_SCROLL_PADDING_TOP) {
+    const scrollY = window.scrollY;
+    if (scrollY > cd.g.BODY_SCROLL_PADDING_TOP) {
       cd.sections.some((section) => {
         const rect = getExtendedRect(section.$heading.get(0));
         if (!getVisibilityByRects(rect)) {
           return false;
-        } else {
+
+        // The second check to exclude the possibility that the first section is above the TOC, like
+        // at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
+        } else if (!afterLeadPos || rect.outerTop > afterLeadPos) {
           firstSectionOuterTop = rect.outerTop;
+
           if (!afterLeadPos) {
             afterLeadPos = rect.outerTop;
           }
           return true;
+        } else {
+          return false;
         }
       });
     }
@@ -129,10 +139,7 @@ export default {
     }
 
     if (
-      (
-        cd.sections.length &&
-        window.scrollY + window.innerHeight < document.documentElement.scrollHeight
-      ) ||
+      (cd.sections.length && scrollY + window.innerHeight < htmlElement.scrollHeight) ||
       backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {
@@ -140,7 +147,7 @@ export default {
           .attr('id', 'cd-pageNav-bottomLink')
           .addClass('cd-pageNav-item')
           .on('click', () => {
-            this.jump(document.documentElement.scrollHeight - window.innerHeight, this.$bottomLink);
+            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
           })
           .text(cd.s('pagenav-pagebottom'))
           .appendTo(this.$bottomElement);
@@ -152,7 +159,8 @@ export default {
     }
 
     // 1 as a threshold (also below, in "extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1") works
-    // better for Monobook for some reason.
+    // better for Monobook for some reason (scroll to the first section using the page navigation to
+    // see the difference).
     if (
       firstSectionOuterTop === undefined ||
       firstSectionOuterTop >= cd.g.BODY_SCROLL_PADDING_TOP + 1
@@ -168,8 +176,9 @@ export default {
       .reverse()
       .some((section) => {
         const extendedRect = getExtendedRect(section.$heading.get(0));
-
-        if (!getVisibilityByRects(extendedRect)) return;
+        if (!getVisibilityByRects(extendedRect)) {
+          return false;
+        }
 
         if (extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1) {
           if (currentSection === section) {
