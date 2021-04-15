@@ -24,7 +24,6 @@ import {
   getVisibilityByRects,
   handleApiReject,
   isInline,
-  reorderArray,
   saveToLocalStorage,
   unhideText,
 } from './util';

@@ -330,13 +330,6 @@ function adjustDom(feivData) {
         el.classList.add('cd-connectToPreviousItem');
       }
     });
-
-  // TODO: Not sure it is needed or correct (changing the class without changing comment levels).
-  $('dl').has('dt').each((i, el) => {
-    Array.from(el.classList)
-      .filter((className) => className.startsWith('cd-commentLevel'))
-      .forEach((className) => el.classList.remove(className));
-  });
 }
 
 /**

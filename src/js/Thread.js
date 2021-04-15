@@ -28,7 +28,7 @@ let treeWalker;
  *
  * @param {Element} commentPartElement
  * @param {number} level
- * @returns {Element|undefined}
+ * @returns {?Element}
  */
 function findItemElement(commentPartElement, level) {
   if (!treeWalker) {
@@ -40,7 +40,8 @@ function findItemElement(commentPartElement, level) {
   let previousNode = commentPartElement;
   do {
     if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
-      const match = treeWalker.currentNode.getAttribute('class').match(/cd-commentLevel-(\d+)/);
+      const className = treeWalker.currentNode.getAttribute('class');
+      const match = className.match(/cd-commentLevel-(\d+)/);
       if (match && Number(match[1]) === level) {
         item = previousNode;
         break;
@@ -49,7 +50,7 @@ function findItemElement(commentPartElement, level) {
     previousNode = treeWalker.currentNode;
   } while (treeWalker.parentNode());
 
-  return item;
+  return item || null;
 }
 
 /**

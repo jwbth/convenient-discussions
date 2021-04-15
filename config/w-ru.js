@@ -217,6 +217,7 @@ export default {
   foreignElementInHeadlineClasses: [
     'ch-helperText',
     'userflags-wrapper',
+    'dclink-wrapper',
   ],
 
   closedDiscussionTemplates: [
