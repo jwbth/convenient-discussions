@@ -155,8 +155,6 @@ export default {
 
   tagName: 'convenient-discussions',
 
-  optionsPrefix: 'cd',
-
   unsignedTemplates: [
     'unsigned',
     'unsignedIP',

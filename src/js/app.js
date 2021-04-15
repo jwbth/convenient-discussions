@@ -266,13 +266,17 @@ async function go() {
 
   setStrings();
 
+  // For historical reasons, ru.wikipedia.org has 'cd'.
+  const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
+    'cd' :
+    'convenientDiscussions';
   cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
-  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-localSettings`;
-  cd.g.VISITS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-visits`;
+  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
+  cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
 
   // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
   const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
-  cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${cd.config.optionsPrefix}-${wsonEnding}`;
+  cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${wsonEnding}`;
 
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
   cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
