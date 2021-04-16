@@ -165,44 +165,39 @@ export default {
     });
   },
 
-  /**
-   * Scroll to the previous new comment.
-   */
-  goToPreviousNewComment() {
+  goToNewCommentInDirection(direction) {
     if (cd.g.isAutoScrollInProgress) return;
 
-    const commentInViewport = Comment.findInViewport('backward');
+    const commentInViewport = Comment.findInViewport(direction);
     if (!commentInViewport) return;
 
-    // This will return invisible comments too in which case an error will be displayed.
-    const comment = reorderArray(cd.comments, commentInViewport.id, true)
-      .find((comment) => comment.isNew && !comment.isCollapsed && !comment.isInViewport());
+    const reverse = direction === 'backward';
+    const reorderedComments = reorderArray(cd.comments, commentInViewport.id, reverse);
+    const candidates = reorderedComments
+      .filter((comment) => comment.isNew && !comment.isInViewport());
+    const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     if (comment) {
-      comment.$elements.cdScrollTo('center', true, () => {
-        comment.registerSeen('backward', true);
+      comment.scrollTo(true, false, false, () => {
+        // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
+        // a 300ms timeout, so we have a chance to have our callback executed first.
+        comment.registerSeen(direction, true);
         this.updateFirstUnseenButton();
       });
     }
   },
 
   /**
+   * Scroll to the previous new comment.
+   */
+  goToPreviousNewComment() {
+    this.goToNewCommentInDirection('backward');
+  },
+
+  /**
    * Scroll to the next new comment.
    */
   goToNextNewComment() {
-    if (cd.g.isAutoScrollInProgress) return;
-
-    const commentInViewport = Comment.findInViewport('forward');
-    if (!commentInViewport) return;
-
-    // This will return invisible comments too in which case an error will be displayed.
-    const comment = reorderArray(cd.comments, commentInViewport.id)
-      .find((comment) => comment.isNew && !comment.isCollapsed && !comment.isInViewport());
-    if (comment) {
-      comment.$elements.cdScrollTo('center', true, () => {
-        comment.registerSeen('forward', true);
-        this.updateFirstUnseenButton();
-      });
-    }
+    this.goToNewCommentInDirection('forward');
   },
 
   /**
@@ -212,9 +207,9 @@ export default {
     if (cd.g.isAutoScrollInProgress) return;
 
     const candidates = cd.comments.filter((comment) => comment.isSeen === false);
-    const comment = candidates.find((comment) => !comment.isCollapsed) || candidates[0];
+    const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     if (comment) {
-      comment.scrollToAndHighlightTarget(true, false, () => {
+      comment.scrollTo(true, false, false, () => {
         // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
         // a 300ms timeout, so we have a chance to have our callback executed first.
         comment.registerSeen('forward', true);

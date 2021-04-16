@@ -142,10 +142,14 @@ export default {
     let foundComment;
 
     const findClosest = (direction, searchArea, reverse = false) => {
-      if (direction === 'forward') {
-        return findVisible(direction, reverse ? searchArea.top.id : searchArea.bottom.id);
-      } else if (direction === 'backward') {
-        return findVisible(direction, reverse ? searchArea.bottom.id : searchArea.top.id);
+      if (direction) {
+        const startIndex = (
+          (direction === 'forward' && reverse) ||
+          (direction === 'backward' && !reverse)
+        ) ?
+          searchArea.top.id :
+          searchArea.bottom.id;
+        return findVisible(direction, startIndex);
       }
       return null;
     };
@@ -188,7 +192,7 @@ export default {
         // To avoid contriving a sophisticated algorithm for choosing which comment to pick next
         // (and avoid picking any previously picked) we just pick the comment next to the beginning
         // of the search area.
-        currentComment = cd.comments[searchArea.top.id + 1];
+        currentComment = findVisible('forward', searchArea.top.id + 1);
         searchArea.top = currentComment;
         continue;
       }
@@ -218,11 +222,12 @@ export default {
             'searchArea', searchArea
           );
         }
-        currentComment = cd.comments[Math.round(
+        const index = Math.round(
           (searchArea.bottom.id - searchArea.top.id - 1) * proportion +
           searchArea.top.id +
           0.5
-        )];
+        );
+        currentComment = cd.comments[index];
       }
     }
 

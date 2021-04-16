@@ -533,7 +533,7 @@ function connectToCommentLinks($content) {
     .on('click', function (e) {
       e.preventDefault();
       const anchor = $(this).attr('href').slice(1);
-      Comment.getByAnchor(anchor)?.scrollToAndHighlightTarget(true, true);
+      Comment.getByAnchor(anchor)?.scrollTo(true, true);
     });
 }
 
@@ -609,7 +609,7 @@ async function processFragment(keptData) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.
       setTimeout(() => {
-        comment.scrollToAndHighlightTarget(false, keptData.pushState);
+        comment.scrollTo(false, keptData.pushState);
       });
     }
   }

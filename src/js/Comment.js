@@ -24,7 +24,6 @@ import {
   getVisibilityByRects,
   handleApiReject,
   isInline,
-  reorderArray,
   saveToLocalStorage,
   unhideText,
 } from './util';
@@ -1192,14 +1191,15 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the comment and highlight it as a target.
+   * Scroll to the comment and (by default) highlight it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
    * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
    *   anchor as a fragment.
+   * @param {boolean} highlight Whether to highlight the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
-  scrollToAndHighlightTarget(smooth = true, pushState = false, callback) {
+  scrollTo(smooth = true, pushState = false, highlight = true, callback) {
     if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }
@@ -1210,8 +1210,13 @@ export default class Comment extends CommentSkeleton {
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
       const alignment = this.isOpeningSection || this.editForm ? 'top' : 'center';
+      if (callback) {
+        callback();
+      }
       $elements.cdScrollIntoView(alignment, smooth, callback);
-      this.highlightTarget();
+      if (highlight) {
+        this.highlightTarget();
+      }
     }
   }
 
@@ -1240,7 +1245,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    parent.scrollToAndHighlightTarget();
+    parent.scrollTo();
 
     const goToChildButton = new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
@@ -1281,7 +1286,7 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    this.childToScrollBackTo.scrollToAndHighlightTarget();
+    this.childToScrollBackTo.scrollTo();
   }
 
   /**
@@ -1766,15 +1771,15 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [highlight=false] Highlight the comment.
    */
   registerSeen(registerAllInDirection, highlight = false) {
-    if (this.isSeen === false) {
+    const isInVewport = !registerAllInDirection || this.isInViewport();
+    if (this.isSeen === false && isInVewport) {
       this.isSeen = true;
-
       if (highlight) {
         this.highlightTarget();
       }
     }
 
-    if (this.willFlashNewOnSight) {
+    if (this.willFlashNewOnSight && isInVewport) {
       this.willFlashNewOnSight = false;
       this.flashNew();
     }
@@ -1782,12 +1787,10 @@ export default class Comment extends CommentSkeleton {
     const makesSenseToRegister = cd.comments
       .some((comment) => comment.isSeen || comment.willFlashNewOnSight);
     if (registerAllInDirection && makesSenseToRegister) {
-      const reverse = registerAllInDirection === 'backward';
-      const change = reverse ? -1 : 1;
-      const nextUncollapsedComment = reorderArray(cd.comments, this.id + change, reverse)
-        .find((comment) => !comment.isCollapsed);
-      if (nextUncollapsedComment?.isInViewport()) {
-        nextUncollapsedComment.registerSeen(registerAllInDirection, highlight);
+      const change = registerAllInDirection === 'backward' ? -1 : 1;
+      const nextComment = cd.comments[this.id + change];
+      if (nextComment && nextComment.isInViewport() !== false) {
+        nextComment.registerSeen(registerAllInDirection, highlight);
       }
     }
   }
