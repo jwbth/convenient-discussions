@@ -581,9 +581,9 @@ export async function settingsDialog() {
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
      *   to create a "Comment form" booklet page.
-     * @private
      * @param {string} name
      * @param {object} [config]
+     * @private
      */
     function CommentFormPageLayout(name, config) {
       CommentFormPageLayout.super.call(this, name, config);
@@ -680,8 +680,7 @@ export async function settingsDialog() {
       watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),
     };
     settings.haveInsertButtonsBeenAltered = (
-      JSON.stringify(settings.insertButtons) !==
-      JSON.stringify(cd.defaultSettings.insertButtons)
+      JSON.stringify(settings.insertButtons) !== JSON.stringify(cd.defaultSettings.insertButtons)
     );
     return settings;
   };

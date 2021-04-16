@@ -2,11 +2,11 @@
   "script-name": "Convenient Discussions",
   "script-name-short": "CD",
 
-  "cm-gotoparent": "▲",
+  "cm-gotoparent": "Go to parent",
   "cm-gotoparent-tooltip": "Go to the parent comment",
-  "cm-gotochild": "▼",
+  "cm-gotochild": "Go back to child",
   "cm-gotochild-tooltip": "Go back to the child comment",
-  "cm-copylink": "#",
+  "cm-copylink": "Copy link",
   "cm-copylink-tooltip": "Copy a link",
   "cm-thank": "Thank",
   "cm-thank-tooltip": "Thank for the edit that added this comment",
@@ -16,8 +16,8 @@
   "cm-reply": "Reply",
 
   "thread-tooltip": "Collapse/expand the thread",
-  "thread-expand-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}}) starting from the comment by $2",
-  "thread-expand": "Expand the thread ($1 {{plural:$1|comment|comments}}) starting from the comment by {{gender:$3|}} $2",
+  "thread-expand-genderless": "Expand the thread starting from the comment by $2 ($1 {{plural:$1|comment|comments}})",
+  "thread-expand": "Expand the thread starting from the comment by {{gender:$3|}} $2 ($1 {{plural:$1|comment|comments}})",
 
   "sm-editopeningcomment": "edit opening comment",
   "sm-editopeningcomment-tooltip": "Edit the opening comment of the section",

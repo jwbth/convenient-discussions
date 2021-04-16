@@ -136,7 +136,7 @@ export default class Section extends SectionSkeleton {
     );
 
     let tag;
-    let createUl = false;
+    let createList = false;
     if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
       const tagName = this.lastElementInFirstChunk.tagName;
       if (
@@ -157,12 +157,12 @@ export default class Section extends SectionSkeleton {
         tag = 'dd';
       } else {
         tag = 'li';
-        createUl = true;
+        createList = true;
       }
     } else {
       tag = 'li';
       if (!isVotePlaceholder) {
-        createUl = true;
+        createList = true;
       }
     }
 
@@ -172,7 +172,7 @@ export default class Section extends SectionSkeleton {
 
     // Container contains wrapper that contains element ^_^
     let replyContainer;
-    if (createUl) {
+    if (createList) {
       replyContainer = document.createElement('ul');
       replyContainer.className = 'cd-commentLevel cd-commentLevel-1 cd-sectionButton-container';
       replyContainer.appendChild(replyWrapper);

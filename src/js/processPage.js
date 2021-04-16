@@ -324,7 +324,8 @@ function adjustDom(feivData) {
     console.warn('.cd-commentLevel adjacencies have left.');
   }
 
-  cd.g.rootElement.querySelectorAll('li.cd-commentPart-last + li, dd.cd-commentPart-last + dd')
+  cd.g.rootElement
+    .querySelectorAll('li.cd-commentPart-last + li, dd.cd-commentPart-last + dd')
     .forEach((el) => {
       if (el.firstElementChild && ['UL', 'DL'].includes(el.firstElementChild.tagName)) {
         el.classList.add('cd-connectToPreviousItem');

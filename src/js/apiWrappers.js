@@ -274,7 +274,7 @@ async function setOption(name, value, action) {
   }
 
   const resp = await makeBackgroundRequest(cd.g.api.assertCurrentUser({
-    action: action,
+    action,
     optionname: name,
 
     // Global options can't be deleted because of the bug https://phabricator.wikimedia.org/T207448.
@@ -323,7 +323,7 @@ export async function setGlobalOption(name, value) {
  */
 export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
-    .filter((user) => user.isRegistered() && !user.getGender())
+    .filter((user) => !user.getGender() && user.isRegistered())
     .map((user) => user.name);
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;
@@ -335,8 +335,8 @@ export async function getUserGenders(users, requestInBackground = false) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const resp = await (requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options))
-      .catch(handleApiReject);
+    const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options);
+    const resp = await request.catch(handleApiReject);
     const users = resp.query?.users;
     if (!users) {
       throw new CdError({

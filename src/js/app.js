@@ -66,7 +66,7 @@ if (IS_SINGLE) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ *   module:userRegistry~User User} objects for use in {{gender:}}).
  * @param {object} [options]
  * @param {boolean} [options.plain] Should the message be returned in a plain, not substituted,
  *   form.
@@ -115,7 +115,7 @@ function s(name, ...params) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ *   module:userRegistry~User User} objects for use in {{gender:}}).
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
@@ -144,7 +144,7 @@ function sPlain(name) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for the use in {{gender:}}).
+ *   module:userRegistry~User User} objects for use in {{gender:}}).
  * @param {object} [options]
  * @returns {string}
  * @memberof module:cd~convenientDiscussions
@@ -558,6 +558,7 @@ function getStrings() {
     .filter(unique)
     .filter((lang) => lang !== 'en')
     .map((lang) => mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`));
+
   // We assume it's OK to fall back to English if the translation is unavailable for any reason.
   return Promise.all(requests).catch(() => {});
 }
