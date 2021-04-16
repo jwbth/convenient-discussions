@@ -661,6 +661,23 @@ function initOouiAndElementPrototypes() {
     framed: false,
     classes: ['cd-button', 'cd-sectionButton'],
   }).$element.get(0);
+
+  cd.g.THREAD_ELEMENT_PROTOTYPES = {};
+  cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton = new OO.ui.ButtonWidget({
+    // Isn't displayed
+    label: 'Expand the thread',
+
+    framed: false,
+    classes: ['cd-button', 'cd-threadButton', 'cd-threadButton-invisible'],
+  }).$element.get(0);
+
+  const threadClickArea = document.createElement('div');
+  threadClickArea.className = 'cd-threadLine-clickArea';
+  threadClickArea.title = cd.s('thread-tooltip');
+  const line = document.createElement('div');
+  line.className = 'cd-threadLine';
+  threadClickArea.appendChild(line);
+  cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea = threadClickArea;
 }
 
 /**

@@ -77,6 +77,11 @@ ol > li.cd-commentPart-last {
   padding-left: var(--cd-content-font-size);
   padding-right: calc(~"var(--cd-content-font-size) - 2px");
   cursor: pointer;
+
+  &-stretchedStart {
+    padding-left: 0;
+    padding-right: calc(~"var(--cd-content-start-margin) - 2px");
+  }
 }
 
 .cd-threadLine {

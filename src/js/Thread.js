@@ -9,6 +9,7 @@ import Comment from './Comment';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
 import {
+  defined,
   getFromLocalStorage,
   getVisibilityByRects,
   removeFromArrayIfPresent,
@@ -27,7 +28,7 @@ let treeWalker;
  *
  * @param {Element} commentPartElement
  * @param {number} level
- * @returns {Element}
+ * @returns {?Element}
  */
 function findItemElement(commentPartElement, level) {
   if (!treeWalker) {
@@ -39,7 +40,8 @@ function findItemElement(commentPartElement, level) {
   let previousNode = commentPartElement;
   do {
     if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
-      const match = treeWalker.currentNode.getAttribute('class').match(/cd-commentLevel-(\d+)/);
+      const className = treeWalker.currentNode.getAttribute('class');
+      const match = className.match(/cd-commentLevel-(\d+)/);
       if (match && Number(match[1]) === level) {
         item = previousNode;
         break;
@@ -48,7 +50,7 @@ function findItemElement(commentPartElement, level) {
     previousNode = treeWalker.currentNode;
   } while (treeWalker.parentNode());
 
-  return item;
+  return item || null;
 }
 
 /**
@@ -77,16 +79,25 @@ function restoreCollapsedThreads() {
   const dataAllPages = cleanUpCollapsedThreads(getFromLocalStorage('collapsedThreads'));
   const data = dataAllPages[mw.config.get('wgArticleId')] || {};
 
+  const comments = [];
+
   // Reverse order is used for threads to be expanded correctly.
   data.collapsedThreads?.reverse().forEach((anchor) => {
     const comment = Comment.getByAnchor(anchor);
+
     if (comment?.thread) {
-      comment.thread.collapse();
+      comments.push(comment);
     } else {
       // Remove anchors that have no corresponding comments or threads from data.
       data.collapsedThreads.splice(data.collapsedThreads.indexOf(anchor), 1);
     }
   });
+
+  let getUserGendersPromise;
+  if (cd.g.GENDER_AFFECTS_USER_STRING) {
+    getUserGendersPromise = getUserGenders(comments.map((comment) => comment.author));
+  }
+  comments.forEach((comment) => comment.thread.collapse(getUserGendersPromise));
 
   saveToLocalStorage('collapsedThreads', dataAllPages);
 }
@@ -119,10 +130,6 @@ export default class Thread {
   constructor(rootComment) {
     this.rootComment = rootComment;
 
-    if (this.rootComment.level === 0) {
-      throw new CdError();
-    }
-
     const nextToLastCommentId = cd.comments
       .slice(rootComment.id + 1)
       .find((comment) => (
@@ -133,11 +140,36 @@ export default class Thread {
     const lastCommentId = nextToLastCommentId ? nextToLastCommentId - 1 : cd.comments.length - 1;
     this.lastComment = cd.comments[lastCommentId];
     this.commentCount = lastCommentId - this.rootComment.id + 1;
-    const startItem = findItemElement(rootComment.elements[0], rootComment.level);
-    const endItem = findItemElement(
-      this.lastComment.elements[this.lastComment.elements.length - 1],
-      rootComment.level
-    );
+
+    let startItem;
+    let endItem;
+    if (this.rootComment.level === 0) {
+      startItem = this.rootComment.highlightables[0];
+      let commonAncestor = startItem;
+      const lastHighlightable = this.lastComment
+        .highlightables[this.lastComment.highlightables.length - 1];
+      endItem = lastHighlightable;
+      do {
+        commonAncestor = commonAncestor.parentNode;
+      } while (!commonAncestor.contains(lastHighlightable));
+      while (endItem.parentNode !== commonAncestor) {
+        endItem = endItem.parentNode;
+      }
+      const nextElement = endItem.nextElementSibling;
+      if (
+        nextElement &&
+        nextElement.tagName === 'UL' &&
+        nextElement.classList.contains('cd-sectionButton-container')
+      ) {
+        endItem = nextElement;
+      }
+    } else {
+      startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
+      endItem = findItemElement(
+        this.lastComment.highlightables[this.lastComment.highlightables.length - 1],
+        rootComment.level
+      );
+    }
 
     if (startItem && endItem) {
       this.startItem = startItem;
@@ -148,22 +180,19 @@ export default class Thread {
   }
 
   createLine() {
-    const clickArea = document.createElement('div');
-    clickArea.className = 'cd-threadLine-clickArea';
-    clickArea.title = cd.s('thread-tooltip');
-    clickArea.onclick = () => {
+    cd.debug.startTimer('threads createElement create');
+    this.clickArea = cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea.cloneNode(true);
+    if (this.rootComment.isStartStretched) {
+      this.clickArea.classList.add('cd-threadLine-clickArea-stretchedStart');
+    }
+    this.clickArea.onclick = () => {
       this.toggle();
     };
-
-    const line = document.createElement('div');
-    line.className = 'cd-threadLine';
-    clickArea.appendChild(line);
-
-    this.clickArea = clickArea;
-    this.line = line;
+    this.line = this.clickArea.firstChild;
+    cd.debug.stopTimer('threads createElement create');
   }
 
-  collapse() {
+  getRangeContents() {
     const range = document.createRange();
     range.setStart(this.startItem, 0);
     const rangeEnd = this.lastComment.replyForm?.$element.is(':visible') ?
@@ -171,28 +200,46 @@ export default class Thread {
       this.endItem;
     range.setEnd(rangeEnd, rangeEnd.childNodes.length);
 
+    /*
+      Here we should equally account for all cases of the start and end item relative position.
+
+        <ul>         <!-- Say, may start anywhere from here... -->
+          <li></li>
+          <li>
+            <div></div>
+          </li>
+          <li></li>
+        </ul>
+        <div></div>  <!-- ...to here. And, may end anywhere from here... -->
+        <ul>
+          <li></li>
+          <li>
+            <div></div>
+          </li>
+          <li></li>  <-- ...to here. -->
+        </ul>
+     */
+    cd.debug.startTimer('thread collapse traverse');
+    if (!treeWalker) {
+      treeWalker = new ElementsTreeWalker();
+    }
     const rangeContents = [range.startContainer];
-    if (range.commonAncestorContainer !== range.startContainer) {
+    if (range.startContainer !== range.endContainer) {
       treeWalker.currentNode = range.startContainer;
-      while (treeWalker.nextSibling() && treeWalker.currentNode !== range.endContainer) {
-        rangeContents.push(treeWalker.currentNode);
-      }
-      if (treeWalker.currentNode !== range.endContainer) {
-        while (treeWalker.currentNode.parentNode !== range.commonAncestorContainer) {
-          treeWalker.parentNode();
-        }
-        treeWalker.nextSibling();
-        while (!treeWalker.currentNode.contains(range.endContainer)) {
+      while (treeWalker.currentNode.parentNode !== range.commonAncestorContainer) {
+        while (treeWalker.nextSibling()) {
           rangeContents.push(treeWalker.currentNode);
-          treeWalker.nextSibling();
         }
-        while (
-          treeWalker.currentNode.contains(range.endContainer) &&
-          treeWalker.currentNode !== range.endContainer
-        ) {
-          treeWalker.firstChild();
-        }
-        while (treeWalker.currentNode !== range.endContainer) {
+        treeWalker.parentNode();
+      }
+      treeWalker.nextSibling();
+      while (!treeWalker.currentNode.contains(range.endContainer)) {
+        rangeContents.push(treeWalker.currentNode);
+        treeWalker.nextSibling();
+      }
+      while (treeWalker.currentNode !== range.endContainer) {
+        treeWalker.firstChild();
+        while (!treeWalker.currentNode.contains(range.endContainer)) {
           rangeContents.push(treeWalker.currentNode);
           treeWalker.nextSibling();
         }
@@ -200,6 +247,16 @@ export default class Thread {
       rangeContents.push(range.endContainer);
     }
 
+    return rangeContents;
+  }
+
+  collapse(getUserGendersPromise) {
+    // The range contents can change, at least due to appearance of comment forms.
+    const rangeContents = this.getRangeContents();
+
+    cd.debug.stopTimer('thread collapse traverse');
+
+    cd.debug.startTimer('thread collapse range');
     this.$collapsedRange = $(rangeContents)
       // We use a class here because there can be elements in the comment that are hidden from the
       // beginning and should stay so when reshowing the comment.
@@ -213,57 +270,75 @@ export default class Thread {
         roots.push(this.rootComment);
         $el.data('cd-collapsed-thread-root-comments', roots);
       });
+    cd.debug.stopTimer('thread collapse range');
 
+    cd.debug.startTimer('thread collapse traverse comments');
     this.isCollapsed = true;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
       if (comment.thread?.isCollapsed && comment.thread !== this) {
-        i = comment.thread.lastComment.id + 1;
+        i = comment.thread.lastComment.id;
         continue;
       }
       comment.isCollapsed = true;
       comment.collapsedThread = this;
       comment.removeLayers();
     }
+    cd.debug.stopTimer('thread collapse traverse comments');
 
-    const button = new OO.ui.ButtonWidget({
-      // Isn't displayed
-      label: 'Expand the thread',
-
-      framed: false,
-      classes: ['cd-button', 'cd-threadButton', 'cd-threadButton-invisible'],
-    });
-    button.on('click', () => {
+    cd.debug.startTimer('thread collapse button');
+    cd.debug.startTimer('thread collapse button create');
+    const button = cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton.cloneNode(true);
+    cd.debug.stopTimer('thread collapse button create');
+    button.firstChild.onclick = () => {
       this.expand();
-    });
+    };
     const author = this.rootComment.author;
     const setLabel = (genderless) => {
       let messageName = genderless ? 'thread-expand-genderless' : 'thread-expand';
-      button.setLabel(cd.s(messageName, this.commentCount, author.name, author));
-      button.$element.removeClass('cd-threadButton-invisible');
+      const label = button.firstChild.firstChild.nextSibling;
+      label.textContent = cd.s(messageName, this.commentCount, author.name, author);
+      button.classList.remove('cd-threadButton-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
-      getUserGenders([author]).then(setLabel, () => {
+      cd.debug.startTimer('thread collapse button gender');
+      (getUserGendersPromise || getUserGenders([author])).then(setLabel, () => {
         // Couldn't get the gender, use the genderless version.
         setLabel(true);
       });
+      cd.debug.stopTimer('thread collapse button gender');
     } else {
       setLabel();
     }
 
-    this.$collapsedNote = $(`<${$(range.startContainer).prop('tagName')}>`)
-      .addClass('cd-thread-collapsedNote')
-      .append(button.$element)
-      .insertBefore(this.$collapsedRange.first());
+    cd.debug.startTimer('thread collapse button note');
+    let tagName = rangeContents[0].tagName;
+    if (!['LI', 'DD'].includes(tagName)) {
+      tagName = 'DIV';
+    }
+    this.collapsedNote = document.createElement(tagName);
+    this.collapsedNote.className = 'cd-thread-collapsedNote';
+    this.collapsedNote.appendChild(button);
+    rangeContents[0].parentNode.insertBefore(this.collapsedNote, rangeContents[0]);
+    cd.debug.stopTimer('thread collapse button note');
+
+    this.$collapsedNote = $(this.collapsedNote);
     if (isInited) {
       this.$collapsedNote.cdScrollIntoView();
     }
+    cd.debug.stopTimer('thread collapse button');
 
-    // For use in Thread#updateLines where we don't use jQuery for performance reasons.
-    this.collapsedNote = this.$collapsedNote.get(0);
+    if (this.rootComment.isOpeningSection) {
+      const menu = this.rootComment.section.menu;
+      if (menu) {
+        menu.editOpeningComment.wrapper.style.display = 'none';
+      }
+    }
 
+    cd.debug.startTimer('thread collapse end');
     saveCollapsedThreads();
     handleScroll();
+    cd.debug.stopTimer('thread collapse end');
   }
 
   expand() {
@@ -281,14 +356,21 @@ export default class Thread {
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
       if (comment.thread?.isCollapsed) {
-        i = comment.thread.lastComment.id + 1;
+        i = comment.thread.lastComment.id;
         continue;
       }
       comment.isCollapsed = false;
       delete comment.collapsedThread;
       comment.configureLayers();
     }
-    this.$collapsedNote.remove();
+    this.collapsedNote.remove();
+
+    if (this.rootComment.isOpeningSection) {
+      const menu = this.rootComment.section.menu;
+      if (menu) {
+        menu.editOpeningComment.wrapper.style.display = '';
+      }
+    }
 
     saveCollapsedThreads();
     handleScroll();
@@ -303,15 +385,13 @@ export default class Thread {
     cd.debug.startTimer('threads traverse');
 
     isInited = false;
-    cd.comments
-      .filter((comment) => comment.level)
-      .forEach((rootComment) => {
-        try {
-          rootComment.thread = new Thread(rootComment);
-        } catch (e) {
-          // Empty
-        }
-      });
+    cd.comments.forEach((rootComment) => {
+      try {
+        rootComment.thread = new Thread(rootComment);
+      } catch (e) {
+        // Empty
+      }
+    });
 
     cd.debug.stopTimer('threads traverse');
 
@@ -349,7 +429,6 @@ export default class Thread {
     cd.debug.startTimer('threads calculate');
 
     const elementsToAdd = [];
-    let lastAffectedComment;
     cd.comments
       .slice()
       .reverse()
@@ -359,8 +438,35 @@ export default class Thread {
         cd.debug.startTimer('threads getBoundingClientRect');
 
         const thread = comment.thread;
-        const elementTop = thread.isCollapsed ? thread.collapsedNote : thread.startItem;
-        const rectTop = elementTop.getBoundingClientRect();
+        let lineLeft;
+        let lineTop;
+        let lineHeight;
+        let rectTop;
+        if (thread.isCollapsed) {
+          rectTop = thread.collapsedNote.getBoundingClientRect();
+          if (comment.level === 0) {
+            const [leftMargin] = comment.getLayersMargins();
+            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
+            if (!comment.isStartStretched) {
+              lineLeft -= cd.g.CONTENT_FONT_SIZE;
+            }
+            lineTop = window.scrollY + rectTop.top;
+          }
+        } else {
+          if (comment.level === 0) {
+            comment.getPositions();
+            if (comment.positions) {
+              const [leftMargin] = comment.getLayersMargins();
+              lineLeft = comment.positions.left - (leftMargin + 1);
+              if (!comment.isStartStretched) {
+                lineLeft -= cd.g.CONTENT_FONT_SIZE;
+              }
+              lineTop = comment.positions.top;
+            }
+          } else {
+            rectTop = thread.startItem.getBoundingClientRect();
+          }
+        }
 
         let elementBottom;
         if (thread.isCollapsed) {
@@ -379,20 +485,8 @@ export default class Thread {
         const rectBottom = elementBottom.getBoundingClientRect();
         cd.debug.stopTimer('threads getBoundingClientRect');
 
-        if (
-          window.scrollY + rectTop.top === thread.lineTop &&
-          rectBottom.bottom - rectTop.top === thread.lineHeight
-        ) {
-          // Find the first comment counting from 0 that is affected by the change of positions and
-          // stop at it.
-          return (
-            !lastAffectedComment ||
-            comment.level === 1 ||
-            comment.section !== lastAffectedComment.section
-          );
-        }
-
-        if (!getVisibilityByRects(rectTop, rectBottom)) {
+        const rects = [rectTop, rectBottom].filter(defined);
+        if (!getVisibilityByRects(...rects) || (rects.length < 2 && lineLeft === undefined)) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = null;
@@ -404,11 +498,26 @@ export default class Thread {
           return false;
         }
 
+        if (lineLeft === undefined) {
+          lineLeft = (window.scrollX + rectTop.left) - cd.g.CONTENT_FONT_SIZE;
+          lineTop = window.scrollY + rectTop.top;
+          lineHeight = rectBottom.bottom - rectTop.top;
+        } else {
+          lineHeight = rectBottom.bottom - (lineTop - window.scrollY);
+        }
+
+        // Find the top comment that has its positions changed and stop at it.
+        if (lineTop === thread.lineTop && lineHeight === thread.lineHeight) {
+          // Opened/closed "reply in section" comment form will change the thread line height, so we
+          // use only this condition.
+          return comment.level === 0;
+        }
+
         cd.debug.startTimer('threads createElement');
 
-        thread.lineLeft = window.scrollX + rectTop.left - cd.g.CONTENT_FONT_SIZE;
-        thread.lineTop = window.scrollY + rectTop.top;
-        thread.lineHeight = rectBottom.bottom - rectTop.top;
+        thread.lineLeft = lineLeft;
+        thread.lineTop = lineTop;
+        thread.lineHeight = lineHeight;
 
         if (!thread.line) {
           thread.createLine();
@@ -421,8 +530,6 @@ export default class Thread {
         if (!thread.clickArea.parentNode) {
           elementsToAdd.push(thread.clickArea);
         }
-
-        lastAffectedComment = comment;
 
         cd.debug.stopTimer('threads createElement');
 

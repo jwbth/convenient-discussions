@@ -174,7 +174,7 @@ export default class Section extends SectionSkeleton {
     let replyContainer;
     if (createUl) {
       replyContainer = document.createElement('ul');
-      replyContainer.className = 'cd-commentLevel cd-sectionButton-container';
+      replyContainer.className = 'cd-commentLevel cd-commentLevel-1 cd-sectionButton-container';
       replyContainer.appendChild(replyWrapper);
       this.lastElementInFirstChunk.parentNode.insertBefore(
         replyContainer,

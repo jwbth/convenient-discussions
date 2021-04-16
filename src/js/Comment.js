@@ -334,25 +334,20 @@ export default class Comment extends CommentSkeleton {
     this.positions = { top, bottom, left, right, downplayedBottom };
   }
 
-  /**
-   * Calculate the underlay and overlay positions.
-   *
-   * @param {object} [options={}]
-   * @returns {?object}
-   * @private
-   */
-  calculateLayersPositions(options = {}) {
-    // Getting getBoundingClientRect() is a little costly, so we take the value that has already
-    // been calculated where possible.
-
-    this.getPositions(Object.assign({}, options, { considerFloating: true }));
-
-    if (!this.positions) {
-      return null;
+  getLayersMargins() {
+    let positions;
+    let firstElement;
+    if (this.isCollapsed) {
+      const rect = getCommentPartRect(this.thread.collapsedNote);
+      positions = {
+        left: window.scrollX + rect.left,
+        right: window.scrollX + rect.right,
+      };
+      firstElement = this.thread.collapsedNote;
+    } else {
+      positions = this.positions;
+      firstElement = this.highlightables[0];
     }
-
-    // This is to determine if the element has moved in future checks.
-    this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     let startMargin;
     let endMargin;
@@ -374,8 +369,8 @@ export default class Comment extends CommentSkeleton {
     this.isEndStretched = false;
 
     if (this.level === 0) {
-      const leftPosition = this.positions.left - cd.g.CONTENT_START_MARGIN;
-      const rightPosition = this.positions.right + cd.g.CONTENT_START_MARGIN;
+      const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN;
+      const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN;
       this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
         leftPosition <= cd.g.CONTENT_COLUMN_START + 1 :
         rightPosition >= cd.g.CONTENT_COLUMN_START - 1;
@@ -388,8 +383,8 @@ export default class Comment extends CommentSkeleton {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(this.highlightables[0].tagName) &&
-        this.highlightables[0].parentNode.classList.contains('cd-commentLevel')
+        ['LI', 'DD'].includes(firstElement.tagName) &&
+        firstElement.parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
       } else {
@@ -398,7 +393,7 @@ export default class Comment extends CommentSkeleton {
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
 
-    const closestList = this.highlightables[0].closest('.cd-commentLevel');
+    const closestList = firstElement.closest('.cd-commentLevel');
     if (closestList && closestList.tagName === 'OL') {
       startMargin += cd.g.CONTENT_FONT_SIZE * 2.2;
     }
@@ -406,12 +401,32 @@ export default class Comment extends CommentSkeleton {
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
 
-    return {
-      layersTop: this.positions.top - options.layersContainerOffset.top,
-      layersLeft: this.positions.left - leftMargin - options.layersContainerOffset.left,
-      layersWidth: (this.positions.right + rightMargin) - (this.positions.left - leftMargin),
-      layersHeight: this.positions.bottom - this.positions.top,
-    };
+    return [leftMargin, rightMargin];
+  }
+
+  /**
+   * Calculate the underlay and overlay positions and set them to the instance as properties.
+   *
+   * @param {object} [options={}]
+   * @private
+   */
+  calculateLayersPositions(options = {}) {
+    // Getting getBoundingClientRect() is a little costly, so we take the value that has already
+    // been calculated where possible.
+
+    this.getPositions(Object.assign({}, options, { considerFloating: true }));
+
+    if (!this.positions) return;
+
+    // This is to determine if the element has moved in future checks.
+    this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
+
+    const [leftMargin, rightMargin] = this.getLayersMargins();
+
+    this.layersTop = this.positions.top - options.layersContainerOffset.top;
+    this.layersLeft = this.positions.left - leftMargin - options.layersContainerOffset.left;
+    this.layersWidth = (this.positions.right + rightMargin) - (this.positions.left - leftMargin);
+    this.layersHeight = this.positions.bottom - this.positions.top;
   }
 
   /**
@@ -701,7 +716,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (!this.underlay || isMoved) {
-      Object.assign(this, this.calculateLayersPositions(options));
+      this.calculateLayersPositions(options);
     }
 
     // Configure the layers only if they were unexistent or the comment position has changed, to
