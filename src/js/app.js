@@ -33,8 +33,7 @@ import { loadSiteData } from './siteData';
 import { setVisits } from './options';
 
 let config;
-let strings;
-if (IS_SNIPPET) {
+if (IS_SINGLE) {
   try {
     config = require(`../../config/${CONFIG_FILE_NAME}`).default;
   } catch (e) {
@@ -228,7 +227,7 @@ function setStrings() {
     'move-',
   ];
 
-  if (!IS_SNIPPET) {
+  if (!IS_SINGLE) {
     require('../../dist/convenientDiscussions-i18n/en.js');
   }
   const strings = {};
@@ -518,8 +517,8 @@ async function go() {
 function getConfig() {
   return new Promise((resolve, reject) => {
     let key = location.hostname;
-    if (IS_DEV) {
-      key += '-dev';
+    if (IS_TEST) {
+      key += '-test';
     }
     const configUrl = configUrls[key] || configUrls[location.hostname];
     if (configUrl) {
@@ -592,7 +591,7 @@ async function app() {
     return;
   }
 
-  if (IS_SNIPPET) {
+  if (IS_SINGLE) {
     cd.config = Object.assign(defaultConfig, config);
   }
 

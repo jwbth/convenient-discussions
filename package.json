@@ -3,12 +3,13 @@
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
     "build": "node buildConfigs && node buildI18n && webpack",
+    "start": "webpack serve --env dev",
     "configs": "node buildConfigs",
     "deploy": "node --unhandled-rejections=strict deploy",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
     "i18n": "node buildI18n",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions",
-    "snippet": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --snippet"
+    "single": "rimraf node_modules/.cache/terser-webpack-plugin && webpack --env single"
   },
   "browser": "src/js/app.js",
   "repository": {
@@ -35,6 +36,7 @@
     "@babel/plugin-transform-runtime": "^7.13.15",
     "@babel/preset-env": "^7.13.15",
     "@babel/runtime": "^7.13.10",
+    "@webpack-cli/serve": "^1.3.1",
     "ajv": "^6.12.6",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.2.2",
@@ -63,6 +65,7 @@
     "webpack": "^4.46.0",
     "webpack-build-notifier": "^2.1.1",
     "webpack-cli": "^4.6.0",
+    "webpack-dev-server": "^3.11.2",
     "worker-loader": "^2.0.0",
     "yargs": "^15.4.1"
   },

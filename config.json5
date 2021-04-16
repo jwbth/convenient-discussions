@@ -8,12 +8,12 @@
   // With a placeholder, as in `mw.config.get('wgArticlePath')`
   articlePath: '/wiki/$1',
 
-  // Prefix for wiki page names for the script files. Should end with "/".
-  rootPath: 'User:Jack who built the house/',
+  // Root path for wiki page names for the script files. "/" is placed between it and filenames.
+  rootPath: 'User:Jack who built the house',
 
   // First file in the arrays is considered the main file. Commit subjects are added to the edit
   // summary only for this file.
-  distFiles: {
+  assets: {
     default: [
       'convenientDiscussions.js',
       'convenientDiscussions.js.LICENSE.js',
@@ -21,11 +21,11 @@
       'convenientDiscussions-worker.js.map.json',
       'convenientDiscussions-i18n/',
     ],
-    dev: [
-      'convenientDiscussions-dev.js',
-      'convenientDiscussions-dev.js.LICENSE.js',
-      'convenientDiscussions-dev.js.map.json',
-      'convenientDiscussions-worker-dev.js.map.json',
+    test: [
+      'convenientDiscussions-test.js',
+      'convenientDiscussions-test.js.LICENSE.js',
+      'convenientDiscussions-test.js.map.json',
+      'convenientDiscussions-worker-test.js.map.json',
     ],
   },
 }
