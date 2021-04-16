@@ -565,6 +565,11 @@ export default class Parser {
           node === treeWalker.root ||
           foreignComponentClasses.some((className) => node.classList.contains(className)) ||
           node.getAttribute('id') === 'toc' ||
+
+          // Seems to be the best option given pages like
+          // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
+          node.tagName === 'DT' ||
+
           isCellOfMultiCommentTable(node) ||
 
           // Horizontal lines sometimes separate different section blocks.
@@ -748,20 +753,21 @@ export default class Parser {
         // https://ru.wikipedia.org/w/index.php?diff=103584477.
         ['UL', 'DL', 'OL', 'LI', 'DD'].includes(part.node.tagName) &&
 
+        !(part.node.tagName === 'UL' && part.node.classList.contains('gallery')) &&
+
         /*
-          * The check for 'DD' helps here:
+          * The checks for DD helps here:
             https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
             * A complex case where it messes up things:
               https://commons.wikimedia.org/wiki/Commons:Translators'_noticeboard/Archive/2020#202011151417_Ameisenigel
-          * The check for 'DL' helps here:
+          * The check for DL helps here:
             https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
             (see the original HTML source)
-          * The check for 'P' helps here:
+          * The check for P helps here:
             https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Правила/2019/12#201910270736_S.m.46
-          * The check for "!parts[i + 1]..." helps here:
-            https://ru.wikipedia.org/wiki/Википедия:Технические_запросы/Архив/2019#201912081049_Sunpriat
-          * The check for "part.lastStep === 'back'" helps in cases like
+          * The check "['LI', 'DD'].includes(part.node.tagName)" helps in cases like
             https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
+            (the whole thread)
          */
         (
           (part.lastStep === 'up' && (!parts[i - 1] || parts[i - 1].lastStep !== 'back')) ||
@@ -772,10 +778,7 @@ export default class Parser {
               lastPart.node.tagName === 'DL'
             ) &&
             !parts.slice(i + 1).some((part) => part.node.tagName === 'P') &&
-            !(
-              part.lastStep === 'back' &&
-              ['LI', 'DD'].includes(part.node.nextElementSibling.tagName)
-            )
+            !(part.lastStep === 'back' && ['LI', 'DD'].includes(part.node.tagName))
           )
         )
       ) {
