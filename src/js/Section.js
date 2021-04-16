@@ -106,7 +106,16 @@ export default class Section extends SectionSkeleton {
       !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement))
     );
 
-    this.extendSectionMenu(watchedSectionsRequest);
+    if (this.closingBracketElement) {
+      /**
+       * Section menu object.
+       *
+       * @type {object}
+       */
+      this.menu = {};
+
+      this.extendSectionMenu(watchedSectionsRequest);
+    }
   }
 
   /**
@@ -300,34 +309,34 @@ export default class Section extends SectionSkeleton {
         this.comments[0].isActionable
       ) {
         this.addMenuItem({
+          name: 'editOpeningComment',
           label: cd.s('sm-editopeningcomment'),
           tooltip: cd.s('sm-editopeningcomment-tooltip'),
           func: () => {
             this.comments[0].edit();
           },
-          class: 'cd-sectionLink-editOpeningComment',
         });
       }
 
       if (this.level >= 2 && this.level !== 6) {
         this.addMenuItem({
+          name: 'addSubsection',
           label: cd.s('sm-addsubsection'),
           tooltip: cd.s('sm-addsubsection-tooltip'),
           func: () => {
             this.addSubsection();
           },
-          class: 'cd-sectionLink-addSubsection',
         });
       }
 
       if (this.level === 2) {
         this.addMenuItem({
+          name: 'moveSection',
           label: cd.s('sm-move'),
           tooltip: cd.s('sm-move-tooltip'),
           func: () => {
             this.move();
           },
-          class: 'cd-sectionLink-moveSection',
         });
       }
     }
@@ -336,10 +345,12 @@ export default class Section extends SectionSkeleton {
       if (this.headline) {
         // We put this instruction here to make it always appear after the "watch" item.
         this.addMenuItem({
+          name: 'copyLink',
           label: cd.s('sm-copylink'),
+
           // We need the event object to be passed to the function.
           func: this.copyLink.bind(this),
-          class: 'cd-sectionLink-copyLink',
+
           tooltip: cd.s('sm-copylink-tooltip'),
           href: `${cd.g.PAGE.getUrl()}#${this.anchor}`,
         });
@@ -360,21 +371,21 @@ export default class Section extends SectionSkeleton {
           () => {
             this.isWatched = cd.g.currentPageWatchedSections.includes(this.headline);
             this.addMenuItem({
+              name: 'unwatch',
               label: cd.s('sm-unwatch'),
               tooltip: cd.s('sm-unwatch-tooltip'),
               func: () => {
                 this.unwatch();
               },
-              class: 'cd-sectionLink-unwatch',
               visible: this.isWatched,
             });
             this.addMenuItem({
+              name: 'watch',
               label: cd.s('sm-watch'),
               tooltip: cd.s('sm-watch-tooltip'),
               func: () => {
                 this.watch();
               },
-              class: 'cd-sectionLink-watch',
               visible: !this.isWatched,
             });
           },
@@ -424,7 +435,7 @@ export default class Section extends SectionSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   addSubsection(dataToRestore) {
-    if (!this.$heading.find('.cd-sectionLink-addSubsection').length) {
+    if (!this.menu.addSubsection) {
       throw new CdError();
     }
 
@@ -959,12 +970,9 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   updateWatchMenuItems() {
-    if (this.isWatched) {
-      this.$heading.find('.cd-sectionLink-unwatch').parent().show();
-      this.$heading.find('.cd-sectionLink-watch').parent().hide();
-    } else {
-      this.$heading.find('.cd-sectionLink-watch').parent().show();
-      this.$heading.find('.cd-sectionLink-unwatch').parent().hide();
+    if (this.menu) {
+      this.menu.unwatch.wrapper.style.display = this.isWatched ? '' : 'none';
+      this.menu.watch.wrapper.style.display = this.isWatched ? 'none' : '';
     }
   }
 
@@ -981,7 +989,7 @@ export default class Section extends SectionSkeleton {
     const sections = Section.getByHeadline(this.headline);
     let $links;
     if (!silent) {
-      $links = $(sections.map((section) => section.$heading.find('.cd-sectionLink-watch').get(0)));
+      $links = $(sections.map((section) => section.menu?.watch.link));
       if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
@@ -1033,9 +1041,7 @@ export default class Section extends SectionSkeleton {
     const sections = Section.getByHeadline(this.headline);
     let $links;
     if (!silent) {
-      $links = $(
-        sections.map((section) => section.$heading.find('.cd-sectionLink-unwatch').get(0))
-      );
+      $links = $(sections.map((section) => section.menu?.unwatch.link));
       if ($links.hasClass('cd-link-pending')) {
         return;
       } else {
@@ -1219,50 +1225,50 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * @typedef {object} MenuItem
+   * @param {Element} link Link element.
+   * @param {Element} wrapper Wrapper element.
+   */
+
+  /**
    * Add an item to the section menu (to the right from the section headline).
    *
    * @param {object} item
+   * @param {string} item.name Link name, reflected in the class name.
    * @param {string} item.label Item label.
    * @param {string} [item.href] Value of the item href attribute.
    * @param {Function} [item.func] Function to execute on click.
-   * @param {string} [item.class] Link class name.
    * @param {string} [item.tooltip] Tooltip text.
    * @param {boolean} [item.visible=true] Should the item be visible.
    */
-  addMenuItem({
-    label,
-    href,
-    func,
-    class: className,
-    tooltip,
-    visible = true,
-  }) {
+  addMenuItem({ name, label, href, func, tooltip, visible = true }) {
     if (!this.closingBracketElement) return;
 
+    cd.debug.startTimer('addMenuItem');
     const wrapper = document.createElement('span');
-    wrapper.className = 'cd-sectionLink-wrapper';
+    wrapper.className = `cd-sectionLink-wrapper cd-sectionLink-wrapper-${name}`;
     if (!visible) {
       wrapper.style.display = 'none';
     }
 
-    const a = document.createElement('a');
-    a.textContent = label;
+    const link = document.createElement('a');
+    link.textContent = label;
     if (href) {
-      a.href = href;
+      link.href = href;
     }
     if (func) {
-      a.onclick = func;
+      link.onclick = func;
     }
-    a.className = 'cd-sectionLink';
-    if (className) {
-      a.className += ' ' + className;
-    }
+    link.className = `cd-sectionLink cd-sectionLink-${name}`;
     if (tooltip) {
-      a.title = tooltip;
+      link.title = tooltip;
     }
 
-    wrapper.appendChild(a);
+    wrapper.appendChild(link);
     this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
+
+    this.menu[name] = { link, wrapper };
+    cd.debug.stopTimer('addMenuItem');
   }
 
   /**

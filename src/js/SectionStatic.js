@@ -225,7 +225,7 @@ export default {
             nextSameLevelSection.headingNestingLevel !== section.headingNestingLevel
           )
         ) {
-          section.$heading.find('.cd-sectionLink-addSubsection').parent().remove();
+          section.menu?.addSubsection.wrapper.remove();
         } else {
           section.addAddSubsectionButton();
         }
