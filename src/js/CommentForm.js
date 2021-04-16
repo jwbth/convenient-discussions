@@ -3076,7 +3076,6 @@ export default class CommentForm {
       result = await this.targetPage.edit({
         text: newPageCode,
         summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
-        tags: cd.config.tagName,
         baserevid: page.revisionId,
         starttimestamp: page.queryTimestamp,
         minor: this.minorCheckbox?.isSelected(),

@@ -632,7 +632,6 @@ export default class Section extends SectionSkeleton {
             text: summary,
             section: section.headline,
           }),
-          tags: cd.config.tagName,
           baserevid: target.page.revisionId,
           starttimestamp: target.page.queryTimestamp,
         });
@@ -700,7 +699,6 @@ export default class Section extends SectionSkeleton {
             text: summary,
             section: section.headline,
           }),
-          tags: cd.config.tagName,
           baserevid: source.page.revisionId,
           starttimestamp: source.page.queryTimestamp,
         });
