@@ -221,44 +221,7 @@ export default class CommentForm {
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (this.mode === 'addSection') {
-      const title = cd.g.PAGE.title.replace(/\//g, '-');
-      let code = (
-        '<div class="cd-editnotice">' +
-        `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}` +
-        '</div>\n' +
-        '<div class="cd-editnotice">' +
-        `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}` +
-        '</div>\n'
-      );
-      if (this.preloadConfig?.editIntro) {
-        code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
-      }
-      parseCode(code, { title: cd.g.PAGE.name }).then((result) => {
-        const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
-        this.$messageArea
-          .append(result.html)
-          .cdAddCloseButton()
-          .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
-          .parent()
-          .remove();
-
-        // We mirror the functionality of the "ext.charinsert" module to keep the undo/redo
-        // functionality.
-        this.$messageArea
-          .find('.mw-charinsert-item')
-          .each((i, el) => {
-            const $el = $(el);
-            const pre = $el.data('mw-charinsert-start');
-            const post = $el.data('mw-charinsert-end');
-            $el
-              .on('click', () => {
-                this.encapsulateSelection({ pre, post });
-              })
-              .data('mw-charinsert-done', true);
-          });
-
-        mw.hook('wikipage.content').fire(this.$messageArea);
-      });
+      this.addEditNotices();
     }
 
     this.createContents(dataToRestore);
@@ -307,102 +270,10 @@ export default class CommentForm {
       });
 
       if (this.mode === 'edit') {
-        const currentOperation = this.registerOperation({ type: 'load' });
-        this.target.getCode(true).then(
-          () => {
-            let commentText = this.target.codeToText();
-            if (this.target.inCode.inSmallFont) {
-              commentText = `<small>${commentText}</small>`;
-            }
-            const headline = this.target.inCode.headlineCode;
-
-            this.commentInput.setValue(commentText);
-            this.originalComment = commentText;
-            if (this.headlineInput) {
-              this.headlineInput.setValue(headline);
-              this.originalHeadline = headline;
-            }
-
-            this.closeOperation(currentOperation);
-
-            focusInput(this.commentInput);
-            this.preview();
-          },
-          (e) => {
-            if (e instanceof CdError) {
-              const options = Object.assign({}, e.data, {
-                cancel: true,
-                currentOperation,
-              });
-              this.handleError(options);
-            } else {
-              this.handleError({
-                type: 'javascript',
-                logMessage: e,
-                cancel: true,
-                currentOperation,
-              });
-            }
-          }
-        );
+        this.loadComment();
       } else {
         if (this.preloadConfig?.commentTemplate) {
-          const currentOperation = this.registerOperation({
-            type: 'load',
-            affectHeadline: false,
-          });
-          const preloadPage = new Page(this.preloadConfig.commentTemplate);
-          preloadPage.getCode().then(
-            () => {
-              let code = preloadPage.code;
-
-              const regexp = generateTagsRegexp(['onlyinclude']);
-              let match;
-              let onlyInclude;
-              while ((match = regexp.exec(code))) {
-                if (onlyInclude === undefined) {
-                  onlyInclude = '';
-                }
-                onlyInclude += match[2];
-              }
-              if (onlyInclude !== undefined) {
-                code = onlyInclude;
-              }
-
-              code = code
-                .replace(generateTagsRegexp(['includeonly']), '$2')
-                .replace(generateTagsRegexp(['noinclude']), '');
-              code = code.trim();
-
-              if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
-                this.omitSignatureCheckbox.setSelected(true);
-              }
-
-              this.commentInput.setValue(code);
-              this.originalComment = code;
-
-              this.closeOperation(currentOperation);
-
-              focusInput(this.headlineInput || this.commentInput);
-              this.preview();
-            },
-            (e) => {
-              if (e instanceof CdError) {
-                const options = Object.assign({}, e.data, {
-                  cancel: true,
-                  currentOperation,
-                });
-                this.handleError(options);
-              } else {
-                this.handleError({
-                  type: 'javascript',
-                  logMessage: e,
-                  cancel: true,
-                  currentOperation,
-                });
-              }
-            }
-          );
+          this.preloadTemplate();
         } else {
           this.originalComment = '';
         }
@@ -1330,6 +1201,147 @@ export default class CommentForm {
     }
   }
 
+  addEditNotices() {
+    const title = cd.g.PAGE.title.replace(/\//g, '-');
+    let code = (
+      '<div class="cd-editnotice">' +
+      `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}` +
+      '</div>\n' +
+      '<div class="cd-editnotice">' +
+      `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}` +
+      '</div>\n'
+    );
+    if (this.preloadConfig?.editIntro) {
+      code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
+    }
+    parseCode(code, { title: cd.g.PAGE.name }).then((result) => {
+      const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
+      this.$messageArea
+        .append(result.html)
+        .cdAddCloseButton()
+        .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
+        .parent()
+        .remove();
+
+      // We mirror the functionality of the "ext.charinsert" module to keep the undo/redo
+      // functionality.
+      this.$messageArea
+        .find('.mw-charinsert-item')
+        .each((i, el) => {
+          const $el = $(el);
+          const pre = $el.data('mw-charinsert-start');
+          const post = $el.data('mw-charinsert-end');
+          $el
+            .on('click', () => {
+              this.encapsulateSelection({ pre, post });
+            })
+            .data('mw-charinsert-done', true);
+        });
+
+      mw.hook('wikipage.content').fire(this.$messageArea);
+    });
+  }
+
+  loadComment() {
+    const currentOperation = this.registerOperation({ type: 'load' });
+    this.target.getCode(true).then(
+      () => {
+        let commentText = this.target.codeToText();
+        if (this.target.inCode.inSmallFont) {
+          commentText = `<small>${commentText}</small>`;
+        }
+        const headline = this.target.inCode.headlineCode;
+
+        this.commentInput.setValue(commentText);
+        this.originalComment = commentText;
+        if (this.headlineInput) {
+          this.headlineInput.setValue(headline);
+          this.originalHeadline = headline;
+        }
+
+        this.closeOperation(currentOperation);
+
+        focusInput(this.commentInput);
+        this.preview();
+      },
+      (e) => {
+        if (e instanceof CdError) {
+          const options = Object.assign({}, e.data, {
+            cancel: true,
+            currentOperation,
+          });
+          this.handleError(options);
+        } else {
+          this.handleError({
+            type: 'javascript',
+            logMessage: e,
+            cancel: true,
+            currentOperation,
+          });
+        }
+      }
+    );
+  }
+
+  preloadTemplate() {
+    const currentOperation = this.registerOperation({
+      type: 'load',
+      affectHeadline: false,
+    });
+    const preloadPage = new Page(this.preloadConfig.commentTemplate);
+    preloadPage.getCode().then(
+      () => {
+        let code = preloadPage.code;
+
+        const regexp = generateTagsRegexp(['onlyinclude']);
+        let match;
+        let onlyInclude;
+        while ((match = regexp.exec(code))) {
+          if (onlyInclude === undefined) {
+            onlyInclude = '';
+          }
+          onlyInclude += match[2];
+        }
+        if (onlyInclude !== undefined) {
+          code = onlyInclude;
+        }
+
+        code = code
+          .replace(generateTagsRegexp(['includeonly']), '$2')
+          .replace(generateTagsRegexp(['noinclude']), '');
+        code = code.trim();
+
+        if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
+          this.omitSignatureCheckbox.setSelected(true);
+        }
+
+        this.commentInput.setValue(code);
+        this.originalComment = code;
+
+        this.closeOperation(currentOperation);
+
+        focusInput(this.headlineInput || this.commentInput);
+        this.preview();
+      },
+      (e) => {
+        if (e instanceof CdError) {
+          const options = Object.assign({}, e.data, {
+            cancel: true,
+            currentOperation,
+          });
+          this.handleError(options);
+        } else {
+          this.handleError({
+            type: 'javascript',
+            logMessage: e,
+            cancel: true,
+            currentOperation,
+          });
+        }
+      }
+    );
+  }
+
   /**
    * Insert the form into the DOM.
    */
@@ -1349,11 +1361,10 @@ export default class CommentForm {
 
     let outerWrapperTag;
     let createList = false;
-    let $lastOfTarget;
+    const $lastOfTarget = this.target.$elements.last();
     let $other;
     if (this.mode === 'reply') {
       createList = true;
-      $lastOfTarget = this.target.$elements.last();
       $other = $lastOfTarget.next();
       const $nextToTargetFirstChild = $other.children().first();
       if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
@@ -1366,16 +1377,11 @@ export default class CommentForm {
       } else if ($lastOfTarget.is('li')) {
         // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
         // in those cases. Which is unsemantic, yes :-(
-        if (this.containerListType !== 'ol') {
-          outerWrapperTag = 'li';
-        } else {
-          outerWrapperTag = 'div';
-        }
+        outerWrapperTag = this.containerListType === 'ol' ? 'div' : 'li';
       } else if ($lastOfTarget.is('dd')) {
         outerWrapperTag = 'dd';
       }
     } else if (this.mode === 'edit') {
-      const $lastOfTarget = this.target.$elements.last();
       if ($lastOfTarget.is('li')) {
         outerWrapperTag = 'li';
       } else if ($lastOfTarget.is('dd')) {
@@ -1386,7 +1392,7 @@ export default class CommentForm {
     if (outerWrapperTag) {
       /**
        * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
-       * comment form element} directly, or {@link module:CommentForm~$wrappingList the list} that
+       * comment form element} directly or {@link module:CommentForm~$wrappingList the list} that
        * wraps the item that wraps the comment form element.
        *
        * @type {JQuery|undefined}
