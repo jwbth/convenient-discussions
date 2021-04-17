@@ -35,6 +35,15 @@ export default {
   localTimezoneOffset: null,
 
   /**
+   * Whether to store of the some of the preferences globally. Requires Extension:GlobalPreferences to
+   * be enabled.
+   *
+   * @type {?boolean}
+   * @default true
+   */
+  useGlobalPreferences: true,
+
+  /**
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
    * `mw.config.get('wgExtraSignatureNamespaces')` will be used. For example: `[4]` for Project.
    *

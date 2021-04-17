@@ -32,13 +32,13 @@ export function makeBackgroundRequest(params, method = 'post') {
     cd.g.api[method](params, {
       success: (resp) => {
         if (resp.error) {
-          reject('api', resp);
+          reject(['api', resp]);
         } else {
           resolve(resp);
         }
       },
       error: (jqXHR, textStatus) => {
-        reject('http', textStatus);
+        reject(['http', textStatus]);
       },
     });
   });
@@ -310,7 +310,26 @@ export async function setLocalOption(name, value) {
  * @throws {CdError}
  */
 export async function setGlobalOption(name, value) {
-  await setOption(name, value, 'globalpreferences');
+  if (!cd.config.useGlobalPreferences) {
+    // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
+    // of SettingsDialog#removeData in modal~settingsDialog, removing the option if it existed,
+    // which may have a benificial effect if cd.config.useGlobalPreferences was true at some stage
+    // and a local setting with cd.g.SETTINGS_OPTION_NAME name was created instead of a global one,
+    // thus inviting the need to remove it upon removing all data.
+    await setLocalOption(name, value);
+
+    return;
+  }
+  try {
+    await setOption(name, value, 'globalpreferences');
+  } catch (e) {
+    // The site doesn't support global preferences.
+    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
+      await setLocalOption(name, value);
+    } else {
+      throw e;
+    }
+  }
 }
 
 /**

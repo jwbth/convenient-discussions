@@ -348,6 +348,7 @@ async function go() {
         'jquery.client',
         'jquery.color',
         'mediawiki.Title',
+        'mediawiki.Uri',
         'mediawiki.api',
         'mediawiki.cookie',
         'mediawiki.jqueryMsg',

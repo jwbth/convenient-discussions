@@ -193,11 +193,15 @@ export function flat(arr) {
 /**
  * Callback used in the `.catch()` parts of `mw.Api` requests.
  *
- * @param {string} code
+ * @param {string|Array} code
  * @param {object} data
  * @throws {CdError}
  */
 export function handleApiReject(code, data) {
+  // Native promises support only one parameter.
+  if (Array.isArray(code)) {
+    [code, data] = code;
+  }
   // See the parameters with which mw.Api() rejects:
   // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
   throw code === 'http' ?

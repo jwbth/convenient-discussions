@@ -174,32 +174,26 @@ export function getLocalOverridingSettings() {
  * Save the settings to the server. This function will split the settings into the global and local
  * ones and make two respective requests.
  *
- * @param {object} [settings] Settings to save. Otherwise, `cd.settings` is used.
+ * @param {object} [settings=cd.settings] Settings to save.
  */
-export async function setSettings(settings) {
-  settings = settings || cd.settings;
-  const globalSettings = {};
-  const localSettings = {};
-  Object.keys(settings).forEach((key) => {
-    if (cd.localSettingNames.includes(key)) {
-      localSettings[key] = settings[key];
-    } else {
-      globalSettings[key] = settings[key];
-    }
-  });
+export async function setSettings(settings = cd.settings) {
+  if (cd.config.useGlobalPreferences) {
+    const globalSettings = {};
+    const localSettings = {};
+    Object.keys(settings).forEach((key) => {
+      if (cd.localSettingNames.includes(key)) {
+        localSettings[key] = settings[key];
+      } else {
+        globalSettings[key] = settings[key];
+      }
+    });
 
-  try {
     await Promise.all([
       setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, JSON.stringify(localSettings)),
       setGlobalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings))
     ]);
-  } catch (e) {
-    // The site doesn't support global preferences.
-    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
-      await setLocalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings));
-    } else {
-      throw e;
-    }
+  } else {
+    await setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, JSON.stringify(settings));
   }
 }
 

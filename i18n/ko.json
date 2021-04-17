@@ -3,6 +3,7 @@
 		"authors": [
 			"Codenstory",
 			"Jack who built the house",
+			"Siwoolee",
 			"Songhee",
 			"Ykhwong"
 		]
@@ -42,6 +43,8 @@
 	"copylink-error": "링크를 복사하지 못했습니다.",
 	"thank-error": "감사 표현을 보내지 못했습니다.",
 	"thank-success": "감사 표현 알림을 보냈습니다.",
+	"es-delete-reply": "답변 삭제",
+	"es-delete-comment": "댓글 지우기",
 	"es-new-topic": "새 주제",
 	"cf-comment-placeholder-replytosection": "\"$1\"에 답변하기",
 	"cf-comment-placeholder-replytocomment": "$1에 답변하기",
