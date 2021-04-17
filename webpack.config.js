@@ -38,13 +38,13 @@ module.exports = (env) => {
 
   let filenamePostfix = '';
   let lang;
-  let fullCode;
+  let wiki;
   if (single) {
     const project = process.env.npm_config_project || 'w';
-    const interlanguageWikis = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
-    lang = process.env.npm_config_lang || 'ru';
-    fullCode = interlanguageWikis.includes(project) ? `${project}-${lang}` : project;
-    filenamePostfix = `-single-${fullCode}`;
+    const interlanguageProjects = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
+    lang = process.env.npm_config_lang || 'en';
+    wiki = interlanguageProjects.includes(project) ? `${project}-${lang}` : project;
+    filenamePostfix = `-single-${wiki}`;
   } else if (dev) {
     filenamePostfix = '-dev';
   } else if (test) {
@@ -73,7 +73,7 @@ module.exports = (env) => {
     new webpack.DefinePlugin({
       IS_TEST: test,
       IS_SINGLE: single,
-      CONFIG_FILE_NAME: single ? JSON.stringify(fullCode) : null,
+      CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : null,
       LANG_CODE: single ? JSON.stringify(lang) : null,
     }),
     new WebpackBuildNotifierPlugin({
@@ -191,7 +191,6 @@ module.exports = (env) => {
         },
       ],
     },
-    watch: single,
     optimization: {
       concatenateModules: true,
       minimizer: [
@@ -238,6 +237,9 @@ module.exports = (env) => {
 
       // Fixes "Invalid Host/Origin header".
       disableHostCheck: true,
+
+      // To use in a DevTools snippet.
+      writeToDisk: single,
     },
   };
 };
