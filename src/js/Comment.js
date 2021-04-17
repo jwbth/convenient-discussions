@@ -2001,75 +2001,76 @@ export default class Comment extends CommentSkeleton {
       // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
       // to see a bug happening if we don't check for `this.isOpeningSection`.
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
-    }
-
-    // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
-    [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
-      .filter(defined)
-      .filter((regexp) => regexp !== null)
-      .forEach((originalRegexp) => {
-        const regexp = new RegExp(originalRegexp.source + '$', 'm');
-        const linesRegexp = /^(.+)\n/gm;
-        let lineMatch;
-        let indent;
-        while ((lineMatch = linesRegexp.exec(code))) {
-          const line = lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1');
-          if (regexp.test(line)) {
-            const testIndent = lineMatch.index + lineMatch[0].length;
-            if (testIndent === code.length) {
-              break;
-            } else {
-              indent = testIndent;
+    } else {
+      // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
+      [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
+        .filter(defined)
+        .filter((regexp) => regexp !== null)
+        .forEach((originalRegexp) => {
+          const regexp = new RegExp(originalRegexp.source + '$', 'm');
+          const linesRegexp = /^(.+)\n/gm;
+          let lineMatch;
+          let indent;
+          while ((lineMatch = linesRegexp.exec(code))) {
+            const line = lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1');
+            if (regexp.test(line)) {
+              const testIndent = lineMatch.index + lineMatch[0].length;
+              if (testIndent === code.length) {
+                break;
+              } else {
+                indent = testIndent;
+              }
             }
           }
+          if (indent) {
+            code = code.slice(indent);
+            startIndex += indent;
+            lineStartIndex += indent;
+          }
+        });
+
+      // This should be before the "this.level > 0" block to account for cases like
+      // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp
+      // doesn't catch the comment because of a new line inside a "syntaxhighlight" element).
+      cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
+        if (pattern.source[0] !== '^') {
+          console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
         }
-        if (indent) {
-          code = code.slice(indent);
-          startIndex += indent;
-          lineStartIndex += indent;
+        const match = code.match(pattern);
+        if (match) {
+          code = code.slice(match[0].length);
+          lineStartIndex = startIndex + match[0].lastIndexOf('\n') + 1;
+          startIndex += match[0].length;
         }
       });
 
-    // This should be before the "this.level > 0" block to account for cases like
-    // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp doesn't
-    // catch the comment because of a new line inside a "syntaxhighlight" element).
-    cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
-      if (pattern.source[0] !== '^') {
-        console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
-      }
-      const match = code.match(pattern);
-      if (match) {
-        code = code.slice(match[0].length);
-        lineStartIndex = startIndex + match[0].lastIndexOf('\n') + 1;
-        startIndex += match[0].length;
-      }
-    });
+      // Exclude the indentation characters and any foreign code before them from the comment code.
+      // Comments at the zero level sometimes start with ":" that is used to indent some side note.
+      // It shouldn't be considered an indentation character.
+      if (this.level > 0) {
+        const replaceIndentationChars = (s, before, chars) => {
+          indentationChars = chars;
+          lineStartIndex = startIndex + before.length;
+          startIndex += s.length;
+          return '';
+        };
 
-    // Exclude the indentation characters and any foreign code before them from the comment code.
-    // Comments at the zero level sometimes start with ":" that is used to indent some side note. It
-    // shouldn't be considered an indentation character.
-    if (this.level > 0) {
-      const replaceIndentationChars = (s, before, chars) => {
-        indentationChars = chars;
-        lineStartIndex = startIndex + before.length;
-        startIndex += s.length;
-        return '';
-      };
-
-      code = code.replace(
-        new RegExp(`^()${cd.config.indentationCharsPattern}`),
-        replaceIndentationChars
-      );
-
-      // See the comment "Without the following code, the section introduction..." in Parser.js.
-      // Dangerous case: https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1.
-      // This was actually a mistake to put a signature at the first level, but if it was legit,
-      // only the last sentence should have been interpreted as the comment.
-      if (indentationChars === '') {
         code = code.replace(
-          new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
+          new RegExp(`^()${cd.config.indentationCharsPattern}`),
           replaceIndentationChars
         );
+
+        // See the comment "Without the following code, the section introduction..." in Parser.js.
+        // Dangerous case:
+        // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
+        // actually a mistake to put a signature at the first level, but if it was legit, only the
+        // last sentence should have been interpreted as the comment.
+        if (indentationChars === '') {
+          code = code.replace(
+            new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
+            replaceIndentationChars
+          );
+        }
       }
     }
 
