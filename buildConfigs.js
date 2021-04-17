@@ -2,9 +2,9 @@ const fs = require('fs');
 
 const argv = require('yargs').argv;
 
-// node buildConfigs --dev
-// npm run <command running this script> --dev
-const devSuffix = (argv.dev || process.env.npm_config_dev) ? '-dev' : '';
+// node buildConfigs --test
+// npm run <command running this script> --test
+const testSuffix = (argv.test || process.env.npm_config_test) ? '-test' : '';
 
 fs.readdirSync('./config/').forEach((filename) => {
   const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || [];
@@ -60,7 +60,7 @@ convenientDiscussions.config = ${content}
 
 if (!convenientDiscussions.isRunning) {
   convenientDiscussions.getStringsPromise = getStrings();
-  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${devSuffix}.js&action=raw&ctype=text/javascript')
+  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions${testSuffix}.js&action=raw&ctype=text/javascript')
     .catch(function (e) {
       console.warn('Couldn\\'t load Convenient Discussions.', e);
     });
