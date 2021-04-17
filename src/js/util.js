@@ -202,6 +202,7 @@ export function handleApiReject(code, data) {
   if (Array.isArray(code)) {
     [code, data] = code;
   }
+
   // See the parameters with which mw.Api() rejects:
   // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
   throw code === 'http' ?

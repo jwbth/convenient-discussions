@@ -594,7 +594,7 @@ async function app() {
   }
 
   if (IS_SINGLE) {
-    cd.config = Object.assign(defaultConfig, config);
+    cd.config = config;
   }
 
   /**

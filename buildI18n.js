@@ -49,24 +49,24 @@ function unhideText(text, hidden) {
 
 DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
   if (!Object.keys(data.allowedTags).includes(data.tagName) && data.tagName !== 'body') {
-    // `< /li>` qualifies as "#comment" and has content available under `currentNode.textContent`.
-    warning(`Disallowed tag found and sanitized in string "${keyword(config.stringName)}" in ${keyword(config.fileName)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}`);
+    // `< /li>` qualifies as `#comment` and has content available under `currentNode.textContent`.
+    warning(`Disallowed tag found and sanitized in string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}`);
   }
 });
 
 DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent, config) => {
   if (!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)) {
-    warning(`Disallowed attribute found and sanitized in string "${keyword(config.stringName)}" in ${keyword(config.fileName)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}`);
+    warning(`Disallowed attribute found and sanitized in string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}`);
   }
 });
 
 const i18n = {};
 
 fs.readdirSync('./i18n/')
-  .filter(fileName => path.extname(fileName) === '.json' && fileName !== 'qqq.json')
-  .forEach((fileName) => {
-    const [, lang] = path.basename(fileName).match(/^(.+)\.json$/) || [];
-    const strings = require(`./i18n/${fileName}`);
+  .filter(filename => path.extname(filename) === '.json' && filename !== 'qqq.json')
+  .forEach((filename) => {
+    const [, lang] = path.basename(filename).match(/^(.+)\.json$/) || [];
+    const strings = require(`./i18n/${filename}`);
     Object.keys(strings)
       .filter((name) => typeof strings[name] === 'string')
       .forEach((stringName) => {
@@ -82,7 +82,7 @@ fs.readdirSync('./i18n/')
             'target',
           ],
           ALLOW_DATA_ATTR: false,
-          fileName,
+          filename,
           stringName,
           lang,
         });
@@ -93,7 +93,7 @@ fs.readdirSync('./i18n/')
         // just manually check that only allowed tags are present.
         for (const [, tagName] of sanitized.matchAll(/<(\w+)/g)) {
           if (!ALLOWED_TAGS.includes(tagName.toLowerCase())) {
-            warning(`Disallowed tag ${code(tagName)} found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
+            warning(`Disallowed tag ${code(tagName)} found in ${keyword(filename)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
             delete strings[stringName];
             return;
           }
@@ -103,7 +103,7 @@ fs.readdirSync('./i18n/')
         // one of the "on..." attributes.
         let test = sanitized.replace(/&\w+;|\s+/g, '');
         if (/javascript:/i.test(test) || /\bon\w+\s*=/i.test(sanitized)) {
-          warning(`Suspicious code found in ${keyword(fileName)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
+          warning(`Suspicious code found in ${keyword(filename)} at the late stage: ${keyword(sanitized)}. The string has been removed altogether.`);
           delete strings[stringName];
           return;
         }
