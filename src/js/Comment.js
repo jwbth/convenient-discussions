@@ -772,7 +772,7 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    this.$backgroundToAnimate?.stop(false, true);
+    this.$animatedBackground?.stop(false, true);
     const isMoved = this.configureLayers();
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
@@ -790,7 +790,7 @@ export default class Comment extends CommentSkeleton {
   unhighlightHovered() {
     if (!this.isHovered) return;
 
-    this.$backgroundToAnimate?.stop(false, true);
+    this.$animatedBackground?.stop(false, true);
 
     this.underlay.classList.remove('cd-commentUnderlay-hover');
     this.overlay.classList.remove('cd-commentOverlay-hover');
@@ -829,18 +829,18 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    this.$backgroundToAnimate = this.$underlay
-      .add(this.$overlayContent)
-      .add(this.$overlayGradient);
+    cd.debug.startTimer('animatedBackground');
+    /**
+     * Comment underlay and some elements inside comment overlay whose colors are animated in some
+     * events.
+     *
+     * @type {?(JQuery|undefined)}
+     */
+    this.$animatedBackground = this.$underlay.add(this.$overlayContent);
+    cd.debug.stopTimer('animatedBackground');
 
     // Reset the animations and colors
-    this.$backgroundToAnimate
-      .add(this.$marker)
-      .stop()
-      .css({
-        backgroundColor: '',
-        opacity: 1,
-      });
+    this.$animatedBackground.add(this.$marker).stop(false, true);
 
     // The "cd-commentUnderlay-forcedBackground" class helps to set background for a type even if
     // they user has switched off background highlighting for this type ("new", for example).
@@ -880,10 +880,8 @@ export default class Comment extends CommentSkeleton {
         backgroundColor: markerColor,
         opacity: 1,
       });
-      this.$backgroundToAnimate.css({
-        backgroundColor: backgroundColor,
-        backgroundImage: 'none',
-      });
+      this.$animatedBackground.css({ backgroundColor: backgroundColor })
+      this.$overlayGradient.css({ backgroundImage: 'none' });
 
       const generateProperties = (backgroundColor) => {
         const properties = { backgroundColor };
@@ -901,11 +899,11 @@ export default class Comment extends CommentSkeleton {
         opacity: '',
       };
 
-      const comment = this;
-      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', function () {
-        comment.$marker.css(propertyDefaults);
+      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', () => {
+        this.$marker.css(propertyDefaults);
       });
-      this.$backgroundToAnimate.animate(
+      const comment = this;
+      this.$animatedBackground.animate(
         generateProperties(finalBackgroundColor),
         400,
         'swing',
@@ -915,8 +913,7 @@ export default class Comment extends CommentSkeleton {
           if (callback) {
             callback();
           }
-          comment.$backgroundToAnimate.css(propertyDefaults);
-          delete comment.$backgroundToAnimate;
+          comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
         }
       );
     }, delay);
@@ -1823,7 +1820,7 @@ export default class Comment extends CommentSkeleton {
   removeLayers() {
     if (!this.underlay) return;
 
-    this.$backgroundToAnimate?.stop();
+    this.$animatedBackground?.stop();
     this.$marker.stop();
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
