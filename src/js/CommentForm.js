@@ -1731,7 +1731,16 @@ export default class CommentForm {
       .map((comment) => comment.author.name)
       .sort();
     if (this.targetComment && this.mode !== 'edit') {
-      usersInSection.unshift(this.targetComment.author.name);
+      for (
+        let targetComment = this.targetComment;
+        targetComment;
+        targetComment = targetComment.getParent()
+      ) {
+        if (targetComment.author !== cd.g.USER) {
+          usersInSection.unshift(targetComment.author.name);
+          break;
+        }
+      }
     }
     usersInSection = usersInSection.filter(unique);
 
