@@ -116,7 +116,7 @@ fs.readdirSync('./i18n/')
 
 const i18nWithFallbacks = {};
 
-const fallbackData = require('./fallbacks.json');
+const fallbackData = require('./language-fallbacks.json');
 Object.keys(i18n).forEach((lang) => {
   const fallbacks = fallbackData[lang];
   if (!fallbacks) {
