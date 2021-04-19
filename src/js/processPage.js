@@ -29,7 +29,7 @@ import {
 import { confirmDialog, notFound } from './modal';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
-import { init, removeLoadingOverlay, restoreCommentForms, saveSession } from './boot';
+import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
 import { isInline } from './util';
 import { setSettings, setVisits } from './options';
 
@@ -1148,7 +1148,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    removeLoadingOverlay();
+    finishLoading();
 
     // The next line is needed to calculate the rendering time: it won't run until everything gets
     // rendered.
@@ -1157,10 +1157,9 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     cd.debug.stopTimer('final code and rendering');
   } else {
     cd.g.isPageActive = false;
-    removeLoadingOverlay();
+    finishLoading();
   }
 
-  cd.g.isFirstRun = false;
   cd.g.isPageFirstParsed = false;
 
   cd.debug.stopTimer('total time');

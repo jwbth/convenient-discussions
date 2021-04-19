@@ -15,11 +15,11 @@ import util from './globalUtil';
 import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
+  finishLoading,
   isPageLoading,
   memorizeCssValues,
-  removeLoadingOverlay,
-  setLoadingOverlay,
   setTalkPageCssVariables,
+  startLoading,
 } from './boot';
 import {
   isProbablyTalkPage,
@@ -320,16 +320,7 @@ async function go() {
   );
   if (mw.config.get('wgIsArticle')) {
     if (!isDisabledInQuery && (isEnabledInQuery || isPageEligible)) {
-      /**
-       * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
-       * script's refresh functionality).
-       *
-       * @type {CommentForm|undefined}
-       * @memberof module:cd~convenientDiscussions.g
-       */
-      cd.g.isFirstRun = true;
-
-      setLoadingOverlay();
+      startLoading();
 
       cd.debug.stopTimer('start');
       cd.debug.startTimer('loading data');
@@ -388,13 +379,13 @@ async function go() {
           } catch (e) {
             mw.notify(cd.s('error-processpage'), { type: 'error' });
             console.error(e);
-            removeLoadingOverlay();
+            finishLoading();
           }
         },
         (e) => {
           mw.notify(cd.s('error-loaddata'), { type: 'error' });
           console.error(e);
-          removeLoadingOverlay();
+          finishLoading();
         }
       );
 
@@ -402,7 +393,7 @@ async function go() {
       // request was aborted"
       setTimeout(() => {
         if (isPageLoading()) {
-          removeLoadingOverlay();
+          finishLoading();
           console.warn('The loading overlay stays for more than 10 seconds; removing it.');
         }
       }, 10000);

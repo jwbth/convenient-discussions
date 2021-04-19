@@ -12,7 +12,7 @@ import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
-import { addNotification, reloadPage, removeLoadingOverlay, saveSession } from './boot';
+import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
 import { checkboxField } from './ooui';
 import { confirmDestructive, settingsDialog } from './modal';
 import {
@@ -3011,7 +3011,7 @@ export default class CommentForm {
           currentOperation,
         });
       }
-      removeLoadingOverlay();
+      finishLoading();
     }
   }
 

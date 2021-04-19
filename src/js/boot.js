@@ -177,7 +177,7 @@ export async function initSettings() {
 }
 
 /**
- * Assign the properties related to `cd.g.$contentColumn`.
+ * Assign the properties related to `convenientDiscussions.g.$contentColumn`.
  */
 export function setContentColumnGlobals() {
   const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
@@ -804,7 +804,7 @@ async function updatePageContent(html, keptData) {
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
-    removeLoadingOverlay();
+    finishLoading();
   }
 
   mw.hook('wikipage.content').fire(cd.g.$content);
@@ -832,8 +832,29 @@ function isShowLoadingOverlaySettingOff() {
 
 /**
  * Set the loading overlay.
+ *
+ * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
  */
-export function setLoadingOverlay() {
+export function startLoading(isReload = false) {
+  if (isReload) {
+    /**
+     * Is the page being reloaded now.
+     *
+     * @type {boolean}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.isPageBeingReloaded = true;
+  } else {
+    /**
+     * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
+     * script's refresh functionality).
+     *
+     * @type {boolean}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.isFirstRun = true;
+  }
+
   if (isShowLoadingOverlaySettingOff()) return;
   if (!$loadingPopup) {
     $loadingPopup = $('<div>').addClass('cd-loadingPopup');
@@ -853,9 +874,12 @@ export function setLoadingOverlay() {
 }
 
 /**
- * Remove the loading overlay.
+ * Remove the loading overlay and reset `convenientDiscussions.g.isFirstRun` and
+ * `convenientDiscussions.g.isPageBeingReloaded`.
  */
-export function removeLoadingOverlay() {
+export function finishLoading() {
+  cd.g.isFirstRun = false;
+  cd.g.isPageBeingReloaded = false;
   if (!$loadingPopup || isShowLoadingOverlaySettingOff()) return;
   $loadingPopup.hide();
 }
@@ -877,7 +901,6 @@ export function isPageLoading() {
  */
 export async function reloadPage(keptData = {}) {
   if (cd.g.isPageBeingReloaded) return;
-  cd.g.isPageBeingReloaded = true;
 
   // In case checkboxes were changed programmatically.
   saveSession();
@@ -890,7 +913,7 @@ export async function reloadPage(keptData = {}) {
   cd.debug.startTimer('total time');
   cd.debug.startTimer('getting HTML');
 
-  setLoadingOverlay();
+  startLoading(true);
 
   // Save time by requesting the options in advance.
   getUserInfo().catch((e) => {
@@ -901,8 +924,7 @@ export async function reloadPage(keptData = {}) {
   try {
     parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
-    removeLoadingOverlay();
-    cd.g.isPageBeingReloaded = false;
+    finishLoading();
     if (keptData.didSubmitCommentForm) {
       throw e;
     } else {
@@ -937,8 +959,6 @@ export async function reloadPage(keptData = {}) {
   if (!keptData.commentAnchor && !keptData.sectionAnchor) {
     restoreScrollPosition(false);
   }
-
-  cd.g.isPageBeingReloaded = false;
 }
 
 /**
