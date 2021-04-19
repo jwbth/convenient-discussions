@@ -747,7 +747,9 @@ function setLocalTimestampRegexps() {
     localizedTimezones.map(mw.util.escapeRegExp).join('|').toUpperCase() +
     ')\\)'
   );
-  const pattern = mainPartPattern + ' ' + timezonePattern;
+
+  // "+" to account for RTL and LTR marks replaced with a space.
+  const pattern = mainPartPattern + ' +' + timezonePattern;
 
   /**
    * Regular expression for matching timestamps.
