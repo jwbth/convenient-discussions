@@ -1361,10 +1361,11 @@ export default class CommentForm {
 
     let outerWrapperTag;
     let createList = false;
-    const $lastOfTarget = this.target.$elements.last();
+    let $lastOfTarget;
     let $other;
     if (this.mode === 'reply') {
       createList = true;
+      $lastOfTarget = this.target.$elements.last();
       $other = $lastOfTarget.next();
       const $nextToTargetFirstChild = $other.children().first();
       if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
@@ -1382,6 +1383,7 @@ export default class CommentForm {
         outerWrapperTag = 'dd';
       }
     } else if (this.mode === 'edit') {
+      $lastOfTarget = this.target.$elements.last();
       if ($lastOfTarget.is('li')) {
         outerWrapperTag = 'li';
       } else if ($lastOfTarget.is('dd')) {
