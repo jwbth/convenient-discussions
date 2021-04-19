@@ -40,24 +40,20 @@ export function generateTagsRegexp(tags) {
  * that could confuse search results) but get right positions and code in the result.
  *
  * @param {string} code
- * @param {boolean} [replaceMarks=true] Whether to replace left-to-right and right-to-left marks.
  * @returns {string}
  */
-export function hideDistractingCode(code, replaceMarks = true) {
-  let newCode = code
+export function hideDistractingCode(code) {
+  return code
     .replace(
       generateTagsRegexp(['nowiki', 'syntaxhighlight', 'source', 'pre']),
       (s, before, content, after) => before + ' '.repeat(content.length) + after
     )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
+    .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length))
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
       (s, before, newline, after) => before + ' '.repeat(newline.length) + after
     );
-  if (replaceMarks) {
-    newCode = newCode.replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length));
-  }
-  return newCode;
 }
 
 /**
@@ -324,19 +320,15 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  */
 export function extractSignatures(code, generateCommentAnchors = false) {
   // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = hideDistractingCode(code, false)
+  const adjustedCode = hideDistractingCode(code)
     .replace(
       cd.g.QUOTE_REGEXP,
       (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
     )
     .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
 
-  // Custom user signatures can contain RTL marks, so we remove them only for unsigneds.
-  const adjustedCodeForUnsigneds = adjustedCode
-    .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length));
-
   let signatures = extractRegularSignatures(adjustedCode, code);
-  const unsigneds = extractUnsigneds(adjustedCodeForUnsigneds, code, signatures);
+  const unsigneds = extractUnsigneds(adjustedCode, code, signatures);
   signatures.push(...unsigneds);
 
   // This is for the procedure adding anchors to comments linked from the comment, see
