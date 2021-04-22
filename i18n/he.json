@@ -6,6 +6,7 @@
 			"Jack who built the house",
 			"Neriah",
 			"YaronSh",
+			"דגש",
 			"דגש חזק",
 			"מגזין יהלום"
 		]
@@ -127,7 +128,7 @@
 	"cf-watch": "לעקוב אחר הדף",
 	"cf-watchsection-topic": "לעקוב אחר הנושא",
 	"cf-watchsection-subsection": "לעקוב אחר התת נושא",
-	"cf-watchsection-tooltip": "הוספת הנושא לרשימת המעקב. ישפיע על הודעות והדגשות ברשימת המעקב.",
+	"cf-watchsection-tooltip": "הוספת הנושא לרשימת המעקב. ישפיע על הודעות והדגשות ברשימת המעקב",
 	"cf-omitsignature": "להשמיט חתימה",
 	"cf-delete": "מחיקה",
 	"cf-block-preview": "תצוגה מקדימה",
@@ -193,7 +194,7 @@
 	"navpanel-newcomments-names": "$1 ← $2",
 	"navpanel-newcomments-unknowndate": "תאריך לא ידוע",
 	"navpanel-newcomments-refresh": "לחצו לרענון הדף.",
-	"navpanel-markasread": "יש ללחוץ \"Ctrl\" כדי לסמן את כל התגובות המוצגות כנקראו",
+	"navpanel-markasread": "יש להחזיק Ctrl כדי לסמן את כל התגובות המוצגות כנקראו",
 	"toc-more": "{{PLURAL:$1|תגובה אחת נוספת|$1 תגובות נוספות}}",
 	"toc-watched": "אתם עוקבים אחר הנושא הזה",
 	"pagenav-pagetop": "ראש העמוד",
