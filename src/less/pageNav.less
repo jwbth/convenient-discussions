@@ -58,7 +58,19 @@
 
 .cd-pageNav-item {
   margin: 0 0 0.25em;
-  cursor: pointer;
+
+  a {
+    color: inherit;
+
+    &:hover,
+    &:focus {
+      text-decoration: inherit;
+    }
+  }
+}
+
+.cd-pageNav-link {
+  display: block;
 }
 
 .ltr .cd-pageNav-item-level {

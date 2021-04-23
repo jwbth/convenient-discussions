@@ -107,11 +107,14 @@ export default {
         this.$topLink = $('<li>')
           .attr('id', 'cd-pageNav-topLink')
           .addClass('cd-pageNav-item')
+          .appendTo(this.$linksOnTop);
+        $('<a>')
+          .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-pagetop'))
           .on('click', () => {
             this.jump(0, this.$topLink);
           })
-          .appendTo(this.$linksOnTop);
+          .appendTo(this.$topLink);
       }
     } else {
       if (this.$linksOnTop) {
@@ -124,11 +127,14 @@ export default {
         this.$tocLink = $('<li>')
           .attr('id', 'cd-pageNav-tocLink')
           .addClass('cd-pageNav-item')
+          .appendTo(this.$linksOnTop);
+        $('<a>')
+          .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-toc'))
           .on('click', () => {
             this.jump(cd.g.$toc, this.$tocLink);
           })
-          .appendTo(this.$linksOnTop);
+          .appendTo(this.$tocLink);
       }
       if (!this.$currentSection) {
         this.$currentSection = $('<ul>')
@@ -146,11 +152,14 @@ export default {
         this.$bottomLink = $('<li>')
           .attr('id', 'cd-pageNav-bottomLink')
           .addClass('cd-pageNav-item')
+          .appendTo(this.$bottomElement);
+        $('<a>')
+          .addClass('cd-pageNav-link')
+          .text(cd.s('pagenav-pagebottom'))
           .on('click', () => {
             this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
           })
-          .text(cd.s('pagenav-pagebottom'))
-          .appendTo(this.$bottomElement);
+          .appendTo(this.$bottomLink);
       }
     } else {
       if (this.$bottomLink) {
@@ -192,18 +201,23 @@ export default {
           this.$currentSection.empty();
           const ancestors = [section, ...section.getAncestors()].reverse();
           ancestors.forEach((sectionInTree, level) => {
-            const $item = (
-              $sectionWithBackLink &&
-              $sectionWithBackLink.data('section') === sectionInTree
-            ) ?
-              $sectionWithBackLink :
-              $('<li>')
+            let $item;
+            if ($sectionWithBackLink && $sectionWithBackLink.data('section') === sectionInTree) {
+              $item = $sectionWithBackLink;
+            } else {
+              $item = $('<li>')
                 .addClass(`cd-pageNav-item cd-pageNav-item-level-${level}`)
                 .data('section', sectionInTree)
+              $('<a>')
+                .attr('href', sectionInTree.getUrl())
+                .addClass('cd-pageNav-link')
                 .text(sectionInTree.headline)
-                .on('click', () => {
+                .on('click', (e) => {
+                  e.preventDefault();
                   this.jump(sectionInTree.$heading, $item);
-                });
+                })
+                .appendTo($item);
+            }
             $item.appendTo(this.$currentSection);
           });
           return true;
@@ -248,7 +262,7 @@ export default {
     currentSection = null;
   },
 
-  jump($elementOrOffset, $link, isBackLink) {
+  jump($elementOrOffset, $item, isBackLink) {
     const offset = $elementOrOffset instanceof $ ?
       $elementOrOffset.offset().top - cd.g.BODY_SCROLL_PADDING_TOP :
       $elementOrOffset;
@@ -262,23 +276,28 @@ export default {
     }
     if (!isBackLink) {
       const scrollY = window.scrollY;
-      const $backLink = $('<span>')
+      const $backLink = $('<a>')
         .addClass('cd-pageNav-backLink')
         .text(cd.s('pagenav-back'))
         .on('click', (e) => {
+          // For links with href
+          e.preventDefault();
+
+          // For links without href
           e.stopPropagation();
-          this.jump(scrollY, $link, true);
+
+          this.jump(scrollY, $item, true);
         });
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
         .append(cd.sParse('dot-separator'), $backLink)
-        .appendTo($link);
-      if ($link.parent().is('#cd-pageNav-currentSection')) {
-        $sectionWithBackLink = $link;
+        .appendTo($item.children().first());
+      if ($item.parent().is('#cd-pageNav-currentSection')) {
+        $sectionWithBackLink = $item;
       }
-      if ($link === this.$topLink || $link === this.$tocLink) {
+      if ($item === this.$topLink || $item === this.$tocLink) {
         backLinkLocation = 'top';
-      } else if ($link === this.$bottomLink) {
+      } else if ($item === this.$bottomLink) {
         backLinkLocation = 'bottom';
       } else {
         backLinkLocation = 'section';
