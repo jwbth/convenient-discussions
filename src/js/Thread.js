@@ -31,9 +31,6 @@ let treeWalker;
  * @returns {?Element}
  */
 function findItemElement(commentPartElement, level) {
-  if (!treeWalker) {
-    treeWalker = new ElementsTreeWalker();
-  }
   treeWalker.currentNode = commentPartElement;
 
   let item;
@@ -42,8 +39,9 @@ function findItemElement(commentPartElement, level) {
     if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
       const className = treeWalker.currentNode.getAttribute('class');
       const match = className.match(/cd-commentLevel-(\d+)/);
-      if (match && Number(match[1]) === level) {
-        item = previousNode;
+      if (match && Number(match[1]) === (level || 1)) {
+        // Level can be 0 when we start from a comment form.
+        item = level === 0 ? treeWalker.currentNode : previousNode;
         break;
       }
     }
@@ -281,9 +279,6 @@ export default class Thread {
         </ul>
      */
     cd.debug.startTimer('thread collapse traverse');
-    if (!treeWalker) {
-      treeWalker = new ElementsTreeWalker();
-    }
     const rangeContents = [range.startContainer];
     if (range.startContainer !== range.endContainer) {
       treeWalker.currentNode = range.startContainer;
@@ -313,24 +308,23 @@ export default class Thread {
 
   collapse(getUserGendersPromise) {
     // The range contents can change, at least due to appearance of comment forms.
-    const rangeContents = this.getRangeContents();
+    this.collapsedRange = this.getRangeContents();
 
     cd.debug.stopTimer('thread collapse traverse');
 
     cd.debug.startTimer('thread collapse range');
-    this.$collapsedRange = $(rangeContents)
+    this.collapsedRange.forEach((el) => {
       // We use a class here because there can be elements in the comment that are hidden from the
       // beginning and should stay so when reshowing the comment.
-      .addClass('cd-hidden')
+      el.classList.add('cd-hidden')
 
-      .each((i, el) => {
-        // An element can be in more than one collapsed range. So, we need to show it when expanding
-        // a range only if no active collapsed ranges are left.
-        const $el = $(el);
-        const roots = $el.data('cd-collapsed-thread-root-comments') || [];
-        roots.push(this.rootComment);
-        $el.data('cd-collapsed-thread-root-comments', roots);
-      });
+      // An element can be in more than one collapsed range. So, we need to show it when expanding
+      // a range only if no active collapsed ranges are left.
+      const $el = $(el);
+      const roots = $el.data('cd-collapsed-thread-root-comments') || [];
+      roots.push(this.rootComment);
+      $el.data('cd-collapsed-thread-root-comments', roots);
+    });
     cd.debug.stopTimer('thread collapse range');
 
     cd.debug.startTimer('thread collapse traverse comments');
@@ -373,16 +367,17 @@ export default class Thread {
     }
 
     cd.debug.startTimer('thread collapse button note');
-    let tagName = rangeContents[0].tagName;
+    let tagName = this.collapsedRange[0].tagName;
     if (!['LI', 'DD'].includes(tagName)) {
       tagName = 'DIV';
     }
-    this.collapsedNote = document.createElement(tagName);
-    this.collapsedNote.className = 'cd-thread-collapsedNote';
-    this.collapsedNote.appendChild(button);
-    rangeContents[0].parentNode.insertBefore(this.collapsedNote, rangeContents[0]);
+    const collapsedNote = document.createElement(tagName);
+    collapsedNote.className = 'cd-thread-collapsedNote';
+    collapsedNote.appendChild(button);
+    this.collapsedRange[0].parentNode.insertBefore(collapsedNote, this.collapsedRange[0]);
     cd.debug.stopTimer('thread collapse button note');
 
+    this.collapsedNote = collapsedNote;
     this.$collapsedNote = $(this.collapsedNote);
     if (isInited) {
       this.$collapsedNote.cdScrollIntoView();
@@ -409,13 +404,13 @@ export default class Thread {
   }
 
   expand() {
-    this.$collapsedRange.each((i, el) => {
+    this.collapsedRange.forEach((el) => {
       const $el = $(el);
       const roots = $el.data('cd-collapsed-thread-root-comments') || [];
       removeFromArrayIfPresent(roots, this.rootComment);
       $el.data('cd-collapsed-thread-root-comments', roots);
       if (!roots.length) {
-        $el.removeClass('cd-hidden');
+        el.classList.remove('cd-hidden');
       }
     });
 
@@ -462,6 +457,7 @@ export default class Thread {
     cd.debug.startTimer('threads traverse');
 
     isInited = false;
+    treeWalker = new ElementsTreeWalker();
     cd.comments.forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
@@ -502,10 +498,11 @@ export default class Thread {
   static updateLines() {
     if ((isPageLoading() || document.hidden) && isInited) return;
 
-    cd.debug.startTimer('threads update');
+    cd.debug.startTimer('threads updateLines');
     cd.debug.startTimer('threads calculate');
 
     const elementsToAdd = [];
+    const threadsToUpdate = [];
     cd.comments
       .slice()
       .reverse()
@@ -531,6 +528,7 @@ export default class Thread {
           }
         } else {
           if (comment.level === 0) {
+            cd.debug.startTimer('threads getBoundingClientRect 0');
             comment.getPositions();
             if (comment.positions) {
               const [leftMargin] = comment.getLayersMargins();
@@ -540,8 +538,11 @@ export default class Thread {
               }
               lineTop = comment.positions.top;
             }
+            cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
+            cd.debug.startTimer('threads getBoundingClientRect other');
             rectTop = thread.startItem.getBoundingClientRect();
+            cd.debug.stopTimer('threads getBoundingClientRect other');
           }
         }
 
@@ -559,7 +560,9 @@ export default class Thread {
           }
         }
 
+        cd.debug.startTimer('threads getBoundingClientRect bottom');
         const rectBottom = elementBottom.getBoundingClientRect();
+        cd.debug.stopTimer('threads getBoundingClientRect bottom');
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
@@ -600,10 +603,7 @@ export default class Thread {
           thread.createLine();
         }
 
-        thread.clickArea.style.left = thread.lineLeft + 'px';
-        thread.clickArea.style.top = thread.lineTop + 'px';
-        thread.clickArea.style.height = thread.lineHeight + 'px';
-
+        threadsToUpdate.push(thread);
         if (!thread.clickArea.parentNode) {
           elementsToAdd.push(thread.clickArea);
         }
@@ -614,14 +614,23 @@ export default class Thread {
       });
 
     cd.debug.stopTimer('threads calculate');
+    cd.debug.startTimer('threads update');
+
+    // Faster to update/add all elements in one batch.
+    threadsToUpdate.forEach((thread) => {
+      thread.clickArea.style.left = thread.lineLeft + 'px';
+      thread.clickArea.style.top = thread.lineTop + 'px';
+      thread.clickArea.style.height = thread.lineHeight + 'px';
+    });
+
+    cd.debug.stopTimer('threads update');
     cd.debug.startTimer('threads append');
 
-    // Faster to add all elements in one batch.
     if (elementsToAdd.length) {
       threadLinesContainer.append(...elementsToAdd);
     }
 
     cd.debug.stopTimer('threads append');
-    cd.debug.stopTimer('threads update');
+    cd.debug.stopTimer('threads updateLines');
   }
 }
