@@ -1374,7 +1374,7 @@ export default class CommentForm {
       if ($other.is('ul, dl')) {
         createList = false;
         outerWrapperTag = $other.is('ul') ? 'li' : 'dd';
-        $other.addClass('cd-commentLevel');
+        $other.addClass(`cd-commentLevel cd-commentLevel-${this.target.level + 1}`);
       } else if ($lastOfTarget.is('li')) {
         // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
         // in those cases. Which is unsemantic, yes :-(
@@ -1416,12 +1416,14 @@ export default class CommentForm {
 
     if (this.mode === 'reply') {
       if (createList) {
+        const className = `cd-commentLevel cd-commentLevel-${this.target.level + 1}`;
+
         /**
          * List that wraps the item that wraps the comment form element.
          *
          * @type {JQuery|undefined}
          */
-        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
+        this.$wrappingList = $('<ul>').addClass(className);
 
         if (this.$outerWrapper) {
           this.$wrappingList.appendTo(this.$outerWrapper);
