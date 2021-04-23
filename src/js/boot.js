@@ -876,10 +876,15 @@ export function startLoading(isReload = false) {
 /**
  * Remove the loading overlay and reset `convenientDiscussions.g.isFirstRun` and
  * `convenientDiscussions.g.isPageBeingReloaded`.
+ *
+ * @param {boolean} hidePopupOnly
  */
-export function finishLoading() {
-  cd.g.isFirstRun = false;
-  cd.g.isPageBeingReloaded = false;
+export function finishLoading(hidePopupOnly) {
+  if (!hidePopupOnly) {
+    cd.g.isFirstRun = false;
+    cd.g.isPageBeingReloaded = false;
+  }
+
   if (!$loadingPopup || isShowLoadingOverlaySettingOff()) return;
   $loadingPopup.hide();
 }
