@@ -12,8 +12,6 @@ import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
 import util from './globalUtil';
-import { formatDate, parseCommentAnchor } from './timestamp';
-import { getUserInfo } from './apiWrappers';
 import {
   finishLoading,
   isPageLoading,
@@ -21,6 +19,8 @@ import {
   setTalkPageCssVariables,
   startLoading,
 } from './boot';
+import { formatDate, parseCommentAnchor } from './timestamp';
+import { getUserInfo } from './apiWrappers';
 import {
   isProbablyTalkPage,
   mergeRegexps,

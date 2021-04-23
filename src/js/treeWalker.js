@@ -158,7 +158,8 @@ export class TreeWalker {
 }
 
 /**
- * Tree walker that walks only on element nodes of the current document under `cd.g.rootElement`.
+ * Tree walker that walks only on element nodes of the current document under
+ * `convenientDiscussions.g.rootElement`.
  *
  * @augments module:treeWalker.TreeWalker
  */
@@ -178,7 +179,7 @@ export class ElementsTreeWalker extends TreeWalker {
 
 /**
  * Tree walker that walks on both element and text nodes of the current document under
- * `cd.g.rootElement`.
+ * `convenientDiscussions.g.rootElement`.
  *
  * @augments module:treeWalker.TreeWalker
  */

@@ -27,9 +27,9 @@ import {
   handleWindowResize,
 } from './eventHandlers';
 import { confirmDialog, notFound } from './modal';
+import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
-import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
 import { isInline } from './util';
 import { setSettings, setVisits } from './options';
 
@@ -347,10 +347,7 @@ function processComments(parser, feivData) {
 
   signatures.forEach((signature) => {
     try {
-      const comment = parser.createComment(signature);
-      if (comment.highlightables.length) {
-        cd.comments.push(comment);
-      }
+      cd.comments.push(parser.createComment(signature));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -387,10 +384,7 @@ function processComments(parser, feivData) {
 function processSections(parser, watchedSectionsRequest) {
   parser.findHeadings().forEach((heading) => {
     try {
-      const section = parser.createSection(heading, watchedSectionsRequest);
-      if (section.id !== undefined) {
-        cd.sections.push(section);
-      }
+      cd.sections.push(parser.createSection(heading, watchedSectionsRequest));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -889,12 +883,13 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
            are not eligible to create comment forms on.) Such pages are parsed, the page navigation
            block is added to them.
       3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
-         revision. The "cd.g.isPageActive" property is true when the page is of this level. The
-         navigation panel is added to such pages, new comments are highlighted.
+         revision. The "convenientDiscussions.g.isPageActive" property is true when the page is of
+         this level. The navigation panel is added to such pages, new comments are highlighted.
 
     We need to be accurate regarding which functionality should be turned on on which level. We
-    should also make sure we only add this functionality once. The "cd.g.isPageFirstParsed" property
-    is used to reflect the run at which the page is parsed for the first time.
+    should also make sure we only add this functionality once. The
+    "convenientDiscussions.g.isPageFirstParsed" property is used to reflect the run at which the
+    page is parsed for the first time.
    */
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if

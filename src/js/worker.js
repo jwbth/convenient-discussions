@@ -135,10 +135,7 @@ function parse() {
 
   signatures.forEach((signature) => {
     try {
-      const comment = parser.createComment(signature);
-      if (comment.id !== undefined) {
-        cd.comments.push(comment);
-      }
+      cd.comments.push(parser.createComment(signature));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -150,10 +147,7 @@ function parse() {
   cd.debug.startTimer('worker: parse sections');
   parser.findHeadings().forEach((heading) => {
     try {
-      const section = parser.createSection(heading);
-      if (section.id !== undefined) {
-        cd.sections.push(section);
-      }
+      cd.sections.push(parser.createSection(heading));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);

@@ -667,8 +667,8 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
    *   moved. If set to false, it is expected that the positions will be updated afterwards.
    * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results for floating
-   *   elements from `cd.g.floatingElements`. It may be calculated in advance for many elements in
-   *   one sequence to save time.
+   *   elements from `convenientDiscussions.g.floatingElements`. It may be calculated in advance for
+   *   many elements in one sequence to save time.
    * @returns {?boolean} Was the comment moved.
    */
   configureLayers(options = {}) {
