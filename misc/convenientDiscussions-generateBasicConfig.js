@@ -69,6 +69,7 @@ mw.loader.using([
     Q11102202: 'movedTo',
     Q6537954: 'closed',
     Q12109489: 'closedEnd',
+    Q5841554: 'outdent',
   };
 
   const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php', {
@@ -114,45 +115,48 @@ mw.loader.using([
     });
   }
 
+  const titleWithLowerCaseFirst = (title) => {
+    let titleText = title.getMainText();
+    return titleText[0].toLowerCase() + titleText.slice(1);
+  };
+
   config.unsignedTemplates = (
     (titles.unsigned || titles.unsignedIp) &&
     (titles.unsigned || [])
       .concat(titles.unsignedIp || [])
-      .map((title) => title.getMainText())
-  );
-  config.paragraphTemplates = titles.paragraph
-      ?.map((title) => {
-        let titleText = title.getMainText();
-        return titleText[0].toLowerCase() + titleText.slice(1);
-      })
-      .sort((title1, title2) => {
-        if (title1 === 'pb') {
-          return -1;
-        } else if (title2 === 'pb') {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
-  config.smallDivTemplate = titles.smallDiv?.[0].getMainText();
-  config.templatesToExclude = (
-    (titles.movedFrom || titles.movedTo) &&
-    (titles.movedFrom || [])
-      .concat(titles.movedTo || [])
-      .map((title) => title.getMainText())
+      .map(titleWithLowerCaseFirst)
   );
   config.pairQuoteTemplates = (
     (titles.blockquotetop || titles.blockquotebottom) &&
     [
-      (titles.blockquotetop || []).map((title) => title.getMainText()),
-      (titles.blockquotebottom || []).map((title) => title.getMainText()),
+      (titles.blockquotetop || []).map(titleWithLowerCaseFirst),
+      (titles.blockquotebottom || []).map(titleWithLowerCaseFirst),
     ]
+  );
+  config.smallDivTemplates = titles.smallDiv.map(titleWithLowerCaseFirst);
+  config.paragraphTemplates = titles.paragraph
+    ?.map(titleWithLowerCaseFirst)
+    .sort((title1, title2) => {
+      if (title1 === 'pb') {
+        return -1;
+      } else if (title2 === 'pb') {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+  config.outdentTemplates = titles.outdent.map(titleWithLowerCaseFirst);
+  config.templatesToExclude = (
+    (titles.movedFrom || titles.movedTo) &&
+    (titles.movedFrom || [])
+      .concat(titles.movedTo || [])
+      .map(titleWithLowerCaseFirst)
   );
   config.closedDiscussionTemplates = (
     (titles.closed || titles.closedEnd) &&
     [
-      (titles.closed || []).map((title) => title.getMainText()),
-      (titles.closedEnd || []).map((title) => title.getMainText()),
+      (titles.closed || []).map(titleWithLowerCaseFirst),
+      (titles.closedEnd || []).map(titleWithLowerCaseFirst),
     ]
   );
 

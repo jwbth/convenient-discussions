@@ -333,6 +333,16 @@ export default {
   paragraphTemplates: [],
 
   /**
+   * Names of the templates that are analogs of {@link
+   * https://en.wikipedia.org/wiki/Template:Outdent}. The first string *may* be used when
+   * posting comments if this feature is implemented.
+   *
+   * @type {string[]}
+   * @default []
+   */
+  outdentTemplates: [],
+
+  /**
    * Character used to trigger user mention (ping) autocomplete.
    *
    * @type {string}

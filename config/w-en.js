@@ -97,6 +97,12 @@ export default {
     'paragraph',
   ],
 
+  outdentTemplates: [
+    'outdent',
+    'od',
+    'out',
+  ],
+
   quoteFormatting: ["{{tq|1=", "}}"],
 
   elementsToExcludeClasses: [

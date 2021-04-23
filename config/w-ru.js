@@ -181,6 +181,11 @@ export default {
     'абзац',
   ],
 
+  outdentTemplates: [
+    'outdent',
+    'od',
+  ],
+
   elementsToExcludeClasses: [
     'ruwiki-movedTemplate',
     'ambox',
