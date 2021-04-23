@@ -173,15 +173,13 @@ function extractRegularSignatures(adjustedCode, code) {
     /*
       Captures:
       1 - the whole line with the signature
-      2 - text before the last user link
-      3 - unprocessed signature (currently not used)
+      2 - text before the timestamp
+      3 - text before the last user link
       4 - author name (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
-      6 - timestamp + "small" template ending characters / ending small tag
-      7 - timestamp
-      8 - new line characters or empty string
+      6 - timestamp
      */
-    `^((.*)(${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}}((${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?)).*)(\n*|$)`,
+    `^(((.*)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}})(${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?.*)(?:\n*|$)`,
     'igm'
   );
   const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
@@ -202,17 +200,11 @@ function extractRegularSignatures(adjustedCode, code) {
     if (authorTimestampMatch) {
       author = userRegistry.getUser(decodeHtmlEntities(authorTimestampMatch[4]));
 
-      const timestampEndIndex = (
-        authorTimestampMatch[0].length -
-        authorTimestampMatch[6].length -
-        authorTimestampMatch[authorTimestampMatch.length - 1].length
-      );
-      timestamp = code.slice(
-        timestampEndIndex - authorTimestampMatch[7].length,
-        authorTimestampMatch[7].length
-      );
+      const timestampStartIndex = timestampMatch.index + authorTimestampMatch[2].length;
+      const timestampEndIndex = timestampStartIndex + authorTimestampMatch[6].length;
+      timestamp = code.slice(timestampStartIndex, timestampEndIndex);
 
-      startIndex = timestampMatch.index + authorTimestampMatch[2].length;
+      startIndex = timestampMatch.index + authorTimestampMatch[3].length;
       endIndex = timestampMatch.index + authorTimestampMatch[1].length;
       dirtyCode = code.slice(startIndex, endIndex);
 
@@ -221,7 +213,11 @@ function extractRegularSignatures(adjustedCode, code) {
       // Find the first link to this author in the preceding text.
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
-      let commentEndingStartIndex = timestampEndIndex - signatureScanLimitWikitext;
+      let commentEndingStartIndex = (
+        timestampStartIndex -
+        timestampMatch.index -
+        signatureScanLimitWikitext
+      );
       commentEndingStartIndex = Math.max(0, commentEndingStartIndex);
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
@@ -239,8 +235,10 @@ function extractRegularSignatures(adjustedCode, code) {
     } else {
       startIndex = timestampMatch.index + timestampMatch[2].length;
       endIndex = timestampMatch.index + timestampMatch[1].length;
-      timestamp = code.slice(startIndex, endIndex);
-      dirtyCode = timestamp;
+      dirtyCode = code.slice(startIndex, endIndex);
+
+      const timestampEndIndex = startIndex + timestampMatch[3].length;
+      timestamp = code.slice(startIndex, timestampEndIndex);
 
       nextCommentStartIndex = timestampMatch.index + timestampMatch[0].length;
     }
