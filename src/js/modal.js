@@ -1037,7 +1037,7 @@ export async function copyLink(object, e) {
   const isComment = object instanceof Comment;
   const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
   const wikilink = `[[${cd.g.PAGE.name}#${anchor}]]`;
-  const decodedCurrentPageUrl = decodeURI(cd.g.PAGE.getUrl());
+  const link = object.getUrl();
 
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
@@ -1059,8 +1059,6 @@ export async function copyLink(object, e) {
    */
   object.isLinkBeingCopied = true;
 
-  const anchorWithUnderlines = spacesToUnderlines(anchor);
-  const link = `https:${mw.config.get('wgServer')}${decodedCurrentPageUrl}#${anchorWithUnderlines}`;
   const copyCallback = (value) => {
     copyLinkToClipboardAndNotify(value);
     dialog.close();

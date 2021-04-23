@@ -14,7 +14,7 @@ import cd from './cd';
 import toc from './toc';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, focusInput } from './util';
+import { dealWithLoadingBug, focusInput, getObjectUrl } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -1562,6 +1562,14 @@ export default class Section extends SectionSkeleton {
         .removeClass('cd-toc-watched')
         .removeAttr('title');
     }
+  }
+
+  getUrl() {
+    if (!this.cachedUrl) {
+      this.cachedUrl = getObjectUrl(this.anchor);
+    }
+
+    return this.cachedUrl;
   }
 }
 

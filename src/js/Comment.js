@@ -21,6 +21,7 @@ import {
   defined,
   getExtendedRect,
   getFromLocalStorage,
+  getObjectUrl,
   getVisibilityByRects,
   handleApiReject,
   isInline,
@@ -2722,6 +2723,14 @@ export default class Comment extends CommentSkeleton {
       if ($note.is(':visible')) break;
     }
     return $note;
+  }
+
+  getUrl() {
+    if (!this.cachedUrl) {
+      this.cachedUrl = getObjectUrl(this.anchor);
+    }
+
+    return this.cachedUrl;
   }
 }
 

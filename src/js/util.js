@@ -728,3 +728,8 @@ export function getVisibilityByRects(...rects) {
   // If the element has 0 as the left position and height, it's probably invisible for some reason.
   return !rects.some((rect) => rect.left === 0 && rect.height === 0);
 }
+
+export function getObjectUrl(anchor) {
+  const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
+  return `https:${mw.config.get('wgServer')}${decodedPageUrl}#${anchor}`;
+}
