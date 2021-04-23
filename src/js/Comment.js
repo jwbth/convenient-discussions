@@ -11,7 +11,7 @@ import CommentStatic from './CommentStatic';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
-import { ElementsTreeWalker, TreeWalker } from './treeWalker';
+import { TreeWalker } from './treeWalker';
 import {
   addToArrayIfAbsent,
   areObjectsEqual,
@@ -1895,36 +1895,14 @@ export default class Comment extends CommentSkeleton {
    * @returns {?Comment}
    */
   getParent() {
-    if (this.cachedParent === undefined && this.id === 0) {
-      this.cachedParent = null;
-    }
-
-    // Look for {{outdent}} templates
-    if (this.cachedParent === undefined && cd.g.pageHasOutdents) {
-      const treeWalker = new ElementsTreeWalker(this.elements[0]);
-      while (
-        treeWalker.previousNode() &&
-        !treeWalker.currentNode.classList.contains('cd-commentPart')
-      ) {
-        if (treeWalker.currentNode.classList.contains('outdent-template')) {
-          this.cachedParent = cd.comments[this.id - 1];
-          break;
-        }
-      }
-    }
-
-    if (this.cachedParent === undefined && this.level === 0) {
-      this.cachedParent = null;
-    }
-
     if (this.cachedParent === undefined) {
       this.cachedParent = (
         cd.comments
           .slice(0, this.id)
           .reverse()
           .find((comment) => (
-            comment.level < this.level
             comment.section === this.section &&
+            comment.logicalLevel < this.logicalLevel
           )) ||
         null
       );

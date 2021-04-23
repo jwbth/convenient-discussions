@@ -189,6 +189,7 @@ function parse() {
 
   cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
 
+  CommentSkeleton.processOutdents();
   cd.comments.forEach((comment) => {
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;

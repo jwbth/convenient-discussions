@@ -128,7 +128,7 @@ Object.defineProperty(Element.prototype, 'outerHTML', {
 });
 
 Element.prototype.getAttribute = function (name) {
-  let value = this.attribs[name];
+  let value = this.attribs[name] || null;
   if (value && typeof value === 'string' && value.indexOf('&') !== -1) {
     value = value
       .replace(/&amp;/g, '&')

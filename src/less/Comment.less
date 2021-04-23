@@ -91,4 +91,16 @@ ol > li.cd-commentPart-last {
 
 .cd-threadLine-clickArea:hover .cd-threadLine {
   background-color: #72777d;
+
+  &-extended::after {
+    background-image: linear-gradient(to bottom, #72777d, transparent);
+  }
+}
+
+.cd-threadLine-extended::after {
+  display: block;
+  content: '';
+  height: 10px;
+  top: 100%;
+  position: relative;
 }

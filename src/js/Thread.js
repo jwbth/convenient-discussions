@@ -121,6 +121,27 @@ function cleanUpCollapsedThreads(data) {
   return newData;
 }
 
+function getEndItem(startItem, highlightables) {
+  let commonAncestor = startItem;
+  const lastHighlightable = highlightables[highlightables.length - 1];
+  let endItem = lastHighlightable;
+  do {
+    commonAncestor = commonAncestor.parentNode;
+  } while (!commonAncestor.contains(lastHighlightable));
+  while (endItem.parentNode !== commonAncestor) {
+    endItem = endItem.parentNode;
+  }
+  const nextElement = endItem.nextElementSibling;
+  if (
+    nextElement &&
+    nextElement.tagName === 'UL' &&
+    nextElement.classList.contains('cd-sectionButton-container')
+  ) {
+    endItem = nextElement;
+  }
+  return endItem;
+}
+
 export default class Thread {
   /**
    * Create a comment thread object.
@@ -130,10 +151,11 @@ export default class Thread {
   constructor(rootComment) {
     this.rootComment = rootComment;
 
+    // Logically last comment
     const nextToLastCommentId = cd.comments
       .slice(rootComment.id + 1)
       .find((comment) => (
-        comment.level <= rootComment.level ||
+        comment.logicalLevel <= rootComment.logicalLevel ||
         comment.section !== rootComment.section
       ))
       ?.id;
@@ -141,39 +163,62 @@ export default class Thread {
     this.lastComment = cd.comments[lastCommentId];
     this.commentCount = lastCommentId - this.rootComment.id + 1;
 
-    let startItem;
-    let endItem;
-    if (this.rootComment.level === 0) {
-      startItem = this.rootComment.highlightables[0];
-      let commonAncestor = startItem;
-      const lastHighlightable = this.lastComment
-        .highlightables[this.lastComment.highlightables.length - 1];
-      endItem = lastHighlightable;
-      do {
-        commonAncestor = commonAncestor.parentNode;
-      } while (!commonAncestor.contains(lastHighlightable));
-      while (endItem.parentNode !== commonAncestor) {
-        endItem = endItem.parentNode;
-      }
-      const nextElement = endItem.nextElementSibling;
-      if (
-        nextElement &&
-        nextElement.tagName === 'UL' &&
-        nextElement.classList.contains('cd-sectionButton-container')
-      ) {
-        endItem = nextElement;
-      }
+    if (cd.g.pageHasOutdents) {
+      cd.debug.startTimer('visualLastComment');
+      // Visually last comment (if there are {{outdent}} templates)
+      const visualNextToLastCommentId = cd.comments
+        .slice(rootComment.id + 1)
+        .find((comment) => (
+          comment.level <= rootComment.level ||
+          comment.section !== rootComment.section
+        ))
+        ?.id;
+      const visualLastCommentId = visualNextToLastCommentId ?
+        visualNextToLastCommentId - 1 :
+        cd.comments.length - 1;
+      this.visualLastComment = cd.comments[visualLastCommentId];
+      cd.debug.stopTimer('visualLastComment');
     } else {
-      startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
-      endItem = findItemElement(
-        this.lastComment.highlightables[this.lastComment.highlightables.length - 1],
-        rootComment.level
-      );
+      this.visualLastComment = this.lastComment;
     }
 
-    if (startItem && endItem) {
+    let startItem;
+    let visualEndItem;
+    let endItem;
+    const highlightables = this.lastComment.highlightables;
+    const visualHighlightables = this.visualLastComment.highlightables;
+    if (this.rootComment.level === 0) {
+      startItem = this.rootComment.highlightables[0];
+      visualEndItem = getEndItem(startItem, visualHighlightables);
+      endItem = this.lastComment === this.visualLastComment ?
+        visualEndItem :
+        getEndItem(startItem, highlightables);
+
+    } else {
+      startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
+      visualEndItem = findItemElement(
+        visualHighlightables[visualHighlightables.length - 1],
+        rootComment.level
+      );
+
+      if (this.lastComment === this.visualLastComment) {
+        endItem = visualEndItem;
+      } else {
+        const outdentedComment = cd.comments
+          .slice(0, this.lastComment.id + 1)
+          .reverse()
+          .find((comment) => comment.isOutdented);
+        endItem = findItemElement(
+          highlightables[highlightables.length - 1],
+          outdentedComment.level
+        );
+      }
+    }
+
+    if (startItem && endItem && visualEndItem) {
       this.startItem = startItem;
       this.endItem = endItem;
+      this.visualEndItem = visualEndItem;
     } else {
       throw new CdError();
     }
@@ -189,6 +234,22 @@ export default class Thread {
       this.toggle();
     };
     this.line = this.clickArea.firstChild;
+    if (this.endItem !== this.visualEndItem) {
+      let areOutdentedCommentsShown = false;
+      for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
+        const comment = cd.comments[i];
+        if (comment.isOutdented) {
+          areOutdentedCommentsShown = true;
+        }
+        if (comment.thread?.isCollapsed) {
+          i = comment.thread.lastComment.id;
+          continue;
+        }
+      }
+      if (areOutdentedCommentsShown) {
+        this.line.classList.add('cd-threadLine-extended');
+      }
+    }
     cd.debug.stopTimer('threads createElement create');
   }
 
@@ -335,6 +396,12 @@ export default class Thread {
       }
     }
 
+    if (this.endItem !== this.visualEndItem) {
+      for (let c = this.rootComment; c; c = c.getParent()) {
+        c.thread?.line.classList.remove('cd-threadLine-extended');
+      }
+    }
+
     cd.debug.startTimer('thread collapse end');
     saveCollapsedThreads();
     handleScroll();
@@ -353,8 +420,12 @@ export default class Thread {
     });
 
     this.isCollapsed = false;
+    let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
+      if (comment.isOutdented) {
+        areOutdentedCommentsShown = true;
+      }
       if (comment.thread?.isCollapsed) {
         i = comment.thread.lastComment.id;
         continue;
@@ -369,6 +440,12 @@ export default class Thread {
       const menu = this.rootComment.section.menu;
       if (menu) {
         menu.editOpeningComment.wrapper.style.display = '';
+      }
+    }
+
+    if (this.endItem !== this.visualEndItem && areOutdentedCommentsShown) {
+      for (let c = this.rootComment; c; c = c.getParent()) {
+        c.thread?.line.classList.add('cd-threadLine-extended');
       }
     }
 
@@ -478,7 +555,7 @@ export default class Thread {
               thread.lastComment.level
             );
           } else {
-            elementBottom = thread.endItem;
+            elementBottom = thread.visualEndItem;
           }
         }
 

@@ -175,6 +175,13 @@ export default class CommentSkeleton {
      * @type {?Section}
      */
     this.section = null;
+
+    /**
+     * Is the comment outdented with the {{outdent}} template.
+     *
+     * @type {boolean}
+     */
+    this.isOutdented = false;
   }
 
   /**
@@ -214,6 +221,13 @@ export default class CommentSkeleton {
      */
     this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
 
+    /**
+     * Comment level that takes into account {{outdent}} templates.
+     *
+     * @type {number}
+     */
+    this.logicalLevel = this.level;
+
     for (let i = 0; i < this.level; i++) {
       levelElements.forEach((els) => {
         els[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
@@ -231,28 +245,16 @@ export default class CommentSkeleton {
       return [];
     }
 
-    if (cd.g.pageHasOutdents) {
-      const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
-      while (
-        treeWalker.nextNode() &&
-        !treeWalker.currentNode.classList.contains('cd-commentPart')
-      ) {
-        if (treeWalker.currentNode.classList.contains('outdent-template')) {
-          return [cd.comments[this.id + 1]];
-        }
-      }
-    }
-
     const children = [];
     cd.comments
       .slice(this.id + 1)
       .some((otherComment) => {
-          if (
-            otherComment.level === this.level + 1 ||
-            // Comments mistakenly indented more than one level
-            otherComment.id === this.id + 1
-          ) {
-        if (otherComment.section === this.section && otherComment.level > this.level) {
+        if (
+          otherComment.section === this.section &&
+          otherComment.logicalLevel > this.logicalLevel
+        ) {
+          // Allow comments mistakenly indented with more than one level.
+          if (otherComment.logicalLevel <= cd.comments[otherComment.id - 1].logicalLevel) {
             children.push(otherComment);
           }
         } else {
@@ -261,5 +263,47 @@ export default class CommentSkeleton {
       });
 
     return children;
+  }
+
+  static processOutdents() {
+    // Look for {{outdent}} templates
+    if (cd.g.pageHasOutdents) {
+      Array.from(cd.g.rootElement.getElementsByClassName('outdent-template'))
+        .reverse()
+        .forEach((el) => {
+          const treeWalker = new ElementsTreeWalker(el);
+          while (treeWalker.nextNode()) {
+            let commentId = treeWalker.currentNode.getAttribute('data-comment-id');
+            if (commentId !== null) {
+              commentId = Number(commentId);
+              if (commentId !== 0) {
+                const parentComment = cd.comments[commentId - 1];
+                const childComment = cd.comments[commentId];
+                const childLogicalLevel = childComment.logicalLevel;
+
+                // Something is wrong.
+                if (childComment.date < parentComment.date) break;
+
+                childComment.isOutdented = true;
+                cd.comments.slice(commentId).some((comment) => {
+                  if (
+                    comment.section !== parentComment.section ||
+                    (comment.id !== commentId && comment.level <= childComment) ||
+                    comment.date < parentComment.date
+                  ) {
+                    return true;
+                  }
+                  comment.logicalLevel = (
+                    (parentComment.logicalLevel + 1) +
+                    (comment.logicalLevel - childLogicalLevel)
+                  );
+                  return false;
+                });
+                break;
+              }
+            }
+          }
+        });
+    }
   }
 }

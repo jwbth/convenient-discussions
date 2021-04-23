@@ -400,6 +400,9 @@ function processSections(parser, watchedSectionsRequest) {
 
   Section.adjust();
 
+  // Dependent on sections being set
+  Comment.processOutdents();
+
   watchedSectionsRequest.then(() => {
     Section.cleanUpWatched();
     toc.highlightWatchedSections();
