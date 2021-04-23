@@ -349,7 +349,7 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
         comment.markAsEdited('editedSince', true, previousVisitRevisionId, commentsData);
 
         if (comment.isOpeningSection) {
-          const section = comment.getSection();
+          const section = comment.section;
           if (
             section &&
             !section.isWatched &&

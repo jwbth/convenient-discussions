@@ -222,26 +222,6 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Get the section that the comment is directly in (the section with lowest level / the biggest
-   * level number).
-   *
-   * @returns {?Section}
-   * @private
-   */
-  getSection() {
-    if (this.cachedSection === undefined) {
-      this.cachedSection = (
-        cd.sections
-          .slice()
-          .reverse()
-          .find((section) => section.comments.includes(this)) ||
-        null
-      );
-    }
-    return this.cachedSection;
-  }
-
-  /**
    * Get all replies to the comment.
    *
    * @returns {CommentSkeleton[]}
@@ -267,12 +247,12 @@ export default class CommentSkeleton {
     cd.comments
       .slice(this.id + 1)
       .some((otherComment) => {
-        if (otherComment.getSection() === this.getSection() && otherComment.level > this.level) {
           if (
             otherComment.level === this.level + 1 ||
             // Comments mistakenly indented more than one level
             otherComment.id === this.id + 1
           ) {
+        if (otherComment.section === this.section && otherComment.level > this.level) {
             children.push(otherComment);
           }
         } else {

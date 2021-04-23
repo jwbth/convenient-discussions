@@ -89,7 +89,7 @@ export default {
     comments.forEach((comment) => {
       let sectionOrAnchor;
       if (comment instanceof Comment) {
-        sectionOrAnchor = comment.getSection();
+        sectionOrAnchor = comment.section;
       } else if (comment.section) {
         sectionOrAnchor = comment.section.match || comment.section.anchor;
       } else {

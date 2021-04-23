@@ -1145,7 +1145,7 @@ export default class Comment extends CommentSkeleton {
             $headline
               .html($html.html())
               .prepend($headlineNumber);
-            const section = this.getSection();
+            const section = this.section;
             if (section) {
               const originalHeadline = section.headline;
               section.parseHeadline();
@@ -1923,8 +1923,8 @@ export default class Comment extends CommentSkeleton {
           .slice(0, this.id)
           .reverse()
           .find((comment) => (
-            comment.getSection() === this.getSection() &&
             comment.level < this.level
+            comment.section === this.section &&
           )) ||
         null
       );
@@ -2231,7 +2231,7 @@ export default class Comment extends CommentSkeleton {
       sectionHeadline = commentData.section?.headline;
     } else {
       followsHeading = this.followsHeading;
-      sectionHeadline = this.getSection()?.headline;
+      sectionHeadline = this.section?.headline;
     }
 
     // Collect data for every match
@@ -2451,8 +2451,8 @@ export default class Comment extends CommentSkeleton {
           let startIndex;
           let endIndex;
           if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
-            this.getSection().locateInCode();
-            if (extractSignatures(this.getSection().inCode.code).length > 1) {
+            this.section.locateInCode();
+            if (extractSignatures(this.section.inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
                 code: 'delete-repliesInSection',
@@ -2460,7 +2460,7 @@ export default class Comment extends CommentSkeleton {
             } else {
               // Deleting the whole section is safer as we don't want to leave any content in the
               // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = this.getSection().inCode);
+              ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
             }
           } else {
             endIndex = thisInCode.signatureEndIndex + 1;
@@ -2603,8 +2603,7 @@ export default class Comment extends CommentSkeleton {
    * @type {Page}
    */
   getSourcePage() {
-    const section = this.getSection();
-    return section ? section.getSourcePage() : cd.g.PAGE;
+    return this.section ? this.section.getSourcePage() : cd.g.PAGE;
   }
 
   /**

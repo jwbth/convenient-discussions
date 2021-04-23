@@ -201,7 +201,7 @@ export default class CommentForm {
     this.isNewTopicOnTop = isNewTopicOnTop;
 
     if (this.target instanceof Comment) {
-      this.sectionHeadline = this.target.getSection()?.headline;
+      this.sectionHeadline = this.target.section?.headline;
     } else if (this.target instanceof Section) {
       this.sectionHeadline = this.target.headline;
     }
@@ -346,7 +346,7 @@ export default class CommentForm {
        *
        * @type {?(Section|undefined)}
        */
-      this.targetSection = this.target.getSection();
+      this.targetSection = this.target.section;
 
       /**
        * Target comment. This may be the comment the user replies to or the comment opening the
@@ -1717,7 +1717,7 @@ export default class CommentForm {
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
       cd.comments.some((comment) => {
-        if (comment.getSection()) {
+        if (comment.section) {
           return true;
         } else {
           commentsInSection.push(comment);

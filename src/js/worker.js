@@ -169,7 +169,6 @@ function parse() {
   });
 
   let commentDangerousKeys = [
-    'cachedSection',
     'elements',
     'highlightables',
     'parent',
@@ -194,8 +193,10 @@ function parse() {
     comment.getChildren().forEach((reply) => {
       reply.parent = comment;
     });
-    const section = comment.getSection();
-    comment.section = section || null;
+
+    // Replace with a worker-safe object
+    comment.section = comment.section ? cd.sections[comment.section.id] : null;
+
     if (comment.parent) {
       comment.parentAuthorName = comment.parent.authorName;
       comment.parentAnchor = comment.parent.anchor;
