@@ -309,6 +309,14 @@ export default class Parser {
               Array.from(node.getElementsByTagName('a'))
                 .reverse()
                 .some((link) => {
+                  cd.debug.startTimer('link external');
+                  // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
+                  if (link.classList.contains('external')) {
+                    cd.debug.stopTimer('link external');
+                    return false;
+                  }
+                  cd.debug.stopTimer('link external');
+
                   const userName = getUserNameFromLink(link);
                   if (userName) {
                     if (!authorName) {
