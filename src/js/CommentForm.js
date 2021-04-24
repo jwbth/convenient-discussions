@@ -613,25 +613,21 @@ export default class CommentForm {
    * @private
    */
   createContents(dataToRestore) {
-    if (['addSection', 'addSubsection'].includes(this.mode)) {
-      this.containerListType = null;
-    } else {
+    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+      const $content = this.target instanceof Comment ?
+        this.target.$elements.last() :
+        this.target.$replyWrapper;
+
       /**
        * Name of the tag used as a list whereof this comment form is an item. `'dl'`, `'ul'`,
        * `'ol'`, or `null`.
        *
-       * @type {?string}
+       * @type {string|undefined}
        */
-      this.containerListType = this.target instanceof Comment ?
-        this.target.$elements
-          .last()
-          .parent()
-          .prop('tagName')
-          .toLowerCase() :
-        this.target.$replyWrapper
-          .parent()
-          .prop('tagName')
-          .toLowerCase();
+      this.containerListType = $content
+        .closest('ol, ul, dl')
+        .prop('tagName')
+        ?.toLowerCase();
     }
 
     this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
@@ -1359,82 +1355,20 @@ export default class CommentForm {
       cd.g.$root.empty();
     }
 
-    let outerWrapperTag;
-    let createList = false;
-    let $lastOfTarget;
-    let $other;
-    if (this.mode === 'reply') {
-      createList = true;
-      $lastOfTarget = this.target.$elements.last();
-      $other = $lastOfTarget.next();
-      const $nextToTargetFirstChild = $other.children().first();
-      if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
-        $other = $nextToTargetFirstChild;
-      }
-      if ($other.is('ul, dl')) {
-        createList = false;
-        outerWrapperTag = $other.is('ul') ? 'li' : 'dd';
-        $other.addClass(`cd-commentLevel cd-commentLevel-${this.target.level + 1}`);
-      } else if ($lastOfTarget.is('li')) {
-        // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
-        // in those cases. Which is unsemantic, yes :-(
-        outerWrapperTag = this.containerListType === 'ol' ? 'div' : 'li';
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
-    } else if (this.mode === 'edit') {
-      $lastOfTarget = this.target.$elements.last();
-      if ($lastOfTarget.is('li')) {
-        outerWrapperTag = 'li';
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
-    }
-
-    if (outerWrapperTag) {
-      /**
-       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
-       * comment form element} directly or {@link module:CommentForm~$wrappingList the list} that
-       * wraps the item that wraps the comment form element.
-       *
-       * @type {JQuery|undefined}
-       */
-      this.$outerWrapper = $(`<${outerWrapperTag}>`);
-      if (
-        this.mode === 'reply' &&
-        $lastOfTarget.is('li, dd') &&
-
-        // Reply to a pseudo-comment added with this diff with a mistake:
-        // https://ru.wikipedia.org/?diff=113073013.
-        $lastOfTarget.parent().is('.cd-commentLevel') &&
-
-        this.containerListType !== 'ol'
-      ) {
-        this.$outerWrapper.addClass('cd-connectToPreviousItem');
-      }
-    }
-
-    if (this.mode === 'reply') {
-      if (createList) {
-        const className = `cd-commentLevel cd-commentLevel-${this.target.level + 1}`;
+    if (this.mode === 'edit') {
+      const $lastOfTarget = this.target.$elements.last();
+      if ($lastOfTarget.is('li, dd')) {
+        const outerWrapperTag = $lastOfTarget.prop('tagName').toLowerCase();
 
         /**
-         * List that wraps the item that wraps the comment form element.
+         * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
+         * comment form element} directly or {@link module:CommentForm~$wrappingList the list} that
+         * wraps the item that wraps the comment form element.
          *
          * @type {JQuery|undefined}
          */
-        this.$wrappingList = $('<ul>').addClass(className);
+        this.$outerWrapper = $(`<${outerWrapperTag}>`);
 
-        if (this.$outerWrapper) {
-          this.$wrappingList.appendTo(this.$outerWrapper);
-        }
-        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
-        this.$element.appendTo($wrappingItem);
-      } else {
-        this.$element.appendTo(this.$outerWrapper);
-      }
-    } else if (this.mode === 'edit') {
-      if (this.$outerWrapper) {
         this.$element.appendTo(this.$outerWrapper);
       }
     }
@@ -1448,29 +1382,25 @@ export default class CommentForm {
      */
     this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
 
+    // Add to page
     switch (this.mode) {
       case 'reply': {
-        if ($other.is('ul, dl')) {
-          this.$outerWrapper.prependTo($other);
-        } else if ($lastOfTarget.is('li, dd')) {
-          this.$outerWrapper.insertAfter($lastOfTarget);
-        } else {
-          this.$wrappingList.insertAfter($lastOfTarget);
-        }
+        let $wrappingItem;
+        [this.$outerWrapper, this.$wrappingList, $wrappingItem] = this.target
+          .getSublevelItem('top', this.containerListType);
+        this.$element.appendTo($wrappingItem || this.$outerWrapper);
         break;
       }
 
       case 'edit': {
-        const $element = this.$outerWrapper || this.$element;
-
         // We insert the form before the comment so that if the comment ends on a wrong level, the
         // form is on a right one. The exception is comments that open a section (otherwise a bug
         // will be introduced that will manifest when opening an "Add subsection" form of the
         // previous section).
         if (this.target.isOpeningSection) {
-          $element.insertAfter(this.target.$elements.last());
+          this.$outermostElement.insertAfter(this.target.$elements.last());
         } else {
-          $element.insertBefore(this.target.$elements.first());
+          this.$outermostElement.insertBefore(this.target.$elements.first());
         }
         break;
       }
@@ -1500,18 +1430,15 @@ export default class CommentForm {
           subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
           subsection" for a level 3 section, we need to put our form between them.
          */
-        const headingLevelRegexp = new RegExp(
-          `\\bcd-commentForm-addSubsection-[${this.target.level}-6]\\b`
-        );
+        const level = this.target.level;
+        const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
         let $target;
         let $tested = this.target.$elements.last();
+        const selector = '.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
         do {
           $target = $tested;
           $tested = $tested.next();
-        } while (
-          $tested.is('.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply') ||
-          ($tested.get(0)?.className.match(headingLevelRegexp))
-        );
+        } while ($tested.is(selector) || $tested.get(0)?.className.match(headingLevelRegexp));
         this.$element.insertAfter($target);
         break;
       }

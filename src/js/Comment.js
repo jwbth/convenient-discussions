@@ -2732,6 +2732,95 @@ export default class Comment extends CommentSkeleton {
 
     return this.cachedUrl;
   }
+
+  getSublevelItem(position, parentListType) {
+    /*
+      There are 3 basic cases that we account for:
+      1.
+          : Comment.
+          [End of the thread.]
+        We create a list and an item in it. We also create an item next to the existent item and
+        wrap the list into it.
+      2.
+          Comment.
+          [No replies, no "Reply to section" button.]
+        We create a list and an item in it.
+      3.
+          Comment.
+          : Reply or "Reply to section" button.
+        or
+          : Comment.
+          :: Reply.
+        (this means <dl> next to <div> which is a similar case to the previous one)
+        We create an item in an existent list.
+
+      The lists can be of other type, not necessarily ":".
+
+      The resulting structure is:
+        Outer wrapper item element (li, dd, rarely div) - in cases 1 and 3.
+          Wrapping list element (ul) - in cases 1 and 2.
+            Wrapping item element (li) - in cases 1 and 2.
+     */
+
+    let outerWrapperTag;
+    let createList = true;
+    const $lastOfTarget = this.$elements.last();
+    let $nextToTarget = $lastOfTarget.next();
+    const $nextToTargetFirstChild = $nextToTarget.children().first();
+    if ($nextToTarget.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
+      // A relatively rare case possible when two adjacent lists are merged, for example when
+      // replying to
+      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
+      $nextToTarget = $nextToTargetFirstChild;
+    }
+    if ($nextToTarget.is('ul, dl')) {
+      createList = false;
+      outerWrapperTag = $nextToTarget.is('ul') ? 'li' : 'dd';
+      $nextToTarget.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
+    } else if ($lastOfTarget.is('li')) {
+      // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
+      // in those cases. Which is unsemantic, yes :-(
+      outerWrapperTag = parentListType === 'ol' ? 'div' : 'li';
+    } else if ($lastOfTarget.is('dd')) {
+      outerWrapperTag = 'dd';
+    }
+
+    let $outerWrapper;
+    let $wrappingList;
+    if (outerWrapperTag) {
+      $outerWrapper = $(`<${outerWrapperTag}>`);
+
+      // Why ".cd-commentLevel >": reply to a pseudo-comment added with this diff with a mistake:
+      // https://ru.wikipedia.org/?diff=113073013.
+      if ($nextToTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
+        $outerWrapper.addClass('cd-connectToPreviousItem');
+      }
+    }
+
+    let $wrappingItem;
+    if (createList) {
+      const className = `cd-commentLevel cd-commentLevel-${this.level + 1}`;
+      $wrappingList = $('<ul>').addClass(className);
+      if ($outerWrapper) {
+        $wrappingList.appendTo($outerWrapper);
+      }
+      $wrappingItem = $('<li>').appendTo($wrappingList);
+    }
+
+    if ($nextToTarget.is('ul, dl')) {
+      if (position === 'top') {
+        $outerWrapper.prependTo($nextToTarget);
+      } else {
+        $outerWrapper.appendTo($nextToTarget);
+      }
+    } else if ($lastOfTarget.is('li, dd')) {
+      $outerWrapper.insertAfter($lastOfTarget);
+    } else {
+      $wrappingList.insertAfter($lastOfTarget);
+    }
+
+    return [$outerWrapper, $wrappingList, $wrappingItem];
+  }
 }
 
 Object.assign(Comment, CommentStatic);
