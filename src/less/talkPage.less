@@ -1,14 +1,22 @@
-.cd-commentButton.oo-ui-buttonElement-frameless.oo-ui-labelElement,
-.cd-sectionButton.oo-ui-buttonElement-frameless.oo-ui-labelElement,
-.cd-threadButton.oo-ui-buttonElement-frameless.oo-ui-labelElement {
-  > .oo-ui-buttonElement-button {
-    padding: 0;
-  }
-
+.cd-commentButton.cd-commentButton.cd-commentButton,
+.cd-sectionButton.cd-sectionButton.cd-sectionButton,
+.cd-threadButton.cd-threadButton.cd-threadButton {
   &:first-child {
     margin-left: 0;
     margin-right: 0;
   }
+
+  > .oo-ui-buttonElement-button {
+    padding: 0;
+  }
+}
+
+.sitedir-ltr .cd-threadButton.cd-threadButton.cd-threadButton {
+  margin-left: -1px;
+}
+
+.sitedir-rtl .cd-threadButton.cd-threadButton.cd-threadButton {
+  margin-right: -1px;
 }
 
 .cd-threadButton-invisible {

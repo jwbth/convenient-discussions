@@ -655,7 +655,10 @@ function initOouiAndElementPrototypes() {
   cd.g.SECTION_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
     label: cd.s('section-reply'),
     framed: false,
-    classes: ['cd-button', 'cd-sectionButton'],
+
+    // Add the thread button class as it behaves as a thread button in fact, being positioned inside
+    // a "cd-commentLevel" list.
+    classes: ['cd-button', 'cd-threadButton'],
   }).$element.get(0);
 
   cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
