@@ -550,14 +550,10 @@ export default class Thread {
         if (thread.isCollapsed) {
           elementBottom = thread.collapsedNote;
         } else {
-          if (thread.lastComment.replyForm?.$element.is(':visible')) {
-            elementBottom = findItemElement(
-              thread.lastComment.replyForm.$element.get(0),
-              thread.lastComment.level
-            );
-          } else {
-            elementBottom = thread.visualEndItem;
-          }
+          const replyForm = thread.lastComment.replyForm;
+          elementBottom = replyForm?.$element.is(':visible') ?
+            findItemElement(replyForm.$element.get(0), thread.lastComment.level) :
+            thread.visualEndItem;
         }
 
         cd.debug.startTimer('threads getBoundingClientRect bottom');

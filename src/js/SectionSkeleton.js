@@ -57,9 +57,9 @@ export default class SectionSkeleton {
       (node) => (
         !['STYLE', 'LINK'].includes(node.tagName) &&
 
-        // .cd-sectionButton-container elements are added to level 2 sections, which means they
-        // won't have them as elements but their last subsections can if they are included. So we
-        // better don't include them at all.
+        // .cd-sectionButton-container elements are added to level 2 sections, which means these
+        // sections won't have them as elements but their last subsections can if they are included.
+        // So we better don't include them at all.
         !node.classList.contains('cd-sectionButton-container')
       ),
       true,

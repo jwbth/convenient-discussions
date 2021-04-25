@@ -664,13 +664,11 @@ export default class CommentForm {
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.isSectionOpeningCommentEdited
     ) {
+      const parentSection = this.targetSection.getParent();
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
-      } else if (this.mode === 'edit' && this.targetSection.getParent()) {
-        this.headlineInputPurpose = cd.s(
-          'cf-headline-subsection',
-          this.targetSection.getParent().headline
-        );
+      } else if (this.mode === 'edit' && parentSection) {
+        this.headlineInputPurpose = cd.s('cf-headline-subsection', parentSection.headline);
       } else {
         this.headlineInputPurpose = cd.s('cf-headline-topic');
       }
@@ -696,10 +694,7 @@ export default class CommentForm {
     }
 
     let commentInputPlaceholder;
-    if (
-      this.mode === 'replyInSection' ||
-      (this.mode === 'reply' && this.target.isOpeningSection)
-    ) {
+    if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
       commentInputPlaceholder = cd.s(
         'cf-comment-placeholder-replytosection',
         this.targetSection.headline

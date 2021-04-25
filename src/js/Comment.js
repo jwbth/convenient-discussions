@@ -2762,6 +2762,8 @@ export default class Comment extends CommentSkeleton {
             Wrapping item element (li) - in cases 1 and 2.
      */
 
+    cd.debug.startTimer('getSublevelItem');
+
     let outerWrapperTag;
     let createList = true;
     const $lastOfTarget = this.$elements.last();
@@ -2790,11 +2792,15 @@ export default class Comment extends CommentSkeleton {
     if (outerWrapperTag) {
       $outerWrapper = $(`<${outerWrapperTag}>`);
 
+      cd.debug.startTimer('getSublevelItem slow selector');
+
       // Why ".cd-commentLevel >": reply to a pseudo-comment added with this diff with a mistake:
       // https://ru.wikipedia.org/?diff=113073013.
       if ($nextToTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
         $outerWrapper.addClass('cd-connectToPreviousItem');
       }
+
+      cd.debug.stopTimer('getSublevelItem slow selector');
     }
 
     let $wrappingItem;
@@ -2818,6 +2824,8 @@ export default class Comment extends CommentSkeleton {
     } else {
       $wrappingList.insertAfter($lastOfTarget);
     }
+
+    cd.debug.stopTimer('getSublevelItem');
 
     return [$outerWrapper, $wrappingList, $wrappingItem];
   }

@@ -658,7 +658,7 @@ function initOouiAndElementPrototypes() {
 
     // Add the thread button class as it behaves as a thread button in fact, being positioned inside
     // a "cd-commentLevel" list.
-    classes: ['cd-button', 'cd-threadButton'],
+    classes: ['cd-button', 'cd-sectionButton', 'cd-threadButton'],
   }).$element.get(0);
 
   cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({

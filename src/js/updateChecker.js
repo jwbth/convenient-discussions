@@ -676,8 +676,9 @@ function isPageStillAtRevision(revisionId) {
 /**
  * Process the comments retrieved by a web worker.
  *
- * @param {CommentSkeletonLike[]} comments
- * @param {CommentSkeletonLike[]} mappedCurrentComments
+ * @param {CommentSkeletonLike[]} comments Comments from the recent revision.
+ * @param {CommentSkeletonLike[]} mappedCurrentComments Comments from the currently shown revision
+ *   mapped to the comments from the recent revision.
  * @param {number} currentRevisionId
  * @private
  */
@@ -691,10 +692,8 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
     }
   });
 
-  const newComments = comments.filter((comment) => (
-    comment.anchor &&
-    !mappedCurrentComments.some((currentComment) => currentComment.match === comment)
-  ));
+  const newComments = comments
+    .filter((comment) => !mappedCurrentComments.some((mcc) => mcc.match === comment));
 
   // Extract "interesting" comments (that would make the new comments counter purple and might
   // invoke notifications). Keep in mind that we should account for the case where comments have
