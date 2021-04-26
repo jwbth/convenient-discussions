@@ -1891,28 +1891,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the parent comment of the comment.
-   *
-   * @returns {?Comment}
-   */
-  getParent() {
-    if (this.cachedParent === undefined) {
-      this.cachedParent = (
-        cd.comments
-          .slice(0, this.id)
-          .reverse()
-          .find((comment) => (
-            comment.section === this.section &&
-            comment.logicalLevel < this.logicalLevel
-          )) ||
-        null
-      );
-    }
-
-    return this.cachedParent;
-  }
-
-  /**
    * Get the comment's text.
    *
    * @param {boolean} [cleanUp=true] Whether to clean up the signature.

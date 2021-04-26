@@ -236,6 +236,28 @@ export default class CommentSkeleton {
   }
 
   /**
+   * Get the parent comment of the comment.
+   *
+   * @returns {?CommentSkeleton}
+   */
+  getParent() {
+    if (this.cachedParent === undefined) {
+      this.cachedParent = (
+        cd.comments
+          .slice(0, this.id)
+          .reverse()
+          .find((comment) => (
+            comment.section === this.section &&
+            comment.logicalLevel < this.logicalLevel
+          )) ||
+        null
+      );
+    }
+
+    return this.cachedParent;
+  }
+
+  /**
    * Get all replies to the comment.
    *
    * @returns {CommentSkeleton[]}
@@ -248,15 +270,13 @@ export default class CommentSkeleton {
     const children = [];
     cd.comments
       .slice(this.id + 1)
-      .some((otherComment) => {
-        if (
-          otherComment.section === this.section &&
-          otherComment.logicalLevel > this.logicalLevel
-        ) {
+      .some((comment) => {
+        if (comment.section === this.section && comment.logicalLevel > this.logicalLevel) {
           // Allow comments mistakenly indented with more than one level.
-          if (otherComment.logicalLevel <= cd.comments[otherComment.id - 1].logicalLevel) {
-            children.push(otherComment);
+          if (comment.logicalLevel === this.logicalLevel + 1 || comment.getParent() === this) {
+            children.push(comment);
           }
+          return false;
         } else {
           return true;
         }
