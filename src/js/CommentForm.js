@@ -624,10 +624,7 @@ export default class CommentForm {
        *
        * @type {string|undefined}
        */
-      this.containerListType = $content
-        .closest('ol, ul, dl')
-        .prop('tagName')
-        ?.toLowerCase();
+      this.containerListType = $content.cdGetContainerListType();
     }
 
     this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
@@ -664,7 +661,7 @@ export default class CommentForm {
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.isSectionOpeningCommentEdited
     ) {
-      const parentSection = this.targetSection.getParent();
+      const parentSection = this.targetSection?.getParent();
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
       } else if (this.mode === 'edit' && parentSection) {
@@ -1350,40 +1347,35 @@ export default class CommentForm {
       cd.g.$root.empty();
     }
 
-    if (this.mode === 'edit') {
+    let $wrappingItem;
+    let $wrappingList;
+    let $outerWrapper;
+    if (this.mode === 'reply') {
+      [$wrappingItem, $wrappingList, $outerWrapper] = this.target
+        .createSublevelItem('replyForm', 'top', this.containerListType);
+    } else if (this.mode === 'edit') {
       const $lastOfTarget = this.target.$elements.last();
-      if ($lastOfTarget.is('li, dd')) {
+      if ($lastOfTarget.is('dd, li')) {
         const outerWrapperTag = $lastOfTarget.prop('tagName').toLowerCase();
-
-        /**
-         * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
-         * comment form element} directly or {@link module:CommentForm~$wrappingList the list} that
-         * wraps the item that wraps the comment form element.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$outerWrapper = $(`<${outerWrapperTag}>`);
-
-        this.$element.appendTo(this.$outerWrapper);
+        $outerWrapper = $(`<${outerWrapperTag}>`);
+        this.$element.appendTo($outerWrapper);
       }
     }
 
     /**
-     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
-     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
-     * return the DOM to the original state, before the form was created.
+     * The outermost element of the form (equal to the comment form element, item that wraps the
+     * comment form element, list that wraps the item etc., or outer wrapper (usually an item of a
+     * list itself) that wraps the list etc. It is removed to return the DOM to the original state,
+     * before the form was created.
      *
      * @type {JQuery}
      */
-    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
+    this.$outermostElement = $outerWrapper || $wrappingList || $wrappingItem || this.$element;
 
     // Add to page
     switch (this.mode) {
       case 'reply': {
-        let $wrappingItem;
-        [this.$outerWrapper, this.$wrappingList, $wrappingItem] = this.target
-          .getSublevelItem('top', this.containerListType);
-        this.$element.appendTo($wrappingItem || this.$outerWrapper);
+        this.$element.appendTo($wrappingItem || $outerWrapper);
         break;
       }
 
@@ -3201,7 +3193,12 @@ export default class CommentForm {
    * Remove the elements and other objects' properties related to the form.
    */
   destroy() {
-    this.$outermostElement.remove();
+    if (this.mode === 'reply') {
+      this.target.subitems.remove('replyForm');
+    } else {
+      this.$outermostElement.remove();
+    }
+
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));

@@ -204,4 +204,11 @@ export default {
 
     return this;
   },
+
+  cdGetContainerListType() {
+    return this
+      .closest('dl, ul, ol')
+      .prop('tagName')
+      ?.toLowerCase();
+  }
 };

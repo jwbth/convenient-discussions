@@ -24,17 +24,17 @@ let threadLinesContainer;
 let treeWalker;
 
 /**
- * Find the closest item (`<li>`, `<dd>`) element for a comment part.
+ * Find the closest item (`<li>`, `<dd>`) element for an element.
  *
- * @param {Element} commentPartElement
+ * @param {Element} element
  * @param {number} level
  * @returns {?Element}
  */
-function findItemElement(commentPartElement, level) {
-  treeWalker.currentNode = commentPartElement;
+function findItemElement(element, level) {
+  treeWalker.currentNode = element;
 
   let item;
-  let previousNode = commentPartElement;
+  let previousNode = element;
   do {
     if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
       const className = treeWalker.currentNode.getAttribute('class');
@@ -194,10 +194,8 @@ export default class Thread {
 
     } else {
       startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
-      visualEndItem = findItemElement(
-        visualHighlightables[visualHighlightables.length - 1],
-        rootComment.level
-      );
+      const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
+      visualEndItem = findItemElement(lastVisualHighlightable, rootComment.level);
 
       if (this.lastComment === this.visualLastComment) {
         endItem = visualEndItem;
@@ -206,10 +204,8 @@ export default class Thread {
           .slice(0, this.lastComment.id + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
-        endItem = findItemElement(
-          highlightables[highlightables.length - 1],
-          outdentedComment.level
-        );
+        const lastHighlightable = highlightables[highlightables.length - 1];
+        endItem = findItemElement(lastHighlightable, outdentedComment.level);
       }
     }
 
@@ -251,12 +247,21 @@ export default class Thread {
     cd.debug.stopTimer('threads createElement create');
   }
 
+  getAdjustedEndItem(isVisual) {
+    const lastComment = isVisual ? this.visualLastComment : this.lastComment;
+    const endItem = isVisual ? this.visualEndItem : this.endItem;
+    const subitems = lastComment.subitems;
+    const $subitem = subitems.get('newRepliesNote') || subitems.get('replyForm');
+    const adjustedEndItem = $subitem?.is(':visible') ?
+      findItemElement($subitem.get(0), lastComment.level) :
+      endItem;
+    return adjustedEndItem;
+  }
+
   getRangeContents() {
     const range = document.createRange();
     range.setStart(this.startItem, 0);
-    const rangeEnd = this.lastComment.replyForm?.$element.is(':visible') ?
-      findItemElement(this.lastComment.replyForm.$element.get(0), this.lastComment.level) :
-      this.endItem;
+    const rangeEnd = this.getAdjustedEndItem();
     range.setEnd(rangeEnd, rangeEnd.childNodes.length);
 
     /*
@@ -280,8 +285,12 @@ export default class Thread {
      */
     cd.debug.startTimer('thread collapse traverse');
     const rangeContents = [range.startContainer];
-    if (range.startContainer !== range.endContainer) {
+
+    // The start container could contain the end container and be different from it in the case with
+    // adjusted end items.
+    if (!range.startContainer.contains(range.endContainer)) {
       treeWalker.currentNode = range.startContainer;
+
       while (treeWalker.currentNode.parentNode !== range.commonAncestorContainer) {
         while (treeWalker.nextSibling()) {
           rangeContents.push(treeWalker.currentNode);
@@ -372,7 +381,7 @@ export default class Thread {
       tagName = 'DIV';
     }
     const collapsedNote = document.createElement(tagName);
-    collapsedNote.className = 'cd-thread-collapsedNote';
+    collapsedNote.className = 'cd-threadButton-container cd-thread-collapsedNote';
     collapsedNote.appendChild(button);
     this.collapsedRange[0].parentNode.insertBefore(collapsedNote, this.collapsedRange[0]);
     cd.debug.stopTimer('thread collapse button note');
@@ -546,15 +555,9 @@ export default class Thread {
           }
         }
 
-        let elementBottom;
-        if (thread.isCollapsed) {
-          elementBottom = thread.collapsedNote;
-        } else {
-          const replyForm = thread.lastComment.replyForm;
-          elementBottom = replyForm?.$element.is(':visible') ?
-            findItemElement(replyForm.$element.get(0), thread.lastComment.level) :
-            thread.visualEndItem;
-        }
+        const elementBottom = thread.isCollapsed ?
+          thread.collapsedNote :
+          thread.getAdjustedEndItem(true);
 
         cd.debug.startTimer('threads getBoundingClientRect bottom');
         const rectBottom = elementBottom.getBoundingClientRect();

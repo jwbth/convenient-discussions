@@ -230,7 +230,7 @@ function mapComments(currentComments, otherComments) {
   const mappedCurrentComments = currentComments.map((comment) => Object.assign({}, comment));
 
   otherComments.forEach((otherComment) => {
-    let currentCommentsFiltered = mappedCurrentComments.filter((currentComment) => (
+    const currentCommentsFiltered = mappedCurrentComments.filter((currentComment) => (
       currentComment.authorName === otherComment.authorName &&
       currentComment.date &&
       otherComment.date &&
@@ -242,7 +242,9 @@ function mapComments(currentComments, otherComments) {
       let found;
       currentCommentsFiltered
         .map((currentComment) => {
-          const hasParentAnchorMatched = currentComment.parentAnchor === otherComment.parentAnchor;
+          const hasParentAnchorMatched = (
+            currentComment.parent?.anchor === otherComment.parent?.anchor
+          );
           const hasHeadlineMatched = (
             currentComment.section?.headline === otherComment.section?.headline
           );
@@ -262,7 +264,7 @@ function mapComments(currentComments, otherComments) {
             1 :
             calculateWordsOverlap(currentComment.text, otherComment.text);
           const score = (
-            hasParentAnchorMatched * (currentComment.parentAnchor ? 1 : 0.75) +
+            hasParentAnchorMatched * (currentComment.parent?.anchor ? 1 : 0.75) +
             hasHeadlineMatched * 1 +
             partsMatchedProportion +
             overlap +
@@ -483,7 +485,7 @@ function showOrdinaryNotification(comments) {
   if (cd.settings.notifications === 'all') {
     filteredComments = comments;
   } else if (cd.settings.notifications === 'toMe') {
-    filteredComments = comments.filter((comment) => comment.toMe);
+    filteredComments = comments.filter((comment) => comment.isToMe);
   }
 
   if (cd.settings.notifications !== 'none' && filteredComments.length) {
@@ -505,7 +507,7 @@ function showOrdinaryNotification(comments) {
     const reloadHtml = cd.sParse('notification-reload', formsDataWillNotBeLost);
     if (filteredComments.length === 1) {
       const comment = filteredComments[0];
-      if (comment.toMe) {
+      if (comment.isToMe) {
         const where = comment.watchedSectionHeadline ?
           (
             cd.mws('word-separator') +
@@ -583,14 +585,14 @@ function showDesktopNotification(comments) {
   if (cd.settings.desktopNotifications === 'all') {
     filteredComments = comments;
   } else if (cd.settings.desktopNotifications === 'toMe') {
-    filteredComments = comments.filter((comment) => comment.toMe);
+    filteredComments = comments.filter((comment) => comment.isToMe);
   }
 
   if (!document.hasFocus() && Notification.permission === 'granted' && filteredComments.length) {
     let body;
     const comment = filteredComments[0];
     if (filteredComments.length === 1) {
-      if (comment.toMe) {
+      if (comment.isToMe) {
         const where = comment.section?.headline ?
           cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
           '';
@@ -685,15 +687,24 @@ function isPageStillAtRevision(revisionId) {
 async function processComments(comments, mappedCurrentComments, currentRevisionId) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
-    if (comment.parentAuthorName) {
-      comment.parent = {
-        author: userRegistry.getUser(comment.parentAuthorName),
-      };
+    if (comment.parent?.authorName) {
+      comment.parent.author = userRegistry.getUser(comment.parent.authorName);
     }
   });
 
   const newComments = comments
-    .filter((comment) => !mappedCurrentComments.some((mcc) => mcc.match === comment));
+    .filter((comment) => !mappedCurrentComments.some((mcc) => mcc.match === comment))
+
+    // Replace with comment objects detached from the comment objects in the comments object (so
+    // that the object isn't polluted when it is reused).
+    .map((comment) => {
+      const parentMatch = mappedCurrentComments.find((mcc) => mcc.match === comment.parent);
+      const newComment = Object.assign({}, comment);
+      if (parentMatch?.anchor) {
+        newComment.parentMatch = Comment.getByAnchor(parentMatch.anchor);
+      }
+      return newComment;
+    });
 
   // Extract "interesting" comments (that would make the new comments counter purple and might
   // invoke notifications). Keep in mind that we should account for the case where comments have
@@ -703,7 +714,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
     if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
     }
-    if (comment.toMe) {
+    if (comment.isToMe) {
       comment.interesting = true;
       return true;
     }
@@ -746,7 +757,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   updateChecker.updatePageTitle(newComments.length, areThereInteresting);
   toc.addNewComments(newCommentsBySection);
 
-  Section.addNewCommentsNotifications(newCommentsBySection);
+  Comment.addNewRepliesNote(newComments);
 
   const commentsToNotifyAbout = interestingNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));

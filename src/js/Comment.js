@@ -8,6 +8,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
+import CommentSubitemList from './CommentSubitemList';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
@@ -195,6 +196,13 @@ export default class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.isCollapsed = false;
+
+    /**
+     * List of the comment's {@link module:CommentSubitemList subitems}.
+     *
+     * @type {CommentSubitemList}
+     */
+    this.subitems = new CommentSubitemList();
   }
 
   /**
@@ -2711,14 +2719,15 @@ export default class Comment extends CommentSkeleton {
     return this.cachedUrl;
   }
 
-  getSublevelItem(position, parentListType) {
+  createSublevelItem(name, position, parentListType) {
     /*
       There are 3 basic cases that we account for:
       1.
           : Comment.
           [End of the thread.]
         We create a list and an item in it. We also create an item next to the existent item and
-        wrap the list into it.
+        wrap the list into it. We don't add the list to the existent item because that item can be
+        entirely a comment part, so at least highlighting would be broken if we do.
       2.
           Comment.
           [No replies, no "Reply to section" button.]
@@ -2730,32 +2739,34 @@ export default class Comment extends CommentSkeleton {
           : Comment.
           :: Reply.
         (this means <dl> next to <div> which is a similar case to the previous one)
-        We create an item in an existent list.
+        We create an item in the existent list.
 
       The lists can be of other type, not necessarily ":".
 
       The resulting structure is:
-        Outer wrapper item element (li, dd, rarely div) - in cases 1 and 3.
+        Outer wrapper item element (dd, li, rarely div) - in case 1.
           Wrapping list element (ul) - in cases 1 and 2.
-            Wrapping item element (li) - in cases 1 and 2.
+            Wrapping item element (li) - in cases 1, 2, and 3.
      */
 
-    cd.debug.startTimer('getSublevelItem');
+    cd.debug.startTimer('createSublevelItem');
 
-    let outerWrapperTag;
+    let wrappingItemTag = 'li';
     let createList = true;
+    let outerWrapperTag;
+
     const $lastOfTarget = this.$elements.last();
     let $nextToTarget = $lastOfTarget.next();
     const $nextToTargetFirstChild = $nextToTarget.children().first();
-    if ($nextToTarget.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
+    if ($nextToTarget.is('dd, li') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
       // A relatively rare case possible when two adjacent lists are merged, for example when
       // replying to
       // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
       $nextToTarget = $nextToTargetFirstChild;
     }
-    if ($nextToTarget.is('ul, dl')) {
+    if ($nextToTarget.is('dl, ul')) {
       createList = false;
-      outerWrapperTag = $nextToTarget.is('ul') ? 'li' : 'dd';
+      wrappingItemTag = $nextToTarget.is('ul') ? 'li' : 'dd';
       $nextToTarget.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
     } else if ($lastOfTarget.is('li')) {
       // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
@@ -2765,47 +2776,54 @@ export default class Comment extends CommentSkeleton {
       outerWrapperTag = 'dd';
     }
 
-    let $outerWrapper;
+    const $wrappingItem = $(`<${wrappingItemTag}>`);
     let $wrappingList;
+    if (createList) {
+      $wrappingList = $('<ul>')
+        .append($wrappingItem)
+        .addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
+    }
+
+    let $outerWrapper;
     if (outerWrapperTag) {
       $outerWrapper = $(`<${outerWrapperTag}>`);
 
-      cd.debug.startTimer('getSublevelItem slow selector');
+      cd.debug.startTimer('createSublevelItem slow selector');
 
       // Why ".cd-commentLevel >": reply to a pseudo-comment added with this diff with a mistake:
       // https://ru.wikipedia.org/?diff=113073013.
-      if ($nextToTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
+      if ($lastOfTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
         $outerWrapper.addClass('cd-connectToPreviousItem');
       }
 
-      cd.debug.stopTimer('getSublevelItem slow selector');
+      cd.debug.stopTimer('createSublevelItem slow selector');
+
+      $wrappingList.appendTo($outerWrapper);
     }
 
-    let $wrappingItem;
-    if (createList) {
-      const className = `cd-commentLevel cd-commentLevel-${this.level + 1}`;
-      $wrappingList = $('<ul>').addClass(className);
-      if ($outerWrapper) {
-        $wrappingList.appendTo($outerWrapper);
-      }
-      $wrappingItem = $('<li>').appendTo($wrappingList);
-    }
-
-    if ($nextToTarget.is('ul, dl')) {
-      if (position === 'top') {
-        $outerWrapper.prependTo($nextToTarget);
-      } else {
-        $outerWrapper.appendTo($nextToTarget);
-      }
-    } else if ($lastOfTarget.is('li, dd')) {
+    if ($outerWrapper) {
       $outerWrapper.insertAfter($lastOfTarget);
-    } else {
+    } else if ($wrappingList) {
       $wrappingList.insertAfter($lastOfTarget);
+    } else {
+      if (position === 'top') {
+        $wrappingItem.prependTo($nextToTarget);
+      } else {
+        const $last = $nextToTarget.children().last();
+        // "Reply to section" button should always be the last.
+        if ($last.hasClass('cd-replyWrapper')) {
+          $wrappingItem.insertBefore($last);
+        } else {
+          $wrappingItem.insertAfter($last);
+        }
+      }
     }
 
-    cd.debug.stopTimer('getSublevelItem');
+    this.subitems.add(name, $wrappingItem);
 
-    return [$outerWrapper, $wrappingList, $wrappingItem];
+    cd.debug.stopTimer('createSublevelItem');
+
+    return [$wrappingItem, $wrappingList, $outerWrapper];
   }
 }
 

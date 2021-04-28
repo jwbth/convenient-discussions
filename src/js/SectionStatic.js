@@ -6,10 +6,9 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent, unique } from './util';
+import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent } from './util';
 import { editWatchedSections } from './modal';
 import { getWatchedSections, setWatchedSections } from './options';
-import { reloadPage } from './boot';
 
 let watchPromise = Promise.resolve();
 
@@ -266,56 +265,6 @@ export default {
             .on('mouseleave', section.replyButtonUnhoverHandler);
         }
       });
-  },
-
-  /**
-   * Add new comments notifications to the end of each updated section.
-   *
-   * @param {Map} newCommentsBySection
-   * @memberof module:Section
-   */
-  addNewCommentsNotifications(newCommentsBySection) {
-    $('.cd-refreshButton-container').remove();
-
-    newCommentsBySection.forEach((comments, section) => {
-      if (!section || typeof section === 'string') return;
-
-      const authors = comments
-        .map((comment) => comment.author)
-        .filter(unique);
-      const genders = authors.map((author) => author.getGender());
-      let commonGender;
-      if (genders.every((gender) => gender === 'female')) {
-        commonGender = 'female';
-      } else if (genders.every((gender) => gender !== 'female')) {
-        commonGender = 'male';
-      } else {
-        commonGender = 'unknown';
-      }
-      const userList = authors.map((user) => user.name).join(', ');
-      const button = new OO.ui.ButtonWidget({
-        label: cd.s('section-newcomments', comments.length, authors.length, userList, commonGender),
-        framed: false,
-        classes: ['cd-button', 'cd-sectionButton'],
-      });
-      button.on('click', () => {
-        const commentAnchor = comments[0].anchor;
-        reloadPage({ commentAnchor });
-      });
-
-      let $last;
-      if (section.$addSubsectionButtonContainer && !section.getChildren().length) {
-        $last = section.$addSubsectionButtonContainer;
-      } else if (section.$replyButton) {
-        $last = section.$replyButton.closest('ul, ol, dl');
-      } else {
-        $last = section.$elements.last();
-      }
-      $('<div>')
-        .addClass('cd-refreshButton-container cd-sectionButton-container')
-        .append(button.$element)
-        .insertAfter($last);
-    });
   },
 
   /**
