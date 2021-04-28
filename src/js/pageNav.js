@@ -98,7 +98,7 @@ export default {
       });
     }
 
-    if (afterLeadPos < cd.g.BODY_SCROLL_PADDING_TOP || backLinkLocation === 'top') {
+    if (afterLeadPos < cd.g.BODY_SCROLL_PADDING_TOP + 1 || backLinkLocation === 'top') {
       if (!this.$linksOnTop) {
         this.$linksOnTop = $('<ul>')
           .attr('id', 'cd-pageNav-linksOnTop')
