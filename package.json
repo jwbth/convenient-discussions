@@ -3,7 +3,7 @@
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
     "build": "node buildConfigs && node buildI18n && webpack",
-    "start": "webpack serve --env dev",
+    "start": "node buildConfigs && node buildI18n && webpack serve --env dev",
     "configs": "node buildConfigs",
     "deploy": "node --unhandled-rejections=strict deploy",
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
