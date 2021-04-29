@@ -34,7 +34,7 @@
   "sm-copylink-tooltip": "Copy a link",
 
   "comment-edited": "The comment has changed.",
-  "comment-edited-refresh": "Refresh",
+  "comment-edited-refresh": "Refresh to see the changes",
   "comment-edited-diff": "Diff",
   "comment-edited-diff-error": "Couldn't render the diff.",
   "comment-edited-diff-empty": "The diff is empty. Probably, the rendering of the comment has changed, but it wasn't edited.",
