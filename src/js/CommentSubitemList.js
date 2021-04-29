@@ -4,6 +4,8 @@
  * @module CommentSubitemList
  */
 
+import cd from './cd';
+
 /**
  * Class representing a list of the comment's subitems. There can be two types of subitems: comment
  * forms and "new replies" notes. They are managed with the class to handle the removal of their
@@ -38,20 +40,19 @@ export default class CommentSubitemList {
    * @param {string} name
    */
   remove(name) {
+    cd.debug.startTimer('remove comment subitem');
     const $element = this.content[name];
     if ($element) {
       delete this.content[name];
-      if (Object.keys(this.content).length) {
-        $element.remove();
-      } else {
-        const $wrappingList = $element.parent('dl, ul, ol');
+      const $wrappingList = $element.parent('dl, ul, ol');
+      if ($wrappingList.is(':empty')) {
         const $outerWrapper = $wrappingList.parent('dd, li');
-        $wrappingList.remove();
-
-        // If found
-        $outerWrapper.remove();
+        ($outerWrapper.length ? $outerWrapper : $wrappingList).remove();
+      } else {
+        $element.remove();
       }
     }
+    cd.debug.stopTimer('remove comment subitem');
   }
 
   /**
