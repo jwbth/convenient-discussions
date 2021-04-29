@@ -19,7 +19,6 @@ import navPanel from './navPanel';
 import pageNav from './pageNav';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import { ElementsTreeWalker } from './treeWalker';
 import {
   addPreventUnloadCondition,
   handleGlobalKeyDown,
@@ -30,7 +29,11 @@ import { confirmDialog, notFound } from './modal';
 import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
-import { isInline } from './util';
+import {
+  replaceAnchorElement,
+  restoreRelativeScrollPosition,
+  saveRelativeScrollPosition,
+} from './util';
 import { setSettings, setVisits } from './options';
 
 /**
@@ -73,44 +76,6 @@ async function prepare(siteDataRequests) {
     resetCommentAnchors();
     commentLayers.reset();
   }
-}
-
-/**
- * @typedef {object} GetFirstElementInViewportDataReturn
- * @property {Element} element
- * @property {number} top
- * @private
- */
-
-/**
- * Find the first element in the viewport looking from the top of the page and its top offset.
- *
- * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
- * @returns {?GetFirstElementInViewportDataReturn}
- * @private
- */
-function getFirstElementInViewportData(scrollY = window.scrollY) {
-  let element;
-  let top;
-  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-    while (true) {
-      if (!isInline(treeWalker.currentNode.tagName)) {
-        const rect = treeWalker.currentNode.getBoundingClientRect();
-        if (rect.bottom >= 0 && rect.height !== 0) {
-          element = treeWalker.currentNode;
-          top = rect.top;
-          if (treeWalker.firstChild()) {
-            continue;
-          } else {
-            break;
-          }
-        }
-      }
-      if (!treeWalker.nextSibling()) break;
-    }
-  }
-  return element ? { element, top } : null;
 }
 
 /**
@@ -184,15 +149,12 @@ function findSpecialElements() {
  * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
  * that.
  *
- * Not a pure function; it alters `feivData`.
- *
  * @param {Element} element
  * @param {string} newType
- * @param {object|undefined} feivData
  * @returns {Element}
  * @private
  */
-function changeElementType(element, newType, feivData) {
+function changeElementType(element, newType) {
   const newElement = document.createElement(newType);
   while (element.firstChild) {
     newElement.appendChild(element.firstChild);
@@ -210,9 +172,7 @@ function changeElementType(element, newType, feivData) {
     element.parentNode.replaceChild(newElement, element);
   }
 
-  if (feivData && element === feivData.element) {
-    feivData.element = newElement;
-  }
+  replaceAnchorElement(element, newElement);
 
   return newElement;
 }
@@ -221,10 +181,9 @@ function changeElementType(element, newType, feivData) {
  * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
  * the nesting level.
  *
- * @param {object|undefined} feivData
  * @private
  */
-function mergeAdjacentCommentLevels(feivData) {
+function mergeAdjacentCommentLevels() {
   const levels = (
     cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
   );
@@ -274,7 +233,7 @@ function mergeAdjacentCommentLevels(feivData) {
             let child = currentBottomElement.firstChild;
             if (child.nodeType === Node.ELEMENT_NODE) {
               if (bottomInnerTags[child.tagName]) {
-                child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
+                child = changeElementType(child, bottomInnerTags[child.tagName]);
               }
               if (firstMoved === undefined) {
                 firstMoved = child;
@@ -314,12 +273,11 @@ function mergeAdjacentCommentLevels(feivData) {
 /**
  * Perform some DOM-related tasks after parsing comments.
  *
- * @param {object|undefined} feivData
  * @private
  */
-function adjustDom(feivData) {
-  mergeAdjacentCommentLevels(feivData);
-  mergeAdjacentCommentLevels(feivData);
+function adjustDom() {
+  mergeAdjacentCommentLevels();
+  mergeAdjacentCommentLevels();
   if (cd.g.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')) {
     console.warn('.cd-commentLevel adjacencies have left.');
   }
@@ -337,11 +295,10 @@ function adjustDom(feivData) {
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @param {object|undefined} feivData
  * @throws {CdError} If there are no comments.
  * @private
  */
-function processComments(parser, feivData) {
+function processComments(parser) {
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);
 
@@ -363,7 +320,7 @@ function processComments(parser, feivData) {
       cd.comments[commentId].isInSingleCommentTable = true;
     });
 
-  adjustDom(feivData);
+  adjustDom();
 
   /**
    * The script has processed the comments.
@@ -858,9 +815,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
   await prepare(siteDataRequests);
 
-  let feivData;
   if (cd.g.isFirstRun) {
-    feivData = getFirstElementInViewportData(cachedScrollY);
+    saveRelativeScrollPosition(cachedScrollY);
   }
 
   cd.debug.stopTimer('preparations');
@@ -939,7 +895,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     });
 
     try {
-      processComments(parser, feivData);
+      processComments(parser);
     } catch (e) {
       console.error(e);
     }
@@ -996,10 +952,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // Restore the initial viewport position in terms of visible elements which is how the user
       // sees it.
       cd.debug.startTimer('restore scroll position');
-      if (feivData) {
-        const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
-        window.scrollTo(0, y);
-      }
+      restoreRelativeScrollPosition();
       cd.debug.stopTimer('restore scroll position');
 
       cd.debug.startTimer('reviewHighlightables');

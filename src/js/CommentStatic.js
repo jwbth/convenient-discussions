@@ -7,7 +7,13 @@
 import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
-import { getExtendedRect, reorderArray, unique } from './util';
+import {
+  getExtendedRect,
+  reorderArray,
+  restoreRelativeScrollPosition,
+  saveRelativeScrollPosition,
+  unique,
+} from './util';
 import { reloadPage } from './boot';
 
 export default {
@@ -314,6 +320,8 @@ export default {
    * @memberof module:Section
    */
   addNewRepliesNote(newComments) {
+    saveRelativeScrollPosition();
+
     cd.comments.forEach((comment) => {
       comment.subitems.remove('newRepliesNote');
     });
@@ -378,6 +386,8 @@ export default {
         parent.thread.expand();
         parent.thread.collapse();
       }
+
+      restoreRelativeScrollPosition();
     });
   },
 };

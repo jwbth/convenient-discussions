@@ -7,7 +7,10 @@
 
 import CdError from './CdError';
 import cd from './cd';
+import { ElementsTreeWalker } from './treeWalker';
 
+let anchorElement;
+let anchorElementTop;
 let keptScrollPosition = null;
 let keptTocHeight = null;
 
@@ -363,6 +366,48 @@ export function unhideText(text, hidden) {
   }
 
   return text;
+}
+
+/**
+ * Save the scroll position relative to the first element in the viewport looking from the top of
+ * the page.
+ *
+ * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
+ */
+export function saveRelativeScrollPosition(scrollY = window.scrollY) {
+  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
+    while (true) {
+      if (!isInline(treeWalker.currentNode)) {
+        const rect = treeWalker.currentNode.getBoundingClientRect();
+        if (rect.bottom >= 0 && rect.height !== 0) {
+          anchorElement = treeWalker.currentNode;
+          anchorElementTop = rect.top;
+          if (treeWalker.firstChild()) {
+            continue;
+          } else {
+            break;
+          }
+        }
+      }
+      if (!treeWalker.nextSibling()) break;
+    }
+  }
+}
+
+export function restoreRelativeScrollPosition() {
+  if (anchorElement) {
+    const rect = anchorElement.getBoundingClientRect();
+    if (getVisibilityByRects(rect)) {
+      window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+    }
+  }
+}
+
+export function replaceAnchorElement(element, newElement) {
+  if (anchorElement && element === anchorElement) {
+    anchorElement = newElement;
+  }
 }
 
 /**
