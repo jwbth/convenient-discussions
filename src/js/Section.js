@@ -14,7 +14,7 @@ import cd from './cd';
 import toc from './toc';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, focusInput, getObjectUrl } from './util';
+import { calculateWordsOverlap, dealWithLoadingBug, focusInput, getObjectUrl } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -1405,8 +1405,25 @@ export default class Section extends SectionSkeleton {
         // There's no comments neither in the code nor on the page.
         !this.oldestComment;
 
+      let oldestCommentWordsOverlap = Number(!this.oldestComment && !oldestSignature);
+      if (this.oldestComment && oldestSignature) {
+        // Use the comment text overlap factor due to this error
+        // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
+        // superficially, without exluding the headline code and other operations performed in
+        // Comment#adjustCommentBeginning.
+        const oldestCommentCode = code.slice(
+          oldestSignature.commentStartIndex,
+          oldestSignature.startIndex
+        );
+        oldestCommentWordsOverlap = calculateWordsOverlap(
+          this.oldestComment.getText(),
+          removeWikiMarkup(oldestCommentCode)
+        );
+      }
+
       const score = (
-        hasOldestCommentMatched * 1.01 +
+        hasOldestCommentMatched * 1 +
+        oldestCommentWordsOverlap +
         hasHeadlineMatched * 1 +
         hasSectionIndexMatched * 0.5 +
 
