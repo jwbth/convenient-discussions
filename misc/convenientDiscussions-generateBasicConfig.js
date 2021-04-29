@@ -194,6 +194,16 @@ function unique(item, i, arr) {
   return arr.indexOf(item) === i;
 }
 
+function getCommonsScript(page) {
+  return $.get(
+    'https://commons.wikimedia.org/w/api.php?titles=' + encodeURIComponent(page) +
+    '&origin=*&uselang=content&maxage=86400&smaxage=86400&format=json&formatversion=2' +
+    '&action=query&prop=revisions&rvprop=content&rvlimit=1'
+  ).then(function(apiResponse) {
+    eval(apiResponse.query.pages[0].revisions[0].content);
+  });
+}
+
 function getStrings() {
   const requests = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
     .filter(unique)
@@ -201,7 +211,7 @@ function getStrings() {
       return lang !== 'en';
     })
     .map(function (lang) {
-      return mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js&action=raw&ctype=text/javascript');
+      return getCommonsScript('User:Jack_who_built_the_house/convenientDiscussions-i18n/' + lang + '.js');
     });
 
   // We assume it's OK to fall back to English if the translation is unavailable for any reason.
@@ -221,7 +231,7 @@ convenientDiscussions.config = ${output};
 
 if (!convenientDiscussions.isRunning) {
   convenientDiscussions.getStringsPromise = getStrings();
-  mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript')
+  getCommonsScript('User:Jack_who_built_the_house/convenientDiscussions.js')
     .catch(function (e) {
       console.warn('Couldn\\'t load Convenient Discussions.', e);
     });
