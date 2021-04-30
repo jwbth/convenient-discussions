@@ -678,13 +678,16 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-threadButton', 'cd-threadButton-invisible'],
   }).$element.get(0);
 
-  const threadClickArea = document.createElement('div');
-  threadClickArea.className = 'cd-threadLine-clickArea';
-  threadClickArea.title = cd.s('thread-tooltip');
+  const threadArea = document.createElement('div');
+  threadArea.className = 'cd-threadLine-area';
+  threadArea.title = cd.s('thread-tooltip');
+  const topClickArea = document.createElement('div');
+  topClickArea.className = 'cd-threadLine-clickArea cd-threadLine-clickArea-top';
+  threadArea.appendChild(topClickArea);
   const line = document.createElement('div');
   line.className = 'cd-threadLine';
-  threadClickArea.appendChild(line);
-  cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea = threadClickArea;
+  threadArea.appendChild(line);
+  cd.g.THREAD_ELEMENT_PROTOTYPES.area = threadArea;
 }
 
 /**

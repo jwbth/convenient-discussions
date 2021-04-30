@@ -70,31 +70,52 @@ ol > li.cd-commentPart-last {
   cursor: wait;
 }
 
-.cd-threadLine-clickArea {
+.cd-threadLine-area {
   position: absolute;
   z-index: 1;
-  width: 3px;
-  padding-left: var(--cd-content-font-size);
-  padding-right: calc(~"var(--cd-content-font-size) - 2px");
-  cursor: pointer;
+  pointer-events: none;
+  width: calc(~"var(--cd-content-font-size) * 2 + 1px");
 
   &-stretchedStart {
-    padding-left: 0;
-    padding-right: calc(~"var(--cd-content-start-margin) - 2px");
+    width: calc(~"var(--cd-content-start-margin) + 1px");
+
+    .cd-threadLine {
+      margin-left: 0;
+    }
   }
 }
 
 .cd-threadLine {
-  width: 100%;
+  width: 3px;
   height: 100%;
+  margin-left: var(--cd-content-font-size);
 }
 
-.cd-threadLine-clickArea:hover .cd-threadLine {
-  background-color: #72777d;
+.cd-threadLine-clickArea {
+  position: absolute;
+  cursor: pointer;
+  pointer-events: all;
 
-  &-extended::after {
-    background-image: linear-gradient(to bottom, #72777d, transparent);
+  &:hover + .cd-threadLine,
+  &:hover + .cd-threadLine-clickArea + .cd-threadLine {
+    background-color: #72777d;
   }
+
+  &-top {
+    top: 0;
+    left: 0;
+    right: 5px;
+    height: 100%;
+  }
+
+  &-bottom {
+    bottom: 0;
+    width: 100%;
+  }
+}
+
+.cd-threadLine-clickArea:hover .cd-threadLine-extended::after {
+  background-image: linear-gradient(to bottom, #72777d, transparent);
 }
 
 .cd-threadLine-extended::after {
