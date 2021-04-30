@@ -410,12 +410,6 @@ export async function settingsDialog() {
       help: cd.s('sd-desktopnotifications-help', location.hostname),
     });
 
-    [this.highlightOwnCommentsField, this.highlightOwnCommentsCheckbox] = checkboxField({
-      value: 'highlightOwnComments',
-      selected: settings.highlightOwnComments,
-      label: cd.s('sd-highlightowncomments'),
-    });
-
     const insertButtonsSelected = settings.insertButtons
       .map((button) => Array.isArray(button) ? button.join(';') : button);
     this.insertButtonsMultiselect = new OO.ui.TagMultiselectWidget({
@@ -530,7 +524,6 @@ export async function settingsDialog() {
       select: 'updateStates',
       choose: 'changeDesktopNotifications',
     });
-    this.highlightOwnCommentsCheckbox.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
@@ -565,7 +558,6 @@ export async function settingsDialog() {
     function GeneralPageLayout(name, config) {
       GeneralPageLayout.super.call(this, name, config);
       this.$element.append([
-        dialog.highlightOwnCommentsField.$element,
         dialog.useBackgroundHighlightingField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
@@ -667,7 +659,6 @@ export async function settingsDialog() {
         this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
         'unknown'
       ),
-      highlightOwnComments: this.highlightOwnCommentsCheckbox.isSelected(),
       insertButtons: this.processInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),

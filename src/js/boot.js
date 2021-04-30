@@ -87,7 +87,6 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
-    highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notificationsBlacklist: [],

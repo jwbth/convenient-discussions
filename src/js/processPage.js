@@ -998,7 +998,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // Should better be below the comment form restoration to avoid repositioning of layers after
       // the addition of comment forms.
       const commentsToAddLayers = cd.comments.filter((comment) => (
-        (cd.settings.highlightOwnComments && comment.isOwn) ||
+        comment.isOwn ||
 
         // Need to generate the gray line to close the gaps between adjacent list item elements. Do
         // it here, not after the comments parsing, to group all operations requiring reflow

@@ -630,7 +630,7 @@ export default class Comment extends CommentSkeleton {
       this.underlay.classList.add('cd-commentUnderlay-new');
       this.overlay.classList.add('cd-commentOverlay-new');
     }
-    if (cd.settings.highlightOwnComments && this.isOwn) {
+    if (this.isOwn) {
       this.underlay.classList.add('cd-commentUnderlay-own');
       this.overlay.classList.add('cd-commentOverlay-own');
     }

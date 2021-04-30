@@ -52,7 +52,7 @@ export default {
         !comment.isCollapsed &&
         (
           comment.isNew ||
-          (comment.isOwn && cd.settings.highlightOwnComments) ||
+          comment.isOwn ||
           comment.isTarget ||
           comment.isHovered ||
           comment.isDeleted ||
