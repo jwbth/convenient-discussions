@@ -323,7 +323,7 @@ export default {
     saveRelativeScrollPosition();
 
     cd.comments.forEach((comment) => {
-      comment.subitems.remove('newRepliesNote');
+      comment.subitemList.remove('newRepliesNote');
     });
 
     const newCommentsByParent = new Map();

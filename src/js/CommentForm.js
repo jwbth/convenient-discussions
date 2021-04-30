@@ -3194,7 +3194,7 @@ export default class CommentForm {
    */
   destroy() {
     if (this.mode === 'reply') {
-      this.target.subitems.remove('replyForm');
+      this.target.subitemList.remove('replyForm');
     } else {
       this.$outermostElement.remove();
     }

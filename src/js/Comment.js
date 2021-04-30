@@ -202,7 +202,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {CommentSubitemList}
      */
-    this.subitems = new CommentSubitemList();
+    this.subitemList = new CommentSubitemList();
   }
 
   /**
@@ -2819,7 +2819,7 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    this.subitems.add(name, $wrappingItem);
+    this.subitemList.add(name, $wrappingItem);
 
     cd.debug.stopTimer('createSublevelItem');
 

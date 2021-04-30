@@ -250,8 +250,8 @@ export default class Thread {
   getAdjustedEndItem(isVisual) {
     const lastComment = isVisual ? this.visualLastComment : this.lastComment;
     const endItem = isVisual ? this.visualEndItem : this.endItem;
-    const subitems = lastComment.subitems;
-    const $subitem = subitems.get('newRepliesNote') || subitems.get('replyForm');
+    const subitemList = lastComment.subitemList;
+    const $subitem = subitemList.get('newRepliesNote') || subitemList.get('replyForm');
     const adjustedEndItem = $subitem?.is(':visible') ?
       findItemElement($subitem.get(0), lastComment.level) :
       endItem;
