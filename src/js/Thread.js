@@ -516,7 +516,7 @@ export default class Thread {
             const [leftMargin] = comment.getLayersMargins();
             lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
             if (!comment.isStartStretched) {
-              lineLeft -= cd.g.CONTENT_FONT_SIZE;
+              lineLeft -= cd.g.CONTENT_FONT_SIZE + 3;
             }
             lineTop = window.scrollY + rectTop.top;
           }
@@ -528,7 +528,7 @@ export default class Thread {
               const [leftMargin] = comment.getLayersMargins();
               lineLeft = comment.positions.left - (leftMargin + 1);
               if (!comment.isStartStretched) {
-                lineLeft -= cd.g.CONTENT_FONT_SIZE;
+                lineLeft -= cd.g.CONTENT_FONT_SIZE + 3;
               }
               lineTop = comment.positions.top;
             }
@@ -563,7 +563,7 @@ export default class Thread {
         }
 
         if (lineLeft === undefined) {
-          lineLeft = (window.scrollX + rectTop.left) - cd.g.CONTENT_FONT_SIZE;
+          lineLeft = (window.scrollX + rectTop.left) - (cd.g.CONTENT_FONT_SIZE + 3);
           lineTop = window.scrollY + rectTop.top;
           lineHeight = rectBottom.bottom - rectTop.top;
         } else {
