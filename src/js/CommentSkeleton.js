@@ -260,20 +260,29 @@ export default class CommentSkeleton {
   /**
    * Get all replies to the comment.
    *
+   * @param {boolean} [indirect=false] Whether to include children of children and so on.
+   * @param {boolean} [visual=false] Whether to use visual levels instead of logical.
    * @returns {CommentSkeleton[]}
    */
-  getChildren() {
+  getChildren(indirect = false, visual = false) {
     if (this.id === cd.comments.length - 1) {
       return [];
     }
 
     const children = [];
+    const property = visual ? 'level' : 'logicalLevel';
     cd.comments
       .slice(this.id + 1)
       .some((comment) => {
-        if (comment.section === this.section && comment.logicalLevel > this.logicalLevel) {
-          // Allow comments mistakenly indented with more than one level.
-          if (comment.logicalLevel === this.logicalLevel + 1 || comment.getParent() === this) {
+        if (comment.section === this.section && comment[property] > this[property]) {
+          if (
+            comment[property] === this[property] + 1 ||
+
+            // Allow comments mistakenly indented with more than one level.
+            comment.getParent() === this ||
+
+            indirect
+          ) {
             children.push(comment);
           }
           return false;

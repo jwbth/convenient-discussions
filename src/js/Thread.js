@@ -150,31 +150,16 @@ export default class Thread {
     this.rootComment = rootComment;
 
     // Logically last comment
-    const nextToLastCommentId = cd.comments
-      .slice(rootComment.id + 1)
-      .find((comment) => (
-        comment.logicalLevel <= rootComment.logicalLevel ||
-        comment.section !== rootComment.section
-      ))
-      ?.id;
-    const lastCommentId = nextToLastCommentId ? nextToLastCommentId - 1 : cd.comments.length - 1;
-    this.lastComment = cd.comments[lastCommentId];
-    this.commentCount = lastCommentId - this.rootComment.id + 1;
+    const descendants = rootComment.getChildren(true);
+    this.lastComment = descendants[descendants.length - 1] || rootComment;
+
+    this.commentCount = this.lastComment.id - this.rootComment.id + 1;
 
     if (cd.g.pageHasOutdents) {
       cd.debug.startTimer('visualLastComment');
       // Visually last comment (if there are {{outdent}} templates)
-      const visualNextToLastCommentId = cd.comments
-        .slice(rootComment.id + 1)
-        .find((comment) => (
-          comment.level <= rootComment.level ||
-          comment.section !== rootComment.section
-        ))
-        ?.id;
-      const visualLastCommentId = visualNextToLastCommentId ?
-        visualNextToLastCommentId - 1 :
-        cd.comments.length - 1;
-      this.visualLastComment = cd.comments[visualLastCommentId];
+      const visualDescendants = rootComment.getChildren(true, true);
+      this.visualLastComment = visualDescendants[visualDescendants.length - 1] || rootComment;
       cd.debug.stopTimer('visualLastComment');
     } else {
       this.visualLastComment = this.lastComment;
