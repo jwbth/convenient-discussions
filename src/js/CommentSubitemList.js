@@ -45,11 +45,10 @@ export default class CommentSubitemList {
     if ($element) {
       delete this.content[name];
       const $wrappingList = $element.parent('dl, ul, ol');
+      $element.remove();
       if ($wrappingList.is(':empty')) {
         const $outerWrapper = $wrappingList.parent('dd, li');
         ($outerWrapper.length ? $outerWrapper : $wrappingList).remove();
-      } else {
-        $element.remove();
       }
     }
     cd.debug.stopTimer('remove comment subitem');
