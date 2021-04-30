@@ -178,7 +178,7 @@ function changeElementType(element, newType) {
 }
 
 /**
- * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
+ * Combine two adjacent `.cd-commentLevel` elements into one, recursively going deeper in terms of
  * the nesting level.
  *
  * @private
@@ -283,9 +283,9 @@ function adjustDom() {
   }
 
   cd.g.rootElement
-    .querySelectorAll('li.cd-commentPart-last + li, dd.cd-commentPart-last + dd')
+    .querySelectorAll('dd.cd-commentPart-last + dd, li.cd-commentPart-last + li')
     .forEach((el) => {
-      if (el.firstElementChild && ['UL', 'DL'].includes(el.firstElementChild.tagName)) {
+      if (el.firstElementChild && ['DL', 'UL'].includes(el.firstElementChild.tagName)) {
         el.classList.add('cd-connectToPreviousItem');
       }
     });
@@ -1007,7 +1007,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       ));
       Comment.configureAndAddLayers(commentsToAddLayers);
 
-      // Should be below the comment form restoration for threads to be expanded correctly, and also
+      // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning of threads after the addition of comment forms. Should be below the
       // viewport position restoration, as some elements may get hidden. Should be Should better be
       // above comment highlighting (processVisits(), Comment.configureAndAddLayers()) to avoid

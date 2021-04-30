@@ -292,7 +292,7 @@
   "sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",
   "sd-modifytoc": "Modify the table of contents",
   "sd-modifytoc-help": "Show new comments and sections and highlight watched sections.",
-  "sd-usebackgroundhighlighting": "Use background highlighting for new and my comments",
+  "sd-usebackgroundhighlighting": "Use background highlighting for new and own comments",
   "sd-usetemplatedata": "Use TemplateData in templates autocomplete",
   "sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
   "sd-watchonreply": "Watch pages that I comment on",

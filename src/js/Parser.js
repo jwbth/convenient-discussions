@@ -757,9 +757,9 @@ export default class Parser {
     for (let i = parts.length - 1; i >= 0; i--) {
       const part = parts[i];
       if (
-        // 'LI', 'DD' are in this list too for this kind of structures:
+        // 'DD', 'LI' are in this list too for this kind of structures:
         // https://ru.wikipedia.org/w/index.php?diff=103584477.
-        ['UL', 'DL', 'OL', 'LI', 'DD'].includes(part.node.tagName) &&
+        ['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
 
         !(part.node.tagName === 'UL' && part.node.classList.contains('gallery')) &&
 
@@ -824,7 +824,7 @@ export default class Parser {
         } while (
           children.length &&
           children.every((child) => (
-            ['UL', 'DL', 'OL', 'LI', 'DD'].includes(child.tagName) ||
+            ['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) ||
 
             // An inline (e.g., <small>) tag wrapped around block tags can give that.
             (!child.textContent.trim() && isInline(child))
@@ -868,7 +868,7 @@ export default class Parser {
     const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
-      if (['UL', 'DL', 'OL'].includes(el.tagName)) {
+      if (['DL', 'UL', 'OL'].includes(el.tagName)) {
         if (el.classList.contains('cd-commentLevel')) {
           const match = el.getAttribute('class').match(/cd-commentLevel-(\d+)/);
           if (match) {

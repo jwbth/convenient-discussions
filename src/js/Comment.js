@@ -16,7 +16,7 @@ import { TreeWalker } from './treeWalker';
 import {
   addToArrayIfAbsent,
   areObjectsEqual,
-  calculateWordsOverlap,
+  calculateWordOverlap,
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
@@ -519,7 +519,7 @@ export default class Comment extends CommentSkeleton {
 
       const isThanked = Object.keys(thanks).some((key) => (
         this.anchor === thanks[key].anchor &&
-        calculateWordsOverlap(this.getText(), thanks[key].text) > 0.66
+        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
       ));
       if (isThanked) {
         this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
@@ -1355,12 +1355,12 @@ export default class Comment extends CommentSkeleton {
       let match;
       let diffOriginalText = '';
       let diffText = '';
-      let bestDiffPartOverlap = 0;
+      let bestDiffPartWordOverlap = 0;
       while ((match = regexp.exec(diffBody))) {
         const diffPartText = removeWikiMarkup(decodeHtmlEntities(match[1]));
-        const diffPartOverlap = calculateWordsOverlap(diffPartText, commentFullText);
-        if (diffPartOverlap > bestDiffPartOverlap) {
-          bestDiffPartOverlap = diffPartOverlap;
+        const diffPartWordOverlap = calculateWordOverlap(diffPartText, commentFullText);
+        if (diffPartWordOverlap > bestDiffPartWordOverlap) {
+          bestDiffPartWordOverlap = diffPartWordOverlap;
         }
         diffText += diffPartText + '\n';
         diffOriginalText += match[1] + '\n';
@@ -1375,9 +1375,10 @@ export default class Comment extends CommentSkeleton {
       const thisCommentTimestamp = this.date.getTime() + (30 * 1000);
 
       const dateProximity = Math.abs(thisCommentTimestamp - timestamp);
-      let overlap = Math.max(calculateWordsOverlap(diffText, commentFullText), bestDiffPartOverlap);
+      const fullTextWordOverlap = calculateWordOverlap(diffText, commentFullText);
+      let wordOverlap = Math.max(fullTextWordOverlap, bestDiffPartWordOverlap);
 
-      if (overlap < 1 && diffOriginalText.includes('{{')) {
+      if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
           const html = (await parseCode(diffOriginalText, { title: cd.g.PAGE.name })).html;
           diffOriginalText = $('<div>').append(html).cdGetText();
@@ -1386,20 +1387,20 @@ export default class Comment extends CommentSkeleton {
             type: 'parse',
           });
         }
-        overlap = calculateWordsOverlap(diffOriginalText, commentFullText);
+        wordOverlap = calculateWordOverlap(diffOriginalText, commentFullText);
       }
 
-      matches.push({ revision, overlap, dateProximity });
+      matches.push({ revision, wordOverlap, dateProximity });
     }
 
     let bestMatch;
     matches.forEach((match) => {
       if (
         !bestMatch ||
-        match.overlap > bestMatch.overlap ||
+        match.wordOverlap > bestMatch.wordOverlap ||
         (
           bestMatch &&
-          match.overlap === bestMatch.overlap &&
+          match.wordOverlap === bestMatch.wordOverlap &&
           match.dateProximity > bestMatch.dateProximity
         )
       ) {
@@ -2167,7 +2168,7 @@ export default class Comment extends CommentSkeleton {
       )
     ));
 
-    // Signature object to a comment match object
+    // Transform the signature object to a comment match object
     let matches = signatureMatches.map((match) => ({
       id: match.id,
       author: match.author,
@@ -2252,12 +2253,12 @@ export default class Comment extends CommentSkeleton {
       }
 
       const commentText = commentData ? commentData.text : this.getText();
-      match.overlap = calculateWordsOverlap(commentText, removeWikiMarkup(match.code));
+      match.wordOverlap = calculateWordOverlap(commentText, removeWikiMarkup(match.code));
 
       match.score = (
         (
           matches.length === 1 ||
-          match.overlap > 0.5 ||
+          match.wordOverlap > 0.5 ||
 
           // The reserve method, if for some reason the text is not overlapping: by this and
           // previous two dates and authors. If all dates and authors are the same, that shouldn't
@@ -2275,7 +2276,7 @@ export default class Comment extends CommentSkeleton {
           // longer first. Another option is to look for next comments, not for previous.
           (id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
         ) * 2 +
-        match.overlap +
+        match.wordOverlap +
         match.hasHeadlineMatched * 1 +
         match.hasPreviousCommentsDataMatched * 0.5 +
         match.hasIdMatched * 0.0001

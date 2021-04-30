@@ -527,11 +527,11 @@ export function getExtendedRect(el) {
  *
  * @param {object} object1 First object.
  * @param {object} object2 Second object.
- * @param {boolean} [doesInclude=false] Test if all the values of the first object are contained in
- *   the second object.
+ * @param {boolean} [includes=false] Test if all the keys of the first object are contained in
+ *   the second object instead of checking that all the keys are the same.
  * @returns {boolean}
  */
-export function areObjectsEqual(object1, object2, doesInclude = false) {
+export function areObjectsEqual(object1, object2, includes = false) {
   const isMultipartObject = (val) => (
     val !== null &&
     typeof val === 'object' &&
@@ -558,7 +558,7 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
   const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
 
   return (
-    (keys1.length === keys2.length || doesInclude) &&
+    (keys1.length === keys2.length || includes) &&
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
 }
@@ -679,7 +679,7 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames
  * @returns {number}
  * @private
  */
-export function calculateWordsOverlap(s1, s2) {
+export function calculateWordOverlap(s1, s2) {
   const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{2,}`, 'g');
   const words1 = (s1.match(regexp) || []).filter(unique);
   const words2 = (s2.match(regexp) || []).filter(unique);

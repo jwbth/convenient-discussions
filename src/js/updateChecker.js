@@ -21,7 +21,7 @@ import {
   reloadPage,
 } from './boot';
 import {
-  calculateWordsOverlap,
+  calculateWordOverlap,
   getFromLocalStorage,
   keepWorkerSafeValues,
   saveToLocalStorage,
@@ -262,7 +262,7 @@ function mapComments(currentComments, otherComments) {
           const partsMatchedProportion = partsMatchedCount / currentComment.elementHtmls.length;
           const overlap = partsMatchedProportion === 1 ?
             1 :
-            calculateWordsOverlap(currentComment.text, otherComment.text);
+            calculateWordOverlap(currentComment.text, otherComment.text);
           const score = (
             hasParentAnchorMatched * (currentComment.parent?.anchor ? 1 : 0.75) +
             hasHeadlineMatched * 1 +

@@ -12,9 +12,9 @@ import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import toc from './toc';
+import { calculateWordOverlap, dealWithLoadingBug, focusInput, getObjectUrl } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { calculateWordsOverlap, dealWithLoadingBug, focusInput, getObjectUrl } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -1405,7 +1405,7 @@ export default class Section extends SectionSkeleton {
         // There's no comments neither in the code nor on the page.
         !this.oldestComment;
 
-      let oldestCommentWordsOverlap = Number(!this.oldestComment && !oldestSignature);
+      let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSignature);
       if (this.oldestComment && oldestSignature) {
         // Use the comment text overlap factor due to this error
         // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
@@ -1415,7 +1415,7 @@ export default class Section extends SectionSkeleton {
           oldestSignature.commentStartIndex,
           oldestSignature.startIndex
         );
-        oldestCommentWordsOverlap = calculateWordsOverlap(
+        oldestCommentWordOverlap = calculateWordOverlap(
           this.oldestComment.getText(),
           removeWikiMarkup(oldestCommentCode)
         );
@@ -1423,7 +1423,7 @@ export default class Section extends SectionSkeleton {
 
       const score = (
         hasOldestCommentMatched * 1 +
-        oldestCommentWordsOverlap +
+        oldestCommentWordOverlap +
         hasHeadlineMatched * 1 +
         hasSectionIndexMatched * 0.5 +
 
