@@ -64,13 +64,4 @@ export default class CommentSubitemList {
   get(name) {
     return this.content[name] || null;
   }
-
-  /**
-   * Check if there are any subitems in the list.
-   *
-   * @returns {boolean}
-   */
-  areAny() {
-    return Boolean(Object.keys(this.content).length);
-  }
 }

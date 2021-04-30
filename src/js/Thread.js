@@ -205,11 +205,14 @@ export default class Thread {
 
   createLine() {
     cd.debug.startTimer('threads createElement create');
-    this.area = cd.g.THREAD_ELEMENT_PROTOTYPES.area.cloneNode(true);
+    this.clickArea = cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea.cloneNode(true);
     if (this.rootComment.isStartStretched) {
-      this.area.classList.add('cd-threadLine-area-stretchedStart');
+      this.clickArea.classList.add('cd-threadLine-clickArea-stretchedStart');
     }
-    this.line = this.area.lastChild;
+    this.clickArea.onclick = () => {
+      this.toggle();
+    };
+    this.line = this.clickArea.firstChild;
     if (this.endItem !== this.visualEndItem) {
       let areOutdentedCommentsShown = false;
       for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
@@ -226,16 +229,12 @@ export default class Thread {
         this.line.classList.add('cd-threadLine-extended');
       }
     }
-    this.topClickArea = this.line.previousSibling;
-    this.topClickArea.onclick = () => {
-      this.toggle();
-    };
     cd.debug.stopTimer('threads createElement create');
   }
 
-  getAdjustedEndItem(visual) {
-    const lastComment = visual ? this.visualLastComment : this.lastComment;
-    const endItem = visual ? this.visualEndItem : this.endItem;
+  getAdjustedEndItem(isVisual) {
+    const lastComment = isVisual ? this.visualLastComment : this.lastComment;
+    const endItem = isVisual ? this.visualEndItem : this.endItem;
     const subitemList = lastComment.subitemList;
     const $subitem = subitemList.get('newRepliesNote') || subitemList.get('replyForm');
     const adjustedEndItem = $subitem?.is(':visible') ?
@@ -507,20 +506,19 @@ export default class Thread {
         cd.debug.startTimer('threads getBoundingClientRect');
 
         const thread = comment.thread;
-        let areaLeft;
-        let areaTop;
-        let areaHeight;
-        let bottomClickAreaTop;
+        let lineLeft;
+        let lineTop;
+        let lineHeight;
         let rectTop;
         if (thread.isCollapsed) {
           rectTop = thread.collapsedNote.getBoundingClientRect();
           if (comment.level === 0) {
             const [leftMargin] = comment.getLayersMargins();
-            areaLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
+            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
             if (!comment.isStartStretched) {
-              areaLeft -= cd.g.CONTENT_FONT_SIZE;
+              lineLeft -= cd.g.CONTENT_FONT_SIZE;
             }
-            areaTop = window.scrollY + rectTop.top;
+            lineTop = window.scrollY + rectTop.top;
           }
         } else {
           if (comment.level === 0) {
@@ -528,25 +526,16 @@ export default class Thread {
             comment.getPositions();
             if (comment.positions) {
               const [leftMargin] = comment.getLayersMargins();
-              areaLeft = comment.positions.left - (leftMargin + 1);
+              lineLeft = comment.positions.left - (leftMargin + 1);
               if (!comment.isStartStretched) {
-                areaLeft -= cd.g.CONTENT_FONT_SIZE;
+                lineLeft -= cd.g.CONTENT_FONT_SIZE;
               }
-              areaTop = comment.positions.top;
-              if (comment !== comment.thread.lastComment || comment.subitemList.areAny()) {
-                bottomClickAreaTop = comment.positions.bottom;
-              }
+              lineTop = comment.positions.top;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
             cd.debug.startTimer('threads getBoundingClientRect other');
             rectTop = thread.startItem.getBoundingClientRect();
-            if (comment !== comment.thread.lastComment || comment.subitemList.areAny()) {
-              comment.getPositions();
-              if (comment.positions) {
-                bottomClickAreaTop = comment.positions.bottom;
-              }
-            }
             cd.debug.stopTimer('threads getBoundingClientRect other');
           }
         }
@@ -561,35 +550,28 @@ export default class Thread {
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (rects.length < 2 && areaLeft === undefined)) {
+        if (!getVisibilityByRects(...rects) || (rects.length < 2 && lineLeft === undefined)) {
           if (thread.line) {
-            thread.area.remove();
-            thread.area = null;
-            thread.topClickArea = null;
-            thread.bottomClickArea = null;
+            thread.clickArea.remove();
+            thread.clickArea = null;
             thread.line = null;
-            thread.areaLeft = null;
-            thread.areaTop = null;
-            thread.areaHeight = null;
-            thread.bottomClickAreaTop = null;
+            thread.lineLeft = null;
+            thread.lineTop = null;
+            thread.lineHeight = null;
           }
           return false;
         }
 
-        if (areaLeft === undefined) {
-          areaLeft = (window.scrollX + rectTop.left) - cd.g.CONTENT_FONT_SIZE;
-          areaTop = window.scrollY + rectTop.top;
-          areaHeight = rectBottom.bottom - rectTop.top;
+        if (lineLeft === undefined) {
+          lineLeft = (window.scrollX + rectTop.left) - cd.g.CONTENT_FONT_SIZE;
+          lineTop = window.scrollY + rectTop.top;
+          lineHeight = rectBottom.bottom - rectTop.top;
         } else {
-          areaHeight = rectBottom.bottom - (areaTop - window.scrollY);
+          lineHeight = rectBottom.bottom - (lineTop - window.scrollY);
         }
 
         // Find the top comment that has its positions changed and stop at it.
-        if (
-          areaTop === thread.areaTop &&
-          areaHeight === thread.areaHeight &&
-          bottomClickAreaTop === thread.bottomClickAreaTop
-        ) {
+        if (lineTop === thread.lineTop && lineHeight === thread.lineHeight) {
           // Opened/closed "reply in section" comment form will change the thread line height, so we
           // use only this condition.
           return comment.level === 0;
@@ -597,31 +579,17 @@ export default class Thread {
 
         cd.debug.startTimer('threads createElement');
 
-        thread.areaLeft = areaLeft;
-        thread.areaTop = areaTop;
-        thread.areaHeight = areaHeight;
-        thread.bottomClickAreaTop = bottomClickAreaTop;
+        thread.lineLeft = lineLeft;
+        thread.lineTop = lineTop;
+        thread.lineHeight = lineHeight;
 
         if (!thread.line) {
           thread.createLine();
         }
 
-        if (bottomClickAreaTop !== undefined && !thread.bottomClickArea) {
-          thread.bottomClickArea = document.createElement('div');
-          thread.bottomClickArea.className = 'cd-threadLine-clickArea cd-threadLine-clickArea-bottom';
-          thread.bottomClickArea.onclick = () => {
-            thread.toggle();
-          };
-          thread.area.insertBefore(thread.bottomClickArea, thread.line);
-        }
-        if (bottomClickAreaTop === undefined && thread.bottomClickArea) {
-          thread.bottomClickArea.remove();
-          thread.bottomClickArea = null;
-        }
-
         threadsToUpdate.push(thread);
-        if (!thread.area.parentNode) {
-          elementsToAdd.push(thread.area);
+        if (!thread.clickArea.parentNode) {
+          elementsToAdd.push(thread.clickArea);
         }
 
         cd.debug.stopTimer('threads createElement');
@@ -634,16 +602,9 @@ export default class Thread {
 
     // Faster to update/add all elements in one batch.
     threadsToUpdate.forEach((thread) => {
-      thread.area.style.left = thread.areaLeft + 'px';
-      thread.area.style.top = thread.areaTop + 'px';
-      thread.area.style.height = thread.areaHeight + 'px';
-      if (thread.bottomClickAreaTop === undefined) {
-        thread.topClickArea.style.height = '';
-      } else {
-        const boundary = thread.bottomClickAreaTop - thread.areaTop;
-        thread.topClickArea.style.height = boundary + 'px';
-        thread.bottomClickArea.style.top = boundary + 'px';
-      }
+      thread.clickArea.style.left = thread.lineLeft + 'px';
+      thread.clickArea.style.top = thread.lineTop + 'px';
+      thread.clickArea.style.height = thread.lineHeight + 'px';
     });
 
     cd.debug.stopTimer('threads update');
