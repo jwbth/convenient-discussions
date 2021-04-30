@@ -673,9 +673,15 @@ function initOouiAndElementPrototypes() {
   cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
+    icon: 'expand',
 
     framed: false,
-    classes: ['cd-button', 'cd-threadButton', 'cd-threadButton-invisible'],
+    classes: [
+      'cd-button',
+      'cd-threadButton',
+      'cd-threadButton-invisible',
+      'cd-threadButton-collapsedNote',
+    ],
   }).$element.get(0);
 
   const threadClickArea = document.createElement('div');
