@@ -6,12 +6,18 @@
   margin-bottom: 0.5em;
 }
 
-ol > li.cd-commentPart-first {
+ol > li.cd-commentPart-first,
+ol > li > .cd-commentPart-first:first-child {
   margin-top: 0;
 }
 
+// Because irregular gaps between numbered list items are annoying.
+li {
+  margin-bottom: 0.14285714em;
+}
+
 ol > li.cd-commentPart-last {
-  margin-bottom: 0.1em;
+  margin-bottom: 0.14285714em;
 }
 
 // Repeat the class to gain specificity in the Minerva Neue skin

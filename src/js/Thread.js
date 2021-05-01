@@ -24,7 +24,7 @@ let threadLinesContainer;
 let treeWalker;
 
 /**
- * Find the closest item (`<li>`, `<dd>`) element for an element.
+ * Find the closest item element (`li`, `dd`) for an element.
  *
  * @param {Element} element
  * @param {number} level
@@ -536,6 +536,16 @@ export default class Thread {
           } else {
             cd.debug.startTimer('threads getBoundingClientRect other');
             rectTop = thread.startItem.getBoundingClientRect();
+
+            if (comment.containerListType === 'ol') {
+              const [leftMargin] = comment.getLayersMargins();
+              lineTop = window.scrollY + rectTop.top;
+              lineLeft = (
+                (window.scrollX + rectTop.left) -
+                (leftMargin + 1) -
+                (cd.g.CONTENT_FONT_SIZE + 3)
+              );
+            }
             cd.debug.stopTimer('threads getBoundingClientRect other');
           }
         }
@@ -550,7 +560,7 @@ export default class Thread {
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (rects.length < 2 && lineLeft === undefined)) {
+        if (!getVisibilityByRects(...rects) || (!rectTop && lineLeft === undefined)) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = null;

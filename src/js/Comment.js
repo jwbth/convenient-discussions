@@ -140,6 +140,23 @@ export default class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents.bind(this));
 
+    cd.debug.startTimer('closest list');
+    if (this.level !== 0) {
+      for (let n = this.highlightables[0].parentNode; n; n = n.parentNode) {
+        if (n.classList.contains('cd-commentLevel')) {
+          /**
+           * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
+           * `undefined` .
+           *
+           * @type {string|undefined}
+           */
+          this.containerListType = n.tagName.toLowerCase();
+          break;
+        }
+      }
+    }
+    cd.debug.stopTimer('closest list');
+
     /**
      * Is the comment currently highlighted as the target comment.
      *
@@ -343,18 +360,20 @@ export default class Comment extends CommentSkeleton {
   }
 
   getLayersMargins() {
+    cd.debug.startTimer('getLayersMargins');
+
     let positions;
-    let firstElement;
+    let firstHighlightable;
     if (this.isCollapsed) {
       const rect = getCommentPartRect(this.thread.collapsedNote);
       positions = {
         left: window.scrollX + rect.left,
         right: window.scrollX + rect.right,
       };
-      firstElement = this.thread.collapsedNote;
+      firstHighlightable = this.thread.collapsedNote;
     } else {
       positions = this.positions;
-      firstElement = this.highlightables[0];
+      firstHighlightable = this.highlightables[0];
     }
 
     let startMargin;
@@ -387,12 +406,14 @@ export default class Comment extends CommentSkeleton {
         leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
     }
 
-    if (this.isStartStretched) {
+    if (this.containerListType === 'ol') {
+      startMargin = cd.g.CONTENT_FONT_SIZE * 3.2;
+    } else if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(firstElement.tagName) &&
-        firstElement.parentNode.classList.contains('cd-commentLevel')
+        ['LI', 'DD'].includes(firstHighlightable.tagName) &&
+        firstHighlightable.parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
       } else {
@@ -401,13 +422,10 @@ export default class Comment extends CommentSkeleton {
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
 
-    const closestList = firstElement.closest('.cd-commentLevel');
-    if (closestList && closestList.tagName === 'OL') {
-      startMargin += cd.g.CONTENT_FONT_SIZE * 2.2;
-    }
-
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
+
+    cd.debug.stopTimer('getLayersMargins');
 
     return [leftMargin, rightMargin];
   }
@@ -2780,7 +2798,7 @@ export default class Comment extends CommentSkeleton {
     const $wrappingItem = $(`<${wrappingItemTag}>`);
     let $wrappingList;
     if (createList) {
-      $wrappingList = $('<ul>')
+      $wrappingList = $('<dl>')
         .append($wrappingItem)
         .addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
     }

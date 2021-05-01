@@ -614,17 +614,19 @@ export default class CommentForm {
    */
   createContents(dataToRestore) {
     if (!['addSection', 'addSubsection'].includes(this.mode)) {
-      const $content = this.target instanceof Comment ?
-        this.target.$elements.last() :
-        this.target.$replyWrapper;
-
-      /**
-       * Name of the tag used as a list whereof this comment form is an item. `'dl'`, `'ul'`,
-       * `'ol'`, or `null`.
-       *
-       * @type {string|undefined}
-       */
-      this.containerListType = $content.cdGetContainerListType();
+      if (this.mode === 'reply') {
+        /**
+         * Name of the tag of the list that this comment form is an item of. `'dl'`, `'ul'`, `'ol'`,
+         * or `undefined`.
+         *
+         * @type {string|undefined}
+         */
+        this.containerListType = 'dl';
+      } else if (this.mode === 'edit') {
+        this.containerListType = this.target.containerListType;
+      } else if (this.mode === 'replyInSection') {
+        this.containerListType = this.target.$replyContainer.prop('tagName').toLowerCase();
+      }
     }
 
     this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
