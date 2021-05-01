@@ -295,41 +295,49 @@ export default class CommentSkeleton {
   }
 
   static processOutdents() {
-    // Look for {{outdent}} templates
     if (cd.g.pageHasOutdents) {
       Array.from(cd.g.rootElement.getElementsByClassName('outdent-template'))
         .reverse()
         .forEach((el) => {
           const treeWalker = new ElementsTreeWalker(el);
           while (treeWalker.nextNode()) {
-            let commentId = treeWalker.currentNode.getAttribute('data-comment-id');
-            if (commentId !== null) {
-              commentId = Number(commentId);
-              if (commentId !== 0) {
-                const parentComment = cd.comments[commentId - 1];
-                const childComment = cd.comments[commentId];
-                const childLogicalLevel = childComment.logicalLevel;
+            let commentId = Number(treeWalker.currentNode.getAttribute('data-comment-id'));
 
-                // Something is wrong.
-                if (childComment.date < parentComment.date) break;
+            // null and 0 as the attribute value are both bad.
+            if (commentId !== 0) {
+              const parentComment = cd.comments[commentId - 1];
+              const childComment = cd.comments[commentId];
+              const childLogicalLevel = childComment.logicalLevel;
 
-                childComment.isOutdented = true;
-                cd.comments.slice(commentId).some((comment) => {
-                  if (
-                    comment.section !== parentComment.section ||
-                    (comment.id !== commentId && comment.level <= childComment) ||
-                    comment.date < parentComment.date
-                  ) {
-                    return true;
-                  }
-                  comment.logicalLevel = (
-                    (parentComment.logicalLevel + 1) +
-                    (comment.logicalLevel - childLogicalLevel)
-                  );
-                  return false;
-                });
-                break;
-              }
+              // Something is wrong.
+              if (childComment.date < parentComment.date) break;
+
+              childComment.isOutdented = true;
+              cd.comments.slice(commentId).some((comment) => {
+                if (
+                  comment.section !== parentComment.section ||
+                  comment.logicalLevel < childLogicalLevel ||
+
+                  // If the child comment level is at least 2, we infer that the next comment on
+                  // the same level is outdented together with the child comment. If it is 0 or 1,
+                  // the next comment is more likely a regular reply.
+                  (
+                    comment !== childComment &&
+                    childComment.level < 2 &&
+                    comment.level === childComment.level
+                  ) ||
+
+                  comment.date < childComment.date
+                ) {
+                  return true;
+                }
+                comment.logicalLevel = (
+                  (parentComment.logicalLevel + 1) +
+                  (comment.logicalLevel - childLogicalLevel)
+                );
+                return false;
+              });
+              break;
             }
           }
         });
