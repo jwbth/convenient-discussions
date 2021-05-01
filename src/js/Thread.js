@@ -497,6 +497,7 @@ export default class Thread {
 
     const elementsToAdd = [];
     const threadsToUpdate = [];
+    let lastCheckedComment;
     cd.comments
       .slice()
       .reverse()
@@ -582,9 +583,12 @@ export default class Thread {
 
         // Find the top comment that has its positions changed and stop at it.
         if (lineTop === thread.lineTop && lineHeight === thread.lineHeight) {
-          // Opened/closed "reply in section" comment form will change the thread line height, so we
-          // use only this condition.
-          return comment.level === 0;
+          // Opened/closed "reply in section" comment form will change the 0-level thread line
+          // height, so we use only these conditions.
+          return (
+            comment.level === 0 ||
+            (lastCheckedComment && comment.section !== lastCheckedComment.section)
+          );
         }
 
         cd.debug.startTimer('threads createElement');
@@ -603,6 +607,8 @@ export default class Thread {
         }
 
         cd.debug.stopTimer('threads createElement');
+
+        lastCheckedComment = comment;
 
         return false;
       });
