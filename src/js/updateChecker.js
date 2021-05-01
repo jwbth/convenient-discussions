@@ -711,17 +711,24 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   // been removed. For example, the counter could be "+1" but then go back to displaying the refresh
   // icon which means 0 new comments.
   const interestingNewComments = newComments.filter((comment) => {
+    if (!cd.settings.notifyCollapsedThreads && comment.logicalLevel !== 0) {
+      let parentMatch;
+      for (let c = comment; c && !parentMatch; c = c.parent) {
+        parentMatch = c.parentMatch;
+      }
+      if (parentMatch?.isCollapsed) {
+        return false;
+      }
+    }
     if (comment.isOwn || cd.settings.notificationsBlacklist.includes(comment.author.name)) {
       return false;
     }
     if (comment.isToMe) {
-      comment.interesting = true;
       return true;
     }
     if (!cd.g.currentPageWatchedSections) {
       return false;
     }
-
     if (comment.section) {
       // Is this section watched by means of an upper level section?
       const section = comment.section.match;
@@ -729,11 +736,11 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
         const closestWatchedSection = section.getClosestWatchedSection(true);
         if (closestWatchedSection) {
           comment.watchedSectionHeadline = closestWatchedSection.headline;
-          comment.interesting = true;
           return true;
         }
       }
     }
+    return false;
   });
 
   if (cd.g.GENDER_AFFECTS_USER_STRING) {

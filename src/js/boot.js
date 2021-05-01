@@ -89,6 +89,7 @@ export async function initSettings() {
     defaultSectionLinkType: null,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
+    notifyCollapsedThreads: false,
     notificationsBlacklist: [],
     showLoadingOverlay: true,
     showToolbar: true,

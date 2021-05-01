@@ -287,6 +287,7 @@
   "sd-notifications-help": "Notifications are small popups in the top right corner of the page.",
   "sd-notificationsblacklist": "Don't notify about comments of these users",
   "sd-notificationsblacklist-multiselect-placeholder": "Add a user",
+  "sd-notifycollapsedthreads": "Notify about comments in collapsed threads",
   "sd-showtoolbar": "Show the editing toolbar",
   "sd-signatureprefix": "Signature prefix",
   "sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",

@@ -471,6 +471,12 @@ export async function settingsDialog() {
       })
     );
 
+    [this.notifyCollapsedThreadsField, this.notifyCollapsedThreadsCheckbox] = checkboxField({
+      value: 'notifyCollapsedThreads',
+      selected: settings.notifyCollapsedThreads,
+      label: cd.s('sd-notifycollapsedthreads'),
+    });
+
     [this.showToolbarField, this.showToolbarCheckbox] = checkboxField({
       value: 'showToolbar',
       selected: settings.showToolbar,
@@ -527,6 +533,7 @@ export async function settingsDialog() {
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
+    this.notifyCollapsedThreadsCheckbox.connect(this, { change: 'updateStates' });
     this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
     this.signaturePrefixInput.connect(this, { change: 'updateStates' });
     this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
@@ -609,6 +616,7 @@ export async function settingsDialog() {
       this.$element.append([
         dialog.notificationsField.$element,
         dialog.desktopNotificationsField.$element,
+        dialog.notifyCollapsedThreadsField.$element,
         dialog.notificationsBlacklistField.$element,
       ]);
     }
@@ -663,6 +671,7 @@ export async function settingsDialog() {
       modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),
       notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
+      notifyCollapsedThreads: this.notifyCollapsedThreadsCheckbox.isSelected(),
       showToolbar: this.showToolbarCheckbox.isSelected(),
       signaturePrefix: this.signaturePrefixInput.getValue(),
       useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
