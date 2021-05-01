@@ -181,6 +181,11 @@ export default {
     'абзац',
   ],
 
+  outdentTemplates: [
+    'outdent',
+    'od',
+  ],
+
   elementsToExcludeClasses: [
     'ruwiki-movedTemplate',
     'ambox',
@@ -220,21 +225,21 @@ export default {
 
   closedDiscussionTemplates: [
     [
-      'Закрыто',
-      'Closed',
-      'Начало закрытой секции',
-      'Close',
+      'закрыто',
+      'closed',
+      'начало закрытой секции',
+      'close',
     ],
     [
-      'Конец закрытой секции',
-      'Закрыто-конец',
-      'Ecs',
-      'Конец',
-      'Esc',
-      'Кзс',
-      'Закрыто конец',
-      'ECS',
-      'Рано',
+      'конец закрытой секции',
+      'закрыто-конец',
+      'ecs',
+      'конец',
+      'esc',
+      'кзс',
+      'закрыто конец',
+      'eCS',
+      'рано',
     ],
   ],
 
@@ -352,7 +357,7 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
   // the parent list tag into two parts putting the comment in between.
   $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
     const $current = $(el).css('margin', 0);
-    const $list = $current.parent('dd, li').parent('dl, ol, ul');
+    const $list = $current.parent('dd, li').parent('dl, ul, ol');
     while ($list.get(0).contains($current.get(0))) {
       const $parent = $current.parent();
       const $elementsAfter = $current.nextAll();

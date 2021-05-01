@@ -91,17 +91,15 @@ function hideElement(el, comment) {
  *
  * @param {object} obj
  * @param {Array} dangerousKeys
- * @returns {object}
  * @private
  */
 function keepSafeValues(obj, dangerousKeys) {
-  const newObj = Object.assign({}, obj);
-  Object.keys(newObj).forEach((key) => {
+  // Use the same object, as creating a copy would kill the prototype.
+  Object.keys(obj).forEach((key) => {
     if (dangerousKeys.includes(key)) {
-      delete newObj[key];
+      delete obj[key];
     }
   });
-  return newObj;
 }
 
 /**
@@ -135,10 +133,7 @@ function parse() {
 
   signatures.forEach((signature) => {
     try {
-      const comment = parser.createComment(signature);
-      if (comment.id !== undefined) {
-        cd.comments.push(comment);
-      }
+      cd.comments.push(parser.createComment(signature));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -150,10 +145,7 @@ function parse() {
   cd.debug.startTimer('worker: parse sections');
   parser.findHeadings().forEach((heading) => {
     try {
-      const section = parser.createSection(heading);
-      if (section.id !== undefined) {
-        cd.sections.push(section);
-      }
+      cd.sections.push(parser.createSection(heading));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -169,10 +161,8 @@ function parse() {
   });
 
   let commentDangerousKeys = [
-    'cachedSection',
     'elements',
     'highlightables',
-    'parent',
     'parser',
     'parts',
     'signatureElement',
@@ -188,19 +178,15 @@ function parse() {
     'parser',
   ];
 
-  cd.sections = cd.sections.map((section) => keepSafeValues(section, sectionDangerousKeys));
+  cd.sections.forEach((section) => {
+    keepSafeValues(section, sectionDangerousKeys);
+  });
 
+  CommentSkeleton.processOutdents();
   cd.comments.forEach((comment) => {
-    comment.getChildren().forEach((reply) => {
-      reply.parent = comment;
-    });
-    const section = comment.getSection();
-    comment.section = section || null;
-    if (comment.parent) {
-      comment.parentAuthorName = comment.parent.authorName;
-      comment.parentAnchor = comment.parent.anchor;
-      comment.toMe = comment.parent.isOwn;
-    }
+    // Replace with a worker-safe object
+    comment.section = comment.section ? cd.sections[comment.section.id] : null;
+
     comment.hiddenElementData = [];
     comment.elementHtmls = comment.elements.map((element) => {
       element.removeAttribute('data-comment-id');
@@ -299,8 +285,17 @@ function parse() {
   cd.sections.forEach((section) => {
     delete section.comments;
   });
-  cd.comments = cd.comments.map((comment) => keepSafeValues(comment, commentDangerousKeys));
   cd.comments.forEach((comment, i) => {
+    keepSafeValues(comment, commentDangerousKeys);
+
+    cd.debug.startTimer('set children and parent');
+    comment.children = comment.getChildren();
+    comment.children.forEach((reply) => {
+      reply.parent = comment;
+      reply.isToMe = comment.isOwn;
+    });
+    cd.debug.stopTimer('set children and parent');
+
     comment.previousComments = cd.comments
       .slice(Math.max(0, i - 2), i)
       .reverse();

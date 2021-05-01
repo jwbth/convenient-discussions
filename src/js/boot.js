@@ -87,9 +87,9 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
-    highlightOwnComments: true,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
+    notifyCollapsedThreads: false,
     notificationsBlacklist: [],
     showLoadingOverlay: true,
     showToolbar: true,
@@ -655,7 +655,10 @@ function initOouiAndElementPrototypes() {
   cd.g.SECTION_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
     label: cd.s('section-reply'),
     framed: false,
-    classes: ['cd-button', 'cd-sectionButton'],
+
+    // Add the thread button class as it behaves as a thread button in fact, being positioned inside
+    // a "cd-commentLevel" list.
+    classes: ['cd-button', 'cd-sectionButton', 'cd-threadButton'],
   }).$element.get(0);
 
   cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
@@ -670,9 +673,15 @@ function initOouiAndElementPrototypes() {
   cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
+    icon: 'expand',
 
     framed: false,
-    classes: ['cd-button', 'cd-threadButton', 'cd-threadButton-invisible'],
+    classes: [
+      'cd-button',
+      'cd-threadButton',
+      'cd-threadButton-invisible',
+      'cd-threadButton-collapsedNote',
+    ],
   }).$element.get(0);
 
   const threadClickArea = document.createElement('div');
@@ -876,10 +885,15 @@ export function startLoading(isReload = false) {
 /**
  * Remove the loading overlay and reset `convenientDiscussions.g.isFirstRun` and
  * `convenientDiscussions.g.isPageBeingReloaded`.
+ *
+ * @param {boolean} hidePopupOnly
  */
-export function finishLoading() {
-  cd.g.isFirstRun = false;
-  cd.g.isPageBeingReloaded = false;
+export function finishLoading(hidePopupOnly) {
+  if (!hidePopupOnly) {
+    cd.g.isFirstRun = false;
+    cd.g.isPageBeingReloaded = false;
+  }
+
   if (!$loadingPopup || isShowLoadingOverlaySettingOff()) return;
   $loadingPopup.hide();
 }

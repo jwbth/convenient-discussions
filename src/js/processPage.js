@@ -19,7 +19,6 @@ import navPanel from './navPanel';
 import pageNav from './pageNav';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import { ElementsTreeWalker } from './treeWalker';
 import {
   addPreventUnloadCondition,
   handleGlobalKeyDown,
@@ -27,10 +26,14 @@ import {
   handleWindowResize,
 } from './eventHandlers';
 import { confirmDialog, notFound } from './modal';
+import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
-import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
-import { isInline } from './util';
+import {
+  replaceAnchorElement,
+  restoreRelativeScrollPosition,
+  saveRelativeScrollPosition,
+} from './util';
 import { setSettings, setVisits } from './options';
 
 /**
@@ -73,44 +76,6 @@ async function prepare(siteDataRequests) {
     resetCommentAnchors();
     commentLayers.reset();
   }
-}
-
-/**
- * @typedef {object} GetFirstElementInViewportDataReturn
- * @property {Element} element
- * @property {number} top
- * @private
- */
-
-/**
- * Find the first element in the viewport looking from the top of the page and its top offset.
- *
- * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
- * @returns {?GetFirstElementInViewportDataReturn}
- * @private
- */
-function getFirstElementInViewportData(scrollY = window.scrollY) {
-  let element;
-  let top;
-  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-    while (true) {
-      if (!isInline(treeWalker.currentNode.tagName)) {
-        const rect = treeWalker.currentNode.getBoundingClientRect();
-        if (rect.bottom >= 0 && rect.height !== 0) {
-          element = treeWalker.currentNode;
-          top = rect.top;
-          if (treeWalker.firstChild()) {
-            continue;
-          } else {
-            break;
-          }
-        }
-      }
-      if (!treeWalker.nextSibling()) break;
-    }
-  }
-  return element ? { element, top } : null;
 }
 
 /**
@@ -184,15 +149,12 @@ function findSpecialElements() {
  * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
  * that.
  *
- * Not a pure function; it alters `feivData`.
- *
  * @param {Element} element
  * @param {string} newType
- * @param {object|undefined} feivData
  * @returns {Element}
  * @private
  */
-function changeElementType(element, newType, feivData) {
+function changeElementType(element, newType) {
   const newElement = document.createElement(newType);
   while (element.firstChild) {
     newElement.appendChild(element.firstChild);
@@ -210,21 +172,18 @@ function changeElementType(element, newType, feivData) {
     element.parentNode.replaceChild(newElement, element);
   }
 
-  if (feivData && element === feivData.element) {
-    feivData.element = newElement;
-  }
+  replaceAnchorElement(element, newElement);
 
   return newElement;
 }
 
 /**
- * Combine two adjacent ".cd-commentLevel" elements into one, recursively going deeper in terms of
+ * Combine two adjacent `.cd-commentLevel` elements into one, recursively going deeper in terms of
  * the nesting level.
  *
- * @param {object|undefined} feivData
  * @private
  */
-function mergeAdjacentCommentLevels(feivData) {
+function mergeAdjacentCommentLevels() {
   const levels = (
     cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
   );
@@ -274,7 +233,7 @@ function mergeAdjacentCommentLevels(feivData) {
             let child = currentBottomElement.firstChild;
             if (child.nodeType === Node.ELEMENT_NODE) {
               if (bottomInnerTags[child.tagName]) {
-                child = changeElementType(child, bottomInnerTags[child.tagName], feivData);
+                child = changeElementType(child, bottomInnerTags[child.tagName]);
               }
               if (firstMoved === undefined) {
                 firstMoved = child;
@@ -314,20 +273,19 @@ function mergeAdjacentCommentLevels(feivData) {
 /**
  * Perform some DOM-related tasks after parsing comments.
  *
- * @param {object|undefined} feivData
  * @private
  */
-function adjustDom(feivData) {
-  mergeAdjacentCommentLevels(feivData);
-  mergeAdjacentCommentLevels(feivData);
+function adjustDom() {
+  mergeAdjacentCommentLevels();
+  mergeAdjacentCommentLevels();
   if (cd.g.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')) {
     console.warn('.cd-commentLevel adjacencies have left.');
   }
 
   cd.g.rootElement
-    .querySelectorAll('li.cd-commentPart-last + li, dd.cd-commentPart-last + dd')
+    .querySelectorAll('dd.cd-commentPart-last + dd, li.cd-commentPart-last + li')
     .forEach((el) => {
-      if (el.firstElementChild && ['UL', 'DL'].includes(el.firstElementChild.tagName)) {
+      if (el.firstElementChild && ['DL', 'UL'].includes(el.firstElementChild.tagName)) {
         el.classList.add('cd-connectToPreviousItem');
       }
     });
@@ -337,20 +295,16 @@ function adjustDom(feivData) {
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @param {object|undefined} feivData
  * @throws {CdError} If there are no comments.
  * @private
  */
-function processComments(parser, feivData) {
+function processComments(parser) {
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);
 
   signatures.forEach((signature) => {
     try {
-      const comment = parser.createComment(signature);
-      if (comment.highlightables.length) {
-        cd.comments.push(comment);
-      }
+      cd.comments.push(parser.createComment(signature));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -366,7 +320,7 @@ function processComments(parser, feivData) {
       cd.comments[commentId].isInSingleCommentTable = true;
     });
 
-  adjustDom(feivData);
+  adjustDom();
 
   /**
    * The script has processed the comments.
@@ -387,10 +341,7 @@ function processComments(parser, feivData) {
 function processSections(parser, watchedSectionsRequest) {
   parser.findHeadings().forEach((heading) => {
     try {
-      const section = parser.createSection(heading, watchedSectionsRequest);
-      if (section.id !== undefined) {
-        cd.sections.push(section);
-      }
+      cd.sections.push(parser.createSection(heading, watchedSectionsRequest));
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);
@@ -399,6 +350,9 @@ function processSections(parser, watchedSectionsRequest) {
   });
 
   Section.adjust();
+
+  // Dependent on sections being set
+  Comment.processOutdents();
 
   watchedSectionsRequest.then(() => {
     Section.cleanUpWatched();
@@ -861,9 +815,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
   await prepare(siteDataRequests);
 
-  let feivData;
   if (cd.g.isFirstRun) {
-    feivData = getFirstElementInViewportData(cachedScrollY);
+    saveRelativeScrollPosition(cachedScrollY);
   }
 
   cd.debug.stopTimer('preparations');
@@ -886,12 +839,13 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
            are not eligible to create comment forms on.) Such pages are parsed, the page navigation
            block is added to them.
       3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
-         revision. The "cd.g.isPageActive" property is true when the page is of this level. The
-         navigation panel is added to such pages, new comments are highlighted.
+         revision. The "convenientDiscussions.g.isPageActive" property is true when the page is of
+         this level. The navigation panel is added to such pages, new comments are highlighted.
 
     We need to be accurate regarding which functionality should be turned on on which level. We
-    should also make sure we only add this functionality once. The "cd.g.isPageFirstParsed" property
-    is used to reflect the run at which the page is parsed for the first time.
+    should also make sure we only add this functionality once. The
+    "convenientDiscussions.g.isPageFirstParsed" property is used to reflect the run at which the
+    page is parsed for the first time.
    */
 
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
@@ -941,7 +895,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     });
 
     try {
-      processComments(parser, feivData);
+      processComments(parser);
     } catch (e) {
       console.error(e);
     }
@@ -998,10 +952,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // Restore the initial viewport position in terms of visible elements which is how the user
       // sees it.
       cd.debug.startTimer('restore scroll position');
-      if (feivData) {
-        const y = window.scrollY + feivData.element.getBoundingClientRect().top - feivData.top;
-        window.scrollTo(0, y);
-      }
+      restoreRelativeScrollPosition();
       cd.debug.stopTimer('restore scroll position');
 
       cd.debug.startTimer('reviewHighlightables');
@@ -1047,7 +998,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // Should better be below the comment form restoration to avoid repositioning of layers after
       // the addition of comment forms.
       const commentsToAddLayers = cd.comments.filter((comment) => (
-        (cd.settings.highlightOwnComments && comment.isOwn) ||
+        comment.isOwn ||
 
         // Need to generate the gray line to close the gaps between adjacent list item elements. Do
         // it here, not after the comments parsing, to group all operations requiring reflow
@@ -1056,7 +1007,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       ));
       Comment.configureAndAddLayers(commentsToAddLayers);
 
-      // Should be below the comment form restoration for threads to be expanded correctly, and also
+      // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning of threads after the addition of comment forms. Should be below the
       // viewport position restoration, as some elements may get hidden. Should be Should better be
       // above comment highlighting (processVisits(), Comment.configureAndAddLayers()) to avoid

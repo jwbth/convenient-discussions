@@ -29,7 +29,6 @@
 .cd-commentOverlay {
   position: absolute;
   z-index: 1;
-  pointer-events: none;
   line-height: 1.4285714em;
 }
 
@@ -192,12 +191,12 @@
   }
 }
 
-body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+body:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
   padding-top: 1.4285714em;
   min-width: unset;
 }
 
-.ltr:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+.ltr:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
   padding-left: 1.4285714em;
 
   > .oo-ui-iconElement-icon {
@@ -205,7 +204,7 @@ body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo
   }
 }
 
-.rtl:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo-ui-iconElement > .oo-ui-buttonElement-button {
+.rtl:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
   padding-right: 1.4285714em;
 
   > .oo-ui-iconElement-icon {
@@ -215,6 +214,7 @@ body:not(.skin-monobook) .cd-commentButton-icon.oo-ui-buttonElement-frameless.oo
 
 .cd-commentLayersContainer {
   position: relative;
+  pointer-events: none;
 }
 
 .sitedir-ltr .cd-commentLayersContainer {

@@ -12,9 +12,9 @@ import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import toc from './toc';
+import { calculateWordOverlap, dealWithLoadingBug, focusInput, getObjectUrl } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
-import { dealWithLoadingBug, focusInput } from './util';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -127,28 +127,31 @@ export default class Section extends SectionSkeleton {
       this.addReply();
     };
 
+    const lastElement = this.lastElementInFirstChunk;
+
     // Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
     // the comment form in the <ol> tag.
     const isVotePlaceholder = (
-      this.lastElementInFirstChunk.tagName === 'OL' &&
-      this.lastElementInFirstChunk.childElementCount === 1 &&
-      this.lastElementInFirstChunk.children[0].classList.contains('mw-empty-elt')
+      lastElement.tagName === 'OL' &&
+      lastElement.childElementCount === 1 &&
+      lastElement.children[0].classList.contains('mw-empty-elt')
     );
 
     let tag;
     let createList = false;
-    if (this.lastElementInFirstChunk.classList.contains('cd-commentLevel')) {
-      const tagName = this.lastElementInFirstChunk.tagName;
+    if (lastElement.classList.contains('cd-commentLevel')) {
+      const tagName = lastElement.tagName;
       if (
         tagName === 'UL' ||
         (
           tagName === 'OL' &&
+
           // Check if this is indeed a numbered list with replies as list items, not a numbered list
           // as part of the user's comment that has their signature technically inside the last
           // item.
           (
-            this.lastElementInFirstChunk.querySelectorAll('ol > li').length === 1 ||
-            this.lastElementInFirstChunk.querySelectorAll('ol > li > .cd-signature').length > 1
+            lastElement.querySelectorAll('ol > li').length === 1 ||
+            lastElement.querySelectorAll('ol > li > .cd-signature').length > 1
           )
         )
       ) {
@@ -170,18 +173,16 @@ export default class Section extends SectionSkeleton {
     replyWrapper.className = 'cd-replyWrapper';
     replyWrapper.appendChild(replyButton);
 
-    // Container contains wrapper that contains element ^_^
+    // The container contains the wrapper that contains the element ^_^
     let replyContainer;
     if (createList) {
-      replyContainer = document.createElement('ul');
+      replyContainer = document.createElement('dl');
       replyContainer.className = 'cd-commentLevel cd-commentLevel-1 cd-sectionButton-container';
       replyContainer.appendChild(replyWrapper);
-      this.lastElementInFirstChunk.parentNode.insertBefore(
-        replyContainer,
-        this.lastElementInFirstChunk.nextElementSibling
-      );
+      lastElement.parentNode.insertBefore(replyContainer, lastElement.nextElementSibling);
     } else {
-      this.lastElementInFirstChunk.appendChild(replyWrapper);
+      lastElement.appendChild(replyWrapper);
+      replyContainer = lastElement;
     }
 
     /**
@@ -206,11 +207,12 @@ export default class Section extends SectionSkeleton {
     this.$replyWrapper = $(replyWrapper);
 
     /**
-     * Reply button container if present. It may be wrapped around the reply button wrapper.
+     * Reply button container. It is wrapped around the {@link module:Section#$replyWrapper reply
+     * button wrapper}, but can have other elements (and comments) too.
      *
      * @type {JQuery|undefined}
      */
-    this.$replyContainer = replyContainer && $(replyContainer);
+    this.$replyContainer = $(replyContainer);
   }
 
   /**
@@ -1405,8 +1407,25 @@ export default class Section extends SectionSkeleton {
         // There's no comments neither in the code nor on the page.
         !this.oldestComment;
 
+      let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSignature);
+      if (this.oldestComment && oldestSignature) {
+        // Use the comment text overlap factor due to this error
+        // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
+        // superficially, without exluding the headline code and other operations performed in
+        // Comment#adjustCommentBeginning.
+        const oldestCommentCode = code.slice(
+          oldestSignature.commentStartIndex,
+          oldestSignature.startIndex
+        );
+        oldestCommentWordOverlap = calculateWordOverlap(
+          this.oldestComment.getText(),
+          removeWikiMarkup(oldestCommentCode)
+        );
+      }
+
       const score = (
-        hasOldestCommentMatched * 1.01 +
+        hasOldestCommentMatched * 1 +
+        oldestCommentWordOverlap +
         hasHeadlineMatched * 1 +
         hasSectionIndexMatched * 0.5 +
 
@@ -1562,6 +1581,14 @@ export default class Section extends SectionSkeleton {
         .removeClass('cd-toc-watched')
         .removeAttr('title');
     }
+  }
+
+  getUrl() {
+    if (!this.cachedUrl) {
+      this.cachedUrl = getObjectUrl(this.anchor);
+    }
+
+    return this.cachedUrl;
   }
 }
 

@@ -24,26 +24,24 @@ let threadLinesContainer;
 let treeWalker;
 
 /**
- * Find the closest item (`<li>`, `<dd>`) element for a comment part.
+ * Find the closest item element (`li`, `dd`) for an element.
  *
- * @param {Element} commentPartElement
+ * @param {Element} element
  * @param {number} level
  * @returns {?Element}
  */
-function findItemElement(commentPartElement, level) {
-  if (!treeWalker) {
-    treeWalker = new ElementsTreeWalker();
-  }
-  treeWalker.currentNode = commentPartElement;
+function findItemElement(element, level) {
+  treeWalker.currentNode = element;
 
   let item;
-  let previousNode = commentPartElement;
+  let previousNode = element;
   do {
     if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
       const className = treeWalker.currentNode.getAttribute('class');
       const match = className.match(/cd-commentLevel-(\d+)/);
-      if (match && Number(match[1]) === level) {
-        item = previousNode;
+      if (match && Number(match[1]) === (level || 1)) {
+        // Level can be 0 when we start from a comment form.
+        item = level === 0 ? treeWalker.currentNode : previousNode;
         break;
       }
     }
@@ -121,6 +119,27 @@ function cleanUpCollapsedThreads(data) {
   return newData;
 }
 
+function getEndItem(startItem, highlightables) {
+  let commonAncestor = startItem;
+  const lastHighlightable = highlightables[highlightables.length - 1];
+  let endItem = lastHighlightable;
+  do {
+    commonAncestor = commonAncestor.parentNode;
+  } while (!commonAncestor.contains(lastHighlightable));
+  while (endItem.parentNode !== commonAncestor) {
+    endItem = endItem.parentNode;
+  }
+  const nextElement = endItem.nextElementSibling;
+  if (
+    nextElement &&
+    nextElement.tagName === 'UL' &&
+    nextElement.classList.contains('cd-sectionButton-container')
+  ) {
+    endItem = nextElement;
+  }
+  return endItem;
+}
+
 export default class Thread {
   /**
    * Create a comment thread object.
@@ -130,50 +149,55 @@ export default class Thread {
   constructor(rootComment) {
     this.rootComment = rootComment;
 
-    const nextToLastCommentId = cd.comments
-      .slice(rootComment.id + 1)
-      .find((comment) => (
-        comment.level <= rootComment.level ||
-        comment.section !== rootComment.section
-      ))
-      ?.id;
-    const lastCommentId = nextToLastCommentId ? nextToLastCommentId - 1 : cd.comments.length - 1;
-    this.lastComment = cd.comments[lastCommentId];
-    this.commentCount = lastCommentId - this.rootComment.id + 1;
+    // Logically last comment
+    const descendants = rootComment.getChildren(true);
+    this.lastComment = descendants[descendants.length - 1] || rootComment;
 
-    let startItem;
-    let endItem;
-    if (this.rootComment.level === 0) {
-      startItem = this.rootComment.highlightables[0];
-      let commonAncestor = startItem;
-      const lastHighlightable = this.lastComment
-        .highlightables[this.lastComment.highlightables.length - 1];
-      endItem = lastHighlightable;
-      do {
-        commonAncestor = commonAncestor.parentNode;
-      } while (!commonAncestor.contains(lastHighlightable));
-      while (endItem.parentNode !== commonAncestor) {
-        endItem = endItem.parentNode;
-      }
-      const nextElement = endItem.nextElementSibling;
-      if (
-        nextElement &&
-        nextElement.tagName === 'UL' &&
-        nextElement.classList.contains('cd-sectionButton-container')
-      ) {
-        endItem = nextElement;
-      }
+    this.commentCount = this.lastComment.id - this.rootComment.id + 1;
+
+    if (cd.g.pageHasOutdents) {
+      cd.debug.startTimer('visualLastComment');
+      // Visually last comment (if there are {{outdent}} templates)
+      const visualDescendants = rootComment.getChildren(true, true);
+      this.visualLastComment = visualDescendants[visualDescendants.length - 1] || rootComment;
+      cd.debug.stopTimer('visualLastComment');
     } else {
-      startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
-      endItem = findItemElement(
-        this.lastComment.highlightables[this.lastComment.highlightables.length - 1],
-        rootComment.level
-      );
+      this.visualLastComment = this.lastComment;
     }
 
-    if (startItem && endItem) {
+    let startItem;
+    let visualEndItem;
+    let endItem;
+    const highlightables = this.lastComment.highlightables;
+    const visualHighlightables = this.visualLastComment.highlightables;
+    if (this.rootComment.level === 0) {
+      startItem = this.rootComment.highlightables[0];
+      visualEndItem = getEndItem(startItem, visualHighlightables);
+      endItem = this.lastComment === this.visualLastComment ?
+        visualEndItem :
+        getEndItem(startItem, highlightables);
+
+    } else {
+      startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
+      const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
+      visualEndItem = findItemElement(lastVisualHighlightable, rootComment.level);
+
+      if (this.lastComment === this.visualLastComment) {
+        endItem = visualEndItem;
+      } else {
+        const outdentedComment = cd.comments
+          .slice(0, this.lastComment.id + 1)
+          .reverse()
+          .find((comment) => comment.isOutdented);
+        const lastHighlightable = highlightables[highlightables.length - 1];
+        endItem = findItemElement(lastHighlightable, outdentedComment.level);
+      }
+    }
+
+    if (startItem && endItem && visualEndItem) {
       this.startItem = startItem;
       this.endItem = endItem;
+      this.visualEndItem = visualEndItem;
     } else {
       throw new CdError();
     }
@@ -189,15 +213,40 @@ export default class Thread {
       this.toggle();
     };
     this.line = this.clickArea.firstChild;
+    if (this.endItem !== this.visualEndItem) {
+      let areOutdentedCommentsShown = false;
+      for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
+        const comment = cd.comments[i];
+        if (comment.isOutdented) {
+          areOutdentedCommentsShown = true;
+        }
+        if (comment.thread?.isCollapsed) {
+          i = comment.thread.lastComment.id;
+          continue;
+        }
+      }
+      if (areOutdentedCommentsShown) {
+        this.line.classList.add('cd-threadLine-extended');
+      }
+    }
     cd.debug.stopTimer('threads createElement create');
+  }
+
+  getAdjustedEndItem(isVisual) {
+    const lastComment = isVisual ? this.visualLastComment : this.lastComment;
+    const endItem = isVisual ? this.visualEndItem : this.endItem;
+    const subitemList = lastComment.subitemList;
+    const $subitem = subitemList.get('newRepliesNote') || subitemList.get('replyForm');
+    const adjustedEndItem = $subitem?.is(':visible') ?
+      findItemElement($subitem.get(0), lastComment.level) :
+      endItem;
+    return adjustedEndItem;
   }
 
   getRangeContents() {
     const range = document.createRange();
     range.setStart(this.startItem, 0);
-    const rangeEnd = this.lastComment.replyForm?.$element.is(':visible') ?
-      findItemElement(this.lastComment.replyForm.$element.get(0), this.lastComment.level) :
-      this.endItem;
+    const rangeEnd = this.getAdjustedEndItem();
     range.setEnd(rangeEnd, rangeEnd.childNodes.length);
 
     /*
@@ -220,12 +269,13 @@ export default class Thread {
         </ul>
      */
     cd.debug.startTimer('thread collapse traverse');
-    if (!treeWalker) {
-      treeWalker = new ElementsTreeWalker();
-    }
     const rangeContents = [range.startContainer];
-    if (range.startContainer !== range.endContainer) {
+
+    // The start container could contain the end container and be different from it in the case with
+    // adjusted end items.
+    if (!range.startContainer.contains(range.endContainer)) {
       treeWalker.currentNode = range.startContainer;
+
       while (treeWalker.currentNode.parentNode !== range.commonAncestorContainer) {
         while (treeWalker.nextSibling()) {
           rangeContents.push(treeWalker.currentNode);
@@ -252,24 +302,23 @@ export default class Thread {
 
   collapse(getUserGendersPromise) {
     // The range contents can change, at least due to appearance of comment forms.
-    const rangeContents = this.getRangeContents();
+    this.collapsedRange = this.getRangeContents();
 
     cd.debug.stopTimer('thread collapse traverse');
 
     cd.debug.startTimer('thread collapse range');
-    this.$collapsedRange = $(rangeContents)
+    this.collapsedRange.forEach((el) => {
       // We use a class here because there can be elements in the comment that are hidden from the
       // beginning and should stay so when reshowing the comment.
-      .addClass('cd-hidden')
+      el.classList.add('cd-hidden')
 
-      .each((i, el) => {
-        // An element can be in more than one collapsed range. So, we need to show it when expanding
-        // a range only if no active collapsed ranges are left.
-        const $el = $(el);
-        const roots = $el.data('cd-collapsed-thread-root-comments') || [];
-        roots.push(this.rootComment);
-        $el.data('cd-collapsed-thread-root-comments', roots);
-      });
+      // An element can be in more than one collapsed range. So, we need to show it when expanding
+      // a range only if no active collapsed ranges are left.
+      const $el = $(el);
+      const roots = $el.data('cd-collapsed-thread-root-comments') || [];
+      roots.push(this.rootComment);
+      $el.data('cd-collapsed-thread-root-comments', roots);
+    });
     cd.debug.stopTimer('thread collapse range');
 
     cd.debug.startTimer('thread collapse traverse comments');
@@ -312,16 +361,17 @@ export default class Thread {
     }
 
     cd.debug.startTimer('thread collapse button note');
-    let tagName = rangeContents[0].tagName;
+    let tagName = this.collapsedRange[0].tagName;
     if (!['LI', 'DD'].includes(tagName)) {
       tagName = 'DIV';
     }
-    this.collapsedNote = document.createElement(tagName);
-    this.collapsedNote.className = 'cd-thread-collapsedNote';
-    this.collapsedNote.appendChild(button);
-    rangeContents[0].parentNode.insertBefore(this.collapsedNote, rangeContents[0]);
+    const collapsedNote = document.createElement(tagName);
+    collapsedNote.className = 'cd-threadButton-container cd-thread-collapsedNote';
+    collapsedNote.appendChild(button);
+    this.collapsedRange[0].parentNode.insertBefore(collapsedNote, this.collapsedRange[0]);
     cd.debug.stopTimer('thread collapse button note');
 
+    this.collapsedNote = collapsedNote;
     this.$collapsedNote = $(this.collapsedNote);
     if (isInited) {
       this.$collapsedNote.cdScrollIntoView();
@@ -335,6 +385,12 @@ export default class Thread {
       }
     }
 
+    if (this.endItem !== this.visualEndItem) {
+      for (let c = this.rootComment; c; c = c.getParent()) {
+        c.thread?.line.classList.remove('cd-threadLine-extended');
+      }
+    }
+
     cd.debug.startTimer('thread collapse end');
     saveCollapsedThreads();
     handleScroll();
@@ -342,19 +398,23 @@ export default class Thread {
   }
 
   expand() {
-    this.$collapsedRange.each((i, el) => {
+    this.collapsedRange.forEach((el) => {
       const $el = $(el);
       const roots = $el.data('cd-collapsed-thread-root-comments') || [];
       removeFromArrayIfPresent(roots, this.rootComment);
       $el.data('cd-collapsed-thread-root-comments', roots);
       if (!roots.length) {
-        $el.removeClass('cd-hidden');
+        el.classList.remove('cd-hidden');
       }
     });
 
     this.isCollapsed = false;
+    let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
+      if (comment.isOutdented) {
+        areOutdentedCommentsShown = true;
+      }
       if (comment.thread?.isCollapsed) {
         i = comment.thread.lastComment.id;
         continue;
@@ -372,6 +432,12 @@ export default class Thread {
       }
     }
 
+    if (this.endItem !== this.visualEndItem && areOutdentedCommentsShown) {
+      for (let c = this.rootComment; c; c = c.getParent()) {
+        c.thread?.line.classList.add('cd-threadLine-extended');
+      }
+    }
+
     saveCollapsedThreads();
     handleScroll();
   }
@@ -385,6 +451,7 @@ export default class Thread {
     cd.debug.startTimer('threads traverse');
 
     isInited = false;
+    treeWalker = new ElementsTreeWalker();
     cd.comments.forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
@@ -425,10 +492,12 @@ export default class Thread {
   static updateLines() {
     if ((isPageLoading() || document.hidden) && isInited) return;
 
-    cd.debug.startTimer('threads update');
+    cd.debug.startTimer('threads updateLines');
     cd.debug.startTimer('threads calculate');
 
     const elementsToAdd = [];
+    const threadsToUpdate = [];
+    let lastCheckedComment;
     cd.comments
       .slice()
       .reverse()
@@ -448,45 +517,51 @@ export default class Thread {
             const [leftMargin] = comment.getLayersMargins();
             lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
             if (!comment.isStartStretched) {
-              lineLeft -= cd.g.CONTENT_FONT_SIZE;
+              lineLeft -= cd.g.CONTENT_FONT_SIZE + 3;
             }
             lineTop = window.scrollY + rectTop.top;
           }
         } else {
           if (comment.level === 0) {
+            cd.debug.startTimer('threads getBoundingClientRect 0');
             comment.getPositions();
             if (comment.positions) {
               const [leftMargin] = comment.getLayersMargins();
               lineLeft = comment.positions.left - (leftMargin + 1);
               if (!comment.isStartStretched) {
-                lineLeft -= cd.g.CONTENT_FONT_SIZE;
+                lineLeft -= cd.g.CONTENT_FONT_SIZE + 3;
               }
               lineTop = comment.positions.top;
             }
+            cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
+            cd.debug.startTimer('threads getBoundingClientRect other');
             rectTop = thread.startItem.getBoundingClientRect();
+
+            if (comment.containerListType === 'ol') {
+              const [leftMargin] = comment.getLayersMargins();
+              lineTop = window.scrollY + rectTop.top;
+              lineLeft = (
+                (window.scrollX + rectTop.left) -
+                (leftMargin + 1) -
+                (cd.g.CONTENT_FONT_SIZE + 3)
+              );
+            }
+            cd.debug.stopTimer('threads getBoundingClientRect other');
           }
         }
 
-        let elementBottom;
-        if (thread.isCollapsed) {
-          elementBottom = thread.collapsedNote;
-        } else {
-          if (thread.lastComment.replyForm?.$element.is(':visible')) {
-            elementBottom = findItemElement(
-              thread.lastComment.replyForm.$element.get(0),
-              thread.lastComment.level
-            );
-          } else {
-            elementBottom = thread.endItem;
-          }
-        }
+        const elementBottom = thread.isCollapsed ?
+          thread.collapsedNote :
+          thread.getAdjustedEndItem(true);
 
+        cd.debug.startTimer('threads getBoundingClientRect bottom');
         const rectBottom = elementBottom.getBoundingClientRect();
+        cd.debug.stopTimer('threads getBoundingClientRect bottom');
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (rects.length < 2 && lineLeft === undefined)) {
+        if (!getVisibilityByRects(...rects) || (!rectTop && lineLeft === undefined)) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = null;
@@ -499,7 +574,7 @@ export default class Thread {
         }
 
         if (lineLeft === undefined) {
-          lineLeft = (window.scrollX + rectTop.left) - cd.g.CONTENT_FONT_SIZE;
+          lineLeft = (window.scrollX + rectTop.left) - (cd.g.CONTENT_FONT_SIZE + 3);
           lineTop = window.scrollY + rectTop.top;
           lineHeight = rectBottom.bottom - rectTop.top;
         } else {
@@ -508,9 +583,12 @@ export default class Thread {
 
         // Find the top comment that has its positions changed and stop at it.
         if (lineTop === thread.lineTop && lineHeight === thread.lineHeight) {
-          // Opened/closed "reply in section" comment form will change the thread line height, so we
-          // use only this condition.
-          return comment.level === 0;
+          // Opened/closed "reply in section" comment form will change the 0-level thread line
+          // height, so we use only these conditions.
+          return (
+            comment.level === 0 ||
+            (lastCheckedComment && comment.section !== lastCheckedComment.section)
+          );
         }
 
         cd.debug.startTimer('threads createElement');
@@ -523,28 +601,36 @@ export default class Thread {
           thread.createLine();
         }
 
-        thread.clickArea.style.left = thread.lineLeft + 'px';
-        thread.clickArea.style.top = thread.lineTop + 'px';
-        thread.clickArea.style.height = thread.lineHeight + 'px';
-
+        threadsToUpdate.push(thread);
         if (!thread.clickArea.parentNode) {
           elementsToAdd.push(thread.clickArea);
         }
 
         cd.debug.stopTimer('threads createElement');
 
+        lastCheckedComment = comment;
+
         return false;
       });
 
     cd.debug.stopTimer('threads calculate');
+    cd.debug.startTimer('threads update');
+
+    // Faster to update/add all elements in one batch.
+    threadsToUpdate.forEach((thread) => {
+      thread.clickArea.style.left = thread.lineLeft + 'px';
+      thread.clickArea.style.top = thread.lineTop + 'px';
+      thread.clickArea.style.height = thread.lineHeight + 'px';
+    });
+
+    cd.debug.stopTimer('threads update');
     cd.debug.startTimer('threads append');
 
-    // Faster to add all elements in one batch.
     if (elementsToAdd.length) {
       threadLinesContainer.append(...elementsToAdd);
     }
 
     cd.debug.stopTimer('threads append');
-    cd.debug.stopTimer('threads update');
+    cd.debug.stopTimer('threads updateLines');
   }
 }

@@ -3,7 +3,47 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": ["node_modules", "dist", "docs"],
+			"folder_exclude_patterns": [".git", "node_modules", "dist", "docs"],
 		}
-	]
+	],
+  "settings":
+  {
+    "rulers":
+    [
+      100
+    ],
+    "tab_size": 2,
+    "translate_tabs_to_spaces": true,
+    "wrap_as_you_type_paragraphs":
+    [
+      {
+        "first_line_regex": "^@(arg|argument|prop|property|param(\\[(in|out|in,out)\\])?)\\s+([^\\{\\s]\\S*|\\{[^\\}]*\\})\\s+([^\\[\\s]\\S*|\\[[^\\]]*\\])\\s+",
+        "indent": "  "
+      },
+      {
+        "first_line_regex": "^@(exception|result|returns?|throws?)\\s+([^\\{\\s]\\S*|\\{[^\\}]*\\})\\s+",
+        "indent": "  "
+      },
+      {
+        "first_line_regex": "^@(defgroup|link|retval|section|see|snippet|snippetdoc|snippetlineno|source|subsection)\\s+\\S+\\s+",
+        "indent": "  "
+      },
+      {
+        "first_line_regex": "^@([a-zA-Z][a-zA-Z\\[,\\]]*(\\s+|$)|$)",
+        "indent": "  "
+      }
+    ],
+    "wrap_as_you_type_sections":
+    [
+      {
+        "line_start": " * ",
+        "selector": "comment.block - punctuation.comment"
+      },
+      {
+        "combining_selector": "source - (comment | constant | entity | invalid | keyword | punctuation | storage | string | variable)",
+        "line_start": "//",
+        "selector": "comment.line"
+      }
+    ]
+  }
 }

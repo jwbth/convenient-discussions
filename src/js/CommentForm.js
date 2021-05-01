@@ -201,7 +201,7 @@ export default class CommentForm {
     this.isNewTopicOnTop = isNewTopicOnTop;
 
     if (this.target instanceof Comment) {
-      this.sectionHeadline = this.target.getSection()?.headline;
+      this.sectionHeadline = this.target.section?.headline;
     } else if (this.target instanceof Section) {
       this.sectionHeadline = this.target.headline;
     }
@@ -346,7 +346,7 @@ export default class CommentForm {
        *
        * @type {?(Section|undefined)}
        */
-      this.targetSection = this.target.getSection();
+      this.targetSection = this.target.section;
 
       /**
        * Target comment. This may be the comment the user replies to or the comment opening the
@@ -613,25 +613,20 @@ export default class CommentForm {
    * @private
    */
   createContents(dataToRestore) {
-    if (['addSection', 'addSubsection'].includes(this.mode)) {
-      this.containerListType = null;
-    } else {
-      /**
-       * Name of the tag used as a list whereof this comment form is an item. `'dl'`, `'ul'`,
-       * `'ol'`, or `null`.
-       *
-       * @type {?string}
-       */
-      this.containerListType = this.target instanceof Comment ?
-        this.target.$elements
-          .last()
-          .parent()
-          .prop('tagName')
-          .toLowerCase() :
-        this.target.$replyWrapper
-          .parent()
-          .prop('tagName')
-          .toLowerCase();
+    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+      if (this.mode === 'reply') {
+        /**
+         * Name of the tag of the list that this comment form is an item of. `'dl'`, `'ul'`, `'ol'`,
+         * or `undefined`.
+         *
+         * @type {string|undefined}
+         */
+        this.containerListType = 'dl';
+      } else if (this.mode === 'edit') {
+        this.containerListType = this.target.containerListType;
+      } else if (this.mode === 'replyInSection') {
+        this.containerListType = this.target.$replyContainer.prop('tagName').toLowerCase();
+      }
     }
 
     this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
@@ -668,13 +663,11 @@ export default class CommentForm {
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.isSectionOpeningCommentEdited
     ) {
+      const parentSection = this.targetSection?.getParent();
       if (this.mode === 'addSubsection') {
         this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
-      } else if (this.mode === 'edit' && this.targetSection.getParent()) {
-        this.headlineInputPurpose = cd.s(
-          'cf-headline-subsection',
-          this.targetSection.getParent().headline
-        );
+      } else if (this.mode === 'edit' && parentSection) {
+        this.headlineInputPurpose = cd.s('cf-headline-subsection', parentSection.headline);
       } else {
         this.headlineInputPurpose = cd.s('cf-headline-topic');
       }
@@ -700,10 +693,7 @@ export default class CommentForm {
     }
 
     let commentInputPlaceholder;
-    if (
-      this.mode === 'replyInSection' ||
-      (this.mode === 'reply' && this.target.isOpeningSection)
-    ) {
+    if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
       commentInputPlaceholder = cd.s(
         'cf-comment-placeholder-replytosection',
         this.targetSection.headline
@@ -1359,116 +1349,47 @@ export default class CommentForm {
       cd.g.$root.empty();
     }
 
-    let outerWrapperTag;
-    let createList = false;
-    let $lastOfTarget;
-    let $other;
+    let $wrappingItem;
+    let $wrappingList;
+    let $outerWrapper;
     if (this.mode === 'reply') {
-      createList = true;
-      $lastOfTarget = this.target.$elements.last();
-      $other = $lastOfTarget.next();
-      const $nextToTargetFirstChild = $other.children().first();
-      if ($other.is('li, dd') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
-        $other = $nextToTargetFirstChild;
-      }
-      if ($other.is('ul, dl')) {
-        createList = false;
-        outerWrapperTag = $other.is('ul') ? 'li' : 'dd';
-        $other.addClass('cd-commentLevel');
-      } else if ($lastOfTarget.is('li')) {
-        // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
-        // in those cases. Which is unsemantic, yes :-(
-        outerWrapperTag = this.containerListType === 'ol' ? 'div' : 'li';
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
+      [$wrappingItem, $wrappingList, $outerWrapper] = this.target
+        .createSublevelItem('replyForm', 'top', this.containerListType);
     } else if (this.mode === 'edit') {
-      $lastOfTarget = this.target.$elements.last();
-      if ($lastOfTarget.is('li')) {
-        outerWrapperTag = 'li';
-      } else if ($lastOfTarget.is('dd')) {
-        outerWrapperTag = 'dd';
-      }
-    }
-
-    if (outerWrapperTag) {
-      /**
-       * Element, usually a `li` or `dd`, that wraps either {@link module:CommentForm~$element the
-       * comment form element} directly or {@link module:CommentForm~$wrappingList the list} that
-       * wraps the item that wraps the comment form element.
-       *
-       * @type {JQuery|undefined}
-       */
-      this.$outerWrapper = $(`<${outerWrapperTag}>`);
-      if (
-        this.mode === 'reply' &&
-        $lastOfTarget.is('li, dd') &&
-
-        // Reply to a pseudo-comment added with this diff with a mistake:
-        // https://ru.wikipedia.org/?diff=113073013.
-        $lastOfTarget.parent().is('.cd-commentLevel') &&
-
-        this.containerListType !== 'ol'
-      ) {
-        this.$outerWrapper.addClass('cd-connectToPreviousItem');
-      }
-    }
-
-    if (this.mode === 'reply') {
-      if (createList) {
-        /**
-         * List that wraps the item that wraps the comment form element.
-         *
-         * @type {JQuery|undefined}
-         */
-        this.$wrappingList = $('<ul>').addClass('cd-commentLevel');
-
-        if (this.$outerWrapper) {
-          this.$wrappingList.appendTo(this.$outerWrapper);
-        }
-        const $wrappingItem = $('<li>').appendTo(this.$wrappingList);
-        this.$element.appendTo($wrappingItem);
-      } else {
-        this.$element.appendTo(this.$outerWrapper);
-      }
-    } else if (this.mode === 'edit') {
-      if (this.$outerWrapper) {
-        this.$element.appendTo(this.$outerWrapper);
+      const $lastOfTarget = this.target.$elements.last();
+      if ($lastOfTarget.is('dd, li')) {
+        const outerWrapperTag = $lastOfTarget.prop('tagName').toLowerCase();
+        $outerWrapper = $(`<${outerWrapperTag}>`);
+        this.$element.appendTo($outerWrapper);
       }
     }
 
     /**
-     * The outermost element of the form (equal to {@link module:CommentForm#$outerWrapper}, {@link
-     * module:CommentForm#$wrappingList} or {@link module:CommentForm#$element}). It is removed to
-     * return the DOM to the original state, before the form was created.
+     * The outermost element of the form (equal to the comment form element, item that wraps the
+     * comment form element, list that wraps the item etc., or outer wrapper (usually an item of a
+     * list itself) that wraps the list etc. It is removed to return the DOM to the original state,
+     * before the form was created.
      *
      * @type {JQuery}
      */
-    this.$outermostElement = this.$outerWrapper || this.$wrappingList || this.$element;
+    this.$outermostElement = $outerWrapper || $wrappingList || $wrappingItem || this.$element;
 
+    // Add to page
     switch (this.mode) {
       case 'reply': {
-        if ($other.is('ul, dl')) {
-          this.$outerWrapper.prependTo($other);
-        } else if ($lastOfTarget.is('li, dd')) {
-          this.$outerWrapper.insertAfter($lastOfTarget);
-        } else {
-          this.$wrappingList.insertAfter($lastOfTarget);
-        }
+        this.$element.appendTo($wrappingItem || $outerWrapper);
         break;
       }
 
       case 'edit': {
-        const $element = this.$outerWrapper || this.$element;
-
         // We insert the form before the comment so that if the comment ends on a wrong level, the
         // form is on a right one. The exception is comments that open a section (otherwise a bug
         // will be introduced that will manifest when opening an "Add subsection" form of the
         // previous section).
         if (this.target.isOpeningSection) {
-          $element.insertAfter(this.target.$elements.last());
+          this.$outermostElement.insertAfter(this.target.$elements.last());
         } else {
-          $element.insertBefore(this.target.$elements.first());
+          this.$outermostElement.insertBefore(this.target.$elements.first());
         }
         break;
       }
@@ -1498,18 +1419,15 @@ export default class CommentForm {
           subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
           subsection" for a level 3 section, we need to put our form between them.
          */
-        const headingLevelRegexp = new RegExp(
-          `\\bcd-commentForm-addSubsection-[${this.target.level}-6]\\b`
-        );
+        const level = this.target.level;
+        const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
         let $target;
         let $tested = this.target.$elements.last();
+        const selector = '.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
         do {
           $target = $tested;
           $tested = $tested.next();
-        } while (
-          $tested.is('.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply') ||
-          ($tested.get(0)?.className.match(headingLevelRegexp))
-        );
+        } while ($tested.is(selector) || $tested.get(0)?.className.match(headingLevelRegexp));
         this.$element.insertAfter($target);
         break;
       }
@@ -1717,7 +1635,7 @@ export default class CommentForm {
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
       cd.comments.some((comment) => {
-        if (comment.getSection()) {
+        if (comment.section) {
           return true;
         } else {
           commentsInSection.push(comment);
@@ -1733,13 +1651,9 @@ export default class CommentForm {
       .map((comment) => comment.author.name)
       .sort();
     if (this.targetComment && this.mode !== 'edit') {
-      for (
-        let targetComment = this.targetComment;
-        targetComment;
-        targetComment = targetComment.getParent()
-      ) {
-        if (targetComment.author !== cd.g.USER) {
-          usersInSection.unshift(targetComment.author.name);
+      for (let с = this.targetComment; с; с = с.getParent()) {
+        if (с.author !== cd.g.USER) {
+          usersInSection.unshift(с.author.name);
           break;
         }
       }
@@ -3281,7 +3195,12 @@ export default class CommentForm {
    * Remove the elements and other objects' properties related to the form.
    */
   destroy() {
-    this.$outermostElement.remove();
+    if (this.mode === 'reply') {
+      this.target.subitemList.remove('replyForm');
+    } else {
+      this.$outermostElement.remove();
+    }
+
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));

@@ -175,6 +175,13 @@ export default class CommentSkeleton {
      * @type {?Section}
      */
     this.section = null;
+
+    /**
+     * Is the comment outdented with the {{outdent}} template.
+     *
+     * @type {boolean}
+     */
+    this.isOutdented = false;
   }
 
   /**
@@ -214,6 +221,13 @@ export default class CommentSkeleton {
      */
     this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
 
+    /**
+     * Comment level that takes into account {{outdent}} templates.
+     *
+     * @type {number}
+     */
+    this.logicalLevel = this.level;
+
     for (let i = 0; i < this.level; i++) {
       levelElements.forEach((els) => {
         els[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
@@ -222,64 +236,111 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Get the section that the comment is directly in (the section with lowest level / the biggest
-   * level number).
+   * Get the parent comment of the comment.
    *
-   * @returns {?Section}
-   * @private
+   * @returns {?CommentSkeleton}
    */
-  getSection() {
-    if (this.cachedSection === undefined) {
-      this.cachedSection = (
-        cd.sections
-          .slice()
+  getParent() {
+    if (this.cachedParent === undefined) {
+      this.cachedParent = (
+        cd.comments
+          .slice(0, this.id)
           .reverse()
-          .find((section) => section.comments.includes(this)) ||
+          .find((comment) => (
+            comment.section === this.section &&
+            comment.logicalLevel < this.logicalLevel
+          )) ||
         null
       );
     }
-    return this.cachedSection;
+
+    return this.cachedParent;
   }
 
   /**
    * Get all replies to the comment.
    *
+   * @param {boolean} [indirect=false] Whether to include children of children and so on.
+   * @param {boolean} [visual=false] Whether to use visual levels instead of logical.
    * @returns {CommentSkeleton[]}
    */
-  getChildren() {
+  getChildren(indirect = false, visual = false) {
     if (this.id === cd.comments.length - 1) {
       return [];
     }
 
-    if (cd.g.pageHasOutdents) {
-      const treeWalker = new ElementsTreeWalker(this.elements[this.elements.length - 1]);
-      while (
-        treeWalker.nextNode() &&
-        !treeWalker.currentNode.classList.contains('cd-commentPart')
-      ) {
-        if (treeWalker.currentNode.classList.contains('outdent-template')) {
-          return [cd.comments[this.id + 1]];
-        }
-      }
-    }
-
     const children = [];
+    const property = visual ? 'level' : 'logicalLevel';
     cd.comments
       .slice(this.id + 1)
-      .some((otherComment) => {
-        if (otherComment.getSection() === this.getSection() && otherComment.level > this.level) {
+      .some((comment) => {
+        if (comment.section === this.section && comment[property] > this[property]) {
           if (
-            otherComment.level === this.level + 1 ||
-            // Comments mistakenly indented more than one level
-            otherComment.id === this.id + 1
+            comment[property] === this[property] + 1 ||
+
+            // Allow comments mistakenly indented with more than one level.
+            comment.getParent() === this ||
+
+            indirect
           ) {
-            children.push(otherComment);
+            children.push(comment);
           }
+          return false;
         } else {
           return true;
         }
       });
 
     return children;
+  }
+
+  static processOutdents() {
+    if (cd.g.pageHasOutdents) {
+      Array.from(cd.g.rootElement.getElementsByClassName('outdent-template'))
+        .reverse()
+        .forEach((el) => {
+          const treeWalker = new ElementsTreeWalker(el);
+          while (treeWalker.nextNode()) {
+            let commentId = Number(treeWalker.currentNode.getAttribute('data-comment-id'));
+
+            // null and 0 as the attribute value are both bad.
+            if (commentId !== 0) {
+              const parentComment = cd.comments[commentId - 1];
+              const childComment = cd.comments[commentId];
+              const childLogicalLevel = childComment.logicalLevel;
+
+              // Something is wrong.
+              if (childComment.date < parentComment.date) break;
+
+              childComment.isOutdented = true;
+              cd.comments.slice(commentId).some((comment) => {
+                if (
+                  comment.section !== parentComment.section ||
+                  comment.logicalLevel < childLogicalLevel ||
+
+                  // If the child comment level is at least 2, we infer that the next comment on
+                  // the same level is outdented together with the child comment. If it is 0 or 1,
+                  // the next comment is more likely a regular reply.
+                  (
+                    comment !== childComment &&
+                    childComment.level < 2 &&
+                    comment.level === childComment.level
+                  ) ||
+
+                  comment.date < childComment.date
+                ) {
+                  return true;
+                }
+                comment.logicalLevel = (
+                  (parentComment.logicalLevel + 1) +
+                  (comment.logicalLevel - childLogicalLevel)
+                );
+                return false;
+              });
+              break;
+            }
+          }
+        });
+    }
   }
 }

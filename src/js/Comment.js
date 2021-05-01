@@ -8,19 +8,21 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
+import CommentSubitemList from './CommentSubitemList';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
-import { ElementsTreeWalker, TreeWalker } from './treeWalker';
+import { TreeWalker } from './treeWalker';
 import {
   addToArrayIfAbsent,
   areObjectsEqual,
-  calculateWordsOverlap,
+  calculateWordOverlap,
   caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
   getExtendedRect,
   getFromLocalStorage,
+  getObjectUrl,
   getVisibilityByRects,
   handleApiReject,
   isInline,
@@ -138,6 +140,23 @@ export default class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents.bind(this));
 
+    cd.debug.startTimer('closest list');
+    if (this.level !== 0) {
+      for (let n = this.highlightables[0].parentNode; n; n = n.parentNode) {
+        if (n.classList.contains('cd-commentLevel')) {
+          /**
+           * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
+           * `undefined` .
+           *
+           * @type {string|undefined}
+           */
+          this.containerListType = n.tagName.toLowerCase();
+          break;
+        }
+      }
+    }
+    cd.debug.stopTimer('closest list');
+
     /**
      * Is the comment currently highlighted as the target comment.
      *
@@ -194,6 +213,13 @@ export default class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.isCollapsed = false;
+
+    /**
+     * List of the comment's {@link module:CommentSubitemList subitems}.
+     *
+     * @type {CommentSubitemList}
+     */
+    this.subitemList = new CommentSubitemList();
   }
 
   /**
@@ -334,18 +360,20 @@ export default class Comment extends CommentSkeleton {
   }
 
   getLayersMargins() {
+    cd.debug.startTimer('getLayersMargins');
+
     let positions;
-    let firstElement;
+    let firstHighlightable;
     if (this.isCollapsed) {
       const rect = getCommentPartRect(this.thread.collapsedNote);
       positions = {
         left: window.scrollX + rect.left,
         right: window.scrollX + rect.right,
       };
-      firstElement = this.thread.collapsedNote;
+      firstHighlightable = this.thread.collapsedNote;
     } else {
       positions = this.positions;
-      firstElement = this.highlightables[0];
+      firstHighlightable = this.highlightables[0];
     }
 
     let startMargin;
@@ -378,12 +406,14 @@ export default class Comment extends CommentSkeleton {
         leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
     }
 
-    if (this.isStartStretched) {
+    if (this.containerListType === 'ol') {
+      startMargin = cd.g.CONTENT_FONT_SIZE * 3.2;
+    } else if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(firstElement.tagName) &&
-        firstElement.parentNode.classList.contains('cd-commentLevel')
+        ['LI', 'DD'].includes(firstHighlightable.tagName) &&
+        firstHighlightable.parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
       } else {
@@ -392,13 +422,10 @@ export default class Comment extends CommentSkeleton {
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
 
-    const closestList = firstElement.closest('.cd-commentLevel');
-    if (closestList && closestList.tagName === 'OL') {
-      startMargin += cd.g.CONTENT_FONT_SIZE * 2.2;
-    }
-
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
+
+    cd.debug.stopTimer('getLayersMargins');
 
     return [leftMargin, rightMargin];
   }
@@ -510,7 +537,7 @@ export default class Comment extends CommentSkeleton {
 
       const isThanked = Object.keys(thanks).some((key) => (
         this.anchor === thanks[key].anchor &&
-        calculateWordsOverlap(this.getText(), thanks[key].text) > 0.66
+        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
       ));
       if (isThanked) {
         this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
@@ -621,7 +648,7 @@ export default class Comment extends CommentSkeleton {
       this.underlay.classList.add('cd-commentUnderlay-new');
       this.overlay.classList.add('cd-commentOverlay-new');
     }
-    if (cd.settings.highlightOwnComments && this.isOwn) {
+    if (this.isOwn) {
       this.underlay.classList.add('cd-commentUnderlay-own');
       this.overlay.classList.add('cd-commentOverlay-own');
     }
@@ -667,8 +694,8 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
    *   moved. If set to false, it is expected that the positions will be updated afterwards.
    * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results for floating
-   *   elements from `cd.g.floatingElements`. It may be calculated in advance for many elements in
-   *   one sequence to save time.
+   *   elements from `convenientDiscussions.g.floatingElements`. It may be calculated in advance for
+   *   many elements in one sequence to save time.
    * @returns {?boolean} Was the comment moved.
    */
   configureLayers(options = {}) {
@@ -1145,7 +1172,7 @@ export default class Comment extends CommentSkeleton {
             $headline
               .html($html.html())
               .prepend($headlineNumber);
-            const section = this.getSection();
+            const section = this.section;
             if (section) {
               const originalHeadline = section.headline;
               section.parseHeadline();
@@ -1346,12 +1373,12 @@ export default class Comment extends CommentSkeleton {
       let match;
       let diffOriginalText = '';
       let diffText = '';
-      let bestDiffPartOverlap = 0;
+      let bestDiffPartWordOverlap = 0;
       while ((match = regexp.exec(diffBody))) {
         const diffPartText = removeWikiMarkup(decodeHtmlEntities(match[1]));
-        const diffPartOverlap = calculateWordsOverlap(diffPartText, commentFullText);
-        if (diffPartOverlap > bestDiffPartOverlap) {
-          bestDiffPartOverlap = diffPartOverlap;
+        const diffPartWordOverlap = calculateWordOverlap(diffPartText, commentFullText);
+        if (diffPartWordOverlap > bestDiffPartWordOverlap) {
+          bestDiffPartWordOverlap = diffPartWordOverlap;
         }
         diffText += diffPartText + '\n';
         diffOriginalText += match[1] + '\n';
@@ -1366,9 +1393,10 @@ export default class Comment extends CommentSkeleton {
       const thisCommentTimestamp = this.date.getTime() + (30 * 1000);
 
       const dateProximity = Math.abs(thisCommentTimestamp - timestamp);
-      let overlap = Math.max(calculateWordsOverlap(diffText, commentFullText), bestDiffPartOverlap);
+      const fullTextWordOverlap = calculateWordOverlap(diffText, commentFullText);
+      let wordOverlap = Math.max(fullTextWordOverlap, bestDiffPartWordOverlap);
 
-      if (overlap < 1 && diffOriginalText.includes('{{')) {
+      if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
           const html = (await parseCode(diffOriginalText, { title: cd.g.PAGE.name })).html;
           diffOriginalText = $('<div>').append(html).cdGetText();
@@ -1377,20 +1405,20 @@ export default class Comment extends CommentSkeleton {
             type: 'parse',
           });
         }
-        overlap = calculateWordsOverlap(diffOriginalText, commentFullText);
+        wordOverlap = calculateWordOverlap(diffOriginalText, commentFullText);
       }
 
-      matches.push({ revision, overlap, dateProximity });
+      matches.push({ revision, wordOverlap, dateProximity });
     }
 
     let bestMatch;
     matches.forEach((match) => {
       if (
         !bestMatch ||
-        match.overlap > bestMatch.overlap ||
+        match.wordOverlap > bestMatch.wordOverlap ||
         (
           bestMatch &&
-          match.overlap === bestMatch.overlap &&
+          match.wordOverlap === bestMatch.wordOverlap &&
           match.dateProximity > bestMatch.dateProximity
         )
       ) {
@@ -1890,50 +1918,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the parent comment of the comment.
-   *
-   * @returns {?Comment}
-   */
-  getParent() {
-    if (this.cachedParent === undefined && this.id === 0) {
-      this.cachedParent = null;
-    }
-
-    // Look for {{outdent}} templates
-    if (this.cachedParent === undefined && cd.g.pageHasOutdents) {
-      const treeWalker = new ElementsTreeWalker(this.elements[0]);
-      while (
-        treeWalker.previousNode() &&
-        !treeWalker.currentNode.classList.contains('cd-commentPart')
-      ) {
-        if (treeWalker.currentNode.classList.contains('outdent-template')) {
-          this.cachedParent = cd.comments[this.id - 1];
-          break;
-        }
-      }
-    }
-
-    if (this.cachedParent === undefined && this.level === 0) {
-      this.cachedParent = null;
-    }
-
-    if (this.cachedParent === undefined) {
-      this.cachedParent = (
-        cd.comments
-          .slice(0, this.id)
-          .reverse()
-          .find((comment) => (
-            comment.getSection() === this.getSection() &&
-            comment.level < this.level
-          )) ||
-        null
-      );
-    }
-
-    return this.cachedParent;
-  }
-
-  /**
    * Get the comment's text.
    *
    * @param {boolean} [cleanUp=true] Whether to clean up the signature.
@@ -2202,7 +2186,7 @@ export default class Comment extends CommentSkeleton {
       )
     ));
 
-    // Signature object to a comment match object
+    // Transform the signature object to a comment match object
     let matches = signatureMatches.map((match) => ({
       id: match.id,
       author: match.author,
@@ -2231,7 +2215,7 @@ export default class Comment extends CommentSkeleton {
       sectionHeadline = commentData.section?.headline;
     } else {
       followsHeading = this.followsHeading;
-      sectionHeadline = this.getSection()?.headline;
+      sectionHeadline = this.section?.headline;
     }
 
     // Collect data for every match
@@ -2287,12 +2271,12 @@ export default class Comment extends CommentSkeleton {
       }
 
       const commentText = commentData ? commentData.text : this.getText();
-      match.overlap = calculateWordsOverlap(commentText, removeWikiMarkup(match.code));
+      match.wordOverlap = calculateWordOverlap(commentText, removeWikiMarkup(match.code));
 
       match.score = (
         (
           matches.length === 1 ||
-          match.overlap > 0.5 ||
+          match.wordOverlap > 0.5 ||
 
           // The reserve method, if for some reason the text is not overlapping: by this and
           // previous two dates and authors. If all dates and authors are the same, that shouldn't
@@ -2310,7 +2294,7 @@ export default class Comment extends CommentSkeleton {
           // longer first. Another option is to look for next comments, not for previous.
           (id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
         ) * 2 +
-        match.overlap +
+        match.wordOverlap +
         match.hasHeadlineMatched * 1 +
         match.hasPreviousCommentsDataMatched * 0.5 +
         match.hasIdMatched * 0.0001
@@ -2451,8 +2435,8 @@ export default class Comment extends CommentSkeleton {
           let startIndex;
           let endIndex;
           if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
-            this.getSection().locateInCode();
-            if (extractSignatures(this.getSection().inCode.code).length > 1) {
+            this.section.locateInCode();
+            if (extractSignatures(this.section.inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
                 code: 'delete-repliesInSection',
@@ -2460,7 +2444,7 @@ export default class Comment extends CommentSkeleton {
             } else {
               // Deleting the whole section is safer as we don't want to leave any content in the
               // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = this.getSection().inCode);
+              ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
             }
           } else {
             endIndex = thisInCode.signatureEndIndex + 1;
@@ -2603,8 +2587,7 @@ export default class Comment extends CommentSkeleton {
    * @type {Page}
    */
   getSourcePage() {
-    const section = this.getSection();
-    return section ? section.getSourcePage() : cd.g.PAGE;
+    return this.section ? this.section.getSourcePage() : cd.g.PAGE;
   }
 
   /**
@@ -2745,6 +2728,121 @@ export default class Comment extends CommentSkeleton {
       if ($note.is(':visible')) break;
     }
     return $note;
+  }
+
+  getUrl() {
+    if (!this.cachedUrl) {
+      this.cachedUrl = getObjectUrl(this.anchor);
+    }
+
+    return this.cachedUrl;
+  }
+
+  createSublevelItem(name, position, parentListType) {
+    /*
+      There are 3 basic cases that we account for:
+      1.
+          : Comment.
+          [End of the thread.]
+        We create a list and an item in it. We also create an item next to the existent item and
+        wrap the list into it. We don't add the list to the existent item because that item can be
+        entirely a comment part, so at least highlighting would be broken if we do.
+      2.
+          Comment.
+          [No replies, no "Reply to section" button.]
+        We create a list and an item in it.
+      3.
+          Comment.
+          : Reply or "Reply to section" button.
+        or
+          : Comment.
+          :: Reply.
+        (this means <dl> next to <div> which is a similar case to the previous one)
+        We create an item in the existent list.
+
+      The lists can be of other type, not necessarily ":".
+
+      The resulting structure is:
+        Outer wrapper item element (dd, li, rarely div) - in case 1.
+          Wrapping list element (ul) - in cases 1 and 2.
+            Wrapping item element (li) - in cases 1, 2, and 3.
+     */
+
+    cd.debug.startTimer('createSublevelItem');
+
+    let wrappingItemTag = 'li';
+    let createList = true;
+    let outerWrapperTag;
+
+    const $lastOfTarget = this.$elements.last();
+    let $nextToTarget = $lastOfTarget.next();
+    const $nextToTargetFirstChild = $nextToTarget.children().first();
+    if ($nextToTarget.is('dd, li') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
+      // A relatively rare case possible when two adjacent lists are merged, for example when
+      // replying to
+      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
+      $nextToTarget = $nextToTargetFirstChild;
+    }
+    if ($nextToTarget.is('dl, ul')) {
+      createList = false;
+      wrappingItemTag = $nextToTarget.is('ul') ? 'li' : 'dd';
+      $nextToTarget.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
+    } else if ($lastOfTarget.is('li')) {
+      // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
+      // in those cases. Which is unsemantic, yes :-(
+      outerWrapperTag = parentListType === 'ol' ? 'div' : 'li';
+    } else if ($lastOfTarget.is('dd')) {
+      outerWrapperTag = 'dd';
+    }
+
+    const $wrappingItem = $(`<${wrappingItemTag}>`);
+    let $wrappingList;
+    if (createList) {
+      $wrappingList = $('<dl>')
+        .append($wrappingItem)
+        .addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
+    }
+
+    let $outerWrapper;
+    if (outerWrapperTag) {
+      $outerWrapper = $(`<${outerWrapperTag}>`);
+
+      cd.debug.startTimer('createSublevelItem slow selector');
+
+      // Why ".cd-commentLevel >": reply to a pseudo-comment added with this diff with a mistake:
+      // https://ru.wikipedia.org/?diff=113073013.
+      if ($lastOfTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
+        $outerWrapper.addClass('cd-connectToPreviousItem');
+      }
+
+      cd.debug.stopTimer('createSublevelItem slow selector');
+
+      $wrappingList.appendTo($outerWrapper);
+    }
+
+    if ($outerWrapper) {
+      $outerWrapper.insertAfter($lastOfTarget);
+    } else if ($wrappingList) {
+      $wrappingList.insertAfter($lastOfTarget);
+    } else {
+      if (position === 'top') {
+        $wrappingItem.prependTo($nextToTarget);
+      } else {
+        const $last = $nextToTarget.children().last();
+        // "Reply to section" button should always be the last.
+        if ($last.hasClass('cd-replyWrapper')) {
+          $wrappingItem.insertBefore($last);
+        } else {
+          $wrappingItem.insertAfter($last);
+        }
+      }
+    }
+
+    this.subitemList.add(name, $wrappingItem);
+
+    cd.debug.stopTimer('createSublevelItem');
+
+    return [$wrappingItem, $wrappingList, $outerWrapper];
   }
 }
 

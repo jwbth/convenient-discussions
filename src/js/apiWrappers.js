@@ -60,6 +60,7 @@ export async function parseCode(code, customOptions) {
     contentmodel: 'wikitext',
     prop: ['text', 'modules', 'jsconfigvars'],
     pst: true,
+    disabletoc: true,
     disablelimitreport: true,
     formatversion: 2,
   };

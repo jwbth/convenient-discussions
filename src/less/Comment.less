@@ -6,12 +6,18 @@
   margin-bottom: 0.5em;
 }
 
-ol > li.cd-commentPart-first {
+ol > li.cd-commentPart-first,
+ol > li > .cd-commentPart-first:first-child {
   margin-top: 0;
 }
 
+// Because irregular gaps between numbered list items are annoying.
+li {
+  margin-bottom: 0.14285714em;
+}
+
 ol > li.cd-commentPart-last {
-  margin-bottom: 0.1em;
+  margin-bottom: 0.14285714em;
 }
 
 // Repeat the class to gain specificity in the Minerva Neue skin
@@ -74,13 +80,13 @@ ol > li.cd-commentPart-last {
   position: absolute;
   z-index: 1;
   width: 3px;
-  padding-left: var(--cd-content-font-size);
-  padding-right: calc(~"var(--cd-content-font-size) - 2px");
+  padding-left: calc(~"var(--cd-content-font-size) + 3px");
+  padding-right: calc(~"var(--cd-content-font-size) - 5px");
   cursor: pointer;
 
   &-stretchedStart {
     padding-left: 0;
-    padding-right: calc(~"var(--cd-content-start-margin) - 2px");
+    padding-right: calc(~"var(--cd-content-start-margin) - 5px");
   }
 }
 
@@ -91,4 +97,16 @@ ol > li.cd-commentPart-last {
 
 .cd-threadLine-clickArea:hover .cd-threadLine {
   background-color: #72777d;
+
+  &-extended::after {
+    background-image: linear-gradient(to bottom, #72777d, transparent);
+  }
+}
+
+.cd-threadLine-extended::after {
+  display: block;
+  content: '';
+  height: 10px;
+  top: 100%;
+  position: relative;
 }

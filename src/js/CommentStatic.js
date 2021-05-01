@@ -7,7 +7,14 @@
 import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
-import { getExtendedRect, reorderArray } from './util';
+import {
+  getExtendedRect,
+  reorderArray,
+  restoreRelativeScrollPosition,
+  saveRelativeScrollPosition,
+  unique,
+} from './util';
+import { reloadPage } from './boot';
 
 export default {
   /**
@@ -89,7 +96,7 @@ export default {
     comments.forEach((comment) => {
       let sectionOrAnchor;
       if (comment instanceof Comment) {
-        sectionOrAnchor = comment.getSection();
+        sectionOrAnchor = comment.section;
       } else if (comment.section) {
         sectionOrAnchor = comment.section.match || comment.section.anchor;
       } else {
@@ -303,6 +310,91 @@ export default {
     cd.comments.forEach((comment) => {
       comment.reviewHighlightables();
       comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0;
+    });
+  },
+
+  /**
+   * Add new comments notifications to the threads.
+   *
+   * @param {Map} newComments
+   * @memberof module:Section
+   */
+  addNewRepliesNote(newComments) {
+    saveRelativeScrollPosition();
+
+    cd.comments.forEach((comment) => {
+      comment.subitemList.remove('newRepliesNote');
+    });
+
+    const newCommentsByParent = new Map();
+    newComments.forEach((comment) => {
+      if (!comment.parentMatch) return;
+
+      if (!newCommentsByParent.get(comment.parentMatch)) {
+        newCommentsByParent.set(comment.parentMatch, []);
+      }
+      newCommentsByParent.get(comment.parentMatch).push(comment);
+    });
+
+
+    newCommentsByParent.forEach((comments, parent) => {
+      const walkThroughChildren = (child) => {
+        commentsWithChildren.push(child);
+        child.children.forEach(walkThroughChildren);
+      };
+
+      const commentsWithChildren = [];
+      comments.forEach(walkThroughChildren);
+
+      const authors = commentsWithChildren
+        .map((comment) => comment.author)
+        .filter(unique);
+      const genders = authors.map((author) => author.getGender());
+      let commonGender;
+      if (genders.every((gender) => gender === 'female')) {
+        commonGender = 'female';
+      } else if (genders.every((gender) => gender !== 'female')) {
+        commonGender = 'male';
+      } else {
+        commonGender = 'unknown';
+      }
+      const userList = authors.map((user) => user.name).join(', ');
+      const button = new OO.ui.ButtonWidget({
+        label: cd.s(
+          'thread-newcomments',
+          commentsWithChildren.length,
+          authors.length,
+          userList,
+          commonGender
+        ),
+        framed: false,
+        classes: ['cd-button', 'cd-sectionButton'],
+      });
+      button.on('click', () => {
+        const commentAnchor = commentsWithChildren[0].anchor;
+        reloadPage({ commentAnchor });
+      });
+
+      // We can't use Comment#containerListType as it contains the type for the _first_
+      // (highlightable) element.
+      const parentListType = parent.$elements
+        .last()
+        .closest('dl, ul, ol')
+        .prop('tagName')
+        ?.toLowerCase();
+
+      const [$wrappingItem] = parent.createSublevelItem('newRepliesNote', 'bottom', parentListType);
+      $wrappingItem
+        .addClass('cd-threadButton-container cd-thread-newRepliesNote')
+        .append(button.$element);
+
+      // Update collapsed range for the thread
+      if (parent.thread?.isCollapsed) {
+        parent.thread.expand();
+        parent.thread.collapse();
+      }
+
+      restoreRelativeScrollPosition();
     });
   },
 };

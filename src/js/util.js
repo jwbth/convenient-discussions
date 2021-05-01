@@ -7,7 +7,10 @@
 
 import CdError from './CdError';
 import cd from './cd';
+import { ElementsTreeWalker } from './treeWalker';
 
+let anchorElement;
+let anchorElementTop;
 let keptScrollPosition = null;
 let keptTocHeight = null;
 
@@ -366,6 +369,48 @@ export function unhideText(text, hidden) {
 }
 
 /**
+ * Save the scroll position relative to the first element in the viewport looking from the top of
+ * the page.
+ *
+ * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
+ */
+export function saveRelativeScrollPosition(scrollY = window.scrollY) {
+  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
+    while (true) {
+      if (!isInline(treeWalker.currentNode)) {
+        const rect = treeWalker.currentNode.getBoundingClientRect();
+        if (rect.bottom >= 0 && rect.height !== 0) {
+          anchorElement = treeWalker.currentNode;
+          anchorElementTop = rect.top;
+          if (treeWalker.firstChild()) {
+            continue;
+          } else {
+            break;
+          }
+        }
+      }
+      if (!treeWalker.nextSibling()) break;
+    }
+  }
+}
+
+export function restoreRelativeScrollPosition() {
+  if (anchorElement) {
+    const rect = anchorElement.getBoundingClientRect();
+    if (getVisibilityByRects(rect)) {
+      window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+    }
+  }
+}
+
+export function replaceAnchorElement(element, newElement) {
+  if (anchorElement && element === anchorElement) {
+    anchorElement = newElement;
+  }
+}
+
+/**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
  *
  * @param {boolean} [saveTocHeight=true] Used for more fine control of scroll behavior after page
@@ -482,11 +527,11 @@ export function getExtendedRect(el) {
  *
  * @param {object} object1 First object.
  * @param {object} object2 Second object.
- * @param {boolean} [doesInclude=false] Test if all the values of the first object are contained in
- *   the second object.
+ * @param {boolean} [includes=false] Test if all the keys of the first object are contained in
+ *   the second object instead of checking that all the keys are the same.
  * @returns {boolean}
  */
-export function areObjectsEqual(object1, object2, doesInclude = false) {
+export function areObjectsEqual(object1, object2, includes = false) {
   const isMultipartObject = (val) => (
     val !== null &&
     typeof val === 'object' &&
@@ -513,7 +558,7 @@ export function areObjectsEqual(object1, object2, doesInclude = false) {
   const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
 
   return (
-    (keys1.length === keys2.length || doesInclude) &&
+    (keys1.length === keys2.length || includes) &&
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
 }
@@ -634,7 +679,7 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames
  * @returns {number}
  * @private
  */
-export function calculateWordsOverlap(s1, s2) {
+export function calculateWordOverlap(s1, s2) {
   const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{2,}`, 'g');
   const words1 = (s1.match(regexp) || []).filter(unique);
   const words2 = (s2.match(regexp) || []).filter(unique);
@@ -727,4 +772,9 @@ export function removeFromArrayIfPresent(arr, el) {
 export function getVisibilityByRects(...rects) {
   // If the element has 0 as the left position and height, it's probably invisible for some reason.
   return !rects.some((rect) => rect.left === 0 && rect.height === 0);
+}
+
+export function getObjectUrl(anchor) {
+  const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
+  return `https:${mw.config.get('wgServer')}${decodedPageUrl}#${anchor}`;
 }
