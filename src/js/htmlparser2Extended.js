@@ -117,13 +117,15 @@ Object.defineProperty(Element.prototype, 'textContent', {
 
 Object.defineProperty(Element.prototype, 'innerHTML', {
   get: function () {
-    return DomUtils.getInnerHTML(this);
+    // decodeEntities acts opposite to its value ¯\_(ツ)_/¯
+    return DomUtils.getInnerHTML(this, { decodeEntities: false });
   },
 });
 
 Object.defineProperty(Element.prototype, 'outerHTML', {
   get: function () {
-    return DomUtils.getOuterHTML(this);
+    // decodeEntities acts opposite to its value ¯\_(ツ)_/¯
+    return DomUtils.getOuterHTML(this, { decodeEntities: false });
   },
 });
 

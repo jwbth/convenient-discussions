@@ -362,6 +362,7 @@ function onMessageFromWindow(e) {
     const dom = parseDOM(message.text, {
       withStartIndices: true,
       withEndIndices: true,
+      decodeEntities: false,
     });
 
     context.document = new Document(dom);
