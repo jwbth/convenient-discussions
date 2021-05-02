@@ -700,10 +700,12 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
     // Replace with comment objects detached from the comment objects in the comments object (so
     // that the object isn't polluted when it is reused).
     .map((comment) => {
-      const parentMatch = mappedCurrentComments.find((mcc) => mcc.match === comment.parent);
       const newComment = Object.assign({}, comment);
-      if (parentMatch?.anchor) {
-        newComment.parentMatch = Comment.getByAnchor(parentMatch.anchor);
+      if (comment.parent) {
+        const parentMatch = mappedCurrentComments.find((mcc) => mcc.match === comment.parent);
+        if (parentMatch?.anchor) {
+          newComment.parentMatch = Comment.getByAnchor(parentMatch.anchor);
+        }
       }
       return newComment;
     });

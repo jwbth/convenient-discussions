@@ -325,17 +325,18 @@ export default {
     cd.comments.forEach((comment) => {
       comment.subitemList.remove('newRepliesNote');
     });
+    $('.cd-thread-newRepliesNote').remove();
 
     const newCommentsByParent = new Map();
     newComments.forEach((comment) => {
-      if (!comment.parentMatch) return;
+      const key = comment.parentMatch || comment.section.match;
+      if (!key) return;
 
-      if (!newCommentsByParent.get(comment.parentMatch)) {
-        newCommentsByParent.set(comment.parentMatch, []);
+      if (!newCommentsByParent.get(key)) {
+        newCommentsByParent.set(key, []);
       }
-      newCommentsByParent.get(comment.parentMatch).push(comment);
+      newCommentsByParent.get(key).push(comment);
     });
-
 
     newCommentsByParent.forEach((comments, parent) => {
       const walkThroughChildren = (child) => {
@@ -368,30 +369,50 @@ export default {
           commonGender
         ),
         framed: false,
-        classes: ['cd-button', 'cd-sectionButton'],
+        classes: ['cd-button', 'cd-threadButton'],
       });
       button.on('click', () => {
         const commentAnchor = commentsWithChildren[0].anchor;
         reloadPage({ commentAnchor });
       });
 
-      // We can't use Comment#containerListType as it contains the type for the _first_
-      // (highlightable) element.
-      const parentListType = parent.$elements
-        .last()
-        .closest('dl, ul, ol')
-        .prop('tagName')
-        ?.toLowerCase();
+      if (parent instanceof Comment) {
+        // We can't use Comment#containerListType as it contains the type for the _first_
+        // (highlightable) element.
+        const parentListType = parent.$elements
+          .last()
+          .closest('dl, ul, ol')
+          .prop('tagName')
+          ?.toLowerCase();
 
-      const [$wrappingItem] = parent.createSublevelItem('newRepliesNote', 'bottom', parentListType);
-      $wrappingItem
-        .addClass('cd-threadButton-container cd-thread-newRepliesNote')
-        .append(button.$element);
+        const [$wrappingItem] = parent
+          .createSublevelItem('newRepliesNote', 'bottom', parentListType);
+        $wrappingItem
+          .addClass('cd-threadButton-container cd-thread-newRepliesNote')
+          .append(button.$element);
 
-      // Update collapsed range for the thread
-      if (parent.thread?.isCollapsed) {
-        parent.thread.expand();
-        parent.thread.collapse();
+        // Update collapsed range for the thread
+        if (parent.thread?.isCollapsed) {
+          parent.thread.expand();
+          parent.thread.collapse();
+        }
+      } else if (parent.$replyWrapper) {
+        const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
+        $(`<${tagName}>`)
+          .addClass('cd-threadButton-container cd-thread-newRepliesNote')
+          .append(button.$element)
+          .insertBefore(parent.$replyWrapper);
+      } else {
+        const $last = parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
+          parent.$addSubsectionButtonContainer :
+          parent.$elements.last();
+        button.$element
+          .removeClass('cd-threadButton')
+          .addClass('cd-sectionButton');
+        $('<div>')
+          .addClass('cd-sectionButton-container cd-thread-newRepliesNote')
+          .append(button.$element)
+          .insertAfter($last);
       }
 
       restoreRelativeScrollPosition();
