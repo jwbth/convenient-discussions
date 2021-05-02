@@ -163,7 +163,7 @@ export default class Section extends SectionSkeleton {
         createList = true;
       }
     } else {
-      tag = 'li';
+      tag = 'dd';
       if (!isVotePlaceholder) {
         createList = true;
       }
