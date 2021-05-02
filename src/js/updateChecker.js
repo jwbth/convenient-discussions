@@ -460,7 +460,9 @@ function checkForNewEdits(mappedCurrentComments) {
     // layers before them from being updated due to the "stop at the first three unmoved comments"
     // optimization. So we just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
-    Thread.updateLines();
+
+    // Thread start and end items may be replaced.
+    Thread.init();
   }
 
   if (editList.length) {
