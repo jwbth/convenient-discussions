@@ -417,10 +417,10 @@ export default class Comment extends CommentSkeleton {
       ) {
         startMargin = -1;
       } else {
-        startMargin = this.level === 0 ? 8 : cd.g.CONTENT_FONT_SIZE;
+        startMargin = this.level === 0 ? cd.g.COMMENT_FALLBACK_SIDE_MARGIN : cd.g.CONTENT_FONT_SIZE;
       }
     }
-    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
+    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;

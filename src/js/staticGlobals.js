@@ -134,6 +134,14 @@ export default {
   COMMENT_DELETED_HOVER_BACKGROUND_COLOR: '#fddbd9',
 
   /**
+   * Left and right margins of the comment underlay used as a fallback.
+   *
+   * @type {number}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_FALLBACK_SIDE_MARGIN: 8,
+
+  /**
    * How long a comment should be considered new and have a corresponding background on newly loaded
    * pages. In minutes.
    *
