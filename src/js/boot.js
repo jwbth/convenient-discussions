@@ -178,12 +178,18 @@ export async function initSettings() {
 
 /**
  * Assign the properties related to `convenientDiscussions.g.$contentColumn`.
+ *
+ * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
  */
-export function setContentColumnGlobals() {
+export function setContentColumnGlobals(setCssVar) {
   const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
   cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(property));
   if (cd.g.CONTENT_START_MARGIN < cd.g.CONTENT_FONT_SIZE) {
     cd.g.CONTENT_START_MARGIN = cd.g.CONTENT_FONT_SIZE;
+  }
+
+  if (setCssVar) {
+    $(document.documentElement).css('--cd-content-start-margin', cd.g.CONTENT_START_MARGIN + 'px');
   }
 
   const left = cd.g.$contentColumn.offset().left;

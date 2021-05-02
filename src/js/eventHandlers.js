@@ -20,7 +20,7 @@ const beforeUnloadHandlers = {};
  * Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
-  setContentColumnGlobals();
+  setContentColumnGlobals(true);
   commentLayers.redrawIfNecessary(true);
   Thread.updateLines();
   navPanel.updateCommentFormButton();
