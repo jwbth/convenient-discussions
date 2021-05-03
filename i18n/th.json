@@ -34,7 +34,6 @@
 	"comment-edited-history": "ประวัติการแก้ไข",
 	"section-reply": "ตอบกลับส่วน",
 	"section-addsubsection-to": "เพิ่มส่วนย่อย \"$1\"",
-	"section-newcomments": "{{plural:$1|}}มีความเห็นใหม่ในส่วนนี้จาก{{plural:$2|{{plural:$4|}}|{{plural:$4|}}}} $3 กดเพื่อรีเฟรชหน้า",
 	"section-watch-success": "ส่วน \"$1\" ถูกเพิ่มไปยังรายการเฝ้าดูของคุณแล้ว",
 	"section-unwatch-success": "ส่วน \"$1\" ถูกลบจากรายการเฝ้าดูของคุณแล้ว",
 	"section-unwatch-stillwatched": "<strong>หมายเหตุ:</strong> ในทางปฏิบัติคุณจะยังเฝ้าดูหน้านี้อยู่เช่นเดิม เนื่องจากคุณเฝ้าดูส่วน \"$1\" ซึ่งอยู่ในหน้าเดียวกันนี้ด้วย",

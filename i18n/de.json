@@ -44,7 +44,6 @@
 	"comment-edited-history": "Bearbeitungsgeschichte",
 	"section-reply": "Antwort auf Abschnitt",
 	"section-addsubsection-to": "Unterabschnitt zu „$1“ hinzufügen",
-	"section-newcomments": "{{plural:$1|Es gibt einen neuen Kommentar|Es gibt neue Kommentare}} in diesem Abschnitt von {{plural:$2|{{gender:$4|}}}} $3. Klicken Sie hier, um die Seite zu aktualisieren.",
 	"section-watch-success": "Abschnitt „$1“ wurde zu deiner Beobachtungsliste hinzugefügt.",
 	"section-unwatch-success": "Abschnitt „$1“ wurde von deiner Beobachtungsliste entfernt.",
 	"section-unwatch-stillwatched": "<strong>Hinweis:</strong> Du siehst diesen Abschnitt immer noch, da er in dem Abschnitt „$1“ enthalten ist, den du beobachtest.",
