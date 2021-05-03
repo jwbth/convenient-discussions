@@ -1,3 +1,10 @@
+.flow-root() {
+  display: flow-root;
+
+  // Hack for Edge
+  -ms-display: grid;
+}
+
 .cd-commentUnderlay {
   position: absolute;
   z-index: -1;
@@ -231,7 +238,11 @@ body:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-comment
 }
 
 .mw-parser-output .cd-commentLayersContainer-parent-relative {
-  // https://en.wikipedia.org/wiki/Template:Discussion_top has "overflow: auto" in the style
-  // property, which can create a scrollbar in some cases.
-  overflow: hidden !important;
+  .flow-root();
+
+  // "display: flow-root" should do the job of "overflow: hidden" or "overflow: auto" if it's set
+  // for an element. "overflow: auto" (present in
+  // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar in
+  // some cases.
+  overflow: unset !important;
 }
