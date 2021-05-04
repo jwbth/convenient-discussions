@@ -44,6 +44,7 @@
 
   "section-reply": "Reply to section",
   "section-addsubsection-to": "Add subsection to \"$1\"",
+  "section-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this section outside of threads from {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
   "section-watch-success": "Section \"$1\" has been added to your watchlist.",
   "section-unwatch-success": "Section \"$1\" has been removed from your watchlist.",
   "section-unwatch-stillwatched": "<strong>Note:</strong> you are still watching this section as it is included in the section \"$1\" that you watch.",

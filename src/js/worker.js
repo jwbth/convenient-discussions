@@ -155,38 +155,8 @@ function parse() {
   cd.debug.stopTimer('worker: parse sections');
 
   cd.debug.startTimer('worker: prepare comments and sections');
-  cd.sections.forEach((section) => {
-    section.ancestors = section.getAncestors().map((section) => section.headline);
-    section.oldestCommentAnchor = section.oldestComment?.anchor;
-  });
-
-  let commentDangerousKeys = [
-    'elements',
-    'highlightables',
-    'parser',
-    'parts',
-    'signatureElement',
-  ];
-  let sectionDangerousKeys = [
-    'cachedAncestors',
-    // 'comments' property is removed below individually.
-    'commentsInFirstChunk',
-    'elements',
-    'headlineElement',
-    'lastElementInFirstChunk',
-    'oldestComment',
-    'parser',
-  ];
-
-  cd.sections.forEach((section) => {
-    keepSafeValues(section, sectionDangerousKeys);
-  });
-
   CommentSkeleton.processOutdents();
   cd.comments.forEach((comment) => {
-    // Replace with a worker-safe object
-    comment.section = comment.section ? cd.sections[comment.section.id] : null;
-
     comment.hiddenElementData = [];
     comment.elementHtmls = comment.elements.map((element) => {
       element.removeAttribute('data-comment-id');
@@ -282,12 +252,23 @@ function parse() {
     comment.elementTagNames = comment.elements.map((el) => el.tagName);
   });
 
-  cd.sections.forEach((section) => {
-    delete section.comments;
-  });
-  cd.comments.forEach((comment, i) => {
-    keepSafeValues(comment, commentDangerousKeys);
+  let commentDangerousKeys = [
+    'cachedParent',
+    'elements',
+    'highlightables',
+    'parser',
+    'parts',
+    'signatureElement',
+  ];
+  let sectionDangerousKeys = [
+    'cachedAncestors',
+    'elements',
+    'headlineElement',
+    'lastElementInFirstChunk',
+    'parser',
+  ];
 
+  cd.comments.forEach((comment, i) => {
     cd.debug.startTimer('set children and parent');
     comment.children = comment.getChildren();
     comment.children.forEach((reply) => {
@@ -299,6 +280,16 @@ function parse() {
     comment.previousComments = cd.comments
       .slice(Math.max(0, i - 2), i)
       .reverse();
+
+    keepSafeValues(comment, commentDangerousKeys);
+  });
+
+  cd.sections.forEach((section) => {
+    section.parent = section.getParent();
+    section.ancestors = section.getAncestors().map((section) => section.headline);
+    section.oldestCommentAnchor = section.oldestComment?.anchor;
+
+    keepSafeValues(section, sectionDangerousKeys);
   });
 
   cd.debug.stopTimer('worker: prepare comments and sections');

@@ -106,13 +106,13 @@ async function checkForUpdates() {
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
           toc.addNewSections(sections);
-          const mappedCurrentComments = mapComments(currentComments, comments);
+          mapComments(currentComments, comments);
 
           // We check for new edits before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
-          checkForNewEdits(mappedCurrentComments);
+          checkForNewEdits(currentComments);
 
-          await processComments(comments, mappedCurrentComments, currentRevisionId);
+          await processComments(comments, currentComments, currentRevisionId);
         }
       }
     }
@@ -152,7 +152,8 @@ async function processRevisionsIfNeeded() {
     const { comments: oldComments } = await updateChecker.processPage(previousVisitRevisionId);
     const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
     if (isPageStillAtRevision(currentRevisionId)) {
-      checkForEditsSincePreviousVisit(mapComments(currentComments, oldComments));
+      mapComments(currentComments, oldComments);
+      checkForEditsSincePreviousVisit(currentComments);
     }
   }
 }
@@ -190,10 +191,15 @@ function cleanUpSeenRenderedEdits(data) {
  * @private
  */
 function mapSections(sections) {
-  // Reset from the previous run.
+  cd.debug.startTimer('mapSections');
+  // Reset values set in the previous run.
   cd.sections.forEach((section) => {
     delete section.match;
   });
+  sections.forEach((section) => {
+    delete section.match;
+  });
+  cd.debug.stopTimer('mapSections');
 
   sections.forEach((section) => {
     const { section: matchedSection, score } = Section.search(section, true) || {};
@@ -223,14 +229,21 @@ function mapSections(sections) {
  *
  * @param {CommentSkeletonLike[]} currentComments
  * @param {CommentSkeletonLike[]} otherComments
- * @returns {CommentSkeletonLike[]} Mapped current comments.
  * @private
  */
 function mapComments(currentComments, otherComments) {
-  const mappedCurrentComments = currentComments.map((comment) => Object.assign({}, comment));
+  // Reset values set in the previous run.
+  cd.debug.startTimer('mapComments');
+  currentComments.forEach((comment) => {
+    delete comment.match;
+    delete comment.matchScore;
+    delete comment.hasPoorMatch;
+    delete comment.parentMatch;
+  });
+  cd.debug.stopTimer('mapComments');
 
   otherComments.forEach((otherComment) => {
-    const currentCommentsFiltered = mappedCurrentComments.filter((currentComment) => (
+    const currentCommentsFiltered = currentComments.filter((currentComment) => (
       currentComment.authorName === otherComment.authorName &&
       currentComment.date &&
       otherComment.date &&
@@ -253,7 +266,7 @@ function mapComments(currentComments, otherComments) {
           // coincides.
           const hasIdMatched = (
             currentComment.id === otherComment.id &&
-            mappedCurrentComments.length === otherComments.length
+            currentComments.length === otherComments.length
           );
 
           const partsMatchedCount = currentComment.elementHtmls
@@ -299,8 +312,6 @@ function mapComments(currentComments, otherComments) {
         });
     }
   });
-
-  return mappedCurrentComments;
 }
 
 /**
@@ -768,7 +779,9 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   updateChecker.updatePageTitle(newComments.length, areThereInteresting);
   toc.addNewComments(newCommentsBySection);
 
+  cd.debug.startTimer('addNewRepliesNote');
   Comment.addNewRepliesNote(newComments);
+  cd.debug.stopTimer('addNewRepliesNote');
 
   const commentsToNotifyAbout = interestingNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));

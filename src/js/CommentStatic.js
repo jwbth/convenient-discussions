@@ -5,6 +5,7 @@
  */
 
 import Comment from './Comment';
+import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
 import {
@@ -329,7 +330,15 @@ export default {
 
     const newCommentsByParent = new Map();
     newComments.forEach((comment) => {
-      const key = comment.parentMatch || comment.section.match;
+      let key;
+      if (comment.parent) {
+        key = comment.parentMatch;
+      } else {
+        // If there is no section match, use the ancestors' section match.
+        for (let s = comment.section; s && !key; s = s.parent) {
+          key = s.match;
+        }
+      }
       if (!key) return;
 
       if (!newCommentsByParent.get(key)) {
@@ -338,14 +347,24 @@ export default {
       newCommentsByParent.get(key).push(comment);
     });
 
-    newCommentsByParent.forEach((comments, parent) => {
-      const walkThroughChildren = (child) => {
-        commentsWithChildren.push(child);
-        child.children.forEach(walkThroughChildren);
-      };
+    const walkThroughChildren = (child, arr) => {
+      arr.push(child);
+      child.children.forEach((child) => {
+        walkThroughChildren(child, arr);
+      });
+    };
 
-      const commentsWithChildren = [];
-      comments.forEach(walkThroughChildren);
+    const addNote = (comments, parent, type = 'thread') => {
+      if (!comments.length) return;
+
+      let commentsWithChildren = [];
+      comments.forEach((child) => {
+        walkThroughChildren(child, commentsWithChildren);
+      });
+
+      if (parent instanceof Section) {
+        commentsWithChildren = commentsWithChildren.filter(unique);
+      }
 
       const authors = commentsWithChildren
         .map((comment) => comment.author)
@@ -362,7 +381,7 @@ export default {
       const userList = authors.map((user) => user.name).join(', ');
       const button = new OO.ui.ButtonWidget({
         label: cd.s(
-          'thread-newcomments',
+          type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
           commentsWithChildren.length,
           authors.length,
           userList,
@@ -396,7 +415,7 @@ export default {
           parent.thread.expand();
           parent.thread.collapse();
         }
-      } else if (parent.$replyWrapper) {
+      } else if (type === 'thread' && parent.$replyWrapper) {
         const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
         $(`<${tagName}>`)
           .addClass('cd-threadButton-container cd-thread-newRepliesNote')
@@ -409,13 +428,36 @@ export default {
         button.$element
           .removeClass('cd-threadButton')
           .addClass('cd-sectionButton');
-        $('<div>')
+        let $container;
+        if (type === 'section') {
+          $container = $('<div>').append(button.$element);
+        } else {
+          const $item = $('<dd>').append(button.$element);
+          $container = $('<dl>').append($item);
+        }
+        $container
           .addClass('cd-sectionButton-container cd-thread-newRepliesNote')
-          .append(button.$element)
           .insertAfter($last);
       }
+    };
 
-      restoreRelativeScrollPosition();
+    newCommentsByParent.forEach((comments, parent) => {
+      if (parent instanceof Section) {
+        // Add notes for level 0 comments and their children and the rest of comments separately.
+        const level0Comments = comments.filter((comment) => comment.logicalLevel === 0);
+        let level0CommentsWithChildren = [];
+        level0Comments.forEach((child) => {
+          walkThroughChildren(child, level0CommentsWithChildren);
+        });
+        const restOfComments = comments
+          .filter((comment) => !level0CommentsWithChildren.includes(comment));
+        addNote(restOfComments, parent);
+        addNote(level0CommentsWithChildren, parent, 'section');
+      } else {
+        addNote(comments, parent);
+      }
     });
+
+    restoreRelativeScrollPosition();
   },
 };
