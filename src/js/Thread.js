@@ -132,7 +132,7 @@ function getEndItem(startItem, highlightables) {
   const nextElement = endItem.nextElementSibling;
   if (
     nextElement &&
-    nextElement.tagName === 'UL' &&
+    nextElement.tagName === 'DL' &&
     nextElement.classList.contains('cd-sectionButton-container')
   ) {
     endItem = nextElement;
