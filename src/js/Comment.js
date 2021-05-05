@@ -12,7 +12,7 @@ import CommentSubitemList from './CommentSubitemList';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
-import { ElementsTreeWalker, TreeWalker } from './treeWalker';
+import { ElementTreeWalker, TreeWalker } from './treeWalker';
 import {
   addToArrayIfAbsent,
   areObjectsEqual,
@@ -145,7 +145,7 @@ export default class Comment extends CommentSkeleton {
       const nestingLevels = [];
       const closestListTypes = [];
       this.highlightables.some((highlightable, i) => {
-        const treeWalker = new ElementsTreeWalker(highlightable);
+        const treeWalker = new ElementTreeWalker(highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
           nestingLevels[i]++;
@@ -171,7 +171,7 @@ export default class Comment extends CommentSkeleton {
     cd.debug.stopTimer('anchorHighlightable');
 
     const getContainerListType = (el) => {
-      const treeWalker = new ElementsTreeWalker(el);
+      const treeWalker = new ElementTreeWalker(el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
           return treeWalker.currentNode.tagName.toLowerCase();

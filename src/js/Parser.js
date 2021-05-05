@@ -8,7 +8,7 @@
  */
 
 import cd from './cd';
-import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
+import { ElementAndTextTreeWalker, ElementTreeWalker } from './treeWalker';
 import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } from './util';
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
@@ -260,7 +260,7 @@ export default class Parser {
 
         if (closestNotInlineAncestor) {
           const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
-          const treeWalker = new ElementsTreeWalker(timestamp.element);
+          const treeWalker = new ElementTreeWalker(timestamp.element);
 
           while (
             treeWalker.nextNode() &&
@@ -273,7 +273,7 @@ export default class Parser {
         }
 
         const startElement = unsignedElement || timestamp.element;
-        const treeWalker = new ElementsAndTextTreeWalker(startElement);
+        const treeWalker = new ElementAndTextTreeWalker(startElement);
         let authorName;
         let length = 0;
         let firstSignatureElement;
@@ -406,7 +406,7 @@ export default class Parser {
    * @returns {object[]}
    */
   collectParts(signatureElement) {
-    const treeWalker = new ElementsAndTextTreeWalker(signatureElement);
+    const treeWalker = new ElementAndTextTreeWalker(signatureElement);
     let parts = [];
     let firstForeignComponentAfter;
 
@@ -794,9 +794,6 @@ export default class Parser {
         // nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
         const partTextNoSpaces = part.node.textContent.replace(/\s+/g, '');
 
-        let current = [part.node];
-        let children;
-
         /*
           With code like this:
 
@@ -805,8 +802,8 @@ export default class Parser {
 
           one comment (preceded by :: in this case) creates its own list tree, not a subtree,
           even though it's a reply to a reply. So we dive to the bottom of the hierarchy of nested
-          lists to get the bottom node (and therefore draw the comment layers more neatly). One of
-          the most complex tree structures is this:
+          lists to get the bottom node (and therefore draw comment layers more neatly). One of the
+          most complex tree structures is this:
 
             * Smth. [signature]
             :* Smth.
@@ -816,7 +813,10 @@ export default class Parser {
           https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
           It has a branchy structure that requires a tricky algorithm to be parsed correctly.
          */
+        let current;
+        let children = [part.node];
         do {
+          current = children;
           children = current.reduce(
             (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
             []
@@ -832,8 +832,7 @@ export default class Parser {
           (
             children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
             partTextNoSpaces
-          ) &&
-          (current = children)
+          )
         );
 
         if (current.length > 1) {
@@ -865,7 +864,7 @@ export default class Parser {
    */
   getLevelsUpTree(initialElement) {
     const levelElements = [];
-    const treeWalker = new ElementsTreeWalker(initialElement);
+    const treeWalker = new ElementTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
       if (['DL', 'UL', 'OL'].includes(el.tagName)) {

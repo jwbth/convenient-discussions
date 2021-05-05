@@ -7,7 +7,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
-import { ElementsTreeWalker } from './treeWalker';
+import { ElementTreeWalker } from './treeWalker';
 import {
   defined,
   getFromLocalStorage,
@@ -156,8 +156,8 @@ export default class Thread {
     this.commentCount = this.lastComment.id - this.rootComment.id + 1;
 
     if (cd.g.pageHasOutdents) {
-      cd.debug.startTimer('visualLastComment');
       // Visually last comment (if there are {{outdent}} templates)
+      cd.debug.startTimer('visualLastComment');
       const visualDescendants = rootComment.getChildren(true, true);
       this.visualLastComment = visualDescendants[visualDescendants.length - 1] || rootComment;
       cd.debug.stopTimer('visualLastComment');
@@ -461,7 +461,7 @@ export default class Thread {
     cd.debug.startTimer('threads traverse');
 
     isInited = false;
-    treeWalker = new ElementsTreeWalker();
+    treeWalker = new ElementTreeWalker();
     cd.comments.forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
@@ -566,10 +566,10 @@ export default class Thread {
         const elementBottom = thread.isCollapsed ?
           thread.collapsedNote :
           thread.getAdjustedEndItem(true);
-
         cd.debug.startTimer('threads getBoundingClientRect bottom');
         const rectBottom = elementBottom.getBoundingClientRect();
         cd.debug.stopTimer('threads getBoundingClientRect bottom');
+
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);

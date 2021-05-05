@@ -7,7 +7,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { ElementsTreeWalker } from './treeWalker';
+import { ElementTreeWalker } from './treeWalker';
 
 let anchorElement;
 let anchorElementTop;
@@ -376,7 +376,7 @@ export function unhideText(text, hidden) {
  */
 export function saveRelativeScrollPosition(scrollY = window.scrollY) {
   if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
+    const treeWalker = new ElementTreeWalker(cd.g.rootElement.firstElementChild);
     while (true) {
       if (!isInline(treeWalker.currentNode)) {
         const rect = treeWalker.currentNode.getBoundingClientRect();

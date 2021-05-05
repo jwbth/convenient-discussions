@@ -339,7 +339,6 @@ function adjustDom() {
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @throws {CdError} If there are no comments.
  * @private
  */
 function processComments(parser) {

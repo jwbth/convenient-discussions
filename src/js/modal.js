@@ -857,8 +857,8 @@ export async function editWatchedSections() {
           return;
         }
 
-        // Logically, there should be no coinciding titles between pages, so we don't need a separate
-        // "return 0" condition.
+        // Logically, there should be no coinciding titles between pages, so we don't need a
+        // separate "return 0" condition.
         pages.sort((page1, page2) => page1.title > page2.title ? 1 : -1);
 
         const value = pages
