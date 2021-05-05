@@ -422,9 +422,14 @@ export default {
           .append(button.$element)
           .insertBefore(parent.$replyWrapper);
       } else {
-        const $last = parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
-          parent.$addSubsectionButtonContainer :
-          parent.$elements.last();
+        let $last;
+        if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
+          $last = parent.$addSubsectionButtonContainer;
+        } else if (parent.$replyContainer) {
+          $last = parent.$replyContainer;
+        } else {
+          $last = $(parent.lastElementInFirstChunk);
+        }
         button.$element
           .removeClass('cd-threadButton')
           .addClass('cd-sectionButton');
