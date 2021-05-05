@@ -139,8 +139,8 @@ export default class Section extends SectionSkeleton {
 
     let tag;
     let createList = false;
-    if (lastElement.classList.contains('cd-commentLevel')) {
-      const tagName = lastElement.tagName;
+    const tagName = lastElement.tagName;
+    if (lastElement.classList.contains('cd-commentLevel') || isVotePlaceholder) {
       if (
         tagName === 'UL' ||
         (
@@ -150,6 +150,7 @@ export default class Section extends SectionSkeleton {
           // as part of the user's comment that has their signature technically inside the last
           // item.
           (
+            isVotePlaceholder ||
             lastElement.querySelectorAll('ol > li').length === 1 ||
             lastElement.querySelectorAll('ol > li > .cd-signature').length > 1
           )

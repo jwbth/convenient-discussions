@@ -285,10 +285,54 @@ function adjustDom() {
   cd.g.rootElement
     .querySelectorAll('dd.cd-commentPart-last + dd, li.cd-commentPart-last + li')
     .forEach((el) => {
-      if (el.firstElementChild && ['DL', 'UL'].includes(el.firstElementChild.tagName)) {
+      if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
         el.classList.add('cd-connectToPreviousItem');
       }
     });
+
+  cd.debug.startTimer('adjustDom separate');
+  /*
+    A very specific fix for cases when an indented comment starts with a list like this:
+
+      : Comment. [signature]
+      :* Item
+      :* Item
+      : Comment end. [signature]
+
+    which gives the following DOM:
+
+      <dd>
+        <div>Comment. [signature]</div>
+        <ul>
+          <li>Item</li>
+          <li>Item</li>
+        </ul>
+      </dd>
+      <dd>Comment end. [signature]</dd>
+
+    The code splits the parent item element ("dd" in this case) into two and puts the list in the
+    second one. This fixes the thread feature behavior among other things.
+   */
+  cd.comments.slice(1).forEach((comment, i) => {
+    const previousComment = cd.comments[i];
+    const previousCommentLastElement = previousComment
+      .elements[previousComment.elements.length - 1];
+    const potentialItem = previousCommentLastElement.nextElementSibling?.firstElementChild;
+    if (
+      ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
+      comment.level === previousComment.level &&
+      previousCommentLastElement.tagName === 'DIV' &&
+      potentialItem === comment.elements[0] &&
+      potentialItem.tagName === 'LI'
+    ) {
+      const parentElement = previousCommentLastElement.parentNode;
+      const copyElement = document.createElement(parentElement.tagName);
+      copyElement.appendChild(previousCommentLastElement.nextElementSibling);
+      parentElement.parentNode.insertBefore(copyElement, parentElement.nextElementSibling);
+      console.debug('Separated a list from a part of the previous comment.');
+    }
+  });
+  cd.debug.stopTimer('adjustDom separate');
 }
 
 /**

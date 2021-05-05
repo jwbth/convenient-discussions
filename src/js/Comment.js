@@ -12,7 +12,7 @@ import CommentSubitemList from './CommentSubitemList';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
-import { TreeWalker } from './treeWalker';
+import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
   addToArrayIfAbsent,
   areObjectsEqual,
@@ -140,20 +140,56 @@ export default class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents.bind(this));
 
-    cd.debug.startTimer('closest list');
-    if (this.level !== 0) {
-      for (let n = this.highlightables[0].parentNode; n; n = n.parentNode) {
-        if (n.classList.contains('cd-commentLevel')) {
-          /**
-           * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
-           * `undefined` .
-           *
-           * @type {string|undefined}
-           */
-          this.containerListType = n.tagName.toLowerCase();
-          break;
+    cd.debug.startTimer('anchorHighlightable');
+    if (this.highlightables.length > 1) {
+      const nestingLevels = [];
+      const closestListTypes = [];
+      this.highlightables.some((highlightable, i) => {
+        const treeWalker = new ElementsTreeWalker(highlightable);
+        nestingLevels[i] = 0;
+        while (treeWalker.parentNode()) {
+          nestingLevels[i]++;
+          if (!closestListTypes[i] && ['DL', 'UL', 'OL'].includes(treeWalker.currentNode.tagName)) {
+            closestListTypes[i] = treeWalker.currentNode.tagName.toLowerCase();
+          }
+        }
+      });
+      const minNestingLevel = Math.min(...nestingLevels);
+      let anchorHighlightableIndex;
+      for (let i = 0; i < this.highlightables.length; i++) {
+        if (
+          (nestingLevels[i] === minNestingLevel && anchorHighlightableIndex === undefined) ||
+          (closestListTypes[anchorHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
+        ) {
+          anchorHighlightableIndex = i;
         }
       }
+      this.anchorHighlightable = this.highlightables[anchorHighlightableIndex];
+    } else {
+      this.anchorHighlightable = this.highlightables[0];
+    }
+    cd.debug.stopTimer('anchorHighlightable');
+
+    const getContainerListType = (el) => {
+      const treeWalker = new ElementsTreeWalker(el);
+      while (treeWalker.parentNode()) {
+        if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
+          return treeWalker.currentNode.tagName.toLowerCase();
+        }
+      }
+    };
+
+    cd.debug.startTimer('closest list');
+    if (this.level !== 0) {
+      /**
+       * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
+       * `undefined`.
+       *
+       * @type {string|undefined}
+       */
+      this.containerListType = getContainerListType(this.highlightables[0]);
+
+      this.ahContainerListType = getContainerListType(this.anchorHighlightable);
     }
     cd.debug.stopTimer('closest list');
 
@@ -363,17 +399,17 @@ export default class Comment extends CommentSkeleton {
     cd.debug.startTimer('getLayersMargins');
 
     let positions;
-    let firstHighlightable;
+    let anchorElement;
     if (this.isCollapsed) {
       const rect = getCommentPartRect(this.thread.collapsedNote);
       positions = {
         left: window.scrollX + rect.left,
         right: window.scrollX + rect.right,
       };
-      firstHighlightable = this.thread.collapsedNote;
+      anchorElement = this.thread.collapsedNote;
     } else {
       positions = this.positions;
-      firstHighlightable = this.highlightables[0];
+      anchorElement = this.anchorHighlightable;
     }
 
     let startMargin;
@@ -406,14 +442,14 @@ export default class Comment extends CommentSkeleton {
         leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
     }
 
-    if (this.containerListType === 'ol') {
+    if (this.ahContainerListType === 'ol') {
       startMargin = cd.g.CONTENT_FONT_SIZE * 3.2;
     } else if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(firstHighlightable.tagName) &&
-        firstHighlightable.parentNode.classList.contains('cd-commentLevel')
+        ['LI', 'DD'].includes(anchorElement.tagName) &&
+        anchorElement.parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
       } else {
@@ -665,7 +701,7 @@ export default class Comment extends CommentSkeleton {
       }
     } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
       this.underlay.classList.remove('cd-commentUnderlay-deleted');
-      this.overlay.classList.remove('cd-commentUnderlay-deleted');
+      this.overlay.classList.remove('cd-commentOverlay-deleted');
       if (this.replyButton) {
         this.replyButton.classList.remove('oo-ui-widget-disabled');
         this.replyButton.classList.add('oo-ui-widget-enabled');
@@ -1914,6 +1950,9 @@ export default class Comment extends CommentSkeleton {
     if (this.highlightables.includes(nativeElement)) {
       this.highlightables.splice(this.highlightables.indexOf(nativeElement), 1, newElement);
       this.bindEvents(newElement);
+    }
+    if (this.anchorHighlightable === nativeElement) {
+      this.anchorHighlightable = newElement;
     }
   }
 

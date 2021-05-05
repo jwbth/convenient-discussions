@@ -361,14 +361,23 @@ export default class Thread {
     }
 
     cd.debug.startTimer('thread collapse button note');
-    let tagName = this.collapsedRange[0].tagName;
+    const firstElement = this.collapsedRange[0];
+    let tagName = firstElement.tagName;
     if (!['LI', 'DD'].includes(tagName)) {
       tagName = 'DIV';
     }
     const collapsedNote = document.createElement(tagName);
     collapsedNote.className = 'cd-threadButton-container cd-thread-collapsedNote';
     collapsedNote.appendChild(button);
-    this.collapsedRange[0].parentNode.insertBefore(collapsedNote, this.collapsedRange[0]);
+    if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {
+      const container = document.createElement('ul');
+      container.className = 'cd-commentLevel';
+      container.appendChild(collapsedNote);
+      firstElement.parentNode.parentNode.insertBefore(container, firstElement.parentNode);
+      this.collapsedNoteContainer = container;
+    } else {
+      firstElement.parentNode.insertBefore(collapsedNote, firstElement);
+    }
     cd.debug.stopTimer('thread collapse button note');
 
     this.collapsedNote = collapsedNote;
@@ -424,6 +433,7 @@ export default class Thread {
       comment.configureLayers();
     }
     this.collapsedNote.remove();
+    this.collapsedNoteContainer?.remove();
 
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
@@ -513,7 +523,7 @@ export default class Thread {
         let rectTop;
         if (thread.isCollapsed) {
           rectTop = thread.collapsedNote.getBoundingClientRect();
-          if (comment.level === 0) {
+          if (comment.level === 0 || thread.collapsedNote.parentNode.tagName === 'OL') {
             const [leftMargin] = comment.getLayersMargins();
             lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
             if (!comment.isStartStretched) {
@@ -537,18 +547,20 @@ export default class Thread {
           } else {
             cd.debug.startTimer('threads getBoundingClientRect other');
             rectTop = thread.startItem.getBoundingClientRect();
+            if (comment.containerListType === 'ol') {
+              comment.getPositions();
+              if (comment.positions) {
+                const [leftMargin] = comment.getLayersMargins();
+                lineTop = window.scrollY + rectTop.top;
+                lineLeft = (
+                  (window.scrollX + comment.positions.left) -
+                  (leftMargin + 1) -
+                  (cd.g.CONTENT_FONT_SIZE + 3)
+                );
+              }
+            }
             cd.debug.stopTimer('threads getBoundingClientRect other');
           }
-        }
-
-        if (rectTop && comment.containerListType === 'ol') {
-          const [leftMargin] = comment.getLayersMargins();
-          lineTop = window.scrollY + rectTop.top;
-          lineLeft = (
-            (window.scrollX + rectTop.left) -
-            (leftMargin + 1) -
-            (cd.g.CONTENT_FONT_SIZE + 3)
-          );
         }
 
         const elementBottom = thread.isCollapsed ?
