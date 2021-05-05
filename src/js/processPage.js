@@ -905,6 +905,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
   // Reevaluate if this is likely a talk page.
   const isLikelyTalkPage = (
+    cd.g.isEnabledInQuery ||
     !cd.g.isFirstRun ||
     cd.comments.length ||
     $('#ca-addsection').length ||
@@ -1109,6 +1110,12 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   } else {
     cd.g.isPageActive = false;
     finishLoading();
+    const $disableLink = $('#footer-places-togglecd a');
+    if ($disableLink.length) {
+      $disableLink
+        .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
+        .text(cd.s('footer-runcd'));
+    }
   }
 
   cd.g.isPageFirstParsed = false;

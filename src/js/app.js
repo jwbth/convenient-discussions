@@ -302,8 +302,8 @@ async function go() {
   cd.g.$content = $('#mw-content-text');
 
   // Process the page as a talk page
-  const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
-  const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
+  cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
+  cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
   const isPageEligible = (
     !mw.config.get('wgIsRedirect') &&
     !cd.g.$content.find('.cd-notTalkPage').length &&
@@ -319,7 +319,7 @@ async function go() {
     )
   );
   if (mw.config.get('wgIsArticle')) {
-    if (!isDisabledInQuery && (isEnabledInQuery || isPageEligible)) {
+    if (!cd.g.isDisabledInQuery && (cd.g.isEnabledInQuery || isPageEligible)) {
       startLoading();
 
       cd.debug.stopTimer('start');
