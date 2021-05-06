@@ -142,6 +142,14 @@ export default {
   COMMENT_FALLBACK_SIDE_MARGIN: 8,
 
   /**
+   * Left and right margins of thread lines.
+   *
+   * @type {number}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  THREAD_LINE_SIDE_MARGIN: 5,
+
+  /**
    * How long a comment should be considered new and have a corresponding background on newly loaded
    * pages. In minutes.
    *

@@ -80,13 +80,12 @@ ol > li.cd-commentPart-last {
   position: absolute;
   z-index: 1;
   width: 3px;
-  padding-left: calc(~"var(--cd-content-font-size) + 3px");
-  padding-right: calc(~"var(--cd-content-font-size) - 5px");
-  cursor: pointer;
+  padding-left: var(--cd-thread-line-side-margin);
+  padding-right: var(--cd-thread-line-side-margin);
 
   &-stretchedStart {
     padding-left: 0;
-    padding-right: calc(~"var(--cd-content-start-margin) - 5px");
+    padding-right: var(--cd-thread-line-side-margin);
   }
 }
 
@@ -95,11 +94,15 @@ ol > li.cd-commentPart-last {
   height: 100%;
 }
 
-.cd-threadLine-clickArea:hover .cd-threadLine {
-  background-color: #72777d;
+.cd-threadLine-clickArea-hover {
+  cursor: pointer;
 
-  &-extended::after {
-    background-image: linear-gradient(to bottom, #72777d, transparent);
+  .cd-threadLine {
+    background-color: #72777d;
+
+    &-extended::after {
+      background-image: linear-gradient(to bottom, #72777d, transparent);
+    }
   }
 }
 

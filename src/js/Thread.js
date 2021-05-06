@@ -209,9 +209,22 @@ export default class Thread {
     if (this.rootComment.isStartStretched) {
       this.clickArea.classList.add('cd-threadLine-clickArea-stretchedStart');
     }
-    this.clickArea.onclick = () => {
-      this.toggle();
+
+    this.clickArea.onmouseenter = () => {
+      this.highlightTimeout = setTimeout(() => {
+        this.clickArea.classList.add('cd-threadLine-clickArea-hover');
+      }, 100);
     };
+    this.clickArea.onmouseleave = () => {
+      clearTimeout(this.highlightTimeout);
+      this.clickArea.classList.remove('cd-threadLine-clickArea-hover');
+    };
+    this.clickArea.onclick = () => {
+      if (this.clickArea.classList.contains('cd-threadLine-clickArea-hover')) {
+        this.toggle();
+      }
+    };
+
     this.line = this.clickArea.firstChild;
     if (this.endItem !== this.visualEndItem) {
       let areOutdentedCommentsShown = false;
@@ -527,7 +540,7 @@ export default class Thread {
             const [leftMargin] = comment.getLayersMargins();
             lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
             if (!comment.isStartStretched) {
-              lineLeft -= cd.g.CONTENT_FONT_SIZE + 3;
+              lineLeft -= cd.g.THREAD_LINE_SIDE_MARGIN;
             }
             lineTop = window.scrollY + rectTop.top;
           }
@@ -539,7 +552,7 @@ export default class Thread {
               const [leftMargin] = comment.getLayersMargins();
               lineLeft = comment.positions.left - (leftMargin + 1);
               if (!comment.isStartStretched) {
-                lineLeft -= cd.g.CONTENT_FONT_SIZE + 3;
+                lineLeft -= cd.g.THREAD_LINE_SIDE_MARGIN;
               }
               lineTop = comment.positions.top;
             }
@@ -555,7 +568,7 @@ export default class Thread {
                 lineLeft = (
                   (window.scrollX + comment.positions.left) -
                   (leftMargin + 1) -
-                  (cd.g.CONTENT_FONT_SIZE + 3)
+                  cd.g.THREAD_LINE_SIDE_MARGIN
                 );
               }
             }
@@ -586,7 +599,7 @@ export default class Thread {
         }
 
         if (lineLeft === undefined) {
-          lineLeft = (window.scrollX + rectTop.left) - (cd.g.CONTENT_FONT_SIZE + 3);
+          lineLeft = (window.scrollX + rectTop.left) - cd.g.THREAD_LINE_SIDE_MARGIN;
           lineTop = window.scrollY + rectTop.top;
           lineHeight = rectBottom.bottom - rectTop.top;
         } else {

@@ -242,6 +242,7 @@ export function setTalkPageCssVariables() {
     '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
     '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
     '--cd-comment-fallback-side-margin': cd.g.COMMENT_FALLBACK_SIDE_MARGIN + 'px',
+    '--cd-thread-line-side-margin': cd.g.THREAD_LINE_SIDE_MARGIN + 'px',
     '--cd-content-background-color': contentBackgroundColor,
     '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
     '--cd-content-font-size': cd.g.CONTENT_FONT_SIZE + 'px',
