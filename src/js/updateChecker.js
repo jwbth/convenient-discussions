@@ -706,7 +706,7 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   });
 
   const newComments = comments
-    .filter((comment) => !mappedCurrentComments.some((mcc) => mcc.match === comment))
+    .filter((comment) => comment.anchor && !mappedCurrentComments.some((mcc) => mcc.match === comment))
 
     // Replace with comment objects detached from the comment objects in the comments object (so
     // that the object isn't polluted when it is reused).
