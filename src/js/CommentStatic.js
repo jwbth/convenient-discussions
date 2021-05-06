@@ -398,11 +398,7 @@ export default {
       if (parent instanceof Comment) {
         // We can't use Comment#containerListType as it contains the type for the _first_
         // (highlightable) element.
-        const parentListType = parent.$elements
-          .last()
-          .closest('dl, ul, ol')
-          .prop('tagName')
-          ?.toLowerCase();
+        const parentListType = parent.$elements.last().cdGetContainerListType();
 
         const [$wrappingItem] = parent
           .createSublevelItem('newRepliesNote', 'bottom', parentListType);

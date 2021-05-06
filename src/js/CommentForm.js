@@ -1353,8 +1353,11 @@ export default class CommentForm {
     let $wrappingList;
     let $outerWrapper;
     if (this.mode === 'reply') {
+      // We can't use Comment#containerListType as it contains the type for the _first_
+      // (highlightable) element.
+      const containerListType = this.target.$elements.last().cdGetContainerListType();
       [$wrappingItem, $wrappingList, $outerWrapper] = this.target
-        .createSublevelItem('replyForm', 'top', this.containerListType);
+        .createSublevelItem('replyForm', 'top', containerListType);
     } else if (this.mode === 'edit') {
       const $lastOfTarget = this.target.$elements.last();
       if ($lastOfTarget.is('dd, li')) {
