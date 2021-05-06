@@ -201,15 +201,16 @@ export default class Section extends SectionSkeleton {
     this.$replyButtonLink = $(replyButton.firstChild);
 
     /**
-     * Reply button wrapper.
+     * Reply (button) wrapper, an item element.
      *
      * @type {JQuery|undefined}
      */
     this.$replyWrapper = $(replyWrapper);
 
     /**
-     * Reply button container. It is wrapped around the {@link module:Section#$replyWrapper reply
-     * button wrapper}, but can have other elements (and comments) too.
+     * Reply (button) container, a list element. It is wrapped around the {@link
+     * module:Section#$replyWrapper reply button wrapper}, but can have other elements (and
+     * comments) too.
      *
      * @type {JQuery|undefined}
      */

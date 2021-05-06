@@ -337,15 +337,15 @@ function isCommentEdited(olderComment, newerComment) {
 /**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
- * @param {CommentSkeletonLike[]} mappedCurrentComments
+ * @param {CommentSkeletonLike[]} currentComments
  * @private
  */
-function checkForEditsSincePreviousVisit(mappedCurrentComments) {
+function checkForEditsSincePreviousVisit(currentComments) {
   const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
   const articleId = mw.config.get('wgArticleId');
 
   const editList = [];
-  mappedCurrentComments.forEach((currentComment) => {
+  currentComments.forEach((currentComment) => {
     if (currentComment.anchor === submittedCommentAnchor) return;
 
     const oldComment = currentComment.match;
@@ -413,13 +413,13 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
 /**
  * Check if there are changes made to the currently displayed comments since they were rendered.
  *
- * @param {CommentSkeletonLike[]} mappedCurrentComments
+ * @param {CommentSkeletonLike[]} currentComments
  * @private
  */
-function checkForNewEdits(mappedCurrentComments) {
+function checkForNewEdits(currentComments) {
   let isEditMarkUpdated = false;
   const editList = [];
-  mappedCurrentComments.forEach((currentComment) => {
+  currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     let comment;
     const events = {};
@@ -692,12 +692,12 @@ function isPageStillAtRevision(revisionId) {
  * Process the comments retrieved by a web worker.
  *
  * @param {CommentSkeletonLike[]} comments Comments from the recent revision.
- * @param {CommentSkeletonLike[]} mappedCurrentComments Comments from the currently shown revision
+ * @param {CommentSkeletonLike[]} currentComments Comments from the currently shown revision
  *   mapped to the comments from the recent revision.
  * @param {number} currentRevisionId
  * @private
  */
-async function processComments(comments, mappedCurrentComments, currentRevisionId) {
+async function processComments(comments, currentComments, currentRevisionId) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     if (comment.parent?.authorName) {
@@ -706,14 +706,14 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   });
 
   const newComments = comments
-    .filter((comment) => comment.anchor && !mappedCurrentComments.some((mcc) => mcc.match === comment))
+    .filter((comment) => comment.anchor && !currentComments.some((mcc) => mcc.match === comment))
 
     // Replace with comment objects detached from the comment objects in the comments object (so
     // that the object isn't polluted when it is reused).
     .map((comment) => {
       const newComment = Object.assign({}, comment);
       if (comment.parent) {
-        const parentMatch = mappedCurrentComments.find((mcc) => mcc.match === comment.parent);
+        const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
         if (parentMatch?.anchor) {
           newComment.parentMatch = Comment.getByAnchor(parentMatch.anchor);
         }

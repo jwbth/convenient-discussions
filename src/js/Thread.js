@@ -132,7 +132,7 @@ function cleanUpCollapsedThreads(data) {
   return newData;
 }
 
-function getEndItem(startItem, highlightables, nextForeignElement) {
+function getEndItem0Level(startItem, highlightables, nextForeignElement) {
   let commonAncestor = startItem;
   const lastHighlightable = highlightables[highlightables.length - 1];
   let endItem = lastHighlightable;
@@ -193,10 +193,10 @@ export default class Thread {
     const nextForeignElement = cd.comments[this.lastComment.id + 1]?.elements[0];
     if (this.rootComment.level === 0) {
       startItem = this.rootComment.highlightables[0];
-      visualEndItem = getEndItem(startItem, visualHighlightables, nextForeignElement);
+      visualEndItem = getEndItem0Level(startItem, visualHighlightables, nextForeignElement);
       endItem = this.lastComment === this.visualLastComment ?
         visualEndItem :
-        getEndItem(startItem, highlightables, nextForeignElement);
+        getEndItem0Level(startItem, highlightables, nextForeignElement);
     } else {
       startItem = (
         findItemElement(rootComment.highlightables[0], rootComment.level, nextForeignElement) ||
