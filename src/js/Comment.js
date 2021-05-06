@@ -144,7 +144,11 @@ export default class Comment extends CommentSkeleton {
     if (this.highlightables.length > 1) {
       const nestingLevels = [];
       const closestListTypes = [];
-      this.highlightables.some((highlightable, i) => {
+      const firstAndLastHighlightable = [
+        this.highlightables[0],
+        this.highlightables[this.highlightables.length - 1],
+      ];
+      firstAndLastHighlightable.forEach((highlightable, i) => {
         const treeWalker = new ElementTreeWalker(highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
@@ -156,7 +160,7 @@ export default class Comment extends CommentSkeleton {
       });
       const minNestingLevel = Math.min(...nestingLevels);
       let anchorHighlightableIndex;
-      for (let i = 0; i < this.highlightables.length; i++) {
+      for (let i = 0; i < 2; i++) {
         if (
           (nestingLevels[i] === minNestingLevel && anchorHighlightableIndex === undefined) ||
           (closestListTypes[anchorHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
@@ -164,7 +168,7 @@ export default class Comment extends CommentSkeleton {
           anchorHighlightableIndex = i;
         }
       }
-      this.anchorHighlightable = this.highlightables[anchorHighlightableIndex];
+      this.anchorHighlightable = firstAndLastHighlightable[anchorHighlightableIndex];
     } else {
       this.anchorHighlightable = this.highlightables[0];
     }
