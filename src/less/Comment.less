@@ -82,16 +82,12 @@ ol > li.cd-commentPart-last {
   width: 3px;
   padding-left: var(--cd-thread-line-side-margin);
   padding-right: var(--cd-thread-line-side-margin);
-
-  &-stretchedStart {
-    padding-left: 0;
-    padding-right: var(--cd-thread-line-side-margin);
-  }
 }
 
 .cd-threadLine {
   width: 100%;
   height: 100%;
+  opacity: 0;
 }
 
 .cd-threadLine-clickArea-hover {
@@ -99,6 +95,8 @@ ol > li.cd-commentPart-last {
 
   .cd-threadLine {
     background-color: #72777d;
+    opacity: 1;
+    transition: opacity 0.2s ease-in;
 
     &-extended::after {
       background-image: linear-gradient(to bottom, #72777d, transparent);

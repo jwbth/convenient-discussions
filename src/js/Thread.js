@@ -213,7 +213,7 @@ export default class Thread {
     this.clickArea.onmouseenter = () => {
       this.highlightTimeout = setTimeout(() => {
         this.clickArea.classList.add('cd-threadLine-clickArea-hover');
-      }, 100);
+      }, 75);
     };
     this.clickArea.onmouseleave = () => {
       clearTimeout(this.highlightTimeout);
@@ -538,10 +538,11 @@ export default class Thread {
           rectTop = thread.collapsedNote.getBoundingClientRect();
           if (comment.level === 0 || thread.collapsedNote.parentNode.tagName === 'OL') {
             const [leftMargin] = comment.getLayersMargins();
-            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1);
-            if (!comment.isStartStretched) {
-              lineLeft -= cd.g.THREAD_LINE_SIDE_MARGIN;
-            }
+            lineLeft = (
+              (window.scrollX + rectTop.left) -
+              (leftMargin + 1) -
+              cd.g.THREAD_LINE_SIDE_MARGIN
+            );
             lineTop = window.scrollY + rectTop.top;
           }
         } else {
@@ -550,10 +551,7 @@ export default class Thread {
             comment.getPositions();
             if (comment.positions) {
               const [leftMargin] = comment.getLayersMargins();
-              lineLeft = comment.positions.left - (leftMargin + 1);
-              if (!comment.isStartStretched) {
-                lineLeft -= cd.g.THREAD_LINE_SIDE_MARGIN;
-              }
+              lineLeft = comment.positions.left - (leftMargin + 1) - cd.g.THREAD_LINE_SIDE_MARGIN;
               lineTop = comment.positions.top;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');

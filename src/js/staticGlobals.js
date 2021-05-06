@@ -147,7 +147,7 @@ export default {
    * @type {number}
    * @memberof module:cd~convenientDiscussions.g
    */
-  THREAD_LINE_SIDE_MARGIN: 5,
+  THREAD_LINE_SIDE_MARGIN: 4,
 
   /**
    * How long a comment should be considered new and have a corresponding background on newly loaded
