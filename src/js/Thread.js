@@ -28,9 +28,11 @@ let treeWalker;
  *
  * @param {Element} element
  * @param {number} level
+ * @param {Element} nextForeignElement
  * @returns {?Element}
+ * @private
  */
-function findItemElement(element, level) {
+function findItemElement(element, level, nextForeignElement) {
   treeWalker.currentNode = element;
 
   let item;
@@ -40,8 +42,19 @@ function findItemElement(element, level) {
       const className = treeWalker.currentNode.getAttribute('class');
       const match = className.match(/cd-commentLevel-(\d+)/);
       if (match && Number(match[1]) === (level || 1)) {
-        // Level can be 0 when we start from a comment form.
+        // If the level is 0 (outdented comment or subitem of a 0-level comment), we need the list
+        // element, not the item element.
         item = level === 0 ? treeWalker.currentNode : previousNode;
+
+        cd.debug.startTimer('threads nextForeignElement');
+        // The element can contain parts of a comment that is not in the thread, for example
+        // https://ru.wikipedia.org/wiki/Википедия:К_оценке_источников#202104120830_RosssW_2.
+        if (nextForeignElement && item.contains(nextForeignElement)) {
+          cd.debug.stopTimer('threads nextForeignElement');
+          return null;
+        }
+        cd.debug.stopTimer('threads nextForeignElement');
+
         break;
       }
     }
@@ -119,16 +132,23 @@ function cleanUpCollapsedThreads(data) {
   return newData;
 }
 
-function getEndItem(startItem, highlightables) {
+function getEndItem(startItem, highlightables, nextForeignElement) {
   let commonAncestor = startItem;
   const lastHighlightable = highlightables[highlightables.length - 1];
   let endItem = lastHighlightable;
   do {
     commonAncestor = commonAncestor.parentNode;
   } while (!commonAncestor.contains(lastHighlightable));
-  while (endItem.parentNode !== commonAncestor) {
-    endItem = endItem.parentNode;
+  cd.debug.startTimer('threads nextForeignElement');
+  let n;
+  for (
+    n = endItem.parentNode;
+    n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
+    n = n.parentNode
+  ) {
+    endItem = n;
   }
+  cd.debug.stopTimer('threads nextForeignElement');
   const nextElement = endItem.nextElementSibling;
   if (
     nextElement &&
@@ -170,27 +190,40 @@ export default class Thread {
     let endItem;
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
+    const nextForeignElement = cd.comments[this.lastComment.id + 1]?.elements[0];
     if (this.rootComment.level === 0) {
       startItem = this.rootComment.highlightables[0];
-      visualEndItem = getEndItem(startItem, visualHighlightables);
+      visualEndItem = getEndItem(startItem, visualHighlightables, nextForeignElement);
       endItem = this.lastComment === this.visualLastComment ?
         visualEndItem :
-        getEndItem(startItem, highlightables);
-
+        getEndItem(startItem, highlightables, nextForeignElement);
     } else {
-      startItem = findItemElement(rootComment.highlightables[0], rootComment.level);
-      const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
-      visualEndItem = findItemElement(lastVisualHighlightable, rootComment.level);
+      startItem = (
+        findItemElement(rootComment.highlightables[0], rootComment.level, nextForeignElement) ||
+        rootComment.highlightables[0]
+      );
+      const lastHighlightable = highlightables[highlightables.length - 1];
 
       if (this.lastComment === this.visualLastComment) {
-        endItem = visualEndItem;
+        endItem = (
+          findItemElement(lastHighlightable, rootComment.level, nextForeignElement) ||
+          lastHighlightable
+        );
+
+        visualEndItem = endItem;
       } else {
         const outdentedComment = cd.comments
           .slice(0, this.lastComment.id + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
-        const lastHighlightable = highlightables[highlightables.length - 1];
-        endItem = findItemElement(lastHighlightable, outdentedComment.level);
+        endItem = findItemElement(lastHighlightable, outdentedComment.level, nextForeignElement);
+
+        const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
+        visualEndItem = findItemElement(
+          lastVisualHighlightable,
+          rootComment.level,
+          nextForeignElement
+        );
       }
     }
 
@@ -558,7 +591,14 @@ export default class Thread {
           } else {
             cd.debug.startTimer('threads getBoundingClientRect other');
             rectTop = thread.startItem.getBoundingClientRect();
-            if (comment.containerListType === 'ol') {
+            if (
+              comment.containerListType === 'ol' ||
+
+              // Occurs when a part of a comment that is not in the thread is next to the start
+              // item, for example
+              // https://ru.wikipedia.org/wiki/Википедия:Запросы_к_администраторам#202104081533_Macuser.
+              thread.startItem.tagName === 'DIV'
+            ) {
               comment.getPositions();
               if (comment.positions) {
                 const [leftMargin] = comment.getLayersMargins();
