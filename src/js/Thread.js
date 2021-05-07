@@ -64,6 +64,34 @@ function findItemElement(element, level, nextForeignElement) {
   return item || null;
 }
 
+function getEndItem0Level(startItem, highlightables, nextForeignElement) {
+  let commonAncestor = startItem;
+  const lastHighlightable = highlightables[highlightables.length - 1];
+  let endItem = lastHighlightable;
+  do {
+    commonAncestor = commonAncestor.parentNode;
+  } while (!commonAncestor.contains(lastHighlightable));
+  cd.debug.startTimer('threads nextForeignElement');
+  let n;
+  for (
+    n = endItem.parentNode;
+    n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
+    n = n.parentNode
+  ) {
+    endItem = n;
+  }
+  cd.debug.stopTimer('threads nextForeignElement');
+  const nextElement = endItem.nextElementSibling;
+  if (
+    nextElement &&
+    nextElement.tagName === 'DL' &&
+    nextElement.classList.contains('cd-sectionButton-container')
+  ) {
+    endItem = nextElement;
+  }
+  return endItem;
+}
+
 /**
  * Save collapsed threads to the local storage.
  *
@@ -132,34 +160,6 @@ function cleanUpCollapsedThreads(data) {
   return newData;
 }
 
-function getEndItem0Level(startItem, highlightables, nextForeignElement) {
-  let commonAncestor = startItem;
-  const lastHighlightable = highlightables[highlightables.length - 1];
-  let endItem = lastHighlightable;
-  do {
-    commonAncestor = commonAncestor.parentNode;
-  } while (!commonAncestor.contains(lastHighlightable));
-  cd.debug.startTimer('threads nextForeignElement');
-  let n;
-  for (
-    n = endItem.parentNode;
-    n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
-    n = n.parentNode
-  ) {
-    endItem = n;
-  }
-  cd.debug.stopTimer('threads nextForeignElement');
-  const nextElement = endItem.nextElementSibling;
-  if (
-    nextElement &&
-    nextElement.tagName === 'DL' &&
-    nextElement.classList.contains('cd-sectionButton-container')
-  ) {
-    endItem = nextElement;
-  }
-  return endItem;
-}
-
 export default class Thread {
   /**
    * Create a comment thread object.
@@ -216,7 +216,9 @@ export default class Thread {
           .slice(0, this.lastComment.id + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
-        endItem = findItemElement(lastHighlightable, outdentedComment.level, nextForeignElement);
+        endItem = outdentedComment.level === 0 ?
+          getEndItem0Level(startItem, highlightables, nextForeignElement) :
+          findItemElement(lastHighlightable, outdentedComment.level, nextForeignElement);
 
         const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
         visualEndItem = findItemElement(
