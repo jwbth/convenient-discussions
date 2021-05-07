@@ -3,6 +3,7 @@
 		"authors": [
 			"A2y4",
 			"Buntschann",
+			"Kkairri",
 			"LaMagiaaa",
 			"Linuxmetel",
 			"Omotecho",
@@ -160,6 +161,7 @@
 	"ewsd-error-processing": "ウォッチ中の節一覧の処理中にエラーが発生しました。",
 	"ewsd-close-confirm": "ウォッチしている節のリストがまだ保存してありません。ほんとうにウィンドウを閉じてよいですか？",
 	"msd-title": "トピック移動",
+	"msd-move": "移動",
 	"msd-targetpage": "トピックを移動する先の議論ページ名を入力：",
 	"msd-error-editingtargetpage": "対象のページを編集できませんでした。",
 	"msd-moved": "トピックの移動に成功しました。ページを再読み込みするか、[[$1|トピックの移動先のページ]]を開いてください。",

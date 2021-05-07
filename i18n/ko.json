@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Codenstory",
+			"Ellif",
 			"Jack who built the house",
 			"Siwoolee",
 			"Songhee",
@@ -18,7 +19,7 @@
 	"sm-unwatch": "주시 해제",
 	"sm-copylink-tooltip": "링크 복사",
 	"comment-edited": "댓글이 변경되었습니다.",
-	"comment-edited-refresh": "새로 고침",
+	"comment-edited-refresh": "변경내용을 보기 위해 새로고침",
 	"comment-edited-diff": "차이",
 	"comment-edited-diff-error": "차이를 렌더링하지 못했습니다.",
 	"comment-edited-diff-empty": "차이가 비어 있습니다. 댓글의 렌더링이 변경되었을 수 있으며 편집은 되지 않았습니다.",
