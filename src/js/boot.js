@@ -95,7 +95,7 @@ export async function initSettings() {
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
     modifyToc: true,
-    useBackgroundHighlighting: false,
+    useBackgroundHighlighting: true,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
