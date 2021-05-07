@@ -75,7 +75,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_NEW_BACKGROUND_COLOR: '#f0ffe5',
+  COMMENT_NEW_BACKGROUND_COLOR: '#efffe7',
 
   /**
    * New comments color when they are hovered.
@@ -83,7 +83,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_NEW_HOVER_BACKGROUND_COLOR: '#e8ffd8',
+  COMMENT_NEW_HOVER_BACKGROUND_COLOR: '#e7ffdb',
 
   /**
    * Marker color for own comments.
