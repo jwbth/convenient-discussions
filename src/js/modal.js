@@ -8,7 +8,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
-import { areObjectsEqual, dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
+import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
 import { checkboxField, copyActionField, radioField } from './ooui';
 import { encodeWikilink } from './wikitext';
 import { focusInput, hideText, underlinesToSpaces, unhideText } from './util';

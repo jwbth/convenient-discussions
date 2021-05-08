@@ -274,7 +274,7 @@ export default class Thread {
         }
       }
       if (areOutdentedCommentsShown) {
-        this.line.classList.add('cd-threadLine-extended');
+        this.line.classList.add('cd-threadLine-line-extended');
       }
     }
     cd.debug.stopTimer('threads createElement create');
@@ -444,7 +444,7 @@ export default class Thread {
 
     if (this.endItem !== this.visualEndItem) {
       for (let c = this.rootComment; c; c = c.getParent()) {
-        c.thread?.line.classList.remove('cd-threadLine-extended');
+        c.thread?.line.classList.remove('cd-threadLine-line-extended');
       }
     }
 
@@ -492,7 +492,7 @@ export default class Thread {
 
     if (this.endItem !== this.visualEndItem && areOutdentedCommentsShown) {
       for (let c = this.rootComment; c; c = c.getParent()) {
-        c.thread?.line.classList.add('cd-threadLine-extended');
+        c.thread?.line.classList.add('cd-threadLine-line-extended');
       }
     }
 

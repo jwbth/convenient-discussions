@@ -696,7 +696,7 @@ function initOouiAndElementPrototypes() {
   threadClickArea.className = 'cd-threadLine-clickArea';
   threadClickArea.title = cd.s('thread-tooltip');
   const line = document.createElement('div');
-  line.className = 'cd-threadLine';
+  line.className = 'cd-threadLine-line';
   threadClickArea.appendChild(line);
   cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea = threadClickArea;
 }

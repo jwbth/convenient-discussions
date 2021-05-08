@@ -84,7 +84,7 @@ ol > li.cd-commentPart-last {
   padding-right: var(--cd-thread-line-side-margin);
 }
 
-.cd-threadLine {
+.cd-threadLine-line {
   width: 100%;
   height: 100%;
   opacity: 0;
@@ -93,7 +93,7 @@ ol > li.cd-commentPart-last {
 .cd-threadLine-clickArea-hover {
   cursor: pointer;
 
-  .cd-threadLine {
+  .cd-threadLine-line {
     background-color: #72777d;
     opacity: 1;
     transition: opacity 0.2s ease-in;
@@ -104,7 +104,7 @@ ol > li.cd-commentPart-last {
   }
 }
 
-.cd-threadLine-extended::after {
+.cd-threadLine-line-extended::after {
   display: block;
   content: '';
   height: 10px;
