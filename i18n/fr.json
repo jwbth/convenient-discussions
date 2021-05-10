@@ -176,7 +176,7 @@
 	"dn-confirm-yes": "Oui",
 	"dn-confirm-no": "Non",
 	"dn-grantpermission": "Accorder une autorisation au site.",
-	"dn-grantpermission-again": "Vous avez activé les notifications de bureau, mais le site ne permet pas de vous les envoyer. Accordez une autorisation au site pour recevoir des notifications ou refusez-la pour empêcher ce message de s’afficher de nouveau.",
+	"dn-grantpermission-again": "Vous avez activé les notifications de bureau, mais le site n'est pas autorisé à vous les envoyer. Accordez une autorisation au site pour recevoir des notifications ou refusez-la pour empêcher ce message de s’afficher de nouveau.",
 	"deadanchor-section-title": "Section non trouvée",
 	"deadanchor-section-text": "Elle est peut-être déplacée ou archivée.",
 	"deadanchor-comment-title": "Commentaire non trouvé",

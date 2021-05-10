@@ -164,5 +164,16 @@
 	"cf-confirm-close-no": "Cancellar",
 	"dn-confirm": "Vole tu que \"Discussiones practic\" te invia notificationes de scriptorio concernente nove commentos sur le paginas actualmente aperte si illos es adressate a te o publicate in sectiones que tu seque? Tu pote disactivar iste function in le parametros.",
 	"dn-confirm-yes": "Si",
-	"dn-confirm-no": "No"
+	"dn-confirm-no": "No",
+	"dn-grantpermission": "Conceder un permission al sito.",
+	"dn-grantpermission-again": "Tu ha activate le notificationes de scriptorio, ma le sito non ha le permission de inviar te los. Concede un permission al sito pro reciper notificationes o refusa lo pro impedir que iste message appare de novo.",
+	"deadanchor-section-title": "Section non trovate",
+	"deadanchor-section-text": "Illo pote esser displaciate o archivate.",
+	"deadanchor-comment-title": "Commento non trovate",
+	"deadanchor-comment-text": "Illo pote esser displaciate o archivate.",
+	"deadanchor-searchinarchive": "Vole tu cercar in le archivo?",
+	"deadanchor-search-gotocomment": "saltar al commento",
+	"restore-restored-title": "Session restaurate",
+	"restore-restored-text": "Le formularios de commento non inviate ha essite recuperate automaticamente.",
+	"rd-intro": "Non poteva trovar le commentos o sectiones sur le pagina al qual certe formularios aperte es ligate. Hic infra se trova le contento restaurate de iste formularios. Copia lo si tu lo require."
 }

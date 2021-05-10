@@ -6,15 +6,16 @@
 			"Jack who built the house",
 			"Kareyac",
 			"Okras",
+			"Rivka Silinsky",
 			"Rubin16",
 			"Smigles"
 		]
 	},
 	"script-name": "«Удобные дискуссии»",
 	"script-name-short": "CD",
-	"cm-gotoparent": "Перейти к родителю",
+	"cm-gotoparent": "Вернутся к родителю",
 	"cm-gotoparent-tooltip": "Перейти к родительскому сообщению",
-	"cm-gotochild": "Вернуться к потомку",
+	"cm-gotochild": "Вернуться к ребенку",
 	"cm-gotochild-tooltip": "Вернуться к дочернему сообщению",
 	"cm-copylink": "Скопировать ссылку",
 	"cm-copylink-tooltip": "Скопировать ссылку",
