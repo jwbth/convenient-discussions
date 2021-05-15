@@ -125,7 +125,6 @@ export function handleScroll() {
 
     if (cd.g.isPageActive) {
       Comment.registerSeen();
-      navPanel.updateFirstUnseenButton();
       navPanel.updateCommentFormButton();
     }
     pageNav.update();

@@ -78,6 +78,8 @@ export default {
     cd.comments
       .slice(commentInViewport.id)
       .some(registerIfInViewport);
+
+    navPanel.updateFirstUnseenButton();
   },
 
   /**
