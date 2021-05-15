@@ -355,7 +355,9 @@ const cd = convenientDiscussions;
 mw.hook('convenientDiscussions.beforeParse').add(function () {
   // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
   // the parent list tag into two parts putting the comment in between.
-  $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
+
+  // Commented for now, as it can confuse votes for the criteria check script on voting pages.
+  /*$('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
     const $current = $(el).css('margin', 0);
     const $list = $current.parent('dd, li').parent('dl, ul, ol');
     while ($list.get(0).contains($current.get(0))) {
@@ -372,6 +374,10 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
         $parent.remove();
       }
     }
+  });*/
+
+  mw.loader.using('mediawiki.util').then(function () {
+    mw.util.addCSS('.ruwiki-msgIndentation-minus1level { margin-left: 0 !important; }');
   });
 });
 
