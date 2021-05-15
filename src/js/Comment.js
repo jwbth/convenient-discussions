@@ -3044,7 +3044,7 @@ export default class Comment extends CommentSkeleton {
 
     cd.debug.startTimer('createSublevelItem');
 
-    let wrappingItemTag = 'li';
+    let wrappingItemTag = 'dd';
     let createList = true;
     let outerWrapperTag;
 
