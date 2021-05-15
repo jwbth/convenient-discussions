@@ -1097,6 +1097,40 @@ export default class Comment extends CommentSkeleton {
     this.isHovered = false;
   }
 
+  animateToColors(markerColor, backgroundColor, callback) {
+    const generateProperties = (backgroundColor) => {
+      const properties = { backgroundColor };
+
+      // jquery.color module can't animate to the transparent color.
+      if (properties.backgroundColor === 'rgba(0, 0, 0, 0)') {
+        properties.opacity = 0;
+      }
+
+      return properties;
+    };
+    const propertyDefaults = {
+      backgroundColor: '',
+      backgroundImage: '',
+      opacity: '',
+    };
+
+    const finalMarkerProperties = generateProperties(markerColor);
+    this.$marker.animate(finalMarkerProperties, 400, 'swing', () => {
+      this.$marker.css(propertyDefaults);
+    });
+
+    const comment = this;
+    const finalBackgroundProperties = generateProperties(backgroundColor);
+    this.$animatedBackground.animate(finalBackgroundProperties, 400, 'swing', function () {
+      if (this !== comment.$animatedBackground.get(-1)) return;
+
+      if (callback) {
+        callback();
+      }
+      comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
+    });
+  }
+
   /**
    * Highlight the comment as a target (it is opened by a link, just posted, is the target of the
    * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
@@ -1128,94 +1162,72 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    cd.debug.startTimer('animatedBackground');
+    if (this.animateBack) {
+      clearTimeout(this.unhighlightTimeout);
+      this.animateBack();
+    }
+
     /**
-     * Comment underlay and some elements inside comment overlay whose colors are animated in some
-     * events.
+     * Comment underlay and menu whose colors are animated in some events.
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$animatedBackground = this.$underlay.add(this.$overlayContent);
-    cd.debug.stopTimer('animatedBackground');
+    this.$animatedBackground = this.$underlay.add(this.$overlayMenu);
 
     // Reset the animations and colors
     this.$animatedBackground.add(this.$marker).stop(false, true);
 
+    const underlayClasses = ['cd-commentUnderlay-forcedBackground'];
+    const overlayClasses = ['cd-commentOverlay-forcedBackground'];
+    if (!this.underlay.classList.contains(`cd-commentUnderlay-${type}`)) {
+      underlayClasses.push(`cd-commentUnderlay-${type}`);
+      overlayClasses.push(`cd-commentOverlay-${type}`);
+    }
+
     // The "cd-commentUnderlay-forcedBackground" class helps to set background for a type even if
     // they user has switched off background highlighting for this type ("new", for example).
-    this.underlay.classList.add(
-      `cd-commentUnderlay-${type}`,
-      'cd-commentUnderlay-forcedBackground'
-    );
-    this.overlay.classList.add(`cd-commentOverlay-${type}`, 'cd-commentOverlay-forcedBackground');
+    this.underlay.classList.add(...underlayClasses);
+    this.overlay.classList.add(...overlayClasses);
 
-    this.$marker.css({ opacity: 1 });
-    clearTimeout(this.unhighlightTimeout);
-    this.unhighlightTimeout = setTimeout(() => {
-      // TODO: disappeared check / animation / unhighlightTimeout stop()
+    this.animateBack = () => {
+      this.animateBack = null;
 
-      const markerColor = this.$marker.css('background-color');
-      const backgroundColor = this.$underlay.css('background-color');
+      if (!this.underlay) {
+        callback();
+        return;
+      }
 
-      this.underlay.classList.remove(
-        `cd-commentUnderlay-${type}`,
-        'cd-commentUnderlay-forcedBackground'
-      );
-      this.overlay.classList.remove(
-        `cd-commentOverlay-${type}`,
-        'cd-commentOverlay-forcedBackground'
-      );
+      // Get the current colors
+      const initialMarkerColor = this.$marker.css('background-color');
+      const initialBackgroundColor = this.$underlay.css('background-color');
+
+      // Reset the classes that produce these colors
+      this.underlay.classList.remove(...underlayClasses);
+      this.overlay.classList.remove(...overlayClasses);
+
+      // Get the final (destination) colors
       const finalMarkerColor = this.$marker.css('background-color');
       let finalBackgroundColor = this.$underlay.css('background-color');
 
-      // That's basically if the flash color is green (new, when a comment is updated after an edit)
-      // and the comment itself is new and green, then animate to transparent, then set green back,
-      // so that there is any animation at all.
-      if (finalBackgroundColor === backgroundColor) {
+      // That's basically if the flash color is green (when a comment is updated after an edit) and
+      // the comment itself is green, then animate to transparent, then set green back, so that
+      // there is any animation at all.
+      if (finalBackgroundColor === initialBackgroundColor) {
         finalBackgroundColor = 'rgba(0, 0, 0, 0)';
       }
 
+      // Set back the colors previously produced by classes
       this.$marker.css({
-        backgroundColor: markerColor,
+        backgroundColor: initialMarkerColor,
         opacity: 1,
       });
-      this.$animatedBackground.css({ backgroundColor: backgroundColor })
-      this.$overlayGradient.css({ backgroundImage: 'none' });
+      this.$animatedBackground.css({ backgroundColor: initialBackgroundColor })
+      this.$overlayGradient?.css({ backgroundImage: 'none' });
 
-      const generateProperties = (backgroundColor) => {
-        const properties = { backgroundColor };
+      this.animateToColors(finalMarkerColor, finalBackgroundColor, callback);
+    };
 
-        // jquery.color module can't animate to the transparent color.
-        if (properties.backgroundColor === 'rgba(0, 0, 0, 0)') {
-          properties.opacity = 0;
-        }
-
-        return properties;
-      };
-      const propertyDefaults = {
-        backgroundColor: '',
-        backgroundImage: '',
-        opacity: '',
-      };
-
-      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', () => {
-        this.$marker.css(propertyDefaults);
-      });
-      const comment = this;
-      this.$animatedBackground.animate(
-        generateProperties(finalBackgroundColor),
-        400,
-        'swing',
-        function () {
-          if (this !== comment.$overlayContent.get(0)) return;
-
-          if (callback) {
-            callback();
-          }
-          comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
-        }
-      );
-    }, delay);
+    this.unhighlightTimeout = setTimeout(this.animateBack.bind(this), delay);
   }
 
   /**

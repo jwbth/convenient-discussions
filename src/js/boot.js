@@ -770,31 +770,24 @@ function initOouiAndElementPrototypes() {
  * @private
  */
 function addBackgroundHighlightingCss() {
-  let underlayPostfix = '';
-  let overlayPostfix = '';
-  if (!cd.settings.useBackgroundHighlighting) {
-    underlayPostfix = '.cd-commentUnderlay-forcedBackground';
-    overlayPostfix = '.cd-commentOverlay-forcedBackground';
-  }
-  cd.g.nanoCss.put(`.cd-commentUnderlay-new${underlayPostfix}`, {
-    backgroundColor: 'var(--cd-comment-new-background-color)',
-  });
-  cd.g.nanoCss.put(
-    `.cd-commentUnderlay-new.cd-commentUnderlay-hover${underlayPostfix}, ` +
-    `.cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-content`,
-    {
-      backgroundColor: 'var(--cd-comment-new-hover-background-color)',
-    }
-  );
-  // FIX TRANSPARENT
-  cd.g.nanoCss.put(`.ltr .cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-gradient`, {
-    backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
-  });
-  cd.g.nanoCss.put(`.rtl .cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-gradient`, {
-    backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
-  });
-
   if (cd.settings.useBackgroundHighlighting) {
+    cd.g.nanoCss.put(`.cd-commentUnderlay-new`, {
+      backgroundColor: 'var(--cd-comment-new-background-color)',
+    });
+    cd.g.nanoCss.put(
+      `.cd-commentUnderlay-new.cd-commentUnderlay-hover, ` +
+      `.cd-commentOverlay-new .cd-commentOverlay-content`,
+      {
+        backgroundColor: 'var(--cd-comment-new-hover-background-color)',
+      }
+    );
+    cd.g.nanoCss.put(`.ltr .cd-commentOverlay-new .cd-commentOverlay-gradient`, {
+      backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
+    });
+    cd.g.nanoCss.put(`.rtl .cd-commentOverlay-new .cd-commentOverlay-gradient`, {
+      backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
+    });
+
     cd.g.nanoCss.put('.cd-commentUnderlay-own', {
       backgroundColor: 'var(--cd-comment-own-background-color)',
     });
@@ -985,6 +978,14 @@ export function isPageLoading() {
  */
 export async function reloadPage(keptData = {}) {
   if (cd.g.isPageBeingReloaded) return;
+
+  // Stop all animations
+  cd.comments
+    .filter((comment) => comment.$animatedBackground)
+    .forEach((comment) => {
+      comment.$animatedBackground.stop();
+      comment.$marker.stop();
+    });
 
   // In case checkboxes were changed programmatically.
   saveSession();
