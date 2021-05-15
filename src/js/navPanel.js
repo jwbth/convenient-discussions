@@ -341,10 +341,8 @@ export default {
   updateCommentFormButton() {
     if (cd.g.isAutoScrollInProgress || !this.isMounted()) return;
 
-    if (cd.commentForms.some((commentForm) => !commentForm.$element.cdIsInViewport(true))) {
-      this.$commentFormButton.show();
-    } else {
-      this.$commentFormButton.hide();
-    }
+    const areThereHidden = cd.commentForms
+      .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
+    this.$commentFormButton[areThereHidden ? 'show' : 'hide']();
   },
 };

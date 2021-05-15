@@ -277,10 +277,8 @@ export default {
    * @param {object} keptData
    */
   addNewComments(commentsBySection, keptData) {
-    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
-
     const firstComment = commentsBySection.values().next().value?.[0];
-    if (!firstComment) return;
+    if (!cd.settings.modifyToc || !cd.g.$toc.length || !firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
 

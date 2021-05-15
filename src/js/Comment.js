@@ -1438,7 +1438,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {boolean} Was the update successful.
    */
   update(currentComment, newComment) {
-    const elementTagNames = Array.from(this.$elements).map((el) => el.tagName);
+    const elementNames = Array.from(this.$elements).map((el) => el.tagName);
 
     // References themselves may be out of the comment's HTML and might be edited.
     const areThereReferences = newComment.hiddenElementData
@@ -1457,7 +1457,7 @@ export default class Comment extends CommentSkeleton {
     if (
       !areThereReferences &&
       areStyleTagsKept &&
-      areObjectsEqual(elementTagNames, newComment.elementTagNames)
+      areObjectsEqual(elementNames, newComment.elementNames)
     ) {
       const match = this.$elements.find('.autonumber').text().match(/\d+/);
       let currentAutonumber = match ? match[0] : 1;
@@ -1466,7 +1466,7 @@ export default class Comment extends CommentSkeleton {
           /\x01(\d+)_\w+\x02/g,
           (s, num) => newComment.hiddenElementData[num - 1].html
         );
-        if (/^H[1-6]$/.test(elementTagNames[i])) {
+        if (/^H[1-6]$/.test(elementNames[i])) {
           const $headline = this.$elements.eq(i).find('.mw-headline');
           if ($headline.length) {
             const $headlineNumber = $headline.find('.mw-headline-number');
@@ -3103,12 +3103,9 @@ export default class Comment extends CommentSkeleton {
         $wrappingItem.prependTo($nextToTarget);
       } else {
         const $last = $nextToTarget.children().last();
+
         // "Reply to section" button should always be the last.
-        if ($last.hasClass('cd-replyWrapper')) {
-          $wrappingItem.insertBefore($last);
-        } else {
-          $wrappingItem.insertAfter($last);
-        }
+        $wrappingItem[$last.hasClass('cd-replyWrapper') ? 'insertBefore' : 'insertAfter']($last);
       }
     }
 

@@ -366,8 +366,8 @@ function checkForEditsSincePreviousVisit(currentComments) {
           if (
             section &&
             !section.isWatched &&
-            /^H[1-6]$/.test(currentComment.elementTagNames[0]) &&
-            oldComment.elementTagNames[0] === currentComment.elementTagNames[0]
+            /^H[1-6]$/.test(currentComment.elementNames[0]) &&
+            oldComment.elementNames[0] === currentComment.elementNames[0]
           ) {
             const html = oldComment.elementHtmls[0].replace(
               /\x01(\d+)_\w+\x02/g,

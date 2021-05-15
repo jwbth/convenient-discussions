@@ -114,6 +114,7 @@ class TributeEvents {
     }
     instance.updateSelection(this);
 
+    // Esc
     if (event.keyCode === 27) return;
 
     // jwbth: Added this.

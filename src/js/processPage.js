@@ -427,7 +427,7 @@ function addAddTopicButton() {
       CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
-      .addClass('cd-addTopicButton-container cd-sectionButton-container')
+      .addClass('cd-sectionButton-container cd-addTopicButton-container')
       .append(cd.g.addSectionButton.$element)
       .appendTo(cd.g.rootElement);
   }
@@ -1104,20 +1104,26 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
         cd.debug.stopTimer('parse user links');
       }
 
+      const onPageMutations = () => {
+        commentLayers.redrawIfNecessary();
+        Thread.updateLines();
+
+        // Could also run handleScroll() here, but not sure, as it will double the execution time
+        // with rare effect.
+      };
+
       // Mutation observer doesn't follow all possible comment position changes (for example,
       // initiated with adding new CSS) unfortunately.
       setInterval(() => {
-        commentLayers.redrawIfNecessary();
-        Thread.updateLines();
+        onPageMutations();
       }, 1000);
 
       const observer = new MutationObserver((records) => {
-        const areAllLayers = records
+        const areLayersOnly = records
           .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (areAllLayers) return;
+        if (areLayersOnly) return;
 
-        commentLayers.redrawIfNecessary();
-        Thread.updateLines();
+        onPageMutations();
       });
       observer.observe(cd.g.$content.get(0), {
         attributes: true,

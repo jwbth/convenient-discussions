@@ -331,6 +331,8 @@ export default {
     cd.comments.forEach((comment) => {
       comment.subitemList.remove('newRepliesNote');
     });
+
+    // Section-level replies notes.
     $('.cd-thread-newRepliesNote').remove();
 
     const newCommentsByParent = new Map();

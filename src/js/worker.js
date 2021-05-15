@@ -105,13 +105,13 @@ function keepSafeValues(obj, dangerousKeys) {
 /**
  * Remove the element's attributes whose names start with "data-".
  *
- * @param {Element} el
+ * @param {Element} element
  * @private
  */
-function removeDataAttributes(el) {
-  Object.keys(el.attribs).forEach((name) => {
+function removeDataAttributes(element) {
+  Object.keys(element.attribs).forEach((name) => {
     if (/^data-/.test(name)) {
-      el.removeAttribute(name);
+      element.removeAttribute(name);
     }
   });
 }
@@ -159,8 +159,6 @@ function parse() {
   cd.comments.forEach((comment) => {
     comment.hiddenElementData = [];
     comment.elementHtmls = comment.elements.map((element) => {
-      element.removeAttribute('data-comment-id');
-
       if (/^H[1-6]$/.test(element.tagName)) {
         // Keep only the headline, as other elements contain dynamic identificators.
         const headlineElement = element.getElementsByClassName('mw-headline')[0];
@@ -260,7 +258,7 @@ function parse() {
     comment.signatureElement.remove();
     comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();
 
-    comment.elementTagNames = comment.elements.map((el) => el.tagName);
+    comment.elementNames = comment.elements.map((el) => el.tagName);
   });
 
   let commentDangerousKeys = [

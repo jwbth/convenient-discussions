@@ -571,6 +571,8 @@ export default class Thread {
       .some((comment) => {
         if (!comment.thread) return;
 
+        const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
+
         cd.debug.startTimer('threads getBoundingClientRect');
 
         const thread = comment.thread;
@@ -582,11 +584,7 @@ export default class Thread {
           rectTop = thread.collapsedNote.getBoundingClientRect();
           if (comment.level === 0 || thread.collapsedNote.parentNode.tagName === 'OL') {
             const [leftMargin] = comment.getLayersMargins();
-            lineLeft = (
-              (window.scrollX + rectTop.left) -
-              (leftMargin + 1) -
-              cd.g.THREAD_LINE_SIDE_MARGIN
-            );
+            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1) - lineSideMargin;
             lineTop = window.scrollY + rectTop.top;
           }
         } else {
@@ -595,7 +593,7 @@ export default class Thread {
             comment.getPositions();
             if (comment.positions) {
               const [leftMargin] = comment.getLayersMargins();
-              lineLeft = comment.positions.left - (leftMargin + 1) - cd.g.THREAD_LINE_SIDE_MARGIN;
+              lineLeft = comment.positions.left - (leftMargin + 1) - lineSideMargin;
               lineTop = comment.positions.top;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');
@@ -617,7 +615,7 @@ export default class Thread {
                 lineLeft = (
                   (window.scrollX + comment.positions.left) -
                   (leftMargin + 1) -
-                  cd.g.THREAD_LINE_SIDE_MARGIN
+                  lineSideMargin
                 );
               }
             }
@@ -648,7 +646,7 @@ export default class Thread {
         }
 
         if (lineLeft === undefined) {
-          lineLeft = (window.scrollX + rectTop.left) - cd.g.THREAD_LINE_SIDE_MARGIN;
+          lineLeft = (window.scrollX + rectTop.left) - lineSideMargin;
           lineTop = window.scrollY + rectTop.top;
           lineHeight = rectBottom.bottom - rectTop.top;
         } else {
