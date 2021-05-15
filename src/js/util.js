@@ -375,6 +375,8 @@ export function unhideText(text, hidden) {
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
 export function saveRelativeScrollPosition(scrollY = window.scrollY) {
+  anchorElement = null;
+  anchorElementTop = null;
   if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
     const treeWalker = new ElementTreeWalker(cd.g.rootElement.firstElementChild);
     while (true) {
