@@ -19,7 +19,7 @@ import {
   dealWithLoadingBug,
   defined,
   focusInput,
-  getObjectUrl,
+  getUrlWithAnchor,
 } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
@@ -1576,7 +1576,7 @@ export default class Section extends SectionSkeleton {
 
   getUrl() {
     if (!this.cachedUrl) {
-      this.cachedUrl = getObjectUrl(this.anchor);
+      this.cachedUrl = getUrlWithAnchor(this.anchor);
     }
 
     return this.cachedUrl;

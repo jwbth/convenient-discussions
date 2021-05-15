@@ -6,7 +6,12 @@
  */
 
 import cd from './cd';
-import { getExtendedRect, getVisibilityByRects } from './util';
+import {
+  getExtendedRect,
+  getUrlWithAnchor,
+  getVisibilityByRects,
+  triggerClickOnEnterAndSpace,
+} from './util';
 import { handleScroll } from './eventHandlers';
 
 let currentSection;
@@ -110,7 +115,9 @@ export default {
           .appendTo(this.$linksOnTop);
         $('<a>')
           .addClass('cd-pageNav-link')
+          .attr('tabindex', 0)
           .text(cd.s('pagenav-pagetop'))
+          .on('keydown', triggerClickOnEnterAndSpace)
           .on('click', () => {
             this.jump(0, this.$topLink);
           })
@@ -130,8 +137,12 @@ export default {
           .appendTo(this.$linksOnTop);
         $('<a>')
           .addClass('cd-pageNav-link')
+          .attr('href', getUrlWithAnchor('toc'))
+          .attr('tabindex', 0)
           .text(cd.s('pagenav-toc'))
-          .on('click', () => {
+          .on('keydown', triggerClickOnEnterAndSpace)
+          .on('click', (e) => {
+            e.preventDefault();
             this.jump(cd.g.$toc, this.$tocLink);
           })
           .appendTo(this.$tocLink);
@@ -155,7 +166,9 @@ export default {
           .appendTo(this.$bottomElement);
         $('<a>')
           .addClass('cd-pageNav-link')
+          .attr('tabindex', 0)
           .text(cd.s('pagenav-pagebottom'))
+          .on('keydown', triggerClickOnEnterAndSpace)
           .on('click', () => {
             this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
           })
@@ -212,6 +225,7 @@ export default {
                 .attr('href', sectionInTree.getUrl())
                 .addClass('cd-pageNav-link')
                 .text(sectionInTree.headline)
+                .on('keydown', triggerClickOnEnterAndSpace)
                 .on('click', (e) => {
                   e.preventDefault();
                   this.jump(sectionInTree.$heading, $item);
@@ -270,6 +284,7 @@ export default {
 
     if (backLinkLocation) {
       backLinkLocation = null;
+      $backLinkContainer.prev().removeClass('cd-pageNav-link-inline');
       $backLinkContainer.remove();
       $backLinkContainer = null;
       $sectionWithBackLink = null;
@@ -278,7 +293,9 @@ export default {
       const scrollY = window.scrollY;
       const $backLink = $('<a>')
         .addClass('cd-pageNav-backLink')
+        .attr('tabindex', 0)
         .text(cd.s('pagenav-back'))
+        .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', (e) => {
           // For links with href
           e.preventDefault();
@@ -291,7 +308,8 @@ export default {
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
         .append(cd.sParse('dot-separator'), $backLink)
-        .appendTo($item.children().first());
+        .appendTo($item);
+      $backLinkContainer.prev().addClass('cd-pageNav-link-inline');
       if ($item.parent().is('#cd-pageNav-currentSection')) {
         $sectionWithBackLink = $item;
       }

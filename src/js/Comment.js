@@ -23,7 +23,7 @@ import {
   defined,
   getExtendedRect,
   getFromLocalStorage,
-  getObjectUrl,
+  getUrlWithAnchor,
   getVisibilityByRects,
   handleApiReject,
   isInline,
@@ -3006,7 +3006,7 @@ export default class Comment extends CommentSkeleton {
 
   getUrl() {
     if (!this.cachedUrl) {
-      this.cachedUrl = getObjectUrl(this.anchor);
+      this.cachedUrl = getUrlWithAnchor(this.anchor);
     }
 
     return this.cachedUrl;

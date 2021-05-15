@@ -776,7 +776,7 @@ export function getVisibilityByRects(...rects) {
   return !rects.some((rect) => rect.left === 0 && rect.height === 0);
 }
 
-export function getObjectUrl(anchor) {
+export function getUrlWithAnchor(anchor) {
   const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
   return `https:${mw.config.get('wgServer')}${decodedPageUrl}#${anchor}`;
 }
