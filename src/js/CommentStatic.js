@@ -15,6 +15,7 @@ import {
   saveRelativeScrollPosition,
   unique,
 } from './util';
+import { getPagesExistence } from './apiWrappers';
 import { reloadPage } from './boot';
 
 export default {
@@ -460,5 +461,39 @@ export default {
     });
 
     restoreRelativeScrollPosition();
+  },
+
+  async reformatComments() {
+    if (cd.settings.reformatComments) {
+      const pagesToCheckExistence = [];
+      $(document.documentElement).addClass('cd-reformattedComments');
+      cd.comments.forEach((comment) => {
+        pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
+        comment.addMenu();
+      });
+
+      // Check existence of user and user talk pages and apply respective changes to elements.
+      const pageNamesToLinks = {};
+      pagesToCheckExistence.forEach((page) => {
+        const pageName = page.pageName;
+        if (!pageNamesToLinks[pageName]) {
+          pageNamesToLinks[pageName] = [];
+        }
+        pageNamesToLinks[pageName].push(page.link);
+      });
+      const pageNames = Object.keys(pageNamesToLinks);
+      const pagesExistence = await getPagesExistence(pageNames);
+      Object.keys(pagesExistence)
+        .filter((name) => !pagesExistence[name])
+        .forEach((name) => {
+          pageNamesToLinks[name].forEach((link) => {
+            link.classList.add('new');
+            link.href = mw.util.getUrl(name, {
+              action: 'edit',
+              redlink: 1,
+            });
+          });
+        });
+    }
   },
 };

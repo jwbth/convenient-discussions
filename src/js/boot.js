@@ -91,6 +91,7 @@ export async function initSettings() {
     notifications: 'all',
     notifyCollapsedThreads: false,
     notificationsBlacklist: [],
+    reformatComments: true,
     showLoadingOverlay: true,
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
@@ -367,10 +368,22 @@ function initPatterns() {
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
 
   const namespaceIds = mw.config.get('wgNamespaceIds');
-  const userNamespaces = Object.keys(namespaceIds)
-    .filter((key) => [2, 3].includes(namespaceIds[key]));
-  const userNamespacesPattern = userNamespaces.map(anySpace).join('|');
-  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesPattern}):(.+)`, 'i');
+  const userNamespacesAliases = Object.keys(namespaceIds)
+    .filter((key) => namespaceIds[key] === 2 || namespaceIds[key] === 3);
+  const userNamespacesAliasesPattern = userNamespacesAliases.map(anySpace).join('|');
+  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesAliasesPattern}):(.+)`, 'i');
+
+  const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
+  const userNamespaceAliasesPattern = userNamespaceAliases.map(anySpace).join('|');
+  cd.g.USER_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`, 'i');
+
+  const userTalkNamespaceAliases = Object.keys(namespaceIds)
+    .filter((key) => namespaceIds[key] === 3);
+  const userTalkNamespaceAliasesPattern = userTalkNamespaceAliases.map(anySpace).join('|');
+  cd.g.USER_TALK_LINK_REGEXP = new RegExp(
+    `^:?(?:${userTalkNamespaceAliasesPattern}):([^/]+)$`,
+    'i'
+  );
 
   const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
   const allNamespacesPattern = allNamespaces.join('|');
@@ -378,15 +391,8 @@ function initPatterns() {
 
   const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
-    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesPattern})[ _]*:[ _]*|` +
+    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesAliasesPattern})[ _]*:[ _]*|` +
     `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
-  );
-
-  const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
-  const userNamespaceAliasesPattern = userNamespaceAliases.map(anySpace).join('|');
-  cd.g.USER_NAMESPACE_ALIASES_REGEXP = new RegExp(
-    `^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`,
-    'i'
   );
 
   if (cd.config.unsignedTemplates.length) {
@@ -495,7 +501,7 @@ function initPatterns() {
   cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES
     .concat(cd.config.customUnhighlightableElementClasses);
 
-  const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
+  const fileNamespaces = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 6);
   const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPattern}):`;
 
@@ -509,7 +515,7 @@ function initPatterns() {
   );
 
   const colonNamespaces = Object.keys(namespaceIds)
-    .filter((key) => [6, 14].includes(namespaceIds[key]));
+    .filter((key) => namespaceIds[key] === 6 || namespaceIds[key] === 14);
   const colonNamespacesPattern = colonNamespaces.map(anySpace).join('|');
   cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPattern}):`, 'i');
 
@@ -569,73 +575,125 @@ function initOouiAndElementPrototypes() {
 
   // OOUI button prototypes. Creating every button using the constructor takes 15 times longer than
   // cloning which is critical when creating really many of them.
-  cd.g.COMMENT_ELEMENT_PROTOTYPES = {};
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.goToParentButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-gotoparent'),
-    icon: 'upTriangle',
-    title: cd.s('cm-gotoparent-tooltip'),
-    framed: false,
-    invisibleLabel: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
-  }).$element.get(0);
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.linkButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-copylink'),
-    icon: 'link',
-    title: cd.s('cm-copylink-tooltip'),
-    framed: false,
-    invisibleLabel: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
-  }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingLinkButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-copylink'),
-    icon: 'link',
-    title: cd.s('cm-copylink-tooltip'),
-    framed: false,
-    disabled: true,
-    invisibleLabel: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon', 'cd-button-pending'],
-  }).$element.get(0);
+  let commentElementPrototypes = {};
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.thankButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thank'),
-    title: cd.s('cm-thank-tooltip'),
-    framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingThankButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thank'),
-    title: cd.s('cm-thank-tooltip'),
-    framed: false,
-    disabled: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-button-pending'],
-  }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.thankedButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thanked'),
-    title: cd.s('cm-thanked-tooltip'),
-    framed: false,
-    disabled: true,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
+  const separator = document.createElement('span');
+  separator.innerHTML = cd.sParse('dot-separator');
+  commentElementPrototypes.separator = separator;
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.editButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-edit'),
-    framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
+  if (cd.settings.reformatComments) {
+    const headerElement = document.createElement('div');
+    headerElement.className = 'cd-comment-header';
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-reply'),
-    framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
+    const authorWrapper = document.createElement('span');
+    authorWrapper.className = 'cd-comment-author-wrapper';
+    headerElement.appendChild(authorWrapper);
+
+    const authorLink = document.createElement('a');
+    authorLink.className = 'cd-comment-author mw-userlink';
+    authorWrapper.appendChild(authorLink);
+
+    const bdiElement = document.createElement('bdi');
+    authorLink.appendChild(bdiElement);
+
+    const parenthesesStart = document.createTextNode(' ' + cd.mws('parentheses-start'));
+    const parenthesesEnd = document.createTextNode(cd.mws('parentheses-end'));
+
+    const authorTalkLink = document.createElement('a');
+    authorTalkLink.textContent = cd.s('comment-author-talk');
+    authorWrapper.appendChild(parenthesesStart);
+    authorWrapper.appendChild(authorTalkLink);
+
+    if (cd.settings.showContribsLink) {
+      const contribsLink = document.createElement('a');
+      contribsLink.textContent = cd.s('comment-contribs-talk');
+      const separator = commentElementPrototypes.separator.cloneNode(true);
+      authorWrapper.appendChild(separator);
+      authorWrapper.appendChild(contribsLink);
+    }
+
+    headerElement.appendChild(parenthesesEnd);
+
+    commentElementPrototypes.headerElement = headerElement;
+  } else {
+    commentElementPrototypes.getReplyButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-reply'),
+        framed: false,
+        classes: ['cd-button', 'cd-commentButton'],
+      })
+    );
+    commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element
+      .get(0);
+
+    commentElementPrototypes.getEditButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-edit'),
+        framed: false,
+        classes: ['cd-button', 'cd-commentButton'],
+      })
+    );
+    commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element.get(0);
+
+    commentElementPrototypes.getThankButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-thank'),
+        title: cd.s('cm-thank-tooltip'),
+        framed: false,
+        classes: ['cd-button', 'cd-commentButton'],
+      })
+    );
+    commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element
+      .get(0);
+
+    commentElementPrototypes.getCopyLinkButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-copylink'),
+        icon: 'link',
+        title: cd.s('cm-copylink-tooltip'),
+        framed: false,
+        invisibleLabel: true,
+        classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
+      })
+    );
+    commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton().$element
+      .get(0);
+
+    commentElementPrototypes.getGoToParentButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-gotoparent'),
+        icon: 'upTriangle',
+        title: cd.s('cm-gotoparent-tooltip'),
+        framed: false,
+        invisibleLabel: true,
+        classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
+      })
+    );
+    commentElementPrototypes.goToParentButton = commentElementPrototypes.getGoToParentButton()
+      .$element.get(0);
+
+    commentElementPrototypes.getGoToChildButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-gotochild'),
+        icon: 'downTriangle',
+        title: cd.s('cm-gotochild-tooltip'),
+        framed: false,
+        invisibleLabel: true,
+        classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
+      })
+    );
+    commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton()
+      .$element.get(0);
+  }
 
   const commentUnderlay = document.createElement('div');
   commentUnderlay.className = 'cd-commentUnderlay';
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = commentUnderlay;
+  commentElementPrototypes.underlay = commentUnderlay;
 
   const commentOverlay = document.createElement('div');
   commentOverlay.className = 'cd-commentOverlay';
+  commentElementPrototypes.overlay = commentOverlay;
 
   const overlayLine = document.createElement('div');
   overlayLine.className = 'cd-commentOverlay-line';
@@ -645,22 +703,24 @@ function initOouiAndElementPrototypes() {
   overlayMarker.className = 'cd-commentOverlay-marker';
   commentOverlay.appendChild(overlayMarker);
 
-  const overlayInnerWrapper = document.createElement('div');
-  overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';
-  commentOverlay.appendChild(overlayInnerWrapper);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay = commentOverlay;
+  if (!cd.settings.reformatComments) {
+    const overlayInnerWrapper = document.createElement('div');
+    overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';
+    commentOverlay.appendChild(overlayInnerWrapper);
 
-  const overlayGradient = document.createElement('div');
-  overlayGradient.textContent = '\u00A0';
-  overlayGradient.className = 'cd-commentOverlay-gradient';
-  overlayInnerWrapper.appendChild(overlayGradient);
+    const overlayGradient = document.createElement('div');
+    overlayGradient.textContent = '\u00A0';
+    overlayGradient.className = 'cd-commentOverlay-gradient';
+    overlayInnerWrapper.appendChild(overlayGradient);
 
-  const overlayContent = document.createElement('div');
-  overlayContent.className = 'cd-commentOverlay-content';
-  overlayInnerWrapper.appendChild(overlayContent);
+    const overlayContent = document.createElement('div');
+    overlayContent.className = 'cd-commentOverlay-content';
+    overlayInnerWrapper.appendChild(overlayContent);
+  }
+  cd.g.COMMENT_ELEMENT_PROTOTYPES = commentElementPrototypes;
 
-  cd.g.SECTION_ELEMENT_PROTOTYPES = {};
-  cd.g.SECTION_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
+  let sectionElementPrototypes = {};
+  sectionElementPrototypes.replyButton = new OO.ui.ButtonWidget({
     label: cd.s('section-reply'),
     framed: false,
 
@@ -669,16 +729,17 @@ function initOouiAndElementPrototypes() {
     classes: ['cd-button', 'cd-sectionButton', 'cd-threadButton'],
   }).$element.get(0);
 
-  cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
+  sectionElementPrototypes.addSubsectionButton = new OO.ui.ButtonWidget({
     // Will be replaced
     label: ' ',
 
     framed: false,
     classes: ['cd-button', 'cd-sectionButton'],
   }).$element.get(0);
+  cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
 
-  cd.g.THREAD_ELEMENT_PROTOTYPES = {};
-  cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton = new OO.ui.ButtonWidget({
+  let threadElementPrototypes = {};
+  threadElementPrototypes.collapsedButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
     icon: 'expand',
@@ -698,7 +759,8 @@ function initOouiAndElementPrototypes() {
   const line = document.createElement('div');
   line.className = 'cd-threadLine-line';
   threadClickArea.appendChild(line);
-  cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea = threadClickArea;
+  threadElementPrototypes.clickArea = threadClickArea;
+  cd.g.THREAD_ELEMENT_PROTOTYPES = threadElementPrototypes;
 }
 
 /**

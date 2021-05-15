@@ -72,8 +72,26 @@ export default class CommentSkeleton {
      */
     this.authorName = signature.authorName;
 
-    // This is for the worker context and quickly gets removed.
+    /**
+     * Comment signature element.
+     *
+     * @type {Element}
+     */
     this.signatureElement = signature.element;
+
+    /**
+     * User page (in the "User" namespace) link element.
+     *
+     * @type {Element}
+     */
+    this.authorLink = signature.authorLink;
+
+    /**
+     * User talk page (in the "User talk" namespace) link element.
+     *
+     * @type {Element}
+     */
+    this.authorTalkLink = signature.authorTalkLink;
 
     /**
      * Does the comment belong to the current user.
@@ -124,12 +142,28 @@ export default class CommentSkeleton {
     /**
      * Comment elements that are highlightable.
      *
-     * Keep in mind that the elements may be replaced, and the property values will need to be
-     * updated. See {@link module:Comment#replaceElement}.
+     * Keep in mind that elements may be replaced, and property values will need to be updated. See
+     * {@link module:Comment#replaceElement}.
      *
      * @type {Element[]}
      */
     this.highlightables = this.elements.filter(isHighlightable);
+
+    // Prevent an inappropriate element from being the first highlightable if comments are
+    // reformatted. In the worker context, this will allow to correctly update edited comments
+    // (unless Comment#reviewHighlightables alters the highlightables afterwards).
+    if (
+      cd.settings.reformatComments &&
+      cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
+      this.highlightables[0].className
+    ) {
+      const wrapper = this.parser.context.document.createElement('div');
+      const firstHighlightable = this.highlightables[0];
+      firstHighlightable.parentNode.replaceChild(wrapper, firstHighlightable);
+      this.elements.splice(this.elements.indexOf(firstHighlightable), 1, wrapper);
+      this.highlightables.splice(this.highlightables.indexOf(firstHighlightable), 1, wrapper);
+      wrapper.appendChild(firstHighlightable);
+    }
 
     // That which cannot be highlighted should not be considered existent.
     if (!this.highlightables.length) {
@@ -190,12 +224,12 @@ export default class CommentSkeleton {
    * @private
    */
   addAttributes() {
-    this.highlightables[0].classList.add('cd-commentPart-first');
-    this.highlightables[this.highlightables.length - 1].classList.add('cd-commentPart-last');
     this.elements.forEach((el) => {
       el.classList.add('cd-commentPart');
       el.setAttribute('data-comment-id', String(this.id));
     });
+    this.highlightables[0].classList.add('cd-commentPart-first');
+    this.highlightables[this.highlightables.length - 1].classList.add('cd-commentPart-last');
   }
 
   /**

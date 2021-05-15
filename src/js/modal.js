@@ -477,6 +477,12 @@ export async function settingsDialog() {
       label: cd.s('sd-notifycollapsedthreads'),
     });
 
+    [this.reformatCommentsField, this.reformatCommentsCheckbox] = checkboxField({
+      value: 'reformatComments',
+      selected: settings.reformatComments,
+      label: cd.s('sd-reformatcomments'),
+    });
+
     [this.showToolbarField, this.showToolbarCheckbox] = checkboxField({
       value: 'showToolbar',
       selected: settings.showToolbar,
@@ -534,6 +540,7 @@ export async function settingsDialog() {
     this.notificationsSelect.connect(this, { select: 'updateStates' });
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
     this.notifyCollapsedThreadsCheckbox.connect(this, { change: 'updateStates' });
+    this.reformatCommentsCheckbox.connect(this, { change: 'updateStates' });
     this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
     this.signaturePrefixInput.connect(this, { change: 'updateStates' });
     this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
@@ -565,6 +572,7 @@ export async function settingsDialog() {
     function GeneralPageLayout(name, config) {
       GeneralPageLayout.super.call(this, name, config);
       this.$element.append([
+        dialog.reformatCommentsField.$element,
         dialog.useBackgroundHighlightingField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
@@ -672,6 +680,7 @@ export async function settingsDialog() {
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),
       notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
       notifyCollapsedThreads: this.notifyCollapsedThreadsCheckbox.isSelected(),
+      reformatComments: this.reformatCommentsCheckbox.isSelected(),
       showToolbar: this.showToolbarCheckbox.isSelected(),
       signaturePrefix: this.signaturePrefixInput.getValue(),
       useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),

@@ -5,6 +5,7 @@
  */
 
 import CdError from './CdError';
+import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
@@ -27,6 +28,7 @@ import {
   handleApiReject,
   isInline,
   saveToLocalStorage,
+  triggerClickOnEnterAndSpace,
   unhideText,
 } from './util';
 import { copyLink } from './modal.js';
@@ -42,6 +44,7 @@ import {
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
 
+let elementPrototypes;
 let thanks;
 
 /**
@@ -101,7 +104,9 @@ export default class Comment extends CommentSkeleton {
   constructor(parser, signature) {
     super(parser, signature);
 
-    this.elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
+    if (!elementPrototypes) {
+      elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
+    }
 
     /**
      * Comment author {@link module:userRegistry~User user object}.
@@ -116,8 +121,6 @@ export default class Comment extends CommentSkeleton {
      * @type {JQuery}
      */
     this.$signature = $(signature.element);
-
-    delete this.signatureElement;
 
     /**
      * Comment timestamp element as a jQuery object.
@@ -262,6 +265,304 @@ export default class Comment extends CommentSkeleton {
     this.subitemList = new CommentSubitemList();
   }
 
+  replaceSignatureWithHeader() {
+    const pagesToCheckExistence = [];
+
+    cd.debug.startTimer('replaceSignatureWithHeader');
+
+    cd.debug.startTimer('replaceSignatureWithHeader create');
+    const headerElement = elementPrototypes.headerElement.cloneNode(true);
+
+    const authorWrapper = headerElement.firstChild;
+    let authorLink = authorWrapper.firstChild;
+    const bdiElement = authorLink.firstChild;
+    let authorTalkLink = authorLink.nextElementSibling;
+    let contribsLink;
+    if (cd.settings.showContribsLink) {
+      contribsLink = authorLink.nextElementSibling.nextElementSibling;
+    }
+
+    if (this.authorLink) {
+      const nextElement = this.authorLink.nextElementSibling;
+      if (nextElement && Array.from(nextElement.classList).includes('userflags-wrapper')) {
+        authorLink.parentNode.insertBefore(nextElement, authorLink.nextSibling);
+      }
+      authorLink.parentNode.replaceChild(this.authorLink, authorLink);
+      authorLink = this.authorLink;
+      authorLink.classList.add('cd-comment-author');
+      authorLink.innerHTML = '';
+      authorLink.appendChild(bdiElement);
+    } else {
+      const pageName = 'User:' + this.author.name;
+      pagesToCheckExistence.push({
+        pageName,
+        link: authorLink,
+      });
+      authorLink.title = pageName;
+      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
+      authorLink.href = mw.util.getUrl(pageName);
+      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
+    }
+
+    if (this.authorTalkLink) {
+      authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
+      authorTalkLink = this.authorTalkLink;
+      authorTalkLink.textContent = cd.s('comment-author-talk');
+    } else {
+      const pageName = 'User talk:' + this.author.name;
+      pagesToCheckExistence.push({
+        pageName,
+        link: authorTalkLink,
+      });
+      authorTalkLink.title = pageName;
+      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
+      authorTalkLink.href = mw.util.getUrl(pageName);
+      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
+    }
+
+    bdiElement.textContent = this.author.name;
+
+    if (cd.settings.showContribsLink) {
+      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
+      contribsLink.href = mw.util.getUrl('Special:Contributions/' + this.author.name);
+      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
+    }
+
+    cd.debug.stopTimer('replaceSignatureWithHeader create');
+
+    if (this.timestamp) {
+      /**
+       * "Copy link" button.
+       *
+       * @type {CommentButton}
+       */
+      this.copyLinkButton = new CommentButton({
+        label: this.timestamp,
+        classes: ['cd-comment-button-label', 'cd-comment-timestamp'],
+        action: this.copyLink.bind(this),
+      });
+
+      headerElement.appendChild(this.copyLinkButton.element);
+    }
+
+    this.headerElement = headerElement;
+    this.$header = $(this.headerElement);
+
+    // This is usually done in CommentSkeleton constructor, but if Comment#reviewHighlightables has
+    // altered the highlightables, this would save the day.
+    if (
+      cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
+      Array.from(this.highlightables[0].classList).some((name) => !name.startsWith('cd-'))
+    ) {
+      const wrapper = document.createElement('div');
+      const firstHighlightable = this.highlightables[0];
+      this.replaceElement(this.highlightables[0], wrapper);
+      wrapper.appendChild(firstHighlightable);
+
+      this.addAttributes();
+      firstHighlightable.classList
+        .remove('cd-commentPart', 'cd-commentPart-first', 'cd-commentPart-last');
+      delete firstHighlightable.dataset.commentId;
+    }
+
+    this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
+
+    cd.debug.startTimer('signature clean up');
+
+    const processNode = (n) => {
+      if (!n) return;
+      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
+        n.textContent = n.textContent
+          .replace(cd.config.signaturePrefixRegexp, '')
+          .replace(cd.config.signaturePrefixRegexp, '');
+      }
+      if (n.nodeType === Node.ELEMENT_NODE && n.getAttribute('style')) {
+        n.remove();
+      }
+    };
+
+    // Clean up the signature and elements in front of it
+    const previousNode = this.signatureElement.previousSibling;
+    processNode(previousNode);
+    if (previousNode && (!previousNode.parentNode || !previousNode.textContent.trim())) {
+      const previousPreviousNode = previousNode.previousSibling;
+      processNode(previousPreviousNode);
+    }
+
+    cd.debug.stopTimer('signature clean up');
+
+    this.signatureElement.remove();
+
+    cd.debug.stopTimer('replaceSignatureWithHeader');
+
+    return pagesToCheckExistence;
+  }
+
+  addMenu() {
+    const menuElement = document.createElement('div');
+    menuElement.className = 'cd-comment-menu';
+    this.menuElement = menuElement;
+    this.$menu = $(this.menuElement);
+
+    this.createReplyButton();
+    this.createEditButton();
+    this.createThankButton();
+    this.createGoToParentButton();
+
+    this.highlightables[this.highlightables.length - 1].appendChild(this.menuElement);
+  }
+
+  createReplyButton() {
+    if (this.isActionable) {
+      const action = this.replyButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * Reply button.
+         *
+         * @type {CommentButton}
+         */
+        this.replyButton = new CommentButton({
+          label: cd.s('cm-reply'),
+          classes: ['cd-comment-button-label'],
+          action,
+        });
+
+        this.menuElement.appendChild(this.replyButton.element);
+      } else {
+        const element = elementPrototypes.replyButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getReplyButton;
+        this.replyButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.replyButton.element);
+      }
+    }
+  }
+
+  createEditButton() {
+    if (this.isActionable && (this.isOwn || cd.settings.allowEditOthersComments)) {
+      const action = this.editButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * Edit button.
+         *
+         * @type {CommentButton}
+         */
+        this.editButton = new CommentButton({
+          label: cd.s('cm-edit'),
+          classes: ['cd-comment-button-label'],
+          action,
+        });
+
+        this.menuElement.appendChild(this.editButton.element);
+      } else {
+        const element = elementPrototypes.editButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getEditButton;
+        this.editButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.editButton.element);
+      }
+    }
+  }
+
+  createThankButton() {
+    if (this.author.isRegistered() && this.date && !this.isOwn) {
+      if (!thanks) {
+        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
+        saveToLocalStorage('thanks', thanks);
+      }
+      const isThanked = Object.keys(thanks).some((key) => (
+        this.anchor === thanks[key].anchor &&
+        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
+      ));
+
+      const action = this.thankButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * Edit button.
+         *
+         * @type {CommentButton}
+         */
+        this.thankButton = new CommentButton({
+          label: cd.s(isThanked ? 'cm-thanked' : 'cm-thank'),
+          tooltip: cd.s(isThanked ? 'cm-thanked-tooltip' : 'cm-thank-tooltip'),
+          classes: ['cd-comment-button-label'],
+          action,
+        });
+
+        this.menuElement.appendChild(this.thankButton.element);
+      } else {
+        const element = elementPrototypes.thankButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getThankButton;
+        this.thankButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.thankButton.element);
+      }
+
+      if (isThanked) {
+        this.setThanked();
+      }
+    }
+  }
+
+  createCopyLinkButton() {
+    if (this.anchor) {
+      if (!cd.settings.reformatComments) {
+        const element = elementPrototypes.copyLinkButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getCopyLinkButton;
+        this.copyLinkButton = new CommentButton({
+          element,
+          action: this.copyLink.bind(this),
+          widgetConstructor,
+        });
+        this.overlayMenu.appendChild(this.copyLinkButton.element);
+      }
+    }
+  }
+
+  createGoToParentButton() {
+    if (this.getParent()) {
+      const action = this.goToParentButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * "Go to the parent comment" button.
+         *
+         * @type {CommentButton}
+         */
+        this.goToParentButton = new CommentButton({
+          tooltip: cd.s('cm-gotoparent-tooltip'),
+          classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent'],
+          action,
+        });
+
+        this.headerElement.appendChild(this.goToParentButton.element);
+      } else {
+        const element = elementPrototypes.goToParentButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getGoToParentButton;
+        this.goToParentButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.goToParentButton.element);
+      }
+    }
+  }
+
+  createGoToChildButton() {
+    if (cd.settings.reformatComments) {
+      /**
+       * "Go to the child comment" button.
+       *
+       * @type {CommentButton}
+       */
+      this.goToChildButton = new CommentButton({
+        tooltip: cd.s('cm-gotochild-tooltip'),
+        classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild'],
+      });
+
+      const referenceNode = this.goToParentButton || this.copyLinkButton || this.authorLink;
+      this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
+    } else {
+      const element = elementPrototypes.goToChildButton;
+      const widgetConstructor = elementPrototypes.getGoToChildButton;
+      this.goToChildButton = new CommentButton({ element, widgetConstructor });
+      this.$overlayMenu.prepend(element);
+    }
+  }
+
   /**
    * Bind the standard events to a comment part. Executed on comment object creation and DOM
    * modifications affecting comment parts.
@@ -269,6 +570,8 @@ export default class Comment extends CommentSkeleton {
    * @param {Element} element
    */
   bindEvents(element) {
+    if (cd.settings.reformatComments) return;
+
     element.onmouseenter = this.highlightHovered.bind(this);
     element.onmouseleave = this.unhighlightHovered.bind(this);
     element.ontouchstart = this.highlightHovered.bind(this);
@@ -507,6 +810,26 @@ export default class Comment extends CommentSkeleton {
     this.overlayInnerWrapper.style.display = 'none';
   }
 
+  replyButtonClick() {
+    if (this.replyForm) {
+      this.replyForm.cancel();
+    } else {
+      this.reply();
+    }
+  }
+
+  editButtonClick() {
+    this.edit();
+  }
+
+  thankButtonClick() {
+    this.thank();
+  }
+
+  goToParentButtonClick() {
+    this.goToParent();
+  }
+
   /**
    * Create the comment's underlay and overlay.
    *
@@ -514,122 +837,41 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   createLayers() {
-    this.underlay = this.elementPrototypes.underlay.cloneNode(true);
+    this.underlay = elementPrototypes.underlay.cloneNode(true);
     commentLayers.underlays.push(this.underlay);
 
-    this.overlay = this.elementPrototypes.overlay.cloneNode(true);
+    this.overlay = elementPrototypes.overlay.cloneNode(true);
     this.line = this.overlay.firstChild;
     this.marker = this.overlay.firstChild.nextSibling;
-    this.overlayInnerWrapper = this.overlay.lastChild;
 
-    // Hide the overlay on right click. It can block clicking the author page link.
-    this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
+    if (!cd.settings.reformatComments) {
+      this.overlayInnerWrapper = this.overlay.lastChild;
+      this.overlayGradient = this.overlayInnerWrapper.firstChild;
+      this.overlayMenu = this.overlayInnerWrapper.lastChild;
 
-    let mouseUpTimeout;
-    const deferHideMenu = (e) => {
-      // Ignore other than left button clicks.
-      if (e.which !== 1) return;
+      // Hide the overlay on right click. It can block clicking the author page link.
+      this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
 
-      mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1500);
-    };
-    const dontHideMenu = () => {
-      clearTimeout(mouseUpTimeout);
-    };
+      let mouseUpTimeout;
+      const deferHideMenu = (e) => {
+        // Ignore other than left button clicks.
+        if (e.which !== 1) return;
 
-    // Hide the overlay on long click/tap.
-    this.overlayInnerWrapper.onmousedown = deferHideMenu;
-    this.overlayInnerWrapper.onmouseup = dontHideMenu;
-
-    this.overlayGradient = this.overlayInnerWrapper.firstChild;
-    this.overlayContent = this.overlayInnerWrapper.lastChild;
-
-    if (this.getParent()) {
-      /**
-       * "Go to the parent comment" button.
-       *
-       * @type {Element|undefined}
-       */
-      this.goToParentButton = this.elementPrototypes.goToParentButton.cloneNode(true);
-
-      this.goToParentButton.firstChild.onclick = () => {
-        this.goToParent();
+        mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1500);
       };
-      this.overlayContent.appendChild(this.goToParentButton);
-    }
-
-    if (this.anchor) {
-      /**
-       * "Copy link" button.
-       *
-       * @type {Element|undefined}
-       */
-      this.linkButton = this.elementPrototypes.linkButton.cloneNode(true);
-
-      this.linkButton.firstChild.onclick = this.copyLink.bind(this);
-      this.overlayContent.appendChild(this.linkButton);
-    }
-
-    if (this.author.isRegistered() && this.date && !this.isOwn) {
-      if (!thanks) {
-        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
-        saveToLocalStorage('thanks', thanks);
-      }
-
-      const isThanked = Object.keys(thanks).some((key) => (
-        this.anchor === thanks[key].anchor &&
-        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
-      ));
-      if (isThanked) {
-        this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
-      } else {
-        /**
-         * Thank button.
-         *
-         * @type {Element|undefined}
-         */
-        this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
-
-        this.thankButton.firstChild.onclick = () => {
-          this.thank();
-        };
-      }
-      this.overlayContent.appendChild(this.thankButton);
-    }
-
-    if (this.isActionable) {
-      if (this.isOwn || cd.settings.allowEditOthersComments) {
-        /**
-         * Edit button.
-         *
-         * @type {Element|undefined}
-         */
-        this.editButton = this.elementPrototypes.editButton.cloneNode(true);
-
-        this.editButton.firstChild.onclick = () => {
-          if (!this.editButton.classList.contains('oo-ui-widget-disabled')) {
-            this.edit();
-          }
-        };
-        this.overlayContent.appendChild(this.editButton);
-      }
-
-      /**
-       * Reply button.
-       *
-       * @type {Element|undefined}
-       */
-      this.replyButton = this.elementPrototypes.replyButton.cloneNode(true);
-
-      this.replyButton.firstChild.onclick = () => {
-        if (this.replyForm) {
-          this.replyForm.cancel();
-        } else {
-          if (!this.replyButton.classList.contains('oo-ui-widget-disabled')) {
-            this.reply();
-          }
-        }
+      const dontHideMenu = () => {
+        clearTimeout(mouseUpTimeout);
       };
-      this.overlayContent.appendChild(this.replyButton);
+
+      // Hide the overlay on long click/tap.
+      this.overlayInnerWrapper.onmousedown = deferHideMenu;
+      this.overlayInnerWrapper.onmouseup = dontHideMenu;
+
+      this.createGoToParentButton();
+      this.createCopyLinkButton();
+      this.createThankButton();
+      this.createEditButton();
+      this.createReplyButton();
     }
 
     this.updateLayersStyles();
@@ -655,19 +897,21 @@ export default class Comment extends CommentSkeleton {
      */
     this.$marker = $(this.marker);
 
-    /**
-     * Links container of the comment's overlay.
-     *
-     * @type {?(JQuery|undefined)}
-     */
-    this.$overlayContent = $(this.overlayContent);
+    if (!cd.settings.reformatComments) {
+      /**
+       * Menu element in the comment's overlay.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$overlayMenu = $(this.overlayMenu);
 
-    /**
-     * Gradient element of the comment's overlay.
-     *
-     * @type {?(JQuery|undefined)}
-     */
-    this.$overlayGradient = $(this.overlayGradient);
+      /**
+       * Gradient element in the comment's overlay.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$overlayGradient = $(this.overlayGradient);
+    }
 
     /**
      * Comment layers have been created.
@@ -695,25 +939,13 @@ export default class Comment extends CommentSkeleton {
     if (this.isDeleted) {
       this.underlay.classList.add('cd-commentUnderlay-deleted');
       this.overlay.classList.add('cd-commentOverlay-deleted');
-      if (this.replyButton) {
-        this.replyButton.classList.add('oo-ui-widget-disabled');
-        this.replyButton.classList.remove('oo-ui-widget-enabled');
-      }
-      if (this.editButton) {
-        this.editButton.classList.add('oo-ui-widget-disabled');
-        this.editButton.classList.remove('oo-ui-widget-enabled');
-      }
+      this.replyButton?.setDisabled(true);
+      this.editButton?.setDisabled(true);
     } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
       this.underlay.classList.remove('cd-commentUnderlay-deleted');
       this.overlay.classList.remove('cd-commentOverlay-deleted');
-      if (this.replyButton) {
-        this.replyButton.classList.remove('oo-ui-widget-disabled');
-        this.replyButton.classList.add('oo-ui-widget-enabled');
-      }
-      if (this.editButton) {
-        this.editButton.classList.remove('oo-ui-widget-disabled');
-        this.editButton.classList.add('oo-ui-widget-enabled');
-      }
+      this.replyButton?.setDisabled(false);
+      this.editButton?.setDisabled(false);
     }
     if (this.isLineGapped) {
       this.line.classList.add('cd-commentOverlay-line-closingGap');
@@ -829,7 +1061,7 @@ export default class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   highlightHovered(e) {
-    if (this.isHovered || cd.util.isPageOverlayOn()) return;
+    if (this.isHovered || cd.util.isPageOverlayOn() || cd.settings.reformatComments) return;
 
     if (e && e.type === 'touchstart') {
       cd.comments
@@ -855,7 +1087,7 @@ export default class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightHovered() {
-    if (!this.isHovered) return;
+    if (!this.isHovered || cd.settings.reformatComments) return;
 
     this.$animatedBackground?.stop(false, true);
 
@@ -1009,7 +1241,7 @@ export default class Comment extends CommentSkeleton {
    * Flash the comment as updated when it appears in sight.
    */
   flashNewOnSight() {
-    if (this.isInViewport()) {
+    if (!document.hidden && this.isInViewport()) {
       this.flashNew();
     } else {
       this.willFlashNewOnSight = true;
@@ -1047,16 +1279,13 @@ export default class Comment extends CommentSkeleton {
         break;
     }
 
-    this.$elements
-      .last()
-      .find('.cd-editMark')
-      .remove();
-
     let $refreshLink;
     if (!isNewVersionRendered) {
       const keptData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
       $refreshLink = $('<a>')
+        .attr('tabindex', 0)
         .text(cd.s('comment-edited-refresh'))
+        .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', () => {
           reloadPage(keptData);
         });
@@ -1065,7 +1294,9 @@ export default class Comment extends CommentSkeleton {
     let $diffLink;
     if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
       $diffLink = $('<a>')
+        .attr('tabindex', 0)
         .text(cd.s('comment-edited-diff'))
+        .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', async (e) => {
           e.preventDefault();
           $diffLink.addClass('cd-link-pending');
@@ -1087,32 +1318,51 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
+    let refreshLinkSeparator;
+    let diffLinkSeparator;
+    if (cd.settings.reformatComments) {
+      stringName += '-short';
+      refreshLinkSeparator = cd.sParse('dot-separator');
+      diffLinkSeparator = cd.sParse('dot-separator');
+    } else {
+      refreshLinkSeparator = ' ';
+      diffLinkSeparator = $refreshLink ? cd.sParse('dot-separator') : ' ';
+    }
+
+    $(this.highlightables)
+      .find('.cd-editMark')
+      .remove();
+
     const $editMark = $('<span>')
       .addClass('cd-editMark')
-      .append(cd.sParse(stringName));
+      .text(cd.s(stringName));
     if ($refreshLink) {
-      $editMark.append(' ', $refreshLink);
+      $editMark.append(refreshLinkSeparator, $refreshLink);
     } else {
       $editMark.addClass('cd-editMark-newVersionRendered');
     }
     if ($diffLink) {
-      $editMark.append($refreshLink ? cd.sParse('dot-separator') : ' ', $diffLink);
+      $editMark.append(diffLinkSeparator, $diffLink);
     }
 
-    // Add the mark to the last block element, going as many nesting levels down as needed to avoid
-    // it appearing after a block element.
-    let $last;
-    let $tested = this.$elements.last();
-    do {
-      $last = $tested;
-      $tested = $last.children().last();
-    } while ($tested.length && !isInline($tested.get(0)));
+    if (cd.settings.reformatComments) {
+      this.$header.append($editMark);
+    } else {
+      // Add the mark to the last block element, going as many nesting levels down as needed to
+      // avoid it appearing after a block element.
+      let $last;
+      let $tested = $(this.highlightables).last();
+      do {
+        $last = $tested;
+        $tested = $last.children().last();
+      } while ($tested.length && !isInline($tested.get(0)));
 
-    if (!$last.find('.cd-beforeEditMark').length) {
-      const $before = $('<span>').addClass('cd-beforeEditMark');
-      $last.append(' ', $before);
+      if (!$last.find('.cd-beforeEditMark').length) {
+        const $before = $('<span>').addClass('cd-beforeEditMark');
+        $last.append(' ', $before);
+      }
+      $last.append($editMark);
     }
-    $last.append($editMark);
 
     if (isNewVersionRendered) {
       this.flashNewOnSight();
@@ -1230,11 +1480,15 @@ export default class Comment extends CommentSkeleton {
         $(el).text(`[${currentAutonumber}]`);
         currentAutonumber++;
       });
-      this.$elements
-        .attr('data-comment-id', this.id)
-        .first()
-        .attr('id', this.anchor);
-      mw.hook('wikipage.content').add(this.$elements);
+      this.$elements.attr('data-comment-id', this.id);
+
+      if (cd.settings.reformatComments) {
+        this.signatureElement = this.$elements.find('.cd-signature').get(0);
+        this.replaceSignatureWithHeader();
+        this.addMenu();
+      }
+
+      mw.hook('wikipage.content').fire(this.$elements);
 
       delete this.cachedText;
       return true;
@@ -1285,20 +1539,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Replace a button in the comment overlay with another.
-   *
-   * @param {Element} button
-   * @param {Element} replacement
-   * @param {string} buttonName
-   * @private
-   */
-  replaceButton(button, replacement, buttonName) {
-    this.overlayContent.insertBefore(replacement, button);
-    button.remove();
-    this[buttonName + 'Button'] = replacement;
-  }
-
-  /**
    * Scroll to the parent comment of the comment.
    */
   goToParent() {
@@ -1310,47 +1550,14 @@ export default class Comment extends CommentSkeleton {
     }
 
     parent.scrollTo();
-
-    const goToChildButton = new OO.ui.ButtonWidget({
-      label: cd.s('cm-gotochild'),
-      icon: 'downTriangle',
-      title: cd.s('cm-gotochild-tooltip'),
-      framed: false,
-      invisibleLabel: true,
-      classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
-    });
-    goToChildButton.on('click', () => {
-      parent.goToChild();
-    });
-
     parent.configureLayers();
 
-    if (parent.goToChildButton) {
-      parent.goToChildButton.$element.remove();
+    if (!parent.goToChildButton) {
+      parent.createGoToChildButton();
     }
-    parent.$overlayContent.prepend(goToChildButton.$element);
-    parent.goToChildButton = goToChildButton;
-
-    /**
-     * Child comment that has sent the user to this comment using the "Go to parent" function.
-     *
-     * @name childToScrollBackTo
-     * @type {Comment|undefined}
-     * @instance
-     */
-    parent.childToScrollBackTo = this;
-  }
-
-  /**
-   * Scroll to the child comment of the comment.
-   */
-  goToChild() {
-    if (!this.childToScrollBackTo) {
-      console.error('This comment has no child from which the user had navigated earlier.');
-      return;
-    }
-
-    this.childToScrollBackTo.scrollTo();
+    parent.goToChildButton.setAction(() => {
+      this.scrollTo();
+    });
   }
 
   /**
@@ -1360,11 +1567,9 @@ export default class Comment extends CommentSkeleton {
    */
   async copyLink(e) {
     if (this.isLinkBeingCopied) return;
-    const linkButton = this.linkButton;
-    const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
-    this.replaceButton(this.linkButton, pendingLinkButton, 'link');
+    this.copyLinkButton.setPending(true);
     await copyLink(this, e);
-    this.replaceButton(this.linkButton, linkButton, 'link');
+    this.copyLinkButton.setPending(false);
   }
 
   /**
@@ -1521,13 +1726,25 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Consider the comment thanked (rename the button and set other parameters).
+   *
+   * @private
+   */
+  setThanked() {
+    this.thankButton
+      .setPending(false)
+      .setDisabled(true)
+      .setLabel(cd.s('cm-thanked'))
+      .setTooltip(cd.s('cm-thanked-tooltip'));
+  }
+
+  /**
    * Process thank error.
    *
    * @param {CdError|Error} e
-   * @param {Element} thankButton
    * @private
    */
-  thankFail(e, thankButton) {
+  thankFail(e) {
     const { type, code } = e.data;
     let text;
     switch (type) {
@@ -1559,7 +1776,7 @@ export default class Comment extends CommentSkeleton {
       }
     }
     mw.notify(cd.util.wrap(text, { targetBlank: true }), { type: 'error' });
-    this.replaceButton(this.thankButton, thankButton, 'thank');
+    this.thankButton.setPending(false);
   }
 
   /**
@@ -1569,9 +1786,7 @@ export default class Comment extends CommentSkeleton {
   async thank() {
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
-    const thankButton = this.thankButton;
-    const pendingThankButton = this.elementPrototypes.pendingThankButton.cloneNode(true);
-    this.replaceButton(this.thankButton, pendingThankButton, 'thank');
+    this.thankButton.setPending(true);
 
     let genderRequest;
     if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered()) {
@@ -1586,7 +1801,7 @@ export default class Comment extends CommentSkeleton {
         mw.loader.using('mediawiki.diff.styles'),
       ].filter(defined)));
     } catch (e) {
-      this.thankFail(e, thankButton);
+      this.thankFail(e);
       return;
     }
 
@@ -1606,13 +1821,12 @@ export default class Comment extends CommentSkeleton {
           source: cd.config.scriptCodeName,
         })).catch(handleApiReject);
       } catch (e) {
-        this.thankFail(e, thankButton);
+        this.thankFail(e);
         return;
       }
 
       mw.notify(cd.s('thank-success'));
-      const thankedButton = this.elementPrototypes.thankedButton.cloneNode(true);
-      this.replaceButton(this.thankButton, thankedButton, 'thank');
+      this.setThanked();
 
       thanks[edit.revid] = {
         anchor: this.anchor,
@@ -1621,7 +1835,7 @@ export default class Comment extends CommentSkeleton {
       };
       saveToLocalStorage('thanks', thanks);
     } else {
-      this.replaceButton(this.thankButton, thankButton, 'thank');
+      this.thankButton.setPending(false);
     }
   }
 
@@ -1927,8 +2141,10 @@ export default class Comment extends CommentSkeleton {
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
-   * @param {Element|JQuery} element
-   * @param {Element|string} newElementOrHtml
+   * @param {Element|JQuery} element Element to replace. Provide a native element only if we're in
+   *   the page processing phase (and {@link module:Comment#$elements} has not been requested, hence
+   *   cached yet).
+   * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
    */
   replaceElement(element, newElementOrHtml) {
     const nativeElement = element instanceof $ ? element.get(0) : element;
@@ -1974,6 +2190,9 @@ export default class Comment extends CommentSkeleton {
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
       const selectorParts = ['.cd-signature', '.cd-editMark'];
+      if (cd.settings.reformatComments) {
+        selectorParts.push('.cd-comment-header', '.cd-comment-menu');
+      }
       if (cd.config.unsignedClass) {
         selectorParts.push(`.${cd.config.unsignedClass}`);
       }

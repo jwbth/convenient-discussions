@@ -780,3 +780,9 @@ export function getObjectUrl(anchor) {
   const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
   return `https:${mw.config.get('wgServer')}${decodedPageUrl}#${anchor}`;
 }
+
+export function triggerClickOnEnterAndSpace(e) {
+  if (e.keyCode === 13 || e.keyCode === 32) {
+    $(this).trigger('click');
+  }
+}

@@ -1,3 +1,81 @@
+.cd-comment-header {
+  font-size: 0.9285714em;
+  margin-bottom: 0.3076923em;
+  padding-top: 0.0769231em;
+}
+
+.cd-comment-author {
+  font-weight: bold;
+}
+
+.cd-comment-timestamp {
+  margin-left: 0.5em;
+  color: #54595d;
+}
+
+.cd-comment-button {
+  margin-left: 0.75em;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &-label.cd-comment-button-label {
+    color: #54595d;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--cd-link-hover-color);
+    }
+
+    &:active {
+      color: var(--cd-link-active-color);
+    }
+  }
+
+  &.cd-button-disabled.cd-button-disabled {
+    color: #72777d;
+  }
+
+  &-icon {
+    display: inline-block;
+    vertical-align: bottom;
+    margin-bottom: 2px;
+    width: 16px;
+    height: 16px;
+    background-size: 16px 16px;
+  }
+}
+
+.cd-comment-button-goToParent {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+
+  &:hover {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  &:active {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+.cd-comment-button-goToChild {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+
+  &:hover {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  &:active {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+  }
+}
+
+.cd-comment-menu {
+  font-size: 0.9285714em;
+  margin-top: 0.3076923em;
+}
+
 .cd-commentPart-first {
   margin-top: 0.5em;
 }
@@ -6,9 +84,23 @@
   margin-bottom: 0.5em;
 }
 
-ol > li.cd-commentPart-first,
-ol > li > .cd-commentPart-first:first-child {
+ol > li.cd-commentPart-first.cd-commentPart-first,
+ol > li > .cd-commentPart-first.cd-commentPart-first:first-child {
   margin-top: 0;
+}
+
+.cd-reformattedComments {
+  .cd-commentPart-first {
+    margin-top: 0.75em;
+  }
+
+  .cd-commentPart-last {
+    margin-bottom: 0.75em;
+  }
+
+  .cd-commentForm-signature {
+    display: none;
+  }
 }
 
 // Because irregular gaps between numbered list items are annoying.
@@ -16,7 +108,7 @@ li {
   margin-bottom: 0.14285714em;
 }
 
-ol > li.cd-commentPart-last {
+ol > li.cd-commentPart-last.cd-commentPart-last {
   margin-bottom: 0.14285714em;
 }
 
@@ -64,16 +156,17 @@ ol > li.cd-commentPart-last {
   height: 0.5em;
 }
 
+.cd-reformattedComments .cd-connectToPreviousItem::before {
+  top: -0.75em;
+  height: 0.75em;
+}
+
 .sitedir-ltr .cd-connectToPreviousItem::before {
   left: -1px;
 }
 
 .sitedir-rtl .cd-connectToPreviousItem::before {
   right: -1px;
-}
-
-.cd-button-pending.cd-button-pending.cd-button-pending .oo-ui-buttonElement-button {
-  cursor: wait;
 }
 
 .cd-threadLine-clickArea {
@@ -110,4 +203,18 @@ ol > li.cd-commentPart-last {
   height: 10px;
   top: 100%;
   position: relative;
+}
+
+.cd-beforeEditMark {
+  margin-right: 0.75em;
+}
+
+.cd-editMark {
+  font-size: 85%;
+  color: #72777d;
+}
+
+.cd-reformattedComments .cd-editMark {
+  font-size: 100%;
+  margin-left: 0.75em;
 }

@@ -358,7 +358,7 @@ export default class CommentForm {
     } else if (this.target instanceof Section) {
       this.targetSection = this.target;
 
-      if (this.mode === 'replyInSection' && !this.target.$replyButton) {
+      if (this.mode === 'replyInSection' && !this.target.replyButton) {
         throw new CdError();
       }
 
@@ -1337,7 +1337,7 @@ export default class CommentForm {
    */
   addToPage() {
     if (this.mode === 'replyInSection') {
-      this.target.$replyButton.hide();
+      this.target.replyButton.hide();
     } else if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
       this.target.$addSubsectionButtonContainer.hide();
     } else if (this.mode === 'addSection' && cd.g.$addSectionButtonContainer) {
@@ -3183,7 +3183,7 @@ export default class CommentForm {
     if (this.mode === 'reply') {
       this.target.scrollIntoView('top');
     } else if (this.mode === 'replyInSection') {
-      this.target.$replyButton.show();
+      this.target.replyButton.show();
       this.target.$replyWrapper.removeClass('cd-replyWrapper-hasCommentForm');
     } else if (this.mode === 'edit') {
       this.target.$elements.removeClass('cd-hidden');
@@ -3285,7 +3285,7 @@ export default class CommentForm {
 
         // Remove user links to prevent sending a double notification.
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
-          cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(wikilink) ? text : s
+          cd.g.USER_LINK_REGEXP.test(wikilink) ? text : s
         ));
       if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
         optionalText = `: ${commentText} (-)`;

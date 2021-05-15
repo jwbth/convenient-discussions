@@ -213,6 +213,15 @@ export default {
   ],
 
   /**
+   * Names of elements that shouldn't be the first highlightable element when
+   * `conveneintDiscussions.settings.reformatComments` is turned on. These elements are wrapped into
+   * `'div'` containers. It allows for comment headers to be displayed correctly.
+   *
+   * @type {Array}
+   */
+  BAD_FIRST_HIGHLIGHTABLE_ELEMENTS: ['BLOCKQUOTE', 'DL', 'FORM', 'HR', 'OL', 'PRE', 'TABLE', 'UL'],
+
+  /**
    * Classes of elements that shouldn't be highlighted. Only MediaWiki-assigned classes go here.
    * Wiki-specific classes go in the configuration.
    *

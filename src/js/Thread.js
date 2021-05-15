@@ -4,6 +4,7 @@
  * @module Thread
  */
 
+import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
@@ -19,6 +20,7 @@ import { getUserGenders } from './apiWrappers';
 import { handleScroll } from './eventHandlers';
 import { isPageLoading } from './boot';
 
+let elementPrototypes;
 let isInited;
 let threadLinesContainer;
 let treeWalker;
@@ -167,6 +169,10 @@ export default class Thread {
    * @param {Comment} rootComment Root comment of the thread.
    */
   constructor(rootComment) {
+    if (!elementPrototypes) {
+      elementPrototypes = cd.g.THREAD_ELEMENT_PROTOTYPES;
+    }
+
     this.rootComment = rootComment;
 
     // Logically last comment
@@ -240,7 +246,7 @@ export default class Thread {
 
   createLine() {
     cd.debug.startTimer('threads createElement create');
-    this.clickArea = cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea.cloneNode(true);
+    this.clickArea = elementPrototypes.clickArea.cloneNode(true);
     if (this.rootComment.isStartStretched) {
       this.clickArea.classList.add('cd-threadLine-clickArea-stretchedStart');
     }
@@ -385,17 +391,20 @@ export default class Thread {
 
     cd.debug.startTimer('thread collapse button');
     cd.debug.startTimer('thread collapse button create');
-    const button = cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton.cloneNode(true);
+    const buttonElement = elementPrototypes.collapsedButton.cloneNode(true);
+    const button = new Button({
+      action: () => {
+        this.expand();
+      },
+      element: buttonElement,
+      labelElement: buttonElement.querySelector('.oo-ui-labelElement-label'),
+    });
     cd.debug.stopTimer('thread collapse button create');
-    button.firstChild.onclick = () => {
-      this.expand();
-    };
     const author = this.rootComment.author;
     const setLabel = (genderless) => {
       let messageName = genderless ? 'thread-expand-genderless' : 'thread-expand';
-      const label = button.firstChild.firstChild.nextSibling;
-      label.textContent = cd.s(messageName, this.commentCount, author.name, author);
-      button.classList.remove('cd-threadButton-invisible');
+      button.setLabel(cd.s(messageName, this.commentCount, author.name, author));
+      button.element.classList.remove('cd-threadButton-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
       cd.debug.startTimer('thread collapse button gender');
@@ -416,7 +425,7 @@ export default class Thread {
     }
     const collapsedNote = document.createElement(tagName);
     collapsedNote.className = 'cd-threadButton-container cd-thread-collapsedNote';
-    collapsedNote.appendChild(button);
+    collapsedNote.appendChild(button.element);
     if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {
       const container = document.createElement('ul');
       container.className = 'cd-commentLevel';
@@ -438,7 +447,7 @@ export default class Thread {
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
       if (menu) {
-        menu.editOpeningComment.wrapper.style.display = 'none';
+        menu.editOpeningComment.setDisabled(true);
       }
     }
 
@@ -486,7 +495,7 @@ export default class Thread {
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
       if (menu) {
-        menu.editOpeningComment.wrapper.style.display = '';
+        menu.editOpeningComment.setDisabled(false);
       }
     }
 

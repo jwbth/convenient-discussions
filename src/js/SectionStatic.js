@@ -224,7 +224,11 @@ export default {
             nextSameLevelSection.headingNestingLevel !== section.headingNestingLevel
           )
         ) {
-          section.menu?.addSubsection?.wrapper.remove();
+          const menu = section.menu;
+          if (menu) {
+            menu.addSubsection?.wrapperElement.remove();
+            delete menu.addSubsection;
+          }
         } else {
           section.addAddSubsectionButton();
         }
@@ -259,8 +263,8 @@ export default {
         // Section with the last reply button
         const subsections = section.getChildren(true);
         const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
-        if (targetSection.$replyButtonLink) {
-          targetSection.$replyButtonLink
+        if (targetSection.replyButton) {
+          $(targetSection.replyButton.linkElement)
             .on('mouseenter', section.replyButtonHoverHandler)
             .on('mouseleave', section.replyButtonUnhoverHandler);
         }

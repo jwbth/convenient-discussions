@@ -5,14 +5,22 @@
  */
 
 import Autocomplete from './Autocomplete';
+import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import Page from './Page';
+import SectionMenuButton from './SectionMenuButton';
 import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import toc from './toc';
-import { calculateWordOverlap, dealWithLoadingBug, focusInput, getObjectUrl } from './util';
+import {
+  calculateWordOverlap,
+  dealWithLoadingBug,
+  defined,
+  focusInput,
+  getObjectUrl,
+} from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
 import {
@@ -25,6 +33,8 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { reloadPage } from './boot';
+
+let elementPrototypes;
 
 /**
  * Class representing a section.
@@ -43,7 +53,7 @@ export default class Section extends SectionSkeleton {
   constructor(parser, headingElement, watchedSectionsRequest) {
     super(parser, headingElement);
 
-    this.elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
+    elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
     /**
      * Section headline element as a jQuery object.
@@ -119,13 +129,16 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a "Reply" button to the end of the first chunk of the section.
+   * Add a "Reply in section" button to the end of the first chunk of the section.
    */
   addReplyButton() {
-    const replyButton = this.elementPrototypes.replyButton.cloneNode(true);
-    replyButton.firstChild.onclick = () => {
-      this.addReply();
-    };
+    const element = elementPrototypes.replyButton.cloneNode(true);
+    const button = new Button({
+      element,
+      action: () => {
+        this.reply();
+      },
+    });
 
     const lastElement = this.lastElementInFirstChunk;
 
@@ -170,42 +183,35 @@ export default class Section extends SectionSkeleton {
       }
     }
 
-    const replyWrapper = document.createElement(tag);
-    replyWrapper.className = 'cd-replyWrapper';
-    replyWrapper.appendChild(replyButton);
+    const wrapper = document.createElement(tag);
+    wrapper.className = 'cd-replyWrapper';
+    wrapper.appendChild(button.element);
 
     // The container contains the wrapper that contains the element ^_^
-    let replyContainer;
+    let container;
     if (createList) {
-      replyContainer = document.createElement('dl');
-      replyContainer.className = 'cd-commentLevel cd-commentLevel-1 cd-sectionButton-container';
-      replyContainer.appendChild(replyWrapper);
-      lastElement.parentNode.insertBefore(replyContainer, lastElement.nextElementSibling);
+      container = document.createElement('dl');
+      container.className = 'cd-commentLevel cd-commentLevel-1 cd-sectionButton-container';
+      container.appendChild(wrapper);
+      lastElement.parentNode.insertBefore(container, lastElement.nextElementSibling);
     } else {
-      lastElement.appendChild(replyWrapper);
-      replyContainer = lastElement;
+      lastElement.appendChild(wrapper);
+      container = lastElement;
     }
 
     /**
      * Reply button on the bottom of the first chunk of the section.
      *
-     * @type {JQuery|undefined}
+     * @type {Button|undefined}
      */
-    this.$replyButton = $(replyButton);
-
-    /**
-     * Link element contained in the reply button element.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$replyButtonLink = $(replyButton.firstChild);
+    this.replyButton = button;
 
     /**
      * Reply (button) wrapper, an item element.
      *
      * @type {JQuery|undefined}
      */
-    this.$replyWrapper = $(replyWrapper);
+    this.$replyWrapper = $(wrapper);
 
     /**
      * Reply (button) container, a list element. It is wrapped around the {@link
@@ -214,7 +220,7 @@ export default class Section extends SectionSkeleton {
      *
      * @type {JQuery|undefined}
      */
-    this.$replyContainer = $(replyContainer);
+    this.$replyContainer = $(container);
   }
 
   /**
@@ -223,21 +229,20 @@ export default class Section extends SectionSkeleton {
   addAddSubsectionButton() {
     if (this.level !== 2) return;
 
-    const button = this.elementPrototypes.addSubsectionButton.cloneNode(true);
-    const labelContainer = button.querySelector('.oo-ui-labelElement-label');
-    if (!labelContainer) return;
-
-    labelContainer.innerHTML = '';
-    const label = document.createTextNode(cd.s('section-addsubsection-to', this.headline));
-    labelContainer.appendChild(label);
-    button.firstChild.onclick = () => {
-      this.addSubsection();
-    };
+    const element = elementPrototypes.addSubsectionButton.cloneNode(true);
+    const button = new Button({
+      element,
+      labelElement: element.querySelector('.oo-ui-labelElement-label'),
+      label: cd.s('section-addsubsection-to', this.headline),
+      action: () => {
+        this.addSubsection();
+      },
+    });
 
     const buttonContainer = document.createElement('div');
     buttonContainer.className = 'cd-sectionButton-container cd-addSubsectionButton-container';
     buttonContainer.style.display = 'none';
-    buttonContainer.appendChild(button);
+    buttonContainer.appendChild(button.element);
 
     const lastElement = this.elements[this.elements.length - 1];
     lastElement.parentNode.insertBefore(buttonContainer, lastElement.nextElementSibling);
@@ -251,11 +256,11 @@ export default class Section extends SectionSkeleton {
       }
     };
 
-    button.firstChild.onmouseenter = () => {
+    button.linkElement.firstChild.onmouseenter = () => {
       clearTimeout(hideAddSubsectionButtonTimeout);
       hideAddSubsectionButtonTimeout = null;
     };
-    button.firstChild.onmouseleave = () => {
+    button.linkElement.firstChild.onmouseleave = () => {
       deferButtonHide();
     };
 
@@ -284,9 +289,9 @@ export default class Section extends SectionSkeleton {
     /**
      * Add subsection button in the end of the section.
      *
-     * @type {JQuery|undefined}
+     * @type {Button|undefined}
      */
-    this.$addSubsectionButton = $(button);
+    this.addSubsectionButton = button;
 
     /**
      * Add subsection button container.
@@ -316,7 +321,7 @@ export default class Section extends SectionSkeleton {
           name: 'editOpeningComment',
           label: cd.s('sm-editopeningcomment'),
           tooltip: cd.s('sm-editopeningcomment-tooltip'),
-          func: () => {
+          action: () => {
             this.comments[0].edit();
           },
         });
@@ -327,7 +332,7 @@ export default class Section extends SectionSkeleton {
           name: 'addSubsection',
           label: cd.s('sm-addsubsection'),
           tooltip: cd.s('sm-addsubsection-tooltip'),
-          func: () => {
+          action: () => {
             this.addSubsection();
           },
         });
@@ -338,7 +343,7 @@ export default class Section extends SectionSkeleton {
           name: 'moveSection',
           label: cd.s('sm-move'),
           tooltip: cd.s('sm-move-tooltip'),
-          func: () => {
+          action: () => {
             this.move();
           },
         });
@@ -353,7 +358,7 @@ export default class Section extends SectionSkeleton {
           label: cd.s('sm-copylink'),
 
           // We need the event object to be passed to the function.
-          func: this.copyLink.bind(this),
+          action: this.copyLink.bind(this),
 
           tooltip: cd.s('sm-copylink-tooltip'),
           href: `${cd.g.PAGE.getUrl()}#${this.anchor}`,
@@ -378,7 +383,7 @@ export default class Section extends SectionSkeleton {
               name: 'unwatch',
               label: cd.s('sm-unwatch'),
               tooltip: cd.s('sm-unwatch-tooltip'),
-              func: () => {
+              action: () => {
                 this.unwatch();
               },
               visible: this.isWatched,
@@ -387,7 +392,7 @@ export default class Section extends SectionSkeleton {
               name: 'watch',
               label: cd.s('sm-watch'),
               tooltip: cd.s('sm-watch-tooltip'),
-              func: () => {
+              action: () => {
                 this.watch();
               },
               visible: !this.isWatched,
@@ -402,20 +407,20 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Create an {@link module:Section#addReplyForm add reply form}.
+   * Create an {@link module:Section#replyForm add reply form}.
    *
    * @param {object|CommentForm} dataToRestore
    */
-  addReply(dataToRestore) {
+  reply(dataToRestore) {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
-    if (!this.addReplyForm) {
+    if (!this.replyForm) {
       /**
        * Add reply form related to the section.
        *
        * @type {CommentForm|undefined}
        */
-      this.addReplyForm = dataToRestore instanceof CommentForm ?
+      this.replyForm = dataToRestore instanceof CommentForm ?
         dataToRestore :
         new CommentForm({
           mode: 'replyInSection',
@@ -973,8 +978,8 @@ export default class Section extends SectionSkeleton {
    */
   updateWatchMenuItems() {
     if (this.menu) {
-      this.menu.unwatch.wrapper.style.display = this.isWatched ? '' : 'none';
-      this.menu.watch.wrapper.style.display = this.isWatched ? 'none' : '';
+      this.menu.unwatch[this.isWatched ? 'show' : 'hide']();
+      this.menu.watch[this.isWatched ? 'hide' : 'show']();
     }
   }
 
@@ -989,26 +994,23 @@ export default class Section extends SectionSkeleton {
    */
   watch(silent = false, renamedFrom) {
     const sections = Section.getByHeadline(this.headline);
-    let $links;
+    let finallyCallback;
     if (!silent) {
-      $links = $(sections.map((section) => section.menu?.watch.link));
-      if ($links.hasClass('cd-link-pending')) {
-        return;
-      } else {
-        $links.addClass('cd-link-pending');
-      }
+      const buttons = sections.map((section) => section.menu?.watch).filter(defined);
+      buttons.forEach((button) => {
+        button.setPending(true);
+      });
+      finallyCallback = () => {
+        buttons.forEach((button) => {
+          button.setPending(false);
+        });
+      };
     }
 
     let unwatchHeadline;
     if (renamedFrom && !Section.getByHeadline(renamedFrom).length) {
       unwatchHeadline = renamedFrom;
     }
-
-    const finallyCallback = () => {
-      if ($links) {
-        $links.removeClass('cd-link-pending');
-      }
-    };
 
     Section.watch(this.headline, unwatchHeadline)
       .then(finallyCallback, finallyCallback)
@@ -1041,21 +1043,18 @@ export default class Section extends SectionSkeleton {
    */
   unwatch(silent = false) {
     const sections = Section.getByHeadline(this.headline);
-    let $links;
+    let finallyCallback;
     if (!silent) {
-      $links = $(sections.map((section) => section.menu?.unwatch.link));
-      if ($links.hasClass('cd-link-pending')) {
-        return;
-      } else {
-        $links.addClass('cd-link-pending');
-      }
+      const buttons = sections.map((section) => section.menu?.unwatch).filter(defined);
+      buttons.forEach((button) => {
+        button.setPending(true);
+      });
+      finallyCallback = () => {
+        buttons.forEach((button) => {
+          button.setPending(false);
+        });
+      };
     }
-
-    const finallyCallback = () => {
-      if ($links) {
-        $links.removeClass('cd-link-pending');
-      }
-    };
 
     Section.unwatch(this.headline)
       .then(finallyCallback, finallyCallback)
@@ -1239,37 +1238,27 @@ export default class Section extends SectionSkeleton {
    * @param {string} item.name Link name, reflected in the class name.
    * @param {string} item.label Item label.
    * @param {string} [item.href] Value of the item href attribute.
-   * @param {Function} [item.func] Function to execute on click.
    * @param {string} [item.tooltip] Tooltip text.
+   * @param {Function} [item.action] Function to execute on click.
    * @param {boolean} [item.visible=true] Should the item be visible.
    */
-  addMenuItem({ name, label, href, func, tooltip, visible = true }) {
+  addMenuItem({ name, label, href, tooltip, action, visible = true }) {
     if (!this.closingBracketElement) return;
 
     cd.debug.startTimer('addMenuItem');
-    const wrapper = document.createElement('span');
-    wrapper.className = `cd-sectionLink-wrapper cd-sectionLink-wrapper-${name}`;
-    if (!visible) {
-      wrapper.style.display = 'none';
-    }
-
-    const link = document.createElement('a');
-    link.textContent = label;
-    if (href) {
-      link.href = href;
-    }
-    if (func) {
-      link.onclick = func;
-    }
-    link.className = `cd-sectionLink cd-sectionLink-${name}`;
-    if (tooltip) {
-      link.title = tooltip;
-    }
-
-    wrapper.appendChild(link);
-    this.editSectionElement.insertBefore(wrapper, this.closingBracketElement);
-
-    this.menu[name] = { link, wrapper };
+    this.menu[name] = new SectionMenuButton({
+      name,
+      label,
+      href,
+      tooltip,
+      visible,
+      classes: ['cd-section-menu-button'],
+      action,
+    });
+    this.editSectionElement.insertBefore(
+      this.menu[name].wrapperElement,
+      this.closingBracketElement
+    );
     cd.debug.stopTimer('addMenuItem');
   }
 

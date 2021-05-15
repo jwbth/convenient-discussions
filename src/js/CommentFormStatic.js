@@ -57,7 +57,7 @@ export default {
    * @memberof module:CommentForm
    */
   modeToProperty(mode) {
-    return mode === 'replyInSection' ? 'addReply' : mode;
+    return mode === 'replyInSection' ? 'reply' : mode;
   },
 
   /**

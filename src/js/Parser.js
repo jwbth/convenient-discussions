@@ -67,15 +67,22 @@ function getPageNameFromUrl(url) {
 }
 
 /**
+ * @typedef {object} GetUserNameFromLinkReturn
+ * @param {string} 0 User name.
+ * @param {?string} Link type (`user`, `userTalk`).
+ */
+
+/**
  * Get the user name from a link.
  *
  * @param {Element} element
- * @returns {string}
+ * @returns {?GetUserNameFromLinkReturn}
  * @private
  */
 export function getUserNameFromLink(element) {
   const href = element.getAttribute('href');
   let userName;
+  let linkType = null;
   if (href) {
     const pageName = getPageNameFromUrl(href);
     if (!pageName) {
@@ -84,6 +91,11 @@ export function getUserNameFromLink(element) {
     const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
     if (match) {
       userName = match[1];
+      if (cd.g.USER_LINK_REGEXP.test(pageName)) {
+        linkType = 'user';
+      } else if (cd.g.USER_TALK_LINK_REGEXP.test(pageName)) {
+        linkType = 'userTalk';
+      }
     } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
       userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
       if (cd.g.IS_IPv6_ADDRESS(userName)) {
@@ -102,7 +114,7 @@ export function getUserNameFromLink(element) {
       return null;
     }
   }
-  return userName;
+  return [userName, linkType];
 }
 
 /**
@@ -275,6 +287,8 @@ export default class Parser {
         const startElement = unsignedElement || timestamp.element;
         const treeWalker = new ElementAndTextTreeWalker(startElement);
         let authorName;
+        let authorLink;
+        let authorTalkLink;
         let length = 0;
         let firstSignatureElement;
         let signatureNodes = [];
@@ -295,12 +309,18 @@ export default class Parser {
             if (node.classList.contains('cd-timestamp')) break;
             let hasAuthorLinks = false;
             if (node.tagName === 'A') {
-              const userName = getUserNameFromLink(node);
+              const [userName, linkType] = getUserNameFromLink(node) || [];
               if (userName) {
                 if (!authorName) {
                   authorName = userName;
                 }
                 if (authorName === userName) {
+                  if (linkType === 'user') {
+                    authorLink = node;
+                  } else if (linkType === 'userTalk') {
+                    authorTalkLink = node;
+                  }
+
                   // That's not some other user link that is not a part of the signature.
                   hasAuthorLinks = true;
                 }
@@ -317,12 +337,18 @@ export default class Parser {
                   }
                   cd.debug.stopTimer('link external');
 
-                  const userName = getUserNameFromLink(link);
+                  const [userName, linkType] = getUserNameFromLink(link) || [];
                   if (userName) {
                     if (!authorName) {
                       authorName = userName;
                     }
                     if (authorName === userName) {
+                      if (linkType === 'user') {
+                        authorLink = link;
+                      } else if (linkType === 'userTalk') {
+                        authorTalkLink = link;
+                      }
+
                       // That's not some other user link that is not a part of the signature.
                       hasAuthorLinks = true;
                       return true;
@@ -370,7 +396,17 @@ export default class Parser {
         // part of other comment but don't append to the list of signatures.
         if (!authorName) return;
 
-        return { element, timestampElement, timestampText, date, authorName, anchor, isUnsigned };
+        return {
+          element,
+          timestampElement,
+          timestampText,
+          date,
+          authorLink,
+          authorTalkLink,
+          authorName,
+          anchor,
+          isUnsigned,
+        };
       })
       .filter(defined);
 
@@ -380,11 +416,24 @@ export default class Parser {
           // Only templates with no timestamp interest us.
           if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
             Array.from(element.getElementsByTagName('a')).some((link) => {
-              const authorName = getUserNameFromLink(link);
+              const [authorName, linkType] = getUserNameFromLink(link) || [];
               if (authorName) {
+                let authorLink;
+                let authorTalkLink;
+                if (linkType === 'user') {
+                  authorLink = link;
+                } else if (linkType === 'userTalk') {
+                  authorTalkLink = link;
+                }
                 element.classList.add('cd-signature');
                 const isUnsigned = true;
-                signatures.push({ element, authorName, isUnsigned });
+                signatures.push({
+                  element,
+                  authorName,
+                  isUnsigned,
+                  authorLink,
+                  authorTalkLink,
+                });
                 return true;
               }
             });

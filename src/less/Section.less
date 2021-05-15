@@ -1,6 +1,17 @@
-.cd-sectionLink-wrapper::before {
+.cd-section-menu-button-wrapper::before {
   content: " | ";
   color: #54595d;
+}
+
+.cd-section-menu-button.cd-button-disabled {
+  opacity: 0.5;
+  text-decoration: none;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: var(--cd-link-color);
+  }
 }
 
 .cd-sectionButton-container {

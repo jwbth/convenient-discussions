@@ -535,14 +535,14 @@ function connectToCommentLinks($content) {
  * @private
  */
 function highlightMentions($content) {
-  const selector = ['cd-signature']
+  const selector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
     .join(', ');
   Array.from($content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.USER_NAME}"]`))
     .filter((el) => (
-      cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
-      !el.parentNode.closest(selector) &&
+      cd.g.USER_LINK_REGEXP.test(el.title) &&
+      !el.closest(selector) &&
       getUserNameFromLink(el) === cd.g.USER_NAME
     ))
     .forEach((link) => {
@@ -993,17 +993,21 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     cd.debug.startTimer('final code and rendering');
 
     if (articleId) {
-      // Restore the initial viewport position in terms of visible elements which is how the user
-      // sees it.
-      cd.debug.startTimer('restore scroll position');
-      restoreRelativeScrollPosition();
-      cd.debug.stopTimer('restore scroll position');
-
       cd.debug.startTimer('reviewHighlightables');
       // Should be above all code that deals with comment highlightable elements and comment levels
       // as this may alter that.
       Comment.reviewHighlightables();
       cd.debug.stopTimer('reviewHighlightables');
+
+      cd.debug.startTimer('reformatComments');
+      Comment.reformatComments();
+      cd.debug.stopTimer('reformatComments');
+
+      // Restore the initial viewport position in terms of visible elements which is how the user
+      // sees it.
+      cd.debug.startTimer('restore scroll position');
+      restoreRelativeScrollPosition();
+      cd.debug.stopTimer('restore scroll position');
     }
 
     if (isPageCommentable) {
@@ -1077,16 +1081,25 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       pageNav.mount();
       cd.debug.stopTimer('pageNav mount');
 
-      $(document)
+      if (!cd.settings.reformatComments) {
         // `mouseover` allows to capture the event when the cursor is not moving but ends up above
         // the element (for example, as a result of scrolling).
-        .on('mousemove mouseover', Comment.highlightHovered)
+        $(document).on('mousemove mouseover', Comment.highlightHovered);
+      }
+      $(document).on('scroll', handleScroll);
 
-        .on('scroll', handleScroll);
       $(window).on('resize orientationchange', handleWindowResize);
 
       mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
+
+      if (articleId) {
+        cd.debug.startTimer('parse user links');
+        // Should be above "mw.hook('wikipage.content').add" as the next such instruction will run
+        // with "$('.cd-comment-author-wrapper')" as $content.
+        mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
+        cd.debug.stopTimer('parse user links');
+      }
 
       // Mutation observer doesn't follow all possible comment position changes (for example,
       // initiated with adding new CSS) unfortunately.

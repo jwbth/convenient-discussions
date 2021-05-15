@@ -264,6 +264,8 @@ function parse() {
   });
 
   let commentDangerousKeys = [
+    'authorLink',
+    'authorTalkLink',
     'cachedParent',
     'elements',
     'highlightables',
@@ -354,6 +356,7 @@ function onMessageFromWindow(e) {
 
     Object.assign(cd.g, message.g);
     cd.config = message.config;
+    cd.settings = message.settings;
 
     cd.config.checkForCustomForeignComponents = restoreFunc(
       cd.config.checkForCustomForeignComponents

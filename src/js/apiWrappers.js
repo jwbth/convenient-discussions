@@ -545,3 +545,49 @@ export function getRelevantTemplateNames(text) {
 
   return promise;
 }
+
+export async function getPagesExistence(titles) {
+  const results = {};
+  const normalized = [];
+  const pages = [];
+  const titlesToRequest = titles.slice();
+  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
+  let nextPages;
+  while ((nextPages = titlesToRequest.splice(0, limit).join('|'))) {
+    const resp = await cd.g.api.post({
+      action: 'query',
+      titles: nextPages,
+      formatversion: 2,
+    }).catch(handleApiReject);
+
+    if (resp.error) {
+      throw new CdError({
+        type: 'api',
+        code: 'error',
+        apiData: resp,
+      });
+    }
+
+    const query = resp.query;
+    const pagesToAdd = query?.pages;
+    if (!pagesToAdd) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    normalized.push(...query.normalized || []);
+    pages.push(...pagesToAdd);
+  }
+
+  const normalizedToOriginal = {};
+  normalized.forEach((page) => {
+    normalizedToOriginal[page.to] = page.from;
+  });
+  pages.forEach((page) => {
+    results[normalizedToOriginal[page.title] || page.title] = !page.missing;
+  });
+
+  return results;
+}
