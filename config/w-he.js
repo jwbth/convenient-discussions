@@ -457,6 +457,6 @@ export default {
    * }</code></pre>
    */
   // getAnchorCode: function (anchor) {
-  //   return '<span id="' + anchor + '></span>';
+  //   return '<span id="' + anchor + '"></span>';
   // },
 };

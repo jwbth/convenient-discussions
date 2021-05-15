@@ -716,10 +716,10 @@ export default {
    * @param {string} anchor
    * @returns {string}
    * @default <pre class="prettyprint source"><code>function (anchor) {
-   *   return '&lt;span id="' + anchor + '>&lt;/span>';
+   *   return '&lt;span id="' + anchor + '">&lt;/span>';
    * }</code></pre>
    */
   getAnchorCode: function (anchor) {
-    return '<span id="' + anchor + '></span>';
+    return '<span id="' + anchor + '"></span>';
   },
 };
