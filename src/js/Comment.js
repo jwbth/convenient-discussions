@@ -1132,20 +1132,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Highlight the comment as a target (it is opened by a link, just posted, is the target of the
-   * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
-   */
-  highlightTarget() {
-    this.isTarget = true;
-
-    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
-    // their personal CSS.
-    this.flash('target', 2000, () => {
-      this.isTarget = false;
-    });
-  }
-
-  /**
    * Change the comment's background color to the provided color for the given number of
    * milliseconds, then smoothly change it back.
    *
@@ -1228,6 +1214,20 @@ export default class Comment extends CommentSkeleton {
     };
 
     this.unhighlightTimeout = setTimeout(this.animateBack.bind(this), delay);
+  }
+
+  /**
+   * Flash the comment as a target (it is opened by a link, just posted, is the target of the
+   * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
+   */
+  flashTarget() {
+    this.isTarget = true;
+
+    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
+    // their personal CSS.
+    this.flash('target', 2000, () => {
+      this.isTarget = false;
+    });
   }
 
   /**
@@ -1521,15 +1521,15 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the comment and (by default) highlight it as a target.
+   * Scroll to the comment and (by default) flash it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
    * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
    *   anchor as a fragment.
-   * @param {boolean} highlight Whether to highlight the comment as target.
+   * @param {boolean} flash Whether to flash the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
-  scrollTo(smooth = true, pushState = false, highlight = true, callback) {
+  scrollTo(smooth = true, pushState = false, flash = true, callback) {
     if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }
@@ -1544,8 +1544,8 @@ export default class Comment extends CommentSkeleton {
         callback();
       }
       $elements.cdScrollIntoView(alignment, smooth, callback);
-      if (highlight) {
-        this.highlightTarget();
+      if (flash) {
+        this.flashTarget();
       }
     }
   }
@@ -2059,14 +2059,14 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {string} [registerAllInDirection] Mark all comments in the forward (`'forward'`) or
    *   backward (`'backward'`) direction from this comment as seen.
-   * @param {boolean} [highlight=false] Highlight the comment.
+   * @param {boolean} [flash=false] Whether to flash the comment as a target.
    */
-  registerSeen(registerAllInDirection, highlight = false) {
+  registerSeen(registerAllInDirection, flash = false) {
     const isInVewport = !registerAllInDirection || this.isInViewport();
     if (this.isSeen === false && isInVewport) {
       this.isSeen = true;
-      if (highlight) {
-        this.highlightTarget();
+      if (flash) {
+        this.flashTarget();
       }
     }
 
@@ -2081,7 +2081,7 @@ export default class Comment extends CommentSkeleton {
       const change = registerAllInDirection === 'backward' ? -1 : 1;
       const nextComment = cd.comments[this.id + change];
       if (nextComment && nextComment.isInViewport() !== false) {
-        nextComment.registerSeen(registerAllInDirection, highlight);
+        nextComment.registerSeen(registerAllInDirection, flash);
       }
     }
   }
