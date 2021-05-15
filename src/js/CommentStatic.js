@@ -52,6 +52,8 @@ export default {
    * @memberof module:Comment
    */
   registerSeen() {
+    if (document.hidden) return;
+
     const commentInViewport = Comment.findInViewport();
     if (!commentInViewport) return;
 

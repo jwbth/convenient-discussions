@@ -1086,7 +1086,10 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
         // the element (for example, as a result of scrolling).
         $(document).on('mousemove mouseover', Comment.highlightHovered);
       }
-      $(document).on('scroll', handleScroll);
+
+      // We need the visibilitychange event because many things may move while the document is
+      // hidden, and the movements are not processed when the document is hidden.
+      $(document).on('scroll visibilitychange', handleScroll);
 
       $(window).on('resize orientationchange', handleWindowResize);
 
