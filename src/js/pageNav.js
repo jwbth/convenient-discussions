@@ -261,17 +261,13 @@ export default {
       this.$bottomElement.empty();
       this.$bottomLink = null;
     }
-    if (!part || part === backLinkLocation) {
-      backLinkLocation = null;
-      $backLinkContainer = null;
-      $sectionWithBackLink = null;
-    }
   },
 
   /**
    * Reset the current section variable and empty the contents of the current section block.
    */
   resetSections() {
+    $sectionWithBackLink?.detach();
     this.$currentSection.empty();
     currentSection = null;
   },
