@@ -586,7 +586,10 @@ export async function getPagesExistence(titles) {
     normalizedToOriginal[page.to] = page.from;
   });
   pages.forEach((page) => {
-    results[normalizedToOriginal[page.title] || page.title] = !page.missing;
+    results[normalizedToOriginal[page.title] || page.title] = {
+      exists: !page.missing,
+      normalized: page.title,
+    };
   });
 
   return results;

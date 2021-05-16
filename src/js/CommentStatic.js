@@ -489,17 +489,18 @@ export default {
       });
       const pageNames = Object.keys(pageNamesToLinks);
       const pagesExistence = await getPagesExistence(pageNames);
-      Object.keys(pagesExistence)
-        .filter((name) => !pagesExistence[name])
-        .forEach((name) => {
-          pageNamesToLinks[name].forEach((link) => {
+      Object.keys(pagesExistence).forEach((name) => {
+        pageNamesToLinks[name].forEach((link) => {
+          link.title = pagesExistence[name].normalized;
+          if (!pagesExistence[name].exists) {
             link.classList.add('new');
             link.href = mw.util.getUrl(name, {
               action: 'edit',
               redlink: 1,
             });
-          });
+          }
         });
+      });
     }
   },
 };
