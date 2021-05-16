@@ -669,6 +669,8 @@ function showDesktopNotification(comments) {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
+      commentLayers.redrawIfNecessary(false, true);
+
       reloadPage({
         commentAnchor: comment.anchor,
         closeNotificationsSmoothly: false,
