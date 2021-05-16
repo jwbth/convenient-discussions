@@ -32,9 +32,19 @@ import cd from './cd';
  * @param {string} [options.help]
  * @param {string} [options.tabIndex]
  * @param {string} [options.title]
+ * @param {string[]} [options.classes]
  * @returns {CheckboxFieldReturn}
  */
-export function checkboxField({ value, selected, disabled, label, help, tabIndex, title }) {
+export function checkboxField({
+  value,
+  selected,
+  disabled,
+  label,
+  help,
+  tabIndex,
+  title,
+  classes,
+}) {
   const checkbox = new OO.ui.CheckboxInputWidget({ value, selected, disabled, tabIndex });
   const field = new OO.ui.FieldLayout(checkbox, {
     label,
@@ -42,6 +52,7 @@ export function checkboxField({ value, selected, disabled, label, help, tabIndex
     help,
     helpInline: true,
     title,
+    classes,
   });
   return [field, checkbox];
 }

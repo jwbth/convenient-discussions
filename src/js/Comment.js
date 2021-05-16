@@ -279,7 +279,7 @@ export default class Comment extends CommentSkeleton {
     let authorTalkLink = authorLink.nextElementSibling;
     let contribsLink;
     if (cd.settings.showContribsLink) {
-      contribsLink = authorLink.nextElementSibling.nextElementSibling;
+      contribsLink = authorTalkLink.nextElementSibling.nextElementSibling;
     }
 
     if (this.authorLink) {
@@ -323,8 +323,10 @@ export default class Comment extends CommentSkeleton {
     bdiElement.textContent = this.author.name;
 
     if (cd.settings.showContribsLink) {
+      const pageName = 'Special:Contributions/' + this.author.name;
+      contribsLink.title = pageName;
       cd.debug.startTimer('replaceSignatureWithHeader getUrl');
-      contribsLink.href = mw.util.getUrl('Special:Contributions/' + this.author.name);
+      contribsLink.href = mw.util.getUrl(pageName);
       cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
     }
 
@@ -2968,7 +2970,7 @@ export default class Comment extends CommentSkeleton {
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',
-        message: cd.s('comment-edited-diff-empty'),
+        message: cd.sParse('comment-edited-diff-empty'),
       });
     }
 

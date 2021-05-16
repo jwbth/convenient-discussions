@@ -295,6 +295,7 @@
   "sd-notificationsblacklist-multiselect-placeholder": "Add a user",
   "sd-notifycollapsedthreads": "Notify about comments in collapsed threads",
   "sd-reformatcomments": "Reformat comments, replacing signatures with standard links above and below",
+  "sd-showcontribslink": "Show a contributions link after the user name in comments",
   "sd-showtoolbar": "Show the editing toolbar",
   "sd-signatureprefix": "Signature prefix",
   "sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",

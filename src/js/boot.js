@@ -92,6 +92,7 @@ export async function initSettings() {
     notifyCollapsedThreads: false,
     notificationsBlacklist: [],
     reformatComments: true,
+    showContribsLink: false,
     showLoadingOverlay: true,
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
@@ -607,7 +608,7 @@ function initOouiAndElementPrototypes() {
 
     if (cd.settings.showContribsLink) {
       const contribsLink = document.createElement('a');
-      contribsLink.textContent = cd.s('comment-contribs-talk');
+      contribsLink.textContent = cd.s('comment-author-contribs');
       const separator = commentElementPrototypes.separator.cloneNode(true);
       authorWrapper.appendChild(separator);
       authorWrapper.appendChild(contribsLink);
