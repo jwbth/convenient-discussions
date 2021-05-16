@@ -1317,7 +1317,7 @@ export default class Comment extends CommentSkeleton {
           try {
             await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
-            let text = cd.s('comment-edited-diff-error');
+            let text = cd.sParse('comment-edited-diff-error');
             if (e instanceof CdError) {
               const { type, message } = e.data;
               if (message) {
@@ -1326,7 +1326,7 @@ export default class Comment extends CommentSkeleton {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(text, { type: 'error' });
+            mw.notify(cd.util.wrap(text), { type: 'error' });
           }
           $diffLink.removeClass('cd-link-pending');
         });
@@ -2048,7 +2048,9 @@ export default class Comment extends CommentSkeleton {
       this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
-        throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
+        throw new CdError(Object.assign({}, {
+          message: cd.sParse('cf-error-getpagecode'),
+        }, e.data));
       } else {
         throw e;
       }

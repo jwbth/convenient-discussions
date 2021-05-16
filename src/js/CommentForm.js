@@ -1907,7 +1907,7 @@ export default class CommentForm {
    * Abort the operation the form is undergoing and show an error message.
    *
    * @param {object} options
-   * @param {string} options.message Message visible to the user.
+   * @param {string|JQuery} options.message Message visible to the user.
    * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
@@ -1937,7 +1937,7 @@ export default class CommentForm {
 
     if (cancel) {
       addNotification([
-        message,
+        message instanceof $ ? message : cd.util.wrap(message),
         {
           type: 'error',
           autoHideSeconds: 'long',

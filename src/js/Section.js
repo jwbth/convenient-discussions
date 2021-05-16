@@ -1218,7 +1218,7 @@ export default class Section extends SectionSkeleton {
       this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
-        throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
+        throw new CdError(Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data));
       } else {
         throw e;
       }
