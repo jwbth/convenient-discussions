@@ -1526,12 +1526,12 @@ export default class Comment extends CommentSkeleton {
    * Scroll to the comment and (by default) flash it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
-   * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
+   * @param {boolean} [pushState=true] Whether to push a state to the history with the comment
    *   anchor as a fragment.
    * @param {boolean} flash Whether to flash the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
-  scrollTo(smooth = true, pushState = false, flash = true, callback) {
+  scrollTo(smooth = true, pushState = true, flash = true, callback) {
     if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }

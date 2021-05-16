@@ -6,12 +6,7 @@
  */
 
 import cd from './cd';
-import {
-  getExtendedRect,
-  getUrlWithAnchor,
-  getVisibilityByRects,
-  triggerClickOnEnterAndSpace,
-} from './util';
+import { getExtendedRect, getVisibilityByRects, triggerClickOnEnterAndSpace } from './util';
 import { handleScroll } from './eventHandlers';
 
 let currentSection;
@@ -114,12 +109,14 @@ export default {
           .addClass('cd-pageNav-item')
           .appendTo(this.$linksOnTop);
         $('<a>')
-          .addClass('cd-pageNav-link')
+          .attr('href', '#')
           .attr('tabindex', 0)
+          .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-pagetop'))
           .on('keydown', triggerClickOnEnterAndSpace)
-          .on('click', () => {
-            this.jump(0, this.$topLink);
+          .on('click', (e) => {
+            e.preventDefault();
+            this.jump(0, this.$topLink, '#');
           })
           .appendTo(this.$topLink);
       }
@@ -136,14 +133,14 @@ export default {
           .addClass('cd-pageNav-item')
           .appendTo(this.$linksOnTop);
         $('<a>')
-          .addClass('cd-pageNav-link')
-          .attr('href', getUrlWithAnchor('toc'))
+          .attr('href', '#toc')
           .attr('tabindex', 0)
+          .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-toc'))
           .on('keydown', triggerClickOnEnterAndSpace)
           .on('click', (e) => {
             e.preventDefault();
-            this.jump(cd.g.$toc, this.$tocLink);
+            this.jump(cd.g.$toc, this.$tocLink, '#toc');
           })
           .appendTo(this.$tocLink);
       }
@@ -165,12 +162,14 @@ export default {
           .addClass('cd-pageNav-item')
           .appendTo(this.$bottomElement);
         $('<a>')
-          .addClass('cd-pageNav-link')
+          .attr('href', '#footer')
           .attr('tabindex', 0)
+          .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-pagebottom'))
           .on('keydown', triggerClickOnEnterAndSpace)
-          .on('click', () => {
-            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
+          .on('click', (e) => {
+            e.preventDefault();
+            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink, '#footer');
           })
           .appendTo(this.$bottomLink);
       }
@@ -228,7 +227,7 @@ export default {
                 .on('keydown', triggerClickOnEnterAndSpace)
                 .on('click', (e) => {
                   e.preventDefault();
-                  this.jump(sectionInTree.$heading, $item);
+                  this.jump(sectionInTree.$heading, $item, '#' + sectionInTree.anchor);
                 })
                 .appendTo($item);
             }
@@ -272,7 +271,7 @@ export default {
     currentSection = null;
   },
 
-  jump($elementOrOffset, $item, isBackLink) {
+  jump($elementOrOffset, $item, url, isBackLink) {
     const offset = $elementOrOffset instanceof $ ?
       $elementOrOffset.offset().top - cd.g.BODY_SCROLL_PADDING_TOP :
       $elementOrOffset;
@@ -286,10 +285,11 @@ export default {
       $sectionWithBackLink = null;
     }
     if (!isBackLink) {
+      const originalUrl = location.href;
       const scrollY = window.scrollY;
       const $backLink = $('<a>')
-        .addClass('cd-pageNav-backLink')
         .attr('tabindex', 0)
+        .addClass('cd-pageNav-backLink')
         .text(cd.s('pagenav-back'))
         .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', (e) => {
@@ -299,7 +299,7 @@ export default {
           // For links without href
           e.stopPropagation();
 
-          this.jump(scrollY, $item, true);
+          this.jump(scrollY, $item, originalUrl, true);
         });
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
@@ -317,6 +317,9 @@ export default {
         backLinkLocation = 'section';
       }
     }
+
+    history.pushState(history.state, '', url);
+
     cd.g.isAutoScrollInProgress = true;
     $('body, html').animate({ scrollTop: offset }, {
       complete: () => {

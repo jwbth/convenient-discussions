@@ -978,6 +978,10 @@ export function isPageLoading() {
  * @throws {CdError|Error}
  */
 export async function reloadPage(keptData = {}) {
+  if (keptData.pushState === undefined) {
+    keptData.pushState = false;
+  }
+
   if (cd.g.isPageBeingReloaded) return;
 
   // Stop all animations

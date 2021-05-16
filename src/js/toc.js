@@ -360,7 +360,7 @@ export default {
           if (comment instanceof Comment) {
             a.onclick = (e) => {
               e.preventDefault();
-              comment.scrollTo(false, true);
+              comment.scrollTo(false);
             };
           } else {
             a.onclick = (e) => {
