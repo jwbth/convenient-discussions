@@ -323,7 +323,7 @@ export default class Comment extends CommentSkeleton {
     bdiElement.textContent = this.author.name;
 
     if (cd.settings.showContribsLink) {
-      const pageName = 'Special:Contributions/' + this.author.name;
+      const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
       contribsLink.title = pageName;
       cd.debug.startTimer('replaceSignatureWithHeader getUrl');
       contribsLink.href = mw.util.getUrl(pageName);
