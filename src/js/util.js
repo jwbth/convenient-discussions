@@ -331,7 +331,7 @@ export function mergeRegexps(arr) {
  * @param {string} text
  * @param {RegExp} regexp
  * @param {string[]} hidden
- * @param {string} type
+ * @param {string} type Should consist only of alphanumeric characters.
  * @returns {string}
  */
 export function hideText(text, regexp, hidden, type) {
@@ -354,15 +354,19 @@ export function hideText(text, regexp, hidden, type) {
 }
 
 /**
- * Replace placeholders created by {@link module:util.hide}.
+ * Replace placeholders created by {@link module:util.hideText}.
  *
  * @param {string} text
  * @param {string[]} hidden
+ * @param {string} type
  * @returns {string}
  */
-export function unhideText(text, hidden) {
-  while (/(?:\x01|\x03)\d+(_\w+)?(?:\x02|\x04)/.test(text)) {
-    text = text.replace(/(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
+export function unhideText(text, hidden, type) {
+  const regexp = type ?
+    new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type})?(?:\\x02|\\x04)`, 'g') :
+    /(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g;
+  while (regexp.test(text)) {
+    text = text.replace(regexp, (s, num) => hidden[num - 1]);
   }
 
   return text;

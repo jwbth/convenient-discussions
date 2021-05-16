@@ -2415,8 +2415,13 @@ export default class CommentForm {
         before = '';
       }
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(code)) {
-        const adjustedCode = code.trim().replace(/\|/g, '{{!}}') + signature;
-        code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
+        // Hide links that have "|", then replace "|" with "{{!}}", then wrap in a small div
+        // template.
+        const hiddenLinks = [];
+        code = hideText(code.trim(), /\[\[[^\]|]+\|/g, hiddenLinks, 'link');
+        code = code.replace(/\|/g, '{{!}}') + signature;
+        code = unhideText(code, hiddenLinks, 'link');
+        code = `{{${cd.config.smallDivTemplates[0]}|1=${code}}}`;
       } else {
         code = `<small>${before}${code}${signature}</small>`;
       }
