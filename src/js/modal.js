@@ -68,30 +68,6 @@ export async function confirmDialog(message, options = {}) {
 }
 
 /**
- * Show a confirmation message dialog with a destructive action.
- *
- * @param {string} messageName
- * @param {object} [customOptions={}]
- * @returns {Promise}
- */
-export function confirmDestructive(messageName, customOptions = {}) {
-  const actions = [
-    {
-      label: cd.s(`${messageName}-yes`),
-      action: 'accept',
-      flags: ['primary', 'destructive'],
-    },
-    {
-      label: cd.s(`${messageName}-no`),
-      action: 'reject',
-      flags: 'safe',
-    },
-  ];
-  const options = Object.assign({}, { actions }, customOptions);
-  return OO.ui.confirm(cd.s(messageName), options);
-}
-
-/**
  * Check if there are unsaved changes in a process dialog.
  *
  * @param {OoUiProcessDialog} dialog
@@ -116,7 +92,7 @@ function isUnsaved(dialog) {
  * @private
  */
 async function confirmCloseDialog(dialog, dialogCode) {
-  if (!isUnsaved(dialog) || (await confirmDestructive(`${dialogCode}-close-confirm`))) {
+  if (!isUnsaved(dialog) || confirm(cd.s(`${dialogCode}-close-confirm`))) {
     dialog.close({ action: 'close' });
     removePreventUnloadCondition('dialog');
   }
@@ -309,7 +285,7 @@ export async function settingsDialog() {
       });
     } else if (action === 'reset') {
       return new OO.ui.Process(async () => {
-        if (await OO.ui.confirm(cd.s('sd-reset-confirm'))) {
+        if (confirm(cd.s('sd-reset-confirm'))) {
           const currentPageName = this.bookletLayout.getCurrentPageName();
           this.renderForm(cd.defaultSettings);
           this.bookletLayout.setPage(currentPageName);
@@ -750,7 +726,7 @@ export async function settingsDialog() {
   };
 
   SettingsDialog.prototype.removeData = async function () {
-    if (await confirmDestructive('sd-removedata-confirm', { size: 'medium' })) {
+    if (confirm(cd.s('sd-removedata-confirm'))) {
       this.pushPending();
 
       try {

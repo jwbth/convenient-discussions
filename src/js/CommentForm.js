@@ -14,7 +14,7 @@ import cd from './cd';
 import navPanel from './navPanel';
 import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
 import { checkboxField } from './ooui';
-import { confirmDestructive, settingsDialog } from './modal';
+import { settingsDialog } from './modal';
 import {
   defined,
   findLastIndex,
@@ -665,11 +665,11 @@ export default class CommentForm {
     ) {
       const parentSection = this.targetSection?.getParent();
       if (this.mode === 'addSubsection') {
-        this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
+        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', this.targetSection.headline);
       } else if (this.mode === 'edit' && parentSection) {
-        this.headlineInputPurpose = cd.s('cf-headline-subsection', parentSection.headline);
+        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', parentSection.headline);
       } else {
-        this.headlineInputPurpose = cd.s('cf-headline-topic');
+        this.headlineInputPlaceholder = cd.s('cf-headline-topic');
       }
 
       /**
@@ -679,7 +679,7 @@ export default class CommentForm {
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
-        placeholder: this.headlineInputPurpose,
+        placeholder: this.headlineInputPlaceholder,
         classes: ['cd-headlineInput'],
         tabIndex: String(this.id) + '11',
       });
@@ -2951,12 +2951,15 @@ export default class CommentForm {
     const checks = [
       {
         condition: !doDelete && this.headlineInput?.getValue() === '',
-        confirmation: async () => {
-          const noHeadline = cd.s(
-            'cf-confirm-noheadline-' +
-            (this.headlineInputPurpose === cd.s('cf-headline-topic') ? 'topic' : 'subsection')
+        confirmation: () => {
+          const ending = this.headlineInputPlaceholder === cd.s('cf-headline-topic') ?
+            'topic' :
+            'subsection';
+          return confirm(
+            cd.s(`cf-confirm-noheadline-${ending}`) +
+            ' ' +
+            cd.s('cf-confirm-noheadline-question')
           );
-          return await OO.ui.confirm(noHeadline + ' ' + cd.s('cf-confirm-noheadline-question'));
         },
       },
       {
@@ -2965,16 +2968,14 @@ export default class CommentForm {
           !this.commentInput.getValue().trim() &&
           !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.PAGE.name)
         ),
-        confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
+        confirmation: () => confirm(cd.s('cf-confirm-empty')),
       },
       {
         condition: (
           !doDelete &&
           this.commentInput.getValue().trim().length > cd.config.longCommentThreshold
         ),
-        confirmation: async () => (
-          await OO.ui.confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold))
-        ),
+        confirmation: () => confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold)),
       },
       {
         condition: (
@@ -2982,11 +2983,11 @@ export default class CommentForm {
           /^==[^=]/m.test(this.commentInput.getValue()) &&
           this.mode !== 'edit'
         ),
-        confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-secondlevelheading')),
+        confirmation: () => confirm(cd.s('cf-confirm-secondlevelheading')),
       },
       {
         condition: doDelete,
-        confirmation: async () => await confirmDestructive('cf-confirm-delete'),
+        confirmation: () => confirm(cd.s('cf-confirm-delete')),
       }
     ];
 
@@ -3167,7 +3168,7 @@ export default class CommentForm {
    * @returns {boolean}
    */
   async confirmClose() {
-    return (!this.isAltered() || (await confirmDestructive('cf-confirm-close')));
+    return !this.isAltered() || confirm(cd.s('cf-confirm-close'));
   }
 
   /**

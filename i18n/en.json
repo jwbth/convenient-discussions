@@ -181,11 +181,7 @@
   "cf-confirm-long": "This comment is longer than $1 characters. Are you sure you want to post it?",
   "cf-confirm-secondlevelheading": "The comment contains the code of the second level section. If you are moving the source code, it's better to use the standard edit source function, otherwise it could be altered unpredictably. Are you sure you want to post the comment?",
   "cf-confirm-delete": "Are you sure you want to delete the comment?",
-  "cf-confirm-delete-yes": "Delete",
-  "cf-confirm-delete-no": "Cancel",
   "cf-confirm-close": "Are you sure you want to close the form? The changes will be lost.",
-  "cf-confirm-close-yes": "Close",
-  "cf-confirm-close-no": "Cancel",
 
   "cf-autocomplete-commentlinktext": "$1 @ $2",
 
@@ -254,8 +250,6 @@
   "sd-page-notifications": "Notifications",
   "sd-page-dataremoval": "Data removal",
   "sd-close-confirm": "The settings were not saved. Are you sure you want to close the window?",
-  "sd-close-confirm-yes": "Close",
-  "sd-close-confirm-no": "Cancel",
   "sd-saved": "The settings have been saved successfully. Reload the page to apply them.",
   "sd-reset": "Reset settings (in all sections)",
   "sd-reset-confirm": "Are you sure you want to reset the settings? (Click \"{{int:convenient-discussions-sd-save}}\" after resetting.)",
@@ -263,8 +257,6 @@
   "sd-removedata-description": "Delete the data that Convenient Discussions has collected: your settings, talk page last visits, watched sections, and drafts of unsent comments",
   "sd-removedata-help": "Note that everything except the global settings is removed for the current wiki only. If you have used Convenient Discussions on other wikis and you want to remove the data on them, you will have to remove it on those wikis. See [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|the script's homepage]] for the details on what, why, and how the script stores and instructions on how to delete each piece of data individually.",
   "sd-removedata-confirm": "This will permanently delete your settings, talk page last visits, watched sections, and drafts of unsent comments. Do you want to proceed?",
-  "sd-removedata-confirm-yes": "Yes",
-  "sd-removedata-confirm-no": "No",
   "sd-dataremoved": "Your data has been successfully removed.",
   "sd-error-removedata": "Couldn't remove the data on the server.",
   "sd-localsetting": "<i>This setting is individual for each wiki.</i>",
@@ -314,8 +306,6 @@
   "ewsd-error-maxsize": "Couldn't update the settings: the size of the watched sections list exceeds the maximum size. Reduce the size of the list to fix this.",
   "ewsd-error-processing": "An error occurred while processing the watched sections list.",
   "ewsd-close-confirm": "The watched sections list wasn't saved. Are you sure you want to close the window?",
-  "ewsd-close-confirm-yes": "Close",
-  "ewsd-close-confirm-no": "Cancel",
 
   "msd-title": "Move topic",
   "msd-move": "Move",
