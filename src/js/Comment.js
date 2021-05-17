@@ -201,7 +201,26 @@ export default class Comment extends CommentSkeleton {
     cd.debug.stopTimer('closest list');
 
     /**
-     * Is the comment currently highlighted as the target comment.
+     * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
+     * excluding pages that are visited for the first time.
+     *
+     * @type {?boolean}
+     * @memberof module:Comment
+     */
+    this.isNew = null;
+
+    /**
+     * Has the comment been seen if it is new. Is set only on active pages (not archived, not old
+     * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
+     * need to know if the comment is highlighted as new and unseen.
+     *
+     * @type {?boolean}
+     * @memberof module:Comment
+     */
+    this.isSeen = null;
+
+    /**
+     * Is the comment currently highlighted as a target comment.
      *
      * @type {boolean}
      */
@@ -222,7 +241,7 @@ export default class Comment extends CommentSkeleton {
     this.isEditedSincePreviousVisit = null;
 
     /**
-     * Was the comment edited while the page was idle. (The new version may be rendered or may be
+     * Was the comment edited while the page was idle. (The new version may be rendered and may be
      * not, if the layout is too complex.)
      *
      * @type {?boolean}
@@ -237,11 +256,11 @@ export default class Comment extends CommentSkeleton {
     this.isDeleted = null;
 
     /**
-     * Should the comment be flashed as updated when it appears in sight.
+     * Should the comment be flashed as changed when it appears in sight.
      *
      * @type {?boolean}
      */
-    this.willFlashNewOnSight = false;
+    this.willFlashChangedOnSight = false;
 
     /**
      * Is the comment (or its signature) inside a table containing only one comment.
@@ -724,31 +743,33 @@ export default class Comment extends CommentSkeleton {
     let startMargin;
     let endMargin;
 
-    /**
-     * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
-     * start of the content area.
-     *
-     * @type {boolean|undefined}
-     */
-    this.isStartStretched = false;
+    if (this.isStartStretched === undefined) {
+      /**
+       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
+       * start of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isStartStretched = false;
 
-    /**
-     * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
-     * of the content area.
-     *
-     * @type {boolean|undefined}
-     */
-    this.isEndStretched = false;
+      /**
+       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
+       * of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isEndStretched = false;
 
-    if (this.level === 0) {
-      const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN;
-      const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN;
-      this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
-        leftPosition <= cd.g.CONTENT_COLUMN_START + 1 :
-        rightPosition >= cd.g.CONTENT_COLUMN_START - 1;
-      this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
-        rightPosition >= cd.g.CONTENT_COLUMN_END - 1 :
-        leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
+      if (this.level === 0) {
+        const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN;
+        const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN;
+        this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
+          leftPosition <= cd.g.CONTENT_COLUMN_START + 1 :
+          rightPosition >= cd.g.CONTENT_COLUMN_START - 1;
+        this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
+          rightPosition >= cd.g.CONTENT_COLUMN_END - 1 :
+          leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
+      }
     }
 
     if (this.ahContainerListType === 'ol') {
@@ -876,7 +897,7 @@ export default class Comment extends CommentSkeleton {
       this.createReplyButton();
     }
 
-    this.updateLayersStyles();
+    this.updateLayersStyles(true);
 
     /**
      * Comment's underlay.
@@ -924,36 +945,45 @@ export default class Comment extends CommentSkeleton {
     mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
   }
 
+  updateClassesForType(type, add) {
+    add = Boolean(add);
+    if (this.underlay.classList.contains(`cd-commentUnderlay-${type}`) !== add) {
+      this.underlay.classList.toggle(`cd-commentUnderlay-${type}`, add);
+      this.overlay.classList.toggle(`cd-commentOverlay-${type}`, add);
+
+      if (type === 'deleted') {
+        this.replyButton?.setDisabled(add);
+        this.editButton?.setDisabled(add);
+      } else if (type === 'hover' && !add) {
+        this.overlayInnerWrapper.style.display = '';
+      }
+    }
+  }
+
   /**
    * Update the styles of the layers according to the comment's properties.
+   *
+   * @param {boolean} wereJustCreated Were the layers just created.
    */
-  updateLayersStyles() {
+  updateLayersStyles(wereJustCreated) {
     if (!this.underlay) return;
 
-    if (this.isNew) {
-      this.underlay.classList.add('cd-commentUnderlay-new');
-      this.overlay.classList.add('cd-commentOverlay-new');
+    this.updateClassesForType('new', this.isNew);
+    this.updateClassesForType('own', this.isOwn);
+    this.updateClassesForType('deleted', this.isDeleted);
+
+
+    if (wereJustCreated) {
+      if (this.isLineGapped) {
+        this.line.classList.add('cd-commentOverlay-line-closingGap');
+      }
+      if (this.isStartStretched) {
+        this.overlay.classList.add('cd-commentOverlay-stretchedStart');
+      }
+      if (this.isEndStretched) {
+        this.overlay.classList.add('cd-commentOverlay-stretchedEnd');
+      }
     }
-    if (this.isOwn) {
-      this.underlay.classList.add('cd-commentUnderlay-own');
-      this.overlay.classList.add('cd-commentOverlay-own');
-    }
-    if (this.isDeleted) {
-      this.underlay.classList.add('cd-commentUnderlay-deleted');
-      this.overlay.classList.add('cd-commentOverlay-deleted');
-      this.replyButton?.setDisabled(true);
-      this.editButton?.setDisabled(true);
-    } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
-      this.underlay.classList.remove('cd-commentUnderlay-deleted');
-      this.overlay.classList.remove('cd-commentOverlay-deleted');
-      this.replyButton?.setDisabled(false);
-      this.editButton?.setDisabled(false);
-    }
-    if (this.isLineGapped) {
-      this.line.classList.add('cd-commentOverlay-line-closingGap');
-    }
-    this.overlay.classList.toggle('cd-commentOverlay-stretchedStart', this.isStartStretched);
-    this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);
   }
 
   /**
@@ -1080,8 +1110,7 @@ export default class Comment extends CommentSkeleton {
     // again when the next event fires.
     if (isMoved || !this.underlay) return;
 
-    this.underlay.classList.add('cd-commentUnderlay-hover');
-    this.overlay.classList.add('cd-commentOverlay-hover');
+    this.updateClassesForType('hover', true);
     this.isHovered = true;
   }
 
@@ -1093,9 +1122,7 @@ export default class Comment extends CommentSkeleton {
 
     this.$animatedBackground?.stop(false, true);
 
-    this.underlay.classList.remove('cd-commentUnderlay-hover');
-    this.overlay.classList.remove('cd-commentOverlay-hover');
-    this.overlayInnerWrapper.style.display = '';
+    this.updateClassesForType('hover', false);
     this.isHovered = false;
   }
 
@@ -1133,9 +1160,46 @@ export default class Comment extends CommentSkeleton {
     });
   }
 
+  animateBack(type, callback) {
+    this.animateBackBound = null;
+
+    if (!this.underlay) {
+      callback();
+      return;
+    }
+
+    // Get the current colors
+    const initialMarkerColor = this.$marker.css('background-color');
+    const initialBackgroundColor = this.$underlay.css('background-color');
+
+    // Reset the classes that produce these colors
+    this.updateClassesForType(type, false);
+
+    // Get the final (destination) colors
+    const finalMarkerColor = this.$marker.css('background-color');
+    let finalBackgroundColor = this.$underlay.css('background-color');
+
+    // That's basically if the flash color is green (when a comment is changed after an edit) and
+    // the comment itself is green. We animate to transparent, then set green back, so that there is
+    // any animation at all.
+    if (finalBackgroundColor === initialBackgroundColor) {
+      finalBackgroundColor = 'rgba(0, 0, 0, 0)';
+    }
+
+    // Set back the colors previously produced by classes
+    this.$marker.css({
+      backgroundColor: initialMarkerColor,
+      opacity: 1,
+    });
+    this.$animatedBackground.css({ backgroundColor: initialBackgroundColor })
+    this.$overlayGradient?.css({ backgroundImage: 'none' });
+
+    this.animateToColors(finalMarkerColor, finalBackgroundColor, callback);
+  }
+
   /**
-   * Change the comment's background color to the provided color for the given number of
-   * milliseconds, then smoothly change it back.
+   * Change the comment's background color to a color of the provided comment type for the given
+   * number of milliseconds, then smoothly change it back.
    *
    * @param {string} type
    * @param {number} delay
@@ -1150,9 +1214,9 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    if (this.animateBack) {
+    if (this.animateBackBound) {
       clearTimeout(this.unhighlightTimeout);
-      this.animateBack();
+      this.animateBackBound();
     }
 
     /**
@@ -1165,57 +1229,10 @@ export default class Comment extends CommentSkeleton {
     // Reset the animations and colors
     this.$animatedBackground.add(this.$marker).stop(false, true);
 
-    const underlayClasses = ['cd-commentUnderlay-forcedBackground'];
-    const overlayClasses = ['cd-commentOverlay-forcedBackground'];
-    if (!this.underlay.classList.contains(`cd-commentUnderlay-${type}`)) {
-      underlayClasses.push(`cd-commentUnderlay-${type}`);
-      overlayClasses.push(`cd-commentOverlay-${type}`);
-    }
+    this.updateClassesForType(type, true);
 
-    // The "cd-commentUnderlay-forcedBackground" class helps to set background for a type even if
-    // they user has switched off background highlighting for this type ("new", for example).
-    this.underlay.classList.add(...underlayClasses);
-    this.overlay.classList.add(...overlayClasses);
-
-    this.animateBack = () => {
-      this.animateBack = null;
-
-      if (!this.underlay) {
-        callback();
-        return;
-      }
-
-      // Get the current colors
-      const initialMarkerColor = this.$marker.css('background-color');
-      const initialBackgroundColor = this.$underlay.css('background-color');
-
-      // Reset the classes that produce these colors
-      this.underlay.classList.remove(...underlayClasses);
-      this.overlay.classList.remove(...overlayClasses);
-
-      // Get the final (destination) colors
-      const finalMarkerColor = this.$marker.css('background-color');
-      let finalBackgroundColor = this.$underlay.css('background-color');
-
-      // That's basically if the flash color is green (when a comment is updated after an edit) and
-      // the comment itself is green, then animate to transparent, then set green back, so that
-      // there is any animation at all.
-      if (finalBackgroundColor === initialBackgroundColor) {
-        finalBackgroundColor = 'rgba(0, 0, 0, 0)';
-      }
-
-      // Set back the colors previously produced by classes
-      this.$marker.css({
-        backgroundColor: initialMarkerColor,
-        opacity: 1,
-      });
-      this.$animatedBackground.css({ backgroundColor: initialBackgroundColor })
-      this.$overlayGradient?.css({ backgroundImage: 'none' });
-
-      this.animateToColors(finalMarkerColor, finalBackgroundColor, callback);
-    };
-
-    this.unhighlightTimeout = setTimeout(this.animateBack.bind(this), delay);
+    this.animateBackBound = this.animateBack.bind(this, type, callback);
+    this.unhighlightTimeout = setTimeout(this.animateBackBound, delay);
   }
 
   /**
@@ -1233,11 +1250,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Flash the comment as updated and add it to the seen rendered edits list kept in the local
+   * Flash the comment as changed and add it to the seen rendered edits list kept in the local
    * storage.
    */
-  flashNew() {
-    this.flash('new', 1000);
+  flashChanged() {
+    // Use the "changed" type, not "new", to get the "cd-commentUnderlay-changed" class that helps
+    // to set background if the user has switched off background highlighting for new comments.
+    this.flash('changed', 1000);
 
     if (this.isEdited) {
       const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
@@ -1252,19 +1271,19 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Flash the comment as updated when it appears in sight.
+   * Flash the comment as changed when it appears in sight.
    */
-  flashNewOnSight() {
+  flashChangedOnSight() {
     if (!document.hidden && this.isInViewport()) {
-      this.flashNew();
+      this.flashChanged();
     } else {
-      this.willFlashNewOnSight = true;
+      this.willFlashChangedOnSight = true;
     }
   }
 
   /**
    * Update the comment's properties, add a small text next to the signature saying the comment has
-   * been edited or deleted, and flash the comment as updated if it has been.
+   * been edited or deleted, and flash the comment as changed if it has been.
    *
    * @param {string} type Type of the mark: `'edited'`, `'editedSince'`, or `'deleted'`.
    * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
@@ -1379,7 +1398,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (isNewVersionRendered) {
-      this.flashNewOnSight();
+      this.flashChangedOnSight();
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -1388,7 +1407,7 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Update the comment's properties, remove the edit mark added in {@link
-   * module:Comment#markAsEdited} and flash the comment as updated if it has been (reset to the
+   * module:Comment#markAsEdited} and flash the comment as changed if it has been (reset to the
    * original version, or unedited, in this case).
    *
    * @param {string} type Type of the mark: `'edited'` or `'deleted'`.
@@ -1416,8 +1435,8 @@ export default class Comment extends CommentSkeleton {
       .remove();
 
     if (type === 'edited') {
-      if (this.willFlashNewOnSight) {
-        this.willFlashNewOnSight = false;
+      if (this.willFlashChangedOnSight) {
+        this.willFlashChangedOnSight = false;
       } else {
         const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
         const articleId = mw.config.get('wgArticleId');
@@ -1425,7 +1444,7 @@ export default class Comment extends CommentSkeleton {
         delete seenRenderedEdits[articleId][this.anchor];
         saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
 
-        this.flashNewOnSight();
+        this.flashChangedOnSight();
       }
     }
   }
@@ -2074,13 +2093,13 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    if (this.willFlashNewOnSight && isInVewport) {
-      this.willFlashNewOnSight = false;
-      this.flashNew();
+    if (this.willFlashChangedOnSight && isInVewport) {
+      this.willFlashChangedOnSight = false;
+      this.flashChanged();
     }
 
     const makesSenseToRegister = cd.comments
-      .some((comment) => comment.isSeen || comment.willFlashNewOnSight);
+      .some((comment) => comment.isSeen || comment.willFlashChangedOnSight);
     if (registerAllInDirection && makesSenseToRegister) {
       const change = registerAllInDirection === 'backward' ? -1 : 1;
       const nextComment = cd.comments[this.id + change];

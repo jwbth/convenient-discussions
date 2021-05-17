@@ -15,11 +15,12 @@
   background-color: var(--cd-comment-hover-background-color);
 }
 
-.cd-commentUnderlay-new.cd-commentUnderlay-forcedBackground {
+.cd-commentUnderlay-changed.cd-commentUnderlay-changed {
   background-color: var(--cd-comment-new-background-color);
 }
-.cd-commentUnderlay-new.cd-commentUnderlay-forcedBackground.cd-commentUnderlay-hover,
-.cd-commentOverlay-new.cd-commentOverlay-forcedBackground .cd-commentOverlay-content {
+
+.cd-commentUnderlay-changed.cd-commentUnderlay-changed.cd-commentUnderlay-hover,
+.cd-commentOverlay-changed.cd-commentOverlay-changed .cd-commentOverlay-content {
   background-color: var(--cd-comment-new-hover-background-color);
 }
 
@@ -47,11 +48,8 @@
   line-height: 1.4285714em;
 }
 
-.cd-commentOverlay-new .cd-commentOverlay-marker {
-  background-color: var(--cd-comment-new-marker-color);
-}
-
-.cd-commentOverlay-new.cd-commentOverlay-forcedBackground .cd-commentOverlay-marker {
+.cd-commentOverlay-new .cd-commentOverlay-marker,
+.cd-commentOverlay-changed.cd-commentOverlay-changed .cd-commentOverlay-marker {
   background-color: var(--cd-comment-new-marker-color);
 }
 
@@ -164,7 +162,7 @@
     background-image: linear-gradient(to left, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
   }
 
-  .cd-commentOverlay-new.cd-commentOverlay-forcedBackground .cd-commentOverlay-gradient {
+  .cd-commentOverlay-changed.cd-commentOverlay-changed .cd-commentOverlay-gradient {
     background-image: linear-gradient(to left, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0));
   }
 
@@ -199,7 +197,7 @@
     background-image: linear-gradient(to right, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
   }
 
-  .cd-commentOverlay-new.cd-commentOverlay-forcedBackground .cd-commentOverlay-gradient {
+  .cd-commentOverlay-changed.cd-commentOverlay-changed .cd-commentOverlay-gradient {
     background-image: linear-gradient(to right, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0));
   }
 

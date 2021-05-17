@@ -675,23 +675,7 @@ async function processVisits(visitsRequest, keptData) {
   let haveMatchedTimeWithComment = false;
   if (currentPageVisits.length) {
     cd.comments.forEach((comment) => {
-      /**
-       * Is the comment new. Set only on active pages (not archived, not old diffs) excluding pages
-       * that are visited for the first time.
-       *
-       * @type {boolean|undefined}
-       * @memberof module:Comment
-       */
       comment.isNew = false;
-
-      /**
-       * Has the comment been seen. Set only on active pages (not archived, not old diffs) excluding
-       * pages that are visited for the first time. Check using `=== false` if you need to know if
-       * the comment is highlighted as new and unseen.
-       *
-       * @type {boolean|undefined}
-       * @memberof module:Comment
-       */
       comment.isSeen = true;
 
       if (!comment.date) return;
