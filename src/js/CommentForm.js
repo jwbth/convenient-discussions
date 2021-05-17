@@ -260,12 +260,16 @@ export default class CommentForm {
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
 
-      navPanel.updateCommentFormButton();
+      // Navigation panel's comment form button is updated in the end of boot.restoreCommentForms,
+      // so we don't have to do it here.
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
           focusInput(this.headlineInput || this.commentInput);
         }
+
+        // This is for the case when scrolling isn't performed (when it is, callback at the end of
+        // $#cdScrollIntoView executes this line itself).
         navPanel.updateCommentFormButton();
       });
 
