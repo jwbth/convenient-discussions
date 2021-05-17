@@ -7,6 +7,7 @@
 			"LaMagiaaa",
 			"Linuxmetel",
 			"Omotecho",
+			"RYU N",
 			"つぶあん派"
 		]
 	},
@@ -36,7 +37,7 @@
 	"sm-copylink": "#",
 	"sm-copylink-tooltip": "リンクをコピー",
 	"comment-edited": "コメントを変更しました。",
-	"comment-edited-refresh": "更新",
+	"comment-edited-refresh": "更新して変更を確認",
 	"comment-edited-diff": "差分",
 	"section-reply": "返信",
 	"section-addsubsection-to": "『$1」に小見出しを追加する",

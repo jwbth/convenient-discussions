@@ -35,7 +35,7 @@
 	"sm-unwatch-tooltip": "Den Abschnitt von der Beobachtungsliste entfernen",
 	"sm-copylink-tooltip": "Einen Link kopieren.",
 	"comment-edited": "Der Kommentar hat sich geändert.",
-	"comment-edited-refresh": "Aktualisieren",
+	"comment-edited-refresh": "Aktualisieren, um die Änderungen zu sehen",
 	"comment-edited-diff": "Unterschied",
 	"comment-edited-diff-error": "Konnte den Unterschied nicht darstellen.",
 	"comment-edited-diff-empty": "Das Diff ist leer. Wahrscheinlich hat sich das Rendering des Kommentars geändert, aber er wurde nicht bearbeitet.",
