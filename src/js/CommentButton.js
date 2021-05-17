@@ -145,7 +145,7 @@ export default class CommentButton extends Button {
 
   setAction(action) {
     if (this.buttonWidget) {
-      this.widget.on('click', action);
+      this.buttonWidget.on('click', action);
     } else {
       super.setAction(action);
     }
