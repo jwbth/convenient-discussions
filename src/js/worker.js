@@ -235,7 +235,7 @@ function parse() {
         // comment) is treated differently depending on whether there are replies to that comment.
         // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
         // part; when there is, the <div> wrapper is.
-        el.classList.remove('cd-commentPart', 'cd-commentPart-first', 'cd-commentPart-last');
+        el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
         if (!el.getAttribute('class')) {
           el.removeAttribute('class');
         }

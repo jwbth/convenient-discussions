@@ -87,7 +87,7 @@ function getEndItem0Level(startItem, highlightables, nextForeignElement) {
   if (
     nextElement &&
     nextElement.tagName === 'DL' &&
-    nextElement.classList.contains('cd-sectionButton-container')
+    nextElement.classList.contains('cd-section-button-container')
   ) {
     endItem = nextElement;
   }
@@ -248,20 +248,20 @@ export default class Thread {
     cd.debug.startTimer('threads createElement create');
     this.clickArea = elementPrototypes.clickArea.cloneNode(true);
     if (this.rootComment.isStartStretched) {
-      this.clickArea.classList.add('cd-threadLine-clickArea-stretchedStart');
+      this.clickArea.classList.add('cd-thread-clickArea-stretchedStart');
     }
 
     this.clickArea.onmouseenter = () => {
       this.highlightTimeout = setTimeout(() => {
-        this.clickArea.classList.add('cd-threadLine-clickArea-hover');
+        this.clickArea.classList.add('cd-thread-clickArea-hover');
       }, 75);
     };
     this.clickArea.onmouseleave = () => {
       clearTimeout(this.highlightTimeout);
-      this.clickArea.classList.remove('cd-threadLine-clickArea-hover');
+      this.clickArea.classList.remove('cd-thread-clickArea-hover');
     };
     this.clickArea.onclick = () => {
-      if (this.clickArea.classList.contains('cd-threadLine-clickArea-hover')) {
+      if (this.clickArea.classList.contains('cd-thread-clickArea-hover')) {
         this.toggle();
       }
     };
@@ -280,7 +280,7 @@ export default class Thread {
         }
       }
       if (areOutdentedCommentsShown) {
-        this.line.classList.add('cd-threadLine-line-extended');
+        this.line.classList.add('cd-thread-line-extended');
       }
     }
     cd.debug.stopTimer('threads createElement create');
@@ -404,7 +404,7 @@ export default class Thread {
     const setLabel = (genderless) => {
       let messageName = genderless ? 'thread-expand-genderless' : 'thread-expand';
       button.setLabel(cd.s(messageName, this.commentCount, author.name, author));
-      button.element.classList.remove('cd-threadButton-invisible');
+      button.element.classList.remove('cd-thread-button-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
       cd.debug.startTimer('thread collapse button gender');
@@ -424,7 +424,7 @@ export default class Thread {
       tagName = 'DIV';
     }
     const collapsedNote = document.createElement(tagName);
-    collapsedNote.className = 'cd-threadButton-container cd-thread-collapsedNote';
+    collapsedNote.className = 'cd-thread-button-container cd-thread-collapsedNote';
     collapsedNote.appendChild(button.element);
     if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {
       const container = document.createElement('ul');
@@ -453,7 +453,7 @@ export default class Thread {
 
     if (this.endItem !== this.visualEndItem) {
       for (let c = this.rootComment; c; c = c.getParent()) {
-        c.thread?.line.classList.remove('cd-threadLine-line-extended');
+        c.thread?.line.classList.remove('cd-thread-line-extended');
       }
     }
 
@@ -501,7 +501,7 @@ export default class Thread {
 
     if (this.endItem !== this.visualEndItem && areOutdentedCommentsShown) {
       for (let c = this.rootComment; c; c = c.getParent()) {
-        c.thread?.line.classList.add('cd-threadLine-line-extended');
+        c.thread?.line.classList.add('cd-thread-line-extended');
       }
     }
 
@@ -532,7 +532,7 @@ export default class Thread {
     cd.debug.startTimer('threads reset');
     if (cd.g.isPageFirstParsed) {
       threadLinesContainer = document.createElement('div');
-      threadLinesContainer.className = 'cd-threadLinesContainer';
+      threadLinesContainer.className = 'cd-thread-linesContainer';
     } else {
       threadLinesContainer.innerHTML = '';
     }

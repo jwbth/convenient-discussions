@@ -283,7 +283,7 @@ function adjustDom() {
   }
 
   cd.g.rootElement
-    .querySelectorAll('dd.cd-commentPart-last + dd, li.cd-commentPart-last + li')
+    .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
     .forEach((el) => {
       if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
         el.classList.add('cd-connectToPreviousItem');
@@ -357,9 +357,9 @@ function processComments(parser) {
 
   // Faster than doing it for every individual comment.
   cd.g.rootElement
-    .querySelectorAll('table.cd-commentPart .cd-signature')
+    .querySelectorAll('table.cd-comment-part .cd-signature')
     .forEach((signature) => {
-      const commentId = signature.closest('.cd-commentPart').dataset.commentId;
+      const commentId = signature.closest('.cd-comment-part').dataset.commentId;
       cd.comments[commentId].isInSingleCommentTable = true;
     });
 
@@ -421,13 +421,13 @@ function addAddTopicButton() {
     cd.g.addSectionButton = new OO.ui.ButtonWidget({
       label: cd.s('addtopic'),
       framed: false,
-      classes: ['cd-button', 'cd-sectionButton'],
+      classes: ['cd-button-ooui', 'cd-section-button'],
     });
     cd.g.addSectionButton.on('click', () => {
       CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
-      .addClass('cd-sectionButton-container cd-addTopicButton-container')
+      .addClass('cd-section-button-container cd-addTopicButton-container')
       .append(cd.g.addSectionButton.$element)
       .appendTo(cd.g.rootElement);
   }
@@ -542,7 +542,7 @@ function highlightMentions($content) {
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
     .join(', ');
-  Array.from(contentElement.querySelectorAll(`.cd-commentPart a[title*=":${cd.g.USER_NAME}"]`))
+  Array.from(contentElement.querySelectorAll(`.cd-comment-part a[title*=":${cd.g.USER_NAME}"]`))
     .filter((el) => (
       cd.g.USER_LINK_REGEXP.test(el.title) &&
       !el.closest(selector) &&

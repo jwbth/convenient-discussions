@@ -76,25 +76,25 @@
   margin-top: 0.3076923em;
 }
 
-.cd-commentPart-first {
+.cd-comment-part-first {
   margin-top: 0.5em;
 }
 
-.cd-commentPart-last {
+.cd-comment-part-last {
   margin-bottom: 0.5em;
 }
 
-ol > li.cd-commentPart-first.cd-commentPart-first,
-ol > li > .cd-commentPart-first.cd-commentPart-first:first-child {
+ol > li.cd-comment-part-first.cd-comment-part-first,
+ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   margin-top: 0;
 }
 
 .cd-reformattedComments {
-  .cd-commentPart-first {
+  .cd-comment-part-first {
     margin-top: 0.75em;
   }
 
-  .cd-commentPart-last {
+  .cd-comment-part-last {
     margin-bottom: 0.75em;
   }
 
@@ -108,7 +108,7 @@ li {
   margin-bottom: 0.14285714em;
 }
 
-ol > li.cd-commentPart-last.cd-commentPart-last {
+ol > li.cd-comment-part-last.cd-comment-part-last {
   margin-bottom: 0.14285714em;
 }
 
@@ -169,7 +169,7 @@ ol > li.cd-commentPart-last.cd-commentPart-last {
   right: -1px;
 }
 
-.cd-threadLine-clickArea {
+.cd-thread-clickArea {
   position: absolute;
   z-index: 1;
   width: 3px;
@@ -177,16 +177,16 @@ ol > li.cd-commentPart-last.cd-commentPart-last {
   padding-right: var(--cd-thread-line-side-margin);
 }
 
-.cd-threadLine-line {
+.cd-thread-line {
   width: 100%;
   height: 100%;
   opacity: 0;
 }
 
-.cd-threadLine-clickArea-hover {
+.cd-thread-clickArea-hover {
   cursor: pointer;
 
-  .cd-threadLine-line {
+  .cd-thread-line {
     background-color: #72777d;
     opacity: 1;
     transition: opacity 0.2s ease-in;
@@ -197,7 +197,7 @@ ol > li.cd-commentPart-last.cd-commentPart-last {
   }
 }
 
-.cd-threadLine-line-extended::after {
+.cd-thread-line-extended::after {
   display: block;
   content: '';
   height: 10px;

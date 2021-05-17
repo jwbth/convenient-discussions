@@ -108,9 +108,9 @@ async function checkForUpdates() {
           toc.addNewSections(sections);
           mapComments(currentComments, comments);
 
-          // We check for new edits before notifying about new comments to notify about changes in a
+          // We check for changes before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
-          checkForNewEdits(currentComments);
+          checkForNewChanges(currentComments);
 
           await processComments(comments, currentComments, currentRevisionId);
         }
@@ -134,7 +134,7 @@ async function checkForUpdates() {
  * If the revision of the current visit and previous visit are different, process the said
  * revisions. (We need to process the current revision too to get the comments' inner HTML without
  * any elements that may be added by scripts.) The revisions' data will finally processed by {@link
- * module:updateChecker~checkForEditsSincePreviousVisit checkForEditsSincePreviousVisit()}.
+ * module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
  *
  * @private
  */
@@ -153,19 +153,19 @@ async function processRevisionsIfNeeded() {
     const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
     if (isPageStillAtRevision(currentRevisionId)) {
       mapComments(currentComments, oldComments);
-      checkForEditsSincePreviousVisit(currentComments);
+      checkForChangesSincePreviousVisit(currentComments);
     }
   }
 }
 
 /**
- * Remove seen rendered edits data older than 60 days.
+ * Remove seen rendered changes data older than 60 days.
  *
  * @param {object[]} data
  * @returns {object}
  * @private
  */
-function cleanUpSeenRenderedEdits(data) {
+function cleanUpSeenRenderedChanges(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
@@ -324,7 +324,7 @@ function mapComments(currentComments, otherComments) {
  * @returns {boolean}
  * @private
  */
-function isCommentEdited(olderComment, newerComment) {
+function hasCommentChanged(olderComment, newerComment) {
   return (
     newerComment.textComparedHtml !== olderComment.textComparedHtml ||
     (
@@ -340,26 +340,28 @@ function isCommentEdited(olderComment, newerComment) {
  * @param {CommentSkeletonLike[]} currentComments
  * @private
  */
-function checkForEditsSincePreviousVisit(currentComments) {
-  const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
+function checkForChangesSincePreviousVisit(currentComments) {
+  const seenRenderedChanges = cleanUpSeenRenderedChanges(
+    getFromLocalStorage('seenRenderedChanges')
+  );
   const articleId = mw.config.get('wgArticleId');
 
-  const editList = [];
+  const changeList = [];
   currentComments.forEach((currentComment) => {
     if (currentComment.anchor === submittedCommentAnchor) return;
 
     const oldComment = currentComment.match;
     if (oldComment) {
-      const seenComparedHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.comparedHtml;
+      const seenComparedHtml = seenRenderedChanges[articleId]?.[currentComment.anchor]?.comparedHtml;
       if (
-        isCommentEdited(oldComment, currentComment) &&
+        hasCommentChanged(oldComment, currentComment) &&
         seenComparedHtml !== currentComment.comparedHtml
       ) {
         const comment = Comment.getByAnchor(currentComment.anchor);
         if (!comment) return;
 
         const commentsData = [oldComment, currentComment];
-        comment.markAsEdited('editedSince', true, previousVisitRevisionId, commentsData);
+        comment.markAsChanged('changedSince', true, previousVisitRevisionId, commentsData);
 
         if (comment.isOpeningSection) {
           const section = comment.section;
@@ -391,23 +393,26 @@ function checkForEditsSincePreviousVisit(currentComments) {
           old: oldComment,
           current: currentComment,
         };
-        editList.push({ comment, commentData });
+        changeList.push({ comment, commentData });
       }
     }
   });
 
-  if (editList.length) {
+  if (changeList.length) {
     /**
-     * Edits to the existing comments have been made since the previous visit.
+     * Existing comments have changed since the previous visit.
      *
-     * @event editsSincePreviousVisit
+     * @event changesSincePreviousVisit
      * @type {object}
      */
-    mw.hook('convenientDiscussions.editsSincePreviousVisit').fire(editList);
+    mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
   }
 
-  delete seenRenderedEdits[articleId];
-  saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+  delete seenRenderedChanges[articleId];
+  saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
+
+  // TODO: Remove in September 2021 (3 months after renaming)
+  localStorage.removeItem('convenientDiscussions-seenRenderedEdits');
 }
 
 /**
@@ -416,9 +421,9 @@ function checkForEditsSincePreviousVisit(currentComments) {
  * @param {CommentSkeletonLike[]} currentComments
  * @private
  */
-function checkForNewEdits(currentComments) {
-  let isEditMarkUpdated = false;
-  const editList = [];
+function checkForNewChanges(currentComments) {
+  let isChangeMarkUpdated = false;
+  const changeList = [];
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     let comment;
@@ -428,32 +433,32 @@ function checkForNewEdits(currentComments) {
       if (!comment) return;
 
       if (comment.isDeleted) {
-        comment.unmarkAsEdited('deleted');
-        isEditMarkUpdated = true;
+        comment.unmarkAsChanged('deleted');
+        isChangeMarkUpdated = true;
         events.undeleted = true;
       }
-      if (isCommentEdited(currentComment, newComment)) {
+      if (hasCommentChanged(currentComment, newComment)) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
           comment.comparedHtml = newComment.comparedHtml;
           const updateSuccess = comment.update(currentComment, newComment);
           const commentsData = [currentComment, newComment];
-          comment.markAsEdited('edited', updateSuccess, lastCheckedRevisionId, commentsData);
-          isEditMarkUpdated = true;
-          events.edited = { updateSuccess };
+          comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
+          isChangeMarkUpdated = true;
+          events.changed = { updateSuccess };
         }
-      } else if (comment.isEdited) {
+      } else if (comment.isChanged) {
         comment.update(currentComment, newComment);
-        comment.unmarkAsEdited('edited');
-        isEditMarkUpdated = true;
-        events.unedited = true;
+        comment.unmarkAsChanged('changed');
+        isChangeMarkUpdated = true;
+        events.unchanged = true;
       }
     } else if (!currentComment.hasPoorMatch) {
       comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
-      comment.markAsEdited('deleted');
-      isEditMarkUpdated = true;
+      comment.markAsChanged('deleted');
+      isChangeMarkUpdated = true;
       events.deleted = true;
     }
 
@@ -462,12 +467,12 @@ function checkForNewEdits(currentComments) {
         current: currentComment,
         new: newComment,
       };
-      editList.push({ comment, events, commentData });
+      changeList.push({ comment, events, commentData });
     }
   });
 
-  if (isEditMarkUpdated) {
-    // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
+  if (isChangeMarkUpdated) {
+    // If we configure the layers of deleted comments in Comment#unmarkAsChanged, they will prevent
     // layers before them from being updated due to the "stop at the first three unmoved comments"
     // optimization. So we just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
@@ -476,14 +481,14 @@ function checkForNewEdits(currentComments) {
     Thread.init();
   }
 
-  if (editList.length) {
+  if (changeList.length) {
     /**
-     * Changes to the existing comments have been made.
+     * Existing comments have changed (probably edited).
      *
-     * @event newEdits
+     * @event newChanges
      * @type {object}
      */
-    mw.hook('convenientDiscussions.newEdits').fire(editList);
+    mw.hook('convenientDiscussions.newChanges').fire(changeList);
   }
 }
 

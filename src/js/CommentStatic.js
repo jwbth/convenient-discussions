@@ -395,7 +395,7 @@ export default {
           commonGender
         ),
         framed: false,
-        classes: ['cd-button', 'cd-threadButton'],
+        classes: ['cd-button-ooui', 'cd-thread-button'],
       });
       button.on('click', () => {
         const commentAnchor = commentsWithChildren[0].anchor;
@@ -410,7 +410,7 @@ export default {
         const [$wrappingItem] = parent
           .createSublevelItem('newRepliesNote', 'bottom', parentListType);
         $wrappingItem
-          .addClass('cd-threadButton-container cd-thread-newRepliesNote')
+          .addClass('cd-thread-button-container cd-thread-newRepliesNote')
           .append(button.$element);
 
         // Update collapsed range for the thread
@@ -421,7 +421,7 @@ export default {
       } else if (type === 'thread' && parent.$replyWrapper) {
         const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
         $(`<${tagName}>`)
-          .addClass('cd-threadButton-container cd-thread-newRepliesNote')
+          .addClass('cd-thread-button-container cd-thread-newRepliesNote')
           .append(button.$element)
           .insertBefore(parent.$replyWrapper);
       } else {
@@ -434,8 +434,8 @@ export default {
           $last = $(parent.lastElementInFirstChunk);
         }
         button.$element
-          .removeClass('cd-threadButton')
-          .addClass('cd-sectionButton');
+          .removeClass('cd-thread-button')
+          .addClass('cd-section-button');
         let $container;
         if (type === 'section') {
           $container = $('<div>').append(button.$element);
@@ -444,7 +444,7 @@ export default {
           $container = $('<dl>').append($item);
         }
         $container
-          .addClass('cd-sectionButton-container cd-thread-newRepliesNote')
+          .addClass('cd-section-button-container cd-thread-newRepliesNote')
           .insertAfter($last);
       }
     };

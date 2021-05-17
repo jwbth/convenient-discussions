@@ -230,19 +230,19 @@ export function setTalkPageCssVariables() {
 
   cd.g.nanoCss = nanoCssCreate();
   cd.g.nanoCss.put(':root', {
-    '--cd-comment-hover-background-color': cd.g.COMMENT_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-hovered-background-color': cd.g.COMMENT_HOVERED_BACKGROUND_COLOR,
     '--cd-comment-target-marker-color': cd.g.COMMENT_TARGET_MARKER_COLOR,
     '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
-    '--cd-comment-target-hover-background-color': cd.g.COMMENT_TARGET_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-target-hovered-background-color': cd.g.COMMENT_TARGET_HOVERED_BACKGROUND_COLOR,
     '--cd-comment-new-marker-color': cd.g.COMMENT_NEW_MARKER_COLOR,
     '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
-    '--cd-comment-new-hover-background-color': cd.g.COMMENT_NEW_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-new-hovered-background-color': cd.g.COMMENT_NEW_HOVERED_BACKGROUND_COLOR,
     '--cd-comment-own-marker-color': cd.g.COMMENT_OWN_MARKER_COLOR,
     '--cd-comment-own-background-color': cd.g.COMMENT_OWN_BACKGROUND_COLOR,
-    '--cd-comment-own-hover-background-color': cd.g.COMMENT_OWN_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-own-hovered-background-color': cd.g.COMMENT_OWN_HOVERED_BACKGROUND_COLOR,
     '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
     '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
-    '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
+    '--cd-comment-deleted-hovered-background-color': cd.g.COMMENT_DELETED_HOVERED_BACKGROUND_COLOR,
     '--cd-comment-fallback-side-margin': cd.g.COMMENT_FALLBACK_SIDE_MARGIN + 'px',
     '--cd-thread-line-side-margin': cd.g.THREAD_LINE_SIDE_MARGIN + 'px',
     '--cd-content-background-color': contentBackgroundColor,
@@ -622,7 +622,7 @@ function initOouiAndElementPrototypes() {
       new OO.ui.ButtonWidget({
         label: cd.s('cm-reply'),
         framed: false,
-        classes: ['cd-button', 'cd-commentButton'],
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
       })
     );
     commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element
@@ -632,7 +632,7 @@ function initOouiAndElementPrototypes() {
       new OO.ui.ButtonWidget({
         label: cd.s('cm-edit'),
         framed: false,
-        classes: ['cd-button', 'cd-commentButton'],
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
       })
     );
     commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element.get(0);
@@ -642,7 +642,7 @@ function initOouiAndElementPrototypes() {
         label: cd.s('cm-thank'),
         title: cd.s('cm-thank-tooltip'),
         framed: false,
-        classes: ['cd-button', 'cd-commentButton'],
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
       })
     );
     commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element
@@ -655,7 +655,7 @@ function initOouiAndElementPrototypes() {
         title: cd.s('cm-copylink-tooltip'),
         framed: false,
         invisibleLabel: true,
-        classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
       })
     );
     commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton().$element
@@ -668,7 +668,7 @@ function initOouiAndElementPrototypes() {
         title: cd.s('cm-gotoparent-tooltip'),
         framed: false,
         invisibleLabel: true,
-        classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
       })
     );
     commentElementPrototypes.goToParentButton = commentElementPrototypes.getGoToParentButton()
@@ -681,7 +681,7 @@ function initOouiAndElementPrototypes() {
         title: cd.s('cm-gotochild-tooltip'),
         framed: false,
         invisibleLabel: true,
-        classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
       })
     );
     commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton()
@@ -689,33 +689,33 @@ function initOouiAndElementPrototypes() {
   }
 
   const commentUnderlay = document.createElement('div');
-  commentUnderlay.className = 'cd-commentUnderlay';
+  commentUnderlay.className = 'cd-comment-underlay';
   commentElementPrototypes.underlay = commentUnderlay;
 
   const commentOverlay = document.createElement('div');
-  commentOverlay.className = 'cd-commentOverlay';
+  commentOverlay.className = 'cd-comment-overlay';
   commentElementPrototypes.overlay = commentOverlay;
 
   const overlayLine = document.createElement('div');
-  overlayLine.className = 'cd-commentOverlay-line';
+  overlayLine.className = 'cd-comment-overlay-line';
   commentOverlay.appendChild(overlayLine);
 
   const overlayMarker = document.createElement('div');
-  overlayMarker.className = 'cd-commentOverlay-marker';
+  overlayMarker.className = 'cd-comment-overlay-marker';
   commentOverlay.appendChild(overlayMarker);
 
   if (!cd.settings.reformatComments) {
     const overlayInnerWrapper = document.createElement('div');
-    overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';
+    overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
     commentOverlay.appendChild(overlayInnerWrapper);
 
     const overlayGradient = document.createElement('div');
     overlayGradient.textContent = '\u00A0';
-    overlayGradient.className = 'cd-commentOverlay-gradient';
+    overlayGradient.className = 'cd-comment-overlay-gradient';
     overlayInnerWrapper.appendChild(overlayGradient);
 
     const overlayContent = document.createElement('div');
-    overlayContent.className = 'cd-commentOverlay-content';
+    overlayContent.className = 'cd-comment-overlay-content';
     overlayInnerWrapper.appendChild(overlayContent);
   }
   cd.g.COMMENT_ELEMENT_PROTOTYPES = commentElementPrototypes;
@@ -727,7 +727,7 @@ function initOouiAndElementPrototypes() {
 
     // Add the thread button class as it behaves as a thread button in fact, being positioned inside
     // a "cd-commentLevel" list.
-    classes: ['cd-button', 'cd-sectionButton', 'cd-threadButton'],
+    classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
   }).$element.get(0);
 
   sectionElementPrototypes.addSubsectionButton = new OO.ui.ButtonWidget({
@@ -735,7 +735,7 @@ function initOouiAndElementPrototypes() {
     label: ' ',
 
     framed: false,
-    classes: ['cd-button', 'cd-sectionButton'],
+    classes: ['cd-button-ooui', 'cd-section-button'],
   }).$element.get(0);
   cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
 
@@ -747,18 +747,18 @@ function initOouiAndElementPrototypes() {
 
     framed: false,
     classes: [
-      'cd-button',
-      'cd-threadButton',
-      'cd-threadButton-invisible',
-      'cd-threadButton-collapsedNote',
+      'cd-button-ooui',
+      'cd-thread-button',
+      'cd-thread-button-invisible',
+      'cd-thread-button-collapsedNote',
     ],
   }).$element.get(0);
 
   const threadClickArea = document.createElement('div');
-  threadClickArea.className = 'cd-threadLine-clickArea';
+  threadClickArea.className = 'cd-thread-clickArea';
   threadClickArea.title = cd.s('thread-tooltip');
   const line = document.createElement('div');
-  line.className = 'cd-threadLine-line';
+  line.className = 'cd-thread-line';
   threadClickArea.appendChild(line);
   threadElementPrototypes.clickArea = threadClickArea;
   cd.g.THREAD_ELEMENT_PROTOTYPES = threadElementPrototypes;
@@ -772,38 +772,38 @@ function initOouiAndElementPrototypes() {
  */
 function addBackgroundHighlightingCss() {
   if (cd.settings.useBackgroundHighlighting) {
-    cd.g.nanoCss.put(`.cd-commentUnderlay-new`, {
+    cd.g.nanoCss.put(`.cd-comment-underlay-new`, {
       backgroundColor: 'var(--cd-comment-new-background-color)',
     });
     cd.g.nanoCss.put(
-      `.cd-commentUnderlay-new.cd-commentUnderlay-hover, ` +
-      `.cd-commentOverlay-new .cd-commentOverlay-content`,
+      `.cd-comment-underlay-new.cd-comment-underlay-hovered, ` +
+      `.cd-comment-overlay-new .cd-comment-overlay-content`,
       {
-        backgroundColor: 'var(--cd-comment-new-hover-background-color)',
+        backgroundColor: 'var(--cd-comment-new-hovered-background-color)',
       }
     );
-    cd.g.nanoCss.put(`.ltr .cd-commentOverlay-new .cd-commentOverlay-gradient`, {
-      backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
+    cd.g.nanoCss.put(`.ltr .cd-comment-overlay-new .cd-comment-overlay-gradient`, {
+      backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0))',
     });
-    cd.g.nanoCss.put(`.rtl .cd-commentOverlay-new .cd-commentOverlay-gradient`, {
-      backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
+    cd.g.nanoCss.put(`.rtl .cd-comment-overlay-new .cd-comment-overlay-gradient`, {
+      backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0))',
     });
 
-    cd.g.nanoCss.put('.cd-commentUnderlay-own', {
+    cd.g.nanoCss.put('.cd-comment-underlay-own', {
       backgroundColor: 'var(--cd-comment-own-background-color)',
     });
     cd.g.nanoCss.put(
-      '.cd-commentUnderlay-own.cd-commentUnderlay-hover, ' +
-      '.cd-commentOverlay-own .cd-commentOverlay-content',
+      '.cd-comment-underlay-own.cd-comment-underlay-hovered, ' +
+      '.cd-comment-overlay-own .cd-comment-overlay-content',
       {
-        backgroundColor: 'var(--cd-comment-own-hover-background-color)',
+        backgroundColor: 'var(--cd-comment-own-hovered-background-color)',
       }
     );
-    cd.g.nanoCss.put('.ltr .cd-commentOverlay-own .cd-commentOverlay-gradient', {
-      backgroundImage: 'linear-gradient(to left, var(--cd-comment-own-hover-background-color), rgba(255, 255, 255, 0))',
+    cd.g.nanoCss.put('.ltr .cd-comment-overlay-own .cd-comment-overlay-gradient', {
+      backgroundImage: 'linear-gradient(to left, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0))',
     });
-    cd.g.nanoCss.put('.rtl .cd-commentOverlay-own .cd-commentOverlay-gradient', {
-      backgroundImage: 'linear-gradient(to right, var(--cd-comment-own-hover-background-color), rgba(255, 255, 255, 0))',
+    cd.g.nanoCss.put('.rtl .cd-comment-overlay-own .cd-comment-overlay-gradient', {
+      backgroundImage: 'linear-gradient(to right, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0))',
     });
   }
 }

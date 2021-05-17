@@ -151,7 +151,7 @@ export default class Parser {
     this.context = context;
 
     if (!foreignComponentClasses) {
-      foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
+      foreignComponentClasses = ['cd-comment-part', ...cd.config.closedDiscussionClasses];
       if (cd.g.pageHasOutdents) {
         foreignComponentClasses.push('outdent-template');
       }

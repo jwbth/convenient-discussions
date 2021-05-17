@@ -8,19 +8,19 @@
 .skin-monobook {
   --cd-link-color: #002bb8;
 
-  .cd-commentUnderlay {
+  .cd-comment-underlay {
     z-index: -1;
   }
 
-  .cd-commentOverlay-innerWrapper {
+  .cd-comment-overlay-innerWrapper {
     z-index: 2;
   }
 
-  .cd-commentButton.cd-commentButton.oo-ui-labelElement > .oo-ui-buttonElement-button > .oo-ui-labelElement-label {
+  .cd-comment-button-ooui.oo-ui-labelElement .oo-ui-labelElement-label {
     line-height: 1.14285714em;
   }
 
-  .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
+  .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
     padding: 0;
 
     > .oo-ui-iconElement-icon {
@@ -30,7 +30,7 @@
     }
   }
 
-  .cd-commentInput {
+  .cd-commentForm-commentInput {
     border: 1px solid #ccc;
 
     .wikiEditor-ui-toolbar {
@@ -61,7 +61,7 @@
     height: 35px;
   }
 
-  .cd-threadButton-collapsedNote.cd-threadButton-collapsedNote.cd-threadButton-collapsedNote > .oo-ui-buttonElement-button {
+  .cd-thread-button-collapsedNote.cd-thread-button-collapsedNote.cd-thread-button-collapsedNote > .oo-ui-buttonElement-button {
     padding-left: 0;
 
     > .oo-ui-iconElement-icon {
@@ -96,11 +96,11 @@
 
   // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
   // surrounding area from the design point of view.
-  .sitedir-ltr .cd-commentOverlay-stretchedStart .cd-commentOverlay-line {
+  .sitedir-ltr .cd-comment-overlay-stretchedStart .cd-comment-overlay-line {
     left: 0;
   }
 
-  .sitedir-rtl .cd-commentOverlay-stretchedStart .cd-commentOverlay-line {
+  .sitedir-rtl .cd-comment-overlay-stretchedStart .cd-comment-overlay-line {
     right: 0;
   }
 }

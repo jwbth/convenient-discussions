@@ -57,10 +57,10 @@ export default class SectionSkeleton {
       (node) => (
         !['STYLE', 'LINK'].includes(node.tagName) &&
 
-        // .cd-sectionButton-container elements are added to level 2 sections, which means these
+        // .cd-section-button-container elements are added to level 2 sections, which means these
         // sections won't have them as elements but their last subsections can if they are included.
         // So we better don't include them at all.
-        !node.classList.contains('cd-sectionButton-container')
+        !node.classList.contains('cd-section-button-container')
       ),
       true,
       headingElement
@@ -108,14 +108,14 @@ export default class SectionSkeleton {
 
       treeWalker.currentNode = elements[1];
       do {
-        if (treeWalker.currentNode.classList.contains('cd-commentPart')) {
+        if (treeWalker.currentNode.classList.contains('cd-comment-part')) {
           firstCommentPart = treeWalker.currentNode;
         }
       } while (!firstCommentPart && treeWalker.currentNode !== lastNode && treeWalker.nextNode());
 
       treeWalker.currentNode = lastNode;
       do {
-        if (treeWalker.currentNode.classList.contains('cd-commentPart')) {
+        if (treeWalker.currentNode.classList.contains('cd-comment-part')) {
           lastCommentPart = treeWalker.currentNode;
         }
       } while (

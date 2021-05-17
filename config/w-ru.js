@@ -398,8 +398,8 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
         const hlmStyledElements = cd.g.rootElement.querySelectorAll(
-          '.cd-commentPart[style="background-color: ' + dummyElement.style.color + ';"],' +
-          '.cd-commentPart[style="background-color: ' + window.messagesHighlightColor + '"]'
+          '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
+          '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
         );
         hlmStyledElements.forEach(function (el) {
           el.style.backgroundColor = null;

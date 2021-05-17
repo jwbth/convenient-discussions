@@ -234,19 +234,19 @@ export default class Comment extends CommentSkeleton {
     this.isHovered = false;
 
     /**
-     * Was the comment edited since the previous visit.
+     * Has the comment changed since the previous visit.
      *
      * @type {?boolean}
      */
-    this.isEditedSincePreviousVisit = null;
+    this.isChangedSincePreviousVisit = null;
 
     /**
-     * Was the comment edited while the page was idle. (The new version may be rendered and may be
+     * Has the comment changed while the page was idle. (The new version may be rendered and may be
      * not, if the layout is too complex.)
      *
      * @type {?boolean}
      */
-    this.isEdited = null;
+    this.isChanged = null;
 
     /**
      * Was the comment deleted while the page was idle.
@@ -382,7 +382,7 @@ export default class Comment extends CommentSkeleton {
 
       this.addAttributes();
       firstHighlightable.classList
-        .remove('cd-commentPart', 'cd-commentPart-first', 'cd-commentPart-last');
+        .remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
       delete firstHighlightable.dataset.commentId;
     }
 
@@ -614,13 +614,13 @@ export default class Comment extends CommentSkeleton {
 
           (['left', 'right'].includes(style.float) || style.display === 'none')
         ) {
-          if (el.classList.contains('cd-commentPart-first')) {
-            el.classList.remove('cd-commentPart-first');
-            this.highlightables[i + 1].classList.add('cd-commentPart-first');
+          if (el.classList.contains('cd-comment-part-first')) {
+            el.classList.remove('cd-comment-part-first');
+            this.highlightables[i + 1].classList.add('cd-comment-part-first');
           }
-          if (el.classList.contains('cd-commentPart-last')) {
-            el.classList.remove('cd-commentPart-last');
-            this.highlightables[i - 1].classList.add('cd-commentPart-last');
+          if (el.classList.contains('cd-comment-part-last')) {
+            el.classList.remove('cd-comment-part-last');
+            this.highlightables[i - 1].classList.add('cd-comment-part-last');
           }
           delete el.dataset.commentId;
           this.highlightables.splice(i, 1);
@@ -947,14 +947,14 @@ export default class Comment extends CommentSkeleton {
 
   updateClassesForType(type, add) {
     add = Boolean(add);
-    if (this.underlay.classList.contains(`cd-commentUnderlay-${type}`) !== add) {
-      this.underlay.classList.toggle(`cd-commentUnderlay-${type}`, add);
-      this.overlay.classList.toggle(`cd-commentOverlay-${type}`, add);
+    if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) !== add) {
+      this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
+      this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
 
       if (type === 'deleted') {
         this.replyButton?.setDisabled(add);
         this.editButton?.setDisabled(add);
-      } else if (type === 'hover' && !add) {
+      } else if (type === 'hovered' && !add) {
         this.overlayInnerWrapper.style.display = '';
       }
     }
@@ -963,9 +963,9 @@ export default class Comment extends CommentSkeleton {
   /**
    * Update the styles of the layers according to the comment's properties.
    *
-   * @param {boolean} wereJustCreated Were the layers just created.
+   * @param {boolean} [wereJustCreated=false] Were the layers just created.
    */
-  updateLayersStyles(wereJustCreated) {
+  updateLayersStyles(wereJustCreated = false) {
     if (!this.underlay) return;
 
     this.updateClassesForType('new', this.isNew);
@@ -975,13 +975,13 @@ export default class Comment extends CommentSkeleton {
 
     if (wereJustCreated) {
       if (this.isLineGapped) {
-        this.line.classList.add('cd-commentOverlay-line-closingGap');
+        this.line.classList.add('cd-comment-overlay-line-closingGap');
       }
       if (this.isStartStretched) {
-        this.overlay.classList.add('cd-commentOverlay-stretchedStart');
+        this.overlay.classList.add('cd-comment-overlay-stretchedStart');
       }
       if (this.isEndStretched) {
-        this.overlay.classList.add('cd-commentOverlay-stretchedEnd');
+        this.overlay.classList.add('cd-comment-overlay-stretchedEnd');
       }
     }
   }
@@ -1110,7 +1110,7 @@ export default class Comment extends CommentSkeleton {
     // again when the next event fires.
     if (isMoved || !this.underlay) return;
 
-    this.updateClassesForType('hover', true);
+    this.updateClassesForType('hovered', true);
     this.isHovered = true;
   }
 
@@ -1122,7 +1122,7 @@ export default class Comment extends CommentSkeleton {
 
     this.$animatedBackground?.stop(false, true);
 
-    this.updateClassesForType('hover', false);
+    this.updateClassesForType('hovered', false);
     this.isHovered = false;
   }
 
@@ -1254,19 +1254,19 @@ export default class Comment extends CommentSkeleton {
    * storage.
    */
   flashChanged() {
-    // Use the "changed" type, not "new", to get the "cd-commentUnderlay-changed" class that helps
+    // Use the "changed" type, not "new", to get the "cd-comment-underlay-changed" class that helps
     // to set background if the user has switched off background highlighting for new comments.
     this.flash('changed', 1000);
 
-    if (this.isEdited) {
-      const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
+    if (this.isChanged) {
+      const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
       const articleId = mw.config.get('wgArticleId');
-      seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
-      seenRenderedEdits[articleId][this.anchor] = {
+      seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
+      seenRenderedChanges[articleId][this.anchor] = {
         comparedHtml: this.comparedHtml,
         seenUnixTime: Date.now(),
       };
-      saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+      saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
     }
   }
 
@@ -1283,27 +1283,27 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Update the comment's properties, add a small text next to the signature saying the comment has
-   * been edited or deleted, and flash the comment as changed if it has been.
+   * been changed or deleted, and change the comment's styling if it has been.
    *
-   * @param {string} type Type of the mark: `'edited'`, `'editedSince'`, or `'deleted'`.
+   * @param {string} type Type of the mark: `'changed'`, `'changedSince'`, or `'deleted'`.
    * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
    *   see the diff.
    * @param {string} [commentsData] Data of the comments as of the current revision and the revision
    *   to compare with.
    */
-  markAsEdited(type, isNewVersionRendered, comparedRevisionId, commentsData) {
+  markAsChanged(type, isNewVersionRendered, comparedRevisionId, commentsData) {
     let stringName;
     switch (type) {
-      case 'edited':
+      case 'changed':
       default:
-        this.isEdited = true;
-        stringName = 'comment-edited';
+        this.isChanged = true;
+        stringName = 'comment-changed';
         break;
 
-      case 'editedSince':
-        this.isEditedSincePreviousVisit = true;
-        stringName = 'comment-editedsince';
+      case 'changedSince':
+        this.isChangedSincePreviousVisit = true;
+        stringName = 'comment-changedsince';
         break;
 
       case 'deleted':
@@ -1317,7 +1317,7 @@ export default class Comment extends CommentSkeleton {
       const keptData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
       $refreshLink = $('<a>')
         .attr('tabindex', 0)
-        .text(cd.s('comment-edited-refresh'))
+        .text(cd.s('comment-changed-refresh'))
         .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', () => {
           reloadPage(keptData);
@@ -1328,7 +1328,7 @@ export default class Comment extends CommentSkeleton {
     if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
       $diffLink = $('<a>')
         .attr('tabindex', 0)
-        .text(cd.s('comment-edited-diff'))
+        .text(cd.s('comment-changed-diff'))
         .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', async (e) => {
           e.preventDefault();
@@ -1336,7 +1336,7 @@ export default class Comment extends CommentSkeleton {
           try {
             await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
-            let text = cd.sParse('comment-edited-diff-error');
+            let text = cd.sParse('comment-changed-diff-error');
             if (e instanceof CdError) {
               const { type, message } = e.data;
               if (message) {
@@ -1363,23 +1363,23 @@ export default class Comment extends CommentSkeleton {
     }
 
     $(this.highlightables)
-      .find('.cd-editMark')
+      .find('.cd-changeMark')
       .remove();
 
-    const $editMark = $('<span>')
-      .addClass('cd-editMark')
+    const $changeMark = $('<span>')
+      .addClass('cd-changeMark')
       .text(cd.s(stringName));
     if ($refreshLink) {
-      $editMark.append(refreshLinkSeparator, $refreshLink);
+      $changeMark.append(refreshLinkSeparator, $refreshLink);
     } else {
-      $editMark.addClass('cd-editMark-newVersionRendered');
+      $changeMark.addClass('cd-changeMark-newVersionRendered');
     }
     if ($diffLink) {
-      $editMark.append(diffLinkSeparator, $diffLink);
+      $changeMark.append(diffLinkSeparator, $diffLink);
     }
 
     if (cd.settings.reformatComments) {
-      this.$header.append($editMark);
+      this.$header.append($changeMark);
     } else {
       // Add the mark to the last block element, going as many nesting levels down as needed to
       // avoid it appearing after a block element.
@@ -1390,11 +1390,11 @@ export default class Comment extends CommentSkeleton {
         $tested = $last.children().last();
       } while ($tested.length && !isInline($tested.get(0)));
 
-      if (!$last.find('.cd-beforeEditMark').length) {
-        const $before = $('<span>').addClass('cd-beforeEditMark');
+      if (!$last.find('.cd-beforeChangeMark').length) {
+        const $before = $('<span>').addClass('cd-beforeChangeMark');
         $last.append(' ', $before);
       }
-      $last.append($editMark);
+      $last.append($changeMark);
     }
 
     if (isNewVersionRendered) {
@@ -1402,21 +1402,21 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
-    // see updateChecker~checkForNewEdits, for example.
+    // see updateChecker~checkForNewChanges, for example.
   }
 
   /**
    * Update the comment's properties, remove the edit mark added in {@link
-   * module:Comment#markAsEdited} and flash the comment as changed if it has been (reset to the
-   * original version, or unedited, in this case).
+   * module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to the
+   * original version, or unchanged, in this case).
    *
-   * @param {string} type Type of the mark: `'edited'` or `'deleted'`.
+   * @param {string} type Type of the mark: `'changed'` or `'deleted'`.
    */
-  unmarkAsEdited(type) {
+  unmarkAsChanged(type) {
     switch (type) {
-      case 'edited':
+      case 'changed':
       default:
-        this.isEdited = false;
+        this.isChanged = false;
         break;
       case 'deleted':
         this.isDeleted = false;
@@ -1431,18 +1431,18 @@ export default class Comment extends CommentSkeleton {
 
     this.$elements
       .last()
-      .find('.cd-editMark')
+      .find('.cd-changeMark')
       .remove();
 
-    if (type === 'edited') {
+    if (type === 'changed') {
       if (this.willFlashChangedOnSight) {
         this.willFlashChangedOnSight = false;
       } else {
-        const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
+        const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
         const articleId = mw.config.get('wgArticleId');
-        seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
-        delete seenRenderedEdits[articleId][this.anchor];
-        saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+        seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
+        delete seenRenderedChanges[articleId][this.anchor];
+        saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
 
         this.flashChangedOnSight();
       }
@@ -2224,7 +2224,7 @@ export default class Comment extends CommentSkeleton {
         .clone()
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
-      const selectorParts = ['.cd-signature', '.cd-editMark'];
+      const selectorParts = ['.cd-signature', '.cd-changeMark'];
       if (cd.settings.reformatComments) {
         selectorParts.push('.cd-comment-header', '.cd-comment-menu');
       }
@@ -2991,14 +2991,14 @@ export default class Comment extends CommentSkeleton {
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',
-        message: cd.sParse('comment-edited-diff-empty'),
+        message: cd.sParse('comment-changed-diff-empty'),
       });
     }
 
     const $historyLink = $('<a>')
       .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
       .attr('target', '_blank')
-      .text(cd.s('comment-edited-history'));
+      .text(cd.s('comment-changed-history'));
     const $below = $('<div>')
       .addClass('cd-commentDiffView-below')
       .append($historyLink);

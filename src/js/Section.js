@@ -191,7 +191,7 @@ export default class Section extends SectionSkeleton {
     let container;
     if (createList) {
       container = document.createElement('dl');
-      container.className = 'cd-commentLevel cd-commentLevel-1 cd-sectionButton-container';
+      container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container';
       container.appendChild(wrapper);
       lastElement.parentNode.insertBefore(container, lastElement.nextElementSibling);
     } else {
@@ -240,7 +240,7 @@ export default class Section extends SectionSkeleton {
     });
 
     const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'cd-sectionButton-container cd-addSubsectionButton-container';
+    buttonContainer.className = 'cd-section-button-container cd-addSubsectionButton-container';
     buttonContainer.style.display = 'none';
     buttonContainer.appendChild(button.element);
 

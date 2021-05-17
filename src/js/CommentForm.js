@@ -684,7 +684,7 @@ export default class CommentForm {
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
         placeholder: this.headlineInputPlaceholder,
-        classes: ['cd-headlineInput'],
+        classes: ['cd-commentForm-headlineInput'],
         tabIndex: String(this.id) + '11',
       });
     }
@@ -735,7 +735,7 @@ export default class CommentForm {
       autosize: true,
       rows: rowNumber,
       maxRows: 30,
-      classes: ['cd-commentInput'],
+      classes: ['cd-commentForm-commentInput'],
       tabIndex: String(this.id) + '12',
     });
     this.commentInput.$input.addClass('ime-position-inside');
@@ -756,7 +756,7 @@ export default class CommentForm {
       value: dataToRestore ? dataToRestore.summary : '',
       maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
       placeholder: cd.s('cf-summary-placeholder'),
-      classes: ['cd-summaryInput'],
+      classes: ['cd-commentForm-summaryInput'],
       tabIndex: String(this.id) + '13',
     });
     this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
@@ -936,7 +936,7 @@ export default class CommentForm {
      * @type {OoUiHorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
-      classes: ['cd-checkboxes'],
+      classes: ['cd-commentForm-checkboxes'],
       items: [
         this.minorField,
         this.watchField,
@@ -951,21 +951,21 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$buttons = $('<div>').addClass('cd-buttons');
+    this.$buttons = $('<div>').addClass('cd-commentForm-buttons');
 
     /**
      * Start (left on LTR wikis, right on RTL wikis) form buttons container.
      *
      * @type {JQuery}
      */
-    this.$buttonsStart = $('<div>').addClass('cd-buttons-start');
+    this.$buttonsStart = $('<div>').addClass('cd-commentForm-buttons-start');
 
     /**
      * End (right on LTR wikis, left on RTL wikis) form buttons container.
      *
      * @type {JQuery}
      */
-    this.$buttonsEnd = $('<div>').addClass('cd-buttons-end');
+    this.$buttonsEnd = $('<div>').addClass('cd-commentForm-buttons-end');
 
     const modeToSubmitButtonMessageName = {
       edit: 'save',
@@ -989,7 +989,7 @@ export default class CommentForm {
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
       framed: false,
-      classes: ['cd-button', 'cd-advancedButton'],
+      classes: ['cd-button-ooui', 'cd-commentForm-advancedButton'],
       tabIndex: String(this.id) + '30',
     });
 
@@ -1012,7 +1012,7 @@ export default class CommentForm {
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
       framed: false,
-      classes: ['cd-button'],
+      classes: ['cd-button-ooui'],
       popup: {
         head: false,
         $content: cd.util.wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
@@ -1040,7 +1040,7 @@ export default class CommentForm {
       label: cd.s('cf-settings-tooltip'),
       invisibleLabel: true,
       title: cd.s('cf-settings-tooltip'),
-      classes: ['cd-button', 'cd-settingsButton'],
+      classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
       tabIndex: String(this.id) + '32',
     });
 
@@ -1053,7 +1053,7 @@ export default class CommentForm {
       label: cd.s('cf-cancel'),
       flags: 'destructive',
       framed: false,
-      classes: ['cd-button', 'cd-cancelButton'],
+      classes: ['cd-button-ooui', 'cd-commentForm-cancelButton'],
       tabIndex: String(this.id) + '33',
     });
 
@@ -1064,7 +1064,7 @@ export default class CommentForm {
      */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
-      classes: ['cd-viewChangesButton'],
+      classes: ['cd-commentForm-viewChangesButton'],
       tabIndex: String(this.id) + '34',
     });
 
@@ -1075,7 +1075,7 @@ export default class CommentForm {
      */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
-      classes: ['cd-previewButton'],
+      classes: ['cd-commentForm-previewButton'],
       tabIndex: String(this.id) + '35',
     });
     if (cd.settings.autopreview) {
@@ -1090,7 +1090,7 @@ export default class CommentForm {
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
-      classes: ['cd-submitButton'],
+      classes: ['cd-commentForm-submitButton'],
       tabIndex: String(this.id) + '36',
     });
 
@@ -1430,7 +1430,7 @@ export default class CommentForm {
         const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
         let $target;
         let $tested = this.target.$elements.last();
-        const selector = '.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
+        const selector = '.cd-section-button-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
         do {
           $target = $tested;
           $tested = $tested.next();
