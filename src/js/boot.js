@@ -4,8 +4,6 @@
  * @module boot
  */
 
-import { create as nanoCssCreate } from 'nano-css';
-
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
@@ -20,6 +18,7 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import {
+  addCss,
   areObjectsEqual,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
@@ -228,29 +227,28 @@ export function setTalkPageCssVariables() {
   });
   const sidebarColor = $backgrounded.css('background-color');
 
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put(':root', {
-    '--cd-comment-hovered-background-color': cd.g.COMMENT_HOVERED_BACKGROUND_COLOR,
-    '--cd-comment-target-marker-color': cd.g.COMMENT_TARGET_MARKER_COLOR,
-    '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
-    '--cd-comment-target-hovered-background-color': cd.g.COMMENT_TARGET_HOVERED_BACKGROUND_COLOR,
-    '--cd-comment-new-marker-color': cd.g.COMMENT_NEW_MARKER_COLOR,
-    '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
-    '--cd-comment-new-hovered-background-color': cd.g.COMMENT_NEW_HOVERED_BACKGROUND_COLOR,
-    '--cd-comment-own-marker-color': cd.g.COMMENT_OWN_MARKER_COLOR,
-    '--cd-comment-own-background-color': cd.g.COMMENT_OWN_BACKGROUND_COLOR,
-    '--cd-comment-own-hovered-background-color': cd.g.COMMENT_OWN_HOVERED_BACKGROUND_COLOR,
-    '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
-    '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
-    '--cd-comment-deleted-hovered-background-color': cd.g.COMMENT_DELETED_HOVERED_BACKGROUND_COLOR,
-    '--cd-comment-fallback-side-margin': cd.g.COMMENT_FALLBACK_SIDE_MARGIN + 'px',
-    '--cd-thread-line-side-margin': cd.g.THREAD_LINE_SIDE_MARGIN + 'px',
-    '--cd-content-background-color': contentBackgroundColor,
-    '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
-    '--cd-content-font-size': cd.g.CONTENT_FONT_SIZE + 'px',
-    '--cd-sidebar-color': sidebarColor,
-    '--cd-sidebar-transparent-color': transparentize(sidebarColor),
-  });
+  addCss(`:root {
+  --cd-comment-hovered-background-color: ${cd.g.COMMENT_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-target-marker-color: ${cd.g.COMMENT_TARGET_MARKER_COLOR};
+  --cd-comment-target-background-color: ${cd.g.COMMENT_TARGET_BACKGROUND_COLOR};
+  --cd-comment-target-hovered-background-color: ${cd.g.COMMENT_TARGET_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-new-marker-color: ${cd.g.COMMENT_NEW_MARKER_COLOR};
+  --cd-comment-new-background-color: ${cd.g.COMMENT_NEW_BACKGROUND_COLOR};
+  --cd-comment-new-hovered-background-color: ${cd.g.COMMENT_NEW_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-own-marker-color: ${cd.g.COMMENT_OWN_MARKER_COLOR};
+  --cd-comment-own-background-color: ${cd.g.COMMENT_OWN_BACKGROUND_COLOR};
+  --cd-comment-own-hovered-background-color: ${cd.g.COMMENT_OWN_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-deleted-marker-color: ${cd.g.COMMENT_DELETED_MARKER_COLOR};
+  --cd-comment-deleted-background-color: ${cd.g.COMMENT_DELETED_BACKGROUND_COLOR};
+  --cd-comment-deleted-hovered-background-color: ${cd.g.COMMENT_DELETED_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-fallback-side-margin: ${cd.g.COMMENT_FALLBACK_SIDE_MARGIN}px;
+  --cd-thread-line-side-margin: ${cd.g.THREAD_LINE_SIDE_MARGIN}px;
+  --cd-content-background-color: ${contentBackgroundColor};
+  --cd-content-start-margin: ${cd.g.CONTENT_START_MARGIN}px;
+  --cd-content-font-size: ${cd.g.CONTENT_FONT_SIZE}px;
+  --cd-sidebar-color: ${sidebarColor};
+  --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
+}`);
 }
 
 /**
@@ -765,50 +763,6 @@ function initOouiAndElementPrototypes() {
 }
 
 /**
- * Add CSS rules related to background highlighting. It is contingent on the
- * "useBackgroundHighlighting" setting.
- *
- * @private
- */
-function addBackgroundHighlightingCss() {
-  if (cd.settings.useBackgroundHighlighting) {
-    cd.g.nanoCss.put(`.cd-comment-underlay-new`, {
-      backgroundColor: 'var(--cd-comment-new-background-color)',
-    });
-    cd.g.nanoCss.put(
-      `.cd-comment-underlay-new.cd-comment-underlay-hovered, ` +
-      `.cd-comment-overlay-new .cd-comment-overlay-content`,
-      {
-        backgroundColor: 'var(--cd-comment-new-hovered-background-color)',
-      }
-    );
-    cd.g.nanoCss.put(`.ltr .cd-comment-overlay-new .cd-comment-overlay-gradient`, {
-      backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0))',
-    });
-    cd.g.nanoCss.put(`.rtl .cd-comment-overlay-new .cd-comment-overlay-gradient`, {
-      backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0))',
-    });
-
-    cd.g.nanoCss.put('.cd-comment-underlay-own', {
-      backgroundColor: 'var(--cd-comment-own-background-color)',
-    });
-    cd.g.nanoCss.put(
-      '.cd-comment-underlay-own.cd-comment-underlay-hovered, ' +
-      '.cd-comment-overlay-own .cd-comment-overlay-content',
-      {
-        backgroundColor: 'var(--cd-comment-own-hovered-background-color)',
-      }
-    );
-    cd.g.nanoCss.put('.ltr .cd-comment-overlay-own .cd-comment-overlay-gradient', {
-      backgroundImage: 'linear-gradient(to left, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0))',
-    });
-    cd.g.nanoCss.put('.rtl .cd-comment-overlay-own .cd-comment-overlay-gradient', {
-      backgroundImage: 'linear-gradient(to right, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0))',
-    });
-  }
-}
-
-/**
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed on
  * the first run.
  *
@@ -824,7 +778,9 @@ export async function init(siteDataRequests) {
   initTimestampParsingTools();
   initPatterns();
   initOouiAndElementPrototypes();
-  addBackgroundHighlightingCss();
+  if (cd.settings.useBackgroundHighlighting) {
+    require('../less/commentLayers-optionalBackgroundHighlighting.less');
+  }
   $.fn.extend(jqueryExtensions);
 
   /**

@@ -4,12 +4,11 @@
  * @module commentLinks
  */
 
-import { create as nanoCssCreate } from 'nano-css';
-
 import Comment from './Comment';
 import Page from './Page';
 import cd from './cd';
 import {
+  addCss,
   caseInsensitiveFirstCharPattern,
   isCommentEdit,
   isProbablyTalkPage,
@@ -58,15 +57,10 @@ async function prepare(siteDataRequests) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
 
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
-    '::before': {
-      content: `"${cd.mws('parentheses-start')}"`,
-    },
-    '::after': {
-      content: `"${cd.mws('parentheses-end')}"`,
-    },
-  });
+  addCss(`:root {
+  --cd-parentheses-start: '${cd.mws('parentheses-start')}';
+  --cd-parentheses-end: '${cd.mws('parentheses-end')}';
+}`);
 
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];

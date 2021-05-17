@@ -790,3 +790,10 @@ export function triggerClickOnEnterAndSpace(e) {
     $(this).trigger('click');
   }
 }
+
+export function addCss(text) {
+  const element = document.createElement('style');
+  element.appendChild(document.createTextNode(text));
+  document.head.appendChild(element);
+  return element.sheet;
+}
