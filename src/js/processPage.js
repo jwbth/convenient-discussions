@@ -535,11 +535,14 @@ function connectToCommentLinks($content) {
  * @private
  */
 function highlightMentions($content) {
+  const contentElement = $content.get(0);
+  if (!contentElement) return;
+
   const selector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
     .join(', ');
-  Array.from($content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.USER_NAME}"]`))
+  Array.from(contentElement.querySelectorAll(`.cd-commentPart a[title*=":${cd.g.USER_NAME}"]`))
     .filter((el) => (
       cd.g.USER_LINK_REGEXP.test(el.title) &&
       !el.closest(selector) &&
@@ -1080,7 +1083,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
-      if (articleId) {
+      if (cd.settings.reformatComments && articleId) {
         cd.debug.startTimer('parse user links');
         // Should be above "mw.hook('wikipage.content').add" as the next such instruction will run
         // with "$('.cd-comment-author-wrapper')" as $content.
