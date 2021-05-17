@@ -866,7 +866,7 @@ async function updatePageContent(html, keptData) {
     cd.g.$content.empty();
   }
 
-  cd.g.$content.append(html);
+  cd.g.$content.prepend(html);
 
   keptData = Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() });
 
