@@ -14,7 +14,6 @@ import cd from './cd';
 import navPanel from './navPanel';
 import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
 import { checkboxField } from './ooui';
-import { settingsDialog } from './modal';
 import {
   defined,
   findLastIndex,
@@ -38,6 +37,7 @@ import {
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
+import { settingsDialog } from './modal';
 
 let commentFormsCounter = 0;
 

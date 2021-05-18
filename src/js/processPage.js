@@ -602,9 +602,7 @@ async function processFragment(keptData) {
     if (comment) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.
-      setTimeout(() => {
-        comment.scrollTo(false, keptData.pushState);
-      });
+      setTimeout(comment.scrollTo.bind(comment, false, keptData.pushState));
     }
   }
 
@@ -990,7 +988,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       Comment.reformatComments();
       cd.debug.stopTimer('reformatComments');
 
-      // Restore the initial viewport position in terms of visible elements which is how the user
+      // Restore the initial viewport position in terms of visible elements, which is how the user
       // sees it.
       cd.debug.startTimer('restore scroll position');
       restoreRelativeScrollPosition();

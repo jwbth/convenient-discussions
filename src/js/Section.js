@@ -542,11 +542,9 @@ export default class Section extends SectionSkeleton {
         if (e instanceof CdError) {
           const { code } = e.data;
           let message;
-          if (code === 'locateSection') {
-            message = cd.sParse('error-locatesection');
-          } else {
-            message = cd.sParse('error-unknown');
-          }
+          message = code === 'locateSection' ?
+            cd.sParse('error-locatesection') :
+            cd.sParse('error-unknown');
           throw [message, true];
         } else {
           throw [cd.sParse('error-javascript'), false];
