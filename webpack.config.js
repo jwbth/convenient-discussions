@@ -110,22 +110,7 @@ module.exports = (env) => {
         new webpack.SourceMapDevToolPlugin({
           filename: `[file]${sourceMapExt}`,
           append: `\n//# sourceMappingURL=${config.protocol}://${config.server}${config.scriptPath}/index.php?title=${config.rootPath}/[url]&action=raw&ctype=application/json`,
-        }),
-
-        // Fix the exposal of an absolute path in the source map by worker-loader.
-        {
-          apply: (compiler) => {
-            compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
-              const sourceMapFilename = `./dist/${filename}${sourceMapExt}`;
-              const content = fs.readFileSync(sourceMapFilename).toString();
-              const newContent = content.replace(
-                /(require\(\\"!!)[^"]+[^.\\/]([\\/]+node_modules[\\/]+worker-loader)/g,
-                (s, before, end) => `${before}.${end}`,
-              );
-              fs.writeFileSync(sourceMapFilename, newContent);
-            });
-          },
-        }
+        })
       );
     }
     if (!process.env.CI) {
@@ -183,9 +168,8 @@ module.exports = (env) => {
           use: {
             loader: 'worker-loader',
             options: {
-              name: `convenientDiscussions-worker${filenamePostfix}.js`,
-              inline: true,
-              fallback: false,
+              filename: `convenientDiscussions-worker${filenamePostfix}.js`,
+              inline: 'no-fallback',
             },
           },
         },
