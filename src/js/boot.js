@@ -9,7 +9,6 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
 import Section from './Section';
-import Worker from './worker-gate';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
@@ -770,8 +769,6 @@ function initOouiAndElementPrototypes() {
  */
 export async function init(siteDataRequests) {
   createApi();
-  cd.g.worker = new Worker();
-
   await (siteDataRequests || loadSiteData());
   initGlobals();
   await initSettings();

@@ -8,6 +8,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementTreeWalker } from './treeWalker';
+import { handleScroll } from './eventHandlers';
 
 let anchorElement;
 let anchorElementTop;
@@ -796,4 +797,26 @@ export function addCss(text) {
   element.appendChild(document.createTextNode(text));
   document.head.appendChild(element);
   return element.sheet;
+}
+
+export function scrollToY(y, smooth = true, callback) {
+  const onComplete = () => {
+    cd.g.isAutoScrollInProgress = false;
+    handleScroll();
+    if (callback) {
+      callback();
+    }
+  };
+
+  if (smooth) {
+    $('body, html').animate({ scrollTop: y }, {
+      complete: function () {
+        if (this !== document.documentElement) return;
+        onComplete();
+      },
+    });
+  } else {
+    window.scrollTo(window.scrollX, y);
+    onComplete();
+  }
 }

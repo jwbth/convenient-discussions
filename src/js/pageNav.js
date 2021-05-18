@@ -6,8 +6,12 @@
  */
 
 import cd from './cd';
-import { getExtendedRect, getVisibilityByRects, triggerClickOnEnterAndSpace } from './util';
-import { handleScroll } from './eventHandlers';
+import {
+  getExtendedRect,
+  getVisibilityByRects,
+  scrollToY,
+  triggerClickOnEnterAndSpace,
+} from './util';
 
 let currentSection;
 let $sectionWithBackLink;
@@ -321,11 +325,6 @@ export default {
     history.pushState(history.state, '', url);
 
     cd.g.isAutoScrollInProgress = true;
-    $('body, html').animate({ scrollTop: offset }, {
-      complete: () => {
-        cd.g.isAutoScrollInProgress = false;
-        handleScroll();
-      },
-    });
+    scrollToY(offset);
   },
 };

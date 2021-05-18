@@ -5,7 +5,7 @@
  */
 
 import cd from './cd';
-import { handleScroll } from './eventHandlers';
+import { scrollToY } from './util';
 
 /**
  * jQuery. See {@link $.fn} for extensions.
@@ -45,13 +45,10 @@ export default {
    * @memberof $.fn
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
-    cd.g.isAutoScrollInProgress = true;
-
     let $elements = this.cdRemoveNonElementNodes();
     const offsetFirst = $elements.first().offset();
     const offsetLast = $elements.last().offset();
     if ((offsetFirst.top === 0 || offsetLast.top === 0) && offsetFirst.left === 0) {
-      cd.g.isAutoScrollInProgress = false;
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
     }
@@ -69,28 +66,8 @@ export default {
       top = offsetFirst.top - cd.g.BODY_SCROLL_PADDING_TOP;
     }
 
-    const onComplete = () => {
-      cd.g.isAutoScrollInProgress = false;
-      handleScroll();
-    };
-
-    if (smooth) {
-      $('body, html').animate({ scrollTop: top }, {
-        complete: function () {
-          if (this !== document.documentElement) return;
-          onComplete();
-          if (callback) {
-            callback();
-          }
-        },
-      });
-    } else {
-      window.scrollTo(0, top);
-      onComplete();
-      if (callback) {
-        callback();
-      }
-    }
+    cd.g.isAutoScrollInProgress = true;
+    scrollToY(top, smooth, callback);
 
     return this;
   },
