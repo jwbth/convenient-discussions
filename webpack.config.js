@@ -32,7 +32,7 @@ module.exports = (env) => {
   /*
     Single builds include the main file, configuration and localization, as well as source maps, in
     a single file. Create them like this:
-      npm run single --project=w --lang=en
+      npm run single -- project=w lang=en
    */
   const single = Boolean(env.single || process.env.npm_config_single);
 
@@ -40,9 +40,9 @@ module.exports = (env) => {
   let lang;
   let wiki;
   if (single) {
-    const project = process.env.npm_config_project || 'w';
+    const project = env.project || 'w';
     const interlanguageProjects = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
-    lang = process.env.npm_config_lang || 'en';
+    lang = env.lang || 'en';
     wiki = interlanguageProjects.includes(project) ? `${project}-${lang}` : project;
     filenamePostfix = `-single-${wiki}`;
   } else if (dev) {
