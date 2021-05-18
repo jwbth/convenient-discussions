@@ -15,7 +15,6 @@ import Parser from './Parser';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
-import g from './staticGlobals';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
 import { resetCommentAnchors } from './timestamp';
 
@@ -34,7 +33,6 @@ const context = {
 let alarmTimeout;
 
 self.cd = cd;
-cd.g = g;
 cd.debug = debug;
 cd.debug.init();
 
@@ -352,7 +350,7 @@ function onMessageFromWindow(e) {
   if (message.type === 'parse') {
     cd.debug.startTimer('worker');
 
-    Object.assign(cd.g, message.g);
+    cd.g = message.g;
     cd.config = message.config;
     cd.settings = message.settings;
 
