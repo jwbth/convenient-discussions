@@ -70,8 +70,7 @@
     "yargs": "^15.4.1"
   },
   "sideEffects": [
-    "*.less",
-    "src/js/worker.js"
+    "*.less"
   ],
   "browserslist": [
     "> 1%",
