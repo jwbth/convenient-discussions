@@ -154,10 +154,13 @@ export default class CommentSkeleton {
     // (unless Comment#reviewHighlightables alters the highlightables afterwards).
     if (
       cd.settings.reformatComments &&
-      cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
-      this.highlightables[0].className
+      (
+        cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
+        this.highlightables[0].className
+      )
     ) {
       const wrapper = this.parser.context.document.createElement('div');
+      wrapper.className = 'cd-firstHighlightableReplacement';
       const firstHighlightable = this.highlightables[0];
       firstHighlightable.parentNode.replaceChild(wrapper, firstHighlightable);
       this.elements.splice(this.elements.indexOf(firstHighlightable), 1, wrapper);

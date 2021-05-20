@@ -103,16 +103,44 @@ function getAllTextNodes() {
 }
 
 /**
- * Find some types of special elements on the page (floating elements, closed discussions, outdent
- * templates).
+ * Find closed discussions on the page and set to the global object property.
  *
  * @private
  */
-function findSpecialElements() {
-  const tsSelectors = [];
+function findClosedDiscussions() {
+  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
+    .map((name) => `.${name}`)
+    .join(', ');
+  cd.g.closedDiscussionElements = cd.g.$root.find(closedDiscussionsSelector).get();
+}
+
+/**
+ * Find outdent templates on the page and set to the global object property.
+ *
+ * @private
+ */
+function findOutdents() {
+  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+}
+
+/**
+ * Find floating and hidden (`display: none`) elements on the page and set to the global object
+ * property.
+ *
+ * @private
+ */
+function findFloatingAndHiddenElements() {
+  const tsSelectorsFloating = [];
+  const tsSelectorsHidden = [];
   const filterRules = (rule) => {
-    if (rule instanceof CSSStyleRule && ['left', 'right'].includes(rule.style.float)) {
-      tsSelectors.push(rule.selectorText);
+    if (rule instanceof CSSStyleRule) {
+      const style = rule.style;
+      if (style.float === 'left' || style.float === 'right') {
+        tsSelectorsFloating.push(rule.selectorText);
+      }
+      if (style.display === 'none') {
+        tsSelectorsHidden.push(rule.selectorText);
+      }
     }
   };
   Array.from(document.styleSheets)
@@ -126,21 +154,17 @@ function findSpecialElements() {
 
   // Describe all floating elements on the page in order to calculate the correct border
   // (temporarily setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementSelector = [...cd.g.FLOATING_ELEMENT_SELECTORS, ...tsSelectors].join(', ');
+  const floatingElementSelector = [...cd.g.FLOATING_ELEMENT_SELECTORS, ...tsSelectorsFloating]
+    .join(', ');
 
   // Can't use jQuery here anyway, as .find() doesn't take into account ancestor elements, such as
-  // .mw-parser-output, in selectors.
+  // .mw-parser-output, in selectors. Remove all known elements that never intersect comments from
+  // the collection.
   cd.g.floatingElements = Array.from(cd.g.rootElement.querySelectorAll(floatingElementSelector))
-
-    // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
 
-  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
-    .map((name) => `.${name}`)
-    .join(', ');
-  cd.g.closedDiscussionElements = cd.g.$root.find(closedDiscussionsSelector).get();
-
-  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+  const hiddenElementSelector = [...tsSelectorsHidden].join(', ');
+  cd.g.hiddenElements = Array.from(cd.g.rootElement.querySelectorAll(hiddenElementSelector));
 }
 
 /**
@@ -906,7 +930,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
      */
     mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-    findSpecialElements();
+    findClosedDiscussions();
+    findOutdents();
 
     cd.debug.startTimer('process comments');
 
@@ -978,6 +1003,11 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     cd.debug.startTimer('final code and rendering');
 
     if (articleId) {
+      // Should be below updating content on reload, as it requires the "sheet" property of "style"
+      // elements. Should be above reviewing highlightables, as the reviewing relies on floating and
+      // hidden elements.
+      findFloatingAndHiddenElements();
+
       cd.debug.startTimer('reviewHighlightables');
       // Should be above all code that deals with comment highlightable elements and comment levels
       // as this may alter that.

@@ -143,39 +143,7 @@ export default class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents.bind(this));
 
-    cd.debug.startTimer('anchorHighlightable');
-    if (this.highlightables.length > 1) {
-      const nestingLevels = [];
-      const closestListTypes = [];
-      const firstAndLastHighlightable = [
-        this.highlightables[0],
-        this.highlightables[this.highlightables.length - 1],
-      ];
-      firstAndLastHighlightable.forEach((highlightable, i) => {
-        const treeWalker = new ElementTreeWalker(highlightable);
-        nestingLevels[i] = 0;
-        while (treeWalker.parentNode()) {
-          nestingLevels[i]++;
-          if (!closestListTypes[i] && ['DL', 'UL', 'OL'].includes(treeWalker.currentNode.tagName)) {
-            closestListTypes[i] = treeWalker.currentNode.tagName.toLowerCase();
-          }
-        }
-      });
-      const minNestingLevel = Math.min(...nestingLevels);
-      let anchorHighlightableIndex;
-      for (let i = 0; i < 2; i++) {
-        if (
-          (nestingLevels[i] === minNestingLevel && anchorHighlightableIndex === undefined) ||
-          (closestListTypes[anchorHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
-        ) {
-          anchorHighlightableIndex = i;
-        }
-      }
-      this.anchorHighlightable = firstAndLastHighlightable[anchorHighlightableIndex];
-    } else {
-      this.anchorHighlightable = this.highlightables[0];
-    }
-    cd.debug.stopTimer('anchorHighlightable');
+    this.setAnchorHighlightable();
 
     const getContainerListType = (el) => {
       const treeWalker = new ElementTreeWalker(el);
@@ -284,6 +252,42 @@ export default class Comment extends CommentSkeleton {
     this.subitemList = new CommentSubitemList();
   }
 
+  setAnchorHighlightable() {
+    cd.debug.startTimer('anchorHighlightable');
+    if (this.highlightables.length > 1) {
+      const nestingLevels = [];
+      const closestListTypes = [];
+      const firstAndLastHighlightable = [
+        this.highlightables[0],
+        this.highlightables[this.highlightables.length - 1],
+      ];
+      firstAndLastHighlightable.forEach((highlightable, i) => {
+        const treeWalker = new ElementTreeWalker(highlightable);
+        nestingLevels[i] = 0;
+        while (treeWalker.parentNode()) {
+          nestingLevels[i]++;
+          if (!closestListTypes[i] && ['DL', 'UL', 'OL'].includes(treeWalker.currentNode.tagName)) {
+            closestListTypes[i] = treeWalker.currentNode.tagName.toLowerCase();
+          }
+        }
+      });
+      const minNestingLevel = Math.min(...nestingLevels);
+      let anchorHighlightableIndex;
+      for (let i = 0; i < 2; i++) {
+        if (
+          (nestingLevels[i] === minNestingLevel && anchorHighlightableIndex === undefined) ||
+          (closestListTypes[anchorHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
+        ) {
+          anchorHighlightableIndex = i;
+        }
+      }
+      this.anchorHighlightable = firstAndLastHighlightable[anchorHighlightableIndex];
+    } else {
+      this.anchorHighlightable = this.highlightables[0];
+    }
+    cd.debug.stopTimer('anchorHighlightable');
+  }
+
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
@@ -369,8 +373,8 @@ export default class Comment extends CommentSkeleton {
     this.headerElement = headerElement;
     this.$header = $(this.headerElement);
 
-    // This is usually done in CommentSkeleton constructor, but if Comment#reviewHighlightables has
-    // altered the highlightables, this would save the day.
+    // This is usually done in the CommentSkeleton constructor, but if Comment#reviewHighlightables
+    // has altered the highlightables, this will save the day.
     if (
       cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
       Array.from(this.highlightables[0].classList).some((name) => !name.startsWith('cd-'))
@@ -606,13 +610,22 @@ export default class Comment extends CommentSkeleton {
   reviewHighlightables() {
     for (let i = 0; i < this.highlightables.length; i++) {
       const el = this.highlightables[i];
-      if (Array.from(el.classList).some((name) => !name.startsWith('cd-'))) {
-        const style = window.getComputedStyle(el);
+      const areThereClassedElements = Array.from(el.classList)
+        .some((name) => !name.startsWith('cd-') || name === 'cd-firstHighlightableReplacement');
+      if (areThereClassedElements) {
+        const isReplacement = (
+          cd.settings.reformatComments &&
+          i === 0 &&
+          el.classList.contains('cd-firstHighlightableReplacement')
+        );
+        const testElement = isReplacement ? el.firstChild : el;
+
+        // Node that we could use window.getComputerStyle here, but avoid it to avoid the reflow.
         if (
           // Currently we can't have comments with no highlightable elements.
           this.highlightables.length > 1 &&
 
-          (['left', 'right'].includes(style.float) || style.display === 'none')
+          (cd.g.floatingElements.includes(testElement) || cd.g.hiddenElements.includes(testElement))
         ) {
           if (el.classList.contains('cd-comment-part-first')) {
             el.classList.remove('cd-comment-part-first');
@@ -626,6 +639,9 @@ export default class Comment extends CommentSkeleton {
           this.highlightables.splice(i, 1);
           i--;
           this.setLevels();
+          this.setAnchorHighlightable();
+
+          // Update this.ahContainerListType here as well?
         }
       }
     }
