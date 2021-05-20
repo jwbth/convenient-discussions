@@ -87,7 +87,7 @@ export default class Page {
     }
     let result;
     if (this === cd.g.PAGE) {
-      result = $('.cd-archivingInfo').data('isArchivePage');
+      result = cd.g.$root.find('.cd-archivingInfo').data('isArchivePage');
     }
     if (result === undefined) {
       result = false;
@@ -118,7 +118,7 @@ export default class Page {
     }
     let result;
     if (this === cd.g.PAGE) {
-      result = $('.cd-archivingInfo').data('canHaveArchives');
+      result = cd.g.$root.find('.cd-archivingInfo').data('canHaveArchives');
     }
     if (result === undefined) {
       const name = this.realName || this.name;
@@ -141,7 +141,7 @@ export default class Page {
     }
     let result;
     if (this === cd.g.PAGE) {
-      result = $('.cd-archivingInfo').data('archivePrefix');
+      result = cd.g.$root.find('.cd-archivingInfo').data('archivePrefix');
     }
     const name = this.realName || this.name;
     if (!result) {
@@ -167,7 +167,7 @@ export default class Page {
   getArchivedPage() {
     let result;
     if (this === cd.g.PAGE) {
-      result = $('.cd-archivingInfo').data('archivedPage');
+      result = cd.g.$root.find('.cd-archivingInfo').data('archivedPage');
     }
     if (!result) {
       const name = this.realName || this.name;

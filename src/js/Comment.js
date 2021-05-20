@@ -1330,13 +1330,13 @@ export default class Comment extends CommentSkeleton {
 
     let $refreshLink;
     if (!isNewVersionRendered) {
-      const keptData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
+      const passedData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
       $refreshLink = $('<a>')
         .attr('tabindex', 0)
         .text(cd.s('comment-changed-refresh'))
         .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', () => {
-          reloadPage(keptData);
+          reloadPage(passedData);
         });
     }
 

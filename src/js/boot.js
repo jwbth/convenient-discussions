@@ -806,27 +806,16 @@ function getUnseenCommentAnchors() {
 /**
  * Replace the inner HTML of the content element and run the parse routine.
  *
- * @param {string} html
- * @param {object} keptData
+ * @param {object} passedData
  * @private
  */
-async function updatePageContent(html, keptData) {
+async function updatePageContent(passedData) {
   cd.debug.stopTimer('getting HTML');
-  cd.debug.startTimer('laying out HTML');
-
-  cd.g.$content.children('.mw-parser-output').remove();
-  if (keptData.wasPageCreated) {
-    cd.g.$content.empty();
-  }
-
-  cd.g.$content.prepend(html);
-
-  keptData = Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() });
 
   // We could say "let it crash", but, well, unforeseen errors in processPage() are just too likely
   // to go without a safeguard.
   try {
-    await processPage(keptData);
+    await processPage(passedData);
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
@@ -927,12 +916,12 @@ export function isPageLoading() {
 /**
  * Reload the page via Ajax.
  *
- * @param {object} [keptData={}] Data passed from the previous page state.
+ * @param {object} [passedData={}] Data passed from the previous page state.
  * @throws {CdError|Error}
  */
-export async function reloadPage(keptData = {}) {
-  if (keptData.pushState === undefined) {
-    keptData.pushState = false;
+export async function reloadPage(passedData = {}) {
+  if (passedData.pushState === undefined) {
+    passedData.pushState = false;
   }
 
   if (cd.g.isPageBeingReloaded) return;
@@ -950,7 +939,7 @@ export async function reloadPage(keptData = {}) {
 
   saveScrollPosition();
 
-  closeNotifications(keptData.closeNotificationsSmoothly ?? true);
+  closeNotifications(passedData.closeNotificationsSmoothly ?? true);
 
   cd.debug.init();
   cd.debug.startTimer('total time');
@@ -968,7 +957,7 @@ export async function reloadPage(keptData = {}) {
     parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
     finishLoading();
-    if (keptData.didSubmitCommentForm) {
+    if (passedData.didSubmitCommentForm) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -981,6 +970,9 @@ export async function reloadPage(keptData = {}) {
     commentForm.$outermostElement.detach();
   });
 
+  passedData.unseenCommentAnchors = getUnseenCommentAnchors();
+
+  passedData.html = parseData.text;
   mw.config.set({
     wgRevisionId: parseData.revid,
     wgCurRevisionId: parseData.revid,
@@ -995,11 +987,11 @@ export async function reloadPage(keptData = {}) {
   cd.g.hasPageBeenReloaded = true;
 
   updateChecker.updatePageTitle(0, false);
-  await updatePageContent(parseData.text, keptData);
+  await updatePageContent(passedData);
 
   toc.possiblyHide();
 
-  if (!keptData.commentAnchor && !keptData.sectionAnchor) {
+  if (!passedData.commentAnchor && !passedData.sectionAnchor) {
     restoreScrollPosition(false);
   }
 }

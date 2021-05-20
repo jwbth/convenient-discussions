@@ -2915,14 +2915,14 @@ export default class CommentForm {
   /**
    * Forget the form and reload the page.
    *
-   * @param {object} [keptData] Data passed from the previous page state.
+   * @param {object} [passedData] Data passed from the previous page state.
    * @param {Operation} [currentOperation] Current operation.
    */
-  async reloadPage(keptData, currentOperation) {
+  async reloadPage(passedData, currentOperation) {
     this.forget();
 
     try {
-      await reloadPage(keptData);
+      await reloadPage(passedData);
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
@@ -3102,15 +3102,15 @@ export default class CommentForm {
     );
     if (!editTimestamp) return;
 
-    // Here we use a trick where we pass, in keptData, the name of the section that was set to be
+    // Here we use a trick where we pass, in passedData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    const keptData = { didSubmitCommentForm: true };
+    const passedData = { didSubmitCommentForm: true };
 
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
       mw.config.set('wgArticleId', this.targetPage.pageId);
-      keptData.wasPageCreated = true;
+      passedData.wasPageCreated = true;
     }
 
     if (this.watchSectionCheckbox) {
@@ -3121,25 +3121,25 @@ export default class CommentForm {
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
           const headline = removeWikiMarkup(this.headlineInput.getValue());
-          keptData.justWatchedSection = headline;
+          passedData.justWatchedSection = headline;
           let originalHeadline;
           if (isHeadlineAltered) {
             originalHeadline = removeWikiMarkup(this.originalHeadline);
-            keptData.justUnwatchedSection = originalHeadline;
+            passedData.justUnwatchedSection = originalHeadline;
           }
           Section.watch(headline, originalHeadline).catch(() => {});
         } else {
           const section = this.targetSection;
           if (section && !section.isWatched) {
             section.watch(true);
-            keptData.justWatchedSection = section.headline;
+            passedData.justWatchedSection = section.headline;
           }
         }
       } else {
         const section = this.targetSection;
         if (section?.isWatched) {
           section.unwatch(true);
-          keptData.justUnwatchedSection = section.headline;
+          passedData.justUnwatchedSection = section.headline;
         }
       }
     }
@@ -3152,7 +3152,7 @@ export default class CommentForm {
     }
 
     if (!doDelete) {
-      keptData.commentAnchor = this.mode === 'edit' ?
+      passedData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
         generateCommentAnchor(new Date(editTimestamp), cd.g.USER_NAME, true);
     }
@@ -3163,7 +3163,7 @@ export default class CommentForm {
       await cd.g.PAGE.purge();
     }
 
-    this.reloadPage(keptData, currentOperation);
+    this.reloadPage(passedData, currentOperation);
   }
 
   /**

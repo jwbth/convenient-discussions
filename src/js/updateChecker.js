@@ -846,10 +846,10 @@ const updateChecker = {
    * Initialize the update checker.
    *
    * @param {Promise} visitsRequest
-   * @param {object} keptData
+   * @param {object} passedData
    * @memberof module:updateChecker
    */
-  async init(visitsRequest, keptData) {
+  async init(visitsRequest, passedData) {
     if (!cd.g.worker) return;
 
     commentsNotifiedAbout = [];
@@ -870,8 +870,8 @@ const updateChecker = {
 
     if (cd.g.previousVisitUnixTime) {
       processRevisionsIfNeeded();
-      if (keptData.didSubmitCommentForm && keptData.commentAnchor) {
-        submittedCommentAnchor = keptData.commentAnchor;
+      if (passedData.didSubmitCommentForm && passedData.commentAnchor) {
+        submittedCommentAnchor = passedData.commentAnchor;
       }
     }
   },

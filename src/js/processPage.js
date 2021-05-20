@@ -40,15 +40,26 @@ import { setSettings, setVisits } from './options';
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
  *
+ * @param {PassedData} passedData
  * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
  * @private
  */
-async function prepare(siteDataRequests) {
-  cd.g.$root = cd.g.$content.children('.mw-parser-output');
-  if (!cd.g.$root.length) {
-    cd.g.$root = cd.g.$content;
+async function prepare(passedData, siteDataRequests) {
+  if (passedData.html) {
+    const div = document.createElement('div');
+    div.innerHTML = passedData.html;
+    cd.g.rootElement = div.firstChild;
+    cd.g.$root = $(cd.g.rootElement);
+  } else {
+    cd.g.$root = cd.g.$content.children('.mw-parser-output');
+
+    // 404 pages
+    if (!cd.g.$root.length) {
+      cd.g.$root = cd.g.$content;
+    }
+
+    cd.g.rootElement = cd.g.$root.get(0);
   }
-  cd.g.rootElement = cd.g.$root.get(0);
 
   toc.reset();
 
@@ -580,10 +591,10 @@ function highlightMentions($content) {
 /**
  * Perform fragment-related tasks, as well as comment anchor-related ones.
  *
- * @param {object} keptData
+ * @param {object} passedData
  * @private
  */
-async function processFragment(keptData) {
+async function processFragment(passedData) {
   let fragment;
   let decodedFragment;
   let escapedFragment;
@@ -602,7 +613,7 @@ async function processFragment(keptData) {
       commentAnchor = decodedFragment;
     }
   } else {
-    commentAnchor = keptData.commentAnchor;
+    commentAnchor = passedData.commentAnchor;
   }
 
   let date;
@@ -612,7 +623,7 @@ async function processFragment(keptData) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getByAnchor(commentAnchor);
 
-    if (!keptData.commentAnchor && !comment) {
+    if (!passedData.commentAnchor && !comment) {
       let commentAnchorToCheck;
       // There can be a time difference between the time we know (taken from the watchlist) and the
       // time on the page. We take it to be not higher than 5 minutes for the watchlist.
@@ -630,10 +641,10 @@ async function processFragment(keptData) {
     }
   }
 
-  if (keptData.sectionAnchor) {
-    const section = Section.getByAnchor(keptData.sectionAnchor);
+  if (passedData.sectionAnchor) {
+    const section = Section.getByAnchor(passedData.sectionAnchor);
     if (section) {
-      if (keptData.pushState) {
+      if (passedData.pushState) {
         history.pushState(history.state, '', '#' + section.anchor);
       }
 
@@ -666,11 +677,11 @@ async function processFragment(keptData) {
  * module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
- * @param {object} keptData
+ * @param {PassedData} passedData
  * @fires newCommentsHighlighted
  * @private
  */
-async function processVisits(visitsRequest, keptData) {
+async function processVisits(visitsRequest, passedData) {
   let visits;
   let currentPageVisits;
   try {
@@ -690,7 +701,7 @@ async function processVisits(visitsRequest, keptData) {
   for (let i = currentPageVisits.length - 1; i >= 0; i--) {
     if (
       currentPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL ||
-      keptData.markAsRead
+      passedData.markAsRead
     ) {
       currentPageVisits.splice(0, i);
       break;
@@ -716,14 +727,14 @@ async function processVisits(visitsRequest, keptData) {
             commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1] ||
             comment.isOwn
           ) &&
-          !keptData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
+          !passedData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
         );
       }
     });
 
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
-    toc.addNewComments(Comment.groupBySection(unseenComments), keptData);
+    toc.addNewComments(Comment.groupBySection(unseenComments), passedData);
   }
 
   // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
@@ -833,7 +844,8 @@ function debugLog() {
 }
 
 /**
- * @typedef {object} KeptData
+ * @typedef {object} PassedData
+ * @property {string} [html] HTML code of the page content to replace the current content with.
  * @property {string} [commentAnchor] Comment anchor to scroll to.
  * @property {string} [sectionAnchor] Section anchor to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
@@ -846,13 +858,13 @@ function debugLog() {
  *   enough time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
- * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
+ * @property {boolean} [didSubmitCommentForm] Did the user just submit a comment form.
  */
 
 /**
  * Process the current web page.
  *
- * @param {KeptData} [keptData={}] Data passed from the previous page state.
+ * @param {PassedData} [passedData={}] Data passed from the previous page state.
  * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
@@ -861,11 +873,13 @@ function debugLog() {
  * @fires pageReady
  * @fires pageReadyFirstTime
  */
-export default async function processPage(keptData = {}, siteDataRequests, cachedScrollY) {
-  cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
+export default async function processPage(passedData = {}, siteDataRequests, cachedScrollY) {
+  if (cd.g.isFirstRun) {
+    cd.debug.stopTimer('loading data');
+  }
   cd.debug.startTimer('preparations');
 
-  await prepare(siteDataRequests);
+  await prepare(passedData, siteDataRequests);
 
   if (cd.g.isFirstRun) {
     saveRelativeScrollPosition(cachedScrollY);
@@ -913,7 +927,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   let visitsRequest;
   let parser;
   if (articleId) {
-    watchedSectionsRequest = getWatchedSections(true, keptData);
+    watchedSectionsRequest = getWatchedSections(true, passedData);
     watchedSectionsRequest.catch((e) => {
       console.warn('Couldn\'t load the settings from the server.', e);
     });
@@ -966,7 +980,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   );
 
   const isPageCommentable = cd.g.isPageActive || !articleId;
-  cd.g.isPageFirstParsed = cd.g.isFirstRun || keptData.wasPageCreated;
+  cd.g.isPageFirstParsed = cd.g.isFirstRun || passedData.wasPageCreated;
 
   if (isLikelyTalkPage) {
     if (articleId) {
@@ -976,6 +990,18 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
       cd.debug.stopTimer('process sections');
     }
+
+    cd.debug.startTimer('laying out HTML');
+    if (passedData.html) {
+      if (passedData.wasPageCreated) {
+        cd.g.$content.empty();
+      }
+      cd.g.$content
+        .children('.mw-parser-output')
+        .first()
+        .replaceWith(cd.g.$root);
+    }
+    cd.debug.stopTimer('laying out HTML');
 
     if (isPageCommentable) {
       addAddTopicButton();
@@ -1078,15 +1104,15 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       Thread.init();
 
       // Should be below Thread.init() as it may want to scroll to a comment in a collapsed thread.
-      processFragment(keptData);
+      processFragment(passedData);
     }
 
     if (cd.g.isPageActive) {
-      processVisits(visitsRequest, keptData);
+      processVisits(visitsRequest, passedData);
 
       // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
       // cd.g.previousVisitUnixTime to be set.
-      updateChecker.init(visitsRequest, keptData);
+      updateChecker.init(visitsRequest, passedData);
     }
 
     // keptData.wasPageCreated? articleId? но resize + adjustLabels ok на 404. resize
