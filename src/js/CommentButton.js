@@ -68,6 +68,7 @@ export default class CommentButton extends Button {
     const element = this.buttonWidget.$element.get(0);
     this.element.parentNode.replaceChild(element, this.element);
     this.element = element;
+    this.linkElement = element.firstChild;
     if (this.action) {
       this.setAction(this.action);
     }
@@ -144,11 +145,9 @@ export default class CommentButton extends Button {
   }
 
   setAction(action) {
-    if (this.buttonWidget) {
-      this.buttonWidget.on('click', action);
-    } else {
-      super.setAction(action);
-    }
+    // OOUI widgets don't pass the event object to the handler, so we use the traditional method of
+    // handling events.
+    super.setAction(action);
 
     /**
      * Function executed by clicking or pressing Enter on the button.
