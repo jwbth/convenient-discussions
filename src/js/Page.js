@@ -82,9 +82,6 @@ export default class Page {
    * @returns {boolean}
    */
   isArchivePage() {
-    if (this.cachedIsArchivePage !== undefined) {
-      return this.cachedIsArchivePage;
-    }
     let result;
     if (this === cd.g.PAGE) {
       result = cd.g.$root.find('.cd-archivingInfo').data('isArchivePage');
@@ -100,8 +97,7 @@ export default class Page {
         }
       }
     }
-    this.cachedIsArchivePage = Boolean(result);
-    return result;
+    return Boolean(result);
   }
 
   /**
