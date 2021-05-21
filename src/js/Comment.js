@@ -613,11 +613,7 @@ export default class Comment extends CommentSkeleton {
       const areThereClassedElements = Array.from(el.classList)
         .some((name) => !name.startsWith('cd-') || name === 'cd-firstHighlightableReplacement');
       if (areThereClassedElements) {
-        const isReplacement = (
-          cd.settings.reformatComments &&
-          i === 0 &&
-          el.classList.contains('cd-firstHighlightableReplacement')
-        );
+        const isReplacement = i === 0 && el.classList.contains('cd-firstHighlightableReplacement');
         const testElement = isReplacement ? el.firstChild : el;
 
         // Node that we could use window.getComputerStyle here, but avoid it to avoid the reflow.

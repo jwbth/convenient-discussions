@@ -908,7 +908,6 @@ const updateChecker = {
       text,
       g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER'], disallowedNames),
       config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents'], disallowedNames),
-      settings: cd.settings,
     });
 
     if (!revisionData[message.revisionId]) {

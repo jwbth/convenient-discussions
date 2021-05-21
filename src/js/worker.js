@@ -352,7 +352,6 @@ function onMessageFromWindow(e) {
 
     cd.g = message.g;
     cd.config = message.config;
-    cd.settings = message.settings;
 
     cd.config.checkForCustomForeignComponents = restoreFunc(
       cd.config.checkForCustomForeignComponents

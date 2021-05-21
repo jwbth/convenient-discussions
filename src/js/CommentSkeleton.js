@@ -149,15 +149,13 @@ export default class CommentSkeleton {
      */
     this.highlightables = this.elements.filter(isHighlightable);
 
-    // Prevent an inappropriate element from being the first highlightable if comments are
-    // reformatted. In the worker context, this will allow to correctly update edited comments
-    // (unless Comment#reviewHighlightables alters the highlightables afterwards).
+    // Prevent an inappropriate element from being the first highlightable (this is used for when
+    // comments are reformatted, but we do it always to have a uniform parsing result). In the
+    // worker context, this will allow to correctly update edited comments (unless
+    // Comment#reviewHighlightables alters the highlightables afterwards).
     if (
-      cd.settings.reformatComments &&
-      (
-        cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
-        this.highlightables[0].className
-      )
+      cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
+      this.highlightables[0].className
     ) {
       const wrapper = this.parser.context.document.createElement('div');
       wrapper.className = 'cd-firstHighlightableReplacement';
