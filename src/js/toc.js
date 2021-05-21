@@ -151,6 +151,8 @@ export default {
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
+    saveScrollPosition();
+
     cd.g.$toc
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
       .remove();
@@ -260,6 +262,8 @@ export default {
       currentTree[section.tocLevel - 1] = item;
       currentTree.splice(section.tocLevel);
     });
+
+    restoreScrollPosition();
   },
 
   /**
@@ -283,7 +287,11 @@ export default {
     const areCommentsRendered = firstComment instanceof Comment;
 
     const saveTocHeight = Boolean(
-      !(cd.g.hasPageBeenReloaded && areCommentsRendered) ||
+      // On first load
+      !cd.g.hasPageBeenReloaded ||
+
+      // When unrendered (in gray) comments are added
+      !areCommentsRendered ||
 
       // When the comment or section is opened by a link from the TOC
       passedData.commentAnchor ||

@@ -420,8 +420,8 @@ export function replaceAnchorElement(element, newElement) {
 /**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
  *
- * @param {boolean} [saveTocHeight=true] Used for more fine control of scroll behavior after page
- *   reloads and when visits are loaded.
+ * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
+ *   when visits are loaded after a page reload.
  */
 export function saveScrollPosition(saveTocHeight = true) {
   keptScrollPosition = window.scrollY;
@@ -439,8 +439,8 @@ export function saveScrollPosition(saveTocHeight = true) {
 /**
  * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
  *
- * @param {boolean} [resetTocHeight=true] Used for more fine control of scroll behavior after page
- *   reloads and when visits are loaded.
+ * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
+ *   after page reloads.
  */
 export function restoreScrollPosition(resetTocHeight = true) {
   if (keptScrollPosition === null) return;
