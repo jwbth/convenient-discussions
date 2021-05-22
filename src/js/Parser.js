@@ -635,6 +635,10 @@ export default class Parser {
           ) ||
 
           (cd.g.pageHasOutdents && this.context.getElementByClassName(node, 'outdent-template')) ||
+
+          // Talk page message box
+          (cd.g.NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
+
           cd.config.checkForCustomForeignComponents?.(node, this.context)
         ) {
           break;

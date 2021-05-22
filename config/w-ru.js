@@ -319,9 +319,6 @@ export default {
     return (
       node.classList.contains('ts-Закрыто-header') ||
 
-      // Talk page template
-      (cd.g.NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
-
       // {{clear}}
       (
         node.tagName === 'DIV' &&
