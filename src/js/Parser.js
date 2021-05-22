@@ -383,6 +383,8 @@ export default class Parser {
           firstSignatureElementIndex + 1
         );
 
+        if (!authorName) return;
+
         const anchor = generateCommentAnchor(timestamp.date, authorName, true);
         registerCommentAnchor(anchor);
         const signatureContainer = signatureNodes[0].parentNode;
@@ -391,10 +393,6 @@ export default class Parser {
         element.classList.add('cd-signature');
         signatureNodes.reverse().forEach(element.appendChild.bind(element));
         signatureContainer.insertBefore(element, startElementNextSibling);
-
-        // If there is no author, we add the class to prevent the element from being considered a
-        // part of other comment but don't append to the list of signatures.
-        if (!authorName) return;
 
         return {
           element,
