@@ -1131,9 +1131,11 @@ export async function copyLink(object, e) {
     return;
   }
 
-  let onlyCdWarning;
+  let helpOnlyCd;
+  let helpNotOnlyCd;
   if (isComment) {
-    onlyCdWarning = cd.s('cld-help-onlycd');
+    helpOnlyCd = cd.s('cld-help-onlycd');
+    helpNotOnlyCd = cd.util.wrap(cd.sParse('cld-help-notonlycd'));
   }
 
   const wikilinkField = copyActionField({
@@ -1141,20 +1143,21 @@ export async function copyLink(object, e) {
     disabled: !wikilink,
     label: cd.s('cld-wikilink'),
     copyCallback,
-    help: onlyCdWarning,
+    help: helpOnlyCd,
   });
 
   const currentPageWikilinkField = copyActionField({
     value: `[[#${anchor}]]`,
     label: cd.s('cld-currentpagewikilink'),
     copyCallback,
+    help: helpNotOnlyCd,
   });
 
   const linkField = copyActionField({
     value: link,
     label: cd.s('cld-link'),
     copyCallback,
-    help: onlyCdWarning,
+    help: helpOnlyCd,
   });
 
   // Workaround, because we don't want the first input to be focused on click almost anywhere in

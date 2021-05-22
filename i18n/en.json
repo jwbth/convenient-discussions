@@ -66,6 +66,7 @@
   "cld-shortdiff": "Short diff link",
   "cld-wikilink": "Wikilink",
   "cld-help-onlycd": "This link will work only for users who have Convenient Discussions installed.",
+  "cld-help-notonlycd": "An anchor will be added automatically to the linked comment, so the link <em>will</em> work for everybody.",
   "cld-currentpagewikilink": "Wikilink from the same page",
   "cld-link": "Regular link",
   "cld-close": "Close",
