@@ -160,7 +160,7 @@ export default class CommentSkeleton {
       const wrapper = this.parser.context.document.createElement('div');
       wrapper.className = 'cd-firstHighlightableReplacement';
       const firstHighlightable = this.highlightables[0];
-      firstHighlightable.parentNode.replaceChild(wrapper, firstHighlightable);
+      firstHighlightable.parentNode.insertBefore(wrapper, firstHighlightable);
       this.elements.splice(this.elements.indexOf(firstHighlightable), 1, wrapper);
       this.highlightables.splice(this.highlightables.indexOf(firstHighlightable), 1, wrapper);
       wrapper.appendChild(firstHighlightable);
