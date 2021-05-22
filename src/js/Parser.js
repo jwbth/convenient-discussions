@@ -785,8 +785,12 @@ export default class Parser {
   filterParts(parts) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
     for (let i = parts.length - 1; i > 0; i--) {
-      const part = parts[i];
-      if (part.node.tagName === 'P' && !part.node.textContent.trim()) {
+      const node = parts[i].node;
+      if (
+        node.tagName === 'P' &&
+        !node.textContent.trim() &&
+        Array.from(node.children).every((child) => child.tagName === 'BR')
+      ) {
         parts.splice(i, 1);
       } else {
         break;
