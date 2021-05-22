@@ -635,8 +635,8 @@ export default {
    * properties that perform the tasks we need in the current context (window or worker). Examples
    * are the name of the child elements property (the worker context uses `childElements` instead of
    * `children`) and the document element. Contexts are predefined in the script like {@link
-   * https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885}
-   * this.
+   * https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885
+   * this}.
    *
    * @type {?Function}
    * @kind function

@@ -8,7 +8,7 @@ import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
-import { ElementTreeWalker } from './treeWalker';
+import { ElementsTreeWalker } from './treeWalker';
 import {
   defined,
   getFromLocalStorage,
@@ -518,7 +518,7 @@ export default class Thread {
     cd.debug.startTimer('threads traverse');
 
     isInited = false;
-    treeWalker = new ElementTreeWalker();
+    treeWalker = new ElementsTreeWalker();
     cd.comments.forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);

@@ -7,7 +7,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { ElementTreeWalker } from './treeWalker';
+import { ElementsTreeWalker } from './treeWalker';
 import { handleScroll } from './eventHandlers';
 
 let anchorElement;
@@ -383,7 +383,7 @@ export function saveRelativeScrollPosition(scrollY = window.scrollY) {
   anchorElement = null;
   anchorElementTop = null;
   if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementTreeWalker(cd.g.rootElement.firstElementChild);
+    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
     while (true) {
       if (!isInline(treeWalker.currentNode)) {
         const rect = treeWalker.currentNode.getBoundingClientRect();

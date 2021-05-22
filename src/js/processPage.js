@@ -637,7 +637,9 @@ async function processFragment(passedData) {
     if (comment) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.
-      setTimeout(comment.scrollTo.bind(comment, false, keptData.pushState));
+      setTimeout(() => {
+        comment.scrollTo(false, passedData.pushState);
+      });
     }
   }
 
@@ -1003,10 +1005,12 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     }
     cd.debug.stopTimer('laying out HTML');
 
+    cd.debug.startTimer('add topic buttons');
     if (isPageCommentable) {
       addAddTopicButton();
       connectToAddTopicButtons();
     }
+    cd.debug.stopTimer('add topic buttons');
 
     cd.debug.startTimer('mount navPanel');
     if (cd.g.isPageActive) {
@@ -1115,16 +1119,17 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       updateChecker.init(visitsRequest, passedData);
     }
 
-    // keptData.wasPageCreated? articleId? но resize + adjustLabels ok на 404. resize
-    // orientationchange у document + window
     if (cd.g.isPageFirstParsed) {
       cd.debug.startTimer('pageNav mount');
       pageNav.mount();
       cd.debug.stopTimer('pageNav mount');
 
       if (!cd.settings.reformatComments) {
-        // `mouseover` allows to capture the event when the cursor is not moving but ends up above
-        // the element (for example, as a result of scrolling).
+        // The "mouseover" event allows to capture the state when the cursor is not moving but ends
+        // up above a comment but not above any comment parts (for example, as a result of
+        // scrolling). The benefit may be low compared to the performance cost, but it's unexpected
+        // when the user scrolls a comment and it suddenly stops being highlighted because the
+        // cursor is between neighboring <p>'s.
         $(document).on('mousemove mouseover', Comment.highlightHovered);
       }
 
@@ -1137,7 +1142,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
-      if (cd.settings.reformatComments && articleId) {
+      if (cd.settings.reformatComments && cd.comments.length) {
         cd.debug.startTimer('parse user links');
         // Should be above "mw.hook('wikipage.content').add" as the next such instruction will run
         // with "$('.cd-comment-author-wrapper')" as $content.

@@ -163,7 +163,7 @@ export class TreeWalker {
  *
  * @augments module:treeWalker.TreeWalker
  */
-export class ElementTreeWalker extends TreeWalker {
+export class ElementsTreeWalker extends TreeWalker {
   /**
    * Create an element {@link module:treeWalker.TreeWalker tree walker}.
    *
@@ -183,7 +183,7 @@ export class ElementTreeWalker extends TreeWalker {
  *
  * @augments module:treeWalker.TreeWalker
  */
-export class ElementAndTextTreeWalker extends TreeWalker {
+export class ElementsAndTextTreeWalker extends TreeWalker {
   /**
    * Create an element and text {@link module:treeWalker.TreeWalker tree walker}.
    *

@@ -8,7 +8,7 @@
  */
 
 import cd from './cd';
-import { ElementAndTextTreeWalker, ElementTreeWalker } from './treeWalker';
+import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } from './util';
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
@@ -270,22 +270,23 @@ export default class Parser {
         }
         const isUnsigned = Boolean(unsignedElement);
 
-        if (closestNotInlineAncestor) {
-          const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
-          const treeWalker = new ElementTreeWalker(timestamp.element);
+        const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
+        const elementsTreeWalker = new ElementsTreeWalker(timestamp.element);
 
-          while (
-            treeWalker.nextNode() &&
-            closestNotInlineAncestor.contains(treeWalker.currentNode) &&
-            (!cniaChildren.includes(treeWalker.currentNode) || isInline(treeWalker.currentNode))
-          ) {
-            // Found other timestamp after this timestamp.
-            if (treeWalker.currentNode.classList.contains('cd-timestamp')) return;
-          }
+        while (
+          elementsTreeWalker.nextNode() &&
+          closestNotInlineAncestor.contains(elementsTreeWalker.currentNode) &&
+          (
+            !cniaChildren.includes(elementsTreeWalker.currentNode) ||
+            isInline(elementsTreeWalker.currentNode)
+          )
+        ) {
+          // Found other timestamp after this timestamp.
+          if (elementsTreeWalker.currentNode.classList.contains('cd-timestamp')) return;
         }
 
         const startElement = unsignedElement || timestamp.element;
-        const treeWalker = new ElementAndTextTreeWalker(startElement);
+        const treeWalker = new ElementsAndTextTreeWalker(startElement);
         let authorName;
         let authorLink;
         let authorTalkLink;
@@ -453,7 +454,7 @@ export default class Parser {
    * @returns {object[]}
    */
   collectParts(signatureElement) {
-    const treeWalker = new ElementAndTextTreeWalker(signatureElement);
+    const treeWalker = new ElementsAndTextTreeWalker(signatureElement);
     let parts = [];
     let firstForeignComponentAfter;
 
@@ -919,7 +920,7 @@ export default class Parser {
    */
   getLevelsUpTree(initialElement) {
     const levelElements = [];
-    const treeWalker = new ElementTreeWalker(initialElement);
+    const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
       if (['DL', 'UL', 'OL'].includes(el.tagName)) {

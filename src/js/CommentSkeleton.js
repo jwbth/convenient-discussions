@@ -6,7 +6,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { ElementTreeWalker } from './treeWalker';
+import { ElementsTreeWalker } from './treeWalker';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -334,7 +334,7 @@ export default class CommentSkeleton {
       Array.from(cd.g.rootElement.getElementsByClassName('outdent-template'))
         .reverse()
         .forEach((el) => {
-          const treeWalker = new ElementTreeWalker(el);
+          const treeWalker = new ElementsTreeWalker(el);
           while (treeWalker.nextNode()) {
             let commentId = Number(treeWalker.currentNode.getAttribute('data-comment-id'));
 
