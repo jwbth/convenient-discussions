@@ -447,7 +447,7 @@ export default class Thread {
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
       if (menu) {
-        menu.editOpeningComment.setDisabled(true);
+        menu.editOpeningComment?.setDisabled(true);
       }
     }
 
@@ -495,7 +495,7 @@ export default class Thread {
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
       if (menu) {
-        menu.editOpeningComment.setDisabled(false);
+        menu.editOpeningComment?.setDisabled(false);
       }
     }
 
