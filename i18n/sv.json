@@ -29,7 +29,7 @@
 	"sm-unwatch-tooltip": "Ta bort avsnittet från bevakningslistan",
 	"sm-copylink-tooltip": "Kopiera en länk",
 	"comment-edited": "Kommentaren har ändrats.",
-	"comment-edited-refresh": "Uppdatera",
+	"comment-edited-refresh": "Uppdatera för att se ändringarna",
 	"comment-edited-diff": "Skillnad",
 	"comment-edited-diff-error": "Kunde inte rendera skillnaden.",
 	"comment-edited-diff-empty": "Skillnaden är tom. Renderingen av kommentaren har förmodligen ändrats, men den redigerades inte.",
