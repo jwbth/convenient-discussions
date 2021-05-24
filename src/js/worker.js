@@ -356,7 +356,6 @@ function onMessageFromWindow(e) {
     cd.config.checkForCustomForeignComponents = restoreFunc(
       cd.config.checkForCustomForeignComponents
     );
-    cd.g.TIMESTAMP_PARSER = restoreFunc(cd.g.TIMESTAMP_PARSER);
     cd.g.IS_IPv6_ADDRESS = restoreFunc(cd.g.IS_IPv6_ADDRESS);
 
     const dom = parseDOM(message.text, {

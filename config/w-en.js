@@ -62,7 +62,7 @@ export default {
 
   contribsPage: 'Special:Contributions',
 
-  localTimezoneOffset: 0,
+  timezone: 'UTC',
 
   archivePaths: [
     {

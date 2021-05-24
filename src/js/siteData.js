@@ -523,7 +523,7 @@ export function loadSiteData() {
   mw.messages.set(cd.config.messages);
 
   cd.g.CONTRIBS_PAGE = cd.config.contribsPage;
-  cd.g.LOCAL_TIMEZONE_OFFSET = cd.config.localTimezoneOffset;
+  cd.g.TIMEZONE = cd.config.timezone;
 
   const messageNames = [
     'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat',
@@ -576,7 +576,7 @@ export function loadSiteData() {
 
   requests.push(...messageRequests);
 
-  if (!cd.g.CONTRIBS_PAGE || cd.g.LOCAL_TIMEZONE_OFFSET == null) {
+  if (!cd.g.CONTRIBS_PAGE || cd.g.TIMEZONE == null) {
     const request = cd.g.api.get({
       action: 'query',
       meta: 'siteinfo',
@@ -589,8 +589,7 @@ export function loadSiteData() {
         }
       });
 
-      // TODO: Implement DST offsets
-      cd.g.LOCAL_TIMEZONE_OFFSET = resp.query.general.timeoffset;
+      cd.g.TIMEZONE = resp.query.general.timezone;
     });
     requests.push(request);
   }
@@ -785,7 +784,7 @@ function setLocalTimestampRegexps() {
  *
  * @private
  */
-function setLocalTimestampParser() {
+function setMatchingGroupsForLocalTimestampParser() {
   const format = cd.g.DATE_FORMAT;
 
   const matchingGroups = [];
@@ -841,97 +840,6 @@ function setLocalTimestampParser() {
   // functions only as strings, forgetting their scope.
 
   /**
-   * Timestamp parser.
-   *
-   * @name TIMESTAMP_PARSER
-   * @param {Array} match Regexp match data.
-   * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker
-   *   context) global object.
-   * @param {number} [timezoneOffset] User's timezone, if it should be used instead of the wiki's
-   *   timezone.
-   * @returns {Date}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  cd.g.TIMESTAMP_PARSER = (match, cd, timezoneOffset) => {
-    const untransformDigits = (text) => {
-      if (!cd.g.DIGITS) {
-        return text;
-      }
-      return text.replace(new RegExp('[' + cd.g.DIGITS + ']', 'g'), (m) => cd.g.DIGITS.indexOf(m));
-    };
-
-    // Override the imported function to be able to use it in the worker context.
-    const getMessages = (messages) => messages.map((name) => cd.g.messages[name]);
-
-    let year = 0;
-    let monthIdx = 0;
-    let day = 0;
-    let hour = 0;
-    let minute = 0;
-
-    for (let i = 0; i < cd.g.TIMESTAMP_MATCHING_GROUPS.length; i++) {
-      const code = cd.g.TIMESTAMP_MATCHING_GROUPS[i];
-      const text = match[i + 3];
-
-      switch (code) {
-        case 'xg':
-          monthIdx = getMessages([
-            'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen',
-            'july-gen', 'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'
-          ]).indexOf(text);
-          break;
-        case 'd':
-        case 'j':
-          day = Number(untransformDigits(text));
-          break;
-        case 'D':
-        case 'l':
-          // Day of the week - unused
-          break;
-        case 'F':
-          monthIdx = getMessages([
-            'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august',
-            'september', 'october', 'november', 'december'
-          ]).indexOf(text);
-          break;
-        case 'M':
-          monthIdx = getMessages([
-            'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
-          ]).indexOf(text);
-          break;
-        case 'n':
-          monthIdx = Number(untransformDigits(text)) - 1;
-          break;
-        case 'Y':
-          year = Number(untransformDigits(text));
-          break;
-        case 'xkY':
-          // Thai year
-          year = Number(untransformDigits(text)) - 543;
-          break;
-        case 'G':
-        case 'H':
-          hour = Number(untransformDigits(text));
-          break;
-        case 'i':
-          minute = Number(untransformDigits(text));
-          break;
-        default:
-          throw 'Not implemented';
-      }
-    }
-
-    if (timezoneOffset === undefined) {
-      timezoneOffset = cd.g.LOCAL_TIMEZONE_OFFSET;
-    }
-
-    return new Date(
-      Date.UTC(year, monthIdx, day, hour, minute) -
-      (timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE)
-    );
-  };
-
-  /**
    * Codes of date components for the parser function.
    *
    * @name TIMESTAMP_MATCHING_GROUPS
@@ -947,5 +855,5 @@ function setLocalTimestampParser() {
 export function initTimestampParsingTools() {
   setFormats();
   setLocalTimestampRegexps();
-  setLocalTimestampParser();
+  setMatchingGroupsForLocalTimestampParser();
 }

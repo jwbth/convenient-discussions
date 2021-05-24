@@ -24,15 +24,14 @@ export default {
   contribsPage: null,
 
   /**
-   * Local timezone offset in minutes. Get by running {@link
+   * Timezone. Get by running {@link
    * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
-   * in your browser's console while the page of your wiki is open. Leave `null` if your wiki uses
-   * daylight saving time (summer time).
+   * in your browser's console while the page of your wiki is open.
    *
-   * @type {?number}
+   * @type {?string}
    * @default null
    */
-  localTimezoneOffset: null,
+  timezone: null,
 
   /**
    * Whether to store of the some of the preferences globally. Requires Extension:GlobalPreferences to

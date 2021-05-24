@@ -55,7 +55,7 @@ mw.loader.using([
       return true;
     }
   });
-  config.localTimezoneOffset = siteInfoResp.query.general.timeoffset;
+  config.timezone = siteInfoResp.query.general.timezone;
   config.useGlobalPreferences = !!siteInfoResp.query.extensions.find(e => e.name === 'GlobalPreferences');
 
   const idsToProps = {

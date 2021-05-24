@@ -62,7 +62,7 @@ export default {
 
   contribsPage: 'Служебная:Вклад',
 
-  localTimezoneOffset: 0,
+  timezone: 'UTC',
 
   pageWhitelist: [
     /^Арбитраж:.+\//,

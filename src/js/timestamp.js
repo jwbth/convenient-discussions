@@ -11,11 +11,111 @@
  * @module timestamp
  */
 
+import { getTimezoneOffset } from 'date-fns-tz';
+
 import cd from './cd';
 import { getMessages, removeDirMarks, spacesToUnderlines } from './util';
 
 let parseTimestampRegexp;
 let parseTimestampRegexpNoTimezone;
+
+/**
+ * Parse a timestamp, accepting a regexp match and returning a date.
+ *
+ * @param {Array} match Regexp match data.
+ * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker
+ *   context) global object.
+ * @param {number} [timezoneOffset] User's timezone offset in minutes, if it should be used instead
+ *   of the wiki's timezone offset.
+ * @returns {Date}
+ * @author Bartosz Dziewoński <matma.rex@gmail.com>
+ * @license GPL-2.0-only
+ */
+export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
+  cd.debug.startTimer('parse timestamps');
+
+  const untransformDigits = (text) => {
+    if (!cd.g.DIGITS) {
+      return text;
+    }
+    return text.replace(new RegExp('[' + cd.g.DIGITS + ']', 'g'), (m) => cd.g.DIGITS.indexOf(m));
+  };
+
+  // Override the imported function to be able to use it in the worker context.
+  const getMessages = (messages) => messages.map((name) => cd.g.messages[name]);
+
+  let year = 0;
+  let monthIdx = 0;
+  let day = 0;
+  let hours = 0;
+  let minutes = 0;
+
+  for (let i = 0; i < cd.g.TIMESTAMP_MATCHING_GROUPS.length; i++) {
+    const code = cd.g.TIMESTAMP_MATCHING_GROUPS[i];
+    const text = match[i + 3];
+
+    switch (code) {
+      case 'xg':
+        monthIdx = getMessages([
+          'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen',
+          'july-gen', 'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'
+        ]).indexOf(text);
+        break;
+      case 'd':
+      case 'j':
+        day = Number(untransformDigits(text));
+        break;
+      case 'D':
+      case 'l':
+        // Day of the week - unused
+        break;
+      case 'F':
+        monthIdx = getMessages([
+          'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august',
+          'september', 'october', 'november', 'december'
+        ]).indexOf(text);
+        break;
+      case 'M':
+        monthIdx = getMessages([
+          'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+        ]).indexOf(text);
+        break;
+      case 'n':
+        monthIdx = Number(untransformDigits(text)) - 1;
+        break;
+      case 'Y':
+        year = Number(untransformDigits(text));
+        break;
+      case 'xkY':
+        // Thai year
+        year = Number(untransformDigits(text)) - 543;
+        break;
+      case 'G':
+      case 'H':
+        hours = Number(untransformDigits(text));
+        break;
+      case 'i':
+        minutes = Number(untransformDigits(text));
+        break;
+      default:
+        throw 'Not implemented';
+    }
+  }
+
+  let date;
+  let timezoneOffsetMs;
+  const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
+  if (timezoneOffset === undefined) {
+    timezoneOffsetMs = cd.g.TIMEZONE === 'UTC' ? 0 : getTimezoneOffset(cd.g.TIMEZONE, unixTime);
+  } else {
+    timezoneOffsetMs = timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE;
+  }
+  date = new Date(unixTime - timezoneOffsetMs);
+
+  cd.debug.stopTimer('parse timestamps');
+
+  return date;
+}
 
 /**
  * @typedef {object} ParseTimestampReturn
@@ -24,7 +124,7 @@ let parseTimestampRegexpNoTimezone;
  */
 
 /**
- * Parse a timestamp, and return a date and the match object.
+ * Parse a timestamp and return the date and the match object.
  *
  * @param {string} timestamp
  * @param {number} [timezoneOffset] Timezone offset in minutes.
@@ -51,7 +151,7 @@ export function parseTimestamp(timestamp, timezoneOffset) {
   if (!match) {
     return null;
   }
-  const date = cd.g.TIMESTAMP_PARSER(match, cd, timezoneOffset);
+  const date = getDateFromTimestampMatch(match, cd, timezoneOffset);
 
   return { date, match };
 }

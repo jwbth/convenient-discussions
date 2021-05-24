@@ -67,7 +67,7 @@ export default {
 
   contribsPage: 'מיוחד:תרומות',
 
-  localTimezoneOffset: null,
+  timezone: 'Asia/Tel_Aviv',
 
   customTalkNamespaces: [4],
 
