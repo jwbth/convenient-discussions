@@ -1952,8 +1952,13 @@ export default class Comment extends CommentSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   edit(dataToRestore) {
-    // "!this.editForm" check is in case the editing is called from a script of some kind (there is
-    // no button to call it from CD when the form is displayed).
+    // We use a class here because there can be elements in the comment that are hidden from the
+    // beginning and should stay so when reshowing the comment.
+    this.$elements.addClass('cd-hidden');
+    this.removeLayers();
+
+    // "!this.editForm" check is in case the editing is initiated from a script of some kind (there
+    // is no button to call it from CD when the form is displayed).
     if (!this.editForm) {
       /**
        * Edit form related to the comment.
@@ -1968,11 +1973,6 @@ export default class Comment extends CommentSkeleton {
           dataToRestore,
         });
     }
-
-    // We use a class here because there can be elements in the comment that are hidden from the
-    // beginning and should stay so when reshowing the comment.
-    this.$elements.addClass('cd-hidden');
-    this.removeLayers();
   }
 
   /**
