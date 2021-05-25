@@ -11,6 +11,7 @@
  */
 
 import cd from './cd';
+import languageFallbacks from '../../languageFallbacks.json';
 import { createApi } from './boot';
 import { getMessages } from './util';
 
@@ -138,7 +139,6 @@ const DATE_FORMATS = {
   'gl': 'j \\d\\e F \\d\\e Y "ás" H:i',
   'glk': 'j xg Y، ساعت H:i',
   'gn': 'H:i j M Y',
-  'gom': 'H:i, j F Y',
   'gom-deva': 'H:i, j F Y',
   'gom-latn': 'H:i, j F Y',
   'gor': 'j F Y H.i',
@@ -502,7 +502,7 @@ const TIMEZONES = [
 function setFormats() {
   let langCode = mw.config.get('wgPageContentLanguage');
   if (!DATE_FORMATS[langCode]) {
-    langCode = mw.config.get('wgVisualEditor')?.pageVariantFallbacks;
+    langCode = (languageFallbacks[langCode] || []).find((fallback) => DATE_FORMATS[fallback]);
     if (!DATE_FORMATS[langCode]) {
       // https://incubator.wikimedia.org/wiki/Talk:Wp/enm/Mayne_Page
       langCode = mw.config.get('wgContentLanguage');

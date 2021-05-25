@@ -61,7 +61,6 @@ DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent, config) => {
 });
 
 const i18n = {};
-
 fs.readdirSync('./i18n/')
   .filter(filename => path.extname(filename) === '.json' && filename !== 'qqq.json')
   .forEach((filename) => {
@@ -116,7 +115,9 @@ fs.readdirSync('./i18n/')
 
 const i18nWithFallbacks = {};
 
-const fallbackData = require('./language-fallbacks.json');
+// When fallbacks need to be updated, they can be collected using
+// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
+const fallbackData = require('./languageFallbacks.json');
 Object.keys(i18n).forEach((lang) => {
   const fallbacks = fallbackData[lang];
   if (!fallbacks) {
@@ -143,5 +144,8 @@ convenientDiscussions.i18n['${lang}'] = ${jsonText};
   fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
   fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);
 }
+
+const i18nListText = JSON.stringify(Object.keys(i18n), null, '\t') + '\n';
+fs.writeFileSync('i18nList.json', i18nListText);
 
 console.log('Internationalization files have been built successfully.');

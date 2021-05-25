@@ -11,6 +11,8 @@ import configUrls from '../../config/urls.json';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
+import i18nList from '../../i18nList.json';
+import languageFallbacks from '../../languageFallbacks.json';
 import processPage from './processPage';
 import util from './globalUtil';
 import {
@@ -237,8 +239,8 @@ function setStrings() {
       name === contentStringName ||
       (contentStringName.endsWith('-') && name.startsWith(contentStringName))
     )) ?
-      mw.config.get('wgContentLanguage') :
-      mw.config.get('wgUserLanguage');
+      cd.g.CONTENT_LANGUAGE :
+      cd.g.USER_LANGUAGE;
     strings[name] = cd.i18n[relevantLang]?.[name] || cd.i18n.en[name];
   });
 
@@ -506,6 +508,28 @@ async function go() {
 }
 
 /**
+ * Set language properties of the global object, taking fallback languages into account.
+ *
+ * @private
+ */
+function setLanguages() {
+  const languageOrFallback = (lang) => (
+    i18nList.includes(lang) ?
+      lang :
+      (languageFallbacks[lang] || []).find((fallback) => i18nList.includes(fallback)) || 'en'
+  );
+
+  // This is the only place where mw.config.get('wgUserLanguage') is used.
+  cd.g.USER_LANGUAGE = languageOrFallback(mw.config.get('wgUserLanguage'));
+
+  // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
+  // used for signature parsing we will have to use the real content language (see
+  // siteData.loadSiteData). As a result, we use cd.g.CONTENT_LANGUAGE only for the script's own
+  // messages, not the native MediaWiki messages.
+  cd.g.CONTENT_LANGUAGE = languageOrFallback(mw.config.get('wgContentLanguage'));
+}
+
+/**
  * Load and execute the configuration script if available.
  *
  * @returns {Promise}
@@ -545,16 +569,20 @@ function getConfig() {
 }
 
 /**
- * Load and add localization strings.
+ * Load and add localization strings to the `cd.i18n` object. Use fallback languages if default
+ * languages are unavailable.
  *
  * @returns {Promise}
  * @private
  */
 function getStrings() {
-  const requests = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
+  const requests = [cd.g.USER_LANGUAGE, cd.g.CONTENT_LANGUAGE]
     .filter(unique)
     .filter((lang) => lang !== 'en')
-    .map((lang) => mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`));
+    .map((lang) => {
+      const url = `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`;
+      return mw.loader.getScript(url);
+    });
 
   // We assume it's OK to fall back to English if the translation is unavailable for any reason.
   return Promise.all(requests).catch(() => {});
@@ -643,6 +671,8 @@ async function app() {
    * @type {module:cd~convenientDiscussions}
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
+
+  setLanguages();
 
   try {
     await Promise.all([
