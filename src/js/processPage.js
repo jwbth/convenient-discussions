@@ -175,7 +175,9 @@ function findFloatingAndHiddenElements() {
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
 
   const hiddenElementSelector = [...tsSelectorsHidden].join(', ');
-  cd.g.hiddenElements = Array.from(cd.g.rootElement.querySelectorAll(hiddenElementSelector));
+  cd.g.hiddenElements = hiddenElementSelector ?
+    Array.from(cd.g.rootElement.querySelectorAll(hiddenElementSelector)) :
+    [];
 }
 
 /**
