@@ -274,13 +274,13 @@ export function firstCharToUpperCase(s) {
 }
 
 /**
- * Get text of the localization messages.
+ * Get text of the localization messages for the content language.
  *
  * @param {string[]} messages
  * @returns {string[]}
  */
-export function getMessages(messages) {
-  return messages.map(mw.msg);
+export function getContentLanguageMessages(messages) {
+  return messages.map((name) => cd.g.contentLanguageMessages[name]);
 }
 
 /**

@@ -70,7 +70,7 @@ async function prepare(siteDataRequests) {
   initTimestampParsingTools();
 
   serverName = mw.config.get('wgServerName');
-  colon = cd.mws('colon-separator').trim();
+  colon = cd.mws('colon-separator', { language: 'content' }).trim();
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 

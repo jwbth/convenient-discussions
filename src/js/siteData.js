@@ -13,7 +13,7 @@
 import cd from './cd';
 import languageFallbacks from '../../languageFallbacks.json';
 import { createApi } from './boot';
-import { getMessages } from './util';
+import { getContentLanguageMessages } from './util';
 
 const DATE_FORMATS = {
   'ab': 'H:i, j xg Y',
@@ -518,14 +518,7 @@ function setFormats() {
  * @returns {Promise}
  */
 export function loadSiteData() {
-  const requests = [];
-
-  mw.messages.set(cd.config.messages);
-
-  cd.g.CONTRIBS_PAGE = cd.config.contribsPage;
-  cd.g.TIMEZONE = cd.config.timezone;
-
-  const messageNames = [
+  const contentLanguageMessageNames = [
     'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat',
 
     'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
@@ -538,43 +531,91 @@ export function loadSiteData() {
     'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen', 'july-gen',
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
+    'word-separator', 'comma-separator', 'colon-separator',
+  ];
+  const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
     'colon-separator', 'nextdiff',
   ];
 
-  createApi();
+  // We need this object to pass it to the web worker.
+  cd.g.contentLanguageMessages = {};
 
-  // I hope we won't be scolded too much for making two message requests in parallel.
-  const messageRequests = [];
-  for (let i = 0; i < messageNames.length; i += 50) {
-    const nextNames = messageNames.slice(i, i + 50);
-    const request = cd.g.api.loadMessagesIfMissing(nextNames, {
-      amlang: mw.config.get('wgContentLanguage'),
-    });
-    messageRequests.push(request);
-  }
-
-  if (!Object.keys(cd.config.messages).some((name) => name.startsWith('timezone-'))) {
-    const request = cd.g.api.loadMessages(undefined, {
-      amlang: mw.config.get('wgContentLanguage'),
-      amincludelocal: true,
-      amfilter: 'timezone-',
-    });
-    messageRequests.push(request);
-  }
-
-  const populateMessages = () => {
-    // We need this object to pass to the web worker.
-    cd.g.messages = {};
-    messageNames.push(
-      ...Object.keys(mw.messages.get()).filter((name) => name.startsWith('timezone-'))
-    );
-    messageNames.forEach((name) => {
-      cd.g.messages[name] = mw.messages.get(name);
+  const setContentLanguageMessages = (messages) => {
+    Object.keys(messages).forEach((name) => {
+      mw.messages.set('(content)' + name, messages[name]);
+      cd.g.contentLanguageMessages[name] = messages[name];
     });
   };
 
-  requests.push(...messageRequests);
+  const areUserAndContentLanguagesEqual = mw.config.get('wgContentLanguage') === cd.g.USER_LANGUAGE;
+  if (areUserAndContentLanguagesEqual) {
+    const userLanguageConfigMessages = {};
+    Object.keys(cd.config.messages)
+      .filter((name) => userLanguageMessageNames.includes(name))
+      .forEach((name) => {
+        userLanguageConfigMessages[name] = cd.config.messages[name];
+      });
+    mw.messages.set(userLanguageConfigMessages);
+  }
+
+  const filterAndSetContentLanguageMessages = (obj) => {
+    const messages = {};
+    Object.keys(obj)
+      .filter((name) => contentLanguageMessageNames.includes(name) || name.startsWith('timezone-'))
+      .forEach((name) => {
+        messages[name] = obj[name];
+      });
+    setContentLanguageMessages(messages);
+  };
+  filterAndSetContentLanguageMessages(cd.config.messages);
+
+  createApi();
+
+  // I hope we won't be scolded too much for making two (three if the user and content language are
+  // different) message requests in parallel.
+  const requests = [];
+  if (areUserAndContentLanguagesEqual) {
+    const messagesToRequest = contentLanguageMessageNames.concat(userLanguageMessageNames);
+    let nextNames;
+    while ((nextNames = messagesToRequest.splice(0, 50)).length) {
+      const request = cd.g.api.loadMessagesIfMissing(nextNames, {
+        amlang: mw.config.get('wgContentLanguage'),
+      }).then(() => {
+        filterAndSetContentLanguageMessages(mw.messages.get());
+      });
+      requests.push(request);
+    }
+  } else {
+    let nextNames;
+    const contentLanguageMessagesToRequest = contentLanguageMessageNames
+      .filter((name) => !cd.g.contentLanguageMessages[name]);
+    while ((nextNames = contentLanguageMessagesToRequest.splice(0, 50)).length) {
+      const request = cd.g.api.getMessages(nextNames, {
+        amlang: mw.config.get('wgContentLanguage'),
+      }).then(setContentLanguageMessages);
+      requests.push(request);
+    }
+
+    const userLanguageMessagesRequest = cd.g.api.loadMessagesIfMissing(userLanguageMessageNames, {
+      amlang: cd.g.USER_LANGUAGE,
+    });
+    requests.push(userLanguageMessagesRequest);
+  }
+
+  // We expect that if some "timezone-" messages are set, then all are set (we can't be sure without
+  // making a request).
+  if (!Object.keys(cd.config.messages).some((name) => name.startsWith('timezone-'))) {
+    const request = cd.g.api.getMessages(undefined, {
+      amlang: mw.config.get('wgContentLanguage'),
+      amincludelocal: true,
+      amfilter: 'timezone-',
+    }).then(setContentLanguageMessages);
+    requests.push(request);
+  }
+
+  cd.g.CONTRIBS_PAGE = cd.config.contribsPage;
+  cd.g.TIMEZONE = cd.config.timezone;
 
   if (!cd.g.CONTRIBS_PAGE || cd.g.TIMEZONE == null) {
     const request = cd.g.api.get({
@@ -594,13 +635,7 @@ export function loadSiteData() {
     requests.push(request);
   }
 
-  if (requests.every((request) => request.state() === 'resolved')) {
-    populateMessages();
-    return Promise.all([]);
-  } else {
-    Promise.all(messageRequests).then(populateMessages);
-    return Promise.all(requests);
-  }
+  return Promise.all(requests.every((request) => request.state() === 'resolved') ? [] : requests);
 }
 
 /**
@@ -638,7 +673,7 @@ function getTimestampMainPartPattern(format, digits) {
         s += 'x';
         break;
       case 'xg':
-        s += regexpAlternateGroup(getMessages([
+        s += regexpAlternateGroup(getContentLanguageMessages([
           'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen',
           'july-gen', 'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'
         ]));
@@ -647,24 +682,26 @@ function getTimestampMainPartPattern(format, digits) {
         num = '2';
         break;
       case 'D':
-        s += regexpAlternateGroup(getMessages(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']));
+        s += regexpAlternateGroup(getContentLanguageMessages([
+          'sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'
+        ]));
         break;
       case 'j':
         num = '1,2';
         break;
       case 'l':
-        s += regexpAlternateGroup(getMessages([
+        s += regexpAlternateGroup(getContentLanguageMessages([
           'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
         ]));
         break;
       case 'F':
-        s += regexpAlternateGroup(getMessages([
+        s += regexpAlternateGroup(getContentLanguageMessages([
           'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august',
           'september', 'october', 'november', 'december'
         ]));
         break;
       case 'M':
-        s += regexpAlternateGroup(getMessages([
+        s += regexpAlternateGroup(getContentLanguageMessages([
           'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
         ]));
         break;
@@ -729,23 +766,21 @@ function getTimestampMainPartPattern(format, digits) {
  * @private
  */
 function setLocalTimestampRegexps() {
-  const mainPartPattern = getTimestampMainPartPattern(
-    cd.g.DATE_FORMAT,
-    cd.g.DIGITS ? `[${cd.g.DIGITS}]` : '\\d'
-  );
-  const timezones = Object.keys(cd.g.messages)
+  const digitsPattern = cd.g.DIGITS ? `[${cd.g.DIGITS}]` : '\\d';
+  const mainPartPattern = getTimestampMainPartPattern(cd.g.DATE_FORMAT, digitsPattern);
+  const localizedTimezonesPattern = Object.keys(cd.g.contentLanguageMessages)
     .filter((name) => name.startsWith('timezone-'))
     .map((name) => name.slice(9))
-    .filter((name) => !['local', 'useoffset-placeholder'].includes(name));
-  const localizedTimezones = TIMEZONES.concat(timezones).map((abbr) => {
-    const message = mw.message('timezone-' + abbr);
-    return message.exists() ? message.parse() : abbr;
-  });
-  const timezonePattern = (
-    '\\((?:' +
-    localizedTimezones.map(mw.util.escapeRegExp).join('|').toUpperCase() +
-    ')\\)'
-  );
+    .filter((name) => !['local', 'useoffset-placeholder'].includes(name))
+    .concat(TIMEZONES)
+    .map((abbr) => {
+      const message = mw.message('(content)timezone-' + abbr);
+      return message.exists() ? message.parse() : abbr;
+    })
+    .map(mw.util.escapeRegExp)
+    .join('|')
+    .toUpperCase();
+  const timezonePattern = '\\((?:' + localizedTimezonesPattern + ')\\)';
 
   // "+" to account for RTL and LTR marks replaced with a space.
   const pattern = mainPartPattern + ' +' + timezonePattern;

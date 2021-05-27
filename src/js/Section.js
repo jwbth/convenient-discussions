@@ -630,7 +630,7 @@ export default class Section extends SectionSkeleton {
       const summaryEnding = this.summaryEndingInput.getValue();
       const summary = (
         cd.s('es-move-from', source.sectionWikilink) +
-        (summaryEnding ? cd.mws('colon-separator') + summaryEnding : '')
+        (summaryEnding ? cd.mws('colon-separator', { language: 'content' }) + summaryEnding : '')
       );
       try {
         await target.page.edit({
@@ -696,7 +696,7 @@ export default class Section extends SectionSkeleton {
       const summaryEnding = this.summaryEndingInput.getValue();
       const summary = (
         cd.s('es-move-to', target.sectionWikilink) +
-        (summaryEnding ? cd.mws('colon-separator') + summaryEnding : '')
+        (summaryEnding ? cd.mws('colon-separator', { language: 'content' }) + summaryEnding : '')
       );
 
       try {

@@ -152,8 +152,17 @@ function sPlain(name) {
  * @returns {string}
  * @memberof module:cd~convenientDiscussions
  */
-function mws(...args) {
-  return mw.message(...args).parse();
+function mws(name, ...params) {
+  let options;
+  let lastParam = params[params.length - 1];
+  if (typeof lastParam === 'object') {
+    options = lastParam;
+    params.splice(params.length - 1);
+  }
+  if (options && options.language === 'content') {
+    name = '(content)' + name;
+  }
+  return mw.message(name, ...params).parse();
 }
 
 /**

@@ -14,7 +14,7 @@
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
-import { getMessages, removeDirMarks, spacesToUnderlines } from './util';
+import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from './util';
 
 let parseTimestampRegexp;
 let parseTimestampRegexpNoTimezone;
@@ -42,7 +42,9 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
   };
 
   // Override the imported function to be able to use it in the worker context.
-  const getMessages = (messages) => messages.map((name) => cd.g.messages[name]);
+  const getContentLanguageMessages = (messages) => (
+    messages.map((name) => cd.g.contentLanguageMessages[name])
+  );
 
   let year = 0;
   let monthIdx = 0;
@@ -56,7 +58,7 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
 
     switch (code) {
       case 'xg':
-        monthIdx = getMessages([
+        monthIdx = getContentLanguageMessages([
           'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen',
           'july-gen', 'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'
         ]).indexOf(text);
@@ -70,13 +72,13 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
         // Day of the week - unused
         break;
       case 'F':
-        monthIdx = getMessages([
+        monthIdx = getContentLanguageMessages([
           'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august',
           'september', 'october', 'november', 'december'
         ]).indexOf(text);
         break;
       case 'M':
-        monthIdx = getMessages([
+        monthIdx = getContentLanguageMessages([
           'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
         ]).indexOf(text);
         break;
@@ -193,7 +195,7 @@ export function formatDate(date) {
         s += 'x';
         break;
       case 'xg':
-        s += getMessages([
+        s += getContentLanguageMessages([
           'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen',
           'july-gen', 'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'
         ])[date.getUTCMonth()];
@@ -202,24 +204,24 @@ export function formatDate(date) {
         s += zeroPad(date.getUTCDate(), 2);
         break;
       case 'D':
-        s += getMessages(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'])[date.getUTCDay()];
+        s += getContentLanguageMessages(['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'])[date.getUTCDay()];
         break;
       case 'j':
         s += date.getUTCDate();
         break;
       case 'l':
-        s += getMessages([
+        s += getContentLanguageMessages([
           'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
         ])[date.getDay()];
         break;
       case 'F':
-        s += getMessages([
+        s += getContentLanguageMessages([
           'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august',
           'september', 'october', 'november', 'december'
         ])[date.getUTCMonth()];
         break;
       case 'M':
-        s += getMessages([
+        s += getContentLanguageMessages([
           'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
         ])[date.getUTCMonth()];
         break;
