@@ -23,8 +23,8 @@ mw.loader.using([
     'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen', 'july-gen',
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
-    'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'nextdiff',
+    'timezone-utc', 'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator',
+    'comma-separator', 'colon-separator', 'nextdiff',
   ];
 
   for (let i = 0; i < messageNames.length; i += 50) {
@@ -34,15 +34,6 @@ mw.loader.using([
     });
     Object.assign(config.messages, messages);
   }
-
-  const timezoneData = await api.getMessages(undefined, {
-    amlang: mw.config.get('wgContentLanguage'),
-    amincludelocal: 1,
-    amfilter: 'timezone-',
-  });
-  delete timezoneData['timezone-local'];
-  delete timezoneData['timezone-useoffset-placeholder'];
-  Object.assign(config.messages, timezoneData);
 
   const siteInfoResp = await api.get({
     action: 'query',

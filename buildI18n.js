@@ -117,7 +117,7 @@ const i18nWithFallbacks = {};
 
 // When fallbacks need to be updated, they can be collected using
 // https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
-const fallbackData = require('./languageFallbacks.json');
+const fallbackData = require('./data/languageFallbacks.json');
 Object.keys(i18n).forEach((lang) => {
   const fallbacks = fallbackData[lang];
   if (!fallbacks) {
@@ -146,6 +146,7 @@ convenientDiscussions.i18n['${lang}'] = ${jsonText};
 }
 
 const i18nListText = JSON.stringify(Object.keys(i18n), null, '\t') + '\n';
-fs.writeFileSync('i18nList.json', i18nListText);
+fs.mkdirSync('data', { recursive: true });
+fs.writeFileSync('data/i18nList.json', i18nListText);
 
 console.log('Internationalization files have been built successfully.');

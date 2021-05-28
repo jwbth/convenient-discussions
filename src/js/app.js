@@ -4,15 +4,15 @@
  * @module app
  */
 
+import CONFIG_URLS from '../../data/configUrls.json';
+import I18N_LIST from '../../data/i18nList.json';
+import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
 import Worker from './worker-gate';
 import cd from './cd';
 import commentLinks from './commentLinks';
-import configUrls from '../../config/urls.json';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
-import i18nList from '../../i18nList.json';
-import languageFallbacks from '../../languageFallbacks.json';
 import processPage from './processPage';
 import util from './globalUtil';
 import {
@@ -523,9 +523,9 @@ async function go() {
  */
 function setLanguages() {
   const languageOrFallback = (lang) => (
-    i18nList.includes(lang) ?
+    I18N_LIST.includes(lang) ?
       lang :
-      (languageFallbacks[lang] || []).find((fallback) => i18nList.includes(fallback)) || 'en'
+      (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
   );
 
   // This is the only place where mw.config.get('wgUserLanguage') is used.
@@ -550,7 +550,7 @@ function getConfig() {
     if (IS_TEST) {
       key += '-test';
     }
-    const configUrl = configUrls[key] || configUrls[location.hostname];
+    const configUrl = CONFIG_URLS[key] || CONFIG_URLS[location.hostname];
     if (configUrl) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);

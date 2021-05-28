@@ -21,4 +21,8 @@ function getUrl(page) {
   );
 }
 
-module.exports = { getUrl };
+function unique(item, i, arr) {
+  return arr.indexOf(item) === i;
+}
+
+module.exports = { getUrl, unique };
