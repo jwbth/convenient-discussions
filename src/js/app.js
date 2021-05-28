@@ -4,7 +4,7 @@
  * @module app
  */
 
-import CONFIG_URLS from '../../data/configUrls.json';
+import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
 import Worker from './worker-gate';
