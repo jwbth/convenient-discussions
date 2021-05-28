@@ -36,16 +36,16 @@ const patternToMessageNames = {
  * @private
  */
 function setFormats() {
-  let langCode = mw.config.get('wgPageContentLanguage');
-  if (!DATE_FORMATS[langCode]) {
-    langCode = (LANGUAGE_FALLBACKS[langCode] || []).find((fallback) => DATE_FORMATS[fallback]);
-    if (!DATE_FORMATS[langCode]) {
+  let lang = mw.config.get('wgPageContentLanguage');
+  if (!DATE_FORMATS[lang]) {
+    lang = (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => DATE_FORMATS[fallback]);
+    if (!DATE_FORMATS[lang]) {
       // https://incubator.wikimedia.org/wiki/Talk:Wp/enm/Mayne_Page
-      langCode = mw.config.get('wgContentLanguage');
+      lang = mw.config.get('wgContentLanguage');
     }
   }
-  cd.g.DATE_FORMAT = DATE_FORMATS[langCode];
-  cd.g.DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[langCode] : null;
+  cd.g.DATE_FORMAT = DATE_FORMATS[lang];
+  cd.g.DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[lang] : null;
 }
 
 function getUsedDatePatterns(format) {
@@ -73,7 +73,6 @@ function getUsedDatePatterns(format) {
  * @returns {Promise}
  */
 export function loadSiteData() {
-
   setFormats();
 
   const datePatternsMessageNames = getUsedDatePatterns(cd.g.DATE_FORMAT)

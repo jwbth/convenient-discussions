@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 
 const webpack = require('webpack');
@@ -185,9 +184,11 @@ module.exports = (env) => {
             compress: {
               // + 0.3% to the file size
               sequences: false,
+
               // + 1% to the file size
               conditionals: false,
             },
+
             output: {
               // Otherwise messes with \x01 \x02 \x03 \x04.
               ascii_only: true,

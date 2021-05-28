@@ -178,18 +178,16 @@ function addCommentLinksToSpecialSearch() {
       async () => {
         await loadSiteData();
         $('.mw-search-result-heading').each((i, el) => {
+          const href = (
+            $(el)
+              .find('a')
+              .first()
+              .attr('href') +
+            '#' +
+            commentAnchor
+          );
           const $a = $('<a>')
-            .attr(
-              'href',
-              (
-                $(el)
-                  .find('a')
-                  .first()
-                  .attr('href') +
-                '#' +
-                commentAnchor
-              )
-            )
+            .attr('href', href)
             .text(cd.s('deadanchor-search-gotocomment'));
           const $start = $('<span>').text(cd.mws('parentheses-start'));
           const $end = $('<span>').text(cd.mws('parentheses-end'));

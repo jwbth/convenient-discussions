@@ -386,6 +386,7 @@ export default class Autocomplete {
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
+
               // 10 spaces in a page name seems too many.
               (text.match(spacesRegexp) || []).length <= 9
             );

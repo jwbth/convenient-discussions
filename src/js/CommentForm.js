@@ -430,7 +430,7 @@ export default class CommentForm {
         },
       });
 
-      const lang = mw.config.get('wgUserLanguage');
+      const lang = cd.g.USER_LANGUAGE;
       $input.wikiEditor('addToToolbar', {
         section: 'main',
         group: 'format',

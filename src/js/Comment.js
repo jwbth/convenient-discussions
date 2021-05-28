@@ -611,9 +611,9 @@ export default class Comment extends CommentSkeleton {
     for (let i = 0; i < this.highlightables.length; i++) {
       const el = this.highlightables[i];
       const areThereClassedElements = Array.from(el.classList)
-        .some((name) => !name.startsWith('cd-') || name === 'cd-firstHighlightableReplacement');
+        .some((name) => !name.startsWith('cd-') || name === 'cd-comment-replacedPart');
       if (areThereClassedElements) {
-        const isReplacement = i === 0 && el.classList.contains('cd-firstHighlightableReplacement');
+        const isReplacement = i === 0 && el.classList.contains('cd-comment-replacedPart');
         const testElement = isReplacement ? el.firstChild : el;
 
         // Node that we could use window.getComputerStyle here, but avoid it to avoid the reflow.
