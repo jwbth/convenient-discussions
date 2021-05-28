@@ -920,10 +920,6 @@ export function isPageLoading() {
  * @throws {CdError|Error}
  */
 export async function reloadPage(passedData = {}) {
-  if (passedData.pushState === undefined) {
-    passedData.pushState = false;
-  }
-
   if (cd.g.isPageBeingReloaded) return;
 
   // Stop all animations

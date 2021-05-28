@@ -322,8 +322,6 @@ export default {
       }
     }
 
-    history.pushState(history.state, '', url);
-
     cd.g.isAutoScrollInProgress = true;
     scrollToY(offset);
   },
