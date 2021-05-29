@@ -517,6 +517,7 @@ async function go() {
 /**
  * Set language properties of the global object, taking fallback languages into account.
  *
+ * @returns {boolean} Are fallbacks employed.
  * @private
  */
 function setLanguages() {
@@ -534,6 +535,11 @@ function setLanguages() {
   // siteData.loadSiteData). As a result, we use cd.g.CONTENT_LANGUAGE only for the script's own
   // messages, not the native MediaWiki messages.
   cd.g.CONTENT_LANGUAGE = languageOrFallback(mw.config.get('wgContentLanguage'));
+
+  return !(
+    cd.g.USER_LANGUAGE === mw.config.get('wgUserLanguage') &&
+    cd.g.CONTENT_LANGUAGE === mw.config.get('wgContentLanguage')
+  );
 }
 
 /**
@@ -585,7 +591,7 @@ function getConfig() {
 function getStrings() {
   const requests = [cd.g.USER_LANGUAGE, cd.g.CONTENT_LANGUAGE]
     .filter(unique)
-    .filter((lang) => lang !== 'en')
+    .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
     .map((lang) => {
       const url = `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`;
       return mw.loader.getScript(url);
@@ -679,15 +685,15 @@ async function app() {
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
 
-  setLanguages();
+  const areLanguageFallbacksEmployed = setLanguages();
+  const getStringsPromise = areLanguageFallbacksEmployed ?
+    getStrings() :
+
+    // cd.getStringsPromise may be set in the configuration file.
+    !cd.i18n && (cd.getStringsPromise || getStrings());
 
   try {
-    await Promise.all([
-      !cd.config && getConfig(),
-
-      // cd.getStringsPromise may be set in the configuration file.
-      !cd.i18n && (cd.getStringsPromise || getStrings()),
-    ]);
+    await Promise.all([!cd.config && getConfig(), getStringsPromise]);
   } catch (e) {
     console.error(e);
     return;
