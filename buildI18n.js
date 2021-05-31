@@ -1,9 +1,11 @@
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const chalk = require('chalk');
 const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
+const rimraf = require('rimraf');
 
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
@@ -115,34 +117,99 @@ fs.readdirSync('./i18n/')
 
 const i18nWithFallbacks = {};
 
-// When fallbacks need to be updated, they can be collected using
-// https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
-const fallbackData = require('./data/languageFallbacks.json');
-Object.keys(i18n).forEach((lang) => {
-  const fallbacks = fallbackData[lang];
-  if (!fallbacks) {
-    i18nWithFallbacks[lang] = i18n[lang];
-  } else {
-    const fallbackMessages = fallbacks.map(fbLang => i18n[fbLang]).reverse();
-    i18nWithFallbacks[lang] = Object.assign({}, ...fallbackMessages, i18n[lang]);
-  }
-});
+if (Object.keys(i18n).length) {
+  // Use language fallbacks data to fill missing messages. When fallbacks need to be updated, they
+  // can be collected using
+  // https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
+  const fallbackData = require('./data/languageFallbacks.json');
+  Object.keys(i18n).forEach((lang) => {
+    const fallbacks = fallbackData[lang];
+    if (fallbacks) {
+      const fallbackMessages = fallbacks.map((fbLang) => i18n[fbLang]).reverse();
+      i18nWithFallbacks[lang] = Object.assign({}, ...fallbackMessages, i18n[lang]);
+    } else {
+      i18nWithFallbacks[lang] = i18n[lang];
+    }
+  });
 
-for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
-  let jsonText = JSON.stringify(json, null, '\t')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&#32;/g, ' ');
+  // Create a temporary folder.
+  const localesTempDirName = 'date-fns-locales-temp';
+  fs.mkdirSync(localesTempDirName, { recursive: true });
 
-  if (lang === 'en') {
-    // Prevent creating "</nowiki>" character sequences when building the main script file.
-    jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
+  // Add temporary language files to that folder that import respective locales if they exist.
+  const dateFnsLocales = require('date-fns/locale');
+  const langsHavingDateFnsLocale = [];
+  Object.keys(i18nWithFallbacks).forEach((lang) => {
+    const langDateFnsName = lang
+      .replace(/^zh-han./, 'zhCN')
+      .replace(/^en$/, 'enUS')
+      .replace(/-.+$/, (s) => s.toUpperCase())
+      .replace(/-/g, '');
+    if (dateFnsLocales[langDateFnsName]) {
+      langsHavingDateFnsLocale.push(lang);
+      const text = `import { ${langDateFnsName} } from 'date-fns/locale';
+convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${langDateFnsName};
+`;
+      fs.writeFileSync(`${localesTempDirName}/${lang}.js`, text);
+    }
+  });
+
+  // Build the locales.
+  if (langsHavingDateFnsLocale.length) {
+    const webpackConfig = `const fs = require('fs');
+const path = require('path');
+
+const entry = {};
+fs.readdirSync('./${localesTempDirName}')
+  .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
+  .forEach((name) => {
+    entry[name.slice(0, -3)] = './' + name;
+  });
+
+module.exports = {
+  mode: 'production',
+  context: path.resolve(__dirname, '.'),
+  entry,
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+  },
+};
+`;
+    fs.writeFileSync(`${localesTempDirName}/webpack.config.js`, webpackConfig);
+    execSync(`node ./node_modules/webpack/bin/webpack --config "${localesTempDirName}/webpack.config.js"`);
   }
-  const data = `window.convenientDiscussions = window.convenientDiscussions || {};
+
+  // Create i18n files that combine translations with date-fns locales.
+  for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
+    let jsonText = JSON.stringify(json, null, '\t')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&#32;/g, ' ');
+
+    let dateFnsLocaleText;
+    if (langsHavingDateFnsLocale.includes(lang)) {
+      dateFnsLocaleText = fs.readFileSync(`./${localesTempDirName}/dist/${lang}.js`).toString();
+    }
+
+    if (lang === 'en') {
+      // Prevent creating "</nowiki>" character sequences when building the main script file.
+      jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
+    }
+
+    let text = `window.convenientDiscussions = window.convenientDiscussions || {};
 convenientDiscussions.i18n = convenientDiscussions.i18n || {};
 convenientDiscussions.i18n['${lang}'] = ${jsonText};
 `;
-  fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
-  fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, data);
+    if (dateFnsLocaleText) {
+      text += `
+// This assigns a date-fns locale object to \`convenientDiscussions.i18n['${lang}'].dateFnsLocale\`.
+${dateFnsLocaleText}
+`;
+    }
+    fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
+    fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, text);
+  }
+
+  rimraf.sync(localesTempDirName);
 }
 
 const i18nListText = JSON.stringify(Object.keys(i18n), null, '\t') + '\n';

@@ -39,7 +39,8 @@ import {
 } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools, loadSiteData } from './siteData';
+import { initTimestampParsingTools } from './timestamp';
+import { loadSiteData } from './siteData';
 
 let notificationsData = [];
 let saveSessionTimeout;
@@ -85,17 +86,20 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
+    hideTimezone: false,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notifyCollapsedThreads: false,
     notificationsBlacklist: [],
-    reformatComments: true,
+    reformatComments: false,
     showContribsLink: false,
     showLoadingOverlay: true,
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
+    timestampFormat: 'default',
     modifyToc: true,
     useBackgroundHighlighting: true,
+    useLocalTime: true,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,

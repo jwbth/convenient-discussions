@@ -34,6 +34,8 @@ import {
 } from './util';
 import { loadSiteData } from './siteData';
 import { setVisits } from './options';
+import { getTimezoneOffset, zonedTimeToUtc, utcToZonedTime, format as formatTz } from 'date-fns-tz';
+import { format } from 'date-fns';
 
 let config;
 if (IS_SINGLE) {
@@ -274,6 +276,12 @@ async function go() {
   cd.config = Object.assign(defaultConfig, cd.config);
 
   setStrings();
+
+  cd.g.getTimezoneOffset = getTimezoneOffset;
+  cd.g.zonedTimeToUtc = zonedTimeToUtc;
+  cd.g.utcToZonedTime = utcToZonedTime;
+  cd.g.formatTz = formatTz;
+  cd.g.format = format;
 
   // For historical reasons, ru.wikipedia.org has 'cd'.
   const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
@@ -523,8 +531,8 @@ async function go() {
 function setLanguages() {
   const languageOrFallback = (lang) => (
     I18N_LIST.includes(lang) ?
-      lang :
-      (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
+    lang :
+    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
   );
 
   // This is the only place where mw.config.get('wgUserLanguage') is used.

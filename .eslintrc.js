@@ -16,8 +16,11 @@ module.exports = {
     "Tribute": "readonly",
     "convenientDiscussions": "readonly",
     "jQuery": "readonly",
+    "jest": "readonly",
+    "expect": "readonly",
     "mw": "readonly",
     "require": "readonly",
+    "test": "readonly",
   },
   "ignorePatterns": ["dist/**", "misc/**", "*.json5"],
   "overrides": [

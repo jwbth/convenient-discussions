@@ -268,6 +268,7 @@ function parse() {
     'parser',
     'parts',
     'signatureElement',
+    'timestampElement',
   ];
   let sectionDangerousKeys = [
     'cachedAncestors',

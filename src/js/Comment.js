@@ -41,11 +41,13 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
+import { formatDate, formatDateImproved, formatDateRelative } from './timestamp';
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
 
 let elementPrototypes;
 let thanks;
+let utcString;
 
 /**
  * Remove thanks older than 60 days.
@@ -120,14 +122,14 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {JQuery}
      */
-    this.$signature = $(signature.element);
+    this.$signature = $(this.signatureElement);
 
     /**
      * Comment timestamp element as a jQuery object.
      *
      * @type {JQuery}
      */
-    this.$timestamp = $(signature.timestampElement);
+    this.$timestamp = $(this.timestampElement);
 
     /**
      * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
@@ -362,7 +364,8 @@ export default class Comment extends CommentSkeleton {
        * @type {CommentButton}
        */
       this.copyLinkButton = new CommentButton({
-        label: this.timestamp,
+        label: this.reformattedTimestamp || this.timestamp,
+        tooltip: this.timestampTitle,
         classes: ['cd-comment-button-label', 'cd-comment-timestamp'],
         action: this.copyLink.bind(this),
       });
@@ -585,6 +588,67 @@ export default class Comment extends CommentSkeleton {
       const widgetConstructor = elementPrototypes.getGoToChildButton;
       this.goToChildButton = new CommentButton({ element, widgetConstructor });
       this.$overlayMenu.prepend(element);
+    }
+  }
+
+  reformatTimestamp() {
+    if (!this.date) return;
+
+    if (!utcString) {
+      utcString = cd.mws('timezone-utc');
+    }
+
+    let offset;
+    let sign;
+    const utcPostfix = ` (${utcString})`;
+    let postfix = utcPostfix;
+    if (cd.settings.useLocalTime) {
+      // Not necessarily an integer
+      offset = this.date.getTimezoneOffset() / 60;
+
+      if (offset !== 0) {
+        sign = offset > 0 ? '-' : '+';
+        postfix = ` (${utcString}${sign}${Math.abs(offset)})`;
+      }
+    }
+
+    const isContentLanguageDifferent = mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE;
+
+    let newTimestamp;
+    let title = '';
+    if (
+      cd.settings.timestampFormat === 'default' &&
+      (
+        (cd.settings.useLocalTime && offset !== 0) ||
+        isContentLanguageDifferent ||
+        cd.settings.hideTimezone
+      )
+    ) {
+      newTimestamp = formatDate(this.date);
+    } else if (cd.settings.timestampFormat === 'improved') {
+      newTimestamp = formatDateImproved(this.date);
+    } else if (cd.settings.timestampFormat === 'relative') {
+      newTimestamp = formatDateRelative(this.date);
+      if (cd.settings.useLocalTime) {
+        title = '\n' + formatDate(this.date) + postfix;
+      }
+      postfix = '';
+    }
+
+    if (newTimestamp) {
+      const utcTimestamp = isContentLanguageDifferent ?
+        formatDate(this.date, true) + utcPostfix :
+        this.timestampElement.textContent;
+      title = utcTimestamp + title;
+      if (cd.settings.hideTimezone) {
+        postfix = '';
+      }
+      this.reformattedTimestamp = newTimestamp + postfix;
+      this.timestampTitle = title;
+      if (!cd.settings.reformatComments) {
+        this.timestampElement.textContent = this.reformattedTimestamp;
+        this.timestampElement.title = this.timestampTitle;
+      }
     }
   }
 
