@@ -117,6 +117,14 @@ testWithSettings(
 );
 
 testWithSettings(
+  ['2021-05-28T10:47:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
+  ['a minute ago', '10:47, 28 May 2021 (UTC)']
+);
+testWithSettings(
+  ['2021-05-28T09:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
+  ['an hour ago', '9:48, 28 May 2021 (UTC)']
+);
+testWithSettings(
   ['2021-05-28T10:21:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
   ['27 minutes ago', '10:21, 28 May 2021 (UTC)']
 );

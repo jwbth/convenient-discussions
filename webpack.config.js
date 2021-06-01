@@ -196,7 +196,7 @@ module.exports = (env) => {
             condition: /@preserve|@license|@cc_on/i,
 
             filename: (filename) => `${filename}.LICENSE.js`,
-            banner: (licenseFile) => `For license information please see ${getUrl(config.rootPath + '/' + licenseFile)}`,
+            banner: (licenseFile) => `For license information, please see ${getUrl(config.rootPath + '/' + licenseFile)}`,
           },
           sourceMap: true,
         }),

@@ -35,7 +35,7 @@ import {
 import { loadSiteData } from './siteData';
 import { setVisits } from './options';
 import { getTimezoneOffset, zonedTimeToUtc, utcToZonedTime, format as formatTz } from 'date-fns-tz';
-import { format } from 'date-fns';
+import { format, formatRelative, formatDistanceToNowStrict, formatDistanceStrict } from 'date-fns';
 
 let config;
 if (IS_SINGLE) {
@@ -282,6 +282,9 @@ async function go() {
   cd.g.utcToZonedTime = utcToZonedTime;
   cd.g.formatTz = formatTz;
   cd.g.format = format;
+  cd.g.formatRelative = formatRelative;
+  cd.g.formatDistanceToNowStrict = formatDistanceToNowStrict;
+  cd.g.formatDistanceStrict = formatDistanceStrict;
 
   // For historical reasons, ru.wikipedia.org has 'cd'.
   const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?

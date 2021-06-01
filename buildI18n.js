@@ -147,9 +147,22 @@ if (Object.keys(i18n).length) {
       .replace(/-/g, '');
     if (dateFnsLocales[langDateFnsName]) {
       langsHavingDateFnsLocale.push(lang);
-      const text = `import { ${langDateFnsName} } from 'date-fns/locale';
+      let text = `import { ${langDateFnsName} } from 'date-fns/locale';
 convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${langDateFnsName};
 `;
+      if (lang === 'en') {
+        text += `const realFormatDistance = convenientDiscussions.i18n.en.dateFnsLocale.formatDistance;
+convenientDiscussions.i18n.en.dateFnsLocale.formatDistance = (...args) => {
+  // "1 minute ago" → "a minute ago", "1 hour ago" → "an hour ago", etc.
+  return realFormatDistance(...args).replace(/^1 (\\w+)/, (s, m1) => (
+    m1.startsWith('hour') ?
+    'an ' :
+    'a '
+  ));
+};
+
+`;
+      }
       fs.writeFileSync(`${localesTempDirName}/${lang}.js`, text);
     }
   });
