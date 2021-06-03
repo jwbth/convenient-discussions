@@ -1,3 +1,5 @@
+window.moment = require('moment');
+
 const Comment = require('../src/js/Comment').default;
 const cd = require('../src/js/cd').default;
 const en = require('../i18n/en.json');
@@ -122,7 +124,7 @@ testWithSettings(
 );
 testWithSettings(
   ['2021-05-28T09:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['an hour ago', '9:48, 28 May 2021 (UTC)']
+  ['an hour ago', '09:48, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-28T10:21:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
@@ -138,5 +140,5 @@ testWithSettings(
 );
 testWithSettings(
   ['2020-05-28T10:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['1 year ago', '10:48, 28 May 2020 (UTC)']
+  ['a year ago', '10:48, 28 May 2020 (UTC)']
 );

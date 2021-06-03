@@ -160,7 +160,6 @@ convenientDiscussions.i18n.en.dateFnsLocale.formatDistance = (...args) => {
     'a '
   ));
 };
-
 `;
       }
       fs.writeFileSync(`${localesTempDirName}/${lang}.js`, text);

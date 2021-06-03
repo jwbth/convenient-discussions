@@ -68,13 +68,13 @@ export function loadSiteData() {
   const datePatternsMessageNames = getUsedDatePatterns(cd.g.CONTENT_DATE_FORMAT)
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const contentLanguageMessageNames = [
-    'timezone-utc', 'word-separator', 'comma-separator', 'colon-separator'
+    'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
   ].concat(...datePatternsMessageNames);
 
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'nextdiff',
-  ];
+    'colon-separator', 'nextdiff', 'timezone-utc'
+  ].concat(...datePatternsMessageNames);
 
   // We need this object to pass it to the web worker.
   cd.g.contentLanguageMessages = {};

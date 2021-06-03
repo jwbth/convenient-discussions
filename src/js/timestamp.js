@@ -9,8 +9,17 @@
  * @module timestamp
  */
 
-import { format, getTimezoneOffset, utcToZonedTime } from 'date-fns-tz';
-import { formatDistanceToNowStrict } from 'date-fns';
+// import { format, getTimezoneOffset, utcToZonedTime } from 'date-fns-tz';
+// import { formatDistanceToNowStrict } from 'date-fns';
+
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import timezone from 'dayjs/plugin/timezone';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(relativeTime);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 import cd from './cd';
 import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from './util';
@@ -320,12 +329,13 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
   let date;
   let timezoneOffsetMs;
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
-  if (timezoneOffset === undefined) {
-    timezoneOffsetMs = cd.g.TIMEZONE === 'UTC' ? 0 : getTimezoneOffset(cd.g.TIMEZONE, unixTime);
+  if (timezoneOffset === undefined && cd.g.TIMEZONE !== 'UTC') {
+    // timezoneOffsetMs = cd.g.TIMEZONE === 'UTC' ? 0 : getTimezoneOffset(cd.g.TIMEZONE, unixTime);
+    date = dayjs(unixTime).tz(cd.g.TIMEZONE).toDate();
   } else {
-    timezoneOffsetMs = timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE;
+    timezoneOffsetMs = (timezoneOffset || 0) * cd.g.MILLISECONDS_IN_MINUTE;
+    date = new Date(unixTime - timezoneOffsetMs);
   }
-  date = new Date(unixTime - timezoneOffsetMs);
 
   cd.debug.stopTimer('parse timestamps');
 
@@ -479,7 +489,7 @@ export function formatDate(date, useUtc = false) {
   return s;
 }
 
-export function formatDateImproved(date, useUtc = false) {
+/*export function formatDateImproved(date, useUtc = false) {
   cd.debug.startTimer('formatDateImproved');
   const useLocalTime = cd.settings.useLocalTime && !useUtc;
 
@@ -511,15 +521,47 @@ export function formatDateImproved(date, useUtc = false) {
   cd.debug.stopTimer('formatDateImproved');
 
   return formattedDate;
+}*/
+
+export function formatDateImproved(date, useUtc = false) {
+  cd.debug.startTimer('formatDateImproved');
+  const useLocalTime = cd.settings.useLocalTime && !useUtc;
+
+  let day = useLocalTime ? date.getDate() : date.getUTCDate();
+  let monthIdx = useLocalTime ? date.getMonth() : date.getUTCMonth();
+  let year = useLocalTime ? date.getFullYear() : date.getUTCFullYear();
+
+  const now = new Date();
+  let nowDay = useLocalTime ? now.getDate() : now.getUTCDate();
+  let nowMonthIdx = useLocalTime ? now.getMonth() : now.getUTCMonth();
+  let nowYear = useLocalTime ? now.getFullYear() : now.getUTCFullYear();
+
+  let formattedDate;
+  let dayjsDate = dayjs(date);
+  if (!useLocalTime) {
+    dayjsDate = dayjsDate.utc();
+  }
+  if (day === nowDay && monthIdx === nowMonthIdx && year === nowYear) {
+    formattedDate = dayjsDate.format(cd.s('comment-timestamp-today'));
+  } else if (day === nowDay - 1 && monthIdx === nowMonthIdx && year === nowYear) {
+    formattedDate = dayjsDate.format(cd.s('comment-timestamp-yesterday'));
+  } else if (year === nowYear) {
+    formattedDate = dayjsDate.format(cd.s('comment-timestamp-currentyear'));
+  } else {
+    formattedDate = dayjsDate.format(cd.s('comment-timestamp-other'));
+  }
+  cd.debug.stopTimer('formatDateImproved');
+
+  return formattedDate;
 }
 
 export function formatDateRelative(date) {
-  const options = {
-    addSuffix: true,
-    roundingMethod: 'floor',
-    locale: cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale,
-  };
-  return formatDistanceToNowStrict(date, options);
+  // const options = {
+  //   addSuffix: true,
+  //   locale: cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale,
+  // };
+  // return formatDistanceToNowStrict(date, options);
+  return dayjs(date).fromNow();
 }
 
 /**

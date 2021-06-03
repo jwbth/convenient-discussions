@@ -18,6 +18,7 @@ module.exports = {
     "jQuery": "readonly",
     "jest": "readonly",
     "expect": "readonly",
+    "moment": "readonly",
     "mw": "readonly",
     "require": "readonly",
     "test": "readonly",
