@@ -41,7 +41,7 @@
 	"sm-copylink": "#",
 	"sm-copylink-tooltip": "Скопировать ссылку",
 	"comment-edited": "Сообщение изменилось.",
-	"comment-edited-refresh": "Обновить",
+	"comment-edited-refresh": "Обновите, чтобы увидеть изменения",
 	"comment-edited-diff": "Разница версий",
 	"comment-edited-diff-error": "Не удалось отобразить разницу в версиях.",
 	"comment-edited-diff-empty": "Разница в версиях пуста. Вероятно, отображение сообщения изменилось, но оно не было отредактировано.",
