@@ -133,46 +133,32 @@ if (Object.keys(i18n).length) {
   });
 
   // Create a temporary folder.
-  const localesTempDirName = 'date-fns-locales-temp';
-  fs.mkdirSync(localesTempDirName, { recursive: true });
+  const dateLocalesTempDirName = 'date-locales-temp';
+  fs.mkdirSync(dateLocalesTempDirName, { recursive: true });
 
   // Add temporary language files to that folder that import respective locales if they exist.
-  const dateFnsLocales = require('date-fns/locale');
-  const langsHavingDateFnsLocale = [];
+  const dateLocales = require('dayjs/locale').map((locale) => locale.key);
+  const langsHavingDateLocale = [];
   Object.keys(i18nWithFallbacks).forEach((lang) => {
-    const langDateFnsName = lang
-      .replace(/^zh-han./, 'zhCN')
-      .replace(/^en$/, 'enUS')
-      .replace(/-.+$/, (s) => s.toUpperCase())
-      .replace(/-/g, '');
-    if (dateFnsLocales[langDateFnsName]) {
-      langsHavingDateFnsLocale.push(lang);
-      let text = `import { ${langDateFnsName} } from 'date-fns/locale';
-convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${langDateFnsName};
+    const langDateLocaleName = lang
+      .replace(/^zh-hans$/, 'zh-cn')
+      .replace(/^zh-hant$/, 'zh-tw');
+    if (dateLocales.includes(langDateLocaleName)) {
+      langsHavingDateLocale.push(lang);
+      let text = `import dateLocale from 'dayjs/locale/${langDateLocaleName}';
+convenientDiscussions.i18n['${lang}'].dateLocale = dateLocale;
 `;
-      if (lang === 'en') {
-        text += `const realFormatDistance = convenientDiscussions.i18n.en.dateFnsLocale.formatDistance;
-convenientDiscussions.i18n.en.dateFnsLocale.formatDistance = (...args) => {
-  // "1 minute ago" → "a minute ago", "1 hour ago" → "an hour ago", etc.
-  return realFormatDistance(...args).replace(/^1 (\\w+)/, (s, m1) => (
-    m1.startsWith('hour') ?
-    'an ' :
-    'a '
-  ));
-};
-`;
-      }
-      fs.writeFileSync(`${localesTempDirName}/${lang}.js`, text);
+      fs.writeFileSync(`${dateLocalesTempDirName}/${lang}.js`, text);
     }
   });
 
   // Build the locales.
-  if (langsHavingDateFnsLocale.length) {
+  if (langsHavingDateLocale.length) {
     const webpackConfig = `const fs = require('fs');
 const path = require('path');
 
 const entry = {};
-fs.readdirSync('./${localesTempDirName}')
+fs.readdirSync('./${dateLocalesTempDirName}')
   .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
   .forEach((name) => {
     entry[name.slice(0, -3)] = './' + name;
@@ -187,19 +173,19 @@ module.exports = {
   },
 };
 `;
-    fs.writeFileSync(`${localesTempDirName}/webpack.config.js`, webpackConfig);
-    execSync(`node ./node_modules/webpack/bin/webpack --config "${localesTempDirName}/webpack.config.js"`);
+    fs.writeFileSync(`${dateLocalesTempDirName}/webpack.config.js`, webpackConfig);
+    execSync(`node ./node_modules/webpack/bin/webpack --config "${dateLocalesTempDirName}/webpack.config.js"`);
   }
 
-  // Create i18n files that combine translations with date-fns locales.
+  // Create i18n files that combine translations with dayjs locales.
   for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
     let jsonText = JSON.stringify(json, null, '\t')
       .replace(/&nbsp;/g, ' ')
       .replace(/&#32;/g, ' ');
 
-    let dateFnsLocaleText;
-    if (langsHavingDateFnsLocale.includes(lang)) {
-      dateFnsLocaleText = fs.readFileSync(`./${localesTempDirName}/dist/${lang}.js`).toString();
+    let dateLocaleText;
+    if (langsHavingDateLocale.includes(lang)) {
+      dateLocaleText = fs.readFileSync(`./${dateLocalesTempDirName}/dist/${lang}.js`).toString();
     }
 
     if (lang === 'en') {
@@ -211,17 +197,17 @@ module.exports = {
 convenientDiscussions.i18n = convenientDiscussions.i18n || {};
 convenientDiscussions.i18n['${lang}'] = ${jsonText};
 `;
-    if (dateFnsLocaleText) {
+    if (dateLocaleText) {
       text += `
-// This assigns a date-fns locale object to \`convenientDiscussions.i18n['${lang}'].dateFnsLocale\`.
-${dateFnsLocaleText}
+// This assigns a day.js locale object to \`convenientDiscussions.i18n['${lang}'].dateLocale\`.
+${dateLocaleText}
 `;
     }
     fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
     fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, text);
   }
 
-  rimraf.sync(localesTempDirName);
+  rimraf.sync(dateLocalesTempDirName);
 }
 
 const i18nListText = JSON.stringify(Object.keys(i18n), null, '\t') + '\n';

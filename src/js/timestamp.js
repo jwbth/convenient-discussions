@@ -17,10 +17,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 
-dayjs.extend(relativeTime);
-dayjs.extend(utc);
-dayjs.extend(timezone);
-
 import cd from './cd';
 import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from './util';
 
@@ -40,6 +36,16 @@ export const dateTokenToMessageNames = {
   ],
   M: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
 };
+
+export function initDayjs() {
+  const locale = cd.i18n[cd.g.USER_LANGUAGE].dateLocale;
+  if (locale) {
+    dayjs.locale(locale);
+  }
+  dayjs.extend(relativeTime);
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+}
 
 /**
  * Get a regexp that matches timestamps (without timezone at the end) generated using the given date
@@ -488,40 +494,6 @@ export function formatDate(date, useUtc = false) {
 
   return s;
 }
-
-/*export function formatDateImproved(date, useUtc = false) {
-  cd.debug.startTimer('formatDateImproved');
-  const useLocalTime = cd.settings.useLocalTime && !useUtc;
-
-  let day = useLocalTime ? date.getDate() : date.getUTCDate();
-  let monthIdx = useLocalTime ? date.getMonth() : date.getUTCMonth();
-  let year = useLocalTime ? date.getFullYear() : date.getUTCFullYear();
-
-  const now = new Date();
-  let nowDay = useLocalTime ? now.getDate() : now.getUTCDate();
-  let nowMonthIdx = useLocalTime ? now.getMonth() : now.getUTCMonth();
-  let nowYear = useLocalTime ? now.getFullYear() : now.getUTCFullYear();
-
-  const locale = cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale;
-  let formattedDate;
-  const options = { locale };
-  if (!useLocalTime) {
-    options.timeZone = 'UTC';
-    date = utcToZonedTime(date, 'UTC');
-  }
-  if (day === nowDay && monthIdx === nowMonthIdx && year === nowYear) {
-    formattedDate = format(date, cd.s('comment-timestamp-today'), options);
-  } else if (day === nowDay - 1 && monthIdx === nowMonthIdx && year === nowYear) {
-    formattedDate = format(date, cd.s('comment-timestamp-yesterday'), options);
-  } else if (year === nowYear) {
-    formattedDate = format(date, cd.s('comment-timestamp-currentyear'), options);
-  } else {
-    formattedDate = format(date, cd.s('comment-timestamp-other'), options);
-  }
-  cd.debug.stopTimer('formatDateImproved');
-
-  return formattedDate;
-}*/
 
 export function formatDateImproved(date, useUtc = false) {
   cd.debug.startTimer('formatDateImproved');

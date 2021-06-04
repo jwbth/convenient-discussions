@@ -499,7 +499,7 @@ export async function settingsDialog() {
     let exampleImproved2;
     let exampleRelative1;
     let exampleRelative2;
-    const locale = cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale;
+    const locale = cd.i18n[cd.g.USER_LANGUAGE].dateLocale;
     if (locale) {
       exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
       exampleImproved2 = formatDateImproved(threeDaysAgo);
@@ -611,13 +611,13 @@ export async function settingsDialog() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "General" booklet page.
+     *   to create the "Date and time" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
      */
-    function GeneralPageLayout(name, config) {
-      GeneralPageLayout.super.call(this, name, config);
+    function TalkPagePageLayout(name, config) {
+      TalkPagePageLayout.super.call(this, name, config);
       this.$element.append([
         dialog.reformatCommentsField.$element,
         dialog.showContribsLinkField.$element,
@@ -629,16 +629,16 @@ export async function settingsDialog() {
         dialog.useBackgroundHighlightingField.$element,
       ]);
     }
-    OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
-    GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
-      GeneralPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+    OO.inheritClass(TalkPagePageLayout, OO.ui.PageLayout);
+    TalkPagePageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      TalkPagePageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
       this.outlineItem.setLabel(cd.s('sd-page-talkpage'));
     };
 
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "Comment form" booklet page.
+     *   to create the "Comment form" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -665,7 +665,29 @@ export async function settingsDialog() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "Notifications" booklet page.
+     *   to create the "Talk page" booklet page.
+     * @param {string} name
+     * @param {object} [config]
+     * @private
+     */
+    function DateAndTimePageLayout(name, config) {
+      DateAndTimePageLayout.super.call(this, name, config);
+      this.$element.append([
+        dialog.useLocalTimeField.$element,
+        dialog.timestampFormatField.$element,
+        dialog.hideTimezoneField.$element,
+      ]);
+    }
+    OO.inheritClass(DateAndTimePageLayout, OO.ui.PageLayout);
+    DateAndTimePageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      DateAndTimePageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+      this.outlineItem.setLabel(cd.s('sd-page-dateandtime'));
+    };
+
+    /**
+     * @class Subclass of {@link
+     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
+     *   to create the "Notifications" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -687,7 +709,7 @@ export async function settingsDialog() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "Remove data" booklet page.
+     *   to create the "Remove data" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -701,15 +723,22 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-dataremoval'));
     };
 
-    const generalPage = new GeneralPageLayout('general');
+    const generalPage = new TalkPagePageLayout('general');
     const commentFormPage = new CommentFormPageLayout('commentForm');
+    const dateAndTimePage = new DateAndTimePageLayout('dateAndTime');
     const notificationsPage = new NotificationsPageLayout('notifications');
     const removeDataPage = new RemoveDataPageLayout('removeData');
 
     this.bookletLayout = new OO.ui.BookletLayout({
       outlined: true,
     });
-    this.bookletLayout.addPages([generalPage, commentFormPage, notificationsPage, removeDataPage]);
+    this.bookletLayout.addPages([
+      generalPage,
+      commentFormPage,
+      dateAndTimePage,
+      notificationsPage,
+      removeDataPage,
+    ]);
 
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 

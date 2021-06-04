@@ -34,12 +34,11 @@ import {
 } from './util';
 import { loadSiteData } from './siteData';
 import { setVisits } from './options';
-// import { getTimezoneOffset, zonedTimeToUtc, utcToZonedTime, format as formatTz } from 'date-fns-tz';
-// import { format, formatRelative, formatDistanceToNowStrict, formatDistanceStrict } from 'date-fns';
-// import dayjs from 'dayjs';
-// import relativeTime from 'dayjs/plugin/relativeTime';
-// import utc from 'dayjs/plugin/utc';
-// import timezone from 'dayjs/plugin/timezone';
+
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 
 let config;
 if (IS_SINGLE) {
@@ -245,6 +244,8 @@ function setStrings() {
 
   if (!IS_SINGLE) {
     require('../../dist/convenientDiscussions-i18n/en.js');
+    require('../../dist/convenientDiscussions-i18n/fr.js');
+    require('../../dist/convenientDiscussions-i18n/ru.js');
   }
   const strings = {};
   Object.keys(cd.i18n.en).forEach((name) => {
@@ -281,21 +282,13 @@ async function go() {
 
   setStrings();
 
-  // cd.g.getTimezoneOffset = getTimezoneOffset;
-  // cd.g.zonedTimeToUtc = zonedTimeToUtc;
-  // cd.g.utcToZonedTime = utcToZonedTime;
-  // cd.g.formatTz = formatTz;
-  // cd.g.format = format;
-  // cd.g.formatRelative = formatRelative;
-  // cd.g.formatDistanceToNowStrict = formatDistanceToNowStrict;
-  // cd.g.formatDistanceStrict = formatDistanceStrict;
-  // cd.g.dayjs = dayjs;
-  // cd.g.relativeTime = relativeTime;
-  // cd.g.utc = utc;
-  // cd.g.timezone = timezone;
-  // cd.g.dayjs.extend(relativeTime);
-  // cd.g.dayjs.extend(utc);
-  // cd.g.dayjs.extend(timezone);
+  cd.g.dayjs = dayjs;
+  cd.g.relativeTime = relativeTime;
+  cd.g.utc = utc;
+  cd.g.timezone = timezone;
+  cd.g.dayjs.extend(relativeTime);
+  cd.g.dayjs.extend(utc);
+  cd.g.dayjs.extend(timezone);
 
   // For historical reasons, ru.wikipedia.org has 'cd'.
   const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?

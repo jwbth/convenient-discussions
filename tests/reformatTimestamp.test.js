@@ -1,9 +1,7 @@
-window.moment = require('moment');
-
 const Comment = require('../src/js/Comment').default;
 const cd = require('../src/js/cd').default;
 const en = require('../i18n/en.json');
-const { formatDate } = require('../src/js/timestamp');
+const { formatDate, initDayjs } = require('../src/js/timestamp');
 
 cd.settings = {};
 
@@ -70,6 +68,8 @@ const testWithSettings = ([date, timestampFormat, useLocalTime, hideTimezone, no
     }
   });
 };
+
+initDayjs();
 
 test('Timezone set to Europe/Berlin', () => {
   expect(new Date().getTimezoneOffset()).toBe(-120);

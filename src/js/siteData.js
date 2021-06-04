@@ -38,8 +38,8 @@ function setFormats() {
   cd.g.USER_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[userLanguage] : null;
 }
 
-function getUsedDatePatterns(format) {
-  const formats = [];
+function getUsedDateTokens(format) {
+  const tokens = [];
 
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
@@ -48,13 +48,13 @@ function getUsedDatePatterns(format) {
     }
 
     if (['xg', 'D', 'l', 'F', 'M'].includes(code)) {
-      formats.push(code);
+      tokens.push(code);
     } else if (code === '\\' && p < format.length - 1) {
       ++p;
     }
   }
 
-  return formats;
+  return tokens;
 }
 
 /**
@@ -65,16 +65,18 @@ function getUsedDatePatterns(format) {
 export function loadSiteData() {
   setFormats();
 
-  const datePatternsMessageNames = getUsedDatePatterns(cd.g.CONTENT_DATE_FORMAT)
+  const contentDateTokensMessageNames = getUsedDateTokens(cd.g.CONTENT_DATE_FORMAT)
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const contentLanguageMessageNames = [
     'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
-  ].concat(...datePatternsMessageNames);
+  ].concat(...contentDateTokensMessageNames);
 
+  const userDateTokensMessageNames = getUsedDateTokens(cd.g.USER_DATE_FORMAT)
+    .map((pattern) => dateTokenToMessageNames[pattern]);
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
     'colon-separator', 'nextdiff', 'timezone-utc'
-  ].concat(...datePatternsMessageNames);
+  ].concat(...userDateTokensMessageNames);
 
   // We need this object to pass it to the web worker.
   cd.g.contentLanguageMessages = {};

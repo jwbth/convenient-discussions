@@ -39,7 +39,7 @@ import {
 } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools } from './timestamp';
+import { initDayjs, initTimestampParsingTools } from './timestamp';
 import { loadSiteData } from './siteData';
 
 let notificationsData = [];
@@ -783,6 +783,7 @@ export async function init(siteDataRequests) {
     require('../less/commentLayers-optionalBackgroundHighlighting.less');
   }
   $.fn.extend(jqueryExtensions);
+  initDayjs();
 
   /**
    * Collection of all comment forms on the page in the order of their creation.
