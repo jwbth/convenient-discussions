@@ -392,6 +392,10 @@ function processComments(parser) {
     }
   });
 
+  cd.debug.startTimer('reformatTimestamps');
+  Comment.reformatTimestamps();
+  cd.debug.stopTimer('reformatTimestamps');
+
   // Faster than doing it for every individual comment.
   cd.g.rootElement
     .querySelectorAll('table.cd-comment-part .cd-signature')

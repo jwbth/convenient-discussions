@@ -23,8 +23,7 @@
   },
   "homepage": "https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions",
   "dependencies": {
-    "date-fns": "^2.21.3",
-    "date-fns-tz": "^1.1.4",
+    "dayjs": "^1.10.5",
     "htmlparser2": "^6.1.0",
     "locutus": "^2.0.14",
     "lz-string": "^1.4.4"

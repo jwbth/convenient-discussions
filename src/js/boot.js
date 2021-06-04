@@ -39,7 +39,8 @@ import {
 } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools, loadSiteData } from './siteData';
+import { initDayjs, initTimestampParsingTools } from './timestamp';
+import { loadSiteData } from './siteData';
 
 let notificationsData = [];
 let saveSessionTimeout;
@@ -85,6 +86,7 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
+    hideTimezone: false,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notifyCollapsedThreads: false,
@@ -94,8 +96,10 @@ export async function initSettings() {
     showLoadingOverlay: true,
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
+    timestampFormat: 'default',
     modifyToc: true,
     useBackgroundHighlighting: true,
+    useLocalTime: true,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
@@ -779,6 +783,7 @@ export async function init(siteDataRequests) {
     require('../less/commentLayers-optionalBackgroundHighlighting.less');
   }
   $.fn.extend(jqueryExtensions);
+  initDayjs();
 
   /**
    * Collection of all comment forms on the page in the order of their creation.

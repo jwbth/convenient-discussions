@@ -80,6 +80,13 @@ export default class CommentSkeleton {
     this.signatureElement = signature.element;
 
     /**
+     * Comment timestamp element.
+     *
+     * @type {Element}
+     */
+    this.timestampElement = signature.timestampElement;
+
+    /**
      * User page (in the "User" namespace) link element.
      *
      * @type {Element}

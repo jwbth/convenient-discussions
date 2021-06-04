@@ -18,9 +18,9 @@ import {
 } from './util';
 import { createApi, initSettings } from './boot';
 import { editWatchedSections, settingsDialog } from './modal';
-import { generateCommentAnchor, parseTimestamp } from './timestamp';
+import { generateCommentAnchor, initTimestampParsingTools, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
-import { initTimestampParsingTools, loadSiteData } from './siteData';
+import { loadSiteData } from './siteData';
 
 let serverName;
 let colon;
