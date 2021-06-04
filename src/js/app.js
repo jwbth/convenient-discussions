@@ -214,11 +214,21 @@ function addFooterLink(enable) {
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
   const $li = $('<li>').attr('id', 'footer-places-togglecd');
-  $('<a>')
+  const $a = $('<a>')
     .attr('href', url.toString())
     .addClass('noprint')
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
+  if (enable) {
+    $a.on('click', (e) => {
+      if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        e.preventDefault();
+        history.pushState(history.state, '', url.toString());
+        $li.remove();
+        go();
+      }
+    });
+  }
   skin$({
     monobook: '#f-list',
     modern: '#footer-info',
