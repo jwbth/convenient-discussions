@@ -143,7 +143,9 @@ if (Object.keys(i18n).length) {
     const langDateLocaleName = lang
       .replace(/^zh-hans$/, 'zh-cn')
       .replace(/^zh-hant$/, 'zh-tw');
-    if (dateLocales.includes(langDateLocaleName)) {
+
+    // The English locale is built-in.
+    if (lang !== 'en' && dateLocales.includes(langDateLocaleName)) {
       langsHavingDateLocale.push(lang);
       let text = `import dateLocale from 'dayjs/locale/${langDateLocaleName}';
 convenientDiscussions.i18n['${lang}'].dateLocale = dateLocale;
