@@ -196,7 +196,12 @@ module.exports = (env) => {
             condition: /@preserve|@license|@cc_on/i,
 
             filename: (filename) => `${filename}.LICENSE.js`,
-            banner: (licenseFile) => `For license information please see ${getUrl(config.rootPath + '/' + licenseFile)}`,
+            banner: (licenseFile) => `
+ * For documentation and feedback, see the script's homepage:
+ *   https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+ * For license information, see
+ *   ${getUrl(config.rootPath + '/' + licenseFile)}
+`,
           },
           sourceMap: true,
         }),
