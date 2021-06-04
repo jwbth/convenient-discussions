@@ -412,7 +412,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
   saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
 
   // TODO: Remove in September 2021 (3 months after renaming)
-  localStorage.removeItem('convenientDiscussions-seenRenderedEdits');
+  mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 }
 
 /**
