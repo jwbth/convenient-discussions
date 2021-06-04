@@ -56,11 +56,13 @@ if (IS_SINGLE) {
   });
   if (LANG_CODE !== 'en') {
     cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
+    const langObj = cd.i18n[LANG_CODE];
     Object.keys(cd.i18n[LANG_CODE])
-      .filter((name) => typeof cd.i18n[LANG_CODE][name] === 'string')
+      .filter((name) => typeof langObj[name] === 'string')
       .forEach((name) => {
-        cd.i18n[LANG_CODE][name] = replaceEntities(cd.i18n[LANG_CODE][name]);
+        langObj[name] = replaceEntities(langObj[name]);
       });
+    langObj.dateLocale = require(`dayjs/locale/${LANG_CODE}`);
   }
 }
 
