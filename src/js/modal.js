@@ -840,6 +840,7 @@ export async function settingsDialog() {
 
       mw.storage.remove('convenientDiscussions-commentForms');
       mw.storage.remove('convenientDiscussions-thanks');
+      mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 
       this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');
