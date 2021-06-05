@@ -166,7 +166,7 @@ module.exports = (env) => {
       ],
     },
     optimization: {
-      concatenateModules: true,
+      concatenateModules: !dev,
       minimizer: [
         new TerserPlugin({
           terserOptions: {
