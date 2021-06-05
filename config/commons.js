@@ -61,6 +61,7 @@ export default {
   },
   'contribsPage': 'Special:Contributions',
   'timezone': 'UTC',
+  'tagName': 'convenient-discussions',
   'unsignedTemplates': [
     'Unsigned',
     'Non firmato',
