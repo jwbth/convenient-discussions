@@ -19,6 +19,7 @@ import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from '
 
 let parseTimestampRegexp;
 let parseTimestampRegexpNoTimezone;
+let utcString;
 
 export const dateTokenToMessageNames = {
   xg: [
@@ -384,6 +385,42 @@ export function parseTimestamp(timestamp, timezoneOffset) {
 }
 
 /**
+ * Convert a date to a string in the format set in the settings.
+ *
+ * @param {Date} date
+ * @param {boolean} [addTimezone=false]
+ * @returns {string}
+ */
+export function formatDate(date, addTimezone = false) {
+  let s;
+  if (cd.settings.timestampFormat === 'default') {
+    s = formatDateNative(date);
+  } else if (cd.settings.timestampFormat === 'improved') {
+    s = formatDateImproved(date);
+  } else if (cd.settings.timestampFormat === 'relative') {
+    s = formatDateRelative(date);
+  }
+
+  if (addTimezone && !cd.settings.hideTimezone && cd.settings.timestampFormat !== 'relative') {
+    if (!utcString) {
+      utcString = cd.mws('timezone-utc');
+    }
+    let postfix = ` (${utcString})`;
+    if (cd.settings.useLocalTime) {
+      // Not necessarily an integer
+      const offset = date.getTimezoneOffset() / 60;
+
+      if (offset !== 0) {
+        const sign = offset > 0 ? '-' : '+';
+        postfix = ` (${utcString}${sign}${Math.abs(offset)})`;
+      }
+    }
+    s += postfix;
+  }
+  return s;
+}
+
+/**
  * Pad a number with zeros like this: `4` → `04` or `0004`.
  *
  * @param {number} number Number to pad.
@@ -402,7 +439,7 @@ function zeroPad(number, length) {
  * @param {boolean} useUtc Use the UTC time zone no matter user settings.
  * @returns {string}
  */
-export function formatDate(date, useUtc = false) {
+export function formatDateNative(date, useUtc = false) {
   const useLocalTime = cd.settings.useLocalTime && !useUtc;
 
   let s = '';
@@ -491,6 +528,13 @@ export function formatDate(date, useUtc = false) {
   return s;
 }
 
+/**
+ * Format a date in the "improved" format.
+ *
+ * @param {Date} date
+ * @param {boolean} useUtc
+ * @returns {string}
+ */
 export function formatDateImproved(date, useUtc = false) {
   cd.debug.startTimer('formatDateImproved');
   const useLocalTime = cd.settings.useLocalTime && !useUtc;
@@ -523,6 +567,12 @@ export function formatDateImproved(date, useUtc = false) {
   return formattedDate;
 }
 
+/**
+ * Format a date in the "relative" format.
+ *
+ * @param {Date} date
+ * @returns {string}
+ */
 export function formatDateRelative(date) {
   return dayjs(date).fromNow();
 }

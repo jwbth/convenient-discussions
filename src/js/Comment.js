@@ -41,7 +41,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { formatDate, formatDateImproved, formatDateRelative } from './timestamp';
+import { formatDate, formatDateNative } from './timestamp';
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
 
@@ -599,7 +599,6 @@ export default class Comment extends CommentSkeleton {
     }
 
     let offset;
-    let sign;
     const utcPostfix = ` (${utcString})`;
     let postfix = utcPostfix;
     if (cd.settings.useLocalTime) {
@@ -607,37 +606,34 @@ export default class Comment extends CommentSkeleton {
       offset = this.date.getTimezoneOffset() / 60;
 
       if (offset !== 0) {
-        sign = offset > 0 ? '-' : '+';
+        const sign = offset > 0 ? '-' : '+';
         postfix = ` (${utcString}${sign}${Math.abs(offset)})`;
       }
     }
 
-    const isContentLanguageDifferent = mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE;
+    const areLanguagesEqual = mw.config.get('wgContentLanguage') === cd.g.USER_LANGUAGE;
 
     let newTimestamp;
     let title = '';
     if (
-      cd.settings.timestampFormat === 'default' &&
-      (
-        (cd.settings.useLocalTime && offset !== 0) ||
-        isContentLanguageDifferent ||
-        cd.settings.hideTimezone
-      )
+      cd.settings.timestampFormat !== 'default' ||
+      (cd.settings.useLocalTime && offset !== 0) ||
+      !areLanguagesEqual ||
+      cd.settings.hideTimezone
     ) {
       newTimestamp = formatDate(this.date);
-    } else if (cd.settings.timestampFormat === 'improved') {
-      newTimestamp = formatDateImproved(this.date);
-    } else if (cd.settings.timestampFormat === 'relative') {
-      newTimestamp = formatDateRelative(this.date);
+    }
+
+    if (cd.settings.timestampFormat === 'relative') {
       if (cd.settings.useLocalTime) {
-        title = '\n' + formatDate(this.date) + postfix;
+        title = '\n' + formatDateNative(this.date) + postfix;
       }
       postfix = '';
     }
 
     if (newTimestamp) {
-      const utcTimestamp = isContentLanguageDifferent ?
-        formatDate(this.date, true) + utcPostfix :
+      const utcTimestamp = areLanguagesEqual ?
+        formatDateNative(this.date, true) + utcPostfix :
         this.timestampElement.textContent;
       title = utcTimestamp + title;
       if (cd.settings.hideTimezone) {

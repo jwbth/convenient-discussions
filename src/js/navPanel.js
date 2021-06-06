@@ -8,6 +8,7 @@ import Comment from './Comment';
 import cd from './cd';
 import updateChecker from './updateChecker';
 import { focusInput, reorderArray } from './util';
+import { formatDate } from './timestamp';
 import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
 
@@ -299,7 +300,7 @@ export default {
             cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
             comment.author.name;
           const date = comment.date ?
-            cd.util.formatDate(comment.date) :
+            formatDate(comment.date) :
             cd.s('navpanel-newcomments-unknowndate');
           tooltipText += (
             bullet +

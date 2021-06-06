@@ -6,6 +6,7 @@
 
 import Comment from './Comment';
 import cd from './cd';
+import { formatDateNative } from './timestamp';
 import { reloadPage } from './boot';
 import { restoreScrollPosition, saveScrollPosition } from './util';
 
@@ -336,7 +337,7 @@ export default {
           cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
           comment.author.name;
         const date = comment.date ?
-          cd.util.formatDate(comment.date) :
+          formatDateNative(comment.date) :
           cd.s('navpanel-newcomments-unknowndate');
         const text = (
           names +

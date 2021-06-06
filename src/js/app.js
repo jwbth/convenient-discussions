@@ -22,7 +22,6 @@ import {
   setTalkPageCssVariables,
   startLoading,
 } from './boot';
-import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import {
   isProbablyTalkPage,
@@ -33,6 +32,7 @@ import {
   unique,
 } from './util';
 import { loadSiteData } from './siteData';
+import { parseCommentAnchor } from './timestamp';
 import { setVisits } from './options';
 
 let config;
@@ -671,13 +671,6 @@ async function app() {
    * @memberof module:cd~convenientDiscussions.util
    */
   cd.util.parseCommentAnchor = parseCommentAnchor;
-
-  /**
-   * @see module:timestamp.formatDate
-   * @function formatDate
-   * @memberof module:cd~convenientDiscussions.util
-   */
-  cd.util.formatDate = formatDate;
 
   /**
    * @see module:options.setVisits
