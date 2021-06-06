@@ -626,7 +626,7 @@ export default class Comment extends CommentSkeleton {
 
     if (cd.settings.timestampFormat === 'relative') {
       if (cd.settings.useLocalTime) {
-        title = '\n' + formatDateNative(this.date) + postfix;
+        title = formatDateNative(this.date) + postfix + '\n';
       }
       postfix = '';
     }
@@ -635,7 +635,7 @@ export default class Comment extends CommentSkeleton {
       const utcTimestamp = areLanguagesEqual ?
         formatDateNative(this.date, true) + utcPostfix :
         this.timestampElement.textContent;
-      title = utcTimestamp + title;
+      title = title + utcTimestamp;
       if (cd.settings.hideTimezone) {
         postfix = '';
       }
