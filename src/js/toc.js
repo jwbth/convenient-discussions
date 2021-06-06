@@ -5,8 +5,10 @@
  */
 
 import Comment from './Comment';
+import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
-import { formatDateNative } from './timestamp';
+import navPanel from './navPanel';
+import { formatDate, formatDateNative } from './timestamp';
 import { reloadPage } from './boot';
 import { restoreScrollPosition, saveScrollPosition } from './util';
 
@@ -304,6 +306,8 @@ export default {
       .find('.cd-toc-notRenderedCommentList')
       .remove();
 
+    const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '';
+    const comma = cd.mws('comma-separator');
     commentsBySection.forEach((comments, sectionOrAnchor) => {
       if (!sectionOrAnchor) return;
 
@@ -336,19 +340,25 @@ export default {
         const names = parent?.author && comment.level > 1 ?
           cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
           comment.author.name;
-        const date = comment.date ?
-          formatDateNative(comment.date) :
-          cd.s('navpanel-newcomments-unknowndate');
-        const text = (
-          names +
-          (cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '') +
-          cd.mws('comma-separator') +
-          date
-        );
+        const addAsItem = i < 4 || comments.length === 5;
+        let date;
+        let nativeDate;
+        if (comment.date) {
+          nativeDate = formatDateNative(comment.date);
+          date = addAsItem && cd.settings.timestampFormat !== 'default' ?
+            formatDate(comment.date) :
+            nativeDate;
+        } else {
+          date = cd.s('navpanel-newcomments-unknowndate');
+        }
+        let text = names + rtlMarkOrNot + comma;
+        if (cd.settings.timestampFormat === 'default') {
+          text += date;
+        }
 
         // If there are 5 comments or less, show all of them. If there are more, show 4 and "N
         // more". (Because showing 4 and then "1 more" is stupid.)
-        if (i < 4 || comments.length === 5) {
+        if (addAsItem) {
           const li = document.createElement('li');
           ul.appendChild(li);
 
@@ -366,6 +376,21 @@ export default {
           a.textContent = text;
           textSpan.appendChild(a);
 
+          if (cd.settings.timestampFormat !== 'default') {
+            const timestampSpan = document.createElement('span');
+            timestampSpan.textContent = date;
+            timestampSpan.title = nativeDate;
+            a.appendChild(timestampSpan);
+
+            let callback;
+            if (!areCommentsRendered) {
+              callback = () => {
+                navPanel.updateTimestampsInRefreshButtonTooltip();
+              };
+            }
+            new LiveTimestamp(timestampSpan, comment.date, callback);
+          }
+
           if (comment instanceof Comment) {
             a.onclick = (e) => {
               e.preventDefault();
@@ -381,7 +406,9 @@ export default {
             };
           }
         } else {
-          moreTooltipText += text + '\n';
+          // In a tooltip, always show the date in the default format — we won't be auto-updating
+          // relative dates there due to low benefit.
+          moreTooltipText += text + nativeDate + '\n';
         }
       });
 

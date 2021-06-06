@@ -10,6 +10,7 @@ import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
+import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
@@ -123,13 +124,6 @@ export default class Comment extends CommentSkeleton {
      * @type {JQuery}
      */
     this.$signature = $(this.signatureElement);
-
-    /**
-     * Comment timestamp element as a jQuery object.
-     *
-     * @type {JQuery}
-     */
-    this.$timestamp = $(this.timestampElement);
 
     /**
      * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
@@ -371,6 +365,8 @@ export default class Comment extends CommentSkeleton {
       });
 
       headerElement.appendChild(this.copyLinkButton.element);
+      this.timestampElement = this.copyLinkButton.labelElement;
+      new LiveTimestamp(this.timestampElement, this.date);
     }
 
     this.headerElement = headerElement;
@@ -644,6 +640,7 @@ export default class Comment extends CommentSkeleton {
       if (!cd.settings.reformatComments) {
         this.timestampElement.textContent = this.reformattedTimestamp;
         this.timestampElement.title = this.timestampTitle;
+        new LiveTimestamp(this.timestampElement, this.date);
       }
     }
   }

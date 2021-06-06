@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import LiveTimestamp from './LiveTimestamp';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
@@ -927,13 +928,14 @@ export function isPageLoading() {
 export async function reloadPage(passedData = {}) {
   if (cd.g.isPageBeingReloaded) return;
 
-  // Stop all animations
+  // Stop all animations, clear all timeouts.
   cd.comments
     .filter((comment) => comment.$animatedBackground)
     .forEach((comment) => {
       comment.$animatedBackground.stop();
       comment.$marker.stop();
     });
+  LiveTimestamp.reset();
 
   // In case checkboxes were changed programmatically.
   saveSession();

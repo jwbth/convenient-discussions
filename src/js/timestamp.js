@@ -35,6 +35,39 @@ export const dateTokenToMessageNames = {
   M: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
 };
 
+export const relativeTimeThresholds = [
+  // Seconds
+  {
+    interval: 1,
+    start: 0,
+    step: 1,
+  },
+
+  // Minutes
+  {
+    interval: 60,
+    start: 1,
+    step: 1,
+  },
+
+  // Hours
+  {
+    interval: 60 * 24,
+    start: 60,
+    step: 60,
+  },
+
+  // Days
+  {
+    interval: 60 * 24 * 31,
+    start: 60 * 24,
+    step: 60 * 24,
+  },
+
+  // We don't update months and years. Additional setTimeouts are costly, and algorithm for them is
+  // also too complex.
+];
+
 export function initDayjs() {
   const locale = cd.i18n[cd.g.USER_LANGUAGE].dateLocale;
   if (locale) {
