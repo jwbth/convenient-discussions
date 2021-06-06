@@ -166,7 +166,10 @@ module.exports = (env) => {
       ],
     },
     optimization: {
-      concatenateModules: !dev,
+      // Less function calls when debugging, but one scope for all modules. To change this, "!dev"
+      // could be used.
+      concatenateModules: true,
+
       minimizer: [
         new TerserPlugin({
           terserOptions: {
