@@ -1,7 +1,7 @@
 const Comment = require('../src/js/Comment').default;
 const cd = require('../src/js/cd').default;
 const en = require('../i18n/en.json');
-const { formatDate, initDayjs } = require('../src/js/timestamp');
+const { formatDateNative, initDayjs } = require('../src/js/timestamp');
 
 cd.settings = {};
 
@@ -42,6 +42,7 @@ window.mw = {
 
 const comment = {
   timestampElement: {},
+  setDateUpdateTimer: () => {},
 };
 const adaptedReformatTimestamp = (date) => {
   comment.date = new Date(date);
@@ -56,7 +57,7 @@ const testWithSettings = ([date, timestampFormat, useLocalTime, hideTimezone, no
     cd.settings.timestampFormat = timestampFormat;
     cd.settings.useLocalTime = useLocalTime;
     cd.settings.hideTimezone = hideTimezone;
-    comment.timestampElement.textContent = formatDate(new Date(date), true) + ' (UTC)';
+    comment.timestampElement.textContent = formatDateNative(new Date(date), true) + ' (UTC)';
 
     if (nowDate) {
       jest.useFakeTimers('modern');
@@ -119,8 +120,16 @@ testWithSettings(
 );
 
 testWithSettings(
+  ['2021-05-28T10:48:00.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
+  ['a few seconds ago', '10:48, 28 May 2021 (UTC)']
+);
+testWithSettings(
   ['2021-05-28T10:47:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
   ['a minute ago', '10:47, 28 May 2021 (UTC)']
+);
+testWithSettings(
+  ['2021-05-28T10:46:48.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
+  ['a minute ago', '10:46, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-28T09:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
@@ -131,8 +140,8 @@ testWithSettings(
   ['27 minutes ago', '10:21, 28 May 2021 (UTC)']
 );
 testWithSettings(
-  ['2021-05-28T10:21:47.000Z', 'relative', true, true, '2021-05-28T10:48:47.000Z'],
-  ['27 minutes ago', '10:21, 28 May 2021 (UTC)\n12:21, 28 May 2021 (UTC+2)']
+  ['2021-05-28T10:00:00.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
+  ['48 minutes ago', '10:00, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-25T10:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
@@ -141,4 +150,8 @@ testWithSettings(
 testWithSettings(
   ['2020-05-28T10:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
   ['a year ago', '10:48, 28 May 2020 (UTC)']
+);
+testWithSettings(
+  ['2020-05-28T10:48:47.000Z', 'relative', true, true, '2021-05-28T10:48:47.000Z'],
+  ['a year ago', '12:48, 28 May 2020 (UTC+2)\n10:48, 28 May 2020 (UTC)']
 );
