@@ -4,6 +4,7 @@
  * @module Comment
  */
 
+import Button from './Button';
 import CdError from './CdError';
 import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
@@ -1393,15 +1394,12 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    let $diffLink;
+    let diffButton;
     if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
-      $diffLink = $('<a>')
-        .attr('tabindex', 0)
-        .text(cd.s('comment-changed-diff'))
-        .on('keydown', triggerClickOnEnterAndSpace)
-        .on('click', async (e) => {
-          e.preventDefault();
-          $diffLink.addClass('cd-link-pending');
+      diffButton = new Button({
+        label: cd.s('comment-changed-diff'),
+        action: async () => {
+          diffButton.setPending(true);
           try {
             await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
@@ -1416,8 +1414,9 @@ export default class Comment extends CommentSkeleton {
             }
             mw.notify(cd.util.wrap(text), { type: 'error' });
           }
-          $diffLink.removeClass('cd-link-pending');
-        });
+          diffButton.setPending(false);
+        },
+      });
     }
 
     let refreshLinkSeparator;
@@ -1443,8 +1442,8 @@ export default class Comment extends CommentSkeleton {
     } else {
       $changeMark.addClass('cd-changeMark-newVersionRendered');
     }
-    if ($diffLink) {
-      $changeMark.append(diffLinkSeparator, $diffLink);
+    if (diffButton) {
+      $changeMark.append(diffLinkSeparator, diffButton.element);
     }
 
     if (cd.settings.reformatComments) {
