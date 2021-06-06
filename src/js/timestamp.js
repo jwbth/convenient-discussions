@@ -40,7 +40,25 @@ export function initDayjs() {
   if (locale) {
     dayjs.locale(locale);
   }
-  dayjs.extend(relativeTime);
+
+  const relativeTimeConfig = {
+    thresholds: [
+      { l: 's', r: 59, d: 'second' },
+      { l: 'm', r: 1 },
+      { l: 'mm', r: 59, d: 'minute' },
+      { l: 'h', r: 1 },
+      { l: 'hh', r: 23, d: 'hour' },
+      { l: 'd', r: 1 },
+      { l: 'dd', r: 29, d: 'day' },
+      { l: 'M', r: 1 },
+      { l: 'MM', r: 11, d: 'month' },
+      { l: 'y' },
+      { l: 'yy', d: 'year' },
+    ],
+    rounding: Math.floor,
+  };
+  dayjs.extend(relativeTime, relativeTimeConfig);
+
   dayjs.extend(utc);
   dayjs.extend(timezone);
 }
