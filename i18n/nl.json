@@ -112,7 +112,12 @@
 	"msd-move": "Hernoemen",
 	"msd-error-sourcepagedeleted": "De huidige pagina is verwijderd.",
 	"msd-error-invalidpagename": "Ongeldige paginanaam.",
+	"error-api": "API-fout: $1.",
+	"error-network": "Netwerk fout",
+	"error-unknown": "Onbekende fout.",
 	"error-editconflict": "Bewerkingsconflict.",
 	"error-pagenotedited": "De pagina is niet bewerkt.",
+	"loading-ellipsis": "Bezig met laden...",
+	"addtopic": "Onderwerp toevoegen",
 	"copy": "Kopiëren"
 }
