@@ -79,6 +79,9 @@ export default {
           update: false,
           floatingRects,
         });
+        if (isMoved === null) {
+          comment.removeLayers();
+        }
         if (isMoved || redrawAll) {
           notMovedCount = 0;
           comments.push(comment);
