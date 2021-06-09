@@ -19,7 +19,6 @@ import {
   isPageOverlayOn,
   isProbablyTalkPage,
   mergeRegexps,
-  nativePromiseState,
   skin$,
   underlinesToSpaces,
   unique,
@@ -355,9 +354,14 @@ async function go() {
       // the background, this request is made and the execution stops at mw.loader.using, which
       // results in overriding the renewed visits setting of one tab by another tab (the visits are
       // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      let siteDataRequests;
+      let siteDataRequests = [];
       if (mw.loader.getState('mediawiki.api') === 'ready') {
         siteDataRequests = loadSiteData();
+
+        // We are _not_ calling getUserInfo() here to avoid losing visits data updates from some
+        // pages if more than one page is opened simultaneously. In this situation, visits could be
+        // requested for multiple pages; updated and then saved for each of them with losing the
+        // updates from the rest.
       }
 
       const modules = [
@@ -388,17 +392,17 @@ async function go() {
       let modulesRequest;
       let cachedScrollY;
       if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
-        // If there is no data to load and, therefore, no period of time in which a reflow could
-        // happen without impeding performance, we cache the value so that it could be used in
-        // processPage~getFirstElementInViewportData without causing a reflow (layout thrashing).
-        if (siteDataRequests && await nativePromiseState(siteDataRequests) === 'resolved') {
+        // If there is no data to load and, therefore, no period of time within which a reflow
+        // (layout thrashing) could happen without impeding performance, we cache the value so that
+        // it could be used in util.saveRelativeScrollPosition without causing a reflow.
+        if (siteDataRequests?.every((request) => request.state() === 'resolved')) {
           cachedScrollY = window.scrollY;
         }
       } else {
         modulesRequest = mw.loader.using(modules);
       }
 
-      Promise.all([modulesRequest, siteDataRequests]).then(
+      Promise.all([modulesRequest, ...siteDataRequests]).then(
         async () => {
           try {
             await processPage(undefined, siteDataRequests, cachedScrollY);
@@ -488,7 +492,7 @@ async function go() {
   if (isEligibleSpecialPage || isEligibleHistoryPage || cd.g.IS_DIFF_PAGE) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let siteDataRequests;
+    let siteDataRequests = [];
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       siteDataRequests = loadSiteData();
       if (!cd.g.IS_DIFF_PAGE) {

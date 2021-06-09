@@ -60,7 +60,7 @@ function getUsedDateTokens(format) {
 /**
  * Load messages needed to parse and generate timestamps, as well as some site data.
  *
- * @returns {Promise}
+ * @returns {Promise[]}
  */
 export function loadSiteData() {
   setFormats();
@@ -164,5 +164,5 @@ export function loadSiteData() {
     requests.push(request);
   }
 
-  return Promise.all(requests.every((request) => request.state() === 'resolved') ? [] : requests);
+  return requests;
 }

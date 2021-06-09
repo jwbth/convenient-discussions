@@ -42,7 +42,8 @@ import { setSettings, setVisits } from './options';
  * comment layers are also made here.
  *
  * @param {PassedData} passedData
- * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  * @private
  */
 async function prepare(passedData, siteDataRequests) {
@@ -874,7 +875,8 @@ function debugLog() {
  * Process the current web page.
  *
  * @param {PassedData} [passedData={}] Data passed from the previous page state.
- * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
  * @fires commentsReady

@@ -770,11 +770,12 @@ function initOouiAndElementPrototypes() {
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed on
  * the first run.
  *
- * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  */
 export async function init(siteDataRequests) {
   createApi();
-  await (siteDataRequests || loadSiteData());
+  await Promise.all(siteDataRequests.length ? siteDataRequests : loadSiteData());
   initGlobals();
   await initSettings();
   initTimestampParsingTools();

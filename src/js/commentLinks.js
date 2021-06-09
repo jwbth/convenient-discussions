@@ -38,7 +38,8 @@ let isProcessDiffFirstRun = true;
 /**
  * Prepare variables.
  *
- * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  * @private
  */
 async function prepare(siteDataRequests) {
@@ -49,10 +50,12 @@ async function prepare(siteDataRequests) {
   const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
     console.warn('Couldn\'t load the settings from the server.', e);
   });
-  siteDataRequests = siteDataRequests || loadSiteData();
+  if (!siteDataRequests.length) {
+    siteDataRequests = loadSiteData();
+  }
 
   try {
-    await Promise.all([watchedSectionsRequest, siteDataRequests]);
+    await Promise.all([watchedSectionsRequest, ...siteDataRequests]);
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
@@ -714,7 +717,8 @@ async function addCommentLinks($content) {
 /**
  * The entry function for the comment links adding mechanism.
  *
- * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  */
 export default async function commentLinks(siteDataRequests) {
   try {
