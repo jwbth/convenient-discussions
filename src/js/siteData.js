@@ -88,8 +88,8 @@ export function loadSiteData() {
     });
   };
 
-  const areUserAndContentLanguagesEqual = mw.config.get('wgContentLanguage') === cd.g.USER_LANGUAGE;
-  if (areUserAndContentLanguagesEqual) {
+  const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
+  if (areLanguagesEqual) {
     const userLanguageConfigMessages = {};
     Object.keys(cd.config.messages)
       .filter((name) => userLanguageMessageNames.includes(name))
@@ -115,16 +115,17 @@ export function loadSiteData() {
   // I hope we won't be scolded too much for making two message requests in parallel (if the user
   // and content language are different).
   const requests = [];
-  if (areUserAndContentLanguagesEqual) {
+  if (areLanguagesEqual) {
     const messagesToRequest = contentLanguageMessageNames.concat(userLanguageMessageNames);
     let nextNames;
     while ((nextNames = messagesToRequest.splice(0, 50)).length) {
-      const request = cd.g.api.loadMessagesIfMissing(nextNames, {
-        amlang: mw.config.get('wgContentLanguage'),
-      }).then(() => {
-        filterAndSetContentLanguageMessages(mw.messages.get());
-      });
+      const request = cd.g.api.loadMessagesIfMissing(nextNames);
       requests.push(request);
+      if (requests.length === 1) {
+        request.then(() => {
+          filterAndSetContentLanguageMessages(mw.messages.get());
+        });
+      }
     }
   } else {
     let nextNames;
@@ -137,9 +138,7 @@ export function loadSiteData() {
       requests.push(request);
     }
 
-    const userLanguageMessagesRequest = cd.g.api.loadMessagesIfMissing(userLanguageMessageNames, {
-      amlang: cd.g.USER_LANGUAGE,
-    });
+    const userLanguageMessagesRequest = cd.g.api.loadMessagesIfMissing(userLanguageMessageNames);
     requests.push(userLanguageMessagesRequest);
   }
 
