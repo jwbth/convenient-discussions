@@ -641,7 +641,7 @@ export default class Comment extends CommentSkeleton {
 
     if (newTimestamp) {
       const utcTimestamp = areLanguagesEqual ?
-        formatDateNative(this.date, true) + utcPostfix :
+        formatDateNative(this.date, 'UTC') + utcPostfix :
         this.timestampElement.textContent;
       title = title + utcTimestamp;
       if (cd.settings.hideTimezone) {

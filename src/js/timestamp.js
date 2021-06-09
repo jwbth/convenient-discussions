@@ -11,6 +11,7 @@
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
 import { getTimezoneOffset } from 'date-fns-tz';
 
@@ -96,6 +97,9 @@ export function initDayjs() {
   dayjs.extend(relativeTime, relativeTimeConfig);
 
   dayjs.extend(utc);
+  dayjs.extend(timezone);
+
+  cd.g.dayjs = dayjs;
 }
 
 /**
@@ -491,20 +495,41 @@ function zeroPad(number, length) {
  * Convert a date to a string in the default timestamp format.
  *
  * @param {Date} date
- * @param {boolean} useUtc Use the UTC time zone no matter user settings.
+ * @param {string} [timezone] Use the specified time zone no matter user settings.
  * @returns {string}
  */
-export function formatDateNative(date, useUtc = false) {
-  const useLocalTime = cd.settings.useLocalTime && !useUtc;
+export function formatDateNative(date, timezone) {
+  let year;
+  let monthIdx;
+  let day;
+  let hours;
+  let minutes;
+  let dayOfWeek;
+  if (cd.settings.useLocalTime && !timezone) {
+    year = date.getFullYear();
+    monthIdx = date.getMonth();
+    day = date.getDate();
+    hours = date.getHours();
+    minutes = date.getMinutes();
+    dayOfWeek = date.getDay();
+  } else if (!timezone || timezone === 'UTC') {
+    year = date.getUTCFullYear();
+    monthIdx = date.getUTCMonth();
+    day = date.getUTCDate();
+    hours = date.getUTCHours();
+    minutes = date.getUTCMinutes();
+    dayOfWeek = date.getUTCDay();
+  } else {
+    const dayjsDate = dayjs(date).tz(timezone);
+    year = dayjsDate.year();
+    monthIdx = dayjsDate.month();
+    day = dayjsDate.date();
+    hours = dayjsDate.hour();
+    minutes = dayjsDate.minute();
+    dayOfWeek = dayjsDate.day();
+  }
 
   let s = '';
-
-  const year = useLocalTime ? date.getFullYear() : date.getUTCFullYear();
-  const monthIdx = useLocalTime ? date.getMonth() : date.getUTCMonth();
-  const day = useLocalTime ? date.getDate() : date.getUTCDate();
-  const hours = useLocalTime ? date.getHours() : date.getUTCHours();
-  const minutes = useLocalTime ? date.getMinutes() : date.getUTCMinutes();
-
   const format = cd.g.USER_DATE_FORMAT;
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
@@ -526,7 +551,6 @@ export function formatDateNative(date, useUtc = false) {
         break;
       case 'D':
       case 'l': {
-        const dayOfWeek = useLocalTime ? date.getDay() : date.getUTCDay();
         s += dateTokenToMessageNames[code].map(mw.msg)[dayOfWeek];
         break;
       }

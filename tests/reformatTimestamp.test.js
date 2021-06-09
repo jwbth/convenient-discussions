@@ -57,7 +57,7 @@ const testWithSettings = ([date, timestampFormat, useLocalTime, hideTimezone, no
     cd.settings.timestampFormat = timestampFormat;
     cd.settings.useLocalTime = useLocalTime;
     cd.settings.hideTimezone = hideTimezone;
-    comment.timestampElement.textContent = formatDateNative(new Date(date), true) + ' (UTC)';
+    comment.timestampElement.textContent = formatDateNative(new Date(date), 'UTC') + ' (UTC)';
 
     if (nowDate) {
       jest.useFakeTimers('modern');

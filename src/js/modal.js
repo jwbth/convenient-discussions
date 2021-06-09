@@ -501,7 +501,7 @@ export async function settingsDialog() {
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 43);
     const threeDaysAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24 * 3.3);
 
-    const exampleDefault = formatDateNative(fortyThreeMinutesAgo, cd.g.CONTENT_DATE_FORMAT);
+    const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
     let exampleImproved1;
     let exampleImproved2;
     let exampleRelative1;
@@ -1352,15 +1352,12 @@ export async function notFound(decodedFragment, date) {
   if (cd.g.PAGE.canHaveArchives()) {
     message += ' ' + cd.s('deadanchor-searchinarchive');
     if (await OO.ui.confirm(message, { title })) {
-      let text;
-      if (date) {
-        text = formatDateNative(date);
-      } else {
-        text = decodedFragment
+      const text = date ?
+        formatDateNative(date, cd.g.TIMEZONE) :
+        decodedFragment
           .replace(/_/g, ' ')
           .replace(/"/g, '')
           .trim();
-      }
       const archivePrefix = cd.g.PAGE.getArchivePrefix();
       const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {
