@@ -2051,7 +2051,7 @@ export default class Comment extends CommentSkeleton {
       console.error('The Comment#inCode property should contain an object with the comment code data.');
       return;
     }
-    let { code, indentationChars } = this.inCode;
+    let { code, indentationChars, originalIndentationChars } = this.inCode;
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
@@ -2103,15 +2103,16 @@ export default class Comment extends CommentSkeleton {
 
       // Remove indentation characters
       .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
-        const newChars = chars.slice(indentationChars.length);
-        return (
-          '\n' +
-          (
-            chars.length >= indentationChars.length ?
-            newChars + (chars.length > indentationChars.length ? spacing : '') :
-            chars + spacing
-          )
-        );
+        let newChars;
+        if (chars.length >= originalIndentationChars.length) {
+          newChars = chars.slice(originalIndentationChars.length);
+          if (chars.length > originalIndentationChars.length) {
+            newChars += spacing;
+          }
+        } else {
+          newChars = chars + spacing;
+        }
+        return '\n' + newChars;
       });
 
     text = unhideText(text, hidden);
@@ -2339,6 +2340,7 @@ export default class Comment extends CommentSkeleton {
    */
   adjustCommentBeginning({ code, startIndex }) {
     // Identifying indentation characters
+    let originalIndentationChars = '';
     let indentationChars = '';
     let lineStartIndex = startIndex;
 
@@ -2406,11 +2408,48 @@ export default class Comment extends CommentSkeleton {
       // Comments at the zero level sometimes start with ":" that is used to indent some side note.
       // It shouldn't be considered an indentation character.
       if (this.level > 0) {
-        const replaceIndentationChars = (s, before, chars) => {
-          indentationChars = chars;
+        const replaceIndentationChars = (s, before, chars, after = '') => {
+          if (typeof after === 'number') {
+            after = '';
+          }
+          let remainder = '';
+          let adjustedChars = chars;
+          let startIndexShift = s.length;
+
+          // We could just throw an error here, but instead will try to fix the markup.
+          if (code.includes('\n') && adjustedChars.endsWith('#')) {
+            adjustedChars = adjustedChars.slice(0, -1);
+            originalIndentationChars = adjustedChars;
+
+            /*
+              We can have this structure:
+                : Comment. [signature]
+                :# Item 1.
+                :# Item 2.
+                :: End of the comment. [signature]
+
+              And we can have this:
+                : Comment. [signature]
+                ::# Item 1.
+                ::# Item 2.
+                :: End of the comment. [signature]
+
+              The first is incorrect, and we need to add additional indentation for that case.
+             */
+            if (adjustedChars.length < this.level) {
+              adjustedChars += ':';
+            }
+            startIndexShift -= 1 + after.length;
+
+            remainder = '#' + after;
+          } else {
+            originalIndentationChars = chars;
+          }
+
+          indentationChars = adjustedChars;
           lineStartIndex = startIndex + before.length;
-          startIndex += s.length;
-          return '';
+          startIndex += startIndexShift;
+          return remainder;
         };
 
         code = code.replace(
@@ -2441,6 +2480,7 @@ export default class Comment extends CommentSkeleton {
       headingStartIndex,
       headingLevel,
       headlineCode,
+      originalIndentationChars,
       indentationChars,
     };
   }
@@ -2515,27 +2555,36 @@ export default class Comment extends CommentSkeleton {
 
     // If the comment contains different indentation character sets for different lines, then use
     // different sets depending on the mode (edit/reply).
-    data.replyIndentationChars = data.indentationChars;
+    let replyIndentationChars = data.originalIndentationChars;
     if (!this.isOpeningSection) {
       // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
       // comments in one, so we exclude such cases. The signature code is used because it may start
       // with a newline.
       const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*]).*$/);
       if (match) {
-        data.replyIndentationChars = match[1];
+        replyIndentationChars = match[1];
 
         // Cases where indentation characters on the first line don't denote a comment level but
-        // serve some other purposes. Some strange example:
-        // https://ru.wikipedia.org/w/index.php?diff=105978713.
-        if (data.replyIndentationChars.length < data.indentationChars.length) {
-          const prefix = data.indentationChars.slice(data.replyIndentationChars.length) + ' ';
+        // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
+        // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
+        // "replaceIndentationChars" in Comment#adjustCommentBeginning).
+        if (replyIndentationChars.length < data.originalIndentationChars.length) {
+          // We better restore the original space or its absence here.
+          const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
+
+          const prefix = (
+            data.originalIndentationChars.slice(replyIndentationChars.length) +
+            spaceOrNot
+          );
           data.code = prefix + data.code;
-          data.indentationChars = data.indentationChars.slice(0, data.replyIndentationChars.length);
+          data.originalIndentationChars = data.originalIndentationChars
+            .slice(0, replyIndentationChars.length);
           data.startIndex -= prefix.length;
         }
       }
     }
-    data.replyIndentationChars += cd.config.defaultIndentationChar;
+    replyIndentationChars += cd.config.defaultIndentationChar;
+    data.replyIndentationChars = replyIndentationChars;
 
     return data;
   }
