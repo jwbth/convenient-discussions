@@ -11,8 +11,8 @@
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
 import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from './util';
@@ -68,6 +68,9 @@ export const relativeTimeThresholds = [
   // also too complex.
 ];
 
+/**
+ * Prepare `dayjs` object for further use (add plugins and a locale).
+ */
 export function initDayjs() {
   const locale = cd.i18n[cd.g.USER_LANGUAGE].dateLocale;
   if (locale) {
@@ -93,7 +96,6 @@ export function initDayjs() {
   dayjs.extend(relativeTime, relativeTimeConfig);
 
   dayjs.extend(utc);
-  dayjs.extend(timezone);
 }
 
 /**
@@ -381,15 +383,17 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
     }
   }
 
+  cd.debug.startTimer('parse timestamps tz');
   let date;
   let timezoneOffsetMs;
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
-  if (timezoneOffset === undefined && cd.g.TIMEZONE !== 'UTC') {
-    date = dayjs(unixTime).tz(cd.g.TIMEZONE).toDate();
+  if (timezoneOffset === undefined) {
+    timezoneOffsetMs = cd.g.TIMEZONE === 'UTC' ? 0 : getTimezoneOffset(cd.g.TIMEZONE, unixTime);
   } else {
-    timezoneOffsetMs = (timezoneOffset || 0) * cd.g.MILLISECONDS_IN_MINUTE;
-    date = new Date(unixTime - timezoneOffsetMs);
+    timezoneOffsetMs = timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE;
   }
+  date = new Date(unixTime - timezoneOffsetMs);
+  cd.debug.stopTimer('parse timestamps tz');
 
   cd.debug.stopTimer('parse timestamps');
 
