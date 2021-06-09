@@ -44,6 +44,9 @@ export default class CommentSkeleton {
     // dd, li instead of dl, ul, ol where appropriate.
     parts = this.parser.replaceListsWithItems(parts, signature.element);
 
+    // Wrap ol into div or dl & dd if the comment starts with numbered list items.
+    parts = this.parser.wrapNumberedList(parts);
+
     /**
      * Comment ID. Same as the comment index in {@link module:cd~convenientDiscussions.comments
      * convenientDiscussions.comments}.
