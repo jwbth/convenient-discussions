@@ -409,7 +409,10 @@ export default class Comment extends CommentSkeleton {
           .replace(cd.config.signaturePrefixRegexp, '')
           .replace(cd.config.signaturePrefixRegexp, '');
       }
-      if (n.tagName && n.getAttribute('style')) {
+
+      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
+      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
+      if (n.tagName && n.getAttribute('style') && !n.classList.contains('noprint')) {
         n.remove();
       }
     };
