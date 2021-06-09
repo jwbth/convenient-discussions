@@ -30,7 +30,7 @@ export default {
    */
   cdRemoveNonElementNodes: function () {
     return this.filter(function () {
-      return this.nodeType === Node.ELEMENT_NODE && !['STYLE', 'LINK'].includes(this.tagName);
+      return this.tagName && !['STYLE', 'LINK'].includes(this.tagName);
     });
   },
 

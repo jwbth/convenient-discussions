@@ -391,7 +391,7 @@ export default class Thread {
 
     cd.debug.startTimer('thread collapse button');
     cd.debug.startTimer('thread collapse button create');
-    const buttonElement = elementPrototypes.collapsedButton.cloneNode(true);
+    const buttonElement = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
       action: () => {
         this.expand();
@@ -423,24 +423,24 @@ export default class Thread {
     if (!['LI', 'DD'].includes(tagName)) {
       tagName = 'DIV';
     }
-    const collapsedNote = document.createElement(tagName);
-    collapsedNote.className = 'cd-thread-button-container cd-thread-collapsedNote';
-    collapsedNote.appendChild(button.element);
+    const expandNote = document.createElement(tagName);
+    expandNote.className = 'cd-thread-button-container cd-thread-expandNote';
+    expandNote.appendChild(button.element);
     if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {
       const container = document.createElement('ul');
       container.className = 'cd-commentLevel';
-      container.appendChild(collapsedNote);
+      container.appendChild(expandNote);
       firstElement.parentNode.parentNode.insertBefore(container, firstElement.parentNode);
-      this.collapsedNoteContainer = container;
+      this.expandNoteContainer = container;
     } else {
-      firstElement.parentNode.insertBefore(collapsedNote, firstElement);
+      firstElement.parentNode.insertBefore(expandNote, firstElement);
     }
     cd.debug.stopTimer('thread collapse button note');
 
-    this.collapsedNote = collapsedNote;
-    this.$collapsedNote = $(this.collapsedNote);
+    this.expandNote = expandNote;
+    this.$expandNote = $(this.expandNote);
     if (isInited) {
-      this.$collapsedNote.cdScrollIntoView();
+      this.$expandNote.cdScrollIntoView();
     }
     cd.debug.stopTimer('thread collapse button');
 
@@ -489,8 +489,8 @@ export default class Thread {
       delete comment.collapsedThread;
       comment.configureLayers();
     }
-    this.collapsedNote.remove();
-    this.collapsedNoteContainer?.remove();
+    this.expandNote.remove();
+    this.expandNoteContainer?.remove();
 
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
@@ -581,8 +581,8 @@ export default class Thread {
         let lineHeight;
         let rectTop;
         if (thread.isCollapsed) {
-          rectTop = thread.collapsedNote.getBoundingClientRect();
-          if (comment.level === 0 || thread.collapsedNote.parentNode.tagName === 'OL') {
+          rectTop = thread.expandNote.getBoundingClientRect();
+          if (comment.level === 0 || thread.expandNote.parentNode.tagName === 'OL') {
             const [leftMargin] = comment.getLayersMargins();
             lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1) - lineSideMargin;
             lineTop = window.scrollY + rectTop.top;
@@ -624,7 +624,7 @@ export default class Thread {
         }
 
         const elementBottom = thread.isCollapsed ?
-          thread.collapsedNote :
+          thread.expandNote :
           thread.getAdjustedEndItem(true);
         cd.debug.startTimer('threads getBoundingClientRect bottom');
         const rectBottom = elementBottom.getBoundingClientRect();

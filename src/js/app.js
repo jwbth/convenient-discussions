@@ -539,8 +539,8 @@ async function go() {
 function setLanguages() {
   const languageOrFallback = (lang) => (
     I18N_LIST.includes(lang) ?
-      lang :
-      (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
+    lang :
+    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
   );
 
   // This is the only place where mw.config.get('wgUserLanguage') is used.

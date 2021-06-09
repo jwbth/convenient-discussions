@@ -409,7 +409,7 @@ export default class Comment extends CommentSkeleton {
           .replace(cd.config.signaturePrefixRegexp, '')
           .replace(cd.config.signaturePrefixRegexp, '');
       }
-      if (n.nodeType === Node.ELEMENT_NODE && n.getAttribute('style')) {
+      if (n.tagName && n.getAttribute('style')) {
         n.remove();
       }
     };
@@ -807,12 +807,12 @@ export default class Comment extends CommentSkeleton {
     let positions;
     let anchorElement;
     if (this.isCollapsed) {
-      const rect = getCommentPartRect(this.thread.collapsedNote);
+      const rect = getCommentPartRect(this.thread.expandNote);
       positions = {
         left: window.scrollX + rect.left,
         right: window.scrollX + rect.right,
       };
-      anchorElement = this.thread.collapsedNote;
+      anchorElement = this.thread.expandNote;
     } else {
       positions = this.positions;
       anchorElement = this.anchorHighlightable;
@@ -1636,7 +1636,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (this.isCollapsed) {
-      this.getVisibleCollapsedNote().cdScrollTo('top', smooth, callback);
+      this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
       mw.notify(cd.s('navpanel-firstunseen-hidden'));
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
@@ -3142,14 +3142,14 @@ export default class Comment extends CommentSkeleton {
    *
    * @returns {?JQuery}
    */
-  getVisibleCollapsedNote() {
+  getVisibleExpandNote() {
     if (!this.isCollapsed) {
       return null;
     }
 
     let $note;
     for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread) {
-      $note = t.$collapsedNote;
+      $note = t.$expandNote;
       if ($note.is(':visible')) break;
     }
     return $note;

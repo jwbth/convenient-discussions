@@ -306,7 +306,7 @@ export default class Parser {
         do {
           const node = treeWalker.currentNode;
           length += node.textContent.length;
-          if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName) {
             if (node.classList.contains('cd-timestamp')) break;
             let hasAuthorLinks = false;
             if (node.tagName === 'A') {
@@ -382,12 +382,8 @@ export default class Parser {
           signatureNodes = [startElement];
         }
 
-        const firstSignatureElementIndex = signatureNodes.indexOf(firstSignatureElement);
-        signatureNodes.splice(
-          firstSignatureElementIndex === -1 ?
-          1 :
-          firstSignatureElementIndex + 1
-        );
+        const fseIndex = signatureNodes.indexOf(firstSignatureElement);
+        signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
 
         if (!authorName) return;
 

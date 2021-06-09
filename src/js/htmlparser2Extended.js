@@ -59,14 +59,14 @@ const Document = dummyDom[0].parent.constructor;
 // class. So we use the "childElements" property instead for this purpose.
 Object.defineProperty(Element.prototype, 'childElements', {
   get: function () {
-    return this.childNodes.filter((node) => node.nodeType === Node.ELEMENT_NODE);
+    return this.childNodes.filter((node) => node.tagName);
   },
 });
 
 Object.defineProperty(Element.prototype, 'previousElementSibling', {
   get: function () {
     for (let n = this.previousSibling; n; n = n.previousSibling) {
-      if (n.nodeType === Node.ELEMENT_NODE) {
+      if (n.tagName) {
         return n;
       }
     }
@@ -77,7 +77,7 @@ Object.defineProperty(Element.prototype, 'previousElementSibling', {
 Object.defineProperty(Element.prototype, 'nextElementSibling', {
   get: function () {
     for (let n = this.nextSibling; n; n = n.nextSibling) {
-      if (n.nodeType === Node.ELEMENT_NODE) {
+      if (n.tagName) {
         return n;
       }
     }
@@ -318,7 +318,7 @@ Object.defineProperty(Element.prototype, 'classList', {
 Element.prototype.getElementsByClassName = function (name, limit) {
   let nodes = [];
   walkThroughSubtree(this, (node) => {
-    if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(name)) {
+    if (node.tagName && node.classList.contains(name)) {
       nodes.push(node);
       if (limit && nodes.length === limit) {
         return true;
@@ -331,7 +331,7 @@ Element.prototype.getElementsByClassName = function (name, limit) {
 Element.prototype.getElementsByAttribute = function (regexp) {
   let nodes = [];
   walkThroughSubtree(this, (node) => {
-    if (node.nodeType === Node.ELEMENT_NODE) {
+    if (node.tagName) {
       Object.keys(node.attribs).some((name) => regexp.test(name))
       nodes.push(node);
     }

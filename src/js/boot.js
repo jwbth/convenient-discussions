@@ -742,7 +742,7 @@ function initOouiAndElementPrototypes() {
   cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
 
   let threadElementPrototypes = {};
-  threadElementPrototypes.collapsedButton = new OO.ui.ButtonWidget({
+  threadElementPrototypes.expandButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
     icon: 'expand',
@@ -752,7 +752,7 @@ function initOouiAndElementPrototypes() {
       'cd-button-ooui',
       'cd-thread-button',
       'cd-thread-button-invisible',
-      'cd-thread-button-collapsedNote',
+      'cd-thread-button-expandNote',
     ],
   }).$element.get(0);
 

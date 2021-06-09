@@ -269,7 +269,7 @@ function mergeAdjacentCommentLevels() {
         if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
           while (currentBottomElement.childNodes.length) {
             let child = currentBottomElement.firstChild;
-            if (child.nodeType === Node.ELEMENT_NODE) {
+            if (child.tagName) {
               if (bottomInnerTags[child.tagName]) {
                 child = changeElementType(child, bottomInnerTags[child.tagName]);
               }
