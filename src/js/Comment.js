@@ -32,6 +32,7 @@ import {
   saveToLocalStorage,
   triggerClickOnEnterAndSpace,
   unhideText,
+  unique,
 } from './util';
 import { copyLink } from './modal.js';
 import {
@@ -375,20 +376,24 @@ export default class Comment extends CommentSkeleton {
 
     // This is usually done in the CommentSkeleton constructor, but if Comment#reviewHighlightables
     // has altered the highlightables, this will save the day.
-    if (
-      cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
-      Array.from(this.highlightables[0].classList).some((name) => !name.startsWith('cd-'))
-    ) {
-      const wrapper = document.createElement('div');
-      const firstHighlightable = this.highlightables[0];
-      this.replaceElement(this.highlightables[0], wrapper);
-      wrapper.appendChild(firstHighlightable);
+    [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
+      .filter(unique)
+      .filter((el) => (
+        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+        Array.from(el.classList).some((name) => !name.startsWith('cd-'))
+      ))
+      .forEach((el) => {
+        const wrapper = document.createElement('div');
+        const origEl = el;
+        this.replaceElement(el, wrapper);
+        wrapper.appendChild(origEl);
 
-      this.addAttributes();
-      firstHighlightable.classList
-        .remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-      delete firstHighlightable.dataset.commentId;
-    }
+        this.addAttributes();
+        origEl.classList
+          .remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+        delete origEl.dataset.commentId;
+      });
 
     this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
 

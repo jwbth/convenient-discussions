@@ -9,6 +9,10 @@
  * @module worker
  */
 
+// Workaround to fix the error when trying to import unique() to CommentSkeleton.
+import { unique } from './util';
+void unique;
+
 import CdError from './CdError';
 import CommentSkeleton from './CommentSkeleton';
 import Parser from './Parser';

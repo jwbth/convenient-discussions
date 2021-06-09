@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
+import { unique } from './util';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -156,28 +157,12 @@ export default class CommentSkeleton {
      */
     this.highlightables = this.elements.filter(isHighlightable);
 
-    // Prevent an inappropriate element from being the first highlightable (this is used for when
-    // comments are reformatted, but we do it always to have a uniform parsing result). In the
-    // worker context, this will allow to correctly update edited comments (unless
-    // Comment#reviewHighlightables alters the highlightables afterwards).
-    if (
-      cd.g.BAD_FIRST_HIGHLIGHTABLE_ELEMENTS.includes(this.highlightables[0].tagName) ||
-      this.highlightables[0].className
-    ) {
-      const wrapper = this.parser.context.document.createElement('div');
-      wrapper.className = 'cd-comment-replacedPart';
-      const firstHighlightable = this.highlightables[0];
-      firstHighlightable.parentNode.insertBefore(wrapper, firstHighlightable);
-      this.elements.splice(this.elements.indexOf(firstHighlightable), 1, wrapper);
-      this.highlightables.splice(this.highlightables.indexOf(firstHighlightable), 1, wrapper);
-      wrapper.appendChild(firstHighlightable);
-    }
-
-    // That which cannot be highlighted should not be considered existent.
+    // There shouldn't be comments without highlightables.
     if (!this.highlightables.length) {
       throw new CdError();
     }
 
+    this.wrapHighlightables();
     this.setLevels();
 
     /**
@@ -224,6 +209,35 @@ export default class CommentSkeleton {
      * @type {boolean}
      */
     this.isOutdented = false;
+  }
+
+  /**
+   * Prevent an inappropriate element from being the first or last highlightable (this is used for
+   * when comments are reformatted, but we do it always to have a uniform parsing result). In the
+   * worker context, this will allow to correctly update edited comments (unless
+   * Comment#reviewHighlightables alters the highlightables afterwards).
+   */
+  wrapHighlightables() {
+    [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
+      .filter(unique)
+      .filter((el) => (
+        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+
+        // Such cases: https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
+        // semantical correctness of the markup.
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+
+        el.className ||
+        el.getAttribute('style')
+      ))
+      .forEach((el) => {
+        const wrapper = this.parser.context.document.createElement('div');
+        wrapper.className = 'cd-comment-replacedPart';
+        el.parentNode.insertBefore(wrapper, el);
+        this.elements.splice(this.elements.indexOf(el), 1, wrapper);
+        this.highlightables.splice(this.highlightables.indexOf(el), 1, wrapper);
+        wrapper.appendChild(el);
+      });
   }
 
   /**
