@@ -38,16 +38,25 @@ mw.loader.using([
   const siteInfoResp = await api.get({
     action: 'query',
     meta: 'siteinfo',
-    siprop: ['specialpagealiases', 'general', 'extensions'],
+    siprop: ['specialpagealiases', 'general', 'extensions', 'magicwords'],
   });
-  siteInfoResp.query.specialpagealiases.some((alias) => {
-    if (alias.realname === 'Contributions') {
-      config.contribsPage = mw.config.get('wgFormattedNamespaces')[-1] + ':' + alias.aliases[0];
-      return true;
-    }
-  });
+  const contribsPageAliasesObj = siteInfoResp.query.specialpagealiases
+    .find((obj) => obj.realname === 'Contributions');
+  if (contribsPageAliasesObj) {
+    config.contribsPage = (
+      mw.config.get('wgFormattedNamespaces')[-1] +
+      ':' +
+      contribsPageAliasesObj.aliases[0]
+    );
+  }
+  config.substAliases = siteInfoResp.query.magicwords
+    .find((obj) => obj.name === 'subst')
+    ?.aliases
+    .map((alias) => alias.toLowerCase());
+
   config.timezone = siteInfoResp.query.general.timezone;
-  config.useGlobalPreferences = !!siteInfoResp.query.extensions.find(e => e.name === 'GlobalPreferences');
+  config.useGlobalPreferences = siteInfoResp.query.extensions
+    .some((ext) => ext.name === 'GlobalPreferences');
 
   const idsToProps = {
     Q5573785: 'unsigned',
