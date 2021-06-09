@@ -848,7 +848,11 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (this.ahContainerListType === 'ol') {
-      startMargin = cd.g.CONTENT_FONT_SIZE * 3.2;
+      // "this.highlightables.length === 1" is a workaround for cases such as
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160911_Example.
+      startMargin = this.highlightables.length === 1 ?
+        cd.g.CONTENT_FONT_SIZE * 3.2 :
+        cd.g.CONTENT_FONT_SIZE * 2.2 - 1;
     } else if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
