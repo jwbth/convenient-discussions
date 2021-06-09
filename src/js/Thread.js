@@ -100,6 +100,8 @@ function getEndItem0Level(startItem, highlightables, nextForeignElement) {
  * @private
  */
 function saveCollapsedThreads() {
+  if (mw.config.get('wgRevisionId') !== mw.config.get('wgCurRevisionId')) return;
+
   const collapsedThreads = cd.comments
     .filter((comment) => comment.thread?.isCollapsed)
     .map((comment) => comment.anchor);
@@ -125,7 +127,6 @@ function restoreCollapsedThreads() {
   // Reverse order is used for threads to be expanded correctly.
   data.collapsedThreads?.reverse().forEach((anchor) => {
     const comment = Comment.getByAnchor(anchor);
-
     if (comment?.thread) {
       comments.push(comment);
     } else {
@@ -133,14 +134,15 @@ function restoreCollapsedThreads() {
       data.collapsedThreads.splice(data.collapsedThreads.indexOf(anchor), 1);
     }
   });
-
   let getUserGendersPromise;
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
     getUserGendersPromise = getUserGenders(comments.map((comment) => comment.author));
   }
   comments.forEach((comment) => comment.thread.collapse(getUserGendersPromise));
 
-  saveToLocalStorage('collapsedThreads', dataAllPages);
+  if (mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')) {
+    saveToLocalStorage('collapsedThreads', dataAllPages);
+  }
 }
 
 /**
