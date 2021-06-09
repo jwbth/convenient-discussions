@@ -371,6 +371,11 @@ export default class Parser {
             length = 0;
             signatureNodes = [];
           }
+
+          // Users may cross out text ended with their signature and sign again
+          // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
+          // a part of signature then.
+          if (authorName && newNode?.tagName && ['S', 'STRIKE'].includes(newNode.tagName)) break;
         } while (newNode && length < cd.config.signatureScanLimit);
 
         if (!signatureNodes.length) {
