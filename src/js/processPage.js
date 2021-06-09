@@ -33,6 +33,7 @@ import {
   replaceAnchorElement,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
+  wrap,
 } from './util';
 import { setSettings, setVisits } from './options';
 
@@ -1190,7 +1191,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       confirmDesktopNotifications();
 
       if (mw.user.options.get('discussiontools-betaenable')) {
-        mw.notify(cd.util.wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
+        mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
       }
     }
 

@@ -26,6 +26,7 @@ import {
   keepWorkerSafeValues,
   saveToLocalStorage,
   unique,
+  wrap,
 } from './util';
 import { getUserGenders } from './apiWrappers';
 
@@ -584,7 +585,7 @@ function showOrdinaryNotification(comments) {
     }
 
     closeNotifications(false);
-    const $body = cd.util.wrap(html);
+    const $body = wrap(html);
     const notification = addNotification([$body], { comments: filteredComments });
     notification.$notification.on('click', () => {
       reloadPage({ commentAnchor: filteredComments[0].anchor });

@@ -11,7 +11,14 @@ import { addPreventUnloadCondition, removePreventUnloadCondition } from './event
 import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
 import { checkboxField, copyActionField, radioField } from './ooui';
 import { encodeWikilink } from './wikitext';
-import { focusInput, hideText, underlinesToSpaces, unhideText } from './util';
+import {
+  focusInput,
+  hideText,
+  isPageOverlayOn,
+  underlinesToSpaces,
+  unhideText,
+  wrap,
+} from './util';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
@@ -135,7 +142,7 @@ function handleError(dialog, e, messageName, recoverable) {
  * Show a settings dialog.
  */
 export async function settingsDialog() {
-  if (cd.util.isPageOverlayOn()) return;
+  if (isPageOverlayOn()) return;
 
   /**
    * @class Subclass of {@link
@@ -405,7 +412,7 @@ export async function settingsDialog() {
     this.insertButtonsField = new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
       label: cd.s('sd-insertbuttons'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+      help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
       helpInline: true,
     });
 
@@ -487,7 +494,7 @@ export async function settingsDialog() {
     this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
       label: cd.s('sd-signatureprefix'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
+      help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
       helpInline: true,
     });
 
@@ -604,7 +611,7 @@ export async function settingsDialog() {
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
       label: cd.s('sd-removedata-description'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
+      help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
       helpInline: true,
     });
 
@@ -867,7 +874,7 @@ export async function settingsDialog() {
  * Show an edit watched sections dialog.
  */
 export async function editWatchedSections() {
-  if (cd.util.isPageOverlayOn()) return;
+  if (isPageOverlayOn()) return;
 
   /**
    * @class Subclass of {@link
@@ -1233,7 +1240,7 @@ export async function copyLink(object, e) {
   let helpNotOnlyCd;
   if (isComment) {
     helpOnlyCd = cd.s('cld-help-onlycd');
-    helpNotOnlyCd = cd.util.wrap(cd.sParse('cld-help-notonlycd'));
+    helpNotOnlyCd (cd.sParse('cld-help-notonlycd'));
   }
 
   const wikilinkField = copyActionField({

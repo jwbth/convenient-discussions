@@ -10,6 +10,7 @@ import cd from './cd';
 import navPanel from './navPanel';
 import {
   getExtendedRect,
+  isPageOverlayOn,
   reorderArray,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
@@ -255,7 +256,7 @@ export default {
    * @memberof module:Comment
    */
   highlightHovered(e) {
-    if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || cd.util.isPageOverlayOn()) return;
+    if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || isPageOverlayOn()) return;
 
     const isObstructingElementHovered = (
       Array.from(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification'))

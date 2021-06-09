@@ -15,11 +15,13 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import toc from './toc';
 import {
+  buildEditSummary,
   calculateWordOverlap,
   dealWithLoadingBug,
   defined,
   focusInput,
   getUrlWithAnchor,
+  wrap,
 } from './util';
 import { checkboxField } from './ooui';
 import { copyLink } from './modal.js';
@@ -635,7 +637,7 @@ export default class Section extends SectionSkeleton {
       try {
         await target.page.edit({
           text: newCode,
-          summary: cd.util.buildEditSummary({
+          summary: buildEditSummary({
             text: summary,
             section: section.headline,
           }),
@@ -702,7 +704,7 @@ export default class Section extends SectionSkeleton {
       try {
         await source.page.edit({
           text: newCode,
-          summary: cd.util.buildEditSummary({
+          summary: buildEditSummary({
             text: summary,
             section: section.headline,
           }),
@@ -733,7 +735,7 @@ export default class Section extends SectionSkeleton {
     };
 
     MoveSectionDialog.prototype.abort = function (html, recoverable) {
-      const $body = cd.util.wrap(html, {
+      const $body = wrap(html, {
         callbacks: {
           'cd-message-reloadPage': () => {
             this.close();
@@ -935,7 +937,7 @@ export default class Section extends SectionSkeleton {
           }
 
           this.reloadPanel.$element.append(
-            cd.util.wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
+            wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
           );
 
           this.stackLayout.setItem(this.reloadPanel);
@@ -1026,7 +1028,7 @@ export default class Section extends SectionSkeleton {
               text += ' ' + cd.sParse('section-watch-pagenotwatched');
               autoHideSeconds = 'long';
             }
-            mw.notify(cd.util.wrap(text), { autoHideSeconds });
+            mw.notify(wrap(text), { autoHideSeconds });
           }
         },
         () => {}
@@ -1072,7 +1074,7 @@ export default class Section extends SectionSkeleton {
               text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
               autoHideSeconds = 'long';
             }
-            mw.notify(cd.util.wrap(text), { autoHideSeconds });
+            mw.notify(wrap(text), { autoHideSeconds });
           }
         },
         () => {}

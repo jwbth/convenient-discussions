@@ -29,10 +29,13 @@ import {
   getVisibilityByRects,
   handleApiReject,
   isInline,
+  isPageOverlayOn,
   saveToLocalStorage,
   triggerClickOnEnterAndSpace,
   unhideText,
   unique,
+  wrap,
+  wrapDiffBody,
 } from './util';
 import { copyLink } from './modal.js';
 import {
@@ -1172,7 +1175,7 @@ export default class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   highlightHovered(e) {
-    if (this.isHovered || cd.util.isPageOverlayOn() || cd.settings.reformatComments) return;
+    if (this.isHovered || isPageOverlayOn() || cd.settings.reformatComments) return;
 
     if (e && e.type === 'touchstart') {
       cd.comments
@@ -1421,7 +1424,7 @@ export default class Comment extends CommentSkeleton {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(cd.util.wrap(text), { type: 'error' });
+            mw.notify(wrap(text), { type: 'error' });
           }
           diffButton.setPending(false);
         },
@@ -1825,11 +1828,10 @@ export default class Comment extends CommentSkeleton {
       .text(cd.mws('nextdiff'));
     const $above = $('<div>').append($nextDiffLink);
     if (edit.parsedcomment) {
-      const $summaryText = cd.util.wrap(edit.parsedcomment, { targetBlank: true })
-        .addClass('comment');
+      const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
       $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
     }
-    const $diffBody = cd.util.wrapDiffBody(edit.diffBody);
+    const $diffBody = wrapDiffBody(edit.diffBody);
     return $('<div>')
       .addClass('cd-diffView-diff')
       .append($above, $diffBody);
@@ -1885,7 +1887,7 @@ export default class Comment extends CommentSkeleton {
         break;
       }
     }
-    mw.notify(cd.util.wrap(text, { targetBlank: true }), { type: 'error' });
+    mw.notify(wrap(text, { targetBlank: true }), { type: 'error' });
     this.thankButton.setPending(false);
   }
 
@@ -1917,7 +1919,7 @@ export default class Comment extends CommentSkeleton {
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
     const question = cd.sParse('thank-confirm', this.author.name, this.author, url);
-    const $question = cd.util.wrap(question, {
+    const $question = wrap(question, {
       tagName: 'div',
       targetBlank: true,
     });
@@ -3083,7 +3085,7 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
-    const $diff = $(cd.util.wrapDiffBody(body));
+    const $diff = $(wrapDiffBody(body));
     let currentLineNumbers = [];
     let cleanDiffBody = '';
     $diff.find('tr').each((i, tr) => {
@@ -3113,7 +3115,7 @@ export default class Comment extends CommentSkeleton {
         cleanDiffBody += $tr.prop('outerHTML');
       }
     });
-    const $cleanDiff = $(cd.util.wrapDiffBody(cleanDiffBody));
+    const $cleanDiff = $(wrapDiffBody(cleanDiffBody));
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',

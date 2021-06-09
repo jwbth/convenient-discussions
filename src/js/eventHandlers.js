@@ -11,7 +11,7 @@ import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
-import { isInputFocused, keyCombination } from './util';
+import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
 import { setContentColumnGlobals } from './boot';
 
 const beforeUnloadHandlers = {};
@@ -65,7 +65,7 @@ export function removePreventUnloadCondition(name) {
  * @param {Event} e
  */
 export function handleGlobalKeyDown(e) {
-  if (cd.util.isPageOverlayOn()) return;
+  if (isPageOverlayOn()) return;
 
   if (
     // Ctrl+Alt+Q

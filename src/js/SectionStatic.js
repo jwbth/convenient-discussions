@@ -6,7 +6,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent } from './util';
+import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent, wrap } from './util';
 import { editWatchedSections } from './modal';
 import { getWatchedSections, setWatchedSections } from './options';
 
@@ -43,7 +43,7 @@ export default {
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'internal' && code === 'sizeLimit') {
-            const $body = cd.util.wrap(cd.sParse('section-watch-error-maxsize'), {
+            const $body = wrap(cd.sParse('section-watch-error-maxsize'), {
               callbacks: {
                 'cd-notification-editWatchedSections': () => {
                   editWatchedSections();

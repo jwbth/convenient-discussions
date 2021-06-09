@@ -13,8 +13,8 @@ import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
 import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
-import { checkboxField } from './ooui';
 import {
+  buildEditSummary,
   defined,
   findLastIndex,
   focusInput,
@@ -22,13 +22,17 @@ import {
   hideText,
   insertText,
   isInputFocused,
+  isPageOverlayOn,
   keyCombination,
   nativePromiseState,
   removeDoubleSpaces,
   removeFromArrayIfPresent,
   unhideText,
   unique,
+  wrap,
+  wrapDiffBody,
 } from './util';
+import { checkboxField } from './ooui';
 import {
   extractSignatures,
   generateTagsRegexp,
@@ -1015,7 +1019,7 @@ export default class CommentForm {
       classes: ['cd-button-ooui'],
       popup: {
         head: false,
-        $content: cd.util.wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
+        $content: wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
           tagName: 'div',
           targetBlank: true,
         }),
@@ -1532,16 +1536,14 @@ export default class CommentForm {
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
       if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
-          const $message = cd.util.wrap(cd.sParse('cf-reaction-mention-edit'), {
-            targetBlank: true,
-          });
+          const $message = wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true });
           this.showMessage($message, {
             type: 'notice',
             name: 'mentionEdit',
           });
         }
         if (this.omitSignatureCheckbox?.isSelected()) {
-          const $message = cd.util.wrap(cd.sParse('cf-reaction-mention-nosignature'), {
+          const $message = wrap(cd.sParse('cf-reaction-mention-nosignature'), {
             targetBlank: true,
           });
           this.showMessage($message, {
@@ -1875,7 +1877,7 @@ export default class CommentForm {
     if (isRaw) {
       appendable = htmlOrJquery;
     } else {
-      const $label = htmlOrJquery instanceof $ ? htmlOrJquery : cd.util.wrap(htmlOrJquery);
+      const $label = htmlOrJquery instanceof $ ? htmlOrJquery : wrap(htmlOrJquery);
       const classes = ['cd-message'];
       if (name) {
         classes.push(`cd-message-${name}`);
@@ -1941,7 +1943,7 @@ export default class CommentForm {
 
     if (cancel) {
       addNotification([
-        message instanceof $ ? message : cd.util.wrap(message),
+        message instanceof $ ? message : wrap(message),
         {
           type: 'error',
           autoHideSeconds: 'long',
@@ -2050,7 +2052,7 @@ export default class CommentForm {
             location.assign(editUrl);
           }
         };
-        message = cd.util.wrap(message, {
+        message = wrap(message, {
           callbacks: {
             'cd-message-reloadPage': async () => {
               if (await this.confirmClose()) {
@@ -2088,7 +2090,7 @@ export default class CommentForm {
           }
         }
 
-        message = cd.util.wrap(message);
+        message = wrap(message);
         message.find('.mw-parser-output').css('display', 'inline');
         logMessage = logMessage || [code, apiData];
         break;
@@ -2757,7 +2759,7 @@ export default class CommentForm {
     try {
       ({ html, parsedSummary } = await parseCode(commentCode, {
         title: this.targetPage.name,
-        summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
+        summary: buildEditSummary({ text: this.summaryInput.getValue() }),
       }));
     } catch (e) {
       if (e instanceof CdError) {
@@ -2884,7 +2886,7 @@ export default class CommentForm {
 
     let html = resp.compare?.body;
     if (html) {
-      html = cd.util.wrapDiffBody(html);
+      html = wrapDiffBody(html);
       const $label = $('<div>')
         .addClass('cd-previewArea-label')
         .text(cd.s('cf-block-viewchanges'));
@@ -3019,7 +3021,7 @@ export default class CommentForm {
     try {
       result = await this.targetPage.edit({
         text: newPageCode,
-        summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
+        summary: buildEditSummary({ text: this.summaryInput.getValue() }),
         baserevid: page.revisionId,
         starttimestamp: page.queryTimestamp,
         minor: this.minorCheckbox?.isSelected(),
@@ -3181,7 +3183,7 @@ export default class CommentForm {
    * @param {boolean} [confirmClose=true] Whether to confirm form close.
    */
   async cancel(confirmClose = true) {
-    if (cd.util.isPageOverlayOn() || this.isBeingSubmitted()) return;
+    if (isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !(await this.confirmClose())) {
       focusInput(this.commentInput);
@@ -3307,7 +3309,7 @@ export default class CommentForm {
       }
     }
 
-    this.autoSummary = cd.util.buildEditSummary({
+    this.autoSummary = buildEditSummary({
       text,
       section,
       optionalText,

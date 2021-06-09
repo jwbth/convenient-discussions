@@ -14,7 +14,18 @@ import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
-import util from './globalUtil';
+import {
+  buildEditSummary,
+  isPageOverlayOn,
+  isProbablyTalkPage,
+  mergeRegexps,
+  nativePromiseState,
+  skin$,
+  underlinesToSpaces,
+  unique,
+  wrap,
+  wrapDiffBody,
+} from './util';
 import {
   finishLoading,
   isPageLoading,
@@ -23,14 +34,6 @@ import {
   startLoading,
 } from './boot';
 import { getUserInfo } from './apiWrappers';
-import {
-  isProbablyTalkPage,
-  mergeRegexps,
-  nativePromiseState,
-  skin$,
-  underlinesToSpaces,
-  unique,
-} from './util';
 import { loadSiteData } from './siteData';
 import { parseCommentAnchor } from './timestamp';
 import { setVisits } from './options';
@@ -660,10 +663,14 @@ async function app() {
   cd.sParse = sParse;
   cd.sPlain = sPlain;
   cd.mws = mws;
-  cd.util = util;
 
-
-  /* Some utilities that we believe should be global for external use */
+  /**
+   * Some utilities that we believe should be global for external use.
+   *
+   * @namespace util
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.util = {};
 
   /**
    * @see module:timestamp.parseCommentAnchor
@@ -678,6 +685,34 @@ async function app() {
    * @memberof module:cd~convenientDiscussions.util
    */
   cd.util.setVisits = setVisits;
+
+  /**
+   * @see module:options.buildEditSummary
+   * @function buildEditSummary
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.buildEditSummary = buildEditSummary;
+
+  /**
+   * @see module:options.isPageOverlayOn
+   * @function isPageOverlayOn
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.isPageOverlayOn = isPageOverlayOn;
+
+  /**
+   * @see module:options.wrap
+   * @function wrap
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.wrap = wrap;
+
+  /**
+   * @see module:options.wrapDiffBody
+   * @function wrapDiffBody
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.wrapDiffBody = wrapDiffBody;
 
   cd.debug.init();
   cd.debug.startTimer('total time');
