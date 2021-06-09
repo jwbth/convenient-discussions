@@ -1240,7 +1240,7 @@ export async function copyLink(object, e) {
   let helpNotOnlyCd;
   if (isComment) {
     helpOnlyCd = cd.s('cld-help-onlycd');
-    helpNotOnlyCd (cd.sParse('cld-help-notonlycd'));
+    helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
   }
 
   const wikilinkField = copyActionField({
