@@ -371,7 +371,7 @@ export default class Comment extends CommentSkeleton {
 
       headerElement.appendChild(this.copyLinkButton.element);
       this.timestampElement = this.copyLinkButton.labelElement;
-      new LiveTimestamp(this.timestampElement, this.date);
+      new LiveTimestamp(this.timestampElement, this.date, true);
     }
 
     this.headerElement = headerElement;
@@ -652,7 +652,7 @@ export default class Comment extends CommentSkeleton {
       if (!cd.settings.reformatComments) {
         this.timestampElement.textContent = this.reformattedTimestamp;
         this.timestampElement.title = this.timestampTitle;
-        new LiveTimestamp(this.timestampElement, this.date);
+        new LiveTimestamp(this.timestampElement, this.date, true);
       }
     }
   }

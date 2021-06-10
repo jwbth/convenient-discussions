@@ -388,7 +388,7 @@ export default {
                 navPanel.updateTimestampsInRefreshButtonTooltip();
               };
             }
-            new LiveTimestamp(timestampSpan, comment.date, callback);
+            new LiveTimestamp(timestampSpan, comment.date, false, callback);
           }
 
           if (comment instanceof Comment) {

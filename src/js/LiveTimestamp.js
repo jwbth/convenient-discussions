@@ -20,7 +20,7 @@ let improvedTimestamps = [];
  * timestamps.
  */
 export default class LiveTimestamp {
-  constructor(element, date, callback) {
+  constructor(element, date, addTimezone, callback) {
     // TODO: remove after tested.
     if (!cd.g.liveTimestamps) {
       cd.g.liveTimestamps = [];
@@ -30,6 +30,7 @@ export default class LiveTimestamp {
     cd.debug.startTimer('setDateUpdateTimer');
     this.element = element;
     this.date = date;
+    this.addTimezone = addTimezone;
     this.callback = callback;
 
     if (cd.settings.timestampFormat === 'improved') {
@@ -83,7 +84,7 @@ export default class LiveTimestamp {
   }
 
   update() {
-    this.element.textContent = formatDate(this.date, true);
+    this.element.textContent = formatDate(this.date, this.addTimezone);
     if (this.callback) {
       this.callback();
     }
