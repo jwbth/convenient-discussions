@@ -750,9 +750,9 @@ function initOouiAndElementPrototypes() {
     framed: false,
     classes: [
       'cd-button-ooui',
+      'cd-button-expandNote',
       'cd-thread-button',
       'cd-thread-button-invisible',
-      'cd-thread-button-expandNote',
     ],
   }).$element.get(0);
 

@@ -574,29 +574,34 @@ export default class Thread {
         if (!comment.thread) return;
 
         const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
+        const lineWidth = 3;
 
         cd.debug.startTimer('threads getBoundingClientRect');
 
         const thread = comment.thread;
-        let lineLeft;
         let lineTop;
+        let lineLeft;
         let lineHeight;
         let rectTop;
         if (thread.isCollapsed) {
           rectTop = thread.expandNote.getBoundingClientRect();
           if (comment.level === 0 || thread.expandNote.parentNode.tagName === 'OL') {
-            const [leftMargin] = comment.getLayersMargins();
-            lineLeft = (window.scrollX + rectTop.left) - (leftMargin + 1) - lineSideMargin;
+            const [leftMargin, rightMargin] = comment.getLayersMargins();
             lineTop = window.scrollY + rectTop.top;
+            lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
+              (window.scrollX + rectTop.left) - (leftMargin + 1) - lineSideMargin :
+              (window.scrollX + rectTop.right) + (rightMargin + 1) - lineWidth - lineSideMargin;
           }
         } else {
           if (comment.level === 0) {
             cd.debug.startTimer('threads getBoundingClientRect 0');
             comment.getPositions();
             if (comment.positions) {
-              const [leftMargin] = comment.getLayersMargins();
-              lineLeft = comment.positions.left - (leftMargin + 1) - lineSideMargin;
+              const [leftMargin, rightMargin] = comment.getLayersMargins();
               lineTop = comment.positions.top;
+              lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
+                comment.positions.left - (leftMargin + 1) - lineSideMargin :
+                comment.positions.right + (rightMargin + 1) - lineWidth - lineSideMargin;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
@@ -612,13 +617,16 @@ export default class Thread {
             ) {
               comment.getPositions();
               if (comment.positions) {
-                const [leftMargin] = comment.getLayersMargins();
+                const [leftMargin, rightMargin] = comment.getLayersMargins();
                 lineTop = window.scrollY + rectTop.top;
-                lineLeft = (
-                  (window.scrollX + comment.positions.left) -
-                  (leftMargin + 1) -
-                  lineSideMargin
-                );
+                lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
+                  (window.scrollX + comment.positions.left) - (leftMargin + 1) - lineSideMargin :
+                  (
+                    (window.scrollX + comment.positions.right) +
+                    rightMargin -
+                    lineWidth -
+                    lineSideMargin
+                  );
               }
             }
             cd.debug.stopTimer('threads getBoundingClientRect other');
@@ -635,7 +643,7 @@ export default class Thread {
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (!rectTop && lineLeft === undefined)) {
+        if (!getVisibilityByRects(...rects) || (!rectTop && lineTop === undefined)) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = null;
@@ -647,9 +655,11 @@ export default class Thread {
           return false;
         }
 
-        if (lineLeft === undefined) {
-          lineLeft = (window.scrollX + rectTop.left) - lineSideMargin;
+        if (lineTop === undefined) {
           lineTop = window.scrollY + rectTop.top;
+          lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
+            (window.scrollX + rectTop.left) - lineSideMargin :
+            (window.scrollX + rectTop.right) - lineWidth - lineSideMargin;
           lineHeight = rectBottom.bottom - rectTop.top;
         } else {
           lineHeight = rectBottom.bottom - (lineTop - window.scrollY);
@@ -670,8 +680,8 @@ export default class Thread {
 
         cd.debug.startTimer('threads createElement');
 
-        thread.lineLeft = lineLeft;
         thread.lineTop = lineTop;
+        thread.lineLeft = lineLeft;
         thread.lineHeight = lineHeight;
 
         if (!thread.line) {

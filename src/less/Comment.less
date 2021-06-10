@@ -13,12 +13,6 @@
 }
 
 .cd-comment-button {
-  margin-left: 1em;
-
-  &:first-child {
-    margin-left: 0;
-  }
-
   &-label.cd-comment-button-label {
     color: #54595d;
     text-decoration: none;
@@ -43,6 +37,22 @@
     width: 16px;
     height: 16px;
     background-size: 16px 16px;
+  }
+}
+
+.sitedir-ltr .cd-comment-button {
+  margin-left: 1em;
+
+  &:first-child {
+    margin-left: 0;
+  }
+}
+
+.sitedir-rtl .cd-comment-button {
+  margin-right: 1em;
+
+  &:first-child {
+    margin-right: 0;
   }
 }
 
@@ -205,8 +215,12 @@ ol > li.cd-comment-part-last.cd-comment-part-last {
   position: relative;
 }
 
-.cd-beforeChangeMark {
+.sitedir-ltr .cd-beforeChangeMark {
   margin-right: 0.75em;
+}
+
+.sitedir-rtl .cd-beforeChangeMark {
+  margin-left: 0.75em;
 }
 
 .cd-changeMark {
@@ -216,5 +230,12 @@ ol > li.cd-comment-part-last.cd-comment-part-last {
 
 .cd-reformattedComments .cd-changeMark {
   font-size: 100%;
+}
+
+.sitedir-ltr .cd-reformattedComments .cd-changeMark {
   margin-left: 0.75em;
+}
+
+.sitedir-rtl .cd-reformattedComments .cd-changeMark {
+  margin-right: 0.75em;
 }

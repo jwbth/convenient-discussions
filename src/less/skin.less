@@ -61,16 +61,27 @@
     height: 35px;
   }
 
-  .cd-thread-button-expandNote.cd-thread-button-expandNote.cd-thread-button-expandNote > .oo-ui-buttonElement-button {
+  &.sitedir-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
     padding-left: 0;
 
     > .oo-ui-iconElement-icon {
-      min-width: unset;
-      min-height: unset;
-      width: 14px;
-      margin: 0;
       background-position: 1px 50%;
     }
+  }
+
+  &.sitedir-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+    padding-right: 0;
+
+    > .oo-ui-iconElement-icon {
+      background-position: 3px 50%;
+    }
+  }
+
+  .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
+    min-width: unset;
+    min-height: unset;
+    width: 14px;
+    margin: 0;
   }
 }
 
@@ -92,16 +103,6 @@
 
   .cd-pageNav {
     font-size: 13px;
-  }
-
-  // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
-  // surrounding area from the design point of view.
-  .sitedir-ltr .cd-comment-overlay-stretchedStart .cd-comment-overlay-line {
-    left: 0;
-  }
-
-  .sitedir-rtl .cd-comment-overlay-stretchedStart .cd-comment-overlay-line {
-    right: 0;
   }
 }
 
