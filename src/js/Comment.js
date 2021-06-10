@@ -842,14 +842,16 @@ export default class Comment extends CommentSkeleton {
       this.isEndStretched = false;
 
       if (this.level === 0) {
-        const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN;
-        const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN;
+        // 2 instead of 1 for Timeless
+        const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN - 2;
+        const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN + 2;
+
         this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          leftPosition <= cd.g.CONTENT_COLUMN_START + 1 :
-          rightPosition >= cd.g.CONTENT_COLUMN_START - 1;
+          leftPosition <= cd.g.CONTENT_COLUMN_START :
+          rightPosition >= cd.g.CONTENT_COLUMN_START;
         this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          rightPosition >= cd.g.CONTENT_COLUMN_END - 1 :
-          leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
+          rightPosition >= cd.g.CONTENT_COLUMN_END :
+          leftPosition <= cd.g.CONTENT_COLUMN_END;
       }
     }
 

@@ -193,6 +193,12 @@ export function setContentColumnGlobals(setCssVar) {
     cd.g.CONTENT_START_MARGIN = cd.g.CONTENT_FONT_SIZE;
   }
 
+  // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+  // surrounding area from the design point of view.
+  if (cd.g.SKIN === 'timeless') {
+    cd.g.CONTENT_START_MARGIN--;
+  }
+
   if (setCssVar) {
     $(document.documentElement).css('--cd-content-start-margin', cd.g.CONTENT_START_MARGIN + 'px');
   }
