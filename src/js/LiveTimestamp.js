@@ -33,12 +33,12 @@ export default class LiveTimestamp {
     this.callback = callback;
 
     if (cd.settings.timestampFormat === 'improved') {
+      if (!improvedTimestampsInitted) {
+        // Timestamps of the "improved" format are updated all together, on the border of days. So,
+        // we only need to initiate the timeouts once.
+        LiveTimestamp.initImproved();
+      }
       if (date > yesterdayStart) {
-        if (!improvedTimestampsInitted) {
-          // Timestamps of the "improved" format are updated all together, on the border of days. So,
-          // we only need to initiate the timeouts once.
-          LiveTimestamp.initImproved();
-        }
         improvedTimestamps.push(this);
       }
     } else if (cd.settings.timestampFormat === 'relative') {
