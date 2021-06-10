@@ -45,11 +45,7 @@ if (IS_SINGLE) {
     // Empty
   }
 
-  const replaceEntities = (s) => (
-    s
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&#32;/g, ' ')
-  );
+  const replaceEntities = require('../../misc/util').replaceEntitiesInI18n;
 
   cd.i18n = {};
   cd.i18n.en = require('../../i18n/en.json');

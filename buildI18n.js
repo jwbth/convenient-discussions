@@ -7,6 +7,8 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const rimraf = require('rimraf');
 
+const replaceEntities = require('./misc/util').replaceEntitiesInI18n;
+
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
@@ -181,9 +183,7 @@ module.exports = {
 
   // Create i18n files that combine translations with dayjs locales.
   for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
-    let jsonText = JSON.stringify(json, null, '\t')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&#32;/g, ' ');
+    let jsonText = replaceEntities(JSON.stringify(json, null, '\t'));
 
     let dateLocaleText;
     if (langsHavingDateLocale.includes(lang)) {
