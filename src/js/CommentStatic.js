@@ -404,12 +404,7 @@ export default {
       });
 
       if (parent instanceof Comment) {
-        // We can't use Comment#containerListType as it contains the type for the _first_
-        // (highlightable) element.
-        const parentListType = parent.$elements.last().cdGetContainerListType();
-
-        const [$wrappingItem] = parent
-          .createSublevelItem('newRepliesNote', 'bottom', parentListType);
+        const [$wrappingItem] = parent.createSublevelItem('newRepliesNote', 'bottom');
         $wrappingItem
           .addClass('cd-thread-button-container cd-thread-newRepliesNote')
           .append(button.$element);

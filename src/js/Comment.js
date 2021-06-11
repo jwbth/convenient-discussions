@@ -3168,7 +3168,7 @@ export default class Comment extends CommentSkeleton {
     return this.cachedUrl;
   }
 
-  createSublevelItem(name, position, parentListType) {
+  createSublevelItem(name, position) {
     /*
       There are 3 basic cases that we account for:
       1.
@@ -3204,22 +3204,43 @@ export default class Comment extends CommentSkeleton {
     let createList = true;
     let outerWrapperTag;
 
-    const $lastOfTarget = this.$elements.last();
-    let $nextToTarget = $lastOfTarget.next();
-    const $nextToTargetFirstChild = $nextToTarget.children().first();
-    if ($nextToTarget.is('dd, li') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
-      // A relatively rare case possible when two adjacent lists are merged, for example when
-      // replying to
-      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
-      $nextToTarget = $nextToTargetFirstChild;
+    let $lastOfTarget = this.$elements.last();
+
+    if (position === 'bottom') {
+      // The list can be broken, so we need to find the element before the last list of children of
+      // the comment.
+      const children = this.getChildren();
+      if (children.length) {
+        const lastChild = children[children.length - 1];
+        const $test = lastChild.$elements
+          .last()
+          .closest('.cd-commentLevel')
+          .prev();
+        if ($test.length) {
+          $lastOfTarget = $test;
+        }
+      }
     }
-    if ($nextToTarget.is('dl, ul')) {
+
+    let $anchor = $lastOfTarget.next();
+    const $anchorFirstChild = $anchor.children().first();
+    if ($anchor.is('dd, li') && $anchorFirstChild.hasClass('cd-commentLevel')) {
+      // A relatively rare case possible when two adjacent lists are merged with
+      // processPage~mergeAdjacentCommentLevels, for example when replying to
+      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
+      $anchor = $anchorFirstChild;
+    }
+    if ($anchor.is('dl, ul')) {
       createList = false;
-      wrappingItemTag = $nextToTarget.is('ul') ? 'li' : 'dd';
-      $nextToTarget.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
+      wrappingItemTag = $anchor.is('ul') ? 'li' : 'dd';
+      $anchor.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
     } else if ($lastOfTarget.is('li')) {
-      // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
-      // in those cases. Which is unsemantic, yes :-(
+      // We can't use Comment#containerListType as it contains the type for the _first_
+      // (highlightable) element.
+      const parentListType = $lastOfTarget.cdGetContainerListType();
+
+      // We need to avoid a number appearing next to the form in numbered lists, so we have <div> in
+      // those cases. Which is unsemantic, yes :-(
       outerWrapperTag = parentListType === 'ol' ? 'div' : 'li';
     } else if ($lastOfTarget.is('dd')) {
       outerWrapperTag = 'dd';
@@ -3256,9 +3277,9 @@ export default class Comment extends CommentSkeleton {
       $wrappingList.insertAfter($lastOfTarget);
     } else {
       if (position === 'top') {
-        $wrappingItem.prependTo($nextToTarget);
+        $wrappingItem.prependTo($anchor);
       } else {
-        const $last = $nextToTarget.children().last();
+        const $last = $anchor.children().last();
 
         // "Reply to section" button should always be the last.
         $wrappingItem[$last.hasClass('cd-replyWrapper') ? 'insertBefore' : 'insertAfter']($last);
