@@ -716,8 +716,8 @@ async function processComments(comments, currentComments, currentRevisionId) {
   const newComments = comments
     .filter((comment) => comment.anchor && !currentComments.some((mcc) => mcc.match === comment))
 
-    // Replace with comment objects detached from the comment objects in the comments object (so
-    // that the object isn't polluted when it is reused).
+    // Detach comments in the "newComments" object from those in the "comments" object (so that the
+    // last isn't polluted when it is reused).
     .map((comment) => {
       const newComment = Object.assign({}, comment);
       if (comment.parent) {
@@ -787,9 +787,9 @@ async function processComments(comments, currentComments, currentRevisionId) {
   updateChecker.updatePageTitle(newComments.length, areThereInteresting);
   toc.addNewComments(newCommentsBySection);
 
-  cd.debug.startTimer('addNewRepliesNote');
-  Comment.addNewRepliesNote(newComments);
-  cd.debug.stopTimer('addNewRepliesNote');
+  cd.debug.startTimer('addNewCommentsNotes');
+  Comment.addNewCommentsNotes(newComments);
+  cd.debug.stopTimer('addNewCommentsNotes');
 
   const commentsToNotifyAbout = interestingNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));

@@ -5,7 +5,6 @@
  */
 
 import Comment from './Comment';
-import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
 import {
@@ -18,6 +17,23 @@ import {
 } from './util';
 import { getPagesExistence } from './apiWrappers';
 import { reloadPage } from './boot';
+
+/**
+ * Add all comment's children, including indirect, into array, if they are in the array of new
+ * comments.
+ *
+ * @param {CommentSkeleton} child
+ * @param {CommentSkeleton[]} arr
+ * @param {number[]} newCommentIds
+ */
+function searchForNewCommentsInSubtree(child, arr, newCommentIds) {
+  if (newCommentIds.includes(child.id)) {
+    arr.push(child);
+  }
+  child.children.forEach((child) => {
+    searchForNewCommentsInSubtree(child, arr, newCommentIds);
+  });
+}
 
 export default {
   /**
@@ -321,20 +337,108 @@ export default {
   },
 
   /**
-   * Add new comments notifications to the threads.
+   * Add an individual new comments notification to a thread or section.
+   *
+   * @param {CommentSkeleton[]} comments
+   * @param {Comment|Section} parent
+   * @param {string} type
+   * @param {CommentSkeleton[]} newCommentIds
+   * @memberof module:Section
+   */
+  addNewCommentsNote(comments, parent, type, newCommentIds) {
+    if (!comments.length) return;
+
+    let commentsWithChildren;
+    if (parent instanceof Comment) {
+      commentsWithChildren = [];
+      comments.forEach((child) => {
+        searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIds);
+      });
+    } else {
+      commentsWithChildren = comments;
+    }
+
+    const authors = commentsWithChildren
+      .map((comment) => comment.author)
+      .filter(unique);
+    const genders = authors.map((author) => author.getGender());
+    let commonGender;
+    if (genders.every((gender) => gender === 'female')) {
+      commonGender = 'female';
+    } else if (genders.every((gender) => gender !== 'female')) {
+      commonGender = 'male';
+    } else {
+      commonGender = 'unknown';
+    }
+    const userList = authors.map((user) => user.name).join(', ');
+    const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
+    const button = new OO.ui.ButtonWidget({
+      label: cd.s(stringName, commentsWithChildren.length, authors.length, userList, commonGender),
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-thread-button'],
+    });
+    button.on('click', () => {
+      const commentAnchor = commentsWithChildren[0].anchor;
+      reloadPage({ commentAnchor });
+    });
+
+    if (parent instanceof Comment) {
+      const [$wrappingItem] = parent.createSublevelItem('newCommentsNote', 'bottom');
+      $wrappingItem
+        .addClass('cd-thread-button-container cd-thread-newCommentsNote')
+        .append(button.$element);
+
+      // Update collapsed range for the thread.
+      if (parent.thread?.isCollapsed) {
+        parent.thread.expand();
+        parent.thread.collapse();
+      }
+    } else if (type === 'thread' && parent.$replyWrapper) {
+      const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
+      $(`<${tagName}>`)
+        .addClass('cd-thread-button-container cd-thread-newCommentsNote')
+        .append(button.$element)
+        .insertBefore(parent.$replyWrapper);
+    } else {
+      let $last;
+      if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
+        $last = parent.$addSubsectionButtonContainer;
+      } else if (parent.$replyContainer) {
+        $last = parent.$replyContainer;
+      } else {
+        $last = $(parent.lastElementInFirstChunk);
+      }
+      button.$element
+        .removeClass('cd-thread-button')
+        .addClass('cd-section-button');
+      let $container;
+      if (type === 'section') {
+        $container = $('<div>').append(button.$element);
+      } else {
+        const $item = $('<dd>').append(button.$element);
+        $container = $('<dl>').append($item);
+      }
+      $container
+        .addClass('cd-section-button-container cd-thread-newCommentsNote')
+        .insertAfter($last);
+    }
+  },
+
+  /**
+   * Add new comments notifications to threads or sections.
    *
    * @param {Map} newComments
    * @memberof module:Section
    */
-  addNewRepliesNote(newComments) {
+  addNewCommentsNotes(newComments) {
     saveRelativeScrollPosition();
 
     cd.comments.forEach((comment) => {
-      comment.subitemList.remove('newRepliesNote');
+      comment.subitemList.remove('newCommentsNote');
     });
 
     // Section-level replies notes.
-    $('.cd-thread-newRepliesNote').remove();
+    $('.cd-thread-newCommentsNote').remove();
 
     const newCommentsByParent = new Map();
     newComments.forEach((comment) => {
@@ -342,11 +446,13 @@ export default {
       if (comment.parent) {
         key = comment.parentMatch;
       } else {
-        // If there is no section match, use the ancestors' section match.
+        // If there is no section match, use the ancestor sections' section match.
         for (let s = comment.section; s && !key; s = s.parent) {
           key = s.match;
         }
       }
+
+      // Indirect comment children and comments out of section
       if (!key) return;
 
       if (!newCommentsByParent.get(key)) {
@@ -355,110 +461,21 @@ export default {
       newCommentsByParent.get(key).push(comment);
     });
 
-    const walkThroughChildren = (child, arr) => {
-      arr.push(child);
-      child.children.forEach((child) => {
-        walkThroughChildren(child, arr);
-      });
-    };
-
-    const addNote = (comments, parent, type = 'thread') => {
-      if (!comments.length) return;
-
-      let commentsWithChildren = [];
-      comments.forEach((child) => {
-        walkThroughChildren(child, commentsWithChildren);
-      });
-
-      if (parent instanceof Section) {
-        commentsWithChildren = commentsWithChildren.filter(unique);
-      }
-
-      const authors = commentsWithChildren
-        .map((comment) => comment.author)
-        .filter(unique);
-      const genders = authors.map((author) => author.getGender());
-      let commonGender;
-      if (genders.every((gender) => gender === 'female')) {
-        commonGender = 'female';
-      } else if (genders.every((gender) => gender !== 'female')) {
-        commonGender = 'male';
-      } else {
-        commonGender = 'unknown';
-      }
-      const userList = authors.map((user) => user.name).join(', ');
-      const button = new OO.ui.ButtonWidget({
-        label: cd.s(
-          type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
-          commentsWithChildren.length,
-          authors.length,
-          userList,
-          commonGender
-        ),
-        framed: false,
-        classes: ['cd-button-ooui', 'cd-thread-button'],
-      });
-      button.on('click', () => {
-        const commentAnchor = commentsWithChildren[0].anchor;
-        reloadPage({ commentAnchor });
-      });
-
-      if (parent instanceof Comment) {
-        const [$wrappingItem] = parent.createSublevelItem('newRepliesNote', 'bottom');
-        $wrappingItem
-          .addClass('cd-thread-button-container cd-thread-newRepliesNote')
-          .append(button.$element);
-
-        // Update collapsed range for the thread
-        if (parent.thread?.isCollapsed) {
-          parent.thread.expand();
-          parent.thread.collapse();
-        }
-      } else if (type === 'thread' && parent.$replyWrapper) {
-        const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
-        $(`<${tagName}>`)
-          .addClass('cd-thread-button-container cd-thread-newRepliesNote')
-          .append(button.$element)
-          .insertBefore(parent.$replyWrapper);
-      } else {
-        let $last;
-        if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
-          $last = parent.$addSubsectionButtonContainer;
-        } else if (parent.$replyContainer) {
-          $last = parent.$replyContainer;
-        } else {
-          $last = $(parent.lastElementInFirstChunk);
-        }
-        button.$element
-          .removeClass('cd-thread-button')
-          .addClass('cd-section-button');
-        let $container;
-        if (type === 'section') {
-          $container = $('<div>').append(button.$element);
-        } else {
-          const $item = $('<dd>').append(button.$element);
-          $container = $('<dl>').append($item);
-        }
-        $container
-          .addClass('cd-section-button-container cd-thread-newRepliesNote')
-          .insertAfter($last);
-      }
-    };
-
+    const newCommentIds = newComments.map((c) => c.id);
     newCommentsByParent.forEach((comments, parent) => {
-      if (parent instanceof Section) {
-        // Add notes for level 0 comments and their children and the rest of comments separately.
-        const level0Comments = comments.filter((comment) => comment.logicalLevel === 0);
-        let level0CommentsWithChildren = [];
-        level0Comments.forEach((child) => {
-          walkThroughChildren(child, level0CommentsWithChildren);
-        });
-        const restOfComments = comments
-          .filter((comment) => !level0CommentsWithChildren.includes(comment));
-        addNote(restOfComments, parent);
-        addNote(level0CommentsWithChildren, parent, 'section');
+      if (parent instanceof Comment) {
+        Comment.addNewCommentsNote(comments, parent, 'thread', newCommentIds);
       } else {
-        addNote(comments, parent);
+        // Add notes for level 0 comments and their children and the rest of the comments (for
+        // example, level 1 comments without a parent and their children) separately.
+        const level0Comments = comments.filter((comment) => comment.logicalLevel === 0);
+        let sectionComments = [];
+        level0Comments.forEach((child) => {
+          searchForNewCommentsInSubtree(child, sectionComments, newCommentIds);
+        });
+        const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
+        Comment.addNewCommentsNote(sectionComments, parent, 'section', newCommentIds);
+        Comment.addNewCommentsNote(threadComments, parent, 'thread', newCommentIds);
       }
     });
 
