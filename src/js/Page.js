@@ -433,6 +433,7 @@ export default class Page {
       title: this.realName || this.name,
 
       action: 'edit',
+      notminor: !customOptions.minor,
       tags: cd.g.USER.isRegistered() ? cd.config.tagName : undefined,
       formatversion: 2,
     };
