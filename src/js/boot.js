@@ -11,6 +11,7 @@ import LiveTimestamp from './LiveTimestamp';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
+import commentLayers from './commentLayers';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
@@ -942,6 +943,9 @@ export async function reloadPage(passedData = {}) {
       comment.$animatedBackground.stop();
       comment.$marker.stop();
     });
+  if (passedData.isPageReloadedExternally) {
+    commentLayers.reset();
+  }
   LiveTimestamp.reset();
 
   // In case checkboxes were changed programmatically.
@@ -1003,6 +1007,20 @@ export async function reloadPage(passedData = {}) {
 
   if (!passedData.commentAnchor && !passedData.sectionAnchor) {
     restoreScrollPosition(false);
+  }
+}
+
+/**
+ * Handle firings of the hook `'wikipage.content'` (by using `mw.hook('wikipage.content').fire()`).
+ *
+ * @param {JQuery} $content
+ */
+export function handleHookFirings($content) {
+  if ($content.is('#mw-content-text')) {
+    const $root = $content.children('.mw-parser-output');
+    if ($root.length && !$root.data('cd-parsed')) {
+      reloadPage({ isPageReloadedExternally: true });
+    }
   }
 }
 
@@ -1159,9 +1177,15 @@ function restoreCommentFormsFromData(commentFormsData) {
 
 /**
  * Return saved comment forms to their places.
+ *
+ * @param {boolean} isPageReloadedExternally Is the page reloaded due to a `'wikipage.content`
+ *   firing.
  */
-export function restoreCommentForms() {
-  if (cd.g.isFirstRun) {
+export function restoreCommentForms(isPageReloadedExternally) {
+  if (cd.g.isFirstRun || isPageReloadedExternally) {
+    // This is needed when the page is reload externally.
+    cd.commentForms = [];
+
     const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
     saveToLocalStorage('commentForms', dataAllPages);
     const data = dataAllPages[mw.config.get('wgPageName')] || {};

@@ -26,7 +26,7 @@ import {
   handleWindowResize,
 } from './eventHandlers';
 import { confirmDialog, notFound } from './modal';
-import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
+import { finishLoading, handleHookFirings, init, restoreCommentForms, saveSession } from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getSettings, getVisits, getWatchedSections } from './options';
 import {
@@ -1069,7 +1069,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       // invisible during the comment forms restoration. Should be below the navPanel mount/reset
       // methods as it calls navPanel.updateCommentFormButton() which depends on the navigation
       // panel being mounted.
-      restoreCommentForms();
+      restoreCommentForms(passedData.isPageReloadedExternally);
 
       const uri = new mw.Uri();
       if (Number(uri.query.cdaddtopic)) {
@@ -1236,6 +1236,11 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
         .text(cd.s('footer-runcd'));
     }
+  }
+
+  cd.g.$root.data('cd-parsed', true);
+  if (cd.g.isPageFirstParsed) {
+    mw.hook('wikipage.content').add(handleHookFirings);
   }
 
   cd.g.isPageFirstParsed = false;
