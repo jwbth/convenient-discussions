@@ -2366,7 +2366,7 @@ export default class Comment extends CommentSkeleton {
 
       // Try to edit the first comment at
       // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
-      // to see a bug happening if we don't check for `this.isOpeningSection`.
+      // to see the bug happening if we don't check for `this.isOpeningSection`.
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     } else {
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
@@ -2397,8 +2397,8 @@ export default class Comment extends CommentSkeleton {
         });
 
       // This should be before the "this.level > 0" block to account for cases like
-      // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp
-      // doesn't catch the comment because of a new line inside a "syntaxhighlight" element).
+      // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
+      // doesn't catch the comment because of a newline inside the "syntaxhighlight" element).
       cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
         if (pattern.source[0] !== '^') {
           console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
@@ -2410,71 +2410,71 @@ export default class Comment extends CommentSkeleton {
           startIndex += match[0].length;
         }
       });
+    }
 
-      // Exclude the indentation characters and any foreign code before them from the comment code.
-      // Comments at the zero level sometimes start with ":" that is used to indent some side note.
-      // It shouldn't be considered an indentation character.
-      if (this.level > 0) {
-        const replaceIndentationChars = (s, before, chars, after = '') => {
-          if (typeof after === 'number') {
-            after = '';
+    // Exclude the indentation characters and any foreign code before them from the comment code.
+    // Comments at the zero level sometimes start with ":" that is used to indent some side note.
+    // It shouldn't be considered an indentation character.
+    if (this.level > 0) {
+      const replaceIndentationChars = (s, before, chars, after = '') => {
+        if (typeof after === 'number') {
+          after = '';
+        }
+        let remainder = '';
+        let adjustedChars = chars;
+        let startIndexShift = s.length;
+
+        // We could just throw an error here, but instead will try to fix the markup.
+        if (code.includes('\n') && adjustedChars.endsWith('#')) {
+          adjustedChars = adjustedChars.slice(0, -1);
+          originalIndentationChars = adjustedChars;
+
+          /*
+            We can have this structure:
+              : Comment. [signature]
+              :# Item 1.
+              :# Item 2.
+              :: End of the comment. [signature]
+
+            And we can have this:
+              : Comment. [signature]
+              ::# Item 1.
+              ::# Item 2.
+              :: End of the comment. [signature]
+
+            The first is incorrect, and we need to add additional indentation for that case.
+           */
+          if (adjustedChars.length < this.level) {
+            adjustedChars += ':';
           }
-          let remainder = '';
-          let adjustedChars = chars;
-          let startIndexShift = s.length;
+          startIndexShift -= 1 + after.length;
 
-          // We could just throw an error here, but instead will try to fix the markup.
-          if (code.includes('\n') && adjustedChars.endsWith('#')) {
-            adjustedChars = adjustedChars.slice(0, -1);
-            originalIndentationChars = adjustedChars;
+          remainder = '#' + after;
+        } else {
+          originalIndentationChars = chars;
+        }
 
-            /*
-              We can have this structure:
-                : Comment. [signature]
-                :# Item 1.
-                :# Item 2.
-                :: End of the comment. [signature]
+        indentationChars = adjustedChars;
+        lineStartIndex = startIndex + before.length;
+        startIndex += startIndexShift;
+        return remainder;
+      };
 
-              And we can have this:
-                : Comment. [signature]
-                ::# Item 1.
-                ::# Item 2.
-                :: End of the comment. [signature]
+      code = code.replace(
+        new RegExp(`^()${cd.config.indentationCharsPattern}`),
+        replaceIndentationChars
+      );
 
-              The first is incorrect, and we need to add additional indentation for that case.
-             */
-            if (adjustedChars.length < this.level) {
-              adjustedChars += ':';
-            }
-            startIndexShift -= 1 + after.length;
-
-            remainder = '#' + after;
-          } else {
-            originalIndentationChars = chars;
-          }
-
-          indentationChars = adjustedChars;
-          lineStartIndex = startIndex + before.length;
-          startIndex += startIndexShift;
-          return remainder;
-        };
-
+      // See the comment "Without the following code, the section introduction..." in Parser.js.
+      // Dangerous case:
+      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
+      // actually a mistake to put a signature at the first level, but if it was legit, only the
+      // last sentence should have been interpreted as the comment.
+      if (indentationChars === '') {
         code = code.replace(
-          new RegExp(`^()${cd.config.indentationCharsPattern}`),
+          new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
           replaceIndentationChars
         );
-
-        // See the comment "Without the following code, the section introduction..." in Parser.js.
-        // Dangerous case:
-        // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
-        // actually a mistake to put a signature at the first level, but if it was legit, only the
-        // last sentence should have been interpreted as the comment.
-        if (indentationChars === '') {
-          code = code.replace(
-            new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
-            replaceIndentationChars
-          );
-        }
       }
     }
 
