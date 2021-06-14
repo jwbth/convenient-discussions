@@ -3241,6 +3241,7 @@ export default class CommentForm {
     removeFromArrayIfPresent(cd.commentForms, this);
     saveSession();
     navPanel.updateCommentFormButton();
+    this.autocomplete.tribute?.menu?.remove();
   }
 
   /**
