@@ -329,7 +329,7 @@ export default class Page {
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
       page: this.realName || this.name,
 
-      prop: ['text', 'revid', 'categorieshtml', 'modules', 'jsconfigvars'],
+      prop: ['text', 'revid', 'modules', 'jsconfigvars'],
       formatversion: 2,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
