@@ -987,6 +987,7 @@ export async function reloadPage(passedData = {}) {
   passedData.unseenCommentAnchors = getUnseenCommentAnchors();
 
   passedData.html = parseData.text;
+  passedData.categoriesHtml = parseData.categorieshtml;
   mw.config.set({
     wgRevisionId: parseData.revid,
     wgCurRevisionId: parseData.revid,

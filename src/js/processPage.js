@@ -1247,6 +1247,12 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     }
   }
 
+  if (passedData.categoriesHtml) {
+    const $catlinks = $('#catlinks');
+    $catlinks.replaceWith(passedData.categoriesHtml);
+    mw.hook('wikipage.categories').fire($catlinks);
+  }
+
   cd.g.$root.data('cd-parsed', true);
   if (cd.g.isPageFirstParsed) {
     mw.hook('wikipage.content').add(handleHookFirings);
