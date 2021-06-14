@@ -44,7 +44,7 @@
   "comment-changed-refresh": "Refresh to see the changes",
   "comment-changed-diff": "Diff",
   "comment-changed-diff-error": "Couldn't render the diff.",
-  "comment-changed-diff-empty": "The diff is empty. Probably, the rendering of the comment has changed, but it wasn't edited.",
+  "comment-changed-diff-empty": "The diff is empty. It may be the case that the rendering of the comment has changed, but it wasn't edited.",
   "comment-changed-history": "Edit history",
   "comment-changedsince": "The comment has changed since your last visit.",
   "comment-changedsince-short": "Changed since your last visit",

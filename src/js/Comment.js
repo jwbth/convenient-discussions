@@ -3039,7 +3039,7 @@ export default class Comment extends CommentSkeleton {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !mw.config.get('wgIsRedirect'),
       formatversion: 2,
     }).catch(handleApiReject);
 
@@ -3083,7 +3083,7 @@ export default class Comment extends CommentSkeleton {
     });
 
     const body = compareResp?.compare?.body;
-    if (!body) {
+    if (body === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',
