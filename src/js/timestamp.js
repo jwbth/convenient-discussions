@@ -611,12 +611,11 @@ export function formatDateNative(date, timezone) {
  * Format a date in the "improved" format.
  *
  * @param {Date} date
- * @param {boolean} useUtc
  * @returns {string}
  */
-export function formatDateImproved(date, useUtc = false) {
+export function formatDateImproved(date) {
   cd.debug.startTimer('formatDateImproved');
-  const useLocalTime = cd.settings.useLocalTime && !useUtc;
+  const useLocalTime = cd.settings.useLocalTime;
 
   let day = useLocalTime ? date.getDate() : date.getUTCDate();
   let monthIdx = useLocalTime ? date.getMonth() : date.getUTCMonth();

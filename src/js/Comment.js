@@ -1696,9 +1696,9 @@ export default class Comment extends CommentSkeleton {
    * @returns {object}
    * @throws {CdError}
    */
-  async findAddingEdit() {
-    if (this.addingEdit) {
-      return this.addingEdit;
+  async findEditThatAdded() {
+    if (this.editThatAdded) {
+      return this.editThatAdded;
     }
 
     // Search for the edit in the range of 2 minutes before to 2 minutes later.
@@ -1796,9 +1796,9 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Cache a successful result.
-    this.addingEdit = bestMatch.revision;
+    this.editThatAdded = bestMatch.revision;
 
-    return this.addingEdit;
+    return this.editThatAdded;
   }
 
   /**
@@ -1808,7 +1808,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {string}
    */
   async getDiffLink(short) {
-    const edit = await this.findAddingEdit();
+    const edit = await this.findEditThatAdded();
     if (short) {
       return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
     } else {
@@ -1824,7 +1824,7 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   async generateDiffView() {
-    const edit = await this.findAddingEdit();
+    const edit = await this.findEditThatAdded();
     const diffLink = await this.getDiffLink();
     const $nextDiffLink = $('<a>')
       .addClass('cd-diffView-nextDiffLink')
@@ -1913,7 +1913,7 @@ export default class Comment extends CommentSkeleton {
     let edit;
     try {
       ([edit] = await Promise.all([
-        this.findAddingEdit(),
+        this.findEditThatAdded(),
         genderRequest,
         mw.loader.using('mediawiki.diff.styles'),
       ].filter(defined)));
@@ -2058,7 +2058,7 @@ export default class Comment extends CommentSkeleton {
       console.error('The Comment#inCode property should contain an object with the comment code data.');
       return;
     }
-    let { code, indentationChars, originalIndentationChars } = this.inCode;
+    let { code, originalIndentationChars } = this.inCode;
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));

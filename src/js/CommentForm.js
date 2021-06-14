@@ -1136,7 +1136,8 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$previewArea = $('<div>').addClass('cd-previewArea')
+    this.$previewArea = $('<div>').addClass('cd-previewArea');
+
     if (cd.settings.autopreview) {
       this.$previewArea
         .addClass('cd-previewArea-below')
@@ -2823,8 +2824,8 @@ export default class CommentForm {
     this.closeOperation(currentOperation);
 
     if (!isAuto) {
-      this.$previewArea
-        .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
+      const position = this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom';
+      this.$previewArea.cdScrollIntoView(position);
       focusInput(this.commentInput);
     }
   }
@@ -2906,8 +2907,8 @@ export default class CommentForm {
 
     this.closeOperation(currentOperation);
 
-    this.$previewArea
-      .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
+    const position = this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom';
+    this.$previewArea.cdScrollIntoView(position);
     focusInput(this.commentInput);
   }
 
@@ -3212,7 +3213,6 @@ export default class CommentForm {
     } else {
       this.$outermostElement.remove();
     }
-
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
@@ -3227,7 +3227,7 @@ export default class CommentForm {
   }
 
   /**
-   * Remove the references to the form and unload it from the session data thus making it not appear
+   * Remove all references to the form and unload it from the session data thus making it not appear
    * after a page reload.
    *
    * @private

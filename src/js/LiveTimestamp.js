@@ -108,14 +108,10 @@ export default class LiveTimestamp {
     const nextNextDayStart = new Date(date.getTime() + msInMin * 60 * 24 * 2);
 
     cd.debug.startTimer('reformatTimestamps setTimeout');
-    const ndsTimeout = setTimeout(
-      LiveTimestamp.updateImproved,
-      nextDayStart.getTime() - Date.now()
-    );
-    const nndsTimeout = setTimeout(
-      LiveTimestamp.updateImproved,
-      nextNextDayStart.getTime() - Date.now()
-    );
+    const ndsDelay = nextDayStart.getTime() - Date.now();
+    const ndsTimeout = setTimeout(LiveTimestamp.updateImproved, ndsDelay);
+    const nndsDelay = nextNextDayStart.getTime() - Date.now();
+    const nndsTimeout = setTimeout(LiveTimestamp.updateImproved, nndsDelay);
     updateTimeouts.push(ndsTimeout, nndsTimeout);
     cd.debug.stopTimer('reformatTimestamps setTimeout');
   }

@@ -860,7 +860,8 @@ function isShowLoadingOverlaySettingOff() {
 }
 
 /**
- * Set the loading overlay.
+ * Set the loading overlay and assign `true` to `convenientDiscussions.g.isFirstRun` and
+ * `convenientDiscussions.g.isPageBeingReloaded`.
  *
  * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
  */
@@ -980,6 +981,7 @@ export async function reloadPage(passedData = {}) {
     }
   }
 
+  // Detach comment forms to keep events.
   cd.commentForms.forEach((commentForm) => {
     commentForm.$outermostElement.detach();
   });

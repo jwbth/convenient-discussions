@@ -429,10 +429,11 @@ export default class Page {
    */
   async edit(customOptions) {
     const defaultOptions = {
+      action: 'edit',
+
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
       title: this.realName || this.name,
 
-      action: 'edit',
       notminor: !customOptions.minor,
       tags: cd.g.USER.isRegistered() ? cd.config.tagName : undefined,
       formatversion: 2,
