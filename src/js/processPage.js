@@ -10,7 +10,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
-import Parser, { getUserNameFromLink } from './Parser';
+import Parser, { processLink } from './Parser';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
@@ -595,7 +595,7 @@ function highlightMentions($content) {
       return (
         cd.g.USER_LINK_REGEXP.test(this.title) &&
         !this.closest(excludeSelector) &&
-        getUserNameFromLink(el) === cd.g.USER_NAME
+        processLink(this)?.userName === cd.g.USER_NAME
       );
     })
     .each((i, link) => {

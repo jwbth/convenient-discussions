@@ -18,7 +18,7 @@ let signatureEndingRegexp;
 let elementsToExclude;
 
 /**
- * Get the page name from a URL.
+ * Get a page name from a URL.
  *
  * @param {string} url
  * @returns {?string}
@@ -67,22 +67,24 @@ function getPageNameFromUrl(url) {
 }
 
 /**
- * @typedef {object} GetUserNameFromLinkReturn
- * @param {string} 0 User name.
- * @param {?string} Link type (`user`, `userTalk`).
+ * @typedef {object} ProcessLinkReturn
+ * @param {string} userName User name.
+ * @param {?string} linkType Link type (`user`, `userTalk`).
+ * @param {boolean} hasSlash Whether the page name has a slash.
  */
 
 /**
- * Get the user name from a link.
+ * Get a user name from a link, along with some other data about a page name.
  *
  * @param {Element} element
- * @returns {?GetUserNameFromLinkReturn}
+ * @returns {?ProcessLinkReturn}
  * @private
  */
-export function getUserNameFromLink(element) {
+export function processLink(element) {
   const href = element.getAttribute('href');
   let userName;
   let linkType = null;
+  let hasSlash = false;
   if (href) {
     const pageName = getPageNameFromUrl(href);
     if (!pageName) {
@@ -103,10 +105,17 @@ export function getUserNameFromLink(element) {
       }
     }
     if (userName) {
+      if (userName.includes('/')) {
+        hasSlash = true;
+      }
       userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
     }
   } else {
-    if (element.classList.contains('mw-selflink') && cd.g.NAMESPACE_NUMBER === 3) {
+    if (
+      element.classList.contains('mw-selflink') &&
+      cd.g.NAMESPACE_NUMBER === 3 &&
+      !cd.g.PAGE_NAME.includes('/')
+    ) {
       // Comments of users that have only the user talk page link in their signature on their talk
       // page.
       userName = cd.g.PAGE_TITLE;
@@ -114,7 +123,7 @@ export function getUserNameFromLink(element) {
       return null;
     }
   }
-  return [userName, linkType];
+  return { userName, linkType, hasSlash };
 }
 
 /**
@@ -309,53 +318,50 @@ export default class Parser {
           if (node.tagName) {
             if (node.classList.contains('cd-timestamp')) break;
             let hasAuthorLinks = false;
-            if (node.tagName === 'A') {
-              const [userName, linkType] = getUserNameFromLink(node) || [];
+
+            const processLinkData = ({ userName, linkType, hasSlash }, link) => {
               if (userName) {
+                // If we already have an author name and see a link to the author's subpage, most
+                // probably it's not a part of the signature but a part of the comment. Example:
+                // https://ru.wikipedia.org/?diff=112885854.
+                if (authorName && hasSlash) {
+                  return false;
+                }
+
                 if (!authorName) {
                   authorName = userName;
                 }
                 if (authorName === userName) {
                   if (linkType === 'user') {
-                    authorLink = node;
+                    authorLink = link;
                   } else if (linkType === 'userTalk') {
-                    authorTalkLink = node;
+                    authorTalkLink = link;
                   }
 
                   // That's not some other user link that is not a part of the signature.
                   hasAuthorLinks = true;
                 }
               }
+              return true;
+            }
+
+            if (node.tagName === 'A') {
+              const linkData = processLink(node) || [];
+              if (!processLinkData(linkData, node)) break;
             } else {
-              Array.from(node.getElementsByTagName('a'))
-                .reverse()
-                .some((link) => {
-                  cd.debug.startTimer('link external');
-                  // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
-                  if (link.classList.contains('external')) {
-                    cd.debug.stopTimer('link external');
-                    return false;
-                  }
+              const links = Array.from(node.getElementsByTagName('a')).reverse();
+              for (const link of links) {
+                cd.debug.startTimer('link external');
+                // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
+                if (link.classList.contains('external')) {
                   cd.debug.stopTimer('link external');
+                  continue;
+                }
+                cd.debug.stopTimer('link external');
 
-                  const [userName, linkType] = getUserNameFromLink(link) || [];
-                  if (userName) {
-                    if (!authorName) {
-                      authorName = userName;
-                    }
-                    if (authorName === userName) {
-                      if (linkType === 'user') {
-                        authorLink = link;
-                      } else if (linkType === 'userTalk') {
-                        authorTalkLink = link;
-                      }
-
-                      // That's not some other user link that is not a part of the signature.
-                      hasAuthorLinks = true;
-                      return true;
-                    }
-                  }
-                });
+                const linkData = processLink(link) || [];
+                if (!processLinkData(linkData, link)) break;
+              }
             }
 
             if (hasAuthorLinks) {
@@ -416,7 +422,7 @@ export default class Parser {
           // Only templates with no timestamp interest us.
           if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
             Array.from(element.getElementsByTagName('a')).some((link) => {
-              const [authorName, linkType] = getUserNameFromLink(link) || [];
+              const { userName: authorName, linkType } = processLink(link) || {};
               if (authorName) {
                 let authorLink;
                 let authorTalkLink;
