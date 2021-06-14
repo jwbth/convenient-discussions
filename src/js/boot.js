@@ -285,8 +285,8 @@ function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
   cd.g.PAGE = new Page(cd.g.PAGE_NAME);
-  cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
   cd.g.USER_GENDER = mw.user.options.get('gender');
+  cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
   cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
