@@ -222,22 +222,22 @@ export default class Parser {
         const text = node.textContent;
         const { date, match } = parseTimestamp(text) || {};
         if (date && !elementsToExclude.some((el) => el.contains(node))) {
-          return { node, date, match };
+          return { node, date, match, text };
         }
       })
       .filter(defined)
       .map((finding) => {
-        const { node, match, date } = finding;
+        const { node, match, date, text } = finding;
         const element = this.context.document.createElement('span');
         element.classList.add('cd-timestamp');
         const textNode = this.context.document.createTextNode(match[2]);
         element.appendChild(textNode);
-        const remainedText = node.textContent.slice(match.index + match[0].length);
+        const remainedText = node.textContent.slice(match.index + text.length);
         let afterNode;
         if (remainedText) {
           afterNode = this.context.document.createTextNode(remainedText);
         }
-        node.textContent = node.textContent.slice(0, match.index + match[1].length);
+        node.textContent = match[1];
         node.parentNode.insertBefore(element, node.nextSibling);
         if (afterNode) {
           node.parentNode.insertBefore(afterNode, element.nextSibling);
