@@ -559,6 +559,8 @@ function connectToAddTopicButtons() {
  * @private
  */
 function connectToCommentLinks($content) {
+  if (!$content.is('#mw-content-text, .cd-previewArea')) return;
+
   $content
     .find(`a[href^="#"]`)
     .filter(function () {
@@ -578,20 +580,25 @@ function connectToCommentLinks($content) {
  * @private
  */
 function highlightMentions($content) {
-  const contentElement = $content.get(0);
-  if (!contentElement) return;
+  if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
-  const selector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
+  const selector = $content.hasClass('cd-comment-part') ?
+    `a[title*=":${cd.g.USER_NAME}"]` :
+    `.cd-comment-part a[title*=":${cd.g.USER_NAME}"]`;
+  const excludeSelector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
     .join(', ');
-  Array.from(contentElement.querySelectorAll(`.cd-comment-part a[title*=":${cd.g.USER_NAME}"]`))
-    .filter((el) => (
-      cd.g.USER_LINK_REGEXP.test(el.title) &&
-      !el.closest(selector) &&
-      getUserNameFromLink(el) === cd.g.USER_NAME
-    ))
-    .forEach((link) => {
+  $content
+    .find(selector)
+    .filter(function () {
+      return (
+        cd.g.USER_LINK_REGEXP.test(this.title) &&
+        !this.closest(excludeSelector) &&
+        getUserNameFromLink(el) === cd.g.USER_NAME
+      );
+    })
+    .each((i, link) => {
       link.classList.add('cd-currentUserLink');
     });
 }
@@ -1148,13 +1155,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
       $(window).on('resize orientationchange', handleWindowResize);
 
+      // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
+      // content as opposed to "$('.cd-comment-author-wrapper')".
       mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
       if (cd.settings.reformatComments && cd.comments.length) {
         cd.debug.startTimer('parse user links');
-        // Should be above "mw.hook('wikipage.content').add" as the next such instruction will run
-        // with "$('.cd-comment-author-wrapper')" as $content.
+        // This could theoretically disrupt code that needs to process the whole page content, if it
+        // runs later than CD. But typically CD runs relatively late.
         mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
         cd.debug.stopTimer('parse user links');
       }
