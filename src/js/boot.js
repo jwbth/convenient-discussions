@@ -34,6 +34,7 @@ import {
   unhideText,
 } from './util';
 import {
+  confirmDialog,
   createWindowManager,
   editWatchedSections,
   rescueCommentFormsContent,
@@ -317,8 +318,8 @@ function initGlobals() {
   cd.g.dontHandleScroll = false;
   cd.g.isAutoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
-  cd.g.hasPageBeenReloaded = false;
   cd.g.isPageBeingReloaded = false;
+  cd.g.hasPageBeenReloaded = false;
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
@@ -904,14 +905,14 @@ export function startLoading(isReload = false) {
 }
 
 /**
- * Remove the loading overlay and reset `convenientDiscussions.g.isFirstRun` and
- * `convenientDiscussions.g.isPageBeingReloaded`.
+ * Remove the loading overlay and update some state properties of the global object.
  *
- * @param {boolean} hidePopupOnly
+ * @param {boolean} [updatePageState=true] Update the state properties of the global object.
  */
-export function finishLoading(hidePopupOnly) {
-  if (!hidePopupOnly) {
+export function finishLoading(updatePageState = true) {
+  if (updatePageState) {
     cd.g.isFirstRun = false;
+    cd.g.isPageFirstParsed = false;
     cd.g.isPageBeingReloaded = false;
   }
 
@@ -1300,4 +1301,72 @@ export function closeNotifications(smooth = true) {
     data.notification.close();
   });
   notificationsData = [];
+}
+
+/**
+ * Ask the user if they want to receive desktop notifications on first run and ask for a permission
+ * if it is default but the user has desktop notifications enabled (for example, if he/she is using
+ * a browser different from where he/she has previously used).
+ *
+ * @private
+ */
+export async function confirmDesktopNotifications() {
+  if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
+    // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
+    getSettings({ reuse: true }).then((settings) => {
+      if (settings.desktopNotifications === 'unknown') {
+        const actions = [
+          {
+            label: cd.s('dn-confirm-yes'),
+            action: 'accept',
+            flags: 'primary',
+          },
+          {
+            label: cd.s('dn-confirm-no'),
+            action: 'reject',
+          },
+        ];
+        confirmDialog(cd.s('dn-confirm'), {
+          size: 'medium',
+          actions,
+        }).then((action) => {
+          let promise;
+          if (action === 'accept') {
+            if (Notification.permission === 'default') {
+              OO.ui.alert(cd.s('dn-grantpermission'));
+              Notification.requestPermission((permission) => {
+                if (permission === 'granted') {
+                  cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
+                  promise = setSettings(settings);
+                } else if (permission === 'denied') {
+                  cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
+                  promise = setSettings(settings);
+                }
+              });
+            } else if (Notification.permission === 'granted') {
+              cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
+              promise = setSettings(settings);
+            }
+          } else if (action === 'reject') {
+            cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
+            promise = setSettings(settings);
+          }
+          if (promise) {
+            promise.catch((e) => {
+              mw.notify(cd.s('error-settings-save'), { type: 'error' })
+              console.warn(e);
+            });
+          }
+        });
+      }
+    });
+  }
+
+  if (
+    !['unknown', 'none'].includes(cd.settings.desktopNotifications) &&
+    Notification.permission === 'default'
+  ) {
+    await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
+    Notification.requestPermission();
+  }
 }

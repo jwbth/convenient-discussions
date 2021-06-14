@@ -419,7 +419,7 @@ async function go() {
       // request was aborted"
       setTimeout(() => {
         if (isPageLoading()) {
-          finishLoading(true);
+          finishLoading(false);
           console.warn('The loading overlay stays for more than 10 seconds; removing it.');
         }
       }, 10000);

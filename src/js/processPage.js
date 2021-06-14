@@ -25,17 +25,23 @@ import {
   handleScroll,
   handleWindowResize,
 } from './eventHandlers';
-import { confirmDialog, notFound } from './modal';
-import { finishLoading, handleHookFirings, init, restoreCommentForms, saveSession } from './boot';
+import {
+  confirmDesktopNotifications,
+  finishLoading,
+  handleHookFirings,
+  init,
+  restoreCommentForms,
+  saveSession,
+} from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getSettings, getVisits, getWatchedSections } from './options';
+import { getVisits, getWatchedSections, setVisits } from './options';
+import { notFound } from './modal';
 import {
   replaceAnchorElement,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
   wrap,
 } from './util';
-import { setSettings, setVisits } from './options';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
@@ -604,7 +610,7 @@ function highlightMentions($content) {
 }
 
 /**
- * Perform fragment-related tasks, as well as comment anchor-related ones.
+ * Perform URL fragment-related tasks, as well as comment or section anchor-related ones.
  *
  * @param {object} passedData
  * @private
@@ -772,74 +778,6 @@ async function processVisits(visitsRequest, passedData) {
    * @type {module:cd~convenientDiscussions}
    */
   mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
-}
-
-/**
- * Ask the user if they want to receive desktop notifications on first run and ask for a permission
- * if it is default but the user has desktop notifications enabled (for example, if he/she is using
- * a browser different from where he/she has previously used).
- *
- * @private
- */
-async function confirmDesktopNotifications() {
-  if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
-    // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
-    getSettings({ reuse: true }).then((settings) => {
-      if (settings.desktopNotifications === 'unknown') {
-        const actions = [
-          {
-            label: cd.s('dn-confirm-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('dn-confirm-no'),
-            action: 'reject',
-          },
-        ];
-        confirmDialog(cd.s('dn-confirm'), {
-          size: 'medium',
-          actions,
-        }).then((action) => {
-          let promise;
-          if (action === 'accept') {
-            if (Notification.permission === 'default') {
-              OO.ui.alert(cd.s('dn-grantpermission'));
-              Notification.requestPermission((permission) => {
-                if (permission === 'granted') {
-                  cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-                  promise = setSettings(settings);
-                } else if (permission === 'denied') {
-                  cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-                  promise = setSettings(settings);
-                }
-              });
-            } else if (Notification.permission === 'granted') {
-              cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-              promise = setSettings(settings);
-            }
-          } else if (action === 'reject') {
-            cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-            promise = setSettings(settings);
-          }
-          if (promise) {
-            promise.catch((e) => {
-              mw.notify(cd.s('error-settings-save'), { type: 'error' })
-              console.warn(e);
-            });
-          }
-        });
-      }
-    });
-  }
-
-  if (
-    !['unknown', 'none'].includes(cd.settings.desktopNotifications) &&
-    Notification.permission === 'default'
-  ) {
-    await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
-    Notification.requestPermission();
-  }
 }
 
 /**
@@ -1198,14 +1136,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       pageNav.update();
     }
 
-    if (cd.g.isFirstRun) {
-      confirmDesktopNotifications();
-
-      if (mw.user.options.get('discussiontools-betaenable')) {
-        mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
-      }
-    }
-
     if (isPageCommentable) {
       $(document).on('keydown', handleGlobalKeyDown);
     }
@@ -1229,6 +1159,11 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
+    cd.g.$root.data('cd-parsed', true);
+    if (cd.g.isPageFirstParsed) {
+      mw.hook('wikipage.content').add(handleHookFirings);
+    }
+
     finishLoading();
 
     // The next line is needed to calculate the rendering time: it won't run until everything gets
@@ -1236,9 +1171,19 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.g.rootElement.getBoundingClientRect();
 
     cd.debug.stopTimer('final code and rendering');
+
+    if (cd.g.isFirstRun) {
+      await confirmDesktopNotifications();
+
+      if (mw.user.options.get('discussiontools-betaenable')) {
+        mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
+      }
+    }
   } else {
     cd.g.isPageActive = false;
+
     finishLoading();
+
     const $disableLink = $('#footer-places-togglecd a');
     if ($disableLink.length) {
       $disableLink
@@ -1246,13 +1191,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         .text(cd.s('footer-runcd'));
     }
   }
-
-  cd.g.$root.data('cd-parsed', true);
-  if (cd.g.isPageFirstParsed) {
-    mw.hook('wikipage.content').add(handleHookFirings);
-  }
-
-  cd.g.isPageFirstParsed = false;
 
   cd.debug.stopTimer('total time');
   debugLog();
