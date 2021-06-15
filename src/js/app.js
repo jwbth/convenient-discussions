@@ -60,7 +60,8 @@ if (IS_SINGLE) {
       .forEach((name) => {
         langObj[name] = replaceEntities(langObj[name]);
       });
-    langObj.dateLocale = require(`dayjs/locale/${LANG_CODE}`);
+    langObj.dayjsLocale = require(`dayjs/locale/${LANG_CODE}`);
+    langObj.dateFnsLocale = require(`date-fns/locale`)[LANG_CODE];
   }
 }
 

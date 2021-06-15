@@ -39,6 +39,9 @@ const ALLOWED_TAGS = [
   'var',
 ];
 
+const DAYJS_LOCALES_TEMP_DIR_NAME = 'dayjs-locales-temp';
+const DATE_FNS_LOCALES_TEMP_DIR_NAME = 'date-fns-locales-temp';
+
 function hideText(text, regexp, hidden) {
   return text.replace(regexp, (s) => '\x01' + hidden.push(s) + '\x02');
 }
@@ -49,6 +52,124 @@ function unhideText(text, hidden) {
   }
 
   return text;
+}
+
+function buildDayjsLocales() {
+  // Create a temporary folder.
+  fs.mkdirSync(DAYJS_LOCALES_TEMP_DIR_NAME, { recursive: true });
+
+  // Add temporary language files to that folder that import respective locales if they exist.
+  const locales = require('dayjs/locale').map((locale) => locale.key);
+  const langsHavingLocale = [];
+  Object.keys(i18nWithFallbacks).forEach((lang) => {
+    const localLangName = lang
+      .replace(/^zh-hans$/, 'zh-cn')
+      .replace(/^zh-hant$/, 'zh-tw');
+
+    // The English locale is built-in.
+    if (lang !== 'en' && locales.includes(localLangName)) {
+      langsHavingLocale.push(lang);
+      let text = `import dayjsLocale from 'dayjs/locale/${localLangName}';
+convenientDiscussions.i18n['${lang}'].dayjsLocale = dayjsLocale;
+`;
+      fs.writeFileSync(`${DAYJS_LOCALES_TEMP_DIR_NAME}/${lang}.js`, text);
+    }
+  });
+
+  // Build the locales.
+  if (langsHavingLocale.length) {
+    const webpackConfig = `const fs = require('fs');
+const path = require('path');
+
+const entry = {};
+fs.readdirSync('./${DAYJS_LOCALES_TEMP_DIR_NAME}')
+  .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
+  .forEach((name) => {
+    entry[name.slice(0, -3)] = './' + name;
+  });
+
+module.exports = {
+  mode: 'production',
+  context: path.resolve(__dirname, '.'),
+  entry,
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+  },
+};
+`;
+    fs.writeFileSync(`${DAYJS_LOCALES_TEMP_DIR_NAME}/webpack.config.js`, webpackConfig);
+    execSync(`node ./node_modules/webpack/bin/webpack --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/webpack.config.js"`);
+  }
+
+  return langsHavingLocale;
+}
+
+function buildDateFnsLocales() {
+  // Create a temporary folder.
+  fs.mkdirSync(DATE_FNS_LOCALES_TEMP_DIR_NAME, { recursive: true });
+
+  const langNames = {};
+  Object.keys(i18nWithFallbacks).forEach((lang) => {
+    langNames[lang] = {};
+    const names = langNames[lang];
+    names.dirName = lang
+      .replace(/^zh-hans$/, 'zh-cn')
+      .replace(/^zh-hant$/, 'zh-tw')
+      .replace(/-.+$/, (s) => s.toUpperCase());
+    names.localeName = names.dirName.replace(/-/g, '');
+  });
+
+  for (let [, names] of Object.entries(langNames)) {
+    if (fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)) {
+      // We only need data for the formatDistance function.
+      let indexJsText = fs.readFileSync(`node_modules/date-fns/esm/locale/${names.dirName}/index.js`)
+        .toString();
+      indexJsText = indexJsText.replace(/\n\s+formatLong:[^}]+\}/g, '');
+      fs.writeFileSync(`node_modules/date-fns/esm/locale/${names.dirName}/index.js`, indexJsText);
+    }
+  }
+
+  // Add temporary language files to the temporary folder that import respective locales if they
+  // exist.
+  const locales = require('date-fns/locale');
+  const langsHavingLocale = [];
+  for (let [lang, names] of Object.entries(langNames)) {
+    // The English locale is built-in.
+    if (lang !== 'en' && locales[names.localeName]) {
+      langsHavingLocale.push(lang);
+      const text = `import { ${names.localeName} } from 'date-fns/locale';
+convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${names.localeName};
+`;
+      fs.writeFileSync(`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/${lang}.js`, text);
+    }
+  }
+
+  // Build the locales.
+  if (langsHavingLocale.length) {
+    const webpackConfig = `const fs = require('fs');
+const path = require('path');
+
+const entry = {};
+fs.readdirSync('./${DATE_FNS_LOCALES_TEMP_DIR_NAME}')
+  .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
+  .forEach((name) => {
+    entry[name.slice(0, -3)] = './' + name;
+  });
+
+module.exports = {
+  mode: 'production',
+  context: path.resolve(__dirname, '.'),
+  entry,
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+  },
+};
+`;
+    fs.writeFileSync(`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/webpack.config.js`, webpackConfig);
+    execSync(`node ./node_modules/webpack/bin/webpack --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/webpack.config.js"`);
+  }
+
+  return langsHavingLocale;
 }
 
 DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
@@ -134,61 +255,12 @@ if (Object.keys(i18n).length) {
     }
   });
 
-  // Create a temporary folder.
-  const dateLocalesTempDirName = 'date-locales-temp';
-  fs.mkdirSync(dateLocalesTempDirName, { recursive: true });
-
-  // Add temporary language files to that folder that import respective locales if they exist.
-  const dateLocales = require('dayjs/locale').map((locale) => locale.key);
-  const langsHavingDateLocale = [];
-  Object.keys(i18nWithFallbacks).forEach((lang) => {
-    const langDateLocaleName = lang
-      .replace(/^zh-hans$/, 'zh-cn')
-      .replace(/^zh-hant$/, 'zh-tw');
-
-    // The English locale is built-in.
-    if (lang !== 'en' && dateLocales.includes(langDateLocaleName)) {
-      langsHavingDateLocale.push(lang);
-      let text = `import dateLocale from 'dayjs/locale/${langDateLocaleName}';
-convenientDiscussions.i18n['${lang}'].dateLocale = dateLocale;
-`;
-      fs.writeFileSync(`${dateLocalesTempDirName}/${lang}.js`, text);
-    }
-  });
-
-  // Build the locales.
-  if (langsHavingDateLocale.length) {
-    const webpackConfig = `const fs = require('fs');
-const path = require('path');
-
-const entry = {};
-fs.readdirSync('./${dateLocalesTempDirName}')
-  .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
-  .forEach((name) => {
-    entry[name.slice(0, -3)] = './' + name;
-  });
-
-module.exports = {
-  mode: 'production',
-  context: path.resolve(__dirname, '.'),
-  entry,
-  output: {
-    path: path.resolve(__dirname, 'dist'),
-  },
-};
-`;
-    fs.writeFileSync(`${dateLocalesTempDirName}/webpack.config.js`, webpackConfig);
-    execSync(`node ./node_modules/webpack/bin/webpack --config "${dateLocalesTempDirName}/webpack.config.js"`);
-  }
+  const langsHavingDayjsLocale = buildDayjsLocales();
+  const langsHavingDateFnsLocale = buildDateFnsLocales();
 
   // Create i18n files that combine translations with dayjs locales.
   for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
     let jsonText = replaceEntities(JSON.stringify(json, null, '\t'));
-
-    let dateLocaleText;
-    if (langsHavingDateLocale.includes(lang)) {
-      dateLocaleText = fs.readFileSync(`./${dateLocalesTempDirName}/dist/${lang}.js`).toString();
-    }
 
     if (lang === 'en') {
       // Prevent creating "</nowiki>" character sequences when building the main script file.
@@ -199,17 +271,33 @@ module.exports = {
 convenientDiscussions.i18n = convenientDiscussions.i18n || {};
 convenientDiscussions.i18n['${lang}'] = ${jsonText};
 `;
-    if (dateLocaleText) {
+
+    let dayjsLocaleText;
+    if (langsHavingDayjsLocale.includes(lang)) {
+      dayjsLocaleText = fs.readFileSync(`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`)
+        .toString();
       text += `
-// This assigns a day.js locale object to \`convenientDiscussions.i18n['${lang}'].dateLocale\`.
-${dateLocaleText}
+// This assigns a day.js locale object to \`convenientDiscussions.i18n['${lang}'].dayjsLocale\`.
+${dayjsLocaleText}
 `;
     }
+
+    let dateFnsLocaleText;
+    if (langsHavingDateFnsLocale.includes(lang)) {
+      dateFnsLocaleText = fs.readFileSync(`./${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`)
+        .toString();
+      text += `
+// This assigns a date-fns locale object to \`convenientDiscussions.i18n['${lang}'].dateFnsLocale\`.
+${dateFnsLocaleText}
+`;
+    }
+
     fs.mkdirSync('dist/convenientDiscussions-i18n', { recursive: true });
     fs.writeFileSync(`dist/convenientDiscussions-i18n/${lang}.js`, text);
   }
 
-  rimraf.sync(dateLocalesTempDirName);
+  rimraf.sync(DAYJS_LOCALES_TEMP_DIR_NAME);
+  rimraf.sync(DATE_FNS_LOCALES_TEMP_DIR_NAME);
 }
 
 const i18nListText = JSON.stringify(Object.keys(i18n), null, '\t') + '\n';

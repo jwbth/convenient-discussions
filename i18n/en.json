@@ -37,6 +37,7 @@
   "comment-timestamp-yesterday": "[Yesterday], h:mm A",
   "comment-timestamp-currentyear": "D MMMM, h:mm A",
   "comment-timestamp-other": "D MMMM YYYY, h:mm A",
+  "comment-timestamp-lessthanminute": "less than a minute ago",
   "comment-author-talk": "talk",
   "comment-author-contribs": "contribs",
   "comment-changed": "The comment has changed.",

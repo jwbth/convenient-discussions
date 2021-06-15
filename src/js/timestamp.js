@@ -10,9 +10,9 @@
  */
 
 import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
+import { formatDistanceToNowStrict } from 'date-fns';
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
@@ -73,32 +73,15 @@ export const relativeTimeThresholds = [
  * Prepare `dayjs` object for further use (add plugins and a locale).
  */
 export function initDayjs() {
-  const locale = cd.i18n[cd.g.USER_LANGUAGE].dateLocale;
+  const locale = cd.i18n[cd.g.USER_LANGUAGE].dayjsLocale;
   if (locale) {
     dayjs.locale(locale);
   }
 
-  const relativeTimeConfig = {
-    thresholds: [
-      { l: 's', r: 59, d: 'second' },
-      { l: 'm', r: 1 },
-      { l: 'mm', r: 59, d: 'minute' },
-      { l: 'h', r: 1 },
-      { l: 'hh', r: 23, d: 'hour' },
-      { l: 'd', r: 1 },
-      { l: 'dd', r: 29, d: 'day' },
-      { l: 'M', r: 1 },
-      { l: 'MM', r: 11, d: 'month' },
-      { l: 'y' },
-      { l: 'yy', d: 'year' },
-    ],
-    rounding: Math.floor,
-  };
-  dayjs.extend(relativeTime, relativeTimeConfig);
-
   dayjs.extend(utc);
   dayjs.extend(timezone);
 
+  // TODO: remove after testing.
   cd.g.dayjs = dayjs;
 }
 
@@ -652,7 +635,21 @@ export function formatDateImproved(date) {
  * @returns {string}
  */
 export function formatDateRelative(date) {
-  return dayjs(date).fromNow();
+  if (date.getTime() > Date.now() - cd.g.MILLISECONDS_IN_MINUTE) {
+    return cd.s('comment-timestamp-lessthanminute');
+  }
+
+  // We have relative dates rounded down (1 hour 59 minutes rounded to 1 hour, not 2 hours), as is
+  // the standard across the web, judging by Facebook, YouTube, Twitter, and also Google's guideline
+  // on date formats: https://material.io/design/communication/data-formats.html. We also use
+  // date-fns here as its locales always have strings with numbers ("1 day ago", not "a day ago"),
+  // which, IMHO, are more likely to be perceived as "something in between 24 hours and 48 hours",
+  // not "something around 24 hours" (jwbth).
+  return formatDistanceToNowStrict(date, {
+    addSuffix: true,
+    roundingMethod: 'floor',
+    locale: cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale,
+  });
 }
 
 /**
