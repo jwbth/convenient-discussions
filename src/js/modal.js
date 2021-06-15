@@ -502,20 +502,10 @@ export async function settingsDialog() {
     const threeDaysAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24 * 3.3);
 
     const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
-    let exampleImproved1;
-    let exampleImproved2;
-    let exampleRelative1;
-    let exampleRelative2;
-    const isLocalePresent = (
-      Boolean(cd.i18n[cd.g.USER_LANGUAGE].dateLocale) ||
-      cd.g.USER_LANGUAGE === 'en'
-    );
-    if (isLocalePresent) {
-      exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
-      exampleImproved2 = formatDateImproved(threeDaysAgo);
-      exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
-      exampleRelative2 = formatDateRelative(threeDaysAgo);
-    }
+    const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
+    const exampleImproved2 = formatDateImproved(threeDaysAgo);
+    const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
+    const exampleRelative2 = formatDateRelative(threeDaysAgo);
 
     [
       this.timestampFormatField,
@@ -530,15 +520,11 @@ export async function settingsDialog() {
           data: 'default',
         },
         {
-          label: isLocalePresent ?
-            cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2) :
-            cd.s('sd-timestampformat-radio-improved-notavailable'),
+          label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
           data: 'improved',
         },
         {
-          label: isLocalePresent ?
-            cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2) :
-            cd.s('sd-timestampformat-radio-relative-notavailable'),
+          label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
           data: 'relative',
         },
       ],
