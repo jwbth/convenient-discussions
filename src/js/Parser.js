@@ -68,9 +68,8 @@ function getPageNameFromUrl(url) {
 
 /**
  * @typedef {object} ProcessLinkReturn
- * @param {string} userName User name.
- * @param {?string} linkType Link type (`user`, `userTalk`).
- * @param {boolean} hasSlash Whether the page name has a slash.
+ * @param {string} 1 User name.
+ * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`).
  */
 
 /**
@@ -84,7 +83,6 @@ export function processLink(element) {
   const href = element.getAttribute('href');
   let userName;
   let linkType = null;
-  let hasSlash = false;
   if (href) {
     const pageName = getPageNameFromUrl(href);
     if (!pageName) {
@@ -97,17 +95,22 @@ export function processLink(element) {
         linkType = 'user';
       } else if (cd.g.USER_TALK_LINK_REGEXP.test(pageName)) {
         linkType = 'userTalk';
+      } else if (cd.g.USER_SUBPAGE_LINK_REGEXP.test(pageName)) {
+        linkType = 'userSubpage';
+      } else if (cd.g.USER_TALK_SUBPAGE_LINK_REGEXP.test(pageName)) {
+        linkType = 'userTalkSubpage';
       }
+
+      // Another alternative is a user link to another site where a prefix is specified before a
+      // namespace. Enough to capture a user name from, not enough to make any inferences.
     } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
       userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
       if (cd.g.IS_IPv6_ADDRESS(userName)) {
         userName = userName.toUpperCase();
       }
+      linkType = 'contribs';
     }
     if (userName) {
-      if (userName.includes('/')) {
-        hasSlash = true;
-      }
       userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
     }
   } else {
@@ -123,7 +126,7 @@ export function processLink(element) {
       return null;
     }
   }
-  return { userName, linkType, hasSlash };
+  return [userName, linkType];
 }
 
 /**
@@ -299,6 +302,10 @@ export default class Parser {
         let authorName;
         let authorLink;
         let authorTalkLink;
+
+        // Used only to make sure there are no two contribs links in a signature.
+        let authorContribsLink;
+
         let length = 0;
         let firstSignatureElement;
         let signatureNodes = [];
@@ -319,27 +326,43 @@ export default class Parser {
             if (node.classList.contains('cd-timestamp')) break;
             let hasAuthorLinks = false;
 
-            const processLinkData = ({ userName, linkType, hasSlash }, link) => {
+            const processLinkData = ([userName, linkType], link) => {
               if (userName) {
-                // If we already have an author name and see a link to the author's subpage, most
-                // probably it's not a part of the signature but a part of the comment. Example:
-                // https://ru.wikipedia.org/?diff=112885854.
-                if (authorName && hasSlash) {
-                  return false;
-                }
-
                 if (!authorName) {
                   authorName = userName;
                 }
                 if (authorName === userName) {
                   if (linkType === 'user') {
+                    if (authorLink) {
+                      return false;
+                    }
                     authorLink = link;
                   } else if (linkType === 'userTalk') {
+                    if (authorTalkLink) {
+                      return false;
+                    }
                     authorTalkLink = link;
+                  } else if (linkType === 'contribs') {
+                    if (authorContribsLink) {
+                      return false;
+                    }
+                    authorContribsLink = link;
+                  } else if (linkType === 'userSubpage') {
+                    // A user subpage link after a user link - OK. A user subpage link before a user
+                    // link - not OK. Perhaps part of the comment.
+                    if (authorLink) {
+                      return false;
+                    }
+                  } else if (linkType === 'userTalkSubpage') {
+                    // Same as with a user page above.
+                    if (authorTalkLink) {
+                      return false;
+                    }
                   }
-
-                  // That's not some other user link that is not a part of the signature.
                   hasAuthorLinks = true;
+                } else {
+                  // Don't return false here in case the user mentioned a redirect to their user
+                  // page here.
                 }
               }
               return true;
@@ -360,7 +383,7 @@ export default class Parser {
                 cd.debug.stopTimer('link external');
 
                 const linkData = processLink(link) || [];
-                if (!processLinkData(linkData, link)) break;
+                processLinkData(linkData, link);
               }
             }
 
@@ -422,7 +445,7 @@ export default class Parser {
           // Only templates with no timestamp interest us.
           if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
             Array.from(element.getElementsByTagName('a')).some((link) => {
-              const { userName: authorName, linkType } = processLink(link) || {};
+              const [authorName, linkType] = processLink(link) || {};
               if (authorName) {
                 let authorLink;
                 let authorTalkLink;

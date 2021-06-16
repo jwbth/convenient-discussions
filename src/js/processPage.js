@@ -603,7 +603,7 @@ function highlightMentions($content) {
       return (
         cd.g.USER_LINK_REGEXP.test(this.title) &&
         !this.closest(excludeSelector) &&
-        processLink(this)?.userName === cd.g.USER_NAME
+        processLink(this)?.[0] === cd.g.USER_NAME
       );
     })
     .each((i, link) => {

@@ -387,12 +387,17 @@ function initPatterns() {
   const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
   const userNamespaceAliasesPattern = userNamespaceAliases.map(anySpace).join('|');
   cd.g.USER_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`, 'i');
+  cd.g.USER_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):.+?/`, 'i');
 
   const userTalkNamespaceAliases = Object.keys(namespaceIds)
     .filter((key) => namespaceIds[key] === 3);
   const userTalkNamespaceAliasesPattern = userTalkNamespaceAliases.map(anySpace).join('|');
   cd.g.USER_TALK_LINK_REGEXP = new RegExp(
     `^:?(?:${userTalkNamespaceAliasesPattern}):([^/]+)$`,
+    'i'
+  );
+  cd.g.USER_TALK_SUBPAGE_LINK_REGEXP = new RegExp(
+    `^:?(?:${userTalkNamespaceAliasesPattern}):.+?/`,
     'i'
   );
 
