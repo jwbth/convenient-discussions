@@ -94,7 +94,7 @@ export async function initSettings() {
     notifications: 'all',
     notifyCollapsedThreads: false,
     notificationsBlacklist: [],
-    reformatComments: true,
+    reformatComments: null,
     showContribsLink: false,
     showLoadingOverlay: true,
     showToolbar: true,
@@ -593,7 +593,8 @@ function initOouiAndElementPrototypes() {
   separator.innerHTML = cd.sParse('dot-separator');
   commentElementPrototypes.separator = separator;
 
-  if (cd.settings.reformatComments) {
+  // true, null
+  if (cd.settings.reformatComments !== false) {
     const headerElement = document.createElement('div');
     headerElement.className = 'cd-comment-header';
 
@@ -627,7 +628,9 @@ function initOouiAndElementPrototypes() {
     headerElement.appendChild(parenthesesEnd);
 
     commentElementPrototypes.headerElement = headerElement;
-  } else {
+  }
+
+  if (cd.settings.reformatComments !== true) {
     commentElementPrototypes.getReplyButton = () => (
       new OO.ui.ButtonWidget({
         label: cd.s('cm-reply'),
@@ -1303,6 +1306,66 @@ export function closeNotifications(smooth = true) {
   notificationsData = [];
 }
 
+export async function suggestEnableCommentReformatting() {
+  if (cd.settings.reformatComments === null) {
+    const settings = await getSettings({ reuse: true });
+    if ([null, undefined].includes(settings.reformatComments)) {
+      const actions = [
+        {
+          label: cd.s('rc-suggestion-yes'),
+          action: 'accept',
+          flags: 'primary',
+        },
+        {
+          label: cd.s('rc-suggestion-no'),
+          action: 'reject',
+        },
+      ];
+      const $body = $('<div>');
+      const $imgOld = $('<img>')
+        .attr('width', 587)
+        .attr('height', 102)
+        .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
+        .addClass('cd-rc-img');
+      const $arrow = $('<img>')
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
+        .addClass('cd-rc-img cd-rc-arrow');
+      const $imgNew = $('<img>')
+        .attr('width', 587)
+        .attr('height', 128)
+        .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
+        .addClass('cd-rc-img');
+      const $p = $('<p>').text(cd.s('rc-suggestion'));
+      $body.append($imgOld, $arrow, $imgNew, $p);
+      const action = await confirmDialog($body, {
+        size: 'large',
+        actions,
+      });
+      let promise;
+      if (action === 'accept') {
+        cd.settings.reformatComments = settings.reformatComments = true;
+        promise = setSettings(settings);
+      } else if (action === 'reject') {
+        cd.settings.reformatComments = settings.reformatComments = false;
+        promise = setSettings(settings);
+      }
+      if (promise) {
+        try {
+          await promise;
+          return settings.reformatComments;
+        } catch (e) {
+          mw.notify(cd.s('error-settings-save'), { type: 'error' })
+          console.warn(e);
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
 /**
  * Ask the user if they want to receive desktop notifications on first run and ask for a permission
  * if it is default but the user has desktop notifications enabled (for example, if he/she is using
@@ -1313,53 +1376,53 @@ export function closeNotifications(smooth = true) {
 export async function confirmDesktopNotifications() {
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
     // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
-    getSettings({ reuse: true }).then((settings) => {
-      if (settings.desktopNotifications === 'unknown') {
-        const actions = [
-          {
-            label: cd.s('dn-confirm-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('dn-confirm-no'),
-            action: 'reject',
-          },
-        ];
-        confirmDialog(cd.s('dn-confirm'), {
-          size: 'medium',
-          actions,
-        }).then((action) => {
-          let promise;
-          if (action === 'accept') {
-            if (Notification.permission === 'default') {
-              OO.ui.alert(cd.s('dn-grantpermission'));
-              Notification.requestPermission((permission) => {
-                if (permission === 'granted') {
-                  cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-                  promise = setSettings(settings);
-                } else if (permission === 'denied') {
-                  cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-                  promise = setSettings(settings);
-                }
-              });
-            } else if (Notification.permission === 'granted') {
+    const settings = getSettings({ reuse: true });
+    if (['unknown', undefined].includes(settings.reformatComments)) {
+      const actions = [
+        {
+          label: cd.s('dn-confirm-yes'),
+          action: 'accept',
+          flags: 'primary',
+        },
+        {
+          label: cd.s('dn-confirm-no'),
+          action: 'reject',
+        },
+      ];
+      const action = await confirmDialog(cd.s('dn-confirm'), {
+        size: 'medium',
+        actions,
+      });
+      let promise;
+      if (action === 'accept') {
+        if (Notification.permission === 'default') {
+          OO.ui.alert(cd.s('dn-grantpermission'));
+          Notification.requestPermission((permission) => {
+            if (permission === 'granted') {
               cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
               promise = setSettings(settings);
+            } else if (permission === 'denied') {
+              cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
+              promise = setSettings(settings);
             }
-          } else if (action === 'reject') {
-            cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-            promise = setSettings(settings);
-          }
-          if (promise) {
-            promise.catch((e) => {
-              mw.notify(cd.s('error-settings-save'), { type: 'error' })
-              console.warn(e);
-            });
-          }
-        });
+          });
+        } else if (Notification.permission === 'granted') {
+          cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
+          promise = setSettings(settings);
+        }
+      } else if (action === 'reject') {
+        cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
+        promise = setSettings(settings);
       }
-    });
+      if (promise) {
+        try {
+          await promise;
+        } catch (e) {
+          mw.notify(cd.s('error-settings-save'), { type: 'error' })
+          console.warn(e);
+        }
+      }
+    }
   }
 
   if (

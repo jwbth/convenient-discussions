@@ -30,8 +30,10 @@ import {
   finishLoading,
   handleHookFirings,
   init,
+  reloadPage,
   restoreCommentForms,
   saveSession,
+  suggestEnableCommentReformatting,
 } from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getVisits, getWatchedSections, setVisits } from './options';
@@ -938,6 +940,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   const isPageCommentable = cd.g.isPageActive || !articleId;
   cd.g.isPageFirstParsed = cd.g.isFirstRun || passedData.wasPageCreated;
 
+  let showPopups;
   if (isLikelyTalkPage) {
     if (articleId) {
       cd.debug.startTimer('process sections');
@@ -1140,6 +1143,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       $(document).on('keydown', handleGlobalKeyDown);
     }
 
+    showPopups = cd.g.isFirstRun;
+
     /**
      * The script has processed the page.
      *
@@ -1171,18 +1176,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.g.rootElement.getBoundingClientRect();
 
     cd.debug.stopTimer('final code and rendering');
-
-    if (cd.g.isFirstRun) {
-      await confirmDesktopNotifications();
-
-      if (mw.user.options.get('discussiontools-betaenable')) {
-        mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
-      }
-    }
   } else {
     cd.g.isPageActive = false;
-
-    finishLoading();
 
     const $disableLink = $('#footer-places-togglecd a');
     if ($disableLink.length) {
@@ -1190,8 +1185,23 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
         .text(cd.s('footer-runcd'));
     }
+
+    finishLoading();
   }
 
   cd.debug.stopTimer('total time');
   debugLog();
+
+  if (showPopups) {
+    if (mw.user.options.get('discussiontools-betaenable')) {
+      mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
+    }
+
+    const didEnableCommentReformatting = await suggestEnableCommentReformatting();
+    await confirmDesktopNotifications();
+    if (didEnableCommentReformatting) {
+      reloadPage();
+      return;
+    }
+  }
 }
