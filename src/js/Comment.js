@@ -412,17 +412,32 @@ export default class Comment extends CommentSkeleton {
 
       // "noprint" class check is a workaround to avoid removing of templates such as {{citation
       // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
-      if (n.tagName && n.getAttribute('style') && !n.classList.contains('noprint')) {
+      if (
+        n.tagName &&
+        n.getAttribute('style') &&
+        n.textContent.length < 30 &&
+        !n.classList.contains('noprint')
+      ) {
         n.remove();
       }
     };
 
     // Clean up the signature and elements in front of it
     const previousNode = this.signatureElement.previousSibling;
+    const previousPreviousNode = previousNode?.previousSibling;
     processNode(previousNode);
-    if (previousNode && (!previousNode.parentNode || !previousNode.textContent.trim())) {
-      const previousPreviousNode = previousNode.previousSibling;
+    if (
+      previousNode &&
+      previousPreviousNode &&
+      (!previousNode.parentNode || !previousNode.textContent.trim())
+    ) {
+      const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
       processNode(previousPreviousNode);
+
+      // Rare cases like https://en.wikipedia.org/?diff=1022471527
+      if (!previousPreviousNode.parentNode) {
+        processNode(previousPreviousPreviousNode);
+      }
     }
 
     cd.debug.stopTimer('signature clean up');
