@@ -840,7 +840,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   await prepare(passedData, siteDataRequests);
 
   if (cd.g.isFirstRun) {
-    saveRelativeScrollPosition(cachedScrollY);
+    saveRelativeScrollPosition(null, cachedScrollY);
   }
 
   cd.debug.stopTimer('preparations');

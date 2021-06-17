@@ -497,40 +497,68 @@ export function unhideText(text, hidden, type) {
  * Save the scroll position relative to the first element in the viewport looking from the top of
  * the page.
  *
+ * @param {?object} [fallbackToAbsolute=null] If an object with the `saveTocHeight` property, then
+ *   use {@link module:util.saveScrollPosition} if the viewport is above the bottom of the table of
+ *   contents (this allows for better precision).
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
-export function saveRelativeScrollPosition(scrollY = window.scrollY) {
-  anchorElement = null;
-  anchorElementTop = null;
-  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-    while (true) {
-      if (!isInline(treeWalker.currentNode)) {
-        const rect = treeWalker.currentNode.getBoundingClientRect();
-        if (rect.bottom >= 0 && rect.height !== 0) {
-          anchorElement = treeWalker.currentNode;
-          anchorElementTop = rect.top;
-          if (treeWalker.firstChild()) {
-            continue;
-          } else {
-            break;
+export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = window.scrollY) {
+  if (
+    fallbackToAbsolute &&
+    cd.g.$toc.length &&
+    cd.g.$toc.offset().top + cd.g.$toc.outerHeight() > window.scrollY
+  ) {
+    saveScrollPosition(fallbackToAbsolute.saveTocHeight);
+  } else {
+    anchorElement = null;
+    anchorElementTop = null;
+    if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+      const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
+      while (true) {
+        if (!isInline(treeWalker.currentNode)) {
+          const rect = treeWalker.currentNode.getBoundingClientRect();
+          if (rect.bottom >= 0 && rect.height !== 0) {
+            anchorElement = treeWalker.currentNode;
+            anchorElementTop = rect.top;
+            if (treeWalker.firstChild()) {
+              continue;
+            } else {
+              break;
+            }
           }
         }
+        if (!treeWalker.nextSibling()) break;
       }
-      if (!treeWalker.nextSibling()) break;
     }
   }
 }
 
-export function restoreRelativeScrollPosition() {
-  if (anchorElement) {
-    const rect = anchorElement.getBoundingClientRect();
-    if (getVisibilityByRects(rect)) {
-      window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+/**
+ * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
+ *
+ * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using {@link
+ *   module:util.restoreScrollPosition} if it was previously used for saving the position.
+ */
+export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
+  if (fallbackToAbsolute && keptScrollPosition !== null) {
+    restoreScrollPosition();
+  } else {
+    if (anchorElement) {
+      const rect = anchorElement.getBoundingClientRect();
+      if (getVisibilityByRects(rect)) {
+        window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+      }
     }
   }
 }
 
+/**
+ * Replace the "anchor" element used for restoring saved relative scroll position with a new element
+ * if it coincides with the provided element.
+ *
+ * @param {Element} element
+ * @param {Element} newElement
+ */
 export function replaceAnchorElement(element, newElement) {
   if (anchorElement && element === anchorElement) {
     anchorElement = newElement;

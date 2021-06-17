@@ -10,7 +10,7 @@ import cd from './cd';
 import navPanel from './navPanel';
 import { formatDate, formatDateNative } from './timestamp';
 import { reloadPage } from './boot';
-import { restoreScrollPosition, saveScrollPosition } from './util';
+import { restoreRelativeScrollPosition, saveRelativeScrollPosition } from './util';
 
 let tocItems;
 
@@ -154,7 +154,7 @@ export default {
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    saveScrollPosition();
+    saveRelativeScrollPosition({ saveTocHeight: true });
 
     cd.g.$toc
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
@@ -266,7 +266,7 @@ export default {
       currentTree.splice(section.tocLevel);
     });
 
-    restoreScrollPosition();
+    restoreRelativeScrollPosition(true);
   },
 
   /**
@@ -300,7 +300,7 @@ export default {
       passedData.commentAnchor ||
       passedData.sectionAnchor
     );
-    saveScrollPosition(saveTocHeight);
+    saveRelativeScrollPosition({ saveTocHeight });
 
     cd.g.$toc
       .find('.cd-toc-notRenderedCommentList')
@@ -426,6 +426,6 @@ export default {
       target.parentNode.insertBefore(ul, target.nextSibling);
     });
 
-    restoreScrollPosition();
+    restoreRelativeScrollPosition(true);
   },
 };
