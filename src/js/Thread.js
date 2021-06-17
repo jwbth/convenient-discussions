@@ -66,32 +66,40 @@ function findItemElement(element, level, nextForeignElement) {
   return item || null;
 }
 
-function getEndItem0Level(startItem, highlightables, nextForeignElement) {
-  let commonAncestor = startItem;
+/**
+ * Get an end element for a comment at the 0th level.
+ *
+ * @param {Element} startElement
+ * @param {Element[]} highlightables
+ * @param {Element} nextForeignElement
+ * @returns {Element}
+ */
+function getEndElement(startElement, highlightables, nextForeignElement) {
+  let commonAncestor = startElement;
   const lastHighlightable = highlightables[highlightables.length - 1];
-  let endItem = lastHighlightable;
+  let endElement = lastHighlightable;
   do {
     commonAncestor = commonAncestor.parentNode;
   } while (!commonAncestor.contains(lastHighlightable));
   cd.debug.startTimer('threads nextForeignElement');
   let n;
   for (
-    n = endItem.parentNode;
+    n = endElement.parentNode;
     n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
     n = n.parentNode
   ) {
-    endItem = n;
+    endElement = n;
   }
   cd.debug.stopTimer('threads nextForeignElement');
-  const nextElement = endItem.nextElementSibling;
+  const nextElement = endElement.nextElementSibling;
   if (
     nextElement &&
     nextElement.tagName === 'DL' &&
     nextElement.classList.contains('cd-section-button-container')
   ) {
-    endItem = nextElement;
+    endElement = nextElement;
   }
-  return endItem;
+  return endElement;
 }
 
 /**
@@ -193,43 +201,43 @@ export default class Thread {
       this.visualLastComment = this.lastComment;
     }
 
-    let startItem;
-    let visualEndItem;
-    let endItem;
+    let startElement;
+    let visualEndElement;
+    let endElement;
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
     const nextForeignElement = cd.comments[this.lastComment.id + 1]?.elements[0];
     if (this.rootComment.level === 0) {
-      startItem = this.rootComment.highlightables[0];
-      visualEndItem = getEndItem0Level(startItem, visualHighlightables, nextForeignElement);
-      endItem = this.lastComment === this.visualLastComment ?
-        visualEndItem :
-        getEndItem0Level(startItem, highlightables, nextForeignElement);
+      startElement = this.rootComment.highlightables[0];
+      visualEndElement = getEndElement(startElement, visualHighlightables, nextForeignElement);
+      endElement = this.lastComment === this.visualLastComment ?
+        visualEndElement :
+        getEndElement(startElement, highlightables, nextForeignElement);
     } else {
-      startItem = (
+      startElement = (
         findItemElement(rootComment.highlightables[0], rootComment.level, nextForeignElement) ||
         rootComment.highlightables[0]
       );
       const lastHighlightable = highlightables[highlightables.length - 1];
 
       if (this.lastComment === this.visualLastComment) {
-        endItem = (
+        endElement = (
           findItemElement(lastHighlightable, rootComment.level, nextForeignElement) ||
           lastHighlightable
         );
 
-        visualEndItem = endItem;
+        visualEndElement = endElement;
       } else {
         const outdentedComment = cd.comments
           .slice(0, this.lastComment.id + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
-        endItem = outdentedComment.level === 0 ?
-          getEndItem0Level(startItem, highlightables, nextForeignElement) :
+        endElement = outdentedComment.level === 0 ?
+          getEndElement(startElement, highlightables, nextForeignElement) :
           findItemElement(lastHighlightable, outdentedComment.level, nextForeignElement);
 
         const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
-        visualEndItem = findItemElement(
+        visualEndElement = findItemElement(
           lastVisualHighlightable,
           rootComment.level,
           nextForeignElement
@@ -237,10 +245,10 @@ export default class Thread {
       }
     }
 
-    if (startItem && endItem && visualEndItem) {
-      this.startItem = startItem;
-      this.endItem = endItem;
-      this.visualEndItem = visualEndItem;
+    if (startElement && endElement && visualEndElement) {
+      this.startElement = startElement;
+      this.endElement = endElement;
+      this.visualEndElement = visualEndElement;
     } else {
       throw new CdError();
     }
@@ -269,7 +277,7 @@ export default class Thread {
     };
 
     this.line = this.clickArea.firstChild;
-    if (this.endItem !== this.visualEndItem) {
+    if (this.endElement !== this.visualEndElement) {
       let areOutdentedCommentsShown = false;
       for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
         const comment = cd.comments[i];
@@ -288,21 +296,21 @@ export default class Thread {
     cd.debug.stopTimer('threads createElement create');
   }
 
-  getAdjustedEndItem(isVisual) {
+  getAdjustedEndElement(isVisual) {
     const lastComment = isVisual ? this.visualLastComment : this.lastComment;
-    const endItem = isVisual ? this.visualEndItem : this.endItem;
+    const endElement = isVisual ? this.visualEndElement : this.endElement;
     const subitemList = lastComment.subitemList;
     const $subitem = subitemList.get('newCommentsNote') || subitemList.get('replyForm');
-    const adjustedEndItem = $subitem?.is(':visible') ?
+    const adjustedEndElement = $subitem?.is(':visible') ?
       findItemElement($subitem.get(0), lastComment.level) :
-      endItem;
-    return adjustedEndItem;
+      endElement;
+    return adjustedEndElement;
   }
 
   getRangeContents() {
     const range = document.createRange();
-    range.setStart(this.startItem, 0);
-    const rangeEnd = this.getAdjustedEndItem();
+    range.setStart(this.startElement, 0);
+    const rangeEnd = this.getAdjustedEndElement();
     range.setEnd(rangeEnd, rangeEnd.childNodes.length);
 
     /*
@@ -453,7 +461,7 @@ export default class Thread {
       }
     }
 
-    if (this.endItem !== this.visualEndItem) {
+    if (this.endElement !== this.visualEndElement) {
       for (let c = this.rootComment; c; c = c.getParent()) {
         c.thread?.line.classList.remove('cd-thread-line-extended');
       }
@@ -501,7 +509,7 @@ export default class Thread {
       }
     }
 
-    if (this.endItem !== this.visualEndItem && areOutdentedCommentsShown) {
+    if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
       for (let c = this.rootComment; c; c = c.getParent()) {
         c.thread?.line.classList.add('cd-thread-line-extended');
       }
@@ -606,14 +614,14 @@ export default class Thread {
             cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
             cd.debug.startTimer('threads getBoundingClientRect other');
-            rectTop = thread.startItem.getBoundingClientRect();
+            rectTop = thread.startElement.getBoundingClientRect();
             if (
               comment.containerListType === 'ol' ||
 
               // Occurs when a part of a comment that is not in the thread is next to the start
               // item, for example
               // https://ru.wikipedia.org/wiki/Википедия:Запросы_к_администраторам#202104081533_Macuser.
-              thread.startItem.tagName === 'DIV'
+              thread.startElement.tagName === 'DIV'
             ) {
               comment.getPositions();
               if (comment.positions) {
@@ -635,7 +643,7 @@ export default class Thread {
 
         const elementBottom = thread.isCollapsed ?
           thread.expandNote :
-          thread.getAdjustedEndItem(true);
+          thread.getAdjustedEndElement(true);
         cd.debug.startTimer('threads getBoundingClientRect bottom');
         const rectBottom = elementBottom.getBoundingClientRect();
         cd.debug.stopTimer('threads getBoundingClientRect bottom');
