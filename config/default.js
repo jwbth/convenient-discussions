@@ -24,15 +24,14 @@ export default {
   contribsPage: null,
 
   /**
-   * Local timezone offset in minutes. Get by running {@link
+   * Timezone. Get by running {@link
    * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
-   * in your browser's console while the page of your wiki is open. Leave `null` if your wiki uses
-   * daylight saving time (summer time).
+   * in your browser's console while the page of your wiki is open.
    *
-   * @type {?number}
+   * @type {?string}
    * @default null
    */
-  localTimezoneOffset: null,
+  timezone: null,
 
   /**
    * Whether to store of the some of the preferences globally. Requires Extension:GlobalPreferences to
@@ -535,12 +534,13 @@ export default {
   noConfirmPostEmptyCommentPageRegexp: null,
 
   /**
-   * String to be put into a regular expression for matching indentation characters.
+   * String to be put into a regular expression for matching indentation characters. The first group
+   * should contain indentation characters, the second - characters after them (usually spacing).
    *
    * @type {?string}
-   * @default '\\n*([:*#]*) *'
+   * @default '\\n*([:*#]*)( )*'
    */
-  indentationCharsPattern: '\\n*([:*#]*) *',
+  indentationCharsPattern: '\\n*([:*#]*)( )*',
 
   /**
    * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be
@@ -635,8 +635,8 @@ export default {
    * properties that perform the tasks we need in the current context (window or worker). Examples
    * are the name of the child elements property (the worker context uses `childElements` instead of
    * `children`) and the document element. Contexts are predefined in the script like {@link
-   * https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885}
-   * this.
+   * https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885
+   * this}.
    *
    * @type {?Function}
    * @kind function
@@ -716,10 +716,10 @@ export default {
    * @param {string} anchor
    * @returns {string}
    * @default <pre class="prettyprint source"><code>function (anchor) {
-   *   return '&lt;span id="' + anchor + '>&lt;/span>';
+   *   return '&lt;span id="' + anchor + '">&lt;/span>';
    * }</code></pre>
    */
   getAnchorCode: function (anchor) {
-    return '<span id="' + anchor + '></span>';
+    return '<span id="' + anchor + '"></span>';
   },
 };

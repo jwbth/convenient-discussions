@@ -62,7 +62,7 @@ export default {
 
   contribsPage: 'Служебная:Вклад',
 
-  localTimezoneOffset: 0,
+  timezone: 'UTC',
 
   pageWhitelist: [
     /^Арбитраж:.+\//,
@@ -260,7 +260,7 @@ export default {
 
   noConfirmPostEmptyCommentPageRegexp: /^(?:Википедия:Заявки на статус |Википедия:Голосования\/)/,
 
-  indentationCharsPattern: '\\n*(?:\\{\\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\\|)?([:*#]+) *',
+  indentationCharsPattern: '\\n*(?:\\{\\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\\|)?([:*#]+)( )*',
 
   undoTexts: [
     'отмена правки',
@@ -320,9 +320,6 @@ export default {
     return (
       node.classList.contains('ts-Закрыто-header') ||
 
-      // Talk page template
-      (cd.g.NAMESPACE_NUMBER % 2 === 1 && node.classList.contains('tmbox')) ||
-
       // {{clear}}
       (
         node.tagName === 'DIV' &&
@@ -356,7 +353,9 @@ const cd = convenientDiscussions;
 mw.hook('convenientDiscussions.beforeParse').add(function () {
   // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
   // the parent list tag into two parts putting the comment in between.
-  $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
+
+  // Commented for now, as it can confuse votes for the criteria check script on voting pages.
+  /*$('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
     const $current = $(el).css('margin', 0);
     const $list = $current.parent('dd, li').parent('dl, ul, ol');
     while ($list.get(0).contains($current.get(0))) {
@@ -373,6 +372,10 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
         $parent.remove();
       }
     }
+  });*/
+
+  mw.loader.using('mediawiki.util').then(function () {
+    mw.util.addCSS('.ruwiki-msgIndentation-minus1level { margin-left: 0 !important; }');
   });
 });
 
@@ -393,8 +396,8 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
         const hlmStyledElements = cd.g.rootElement.querySelectorAll(
-          '.cd-commentPart[style="background-color: ' + dummyElement.style.color + ';"],' +
-          '.cd-commentPart[style="background-color: ' + window.messagesHighlightColor + '"]'
+          '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
+          '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
         );
         hlmStyledElements.forEach(function (el) {
           el.style.backgroundColor = null;

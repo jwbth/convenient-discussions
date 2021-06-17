@@ -4,15 +4,18 @@
  * @module Comment
  */
 
+import Button from './Button';
 import CdError from './CdError';
+import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
+import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
-import { TreeWalker } from './treeWalker';
+import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
   addToArrayIfAbsent,
   areObjectsEqual,
@@ -22,12 +25,17 @@ import {
   defined,
   getExtendedRect,
   getFromLocalStorage,
-  getObjectUrl,
+  getUrlWithAnchor,
   getVisibilityByRects,
   handleApiReject,
   isInline,
+  isPageOverlayOn,
   saveToLocalStorage,
+  triggerClickOnEnterAndSpace,
   unhideText,
+  unique,
+  wrap,
+  wrapDiffBody,
 } from './util';
 import { copyLink } from './modal.js';
 import {
@@ -39,10 +47,13 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
+import { formatDate, formatDateNative } from './timestamp';
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
 
+let elementPrototypes;
 let thanks;
+let utcString;
 
 /**
  * Remove thanks older than 60 days.
@@ -101,7 +112,9 @@ export default class Comment extends CommentSkeleton {
   constructor(parser, signature) {
     super(parser, signature);
 
-    this.elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
+    if (!elementPrototypes) {
+      elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
+    }
 
     /**
      * Comment author {@link module:userRegistry~User user object}.
@@ -115,16 +128,7 @@ export default class Comment extends CommentSkeleton {
      *
      * @type {JQuery}
      */
-    this.$signature = $(signature.element);
-
-    delete this.signatureElement;
-
-    /**
-     * Comment timestamp element as a jQuery object.
-     *
-     * @type {JQuery}
-     */
-    this.$timestamp = $(signature.timestampElement);
+    this.$signature = $(this.signatureElement);
 
     /**
      * Is the comment actionable, i.e. you can reply to or edit it. A comment is actionable if it is
@@ -140,25 +144,52 @@ export default class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents.bind(this));
 
-    cd.debug.startTimer('closest list');
-    if (this.level !== 0) {
-      for (let n = this.highlightables[0].parentNode; n; n = n.parentNode) {
-        if (n.classList.contains('cd-commentLevel')) {
-          /**
-           * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
-           * `undefined` .
-           *
-           * @type {string|undefined}
-           */
-          this.containerListType = n.tagName.toLowerCase();
-          break;
+    this.setAnchorHighlightable();
+
+    const getContainerListType = (el) => {
+      const treeWalker = new ElementsTreeWalker(el);
+      while (treeWalker.parentNode()) {
+        if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
+          return treeWalker.currentNode.tagName.toLowerCase();
         }
       }
+    };
+
+    cd.debug.startTimer('closest list');
+    if (this.level !== 0) {
+      /**
+       * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
+       * `undefined`.
+       *
+       * @type {string|undefined}
+       */
+      this.containerListType = getContainerListType(this.highlightables[0]);
+
+      this.ahContainerListType = getContainerListType(this.anchorHighlightable);
     }
     cd.debug.stopTimer('closest list');
 
     /**
-     * Is the comment currently highlighted as the target comment.
+     * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
+     * excluding pages that are visited for the first time.
+     *
+     * @type {?boolean}
+     * @memberof module:Comment
+     */
+    this.isNew = null;
+
+    /**
+     * Has the comment been seen if it is new. Is set only on active pages (not archived, not old
+     * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
+     * need to know if the comment is highlighted as new and unseen.
+     *
+     * @type {?boolean}
+     * @memberof module:Comment
+     */
+    this.isSeen = null;
+
+    /**
+     * Is the comment currently highlighted as a target comment.
      *
      * @type {boolean}
      */
@@ -172,19 +203,19 @@ export default class Comment extends CommentSkeleton {
     this.isHovered = false;
 
     /**
-     * Was the comment edited since the previous visit.
+     * Has the comment changed since the previous visit.
      *
      * @type {?boolean}
      */
-    this.isEditedSincePreviousVisit = null;
+    this.isChangedSincePreviousVisit = null;
 
     /**
-     * Was the comment edited while the page was idle. (The new version may be rendered or may be
+     * Has the comment changed while the page was idle. (The new version may be rendered and may be
      * not, if the layout is too complex.)
      *
      * @type {?boolean}
      */
-    this.isEdited = null;
+    this.isChanged = null;
 
     /**
      * Was the comment deleted while the page was idle.
@@ -194,11 +225,11 @@ export default class Comment extends CommentSkeleton {
     this.isDeleted = null;
 
     /**
-     * Should the comment be flashed as updated when it appears in sight.
+     * Should the comment be flashed as changed when it appears in sight.
      *
      * @type {?boolean}
      */
-    this.willFlashNewOnSight = false;
+    this.willFlashChangedOnSight = false;
 
     /**
      * Is the comment (or its signature) inside a table containing only one comment.
@@ -222,6 +253,425 @@ export default class Comment extends CommentSkeleton {
     this.subitemList = new CommentSubitemList();
   }
 
+  setAnchorHighlightable() {
+    cd.debug.startTimer('anchorHighlightable');
+    if (this.highlightables.length > 1) {
+      const nestingLevels = [];
+      const closestListTypes = [];
+      const firstAndLastHighlightable = [
+        this.highlightables[0],
+        this.highlightables[this.highlightables.length - 1],
+      ];
+      firstAndLastHighlightable.forEach((highlightable, i) => {
+        const treeWalker = new ElementsTreeWalker(highlightable);
+        nestingLevels[i] = 0;
+        while (treeWalker.parentNode()) {
+          nestingLevels[i]++;
+          if (!closestListTypes[i] && ['DL', 'UL', 'OL'].includes(treeWalker.currentNode.tagName)) {
+            closestListTypes[i] = treeWalker.currentNode.tagName.toLowerCase();
+          }
+        }
+      });
+      const minNestingLevel = Math.min(...nestingLevels);
+      let anchorHighlightableIndex;
+      for (let i = 0; i < 2; i++) {
+        if (
+          (nestingLevels[i] === minNestingLevel && anchorHighlightableIndex === undefined) ||
+          (closestListTypes[anchorHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
+        ) {
+          anchorHighlightableIndex = i;
+        }
+      }
+      this.anchorHighlightable = firstAndLastHighlightable[anchorHighlightableIndex];
+    } else {
+      this.anchorHighlightable = this.highlightables[0];
+    }
+    cd.debug.stopTimer('anchorHighlightable');
+  }
+
+  replaceSignatureWithHeader() {
+    const pagesToCheckExistence = [];
+
+    cd.debug.startTimer('replaceSignatureWithHeader');
+
+    cd.debug.startTimer('replaceSignatureWithHeader create');
+    const headerElement = elementPrototypes.headerElement.cloneNode(true);
+
+    const authorWrapper = headerElement.firstChild;
+    let authorLink = authorWrapper.firstChild;
+    const bdiElement = authorLink.firstChild;
+    let authorTalkLink = authorLink.nextElementSibling;
+    let contribsLink;
+    if (cd.settings.showContribsLink) {
+      contribsLink = authorTalkLink.nextElementSibling.nextElementSibling;
+    }
+
+    if (this.authorLink) {
+      const nextElement = this.authorLink.nextElementSibling;
+      if (nextElement && Array.from(nextElement.classList).includes('userflags-wrapper')) {
+        authorLink.parentNode.insertBefore(nextElement, authorLink.nextSibling);
+      }
+      authorLink.parentNode.replaceChild(this.authorLink, authorLink);
+      authorLink = this.authorLink;
+      authorLink.classList.add('cd-comment-author');
+      authorLink.innerHTML = '';
+      authorLink.appendChild(bdiElement);
+    } else {
+      const pageName = 'User:' + this.author.name;
+      pagesToCheckExistence.push({
+        pageName,
+        link: authorLink,
+      });
+      authorLink.title = pageName;
+      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
+      authorLink.href = mw.util.getUrl(pageName);
+      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
+    }
+
+    if (this.authorTalkLink) {
+      authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
+      authorTalkLink = this.authorTalkLink;
+      authorTalkLink.textContent = cd.s('comment-author-talk');
+    } else {
+      const pageName = 'User talk:' + this.author.name;
+      pagesToCheckExistence.push({
+        pageName,
+        link: authorTalkLink,
+      });
+      authorTalkLink.title = pageName;
+      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
+      authorTalkLink.href = mw.util.getUrl(pageName);
+      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
+    }
+
+    bdiElement.textContent = this.author.name;
+
+    if (cd.settings.showContribsLink) {
+      const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
+      contribsLink.title = pageName;
+      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
+      contribsLink.href = mw.util.getUrl(pageName);
+      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
+    }
+
+    cd.debug.stopTimer('replaceSignatureWithHeader create');
+
+    if (this.timestamp) {
+      /**
+       * "Copy link" button.
+       *
+       * @type {CommentButton}
+       */
+      this.copyLinkButton = new CommentButton({
+        label: this.reformattedTimestamp || this.timestamp,
+        tooltip: this.timestampTitle,
+        classes: ['cd-comment-button-label', 'cd-comment-timestamp'],
+        action: this.copyLink.bind(this),
+      });
+
+      headerElement.appendChild(this.copyLinkButton.element);
+      this.timestampElement = this.copyLinkButton.labelElement;
+      new LiveTimestamp(this.timestampElement, this.date, true);
+    }
+
+    this.headerElement = headerElement;
+    this.$header = $(this.headerElement);
+
+    // This is usually done in the CommentSkeleton constructor, but if Comment#reviewHighlightables
+    // has altered the highlightables, this will save the day.
+    [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
+      .filter(unique)
+      .filter((el) => (
+        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+        Array.from(el.classList).some((name) => !name.startsWith('cd-'))
+      ))
+      .forEach((el) => {
+        const wrapper = document.createElement('div');
+        const origEl = el;
+        this.replaceElement(el, wrapper);
+        wrapper.appendChild(origEl);
+
+        this.addAttributes();
+        origEl.classList
+          .remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+        delete origEl.dataset.commentId;
+      });
+
+    this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
+
+    cd.debug.startTimer('signature clean up');
+
+    const processNode = (n) => {
+      if (!n) return;
+      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
+        n.textContent = n.textContent
+          .replace(cd.config.signaturePrefixRegexp, '')
+          .replace(cd.config.signaturePrefixRegexp, '');
+      }
+
+      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
+      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
+      if (
+        n.tagName &&
+        n.getAttribute('style') &&
+        n.textContent.length < 30 &&
+        !n.classList.contains('noprint')
+      ) {
+        n.remove();
+      }
+    };
+
+    // Clean up the signature and elements in front of it
+    const previousNode = this.signatureElement.previousSibling;
+    const previousPreviousNode = previousNode?.previousSibling;
+    processNode(previousNode);
+    if (
+      previousNode &&
+      previousPreviousNode &&
+      (!previousNode.parentNode || !previousNode.textContent.trim())
+    ) {
+      const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
+      processNode(previousPreviousNode);
+
+      // Rare cases like https://en.wikipedia.org/?diff=1022471527
+      if (!previousPreviousNode.parentNode) {
+        processNode(previousPreviousPreviousNode);
+      }
+    }
+
+    cd.debug.stopTimer('signature clean up');
+
+    this.signatureElement.remove();
+
+    cd.debug.stopTimer('replaceSignatureWithHeader');
+
+    return pagesToCheckExistence;
+  }
+
+  addMenu() {
+    const menuElement = document.createElement('div');
+    menuElement.className = 'cd-comment-menu';
+    this.menuElement = menuElement;
+    this.$menu = $(this.menuElement);
+
+    this.createReplyButton();
+    this.createEditButton();
+    this.createThankButton();
+    this.createGoToParentButton();
+
+    this.highlightables[this.highlightables.length - 1].appendChild(this.menuElement);
+  }
+
+  createReplyButton() {
+    if (this.isActionable) {
+      const action = this.replyButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * Reply button.
+         *
+         * @type {CommentButton}
+         */
+        this.replyButton = new CommentButton({
+          label: cd.s('cm-reply'),
+          classes: ['cd-comment-button-label'],
+          action,
+        });
+
+        this.menuElement.appendChild(this.replyButton.element);
+      } else {
+        const element = elementPrototypes.replyButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getReplyButton;
+        this.replyButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.replyButton.element);
+      }
+    }
+  }
+
+  createEditButton() {
+    if (this.isActionable && (this.isOwn || cd.settings.allowEditOthersComments)) {
+      const action = this.editButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * Edit button.
+         *
+         * @type {CommentButton}
+         */
+        this.editButton = new CommentButton({
+          label: cd.s('cm-edit'),
+          classes: ['cd-comment-button-label'],
+          action,
+        });
+
+        this.menuElement.appendChild(this.editButton.element);
+      } else {
+        const element = elementPrototypes.editButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getEditButton;
+        this.editButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.editButton.element);
+      }
+    }
+  }
+
+  createThankButton() {
+    if (this.author.isRegistered() && this.date && !this.isOwn) {
+      if (!thanks) {
+        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
+        saveToLocalStorage('thanks', thanks);
+      }
+      const isThanked = Object.keys(thanks).some((key) => (
+        this.anchor === thanks[key].anchor &&
+        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
+      ));
+
+      const action = this.thankButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * Edit button.
+         *
+         * @type {CommentButton}
+         */
+        this.thankButton = new CommentButton({
+          label: cd.s(isThanked ? 'cm-thanked' : 'cm-thank'),
+          tooltip: cd.s(isThanked ? 'cm-thanked-tooltip' : 'cm-thank-tooltip'),
+          classes: ['cd-comment-button-label'],
+          action,
+        });
+
+        this.menuElement.appendChild(this.thankButton.element);
+      } else {
+        const element = elementPrototypes.thankButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getThankButton;
+        this.thankButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.thankButton.element);
+      }
+
+      if (isThanked) {
+        this.setThanked();
+      }
+    }
+  }
+
+  createCopyLinkButton() {
+    if (this.anchor) {
+      if (!cd.settings.reformatComments) {
+        const element = elementPrototypes.copyLinkButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getCopyLinkButton;
+        this.copyLinkButton = new CommentButton({
+          element,
+          action: this.copyLink.bind(this),
+          widgetConstructor,
+        });
+        this.overlayMenu.appendChild(this.copyLinkButton.element);
+      }
+    }
+  }
+
+  createGoToParentButton() {
+    if (this.getParent()) {
+      const action = this.goToParentButtonClick.bind(this);
+      if (cd.settings.reformatComments) {
+        /**
+         * "Go to the parent comment" button.
+         *
+         * @type {CommentButton}
+         */
+        this.goToParentButton = new CommentButton({
+          tooltip: cd.s('cm-gotoparent-tooltip'),
+          classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent'],
+          action,
+        });
+
+        this.headerElement.appendChild(this.goToParentButton.element);
+      } else {
+        const element = elementPrototypes.goToParentButton.cloneNode(true);
+        const widgetConstructor = elementPrototypes.getGoToParentButton;
+        this.goToParentButton = new CommentButton({ element, action, widgetConstructor });
+        this.overlayMenu.appendChild(this.goToParentButton.element);
+      }
+    }
+  }
+
+  createGoToChildButton() {
+    if (cd.settings.reformatComments) {
+      /**
+       * "Go to the child comment" button.
+       *
+       * @type {CommentButton}
+       */
+      this.goToChildButton = new CommentButton({
+        tooltip: cd.s('cm-gotochild-tooltip'),
+        classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild'],
+      });
+
+      const referenceNode = this.goToParentButton || this.copyLinkButton || this.authorLink;
+      this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
+    } else {
+      const element = elementPrototypes.goToChildButton;
+      const widgetConstructor = elementPrototypes.getGoToChildButton;
+      this.goToChildButton = new CommentButton({ element, widgetConstructor });
+      this.$overlayMenu.prepend(element);
+    }
+  }
+
+  reformatTimestamp() {
+    if (!this.date) return;
+
+    if (!utcString) {
+      utcString = cd.mws('timezone-utc');
+    }
+
+    let offset;
+    const utcPostfix = ` (${utcString})`;
+    let postfix = utcPostfix;
+    if (cd.settings.useLocalTime) {
+      // Not necessarily an integer
+      offset = this.date.getTimezoneOffset() / 60;
+
+      if (offset !== 0) {
+        const sign = offset > 0 ? '-' : '+';
+        postfix = ` (${utcString}${sign}${Math.abs(offset)})`;
+      }
+    }
+
+    const areLanguagesEqual = mw.config.get('wgContentLanguage') === cd.g.USER_LANGUAGE;
+
+    let newTimestamp;
+    let title = '';
+    if (
+      cd.settings.timestampFormat !== 'default' ||
+      (cd.settings.useLocalTime && offset !== 0) ||
+      !areLanguagesEqual ||
+      cd.settings.hideTimezone
+    ) {
+      newTimestamp = formatDate(this.date);
+    }
+
+    if (cd.settings.timestampFormat === 'relative') {
+      if (cd.settings.useLocalTime) {
+        title = formatDateNative(this.date) + postfix + '\n';
+      }
+      postfix = '';
+    }
+
+    if (newTimestamp) {
+      const utcTimestamp = areLanguagesEqual ?
+        formatDateNative(this.date, 'UTC') + utcPostfix :
+        this.timestampElement.textContent;
+      title = title + utcTimestamp;
+      if (cd.settings.hideTimezone) {
+        postfix = '';
+      }
+      this.reformattedTimestamp = newTimestamp + postfix;
+      this.timestampTitle = title;
+      if (!cd.settings.reformatComments) {
+        this.timestampElement.textContent = this.reformattedTimestamp;
+        this.timestampElement.title = this.timestampTitle;
+        new LiveTimestamp(this.timestampElement, this.date, true);
+      }
+    }
+  }
+
   /**
    * Bind the standard events to a comment part. Executed on comment object creation and DOM
    * modifications affecting comment parts.
@@ -229,6 +679,8 @@ export default class Comment extends CommentSkeleton {
    * @param {Element} element
    */
   bindEvents(element) {
+    if (cd.settings.reformatComments) return;
+
     element.onmouseenter = this.highlightHovered.bind(this);
     element.onmouseleave = this.unhighlightHovered.bind(this);
     element.ontouchstart = this.highlightHovered.bind(this);
@@ -242,26 +694,34 @@ export default class Comment extends CommentSkeleton {
   reviewHighlightables() {
     for (let i = 0; i < this.highlightables.length; i++) {
       const el = this.highlightables[i];
-      if (Array.from(el.classList).some((name) => !name.startsWith('cd-'))) {
-        const style = window.getComputedStyle(el);
+      const areThereClassedElements = Array.from(el.classList)
+        .some((name) => !name.startsWith('cd-') || name === 'cd-comment-replacedPart');
+      if (areThereClassedElements) {
+        const isReplacement = i === 0 && el.classList.contains('cd-comment-replacedPart');
+        const testElement = isReplacement ? el.firstChild : el;
+
+        // Node that we could use window.getComputerStyle here, but avoid it to avoid the reflow.
         if (
           // Currently we can't have comments with no highlightable elements.
           this.highlightables.length > 1 &&
 
-          (['left', 'right'].includes(style.float) || style.display === 'none')
+          (cd.g.floatingElements.includes(testElement) || cd.g.hiddenElements.includes(testElement))
         ) {
-          if (el.classList.contains('cd-commentPart-first')) {
-            el.classList.remove('cd-commentPart-first');
-            this.highlightables[i + 1].classList.add('cd-commentPart-first');
+          if (el.classList.contains('cd-comment-part-first')) {
+            el.classList.remove('cd-comment-part-first');
+            this.highlightables[i + 1].classList.add('cd-comment-part-first');
           }
-          if (el.classList.contains('cd-commentPart-last')) {
-            el.classList.remove('cd-commentPart-last');
-            this.highlightables[i - 1].classList.add('cd-commentPart-last');
+          if (el.classList.contains('cd-comment-part-last')) {
+            el.classList.remove('cd-comment-part-last');
+            this.highlightables[i - 1].classList.add('cd-comment-part-last');
           }
           delete el.dataset.commentId;
           this.highlightables.splice(i, 1);
           i--;
           this.setLevels();
+          this.setAnchorHighlightable();
+
+          // Update this.ahContainerListType here as well?
         }
       }
     }
@@ -363,64 +823,72 @@ export default class Comment extends CommentSkeleton {
     cd.debug.startTimer('getLayersMargins');
 
     let positions;
-    let firstHighlightable;
+    let anchorElement;
     if (this.isCollapsed) {
-      const rect = getCommentPartRect(this.thread.collapsedNote);
+      const rect = getCommentPartRect(this.thread.expandNote);
       positions = {
         left: window.scrollX + rect.left,
         right: window.scrollX + rect.right,
       };
-      firstHighlightable = this.thread.collapsedNote;
+      anchorElement = this.thread.expandNote;
     } else {
       positions = this.positions;
-      firstHighlightable = this.highlightables[0];
+      anchorElement = this.anchorHighlightable;
     }
 
     let startMargin;
     let endMargin;
 
-    /**
-     * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
-     * start of the content area.
-     *
-     * @type {boolean|undefined}
-     */
-    this.isStartStretched = false;
+    if (this.isStartStretched === undefined) {
+      /**
+       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
+       * start of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isStartStretched = false;
 
-    /**
-     * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
-     * of the content area.
-     *
-     * @type {boolean|undefined}
-     */
-    this.isEndStretched = false;
+      /**
+       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
+       * of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isEndStretched = false;
 
-    if (this.level === 0) {
-      const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN;
-      const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN;
-      this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
-        leftPosition <= cd.g.CONTENT_COLUMN_START + 1 :
-        rightPosition >= cd.g.CONTENT_COLUMN_START - 1;
-      this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
-        rightPosition >= cd.g.CONTENT_COLUMN_END - 1 :
-        leftPosition <= cd.g.CONTENT_COLUMN_END + 1;
+      if (this.level === 0) {
+        // 2 instead of 1 for Timeless
+        const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN - 2;
+        const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN + 2;
+
+        this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
+          leftPosition <= cd.g.CONTENT_COLUMN_START :
+          rightPosition >= cd.g.CONTENT_COLUMN_START;
+        this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
+          rightPosition >= cd.g.CONTENT_COLUMN_END :
+          leftPosition <= cd.g.CONTENT_COLUMN_END;
+      }
     }
 
-    if (this.containerListType === 'ol') {
-      startMargin = cd.g.CONTENT_FONT_SIZE * 3.2;
+    if (this.ahContainerListType === 'ol') {
+      // "this.highlightables.length === 1" is a workaround for cases such as
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160911_Example.
+      startMargin = this.highlightables.length === 1 ?
+        cd.g.CONTENT_FONT_SIZE * 3.2 :
+        cd.g.CONTENT_FONT_SIZE * 2.2 - 1;
     } else if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
       if (
-        ['LI', 'DD'].includes(firstHighlightable.tagName) &&
-        firstHighlightable.parentNode.classList.contains('cd-commentLevel')
+        ['LI', 'DD'].includes(anchorElement.tagName) &&
+        anchorElement.parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
       } else {
-        startMargin = this.level === 0 ? 8 : cd.g.CONTENT_FONT_SIZE;
+        startMargin = this.level === 0 ? cd.g.COMMENT_FALLBACK_SIDE_MARGIN : cd.g.CONTENT_FONT_SIZE;
       }
     }
-    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : 8;
+    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
     const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
@@ -467,6 +935,26 @@ export default class Comment extends CommentSkeleton {
     this.overlayInnerWrapper.style.display = 'none';
   }
 
+  replyButtonClick() {
+    if (this.replyForm) {
+      this.replyForm.cancel();
+    } else {
+      this.reply();
+    }
+  }
+
+  editButtonClick() {
+    this.edit();
+  }
+
+  thankButtonClick() {
+    this.thank();
+  }
+
+  goToParentButtonClick() {
+    this.goToParent();
+  }
+
   /**
    * Create the comment's underlay and overlay.
    *
@@ -474,125 +962,44 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   createLayers() {
-    this.underlay = this.elementPrototypes.underlay.cloneNode(true);
+    this.underlay = elementPrototypes.underlay.cloneNode(true);
     commentLayers.underlays.push(this.underlay);
 
-    this.overlay = this.elementPrototypes.overlay.cloneNode(true);
+    this.overlay = elementPrototypes.overlay.cloneNode(true);
     this.line = this.overlay.firstChild;
     this.marker = this.overlay.firstChild.nextSibling;
-    this.overlayInnerWrapper = this.overlay.lastChild;
 
-    // Hide the overlay on right click. It can block clicking the author page link.
-    this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
+    if (!cd.settings.reformatComments) {
+      this.overlayInnerWrapper = this.overlay.lastChild;
+      this.overlayGradient = this.overlayInnerWrapper.firstChild;
+      this.overlayMenu = this.overlayInnerWrapper.lastChild;
 
-    let mouseUpTimeout;
-    const deferHideMenu = (e) => {
-      // Ignore other than left button clicks.
-      if (e.which !== 1) return;
+      // Hide the overlay on right click. It can block clicking the author page link.
+      this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
 
-      mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1500);
-    };
-    const dontHideMenu = () => {
-      clearTimeout(mouseUpTimeout);
-    };
+      let mouseUpTimeout;
+      const deferHideMenu = (e) => {
+        // Ignore other than left button clicks.
+        if (e.which !== 1) return;
 
-    // Hide the overlay on long click/tap.
-    this.overlayInnerWrapper.onmousedown = deferHideMenu;
-    this.overlayInnerWrapper.onmouseup = dontHideMenu;
-
-    this.overlayGradient = this.overlayInnerWrapper.firstChild;
-    this.overlayContent = this.overlayInnerWrapper.lastChild;
-
-    if (this.getParent()) {
-      /**
-       * "Go to the parent comment" button.
-       *
-       * @type {Element|undefined}
-       */
-      this.goToParentButton = this.elementPrototypes.goToParentButton.cloneNode(true);
-
-      this.goToParentButton.firstChild.onclick = () => {
-        this.goToParent();
+        mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1500);
       };
-      this.overlayContent.appendChild(this.goToParentButton);
-    }
-
-    if (this.anchor) {
-      /**
-       * "Copy link" button.
-       *
-       * @type {Element|undefined}
-       */
-      this.linkButton = this.elementPrototypes.linkButton.cloneNode(true);
-
-      this.linkButton.firstChild.onclick = this.copyLink.bind(this);
-      this.overlayContent.appendChild(this.linkButton);
-    }
-
-    if (this.author.isRegistered() && this.date && !this.isOwn) {
-      if (!thanks) {
-        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
-        saveToLocalStorage('thanks', thanks);
-      }
-
-      const isThanked = Object.keys(thanks).some((key) => (
-        this.anchor === thanks[key].anchor &&
-        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
-      ));
-      if (isThanked) {
-        this.thankButton = this.elementPrototypes.thankedButton.cloneNode(true);
-      } else {
-        /**
-         * Thank button.
-         *
-         * @type {Element|undefined}
-         */
-        this.thankButton = this.elementPrototypes.thankButton.cloneNode(true);
-
-        this.thankButton.firstChild.onclick = () => {
-          this.thank();
-        };
-      }
-      this.overlayContent.appendChild(this.thankButton);
-    }
-
-    if (this.isActionable) {
-      if (this.isOwn || cd.settings.allowEditOthersComments) {
-        /**
-         * Edit button.
-         *
-         * @type {Element|undefined}
-         */
-        this.editButton = this.elementPrototypes.editButton.cloneNode(true);
-
-        this.editButton.firstChild.onclick = () => {
-          if (!this.editButton.classList.contains('oo-ui-widget-disabled')) {
-            this.edit();
-          }
-        };
-        this.overlayContent.appendChild(this.editButton);
-      }
-
-      /**
-       * Reply button.
-       *
-       * @type {Element|undefined}
-       */
-      this.replyButton = this.elementPrototypes.replyButton.cloneNode(true);
-
-      this.replyButton.firstChild.onclick = () => {
-        if (this.replyForm) {
-          this.replyForm.cancel();
-        } else {
-          if (!this.replyButton.classList.contains('oo-ui-widget-disabled')) {
-            this.reply();
-          }
-        }
+      const dontHideMenu = () => {
+        clearTimeout(mouseUpTimeout);
       };
-      this.overlayContent.appendChild(this.replyButton);
+
+      // Hide the overlay on long click/tap.
+      this.overlayInnerWrapper.onmousedown = deferHideMenu;
+      this.overlayInnerWrapper.onmouseup = dontHideMenu;
+
+      this.createGoToParentButton();
+      this.createCopyLinkButton();
+      this.createThankButton();
+      this.createEditButton();
+      this.createReplyButton();
     }
 
-    this.updateLayersStyles();
+    this.updateLayersStyles(true);
 
     /**
      * Comment's underlay.
@@ -615,19 +1022,21 @@ export default class Comment extends CommentSkeleton {
      */
     this.$marker = $(this.marker);
 
-    /**
-     * Links container of the comment's overlay.
-     *
-     * @type {?(JQuery|undefined)}
-     */
-    this.$overlayContent = $(this.overlayContent);
+    if (!cd.settings.reformatComments) {
+      /**
+       * Menu element in the comment's overlay.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$overlayMenu = $(this.overlayMenu);
 
-    /**
-     * Gradient element of the comment's overlay.
-     *
-     * @type {?(JQuery|undefined)}
-     */
-    this.$overlayGradient = $(this.overlayGradient);
+      /**
+       * Gradient element in the comment's overlay.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$overlayGradient = $(this.overlayGradient);
+    }
 
     /**
      * Comment layers have been created.
@@ -638,48 +1047,45 @@ export default class Comment extends CommentSkeleton {
     mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
   }
 
+  updateClassesForType(type, add) {
+    add = Boolean(add);
+    if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) !== add) {
+      this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
+      this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
+
+      if (type === 'deleted') {
+        this.replyButton?.setDisabled(add);
+        this.editButton?.setDisabled(add);
+      } else if (type === 'hovered' && !add) {
+        this.overlayInnerWrapper.style.display = '';
+      }
+    }
+  }
+
   /**
    * Update the styles of the layers according to the comment's properties.
+   *
+   * @param {boolean} [wereJustCreated=false] Were the layers just created.
    */
-  updateLayersStyles() {
+  updateLayersStyles(wereJustCreated = false) {
     if (!this.underlay) return;
 
-    if (this.isNew) {
-      this.underlay.classList.add('cd-commentUnderlay-new');
-      this.overlay.classList.add('cd-commentOverlay-new');
-    }
-    if (this.isOwn) {
-      this.underlay.classList.add('cd-commentUnderlay-own');
-      this.overlay.classList.add('cd-commentOverlay-own');
-    }
-    if (this.isDeleted) {
-      this.underlay.classList.add('cd-commentUnderlay-deleted');
-      this.overlay.classList.add('cd-commentOverlay-deleted');
-      if (this.replyButton) {
-        this.replyButton.classList.add('oo-ui-widget-disabled');
-        this.replyButton.classList.remove('oo-ui-widget-enabled');
+    this.updateClassesForType('new', this.isNew);
+    this.updateClassesForType('own', this.isOwn);
+    this.updateClassesForType('deleted', this.isDeleted);
+
+
+    if (wereJustCreated) {
+      if (this.isLineGapped) {
+        this.line.classList.add('cd-comment-overlay-line-closingGap');
       }
-      if (this.editButton) {
-        this.editButton.classList.add('oo-ui-widget-disabled');
-        this.editButton.classList.remove('oo-ui-widget-enabled');
+      if (this.isStartStretched) {
+        this.overlay.classList.add('cd-comment-overlay-stretchedStart');
       }
-    } else if (this.underlay.classList.contains('cd-commentUnderlay-deleted')) {
-      this.underlay.classList.remove('cd-commentUnderlay-deleted');
-      this.overlay.classList.remove('cd-commentUnderlay-deleted');
-      if (this.replyButton) {
-        this.replyButton.classList.remove('oo-ui-widget-disabled');
-        this.replyButton.classList.add('oo-ui-widget-enabled');
-      }
-      if (this.editButton) {
-        this.editButton.classList.remove('oo-ui-widget-disabled');
-        this.editButton.classList.add('oo-ui-widget-enabled');
+      if (this.isEndStretched) {
+        this.overlay.classList.add('cd-comment-overlay-stretchedEnd');
       }
     }
-    if (this.isLineGapped) {
-      this.line.classList.add('cd-commentOverlay-line-closingGap');
-    }
-    this.overlay.classList.toggle('cd-commentOverlay-stretchedStart', this.isStartStretched);
-    this.overlay.classList.toggle('cd-commentOverlay-stretchedEnd', this.isEndStretched);
   }
 
   /**
@@ -789,7 +1195,7 @@ export default class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   highlightHovered(e) {
-    if (this.isHovered || cd.util.isPageOverlayOn()) return;
+    if (this.isHovered || isPageOverlayOn() || cd.settings.reformatComments) return;
 
     if (e && e.type === 'touchstart') {
       cd.comments
@@ -806,8 +1212,7 @@ export default class Comment extends CommentSkeleton {
     // again when the next event fires.
     if (isMoved || !this.underlay) return;
 
-    this.underlay.classList.add('cd-commentUnderlay-hover');
-    this.overlay.classList.add('cd-commentOverlay-hover');
+    this.updateClassesForType('hovered', true);
     this.isHovered = true;
   }
 
@@ -815,33 +1220,88 @@ export default class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightHovered() {
-    if (!this.isHovered) return;
+    if (!this.isHovered || cd.settings.reformatComments) return;
 
     this.$animatedBackground?.stop(false, true);
 
-    this.underlay.classList.remove('cd-commentUnderlay-hover');
-    this.overlay.classList.remove('cd-commentOverlay-hover');
-    this.overlayInnerWrapper.style.display = '';
+    this.updateClassesForType('hovered', false);
     this.isHovered = false;
   }
 
-  /**
-   * Highlight the comment as a target (it is opened by a link, just posted, is the target of the
-   * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
-   */
-  highlightTarget() {
-    this.isTarget = true;
+  animateToColors(markerColor, backgroundColor, callback) {
+    const generateProperties = (backgroundColor) => {
+      const properties = { backgroundColor };
 
-    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
-    // their personal CSS.
-    this.flash('target', 2000, () => {
-      this.isTarget = false;
+      // jquery.color module can't animate to the transparent color.
+      if (properties.backgroundColor === 'rgba(0, 0, 0, 0)') {
+        properties.opacity = 0;
+      }
+
+      return properties;
+    };
+    const propertyDefaults = {
+      backgroundColor: '',
+      backgroundImage: '',
+      opacity: '',
+    };
+
+    const finalMarkerProperties = generateProperties(markerColor);
+    this.$marker.animate(finalMarkerProperties, 400, 'swing', () => {
+      this.$marker.css(propertyDefaults);
+    });
+
+    const comment = this;
+    const finalBackgroundProperties = generateProperties(backgroundColor);
+    this.$animatedBackground.animate(finalBackgroundProperties, 400, 'swing', function () {
+      if (this !== comment.$animatedBackground.get(-1)) return;
+
+      if (callback) {
+        callback();
+      }
+      comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
     });
   }
 
+  animateBack(type, callback) {
+    this.animateBackBound = null;
+
+    if (!this.underlay) {
+      callback();
+      return;
+    }
+
+    // Get the current colors
+    const initialMarkerColor = this.$marker.css('background-color');
+    const initialBackgroundColor = this.$underlay.css('background-color');
+
+    // Reset the classes that produce these colors
+    this.updateClassesForType(type, false);
+
+    // Get the final (destination) colors
+    const finalMarkerColor = this.$marker.css('background-color');
+    let finalBackgroundColor = this.$underlay.css('background-color');
+
+    // That's basically if the flash color is green (when a comment is changed after an edit) and
+    // the comment itself is green. We animate to transparent, then set green back, so that there is
+    // any animation at all.
+    if (finalBackgroundColor === initialBackgroundColor) {
+      finalBackgroundColor = 'rgba(0, 0, 0, 0)';
+    }
+
+    // Set back the colors previously produced by classes
+    this.$marker.css({
+      backgroundColor: initialMarkerColor,
+      opacity: 1,
+    });
+    this.$animatedBackground.css({ backgroundColor: initialBackgroundColor })
+    this.$overlayGradient?.css({ backgroundImage: 'none' });
+
+    this.animateToColors(finalMarkerColor, finalBackgroundColor, callback);
+  }
+
   /**
-   * Change the comment's background color to the provided color for the given number of
-   * milliseconds, then smoothly change it back.
+   * Change the comment's background color to a color of the provided comment type for the given
+   * number of milliseconds, then smoothly change it back.
    *
    * @param {string} type
    * @param {number} delay
@@ -856,149 +1316,96 @@ export default class Comment extends CommentSkeleton {
       return;
     }
 
-    cd.debug.startTimer('animatedBackground');
+    if (this.animateBackBound) {
+      clearTimeout(this.unhighlightTimeout);
+      this.animateBackBound();
+    }
+
     /**
-     * Comment underlay and some elements inside comment overlay whose colors are animated in some
-     * events.
+     * Comment underlay and menu whose colors are animated in some events.
      *
      * @type {?(JQuery|undefined)}
      */
-    this.$animatedBackground = this.$underlay.add(this.$overlayContent);
-    cd.debug.stopTimer('animatedBackground');
+    this.$animatedBackground = this.$underlay.add(this.$overlayMenu);
 
     // Reset the animations and colors
     this.$animatedBackground.add(this.$marker).stop(false, true);
 
-    // The "cd-commentUnderlay-forcedBackground" class helps to set background for a type even if
-    // they user has switched off background highlighting for this type ("new", for example).
-    this.underlay.classList.add(
-      `cd-commentUnderlay-${type}`,
-      'cd-commentUnderlay-forcedBackground'
-    );
-    this.overlay.classList.add(`cd-commentOverlay-${type}`, 'cd-commentOverlay-forcedBackground');
+    this.updateClassesForType(type, true);
 
-    this.$marker.css({ opacity: 1 });
-    clearTimeout(this.unhighlightTimeout);
-    this.unhighlightTimeout = setTimeout(() => {
-      // TODO: disappeared check / animation / unhighlightTimeout stop()
-
-      const markerColor = this.$marker.css('background-color');
-      const backgroundColor = this.$underlay.css('background-color');
-
-      this.underlay.classList.remove(
-        `cd-commentUnderlay-${type}`,
-        'cd-commentUnderlay-forcedBackground'
-      );
-      this.overlay.classList.remove(
-        `cd-commentOverlay-${type}`,
-        'cd-commentOverlay-forcedBackground'
-      );
-      const finalMarkerColor = this.$marker.css('background-color');
-      let finalBackgroundColor = this.$underlay.css('background-color');
-
-      // That's basically if the flash color is green (new, when a comment is updated after an edit)
-      // and the comment itself is new and green, then animate to transparent, then set green back,
-      // so that there is any animation at all.
-      if (finalBackgroundColor === backgroundColor) {
-        finalBackgroundColor = 'rgba(0, 0, 0, 0)';
-      }
-
-      this.$marker.css({
-        backgroundColor: markerColor,
-        opacity: 1,
-      });
-      this.$animatedBackground.css({ backgroundColor: backgroundColor })
-      this.$overlayGradient.css({ backgroundImage: 'none' });
-
-      const generateProperties = (backgroundColor) => {
-        const properties = { backgroundColor };
-
-        // jquery.color module can't animate to the transparent color.
-        if (properties.backgroundColor === 'rgba(0, 0, 0, 0)') {
-          properties.opacity = 0;
-        }
-
-        return properties;
-      };
-      const propertyDefaults = {
-        backgroundColor: '',
-        backgroundImage: '',
-        opacity: '',
-      };
-
-      this.$marker.animate(generateProperties(finalMarkerColor), 400, 'swing', () => {
-        this.$marker.css(propertyDefaults);
-      });
-      const comment = this;
-      this.$animatedBackground.animate(
-        generateProperties(finalBackgroundColor),
-        400,
-        'swing',
-        function () {
-          if (this !== comment.$overlayContent.get(0)) return;
-
-          if (callback) {
-            callback();
-          }
-          comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
-        }
-      );
-    }, delay);
+    this.animateBackBound = this.animateBack.bind(this, type, callback);
+    this.unhighlightTimeout = setTimeout(this.animateBackBound, delay);
   }
 
   /**
-   * Flash the comment as updated and add it to the seen rendered edits list kept in the local
+   * Flash the comment as a target (it is opened by a link, just posted, is the target of the
+   * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
+   */
+  flashTarget() {
+    this.isTarget = true;
+
+    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
+    // their personal CSS.
+    this.flash('target', 2000, () => {
+      this.isTarget = false;
+    });
+  }
+
+  /**
+   * Flash the comment as changed and add it to the seen rendered edits list kept in the local
    * storage.
    */
-  flashNew() {
-    this.flash('new', 1000);
+  flashChanged() {
+    // Use the "changed" type, not "new", to get the "cd-comment-underlay-changed" class that helps
+    // to set background if the user has switched off background highlighting for new comments.
+    this.flash('changed', 1000);
 
-    if (this.isEdited) {
-      const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
+    if (this.isChanged) {
+      const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
       const articleId = mw.config.get('wgArticleId');
-      seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
-      seenRenderedEdits[articleId][this.anchor] = {
+      seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
+      seenRenderedChanges[articleId][this.anchor] = {
         comparedHtml: this.comparedHtml,
         seenUnixTime: Date.now(),
       };
-      saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+      saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
     }
   }
 
   /**
-   * Flash the comment as updated when it appears in sight.
+   * Flash the comment as changed when it appears in sight.
    */
-  flashNewOnSight() {
-    if (this.isInViewport()) {
-      this.flashNew();
+  flashChangedOnSight() {
+    if (!document.hidden && this.isInViewport()) {
+      this.flashChanged();
     } else {
-      this.willFlashNewOnSight = true;
+      this.willFlashChangedOnSight = true;
     }
   }
 
   /**
    * Update the comment's properties, add a small text next to the signature saying the comment has
-   * been edited or deleted, and flash the comment as updated if it has been.
+   * been changed or deleted, and change the comment's styling if it has been.
    *
-   * @param {string} type Type of the mark: `'edited'`, `'editedSince'`, or `'deleted'`.
+   * @param {string} type Type of the mark: `'changed'`, `'changedSince'`, or `'deleted'`.
    * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
    *   see the diff.
    * @param {string} [commentsData] Data of the comments as of the current revision and the revision
    *   to compare with.
    */
-  markAsEdited(type, isNewVersionRendered, comparedRevisionId, commentsData) {
+  markAsChanged(type, isNewVersionRendered, comparedRevisionId, commentsData) {
     let stringName;
     switch (type) {
-      case 'edited':
+      case 'changed':
       default:
-        this.isEdited = true;
-        stringName = 'comment-edited';
+        this.isChanged = true;
+        stringName = 'comment-changed';
         break;
 
-      case 'editedSince':
-        this.isEditedSincePreviousVisit = true;
-        stringName = 'comment-editedsince';
+      case 'changedSince':
+        this.isChangedSincePreviousVisit = true;
+        stringName = 'comment-changedsince';
         break;
 
       case 'deleted':
@@ -1007,32 +1414,28 @@ export default class Comment extends CommentSkeleton {
         break;
     }
 
-    this.$elements
-      .last()
-      .find('.cd-editMark')
-      .remove();
-
     let $refreshLink;
     if (!isNewVersionRendered) {
-      const keptData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
+      const passedData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
       $refreshLink = $('<a>')
-        .text(cd.s('comment-edited-refresh'))
+        .attr('tabindex', 0)
+        .text(cd.s('comment-changed-refresh'))
+        .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', () => {
-          reloadPage(keptData);
+          reloadPage(passedData);
         });
     }
 
-    let $diffLink;
+    let diffButton;
     if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
-      $diffLink = $('<a>')
-        .text(cd.s('comment-edited-diff'))
-        .on('click', async (e) => {
-          e.preventDefault();
-          $diffLink.addClass('cd-link-pending');
+      diffButton = new Button({
+        label: cd.s('comment-changed-diff'),
+        action: async () => {
+          diffButton.setPending(true);
           try {
             await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
-            let text = cd.s('comment-edited-diff-error');
+            let text = cd.sParse('comment-changed-diff-error');
             if (e instanceof CdError) {
               const { type, message } = e.data;
               if (message) {
@@ -1041,59 +1444,79 @@ export default class Comment extends CommentSkeleton {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(text, { type: 'error' });
+            mw.notify(wrap(text), { type: 'error' });
           }
-          $diffLink.removeClass('cd-link-pending');
-        });
+          diffButton.setPending(false);
+        },
+      });
     }
 
-    const $editMark = $('<span>')
-      .addClass('cd-editMark')
-      .append(cd.sParse(stringName));
-    if ($refreshLink) {
-      $editMark.append(' ', $refreshLink);
+    let refreshLinkSeparator;
+    let diffLinkSeparator;
+    if (cd.settings.reformatComments) {
+      stringName += '-short';
+      refreshLinkSeparator = cd.sParse('dot-separator');
+      diffLinkSeparator = cd.sParse('dot-separator');
     } else {
-      $editMark.addClass('cd-editMark-newVersionRendered');
-    }
-    if ($diffLink) {
-      $editMark.append($refreshLink ? cd.sParse('dot-separator') : ' ', $diffLink);
+      refreshLinkSeparator = ' ';
+      diffLinkSeparator = $refreshLink ? cd.sParse('dot-separator') : ' ';
     }
 
-    // Add the mark to the last block element, going as many nesting levels down as needed to avoid
-    // it appearing after a block element.
-    let $last;
-    let $tested = this.$elements.last();
-    do {
-      $last = $tested;
-      $tested = $last.children().last();
-    } while ($tested.length && !isInline($tested.get(0)));
+    $(this.highlightables)
+      .find('.cd-changeMark')
+      .remove();
 
-    if (!$last.find('.cd-beforeEditMark').length) {
-      const $before = $('<span>').addClass('cd-beforeEditMark');
-      $last.append(' ', $before);
+    const $changeMark = $('<span>')
+      .addClass('cd-changeMark')
+      .text(cd.s(stringName));
+    if ($refreshLink) {
+      $changeMark.append(refreshLinkSeparator, $refreshLink);
+    } else {
+      $changeMark.addClass('cd-changeMark-newVersionRendered');
     }
-    $last.append($editMark);
+    if (diffButton) {
+      $changeMark.append(diffLinkSeparator, diffButton.element);
+    }
+
+    if (cd.settings.reformatComments) {
+      this.$header.append($changeMark);
+    } else {
+      // Add the mark to the last block element, going as many nesting levels down as needed to
+      // avoid it appearing after a block element.
+      let $last;
+      let $tested = $(this.highlightables).last();
+      do {
+        $last = $tested;
+        $tested = $last.children().last();
+      } while ($tested.length && !isInline($tested.get(0)));
+
+      if (!$last.find('.cd-beforeChangeMark').length) {
+        const $before = $('<span>').addClass('cd-beforeChangeMark');
+        $last.append(' ', $before);
+      }
+      $last.append($changeMark);
+    }
 
     if (isNewVersionRendered) {
-      this.flashNewOnSight();
+      this.flashChangedOnSight();
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
-    // see updateChecker~checkForNewEdits, for example.
+    // see updateChecker~checkForNewChanges, for example.
   }
 
   /**
    * Update the comment's properties, remove the edit mark added in {@link
-   * module:Comment#markAsEdited} and flash the comment as updated if it has been (reset to the
-   * original version, or unedited, in this case).
+   * module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to the
+   * original version, or unchanged, in this case).
    *
-   * @param {string} type Type of the mark: `'edited'` or `'deleted'`.
+   * @param {string} type Type of the mark: `'changed'` or `'deleted'`.
    */
-  unmarkAsEdited(type) {
+  unmarkAsChanged(type) {
     switch (type) {
-      case 'edited':
+      case 'changed':
       default:
-        this.isEdited = false;
+        this.isChanged = false;
         break;
       case 'deleted':
         this.isDeleted = false;
@@ -1108,20 +1531,20 @@ export default class Comment extends CommentSkeleton {
 
     this.$elements
       .last()
-      .find('.cd-editMark')
+      .find('.cd-changeMark')
       .remove();
 
-    if (type === 'edited') {
-      if (this.willFlashNewOnSight) {
-        this.willFlashNewOnSight = false;
+    if (type === 'changed') {
+      if (this.willFlashChangedOnSight) {
+        this.willFlashChangedOnSight = false;
       } else {
-        const seenRenderedEdits = getFromLocalStorage('seenRenderedEdits');
+        const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
         const articleId = mw.config.get('wgArticleId');
-        seenRenderedEdits[articleId] = seenRenderedEdits[articleId] || {};
-        delete seenRenderedEdits[articleId][this.anchor];
-        saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+        seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
+        delete seenRenderedChanges[articleId][this.anchor];
+        saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
 
-        this.flashNewOnSight();
+        this.flashChangedOnSight();
       }
     }
   }
@@ -1136,7 +1559,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {boolean} Was the update successful.
    */
   update(currentComment, newComment) {
-    const elementTagNames = Array.from(this.$elements).map((el) => el.tagName);
+    const elementNames = Array.from(this.$elements).map((el) => el.tagName);
 
     // References themselves may be out of the comment's HTML and might be edited.
     const areThereReferences = newComment.hiddenElementData
@@ -1155,7 +1578,7 @@ export default class Comment extends CommentSkeleton {
     if (
       !areThereReferences &&
       areStyleTagsKept &&
-      areObjectsEqual(elementTagNames, newComment.elementTagNames)
+      areObjectsEqual(elementNames, newComment.elementNames)
     ) {
       const match = this.$elements.find('.autonumber').text().match(/\d+/);
       let currentAutonumber = match ? match[0] : 1;
@@ -1164,7 +1587,7 @@ export default class Comment extends CommentSkeleton {
           /\x01(\d+)_\w+\x02/g,
           (s, num) => newComment.hiddenElementData[num - 1].html
         );
-        if (/^H[1-6]$/.test(elementTagNames[i])) {
+        if (/^H[1-6]$/.test(elementNames[i])) {
           const $headline = this.$elements.eq(i).find('.mw-headline');
           if ($headline.length) {
             const $headlineNumber = $headline.find('.mw-headline-number');
@@ -1190,11 +1613,15 @@ export default class Comment extends CommentSkeleton {
         $(el).text(`[${currentAutonumber}]`);
         currentAutonumber++;
       });
-      this.$elements
-        .attr('data-comment-id', this.id)
-        .first()
-        .attr('id', this.anchor);
-      mw.hook('wikipage.content').add(this.$elements);
+      this.$elements.attr('data-comment-id', this.id);
+
+      if (cd.settings.reformatComments) {
+        this.signatureElement = this.$elements.find('.cd-signature').get(0);
+        this.replaceSignatureWithHeader();
+        this.addMenu();
+      }
+
+      mw.hook('wikipage.content').fire(this.$elements);
 
       delete this.cachedText;
       return true;
@@ -1215,21 +1642,21 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the comment and (by default) highlight it as a target.
+   * Scroll to the comment and (by default) flash it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
    * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
    *   anchor as a fragment.
-   * @param {boolean} highlight Whether to highlight the comment as target.
+   * @param {boolean} flash Whether to flash the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
-  scrollTo(smooth = true, pushState = false, highlight = true, callback) {
+  scrollTo(smooth = true, pushState = false, flash = true, callback) {
     if (pushState) {
       history.pushState(history.state, '', '#' + this.anchor);
     }
 
     if (this.isCollapsed) {
-      this.getVisibleCollapsedNote().cdScrollTo('top', smooth, callback);
+      this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
       mw.notify(cd.s('navpanel-firstunseen-hidden'));
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
@@ -1238,24 +1665,10 @@ export default class Comment extends CommentSkeleton {
         callback();
       }
       $elements.cdScrollIntoView(alignment, smooth, callback);
-      if (highlight) {
-        this.highlightTarget();
+      if (flash) {
+        this.flashTarget();
       }
     }
-  }
-
-  /**
-   * Replace a button in the comment overlay with another.
-   *
-   * @param {Element} button
-   * @param {Element} replacement
-   * @param {string} buttonName
-   * @private
-   */
-  replaceButton(button, replacement, buttonName) {
-    this.overlayContent.insertBefore(replacement, button);
-    button.remove();
-    this[buttonName + 'Button'] = replacement;
   }
 
   /**
@@ -1270,47 +1683,14 @@ export default class Comment extends CommentSkeleton {
     }
 
     parent.scrollTo();
-
-    const goToChildButton = new OO.ui.ButtonWidget({
-      label: cd.s('cm-gotochild'),
-      icon: 'downTriangle',
-      title: cd.s('cm-gotochild-tooltip'),
-      framed: false,
-      invisibleLabel: true,
-      classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
-    });
-    goToChildButton.on('click', () => {
-      parent.goToChild();
-    });
-
     parent.configureLayers();
 
-    if (parent.goToChildButton) {
-      parent.goToChildButton.$element.remove();
+    if (!parent.goToChildButton) {
+      parent.createGoToChildButton();
     }
-    parent.$overlayContent.prepend(goToChildButton.$element);
-    parent.goToChildButton = goToChildButton;
-
-    /**
-     * Child comment that has sent the user to this comment using the "Go to parent" function.
-     *
-     * @name childToScrollBackTo
-     * @type {Comment|undefined}
-     * @instance
-     */
-    parent.childToScrollBackTo = this;
-  }
-
-  /**
-   * Scroll to the child comment of the comment.
-   */
-  goToChild() {
-    if (!this.childToScrollBackTo) {
-      console.error('This comment has no child from which the user had navigated earlier.');
-      return;
-    }
-
-    this.childToScrollBackTo.scrollTo();
+    parent.goToChildButton.setAction(() => {
+      this.scrollTo();
+    });
   }
 
   /**
@@ -1320,11 +1700,9 @@ export default class Comment extends CommentSkeleton {
    */
   async copyLink(e) {
     if (this.isLinkBeingCopied) return;
-    const linkButton = this.linkButton;
-    const pendingLinkButton = this.elementPrototypes.pendingLinkButton.cloneNode(true);
-    this.replaceButton(this.linkButton, pendingLinkButton, 'link');
+    this.copyLinkButton.setPending(true);
     await copyLink(this, e);
-    this.replaceButton(this.linkButton, linkButton, 'link');
+    this.copyLinkButton.setPending(false);
   }
 
   /**
@@ -1333,9 +1711,9 @@ export default class Comment extends CommentSkeleton {
    * @returns {object}
    * @throws {CdError}
    */
-  async findAddingEdit() {
-    if (this.addingEdit) {
-      return this.addingEdit;
+  async findEditThatAdded() {
+    if (this.editThatAdded) {
+      return this.editThatAdded;
     }
 
     // Search for the edit in the range of 2 minutes before to 2 minutes later.
@@ -1433,9 +1811,9 @@ export default class Comment extends CommentSkeleton {
     }
 
     // Cache a successful result.
-    this.addingEdit = bestMatch.revision;
+    this.editThatAdded = bestMatch.revision;
 
-    return this.addingEdit;
+    return this.editThatAdded;
   }
 
   /**
@@ -1445,7 +1823,7 @@ export default class Comment extends CommentSkeleton {
    * @returns {string}
    */
   async getDiffLink(short) {
-    const edit = await this.findAddingEdit();
+    const edit = await this.findEditThatAdded();
     if (short) {
       return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
     } else {
@@ -1461,7 +1839,7 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   async generateDiffView() {
-    const edit = await this.findAddingEdit();
+    const edit = await this.findEditThatAdded();
     const diffLink = await this.getDiffLink();
     const $nextDiffLink = $('<a>')
       .addClass('cd-diffView-nextDiffLink')
@@ -1470,24 +1848,35 @@ export default class Comment extends CommentSkeleton {
       .text(cd.mws('nextdiff'));
     const $above = $('<div>').append($nextDiffLink);
     if (edit.parsedcomment) {
-      const $summaryText = cd.util.wrap(edit.parsedcomment, { targetBlank: true })
-        .addClass('comment');
+      const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
       $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
     }
-    const $diffBody = cd.util.wrapDiffBody(edit.diffBody);
+    const $diffBody = wrapDiffBody(edit.diffBody);
     return $('<div>')
       .addClass('cd-diffView-diff')
       .append($above, $diffBody);
   }
 
   /**
+   * Consider the comment thanked (rename the button and set other parameters).
+   *
+   * @private
+   */
+  setThanked() {
+    this.thankButton
+      .setPending(false)
+      .setDisabled(true)
+      .setLabel(cd.s('cm-thanked'))
+      .setTooltip(cd.s('cm-thanked-tooltip'));
+  }
+
+  /**
    * Process thank error.
    *
    * @param {CdError|Error} e
-   * @param {Element} thankButton
    * @private
    */
-  thankFail(e, thankButton) {
+  thankFail(e) {
     const { type, code } = e.data;
     let text;
     switch (type) {
@@ -1518,8 +1907,8 @@ export default class Comment extends CommentSkeleton {
         break;
       }
     }
-    mw.notify(cd.util.wrap(text, { targetBlank: true }), { type: 'error' });
-    this.replaceButton(this.thankButton, thankButton, 'thank');
+    mw.notify(wrap(text, { targetBlank: true }), { type: 'error' });
+    this.thankButton.setPending(false);
   }
 
   /**
@@ -1529,9 +1918,7 @@ export default class Comment extends CommentSkeleton {
   async thank() {
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
 
-    const thankButton = this.thankButton;
-    const pendingThankButton = this.elementPrototypes.pendingThankButton.cloneNode(true);
-    this.replaceButton(this.thankButton, pendingThankButton, 'thank');
+    this.thankButton.setPending(true);
 
     let genderRequest;
     if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered()) {
@@ -1541,18 +1928,18 @@ export default class Comment extends CommentSkeleton {
     let edit;
     try {
       ([edit] = await Promise.all([
-        this.findAddingEdit(),
+        this.findEditThatAdded(),
         genderRequest,
         mw.loader.using('mediawiki.diff.styles'),
       ].filter(defined)));
     } catch (e) {
-      this.thankFail(e, thankButton);
+      this.thankFail(e);
       return;
     }
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
     const question = cd.sParse('thank-confirm', this.author.name, this.author, url);
-    const $question = cd.util.wrap(question, {
+    const $question = wrap(question, {
       tagName: 'div',
       targetBlank: true,
     });
@@ -1566,13 +1953,12 @@ export default class Comment extends CommentSkeleton {
           source: cd.config.scriptCodeName,
         })).catch(handleApiReject);
       } catch (e) {
-        this.thankFail(e, thankButton);
+        this.thankFail(e);
         return;
       }
 
       mw.notify(cd.s('thank-success'));
-      const thankedButton = this.elementPrototypes.thankedButton.cloneNode(true);
-      this.replaceButton(this.thankButton, thankedButton, 'thank');
+      this.setThanked();
 
       thanks[edit.revid] = {
         anchor: this.anchor,
@@ -1581,7 +1967,7 @@ export default class Comment extends CommentSkeleton {
       };
       saveToLocalStorage('thanks', thanks);
     } else {
-      this.replaceButton(this.thankButton, thankButton, 'thank');
+      this.thankButton.setPending(false);
     }
   }
 
@@ -1653,8 +2039,13 @@ export default class Comment extends CommentSkeleton {
    * @param {object|CommentForm} dataToRestore
    */
   edit(dataToRestore) {
-    // "!this.editForm" check is in case the editing is called from a script of some kind (there is
-    // no button to call it from CD when the form is displayed).
+    // We use a class here because there can be elements in the comment that are hidden from the
+    // beginning and should stay so when reshowing the comment.
+    this.$elements.addClass('cd-hidden');
+    this.removeLayers();
+
+    // "!this.editForm" check is in case the editing is initiated from a script of some kind (there
+    // is no button to call it from CD when the form is displayed).
     if (!this.editForm) {
       /**
        * Edit form related to the comment.
@@ -1669,11 +2060,6 @@ export default class Comment extends CommentSkeleton {
           dataToRestore,
         });
     }
-
-    // We use a class here because there can be elements in the comment that are hidden from the
-    // beginning and should stay so when reshowing the comment.
-    this.$elements.addClass('cd-hidden');
-    this.removeLayers();
   }
 
   /**
@@ -1687,7 +2073,7 @@ export default class Comment extends CommentSkeleton {
       console.error('The Comment#inCode property should contain an object with the comment code data.');
       return;
     }
-    let { code, indentationChars } = this.inCode;
+    let { code, originalIndentationChars } = this.inCode;
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
@@ -1739,15 +2125,16 @@ export default class Comment extends CommentSkeleton {
 
       // Remove indentation characters
       .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
-        const newChars = chars.slice(indentationChars.length);
-        return (
-          '\n' +
-          (
-            chars.length >= indentationChars.length ?
-            newChars + (chars.length > indentationChars.length ? spacing : '') :
-            chars + spacing
-          )
-        );
+        let newChars;
+        if (chars.length >= originalIndentationChars.length) {
+          newChars = chars.slice(originalIndentationChars.length);
+          if (chars.length > originalIndentationChars.length) {
+            newChars += spacing;
+          }
+        } else {
+          newChars = chars + spacing;
+        }
+        return '\n' + newChars;
       });
 
     text = unhideText(text, hidden);
@@ -1780,7 +2167,9 @@ export default class Comment extends CommentSkeleton {
       this.locateInCode();
     } catch (e) {
       if (e instanceof CdError) {
-        throw new CdError(Object.assign({}, { message: cd.s('cf-error-getpagecode') }, e.data));
+        throw new CdError(Object.assign({}, {
+          message: cd.sParse('cf-error-getpagecode'),
+        }, e.data));
       } else {
         throw e;
       }
@@ -1793,29 +2182,29 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {string} [registerAllInDirection] Mark all comments in the forward (`'forward'`) or
    *   backward (`'backward'`) direction from this comment as seen.
-   * @param {boolean} [highlight=false] Highlight the comment.
+   * @param {boolean} [flash=false] Whether to flash the comment as a target.
    */
-  registerSeen(registerAllInDirection, highlight = false) {
+  registerSeen(registerAllInDirection, flash = false) {
     const isInVewport = !registerAllInDirection || this.isInViewport();
     if (this.isSeen === false && isInVewport) {
       this.isSeen = true;
-      if (highlight) {
-        this.highlightTarget();
+      if (flash) {
+        this.flashTarget();
       }
     }
 
-    if (this.willFlashNewOnSight && isInVewport) {
-      this.willFlashNewOnSight = false;
-      this.flashNew();
+    if (this.willFlashChangedOnSight && isInVewport) {
+      this.willFlashChangedOnSight = false;
+      this.flashChanged();
     }
 
     const makesSenseToRegister = cd.comments
-      .some((comment) => comment.isSeen || comment.willFlashNewOnSight);
+      .some((comment) => comment.isSeen || comment.willFlashChangedOnSight);
     if (registerAllInDirection && makesSenseToRegister) {
       const change = registerAllInDirection === 'backward' ? -1 : 1;
       const nextComment = cd.comments[this.id + change];
       if (nextComment && nextComment.isInViewport() !== false) {
-        nextComment.registerSeen(registerAllInDirection, highlight);
+        nextComment.registerSeen(registerAllInDirection, flash);
       }
     }
   }
@@ -1887,8 +2276,10 @@ export default class Comment extends CommentSkeleton {
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
-   * @param {Element|JQuery} element
-   * @param {Element|string} newElementOrHtml
+   * @param {Element|JQuery} element Element to replace. Provide a native element only if we're in
+   *   the page processing phase (and {@link module:Comment#$elements} has not been requested, hence
+   *   cached yet).
+   * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
    */
   replaceElement(element, newElementOrHtml) {
     const nativeElement = element instanceof $ ? element.get(0) : element;
@@ -1915,6 +2306,9 @@ export default class Comment extends CommentSkeleton {
       this.highlightables.splice(this.highlightables.indexOf(nativeElement), 1, newElement);
       this.bindEvents(newElement);
     }
+    if (this.anchorHighlightable === nativeElement) {
+      this.anchorHighlightable = newElement;
+    }
   }
 
   /**
@@ -1930,7 +2324,10 @@ export default class Comment extends CommentSkeleton {
         .clone()
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
-      const selectorParts = ['.cd-signature', '.cd-editMark'];
+      const selectorParts = ['.cd-signature', '.cd-changeMark'];
+      if (cd.settings.reformatComments) {
+        selectorParts.push('.cd-comment-header', '.cd-comment-menu');
+      }
       if (cd.config.unsignedClass) {
         selectorParts.push(`.${cd.config.unsignedClass}`);
       }
@@ -1965,6 +2362,7 @@ export default class Comment extends CommentSkeleton {
    */
   adjustCommentBeginning({ code, startIndex }) {
     // Identifying indentation characters
+    let originalIndentationChars = '';
     let indentationChars = '';
     let lineStartIndex = startIndex;
 
@@ -1983,7 +2381,7 @@ export default class Comment extends CommentSkeleton {
 
       // Try to edit the first comment at
       // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
-      // to see a bug happening if we don't check for `this.isOpeningSection`.
+      // to see the bug happening if we don't check for `this.isOpeningSection`.
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     } else {
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
@@ -2014,8 +2412,8 @@ export default class Comment extends CommentSkeleton {
         });
 
       // This should be before the "this.level > 0" block to account for cases like
-      // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (a regexp
-      // doesn't catch the comment because of a new line inside a "syntaxhighlight" element).
+      // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
+      // doesn't catch the comment because of a newline inside the "syntaxhighlight" element).
       cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
         if (pattern.source[0] !== '^') {
           console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
@@ -2027,34 +2425,71 @@ export default class Comment extends CommentSkeleton {
           startIndex += match[0].length;
         }
       });
+    }
 
-      // Exclude the indentation characters and any foreign code before them from the comment code.
-      // Comments at the zero level sometimes start with ":" that is used to indent some side note.
-      // It shouldn't be considered an indentation character.
-      if (this.level > 0) {
-        const replaceIndentationChars = (s, before, chars) => {
-          indentationChars = chars;
-          lineStartIndex = startIndex + before.length;
-          startIndex += s.length;
-          return '';
-        };
+    // Exclude the indentation characters and any foreign code before them from the comment code.
+    // Comments at the zero level sometimes start with ":" that is used to indent some side note.
+    // It shouldn't be considered an indentation character.
+    if (this.level > 0) {
+      const replaceIndentationChars = (s, before, chars, after = '') => {
+        if (typeof after === 'number') {
+          after = '';
+        }
+        let remainder = '';
+        let adjustedChars = chars;
+        let startIndexShift = s.length;
 
+        // We could just throw an error here, but instead will try to fix the markup.
+        if (code.includes('\n') && adjustedChars.endsWith('#')) {
+          adjustedChars = adjustedChars.slice(0, -1);
+          originalIndentationChars = adjustedChars;
+
+          /*
+            We can have this structure:
+              : Comment. [signature]
+              :# Item 1.
+              :# Item 2.
+              :: End of the comment. [signature]
+
+            And we can have this:
+              : Comment. [signature]
+              ::# Item 1.
+              ::# Item 2.
+              :: End of the comment. [signature]
+
+            The first is incorrect, and we need to add additional indentation for that case.
+           */
+          if (adjustedChars.length < this.level) {
+            adjustedChars += ':';
+          }
+          startIndexShift -= 1 + after.length;
+
+          remainder = '#' + after;
+        } else {
+          originalIndentationChars = chars;
+        }
+
+        indentationChars = adjustedChars;
+        lineStartIndex = startIndex + before.length;
+        startIndex += startIndexShift;
+        return remainder;
+      };
+
+      code = code.replace(
+        new RegExp(`^()${cd.config.indentationCharsPattern}`),
+        replaceIndentationChars
+      );
+
+      // See the comment "Without the following code, the section introduction..." in Parser.js.
+      // Dangerous case:
+      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
+      // actually a mistake to put a signature at the first level, but if it was legit, only the
+      // last sentence should have been interpreted as the comment.
+      if (indentationChars === '') {
         code = code.replace(
-          new RegExp(`^()${cd.config.indentationCharsPattern}`),
+          new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
           replaceIndentationChars
         );
-
-        // See the comment "Without the following code, the section introduction..." in Parser.js.
-        // Dangerous case:
-        // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
-        // actually a mistake to put a signature at the first level, but if it was legit, only the
-        // last sentence should have been interpreted as the comment.
-        if (indentationChars === '') {
-          code = code.replace(
-            new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
-            replaceIndentationChars
-          );
-        }
       }
     }
 
@@ -2067,6 +2502,7 @@ export default class Comment extends CommentSkeleton {
       headingStartIndex,
       headingLevel,
       headlineCode,
+      originalIndentationChars,
       indentationChars,
     };
   }
@@ -2141,27 +2577,36 @@ export default class Comment extends CommentSkeleton {
 
     // If the comment contains different indentation character sets for different lines, then use
     // different sets depending on the mode (edit/reply).
-    data.replyIndentationChars = data.indentationChars;
+    let replyIndentationChars = data.originalIndentationChars;
     if (!this.isOpeningSection) {
       // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
       // comments in one, so we exclude such cases. The signature code is used because it may start
       // with a newline.
       const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*]).*$/);
       if (match) {
-        data.replyIndentationChars = match[1];
+        replyIndentationChars = match[1];
 
         // Cases where indentation characters on the first line don't denote a comment level but
-        // serve some other purposes. Some strange example:
-        // https://ru.wikipedia.org/w/index.php?diff=105978713.
-        if (data.replyIndentationChars.length < data.indentationChars.length) {
-          const prefix = data.indentationChars.slice(data.replyIndentationChars.length) + ' ';
+        // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
+        // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
+        // "replaceIndentationChars" in Comment#adjustCommentBeginning).
+        if (replyIndentationChars.length < data.originalIndentationChars.length) {
+          // We better restore the original space or its absence here.
+          const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
+
+          const prefix = (
+            data.originalIndentationChars.slice(replyIndentationChars.length) +
+            spaceOrNot
+          );
           data.code = prefix + data.code;
-          data.indentationChars = data.indentationChars.slice(0, data.replyIndentationChars.length);
+          data.originalIndentationChars = data.originalIndentationChars
+            .slice(0, replyIndentationChars.length);
           data.startIndex -= prefix.length;
         }
       }
     }
-    data.replyIndentationChars += cd.config.defaultIndentationChar;
+    replyIndentationChars += cd.config.defaultIndentationChar;
+    data.replyIndentationChars = replyIndentationChars;
 
     return data;
   }
@@ -2609,7 +3054,7 @@ export default class Comment extends CommentSkeleton {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !mw.config.get('wgIsRedirect'),
       formatversion: 2,
     }).catch(handleApiReject);
 
@@ -2653,14 +3098,14 @@ export default class Comment extends CommentSkeleton {
     });
 
     const body = compareResp?.compare?.body;
-    if (!body) {
+    if (body === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    const $diff = $(cd.util.wrapDiffBody(body));
+    const $diff = $(wrapDiffBody(body));
     let currentLineNumbers = [];
     let cleanDiffBody = '';
     $diff.find('tr').each((i, tr) => {
@@ -2690,18 +3135,18 @@ export default class Comment extends CommentSkeleton {
         cleanDiffBody += $tr.prop('outerHTML');
       }
     });
-    const $cleanDiff = $(cd.util.wrapDiffBody(cleanDiffBody));
+    const $cleanDiff = $(wrapDiffBody(cleanDiffBody));
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',
-        message: cd.s('comment-edited-diff-empty'),
+        message: cd.sParse('comment-changed-diff-empty'),
       });
     }
 
     const $historyLink = $('<a>')
       .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
       .attr('target', '_blank')
-      .text(cd.s('comment-edited-history'));
+      .text(cd.s('comment-changed-history'));
     const $below = $('<div>')
       .addClass('cd-commentDiffView-below')
       .append($historyLink);
@@ -2717,14 +3162,14 @@ export default class Comment extends CommentSkeleton {
    *
    * @returns {?JQuery}
    */
-  getVisibleCollapsedNote() {
+  getVisibleExpandNote() {
     if (!this.isCollapsed) {
       return null;
     }
 
     let $note;
     for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread) {
-      $note = t.$collapsedNote;
+      $note = t.$expandNote;
       if ($note.is(':visible')) break;
     }
     return $note;
@@ -2732,13 +3177,13 @@ export default class Comment extends CommentSkeleton {
 
   getUrl() {
     if (!this.cachedUrl) {
-      this.cachedUrl = getObjectUrl(this.anchor);
+      this.cachedUrl = getUrlWithAnchor(this.anchor);
     }
 
     return this.cachedUrl;
   }
 
-  createSublevelItem(name, position, parentListType) {
+  createSublevelItem(name, position) {
     /*
       There are 3 basic cases that we account for:
       1.
@@ -2770,26 +3215,47 @@ export default class Comment extends CommentSkeleton {
 
     cd.debug.startTimer('createSublevelItem');
 
-    let wrappingItemTag = 'li';
+    let wrappingItemTag = 'dd';
     let createList = true;
     let outerWrapperTag;
 
-    const $lastOfTarget = this.$elements.last();
-    let $nextToTarget = $lastOfTarget.next();
-    const $nextToTargetFirstChild = $nextToTarget.children().first();
-    if ($nextToTarget.is('dd, li') && $nextToTargetFirstChild.hasClass('cd-commentLevel')) {
-      // A relatively rare case possible when two adjacent lists are merged, for example when
-      // replying to
-      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
-      $nextToTarget = $nextToTargetFirstChild;
+    let $lastOfTarget = this.$elements.last();
+
+    if (position === 'bottom') {
+      // The list can be broken, so we need to find the element before the last list of children of
+      // the comment.
+      const children = this.getChildren();
+      if (children.length) {
+        const lastChild = children[children.length - 1];
+        const $test = lastChild.$elements
+          .last()
+          .closest('.cd-commentLevel')
+          .prev();
+        if ($test.length) {
+          $lastOfTarget = $test;
+        }
+      }
     }
-    if ($nextToTarget.is('dl, ul')) {
+
+    let $anchor = $lastOfTarget.next();
+    const $anchorFirstChild = $anchor.children().first();
+    if ($anchor.is('dd, li') && $anchorFirstChild.hasClass('cd-commentLevel')) {
+      // A relatively rare case possible when two adjacent lists are merged with
+      // processPage~mergeAdjacentCommentLevels, for example when replying to
+      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
+      $anchor = $anchorFirstChild;
+    }
+    if ($anchor.is('dl, ul')) {
       createList = false;
-      wrappingItemTag = $nextToTarget.is('ul') ? 'li' : 'dd';
-      $nextToTarget.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
+      wrappingItemTag = $anchor.is('ul') ? 'li' : 'dd';
+      $anchor.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
     } else if ($lastOfTarget.is('li')) {
-      // We need to avoid a number appearing next to the form in numbered lists, so we have <div>
-      // in those cases. Which is unsemantic, yes :-(
+      // We can't use Comment#containerListType as it contains the type for the _first_
+      // (highlightable) element.
+      const parentListType = $lastOfTarget.cdGetContainerListType();
+
+      // We need to avoid a number appearing next to the form in numbered lists, so we have <div> in
+      // those cases. Which is unsemantic, yes :-(
       outerWrapperTag = parentListType === 'ol' ? 'div' : 'li';
     } else if ($lastOfTarget.is('dd')) {
       outerWrapperTag = 'dd';
@@ -2826,15 +3292,12 @@ export default class Comment extends CommentSkeleton {
       $wrappingList.insertAfter($lastOfTarget);
     } else {
       if (position === 'top') {
-        $wrappingItem.prependTo($nextToTarget);
+        $wrappingItem.prependTo($anchor);
       } else {
-        const $last = $nextToTarget.children().last();
+        const $last = $anchor.children().last();
+
         // "Reply to section" button should always be the last.
-        if ($last.hasClass('cd-replyWrapper')) {
-          $wrappingItem.insertBefore($last);
-        } else {
-          $wrappingItem.insertAfter($last);
-        }
+        $wrappingItem[$last.hasClass('cd-replyWrapper') ? 'insertBefore' : 'insertAfter']($last);
       }
     }
 

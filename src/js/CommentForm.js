@@ -13,9 +13,8 @@ import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
 import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
-import { checkboxField } from './ooui';
-import { confirmDestructive, settingsDialog } from './modal';
 import {
+  buildEditSummary,
   defined,
   findLastIndex,
   focusInput,
@@ -23,13 +22,17 @@ import {
   hideText,
   insertText,
   isInputFocused,
+  isPageOverlayOn,
   keyCombination,
   nativePromiseState,
   removeDoubleSpaces,
   removeFromArrayIfPresent,
   unhideText,
   unique,
+  wrap,
+  wrapDiffBody,
 } from './util';
+import { checkboxField } from './ooui';
 import {
   extractSignatures,
   generateTagsRegexp,
@@ -38,6 +41,7 @@ import {
 } from './wikitext';
 import { generateCommentAnchor } from './timestamp';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
+import { settingsDialog } from './modal';
 
 let commentFormsCounter = 0;
 
@@ -260,12 +264,16 @@ export default class CommentForm {
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
 
-      navPanel.updateCommentFormButton();
+      // Navigation panel's comment form button is updated in the end of boot.restoreCommentForms,
+      // so we don't have to do it here.
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
           focusInput(this.headlineInput || this.commentInput);
         }
+
+        // This is for the case when scrolling isn't performed (when it is, callback at the end of
+        // $#cdScrollIntoView executes this line itself).
         navPanel.updateCommentFormButton();
       });
 
@@ -358,7 +366,7 @@ export default class CommentForm {
     } else if (this.target instanceof Section) {
       this.targetSection = this.target;
 
-      if (this.mode === 'replyInSection' && !this.target.$replyButton) {
+      if (this.mode === 'replyInSection' && !this.target.replyButton) {
         throw new CdError();
       }
 
@@ -426,7 +434,7 @@ export default class CommentForm {
         },
       });
 
-      const lang = mw.config.get('wgUserLanguage');
+      const lang = cd.g.USER_LANGUAGE;
       $input.wikiEditor('addToToolbar', {
         section: 'main',
         group: 'format',
@@ -665,11 +673,11 @@ export default class CommentForm {
     ) {
       const parentSection = this.targetSection?.getParent();
       if (this.mode === 'addSubsection') {
-        this.headlineInputPurpose = cd.s('cf-headline-subsection', this.targetSection.headline);
+        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', this.targetSection.headline);
       } else if (this.mode === 'edit' && parentSection) {
-        this.headlineInputPurpose = cd.s('cf-headline-subsection', parentSection.headline);
+        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', parentSection.headline);
       } else {
-        this.headlineInputPurpose = cd.s('cf-headline-topic');
+        this.headlineInputPlaceholder = cd.s('cf-headline-topic');
       }
 
       /**
@@ -679,8 +687,8 @@ export default class CommentForm {
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
-        placeholder: this.headlineInputPurpose,
-        classes: ['cd-headlineInput'],
+        placeholder: this.headlineInputPlaceholder,
+        classes: ['cd-commentForm-headlineInput'],
         tabIndex: String(this.id) + '11',
       });
     }
@@ -731,7 +739,7 @@ export default class CommentForm {
       autosize: true,
       rows: rowNumber,
       maxRows: 30,
-      classes: ['cd-commentInput'],
+      classes: ['cd-commentForm-commentInput'],
       tabIndex: String(this.id) + '12',
     });
     this.commentInput.$input.addClass('ime-position-inside');
@@ -752,7 +760,7 @@ export default class CommentForm {
       value: dataToRestore ? dataToRestore.summary : '',
       maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
       placeholder: cd.s('cf-summary-placeholder'),
-      classes: ['cd-summaryInput'],
+      classes: ['cd-commentForm-summaryInput'],
       tabIndex: String(this.id) + '13',
     });
     this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
@@ -932,7 +940,7 @@ export default class CommentForm {
      * @type {OoUiHorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
-      classes: ['cd-checkboxes'],
+      classes: ['cd-commentForm-checkboxes'],
       items: [
         this.minorField,
         this.watchField,
@@ -947,21 +955,21 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$buttons = $('<div>').addClass('cd-buttons');
+    this.$buttons = $('<div>').addClass('cd-commentForm-buttons');
 
     /**
      * Start (left on LTR wikis, right on RTL wikis) form buttons container.
      *
      * @type {JQuery}
      */
-    this.$buttonsStart = $('<div>').addClass('cd-buttons-start');
+    this.$buttonsStart = $('<div>').addClass('cd-commentForm-buttons-start');
 
     /**
      * End (right on LTR wikis, left on RTL wikis) form buttons container.
      *
      * @type {JQuery}
      */
-    this.$buttonsEnd = $('<div>').addClass('cd-buttons-end');
+    this.$buttonsEnd = $('<div>').addClass('cd-commentForm-buttons-end');
 
     const modeToSubmitButtonMessageName = {
       edit: 'save',
@@ -985,7 +993,7 @@ export default class CommentForm {
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
       framed: false,
-      classes: ['cd-button', 'cd-advancedButton'],
+      classes: ['cd-button-ooui', 'cd-commentForm-advancedButton'],
       tabIndex: String(this.id) + '30',
     });
 
@@ -1008,10 +1016,10 @@ export default class CommentForm {
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
       framed: false,
-      classes: ['cd-button'],
+      classes: ['cd-button-ooui'],
       popup: {
         head: false,
-        $content: cd.util.wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
+        $content: wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
           tagName: 'div',
           targetBlank: true,
         }),
@@ -1036,7 +1044,7 @@ export default class CommentForm {
       label: cd.s('cf-settings-tooltip'),
       invisibleLabel: true,
       title: cd.s('cf-settings-tooltip'),
-      classes: ['cd-button', 'cd-settingsButton'],
+      classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
       tabIndex: String(this.id) + '32',
     });
 
@@ -1049,7 +1057,7 @@ export default class CommentForm {
       label: cd.s('cf-cancel'),
       flags: 'destructive',
       framed: false,
-      classes: ['cd-button', 'cd-cancelButton'],
+      classes: ['cd-button-ooui', 'cd-commentForm-cancelButton'],
       tabIndex: String(this.id) + '33',
     });
 
@@ -1060,7 +1068,7 @@ export default class CommentForm {
      */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
-      classes: ['cd-viewChangesButton'],
+      classes: ['cd-commentForm-viewChangesButton'],
       tabIndex: String(this.id) + '34',
     });
 
@@ -1071,7 +1079,7 @@ export default class CommentForm {
      */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
-      classes: ['cd-previewButton'],
+      classes: ['cd-commentForm-previewButton'],
       tabIndex: String(this.id) + '35',
     });
     if (cd.settings.autopreview) {
@@ -1086,7 +1094,7 @@ export default class CommentForm {
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
-      classes: ['cd-submitButton'],
+      classes: ['cd-commentForm-submitButton'],
       tabIndex: String(this.id) + '36',
     });
 
@@ -1128,7 +1136,8 @@ export default class CommentForm {
      *
      * @type {JQuery}
      */
-    this.$previewArea = $('<div>').addClass('cd-previewArea')
+    this.$previewArea = $('<div>').addClass('cd-previewArea');
+
     if (cd.settings.autopreview) {
       this.$previewArea
         .addClass('cd-previewArea-below')
@@ -1337,7 +1346,7 @@ export default class CommentForm {
    */
   addToPage() {
     if (this.mode === 'replyInSection') {
-      this.target.$replyButton.hide();
+      this.target.replyButton.hide();
     } else if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
       this.target.$addSubsectionButtonContainer.hide();
     } else if (this.mode === 'addSection' && cd.g.$addSectionButtonContainer) {
@@ -1354,7 +1363,7 @@ export default class CommentForm {
     let $outerWrapper;
     if (this.mode === 'reply') {
       [$wrappingItem, $wrappingList, $outerWrapper] = this.target
-        .createSublevelItem('replyForm', 'top', this.containerListType);
+        .createSublevelItem('replyForm', 'top');
     } else if (this.mode === 'edit') {
       const $lastOfTarget = this.target.$elements.last();
       if ($lastOfTarget.is('dd, li')) {
@@ -1423,7 +1432,7 @@ export default class CommentForm {
         const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
         let $target;
         let $tested = this.target.$elements.last();
-        const selector = '.cd-sectionButton-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
+        const selector = '.cd-section-button-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
         do {
           $target = $tested;
           $tested = $tested.next();
@@ -1525,16 +1534,14 @@ export default class CommentForm {
     this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
       if (e.detail.instance.trigger === cd.config.mentionCharacter) {
         if (this.mode === 'edit') {
-          const $message = cd.util.wrap(cd.sParse('cf-reaction-mention-edit'), {
-            targetBlank: true,
-          });
+          const $message = wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true });
           this.showMessage($message, {
             type: 'notice',
             name: 'mentionEdit',
           });
         }
         if (this.omitSignatureCheckbox?.isSelected()) {
-          const $message = cd.util.wrap(cd.sParse('cf-reaction-mention-nosignature'), {
+          const $message = wrap(cd.sParse('cf-reaction-mention-nosignature'), {
             targetBlank: true,
           });
           this.showMessage($message, {
@@ -1868,7 +1875,7 @@ export default class CommentForm {
     if (isRaw) {
       appendable = htmlOrJquery;
     } else {
-      const $label = htmlOrJquery instanceof $ ? htmlOrJquery : cd.util.wrap(htmlOrJquery);
+      const $label = htmlOrJquery instanceof $ ? htmlOrJquery : wrap(htmlOrJquery);
       const classes = ['cd-message'];
       if (name) {
         classes.push(`cd-message-${name}`);
@@ -1904,7 +1911,7 @@ export default class CommentForm {
    * Abort the operation the form is undergoing and show an error message.
    *
    * @param {object} options
-   * @param {string} options.message Message visible to the user.
+   * @param {string|JQuery} options.message Message visible to the user.
    * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
@@ -1934,7 +1941,7 @@ export default class CommentForm {
 
     if (cancel) {
       addNotification([
-        message,
+        message instanceof $ ? message : wrap(message),
         {
           type: 'error',
           autoHideSeconds: 'long',
@@ -2043,7 +2050,7 @@ export default class CommentForm {
             location.assign(editUrl);
           }
         };
-        message = cd.util.wrap(message, {
+        message = wrap(message, {
           callbacks: {
             'cd-message-reloadPage': async () => {
               if (await this.confirmClose()) {
@@ -2081,7 +2088,7 @@ export default class CommentForm {
           }
         }
 
-        message = cd.util.wrap(message);
+        message = wrap(message);
         message.find('.mw-parser-output').css('display', 'inline');
         logMessage = logMessage || [code, apiData];
         break;
@@ -2412,8 +2419,13 @@ export default class CommentForm {
         before = '';
       }
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(code)) {
-        const adjustedCode = code.trim().replace(/\|/g, '{{!}}') + signature;
-        code = `{{${cd.config.smallDivTemplates[0]}|1=${adjustedCode}}}`;
+        // Hide links that have "|", then replace "|" with "{{!}}", then wrap in a small div
+        // template.
+        const hiddenLinks = [];
+        code = hideText(code.trim(), /\[\[[^\]|]+\|/g, hiddenLinks, 'link');
+        code = code.replace(/\|/g, '{{!}}') + signature;
+        code = unhideText(code, hiddenLinks, 'link');
+        code = `{{${cd.config.smallDivTemplates[0]}|1=${code}}}`;
       } else {
         code = `<small>${before}${code}${signature}</small>`;
       }
@@ -2745,7 +2757,7 @@ export default class CommentForm {
     try {
       ({ html, parsedSummary } = await parseCode(commentCode, {
         title: this.targetPage.name,
-        summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
+        summary: buildEditSummary({ text: this.summaryInput.getValue() }),
       }));
     } catch (e) {
       if (e instanceof CdError) {
@@ -2812,8 +2824,8 @@ export default class CommentForm {
     this.closeOperation(currentOperation);
 
     if (!isAuto) {
-      this.$previewArea
-        .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
+      const position = this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom';
+      this.$previewArea.cdScrollIntoView(position);
       focusInput(this.commentInput);
     }
   }
@@ -2872,7 +2884,7 @@ export default class CommentForm {
 
     let html = resp.compare?.body;
     if (html) {
-      html = cd.util.wrapDiffBody(html);
+      html = wrapDiffBody(html);
       const $label = $('<div>')
         .addClass('cd-previewArea-label')
         .text(cd.s('cf-block-viewchanges'));
@@ -2895,22 +2907,22 @@ export default class CommentForm {
 
     this.closeOperation(currentOperation);
 
-    this.$previewArea
-      .cdScrollIntoView(this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom');
+    const position = this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom';
+    this.$previewArea.cdScrollIntoView(position);
     focusInput(this.commentInput);
   }
 
   /**
    * Forget the form and reload the page.
    *
-   * @param {object} [keptData] Data passed from the previous page state.
+   * @param {object} [passedData] Data passed from the previous page state.
    * @param {Operation} [currentOperation] Current operation.
    */
-  async reloadPage(keptData, currentOperation) {
+  async reloadPage(passedData, currentOperation) {
     this.forget();
 
     try {
-      await reloadPage(keptData);
+      await reloadPage(passedData);
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
@@ -2943,12 +2955,15 @@ export default class CommentForm {
     const checks = [
       {
         condition: !doDelete && this.headlineInput?.getValue() === '',
-        confirmation: async () => {
-          const noHeadline = cd.s(
-            'cf-confirm-noheadline-' +
-            (this.headlineInputPurpose === cd.s('cf-headline-topic') ? 'topic' : 'subsection')
+        confirmation: () => {
+          const ending = this.headlineInputPlaceholder === cd.s('cf-headline-topic') ?
+            'topic' :
+            'subsection';
+          return confirm(
+            cd.s(`cf-confirm-noheadline-${ending}`) +
+            ' ' +
+            cd.s('cf-confirm-noheadline-question')
           );
-          return await OO.ui.confirm(noHeadline + ' ' + cd.s('cf-confirm-noheadline-question'));
         },
       },
       {
@@ -2957,16 +2972,14 @@ export default class CommentForm {
           !this.commentInput.getValue().trim() &&
           !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.PAGE.name)
         ),
-        confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-empty')),
+        confirmation: () => confirm(cd.s('cf-confirm-empty')),
       },
       {
         condition: (
           !doDelete &&
           this.commentInput.getValue().trim().length > cd.config.longCommentThreshold
         ),
-        confirmation: async () => (
-          await OO.ui.confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold))
-        ),
+        confirmation: () => confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold)),
       },
       {
         condition: (
@@ -2974,11 +2987,11 @@ export default class CommentForm {
           /^==[^=]/m.test(this.commentInput.getValue()) &&
           this.mode !== 'edit'
         ),
-        confirmation: async () => await OO.ui.confirm(cd.s('cf-confirm-secondlevelheading')),
+        confirmation: () => confirm(cd.s('cf-confirm-secondlevelheading')),
       },
       {
         condition: doDelete,
-        confirmation: async () => await confirmDestructive('cf-confirm-delete'),
+        confirmation: () => confirm(cd.s('cf-confirm-delete')),
       }
     ];
 
@@ -3006,7 +3019,7 @@ export default class CommentForm {
     try {
       result = await this.targetPage.edit({
         text: newPageCode,
-        summary: cd.util.buildEditSummary({ text: this.summaryInput.getValue() }),
+        summary: buildEditSummary({ text: this.summaryInput.getValue() }),
         baserevid: page.revisionId,
         starttimestamp: page.queryTimestamp,
         minor: this.minorCheckbox?.isSelected(),
@@ -3089,15 +3102,15 @@ export default class CommentForm {
     );
     if (!editTimestamp) return;
 
-    // Here we use a trick where we pass, in keptData, the name of the section that was set to be
+    // Here we use a trick where we pass, in passedData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    const keptData = { didSubmitCommentForm: true };
+    const passedData = { didSubmitCommentForm: true };
 
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
       mw.config.set('wgArticleId', this.targetPage.pageId);
-      keptData.wasPageCreated = true;
+      passedData.wasPageCreated = true;
     }
 
     if (this.watchSectionCheckbox) {
@@ -3108,25 +3121,25 @@ export default class CommentForm {
         );
         if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
           const headline = removeWikiMarkup(this.headlineInput.getValue());
-          keptData.justWatchedSection = headline;
+          passedData.justWatchedSection = headline;
           let originalHeadline;
           if (isHeadlineAltered) {
             originalHeadline = removeWikiMarkup(this.originalHeadline);
-            keptData.justUnwatchedSection = originalHeadline;
+            passedData.justUnwatchedSection = originalHeadline;
           }
           Section.watch(headline, originalHeadline).catch(() => {});
         } else {
           const section = this.targetSection;
           if (section && !section.isWatched) {
             section.watch(true);
-            keptData.justWatchedSection = section.headline;
+            passedData.justWatchedSection = section.headline;
           }
         }
       } else {
         const section = this.targetSection;
         if (section?.isWatched) {
           section.unwatch(true);
-          keptData.justUnwatchedSection = section.headline;
+          passedData.justUnwatchedSection = section.headline;
         }
       }
     }
@@ -3139,7 +3152,7 @@ export default class CommentForm {
     }
 
     if (!doDelete) {
-      keptData.commentAnchor = this.mode === 'edit' ?
+      passedData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
         generateCommentAnchor(new Date(editTimestamp), cd.g.USER_NAME, true);
     }
@@ -3150,7 +3163,7 @@ export default class CommentForm {
       await cd.g.PAGE.purge();
     }
 
-    this.reloadPage(keptData, currentOperation);
+    this.reloadPage(passedData, currentOperation);
   }
 
   /**
@@ -3159,7 +3172,7 @@ export default class CommentForm {
    * @returns {boolean}
    */
   async confirmClose() {
-    return (!this.isAltered() || (await confirmDestructive('cf-confirm-close')));
+    return !this.isAltered() || confirm(cd.s('cf-confirm-close'));
   }
 
   /**
@@ -3168,7 +3181,7 @@ export default class CommentForm {
    * @param {boolean} [confirmClose=true] Whether to confirm form close.
    */
   async cancel(confirmClose = true) {
-    if (cd.util.isPageOverlayOn() || this.isBeingSubmitted()) return;
+    if (isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !(await this.confirmClose())) {
       focusInput(this.commentInput);
@@ -3180,7 +3193,7 @@ export default class CommentForm {
     if (this.mode === 'reply') {
       this.target.scrollIntoView('top');
     } else if (this.mode === 'replyInSection') {
-      this.target.$replyButton.show();
+      this.target.replyButton.show();
       this.target.$replyWrapper.removeClass('cd-replyWrapper-hasCommentForm');
     } else if (this.mode === 'edit') {
       this.target.$elements.removeClass('cd-hidden');
@@ -3200,7 +3213,6 @@ export default class CommentForm {
     } else {
       this.$outermostElement.remove();
     }
-
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
@@ -3215,7 +3227,7 @@ export default class CommentForm {
   }
 
   /**
-   * Remove the references to the form and unload it from the session data thus making it not appear
+   * Remove all references to the form and unload it from the session data thus making it not appear
    * after a page reload.
    *
    * @private
@@ -3229,6 +3241,7 @@ export default class CommentForm {
     removeFromArrayIfPresent(cd.commentForms, this);
     saveSession();
     navPanel.updateCommentFormButton();
+    this.autocomplete.tribute?.menu?.remove();
   }
 
   /**
@@ -3282,7 +3295,7 @@ export default class CommentForm {
 
         // Remove user links to prevent sending a double notification.
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
-          cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(wikilink) ? text : s
+          cd.g.USER_LINK_REGEXP.test(wikilink) ? text : s
         ));
       if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
         optionalText = `: ${commentText} (-)`;
@@ -3294,7 +3307,7 @@ export default class CommentForm {
       }
     }
 
-    this.autoSummary = cd.util.buildEditSummary({
+    this.autoSummary = buildEditSummary({
       text,
       section,
       optionalText,

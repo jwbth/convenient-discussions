@@ -34,6 +34,8 @@ export default {
   redrawIfNecessary(removeUnhighlighted = false, redrawAll = false) {
     if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
 
+    cd.debug.startTimer('redrawIfNecessary');
+
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
     });
@@ -77,6 +79,9 @@ export default {
           update: false,
           floatingRects,
         });
+        if (isMoved === null) {
+          comment.removeLayers();
+        }
         if (isMoved || redrawAll) {
           notMovedCount = 0;
           comments.push(comment);
@@ -101,6 +106,8 @@ export default {
     comments.forEach((comment) => {
       comment.updateLayersPositions();
     });
+
+    cd.debug.stopTimer('redrawIfNecessary');
   },
 
   /**

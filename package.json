@@ -9,7 +9,8 @@
     "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
     "i18n": "node buildI18n",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions",
-    "single": "webpack serve --env single"
+    "single": "webpack serve --env single",
+    "test": "jest"
   },
   "browser": "src/js/app.js",
   "repository": {
@@ -23,10 +24,12 @@
   },
   "homepage": "https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions",
   "dependencies": {
+    "date-fns": "^2.22.1",
+    "date-fns-tz": "^1.1.4",
+    "dayjs": "^1.10.5",
     "htmlparser2": "^6.1.0",
     "locutus": "^2.0.14",
-    "lz-string": "^1.4.4",
-    "nano-css": "^5.3.1"
+    "lz-string": "^1.4.4"
   },
   "devDependencies": {
     "@babel/core": "^7.13.15",
@@ -50,11 +53,13 @@
     "eslint-plugin-jsdoc": "^22.2.0",
     "eslint-plugin-sort-imports-es6-autofix": "^0.5.0",
     "http-proxy-to-socks": "^1.1.2",
+    "jest": "^27.0.3",
     "jsdoc": "^3.6.6",
     "jsdom": "^16.5.2",
     "json5": "^2.2.0",
     "less": "^3.13.1",
     "less-loader": "^5.0.0",
+    "node-fetch": "^2.6.1",
     "nodemw": "^0.13.0",
     "postcss-loader": "^3.0.0",
     "prompts": "^2.4.1",
@@ -67,13 +72,11 @@
     "webpack-build-notifier": "^2.1.1",
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^3.11.2",
-    "worker-loader": "^2.0.0",
+    "windows-iana": "^5.0.2",
+    "worker-loader": "^3.0.8",
     "yargs": "^15.4.1"
   },
-  "sideEffects": [
-    "*.less",
-    "src/js/worker.js"
-  ],
+  "sideEffects": false,
   "browserslist": [
     "> 1%",
     "not IE 11"

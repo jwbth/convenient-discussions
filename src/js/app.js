@@ -4,14 +4,27 @@
  * @module app
  */
 
+import CONFIG_URLS from '../../config/urls.json';
+import I18N_LIST from '../../data/i18nList.json';
+import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
+import Worker from './worker-gate';
 import cd from './cd';
 import commentLinks from './commentLinks';
-import configUrls from '../../config/urls.json';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
 import processPage from './processPage';
-import util from './globalUtil';
+import {
+  buildEditSummary,
+  isPageOverlayOn,
+  isProbablyTalkPage,
+  mergeRegexps,
+  skin$,
+  underlinesToSpaces,
+  unique,
+  wrap,
+  wrapDiffBody,
+} from './util';
 import {
   finishLoading,
   isPageLoading,
@@ -19,17 +32,9 @@ import {
   setTalkPageCssVariables,
   startLoading,
 } from './boot';
-import { formatDate, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
-import {
-  isProbablyTalkPage,
-  mergeRegexps,
-  nativePromiseState,
-  skin$,
-  underlinesToSpaces,
-  unique,
-} from './util';
 import { loadSiteData } from './siteData';
+import { parseCommentAnchor } from './timestamp';
 import { setVisits } from './options';
 
 let config;
@@ -40,11 +45,7 @@ if (IS_SINGLE) {
     // Empty
   }
 
-  const replaceEntities = (s) => (
-    s
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&#32;/g, ' ')
-  );
+  const replaceEntities = require('../../misc/util').replaceEntitiesInI18n;
 
   cd.i18n = {};
   cd.i18n.en = require('../../i18n/en.json');
@@ -53,11 +54,14 @@ if (IS_SINGLE) {
   });
   if (LANG_CODE !== 'en') {
     cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
+    const langObj = cd.i18n[LANG_CODE];
     Object.keys(cd.i18n[LANG_CODE])
-      .filter((name) => typeof cd.i18n[LANG_CODE][name] === 'string')
+      .filter((name) => typeof langObj[name] === 'string')
       .forEach((name) => {
-        cd.i18n[LANG_CODE][name] = replaceEntities(cd.i18n[LANG_CODE][name]);
+        langObj[name] = replaceEntities(langObj[name]);
       });
+    langObj.dayjsLocale = require(`dayjs/locale/${LANG_CODE}`);
+    langObj.dateFnsLocale = require(`date-fns/locale`)[LANG_CODE];
   }
 }
 
@@ -149,8 +153,17 @@ function sPlain(name) {
  * @returns {string}
  * @memberof module:cd~convenientDiscussions
  */
-function mws(...args) {
-  return mw.message(...args).parse();
+function mws(name, ...params) {
+  let options;
+  let lastParam = params[params.length - 1];
+  if (typeof lastParam === 'object') {
+    options = lastParam;
+    params.splice(params.length - 1);
+  }
+  if (options && options.language === 'content') {
+    name = '(content)' + name;
+  }
+  return mw.message(name, ...params).parse();
 }
 
 /**
@@ -166,18 +179,16 @@ function addCommentLinksToSpecialSearch() {
       async () => {
         await loadSiteData();
         $('.mw-search-result-heading').each((i, el) => {
+          const href = (
+            $(el)
+              .find('a')
+              .first()
+              .attr('href') +
+            '#' +
+            commentAnchor
+          );
           const $a = $('<a>')
-            .attr(
-              'href',
-              (
-                $(el)
-                  .find('a')
-                  .first()
-                  .attr('href') +
-                '#' +
-                commentAnchor
-              )
-            )
+            .attr('href', href)
             .text(cd.s('deadanchor-search-gotocomment'));
           const $start = $('<span>').text(cd.mws('parentheses-start'));
           const $end = $('<span>').text(cd.mws('parentheses-end'));
@@ -202,11 +213,21 @@ function addFooterLink(enable) {
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
   const $li = $('<li>').attr('id', 'footer-places-togglecd');
-  $('<a>')
+  const $a = $('<a>')
     .attr('href', url.toString())
     .addClass('noprint')
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
+  if (enable) {
+    $a.on('click', (e) => {
+      if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        e.preventDefault();
+        history.pushState(history.state, '', url.toString());
+        $li.remove();
+        go();
+      }
+    });
+  }
   skin$({
     monobook: '#f-list',
     modern: '#footer-info',
@@ -236,8 +257,8 @@ function setStrings() {
       name === contentStringName ||
       (contentStringName.endsWith('-') && name.startsWith(contentStringName))
     )) ?
-      mw.config.get('wgContentLanguage') :
-      mw.config.get('wgUserLanguage');
+      cd.g.CONTENT_LANGUAGE :
+      cd.g.USER_LANGUAGE;
     strings[name] = cd.i18n[relevantLang]?.[name] || cd.i18n.en[name];
   });
 
@@ -302,8 +323,8 @@ async function go() {
   cd.g.$content = $('#mw-content-text');
 
   // Process the page as a talk page
-  const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
-  const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
+  cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
+  cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
   const isPageEligible = (
     !mw.config.get('wgIsRedirect') &&
     !cd.g.$content.find('.cd-notTalkPage').length &&
@@ -319,7 +340,7 @@ async function go() {
     )
   );
   if (mw.config.get('wgIsArticle')) {
-    if (!isDisabledInQuery && (isEnabledInQuery || isPageEligible)) {
+    if (!cd.g.isDisabledInQuery && (cd.g.isEnabledInQuery || isPageEligible)) {
       startLoading();
 
       cd.debug.stopTimer('start');
@@ -330,9 +351,14 @@ async function go() {
       // the background, this request is made and the execution stops at mw.loader.using, which
       // results in overriding the renewed visits setting of one tab by another tab (the visits are
       // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      let siteDataRequests;
+      let siteDataRequests = [];
       if (mw.loader.getState('mediawiki.api') === 'ready') {
         siteDataRequests = loadSiteData();
+
+        // We are _not_ calling getUserInfo() here to avoid losing visits data updates from some
+        // pages if more than one page is opened simultaneously. In this situation, visits could be
+        // requested for multiple pages; updated and then saved for each of them with losing the
+        // updates from the rest.
       }
 
       const modules = [
@@ -344,6 +370,7 @@ async function go() {
         'mediawiki.cookie',
         'mediawiki.jqueryMsg',
         'mediawiki.notification',
+        'mediawiki.storage',
         'mediawiki.user',
         'mediawiki.util',
         'mediawiki.widgets.visibleLengthLimit',
@@ -362,17 +389,17 @@ async function go() {
       let modulesRequest;
       let cachedScrollY;
       if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
-        // If there is no data to load and, therefore, no period of time in which a reflow could
-        // happen without impeding performance, we cache the value so that it could be used in
-        // processPage~getFirstElementInViewportData without causing a reflow (layout thrashing).
-        if (siteDataRequests && await nativePromiseState(siteDataRequests) === 'resolved') {
+        // If there is no data to load and, therefore, no period of time within which a reflow
+        // (layout thrashing) could happen without impeding performance, we cache the value so that
+        // it could be used in util.saveRelativeScrollPosition without causing a reflow.
+        if (siteDataRequests?.every((request) => request.state() === 'resolved')) {
           cachedScrollY = window.scrollY;
         }
       } else {
         modulesRequest = mw.loader.using(modules);
       }
 
-      Promise.all([modulesRequest, siteDataRequests]).then(
+      Promise.all([modulesRequest, ...siteDataRequests]).then(
         async () => {
           try {
             await processPage(undefined, siteDataRequests, cachedScrollY);
@@ -393,10 +420,14 @@ async function go() {
       // request was aborted"
       setTimeout(() => {
         if (isPageLoading()) {
-          finishLoading(true);
+          finishLoading(false);
           console.warn('The loading overlay stays for more than 10 seconds; removing it.');
         }
       }, 10000);
+
+      // Avoid circular reference that would appear if Worker is used in the boot module (which
+      // worker itself imports at the building stage).
+      cd.g.worker = new Worker();
 
       cd.g.$contentColumn = skin$({
         timeless: '#mw-content',
@@ -458,7 +489,7 @@ async function go() {
   if (isEligibleSpecialPage || isEligibleHistoryPage || cd.g.IS_DIFF_PAGE) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let siteDataRequests;
+    let siteDataRequests = [];
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       siteDataRequests = loadSiteData();
       if (!cd.g.IS_DIFF_PAGE) {
@@ -501,6 +532,34 @@ async function go() {
 }
 
 /**
+ * Set language properties of the global object, taking fallback languages into account.
+ *
+ * @returns {boolean} Are fallbacks employed.
+ * @private
+ */
+function setLanguages() {
+  const languageOrFallback = (lang) => (
+    I18N_LIST.includes(lang) ?
+    lang :
+    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
+  );
+
+  // This is the only place where mw.config.get('wgUserLanguage') is used.
+  cd.g.USER_LANGUAGE = languageOrFallback(mw.config.get('wgUserLanguage'));
+
+  // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
+  // used for signature parsing we will have to use the real content language (see
+  // siteData.loadSiteData). As a result, we use cd.g.CONTENT_LANGUAGE only for the script's own
+  // messages, not the native MediaWiki messages.
+  cd.g.CONTENT_LANGUAGE = languageOrFallback(mw.config.get('wgContentLanguage'));
+
+  return !(
+    cd.g.USER_LANGUAGE === mw.config.get('wgUserLanguage') &&
+    cd.g.CONTENT_LANGUAGE === mw.config.get('wgContentLanguage')
+  );
+}
+
+/**
  * Load and execute the configuration script if available.
  *
  * @returns {Promise}
@@ -512,7 +571,7 @@ function getConfig() {
     if (IS_TEST) {
       key += '-test';
     }
-    const configUrl = configUrls[key] || configUrls[location.hostname];
+    const configUrl = CONFIG_URLS[key] || CONFIG_URLS[location.hostname];
     if (configUrl) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
@@ -540,16 +599,20 @@ function getConfig() {
 }
 
 /**
- * Load and add localization strings.
+ * Load and add localization strings to the `cd.i18n` object. Use fallback languages if default
+ * languages are unavailable.
  *
  * @returns {Promise}
  * @private
  */
 function getStrings() {
-  const requests = [mw.config.get('wgUserLanguage'), mw.config.get('wgContentLanguage')]
+  const requests = [cd.g.USER_LANGUAGE, cd.g.CONTENT_LANGUAGE]
     .filter(unique)
-    .filter((lang) => lang !== 'en')
-    .map((lang) => mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`));
+    .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
+    .map((lang) => {
+      const url = `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`;
+      return mw.loader.getScript(url);
+    });
 
   // We assume it's OK to fall back to English if the translation is unavailable for any reason.
   return Promise.all(requests).catch(() => {});
@@ -601,10 +664,14 @@ async function app() {
   cd.sParse = sParse;
   cd.sPlain = sPlain;
   cd.mws = mws;
-  cd.util = util;
 
-
-  /* Some utilities that we believe should be global for external use */
+  /**
+   * Some utilities that we believe should be global for external use.
+   *
+   * @namespace util
+   * @memberof module:cd~convenientDiscussions
+   */
+  cd.util = {};
 
   /**
    * @see module:timestamp.parseCommentAnchor
@@ -614,18 +681,39 @@ async function app() {
   cd.util.parseCommentAnchor = parseCommentAnchor;
 
   /**
-   * @see module:timestamp.formatDate
-   * @function formatDate
-   * @memberof module:cd~convenientDiscussions.util
-   */
-  cd.util.formatDate = formatDate;
-
-  /**
    * @see module:options.setVisits
    * @function setVisits
    * @memberof module:cd~convenientDiscussions.util
    */
   cd.util.setVisits = setVisits;
+
+  /**
+   * @see module:options.buildEditSummary
+   * @function buildEditSummary
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.buildEditSummary = buildEditSummary;
+
+  /**
+   * @see module:options.isPageOverlayOn
+   * @function isPageOverlayOn
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.isPageOverlayOn = isPageOverlayOn;
+
+  /**
+   * @see module:options.wrap
+   * @function wrap
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.wrap = wrap;
+
+  /**
+   * @see module:options.wrapDiffBody
+   * @function wrapDiffBody
+   * @memberof module:cd~convenientDiscussions.util
+   */
+  cd.util.wrapDiffBody = wrapDiffBody;
 
   cd.debug.init();
   cd.debug.startTimer('total time');
@@ -639,13 +727,15 @@ async function app() {
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
 
-  try {
-    await Promise.all([
-      !cd.config && getConfig(),
+  const areLanguageFallbacksEmployed = setLanguages();
+  const getStringsPromise = areLanguageFallbacksEmployed ?
+    getStrings() :
 
-      // cd.getStringsPromise may be set in the configuration file.
-      !cd.i18n && (cd.getStringsPromise || getStrings()),
-    ]);
+    // cd.getStringsPromise may be set in the configuration file.
+    !cd.i18n && (cd.getStringsPromise || getStrings());
+
+  try {
+    await Promise.all([!cd.config && getConfig(), getStringsPromise]);
   } catch (e) {
     console.error(e);
     return;

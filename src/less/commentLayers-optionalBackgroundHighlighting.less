@@ -1,0 +1,33 @@
+.cd-comment-underlay-new {
+  background-color: var(--cd-comment-new-background-color);
+}
+
+.cd-comment-underlay-new.cd-comment-underlay-hovered,
+.cd-comment-overlay-new .cd-comment-overlay-content {
+  background-color: var(--cd-comment-new-hovered-background-color);
+}
+
+.ltr .cd-comment-overlay-new .cd-comment-overlay-gradient {
+  background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+}
+
+.rtl .cd-comment-overlay-new .cd-comment-overlay-gradient {
+  background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+}
+
+.cd-comment-underlay-own {
+  background-color: var(--cd-comment-own-background-color);
+}
+
+.cd-comment-underlay-own.cd-comment-underlay-hovered,
+.cd-comment-overlay-own .cd-comment-overlay-content {
+  background-color: var(--cd-comment-own-hovered-background-color);
+}
+
+.ltr .cd-comment-overlay-own .cd-comment-overlay-gradient {
+  background-image: linear-gradient(to left, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0));
+}
+
+.rtl .cd-comment-overlay-own .cd-comment-overlay-gradient {
+  background-image: linear-gradient(to right, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0));
+}

@@ -10,7 +10,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
-import Parser, { getUserNameFromLink } from './Parser';
+import Parser, { processLink } from './Parser';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
@@ -25,30 +25,51 @@ import {
   handleScroll,
   handleWindowResize,
 } from './eventHandlers';
-import { confirmDialog, notFound } from './modal';
-import { finishLoading, init, restoreCommentForms, saveSession } from './boot';
+import {
+  confirmDesktopNotifications,
+  finishLoading,
+  handleHookFirings,
+  init,
+  reloadPage,
+  restoreCommentForms,
+  saveSession,
+  suggestEnableCommentReformatting,
+} from './boot';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getSettings, getVisits, getWatchedSections } from './options';
+import { getVisits, getWatchedSections, setVisits } from './options';
+import { notFound } from './modal';
 import {
   replaceAnchorElement,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
+  wrap,
 } from './util';
-import { setSettings, setVisits } from './options';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
  *
- * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {PassedData} passedData
+ * @param {Promise[]} siteDataRequests Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  * @private
  */
-async function prepare(siteDataRequests) {
-  cd.g.$root = cd.g.$content.children('.mw-parser-output');
-  if (!cd.g.$root.length) {
-    cd.g.$root = cd.g.$content;
+async function prepare(passedData, siteDataRequests) {
+  if (passedData.html) {
+    const div = document.createElement('div');
+    div.innerHTML = passedData.html;
+    cd.g.rootElement = div.firstChild;
+    cd.g.$root = $(cd.g.rootElement);
+  } else {
+    cd.g.$root = cd.g.$content.children('.mw-parser-output');
+
+    // 404 pages
+    if (!cd.g.$root.length) {
+      cd.g.$root = cd.g.$content;
+    }
+
+    cd.g.rootElement = cd.g.$root.get(0);
   }
-  cd.g.rootElement = cd.g.$root.get(0);
 
   toc.reset();
 
@@ -103,16 +124,44 @@ function getAllTextNodes() {
 }
 
 /**
- * Find some types of special elements on the page (floating elements, closed discussions, outdent
- * templates).
+ * Find closed discussions on the page and set to the global object property.
  *
  * @private
  */
-function findSpecialElements() {
-  const tsSelectors = [];
+function findClosedDiscussions() {
+  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
+    .map((name) => `.${name}`)
+    .join(', ');
+  cd.g.closedDiscussionElements = cd.g.$root.find(closedDiscussionsSelector).get();
+}
+
+/**
+ * Find outdent templates on the page and set to the global object property.
+ *
+ * @private
+ */
+function findOutdents() {
+  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+}
+
+/**
+ * Find floating and hidden (`display: none`) elements on the page and set to the global object
+ * property.
+ *
+ * @private
+ */
+function findFloatingAndHiddenElements() {
+  const tsSelectorsFloating = [];
+  const tsSelectorsHidden = [];
   const filterRules = (rule) => {
-    if (rule instanceof CSSStyleRule && ['left', 'right'].includes(rule.style.float)) {
-      tsSelectors.push(rule.selectorText);
+    if (rule instanceof CSSStyleRule) {
+      const style = rule.style;
+      if (style.float === 'left' || style.float === 'right') {
+        tsSelectorsFloating.push(rule.selectorText);
+      }
+      if (style.display === 'none') {
+        tsSelectorsHidden.push(rule.selectorText);
+      }
     }
   };
   Array.from(document.styleSheets)
@@ -126,21 +175,19 @@ function findSpecialElements() {
 
   // Describe all floating elements on the page in order to calculate the correct border
   // (temporarily setting "overflow: hidden") for all comments that they intersect with.
-  const floatingElementSelector = [...cd.g.FLOATING_ELEMENT_SELECTORS, ...tsSelectors].join(', ');
+  const floatingElementSelector = [...cd.g.FLOATING_ELEMENT_SELECTORS, ...tsSelectorsFloating]
+    .join(', ');
 
   // Can't use jQuery here anyway, as .find() doesn't take into account ancestor elements, such as
-  // .mw-parser-output, in selectors.
+  // .mw-parser-output, in selectors. Remove all known elements that never intersect comments from
+  // the collection.
   cd.g.floatingElements = Array.from(cd.g.rootElement.querySelectorAll(floatingElementSelector))
-
-    // Remove all known elements that never intersect comments from the collection.
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
 
-  const closedDiscussionsSelector = cd.config.closedDiscussionClasses
-    .map((name) => `.${name}`)
-    .join(', ');
-  cd.g.closedDiscussionElements = cd.g.$root.find(closedDiscussionsSelector).get();
-
-  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+  const hiddenElementSelector = [...tsSelectorsHidden].join(', ');
+  cd.g.hiddenElements = hiddenElementSelector ?
+    Array.from(cd.g.rootElement.querySelectorAll(hiddenElementSelector)) :
+    [];
 }
 
 /**
@@ -231,7 +278,7 @@ function mergeAdjacentCommentLevels() {
         if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
           while (currentBottomElement.childNodes.length) {
             let child = currentBottomElement.firstChild;
-            if (child.nodeType === Node.ELEMENT_NODE) {
+            if (child.tagName) {
               if (bottomInnerTags[child.tagName]) {
                 child = changeElementType(child, bottomInnerTags[child.tagName]);
               }
@@ -283,19 +330,62 @@ function adjustDom() {
   }
 
   cd.g.rootElement
-    .querySelectorAll('dd.cd-commentPart-last + dd, li.cd-commentPart-last + li')
+    .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
     .forEach((el) => {
-      if (el.firstElementChild && ['DL', 'UL'].includes(el.firstElementChild.tagName)) {
+      if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
         el.classList.add('cd-connectToPreviousItem');
       }
     });
+
+  cd.debug.startTimer('adjustDom separate');
+  /*
+    A very specific fix for cases when an indented comment starts with a list like this:
+
+      : Comment. [signature]
+      :* Item
+      :* Item
+      : Comment end. [signature]
+
+    which gives the following DOM:
+
+      <dd>
+        <div>Comment. [signature]</div>
+        <ul>
+          <li>Item</li>
+          <li>Item</li>
+        </ul>
+      </dd>
+      <dd>Comment end. [signature]</dd>
+
+    The code splits the parent item element ("dd" in this case) into two and puts the list in the
+    second one. This fixes the thread feature behavior among other things.
+   */
+  cd.comments.slice(1).forEach((comment, i) => {
+    const previousComment = cd.comments[i];
+    const previousCommentLastElement = previousComment
+      .elements[previousComment.elements.length - 1];
+    const potentialItem = previousCommentLastElement.nextElementSibling?.firstElementChild;
+    if (
+      ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
+      comment.level === previousComment.level &&
+      previousCommentLastElement.tagName === 'DIV' &&
+      potentialItem === comment.elements[0] &&
+      potentialItem.tagName === 'LI'
+    ) {
+      const parentElement = previousCommentLastElement.parentNode;
+      const copyElement = document.createElement(parentElement.tagName);
+      copyElement.appendChild(previousCommentLastElement.nextElementSibling);
+      parentElement.parentNode.insertBefore(copyElement, parentElement.nextElementSibling);
+      console.debug('Separated a list from a part of the previous comment.');
+    }
+  });
+  cd.debug.stopTimer('adjustDom separate');
 }
 
 /**
  * Parse comments and modify related parts of the DOM.
  *
  * @param {Parser} parser
- * @throws {CdError} If there are no comments.
  * @private
  */
 function processComments(parser) {
@@ -312,11 +402,15 @@ function processComments(parser) {
     }
   });
 
+  cd.debug.startTimer('reformatTimestamps');
+  Comment.reformatTimestamps();
+  cd.debug.stopTimer('reformatTimestamps');
+
   // Faster than doing it for every individual comment.
   cd.g.rootElement
-    .querySelectorAll('table.cd-commentPart .cd-signature')
+    .querySelectorAll('table.cd-comment-part .cd-signature')
     .forEach((signature) => {
-      const commentId = signature.closest('.cd-commentPart').dataset.commentId;
+      const commentId = signature.closest('.cd-comment-part').dataset.commentId;
       cd.comments[commentId].isInSingleCommentTable = true;
     });
 
@@ -378,13 +472,13 @@ function addAddTopicButton() {
     cd.g.addSectionButton = new OO.ui.ButtonWidget({
       label: cd.s('addtopic'),
       framed: false,
-      classes: ['cd-button', 'cd-sectionButton'],
+      classes: ['cd-button-ooui', 'cd-section-button'],
     });
     cd.g.addSectionButton.on('click', () => {
       CommentForm.createAddSectionForm();
     });
     cd.g.$addSectionButtonContainer = $('<div>')
-      .addClass('cd-addTopicButton-container cd-sectionButton-container')
+      .addClass('cd-section-button-container cd-addTopicButton-container')
       .append(cd.g.addSectionButton.$element)
       .appendTo(cd.g.rootElement);
   }
@@ -473,6 +567,8 @@ function connectToAddTopicButtons() {
  * @private
  */
 function connectToCommentLinks($content) {
+  if (!$content.is('#mw-content-text, .cd-previewArea')) return;
+
   $content
     .find(`a[href^="#"]`)
     .filter(function () {
@@ -492,28 +588,36 @@ function connectToCommentLinks($content) {
  * @private
  */
 function highlightMentions($content) {
-  const selector = ['cd-signature']
+  if (!$content.is('#mw-content-text, .cd-comment-part')) return;
+
+  const selector = $content.hasClass('cd-comment-part') ?
+    `a[title*=":${cd.g.USER_NAME}"]` :
+    `.cd-comment-part a[title*=":${cd.g.USER_NAME}"]`;
+  const excludeSelector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
     .join(', ');
-  Array.from($content.get(0).querySelectorAll(`.cd-commentPart a[title*=":${cd.g.USER_NAME}"]`))
-    .filter((el) => (
-      cd.g.USER_NAMESPACE_ALIASES_REGEXP.test(el.title) &&
-      !el.parentNode.closest(selector) &&
-      getUserNameFromLink(el) === cd.g.USER_NAME
-    ))
-    .forEach((link) => {
+  $content
+    .find(selector)
+    .filter(function () {
+      return (
+        cd.g.USER_LINK_REGEXP.test(this.title) &&
+        !this.closest(excludeSelector) &&
+        processLink(this)?.[0] === cd.g.USER_NAME
+      );
+    })
+    .each((i, link) => {
       link.classList.add('cd-currentUserLink');
     });
 }
 
 /**
- * Perform fragment-related tasks, as well as comment anchor-related ones.
+ * Perform URL fragment-related tasks, as well as comment or section anchor-related ones.
  *
- * @param {object} keptData
+ * @param {object} passedData
  * @private
  */
-async function processFragment(keptData) {
+async function processFragment(passedData) {
   let fragment;
   let decodedFragment;
   let escapedFragment;
@@ -532,7 +636,7 @@ async function processFragment(keptData) {
       commentAnchor = decodedFragment;
     }
   } else {
-    commentAnchor = keptData.commentAnchor;
+    commentAnchor = passedData.commentAnchor;
   }
 
   let date;
@@ -542,7 +646,7 @@ async function processFragment(keptData) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getByAnchor(commentAnchor);
 
-    if (!keptData.commentAnchor && !comment) {
+    if (!passedData.commentAnchor && !comment) {
       let commentAnchorToCheck;
       // There can be a time difference between the time we know (taken from the watchlist) and the
       // time on the page. We take it to be not higher than 5 minutes for the watchlist.
@@ -557,15 +661,15 @@ async function processFragment(keptData) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.
       setTimeout(() => {
-        comment.scrollTo(false, keptData.pushState);
+        comment.scrollTo(false, passedData.pushState);
       });
     }
   }
 
-  if (keptData.sectionAnchor) {
-    const section = Section.getByAnchor(keptData.sectionAnchor);
+  if (passedData.sectionAnchor) {
+    const section = Section.getByAnchor(passedData.sectionAnchor);
     if (section) {
-      if (keptData.pushState) {
+      if (passedData.pushState) {
         history.pushState(history.state, '', '#' + section.anchor);
       }
 
@@ -598,11 +702,11 @@ async function processFragment(keptData) {
  * module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
- * @param {object} keptData
+ * @param {PassedData} passedData
  * @fires newCommentsHighlighted
  * @private
  */
-async function processVisits(visitsRequest, keptData) {
+async function processVisits(visitsRequest, passedData) {
   let visits;
   let currentPageVisits;
   try {
@@ -622,7 +726,7 @@ async function processVisits(visitsRequest, keptData) {
   for (let i = currentPageVisits.length - 1; i >= 0; i--) {
     if (
       currentPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL ||
-      keptData.markAsRead
+      passedData.markAsRead
     ) {
       currentPageVisits.splice(0, i);
       break;
@@ -632,23 +736,7 @@ async function processVisits(visitsRequest, keptData) {
   let haveMatchedTimeWithComment = false;
   if (currentPageVisits.length) {
     cd.comments.forEach((comment) => {
-      /**
-       * Is the comment new. Set only on active pages (not archived, not old diffs) excluding pages
-       * that are visited for the first time.
-       *
-       * @type {boolean|undefined}
-       * @memberof module:Comment
-       */
       comment.isNew = false;
-
-      /**
-       * Has the comment been seen. Set only on active pages (not archived, not old diffs) excluding
-       * pages that are visited for the first time. Check using `=== false` if you need to know if
-       * the comment is highlighted as new and unseen.
-       *
-       * @type {boolean|undefined}
-       * @memberof module:Comment
-       */
       comment.isSeen = true;
 
       if (!comment.date) return;
@@ -664,14 +752,14 @@ async function processVisits(visitsRequest, keptData) {
             commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1] ||
             comment.isOwn
           ) &&
-          !keptData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
+          !passedData.unseenCommentAnchors?.some((anchor) => anchor === comment.anchor)
         );
       }
     });
 
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
-    toc.addNewComments(Comment.groupBySection(unseenComments), keptData);
+    toc.addNewComments(Comment.groupBySection(unseenComments), passedData);
   }
 
   // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
@@ -695,74 +783,6 @@ async function processVisits(visitsRequest, keptData) {
 }
 
 /**
- * Ask the user if they want to receive desktop notifications on first run and ask for a permission
- * if it is default but the user has desktop notifications enabled (for example, if he/she is using
- * a browser different from where he/she has previously used).
- *
- * @private
- */
-async function confirmDesktopNotifications() {
-  if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
-    // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
-    getSettings({ reuse: true }).then((settings) => {
-      if (settings.desktopNotifications === 'unknown') {
-        const actions = [
-          {
-            label: cd.s('dn-confirm-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('dn-confirm-no'),
-            action: 'reject',
-          },
-        ];
-        confirmDialog(cd.s('dn-confirm'), {
-          size: 'medium',
-          actions,
-        }).then((action) => {
-          let promise;
-          if (action === 'accept') {
-            if (Notification.permission === 'default') {
-              OO.ui.alert(cd.s('dn-grantpermission'));
-              Notification.requestPermission((permission) => {
-                if (permission === 'granted') {
-                  cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-                  promise = setSettings(settings);
-                } else if (permission === 'denied') {
-                  cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-                  promise = setSettings(settings);
-                }
-              });
-            } else if (Notification.permission === 'granted') {
-              cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
-              promise = setSettings(settings);
-            }
-          } else if (action === 'reject') {
-            cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
-            promise = setSettings(settings);
-          }
-          if (promise) {
-            promise.catch((e) => {
-              mw.notify(cd.s('error-settings-save'), { type: 'error' })
-              console.warn(e);
-            });
-          }
-        });
-      }
-    });
-  }
-
-  if (
-    !['unknown', 'none'].includes(cd.settings.desktopNotifications) &&
-    Notification.permission === 'default'
-  ) {
-    await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
-    Notification.requestPermission();
-  }
-}
-
-/**
  * Log debug data to the console.
  *
  * @private
@@ -781,7 +801,8 @@ function debugLog() {
 }
 
 /**
- * @typedef {object} KeptData
+ * @typedef {object} PassedData
+ * @property {string} [html] HTML code of the page content to replace the current content with.
  * @property {string} [commentAnchor] Comment anchor to scroll to.
  * @property {string} [sectionAnchor] Section anchor to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
@@ -794,14 +815,15 @@ function debugLog() {
  *   enough time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
- * @property {boolean} [didSubmitCommentForm] Did the user just submitted a comment form.
+ * @property {boolean} [didSubmitCommentForm] Did the user just submit a comment form.
  */
 
 /**
  * Process the current web page.
  *
- * @param {KeptData} [keptData={}] Data passed from the previous page state.
- * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {PassedData} [passedData={}] Data passed from the previous page state.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
  * @fires commentsReady
@@ -809,14 +831,16 @@ function debugLog() {
  * @fires pageReady
  * @fires pageReadyFirstTime
  */
-export default async function processPage(keptData = {}, siteDataRequests, cachedScrollY) {
-  cd.debug.stopTimer(cd.g.isFirstRun ? 'loading data' : 'laying out HTML');
+export default async function processPage(passedData = {}, siteDataRequests, cachedScrollY) {
+  if (cd.g.isFirstRun) {
+    cd.debug.stopTimer('loading data');
+  }
   cd.debug.startTimer('preparations');
 
-  await prepare(siteDataRequests);
+  await prepare(passedData, siteDataRequests);
 
   if (cd.g.isFirstRun) {
-    saveRelativeScrollPosition(cachedScrollY);
+    saveRelativeScrollPosition(null, cachedScrollY);
   }
 
   cd.debug.stopTimer('preparations');
@@ -861,7 +885,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   let visitsRequest;
   let parser;
   if (articleId) {
-    watchedSectionsRequest = getWatchedSections(true, keptData);
+    watchedSectionsRequest = getWatchedSections(true, passedData);
     watchedSectionsRequest.catch((e) => {
       console.warn('Couldn\'t load the settings from the server.', e);
     });
@@ -878,7 +902,8 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
      */
     mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-    findSpecialElements();
+    findClosedDiscussions();
+    findOutdents();
 
     cd.debug.startTimer('process comments');
 
@@ -905,6 +930,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
 
   // Reevaluate if this is likely a talk page.
   const isLikelyTalkPage = (
+    cd.g.isEnabledInQuery ||
     !cd.g.isFirstRun ||
     cd.comments.length ||
     $('#ca-addsection').length ||
@@ -912,8 +938,9 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
   );
 
   const isPageCommentable = cd.g.isPageActive || !articleId;
-  cd.g.isPageFirstParsed = cd.g.isFirstRun || keptData.wasPageCreated;
+  cd.g.isPageFirstParsed = cd.g.isFirstRun || passedData.wasPageCreated;
 
+  let showPopups;
   if (isLikelyTalkPage) {
     if (articleId) {
       cd.debug.startTimer('process sections');
@@ -923,10 +950,24 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       cd.debug.stopTimer('process sections');
     }
 
+    cd.debug.startTimer('laying out HTML');
+    if (passedData.html) {
+      if (passedData.wasPageCreated) {
+        cd.g.$content.empty();
+      }
+      cd.g.$content
+        .children('.mw-parser-output')
+        .first()
+        .replaceWith(cd.g.$root);
+    }
+    cd.debug.stopTimer('laying out HTML');
+
+    cd.debug.startTimer('add topic buttons');
     if (isPageCommentable) {
       addAddTopicButton();
       connectToAddTopicButtons();
     }
+    cd.debug.stopTimer('add topic buttons');
 
     cd.debug.startTimer('mount navPanel');
     if (cd.g.isPageActive) {
@@ -949,17 +990,26 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     cd.debug.startTimer('final code and rendering');
 
     if (articleId) {
-      // Restore the initial viewport position in terms of visible elements which is how the user
-      // sees it.
-      cd.debug.startTimer('restore scroll position');
-      restoreRelativeScrollPosition();
-      cd.debug.stopTimer('restore scroll position');
+      // Should be below updating content on reload, as it requires the "sheet" property of "style"
+      // elements. Should be above reviewing highlightables, as the reviewing relies on floating and
+      // hidden elements.
+      findFloatingAndHiddenElements();
 
       cd.debug.startTimer('reviewHighlightables');
       // Should be above all code that deals with comment highlightable elements and comment levels
       // as this may alter that.
       Comment.reviewHighlightables();
       cd.debug.stopTimer('reviewHighlightables');
+
+      cd.debug.startTimer('reformatComments');
+      Comment.reformatComments();
+      cd.debug.stopTimer('reformatComments');
+
+      // Restore the initial viewport position in terms of visible elements, which is how the user
+      // sees it.
+      cd.debug.startTimer('restore scroll position');
+      restoreRelativeScrollPosition();
+      cd.debug.stopTimer('restore scroll position');
     }
 
     if (isPageCommentable) {
@@ -967,7 +1017,7 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       // invisible during the comment forms restoration. Should be below the navPanel mount/reset
       // methods as it calls navPanel.updateCommentFormButton() which depends on the navigation
       // panel being mounted.
-      restoreCommentForms();
+      restoreCommentForms(passedData.isPageReloadedExternally);
 
       const uri = new mw.Uri();
       if (Number(uri.query.cdaddtopic)) {
@@ -1015,49 +1065,70 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       Thread.init();
 
       // Should be below Thread.init() as it may want to scroll to a comment in a collapsed thread.
-      processFragment(keptData);
+      processFragment(passedData);
     }
 
     if (cd.g.isPageActive) {
-      processVisits(visitsRequest, keptData);
+      processVisits(visitsRequest, passedData);
 
       // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
       // cd.g.previousVisitUnixTime to be set.
-      updateChecker.init(visitsRequest, keptData);
+      updateChecker.init(visitsRequest, passedData);
     }
 
-    // keptData.wasPageCreated? articleId? но resize + adjustLabels ok на 404. resize
-    // orientationchange у document + window
     if (cd.g.isPageFirstParsed) {
       cd.debug.startTimer('pageNav mount');
       pageNav.mount();
       cd.debug.stopTimer('pageNav mount');
 
-      $(document)
-        // `mouseover` allows to capture the event when the cursor is not moving but ends up above
-        // the element (for example, as a result of scrolling).
-        .on('mousemove mouseover', Comment.highlightHovered)
+      if (!cd.settings.reformatComments) {
+        // The "mouseover" event allows to capture the state when the cursor is not moving but ends
+        // up above a comment but not above any comment parts (for example, as a result of
+        // scrolling). The benefit may be low compared to the performance cost, but it's unexpected
+        // when the user scrolls a comment and it suddenly stops being highlighted because the
+        // cursor is between neighboring <p>'s.
+        $(document).on('mousemove mouseover', Comment.highlightHovered);
+      }
 
-        .on('scroll', handleScroll);
+      // We need the visibilitychange event because many things may move while the document is
+      // hidden, and the movements are not processed when the document is hidden.
+      $(document).on('scroll visibilitychange', handleScroll);
+
       $(window).on('resize orientationchange', handleWindowResize);
 
+      // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
+      // content as opposed to "$('.cd-comment-author-wrapper')".
       mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
+
+      if (cd.settings.reformatComments && cd.comments.length) {
+        cd.debug.startTimer('parse user links');
+        // This could theoretically disrupt code that needs to process the whole page content, if it
+        // runs later than CD. But typically CD runs relatively late.
+        mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
+        cd.debug.stopTimer('parse user links');
+      }
+
+      const onPageMutations = () => {
+        commentLayers.redrawIfNecessary();
+        Thread.updateLines();
+
+        // Could also run handleScroll() here, but not sure, as it will double the execution time
+        // with rare effect.
+      };
 
       // Mutation observer doesn't follow all possible comment position changes (for example,
       // initiated with adding new CSS) unfortunately.
       setInterval(() => {
-        commentLayers.redrawIfNecessary();
-        Thread.updateLines();
+        onPageMutations();
       }, 1000);
 
       const observer = new MutationObserver((records) => {
-        const areAllLayers = records
+        const areLayersOnly = records
           .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (areAllLayers) return;
+        if (areLayersOnly) return;
 
-        commentLayers.redrawIfNecessary();
-        Thread.updateLines();
+        onPageMutations();
       });
       observer.observe(cd.g.$content.get(0), {
         attributes: true,
@@ -1068,17 +1139,11 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       pageNav.update();
     }
 
-    if (cd.g.isFirstRun) {
-      confirmDesktopNotifications();
-
-      if (mw.user.options.get('discussiontools-betaenable')) {
-        mw.notify(cd.util.wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
-      }
-    }
-
     if (isPageCommentable) {
       $(document).on('keydown', handleGlobalKeyDown);
     }
+
+    showPopups = cd.g.isFirstRun;
 
     /**
      * The script has processed the page.
@@ -1099,6 +1164,11 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
+    cd.g.$root.data('cd-parsed', true);
+    if (cd.g.isPageFirstParsed) {
+      mw.hook('wikipage.content').add(handleHookFirings);
+    }
+
     finishLoading();
 
     // The next line is needed to calculate the rendering time: it won't run until everything gets
@@ -1108,11 +1178,30 @@ export default async function processPage(keptData = {}, siteDataRequests, cache
     cd.debug.stopTimer('final code and rendering');
   } else {
     cd.g.isPageActive = false;
+
+    const $disableLink = $('#footer-places-togglecd a');
+    if ($disableLink.length) {
+      $disableLink
+        .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
+        .text(cd.s('footer-runcd'));
+    }
+
     finishLoading();
   }
 
-  cd.g.isPageFirstParsed = false;
-
   cd.debug.stopTimer('total time');
   debugLog();
+
+  if (showPopups) {
+    if (mw.user.options.get('discussiontools-betaenable')) {
+      mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
+    }
+
+    const didEnableCommentReformatting = await suggestEnableCommentReformatting();
+    await confirmDesktopNotifications();
+    if (didEnableCommentReformatting) {
+      reloadPage();
+      return;
+    }
+  }
 }

@@ -1,0 +1,326 @@
+{
+	"Africa/Algiers": [
+		"PMT",
+		"WET",
+		"WEST",
+		"CET",
+		"CEST"
+	],
+	"Africa/Lagos": [
+		"LMT",
+		"GMT",
+		"+0030",
+		"WAT"
+	],
+	"Africa/Casablanca": [
+		"LMT",
+		"+00",
+		"+01"
+	],
+	"Africa/Johannesburg": [
+		"SAST",
+		"SAST",
+		"SAST"
+	],
+	"Africa/Juba": [
+		"LMT",
+		"CAT",
+		"CAST",
+		"EAT"
+	],
+	"America/Cayenne": [
+		"LMT",
+		"-04",
+		"-03"
+	],
+	"America/Guayaquil": [
+		"QMT",
+		"-05",
+		"-04"
+	],
+	"America/Jamaica": [
+		"KMT",
+		"EST",
+		"EDT"
+	],
+	"America/New_York": [
+		"EST",
+		"EDT",
+		"EWT",
+		"EPT"
+	],
+	"Asia/Almaty": [
+		"LMT",
+		"+05",
+		"+06",
+		"+07"
+	],
+	"Asia/Bangkok": [
+		"BMT",
+		"+07"
+	],
+	"Asia/Barnaul": [
+		"LMT",
+		"+06",
+		"+07",
+		"+08"
+	],
+	"Asia/Kolkata": [
+		"MMT",
+		"IST",
+		"+0630"
+	],
+	"Asia/Shanghai": [
+		"CST",
+		"CDT"
+	],
+	"Asia/Dhaka": [
+		"HMT",
+		"+0630",
+		"+0530",
+		"+06",
+		"+07"
+	],
+	"Asia/Ho_Chi_Minh": [
+		"LMT",
+		"PLMT",
+		"+07",
+		"+08",
+		"+09"
+	],
+	"Europe/Istanbul": [
+		"IMT",
+		"EET",
+		"EEST",
+		"+03",
+		"+04"
+	],
+	"Asia/Jakarta": [
+		"BMT",
+		"+0720",
+		"+0730",
+		"+09",
+		"+08",
+		"WIB"
+	],
+	"Asia/Karachi": [
+		"LMT",
+		"+0530",
+		"+0630",
+		"+05",
+		"PKT",
+		"PKST"
+	],
+	"Asia/Kathmandu": [
+		"LMT",
+		"+0530",
+		"+0545"
+	],
+	"Asia/Krasnoyarsk": [
+		"LMT",
+		"+06",
+		"+07",
+		"+08"
+	],
+	"Asia/Makassar": [
+		"LMT",
+		"MMT",
+		"+08",
+		"+09",
+		"WITA"
+	],
+	"Asia/Manila": [
+		"PST",
+		"PDT",
+		"JST"
+	],
+	"Asia/Seoul": [
+		"LMT",
+		"KST",
+		"JST",
+		"KST",
+		"KDT",
+		"KDT"
+	],
+	"Asia/Taipei": [
+		"CST",
+		"JST",
+		"CDT"
+	],
+	"Asia/Tbilisi": [
+		"TBMT",
+		"+03",
+		"+04",
+		"+05"
+	],
+	"Asia/Tehran": [
+		"LMT",
+		"TMT",
+		"+0330",
+		"+04",
+		"+05",
+		"+0430"
+	],
+	"Asia/Yakutsk": [
+		"LMT",
+		"+08",
+		"+09",
+		"+10"
+	],
+	"Asia/Yekaterinburg": [
+		"LMT",
+		"PMT",
+		"+04",
+		"+05",
+		"+06"
+	],
+	"Asia/Yerevan": [
+		"LMT",
+		"+03",
+		"+04",
+		"+05"
+	],
+	"Europe/Amsterdam": [
+		"AMT",
+		"NST",
+		"+0120",
+		"+0020",
+		"CEST",
+		"CET"
+	],
+	"Europe/Athens": [
+		"AMT",
+		"EET",
+		"EEST",
+		"CEST",
+		"CET"
+	],
+	"Europe/Berlin": [
+		"CET",
+		"CEST",
+		"CEMT"
+	],
+	"Europe/Prague": [
+		"CET",
+		"CEST",
+		"GMT"
+	],
+	"Europe/Brussels": [
+		"WET",
+		"CET",
+		"CEST",
+		"WEST"
+	],
+	"Europe/Bucharest": [
+		"BMT",
+		"EET",
+		"EEST"
+	],
+	"Europe/Chisinau": [
+		"CMT",
+		"BMT",
+		"EET",
+		"EEST",
+		"CEST",
+		"CET",
+		"MSK",
+		"MSD"
+	],
+	"Europe/Helsinki": [
+		"HMT",
+		"EET",
+		"EEST"
+	],
+	"Europe/Kiev": [
+		"KMT",
+		"EET",
+		"MSK",
+		"CEST",
+		"CET",
+		"MSD",
+		"EEST"
+	],
+	"Europe/Minsk": [
+		"MMT",
+		"EET",
+		"MSK",
+		"CEST",
+		"CET",
+		"MSD",
+		"EEST",
+		"+03"
+	],
+	"Europe/Moscow": [
+		"MMT",
+		"MMT",
+		"MST",
+		"MDST",
+		"MSD",
+		"MSK",
+		"+05",
+		"EET",
+		"EEST",
+		"MSK"
+	],
+	"Europe/Paris": [
+		"PMT",
+		"WET",
+		"WEST",
+		"CEST",
+		"CET",
+		"WEMT"
+	],
+	"Europe/Riga": [
+		"RMT",
+		"LST",
+		"EET",
+		"MSK",
+		"CEST",
+		"CET",
+		"MSD",
+		"EEST"
+	],
+	"Europe/Rome": [
+		"CET",
+		"CEST"
+	],
+	"Europe/Stockholm": [
+		"CET",
+		"CEST"
+	],
+	"Europe/Tallinn": [
+		"TMT",
+		"CET",
+		"CEST",
+		"EET",
+		"MSK",
+		"MSD",
+		"EEST"
+	],
+	"Europe/Vilnius": [
+		"WMT",
+		"KMT",
+		"CET",
+		"EET",
+		"MSK",
+		"CEST",
+		"MSD",
+		"EEST"
+	],
+	"Europe/Warsaw": [
+		"WMT",
+		"CET",
+		"CEST",
+		"EET",
+		"EEST"
+	],
+	"Indian/Maldives": [
+		"MMT",
+		"+05"
+	],
+	"Pacific/Fiji": [
+		"LMT",
+		"+12",
+		"+13"
+	]
+}

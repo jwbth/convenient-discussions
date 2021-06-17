@@ -6,7 +6,7 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent } from './util';
+import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent, wrap } from './util';
 import { editWatchedSections } from './modal';
 import { getWatchedSections, setWatchedSections } from './options';
 
@@ -43,7 +43,7 @@ export default {
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'internal' && code === 'sizeLimit') {
-            const $body = cd.util.wrap(cd.sParse('section-watch-error-maxsize'), {
+            const $body = wrap(cd.sParse('section-watch-error-maxsize'), {
               callbacks: {
                 'cd-notification-editWatchedSections': () => {
                   editWatchedSections();
@@ -224,7 +224,11 @@ export default {
             nextSameLevelSection.headingNestingLevel !== section.headingNestingLevel
           )
         ) {
-          section.menu?.addSubsection?.wrapper.remove();
+          const menu = section.menu;
+          if (menu) {
+            menu.addSubsection?.wrapperElement.remove();
+            delete menu.addSubsection;
+          }
         } else {
           section.addAddSubsectionButton();
         }
@@ -259,8 +263,8 @@ export default {
         // Section with the last reply button
         const subsections = section.getChildren(true);
         const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
-        if (targetSection.$replyButtonLink) {
-          targetSection.$replyButtonLink
+        if (targetSection.replyButton) {
+          $(targetSection.replyButton.linkElement)
             .on('mouseenter', section.replyButtonHoverHandler)
             .on('mouseleave', section.replyButtonUnhoverHandler);
         }

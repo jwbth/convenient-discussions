@@ -289,14 +289,15 @@ export async function setVisits(visits) {
  * can be critical for determining watched sections.
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
- * @param {object} [keptData={}]
- * @param {string} [keptData.justWatchedSection] Name of the section that was watched within seconds
- *   before making this request (it could be not enough time for it to appear in the response).
- * @param {string} [keptData.justUnwatchedSection] Name of the section that was unwatched within
+ * @param {object} [passedData={}]
+ * @param {string} [passedData.justWatchedSection] Name of the section that was watched within
+ *   seconds before making this request (it could be not enough time for it to appear in the
+ *   response).
+ * @param {string} [passedData.justUnwatchedSection] Name of the section that was unwatched within
  *   seconds before making this request (it could be not enough time for it to appear in the
  *   response).
  */
-export async function getWatchedSections(reuse = false, keptData = {}) {
+export async function getWatchedSections(reuse = false, passedData = {}) {
   const isOptionUnset = mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null;
   const promise = cd.g.isPageFirstParsed && isOptionUnset ?
     Promise.resolve({}) :
@@ -312,8 +313,8 @@ export async function getWatchedSections(reuse = false, keptData = {}) {
     // Manually add/remove a section that was added/removed at the same moment the page was
     // reloaded the last time, so when we requested watched sections from server, this section
     // wasn't there yet most probably.
-    addToArrayIfAbsent(currentPageWatchedSections, keptData.justWatchedSection);
-    removeFromArrayIfPresent(currentPageWatchedSections, keptData.justUnwatchedSection);
+    addToArrayIfAbsent(currentPageWatchedSections, passedData.justWatchedSection);
+    removeFromArrayIfPresent(currentPageWatchedSections, passedData.justUnwatchedSection);
   }
 
   cd.g.watchedSections = watchedSections;

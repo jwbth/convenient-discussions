@@ -67,7 +67,7 @@ export default {
 
   contribsPage: 'מיוחד:תרומות',
 
-  localTimezoneOffset: null,
+  timezone: 'Asia/Tel_Aviv',
 
   customTalkNamespaces: [4],
 
@@ -457,6 +457,6 @@ export default {
    * }</code></pre>
    */
   // getAnchorCode: function (anchor) {
-  //   return '<span id="' + anchor + '></span>';
+  //   return '<span id="' + anchor + '"></span>';
   // },
 };

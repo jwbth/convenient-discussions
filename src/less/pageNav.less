@@ -61,16 +61,24 @@
 
   a {
     color: inherit;
+    text-decoration: inherit;
 
-    &:hover,
-    &:focus {
-      text-decoration: inherit;
+    &:hover {
+      color: var(--cd-link-hover-color);
+    }
+
+    &:active {
+      color: var(--cd-link-active-color);
     }
   }
 }
 
 .cd-pageNav-link {
   display: block;
+
+  &.cd-pageNav-link-inline {
+    display: inline;
+  }
 }
 
 .ltr .cd-pageNav-item-level {

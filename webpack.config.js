@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 
 const webpack = require('webpack');
@@ -32,7 +31,7 @@ module.exports = (env) => {
   /*
     Single builds include the main file, configuration and localization, as well as source maps, in
     a single file. Create them like this:
-      npm run single --project=w --lang=en
+      npm run single -- project=w lang=en
    */
   const single = Boolean(env.single || process.env.npm_config_single);
 
@@ -40,9 +39,9 @@ module.exports = (env) => {
   let lang;
   let wiki;
   if (single) {
-    const project = process.env.npm_config_project || 'w';
+    const project = env.project || 'w';
     const interlanguageProjects = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
-    lang = process.env.npm_config_lang || 'en';
+    lang = env.lang || 'en';
     wiki = interlanguageProjects.includes(project) ? `${project}-${lang}` : project;
     filenamePostfix = `-single-${wiki}`;
   } else if (dev) {
@@ -110,22 +109,7 @@ module.exports = (env) => {
         new webpack.SourceMapDevToolPlugin({
           filename: `[file]${sourceMapExt}`,
           append: `\n//# sourceMappingURL=${config.protocol}://${config.server}${config.scriptPath}/index.php?title=${config.rootPath}/[url]&action=raw&ctype=application/json`,
-        }),
-
-        // Fix the exposal of an absolute path in the source map by worker-loader.
-        {
-          apply: (compiler) => {
-            compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
-              const sourceMapFilename = `./dist/${filename}${sourceMapExt}`;
-              const content = fs.readFileSync(sourceMapFilename).toString();
-              const newContent = content.replace(
-                /(require\(\\"!!)[^"]+[^.\\/]([\\/]+node_modules[\\/]+worker-loader)/g,
-                (s, before, end) => `${before}.${end}`,
-              );
-              fs.writeFileSync(sourceMapFilename, newContent);
-            });
-          },
-        }
+        })
       );
     }
     if (!process.env.CI) {
@@ -151,15 +135,6 @@ module.exports = (env) => {
           exclude: /node_modules/,
           use: {
             loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-              plugins: [
-                '@babel/plugin-proposal-nullish-coalescing-operator',
-                '@babel/plugin-proposal-optional-chaining',
-                '@babel/plugin-transform-runtime',
-                '@babel/plugin-transform-async-to-generator',
-              ],
-            },
           },
         },
         {
@@ -183,16 +158,18 @@ module.exports = (env) => {
           use: {
             loader: 'worker-loader',
             options: {
-              name: `convenientDiscussions-worker${filenamePostfix}.js`,
-              inline: true,
-              fallback: false,
+              filename: `convenientDiscussions-worker${filenamePostfix}.js`,
+              inline: 'no-fallback',
             },
           },
         },
       ],
     },
     optimization: {
+      // Less function calls when debugging, but one scope for all modules. To change this, "!dev"
+      // could be used.
       concatenateModules: true,
+
       minimizer: [
         new TerserPlugin({
           terserOptions: {
@@ -201,9 +178,11 @@ module.exports = (env) => {
             compress: {
               // + 0.3% to the file size
               sequences: false,
+
               // + 1% to the file size
               conditionals: false,
             },
+
             output: {
               // Otherwise messes with \x01 \x02 \x03 \x04.
               ascii_only: true,
@@ -220,7 +199,12 @@ module.exports = (env) => {
             condition: /@preserve|@license|@cc_on/i,
 
             filename: (filename) => `${filename}.LICENSE.js`,
-            banner: (licenseFile) => `For license information please see ${getUrl(config.rootPath + '/' + licenseFile)}`,
+            banner: (licenseFile) => `
+ * For documentation and feedback, see the script's homepage:
+ *   https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+ * For license information, see
+ *   ${getUrl(config.rootPath + '/' + licenseFile)}
+`,
           },
           sourceMap: true,
         }),

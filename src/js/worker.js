@@ -2,12 +2,16 @@
  * Web worker entry point.
  *
  * Note that currently there may be difficulties in testing the web worker in the "local" mode with
- * custom config functions such as {@link module:defaultConfig.checkForCustomForeignComponents} due to
- * the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
+ * custom config functions such as {@link module:defaultConfig.checkForCustomForeignComponents} due
+ * to the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
  * contexts resulting in a lost tie between them.
  *
  * @module worker
  */
+
+// Workaround to fix the error when trying to import unique() to CommentSkeleton.
+import { unique } from './util';
+void unique;
 
 import CdError from './CdError';
 import CommentSkeleton from './CommentSkeleton';
@@ -15,7 +19,6 @@ import Parser from './Parser';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
-import g from './staticGlobals';
 import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
 import { resetCommentAnchors } from './timestamp';
 
@@ -34,7 +37,6 @@ const context = {
 let alarmTimeout;
 
 self.cd = cd;
-cd.g = g;
 cd.debug = debug;
 cd.debug.init();
 
@@ -105,13 +107,13 @@ function keepSafeValues(obj, dangerousKeys) {
 /**
  * Remove the element's attributes whose names start with "data-".
  *
- * @param {Element} el
+ * @param {Element} element
  * @private
  */
-function removeDataAttributes(el) {
-  Object.keys(el.attribs).forEach((name) => {
+function removeDataAttributes(element) {
+  Object.keys(element.attribs).forEach((name) => {
     if (/^data-/.test(name)) {
-      el.removeAttribute(name);
+      element.removeAttribute(name);
     }
   });
 }
@@ -155,42 +157,10 @@ function parse() {
   cd.debug.stopTimer('worker: parse sections');
 
   cd.debug.startTimer('worker: prepare comments and sections');
-  cd.sections.forEach((section) => {
-    section.ancestors = section.getAncestors().map((section) => section.headline);
-    section.oldestCommentAnchor = section.oldestComment?.anchor;
-  });
-
-  let commentDangerousKeys = [
-    'elements',
-    'highlightables',
-    'parser',
-    'parts',
-    'signatureElement',
-  ];
-  let sectionDangerousKeys = [
-    'cachedAncestors',
-    // 'comments' property is removed below individually.
-    'commentsInFirstChunk',
-    'elements',
-    'headlineElement',
-    'lastElementInFirstChunk',
-    'oldestComment',
-    'parser',
-  ];
-
-  cd.sections.forEach((section) => {
-    keepSafeValues(section, sectionDangerousKeys);
-  });
-
   CommentSkeleton.processOutdents();
   cd.comments.forEach((comment) => {
-    // Replace with a worker-safe object
-    comment.section = comment.section ? cd.sections[comment.section.id] : null;
-
     comment.hiddenElementData = [];
     comment.elementHtmls = comment.elements.map((element) => {
-      element.removeAttribute('data-comment-id');
-
       if (/^H[1-6]$/.test(element.tagName)) {
         // Keep only the headline, as other elements contain dynamic identificators.
         const headlineElement = element.getElementsByClassName('mw-headline')[0];
@@ -210,6 +180,17 @@ function parse() {
       // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
       removeDataAttributes(element);
       element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
+
+      cd.debug.startTimer('worker remove IDs');
+
+      // Empty comment anchors, in most cases added by the script.
+      element.getElementsByTagName('span')
+        .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
+        .forEach((el) => {
+          el.remove();
+        });
+
+      cd.debug.stopTimer('worker remove IDs');
 
       if (element.classList.contains('references') || ['STYLE', 'LINK'].includes(element.tagName)) {
         const textNode = hideElement(element, comment);
@@ -255,8 +236,8 @@ function parse() {
         // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
         // comment) is treated differently depending on whether there are replies to that comment.
         // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
-        // part; when there is, the <div> wrapper is.
-        el.classList.remove('cd-commentPart', 'cd-commentPart-first', 'cd-commentPart-last');
+        // part; when there are, the <div> wrapper is.
+        el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
         if (!el.getAttribute('class')) {
           el.removeAttribute('class');
         }
@@ -279,15 +260,29 @@ function parse() {
     comment.signatureElement.remove();
     comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();
 
-    comment.elementTagNames = comment.elements.map((el) => el.tagName);
+    comment.elementNames = comment.elements.map((el) => el.tagName);
   });
 
-  cd.sections.forEach((section) => {
-    delete section.comments;
-  });
+  let commentDangerousKeys = [
+    'authorLink',
+    'authorTalkLink',
+    'cachedParent',
+    'elements',
+    'highlightables',
+    'parser',
+    'parts',
+    'signatureElement',
+    'timestampElement',
+  ];
+  let sectionDangerousKeys = [
+    'cachedAncestors',
+    'elements',
+    'headlineElement',
+    'lastElementInFirstChunk',
+    'parser',
+  ];
+
   cd.comments.forEach((comment, i) => {
-    keepSafeValues(comment, commentDangerousKeys);
-
     cd.debug.startTimer('set children and parent');
     comment.children = comment.getChildren();
     comment.children.forEach((reply) => {
@@ -299,6 +294,16 @@ function parse() {
     comment.previousComments = cd.comments
       .slice(Math.max(0, i - 2), i)
       .reverse();
+
+    keepSafeValues(comment, commentDangerousKeys);
+  });
+
+  cd.sections.forEach((section) => {
+    section.parent = section.getParent();
+    section.ancestors = section.getAncestors().map((section) => section.headline);
+    section.oldestCommentAnchor = section.oldestComment?.anchor;
+
+    keepSafeValues(section, sectionDangerousKeys);
   });
 
   cd.debug.stopTimer('worker: prepare comments and sections');
@@ -350,18 +355,18 @@ function onMessageFromWindow(e) {
   if (message.type === 'parse') {
     cd.debug.startTimer('worker');
 
-    Object.assign(cd.g, message.g);
+    cd.g = message.g;
     cd.config = message.config;
 
     cd.config.checkForCustomForeignComponents = restoreFunc(
       cd.config.checkForCustomForeignComponents
     );
-    cd.g.TIMESTAMP_PARSER = restoreFunc(cd.g.TIMESTAMP_PARSER);
     cd.g.IS_IPv6_ADDRESS = restoreFunc(cd.g.IS_IPv6_ADDRESS);
 
     const dom = parseDOM(message.text, {
       withStartIndices: true,
       withEndIndices: true,
+      decodeEntities: false,
     });
 
     context.document = new Document(dom);

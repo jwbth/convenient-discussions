@@ -1,18 +1,26 @@
+:root {
+  --cd-link-color: #0645ad;
+  --cd-link-hover-color: #0645ad;
+  --cd-link-active-color: #faa700;
+}
+
 // Skin fixes for talk pages
 .skin-monobook {
-  .cd-commentUnderlay {
+  --cd-link-color: #002bb8;
+
+  .cd-comment-underlay {
     z-index: -1;
   }
 
-  .cd-commentOverlay-innerWrapper {
+  .cd-comment-overlay-innerWrapper {
     z-index: 2;
   }
 
-  .cd-commentButton.cd-commentButton.oo-ui-labelElement > .oo-ui-buttonElement-button > .oo-ui-labelElement-label {
+  .cd-comment-button-ooui.oo-ui-labelElement .oo-ui-labelElement-label {
     line-height: 1.14285714em;
   }
 
-  .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
+  .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
     padding: 0;
 
     > .oo-ui-iconElement-icon {
@@ -22,7 +30,7 @@
     }
   }
 
-  .cd-commentInput {
+  .cd-commentForm-commentInput {
     border: 1px solid #ccc;
 
     .wikiEditor-ui-toolbar {
@@ -52,9 +60,35 @@
   .cd-copyLinkDialog .oo-ui-textInputWidget input {
     height: 35px;
   }
+
+  &.sitedir-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+    padding-left: 0;
+
+    > .oo-ui-iconElement-icon {
+      background-position: 1px 50%;
+    }
+  }
+
+  &.sitedir-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+    padding-right: 0;
+
+    > .oo-ui-iconElement-icon {
+      background-position: 3px 50%;
+    }
+  }
+
+  .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
+    min-width: unset;
+    min-height: unset;
+    width: 14px;
+    margin: 0;
+  }
 }
 
 .skin-timeless {
+  --cd-link-color: #3366cc;
+  --cd-link-hover-color: #2952a3;
+
   .mw-body-content {
     position: relative;
   }
@@ -70,19 +104,11 @@
   .cd-pageNav {
     font-size: 13px;
   }
-
-  // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
-  // surrounding area from the design point of view.
-  .sitedir-ltr .cd-commentOverlay-stretchedStart .cd-commentOverlay-line {
-    left: 0;
-  }
-
-  .sitedir-rtl .cd-commentOverlay-stretchedStart .cd-commentOverlay-line {
-    right: 0;
-  }
 }
 
 .skin-modern {
+  --cd-link-color: #036;
+
   #mw-content-text {
     position: relative;
   }
@@ -90,4 +116,8 @@
   .cd-loadingPopup {
     width: 18.2em;
   }
+}
+
+.skin-minerva {
+  --cd-link-color: #3366cc;
 }

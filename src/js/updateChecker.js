@@ -26,6 +26,7 @@ import {
   keepWorkerSafeValues,
   saveToLocalStorage,
   unique,
+  wrap,
 } from './util';
 import { getUserGenders } from './apiWrappers';
 
@@ -106,13 +107,13 @@ async function checkForUpdates() {
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
           toc.addNewSections(sections);
-          const mappedCurrentComments = mapComments(currentComments, comments);
+          mapComments(currentComments, comments);
 
-          // We check for new edits before notifying about new comments to notify about changes in a
+          // We check for changes before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
-          checkForNewEdits(mappedCurrentComments);
+          checkForNewChanges(currentComments);
 
-          await processComments(comments, mappedCurrentComments, currentRevisionId);
+          await processComments(comments, currentComments, currentRevisionId);
         }
       }
     }
@@ -134,7 +135,7 @@ async function checkForUpdates() {
  * If the revision of the current visit and previous visit are different, process the said
  * revisions. (We need to process the current revision too to get the comments' inner HTML without
  * any elements that may be added by scripts.) The revisions' data will finally processed by {@link
- * module:updateChecker~checkForEditsSincePreviousVisit checkForEditsSincePreviousVisit()}.
+ * module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
  *
  * @private
  */
@@ -152,19 +153,20 @@ async function processRevisionsIfNeeded() {
     const { comments: oldComments } = await updateChecker.processPage(previousVisitRevisionId);
     const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
     if (isPageStillAtRevision(currentRevisionId)) {
-      checkForEditsSincePreviousVisit(mapComments(currentComments, oldComments));
+      mapComments(currentComments, oldComments);
+      checkForChangesSincePreviousVisit(currentComments);
     }
   }
 }
 
 /**
- * Remove seen rendered edits data older than 60 days.
+ * Remove seen rendered changes data older than 60 days.
  *
  * @param {object[]} data
  * @returns {object}
  * @private
  */
-function cleanUpSeenRenderedEdits(data) {
+function cleanUpSeenRenderedChanges(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
@@ -190,10 +192,15 @@ function cleanUpSeenRenderedEdits(data) {
  * @private
  */
 function mapSections(sections) {
-  // Reset from the previous run.
+  cd.debug.startTimer('mapSections');
+  // Reset values set in the previous run.
   cd.sections.forEach((section) => {
     delete section.match;
   });
+  sections.forEach((section) => {
+    delete section.match;
+  });
+  cd.debug.stopTimer('mapSections');
 
   sections.forEach((section) => {
     const { section: matchedSection, score } = Section.search(section, true) || {};
@@ -216,91 +223,112 @@ function mapSections(sections) {
  */
 
 /**
- * Map comments obtained from the current revision to the comments obtained from another revision
- * (newer or older) by adding the `match` property to the first ones. The function also adds the
- * `hasPoorMatch` property to the comments that have possible matches that are not good enough to
+ * Map comments obtained from the current revision to comments obtained from another revision (newer
+ * or older) by adding the `match` property to the first ones. The function also adds the
+ * `hasPoorMatch` property to comments that have possible matches that are not good enough to
  * confidently state a match.
  *
  * @param {CommentSkeletonLike[]} currentComments
  * @param {CommentSkeletonLike[]} otherComments
- * @returns {CommentSkeletonLike[]} Mapped current comments.
  * @private
  */
 function mapComments(currentComments, otherComments) {
-  const mappedCurrentComments = currentComments.map((comment) => Object.assign({}, comment));
+  // Reset values set in the previous run.
+  cd.debug.startTimer('mapComments');
+  currentComments.forEach((comment) => {
+    delete comment.match;
+    delete comment.matchScore;
+    delete comment.hasPoorMatch;
+    delete comment.parentMatch;
+  });
+  cd.debug.stopTimer('mapComments');
 
+  const sortCommentsByMatchScore = (target, candidates) => (
+    candidates
+      .map((candidate) => {
+        const hasParentAnchorMatched = candidate.parent?.anchor === target.parent?.anchor;
+        const hasHeadlineMatched = candidate.section?.headline === target.section?.headline;
+
+        // Taking matched ID into account makes sense only if the total number of comments
+        // coincides.
+        const hasIdMatched = (
+          candidate.id === target.id &&
+          currentComments.length === otherComments.length
+        );
+
+        const partsMatchedCount = candidate.elementHtmls
+          .filter((html, i) => html === target.elementHtmls[i])
+          .length;
+        const partsMatchedProportion = partsMatchedCount / candidate.elementHtmls.length;
+        const overlap = partsMatchedProportion === 1 ?
+          1 :
+          calculateWordOverlap(candidate.text, target.text);
+        const score = (
+          hasParentAnchorMatched * (candidate.parent?.anchor ? 1 : 0.75) +
+          hasHeadlineMatched * 1 +
+          partsMatchedProportion +
+          overlap +
+          hasIdMatched * 0.25
+        );
+        return {
+          comment: candidate,
+          score,
+        };
+      })
+      .filter((match) => match.score > 1.66)
+      .sort((match1, match2) => {
+        if (match2.score > match1.score) {
+          return 1;
+        } else if (match2.score < match1.score) {
+          return -1;
+        } else {
+          return 0;
+        }
+      })
+  );
+
+  // We choose to traverse "other" (newer/older) comments in the top cycle, not current. This way,
+  // if there are multiple match candidates for an "other" comment, we choose the match between
+  // them. This is better than choosing a match for a current comment between "other" comments,
+  // because if we determined a match for a current comment and then see a better match for the
+  // "other" comment determined as a match, we would have to set the "other" comment as a match to
+  // the new current comment, and the initial current comment would lose its match.
   otherComments.forEach((otherComment) => {
-    const currentCommentsFiltered = mappedCurrentComments.filter((currentComment) => (
+    const ccFiltered = currentComments.filter((currentComment) => (
       currentComment.authorName === otherComment.authorName &&
       currentComment.date &&
       otherComment.date &&
       currentComment.date.getTime() === otherComment.date.getTime()
     ));
-    if (currentCommentsFiltered.length === 1) {
-      currentCommentsFiltered[0].match = otherComment;
-    } else if (currentCommentsFiltered.length > 1) {
+    if (ccFiltered.length === 1) {
+      if (ccFiltered[0].match) {
+        const candidates = [otherComment, ccFiltered[0].match];
+        ccFiltered[0].match = sortCommentsByMatchScore(ccFiltered[0], candidates)[0].comment;
+      } else {
+        ccFiltered[0].match = otherComment;
+      }
+    } else if (ccFiltered.length > 1) {
       let found;
-      currentCommentsFiltered
-        .map((currentComment) => {
-          const hasParentAnchorMatched = (
-            currentComment.parent?.anchor === otherComment.parent?.anchor
-          );
-          const hasHeadlineMatched = (
-            currentComment.section?.headline === otherComment.section?.headline
-          );
-
-          // Taking matched ID into account makes sense only if the total number of comments
-          // coincides.
-          const hasIdMatched = (
-            currentComment.id === otherComment.id &&
-            mappedCurrentComments.length === otherComments.length
-          );
-
-          const partsMatchedCount = currentComment.elementHtmls
-            .filter((html, i) => html === otherComment.elementHtmls[i])
-            .length;
-          const partsMatchedProportion = partsMatchedCount / currentComment.elementHtmls.length;
-          const overlap = partsMatchedProportion === 1 ?
-            1 :
-            calculateWordOverlap(currentComment.text, otherComment.text);
-          const score = (
-            hasParentAnchorMatched * (currentComment.parent?.anchor ? 1 : 0.75) +
-            hasHeadlineMatched * 1 +
-            partsMatchedProportion +
-            overlap +
-            hasIdMatched * 0.25
-          );
-          return {
-            comment: currentComment,
-            score,
-          };
-        })
-        .filter((match) => match.score > 1.66)
-        .sort((match1, match2) => {
-          if (match2.score > match1.score) {
-            return 1;
-          } else if (match2.score < match1.score) {
-            return -1;
-          } else {
-            return 0;
+      sortCommentsByMatchScore(otherComment, ccFiltered).forEach((match) => {
+        // If the current comment already has a match (from a previous iteration of otherComments
+        // cycle), compare their scores.
+        if (!found && (!match.comment.match || match.comment.matchScore < match.score)) {
+          match.comment.match = otherComment;
+          match.comment.matchScore = match.score;
+          delete match.comment.hasPoorMatch;
+          found = true;
+        } else {
+          if (!match.comment.match) {
+            // There is a poor match for a current comment. It is not used as a legitimate match
+            // because it is a worse match for an "other" comment than some other match, but it is
+            // still a possible match. If a better match is found for a current comment, this
+            // property is deleted for it.
+            match.comment.hasPoorMatch = true;
           }
-        })
-        .forEach((match) => {
-          if (!found && (!match.comment.match || match.comment.matchScore < match.score)) {
-            match.comment.match = otherComment;
-            match.comment.matchScore = match.score;
-            delete match.comment.hasPoorMatch;
-            found = true;
-          } else {
-            if (!match.comment.match) {
-              match.comment.hasPoorMatch = true;
-            }
-          }
-        });
+        }
+      });
     }
   });
-
-  return mappedCurrentComments;
 }
 
 /**
@@ -313,7 +341,7 @@ function mapComments(currentComments, otherComments) {
  * @returns {boolean}
  * @private
  */
-function isCommentEdited(olderComment, newerComment) {
+function hasCommentChanged(olderComment, newerComment) {
   return (
     newerComment.textComparedHtml !== olderComment.textComparedHtml ||
     (
@@ -326,37 +354,40 @@ function isCommentEdited(olderComment, newerComment) {
 /**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
- * @param {CommentSkeletonLike[]} mappedCurrentComments
+ * @param {CommentSkeletonLike[]} currentComments
  * @private
  */
-function checkForEditsSincePreviousVisit(mappedCurrentComments) {
-  const seenRenderedEdits = cleanUpSeenRenderedEdits(getFromLocalStorage('seenRenderedEdits'));
+function checkForChangesSincePreviousVisit(currentComments) {
+  const seenRenderedChanges = cleanUpSeenRenderedChanges(
+    getFromLocalStorage('seenRenderedChanges')
+  );
   const articleId = mw.config.get('wgArticleId');
 
-  const editList = [];
-  mappedCurrentComments.forEach((currentComment) => {
+  const changeList = [];
+  currentComments.forEach((currentComment) => {
     if (currentComment.anchor === submittedCommentAnchor) return;
 
     const oldComment = currentComment.match;
     if (oldComment) {
-      const seenComparedHtml = seenRenderedEdits[articleId]?.[currentComment.anchor]?.comparedHtml;
+      const seenComparedHtml = seenRenderedChanges[articleId]?.[currentComment.anchor]
+        ?.comparedHtml;
       if (
-        isCommentEdited(oldComment, currentComment) &&
+        hasCommentChanged(oldComment, currentComment) &&
         seenComparedHtml !== currentComment.comparedHtml
       ) {
         const comment = Comment.getByAnchor(currentComment.anchor);
         if (!comment) return;
 
         const commentsData = [oldComment, currentComment];
-        comment.markAsEdited('editedSince', true, previousVisitRevisionId, commentsData);
+        comment.markAsChanged('changedSince', true, previousVisitRevisionId, commentsData);
 
         if (comment.isOpeningSection) {
           const section = comment.section;
           if (
             section &&
             !section.isWatched &&
-            /^H[1-6]$/.test(currentComment.elementTagNames[0]) &&
-            oldComment.elementTagNames[0] === currentComment.elementTagNames[0]
+            /^H[1-6]$/.test(currentComment.elementNames[0]) &&
+            oldComment.elementNames[0] === currentComment.elementNames[0]
           ) {
             const html = oldComment.elementHtmls[0].replace(
               /\x01(\d+)_\w+\x02/g,
@@ -380,35 +411,38 @@ function checkForEditsSincePreviousVisit(mappedCurrentComments) {
           old: oldComment,
           current: currentComment,
         };
-        editList.push({ comment, commentData });
+        changeList.push({ comment, commentData });
       }
     }
   });
 
-  if (editList.length) {
+  if (changeList.length) {
     /**
-     * Edits to the existing comments have been made since the previous visit.
+     * Existing comments have changed since the previous visit.
      *
-     * @event editsSincePreviousVisit
+     * @event changesSincePreviousVisit
      * @type {object}
      */
-    mw.hook('convenientDiscussions.editsSincePreviousVisit').fire(editList);
+    mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
   }
 
-  delete seenRenderedEdits[articleId];
-  saveToLocalStorage('seenRenderedEdits', seenRenderedEdits);
+  delete seenRenderedChanges[articleId];
+  saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
+
+  // TODO: Remove in September 2021 (3 months after renaming)
+  mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 }
 
 /**
  * Check if there are changes made to the currently displayed comments since they were rendered.
  *
- * @param {CommentSkeletonLike[]} mappedCurrentComments
+ * @param {CommentSkeletonLike[]} currentComments
  * @private
  */
-function checkForNewEdits(mappedCurrentComments) {
-  let isEditMarkUpdated = false;
-  const editList = [];
-  mappedCurrentComments.forEach((currentComment) => {
+function checkForNewChanges(currentComments) {
+  let isChangeMarkUpdated = false;
+  const changeList = [];
+  currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     let comment;
     const events = {};
@@ -417,32 +451,41 @@ function checkForNewEdits(mappedCurrentComments) {
       if (!comment) return;
 
       if (comment.isDeleted) {
-        comment.unmarkAsEdited('deleted');
-        isEditMarkUpdated = true;
+        comment.unmarkAsChanged('deleted');
+        isChangeMarkUpdated = true;
         events.undeleted = true;
       }
-      if (isCommentEdited(currentComment, newComment)) {
+      if (hasCommentChanged(currentComment, newComment)) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
           comment.comparedHtml = newComment.comparedHtml;
+
+          currentComment.hiddenElementData = newComment.hiddenElementData;
+          currentComment.elementHtmls = newComment.elementHtmls;
+          currentComment.elementNames = newComment.elementNames;
+          currentComment.text = newComment.text;
+          currentComment.comparedHtml = newComment.comparedHtml;
+          currentComment.textComparedHtml = newComment.textComparedHtml;
+          currentComment.headingComparedHtml = newComment.headingComparedHtml;
+
           const updateSuccess = comment.update(currentComment, newComment);
           const commentsData = [currentComment, newComment];
-          comment.markAsEdited('edited', updateSuccess, lastCheckedRevisionId, commentsData);
-          isEditMarkUpdated = true;
-          events.edited = { updateSuccess };
+          comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
+          isChangeMarkUpdated = true;
+          events.changed = { updateSuccess };
         }
-      } else if (comment.isEdited) {
+      } else if (comment.isChanged) {
         comment.update(currentComment, newComment);
-        comment.unmarkAsEdited('edited');
-        isEditMarkUpdated = true;
-        events.unedited = true;
+        comment.unmarkAsChanged('changed');
+        isChangeMarkUpdated = true;
+        events.unchanged = true;
       }
     } else if (!currentComment.hasPoorMatch) {
       comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment || comment.isDeleted) return;
 
-      comment.markAsEdited('deleted');
-      isEditMarkUpdated = true;
+      comment.markAsChanged('deleted');
+      isChangeMarkUpdated = true;
       events.deleted = true;
     }
 
@@ -451,26 +494,28 @@ function checkForNewEdits(mappedCurrentComments) {
         current: currentComment,
         new: newComment,
       };
-      editList.push({ comment, events, commentData });
+      changeList.push({ comment, events, commentData });
     }
   });
 
-  if (isEditMarkUpdated) {
-    // If we configure the layers of deleted comments in Comment#unmarkAsEdited, they will prevent
+  if (isChangeMarkUpdated) {
+    // If we configure the layers of deleted comments in Comment#unmarkAsChanged, they will prevent
     // layers before them from being updated due to the "stop at the first three unmoved comments"
     // optimization. So we just do the whole job here.
     commentLayers.redrawIfNecessary(false, true);
-    Thread.updateLines();
+
+    // Thread start and end items may be replaced.
+    Thread.init();
   }
 
-  if (editList.length) {
+  if (changeList.length) {
     /**
-     * Changes to the existing comments have been made.
+     * Existing comments have changed (probably edited).
      *
-     * @event newEdits
+     * @event newChanges
      * @type {object}
      */
-    mw.hook('convenientDiscussions.newEdits').fire(editList);
+    mw.hook('convenientDiscussions.newChanges').fire(changeList);
   }
 }
 
@@ -566,7 +611,7 @@ function showOrdinaryNotification(comments) {
     }
 
     closeNotifications(false);
-    const $body = cd.util.wrap(html);
+    const $body = wrap(html);
     const notification = addNotification([$body], { comments: filteredComments });
     notification.$notification.on('click', () => {
       reloadPage({ commentAnchor: filteredComments[0].anchor });
@@ -656,6 +701,8 @@ function showDesktopNotification(comments) {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
+      commentLayers.redrawIfNecessary(false, true);
+
       reloadPage({
         commentAnchor: comment.anchor,
         closeNotificationsSmoothly: false,
@@ -679,12 +726,12 @@ function isPageStillAtRevision(revisionId) {
  * Process the comments retrieved by a web worker.
  *
  * @param {CommentSkeletonLike[]} comments Comments from the recent revision.
- * @param {CommentSkeletonLike[]} mappedCurrentComments Comments from the currently shown revision
+ * @param {CommentSkeletonLike[]} currentComments Comments from the currently shown revision
  *   mapped to the comments from the recent revision.
  * @param {number} currentRevisionId
  * @private
  */
-async function processComments(comments, mappedCurrentComments, currentRevisionId) {
+async function processComments(comments, currentComments, currentRevisionId) {
   comments.forEach((comment) => {
     comment.author = userRegistry.getUser(comment.authorName);
     if (comment.parent?.authorName) {
@@ -693,15 +740,17 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   });
 
   const newComments = comments
-    .filter((comment) => !mappedCurrentComments.some((mcc) => mcc.match === comment))
+    .filter((comment) => comment.anchor && !currentComments.some((mcc) => mcc.match === comment))
 
-    // Replace with comment objects detached from the comment objects in the comments object (so
-    // that the object isn't polluted when it is reused).
+    // Detach comments in the "newComments" object from those in the "comments" object (so that the
+    // last isn't polluted when it is reused).
     .map((comment) => {
-      const parentMatch = mappedCurrentComments.find((mcc) => mcc.match === comment.parent);
       const newComment = Object.assign({}, comment);
-      if (parentMatch?.anchor) {
-        newComment.parentMatch = Comment.getByAnchor(parentMatch.anchor);
+      if (comment.parent) {
+        const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
+        if (parentMatch?.anchor) {
+          newComment.parentMatch = Comment.getByAnchor(parentMatch.anchor);
+        }
       }
       return newComment;
     });
@@ -764,7 +813,9 @@ async function processComments(comments, mappedCurrentComments, currentRevisionI
   updateChecker.updatePageTitle(newComments.length, areThereInteresting);
   toc.addNewComments(newCommentsBySection);
 
-  Comment.addNewRepliesNote(newComments);
+  cd.debug.startTimer('addNewCommentsNotes');
+  Comment.addNewCommentsNotes(newComments);
+  cd.debug.stopTimer('addNewCommentsNotes');
 
   const commentsToNotifyAbout = interestingNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));
@@ -822,10 +873,10 @@ const updateChecker = {
    * Initialize the update checker.
    *
    * @param {Promise} visitsRequest
-   * @param {object} keptData
+   * @param {object} passedData
    * @memberof module:updateChecker
    */
-  async init(visitsRequest, keptData) {
+  async init(visitsRequest, passedData) {
     if (!cd.g.worker) return;
 
     commentsNotifiedAbout = [];
@@ -846,8 +897,8 @@ const updateChecker = {
 
     if (cd.g.previousVisitUnixTime) {
       processRevisionsIfNeeded();
-      if (keptData.didSubmitCommentForm && keptData.commentAnchor) {
-        submittedCommentAnchor = keptData.commentAnchor;
+      if (passedData.didSubmitCommentForm && passedData.commentAnchor) {
+        submittedCommentAnchor = passedData.commentAnchor;
       }
     }
   },

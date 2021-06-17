@@ -9,12 +9,31 @@ import cd from './cd';
 import navPanel from './navPanel';
 import {
   getExtendedRect,
+  isPageOverlayOn,
   reorderArray,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
   unique,
 } from './util';
+import { getPagesExistence } from './apiWrappers';
 import { reloadPage } from './boot';
+
+/**
+ * Add all comment's children, including indirect, into array, if they are in the array of new
+ * comments.
+ *
+ * @param {CommentSkeleton} child
+ * @param {CommentSkeleton[]} arr
+ * @param {number[]} newCommentIds
+ */
+function searchForNewCommentsInSubtree(child, arr, newCommentIds) {
+  if (newCommentIds.includes(child.id)) {
+    arr.push(child);
+  }
+  child.children.forEach((child) => {
+    searchForNewCommentsInSubtree(child, arr, newCommentIds);
+  });
+}
 
 export default {
   /**
@@ -50,6 +69,8 @@ export default {
    * @memberof module:Comment
    */
   registerSeen() {
+    if (document.hidden) return;
+
     const commentInViewport = Comment.findInViewport();
     if (!commentInViewport) return;
 
@@ -74,6 +95,8 @@ export default {
     cd.comments
       .slice(commentInViewport.id)
       .some(registerIfInViewport);
+
+    navPanel.updateFirstUnseenButton();
   },
 
   /**
@@ -249,7 +272,7 @@ export default {
    * @memberof module:Comment
    */
   highlightHovered(e) {
-    if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || cd.util.isPageOverlayOn()) return;
+    if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || isPageOverlayOn()) return;
 
     const isObstructingElementHovered = (
       Array.from(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification'))
@@ -314,87 +337,196 @@ export default {
   },
 
   /**
-   * Add new comments notifications to the threads.
+   * Add an individual new comments notification to a thread or section.
    *
-   * @param {Map} newComments
+   * @param {CommentSkeleton[]} comments
+   * @param {Comment|Section} parent
+   * @param {string} type
+   * @param {CommentSkeleton[]} newCommentIds
    * @memberof module:Section
    */
-  addNewRepliesNote(newComments) {
-    saveRelativeScrollPosition();
+  addNewCommentsNote(comments, parent, type, newCommentIds) {
+    if (!comments.length) return;
 
-    cd.comments.forEach((comment) => {
-      comment.subitemList.remove('newRepliesNote');
+    let commentsWithChildren;
+    if (parent instanceof Comment) {
+      commentsWithChildren = [];
+      comments.forEach((child) => {
+        searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIds);
+      });
+    } else {
+      commentsWithChildren = comments;
+    }
+
+    const authors = commentsWithChildren
+      .map((comment) => comment.author)
+      .filter(unique);
+    const genders = authors.map((author) => author.getGender());
+    let commonGender;
+    if (genders.every((gender) => gender === 'female')) {
+      commonGender = 'female';
+    } else if (genders.every((gender) => gender !== 'female')) {
+      commonGender = 'male';
+    } else {
+      commonGender = 'unknown';
+    }
+    const userList = authors.map((user) => user.name).join(', ');
+    const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
+    const button = new OO.ui.ButtonWidget({
+      label: cd.s(stringName, commentsWithChildren.length, authors.length, userList, commonGender),
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-thread-button'],
+    });
+    button.on('click', () => {
+      const commentAnchor = commentsWithChildren[0].anchor;
+      reloadPage({ commentAnchor });
     });
 
-    const newCommentsByParent = new Map();
-    newComments.forEach((comment) => {
-      if (!comment.parentMatch) return;
-
-      if (!newCommentsByParent.get(comment.parentMatch)) {
-        newCommentsByParent.set(comment.parentMatch, []);
-      }
-      newCommentsByParent.get(comment.parentMatch).push(comment);
-    });
-
-
-    newCommentsByParent.forEach((comments, parent) => {
-      const walkThroughChildren = (child) => {
-        commentsWithChildren.push(child);
-        child.children.forEach(walkThroughChildren);
-      };
-
-      const commentsWithChildren = [];
-      comments.forEach(walkThroughChildren);
-
-      const authors = commentsWithChildren
-        .map((comment) => comment.author)
-        .filter(unique);
-      const genders = authors.map((author) => author.getGender());
-      let commonGender;
-      if (genders.every((gender) => gender === 'female')) {
-        commonGender = 'female';
-      } else if (genders.every((gender) => gender !== 'female')) {
-        commonGender = 'male';
-      } else {
-        commonGender = 'unknown';
-      }
-      const userList = authors.map((user) => user.name).join(', ');
-      const button = new OO.ui.ButtonWidget({
-        label: cd.s(
-          'thread-newcomments',
-          commentsWithChildren.length,
-          authors.length,
-          userList,
-          commonGender
-        ),
-        framed: false,
-        classes: ['cd-button', 'cd-sectionButton'],
-      });
-      button.on('click', () => {
-        const commentAnchor = commentsWithChildren[0].anchor;
-        reloadPage({ commentAnchor });
-      });
-
-      // We can't use Comment#containerListType as it contains the type for the _first_
-      // (highlightable) element.
-      const parentListType = parent.$elements
-        .last()
-        .closest('dl, ul, ol')
-        .prop('tagName')
-        ?.toLowerCase();
-
-      const [$wrappingItem] = parent.createSublevelItem('newRepliesNote', 'bottom', parentListType);
+    if (parent instanceof Comment) {
+      const [$wrappingItem] = parent.createSublevelItem('newCommentsNote', 'bottom');
       $wrappingItem
-        .addClass('cd-threadButton-container cd-thread-newRepliesNote')
+        .addClass('cd-thread-button-container cd-thread-newCommentsNote')
         .append(button.$element);
 
-      // Update collapsed range for the thread
+      // Update collapsed range for the thread.
       if (parent.thread?.isCollapsed) {
         parent.thread.expand();
         parent.thread.collapse();
       }
+    } else if (type === 'thread' && parent.$replyWrapper) {
+      const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
+      $(`<${tagName}>`)
+        .addClass('cd-thread-button-container cd-thread-newCommentsNote')
+        .append(button.$element)
+        .insertBefore(parent.$replyWrapper);
+    } else {
+      let $last;
+      if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
+        $last = parent.$addSubsectionButtonContainer;
+      } else if (parent.$replyContainer) {
+        $last = parent.$replyContainer;
+      } else {
+        $last = $(parent.lastElementInFirstChunk);
+      }
+      button.$element
+        .removeClass('cd-thread-button')
+        .addClass('cd-section-button');
+      let $container;
+      if (type === 'section') {
+        $container = $('<div>').append(button.$element);
+      } else {
+        const $item = $('<dd>').append(button.$element);
+        $container = $('<dl>').append($item);
+      }
+      $container
+        .addClass('cd-section-button-container cd-thread-newCommentsNote')
+        .insertAfter($last);
+    }
+  },
 
-      restoreRelativeScrollPosition();
+  /**
+   * Add new comments notifications to threads or sections.
+   *
+   * @param {Map} newComments
+   * @memberof module:Section
+   */
+  addNewCommentsNotes(newComments) {
+    saveRelativeScrollPosition();
+
+    cd.comments.forEach((comment) => {
+      comment.subitemList.remove('newCommentsNote');
     });
+
+    // Section-level replies notes.
+    $('.cd-thread-newCommentsNote').remove();
+
+    const newCommentsByParent = new Map();
+    newComments.forEach((comment) => {
+      let key;
+      if (comment.parent) {
+        key = comment.parentMatch;
+      } else {
+        // If there is no section match, use the ancestor sections' section match.
+        for (let s = comment.section; s && !key; s = s.parent) {
+          key = s.match;
+        }
+      }
+
+      // Indirect comment children and comments out of section
+      if (!key) return;
+
+      if (!newCommentsByParent.get(key)) {
+        newCommentsByParent.set(key, []);
+      }
+      newCommentsByParent.get(key).push(comment);
+    });
+
+    const newCommentIds = newComments.map((c) => c.id);
+    newCommentsByParent.forEach((comments, parent) => {
+      if (parent instanceof Comment) {
+        Comment.addNewCommentsNote(comments, parent, 'thread', newCommentIds);
+      } else {
+        // Add notes for level 0 comments and their children and the rest of the comments (for
+        // example, level 1 comments without a parent and their children) separately.
+        const level0Comments = comments.filter((comment) => comment.logicalLevel === 0);
+        let sectionComments = [];
+        level0Comments.forEach((child) => {
+          searchForNewCommentsInSubtree(child, sectionComments, newCommentIds);
+        });
+        const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
+        Comment.addNewCommentsNote(sectionComments, parent, 'section', newCommentIds);
+        Comment.addNewCommentsNote(threadComments, parent, 'thread', newCommentIds);
+      }
+    });
+
+    restoreRelativeScrollPosition();
+  },
+
+  async reformatComments() {
+    if (cd.settings.reformatComments) {
+      const pagesToCheckExistence = [];
+      $(document.body).addClass('cd-reformattedComments');
+      cd.comments.forEach((comment) => {
+        pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
+        comment.addMenu();
+      });
+
+      // Check existence of user and user talk pages and apply respective changes to elements.
+      const pageNamesToLinks = {};
+      pagesToCheckExistence.forEach((page) => {
+        const pageName = page.pageName;
+        if (!pageNamesToLinks[pageName]) {
+          pageNamesToLinks[pageName] = [];
+        }
+        pageNamesToLinks[pageName].push(page.link);
+      });
+      const pageNames = Object.keys(pageNamesToLinks);
+      const pagesExistence = await getPagesExistence(pageNames);
+      Object.keys(pagesExistence).forEach((name) => {
+        pageNamesToLinks[name].forEach((link) => {
+          link.title = pagesExistence[name].normalized;
+          if (!pagesExistence[name].exists) {
+            link.classList.add('new');
+            link.href = mw.util.getUrl(name, {
+              action: 'edit',
+              redlink: 1,
+            });
+          }
+        });
+      });
+    }
+  },
+
+  reformatTimestamps() {
+    if (
+      (cd.settings.useLocalTime && (new Date()).getTimezoneOffset()) ||
+      cd.settings.timestampFormat !== 'default' ||
+      mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
+      cd.settings.hideTimezone
+    ) {
+      cd.comments.forEach((comment) => {
+        comment.reformatTimestamp();
+      });
+    }
   },
 };

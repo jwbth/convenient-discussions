@@ -4,12 +4,11 @@
  * @module commentLinks
  */
 
-import { create as nanoCssCreate } from 'nano-css';
-
 import Comment from './Comment';
 import Page from './Page';
 import cd from './cd';
 import {
+  addCss,
   caseInsensitiveFirstCharPattern,
   isCommentEdit,
   isProbablyTalkPage,
@@ -19,9 +18,9 @@ import {
 } from './util';
 import { createApi, initSettings } from './boot';
 import { editWatchedSections, settingsDialog } from './modal';
-import { generateCommentAnchor, parseTimestamp } from './timestamp';
+import { generateCommentAnchor, initTimestampParsingTools, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
-import { initTimestampParsingTools, loadSiteData } from './siteData';
+import { loadSiteData } from './siteData';
 
 let serverName;
 let colon;
@@ -39,7 +38,8 @@ let isProcessDiffFirstRun = true;
 /**
  * Prepare variables.
  *
- * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  * @private
  */
 async function prepare(siteDataRequests) {
@@ -50,23 +50,20 @@ async function prepare(siteDataRequests) {
   const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
     console.warn('Couldn\'t load the settings from the server.', e);
   });
-  siteDataRequests = siteDataRequests || loadSiteData();
+  if (!siteDataRequests.length) {
+    siteDataRequests = loadSiteData();
+  }
 
   try {
-    await Promise.all([watchedSectionsRequest, siteDataRequests]);
+    await Promise.all([watchedSectionsRequest, ...siteDataRequests]);
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
 
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put('.cd-commentLink-innerWrapper', {
-    '::before': {
-      content: `"${cd.mws('parentheses-start')}"`,
-    },
-    '::after': {
-      content: `"${cd.mws('parentheses-end')}"`,
-    },
-  });
+  addCss(`:root {
+  --cd-parentheses-start: '${cd.mws('parentheses-start')}';
+  --cd-parentheses-end: '${cd.mws('parentheses-end')}';
+}`);
 
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
@@ -76,7 +73,7 @@ async function prepare(siteDataRequests) {
   initTimestampParsingTools();
 
   serverName = mw.config.get('wgServerName');
-  colon = cd.mws('colon-separator').trim();
+  colon = cd.mws('colon-separator', { language: 'content' }).trim();
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
@@ -720,7 +717,8 @@ async function addCommentLinks($content) {
 /**
  * The entry function for the comment links adding mechanism.
  *
- * @param {Promise} [siteDataRequests] Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  */
 export default async function commentLinks(siteDataRequests) {
   try {

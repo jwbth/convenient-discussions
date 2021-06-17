@@ -125,7 +125,7 @@ export default class Autocomplete {
         })
     );
 
-    const spacesRegexp = new RegExp(cd.mws('word-separator'), 'g');
+    const spacesRegexp = new RegExp(cd.mws('word-separator', { language: 'content' }), 'g');
 
     const collectionsByType = {
       mentions: {
@@ -386,6 +386,7 @@ export default class Autocomplete {
               text &&
               text.length <= 255 &&
               !/[#<>[\]|{}]/.test(text) &&
+
               // 10 spaces in a page name seems too many.
               (text.match(spacesRegexp) || []).length <= 9
             );
@@ -455,18 +456,20 @@ export default class Autocomplete {
               const snippetMaxLength = 80;
               if (getText().length > snippetMaxLength) {
                 snippet = getText().slice(0, snippetMaxLength);
-                const spacePos = snippet.lastIndexOf(cd.mws('word-separator'));
+                const wordSeparator = cd.mws('word-separator', { language: 'content' });
+                const spacePos = snippet.lastIndexOf(wordSeparator);
                 if (spacePos !== -1) {
                   snippet = snippet.slice(0, spacePos);
                 }
               } else {
                 snippet = getText();
               }
-              let authortimestamp = author.name;
+              let authorTimestamp = author.name;
               if (timestamp) {
-                authortimestamp += cd.mws('comma-separator') + timestamp;
+                authorTimestamp += cd.mws('comma-separator', { language: 'content' }) + timestamp;
               }
-              const key = authortimestamp + cd.mws('colon-separator') + snippet;
+              const colon = cd.mws('colon-separator', { language: 'content' });
+              const key = authorTimestamp + colon + snippet;
               this.commentLinks.default.push({
                 key,
                 anchor,

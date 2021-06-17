@@ -6,8 +6,12 @@
  */
 
 import cd from './cd';
-import { getExtendedRect, getVisibilityByRects } from './util';
-import { handleScroll } from './eventHandlers';
+import {
+  getExtendedRect,
+  getVisibilityByRects,
+  scrollToY,
+  triggerClickOnEnterAndSpace,
+} from './util';
 
 let currentSection;
 let $sectionWithBackLink;
@@ -109,10 +113,14 @@ export default {
           .addClass('cd-pageNav-item')
           .appendTo(this.$linksOnTop);
         $('<a>')
+          .attr('href', '#')
+          .attr('tabindex', 0)
           .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-pagetop'))
-          .on('click', () => {
-            this.jump(0, this.$topLink);
+          .on('keydown', triggerClickOnEnterAndSpace)
+          .on('click', (e) => {
+            e.preventDefault();
+            this.jump(0, this.$topLink, '#');
           })
           .appendTo(this.$topLink);
       }
@@ -129,10 +137,14 @@ export default {
           .addClass('cd-pageNav-item')
           .appendTo(this.$linksOnTop);
         $('<a>')
+          .attr('href', '#toc')
+          .attr('tabindex', 0)
           .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-toc'))
-          .on('click', () => {
-            this.jump(cd.g.$toc, this.$tocLink);
+          .on('keydown', triggerClickOnEnterAndSpace)
+          .on('click', (e) => {
+            e.preventDefault();
+            this.jump(cd.g.$toc, this.$tocLink, '#toc');
           })
           .appendTo(this.$tocLink);
       }
@@ -154,10 +166,14 @@ export default {
           .addClass('cd-pageNav-item')
           .appendTo(this.$bottomElement);
         $('<a>')
+          .attr('href', '#footer')
+          .attr('tabindex', 0)
           .addClass('cd-pageNav-link')
           .text(cd.s('pagenav-pagebottom'))
-          .on('click', () => {
-            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
+          .on('keydown', triggerClickOnEnterAndSpace)
+          .on('click', (e) => {
+            e.preventDefault();
+            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink, '#footer');
           })
           .appendTo(this.$bottomLink);
       }
@@ -212,9 +228,10 @@ export default {
                 .attr('href', sectionInTree.getUrl())
                 .addClass('cd-pageNav-link')
                 .text(sectionInTree.headline)
+                .on('keydown', triggerClickOnEnterAndSpace)
                 .on('click', (e) => {
                   e.preventDefault();
-                  this.jump(sectionInTree.$heading, $item);
+                  this.jump(sectionInTree.$heading, $item, '#' + sectionInTree.anchor);
                 })
                 .appendTo($item);
             }
@@ -247,22 +264,18 @@ export default {
       this.$bottomElement.empty();
       this.$bottomLink = null;
     }
-    if (!part || part === backLinkLocation) {
-      backLinkLocation = null;
-      $backLinkContainer = null;
-      $sectionWithBackLink = null;
-    }
   },
 
   /**
    * Reset the current section variable and empty the contents of the current section block.
    */
   resetSections() {
+    $sectionWithBackLink?.detach();
     this.$currentSection.empty();
     currentSection = null;
   },
 
-  jump($elementOrOffset, $item, isBackLink) {
+  jump($elementOrOffset, $item, url, isBackLink) {
     const offset = $elementOrOffset instanceof $ ?
       $elementOrOffset.offset().top - cd.g.BODY_SCROLL_PADDING_TOP :
       $elementOrOffset;
@@ -270,15 +283,19 @@ export default {
 
     if (backLinkLocation) {
       backLinkLocation = null;
+      $backLinkContainer.prev().removeClass('cd-pageNav-link-inline');
       $backLinkContainer.remove();
       $backLinkContainer = null;
       $sectionWithBackLink = null;
     }
     if (!isBackLink) {
+      const originalUrl = location.href;
       const scrollY = window.scrollY;
       const $backLink = $('<a>')
+        .attr('tabindex', 0)
         .addClass('cd-pageNav-backLink')
         .text(cd.s('pagenav-back'))
+        .on('keydown', triggerClickOnEnterAndSpace)
         .on('click', (e) => {
           // For links with href
           e.preventDefault();
@@ -286,12 +303,13 @@ export default {
           // For links without href
           e.stopPropagation();
 
-          this.jump(scrollY, $item, true);
+          this.jump(scrollY, $item, originalUrl, true);
         });
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
         .append(cd.sParse('dot-separator'), $backLink)
-        .appendTo($item.children().first());
+        .appendTo($item);
+      $backLinkContainer.prev().addClass('cd-pageNav-link-inline');
       if ($item.parent().is('#cd-pageNav-currentSection')) {
         $sectionWithBackLink = $item;
       }
@@ -303,12 +321,8 @@ export default {
         backLinkLocation = 'section';
       }
     }
+
     cd.g.isAutoScrollInProgress = true;
-    $('body, html').animate({ scrollTop: offset }, {
-      complete: () => {
-        cd.g.isAutoScrollInProgress = false;
-        handleScroll();
-      },
-    });
+    scrollToY(offset);
   },
 };

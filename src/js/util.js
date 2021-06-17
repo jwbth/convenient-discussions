@@ -1,6 +1,6 @@
 /**
- * Utilities module. Utilities that go to the {@link module:cd~convenientDiscussions.util
- * convenientDiscussions.util} object are in {@link module:globalUtil}.
+ * Utilities module. Some of the utilities are parts of the {@link
+ * module:cd~convenientDiscussions.util convenientDiscussions.util} object.
  *
  * @module util
  */
@@ -8,11 +8,132 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
+import { handleScroll } from './eventHandlers';
+import { isPageLoading } from './boot';
 
 let anchorElement;
 let anchorElementTop;
 let keptScrollPosition = null;
 let keptTocHeight = null;
+
+/**
+ * @typedef {object} Callbacks
+ * @property {Function} *
+ * @memberof module:cd~convenientDiscussions.util
+ */
+
+/**
+ * Generate a `<span>` (or other element) suitable as an argument for various methods for
+ * displaying HTML. Optionally, attach callback functions and `target="_blank"` attribute to links
+ * with the provided class names.
+ *
+ * @param {string|JQuery} htmlOrJquery
+ * @param {object} [options={}]
+ * @param {Callbacks} [options.callbacks]
+ * @param {string} [options.tagName='span']
+ * @param {boolean} [options.targetBlank]
+ * @returns {JQuery}
+ * @memberof module:cd~convenientDiscussions.util
+ */
+export function wrap(htmlOrJquery, options = {}) {
+  const $wrapper = $(htmlOrJquery instanceof $ ? htmlOrJquery : $.parseHTML(htmlOrJquery))
+    .wrapAll(`<${options.tagName || 'span'}>`)
+    .parent();
+  if (options) {
+    if (options.callbacks) {
+      Object.keys(options.callbacks).forEach((className) => {
+        const $linkWrapper = $wrapper.find(`.${className}`);
+        if (!$linkWrapper.find('a').length) {
+          $linkWrapper.wrapInner('<a>');
+        }
+        $linkWrapper.find('a').on('click', options.callbacks[className]);
+      });
+    }
+    if (options.targetBlank) {
+      $wrapper.find('a[href]').attr('target', '_blank');
+    }
+  }
+  return $wrapper;
+}
+
+/**
+ * Combine the section headline, summary text and, optionally, summary postfix to create an edit
+ * summary.
+ *
+ * @param {object} options
+ * @param {string} options.text Summary text. Can be clipped if there is not enough space.
+ * @param {string} [options.optionalText] Optional text added to the end of the summary if there is
+ *   enough space. Ignored if there is not.
+ * @param {string} [options.section] Section name.
+ * @param {boolean} [options.addPostfix=true] If to add cd.g.SUMMARY_POSTFIX to the summary.
+ * @returns {string}
+ * @memberof module:cd~convenientDiscussions.util
+ */
+export function buildEditSummary(options) {
+  if (options.addPostfix === undefined) {
+    options.addPostfix = true;
+  }
+
+  let text = (options.section ? `/* ${options.section} */ ` : '') + options.text.trim();
+
+  let wasOptionalTextAdded;
+  if (options.optionalText) {
+    let projectedText = text + options.optionalText;
+
+    if (cd.config.transformSummary) {
+      projectedText = cd.config.transformSummary(projectedText);
+    }
+
+    if (projectedText.length <= cd.g.SUMMARY_LENGTH_LIMIT) {
+      text = projectedText;
+      wasOptionalTextAdded = true;
+    }
+  }
+
+  if (!wasOptionalTextAdded) {
+    if (cd.config.transformSummary) {
+      text = cd.config.transformSummary(text);
+    }
+
+    if (text.length > cd.g.SUMMARY_LENGTH_LIMIT) {
+      text = text.slice(0, cd.g.SUMMARY_LENGTH_LIMIT - 1) + '…';
+    }
+  }
+
+  if (options.addPostfix) {
+    text += cd.g.SUMMARY_POSTFIX;
+  }
+
+  return text;
+}
+
+/**
+ * Is there any kind of a page overlay present, like the OOUI modal overlay or CD loading overlay.
+ * This runs very frequently.
+ *
+ * @returns {boolean}
+ * @memberof module:cd~convenientDiscussions.util
+ */
+export function isPageOverlayOn() {
+  return document.body.classList.contains('oo-ui-windowManager-modal-active') || isPageLoading();
+}
+
+/**
+ * Wrap the response to the "compare" API request in a table.
+ *
+ * @param {string} body
+ * @returns {string}
+ * @memberof module:cd~convenientDiscussions.util
+ */
+export function wrapDiffBody(body) {
+  return (
+    '<table class="diff">' +
+    '<col class="diff-marker"><col class="diff-content">' +
+    '<col class="diff-marker"><col class="diff-content">' +
+    body +
+    '</table>'
+  );
+}
 
 /**
  * Callback for {@link
@@ -273,13 +394,13 @@ export function firstCharToUpperCase(s) {
 }
 
 /**
- * Get text of the localization messages.
+ * Get text of the localization messages for the content language.
  *
  * @param {string[]} messages
  * @returns {string[]}
  */
-export function getMessages(messages) {
-  return messages.map(mw.msg);
+export function getContentLanguageMessages(messages) {
+  return messages.map((name) => cd.g.contentLanguageMessages[name]);
 }
 
 /**
@@ -331,7 +452,7 @@ export function mergeRegexps(arr) {
  * @param {string} text
  * @param {RegExp} regexp
  * @param {string[]} hidden
- * @param {string} type
+ * @param {string} type Should consist only of alphanumeric characters.
  * @returns {string}
  */
 export function hideText(text, regexp, hidden, type) {
@@ -354,15 +475,19 @@ export function hideText(text, regexp, hidden, type) {
 }
 
 /**
- * Replace placeholders created by {@link module:util.hide}.
+ * Replace placeholders created by {@link module:util.hideText}.
  *
  * @param {string} text
  * @param {string[]} hidden
+ * @param {string} type
  * @returns {string}
  */
-export function unhideText(text, hidden) {
-  while (/(?:\x01|\x03)\d+(_\w+)?(?:\x02|\x04)/.test(text)) {
-    text = text.replace(/(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g, (s, num) => hidden[num - 1]);
+export function unhideText(text, hidden, type) {
+  const regexp = type ?
+    new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type})?(?:\\x02|\\x04)`, 'g') :
+    /(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g;
+  while (regexp.test(text)) {
+    text = text.replace(regexp, (s, num) => hidden[num - 1]);
   }
 
   return text;
@@ -372,38 +497,68 @@ export function unhideText(text, hidden) {
  * Save the scroll position relative to the first element in the viewport looking from the top of
  * the page.
  *
+ * @param {?object} [fallbackToAbsolute=null] If an object with the `saveTocHeight` property, then
+ *   use {@link module:util.saveScrollPosition} if the viewport is above the bottom of the table of
+ *   contents (this allows for better precision).
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
-export function saveRelativeScrollPosition(scrollY = window.scrollY) {
-  if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-    while (true) {
-      if (!isInline(treeWalker.currentNode)) {
-        const rect = treeWalker.currentNode.getBoundingClientRect();
-        if (rect.bottom >= 0 && rect.height !== 0) {
-          anchorElement = treeWalker.currentNode;
-          anchorElementTop = rect.top;
-          if (treeWalker.firstChild()) {
-            continue;
-          } else {
-            break;
+export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = window.scrollY) {
+  if (
+    fallbackToAbsolute &&
+    cd.g.$toc.length &&
+    cd.g.$toc.offset().top + cd.g.$toc.outerHeight() > window.scrollY
+  ) {
+    saveScrollPosition(fallbackToAbsolute.saveTocHeight);
+  } else {
+    anchorElement = null;
+    anchorElementTop = null;
+    if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+      const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
+      while (true) {
+        if (!isInline(treeWalker.currentNode)) {
+          const rect = treeWalker.currentNode.getBoundingClientRect();
+          if (rect.bottom >= 0 && rect.height !== 0) {
+            anchorElement = treeWalker.currentNode;
+            anchorElementTop = rect.top;
+            if (treeWalker.firstChild()) {
+              continue;
+            } else {
+              break;
+            }
           }
         }
+        if (!treeWalker.nextSibling()) break;
       }
-      if (!treeWalker.nextSibling()) break;
     }
   }
 }
 
-export function restoreRelativeScrollPosition() {
-  if (anchorElement) {
-    const rect = anchorElement.getBoundingClientRect();
-    if (getVisibilityByRects(rect)) {
-      window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+/**
+ * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
+ *
+ * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using {@link
+ *   module:util.restoreScrollPosition} if it was previously used for saving the position.
+ */
+export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
+  if (fallbackToAbsolute && keptScrollPosition !== null) {
+    restoreScrollPosition();
+  } else {
+    if (anchorElement) {
+      const rect = anchorElement.getBoundingClientRect();
+      if (getVisibilityByRects(rect)) {
+        window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+      }
     }
   }
 }
 
+/**
+ * Replace the "anchor" element used for restoring saved relative scroll position with a new element
+ * if it coincides with the provided element.
+ *
+ * @param {Element} element
+ * @param {Element} newElement
+ */
 export function replaceAnchorElement(element, newElement) {
   if (anchorElement && element === anchorElement) {
     anchorElement = newElement;
@@ -413,8 +568,8 @@ export function replaceAnchorElement(element, newElement) {
 /**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
  *
- * @param {boolean} [saveTocHeight=true] Used for more fine control of scroll behavior after page
- *   reloads and when visits are loaded.
+ * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
+ *   when visits are loaded after a page reload.
  */
 export function saveScrollPosition(saveTocHeight = true) {
   keptScrollPosition = window.scrollY;
@@ -432,8 +587,8 @@ export function saveScrollPosition(saveTocHeight = true) {
 /**
  * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
  *
- * @param {boolean} [resetTocHeight=true] Used for more fine control of scroll behavior after page
- *   reloads and when visits are loaded.
+ * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
+ *   after page reloads.
  */
 export function restoreScrollPosition(resetTocHeight = true) {
   if (keptScrollPosition === null) return;
@@ -476,7 +631,7 @@ export async function nativePromiseState(promise) {
  */
 export function dealWithLoadingBug(moduleName) {
   if (mw.loader.getState(moduleName) === 'loading') {
-    const $body = cd.util.wrap(cd.sParse('error-needreloadpage'), {
+    const $body = wrap(cd.sParse('error-needreloadpage'), {
       callbacks: {
         'cd-notification-reloadPage': () => {
           location.reload();
@@ -564,35 +719,28 @@ export function areObjectsEqual(object1, object2, includes = false) {
 }
 
 /**
- * Helper to get the script's local storage item packed in JSON or an empty object in case of
- * unexistent/falsy/corrupt values.
+ * Helper to get the script's local storage item packed in JSON or an empty object in case of an
+ * unexistent/falsy/corrupt value or the storage inaccessible.
  *
  * @param {string} name
  * @returns {object}
  */
 export function getFromLocalStorage(name) {
-  const json = localStorage.getItem(`convenientDiscussions-${name}`);
-  let obj;
-  if (json) {
-    try {
-      // "||" in case of a falsy value.
-      obj = JSON.parse(json) || {};
-    } catch (e) {
-      console.error(e, json);
-      return {};
-    }
+  const obj = mw.storage.getObject(`convenientDiscussions-${name}`);
+  if (obj === false) {
+    console.error('Storage is unavailable.');
   }
   return obj || {};
 }
 
 /**
- * Helper to set a local storage item.
+ * Helper to save an object to the local storage.
  *
  * @param {string} name
  * @param {object} obj
  */
 export function saveToLocalStorage(name, obj) {
-  localStorage.setItem(`convenientDiscussions-${name}`, JSON.stringify(obj));
+  mw.storage.setObject(`convenientDiscussions-${name}`, obj);
 }
 
 /**
@@ -774,7 +922,42 @@ export function getVisibilityByRects(...rects) {
   return !rects.some((rect) => rect.left === 0 && rect.height === 0);
 }
 
-export function getObjectUrl(anchor) {
+export function getUrlWithAnchor(anchor) {
   const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
   return `https:${mw.config.get('wgServer')}${decodedPageUrl}#${anchor}`;
+}
+
+export function triggerClickOnEnterAndSpace(e) {
+  if (e.keyCode === 13 || e.keyCode === 32) {
+    $(this).trigger('click');
+  }
+}
+
+export function addCss(text) {
+  const element = document.createElement('style');
+  element.appendChild(document.createTextNode(text));
+  document.head.appendChild(element);
+  return element.sheet;
+}
+
+export function scrollToY(y, smooth = true, callback) {
+  const onComplete = () => {
+    cd.g.isAutoScrollInProgress = false;
+    handleScroll();
+    if (callback) {
+      callback();
+    }
+  };
+
+  if (smooth) {
+    $('body, html').animate({ scrollTop: y }, {
+      complete: function () {
+        if (this !== document.documentElement) return;
+        onComplete();
+      },
+    });
+  } else {
+    window.scrollTo(window.scrollX, y);
+    onComplete();
+  }
 }

@@ -1,23 +1,24 @@
-.cd-sectionLink-wrapper::before {
+.cd-section-menu-button-wrapper::before {
   content: " | ";
   color: #54595d;
 }
 
-.cd-sectionButton-container {
+.cd-section-menu-button.cd-button-disabled {
+  opacity: 0.5;
+  text-decoration: none;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: var(--cd-link-color);
+  }
+}
+
+.cd-section-button-container {
   margin-top: 0.5em;
 }
 
-.sitedir-ltr .cd-replyWrapper:not(.cd-commentForm) {
-  padding-left: 1em;
-  padding-right: 0;
-}
-
-.sitedir-rtl .cd-replyWrapper:not(.cd-commentForm) {
-  padding-left: 0;
-  padding-right: 1em;
-}
-
-ol .cd-sectionButton {
+ol .cd-section-button {
   margin-top: -2px;
 }
 

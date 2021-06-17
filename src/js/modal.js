@@ -8,10 +8,18 @@ import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
-import { areObjectsEqual, dealWithLoadingBug, defined, spacesToUnderlines, unique } from './util';
+import { areObjectsEqual, dealWithLoadingBug, defined, unique } from './util';
 import { checkboxField, copyActionField, radioField } from './ooui';
 import { encodeWikilink } from './wikitext';
-import { focusInput, hideText, underlinesToSpaces, unhideText } from './util';
+import {
+  focusInput,
+  hideText,
+  isPageOverlayOn,
+  underlinesToSpaces,
+  unhideText,
+  wrap,
+} from './util';
+import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './apiWrappers';
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
 
@@ -68,30 +76,6 @@ export async function confirmDialog(message, options = {}) {
 }
 
 /**
- * Show a confirmation message dialog with a destructive action.
- *
- * @param {string} messageName
- * @param {object} [customOptions={}]
- * @returns {Promise}
- */
-export function confirmDestructive(messageName, customOptions = {}) {
-  const actions = [
-    {
-      label: cd.s(`${messageName}-yes`),
-      action: 'accept',
-      flags: ['primary', 'destructive'],
-    },
-    {
-      label: cd.s(`${messageName}-no`),
-      action: 'reject',
-      flags: 'safe',
-    },
-  ];
-  const options = Object.assign({}, { actions }, customOptions);
-  return OO.ui.confirm(cd.s(messageName), options);
-}
-
-/**
  * Check if there are unsaved changes in a process dialog.
  *
  * @param {OoUiProcessDialog} dialog
@@ -116,7 +100,7 @@ function isUnsaved(dialog) {
  * @private
  */
 async function confirmCloseDialog(dialog, dialogCode) {
-  if (!isUnsaved(dialog) || (await confirmDestructive(`${dialogCode}-close-confirm`))) {
+  if (!isUnsaved(dialog) || confirm(cd.s(`${dialogCode}-close-confirm`))) {
     dialog.close({ action: 'close' });
     removePreventUnloadCondition('dialog');
   }
@@ -158,7 +142,7 @@ function handleError(dialog, e, messageName, recoverable) {
  * Show a settings dialog.
  */
 export async function settingsDialog() {
-  if (cd.util.isPageOverlayOn()) return;
+  if (isPageOverlayOn()) return;
 
   /**
    * @class Subclass of {@link
@@ -309,7 +293,7 @@ export async function settingsDialog() {
       });
     } else if (action === 'reset') {
       return new OO.ui.Process(async () => {
-        if (await OO.ui.confirm(cd.s('sd-reset-confirm'))) {
+        if (confirm(cd.s('sd-reset-confirm'))) {
           const currentPageName = this.bookletLayout.getCurrentPageName();
           this.renderForm(cd.defaultSettings);
           this.bookletLayout.setPage(currentPageName);
@@ -410,6 +394,12 @@ export async function settingsDialog() {
       help: cd.s('sd-desktopnotifications-help', location.hostname),
     });
 
+    [this.hideTimezoneField, this.hideTimezoneCheckbox] = checkboxField({
+      value: 'hideTimezone',
+      selected: settings.hideTimezone,
+      label: cd.s('sd-hidetimezone'),
+    });
+
     const insertButtonsSelected = settings.insertButtons
       .map((button) => Array.isArray(button) ? button.join(';') : button);
     this.insertButtonsMultiselect = new OO.ui.TagMultiselectWidget({
@@ -422,7 +412,7 @@ export async function settingsDialog() {
     this.insertButtonsField = new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
       label: cd.s('sd-insertbuttons'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+      help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
       helpInline: true,
     });
 
@@ -477,6 +467,20 @@ export async function settingsDialog() {
       label: cd.s('sd-notifycollapsedthreads'),
     });
 
+    [this.reformatCommentsField, this.reformatCommentsCheckbox] = checkboxField({
+      value: 'reformatComments',
+      selected: settings.reformatComments,
+      label: cd.s('sd-reformatcomments'),
+    });
+
+    [this.showContribsLinkField, this.showContribsLinkCheckbox] = checkboxField({
+      value: 'showContribsLink',
+      selected: settings.showContribsLink,
+      label: cd.s('sd-showcontribslink'),
+      classes: ['cd-setting-indented'],
+      disabled: !settings.reformatComments,
+    });
+
     [this.showToolbarField, this.showToolbarCheckbox] = checkboxField({
       value: 'showToolbar',
       selected: settings.showToolbar,
@@ -490,14 +494,55 @@ export async function settingsDialog() {
     this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
       label: cd.s('sd-signatureprefix'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
+      help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
       helpInline: true,
+    });
+
+    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 43);
+    const threeDaysAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24 * 3.3);
+
+    const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
+    const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
+    const exampleImproved2 = formatDateImproved(threeDaysAgo);
+    const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
+    const exampleRelative2 = formatDateRelative(threeDaysAgo);
+
+    [
+      this.timestampFormatField,
+      this.timestampFormatSelect,
+      this.timestampFormatRadioDefault,
+      this.timestampFormatRadioImproved,
+      this.timestampFormatRadioRelative,
+    ] = radioField({
+      options: [
+        {
+          label: cd.s('sd-timestampformat-radio-default', exampleDefault),
+          data: 'default',
+        },
+        {
+          label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
+          data: 'improved',
+        },
+        {
+          label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
+          data: 'relative',
+        },
+      ],
+      selected: settings.timestampFormat,
+      label: cd.s('sd-timestampformat'),
+      help: cd.s('sd-timestampformat-help'),
     });
 
     [this.useBackgroundHighlightingField, this.useBackgroundHighlightingCheckbox] = checkboxField({
       value: 'useBackgroundHighlighting',
       selected: settings.useBackgroundHighlighting,
       label: cd.s('sd-usebackgroundhighlighting'),
+    });
+
+    [this.useLocalTimeField, this.useLocalTimeCheckbox] = checkboxField({
+      value: 'useLocalTime',
+      selected: settings.useLocalTime,
+      label: cd.s('sd-uselocaltime')
     });
 
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({
@@ -530,13 +575,18 @@ export async function settingsDialog() {
       select: 'updateStates',
       choose: 'changeDesktopNotifications',
     });
+    this.hideTimezoneCheckbox.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
     this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
     this.notifyCollapsedThreadsCheckbox.connect(this, { change: 'updateStates' });
+    this.reformatCommentsCheckbox.connect(this, { change: 'reformatCommentsChange' });
+    this.showContribsLinkCheckbox.connect(this, { change: 'updateStates' });
     this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
     this.signaturePrefixInput.connect(this, { change: 'updateStates' });
+    this.timestampFormatSelect.connect(this, { select: 'updateStates' });
     this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
+    this.useLocalTimeCheckbox.connect(this, { change: 'updateStates' });
     this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateStates' });
     this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
@@ -550,36 +600,41 @@ export async function settingsDialog() {
     this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
       label: cd.s('sd-removedata-description'),
       align: 'top',
-      help: cd.util.wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
+      help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
       helpInline: true,
     });
 
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "General" booklet page.
+     *   to create the "Date and time" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
      */
-    function GeneralPageLayout(name, config) {
-      GeneralPageLayout.super.call(this, name, config);
+    function TalkPagePageLayout(name, config) {
+      TalkPagePageLayout.super.call(this, name, config);
       this.$element.append([
-        dialog.useBackgroundHighlightingField.$element,
+        dialog.reformatCommentsField.$element,
+        dialog.showContribsLinkField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
+        dialog.useLocalTimeField.$element,
+        dialog.timestampFormatField.$element,
+        dialog.hideTimezoneField.$element,
+        dialog.useBackgroundHighlightingField.$element,
       ]);
     }
-    OO.inheritClass(GeneralPageLayout, OO.ui.PageLayout);
-    GeneralPageLayout.prototype.setupOutlineItem = function (outlineItem) {
-      GeneralPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+    OO.inheritClass(TalkPagePageLayout, OO.ui.PageLayout);
+    TalkPagePageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      TalkPagePageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
       this.outlineItem.setLabel(cd.s('sd-page-talkpage'));
     };
 
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "Comment form" booklet page.
+     *   to create the "Comment form" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -606,7 +661,29 @@ export async function settingsDialog() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "Notifications" booklet page.
+     *   to create the "Talk page" booklet page.
+     * @param {string} name
+     * @param {object} [config]
+     * @private
+     */
+    function DateAndTimePageLayout(name, config) {
+      DateAndTimePageLayout.super.call(this, name, config);
+      this.$element.append([
+        dialog.useLocalTimeField.$element,
+        dialog.timestampFormatField.$element,
+        dialog.hideTimezoneField.$element,
+      ]);
+    }
+    OO.inheritClass(DateAndTimePageLayout, OO.ui.PageLayout);
+    DateAndTimePageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      DateAndTimePageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+      this.outlineItem.setLabel(cd.s('sd-page-dateandtime'));
+    };
+
+    /**
+     * @class Subclass of {@link
+     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
+     *   to create the "Notifications" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -628,7 +705,7 @@ export async function settingsDialog() {
     /**
      * @class Subclass of {@link
      *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create a "Remove data" booklet page.
+     *   to create the "Remove data" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -642,15 +719,22 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-dataremoval'));
     };
 
-    const generalPage = new GeneralPageLayout('general');
+    const generalPage = new TalkPagePageLayout('general');
     const commentFormPage = new CommentFormPageLayout('commentForm');
+    const dateAndTimePage = new DateAndTimePageLayout('dateAndTime');
     const notificationsPage = new NotificationsPageLayout('notifications');
     const removeDataPage = new RemoveDataPageLayout('removeData');
 
     this.bookletLayout = new OO.ui.BookletLayout({
       outlined: true,
     });
-    this.bookletLayout.addPages([generalPage, commentFormPage, notificationsPage, removeDataPage]);
+    this.bookletLayout.addPages([
+      generalPage,
+      commentFormPage,
+      dateAndTimePage,
+      notificationsPage,
+      removeDataPage,
+    ]);
 
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
@@ -667,14 +751,19 @@ export async function settingsDialog() {
         this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
         'unknown'
       ),
+      hideTimezone: this.hideTimezoneCheckbox.isSelected(),
       insertButtons: this.processInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),
       notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
       notifyCollapsedThreads: this.notifyCollapsedThreadsCheckbox.isSelected(),
+      reformatComments: this.reformatCommentsCheckbox.isSelected(),
+      showContribsLink: this.showContribsLinkCheckbox.isSelected(),
       showToolbar: this.showToolbarCheckbox.isSelected(),
       signaturePrefix: this.signaturePrefixInput.getValue(),
+      timestampFormat: this.timestampFormatSelect.findSelectedItem()?.getData(),
       useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
+      useLocalTime: this.useLocalTimeCheckbox.isSelected(),
       useTemplateData: this.useTemplateDataCheckbox.isSelected(),
       watchOnReply: this.watchOnReplyCheckbox.isSelected(),
       watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),
@@ -713,6 +802,11 @@ export async function settingsDialog() {
     this.actions.setAbilities({ save, reset });
   };
 
+  SettingsDialog.prototype.reformatCommentsChange = function (checked) {
+    this.showContribsLinkCheckbox.setDisabled(!checked);
+    this.updateStates();
+  };
+
   SettingsDialog.prototype.changeDesktopNotifications = function (option) {
     if (option.data !== 'none' && Notification.permission !== 'granted') {
       OO.ui.alert(cd.s('dn-grantpermission'));
@@ -725,7 +819,7 @@ export async function settingsDialog() {
   };
 
   SettingsDialog.prototype.removeData = async function () {
-    if (await confirmDestructive('sd-removedata-confirm', { size: 'medium' })) {
+    if (confirm(cd.s('sd-removedata-confirm'))) {
       this.pushPending();
 
       try {
@@ -740,8 +834,9 @@ export async function settingsDialog() {
         return;
       }
 
-      localStorage.removeItem('convenientDiscussions-commentForms');
-      localStorage.removeItem('convenientDiscussions-thanks');
+      mw.storage.remove('convenientDiscussions-commentForms');
+      mw.storage.remove('convenientDiscussions-thanks');
+      mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 
       this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');
@@ -768,7 +863,7 @@ export async function settingsDialog() {
  * Show an edit watched sections dialog.
  */
 export async function editWatchedSections() {
-  if (cd.util.isPageOverlayOn()) return;
+  if (isPageOverlayOn()) return;
 
   /**
    * @class Subclass of {@link
@@ -857,8 +952,8 @@ export async function editWatchedSections() {
           return;
         }
 
-        // Logically, there should be no coinciding titles between pages, so we don't need a separate
-        // "return 0" condition.
+        // Logically, there should be no coinciding titles between pages, so we don't need a
+        // separate "return 0" condition.
         pages.sort((page1, page2) => page1.title > page2.title ? 1 : -1);
 
         const value = pages
@@ -1130,9 +1225,11 @@ export async function copyLink(object, e) {
     return;
   }
 
-  let onlyCdWarning;
+  let helpOnlyCd;
+  let helpNotOnlyCd;
   if (isComment) {
-    onlyCdWarning = cd.s('cld-help-onlycd');
+    helpOnlyCd = cd.s('cld-help-onlycd');
+    helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
   }
 
   const wikilinkField = copyActionField({
@@ -1140,20 +1237,21 @@ export async function copyLink(object, e) {
     disabled: !wikilink,
     label: cd.s('cld-wikilink'),
     copyCallback,
-    help: onlyCdWarning,
+    help: helpOnlyCd,
   });
 
   const currentPageWikilinkField = copyActionField({
     value: `[[#${anchor}]]`,
     label: cd.s('cld-currentpagewikilink'),
     copyCallback,
+    help: helpNotOnlyCd,
   });
 
   const linkField = copyActionField({
     value: link,
     label: cd.s('cld-link'),
     copyCallback,
-    help: onlyCdWarning,
+    help: helpOnlyCd,
   });
 
   // Workaround, because we don't want the first input to be focused on click almost anywhere in
@@ -1243,15 +1341,12 @@ export async function notFound(decodedFragment, date) {
   if (cd.g.PAGE.canHaveArchives()) {
     message += ' ' + cd.s('deadanchor-searchinarchive');
     if (await OO.ui.confirm(message, { title })) {
-      let text;
-      if (date) {
-        text = cd.util.formatDate(date);
-      } else {
-        text = decodedFragment
+      const text = date ?
+        formatDateNative(date, cd.g.TIMEZONE) :
+        decodedFragment
           .replace(/_/g, ' ')
           .replace(/"/g, '')
           .trim();
-      }
       const archivePrefix = cd.g.PAGE.getArchivePrefix();
       const searchQuery = `"${text}" prefix:${archivePrefix}`;
       const url = mw.util.getUrl('Special:Search', {

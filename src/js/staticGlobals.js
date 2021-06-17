@@ -34,7 +34,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_HOVER_BACKGROUND_COLOR: '#f8f9fa',
+  COMMENT_HOVERED_BACKGROUND_COLOR: '#f8f9fa',
 
   /**
    * Marker color for target comments.
@@ -58,7 +58,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_TARGET_HOVER_BACKGROUND_COLOR: '#fef2db',
+  COMMENT_TARGET_HOVERED_BACKGROUND_COLOR: '#fef2db',
 
   /**
    * Marker color for new comments.
@@ -83,7 +83,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_NEW_HOVER_BACKGROUND_COLOR: '#e8ffd8',
+  COMMENT_NEW_HOVERED_BACKGROUND_COLOR: '#e8ffd8',
 
   /**
    * Marker color for own comments.
@@ -107,7 +107,7 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_OWN_HOVER_BACKGROUND_COLOR: '#f7edfb',
+  COMMENT_OWN_HOVERED_BACKGROUND_COLOR: '#f7edfb',
 
   /**
    * Marker color for deleted comments.
@@ -131,7 +131,23 @@ export default {
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g
    */
-  COMMENT_DELETED_HOVER_BACKGROUND_COLOR: '#fddbd9',
+  COMMENT_DELETED_HOVERED_BACKGROUND_COLOR: '#fddbd9',
+
+  /**
+   * Left and right margins of the comment underlay used as a fallback.
+   *
+   * @type {number}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  COMMENT_FALLBACK_SIDE_MARGIN: 8,
+
+  /**
+   * Left and right margins of thread lines.
+   *
+   * @type {number}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  THREAD_LINE_SIDE_MARGIN: 2,
 
   /**
    * How long a comment should be considered new and have a corresponding background on newly loaded
@@ -195,6 +211,15 @@ export default {
     'A', 'ABBR', 'B', 'BIG', 'BR', 'CENTER', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS',
     'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U', 'VAR'
   ],
+
+  /**
+   * Names of elements that shouldn't be the first or last highlightable element. These elements are
+   * wrapped into `'div'` containers. It allows for comment headers to be displayed correctly when
+   * `conveneintDiscussions.settings.reformatComments` is turned on.
+   *
+   * @type {Array}
+   */
+  BAD_HIGHLIGHTABLE_ELEMENTS: ['BLOCKQUOTE', 'DL', 'FORM', 'HR', 'OL', 'PRE', 'TABLE', 'UL'],
 
   /**
    * Classes of elements that shouldn't be highlighted. Only MediaWiki-assigned classes go here.

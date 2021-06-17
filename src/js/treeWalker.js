@@ -165,7 +165,7 @@ export class TreeWalker {
  */
 export class ElementsTreeWalker extends TreeWalker {
   /**
-   * Create an elements {@link module:treeWalker.TreeWalker tree walker}.
+   * Create an element {@link module:treeWalker.TreeWalker tree walker}.
    *
    * @param {Node} [startNode]
    */
@@ -185,7 +185,7 @@ export class ElementsTreeWalker extends TreeWalker {
  */
 export class ElementsAndTextTreeWalker extends TreeWalker {
   /**
-   * Create an elements and text {@link module:treeWalker.TreeWalker tree walker}.
+   * Create an element and text {@link module:treeWalker.TreeWalker tree walker}.
    *
    * @param {Node} [startNode]
    */

@@ -18,7 +18,7 @@ let signatureEndingRegexp;
 let elementsToExclude;
 
 /**
- * Get the page name from a URL.
+ * Get a page name from a URL.
  *
  * @param {string} url
  * @returns {?string}
@@ -67,15 +67,22 @@ function getPageNameFromUrl(url) {
 }
 
 /**
- * Get the user name from a link.
+ * @typedef {object} ProcessLinkReturn
+ * @param {string} 1 User name.
+ * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`).
+ */
+
+/**
+ * Get a user name from a link, along with some other data about a page name.
  *
  * @param {Element} element
- * @returns {string}
+ * @returns {?ProcessLinkReturn}
  * @private
  */
-export function getUserNameFromLink(element) {
+export function processLink(element) {
   const href = element.getAttribute('href');
   let userName;
+  let linkType = null;
   if (href) {
     const pageName = getPageNameFromUrl(href);
     if (!pageName) {
@@ -84,17 +91,34 @@ export function getUserNameFromLink(element) {
     const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
     if (match) {
       userName = match[1];
+      if (cd.g.USER_LINK_REGEXP.test(pageName)) {
+        linkType = 'user';
+      } else if (cd.g.USER_TALK_LINK_REGEXP.test(pageName)) {
+        linkType = 'userTalk';
+      } else if (cd.g.USER_SUBPAGE_LINK_REGEXP.test(pageName)) {
+        linkType = 'userSubpage';
+      } else if (cd.g.USER_TALK_SUBPAGE_LINK_REGEXP.test(pageName)) {
+        linkType = 'userTalkSubpage';
+      }
+
+      // Another alternative is a user link to another site where a prefix is specified before a
+      // namespace. Enough to capture a user name from, not enough to make any inferences.
     } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
       userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
       if (cd.g.IS_IPv6_ADDRESS(userName)) {
         userName = userName.toUpperCase();
       }
+      linkType = 'contribs';
     }
     if (userName) {
       userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
     }
   } else {
-    if (element.classList.contains('mw-selflink') && cd.g.NAMESPACE_NUMBER === 3) {
+    if (
+      element.classList.contains('mw-selflink') &&
+      cd.g.NAMESPACE_NUMBER === 3 &&
+      !cd.g.PAGE_NAME.includes('/')
+    ) {
       // Comments of users that have only the user talk page link in their signature on their talk
       // page.
       userName = cd.g.PAGE_TITLE;
@@ -102,7 +126,7 @@ export function getUserNameFromLink(element) {
       return null;
     }
   }
-  return userName;
+  return [userName, linkType];
 }
 
 /**
@@ -139,7 +163,7 @@ export default class Parser {
     this.context = context;
 
     if (!foreignComponentClasses) {
-      foreignComponentClasses = ['cd-commentPart', ...cd.config.closedDiscussionClasses];
+      foreignComponentClasses = ['cd-comment-part', ...cd.config.closedDiscussionClasses];
       if (cd.g.pageHasOutdents) {
         foreignComponentClasses.push('outdent-template');
       }
@@ -201,22 +225,22 @@ export default class Parser {
         const text = node.textContent;
         const { date, match } = parseTimestamp(text) || {};
         if (date && !elementsToExclude.some((el) => el.contains(node))) {
-          return { node, date, match };
+          return { node, date, match, text };
         }
       })
       .filter(defined)
       .map((finding) => {
-        const { node, match, date } = finding;
+        const { node, match, date, text } = finding;
         const element = this.context.document.createElement('span');
         element.classList.add('cd-timestamp');
         const textNode = this.context.document.createTextNode(match[2]);
         element.appendChild(textNode);
-        const remainedText = node.textContent.slice(match.index + match[0].length);
+        const remainedText = node.textContent.slice(match.index + text.length);
         let afterNode;
         if (remainedText) {
           afterNode = this.context.document.createTextNode(remainedText);
         }
-        node.textContent = node.textContent.slice(0, match.index + match[1].length);
+        node.textContent = match[1];
         node.parentNode.insertBefore(element, node.nextSibling);
         if (afterNode) {
           node.parentNode.insertBefore(afterNode, element.nextSibling);
@@ -258,23 +282,30 @@ export default class Parser {
         }
         const isUnsigned = Boolean(unsignedElement);
 
-        if (closestNotInlineAncestor) {
-          const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
-          const treeWalker = new ElementsTreeWalker(timestamp.element);
+        const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
+        const elementsTreeWalker = new ElementsTreeWalker(timestamp.element);
 
-          while (
-            treeWalker.nextNode() &&
-            closestNotInlineAncestor.contains(treeWalker.currentNode) &&
-            (!cniaChildren.includes(treeWalker.currentNode) || isInline(treeWalker.currentNode))
-          ) {
-            // Found other timestamp after this timestamp.
-            if (treeWalker.currentNode.classList.contains('cd-timestamp')) return;
-          }
+        while (
+          elementsTreeWalker.nextNode() &&
+          closestNotInlineAncestor.contains(elementsTreeWalker.currentNode) &&
+          (
+            !cniaChildren.includes(elementsTreeWalker.currentNode) ||
+            isInline(elementsTreeWalker.currentNode)
+          )
+        ) {
+          // Found other timestamp after this timestamp.
+          if (elementsTreeWalker.currentNode.classList.contains('cd-timestamp')) return;
         }
 
         const startElement = unsignedElement || timestamp.element;
         const treeWalker = new ElementsAndTextTreeWalker(startElement);
         let authorName;
+        let authorLink;
+        let authorTalkLink;
+
+        // Used only to make sure there are no two contribs links in a signature.
+        let authorContribsLink;
+
         let length = 0;
         let firstSignatureElement;
         let signatureNodes = [];
@@ -291,44 +322,69 @@ export default class Parser {
         do {
           const node = treeWalker.currentNode;
           length += node.textContent.length;
-          if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName) {
             if (node.classList.contains('cd-timestamp')) break;
             let hasAuthorLinks = false;
-            if (node.tagName === 'A') {
-              const userName = getUserNameFromLink(node);
+
+            const processLinkData = ([userName, linkType], link) => {
               if (userName) {
                 if (!authorName) {
                   authorName = userName;
                 }
                 if (authorName === userName) {
-                  // That's not some other user link that is not a part of the signature.
+                  if (linkType === 'user') {
+                    if (authorLink) {
+                      return false;
+                    }
+                    authorLink = link;
+                  } else if (linkType === 'userTalk') {
+                    if (authorTalkLink) {
+                      return false;
+                    }
+                    authorTalkLink = link;
+                  } else if (linkType === 'contribs') {
+                    if (authorContribsLink) {
+                      return false;
+                    }
+                    authorContribsLink = link;
+                  } else if (linkType === 'userSubpage') {
+                    // A user subpage link after a user link - OK. A user subpage link before a user
+                    // link - not OK. Perhaps part of the comment.
+                    if (authorLink) {
+                      return false;
+                    }
+                  } else if (linkType === 'userTalkSubpage') {
+                    // Same as with a user page above.
+                    if (authorTalkLink) {
+                      return false;
+                    }
+                  }
                   hasAuthorLinks = true;
+                } else {
+                  // Don't return false here in case the user mentioned a redirect to their user
+                  // page here.
                 }
               }
-            } else {
-              Array.from(node.getElementsByTagName('a'))
-                .reverse()
-                .some((link) => {
-                  cd.debug.startTimer('link external');
-                  // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
-                  if (link.classList.contains('external')) {
-                    cd.debug.stopTimer('link external');
-                    return false;
-                  }
-                  cd.debug.stopTimer('link external');
+              return true;
+            }
 
-                  const userName = getUserNameFromLink(link);
-                  if (userName) {
-                    if (!authorName) {
-                      authorName = userName;
-                    }
-                    if (authorName === userName) {
-                      // That's not some other user link that is not a part of the signature.
-                      hasAuthorLinks = true;
-                      return true;
-                    }
-                  }
-                });
+            if (node.tagName === 'A') {
+              const linkData = processLink(node) || [];
+              if (!processLinkData(linkData, node)) break;
+            } else {
+              const links = Array.from(node.getElementsByTagName('a')).reverse();
+              for (const link of links) {
+                cd.debug.startTimer('link external');
+                // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
+                if (link.classList.contains('external')) {
+                  cd.debug.stopTimer('link external');
+                  continue;
+                }
+                cd.debug.stopTimer('link external');
+
+                const linkData = processLink(link) || [];
+                processLinkData(linkData, link);
+              }
             }
 
             if (hasAuthorLinks) {
@@ -344,18 +400,21 @@ export default class Parser {
             length = 0;
             signatureNodes = [];
           }
+
+          // Users may cross out text ended with their signature and sign again
+          // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
+          // a part of signature then.
+          if (authorName && newNode?.tagName && ['S', 'STRIKE'].includes(newNode.tagName)) break;
         } while (newNode && length < cd.config.signatureScanLimit);
 
         if (!signatureNodes.length) {
           signatureNodes = [startElement];
         }
 
-        const firstSignatureElementIndex = signatureNodes.indexOf(firstSignatureElement);
-        signatureNodes.splice(
-          firstSignatureElementIndex === -1 ?
-          1 :
-          firstSignatureElementIndex + 1
-        );
+        const fseIndex = signatureNodes.indexOf(firstSignatureElement);
+        signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
+
+        if (!authorName) return;
 
         const anchor = generateCommentAnchor(timestamp.date, authorName, true);
         registerCommentAnchor(anchor);
@@ -366,11 +425,17 @@ export default class Parser {
         signatureNodes.reverse().forEach(element.appendChild.bind(element));
         signatureContainer.insertBefore(element, startElementNextSibling);
 
-        // If there is no author, we add the class to prevent the element from being considered a
-        // part of other comment but don't append to the list of signatures.
-        if (!authorName) return;
-
-        return { element, timestampElement, timestampText, date, authorName, anchor, isUnsigned };
+        return {
+          element,
+          timestampElement,
+          timestampText,
+          date,
+          authorLink,
+          authorTalkLink,
+          authorName,
+          anchor,
+          isUnsigned,
+        };
       })
       .filter(defined);
 
@@ -380,11 +445,24 @@ export default class Parser {
           // Only templates with no timestamp interest us.
           if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
             Array.from(element.getElementsByTagName('a')).some((link) => {
-              const authorName = getUserNameFromLink(link);
+              const [authorName, linkType] = processLink(link) || {};
               if (authorName) {
+                let authorLink;
+                let authorTalkLink;
+                if (linkType === 'user') {
+                  authorLink = link;
+                } else if (linkType === 'userTalk') {
+                  authorTalkLink = link;
+                }
                 element.classList.add('cd-signature');
                 const isUnsigned = true;
-                signatures.push({ element, authorName, isUnsigned });
+                signatures.push({
+                  element,
+                  authorName,
+                  isUnsigned,
+                  authorLink,
+                  authorTalkLink,
+                });
                 return true;
               }
             });
@@ -588,6 +666,14 @@ export default class Parser {
           ) ||
 
           (cd.g.pageHasOutdents && this.context.getElementByClassName(node, 'outdent-template')) ||
+
+          // Talk page message box
+          (
+            cd.g.NAMESPACE_NUMBER % 2 === 1 &&
+            node.classList.contains('tmbox') &&
+            lastStep !== 'up'
+          ) ||
+
           cd.config.checkForCustomForeignComponents?.(node, this.context)
         ) {
           break;
@@ -734,8 +820,12 @@ export default class Parser {
   filterParts(parts) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
     for (let i = parts.length - 1; i > 0; i--) {
-      const part = parts[i];
-      if (part.node.tagName === 'P' && !part.node.textContent.trim()) {
+      const node = parts[i].node;
+      if (
+        node.tagName === 'P' &&
+        !node.textContent.trim() &&
+        Array.from(node.children).every((child) => child.tagName === 'BR')
+      ) {
         parts.splice(i, 1);
       } else {
         break;
@@ -794,9 +884,6 @@ export default class Parser {
         // nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
         const partTextNoSpaces = part.node.textContent.replace(/\s+/g, '');
 
-        let current = [part.node];
-        let children;
-
         /*
           With code like this:
 
@@ -805,8 +892,8 @@ export default class Parser {
 
           one comment (preceded by :: in this case) creates its own list tree, not a subtree,
           even though it's a reply to a reply. So we dive to the bottom of the hierarchy of nested
-          lists to get the bottom node (and therefore draw the comment layers more neatly). One of
-          the most complex tree structures is this:
+          lists to get the bottom node (and therefore draw comment layers more neatly). One of the
+          most complex tree structures is this:
 
             * Smth. [signature]
             :* Smth.
@@ -816,7 +903,10 @@ export default class Parser {
           https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
           It has a branchy structure that requires a tricky algorithm to be parsed correctly.
          */
+        let current;
+        let children = [part.node];
         do {
+          current = children;
           children = current.reduce(
             (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
             []
@@ -832,8 +922,7 @@ export default class Parser {
           (
             children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
             partTextNoSpaces
-          ) &&
-          (current = children)
+          )
         );
 
         if (current.length > 1) {
@@ -851,6 +940,54 @@ export default class Parser {
             lastStep: 'replaced',
           });
         }
+      }
+    }
+
+    return parts;
+  }
+
+  /**
+   * Wrap numbered list into a div or dl & dd if the comment starts with numbered list items.
+   *
+   * @param {object[]} parts
+   * @returns {object[]}
+   */
+  wrapNumberedList(parts) {
+    if (parts.length > 1) {
+      const parent = parts[0].node.parentNode;
+      if (parent.tagName === 'OL' && parent.querySelectorAll('.cd-signature').length <= 1) {
+        const listItems = parts.filter((part) => part.node.parentNode === parent);
+
+        // Is `#` used as an indentation character instead of `:` or `*`, or is the comments just
+        // starts with a list and ends on a correct level (without `#`)?
+        const isNumberedListUsedAsIndentation = !parts.some((part) => (
+          part.node.parentNode !== parent &&
+          part.node.parentNode.contains(parent)
+        ));
+        let outerWrapper;
+        let innerWrapper;
+        const nextSibling = parent.nextSibling;
+        const parentParent = parent.parentNode;
+        if (isNumberedListUsedAsIndentation) {
+          innerWrapper = this.context.document.createElement('dd');
+          outerWrapper = this.context.document.createElement('dl');
+          outerWrapper.appendChild(innerWrapper);
+        } else {
+          innerWrapper = this.context.document.createElement('div');
+          outerWrapper = innerWrapper;
+        }
+        innerWrapper.appendChild(parent);
+        parentParent.insertBefore(outerWrapper, nextSibling);
+
+        const newNode = {
+          node: innerWrapper,
+          isTextNode: false,
+          isHeading: false,
+          hasCurrentSignature: true,
+          hasForeignComponents: false,
+          lastStep: 'replaced',
+        };
+        parts.splice(0, listItems.length, newNode);
       }
     }
 

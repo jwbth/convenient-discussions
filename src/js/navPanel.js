@@ -8,8 +8,13 @@ import Comment from './Comment';
 import cd from './cd';
 import updateChecker from './updateChecker';
 import { focusInput, reorderArray } from './util';
+import { formatDate } from './timestamp';
 import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
+
+let urbtTimeout;
+let cachedCommentCount;
+let cachedCommentsBySection;
 
 export default {
   /**
@@ -137,6 +142,7 @@ export default {
     this.$nextButton.hide();
     this.$firstUnseenButton.hide();
     this.$commentFormButton.hide();
+    clearTimeout(urbtTimeout);
   },
 
   /**
@@ -263,19 +269,27 @@ export default {
   },
 
   /**
-   * Update the tooltip of the refresh button, displaying statistics of comments not yet displayed if
-   * there are such.
+   * Update the tooltip of the refresh button, displaying statistics of comments not yet displayed
+   * if there are such.
    *
-   * @param {number} commentsCount
+   * @param {number} commentCount
    * @param {Map} [commentsBySection]
    * @private
    */
-  updateRefreshButtonTooltip(commentsCount, commentsBySection) {
+  updateRefreshButtonTooltip(commentCount, commentsBySection) {
+    cd.debug.startTimer('updateRefreshButtonTooltip');
+
+    // If the method was not called after a timeout and the timeout exists, clear it.
+    clearTimeout(urbtTimeout);
+
+    cachedCommentCount = commentCount;
+    cachedCommentsBySection = commentsBySection;
+
     let tooltipText = null;
     const areThereNew = cd.comments.some((comment) => comment.isNew);
-    if (commentsCount) {
+    if (commentCount) {
       tooltipText = (
-        cd.s('navpanel-newcomments-count', commentsCount) +
+        cd.s('navpanel-newcomments-count', commentCount) +
         ' ' +
         cd.s('navpanel-newcomments-refresh') +
         ' ' +
@@ -285,6 +299,8 @@ export default {
         tooltipText += '\n' + cd.s('navpanel-markasread');
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
+      const comma = cd.mws('comma-separator');
+      const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '';
       commentsBySection.forEach((comments, sectionOrAnchor) => {
         let headline;
         if (typeof sectionOrAnchor === 'string') {
@@ -299,18 +315,21 @@ export default {
             cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
             comment.author.name;
           const date = comment.date ?
-            cd.util.formatDate(comment.date) :
+            formatDate(comment.date) :
             cd.s('navpanel-newcomments-unknowndate');
-          tooltipText += (
-            bullet +
-            ' ' +
-            names +
-            (cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '') +
-            cd.mws('comma-separator') +
-            date
-          );
+          tooltipText += bullet + ' ' + names + rtlMarkOrNot + comma + date;
         });
       });
+
+      // When timestamps are relative and the TOC is set to be modified, the tooltip is updated
+      // together with the updates of the TOC. When the TOC is not modified, we need to update the
+      // tooltip manually every minute. When timestamps are "improved", timestamps are updated in
+      // LiveTimestamp.updateImproved.
+      if (cd.settings.timestampFormat === 'relative' && !cd.settings.modifyToc) {
+        urbtTimeout = setTimeout(() => {
+          this.updateTimestampsInRefreshButtonTooltip();
+        }, cd.g.MILLISECONDS_IN_MINUTE);
+      }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
       if (areThereNew) {
@@ -319,6 +338,12 @@ export default {
     }
 
     this.$refreshButton.attr('title', tooltipText);
+
+    cd.debug.stopTimer('updateRefreshButtonTooltip');
+  },
+
+  updateTimestampsInRefreshButtonTooltip() {
+    this.updateRefreshButtonTooltip(cachedCommentCount, cachedCommentsBySection);
   },
 
   /**
@@ -341,10 +366,8 @@ export default {
   updateCommentFormButton() {
     if (cd.g.isAutoScrollInProgress || !this.isMounted()) return;
 
-    if (cd.commentForms.some((commentForm) => !commentForm.$element.cdIsInViewport(true))) {
-      this.$commentFormButton.show();
-    } else {
-      this.$commentFormButton.hide();
-    }
+    const areThereHidden = cd.commentForms
+      .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
+    this.$commentFormButton[areThereHidden ? 'show' : 'hide']();
   },
 };

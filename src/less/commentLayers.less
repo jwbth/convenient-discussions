@@ -1,65 +1,82 @@
-.cd-commentUnderlay {
+.flow-root() {
+  display: flow-root;
+
+  // Hack for Edge
+  -ms-display: grid;
+}
+
+.cd-comment-underlay {
   position: absolute;
   z-index: -1;
 }
 
-.cd-commentUnderlay-hover,
-.cd-commentOverlay-content {
-  background-color: var(--cd-comment-hover-background-color);
+.cd-comment-underlay-hovered,
+.cd-comment-overlay-content {
+  background-color: var(--cd-comment-hovered-background-color);
 }
 
-.cd-commentUnderlay-deleted {
+.cd-comment-underlay-changed.cd-comment-underlay-changed {
+  background-color: var(--cd-comment-new-background-color);
+}
+
+.cd-comment-underlay-changed.cd-comment-underlay-changed.cd-comment-underlay-hovered,
+.cd-comment-overlay-changed.cd-comment-overlay-changed .cd-comment-overlay-content {
+  background-color: var(--cd-comment-new-hovered-background-color);
+}
+
+.cd-comment-underlay-deleted.cd-comment-underlay-deleted {
   background-color: var(--cd-comment-deleted-background-color);
 }
 
-.cd-commentUnderlay-deleted.cd-commentUnderlay-hover,
-.cd-commentOverlay-deleted .cd-commentOverlay-content {
-  background-color: var(--cd-comment-deleted-hover-background-color);
+.cd-comment-underlay-deleted.cd-comment-underlay-hovered,
+.cd-comment-overlay-deleted .cd-comment-overlay-content {
+  background-color: var(--cd-comment-deleted-hovered-background-color);
 }
 
-.cd-commentUnderlay-target.cd-commentUnderlay-target {
+.cd-comment-underlay-target.cd-comment-underlay-target {
   background-color: var(--cd-comment-target-background-color);
 }
 
-.cd-commentUnderlay-target.cd-commentUnderlay-target.cd-commentUnderlay-hover,
-.cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-content {
-  background-color: var(--cd-comment-target-hover-background-color);
+.cd-comment-underlay-target.cd-comment-underlay-target.cd-comment-underlay-hovered,
+.cd-comment-overlay-target.cd-comment-overlay-target .cd-comment-overlay-content {
+  background-color: var(--cd-comment-target-hovered-background-color);
 }
 
-.cd-commentOverlay {
+.cd-comment-overlay {
   position: absolute;
   z-index: 1;
   line-height: 1.4285714em;
 }
 
-.cd-commentOverlay-new .cd-commentOverlay-marker {
+.cd-comment-overlay-new .cd-comment-overlay-marker,
+.cd-comment-overlay-changed.cd-comment-overlay-changed .cd-comment-overlay-marker {
   background-color: var(--cd-comment-new-marker-color);
 }
 
-.cd-commentOverlay-own .cd-commentOverlay-marker {
+.cd-comment-overlay-own .cd-comment-overlay-marker {
   background-color: var(--cd-comment-own-marker-color);
 }
 
-.cd-commentOverlay-deleted .cd-commentOverlay-marker {
+.cd-comment-overlay-deleted .cd-comment-overlay-marker {
   background-color: var(--cd-comment-deleted-marker-color);
 }
 
-.cd-commentOverlay-target .cd-commentOverlay-marker {
+.cd-comment-overlay-target.cd-comment-overlay-target .cd-comment-overlay-marker {
   background-color: var(--cd-comment-target-marker-color);
 }
 
-.cd-commentOverlay-target.cd-commentOverlay-target.cd-commentOverlay-target .cd-commentOverlay-gradient {
+.cd-comment-overlay-target.cd-comment-overlay-target.cd-comment-overlay-target .cd-comment-overlay-gradient {
   background-image: none;
 }
 
-.cd-commentOverlay-marker {
+.cd-comment-overlay-marker {
   position: absolute;
   top: 0;
   width: 3px;
   height: 100%;
 }
 
-.cd-commentOverlay-line-closingGap {
+.cd-comment-overlay-line-closingGap {
   position: absolute;
   top: 0;
   width: 1px;
@@ -67,11 +84,11 @@
   background-color: #c8ccd1;
 }
 
-.cd-commentOverlay-hover .cd-commentOverlay-innerWrapper {
+.cd-comment-overlay-hovered .cd-comment-overlay-innerWrapper {
   display: flex;
 }
 
-.cd-commentOverlay-innerWrapper {
+.cd-comment-overlay-innerWrapper {
   position: absolute;
   z-index: 1;
   bottom: 0;
@@ -80,7 +97,7 @@
   flex-direction: row;
 }
 
-.cd-commentOverlay-gradient {
+.cd-comment-overlay-gradient {
   width: 1.5em;
   display: inline-block;
   -moz-user-select: none;
@@ -88,115 +105,119 @@
   user-select: none;
 }
 
-.cd-commentOverlay-content {
+.cd-comment-overlay-content {
   display: inline-flex;
   padding: 0 0.5em;
   flex-direction: row;
   pointer-events: all;
 }
 
-.sitedir-rtl.ltr .cd-commentOverlay-content {
+.sitedir-rtl.ltr .cd-comment-overlay-content {
   margin-right: 0.5em;
 }
 
-.sitedir-ltr.rtl .cd-commentOverlay-content {
+.sitedir-ltr.rtl .cd-comment-overlay-content {
   margin-left: 0.5em;
 }
 
-.sitedir-ltr.ltr .cd-commentOverlay-stretchedEnd .cd-commentOverlay-content {
-  padding-right: calc(~"var(--cd-content-start-margin) - 8px + 0.5em");
+.sitedir-ltr.ltr .cd-comment-overlay-stretchedEnd .cd-comment-overlay-content {
+  padding-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
 }
 
-.sitedir-rtl.rtl .cd-commentOverlay-stretchedEnd .cd-commentOverlay-content {
-  padding-left: calc(~"var(--cd-content-start-margin) - 8px + 0.5em");
+.sitedir-rtl.rtl .cd-comment-overlay-stretchedEnd .cd-comment-overlay-content {
+  padding-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
 }
 
-.sitedir-rtl.ltr .cd-commentOverlay-stretchedStart .cd-commentOverlay-content {
-  margin-right: calc(~"var(--cd-content-start-margin) - 8px");
+.sitedir-rtl.ltr .cd-comment-overlay-stretchedStart .cd-comment-overlay-content {
+  margin-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
 }
 
-.sitedir-ltr.rtl .cd-commentOverlay-stretchedStart .cd-commentOverlay-content {
-  margin-left: calc(~"var(--cd-content-start-margin) - 8px");
+.sitedir-ltr.rtl .cd-comment-overlay-stretchedStart .cd-comment-overlay-content {
+  margin-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
 }
 
-.sitedir-ltr .cd-commentOverlay-marker,
-.sitedir-ltr .cd-commentOverlay-line {
+.sitedir-ltr .cd-comment-overlay-marker,
+.sitedir-ltr .cd-comment-overlay-line {
   left: -1px;
 }
 
-.sitedir-rtl .cd-commentOverlay-marker,
-.sitedir-rtl .cd-commentOverlay-line {
+.sitedir-rtl .cd-comment-overlay-marker,
+.sitedir-rtl .cd-comment-overlay-line {
   right: -1px;
 }
 
 .ltr {
-  .cd-commentOverlay-innerWrapper {
+  .cd-comment-overlay-innerWrapper {
     direction: ltr;
 
     // Fix for Firefox 56
     right: 0;
   }
 
-  .cd-commentOverlay-gradient {
-    background-image: linear-gradient(to left, var(--cd-comment-hover-background-color), rgba(255, 255, 255, 0));
+  .cd-comment-overlay-gradient {
+    background-image: linear-gradient(to left, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
   }
 
-  .cd-commentOverlay-deleted .cd-commentOverlay-gradient {
-    background-image: linear-gradient(to left, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
+  .cd-comment-overlay-deleted .cd-comment-overlay-gradient {
+    background-image: linear-gradient(to left, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
   }
 
-  .cd-commentOverlay {
-    .oo-ui-buttonWidget {
-      margin-right: 0;
-    }
+  .cd-comment-overlay-changed.cd-comment-overlay-changed .cd-comment-overlay-gradient {
+    background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+  }
 
-    .cd-commentButton:not(:first-child) {
+  .cd-comment-button-ooui.cd-comment-button-ooui {
+    margin-right: 0;
+
+    &:not(:first-child) {
       margin-left: 1em;
     }
 
-    .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+    &.oo-ui-iconElement:first-child {
       margin-left: 0;
     }
   }
 }
 
 .rtl {
-  .cd-commentOverlay-innerWrapper {
+  .cd-comment-overlay-innerWrapper {
     direction: rtl;
 
     // Fix for Firefox 56
     left: 0;
   }
 
-  .cd-commentOverlay-gradient {
-    background-image: linear-gradient(to right, var(--cd-comment-hover-background-color), rgba(255, 255, 255, 0));
+  .cd-comment-overlay-gradient {
+    background-image: linear-gradient(to right, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
   }
 
-  .cd-commentOverlay-deleted .cd-commentOverlay-gradient {
-    background-image: linear-gradient(to right, var(--cd-comment-deleted-hover-background-color), rgba(255, 255, 255, 0));
+  .cd-comment-overlay-deleted .cd-comment-overlay-gradient {
+    background-image: linear-gradient(to right, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
   }
 
-  .cd-commentOverlay {
-    .oo-ui-buttonWidget {
-      margin-left: 0;
-    }
+  .cd-comment-overlay-changed.cd-comment-overlay-changed .cd-comment-overlay-gradient {
+    background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+  }
 
-    .cd-commentButton:not(:first-child) {
+  .cd-comment-button-ooui.cd-comment-button-ooui {
+    margin-left: 0;
+
+    &:not(:first-child) {
       margin-right: 1em;
     }
 
-    .oo-ui-buttonElement-frameless.oo-ui-iconElement:first-child {
+    &.oo-ui-iconElement:first-child {
       margin-right: 0;
     }
   }
 }
 
-body:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
+body:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
   padding-top: 1.4285714em;
   min-width: unset;
 }
 
-.ltr:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
+.ltr:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
   padding-left: 1.4285714em;
 
   > .oo-ui-iconElement-icon {
@@ -204,7 +225,7 @@ body:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-comment
   }
 }
 
-.rtl:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-commentButton-icon > .oo-ui-buttonElement-button {
+.rtl:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
   padding-right: 1.4285714em;
 
   > .oo-ui-iconElement-icon {
@@ -231,7 +252,11 @@ body:not(.skin-monobook) .cd-commentButton-icon.cd-commentButton-icon.cd-comment
 }
 
 .mw-parser-output .cd-commentLayersContainer-parent-relative {
-  // https://en.wikipedia.org/wiki/Template:Discussion_top has "overflow: auto" in the style
-  // property, which can create a scrollbar in some cases.
-  overflow: hidden !important;
+  .flow-root();
+
+  // "display: flow-root" should do the job of "overflow: hidden" or "overflow: auto" if it's set
+  // for an element. "overflow: auto" (present in
+  // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar in
+  // some cases.
+  overflow: unset !important;
 }

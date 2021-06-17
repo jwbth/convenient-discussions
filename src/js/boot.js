@@ -4,15 +4,14 @@
  * @module boot
  */
 
-import { create as nanoCssCreate } from 'nano-css';
-
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import LiveTimestamp from './LiveTimestamp';
 import Page from './Page';
 import Section from './Section';
-import Worker from './worker-gate';
 import cd from './cd';
+import commentLayers from './commentLayers';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
@@ -20,6 +19,7 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import {
+  addCss,
   areObjectsEqual,
   caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
@@ -34,6 +34,7 @@ import {
   unhideText,
 } from './util';
 import {
+  confirmDialog,
   createWindowManager,
   editWatchedSections,
   rescueCommentFormsContent,
@@ -41,7 +42,8 @@ import {
 } from './modal';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initTimestampParsingTools, loadSiteData } from './siteData';
+import { initDayjs, initTimestampParsingTools } from './timestamp';
+import { loadSiteData } from './siteData';
 
 let notificationsData = [];
 let saveSessionTimeout;
@@ -87,15 +89,20 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
+    hideTimezone: false,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',
     notifyCollapsedThreads: false,
     notificationsBlacklist: [],
+    reformatComments: null,
+    showContribsLink: false,
     showLoadingOverlay: true,
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
+    timestampFormat: 'default',
     modifyToc: true,
-    useBackgroundHighlighting: false,
+    useBackgroundHighlighting: true,
+    useLocalTime: true,
     useTemplateData: true,
     watchOnReply: true,
     watchSectionOnReply: true,
@@ -178,12 +185,24 @@ export async function initSettings() {
 
 /**
  * Assign the properties related to `convenientDiscussions.g.$contentColumn`.
+ *
+ * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
  */
-export function setContentColumnGlobals() {
+export function setContentColumnGlobals(setCssVar) {
   const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
   cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(property));
   if (cd.g.CONTENT_START_MARGIN < cd.g.CONTENT_FONT_SIZE) {
     cd.g.CONTENT_START_MARGIN = cd.g.CONTENT_FONT_SIZE;
+  }
+
+  // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+  // surrounding area from the design point of view.
+  if (cd.g.SKIN === 'timeless') {
+    cd.g.CONTENT_START_MARGIN--;
+  }
+
+  if (setCssVar) {
+    $(document.documentElement).css('--cd-content-start-margin', cd.g.CONTENT_START_MARGIN + 'px');
   }
 
   const left = cd.g.$contentColumn.offset().left;
@@ -220,27 +239,28 @@ export function setTalkPageCssVariables() {
   });
   const sidebarColor = $backgrounded.css('background-color');
 
-  cd.g.nanoCss = nanoCssCreate();
-  cd.g.nanoCss.put(':root', {
-    '--cd-comment-hover-background-color': cd.g.COMMENT_HOVER_BACKGROUND_COLOR,
-    '--cd-comment-target-marker-color': cd.g.COMMENT_TARGET_MARKER_COLOR,
-    '--cd-comment-target-background-color': cd.g.COMMENT_TARGET_BACKGROUND_COLOR,
-    '--cd-comment-target-hover-background-color': cd.g.COMMENT_TARGET_HOVER_BACKGROUND_COLOR,
-    '--cd-comment-new-marker-color': cd.g.COMMENT_NEW_MARKER_COLOR,
-    '--cd-comment-new-background-color': cd.g.COMMENT_NEW_BACKGROUND_COLOR,
-    '--cd-comment-new-hover-background-color': cd.g.COMMENT_NEW_HOVER_BACKGROUND_COLOR,
-    '--cd-comment-own-marker-color': cd.g.COMMENT_OWN_MARKER_COLOR,
-    '--cd-comment-own-background-color': cd.g.COMMENT_OWN_BACKGROUND_COLOR,
-    '--cd-comment-own-hover-background-color': cd.g.COMMENT_OWN_HOVER_BACKGROUND_COLOR,
-    '--cd-comment-deleted-marker-color': cd.g.COMMENT_DELETED_MARKER_COLOR,
-    '--cd-comment-deleted-background-color': cd.g.COMMENT_DELETED_BACKGROUND_COLOR,
-    '--cd-comment-deleted-hover-background-color': cd.g.COMMENT_DELETED_HOVER_BACKGROUND_COLOR,
-    '--cd-content-background-color': contentBackgroundColor,
-    '--cd-content-start-margin': cd.g.CONTENT_START_MARGIN + 'px',
-    '--cd-content-font-size': cd.g.CONTENT_FONT_SIZE + 'px',
-    '--cd-sidebar-color': sidebarColor,
-    '--cd-sidebar-transparent-color': transparentize(sidebarColor),
-  });
+  addCss(`:root {
+  --cd-comment-hovered-background-color: ${cd.g.COMMENT_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-target-marker-color: ${cd.g.COMMENT_TARGET_MARKER_COLOR};
+  --cd-comment-target-background-color: ${cd.g.COMMENT_TARGET_BACKGROUND_COLOR};
+  --cd-comment-target-hovered-background-color: ${cd.g.COMMENT_TARGET_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-new-marker-color: ${cd.g.COMMENT_NEW_MARKER_COLOR};
+  --cd-comment-new-background-color: ${cd.g.COMMENT_NEW_BACKGROUND_COLOR};
+  --cd-comment-new-hovered-background-color: ${cd.g.COMMENT_NEW_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-own-marker-color: ${cd.g.COMMENT_OWN_MARKER_COLOR};
+  --cd-comment-own-background-color: ${cd.g.COMMENT_OWN_BACKGROUND_COLOR};
+  --cd-comment-own-hovered-background-color: ${cd.g.COMMENT_OWN_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-deleted-marker-color: ${cd.g.COMMENT_DELETED_MARKER_COLOR};
+  --cd-comment-deleted-background-color: ${cd.g.COMMENT_DELETED_BACKGROUND_COLOR};
+  --cd-comment-deleted-hovered-background-color: ${cd.g.COMMENT_DELETED_HOVERED_BACKGROUND_COLOR};
+  --cd-comment-fallback-side-margin: ${cd.g.COMMENT_FALLBACK_SIDE_MARGIN}px;
+  --cd-thread-line-side-margin: ${cd.g.THREAD_LINE_SIDE_MARGIN}px;
+  --cd-content-background-color: ${contentBackgroundColor};
+  --cd-content-start-margin: ${cd.g.CONTENT_START_MARGIN}px;
+  --cd-content-font-size: ${cd.g.CONTENT_FONT_SIZE}px;
+  --cd-sidebar-color: ${sidebarColor};
+  --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
+}`);
 }
 
 /**
@@ -266,8 +286,8 @@ function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
   cd.g.PAGE = new Page(cd.g.PAGE_NAME);
-  cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
   cd.g.USER_GENDER = mw.user.options.get('gender');
+  cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
   cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
@@ -298,8 +318,8 @@ function initGlobals() {
   cd.g.dontHandleScroll = false;
   cd.g.isAutoScrollInProgress = false;
   cd.g.activeAutocompleteMenu = null;
-  cd.g.hasPageBeenReloaded = false;
   cd.g.isPageBeingReloaded = false;
+  cd.g.hasPageBeenReloaded = false;
 
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
@@ -359,26 +379,36 @@ function initPatterns() {
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
 
   const namespaceIds = mw.config.get('wgNamespaceIds');
-  const userNamespaces = Object.keys(namespaceIds)
-    .filter((key) => [2, 3].includes(namespaceIds[key]));
-  const userNamespacesPattern = userNamespaces.map(anySpace).join('|');
-  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesPattern}):(.+)`, 'i');
-
-  const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
-  const allNamespacesPattern = allNamespaces.join('|');
-  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^(?:${allNamespacesPattern}):`, 'i');
-
-  const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
-  cd.g.CAPTURE_USER_NAME_PATTERN = (
-    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesPattern})[ _]*:[ _]*|` +
-    `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
-  );
+  const userNamespacesAliases = Object.keys(namespaceIds)
+    .filter((key) => namespaceIds[key] === 2 || namespaceIds[key] === 3);
+  const userNamespacesAliasesPattern = userNamespacesAliases.map(anySpace).join('|');
+  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesAliasesPattern}):(.+)`, 'i');
 
   const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
   const userNamespaceAliasesPattern = userNamespaceAliases.map(anySpace).join('|');
-  cd.g.USER_NAMESPACE_ALIASES_REGEXP = new RegExp(
-    `^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`,
+  cd.g.USER_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`, 'i');
+  cd.g.USER_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):.+?/`, 'i');
+
+  const userTalkNamespaceAliases = Object.keys(namespaceIds)
+    .filter((key) => namespaceIds[key] === 3);
+  const userTalkNamespaceAliasesPattern = userTalkNamespaceAliases.map(anySpace).join('|');
+  cd.g.USER_TALK_LINK_REGEXP = new RegExp(
+    `^:?(?:${userTalkNamespaceAliasesPattern}):([^/]+)$`,
     'i'
+  );
+  cd.g.USER_TALK_SUBPAGE_LINK_REGEXP = new RegExp(
+    `^:?(?:${userTalkNamespaceAliasesPattern}):.+?/`,
+    'i'
+  );
+
+  const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
+  const allNamespacesPattern = allNamespaces.join('|');
+  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^:?(?:${allNamespacesPattern}):`, 'i');
+
+  const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
+  cd.g.CAPTURE_USER_NAME_PATTERN = (
+    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesAliasesPattern})[ _]*:[ _]*|` +
+    `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
   if (cd.config.unsignedTemplates.length) {
@@ -487,7 +517,7 @@ function initPatterns() {
   cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES
     .concat(cd.config.customUnhighlightableElementClasses);
 
-  const fileNamespaces = Object.keys(namespaceIds).filter((key) => 6 === namespaceIds[key]);
+  const fileNamespaces = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 6);
   const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');
   cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPattern}):`;
 
@@ -501,7 +531,7 @@ function initPatterns() {
   );
 
   const colonNamespaces = Object.keys(namespaceIds)
-    .filter((key) => [6, 14].includes(namespaceIds[key]));
+    .filter((key) => namespaceIds[key] === 6 || namespaceIds[key] === 14);
   const colonNamespacesPattern = colonNamespaces.map(anySpace).join('|');
   cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPattern}):`, 'i');
 
@@ -561,207 +591,217 @@ function initOouiAndElementPrototypes() {
 
   // OOUI button prototypes. Creating every button using the constructor takes 15 times longer than
   // cloning which is critical when creating really many of them.
-  cd.g.COMMENT_ELEMENT_PROTOTYPES = {};
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.goToParentButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-gotoparent'),
-    icon: 'upTriangle',
-    title: cd.s('cm-gotoparent-tooltip'),
-    framed: false,
-    invisibleLabel: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
-  }).$element.get(0);
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.linkButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-copylink'),
-    icon: 'link',
-    title: cd.s('cm-copylink-tooltip'),
-    framed: false,
-    invisibleLabel: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon'],
-  }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingLinkButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-copylink'),
-    icon: 'link',
-    title: cd.s('cm-copylink-tooltip'),
-    framed: false,
-    disabled: true,
-    invisibleLabel: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-commentButton-icon', 'cd-button-pending'],
-  }).$element.get(0);
+  let commentElementPrototypes = {};
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.thankButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thank'),
-    title: cd.s('cm-thank-tooltip'),
-    framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.pendingThankButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thank'),
-    title: cd.s('cm-thank-tooltip'),
-    framed: false,
-    disabled: true,
-    classes: ['cd-button', 'cd-commentButton', 'cd-button-pending'],
-  }).$element.get(0);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.thankedButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-thanked'),
-    title: cd.s('cm-thanked-tooltip'),
-    framed: false,
-    disabled: true,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
+  const separator = document.createElement('span');
+  separator.innerHTML = cd.sParse('dot-separator');
+  commentElementPrototypes.separator = separator;
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.editButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-edit'),
-    framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
+  // true, null
+  if (cd.settings.reformatComments !== false) {
+    const headerElement = document.createElement('div');
+    headerElement.className = 'cd-comment-header';
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
-    label: cd.s('cm-reply'),
-    framed: false,
-    classes: ['cd-button', 'cd-commentButton'],
-  }).$element.get(0);
+    const authorWrapper = document.createElement('span');
+    authorWrapper.className = 'cd-comment-author-wrapper';
+    headerElement.appendChild(authorWrapper);
+
+    const authorLink = document.createElement('a');
+    authorLink.className = 'cd-comment-author mw-userlink';
+    authorWrapper.appendChild(authorLink);
+
+    const bdiElement = document.createElement('bdi');
+    authorLink.appendChild(bdiElement);
+
+    const parenthesesStart = document.createTextNode(' ' + cd.mws('parentheses-start'));
+    const parenthesesEnd = document.createTextNode(cd.mws('parentheses-end'));
+
+    const authorTalkLink = document.createElement('a');
+    authorTalkLink.textContent = cd.s('comment-author-talk');
+    authorWrapper.appendChild(parenthesesStart);
+    authorWrapper.appendChild(authorTalkLink);
+
+    if (cd.settings.showContribsLink) {
+      const contribsLink = document.createElement('a');
+      contribsLink.textContent = cd.s('comment-author-contribs');
+      const separator = commentElementPrototypes.separator.cloneNode(true);
+      authorWrapper.appendChild(separator);
+      authorWrapper.appendChild(contribsLink);
+    }
+
+    headerElement.appendChild(parenthesesEnd);
+
+    commentElementPrototypes.headerElement = headerElement;
+  }
+
+  if (cd.settings.reformatComments !== true) {
+    commentElementPrototypes.getReplyButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-reply'),
+        framed: false,
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+      })
+    );
+    commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element
+      .get(0);
+
+    commentElementPrototypes.getEditButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-edit'),
+        framed: false,
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+      })
+    );
+    commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element.get(0);
+
+    commentElementPrototypes.getThankButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-thank'),
+        title: cd.s('cm-thank-tooltip'),
+        framed: false,
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+      })
+    );
+    commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element
+      .get(0);
+
+    commentElementPrototypes.getCopyLinkButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-copylink'),
+        icon: 'link',
+        title: cd.s('cm-copylink-tooltip'),
+        framed: false,
+        invisibleLabel: true,
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+      })
+    );
+    commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton().$element
+      .get(0);
+
+    commentElementPrototypes.getGoToParentButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-gotoparent'),
+        icon: 'upTriangle',
+        title: cd.s('cm-gotoparent-tooltip'),
+        framed: false,
+        invisibleLabel: true,
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+      })
+    );
+    commentElementPrototypes.goToParentButton = commentElementPrototypes.getGoToParentButton()
+      .$element.get(0);
+
+    commentElementPrototypes.getGoToChildButton = () => (
+      new OO.ui.ButtonWidget({
+        label: cd.s('cm-gotochild'),
+        icon: 'downTriangle',
+        title: cd.s('cm-gotochild-tooltip'),
+        framed: false,
+        invisibleLabel: true,
+        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+      })
+    );
+    commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton()
+      .$element.get(0);
+  }
 
   const commentUnderlay = document.createElement('div');
-  commentUnderlay.className = 'cd-commentUnderlay';
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.underlay = commentUnderlay;
+  commentUnderlay.className = 'cd-comment-underlay';
+  commentElementPrototypes.underlay = commentUnderlay;
 
   const commentOverlay = document.createElement('div');
-  commentOverlay.className = 'cd-commentOverlay';
+  commentOverlay.className = 'cd-comment-overlay';
+  commentElementPrototypes.overlay = commentOverlay;
 
   const overlayLine = document.createElement('div');
-  overlayLine.className = 'cd-commentOverlay-line';
+  overlayLine.className = 'cd-comment-overlay-line';
   commentOverlay.appendChild(overlayLine);
 
   const overlayMarker = document.createElement('div');
-  overlayMarker.className = 'cd-commentOverlay-marker';
+  overlayMarker.className = 'cd-comment-overlay-marker';
   commentOverlay.appendChild(overlayMarker);
 
-  const overlayInnerWrapper = document.createElement('div');
-  overlayInnerWrapper.className = 'cd-commentOverlay-innerWrapper';
-  commentOverlay.appendChild(overlayInnerWrapper);
-  cd.g.COMMENT_ELEMENT_PROTOTYPES.overlay = commentOverlay;
+  if (!cd.settings.reformatComments) {
+    const overlayInnerWrapper = document.createElement('div');
+    overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
+    commentOverlay.appendChild(overlayInnerWrapper);
 
-  const overlayGradient = document.createElement('div');
-  overlayGradient.textContent = '\u00A0';
-  overlayGradient.className = 'cd-commentOverlay-gradient';
-  overlayInnerWrapper.appendChild(overlayGradient);
+    const overlayGradient = document.createElement('div');
+    overlayGradient.textContent = '\u00A0';
+    overlayGradient.className = 'cd-comment-overlay-gradient';
+    overlayInnerWrapper.appendChild(overlayGradient);
 
-  const overlayContent = document.createElement('div');
-  overlayContent.className = 'cd-commentOverlay-content';
-  overlayInnerWrapper.appendChild(overlayContent);
+    const overlayContent = document.createElement('div');
+    overlayContent.className = 'cd-comment-overlay-content';
+    overlayInnerWrapper.appendChild(overlayContent);
+  }
+  cd.g.COMMENT_ELEMENT_PROTOTYPES = commentElementPrototypes;
 
-  cd.g.SECTION_ELEMENT_PROTOTYPES = {};
-  cd.g.SECTION_ELEMENT_PROTOTYPES.replyButton = new OO.ui.ButtonWidget({
+  let sectionElementPrototypes = {};
+  sectionElementPrototypes.replyButton = new OO.ui.ButtonWidget({
     label: cd.s('section-reply'),
     framed: false,
 
     // Add the thread button class as it behaves as a thread button in fact, being positioned inside
     // a "cd-commentLevel" list.
-    classes: ['cd-button', 'cd-sectionButton', 'cd-threadButton'],
+    classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
   }).$element.get(0);
 
-  cd.g.SECTION_ELEMENT_PROTOTYPES.addSubsectionButton = new OO.ui.ButtonWidget({
+  sectionElementPrototypes.addSubsectionButton = new OO.ui.ButtonWidget({
     // Will be replaced
     label: ' ',
 
     framed: false,
-    classes: ['cd-button', 'cd-sectionButton'],
+    classes: ['cd-button-ooui', 'cd-section-button'],
   }).$element.get(0);
+  cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
 
-  cd.g.THREAD_ELEMENT_PROTOTYPES = {};
-  cd.g.THREAD_ELEMENT_PROTOTYPES.collapsedButton = new OO.ui.ButtonWidget({
+  let threadElementPrototypes = {};
+  threadElementPrototypes.expandButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
     icon: 'expand',
 
     framed: false,
     classes: [
-      'cd-button',
-      'cd-threadButton',
-      'cd-threadButton-invisible',
-      'cd-threadButton-collapsedNote',
+      'cd-button-ooui',
+      'cd-button-expandNote',
+      'cd-thread-button',
+      'cd-thread-button-invisible',
     ],
   }).$element.get(0);
 
   const threadClickArea = document.createElement('div');
-  threadClickArea.className = 'cd-threadLine-clickArea';
+  threadClickArea.className = 'cd-thread-clickArea';
   threadClickArea.title = cd.s('thread-tooltip');
   const line = document.createElement('div');
-  line.className = 'cd-threadLine';
+  line.className = 'cd-thread-line';
   threadClickArea.appendChild(line);
-  cd.g.THREAD_ELEMENT_PROTOTYPES.clickArea = threadClickArea;
-}
-
-/**
- * Add CSS rules related to background highlighting. It is contingent on the
- * "useBackgroundHighlighting" setting.
- *
- * @private
- */
-function addBackgroundHighlightingCss() {
-  let underlayPostfix = '';
-  let overlayPostfix = '';
-  if (!cd.settings.useBackgroundHighlighting) {
-    underlayPostfix = '.cd-commentUnderlay-forcedBackground';
-    overlayPostfix = '.cd-commentOverlay-forcedBackground';
-  }
-  cd.g.nanoCss.put(`.cd-commentUnderlay-new${underlayPostfix}`, {
-    backgroundColor: 'var(--cd-comment-new-background-color)',
-  });
-  cd.g.nanoCss.put(
-    `.cd-commentUnderlay-new.cd-commentUnderlay-hover${underlayPostfix}, ` +
-    `.cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-content`,
-    {
-      backgroundColor: 'var(--cd-comment-new-hover-background-color)',
-    }
-  );
-  // FIX TRANSPARENT
-  cd.g.nanoCss.put(`.ltr .cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-gradient`, {
-    backgroundImage: 'linear-gradient(to left, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
-  });
-  cd.g.nanoCss.put(`.rtl .cd-commentOverlay-new${overlayPostfix} .cd-commentOverlay-gradient`, {
-    backgroundImage: 'linear-gradient(to right, var(--cd-comment-new-hover-background-color), rgba(255, 255, 255, 0))',
-  });
-
-  if (cd.settings.useBackgroundHighlighting) {
-    cd.g.nanoCss.put('.cd-commentUnderlay-own', {
-      backgroundColor: 'var(--cd-comment-own-background-color)',
-    });
-    cd.g.nanoCss.put(
-      '.cd-commentUnderlay-own.cd-commentUnderlay-hover, ' +
-      '.cd-commentOverlay-own .cd-commentOverlay-content',
-      {
-        backgroundColor: 'var(--cd-comment-own-hover-background-color)',
-      }
-    );
-    cd.g.nanoCss.put('.ltr .cd-commentOverlay-own .cd-commentOverlay-gradient', {
-      backgroundImage: 'linear-gradient(to left, var(--cd-comment-own-hover-background-color), rgba(255, 255, 255, 0))',
-    });
-    cd.g.nanoCss.put('.rtl .cd-commentOverlay-own .cd-commentOverlay-gradient', {
-      backgroundImage: 'linear-gradient(to right, var(--cd-comment-own-hover-background-color), rgba(255, 255, 255, 0))',
-    });
-  }
+  threadElementPrototypes.clickArea = threadClickArea;
+  cd.g.THREAD_ELEMENT_PROTOTYPES = threadElementPrototypes;
 }
 
 /**
  * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed on
  * the first run.
  *
- * @param {Promise} siteDataRequests Promise returned by {@link module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by {@link
+ *   module:siteData.loadSiteData}.
  */
 export async function init(siteDataRequests) {
   createApi();
-  cd.g.worker = new Worker();
-
-  await (siteDataRequests || loadSiteData());
+  await Promise.all(siteDataRequests.length ? siteDataRequests : loadSiteData());
   initGlobals();
   await initSettings();
   initTimestampParsingTools();
   initPatterns();
   initOouiAndElementPrototypes();
-  addBackgroundHighlightingCss();
+  if (cd.settings.useBackgroundHighlighting) {
+    require('../less/commentLayers-optionalBackgroundHighlighting.less');
+  }
   $.fn.extend(jqueryExtensions);
+  initDayjs();
 
   /**
    * Collection of all comment forms on the page in the order of their creation.
@@ -789,27 +829,16 @@ function getUnseenCommentAnchors() {
 /**
  * Replace the inner HTML of the content element and run the parse routine.
  *
- * @param {string} html
- * @param {object} keptData
+ * @param {object} passedData
  * @private
  */
-async function updatePageContent(html, keptData) {
+async function updatePageContent(passedData) {
   cd.debug.stopTimer('getting HTML');
-  cd.debug.startTimer('laying out HTML');
-
-  cd.g.$content.children('.mw-parser-output').remove();
-  if (keptData.wasPageCreated) {
-    cd.g.$content.empty();
-  }
-
-  cd.g.$content.append(html);
-
-  keptData = Object.assign({}, keptData, { unseenCommentAnchors: getUnseenCommentAnchors() });
 
   // We could say "let it crash", but, well, unforeseen errors in processPage() are just too likely
   // to go without a safeguard.
   try {
-    await processPage(keptData);
+    await processPage(passedData);
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
@@ -840,7 +869,8 @@ function isShowLoadingOverlaySettingOff() {
 }
 
 /**
- * Set the loading overlay.
+ * Set the loading overlay and assign `true` to `convenientDiscussions.g.isFirstRun` and
+ * `convenientDiscussions.g.isPageBeingReloaded`.
  *
  * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
  */
@@ -883,14 +913,14 @@ export function startLoading(isReload = false) {
 }
 
 /**
- * Remove the loading overlay and reset `convenientDiscussions.g.isFirstRun` and
- * `convenientDiscussions.g.isPageBeingReloaded`.
+ * Remove the loading overlay and update some state properties of the global object.
  *
- * @param {boolean} hidePopupOnly
+ * @param {boolean} [updatePageState=true] Update the state properties of the global object.
  */
-export function finishLoading(hidePopupOnly) {
-  if (!hidePopupOnly) {
+export function finishLoading(updatePageState = true) {
+  if (updatePageState) {
     cd.g.isFirstRun = false;
+    cd.g.isPageFirstParsed = false;
     cd.g.isPageBeingReloaded = false;
   }
 
@@ -910,18 +940,30 @@ export function isPageLoading() {
 /**
  * Reload the page via Ajax.
  *
- * @param {object} [keptData={}] Data passed from the previous page state.
+ * @param {object} [passedData={}] Data passed from the previous page state.
  * @throws {CdError|Error}
  */
-export async function reloadPage(keptData = {}) {
+export async function reloadPage(passedData = {}) {
   if (cd.g.isPageBeingReloaded) return;
+
+  // Stop all animations, clear all timeouts.
+  cd.comments
+    .filter((comment) => comment.$animatedBackground)
+    .forEach((comment) => {
+      comment.$animatedBackground.stop();
+      comment.$marker.stop();
+    });
+  if (passedData.isPageReloadedExternally) {
+    commentLayers.reset();
+  }
+  LiveTimestamp.reset();
 
   // In case checkboxes were changed programmatically.
   saveSession();
 
   saveScrollPosition();
 
-  closeNotifications(keptData.closeNotificationsSmoothly ?? true);
+  closeNotifications(passedData.closeNotificationsSmoothly ?? true);
 
   cd.debug.init();
   cd.debug.startTimer('total time');
@@ -939,7 +981,7 @@ export async function reloadPage(keptData = {}) {
     parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
     finishLoading();
-    if (keptData.didSubmitCommentForm) {
+    if (passedData.didSubmitCommentForm) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -948,10 +990,14 @@ export async function reloadPage(keptData = {}) {
     }
   }
 
+  // Detach comment forms to keep events.
   cd.commentForms.forEach((commentForm) => {
     commentForm.$outermostElement.detach();
   });
 
+  passedData.unseenCommentAnchors = getUnseenCommentAnchors();
+
+  passedData.html = parseData.text;
   mw.config.set({
     wgRevisionId: parseData.revid,
     wgCurRevisionId: parseData.revid,
@@ -966,12 +1012,26 @@ export async function reloadPage(keptData = {}) {
   cd.g.hasPageBeenReloaded = true;
 
   updateChecker.updatePageTitle(0, false);
-  await updatePageContent(parseData.text, keptData);
+  await updatePageContent(passedData);
 
   toc.possiblyHide();
 
-  if (!keptData.commentAnchor && !keptData.sectionAnchor) {
+  if (!passedData.commentAnchor && !passedData.sectionAnchor) {
     restoreScrollPosition(false);
+  }
+}
+
+/**
+ * Handle firings of the hook `'wikipage.content'` (by using `mw.hook('wikipage.content').fire()`).
+ *
+ * @param {JQuery} $content
+ */
+export function handleHookFirings($content) {
+  if ($content.is('#mw-content-text')) {
+    const $root = $content.children('.mw-parser-output');
+    if ($root.length && !$root.data('cd-parsed')) {
+      reloadPage({ isPageReloadedExternally: true });
+    }
   }
 }
 
@@ -1128,9 +1188,15 @@ function restoreCommentFormsFromData(commentFormsData) {
 
 /**
  * Return saved comment forms to their places.
+ *
+ * @param {boolean} isPageReloadedExternally Is the page reloaded due to a `'wikipage.content`
+ *   firing.
  */
-export function restoreCommentForms() {
-  if (cd.g.isFirstRun) {
+export function restoreCommentForms(isPageReloadedExternally) {
+  if (cd.g.isFirstRun || isPageReloadedExternally) {
+    // This is needed when the page is reload externally.
+    cd.commentForms = [];
+
     const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
     saveToLocalStorage('commentForms', dataAllPages);
     const data = dataAllPages[mw.config.get('wgPageName')] || {};
@@ -1243,4 +1309,132 @@ export function closeNotifications(smooth = true) {
     data.notification.close();
   });
   notificationsData = [];
+}
+
+export async function suggestEnableCommentReformatting() {
+  if (cd.settings.reformatComments === null) {
+    const settings = await getSettings({ reuse: true });
+    if ([null, undefined].includes(settings.reformatComments)) {
+      const actions = [
+        {
+          label: cd.s('rc-suggestion-yes'),
+          action: 'accept',
+          flags: 'primary',
+        },
+        {
+          label: cd.s('rc-suggestion-no'),
+          action: 'reject',
+        },
+      ];
+      const $body = $('<div>');
+      const $imgOld = $('<img>')
+        .attr('width', 587)
+        .attr('height', 102)
+        .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
+        .addClass('cd-rc-img');
+      const $arrow = $('<img>')
+        .attr('width', 30)
+        .attr('height', 30)
+        .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
+        .addClass('cd-rc-img cd-rc-arrow');
+      const $imgNew = $('<img>')
+        .attr('width', 587)
+        .attr('height', 128)
+        .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
+        .addClass('cd-rc-img');
+      const $p = $('<p>').text(cd.s('rc-suggestion'));
+      $body.append($imgOld, $arrow, $imgNew, $p);
+      const action = await confirmDialog($body, {
+        size: 'large',
+        actions,
+      });
+      let promise;
+      if (action === 'accept') {
+        cd.settings.reformatComments = settings.reformatComments = true;
+        promise = setSettings(settings);
+      } else if (action === 'reject') {
+        cd.settings.reformatComments = settings.reformatComments = false;
+        promise = setSettings(settings);
+      }
+      if (promise) {
+        try {
+          await promise;
+          return settings.reformatComments;
+        } catch (e) {
+          mw.notify(cd.s('error-settings-save'), { type: 'error' })
+          console.warn(e);
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Ask the user if they want to receive desktop notifications on first run and ask for a permission
+ * if it is default but the user has desktop notifications enabled (for example, if he/she is using
+ * a browser different from where he/she has previously used).
+ *
+ * @private
+ */
+export async function confirmDesktopNotifications() {
+  if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
+    // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
+    const settings = getSettings({ reuse: true });
+    if (['unknown', undefined].includes(settings.reformatComments)) {
+      const actions = [
+        {
+          label: cd.s('dn-confirm-yes'),
+          action: 'accept',
+          flags: 'primary',
+        },
+        {
+          label: cd.s('dn-confirm-no'),
+          action: 'reject',
+        },
+      ];
+      const action = await confirmDialog(cd.s('dn-confirm'), {
+        size: 'medium',
+        actions,
+      });
+      let promise;
+      if (action === 'accept') {
+        if (Notification.permission === 'default') {
+          OO.ui.alert(cd.s('dn-grantpermission'));
+          Notification.requestPermission((permission) => {
+            if (permission === 'granted') {
+              cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
+              promise = setSettings(settings);
+            } else if (permission === 'denied') {
+              cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
+              promise = setSettings(settings);
+            }
+          });
+        } else if (Notification.permission === 'granted') {
+          cd.settings.desktopNotifications = settings.desktopNotifications = 'all';
+          promise = setSettings(settings);
+        }
+      } else if (action === 'reject') {
+        cd.settings.desktopNotifications = settings.desktopNotifications = 'none';
+        promise = setSettings(settings);
+      }
+      if (promise) {
+        try {
+          await promise;
+        } catch (e) {
+          mw.notify(cd.s('error-settings-save'), { type: 'error' })
+          console.warn(e);
+        }
+      }
+    }
+  }
+
+  if (
+    !['unknown', 'none'].includes(cd.settings.desktopNotifications) &&
+    Notification.permission === 'default'
+  ) {
+    await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
+    Notification.requestPermission();
+  }
 }

@@ -21,4 +21,16 @@ function getUrl(page) {
   );
 }
 
-module.exports = { getUrl };
+function unique(item, i, arr) {
+  return arr.indexOf(item) === i;
+}
+
+function replaceEntitiesInI18n(s) {
+  return s
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#32;/g, ' ')
+    .replace(/&rlm;/g, '\u202b')
+    .replace(/&lrm;/g, '\u200e');
+}
+
+module.exports = { getUrl, unique, replaceEntitiesInI18n };

@@ -11,7 +11,7 @@ import cd from './cd';
 import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
-import { isInputFocused, keyCombination } from './util';
+import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
 import { setContentColumnGlobals } from './boot';
 
 const beforeUnloadHandlers = {};
@@ -20,7 +20,7 @@ const beforeUnloadHandlers = {};
  * Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
-  setContentColumnGlobals();
+  setContentColumnGlobals(true);
   commentLayers.redrawIfNecessary(true);
   Thread.updateLines();
   navPanel.updateCommentFormButton();
@@ -65,7 +65,7 @@ export function removePreventUnloadCondition(name) {
  * @param {Event} e
  */
 export function handleGlobalKeyDown(e) {
-  if (cd.util.isPageOverlayOn()) return;
+  if (isPageOverlayOn()) return;
 
   if (
     // Ctrl+Alt+Q
@@ -123,11 +123,12 @@ export function handleScroll() {
 
     if (cd.g.isAutoScrollInProgress) return;
 
+    cd.debug.startTimer('handleScroll');
     if (cd.g.isPageActive) {
       Comment.registerSeen();
-      navPanel.updateFirstUnseenButton();
       navPanel.updateCommentFormButton();
     }
     pageNav.update();
+    cd.debug.stopTimer('handleScroll');
   }, 300);
 }

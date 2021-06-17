@@ -60,7 +60,8 @@ export default {
     'timezone-utc': 'UTC',
   },
   'contribsPage': 'Special:Contributions',
-  'localTimezoneOffset': 0,
+  'timezone': 'UTC',
+  'tagName': 'convenient-discussions',
   'unsignedTemplates': [
     'Unsigned',
     'Non firmato',

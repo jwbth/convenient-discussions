@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
+import { unique } from './util';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -43,6 +44,9 @@ export default class CommentSkeleton {
     // dd, li instead of dl, ul, ol where appropriate.
     parts = this.parser.replaceListsWithItems(parts, signature.element);
 
+    // Wrap ol into div or dl & dd if the comment starts with numbered list items.
+    parts = this.parser.wrapNumberedList(parts);
+
     /**
      * Comment ID. Same as the comment index in {@link module:cd~convenientDiscussions.comments
      * convenientDiscussions.comments}.
@@ -72,8 +76,33 @@ export default class CommentSkeleton {
      */
     this.authorName = signature.authorName;
 
-    // This is for the worker context and quickly gets removed.
+    /**
+     * Comment signature element.
+     *
+     * @type {Element}
+     */
     this.signatureElement = signature.element;
+
+    /**
+     * Comment timestamp element.
+     *
+     * @type {Element}
+     */
+    this.timestampElement = signature.timestampElement;
+
+    /**
+     * User page (in the "User" namespace) link element.
+     *
+     * @type {Element}
+     */
+    this.authorLink = signature.authorLink;
+
+    /**
+     * User talk page (in the "User talk" namespace) link element.
+     *
+     * @type {Element}
+     */
+    this.authorTalkLink = signature.authorTalkLink;
 
     /**
      * Does the comment belong to the current user.
@@ -124,18 +153,19 @@ export default class CommentSkeleton {
     /**
      * Comment elements that are highlightable.
      *
-     * Keep in mind that the elements may be replaced, and the property values will need to be
-     * updated. See {@link module:Comment#replaceElement}.
+     * Keep in mind that elements may be replaced, and property values will need to be updated. See
+     * {@link module:Comment#replaceElement}.
      *
      * @type {Element[]}
      */
     this.highlightables = this.elements.filter(isHighlightable);
 
-    // That which cannot be highlighted should not be considered existent.
+    // There shouldn't be comments without highlightables.
     if (!this.highlightables.length) {
       throw new CdError();
     }
 
+    this.wrapHighlightables();
     this.setLevels();
 
     /**
@@ -185,17 +215,46 @@ export default class CommentSkeleton {
   }
 
   /**
+   * Prevent an inappropriate element from being the first or last highlightable (this is used for
+   * when comments are reformatted, but we do it always to have a uniform parsing result). In the
+   * worker context, this will allow to correctly update edited comments (unless
+   * Comment#reviewHighlightables alters the highlightables afterwards).
+   */
+  wrapHighlightables() {
+    [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
+      .filter(unique)
+      .filter((el) => (
+        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+
+        // Such cases: https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
+        // semantical correctness of the markup.
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+
+        el.className ||
+        el.getAttribute('style')
+      ))
+      .forEach((el) => {
+        const wrapper = this.parser.context.document.createElement('div');
+        wrapper.className = 'cd-comment-replacedPart';
+        el.parentNode.insertBefore(wrapper, el);
+        this.elements.splice(this.elements.indexOf(el), 1, wrapper);
+        this.highlightables.splice(this.highlightables.indexOf(el), 1, wrapper);
+        wrapper.appendChild(el);
+      });
+  }
+
+  /**
    * Add the necessary attributes to the comment's elements.
    *
    * @private
    */
   addAttributes() {
-    this.highlightables[0].classList.add('cd-commentPart-first');
-    this.highlightables[this.highlightables.length - 1].classList.add('cd-commentPart-last');
     this.elements.forEach((el) => {
-      el.classList.add('cd-commentPart');
+      el.classList.add('cd-comment-part');
       el.setAttribute('data-comment-id', String(this.id));
     });
+    this.highlightables[0].classList.add('cd-comment-part-first');
+    this.highlightables[this.highlightables.length - 1].classList.add('cd-comment-part-last');
   }
 
   /**
