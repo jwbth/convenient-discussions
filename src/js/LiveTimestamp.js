@@ -120,7 +120,9 @@ export default class LiveTimestamp {
     improvedTimestamps.forEach((timestamp) => {
       timestamp.update();
     });
-    navPanel.updateTimestampsInRefreshButtonTooltip();
+    if (navPanel.isMounted()) {
+      navPanel.updateTimestampsInRefreshButtonTooltip();
+    }
   }
 
   static reset() {
