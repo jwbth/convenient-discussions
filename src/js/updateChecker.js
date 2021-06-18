@@ -458,21 +458,12 @@ function checkForNewChanges(currentComments) {
       if (hasCommentChanged(currentComment, newComment)) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
-          comment.comparedHtml = newComment.comparedHtml;
-
-          currentComment.hiddenElementData = newComment.hiddenElementData;
-          currentComment.elementHtmls = newComment.elementHtmls;
-          currentComment.elementNames = newComment.elementNames;
-          currentComment.text = newComment.text;
-          currentComment.comparedHtml = newComment.comparedHtml;
-          currentComment.textComparedHtml = newComment.textComparedHtml;
-          currentComment.headingComparedHtml = newComment.headingComparedHtml;
-
           const updateSuccess = comment.update(currentComment, newComment);
           const commentsData = [currentComment, newComment];
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
           isChangeMarkUpdated = true;
           events.changed = { updateSuccess };
+          comment.comparedHtml = newComment.comparedHtml;
         }
       } else if (comment.isChanged) {
         comment.update(currentComment, newComment);

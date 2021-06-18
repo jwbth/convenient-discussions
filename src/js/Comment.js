@@ -1568,11 +1568,16 @@ export default class Comment extends CommentSkeleton {
     // If a style element is replaced with a link element, we can't replace HTML.
     const areStyleTagsKept = (
       !newComment.hiddenElementData.length ||
-      newComment.hiddenElementData.every((data, i) => (
-        data.type !== 'templateStyles' ||
-        data.tagName === 'STYLE' ||
-        currentComment.hiddenElementData[i].tagName !== 'STYLE'
-      ))
+      (
+        newComment.hiddenElementData.every((data) => (
+          data.type !== 'templateStyles' ||
+          data.tagName === 'STYLE'
+        )) ||
+        currentComment.hiddenElementData.every((data) => (
+          data.type !== 'templateStyles' ||
+          data.tagName !== 'STYLE'
+        ))
+      )
     );
 
     if (
