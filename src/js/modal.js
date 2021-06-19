@@ -15,6 +15,7 @@ import {
   focusInput,
   hideText,
   isPageOverlayOn,
+  spacesToUnderlines,
   underlinesToSpaces,
   unhideText,
   wrap,
@@ -1328,36 +1329,139 @@ export function rescueCommentFormsContent(content) {
 }
 
 /**
- * Show a message dialog that informs the user that the section/comment was not found.
+ * Show a message at the top of the page that a section/comment was not found, a link to search in
+ * the archive, and optionally a link to the section/comment if it was found automatically.
  *
  * @param {string} decodedFragment
  * @param {Date} date
  */
 export async function notFound(decodedFragment, date) {
-  const title = $('<span>')
-    .addClass('cd-destructiveText')
-    .text(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
-  let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
-  if (cd.g.PAGE.canHaveArchives()) {
-    message += ' ' + cd.s('deadanchor-searchinarchive');
-    if (await OO.ui.confirm(message, { title })) {
-      const text = date ?
-        formatDateNative(date, cd.g.TIMEZONE) :
-        decodedFragment
-          .replace(/_/g, ' ')
-          .replace(/"/g, '')
-          .trim();
-      const archivePrefix = cd.g.PAGE.getArchivePrefix();
-      const searchQuery = `"${text}" prefix:${archivePrefix}`;
-      const url = mw.util.getUrl('Special:Search', {
-        profile: 'default',
-        fulltext: 'Search',
-        search: searchQuery,
-        cdcomment: date && decodedFragment,
-      });
-      location.assign(mw.config.get('wgServer') + url);
-    }
+  let label;
+  let sectionName;
+  if (date) {
+    label = cd.s('deadanchor-comment-text')
   } else {
-    OO.ui.alert(message, { title });
+    sectionName = underlinesToSpaces(decodedFragment);
+    label = cd.s('deadanchor-section-text', sectionName);
   }
+  if (cd.g.PAGE.canHaveArchives()) {
+    label += ' ';
+
+    let sectionNameDotDecoded;
+    if (date) {
+      label += cd.s('deadanchor-comment-finding');
+    } else {
+      label += cd.s('deadanchor-section-finding');
+      try {
+        sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'));
+      } catch (e) {
+        sectionNameDotDecoded = sectionName;
+      }
+    }
+
+    const token = date ? formatDateNative(date, cd.g.TIMEZONE) : sectionName.replace(/"/g, '');
+    const archivePrefix = cd.g.PAGE.getArchivePrefix();
+    let searchQuery = `"${token}"`
+    if (sectionName && sectionName !== sectionNameDotDecoded) {
+      const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
+      searchQuery += ` OR "${tokenDotDecoded}"`;
+    }
+    searchQuery += ` prefix:${archivePrefix}`;
+
+    cd.g.api.get({
+      action: 'query',
+      list: 'search',
+      srsearch: searchQuery,
+      srprop: sectionName ? 'sectiontitle' : undefined,
+
+      // List more recent archives first
+      srsort: 'create_timestamp_desc',
+
+      srlimit: '20'
+    }).then((resp) => {
+      const results = resp?.query?.search;
+
+      if (results.length === 0) {
+        let label;
+        if (date) {
+          label = cd.s('deadanchor-comment-text') + ' ' + cd.s('deadanchor-comment-notfound');
+        } else {
+          label = (
+            cd.s('deadanchor-section-text', sectionName) +
+            ' ' +
+            cd.s('deadanchor-section-notfound')
+          );
+        }
+        message.setLabel(label);
+      } else {
+        let pageTitle;
+
+        // Will either be sectionName or sectionNameDotDecoded.
+        let sectionNameFound = sectionName;
+
+        if (sectionName) {
+          // Obtain the first exact section title match (which would be from the most recent
+          // archive). This loop iterates over just one item in the vast majority of cases.
+          let sectionName_ = spacesToUnderlines(sectionName);
+          let sectionNameDotDecoded_ = spacesToUnderlines(sectionNameDotDecoded);
+          for (let [, result] of Object.entries(results)) {
+            // sectiontitle in API output has spaces encoded as underscores.
+            if (
+              result.sectiontitle &&
+              [sectionName_, sectionNameDotDecoded_].includes(result.sectiontitle)
+            ) {
+              pageTitle = result.title;
+              sectionNameFound = underlinesToSpaces(result.sectiontitle);
+              break;
+            }
+          }
+        } else {
+          if (results.length === 1) {
+            pageTitle = results[0].title;
+          }
+        }
+
+        let searchUrl = mw.util.getUrl('Special:Search', {
+          search: searchQuery,
+          sort: 'create_timestamp_desc',
+          cdcomment: date && decodedFragment,
+        });
+        searchUrl = mw.config.get('wgServer') + searchUrl;
+
+        let label;
+        if (pageTitle) {
+          if (date) {
+            label = cd.sParse(
+              'deadanchor-comment-exactmatch',
+              pageTitle + '#' + decodedFragment,
+              searchUrl
+            );
+          } else {
+            label = cd.sParse(
+              'deadanchor-section-exactmatch',
+              sectionNameFound,
+              pageTitle + '#' + sectionNameFound,
+              searchUrl
+            );
+          }
+        } else {
+          if (date) {
+            label = cd.sParse('deadanchor-comment-inexactmatch', searchUrl);
+          } else {
+            label = cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
+          }
+        }
+
+        message.setLabel(wrap(label));
+      }
+    });
+  }
+
+  const message = new OO.ui.MessageWidget({
+    type: 'warning',
+    inline: true,
+    label,
+    classes: ['cd-message-notFound'],
+  });
+  cd.g.$root.prepend(message.$element);
 }
