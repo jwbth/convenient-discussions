@@ -446,9 +446,9 @@ function processContributions($content) {
   if (timezoneOffset == null || isNaN(timezoneOffset)) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
-  if (!list) { // empty contributions list
-    return;
-  }
+
+  // Empty contributions list
+  if (!list) return;
   const lines = Array.from(list.children);
 
   lines.forEach((line) => {

@@ -412,9 +412,9 @@ function initPatterns() {
   );
 
   if (cd.config.unsignedTemplates.length) {
-    const unsignedTemplatesPattern = cd.config.unsignedTemplates.join('|');
+    const pattern = cd.config.unsignedTemplates.join('|');
     cd.g.UNSIGNED_TEMPLATES_PATTERN = (
-      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
+      `(\\{\\{ *(?:${pattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
     );
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
   }
@@ -455,31 +455,24 @@ function initPatterns() {
     cd.config.commentAntipatterns.length
   ) {
     if (cd.config.elementsToExcludeClasses) {
-      const elementsToExcludeClassesPattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
-      commentAntipatternsPatternParts.push(
-        `class=(['"])[^'"\\n]*(?:\\b${elementsToExcludeClassesPattern}\\b)[^'"\\n]*\\1`
-      );
+      const pattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
+      commentAntipatternsPatternParts.push(`class=(['"])[^'"\\n]*(?:\\b${pattern}\\b)[^'"\\n]*\\1`);
     }
     if (cd.config.templatesToExclude.length) {
-      const templatesToExcludePattern = cd.config.templatesToExclude
-        .map(caseInsensitiveFirstCharPattern)
-        .join('|');
-      commentAntipatternsPatternParts.push(
-        `\\{\\{ *(?:${templatesToExcludePattern}) *(?:\\||\\}\\})`
-      );
+      const pattern = cd.config.templatesToExclude.map(caseInsensitiveFirstCharPattern).join('|');
+      commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
     }
     if (cd.config.commentAntipatterns) {
-      commentAntipatternsPatternParts.push(
-        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
-      );
+      const sources = cd.config.commentAntipatterns.map((pattern) => pattern.source);
+      commentAntipatternsPatternParts.push(...sources);
     }
-    const commentAntipatternPattern = commentAntipatternsPatternParts.join('|');
-    cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${commentAntipatternPattern}).*$`, 'mg');
+    const pattern = commentAntipatternsPatternParts.join('|');
+    cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${pattern}).*$`, 'mg');
   }
 
-  cd.g.ARTICLE_PATH_REGEXP = new RegExp(
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
-  );
+  const articlePathPattern = mw.util.escapeRegExp(mw.config.get('wgArticlePath'))
+    .replace('\\$1', '(.*)');
+  cd.g.ARTICLE_PATH_REGEXP = new RegExp(articlePathPattern);
 
   const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
   const quoteBeginningsPattern = ['<blockquote', '<q']

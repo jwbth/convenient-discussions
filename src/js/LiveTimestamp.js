@@ -21,12 +21,6 @@ let improvedTimestamps = [];
  */
 export default class LiveTimestamp {
   constructor(element, date, addTimezone, callback) {
-    // TODO: remove after tested.
-    if (!cd.g.liveTimestamps) {
-      cd.g.liveTimestamps = [];
-    }
-    cd.g.liveTimestamps.push(this);
-
     cd.debug.startTimer('setDateUpdateTimer');
     this.element = element;
     this.date = date;
@@ -130,8 +124,5 @@ export default class LiveTimestamp {
     updateTimeouts = [];
     improvedTimestampsInitted = false;
     improvedTimestamps = [];
-
-    // TODO: remove after tested.
-    cd.g.liveTimestamps = [];
   }
 }

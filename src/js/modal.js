@@ -254,7 +254,7 @@ export async function settingsDialog() {
       this.renderForm(this.settings);
 
       this.stackLayout.setItem(this.settingsPanel);
-      this.bookletLayout.setPage('general');
+      this.bookletLayout.setPage('talkPage');
       this.actions.setAbilities({ close: true });
 
       cd.g.windowManager.updateWindowSize(this);
@@ -621,9 +621,6 @@ export async function settingsDialog() {
         dialog.showContribsLinkField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
-        dialog.useLocalTimeField.$element,
-        dialog.timestampFormatField.$element,
-        dialog.hideTimezoneField.$element,
         dialog.useBackgroundHighlightingField.$element,
       ]);
     }
@@ -721,7 +718,7 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-dataremoval'));
     };
 
-    const generalPage = new TalkPagePageLayout('general');
+    const talkPagePage = new TalkPagePageLayout('talkPage');
     const commentFormPage = new CommentFormPageLayout('commentForm');
     const timestampsPage = new TimestampsPageLayout('timestamps');
     const notificationsPage = new NotificationsPageLayout('notifications');
@@ -731,7 +728,7 @@ export async function settingsDialog() {
       outlined: true,
     });
     this.bookletLayout.addPages([
-      generalPage,
+      talkPagePage,
       commentFormPage,
       timestampsPage,
       notificationsPage,
