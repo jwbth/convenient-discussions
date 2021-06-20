@@ -428,7 +428,9 @@ function initPatterns() {
   if (authorInSignatureMatch) {
     // Extract signature contents before the user name - in order to cut it out from comment endings
     // when editing.
-    const signaturePrefixPattern = mw.util.escapeRegExp(cd.settings.signaturePrefix);
+    const signaturePrefixPattern = cd.settings.signaturePrefix === ' ' ?
+      '[ \n]' :
+      mw.util.escapeRegExp(cd.settings.signaturePrefix);
     const signatureBeginning = mw.util.escapeRegExp(
       signatureContent.slice(0, authorInSignatureMatch.index)
     );
