@@ -667,18 +667,18 @@ export async function settingsDialog() {
      * @param {object} [config]
      * @private
      */
-    function DateAndTimePageLayout(name, config) {
-      DateAndTimePageLayout.super.call(this, name, config);
+    function TimestampsPageLayout(name, config) {
+      TimestampsPageLayout.super.call(this, name, config);
       this.$element.append([
         dialog.useLocalTimeField.$element,
         dialog.timestampFormatField.$element,
         dialog.hideTimezoneField.$element,
       ]);
     }
-    OO.inheritClass(DateAndTimePageLayout, OO.ui.PageLayout);
-    DateAndTimePageLayout.prototype.setupOutlineItem = function (outlineItem) {
-      DateAndTimePageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
-      this.outlineItem.setLabel(cd.s('sd-page-dateandtime'));
+    OO.inheritClass(TimestampsPageLayout, OO.ui.PageLayout);
+    TimestampsPageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      TimestampsPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+      this.outlineItem.setLabel(cd.s('sd-page-timestamps'));
     };
 
     /**
@@ -722,7 +722,7 @@ export async function settingsDialog() {
 
     const generalPage = new TalkPagePageLayout('general');
     const commentFormPage = new CommentFormPageLayout('commentForm');
-    const dateAndTimePage = new DateAndTimePageLayout('dateAndTime');
+    const timestampsPage = new TimestampsPageLayout('timestamps');
     const notificationsPage = new NotificationsPageLayout('notifications');
     const removeDataPage = new RemoveDataPageLayout('removeData');
 
@@ -732,7 +732,7 @@ export async function settingsDialog() {
     this.bookletLayout.addPages([
       generalPage,
       commentFormPage,
-      dateAndTimePage,
+      timestampsPage,
       notificationsPage,
       removeDataPage,
     ]);

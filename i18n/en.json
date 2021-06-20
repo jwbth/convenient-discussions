@@ -262,7 +262,7 @@
   "sd-reload": "Reload",
   "sd-page-talkpage": "Talk page",
   "sd-page-commentform": "Comment form",
-  "sd-page-dateandtime": "Date and time",
+  "sd-page-timestamps": "Timestamps",
   "sd-page-notifications": "Notifications",
   "sd-page-dataremoval": "Data removal",
   "sd-close-confirm": "The settings were not saved. Are you sure you want to close the window?",
