@@ -672,8 +672,8 @@ export async function settingsDialog() {
       TimestampsPageLayout.super.call(this, name, config);
       this.$element.append([
         dialog.useLocalTimeField.$element,
-        dialog.timestampFormatField.$element,
         dialog.hideTimezoneField.$element,
+        dialog.timestampFormatField.$element,
       ]);
     }
     OO.inheritClass(TimestampsPageLayout, OO.ui.PageLayout);
