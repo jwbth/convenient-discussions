@@ -83,12 +83,17 @@ export default class Section extends SectionSkeleton {
       // there's probably no harm in that.
       const editLink = this.editSectionElement.querySelector('a[href*="action=edit"]');
       if (editLink) {
-        /**
-         * URL to edit the section.
-         *
-         * @type {URL}
-         */
-        this.editUrl = new mw.Uri(editLink.getAttribute('href'));
+        // May crash if the current URL contains undecodable "%" in the fragment.
+        try {
+          /**
+           * URL to edit the section.
+           *
+           * @type {URL}
+           */
+          this.editUrl = new mw.Uri(editLink.getAttribute('href'));
+        } catch (e) {
+          // Empty
+        }
 
         if (this.editUrl) {
           const sectionNumber = this.editUrl.query.section;
