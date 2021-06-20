@@ -543,7 +543,8 @@ export async function settingsDialog() {
     [this.useLocalTimeField, this.useLocalTimeCheckbox] = checkboxField({
       value: 'useLocalTime',
       selected: settings.useLocalTime,
-      label: cd.s('sd-uselocaltime')
+      label: cd.s('sd-uselocaltime'),
+      help: cd.s('sd-uselocaltime-help'),
     });
 
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({

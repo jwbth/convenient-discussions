@@ -317,7 +317,7 @@
   "sd-timestampformat-radio-relative": "Relative (\"$1\", \"$2\")",
   "sd-timestampformat-help": "Timestamps use your interface language (not the content language). You can always see the original timestamp on mouse hover.",
   "sd-uselocaltime": "Show comment timestamps in my local time",
-  "sd-uselocaltime-help": "Use the system time zone.",
+  "sd-uselocaltime-help": "The system time zone is used.",
   "sd-usetemplatedata": "Use TemplateData in templates autocomplete",
   "sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
   "sd-watchonreply": "Watch pages that I comment on",
