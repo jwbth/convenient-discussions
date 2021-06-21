@@ -62,6 +62,12 @@ export default {
 
   contribsPage: 'Служебная:Вклад',
 
+  substAliases: [
+    'подстановка:',
+    'подст:',
+    'subst:',
+  ],
+
   timezone: 'UTC',
 
   pageWhitelist: [
@@ -157,34 +163,79 @@ export default {
   tagName: 'convenient-discussions',
 
   unsignedTemplates: [
-    'unsigned',
-    'unsignedIP',
-    'unsigned-IP',
-    'unsigned2',
-    'unsignedIP2',
-    'не подписано',
-    'нпп',
-    'undated',
+    'Без подписи',
+    'Не подписался',
+    'Unsigned2',
+    'UnsignedIP2',
+    'Нет подписи',
+    'UnsignedIP',
+    'Не подписано',
+    'Неподписано',
+    'Написано',
+    'Unsigned IP',
+    'Unsignedip',
+    'Unsigned-ip',
+    'НеподписаноIP',
+    'Реплика',
+    'Не подписаноIP',
+    'Неподписано IP',
+    'Неподписано-IP',
+    'Неподписано-ip',
+    'Неподписано ip',
+    'Не подписано ip',
+    'Не подписано-ip',
+    'Unsigned-IP',
+    'Unsigned ip',
+    'Неподписаноip',
+    'Не подписаноip',
+    'Не подписано IP',
+    'Не подписано-IP',
+    'Написано-ip',
+    'Написано-IP',
+    'Написано ip',
+    'Написано IP',
+    'НаписаноIP',
+    'Написаноip',
+    'Нпп',
+    'НеподписаноIP2',
+    'Unsigned',
+    'UnsignedIP',
   ],
 
   pairQuoteTemplates: [
-    ['начало цитаты'],
-    ['конец цитаты'],
+    [
+      'Начало цитаты',
+      'НачалоЦитаты',
+      'Нц'
+    ],
+    [
+      'Конец цитаты',
+      'КонецЦитаты',
+      'Кц'
+    ]
   ],
 
   smallDivTemplates: [
     'block-small',
-    'smalldiv',
+    'Smalldiv',
+    'Div-small',
   ],
 
   paragraphTemplates: [
     'pb',
-    'абзац',
+    'Абзац',
   ],
 
   outdentTemplates: [
     'outdent',
-    'od',
+    'Od',
+    'Обратный отступ',
+  ],
+
+  clearTemplates: [
+    'Clear',
+    'Clr',
+    '-',
   ],
 
   elementsToExcludeClasses: [
@@ -196,12 +247,18 @@ export default {
   ],
 
   templatesToExclude: [
-    'перенесено с', 'moved from',
-    'перенесено на', 'moved to',
-    'перенесено из раздела',
-    'перенесено в раздел',
-    'копия с',
-    'скопировано на',
+    'Перенесено с',
+    'Moved from',
+    'Перенесено из',
+    'Moved discussion from',
+    'Перенесено на',
+    'Обсуждение перенесено',
+    'Moved to',
+    'Перенесено в',
+    'Перенесено из раздела',
+    'Перенесено в раздел',
+    'Копия с',
+    'Скопировано на',
   ],
 
   commentAntipatterns: [
@@ -216,21 +273,21 @@ export default {
 
   closedDiscussionTemplates: [
     [
-      'закрыто',
-      'closed',
-      'начало закрытой секции',
-      'close',
+      'Закрыто',
+      'Closed',
+      'Начало закрытой секции',
+      'Close',
     ],
     [
-      'конец закрытой секции',
-      'закрыто-конец',
-      'ecs',
-      'конец',
-      'esc',
-      'кзс',
-      'закрыто конец',
-      'eCS',
-      'рано',
+      'Конец закрытой секции',
+      'Закрыто-конец',
+      'Ecs',
+      'Конец',
+      'Esc',
+      'Кзс',
+      'Закрыто конец',
+      'ECS',
+      'Рано',
     ],
   ],
 

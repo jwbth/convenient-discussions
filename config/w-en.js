@@ -62,6 +62,10 @@ export default {
 
   contribsPage: 'Special:Contributions',
 
+  substAliases: [
+    'subst:'
+  ],
+
   timezone: 'UTC',
 
   archivePaths: [
@@ -88,19 +92,86 @@ export default {
 
   smallDivTemplates: [
     'smalldiv',
+    'Div-small',
+  ],
+
+  unsignedTemplates: [
+    'Unsigned',
+    'Unsigned3',
+    'Unsig',
+    'Unsinged',
+    'Signed',
+    'Unsign',
+    'UNSIGNED',
+    'Uns',
+    'Tidle',
+    'Nosign',
+    'Forgot to sign',
+    'Without signature',
+    'USU',
+    'Unsigned comment',
+    'Preceding unsigned comment',
+    'Unisgned',
+    'Unsigned IP',
+    'Unsignedip',
+    'Ipunsigned',
+    'IPsign',
+    'UnsignedIP',
+    'USIP',
+    'Unsigned ip',
+    'Unsigned-ip',
+    'Unsigned-Ip',
+    'Unsigned-IP',
+    'Uip',
+    'IP unsigned',
   ],
 
   paragraphTemplates: [
     'pb',
-    'paragraph break',
-    'parabr',
-    'paragraph',
+    'Paragraph break',
+    'Break!',
+    'Paragraph',
+    'Parabr',
+    'Paragr',
+    'Paragraphbreak',
+    'Par break',
+    'Parabreak',
+    'Para break',
   ],
 
   outdentTemplates: [
     'outdent',
-    'od',
-    'out',
+    'Noindent',
+    'Unindent',
+    'Outdentarrow',
+    'Oda',
+    'Od',
+    'Out',
+    'De-indent',
+    'Deindent',
+    'Outindent',
+    'OD',
+    'Reduceindent',
+    'Dedent',
+    'Break indent',
+    'Rethread',
+  ],
+
+  clearTemplates: [
+    'Clear',
+    'Clr',
+    '-',
+    'CleanBr',
+    'BrClear',
+    'Breakafterimages',
+    'Br',
+    'Sectionbreak',
+    'BR',
+    'Clear all',
+    'Clear both',
+    'Clearboth',
+    'CLEAR',
+    'Absatz',
   ],
 
   quoteFormatting: ["{{tq|1=", "}}"],
@@ -114,8 +185,35 @@ export default {
   ],
 
   templatesToExclude: [
-    'moved discussion from', 'moved from', 'mdf',
-    'moved discussion to', 'moved to', 'mdt',
+    'Moved discussion from',
+    'Discussion moved from',
+    'Dmf',
+    'Moved from',
+    'Moved conversation from',
+    'Movedfrom',
+    'Mdf',
+    'Moved discussion to',
+    'Discussion at',
+    'Discussion moved',
+    'Discussion moved to',
+    'Dmt',
+    'Moved to',
+    'Moved conversation',
+    'Moved discussion',
+    'Mdt',
+    'Moved',
+    'Discussion-moved',
+    'DiscussionMoved',
+    'Movedto',
+    'Move to',
+  ],
+
+  closedDiscussionTemplates: [
+    [
+      'Closed',
+      'Discussion closed'
+    ],
+    [],
   ],
 
   closedDiscussionClasses: [

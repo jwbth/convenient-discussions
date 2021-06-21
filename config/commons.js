@@ -60,6 +60,9 @@ export default {
     'timezone-utc': 'UTC',
   },
   'contribsPage': 'Special:Contributions',
+  'substAliases': [
+    'subst:',
+  ],
   'timezone': 'UTC',
   'tagName': 'convenient-discussions',
   'unsignedTemplates': [
@@ -74,6 +77,20 @@ export default {
   ],
   'paragraphTemplates': [
     'pb',
-    'paragraph break',
+    'Paragraph break',
+  ],
+  'outdentTemplates': [
+    'outdent',
+    'Od',
+    'Unindent',
+    'Out',
+    'Quito sangría',
+    'Quitar sangría',
+    'OD',
+  ],
+  'clearTemplates': [
+    'Clear',
+    'Clr',
+    '-',
   ],
 };
