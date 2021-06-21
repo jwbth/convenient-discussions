@@ -92,9 +92,7 @@ mw.loader.using([
 
   const redirectsResp = await api.get({
     action: 'query',
-    titles: Object.keys(titles)
-      .filter((prop) => prop !== 'smallDiv')
-      .map((prop) => titles[prop][0].getPrefixedText()),
+    titles: Object.keys(titles).map((prop) => titles[prop][0].getPrefixedText()),
     prop: 'redirects',
     rdlimit: 500,
     formatversion: 2,
