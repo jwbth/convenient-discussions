@@ -2445,7 +2445,7 @@ export default class Comment extends CommentSkeleton {
         let startIndexShift = s.length;
 
         // We could just throw an error here, but instead will try to fix the markup.
-        if (code.includes('\n') && adjustedChars.endsWith('#')) {
+        if (!before && code.includes('\n') && adjustedChars.endsWith('#')) {
           adjustedChars = adjustedChars.slice(0, -1);
           originalIndentationChars = adjustedChars;
 
@@ -2486,13 +2486,13 @@ export default class Comment extends CommentSkeleton {
       );
 
       // See the comment "Without the following code, the section introduction..." in Parser.js.
-      // Dangerous case:
-      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
-      // actually a mistake to put a signature at the first level, but if it was legit, only the
-      // last sentence should have been interpreted as the comment.
+      // Dangerous case: the first section at
+      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
+      // mistake to put a signature at the first level, but if it was legit, only the last sentence
+      // should have been interpreted as the comment.
       if (indentationChars === '') {
         code = code.replace(
-          new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
+          new RegExp(`(^[^]*?\\n)${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
           replaceIndentationChars
         );
       }
