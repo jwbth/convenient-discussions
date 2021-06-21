@@ -209,17 +209,19 @@ export function isInline(node, countTextNodesAsInline) {
  */
 export function caseInsensitiveFirstCharPattern(s) {
   const firstChar = s[0];
-  return (
+  return firstChar ?
     (
-      // Could be issues, probably not very serious, resulting from the difference of PHP's
-      // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
-      // https://phabricator.wikimedia.org/T141723#2513800.
-      firstChar.toUpperCase() !== firstChar.toLowerCase() ?
-      '[' + firstChar.toUpperCase() + firstChar.toLowerCase() + ']' :
-      mw.util.escapeRegExp(firstChar)
-    ) +
-    mw.util.escapeRegExp(s.slice(1))
-  );
+      (
+        // Could be issues, probably not very serious, resulting from the difference of PHP's
+        // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
+        // https://phabricator.wikimedia.org/T141723#2513800.
+        firstChar.toUpperCase() !== firstChar.toLowerCase() ?
+        '[' + firstChar.toUpperCase() + firstChar.toLowerCase() + ']' :
+        mw.util.escapeRegExp(firstChar)
+      ) +
+      mw.util.escapeRegExp(s.slice(1))
+    ) :
+    '';
 }
 
 /**
