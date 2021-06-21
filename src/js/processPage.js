@@ -967,12 +967,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.debug.startTimer('laying out HTML');
     if (passedData.html) {
       if (passedData.wasPageCreated) {
-        cd.g.$content.empty();
+        cd.g.$content
+          .empty()
+          .append(cd.g.$root);
+      } else {
+        cd.g.$content
+          .children('.mw-parser-output')
+          .first()
+          .replaceWith(cd.g.$root);
       }
-      cd.g.$content
-        .children('.mw-parser-output')
-        .first()
-        .replaceWith(cd.g.$root);
     }
     cd.debug.stopTimer('laying out HTML');
 
