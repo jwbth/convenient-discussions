@@ -418,17 +418,20 @@ export default {
   /**
    * Regexps for strings that should be kept in section endings when adding a reply or subsection
    * (so that this reply or subsection is added _before_ them, not after). Should begin with at
-   * least one `\n`. The default value will keep HTML comments placed after an empty line in section
-   * endings.
+   * least one `\n` and allow a newline character at the end (for example, by using `\s*`).
    *
    * @type {RegExp[]}
    * @default <pre class="prettyprint source"><code>[
    *   /\n{2,}(?:&lt;!--[^]*?--&gt;\s*)+$/,
+   *   /\n+(?:&lt;!--[^]*?--&gt;\s*)*&lt;\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^&lt;&gt;]+?)?)?
+   * *\/?&gt;\s*(?:&lt;!--[^]*?--&gt;\s*)*$/i,
+   *   /\n+&lt;noinclude&gt;([^]*?)&lt;\/noinclude&gt;\s*$/i,
    * ]</code></pre>
    */
   keepInSectionEnding: [
     /\n{2,}(?:<!--[^]*?-->\s*)+$/,
     /\n+(?:<!--[^]*?-->\s*)*<\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^<>]+?)?)? *\/?>\s*(?:<!--[^]*?-->\s*)*$/i,
+    /\n+<noinclude>([^]*?)<\/noinclude>\s*$/i,
   ],
 
   /**
