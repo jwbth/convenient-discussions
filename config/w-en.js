@@ -118,18 +118,6 @@ export default {
     'moved discussion to', 'moved to', 'mdt',
   ],
 
-  commentAntipatterns: [],
-
-  customBadCommentBeginnings: [
-    /^\{\{(?:-|clear|br|clr)\}\} *\n*/,
-  ],
-
-  keepInSectionEnding: [
-    /\n{2,}(?:<!--[^]*?-->\s*)+$/,
-    /\n+\{\{(?:-|clear)\}\}\s*$/,
-    /\n+(?:<!--[^]*?-->\s*)*<\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^<>]+?)?)? *\/?>\s*(?:<!--[^]*?-->\s*)*$/i,
-  ],
-
   closedDiscussionClasses: [
     'archived',
     'boilerplate',

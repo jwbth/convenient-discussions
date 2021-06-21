@@ -1438,7 +1438,7 @@ export default class Section extends SectionSkeleton {
 
       let firstChunkContentEndIndex = firstChunkEndIndex;
       let contentEndIndex = endIndex;
-      cd.config.keepInSectionEnding.forEach((regexp) => {
+      cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
         const firstChunkMatch = firstChunkCode.match(regexp);
         if (firstChunkMatch) {
           // "1" accounts for the first line break.

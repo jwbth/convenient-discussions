@@ -342,6 +342,14 @@ export default {
   outdentTemplates: [],
 
   /**
+   * Names of the templates that are analogs of {@link
+   * https://en.wikipedia.org/wiki/Template:Clear}.
+   *
+   * @type {string[]}
+   */
+  clearTemplates: [],
+
+  /**
    * Character used to trigger user mention (ping) autocomplete.
    *
    * @type {string}
@@ -408,7 +416,7 @@ export default {
    * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
    * script to work properly.
    *
-   * Example: 'new RegExp(' ^\\{\\{(?:-|clear)\\}\\} *\\n+')`.
+   * Example: '/^<!--[^]*?--> *\n+/` (but comments are cut out of comment beginnings by default).
    *
    * @type {RegExp[]}
    * @default []

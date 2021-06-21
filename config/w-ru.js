@@ -208,16 +208,6 @@ export default {
     /--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
   ],
 
-  customBadCommentBeginnings: [
-    /^\{\{(?:-|clear)\}\} *\n+/,
-  ],
-
-  keepInSectionEnding: [
-    /\n{2,}(?:<!--[^]*?-->\s*)+$/,
-    /\n+\{\{(?:-|clear)\}\}\s*$/,
-    /\n+(?:<!--[^]*?-->\s*)*<\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^<>]+?)?)? *\/?>\s*(?:<!--[^]*?-->\s*)*$/i,
-  ],
-
   foreignElementInHeadlineClasses: [
     'ch-helperText',
     'userflags-wrapper',

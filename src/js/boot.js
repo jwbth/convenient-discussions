@@ -419,6 +419,12 @@ function initPatterns() {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
   }
 
+  cd.g.KEEP_IN_SECTION_ENDING = cd.config.keepInSectionEnding.slice();
+  if (cd.config.clearTemplates.length) {
+    const pattern = cd.config.clearTemplates.join('|');
+    cd.g.KEEP_IN_SECTION_ENDING.push(new RegExp(`\\n+\\{\\{(?:${pattern})\\}\\}\\s*$`, 'i'));
+  }
+
   cd.g.USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
 
   const signatureContent = mw.user.options.get('nickname');
@@ -531,8 +537,12 @@ function initPatterns() {
   cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPattern}):`, 'i');
 
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
+    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`, 'i'))
     .concat(cd.config.customBadCommentBeginnings);
+  if (cd.config.clearTemplates.length) {
+    const pattern = cd.config.clearTemplates.join('|');
+    cd.g.BAD_COMMENT_BEGINNINGS.push(new RegExp(`^\\{\\{(?:${pattern})\\}\\} *\\n+`, 'i'));
+  }
 
   cd.g.ADD_TOPIC_SELECTOR = [
     '#ca-addsection a',

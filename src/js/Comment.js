@@ -2799,7 +2799,7 @@ export default class Comment extends CommentSkeleton {
       const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*?\1[ \t\x01\x02]*\n|$/);
       let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
       let chunkCodeAfter = pageCode.slice(currentIndex, chunkCodeAfterEndIndex);
-      cd.config.keepInSectionEnding.forEach((regexp) => {
+      cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
         const match = chunkCodeAfter.match(regexp);
         if (match) {
           // "1" accounts for the first line break.

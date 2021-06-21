@@ -70,6 +70,7 @@ mw.loader.using([
     Q6537954: 'closed',
     Q12109489: 'closedEnd',
     Q5841554: 'outdent',
+    Q5411705: 'clear',
   };
 
   const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php', {
@@ -155,6 +156,9 @@ mw.loader.using([
   if (config.outdentTemplates) {
     config.outdentTemplates[0] = toLowerCaseFirst(config.outdentTemplates[0]);
   }
+
+  config.clearTemplates = titles.clear?.map(getTitleText);
+
   config.templatesToExclude = (
     (titles.movedFrom || titles.movedTo) &&
     (titles.movedFrom || [])
