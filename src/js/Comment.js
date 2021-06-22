@@ -1830,10 +1830,10 @@ export default class Comment extends CommentSkeleton {
   async getDiffLink(short) {
     const edit = await this.findEditThatAdded();
     if (short) {
-      return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
+      return `${cd.g.SERVER}/?diff=${edit.revid}`;
     } else {
       const urlEnding = decodeURI(cd.g.PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
-      return `https:${mw.config.get('wgServer')}${urlEnding}`;
+      return `${cd.g.SERVER}${urlEnding}`;
     }
   }
 

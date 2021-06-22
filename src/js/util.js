@@ -926,7 +926,7 @@ export function getVisibilityByRects(...rects) {
 
 export function getUrlWithAnchor(anchor) {
   const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
-  return `https:${mw.config.get('wgServer')}${decodedPageUrl}#${anchor}`;
+  return `${cd.g.SERVER}${decodedPageUrl}#${anchor}`;
 }
 
 export function triggerClickOnEnterAndSpace(e) {

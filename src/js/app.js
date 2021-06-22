@@ -298,6 +298,9 @@ async function go() {
   const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
   cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${wsonEnding}`;
 
+  const server = mw.config.get('wgServer');
+  cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
+
   cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
   cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
   cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));

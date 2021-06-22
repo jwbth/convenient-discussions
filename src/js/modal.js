@@ -1424,7 +1424,7 @@ export async function notFound(decodedFragment, date) {
           sort: 'create_timestamp_desc',
           cdcomment: date && decodedFragment,
         });
-        searchUrl = mw.config.get('wgServer') + searchUrl;
+        searchUrl = cd.g.SERVER + searchUrl;
 
         let label;
         if (pageTitle) {
