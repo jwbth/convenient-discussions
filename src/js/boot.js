@@ -412,11 +412,17 @@ function initPatterns() {
   );
 
   if (cd.config.unsignedTemplates.length) {
-    const unsignedTemplatesPattern = cd.config.unsignedTemplates.join('|');
+    const pattern = cd.config.unsignedTemplates.join('|');
     cd.g.UNSIGNED_TEMPLATES_PATTERN = (
-      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
+      `(\\{\\{ *(?:${pattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
     );
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
+  }
+
+  cd.g.KEEP_IN_SECTION_ENDING = cd.config.keepInSectionEnding.slice();
+  if (cd.config.clearTemplates.length) {
+    const pattern = cd.config.clearTemplates.join('|');
+    cd.g.KEEP_IN_SECTION_ENDING.push(new RegExp(`\\n+\\{\\{(?:${pattern})\\}\\}\\s*$`, 'i'));
   }
 
   cd.g.USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
@@ -428,7 +434,9 @@ function initPatterns() {
   if (authorInSignatureMatch) {
     // Extract signature contents before the user name - in order to cut it out from comment endings
     // when editing.
-    const signaturePrefixPattern = mw.util.escapeRegExp(cd.settings.signaturePrefix);
+    const signaturePrefixPattern = cd.settings.signaturePrefix === ' ' ?
+      '[ \n]' :
+      mw.util.escapeRegExp(cd.settings.signaturePrefix);
     const signatureBeginning = mw.util.escapeRegExp(
       signatureContent.slice(0, authorInSignatureMatch.index)
     );
@@ -455,31 +463,24 @@ function initPatterns() {
     cd.config.commentAntipatterns.length
   ) {
     if (cd.config.elementsToExcludeClasses) {
-      const elementsToExcludeClassesPattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
-      commentAntipatternsPatternParts.push(
-        `class=(['"])[^'"\\n]*(?:\\b${elementsToExcludeClassesPattern}\\b)[^'"\\n]*\\1`
-      );
+      const pattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
+      commentAntipatternsPatternParts.push(`class=(['"])[^'"\\n]*(?:\\b${pattern}\\b)[^'"\\n]*\\1`);
     }
     if (cd.config.templatesToExclude.length) {
-      const templatesToExcludePattern = cd.config.templatesToExclude
-        .map(caseInsensitiveFirstCharPattern)
-        .join('|');
-      commentAntipatternsPatternParts.push(
-        `\\{\\{ *(?:${templatesToExcludePattern}) *(?:\\||\\}\\})`
-      );
+      const pattern = cd.config.templatesToExclude.map(caseInsensitiveFirstCharPattern).join('|');
+      commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
     }
     if (cd.config.commentAntipatterns) {
-      commentAntipatternsPatternParts.push(
-        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
-      );
+      const sources = cd.config.commentAntipatterns.map((pattern) => pattern.source);
+      commentAntipatternsPatternParts.push(...sources);
     }
-    const commentAntipatternPattern = commentAntipatternsPatternParts.join('|');
-    cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${commentAntipatternPattern}).*$`, 'mg');
+    const pattern = commentAntipatternsPatternParts.join('|');
+    cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${pattern}).*$`, 'mg');
   }
 
-  cd.g.ARTICLE_PATH_REGEXP = new RegExp(
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
-  );
+  const articlePathPattern = mw.util.escapeRegExp(mw.config.get('wgArticlePath'))
+    .replace('\\$1', '(.*)');
+  cd.g.ARTICLE_PATH_REGEXP = new RegExp(articlePathPattern);
 
   const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
   const quoteBeginningsPattern = ['<blockquote', '<q']
@@ -536,8 +537,12 @@ function initPatterns() {
   cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPattern}):`, 'i');
 
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`))
+    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`, 'i'))
     .concat(cd.config.customBadCommentBeginnings);
+  if (cd.config.clearTemplates.length) {
+    const pattern = cd.config.clearTemplates.join('|');
+    cd.g.BAD_COMMENT_BEGINNINGS.push(new RegExp(`^\\{\\{(?:${pattern})\\}\\} *\\n+`, 'i'));
+  }
 
   cd.g.ADD_TOPIC_SELECTOR = [
     '#ca-addsection a',

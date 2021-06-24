@@ -401,7 +401,7 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
  * @returns {?ParseTimestampReturn}
  */
 export function parseTimestamp(timestamp, timezoneOffset) {
-  // Remove left-to-right and right-to-left marks that sometimes are copied from the edit history to
+  // Remove left-to-right and right-to-left marks that are sometimes copied from the edit history to
   // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
   timestamp = removeDirMarks(timestamp);
 

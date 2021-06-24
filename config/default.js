@@ -270,8 +270,7 @@ export default {
   /**
    * Names of the templates that are analogs of {@link
    * https://en.wikipedia.org/wiki/Template:Unsigned}, {@link
-   * https://en.wikipedia.org/wiki/Template:Unsigned_IP} **on sites where they are not
-   * substituted**. If they are, don't add them. Please include aliases.
+   * https://en.wikipedia.org/wiki/Template:Unsigned_IP}. Please include aliases.
    *
    * @type {string[]}
    * @default <pre class="prettyprint source"><code>[
@@ -342,6 +341,14 @@ export default {
   outdentTemplates: [],
 
   /**
+   * Names of the templates that are analogs of {@link
+   * https://en.wikipedia.org/wiki/Template:Clear}.
+   *
+   * @type {string[]}
+   */
+  clearTemplates: [],
+
+  /**
    * Character used to trigger user mention (ping) autocomplete.
    *
    * @type {string}
@@ -408,7 +415,7 @@ export default {
    * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
    * script to work properly.
    *
-   * Example: 'new RegExp(' ^\\{\\{(?:-|clear)\\}\\} *\\n+')`.
+   * Example: '/^<!--[^]*?--> *\n+/` (but comments are cut out of comment beginnings by default).
    *
    * @type {RegExp[]}
    * @default []
@@ -418,17 +425,20 @@ export default {
   /**
    * Regexps for strings that should be kept in section endings when adding a reply or subsection
    * (so that this reply or subsection is added _before_ them, not after). Should begin with at
-   * least one `\n`. The default value will keep HTML comments placed after an empty line in section
-   * endings.
+   * least one `\n` and allow a newline character at the end (for example, by using `\s*`).
    *
    * @type {RegExp[]}
    * @default <pre class="prettyprint source"><code>[
    *   /\n{2,}(?:&lt;!--[^]*?--&gt;\s*)+$/,
+   *   /\n+(?:&lt;!--[^]*?--&gt;\s*)*&lt;\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^&lt;&gt;]+?)?)?
+   * *\/?&gt;\s*(?:&lt;!--[^]*?--&gt;\s*)*$/i,
+   *   /\n+&lt;noinclude&gt;([^]*?)&lt;\/noinclude&gt;\s*$/i,
    * ]</code></pre>
    */
   keepInSectionEnding: [
     /\n{2,}(?:<!--[^]*?-->\s*)+$/,
     /\n+(?:<!--[^]*?-->\s*)*<\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^<>]+?)?)? *\/?>\s*(?:<!--[^]*?-->\s*)*$/i,
+    /\n+<noinclude>([^]*?)<\/noinclude>\s*$/i,
   ],
 
   /**

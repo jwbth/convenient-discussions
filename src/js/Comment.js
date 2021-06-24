@@ -1568,11 +1568,16 @@ export default class Comment extends CommentSkeleton {
     // If a style element is replaced with a link element, we can't replace HTML.
     const areStyleTagsKept = (
       !newComment.hiddenElementData.length ||
-      newComment.hiddenElementData.every((data, i) => (
-        data.type !== 'templateStyles' ||
-        data.tagName === 'STYLE' ||
-        currentComment.hiddenElementData[i].tagName !== 'STYLE'
-      ))
+      (
+        newComment.hiddenElementData.every((data) => (
+          data.type !== 'templateStyles' ||
+          data.tagName === 'STYLE'
+        )) ||
+        currentComment.hiddenElementData.every((data) => (
+          data.type !== 'templateStyles' ||
+          data.tagName !== 'STYLE'
+        ))
+      )
     );
 
     if (
@@ -1825,10 +1830,10 @@ export default class Comment extends CommentSkeleton {
   async getDiffLink(short) {
     const edit = await this.findEditThatAdded();
     if (short) {
-      return `https:${mw.config.get('wgServer')}/?diff=${edit.revid}`;
+      return `${cd.g.SERVER}/?diff=${edit.revid}`;
     } else {
       const urlEnding = decodeURI(cd.g.PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
-      return `https:${mw.config.get('wgServer')}${urlEnding}`;
+      return `${cd.g.SERVER}${urlEnding}`;
     }
   }
 
@@ -2440,7 +2445,7 @@ export default class Comment extends CommentSkeleton {
         let startIndexShift = s.length;
 
         // We could just throw an error here, but instead will try to fix the markup.
-        if (code.includes('\n') && adjustedChars.endsWith('#')) {
+        if (!before && code.includes('\n') && adjustedChars.endsWith('#')) {
           adjustedChars = adjustedChars.slice(0, -1);
           originalIndentationChars = adjustedChars;
 
@@ -2481,13 +2486,13 @@ export default class Comment extends CommentSkeleton {
       );
 
       // See the comment "Without the following code, the section introduction..." in Parser.js.
-      // Dangerous case:
-      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit&section=1. This was
-      // actually a mistake to put a signature at the first level, but if it was legit, only the
-      // last sentence should have been interpreted as the comment.
+      // Dangerous case: the first section at
+      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
+      // mistake to put a signature at the first level, but if it was legit, only the last sentence
+      // should have been interpreted as the comment.
       if (indentationChars === '') {
         code = code.replace(
-          new RegExp(`(^[^]*?(?:^|\n))${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
+          new RegExp(`(^[^]*?\\n)${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
           replaceIndentationChars
         );
       }
@@ -2794,7 +2799,7 @@ export default class Comment extends CommentSkeleton {
       const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*?\1[ \t\x01\x02]*\n|$/);
       let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
       let chunkCodeAfter = pageCode.slice(currentIndex, chunkCodeAfterEndIndex);
-      cd.config.keepInSectionEnding.forEach((regexp) => {
+      cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
         const match = chunkCodeAfter.match(regexp);
         if (match) {
           // "1" accounts for the first line break.

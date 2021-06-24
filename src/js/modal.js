@@ -15,6 +15,7 @@ import {
   focusInput,
   hideText,
   isPageOverlayOn,
+  spacesToUnderlines,
   underlinesToSpaces,
   unhideText,
   wrap,
@@ -253,7 +254,7 @@ export async function settingsDialog() {
       this.renderForm(this.settings);
 
       this.stackLayout.setItem(this.settingsPanel);
-      this.bookletLayout.setPage('general');
+      this.bookletLayout.setPage('talkPage');
       this.actions.setAbilities({ close: true });
 
       cd.g.windowManager.updateWindowSize(this);
@@ -542,7 +543,8 @@ export async function settingsDialog() {
     [this.useLocalTimeField, this.useLocalTimeCheckbox] = checkboxField({
       value: 'useLocalTime',
       selected: settings.useLocalTime,
-      label: cd.s('sd-uselocaltime')
+      label: cd.s('sd-uselocaltime'),
+      help: cd.s('sd-uselocaltime-help'),
     });
 
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = checkboxField({
@@ -619,9 +621,6 @@ export async function settingsDialog() {
         dialog.showContribsLinkField.$element,
         dialog.allowEditOthersCommentsField.$element,
         dialog.modifyTocField.$element,
-        dialog.useLocalTimeField.$element,
-        dialog.timestampFormatField.$element,
-        dialog.hideTimezoneField.$element,
         dialog.useBackgroundHighlightingField.$element,
       ]);
     }
@@ -666,18 +665,18 @@ export async function settingsDialog() {
      * @param {object} [config]
      * @private
      */
-    function DateAndTimePageLayout(name, config) {
-      DateAndTimePageLayout.super.call(this, name, config);
+    function TimestampsPageLayout(name, config) {
+      TimestampsPageLayout.super.call(this, name, config);
       this.$element.append([
         dialog.useLocalTimeField.$element,
-        dialog.timestampFormatField.$element,
         dialog.hideTimezoneField.$element,
+        dialog.timestampFormatField.$element,
       ]);
     }
-    OO.inheritClass(DateAndTimePageLayout, OO.ui.PageLayout);
-    DateAndTimePageLayout.prototype.setupOutlineItem = function (outlineItem) {
-      DateAndTimePageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
-      this.outlineItem.setLabel(cd.s('sd-page-dateandtime'));
+    OO.inheritClass(TimestampsPageLayout, OO.ui.PageLayout);
+    TimestampsPageLayout.prototype.setupOutlineItem = function (outlineItem) {
+      TimestampsPageLayout.super.prototype.setupOutlineItem.call(this, outlineItem);
+      this.outlineItem.setLabel(cd.s('sd-page-timestamps'));
     };
 
     /**
@@ -719,9 +718,9 @@ export async function settingsDialog() {
       this.outlineItem.setLabel(cd.s('sd-page-dataremoval'));
     };
 
-    const generalPage = new TalkPagePageLayout('general');
+    const talkPagePage = new TalkPagePageLayout('talkPage');
     const commentFormPage = new CommentFormPageLayout('commentForm');
-    const dateAndTimePage = new DateAndTimePageLayout('dateAndTime');
+    const timestampsPage = new TimestampsPageLayout('timestamps');
     const notificationsPage = new NotificationsPageLayout('notifications');
     const removeDataPage = new RemoveDataPageLayout('removeData');
 
@@ -729,9 +728,9 @@ export async function settingsDialog() {
       outlined: true,
     });
     this.bookletLayout.addPages([
-      generalPage,
+      talkPagePage,
       commentFormPage,
-      dateAndTimePage,
+      timestampsPage,
       notificationsPage,
       removeDataPage,
     ]);
@@ -1328,36 +1327,139 @@ export function rescueCommentFormsContent(content) {
 }
 
 /**
- * Show a message dialog that informs the user that the section/comment was not found.
+ * Show a message at the top of the page that a section/comment was not found, a link to search in
+ * the archive, and optionally a link to the section/comment if it was found automatically.
  *
  * @param {string} decodedFragment
  * @param {Date} date
  */
 export async function notFound(decodedFragment, date) {
-  const title = $('<span>')
-    .addClass('cd-destructiveText')
-    .text(date ? cd.s('deadanchor-comment-title') : cd.s('deadanchor-section-title'));
-  let message = date ? cd.s('deadanchor-comment-text') : cd.s('deadanchor-section-text');
-  if (cd.g.PAGE.canHaveArchives()) {
-    message += ' ' + cd.s('deadanchor-searchinarchive');
-    if (await OO.ui.confirm(message, { title })) {
-      const text = date ?
-        formatDateNative(date, cd.g.TIMEZONE) :
-        decodedFragment
-          .replace(/_/g, ' ')
-          .replace(/"/g, '')
-          .trim();
-      const archivePrefix = cd.g.PAGE.getArchivePrefix();
-      const searchQuery = `"${text}" prefix:${archivePrefix}`;
-      const url = mw.util.getUrl('Special:Search', {
-        profile: 'default',
-        fulltext: 'Search',
-        search: searchQuery,
-        cdcomment: date && decodedFragment,
-      });
-      location.assign(mw.config.get('wgServer') + url);
-    }
+  let label;
+  let sectionName;
+  if (date) {
+    label = cd.s('deadanchor-comment-text')
   } else {
-    OO.ui.alert(message, { title });
+    sectionName = underlinesToSpaces(decodedFragment);
+    label = cd.s('deadanchor-section-text', sectionName);
   }
+  if (cd.g.PAGE.canHaveArchives()) {
+    label += ' ';
+
+    let sectionNameDotDecoded;
+    if (date) {
+      label += cd.s('deadanchor-comment-finding');
+    } else {
+      label += cd.s('deadanchor-section-finding');
+      try {
+        sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'));
+      } catch (e) {
+        sectionNameDotDecoded = sectionName;
+      }
+    }
+
+    const token = date ? formatDateNative(date, cd.g.TIMEZONE) : sectionName.replace(/"/g, '');
+    const archivePrefix = cd.g.PAGE.getArchivePrefix();
+    let searchQuery = `"${token}"`
+    if (sectionName && sectionName !== sectionNameDotDecoded) {
+      const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
+      searchQuery += ` OR "${tokenDotDecoded}"`;
+    }
+    searchQuery += ` prefix:${archivePrefix}`;
+
+    cd.g.api.get({
+      action: 'query',
+      list: 'search',
+      srsearch: searchQuery,
+      srprop: sectionName ? 'sectiontitle' : undefined,
+
+      // List more recent archives first
+      srsort: 'create_timestamp_desc',
+
+      srlimit: '20'
+    }).then((resp) => {
+      const results = resp?.query?.search;
+
+      if (results.length === 0) {
+        let label;
+        if (date) {
+          label = cd.s('deadanchor-comment-text') + ' ' + cd.s('deadanchor-comment-notfound');
+        } else {
+          label = (
+            cd.s('deadanchor-section-text', sectionName) +
+            ' ' +
+            cd.s('deadanchor-section-notfound')
+          );
+        }
+        message.setLabel(label);
+      } else {
+        let pageTitle;
+
+        // Will either be sectionName or sectionNameDotDecoded.
+        let sectionNameFound = sectionName;
+
+        if (sectionName) {
+          // Obtain the first exact section title match (which would be from the most recent
+          // archive). This loop iterates over just one item in the vast majority of cases.
+          let sectionName_ = spacesToUnderlines(sectionName);
+          let sectionNameDotDecoded_ = spacesToUnderlines(sectionNameDotDecoded);
+          for (let [, result] of Object.entries(results)) {
+            // sectiontitle in API output has spaces encoded as underscores.
+            if (
+              result.sectiontitle &&
+              [sectionName_, sectionNameDotDecoded_].includes(result.sectiontitle)
+            ) {
+              pageTitle = result.title;
+              sectionNameFound = underlinesToSpaces(result.sectiontitle);
+              break;
+            }
+          }
+        } else {
+          if (results.length === 1) {
+            pageTitle = results[0].title;
+          }
+        }
+
+        let searchUrl = mw.util.getUrl('Special:Search', {
+          search: searchQuery,
+          sort: 'create_timestamp_desc',
+          cdcomment: date && decodedFragment,
+        });
+        searchUrl = cd.g.SERVER + searchUrl;
+
+        let label;
+        if (pageTitle) {
+          if (date) {
+            label = cd.sParse(
+              'deadanchor-comment-exactmatch',
+              pageTitle + '#' + decodedFragment,
+              searchUrl
+            );
+          } else {
+            label = cd.sParse(
+              'deadanchor-section-exactmatch',
+              sectionNameFound,
+              pageTitle + '#' + sectionNameFound,
+              searchUrl
+            );
+          }
+        } else {
+          if (date) {
+            label = cd.sParse('deadanchor-comment-inexactmatch', searchUrl);
+          } else {
+            label = cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
+          }
+        }
+
+        message.setLabel(wrap(label));
+      }
+    });
+  }
+
+  const message = new OO.ui.MessageWidget({
+    type: 'warning',
+    inline: true,
+    label,
+    classes: ['cd-message-notFound'],
+  });
+  cd.g.$root.prepend(message.$element);
 }

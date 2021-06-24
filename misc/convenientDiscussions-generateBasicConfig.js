@@ -70,6 +70,7 @@ mw.loader.using([
     Q6537954: 'closed',
     Q12109489: 'closedEnd',
     Q5841554: 'outdent',
+    Q5411705: 'clear',
   };
 
   const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php', {
@@ -92,9 +93,7 @@ mw.loader.using([
 
   const redirectsResp = await api.get({
     action: 'query',
-    titles: Object.keys(titles)
-      .filter((prop) => prop !== 'smallDiv')
-      .map((prop) => titles[prop][0].getPrefixedText()),
+    titles: Object.keys(titles).map((prop) => titles[prop][0].getPrefixedText()),
     prop: 'redirects',
     rdlimit: 500,
     formatversion: 2,
@@ -115,48 +114,63 @@ mw.loader.using([
     });
   }
 
-  const titleWithLowerCaseFirst = (title) => {
-    let titleText = title.getMainText();
-    return titleText[0].toLowerCase() + titleText.slice(1);
-  };
+  const getTitleText = (title) => title.getMainText();
+  const toLowerCaseFirst = (s) => s.length ? s[0].toLowerCase() + s.slice(1) : '';
 
   config.unsignedTemplates = (
     (titles.unsigned || titles.unsignedIp) &&
     (titles.unsigned || [])
       .concat(titles.unsignedIp || [])
-      .map(titleWithLowerCaseFirst)
+      .map(getTitleText)
   );
+
   config.pairQuoteTemplates = (
     (titles.blockquotetop || titles.blockquotebottom) &&
     [
-      (titles.blockquotetop || []).map(titleWithLowerCaseFirst),
-      (titles.blockquotebottom || []).map(titleWithLowerCaseFirst),
+      (titles.blockquotetop || []).map(getTitleText),
+      (titles.blockquotebottom || []).map(getTitleText),
     ]
   );
-  config.smallDivTemplates = titles.smallDiv.map(titleWithLowerCaseFirst);
+
+  config.smallDivTemplates = titles.smallDiv?.map(getTitleText);
+  if (config.smallDivTemplates) {
+    config.smallDivTemplates[0] = toLowerCaseFirst(config.smallDivTemplates[0]);
+  }
+
   config.paragraphTemplates = titles.paragraph
-    ?.map(titleWithLowerCaseFirst)
+    ?.map(getTitleText)
     .sort((title1, title2) => {
-      if (title1 === 'pb') {
+      if (title1 === 'Pb') {
         return -1;
-      } else if (title2 === 'pb') {
+      } else if (title2 === 'Pb') {
         return 1;
       } else {
         return 0;
       }
     });
-  config.outdentTemplates = titles.outdent.map(titleWithLowerCaseFirst);
+  if (config.paragraphTemplates) {
+    config.paragraphTemplates[0] = toLowerCaseFirst(config.paragraphTemplates[0]);
+  }
+
+  config.outdentTemplates = titles.outdent?.map(getTitleText);
+  if (config.outdentTemplates) {
+    config.outdentTemplates[0] = toLowerCaseFirst(config.outdentTemplates[0]);
+  }
+
+  config.clearTemplates = titles.clear?.map(getTitleText);
+
   config.templatesToExclude = (
     (titles.movedFrom || titles.movedTo) &&
     (titles.movedFrom || [])
       .concat(titles.movedTo || [])
-      .map(titleWithLowerCaseFirst)
+      .map(getTitleText)
   );
+
   config.closedDiscussionTemplates = (
     (titles.closed || titles.closedEnd) &&
     [
-      (titles.closed || []).map(titleWithLowerCaseFirst),
-      (titles.closedEnd || []).map(titleWithLowerCaseFirst),
+      (titles.closed || []).map(getTitleText),
+      (titles.closedEnd || []).map(getTitleText),
     ]
   );
 

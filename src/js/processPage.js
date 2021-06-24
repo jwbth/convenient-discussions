@@ -496,7 +496,14 @@ function connectToAddTopicButtons() {
       let pageName;
       if ($button.is('a')) {
         const href = $button.attr('href');
-        const query = new mw.Uri(href).query;
+        let query;
+
+        // May crash if the current URL contains undecodable "%" in the fragment.
+        try {
+          query = new mw.Uri(href).query;
+        } catch (e) {
+          return;
+        }
         pageName = query.title;
 
         // There is more than one "title" parameter.
@@ -531,7 +538,14 @@ function connectToAddTopicButtons() {
       let isNewTopicOnTop = false;
       if ($button.is('a')) {
         const href = $button.attr('href');
-        const query = new mw.Uri(href).query;
+        let query;
+
+        // May crash if the current URL contains undecodable "%" in the fragment.
+        try {
+          query = new mw.Uri(href).query;
+        } catch (e) {
+          return;
+        }
         preloadConfig = {
           editIntro: query.editintro,
           commentTemplate: query.preload,
@@ -953,12 +967,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.debug.startTimer('laying out HTML');
     if (passedData.html) {
       if (passedData.wasPageCreated) {
-        cd.g.$content.empty();
+        cd.g.$content
+          .empty()
+          .append(cd.g.$root);
+      } else {
+        cd.g.$content
+          .children('.mw-parser-output')
+          .first()
+          .replaceWith(cd.g.$root);
       }
-      cd.g.$content
-        .children('.mw-parser-output')
-        .first()
-        .replaceWith(cd.g.$root);
     }
     cd.debug.stopTimer('laying out HTML');
 
@@ -1019,11 +1036,16 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       // panel being mounted.
       restoreCommentForms(passedData.isPageReloadedExternally);
 
-      const uri = new mw.Uri();
-      if (Number(uri.query.cdaddtopic)) {
-        CommentForm.createAddSectionForm();
-        delete uri.query.cdaddtopic;
-        history.replaceState(history.state, '', uri.toString());
+      // May crash if the current URL contains undecodable "%" in the fragment.
+      try {
+        const uri = new mw.Uri();
+        if (Number(uri.query.cdaddtopic)) {
+          CommentForm.createAddSectionForm();
+          delete uri.query.cdaddtopic;
+          history.replaceState(history.state, '', uri.toString());
+        }
+      } catch (e) {
+        // Empty
       }
 
       if (cd.g.isPageFirstParsed) {
