@@ -17,6 +17,7 @@
 	"sm-unwatch": "non seguire",
 	"sm-copylink-tooltip": "Copia un collegamento",
 	"comment-timestamp-yesterday": "[Ieri], h:mm A",
+	"comment-author-contribs": "contributi",
 	"comment-changed": "Il commento è stato modificato.",
 	"comment-changed-refresh": "Aggiorna per vedere le modifiche",
 	"comment-changed-diff": "Diff",

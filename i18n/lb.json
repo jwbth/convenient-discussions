@@ -18,6 +18,7 @@
 	"comment-timestamp-today": "[Haut], h:mm A",
 	"comment-timestamp-yesterday": "[Gëschter] h:mm A",
 	"comment-timestamp-currentyear": "D MMMMM, H:mm",
+	"comment-timestamp-other": "D MMMM YYYY, H:mm",
 	"comment-timestamp-lessthanminute": "viru manner wéi enger Minutt",
 	"comment-author-talk": "Diskussioun",
 	"comment-author-contribs": "Kontributiounen",
