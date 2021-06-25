@@ -468,11 +468,15 @@ function checkForNewChanges(currentComments) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
           const updateSuccess = comment.update(currentComment, newComment);
+
+          // It is above the Comment#markAsChanged call, because it's used in Comment#flashChanged
+          // called indirectly by Comment#markAsChanged.
+          comment.comparedHtml = newComment.comparedHtml;
+
           const commentsData = [currentComment, newComment];
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
           isChangeMarkUpdated = true;
           events.changed = { updateSuccess };
-          comment.comparedHtml = newComment.comparedHtml;
         }
       } else if (comment.isChanged) {
         comment.update(currentComment, newComment);
