@@ -1334,8 +1334,8 @@ export async function suggestEnableCommentReformatting() {
       ];
       const $body = $('<div>');
       const $imgOld = $('<img>')
-        .attr('width', 587)
-        .attr('height', 102)
+        .attr('width', 626)
+        .attr('height', 67)
         .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
         .addClass('cd-rc-img');
       const $arrow = $('<img>')
@@ -1344,12 +1344,14 @@ export async function suggestEnableCommentReformatting() {
         .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
         .addClass('cd-rc-img cd-rc-arrow');
       const $imgNew = $('<img>')
-        .attr('width', 587)
-        .attr('height', 128)
+        .attr('width', 626)
+        .attr('height', 118)
         .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
         .addClass('cd-rc-img');
-      const $p = $('<p>').text(cd.s('rc-suggestion'));
-      $body.append($imgOld, $arrow, $imgNew, $p);
+      const $div = $('<div>')
+        .addClass('cd-rc-text')
+        .html(cd.sParse('rc-suggestion'));
+      $body.append($imgOld, $arrow, $imgNew, $div);
       const action = await confirmDialog($body, {
         size: 'large',
         actions,

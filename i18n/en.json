@@ -218,7 +218,7 @@
   "rd-summary": "Edit summary",
   "rd-close": "Close",
 
-  "rc-suggestion": "The new version of Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to navigate through comments easier. Do you want to enable it? (You can always disable it in the settings.) Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in your local time by default).",
+  "rc-suggestion": "<p>The new version of Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of a comment and interact with it easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in your local time by default).</p>",
   "rc-suggestion-yes": "Enable the new formatting",
   "rc-suggestion-no": "Keep the usual formatting",
 
