@@ -349,7 +349,8 @@ export default class Parser {
                     authorContribsLink = link;
                   } else if (linkType === 'userSubpage') {
                     // A user subpage link after a user link - OK. A user subpage link before a user
-                    // link - not OK. Perhaps part of the comment.
+                    // link - not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps
+                    // part of the comment.
                     if (authorLink) {
                       return false;
                     }

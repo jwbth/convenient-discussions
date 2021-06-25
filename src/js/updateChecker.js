@@ -897,7 +897,7 @@ const updateChecker = {
 
     if (cd.g.previousVisitUnixTime) {
       processRevisionsIfNeeded();
-      if (passedData.didSubmitCommentForm && passedData.commentAnchor) {
+      if (passedData.wasCommentFormSubmitted && passedData.commentAnchor) {
         submittedCommentAnchor = passedData.commentAnchor;
       }
     }

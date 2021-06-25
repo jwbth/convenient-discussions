@@ -1638,7 +1638,8 @@ export default class Section extends SectionSkeleton {
   /**
    * Get the collection of the section's subsections.
    *
-   * @param {boolean} [indirect=false] Whether to include subsections of subsections and so on.
+   * @param {boolean} [indirect=false] Whether to include subsections of subsections and so on
+   *   (return descendants, in a word).
    * @returns {Section[]}
    */
   getChildren(indirect = false) {

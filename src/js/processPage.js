@@ -829,7 +829,7 @@ function debugLog() {
  *   enough time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
- * @property {boolean} [didSubmitCommentForm] Did the user just submit a comment form.
+ * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
  */
 
 /**

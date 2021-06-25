@@ -319,7 +319,8 @@ export default class CommentSkeleton {
   /**
    * Get all replies to the comment.
    *
-   * @param {boolean} [indirect=false] Whether to include children of children and so on.
+   * @param {boolean} [indirect=false] Whether to include children of children and so on (return
+   *   descendants, in a word).
    * @param {boolean} [visual=false] Whether to use visual levels instead of logical.
    * @returns {CommentSkeleton[]}
    */

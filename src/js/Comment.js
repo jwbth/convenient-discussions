@@ -174,7 +174,6 @@ export default class Comment extends CommentSkeleton {
      * excluding pages that are visited for the first time.
      *
      * @type {?boolean}
-     * @memberof module:Comment
      */
     this.isNew = null;
 
@@ -184,7 +183,6 @@ export default class Comment extends CommentSkeleton {
      * need to know if the comment is highlighted as new and unseen.
      *
      * @type {?boolean}
-     * @memberof module:Comment
      */
     this.isSeen = null;
 
@@ -1794,21 +1792,11 @@ export default class Comment extends CommentSkeleton {
       matches.push({ revision, wordOverlap, dateProximity });
     }
 
-    let bestMatch;
-    matches.forEach((match) => {
-      if (
-        !bestMatch ||
-        match.wordOverlap > bestMatch.wordOverlap ||
-        (
-          bestMatch &&
-          match.wordOverlap === bestMatch.wordOverlap &&
-          match.dateProximity > bestMatch.dateProximity
-        )
-      ) {
-        bestMatch = match;
-      }
-    });
-
+    const bestMatch = matches.sort((m1, m2) => (
+      m1.wordOverlap === m2.wordOverlap ?
+      m2.dateProximity - m1.dateProximity :
+      m2.wordOverlap - m1.wordOverlap
+    ))[0];
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -2883,8 +2871,8 @@ export default class Comment extends CommentSkeleton {
       );
       if (changedIndentationChars) {
         // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used ".slice(0, thisInCode.indentationChars.length + 1)" (due to
-        // "**" as indentation characters in Bsivko's comment).
+        // possible here when we used `.slice(0, thisInCode.indentationChars.length + 1)` (due to
+        // `**` as indentation characters in Bsivko's comment).
         thisInCode.replyIndentationChars = changedIndentationChars
           .slice(0, thisInCode.replyIndentationChars.length)
           .replace(/:$/, cd.config.defaultIndentationChar);

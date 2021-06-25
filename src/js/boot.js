@@ -986,7 +986,7 @@ export async function reloadPage(passedData = {}) {
     parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
     finishLoading();
-    if (passedData.didSubmitCommentForm) {
+    if (passedData.wasCommentFormSubmitted) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
