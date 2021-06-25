@@ -952,12 +952,13 @@ export async function reloadPage(passedData = {}) {
   if (cd.g.isPageBeingReloaded) return;
 
   // Stop all animations, clear all timeouts.
-  cd.comments
-    .filter((comment) => comment.$animatedBackground)
-    .forEach((comment) => {
-      comment.$animatedBackground.stop();
-      comment.$marker.stop();
-    });
+  cd.comments.forEach((comment) => {
+    comment.$animatedBackground?.add(comment.$marker).stop(true, true);
+  });
+
+  // If the page is reloaded externally, its content is already replaced, so we won't break anything
+  // is we remove the layers containers. And we better do so to avoid comment layers hanging around
+  // without their owner comments.
   if (passedData.isPageReloadedExternally) {
     commentLayers.reset();
   }

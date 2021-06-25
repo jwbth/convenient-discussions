@@ -1203,7 +1203,9 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    this.$animatedBackground?.stop(false, true);
+    // Animation will be directed to wrong properties if we keep it going.
+    this.$animatedBackground?.stop(true, true);
+
     const isMoved = this.configureLayers();
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
@@ -1220,7 +1222,8 @@ export default class Comment extends CommentSkeleton {
   unhighlightHovered() {
     if (!this.isHovered || cd.settings.reformatComments) return;
 
-    this.$animatedBackground?.stop(false, true);
+    // Animation will be directed to wrong properties if we keep it going.
+    this.$animatedBackground?.stop(true, true);
 
     this.updateClassesForType('hovered', false);
     this.isHovered = false;
@@ -1263,8 +1266,10 @@ export default class Comment extends CommentSkeleton {
   animateBack(type, callback) {
     this.animateBackBound = null;
 
-    if (!this.underlay) {
-      callback();
+    if (!this.$underlay?.parent().length) {
+      if (callback) {
+        callback();
+      }
       return;
     }
 
@@ -1326,8 +1331,8 @@ export default class Comment extends CommentSkeleton {
      */
     this.$animatedBackground = this.$underlay.add(this.$overlayMenu);
 
-    // Reset the animations and colors
-    this.$animatedBackground.add(this.$marker).stop(false, true);
+    // Reset animations and colors
+    this.$animatedBackground.add(this.$marker).stop(true, true);
 
     this.updateClassesForType(type, true);
 
@@ -2247,8 +2252,7 @@ export default class Comment extends CommentSkeleton {
   removeLayers() {
     if (!this.underlay) return;
 
-    this.$animatedBackground?.stop();
-    this.$marker.stop();
+    this.$animatedBackground?.add(this.$marker).stop(true, true);
     commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
 
     this.underlay.remove();
