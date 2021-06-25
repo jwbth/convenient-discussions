@@ -2858,11 +2858,11 @@ export default class CommentForm {
         prop: 'diff',
         formatversion: 2,
       };
-      if (this.submitSection) {
-        options.fromslots = 'main',
+      if (this.submitSection || !mw.config.get('wgArticleId')) {
+        options.fromslots = 'main';
         options['fromtext-main'] = this.mode === 'addSection' ? '' : this.targetSection.code;
       } else {
-        options.fromrev = mw.config.get('wgArticleId') ? this.targetPage.revisionId : '';
+        options.fromrev = this.targetPage.revisionId;
       }
       resp = await cd.g.api.post(options).catch(handleApiReject);
     } catch (e) {
