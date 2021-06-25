@@ -394,31 +394,30 @@ export default class Page {
    * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
    *
    * @param {object} options
-   * @param {string} options.pageCode
+   * @param {string} options.commentCode
    * @param {CommentForm} options.commentForm
    * @returns {string}
    */
-  modifyCode({ pageCode, commentForm }) {
-    const commentCode = commentForm.commentTextToCode('submit');
-
-    let newPageCode;
-    let codeBeforeInsertion;
+  modifyWholeCode({ commentCode, commentForm }) {
+    const wholeCode = this.code;
+    let newWholeCode;
     if (commentForm.isNewTopicOnTop) {
-      const adjustedPageCode = hideDistractingCode(pageCode);
+      const adjustedPageCode = hideDistractingCode(wholeCode);
       const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
+      let codeBefore;
       if (firstSectionStartIndex === -1) {
-        codeBeforeInsertion = pageCode ? pageCode + '\n' : '';
+        codeBefore = wholeCode ? wholeCode + '\n' : '';
       } else {
-        codeBeforeInsertion = pageCode.slice(0, firstSectionStartIndex);
+        codeBefore = wholeCode.slice(0, firstSectionStartIndex);
       }
-      const codeAfterInsertion = pageCode.slice(firstSectionStartIndex);
-      newPageCode = codeBeforeInsertion + commentCode + '\n' + codeAfterInsertion;
+      const codeAfter = wholeCode.slice(firstSectionStartIndex);
+      newWholeCode = codeBefore + commentCode + '\n' + codeAfter;
     } else {
-      codeBeforeInsertion = (pageCode + '\n').trimLeft();
-      newPageCode = codeBeforeInsertion + commentCode;
+      const codeBefore = commentForm.submitSection ? '' : (wholeCode + '\n').trimLeft();
+      newWholeCode = codeBefore + commentCode;
     }
 
-    return { newPageCode, codeBeforeInsertion, commentCode };
+    return newWholeCode;
   }
 
   /**

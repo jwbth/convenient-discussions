@@ -33,13 +33,8 @@ import {
   wrapDiffBody,
 } from './util';
 import { checkboxField } from './ooui';
-import {
-  extractSignatures,
-  generateTagsRegexp,
-  hideSensitiveCode,
-  removeWikiMarkup,
-} from './wikitext';
-import { generateCommentAnchor } from './timestamp';
+import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
+import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
 import { settingsDialog } from './modal';
 
@@ -148,6 +143,22 @@ function listMarkupToTags(code) {
     }));
   parseLines(lines);
   return listToTags(lines);
+}
+
+/**
+ * Extract anchors from comment links in the code.
+ *
+ * @param {string} code
+ * @returns {string[]}
+ */
+function extractCommentAnchors(code) {
+  const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
+  const anchors = [];
+  let match;
+  while ((match = anchorsRegexp.exec(code))) {
+    anchors.push(match[1]);
+  }
+  return anchors;
 }
 
 /** Class representing a comment form. */
@@ -423,8 +434,8 @@ export default class CommentForm {
       // default, for dialogs, text is inserted into the last opened form, not the current.
       $input.textSelection('register', {
         encapsulateSelection: (options) => {
-          // Seems like the methods are registered for all inputs instead of the one the method for
-          // which is called.
+          // Seems like the methods are registered for all inputs instead of the one the method is
+          // called for.
           CommentForm.getLastActive().encapsulateSelection(options);
         },
         setContents: (value) => {
@@ -2000,9 +2011,7 @@ export default class CommentForm {
         switch (code) {
           case 'locateComment':
             if (this.targetSection) {
-              editUrl = this.targetSection.editUrl ?
-                this.targetSection.editUrl.toString() :
-                cd.g.PAGE.getUrl({ action: 'edit' });
+              editUrl = this.targetSection.editUrl || cd.g.PAGE.getUrl({ action: 'edit' });
             } else {
               editUrl = cd.g.PAGE.getUrl({
                 action: 'edit',
@@ -2113,21 +2122,18 @@ export default class CommentForm {
    * @private
    */
   addIndentationChars(code, indentationChars) {
-    return (
-      indentationChars +
-      (
-        indentationChars && !/^[:*#;]/.test(code) && cd.config.spaceAfterIndentationChars ?
-        ' ' :
-        ''
-      ) +
-      code
+    const addSpace = (
+      indentationChars &&
+      !/^[:*#;]/.test(code) &&
+      cd.config.spaceAfterIndentationChars
     );
+    return indentationChars + (addSpace ? ' ' : '') + code;
   }
 
   /**
    * Convert the text of the comment in the form to wikitext.
    *
-   * @param {string} action `'submit'` (view changes maps to this too) or `'preview'`.
+   * @param {string} action `'submit'`, `'viewChanges'`, or `'preview'`.
    * @returns {string}
    * @throws {CdError}
    */
@@ -2373,7 +2379,10 @@ export default class CommentForm {
     }
 
     // Add the headline
-    if (this.headlineInput) {
+    if (
+      this.headlineInput &&
+      !(this.mode === 'addSection' && this.submitSection && action === 'submit')
+    ) {
       const headline = this.headlineInput.getValue().trim();
       if (headline) {
         let level;
@@ -2438,7 +2447,7 @@ export default class CommentForm {
     }
 
     // Add the indentation characters
-    if (action === 'submit') {
+    if (action !== 'preview') {
       code = this.addIndentationChars(code, indentationChars);
 
       if (this.mode === 'addSubsection') {
@@ -2461,70 +2470,32 @@ export default class CommentForm {
     return code;
   }
 
-  /**
-   * Prepare the new page code based on the form input.
-   *
-   * @param {string} pageCode
-   * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {string}
-   * @throws {CdError}
-   * @private
-   */
-  prepareNewPageCode(pageCode, action) {
-    const doDelete = this.deleteCheckbox?.isSelected();
-
-    if (!(this.target instanceof Page)) {
-      this.target.locateInCode();
-    }
-    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode({
-      pageCode,
-      action: this.mode,
-      doDelete,
-      commentForm: this,
-    });
-
-    if (action === 'submit' && !doDelete) {
-      // We need this only to generate anchors for the comments above our comment to avoid
-      // collisions.
-      extractSignatures(codeBeforeInsertion, true);
-    }
-
+  addAnchorsToComments(wholeCode, commentAnchors) {
     // Add anchor code to comments linked from the comment.
-    const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
-    const anchors = [];
-    let match;
-    while ((match = anchorsRegexp.exec(commentCode))) {
-      anchors.push(match[1]);
-    }
-    anchors.forEach((anchor) => {
+    commentAnchors.forEach((anchor) => {
       const comment = Comment.getByAnchor(anchor);
       if (comment) {
-        const commentInCode = comment.locateInCode(newPageCode);
+        const commentInCode = comment.locateInCode(wholeCode);
         const anchorCode = cd.config.getAnchorCode(anchor);
         if (commentInCode.code.includes(anchorCode)) return;
 
-        let commentStart = this.addIndentationChars(
+        let commentCodePart = this.addIndentationChars(
           commentInCode.code,
           commentInCode.indentationChars
         );
-        const commentTextIndex = commentStart.match(/^[:*#]* */)[0].length;
-        commentStart = (
-          commentStart.slice(0, commentTextIndex) +
-          anchorCode +
-          commentStart.slice(commentTextIndex)
-        );
-        const commentCode = (
-          (commentInCode.headingCode || '') +
-          commentStart +
-          commentInCode.signatureDirtyCode
-        );
+        const commentTextIndex = commentCodePart.match(/^[:*#]* */)[0].length;
+        const codeBefore = commentCodePart.slice(0, commentTextIndex);
+        const codeAfter = commentCodePart.slice(commentTextIndex);
+        commentCodePart = codeBefore + anchorCode + codeAfter;
+        const headingCode = commentInCode.headingCode || '';
+        const commentCode = headingCode + commentCodePart + commentInCode.signatureDirtyCode;
 
-        ({ newPageCode } = comment.modifyCode({
-          pageCode: newPageCode,
+        wholeCode = comment.modifyWholeCode({
+          wholeCode,
           thisInCode: commentInCode,
           action: 'edit',
           commentCode,
-        }));
+        });
       } else if (!$('#' + anchor).length) {
         throw new CdError({
           type: 'parse',
@@ -2534,19 +2505,34 @@ export default class CommentForm {
       }
     });
 
-    return newPageCode;
+    return wholeCode;
   }
 
   /**
-   * Prepare the new page code and handle errors.
+   * Prepare the new section or page code based on the comment form input and handle errors.
    *
    * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {string} newPageCode
+   * @returns {string}
    * @private
    */
-  async tryPrepareNewPageCode(action) {
+  async prepareWholeCode(action) {
+    const commentAnchors = extractCommentAnchors(this.commentInput.getValue());
+
+    this.submitSection = (
+      this.mode === 'addSection' &&
+      !this.isNewTopicOnTop &&
+      this.headlineInput.getValue().trim()
+    );
     try {
-      await this.targetPage.getCode(mw.config.get('wgArticleId') === 0);
+      if (
+        this.targetSection &&
+        this.targetSection.liveSectionNumber !== null &&
+        !commentAnchors.length
+      ) {
+        await this.targetSection.getCode(this);
+      } else {
+        await this.targetPage.getCode(mw.config.get('wgArticleId') === 0);
+      }
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data);
@@ -2560,9 +2546,26 @@ export default class CommentForm {
       return;
     }
 
-    let newPageCode;
+    let wholeCode;
     try {
-      newPageCode = this.prepareNewPageCode(this.targetPage.code, action);
+      if (
+        !(this.target instanceof Page) &&
+
+        // We already located the section when got its code.
+        !(this.target instanceof Section && this.submitSection)
+      ) {
+        this.target.locateInCode(this.submitSection);
+      }
+      if (this.mode === 'replyInSection') {
+        this.target.setLastCommentIndentationChars(this);
+      }
+      wholeCode = this.target.modifyWholeCode({
+        commentCode: this.commentTextToCode(action),
+        action: this.mode,
+        doDelete: this.deleteCheckbox?.isSelected(),
+        commentForm: this,
+      });
+      wholeCode = this.addAnchorsToComments(wholeCode, commentAnchors);
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(e.data);
@@ -2575,7 +2578,7 @@ export default class CommentForm {
       return;
     }
 
-    return newPageCode;
+    return wholeCode;
   }
 
   /**
@@ -2838,8 +2841,8 @@ export default class CommentForm {
 
     const currentOperation = this.registerOperation({ type: 'viewChanges' });
 
-    const newPageCode = await this.tryPrepareNewPageCode('viewChanges');
-    if (newPageCode === undefined) {
+    const code = await this.prepareWholeCode('viewChanges');
+    if (code === undefined) {
       this.closeOperation(currentOperation);
     }
     if (currentOperation.isClosed) return;
@@ -2851,16 +2854,15 @@ export default class CommentForm {
       const options = {
         action: 'compare',
         toslots: 'main',
-        'totext-main': newPageCode,
+        'totext-main': code,
         prop: 'diff',
         formatversion: 2,
       };
-      if (mw.config.get('wgArticleId')) {
-        options.fromrev = this.targetPage.revisionId;
-      } else {
-        // Unexistent pages
+      if (this.submitSection) {
         options.fromslots = 'main',
-        options['fromtext-main'] = '';
+        options['fromtext-main'] = this.mode === 'addSection' ? '' : this.targetSection.code;
+      } else {
+        options.fromrev = mw.config.get('wgArticleId') ? this.targetPage.revisionId : '';
       }
       resp = await cd.g.api.post(options).catch(handleApiReject);
     } catch (e) {
@@ -3008,20 +3010,35 @@ export default class CommentForm {
   /**
    * Send a post request to edit the page and handle errors.
    *
-   * @param {object} page
-   * @param {string} newPageCode
+   * @param {string} code
    * @param {Operation} currentOperation
    * @returns {?object}
    * @private
    */
-  async tryEditPage(page, newPageCode, currentOperation) {
+  async editPage(code, currentOperation) {
     let result;
     try {
+      let sectionParam;
+      let sectionOrPage;
+      let sectionTitleParam;
+      if (this.submitSection) {
+        if (this.mode === 'addSection') {
+          sectionTitleParam = this.headlineInput.getValue().trim();
+          sectionParam = 'new';
+        } else {
+          sectionParam = this.targetSection.liveSectionNumber;
+        }
+        sectionOrPage = this.targetSection;
+      } else {
+        sectionOrPage = this.targetPage;
+      }
       result = await this.targetPage.edit({
-        text: newPageCode,
+        section: sectionParam,
+        sectiontitle: sectionTitleParam,
+        text: code,
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
-        baserevid: page.revisionId,
-        starttimestamp: page.queryTimestamp,
+        baserevid: sectionOrPage?.revisionId,
+        starttimestamp: sectionOrPage?.queryTimestamp,
         minor: this.minorCheckbox?.isSelected(),
         watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
       });
@@ -3067,6 +3084,50 @@ export default class CommentForm {
     return result;
   }
 
+  generateFutureCommentAnchor(editTimestamp) {
+    const date = new Date(editTimestamp);
+
+    // Timestamps on the page (and therefore anchors) have no seconds.
+    date.setSeconds(0);
+
+    let commentAbove;
+    if (this.target instanceof Comment) {
+      const descendants = this.target.getChildren(true);
+      commentAbove = descendants[descendants.length - 1] || this.target;
+    } else if (this.target instanceof Section) {
+      const sectionAbove = (
+        (this.mode === 'addSubsection' && this.target.getChildren(true).slice(-1)[0]) ||
+        this.target
+      );
+      cd.sections
+        .slice(0, sectionAbove.id + 1)
+        .reverse()
+        .some((section) => {
+          if (section.commentsInFirstChunk.length) {
+            commentAbove = section.commentsInFirstChunk[section.commentsInFirstChunk.length - 1];
+          }
+          return commentAbove;
+        });
+    } else {
+      commentAbove = this.isNewTopicOnTop ? null : cd.comments[cd.comments.length - 1];
+    }
+
+    resetCommentAnchors();
+    if (commentAbove) {
+      cd.comments
+        .slice(0, commentAbove.id + 1)
+        .filter((comment) => (
+          comment.author === cd.g.USER &&
+          comment.date?.getTime() === date.getTime()
+        ))
+        .forEach((comment) => {
+          registerCommentAnchor(comment.anchor);
+        });
+    }
+
+    return generateCommentAnchor(date, cd.g.USER_NAME, true);
+  }
+
   /**
    * Submit the form.
    */
@@ -3089,23 +3150,19 @@ export default class CommentForm {
       return;
     }
 
-    const newPageCode = await this.tryPrepareNewPageCode('submit');
-    if (newPageCode === undefined) {
+    const code = await this.prepareWholeCode('submit');
+    if (code === undefined) {
       this.closeOperation(currentOperation);
       return;
     }
 
-    const editTimestamp = await this.tryEditPage(
-      this.targetPage,
-      newPageCode,
-      currentOperation
-    );
+    const editTimestamp = await this.editPage(code, currentOperation);
     if (!editTimestamp) return;
 
     // Here we use a trick where we pass, in passedData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    const passedData = { didSubmitCommentForm: true };
+    const passedData = { wasCommentFormSubmitted: true };
 
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
@@ -3151,10 +3208,11 @@ export default class CommentForm {
       $('#ca-unwatch').attr('id', 'ca-watch');
     }
 
+    // Generate an anchor for the comment to jump to, taking possible collisions into account.
     if (!doDelete) {
       passedData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
-        generateCommentAnchor(new Date(editTimestamp), cd.g.USER_NAME, true);
+        this.generateFutureCommentAnchor(editTimestamp);
     }
 
     // When the edit takes place on another page that is transcluded in the current one, we must
@@ -3466,7 +3524,7 @@ export default class CommentForm {
       this.commentInput.selectRange(caretIndex);
     }
 
-    const lastChar = caretIndex && this.commentInput.getValue().slice(caretIndex - 1, caretIndex);
+    const lastChar = caretIndex && this.commentInput.getValue().substr(caretIndex - 1, 1);
     if (caretIndex && !/\s/.test(lastChar)) {
       insertText(this.commentInput, ' ');
     }
@@ -3526,7 +3584,8 @@ export default class CommentForm {
    * @param {string} [options.post=''] Text to insert after the caret/selection.
    * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
    *   post instead of leaving it alone.
-   * @param {string} [options.selection] Selected text. Use if it is outside of the input.
+   * @param {string} [options.selection] Selected text. Use if the selection is outside of the
+   *   input.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
    */
   encapsulateSelection({
@@ -3559,7 +3618,7 @@ export default class CommentForm {
       selection = selection || '';
     }
 
-    // Wrap text moving the leading and trailing spaces to the sides of the resulting text.
+    // Wrap the text moving the leading and trailing spaces to the sides of the resulting text.
     const [leadingSpace] = selection.match(/^ */);
     const [trailingSpace] = selection.match(/ *$/);
     const middleText = selection || peri;

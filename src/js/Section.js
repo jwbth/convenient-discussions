@@ -21,6 +21,7 @@ import {
   defined,
   focusInput,
   getUrlWithAnchor,
+  handleApiReject,
   wrap,
 } from './util';
 import { checkboxField } from './ooui';
@@ -57,61 +58,11 @@ export default class Section extends SectionSkeleton {
 
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
-    /**
-     * Section headline element as a jQuery object.
-     *
-     * @type {JQuery}
-     */
-    this.$headline = $(this.headlineElement);
-
-    /**
-     * Wiki page that has the source code of the section (may be different from the current page if
-     * the section is transcluded from another page). This property may also be wrong on old version
-     * pages where there are no edit section links.
-     *
-     * @type {string}
-     */
-    this.sourcePage = cd.g.PAGE;
-
     this.editSectionElement = headingElement.querySelector('.mw-editsection');
     if (this.editSectionElement) {
       this.closingBracketElement = this.editSectionElement
         .getElementsByClassName('mw-editsection-bracket')[1];
-
-      // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
-      // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
-      // there's probably no harm in that.
-      const editLink = this.editSectionElement.querySelector('a[href*="action=edit"]');
-      if (editLink) {
-        // May crash if the current URL contains undecodable "%" in the fragment.
-        try {
-          /**
-           * URL to edit the section.
-           *
-           * @type {URL}
-           */
-          this.editUrl = new mw.Uri(editLink.getAttribute('href'));
-        } catch (e) {
-          // Empty
-        }
-
-        if (this.editUrl) {
-          const sectionNumber = this.editUrl.query.section;
-          if (sectionNumber.startsWith('T-')) {
-            this.sourcePage = new Page(this.editUrl.query.title);
-          }
-        }
-      } else {
-        console.error('Edit link not found.', this);
-      }
     }
-
-    /**
-     * Section heading as a jQuery element.
-     *
-     * @type {JQuery}
-     */
-    this.$heading = $(headingElement);
 
     /**
      * Is the section actionable (is in a closed discussion or on an old version page).
@@ -133,6 +84,45 @@ export default class Section extends SectionSkeleton {
 
       this.extendSectionMenu(watchedSectionsRequest);
     }
+
+    /**
+     * Automatically updated sequental number of the section.
+     *
+     * @type {?number}
+     */
+    this.liveSectionNumber = this.sectionNumber;
+
+    /**
+     * Revision ID of {@link module:Section#liveSectionNumber}.
+     *
+     * @type {number}
+     */
+    this.liveSectionNumberRevisionId = mw.config.get('wgRevisionId');
+
+    /**
+     * Wiki page that has the source code of the section (may be different from the current page if
+     * the section is transcluded from another page). This property may be wrong on old version
+     * pages where there are no edit section links.
+     *
+     * @type {Page}
+     */
+    this.sourcePage = this.sourcePageName ? new Page(this.sourcePageName) : cd.g.PAGE;
+
+    delete this.sourcePageName;
+
+    /**
+     * Section headline element as a jQuery object.
+     *
+     * @type {JQuery}
+     */
+    this.$headline = $(this.headlineElement);
+
+    /**
+     * Section heading as a jQuery element.
+     *
+     * @type {JQuery}
+     */
+    this.$heading = $(headingElement);
   }
 
   /**
@@ -1097,23 +1087,17 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Locate the section in the page source code and set the result to the `inCode` property.
+   * Locate the section in the source code and set the result to the `inCode` property.
    *
+   * @param {boolean} useSectionCode Is the section code available to locate the section in instead
+   *   of the page code.
    * @throws {CdError}
    */
-  locateInCode() {
+  locateInCode(useSectionCode) {
     this.inCode = null;
 
-    // Collect all possible matches
-    const matches = this.searchInCode(this.getSourcePage().code);
-
-    let bestMatch;
-    matches.forEach((match) => {
-      if (!bestMatch || match.score > bestMatch.score) {
-        bestMatch = match;
-      }
-    });
-
+    const matches = this.searchInCode(useSectionCode ? this.code : this.getSourcePage().code);
+    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -1121,76 +1105,76 @@ export default class Section extends SectionSkeleton {
       });
     }
 
+    bestMatch.isSectionCodeUsed = useSectionCode;
+
     this.inCode = bestMatch;
   }
 
   /**
-   * Modify a page code string related to the section in accordance with an action.
+   * Detect the last section comment's indentation characters if needed or a vote / bulleted reply
+   * placeholder.
    *
-   * @param {object} options
-   * @param {string} options.pageCode
-   * @param {string} options.action
-   * @param {string} options.commentForm
-   * @returns {string}
+   * @param {CommentForm} commentForm
    */
-  modifyCode({ pageCode, action, commentForm }) {
-    if (action === 'replyInSection') {
-      // Detect the last section comment's indentation characters if needed or a vote / bulleted
-      // reply placeholder.
-      const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
-      if (replyPlaceholder) {
-        this.inCode.lastCommentIndentationChars = replyPlaceholder;
-      } else {
-        const lastComment = this.comments[this.comments.length - 1];
-        if (
-          lastComment &&
-          (commentForm.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
-        ) {
-          try {
-            lastComment.locateInCode();
-          } finally {
-            if (
-              lastComment.inCode &&
-              (
-                !lastComment.inCode.indentationChars.startsWith('#') ||
+  setLastCommentIndentationChars(commentForm) {
+    const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+    if (replyPlaceholder) {
+      this.inCode.lastCommentIndentationChars = replyPlaceholder;
+    } else {
+      const lastComment = this.commentsInFirstChunk[this.commentsInFirstChunk.length - 1];
+      if (
+        lastComment &&
+        (commentForm.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
+      ) {
+        try {
+          lastComment.locateInCode(commentForm.submitSection);
+        } finally {
+          if (
+            lastComment.inCode &&
+            (
+              !lastComment.inCode.indentationChars.startsWith('#') ||
 
-                // For now we use the workaround with commentForm.containerListType to make sure "#"
-                // is a part of comments organized in a numbered list, not of a numbered list _in_
-                // the target comment.
-                commentForm.containerListType === 'ol'
-              )
-            ) {
-              this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
-            }
+              // For now we use the workaround with commentForm.containerListType to make sure "#"
+              // is a part of comments organized in a numbered list, not of a numbered list _in_
+              // the target comment.
+              commentForm.containerListType === 'ol'
+            )
+          ) {
+            this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
           }
         }
       }
     }
+  }
 
-    let commentCode;
-    if (!commentCode && commentForm) {
-      commentCode = commentForm.commentTextToCode('submit');
-    }
-
-    let newPageCode;
-    let codeBeforeInsertion;
+  /**
+   * Modify a section or page code string related to the section in accordance with an action.
+   *
+   * @param {object} options
+   * @param {string} options.action
+   * @param {string} options.commentCode
+   * @returns {object}
+   */
+  modifyWholeCode({ action, commentCode }) {
+    const wholeCode = this.inCode.isSectionCodeUsed ? this.code : this.getSourcePage().code;
+    let newWholeCode;
     switch (action) {
       case 'replyInSection': {
-        codeBeforeInsertion = pageCode.slice(0, this.inCode.firstChunkContentEndIndex);
-        const codeAfterInsertion = pageCode.slice(this.inCode.firstChunkContentEndIndex);
-        newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        const codeBefore = wholeCode.slice(0, this.inCode.firstChunkContentEndIndex);
+        const codeAfter = wholeCode.slice(this.inCode.firstChunkContentEndIndex);
+        newWholeCode = codeBefore + commentCode + codeAfter;
         break;
       }
 
       case 'addSubsection': {
-        codeBeforeInsertion = endWithTwoNewlines(pageCode.slice(0, this.inCode.contentEndIndex));
-        const codeAfterInsertion = pageCode.slice(this.inCode.contentEndIndex).trim();
-        newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+        const codeBefore = endWithTwoNewlines(wholeCode.slice(0, this.inCode.contentEndIndex));
+        const codeAfter = wholeCode.slice(this.inCode.contentEndIndex).trim();
+        newWholeCode = codeBefore + commentCode + codeAfter;
         break;
       }
     }
 
-    return { newPageCode, codeBeforeInsertion, commentCode };
+    return newWholeCode;
   }
 
   /**
@@ -1213,17 +1197,148 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Request the code of the section by its number using API and set some properties of the section
+   * (and also the page).
+   *
+   * @throws {CdError}
+   */
+  async requestCode() {
+    const resp = await cd.g.api.post({
+      action: 'query',
+      titles: this.getSourcePage().name,
+      prop: 'revisions',
+      rvsection: this.liveSectionNumber,
+      rvslots: 'main',
+      rvprop: ['ids', 'content'],
+      redirects: !mw.config.get('wgIsRedirect'),
+      curtimestamp: true,
+      formatversion: 2,
+    }).catch(handleApiReject);
+
+    const query = resp.query;
+    const page = query?.pages?.[0];
+    const revision = page?.revisions?.[0];
+    const main = revision?.slots?.main;
+    const content = main?.content;
+
+    if (!query || !page) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    if (page.missing) {
+      throw new CdError({
+        type: 'api',
+        code: 'missing',
+      });
+    }
+
+    if (page.invalid) {
+      throw new CdError({
+        type: 'api',
+        code: 'invalid',
+      });
+    }
+
+    if (main.nosuchsection) {
+      throw new CdError({
+        type: 'api',
+        code: 'noSuchSection',
+      });
+    }
+
+    if (!revision || content === undefined) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    const redirectTarget = query.redirects?.[0]?.to || null;
+
+    /**
+     * Section code. Filled upon running {@link module:Section#getCode}.
+     *
+     * @name code
+     * @type {string|undefined}
+     * @instance
+     */
+
+    /**
+     * ID of the revision that has {@link module:Section#code}. Filled upon running {@link
+     * module:Section#getCode}.
+     *
+     * @name revisionId
+     * @type {string|undefined}
+     * @instance
+     */
+
+    /**
+     * Time when {@link module:Section#code} was queried (as the server reports it). Filled upon
+     * running {@link module:Section#getCode}.
+     *
+     * @name queryTimestamp
+     * @type {string|undefined}
+     * @instance
+     */
+    Object.assign(this, {
+      // It's more convenient to unify regexps to have \n as the last character of anything, not
+      // (?:\n|$), and it doesn't seem to affect anything substantially.
+      code: content + '\n',
+
+      revisionId: revision.revid,
+      queryTimestamp: resp.curtimestamp,
+    });
+
+    Object.assign(cd.g.PAGE, {
+      pageId: page.pageid,
+      redirectTarget,
+      realName: redirectTarget || this.name,
+    });
+  }
+
+  /**
    * Load the section code.
    *
+   * @param {CommentForm} [commentForm] Comment form, if it is submitted (or code changes are
+   *   viewed).
    * @throws {CdError|Error}
    */
-  async getCode() {
+  async getCode(commentForm) {
     try {
-      await this.getSourcePage().getCode();
-      this.locateInCode();
+      if (this.liveSectionNumber !== null) {
+        try {
+          await this.requestCode();
+          this.locateInCode(true);
+          if (commentForm) {
+            /**
+             * Whether the wikitext of a section will be submitted to the server instead of a page.
+             *
+             * @type {?boolean}
+             * @memberof module:CommentForm
+             * @instance
+             */
+            commentForm.submitSection = true;
+          }
+        } catch (e) {
+          if (e instanceof CdError && ['noSuchSection', 'locateSection'.includes(e.data.code)]) {
+            await this.getSourcePage().getCode();
+            this.locateInCode(false);
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        await this.getSourcePage().getCode();
+        this.locateInCode(false);
+      }
     } catch (e) {
       if (e instanceof CdError) {
-        throw new CdError(Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data));
+        throw new CdError(Object.assign({}, {
+          message: cd.sParse('cf-error-getpagecode'),
+        }, e.data));
       } else {
         throw e;
       }

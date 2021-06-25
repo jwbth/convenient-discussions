@@ -8,13 +8,8 @@ import html_entity_decode from 'locutus/php/strings/html_entity_decode';
 
 import cd from './cd';
 import userRegistry from './userRegistry';
-import {
-  generateCommentAnchor,
-  parseTimestamp,
-  registerCommentAnchor,
-  resetCommentAnchors,
-} from './timestamp';
 import { hideText } from './util';
+import { parseTimestamp } from './timestamp';
 
 /**
  * Generate a regular expression that searches for specified tags in the text (opening, closing, and
@@ -320,10 +315,9 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  * module:Comment#adjustCommentBeginning}, called before that.
  *
  * @param {string} code Code to extract signatures from.
- * @param {boolean} [generateCommentAnchors=false] Whether to generate and register comment anchors.
  * @returns {object[]}
  */
-export function extractSignatures(code, generateCommentAnchors = false) {
+export function extractSignatures(code) {
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = hideDistractingCode(code)
     .replace(
@@ -357,20 +351,11 @@ export function extractSignatures(code, generateCommentAnchors = false) {
   signatures.forEach((sig, i) => {
     sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
   });
-  if (generateCommentAnchors) {
-    resetCommentAnchors();
-  }
   signatures.forEach((sig, i) => {
     const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
     sig.id = i;
     sig.date = date;
     delete sig.nextCommentStartIndex;
-
-    if (generateCommentAnchors) {
-      const anchor = date && generateCommentAnchor(date, sig.author.name, true);
-      sig.anchor = anchor;
-      registerCommentAnchor(anchor);
-    }
   });
 
   return signatures;

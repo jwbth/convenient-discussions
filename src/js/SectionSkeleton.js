@@ -52,6 +52,47 @@ export default class SectionSkeleton {
      */
     this.level = levelMatch && Number(levelMatch[1]);
 
+    /**
+     * Sequental number of the section.
+     *
+     * @type {?number}
+     */
+    this.sectionNumber = null;
+
+    const editSectionElement = headingElement.lastChild;
+    if (editSectionElement.classList.contains('mw-editsection')) {
+       const links = Array.from(editSectionElement.getElementsByTagName('a'));
+
+      // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
+      // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
+      // there's probably no harm in that.
+      const editLink = links.find((link) => link.getAttribute('href')?.includes('action=edit'));
+
+      if (editLink) {
+        const href = cd.g.SERVER + editLink.getAttribute('href');
+
+        /**
+         * URL to edit the section.
+         *
+         * @type {string}
+         */
+        this.editUrl = new URL(href);
+
+        if (this.editUrl) {
+          const sectionNumber = this.editUrl.searchParams.get('section');
+          if (sectionNumber.startsWith('T-')) {
+            this.sourcePageName = this.editUrl.searchParams.get('title');
+            this.sectionNumber = Number(sectionNumber.match(/\d+/)[0]);
+          } else {
+            this.sectionNumber = Number(sectionNumber);
+          }
+          this.editUrl = this.editUrl.href;
+        }
+      } else {
+        console.error('Edit link not found.', this);
+      }
+    }
+
     const treeWalker = new TreeWalker(
       cd.g.rootElement,
       (node) => (

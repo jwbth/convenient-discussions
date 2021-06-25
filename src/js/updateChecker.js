@@ -188,30 +188,39 @@ function cleanUpSeenRenderedChanges(data) {
 /**
  * Map sections obtained from a revision to the sections present on the page.
  *
- * @param {SectionSkeletonLike[]} sections
+ * @param {SectionSkeletonLike[]} otherSections
  * @private
  */
-function mapSections(sections) {
+function mapSections(otherSections) {
   cd.debug.startTimer('mapSections');
   // Reset values set in the previous run.
   cd.sections.forEach((section) => {
     delete section.match;
+    delete section.matchScore;
   });
-  sections.forEach((section) => {
-    delete section.match;
+  otherSections.forEach((otherSection) => {
+    delete otherSection.match;
   });
   cd.debug.stopTimer('mapSections');
 
-  sections.forEach((section) => {
-    const { section: matchedSection, score } = Section.search(section, true) || {};
-    if (matchedSection && (!matchedSection.match || score > matchedSection.matchScore)) {
-      if (matchedSection.match) {
-        delete matchedSection.match.match;
+  otherSections.forEach((otherSection) => {
+    const { section, score } = Section.search(otherSection, true) || {};
+    if (section && (!section.match || score > section.matchScore)) {
+      if (section.match) {
+        delete section.match.match;
       }
-      matchedSection.match = section;
-      matchedSection.matchScore = score;
-      section.match = matchedSection;
+      section.match = otherSection;
+      section.matchScore = score;
+      otherSection.match = section;
     }
+  });
+
+  cd.sections.forEach((section) => {
+    section.liveSectionNumber = section.match?.sectionNumber ?? null;
+    section.liveSectionNumberRevisionId = lastCheckedRevisionId;
+    delete section.code;
+    delete section.revisionId;
+    delete section.queryTimestamp;
   });
 }
 

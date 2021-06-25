@@ -1977,30 +1977,31 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Locate the comment in the page source code and, if no `pageCode` is passed, set the results to
+   * Locate the comment in the page source code and, if no `code` is passed, set the results to
    * the `inCode` property. Otherwise, return the result.
    *
-   * @param {string} [pageCode] Page code, if different from the `code` property of {@link
-   *   Comment#getSourcePage()}.
-   * @param {string} [commentData] Comment data for comparison (can be set together with pageCode).
+   * @param {string|boolean} [codeOrUseSectionCode] Page or section code, if different from the
+   *   `code` property of {@link Comment#getSourcePage()}. Boolean `true` means to use the
+   *   (prefetched) section code to locate the comment in.
+   * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
    * @returns {string|undefined}
    * @throws {CdError}
    */
-  locateInCode(pageCode, commentData) {
-    if (!pageCode) {
+  locateInCode(codeOrUseSectionCode, commentData) {
+    let code;
+    if (typeof codeOrUseSectionCode === 'string') {
+      code = codeOrUseSectionCode;
+    } else if (codeOrUseSectionCode === true) {
+      code = this.section.code;
+      this.inCode = null;
+    } else {
+      code = this.getSourcePage().code;
       this.inCode = null;
     }
 
-    // Collect matches
-    const matches = this.searchInCode(pageCode || this.getSourcePage().code, commentData);
-
-    let bestMatch;
-    matches.forEach((match) => {
-      if (!bestMatch || match.score > bestMatch.score) {
-        bestMatch = match;
-      }
-    });
-
+    const isSectionCodeUsed = codeOrUseSectionCode === true;
+    const matches = this.searchInCode(code, commentData, isSectionCodeUsed);
+    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -2008,8 +2009,10 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
+    bestMatch.isSectionCodeUsed = isSectionCodeUsed;
+
     const inCode = this.adjustCommentCodeData(bestMatch);
-    if (pageCode) {
+    if (typeof codeOrUseSectionCode === 'string') {
       return inCode;
     } else {
       this.inCode = inCode;
@@ -2168,8 +2171,22 @@ export default class Comment extends CommentSkeleton {
    */
   async getCode() {
     try {
-      await this.getSourcePage().getCode();
-      this.locateInCode();
+      let useSectionCode = false;
+      if (this.section && this.section.liveSectionNumber !== null) {
+        try {
+          await this.section.requestCode();
+          useSectionCode = true;
+        } catch (e) {
+          if (e instanceof CdError && e.data.code === 'noSuchSection') {
+            await this.getSourcePage().getCode();
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        await this.getSourcePage().getCode();
+      }
+      this.locateInCode(useSectionCode);
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, {
@@ -2621,10 +2638,11 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {string} pageCode
    * @param {string} commentData
+   * @param {boolean} isSectionCodeUsed
    * @returns {object}
    * @private
    */
-  searchInCode(pageCode, commentData) {
+  searchInCode(pageCode, commentData, isSectionCodeUsed) {
     const signatures = extractSignatures(pageCode);
     // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
     // templates (it may be present and may be not), but it appears on the page.
@@ -2649,14 +2667,20 @@ export default class Comment extends CommentSkeleton {
       signatureEndIndex: match.startIndex + match.dirtyCode.length,
     }));
 
-    // For the reserve method; the main method uses one date.
-    const previousComments = commentData ?
-      commentData.previousComments :
-      cd.comments
-        .slice(Math.max(0, this.id - 2), this.id)
-        .reverse();
+    let id;
+    let previousComments;
+    if (commentData) {
+      id = commentData.id;
 
-    const id = commentData ? commentData.id : this.id;
+      // For the reserve method; the main method uses one date.
+      previousComments = commentData.previousComments;
+    } else {
+      const comments = isSectionCodeUsed ? this.section.comments : cd.comments;
+      id = comments.indexOf(this);
+      previousComments = comments
+        .slice(Math.max(0, id - 2), id)
+        .reverse();
+    }
 
     let followsHeading;
     let sectionHeadline;
@@ -2756,26 +2780,28 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Modify a page code string related to the comment in accordance with an action.
+   * Modify a section or page code string related to the comment in accordance with an action.
    *
    * @param {object} options
-   * @param {string} options.pageCode
    * @param {string} options.action
-   * @param {string} options.doDelete
-   * @param {string} [options.thisInCode] Should be set if `commentCode` is set.
-   * @param {string} [options.commentForm] `commentCode` or `commentForm` should be set.
-   * @param {string} [options.commentCode] `commentCode` or `commentForm` should be set.
+   * @param {string} [options.commentCode] Can be not set if `doDelete` is `true`.
+   * @param {string} [options.wholeCode]
+   * @param {boolean} [options.doDelete]
+   * @param {string} [options.thisInCode]
    * @returns {string}
    * @throws {CdError}
    */
-  modifyCode({ pageCode, action, doDelete, commentForm, thisInCode, commentCode }) {
+  modifyWholeCode({ action, commentCode, wholeCode, doDelete, thisInCode }) {
     thisInCode = thisInCode || this.inCode;
+    if (!wholeCode) {
+      wholeCode = thisInCode.isSectionCodeUsed ? this.section.code : this.getSourcePage().code;
+    }
 
     let currentIndex;
     if (action === 'reply') {
       currentIndex = thisInCode.endIndex;
 
-      let adjustedCode = hideDistractingCode(pageCode);
+      let adjustedCode = hideDistractingCode(wholeCode);
       if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
         adjustedCode = adjustedCode
           .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentationChars) => (
@@ -2787,10 +2813,10 @@ export default class Comment extends CommentSkeleton {
       if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
         let match;
         while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
-          adjustedCode = (
-            adjustedCode.slice(0, match.index) +
-            hideTemplatesRecursively(adjustedCode.slice(match.index), null, match[1].length).code
-          );
+          const codeBeforeMatch = adjustedCode.slice(0, match.index);
+          const codeAfterMatch = adjustedCode.slice(match.index);
+          const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
+          adjustedCode = codeBeforeMatch + adjustedCam;
         }
       }
 
@@ -2798,7 +2824,7 @@ export default class Comment extends CommentSkeleton {
 
       const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*?\1[ \t\x01\x02]*\n|$/);
       let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
-      let chunkCodeAfter = pageCode.slice(currentIndex, chunkCodeAfterEndIndex);
+      let chunkCodeAfter = wholeCode.slice(currentIndex, chunkCodeAfterEndIndex);
       cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
         const match = chunkCodeAfter.match(regexp);
         if (match) {
@@ -2867,16 +2893,12 @@ export default class Comment extends CommentSkeleton {
       currentIndex += adjustedCodeInBetween.length;
     }
 
-    if (!commentCode && commentForm && !doDelete) {
-      commentCode = commentForm.commentTextToCode('submit');
-    }
-
-    let newPageCode;
-    let codeBeforeInsertion;
+    let newWholeCode;
     switch (action) {
       case 'reply': {
-        codeBeforeInsertion = pageCode.slice(0, currentIndex);
-        newPageCode = codeBeforeInsertion + commentCode + pageCode.slice(currentIndex);
+        const codeBefore = wholeCode.slice(0, currentIndex);
+        const codeAfter = wholeCode.slice(currentIndex);
+        newWholeCode = codeBefore + commentCode + codeAfter;
         break;
       }
 
@@ -2885,7 +2907,9 @@ export default class Comment extends CommentSkeleton {
           let startIndex;
           let endIndex;
           if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
-            this.section.locateInCode();
+            if (!this.section.inCode) {
+              this.section.locateInCode();
+            }
             if (extractSignatures(this.section.inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
@@ -2898,7 +2922,7 @@ export default class Comment extends CommentSkeleton {
             }
           } else {
             endIndex = thisInCode.signatureEndIndex + 1;
-            const succeedingText = pageCode.slice(thisInCode.endIndex);
+            const succeedingText = wholeCode.slice(thisInCode.endIndex);
 
             const repliesRegexp = new RegExp(
               `^.+\\n+[:*#]{${thisInCode.indentationChars.length + 1},}`
@@ -2915,18 +2939,18 @@ export default class Comment extends CommentSkeleton {
             }
           }
 
-          newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
+          newWholeCode = wholeCode.slice(0, startIndex) + wholeCode.slice(endIndex);
         } else {
           const startIndex = thisInCode.lineStartIndex;
-          codeBeforeInsertion = pageCode.slice(0, startIndex);
-          const codeAfterInsertion = pageCode.slice(thisInCode.signatureEndIndex);
-          newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+          const codeBefore = wholeCode.slice(0, startIndex);
+          const codeAfter = wholeCode.slice(thisInCode.signatureEndIndex);
+          newWholeCode = codeBefore + commentCode + codeAfter;
         }
         break;
       }
     }
 
-    return { newPageCode, codeBeforeInsertion, commentCode };
+    return newWholeCode;
   }
 
   /**
