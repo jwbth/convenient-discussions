@@ -951,6 +951,11 @@ export function isPageLoading() {
 export async function reloadPage(passedData = {}) {
   if (cd.g.isPageBeingReloaded) return;
 
+  // We shouldn't make the current version of the page dysfunctional at least until a correct
+  // response to the parse request is received. Otherwise, if the request fails, the user will be
+  // left with a dysfunctional page. This is why we reset the live timestamps only after that
+  // request.
+
   // Stop all animations, clear all timeouts.
   cd.comments.forEach((comment) => {
     comment.$animatedBackground?.add(comment.$marker).stop(true, true);
@@ -962,7 +967,6 @@ export async function reloadPage(passedData = {}) {
   if (passedData.isPageReloadedExternally) {
     commentLayers.reset();
   }
-  LiveTimestamp.reset();
 
   // In case checkboxes were changed programmatically.
   saveSession();
@@ -995,6 +999,8 @@ export async function reloadPage(passedData = {}) {
       return;
     }
   }
+
+  LiveTimestamp.reset();
 
   // Detach comment forms to keep events.
   cd.commentForms.forEach((commentForm) => {
