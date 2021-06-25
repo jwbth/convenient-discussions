@@ -2585,13 +2585,16 @@ export default class CommentForm {
    * Add an operation to the registry of operations.
    *
    * @param {Operation} operation
+   * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
    * @returns {Operation}
    */
-  registerOperation(operation) {
+  registerOperation(operation, clearMessages = true) {
     this.operations.push(operation);
     operation.isClosed = false;
     if (operation.type !== 'preview' || !operation.isAuto) {
-      this.$messageArea.empty();
+      if (clearMessages) {
+        this.$messageArea.empty();
+      }
       this.pushPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
     }
     return operation;
@@ -3057,7 +3060,6 @@ export default class CommentForm {
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
             messageType = 'notice';
-            this.submit();
           }
 
           // FIXME: We don't pass apiData to prevent the message for "missingtitle" to be overriden,
@@ -3070,6 +3072,10 @@ export default class CommentForm {
             logMessage,
             currentOperation,
           });
+
+          if (code === 'editconflict') {
+            this.submit(true);
+          }
         }
       } else {
         this.handleError({
@@ -3130,14 +3136,16 @@ export default class CommentForm {
 
   /**
    * Submit the form.
+   *
+   * @param {boolean} [afterEditConflict=false]
    */
-  async submit() {
+  async submit(afterEditConflict = false) {
     if (this.operations.some((op) => !op.isClosed && op.type === 'load')) return;
 
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!(await this.runChecks({ doDelete }))) return;
 
-    const currentOperation = this.registerOperation({ type: 'submit' });
+    const currentOperation = this.registerOperation({ type: 'submit' }, !afterEditConflict);
 
     const otherFormsSubmitted = cd.commentForms
       .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
