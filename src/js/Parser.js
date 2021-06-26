@@ -165,7 +165,7 @@ export default class Parser {
     if (!foreignComponentClasses) {
       foreignComponentClasses = ['cd-comment-part', ...cd.config.closedDiscussionClasses];
       if (cd.g.pageHasOutdents) {
-        foreignComponentClasses.push('outdent-template');
+        foreignComponentClasses.push(cd.config.outdentClass);
       }
 
       timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
@@ -666,7 +666,10 @@ export default class Parser {
             this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
           ) ||
 
-          (cd.g.pageHasOutdents && this.context.getElementByClassName(node, 'outdent-template')) ||
+          (
+            cd.g.pageHasOutdents &&
+            this.context.getElementByClassName(node, cd.config.outdentClass)
+          ) ||
 
           // Talk page message box
           (

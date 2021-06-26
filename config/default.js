@@ -341,6 +341,13 @@ export default {
   outdentTemplates: [],
 
   /**
+   * Name of the class that the outdent templates set to its container element.
+   *
+   * @type {string}
+   */
+  outdentClass: 'outdent-template',
+
+  /**
    * Names of the templates that are analogs of {@link
    * https://en.wikipedia.org/wiki/Template:Clear}.
    *

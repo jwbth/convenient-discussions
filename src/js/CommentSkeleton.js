@@ -356,7 +356,7 @@ export default class CommentSkeleton {
 
   static processOutdents() {
     if (cd.g.pageHasOutdents) {
-      Array.from(cd.g.rootElement.getElementsByClassName('outdent-template'))
+      Array.from(cd.g.rootElement.getElementsByClassName(cd.config.outdentClass))
         .reverse()
         .forEach((el) => {
           const treeWalker = new ElementsTreeWalker(el);

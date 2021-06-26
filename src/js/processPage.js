@@ -141,7 +141,7 @@ function findClosedDiscussions() {
  * @private
  */
 function findOutdents() {
-  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.' + cd.config.outdentClass).length);
 }
 
 /**

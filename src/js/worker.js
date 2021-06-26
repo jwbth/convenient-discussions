@@ -372,7 +372,7 @@ function onMessageFromWindow(e) {
     context.document = new Document(dom);
     cd.g.rootElement = context.document.childNodes[0];
     cd.g.pageHasOutdents = Boolean(
-      cd.g.rootElement.getElementsByClassName('outdent-template', 1).length
+      cd.g.rootElement.getElementsByClassName(cd.config.outdentClass, 1).length
     );
 
     parse();
