@@ -7,19 +7,23 @@
 import cd from './cd';
 
 /**
- * @typedef {object} OoUiFieldLayout
+ * OOUI field layout
+ * 
+ * @external OoUiFieldLayout
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
  */
 
 /**
- * @typedef {object} OoUiCheckboxInputWidget
+ * OOUI checkbox input widget
+ * 
+ * @external OoUiCheckboxInputWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
  */
 
 /**
  * @typedef {Array} CheckboxFieldReturn
- * @property {OoUiFieldLayout} 0
- * @property {OoUiCheckboxInputWidget} 1
+ * @property {external:OoUiFieldLayout} 0
+ * @property {external:OoUiCheckboxInputWidget} 1
  */
 
 /**
@@ -58,20 +62,24 @@ export function checkboxField({
 }
 
 /**
- * @typedef {object} OoUiRadioSelectWidget
+ * OOUI radio select widget
+ * 
+ * @external OoUiRadioSelectWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
  */
 
 /**
- * @typedef {object} OoUiRadioOptionWidget
+ * OOUI radio option widget
+ * 
+ * @external OoUiRadioOptionWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioOptionWidget
  */
 
 /**
- * @typedef {object} RadioFieldReturn
- * @property {OoUiFieldLayout} 0
- * @property {OoUiRadioSelectWidget} 1
- * @property {OoUiRadioOptionWidget} 2
+ * @typedef {Array} RadioFieldReturn
+ * @property {external:OoUiFieldLayout} 0
+ * @property {external:OoUiRadioSelectWidget} 1
+ * @property {external:OoUiRadioOptionWidget} 2
  */
 
 /**
@@ -98,7 +106,9 @@ export function radioField({ label, selected, help, options }) {
 }
 
 /**
- * @typedef {object} OoUiActionFieldLayout
+ * OOUI action field layout
+ * 
+ * @external OoUiActionFieldLayout
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ActionFieldLayout
  */
 
@@ -111,7 +121,7 @@ export function radioField({ label, selected, help, options }) {
  * @param {object} [options.disabled]
  * @param {object} [options.help]
  * @param {object} options.copyCallback
- * @returns {OoUiActionFieldLayout}
+ * @returns {external:OoUiActionFieldLayout}
  */
 export function copyActionField({ label, value, disabled = false, help, copyCallback }) {
   const input = new OO.ui.TextInputWidget({ value, disabled });

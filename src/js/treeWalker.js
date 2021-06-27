@@ -15,13 +15,13 @@ export class TreeWalker {
   /**
    * Create a tree walker.
    *
-   * @param {Node} root Node that limits where the tree walker can go within this document's tree:
+   * @param {Node|external:Node} root Node that limits where the tree walker can go within this document's tree:
    *   only the root node and its descendants.
    * @param {Function} [acceptNode] Function that returns `true` if the tree walker should accept
    *   the node, and `false` if it should reject.
    * @param {boolean} [onlyElementNodes=false] Walk only on element nodes, ignoring nodes of other
    *   types.
-   * @param {Node} [startNode=root] Node to set as a current node.
+   * @param {Node|external:Node} [startNode=root] Node to set as a current node.
    */
   constructor(root, acceptNode, onlyElementNodes = false, startNode = root) {
     this.acceptNode = acceptNode;
@@ -167,7 +167,7 @@ export class ElementsTreeWalker extends TreeWalker {
   /**
    * Create an element {@link module:treeWalker.TreeWalker tree walker}.
    *
-   * @param {Node} [startNode]
+   * @param {Node|external:Node} [startNode]
    */
   constructor(startNode) {
     super(cd.g.rootElement, null, true);
@@ -187,7 +187,7 @@ export class ElementsAndTextTreeWalker extends TreeWalker {
   /**
    * Create an element and text {@link module:treeWalker.TreeWalker tree walker}.
    *
-   * @param {Node} [startNode]
+   * @param {Node|external:Node} [startNode]
    */
   constructor(startNode) {
     super(

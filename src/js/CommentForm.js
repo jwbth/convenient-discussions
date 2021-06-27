@@ -150,6 +150,7 @@ function listMarkupToTags(code) {
  *
  * @param {string} code
  * @returns {string[]}
+ * @private
  */
 function extractCommentAnchors(code) {
   const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
@@ -318,9 +319,9 @@ export default class CommentForm {
   }
 
   /**
-   * Test if a comment or section exists in the code.
+   * Test if a comment or section exists in the wikitext.
    *
-   * @returns {JQuery.Promise}
+   * @returns {external:JQueryPromise}
    */
   checkCode() {
     if (!this.checkCodeRequest) {
@@ -328,7 +329,7 @@ export default class CommentForm {
        * Request to test if a comment or section exists in the code made by {@link
        * module:CommentForm#checkCode}.
        *
-       * @type {JQuery.Promise|undefined}
+       * @type {external:JQueryPromise|undefined}
        */
       this.checkCodeRequest = this.target.getCode(this).catch((e) => {
         if (e instanceof CdError) {
@@ -350,6 +351,7 @@ export default class CommentForm {
    *
    * @param {Comment|Section|Page} target
    * @throws {CdError}
+   * @private
    */
   setTargets(target) {
     /**
@@ -674,7 +676,9 @@ export default class CommentForm {
     this.$messageArea = $('<div>').addClass('cd-messageArea');
 
     /**
-     * @typedef {object} OoUiTextInputWidget
+     * OOUI text input widget
+     * 
+     * @external OoUiTextInputWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
      */
 
@@ -694,7 +698,7 @@ export default class CommentForm {
       /**
        * Headline input.
        *
-       * @type {OoUiTextInputWidget|undefined}
+       * @type {external:OoUiTextInputWidget|undefined}
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
@@ -735,14 +739,16 @@ export default class CommentForm {
     }
 
     /**
-     * @typedef {object} OoUiMultilineTextInputWidget
+     * OOUI multiline text input widget
+     * 
+     * @external OoUiMultilineTextInputWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
      */
 
     /**
      * Comment input.
      *
-     * @type {OoUiMultilineTextInputWidget}
+     * @type {external:OoUiMultilineTextInputWidget}
      */
     this.commentInput = new OO.ui.MultilineTextInputWidget({
       value: dataToRestore ? dataToRestore.comment : '',
@@ -765,7 +771,7 @@ export default class CommentForm {
     /**
      * Edit summary input.
      *
-     * @type {OoUiTextInputWidget}
+     * @type {external:OoUiTextInputWidget}
      */
     this.summaryInput = new OO.ui.TextInputWidget({
       value: dataToRestore ? dataToRestore.summary : '',
@@ -785,22 +791,12 @@ export default class CommentForm {
      */
     this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
 
-    /**
-     * @typedef {object} OoUiFieldLayout
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
-     */
-
-    /**
-     * @typedef {object} OoUiCheckboxInputWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
-     */
-
     if (this.mode === 'edit') {
       /**
        * Minor change checkbox field.
        *
        * @name minorField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -808,7 +804,7 @@ export default class CommentForm {
        * Minor change checkbox.
        *
        * @name minorCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
       [this.minorField, this.minorCheckbox] = checkboxField({
@@ -829,7 +825,7 @@ export default class CommentForm {
      * Watch page checkbox field.
      *
      * @name watchField
-     * @type {OoUiFieldLayout}
+     * @type {external:OoUiFieldLayout}
      * @instance
      */
 
@@ -837,7 +833,7 @@ export default class CommentForm {
      * Watch page checkbox.
      *
      * @name watchCheckbox
-     * @type {OoUiCheckboxInputWidget}
+     * @type {external:OoUiCheckboxInputWidget}
      * @instance
      */
     [this.watchField, this.watchCheckbox] = checkboxField({
@@ -862,7 +858,7 @@ export default class CommentForm {
        * Watch section checkbox field.
        *
        * @name watchSectionField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -870,7 +866,7 @@ export default class CommentForm {
        * Watch section checkbox.
        *
        * @name watchSectionCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
       [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
@@ -887,7 +883,7 @@ export default class CommentForm {
        * Omit signature checkbox field.
        *
        * @name omitSignatureField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -895,7 +891,7 @@ export default class CommentForm {
        * Omit signature checkbox.
        *
        * @name omitSignatureCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
 
@@ -921,7 +917,7 @@ export default class CommentForm {
        * Delete checkbox field.
        *
        * @name deleteField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -929,7 +925,7 @@ export default class CommentForm {
        * Delete checkbox.
        *
        * @name deleteCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
       [this.deleteField, this.deleteCheckbox] = checkboxField({
@@ -941,14 +937,16 @@ export default class CommentForm {
     }
 
     /**
-     * @typedef {object} OoUiHorizontalLayout
+     * OOUI horizontal layout
+     * 
+     * @external OoUiHorizontalLayout
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
      */
 
     /**
      * Checkboxes area.
      *
-     * @type {OoUiHorizontalLayout}
+     * @type {external:OoUiHorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
       classes: ['cd-commentForm-checkboxes'],
@@ -992,14 +990,16 @@ export default class CommentForm {
     this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
 
     /**
-     * @typedef {object} OoUiButtonWidget
+     * OOUI button widget
+     * 
+     * @external OoUiButtonWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
      */
 
     /**
      * Toggle advanced section button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
@@ -1015,14 +1015,16 @@ export default class CommentForm {
     }
 
     /**
-     * @typedef {object} OoUiPopupButtonWidget
+     * OOUI popup button widget
+     * 
+     * @external OoUiPopupButtonWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
      */
 
     /**
      * Help button.
      *
-     * @type {OoUiPopupButtonWidget}
+     * @type {external:OoUiPopupButtonWidget}
      */
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
@@ -1062,7 +1064,7 @@ export default class CommentForm {
     /**
      * Cancel button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.cancelButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-cancel'),
@@ -1075,7 +1077,7 @@ export default class CommentForm {
     /**
      * View changes button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
@@ -1086,7 +1088,7 @@ export default class CommentForm {
     /**
      * Preview button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
@@ -1100,7 +1102,7 @@ export default class CommentForm {
     /**
      * Submit button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
@@ -1211,6 +1213,12 @@ export default class CommentForm {
     }
   }
 
+  /**
+   * Make a parse request with the transclusion code of edit notices and edit intro and add the
+   * result to the message area.
+   *
+   * @private
+   */
   addEditNotices() {
     const title = cd.g.PAGE.title.replace(/\//g, '-');
     let code = (
@@ -1252,6 +1260,11 @@ export default class CommentForm {
     });
   }
 
+  /**
+   * Load the edited comment to the comment form.
+   *
+   * @private
+   */
   loadComment() {
     const currentOperation = this.registerOperation({ type: 'load' });
     this.target.getCode(true).then(
@@ -1293,6 +1306,12 @@ export default class CommentForm {
     );
   }
 
+  /**
+   * Load the content of a preload template (`preload` parameter of the URL or a POST request) to
+   * the comment input.
+   *
+   * @private
+   */
   preloadTemplate() {
     const currentOperation = this.registerOperation({
       type: 'load',
@@ -1354,6 +1373,8 @@ export default class CommentForm {
 
   /**
    * Insert the form into the DOM.
+   *
+   * @private
    */
   addToPage() {
     if (this.mode === 'replyInSection') {
@@ -1458,6 +1479,8 @@ export default class CommentForm {
 
   /**
    * Add events to form elements.
+   *
+   * @private
    */
   addEvents() {
     const saveSessionEventHandler = () => {
@@ -1645,6 +1668,8 @@ export default class CommentForm {
 
   /**
    * Initialize autocomplete using {@link https://github.com/zurb/tribute Tribute}.
+   *
+   * @private
    */
   initAutocomplete() {
     let commentsInSection = [];
@@ -1719,16 +1744,15 @@ export default class CommentForm {
 
   /**
    * Show or hide the advanced section.
+   *
+   * @private
    */
   toggleAdvanced() {
     if (this.$advanced.is(':hidden')) {
       this.$advanced.show();
       const value = this.summaryInput.getValue();
       const match = value.match(/^.+?\*\/ */);
-
-      // This is needed due to a bug in Firefox 56.
       focusInput(this.summaryInput);
-
       this.summaryInput.selectRange(match ? match[0].length : 0, value.length);
     } else {
       this.$advanced.hide();
@@ -1737,7 +1761,7 @@ export default class CommentForm {
   }
 
   /**
-   * Adjust button labels according to the form width: if the form is to narrow, the labels will
+   * Adjust the button labels according to the form width: if the form is to narrow, the labels will
    * shrink.
    */
   adjustLabels() {
@@ -2054,7 +2078,7 @@ export default class CommentForm {
         const navigateToEditUrl = async (e) => {
           if (e.ctrlKey || e.shiftKey || e.metaKey) return;
           e.preventDefault();
-          if (await this.confirmClose()) {
+          if (this.confirmClose()){
             this.forget();
             location.assign(editUrl);
           }
@@ -2062,7 +2086,7 @@ export default class CommentForm {
         message = wrap(message, {
           callbacks: {
             'cd-message-reloadPage': async () => {
-              if (await this.confirmClose()) {
+              if (this.confirmClose()) {
                 this.reloadPage();
               }
             },
@@ -2470,8 +2494,16 @@ export default class CommentForm {
     return code;
   }
 
+  /**
+   * Add anchor code to comments linked from the comment.
+   *
+   * @param {string} wholeCode Code of the section or page.
+   * @param {string[]} commentAnchors
+   * @returns {string} New code of the section or page.
+   * @throws {CdError}
+   * @private
+   */
   addAnchorsToComments(wholeCode, commentAnchors) {
-    // Add anchor code to comments linked from the comment.
     commentAnchors.forEach((anchor) => {
       const comment = Comment.getByAnchor(anchor);
       if (comment) {
@@ -2491,10 +2523,10 @@ export default class CommentForm {
         const commentCode = headingCode + commentCodePart + commentInCode.signatureDirtyCode;
 
         wholeCode = comment.modifyWholeCode({
-          wholeCode,
-          thisInCode: commentInCode,
           action: 'edit',
           commentCode,
+          wholeCode,
+          thisInCode: commentInCode,
         });
       } else if (!$('#' + anchor).length) {
         throw new CdError({
@@ -2512,7 +2544,7 @@ export default class CommentForm {
    * Prepare the new section or page code based on the comment form input and handle errors.
    *
    * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {string}
+   * @returns {Promise.<string>}
    * @private
    */
   async prepareWholeCode(action) {
@@ -2587,6 +2619,7 @@ export default class CommentForm {
    * @param {Operation} operation
    * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
    * @returns {Operation}
+   * @private
    */
   registerOperation(operation, clearMessages = true) {
     this.operations.push(operation);
@@ -2601,10 +2634,11 @@ export default class CommentForm {
   }
 
   /**
-   * Mark the operation as closed if it is not. Should be done when the operation has finished
-   * (either successfully or not).
+   * Mark an operation as closed if it is not. Should be done when an operation has finished (either
+   * successfully or not).
    *
    * @param {Operation} operation
+   * @private
    */
   closeOperation(operation) {
     if (operation.isClosed) return;
@@ -2629,6 +2663,7 @@ export default class CommentForm {
    *
    * @param {Operation} operation
    * @returns {boolean}
+   * @private
    */
   closeOperationIfNecessary(operation) {
     if (operation.isClosed) {
@@ -2650,6 +2685,7 @@ export default class CommentForm {
    * Remove the operation from the registry of operations.
    *
    * @param {Operation} operation
+   * @private
    */
   unregisterOperation(operation) {
     removeFromArrayIfPresent(this.operations, operation);
@@ -2676,7 +2712,7 @@ export default class CommentForm {
    *   inputs are empty.
    * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has
    *   `cd.settings.autopreview` as `true`).
-   * @param {boolean} [operation] Operation object when the function is called from within itself,
+   * @param {Operation} [operation] Operation object when the function is called from within itself,
    *   being delayed.
    * @fires previewReady
    */
@@ -2953,7 +2989,7 @@ export default class CommentForm {
    *
    * @param {object} options
    * @param {boolean} options.doDelete
-   * @returns {boolean}
+   * @returns {Promise.<boolean>}
    * @private
    */
   async runChecks({ doDelete }) {
@@ -3015,7 +3051,7 @@ export default class CommentForm {
    *
    * @param {string} code
    * @param {Operation} currentOperation
-   * @returns {?object}
+   * @returns {Promise.<object|null>}
    * @private
    */
   async editPage(code, currentOperation) {
@@ -3090,6 +3126,13 @@ export default class CommentForm {
     return result;
   }
 
+  /**
+   * Generate a comment anchor to jump to after the page is reloaded, taking possible collisions
+   * into account.
+   *
+   * @param {string} editTimestamp
+   * @returns {string}
+   */
   generateFutureCommentAnchor(editTimestamp) {
     const date = new Date(editTimestamp);
 
@@ -3216,8 +3259,8 @@ export default class CommentForm {
       $('#ca-unwatch').attr('id', 'ca-watch');
     }
 
-    // Generate an anchor for the comment to jump to, taking possible collisions into account.
     if (!doDelete) {
+    // Generate an anchor for the comment to jump to.
       passedData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
         this.generateFutureCommentAnchor(editTimestamp);
@@ -3237,7 +3280,7 @@ export default class CommentForm {
    *
    * @returns {boolean}
    */
-  async confirmClose() {
+  confirmClose() {
     return !this.isAltered() || confirm(cd.s('cf-confirm-close'));
   }
 
@@ -3249,7 +3292,7 @@ export default class CommentForm {
   async cancel(confirmClose = true) {
     if (isPageOverlayOn() || this.isBeingSubmitted()) return;
 
-    if (confirmClose && !(await this.confirmClose())) {
+    if (confirmClose && !confirmClose()) {
       focusInput(this.commentInput);
       return;
     }

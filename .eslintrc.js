@@ -8,7 +8,6 @@ module.exports = {
   "globals": {
     "$": "readonly",
     "CONFIG_FILE_NAME": "readonly",
-    "DataNode": "readonly",
     "IS_TEST": "readonly",
     "IS_SINGLE": "readonly",
     "LANG_CODE": "readonly",
@@ -28,8 +27,8 @@ module.exports = {
       "files": ["./*.js"],
       "rules": {
         "jsdoc/require-jsdoc": "off",
-      }
-    }
+      },
+    },
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -74,9 +73,7 @@ module.exports = {
         "Comment",
         "CommentSkeleton",
         "CommentForm",
-        "Element",
         "JQuery",
-        "Node",
         "Page",
         "Parser",
         "Section",

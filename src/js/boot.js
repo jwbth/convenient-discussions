@@ -51,6 +51,8 @@ let saveSessionLastTime;
 
 /**
  * Initiate user settings.
+ * 
+ * @private
  */
 export async function initSettings() {
   /**
@@ -187,6 +189,7 @@ export async function initSettings() {
  * Assign the properties related to `convenientDiscussions.g.$contentColumn`.
  *
  * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
+ * @private
  */
 export function setContentColumnGlobals(setCssVar) {
   const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
@@ -213,6 +216,8 @@ export function setContentColumnGlobals(setCssVar) {
 
 /**
  * Assign some important skin-specific values to the properties of the global object.
+ * 
+ * @private
  */
 export function memorizeCssValues() {
   cd.g.CONTENT_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
@@ -266,6 +271,8 @@ export function setTalkPageCssVariables() {
 /**
  * Set a {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance to
  * `convenientDiscussions.g.api` if it's not already set.
+ * 
+ * @private
  */
 export function createApi() {
   cd.g.api = cd.g.api || new mw.Api({
@@ -793,6 +800,7 @@ function initOouiAndElementPrototypes() {
  *
  * @param {Promise[]} siteDataRequests Array of requests returned by {@link
  *   module:siteData.loadSiteData}.
+ * @private
  */
 export async function init(siteDataRequests) {
   createApi();
@@ -856,7 +864,7 @@ async function updatePageContent(passedData) {
 let $loadingPopup;
 
 /**
- * Check if the "showLoadingOverlay" setting is off. We create a separate function for this because
+ * Check if the `showLoadingOverlay` setting is off. We create a separate function for this because
  * this check has to be performed before the settings object is filled.
  *
  * @returns {boolean}
@@ -878,12 +886,14 @@ function isShowLoadingOverlaySettingOff() {
  * `convenientDiscussions.g.isPageBeingReloaded`.
  *
  * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
+ * @private
  */
 export function startLoading(isReload = false) {
   if (isReload) {
     /**
      * Is the page being reloaded now.
      *
+     * @name isPageBeingReloaded
      * @type {boolean}
      * @memberof module:cd~convenientDiscussions.g
      */
@@ -893,6 +903,7 @@ export function startLoading(isReload = false) {
      * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
      * script's refresh functionality).
      *
+     * @name isFirstRun
      * @type {boolean}
      * @memberof module:cd~convenientDiscussions.g
      */
@@ -921,6 +932,7 @@ export function startLoading(isReload = false) {
  * Remove the loading overlay and update some state properties of the global object.
  *
  * @param {boolean} [updatePageState=true] Update the state properties of the global object.
+ * @private
  */
 export function finishLoading(updatePageState = true) {
   if (updatePageState) {
@@ -934,7 +946,7 @@ export function finishLoading(updatePageState = true) {
 }
 
 /**
- * Is page loading (the loading overlay is on).
+ * Is the page loading (the loading overlay is on).
  *
  * @returns {boolean}
  */
@@ -1037,6 +1049,7 @@ export async function reloadPage(passedData = {}) {
  * Handle firings of the hook `'wikipage.content'` (by using `mw.hook('wikipage.content').fire()`).
  *
  * @param {JQuery} $content
+ * @private
  */
 export function handleHookFirings($content) {
   if ($content.is('#mw-content-text')) {
@@ -1070,6 +1083,7 @@ function cleanUpSessions(data) {
  * browser has crashed.)
  *
  * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
+ * @private
  */
 export function saveSession(force) {
   const save = () => {
@@ -1203,6 +1217,7 @@ function restoreCommentFormsFromData(commentFormsData) {
  *
  * @param {boolean} isPageReloadedExternally Is the page reloaded due to a `'wikipage.content`
  *   firing.
+ * @private
  */
 export function restoreCommentForms(isPageReloadedExternally) {
   if (cd.g.isFirstRun || isPageReloadedExternally) {
@@ -1298,9 +1313,9 @@ export function addNotification(params, data = {}) {
 }
 
 /**
- * Get all notifications added to the registry (including already hidden). The {@link
- * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ Notification} object
- * will be in the `notification` property.
+ * Get all notifications added to the registry (including already hidden). The
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ mw.Notification}
+ * object will be in the `notification` property.
  *
  * @returns {object[]}
  */
@@ -1323,6 +1338,13 @@ export function closeNotifications(smooth = true) {
   notificationsData = [];
 }
 
+/**
+ * Show a popup asking the user if they want to enable the new comment formatting. Save the settings
+ * after they make the choice.
+ * 
+ * @returns {Promise.<boolean>} Did the user enable comment reformatting.
+ * @private
+ */
 export async function suggestEnableCommentReformatting() {
   if (cd.settings.reformatComments === null) {
     const settings = await getSettings({ reuse: true });
@@ -1386,10 +1408,11 @@ export async function suggestEnableCommentReformatting() {
 }
 
 /**
- * Ask the user if they want to receive desktop notifications on first run and ask for a permission
- * if it is default but the user has desktop notifications enabled (for example, if he/she is using
- * a browser different from where he/she has previously used).
- *
+ * Show a popup asking the user if they want to receive desktop notifications, or ask for a
+ * permission if it has not been granted but the user has desktop notifications enabled (for
+ * example, if they are using a browser different from where they have previously used). Save the
+ * settings after they make the choice.
+ * 
  * @private
  */
 export async function confirmDesktopNotifications() {

@@ -54,11 +54,32 @@ function setAlarm(interval) {
 }
 
 /**
+ * DomHandler's node
+ * 
+ * @external Node
+ * @see https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L18
+ */
+
+/**
+ * DomHandler's data node
+ * 
+ * @external DataNode
+ * @see https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L84
+ */
+
+/**
+ * DomHandler's element
+ * 
+ * @external Element
+ * @see https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L200
+ */
+
+/**
  * Replace a comment element with a marker.
  *
- * @param {Element} el
+ * @param {external:Element} el
  * @param {CommentSkeleton} comment
- * @returns {DataNode|undefined}
+ * @returns {external:DataNode|undefined}
  * @private
  */
 function hideElement(el, comment) {
@@ -107,7 +128,7 @@ function keepSafeValues(obj, dangerousKeys) {
 /**
  * Remove the element's attributes whose names start with "data-".
  *
- * @param {Element} element
+ * @param {external:Element} element
  * @private
  */
 function removeDataAttributes(element) {

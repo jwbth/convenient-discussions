@@ -25,7 +25,9 @@ import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './ap
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
 
 /**
- * Create an OOUI window manager. It is supposed to be reused across the script.
+ * Create a OOUI window manager. It is supposed to be reused across the script.
+ * 
+ * @private
  */
 export function createWindowManager() {
   if (cd.g.windowManager) return;
@@ -41,16 +43,18 @@ export function createWindowManager() {
 
 /**
  * Display a OOUI message dialog where user is asked to confirm something. Compared to
- * `OO.ui.confirm`, returns an action string, not a boolean (which helps to differentiate between
- * more than two types of answer and also a window close by pressing Esc).
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
+ * returns an action string, not a boolean (which helps to differentiate between more than two types
+ * of answer and also a window close by pressing Esc).
  *
  * @param {JQuery|string} message
  * @param {object} [options={}]
- * @returns {boolean}
+ * @returns {Promise.<Array>}
  */
 export async function confirmDialog(message, options = {}) {
   const defaultOptions = {
     message,
+    
     // OO.ui.MessageDialog standard
     actions: [
       {
@@ -79,7 +83,7 @@ export async function confirmDialog(message, options = {}) {
 /**
  * Check if there are unsaved changes in a process dialog.
  *
- * @param {OoUiProcessDialog} dialog
+ * @param {external:OoUiProcessDialog} dialog
  * @returns {boolean}
  * @private
  */
@@ -89,14 +93,16 @@ function isUnsaved(dialog) {
 }
 
 /**
- * @typedef {object} OoUiProcessDialog
+ * OOUI process dialog
+ * 
+ * @external OoUiProcessDialog
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
  */
 
 /**
  * Confirm closing a process dialog.
  *
- * @param {OoUiProcessDialog} dialog
+ * @param {external:OoUiProcessDialog} dialog
  * @param {string} dialogCode
  * @private
  */
@@ -110,7 +116,7 @@ async function confirmCloseDialog(dialog, dialogCode) {
 /**
  * Standard process dialog error handler.
  *
- * @param {OoUiProcessDialog} dialog
+ * @param {external:OoUiProcessDialog} dialog
  * @param {CdError|Error} e
  * @param {string} messageName
  * @param {boolean} recoverable
@@ -1120,7 +1126,7 @@ function copyLinkToClipboardAndNotify(text) {
 }
 
 /**
- * Copy a link to the object or show a copy link dialog.
+ * Show a copy link dialog.
  *
  * @param {Comment|Section} object Comment or section to copy a link to.
  * @param {Event} e
@@ -1294,6 +1300,7 @@ export async function copyLink(object, e) {
  * @param {string} [content[].headline]
  * @param {string} content[].comment
  * @param {string} content[].summary
+ * @private
  */
 export function rescueCommentFormsContent(content) {
   const text = content
@@ -1330,8 +1337,9 @@ export function rescueCommentFormsContent(content) {
  * Show a message at the top of the page that a section/comment was not found, a link to search in
  * the archive, and optionally a link to the section/comment if it was found automatically.
  *
- * @param {string} decodedFragment
- * @param {Date} date
+ * @param {string} decodedFragment Decoded fragment.
+ * @param {Date} date Comment date, if there is a comment anchor in the fragment.
+ * @private
  */
 export async function notFound(decodedFragment, date) {
   let label;

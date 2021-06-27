@@ -319,7 +319,7 @@ export default class Page {
    * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
    *   when the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
-   * @returns {object}
+   * @returns {Promise.<object>}
    * @throws {CdError}
    */
   async parse(customOptions, requestInBackground = false, markAsRead = false) {
@@ -363,7 +363,7 @@ export default class Page {
    * @param {object} [customOptions={}]
    * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
    *   when the tab is in the background.
-   * @returns {Array}
+   * @returns {Promise.<Array>}
    */
   async getRevisions(customOptions = {}, requestInBackground = false) {
     const defaultOptions = {
@@ -394,8 +394,8 @@ export default class Page {
    * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
    *
    * @param {object} options
-   * @param {string} options.commentCode
-   * @param {CommentForm} options.commentForm
+   * @param {string} options.commentCode Comment code.
+   * @param {CommentForm} options.commentForm Comment form that has the code.
    * @returns {string}
    */
   modifyWholeCode({ commentCode, commentForm }) {
@@ -424,7 +424,8 @@ export default class Page {
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
    * @param {object} customOptions
-   * @returns {number|string} Unix time of the edit or `'nochange'` if nothing has changed.
+   * @returns {Promise.<number|string>} Unix time of the edit or `'nochange'` if nothing has
+   * changed.
    */
   async edit(customOptions) {
     const defaultOptions = {

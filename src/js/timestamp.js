@@ -71,6 +71,8 @@ export const relativeTimeThresholds = [
 
 /**
  * Prepare `dayjs` object for further use (add plugins and a locale).
+ *
+ * @private
  */
 export function initDayjs() {
   const locale = cd.i18n[cd.g.USER_LANGUAGE].dayjsLocale;
@@ -181,7 +183,6 @@ function getTimestampMainPartPattern(format, digits) {
  * This calls `getTimestampMainPartPattern()` with data for the current wiki.
  *
  * @private
- *
  */
 function setLocalTimestampRegexps() {
   const digitsPattern = cd.g.CONTENT_DIGITS ? `[${cd.g.CONTENT_DIGITS}]` : '\\d';
@@ -294,6 +295,8 @@ function setMatchingGroupsForLocalTimestampParser() {
 
 /**
  * Set the global variables related to timestamp parsing.
+ *
+ * @private
  */
 export function initTimestampParsingTools() {
   setLocalTimestampRegexps();

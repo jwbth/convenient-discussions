@@ -27,8 +27,8 @@ export function generateTagsRegexp(tags) {
 }
 
 /**
- * Conceal HTML comments (`<!-- -->`), `&lt;nowiki&gt;`, `&lt;syntaxhighlight&gt;`,
- * `&lt;source&gt;`, and `&lt;pre&gt;` tags content, left-to-right and right-to-left marks, and also
+ * Conceal HTML comments (`<!-- -->`), `<nowiki>`, `<syntaxhighlight>`,
+ * `<source>`, and `<pre>` tags content, left-to-right and right-to-left marks, and also
  * newlines inside some tags (`<br\n>`) in the code.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
@@ -364,7 +364,11 @@ export function extractSignatures(code) {
 /**
  * Decode HTML entities in a string.
  *
- * It should work as fast as possible, so we use `String#indexOf`, not `String#includes`.
+ * It should work as fast as possible, so we use {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf
+ * String#indexOf}, not {@link
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
+ * String#includes}.
  *
  * @param {string} s
  * @returns {string}
@@ -397,11 +401,11 @@ export function decodeHtmlEntities(s) {
  * Hide templates taking into account nested ones.
  *
  * @param {string} code
- * @param {Array} [hidden] Array with texts replaced by markers. Not required if `concealFirstMode`
- *   is `true`.
- * @param {number|undefined} [markerLength] Instead of putting markers in place of templates, fill
- *   the space that the first met template occupies with spaces, and put the specified number of
- *   marker characters at the first positions.
+ * @param {string[]} [hidden] Array with texts replaced by markers. Not required if
+ *   `concealFirstMode` is `true`.
+ * @param {number} [markerLength] Instead of putting markers in place of templates, fill the space
+ *   that the first met template occupies with spaces, and put the specified number of marker
+ *   characters at the first positions.
  * @returns {HideSensitiveCodeReturn}
  */
 export function hideTemplatesRecursively(code, hidden, markerLength) {
@@ -441,7 +445,7 @@ export function hideTemplatesRecursively(code, hidden, markerLength) {
 }
 
 /**
- * Replace code that should not be modified when processing it with placeholders.
+ * Replace code, that should not be modified when processing it, with placeholders.
  *
  * @param {string} code
  * @returns {HideSensitiveCodeReturn}
@@ -478,7 +482,7 @@ export function hideSensitiveCode(code) {
 }
 
 /**
- * Modify or leave unchanged the string to have two newlines in the end of it.
+ * Modify a string or leave it unchanged so that is has two newlines at the end of it.
  *
  * @param {string} code
  * @returns {string}

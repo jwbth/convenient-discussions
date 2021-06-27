@@ -28,8 +28,7 @@ export default {
    * they've changed.
    *
    * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
-   * @param {boolean} [redrawAll] Whether to redraw all underlays and not stop at first three
-   *   unmoved.
+   * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
    */
   redrawIfNecessary(removeUnhighlighted = false, redrawAll = false) {
     if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
@@ -111,7 +110,9 @@ export default {
   },
 
   /**
-   * Empty the underlay registry and the layers container elements.
+   * Empty the underlay registry and the layers container elements. Done on page reload.
+   * 
+   * @private
    */
   reset() {
     this.underlays = [];

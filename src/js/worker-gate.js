@@ -1,5 +1,5 @@
 /**
- * Module created to workaround Chrome's bug {@link
+ * Module created to work around Chrome's bug {@link
  * https://bugs.chromium.org/p/chromium/issues/detail?id=1111297} that prevents opening the source
  * code of the worker in that browser.
  *

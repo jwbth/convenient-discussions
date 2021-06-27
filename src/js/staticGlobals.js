@@ -218,6 +218,7 @@ export default {
    * `conveneintDiscussions.settings.reformatComments` is turned on.
    *
    * @type {Array}
+   * @memberof module:cd~convenientDiscussions.g
    */
   BAD_HIGHLIGHTABLE_ELEMENTS: ['BLOCKQUOTE', 'DL', 'FORM', 'HR', 'OL', 'PRE', 'TABLE', 'UL'],
 

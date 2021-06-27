@@ -45,15 +45,22 @@ export function makeBackgroundRequest(params, method = 'post') {
 }
 
 /**
+ * jQuery promise
+ * 
+ * @external JQueryPromise
+ * @see https://api.jquery.com/Types/#Promise
+ */
+
+/**
  * Make a parse request with arbitrary code. We assume that if something is parsed, it will be
  * shown, so we automatically load modules.
  *
  * @param {string} code
  * @param {object} [customOptions]
- * @returns {Promise}
+ * @returns {external:JQueryPromise}
  * @throws {CdError}
  */
-export async function parseCode(code, customOptions) {
+export function parseCode(code, customOptions) {
   const defaultOptions = {
     action: 'parse',
     text: code,
@@ -150,7 +157,7 @@ export function getUserInfo(reuse = false) {
  *
  * @param {string} errorCode
  * @param {string} [errorInfo]
- * @returns {string}
+ * @returns {Promise.<string>}
  * @private
  */
 export async function unknownApiErrorText(errorCode, errorInfo) {
@@ -174,7 +181,7 @@ export async function unknownApiErrorText(errorCode, errorInfo) {
  * Get page titles for an array of page IDs.
  *
  * @param {number[]} pageIds
- * @returns {object[]}
+ * @returns {Promise.<object[]>}
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
@@ -215,7 +222,7 @@ export async function getPageTitles(pageIds) {
  * Get page IDs for an array of page titles.
  *
  * @param {string[]} pageTitles
- * @returns {object[]}
+ * @returns {Promise.<object[]>}
  * @throws {CdError}
  */
 export async function getPageIds(pageTitles) {
@@ -546,6 +553,12 @@ export function getRelevantTemplateNames(text) {
   return promise;
 }
 
+/**
+ * Get existence of a list of pages by title.
+ * 
+ * @param {string[]} titles Titles to check existence of.
+ * @returns {Promise.<object>}
+ */
 export async function getPagesExistence(titles) {
   const results = {};
   const normalized = [];

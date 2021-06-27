@@ -180,9 +180,10 @@ function cleanUpSeenRenderedChanges(data) {
 
 /**
  * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a web
- * worker so its constuctor is lost.)
+ * worker so its constructor is lost.)
  *
  * @typedef {object} SectionSkeletonLike
+ * @private
  */
 
 /**
@@ -226,9 +227,10 @@ function mapSections(otherSections) {
 
 /**
  * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
- * worker so its constuctor is lost.)
+ * worker so its constructor is lost.)
  *
  * @typedef {object} CommentSkeletonLike
+ * @private
  */
 
 /**
@@ -438,7 +440,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
   delete seenRenderedChanges[articleId];
   saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
 
-  // TODO: Remove in September 2021 (3 months after renaming)
+  // TODO: Remove in October 2021 (3 months after renaming)
   mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 }
 
@@ -879,6 +881,7 @@ const updateChecker = {
    * @param {Promise} visitsRequest
    * @param {object} passedData
    * @memberof module:updateChecker
+   * @private
    */
   async init(visitsRequest, passedData) {
     if (!cd.g.worker) return;
@@ -911,8 +914,9 @@ const updateChecker = {
    * Process the current page in a web worker.
    *
    * @param {number} [revisionToParseId]
-   * @returns {object}
+   * @returns {Promise.<object>}
    * @memberof module:updateChecker
+   * @private
    */
   async processPage(revisionToParseId) {
     if (revisionData[revisionToParseId]) {
@@ -969,6 +973,7 @@ const updateChecker = {
    * @param {number} newCommentsCount
    * @param {boolean} areThereInteresting
    * @memberof module:updateChecker
+   * @private
    */
   updatePageTitle(newCommentsCount, areThereInteresting) {
     const interestingMark = areThereInteresting ? '*' : '';

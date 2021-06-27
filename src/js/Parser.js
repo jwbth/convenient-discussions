@@ -70,12 +70,13 @@ function getPageNameFromUrl(url) {
  * @typedef {object} ProcessLinkReturn
  * @param {string} 1 User name.
  * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`).
+ * @private
  */
 
 /**
  * Get a user name from a link, along with some other data about a page name.
  *
- * @param {Element} element
+ * @param {Element|external:Element} element
  * @returns {?ProcessLinkReturn}
  * @private
  */
@@ -132,7 +133,7 @@ export function processLink(element) {
 /**
  * Determine whether the provided element is a cell of a table containing multiple signatures.
  *
- * @param {Element} element
+ * @param {Element|external:Element} element
  * @returns {boolean}
  * @private
  */
@@ -179,7 +180,7 @@ export default class Parser {
   /**
    * Create a comment instance.
    *
-   * @param {Element} signature
+   * @param {Element|external:Element} signature
    * @returns {*}
    */
   createComment(signature) {
@@ -189,7 +190,7 @@ export default class Parser {
   /**
    * Create a section instance.
    *
-   * @param {Element} headingElement
+   * @param {Element|external:Element} headingElement
    * @param {Promise} watchedSectionsRequest
    * @returns {*}
    */
@@ -199,18 +200,16 @@ export default class Parser {
 
   /**
    * @typedef {object} Timestamp
-   * @property {Element} element
+   * @property {Element|external:Element} element
    * @property {Date} date
-   */
-
-  /**
-   * @typedef {Timestamp[]} FindTimestampsReturn
+   * @private
    */
 
   /**
    * Find timestamps under the root element.
    *
-   * @returns {FindTimestampsReturn}
+   * @returns {Timestamp[]}
+   * @private
    */
   findTimestamps() {
     elementsToExclude = [
@@ -256,6 +255,7 @@ export default class Parser {
    *
    * @param {object[]} timestamps
    * @returns {object[]}
+   * @private
    */
   findSignatures(timestamps) {
     const signatures = timestamps
@@ -481,8 +481,9 @@ export default class Parser {
   /**
    * Collect the parts of the comment given a signature element.
    *
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
+   * @private
    */
   collectParts(signatureElement) {
     const treeWalker = new ElementsAndTextTreeWalker(signatureElement);
@@ -718,6 +719,7 @@ export default class Parser {
    *
    * @param {object[]} parts
    * @returns {object[]}
+   * @private
    */
   removeNestedParts(parts) {
     for (let i = parts.length - 1; i >= 0; i--) {
@@ -742,8 +744,9 @@ export default class Parser {
    * Wrap text and inline nodes into block elements.
    *
    * @param {object[]} parts
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
+   * @private
    */
   encloseInlineParts(parts, signatureElement) {
     const sequencesToBeEnclosed = [];
@@ -820,6 +823,7 @@ export default class Parser {
    *
    * @param {object[]} parts
    * @returns {object[]}
+   * @private
    */
   filterParts(parts) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
@@ -843,8 +847,9 @@ export default class Parser {
    * Replace list elements with collections of their items if appropriate.
    *
    * @param {object[]} parts
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
+   * @private
    */
   replaceListsWithItems(parts, signatureElement) {
     const lastPart = parts[parts.length - 1];
@@ -955,6 +960,7 @@ export default class Parser {
    *
    * @param {object[]} parts
    * @returns {object[]}
+   * @private
    */
   wrapNumberedList(parts) {
     if (parts.length > 1) {
@@ -1001,8 +1007,9 @@ export default class Parser {
   /**
    * Get the `.cd-commentLevel` elements up the DOM tree.
    *
-   * @param {Element} initialElement
-   * @returns {Element[]}
+   * @param {Element|external:Element} initialElement
+   * @returns {Element[]|external:Element[]}
+   * @private
    */
   getLevelsUpTree(initialElement) {
     const levelElements = [];
@@ -1027,7 +1034,8 @@ export default class Parser {
   /**
    * Get all headings on the page.
    *
-   * @returns {Element[]}
+   * @returns {Element[]|external:Element[]}
+   * @private
    */
   findHeadings() {
     // The worker context doesn't support .querySelector(), so we have to use

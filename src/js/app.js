@@ -69,14 +69,12 @@ if (IS_SINGLE) {
  * Get a language string.
  *
  * @param {string} name String name.
- * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for use in {{gender:}}).
- * @param {object} [options]
- * @param {boolean} [options.plain] Should the message be returned in a plain, not substituted,
- *   form.
- * @param {boolean} [options.parse] Should the message be returned in a parsed form. Wikilinks
- *   are replaced with HTML tags, the code is sanitized. Use this for strings that have their raw
- *   HTML inserted into the page.
+ * @param {...*} [params] String parameters (substituted strings, also
+ *   {@link module:userRegistry~User User} objects for use in `{{gender:}}`). The last parameter can
+ *   be an object that can have a boolean property `plain` (should the message be returned in a
+ *   plain, not substituted, form) or `parse` (should the message be returned in a parsed form). In
+ *   the `parse` form, wikilinks are replaced with HTML tags, the code is sanitized. Use this for
+ *   strings that have their raw HTML inserted into the page.
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
@@ -118,13 +116,13 @@ function s(name, ...params) {
  *
  *
  * @param {string} name String name.
- * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for use in {{gender:}}).
+ * @param {...*} [params] String parameters (substituted strings, also
+ *   {@link module:userRegistry~User User} objects for use in `{{gender:}}`).
  * @returns {?string}
  * @memberof module:cd~convenientDiscussions
  */
-function sParse(...args) {
-  return s(...args, { parse: true });
+function sParse(name, ...params) {
+  return s(name, ...params, { parse: true });
 }
 
 /**
@@ -148,8 +146,9 @@ function sPlain(name) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for use in {{gender:}}).
- * @param {object} [options]
+ *   module:userRegistry~User User} objects for use in {{gender:}}). The last parameter can be an
+ *   object that can have a string property `language`. If `language` is `'content'`, the returned
+ *   message will be in the content langage (not the interface language).
  * @returns {string}
  * @memberof module:cd~convenientDiscussions
  */

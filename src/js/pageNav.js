@@ -21,6 +21,8 @@ let backLinkLocation;
 export default {
   /**
    * Render the page navigation block. This is done when the page is first loaded.
+   *
+   * @private
    */
   mount() {
     this.$topElement = $('<div>')
@@ -38,6 +40,8 @@ export default {
 
   /**
    * Update or set the width of the page nagivation blocks.
+   *
+   * @private
    */
   updateWidth() {
     if (cd.g.$contentColumn.length) {
@@ -247,6 +251,7 @@ export default {
    * Reset the page navigation state partly or completely.
    *
    * @param {string} [part]
+   * @private
    */
   reset(part) {
     if (!part || part === 'top') {
@@ -268,6 +273,8 @@ export default {
 
   /**
    * Reset the current section variable and empty the contents of the current section block.
+   *
+   * @private
    */
   resetSections() {
     $sectionWithBackLink?.detach();

@@ -18,7 +18,10 @@ let cachedCommentsBySection;
 
 export default {
   /**
-   * Render the navigation panel. This is done when the page is first loaded or created.
+   * Render the navigation panel. This is done when the page is first loaded, or created using the
+   * script.
+   *
+   * @private
    */
   mount() {
     /**
@@ -114,6 +117,8 @@ export default {
 
   /**
    * Remove the navigation panel.
+   *
+   * @private
    */
   unmount() {
     this.$element.remove();
@@ -134,6 +139,8 @@ export default {
   /**
    * Reset the navigation panel to the initial state. This is done after page refreshes. (Comment
    * forms are expected to be restored already.)
+   *
+   * @private
    */
   reset() {
     this.$refreshButton.empty();
@@ -161,6 +168,7 @@ export default {
    * Perform routines at the refresh button click.
    *
    * @param {boolean} markAsRead Whether to mark all comments as read.
+   * @private
    */
   refreshClick(markAsRead) {
     // There was reload confirmation here, but after session restore was introduced, the
@@ -171,6 +179,13 @@ export default {
     });
   },
 
+  /**
+   * Generic function for {@link module:navPanel.goToPreviousNewComment} and {@link
+   * module:navPanel.goToNextNewComment}.
+   *
+   * @param {string} direction
+   * @private
+   */
   goToNewCommentInDirection(direction) {
     if (cd.g.isAutoScrollInProgress) return;
 
@@ -256,6 +271,7 @@ export default {
    * @param {number} commentCount
    * @param {Map} commentsBySection
    * @param {boolean} areThereInteresting
+   * @private
    */
   updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
     this.$refreshButton.empty();
@@ -342,12 +358,21 @@ export default {
     cd.debug.stopTimer('updateRefreshButtonTooltip');
   },
 
+  /**
+   * Update the tooltip of the {@link module:navPanel.$refreshButton refresh button}. This is called
+   * to update timestamps in the text.
+   *
+   * @private
+   */
   updateTimestampsInRefreshButtonTooltip() {
     this.updateRefreshButtonTooltip(cachedCommentCount, cachedCommentsBySection);
   },
 
   /**
-   * Update the state of the "Go to the first unseen comment" button.
+   * Update the state of the {@link module:navPanel.$firstUnseenButton "Go to the first unseen
+   * comment"} button.
+   *
+   * @private
    */
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
@@ -361,7 +386,10 @@ export default {
   },
 
   /**
-   * Update the "Go to the next comment form out of sight" button visibility.
+   * Update the {@link module:navPanel.$commentFormButton "Go to the next comment form out of
+   * sight"} button visibility.
+   *
+   * @private
    */
   updateCommentFormButton() {
     if (cd.g.isAutoScrollInProgress || !this.isMounted()) return;

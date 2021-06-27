@@ -657,7 +657,7 @@ export default {
    *
    * @type {?Function}
    * @kind function
-   * @param {Node} node
+   * @param {Node|external:Node} node
    * @param {object} context
    * @returns {boolean}
    * @default null
@@ -712,7 +712,7 @@ export default {
    * @kind function
    * @param {string} targetPageWikilink
    * @param {string} signature
-   * @returns {string|Array<string, string>}
+   * @returns {string|Array.<string, string>}
    * @default <pre class="prettyprint source"><code>function (targetPageWikilink, signature) {
    *   return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
    * }</code></pre>

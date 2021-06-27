@@ -48,6 +48,7 @@ class TocItem {
    * allowed in TOC.
    *
    * @param {JQuery} $headline
+   * @private
    */
   replaceText($headline) {
     const html = $headline
@@ -78,6 +79,8 @@ export default {
    * https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js
    * the native MediaWiki function} and exists because we may need to hide the TOC earlier than the
    * native method does it.
+   *
+   * @private
    */
   possiblyHide() {
     if (!cd.g.$toc.length) return;
@@ -88,7 +91,9 @@ export default {
   },
 
   /**
-   * Reset TOC data (executed at each page reload).
+   * Reset the TOC data (executed at each page reload).
+   *
+   * @private
    */
   reset() {
     tocItems = null;
@@ -124,6 +129,8 @@ export default {
 
   /**
    * Highlight (bold) watched sections.
+   *
+   * @private
    */
   highlightWatchedSections() {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -137,9 +144,10 @@ export default {
 
   /**
    * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a
-   * web worker so its constuctor is lost.)
+   * web worker so its constructor is lost.)
    *
    * @typedef {object} SectionSkeletonLike
+   * @private
    */
 
   /**
@@ -150,6 +158,7 @@ export default {
    * matched `Section` object.
    *
    * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
+   * @private
    */
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -271,9 +280,10 @@ export default {
 
   /**
    * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
-   * web worker so its constuctor is lost.)
+   * web worker so its constructor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
+   * @private
    */
 
   /**
@@ -282,6 +292,7 @@ export default {
    *
    * @param {CommentSkeletonLike[]|Comment[]} commentsBySection
    * @param {object} passedData
+   * @private
    */
   addNewComments(commentsBySection, passedData) {
     const firstComment = commentsBySection.values().next().value?.[0];

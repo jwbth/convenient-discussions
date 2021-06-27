@@ -830,20 +830,22 @@ function debugLog() {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
+ * @private
  */
 
 /**
  * Process the current web page.
  *
  * @param {PassedData} [passedData={}] Data passed from the previous page state.
- * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
  * @fires commentsReady
  * @fires sectionsReady
  * @fires pageReady
  * @fires pageReadyFirstTime
+ * @private
  */
 export default async function processPage(passedData = {}, siteDataRequests, cachedScrollY) {
   if (cd.g.isFirstRun) {
@@ -1081,8 +1083,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
       // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning of threads after the addition of comment forms. Should be below the
-      // viewport position restoration, as some elements may get hidden. Should be Should better be
-      // above comment highlighting (processVisits(), Comment.configureAndAddLayers()) to avoid
+      // viewport position restoration, as some elements may get hidden. Should better be above
+      // comment highlighting (`processVisits()`, `Comment.configureAndAddLayers()`) to avoid
       // spending time on comments in collapsed threads.
       Thread.init();
 

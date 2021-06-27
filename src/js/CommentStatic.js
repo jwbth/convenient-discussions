@@ -1,5 +1,5 @@
 /**
- * Methods related to comments.
+ * Static methods of the {@link module:Comment Comment} class.
  *
  * @module CommentStatic
  */
@@ -25,6 +25,7 @@ import { reloadPage } from './boot';
  * @param {CommentSkeleton} child
  * @param {CommentSkeleton[]} arr
  * @param {number[]} newCommentIds
+ * @private
  */
 function searchForNewCommentsInSubtree(child, arr, newCommentIds) {
   if (newCommentIds.includes(child.id)) {
@@ -35,9 +36,97 @@ function searchForNewCommentsInSubtree(child, arr, newCommentIds) {
   });
 }
 
+/**
+ * Add an individual new comments notification to a thread or section.
+ *
+ * @param {CommentSkeleton[]} comments
+ * @param {Comment|Section} parent
+ * @param {string} type
+ * @param {CommentSkeleton[]} newCommentIds
+ * @private
+ */
+function addNewCommentsNote(comments, parent, type, newCommentIds) {
+  if (!comments.length) return;
+
+  let commentsWithChildren;
+  if (parent instanceof Comment) {
+    commentsWithChildren = [];
+    comments.forEach((child) => {
+      searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIds);
+    });
+  } else {
+    commentsWithChildren = comments;
+  }
+
+  const authors = commentsWithChildren
+    .map((comment) => comment.author)
+    .filter(unique);
+  const genders = authors.map((author) => author.getGender());
+  let commonGender;
+  if (genders.every((gender) => gender === 'female')) {
+    commonGender = 'female';
+  } else if (genders.every((gender) => gender !== 'female')) {
+    commonGender = 'male';
+  } else {
+    commonGender = 'unknown';
+  }
+  const userList = authors.map((user) => user.name).join(', ');
+  const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
+  const button = new OO.ui.ButtonWidget({
+    label: cd.s(stringName, commentsWithChildren.length, authors.length, userList, commonGender),
+    framed: false,
+    classes: ['cd-button-ooui', 'cd-thread-button'],
+  });
+  button.on('click', () => {
+    const commentAnchor = commentsWithChildren[0].anchor;
+    reloadPage({ commentAnchor });
+  });
+
+  if (parent instanceof Comment) {
+    const [$wrappingItem] = parent.createSublevelItem('newCommentsNote', 'bottom');
+    $wrappingItem
+      .addClass('cd-thread-button-container cd-thread-newCommentsNote')
+      .append(button.$element);
+
+    // Update collapsed range for the thread.
+    if (parent.thread?.isCollapsed) {
+      parent.thread.expand();
+      parent.thread.collapse();
+    }
+  } else if (type === 'thread' && parent.$replyWrapper) {
+    const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
+    $(`<${tagName}>`)
+      .addClass('cd-thread-button-container cd-thread-newCommentsNote')
+      .append(button.$element)
+      .insertBefore(parent.$replyWrapper);
+  } else {
+    let $last;
+    if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
+      $last = parent.$addSubsectionButtonContainer;
+    } else if (parent.$replyContainer) {
+      $last = parent.$replyContainer;
+    } else {
+      $last = $(parent.lastElementInFirstChunk);
+    }
+    button.$element
+      .removeClass('cd-thread-button')
+      .addClass('cd-section-button');
+    let $container;
+    if (type === 'section') {
+      $container = $('<div>').append(button.$element);
+    } else {
+      const $item = $('<dd>').append(button.$element);
+      $container = $('<dl>').append($item);
+    }
+    $container
+      .addClass('cd-section-button-container cd-thread-newCommentsNote')
+      .insertAfter($last);
+  }
+}
+
 export default {
   /**
-   * Configure and add underlayers for a group of comments.
+   * Configure and add layers for a group of comments.
    *
    * @param {Comment[]} comments
    * @memberof module:Comment
@@ -67,6 +156,7 @@ export default {
    * flash} comments that are prescribed to flash.
    *
    * @memberof module:Comment
+   * @private
    */
   registerSeen() {
     if (document.hidden) return;
@@ -101,9 +191,10 @@ export default {
 
   /**
    * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
-   * web worker so its constuctor is lost.)
+   * web worker so its constructor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
+   * @private
    */
 
   /**
@@ -270,6 +361,7 @@ export default {
    *
    * @param {Event} e
    * @memberof module:Comment
+   * @private
    */
   highlightHovered(e) {
     if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || isPageOverlayOn()) return;
@@ -326,8 +418,11 @@ export default {
 
   /**
    * Filter out floating and hidden elements from all the comments' {@link
-   * module:CommentSkeleton#highlightables}, change their attributes, and update the comments' level
-   * and parent elements' level classes.
+   * module:CommentSkeleton#highlightables highlightables}, change their attributes, and update the
+   * comments' level and parent elements' level classes.
+   *
+   * @memberof module:Comment
+   * @private
    */
   reviewHighlightables() {
     cd.comments.forEach((comment) => {
@@ -337,98 +432,11 @@ export default {
   },
 
   /**
-   * Add an individual new comments notification to a thread or section.
-   *
-   * @param {CommentSkeleton[]} comments
-   * @param {Comment|Section} parent
-   * @param {string} type
-   * @param {CommentSkeleton[]} newCommentIds
-   * @memberof module:Section
-   */
-  addNewCommentsNote(comments, parent, type, newCommentIds) {
-    if (!comments.length) return;
-
-    let commentsWithChildren;
-    if (parent instanceof Comment) {
-      commentsWithChildren = [];
-      comments.forEach((child) => {
-        searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIds);
-      });
-    } else {
-      commentsWithChildren = comments;
-    }
-
-    const authors = commentsWithChildren
-      .map((comment) => comment.author)
-      .filter(unique);
-    const genders = authors.map((author) => author.getGender());
-    let commonGender;
-    if (genders.every((gender) => gender === 'female')) {
-      commonGender = 'female';
-    } else if (genders.every((gender) => gender !== 'female')) {
-      commonGender = 'male';
-    } else {
-      commonGender = 'unknown';
-    }
-    const userList = authors.map((user) => user.name).join(', ');
-    const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
-    const button = new OO.ui.ButtonWidget({
-      label: cd.s(stringName, commentsWithChildren.length, authors.length, userList, commonGender),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-thread-button'],
-    });
-    button.on('click', () => {
-      const commentAnchor = commentsWithChildren[0].anchor;
-      reloadPage({ commentAnchor });
-    });
-
-    if (parent instanceof Comment) {
-      const [$wrappingItem] = parent.createSublevelItem('newCommentsNote', 'bottom');
-      $wrappingItem
-        .addClass('cd-thread-button-container cd-thread-newCommentsNote')
-        .append(button.$element);
-
-      // Update collapsed range for the thread.
-      if (parent.thread?.isCollapsed) {
-        parent.thread.expand();
-        parent.thread.collapse();
-      }
-    } else if (type === 'thread' && parent.$replyWrapper) {
-      const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
-      $(`<${tagName}>`)
-        .addClass('cd-thread-button-container cd-thread-newCommentsNote')
-        .append(button.$element)
-        .insertBefore(parent.$replyWrapper);
-    } else {
-      let $last;
-      if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
-        $last = parent.$addSubsectionButtonContainer;
-      } else if (parent.$replyContainer) {
-        $last = parent.$replyContainer;
-      } else {
-        $last = $(parent.lastElementInFirstChunk);
-      }
-      button.$element
-        .removeClass('cd-thread-button')
-        .addClass('cd-section-button');
-      let $container;
-      if (type === 'section') {
-        $container = $('<div>').append(button.$element);
-      } else {
-        const $item = $('<dd>').append(button.$element);
-        $container = $('<dl>').append($item);
-      }
-      $container
-        .addClass('cd-section-button-container cd-thread-newCommentsNote')
-        .insertAfter($last);
-    }
-  },
-
-  /**
-   * Add new comments notifications to threads or sections.
+   * Add new comments notifications to threads and sections.
    *
    * @param {Map} newComments
-   * @memberof module:Section
+   * @memberof module:Comment
+   * @private
    */
   addNewCommentsNotes(newComments) {
     saveRelativeScrollPosition();
@@ -464,7 +472,7 @@ export default {
     const newCommentIds = newComments.map((c) => c.id);
     newCommentsByParent.forEach((comments, parent) => {
       if (parent instanceof Comment) {
-        Comment.addNewCommentsNote(comments, parent, 'thread', newCommentIds);
+        addNewCommentsNote(comments, parent, 'thread', newCommentIds);
       } else {
         // Add notes for level 0 comments and their children and the rest of the comments (for
         // example, level 1 comments without a parent and their children) separately.
@@ -474,14 +482,21 @@ export default {
           searchForNewCommentsInSubtree(child, sectionComments, newCommentIds);
         });
         const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
-        Comment.addNewCommentsNote(sectionComments, parent, 'section', newCommentIds);
-        Comment.addNewCommentsNote(threadComments, parent, 'thread', newCommentIds);
+        addNewCommentsNote(sectionComments, parent, 'section', newCommentIds);
+        addNewCommentsNote(threadComments, parent, 'thread', newCommentIds);
       }
     });
 
     restoreRelativeScrollPosition();
   },
 
+  /**
+   * Reformat the comments (moving the author and date up and links down) if the relevant setting is
+   * enabled.
+   *
+   * @memberof module:Comment
+   * @private
+   */
   async reformatComments() {
     if (cd.settings.reformatComments) {
       const pagesToCheckExistence = [];
@@ -517,6 +532,12 @@ export default {
     }
   },
 
+  /**
+   * Change the format of the comment timestamps according to the settings.
+   *
+   * @memberof module:Comment
+   * @private
+   */
   reformatTimestamps() {
     if (
       (cd.settings.useLocalTime && (new Date()).getTimezoneOffset()) ||

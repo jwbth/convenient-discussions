@@ -17,7 +17,7 @@ export default class SectionSkeleton {
    * Create a section skeleton instance.
    *
    * @param {Parser} parser
-   * @param {Element} headingElement
+   * @param {Element|external:Element} headingElement
    */
   constructor(parser, headingElement) {
     this.parser = parser;
@@ -25,7 +25,7 @@ export default class SectionSkeleton {
     /**
      * Headline element.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.headlineElement = this.parser.context.getElementByClassName(headingElement, 'mw-headline');
 
@@ -53,7 +53,7 @@ export default class SectionSkeleton {
     this.level = levelMatch && Number(levelMatch[1]);
 
     /**
-     * Sequental number of the section.
+     * Sequental number of the section at the time of the page load.
      *
      * @type {?number}
      */
@@ -135,7 +135,7 @@ export default class SectionSkeleton {
      * Last element in the first chunk of the section, i.e. all elements up to the first subheading
      * if it is present, or all elements if it is not.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.lastElementInFirstChunk = this.lastElementInFirstChunk || elements[elements.length - 1];
 
@@ -227,13 +227,16 @@ export default class SectionSkeleton {
     /**
      * Section elements.
      *
-     * @type {Element[]}
+     * @type {Element[]|external:Element[]}
      */
     this.elements = elements;
   }
 
   /**
-   * Parse the headline of the section and fill the `headline` property, containing no HTML tags.
+   * Parse the headline of the section and fill the {@link module:Section#headline headline}
+   * property that contains no HTML tags.
+   *
+   * @private
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];

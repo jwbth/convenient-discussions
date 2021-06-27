@@ -151,7 +151,7 @@ export default class Button {
   }
 
   /**
-   * Set the actions of the button. It will be executed on click or Enter press.
+   * Set the action of the button. It will be executed on click or Enter press.
    *
    * @param {?Function} action
    * @returns {Button} This button.

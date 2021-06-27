@@ -1,5 +1,5 @@
 /**
- * Methods related to sections.
+ * Static methods  of the {@link module:Section Section} class.
  *
  * @module SectionStatic
  */
@@ -192,6 +192,7 @@ export default {
    * isLastSection} property, adding buttons, and binding events.
    *
    * @memberof module:Section
+   * @private
    */
   adjust() {
     cd.sections.forEach((section, i) => {
@@ -276,6 +277,7 @@ export default {
    * them to the server.
    *
    * @memberof module:Section
+   * @private
    */
   cleanUpWatched() {
     if (!cd.sections) return;

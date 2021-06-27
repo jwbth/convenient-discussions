@@ -126,7 +126,10 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a "Reply in section" button to the end of the first chunk of the section.
+   * Add a {@link module:Section#replyButton "Reply in section" button} to the end of the first
+   * chunk of the section.
+   *
+   * @private
    */
   addReplyButton() {
     const element = elementPrototypes.replyButton.cloneNode(true);
@@ -221,7 +224,10 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add an "Add subsection" button that appears when hovering over a "Reply" button.
+   * Add an {@link module:Section#addSubsectionButton "Add subsection" button} that appears when
+   * hovering over a {@link module:Section#replyButton "Reply in section" button}.
+   *
+   * @private
    */
   addAddSubsectionButton() {
     if (this.level !== 2) return;
@@ -413,7 +419,7 @@ export default class Section extends SectionSkeleton {
     // to call it from CD).
     if (!this.replyForm) {
       /**
-       * Add reply form related to the section.
+       * A reply form related to the section.
        *
        * @type {CommentForm|undefined}
        */
@@ -1115,6 +1121,7 @@ export default class Section extends SectionSkeleton {
    * placeholder.
    *
    * @param {CommentForm} commentForm
+   * @private
    */
   setLastCommentIndentationChars(commentForm) {
     const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
@@ -1151,8 +1158,8 @@ export default class Section extends SectionSkeleton {
    * Modify a section or page code string related to the section in accordance with an action.
    *
    * @param {object} options
-   * @param {string} options.action
-   * @param {string} options.commentCode
+   * @param {string} options.action `'replyInSection'` or `'addSubsection'`.
+   * @param {string} options.commentCode Comment code.
    * @returns {object}
    */
   modifyWholeCode({ action, commentCode }) {
@@ -1197,8 +1204,8 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Request the code of the section by its number using API and set some properties of the section
-   * (and also the page).
+   * Request the code of the section by its number using the API and set some properties of the
+   * section (and also the page). {@link module:Section#getCode} is a more general method.
    *
    * @throws {CdError}
    */
@@ -1300,7 +1307,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Load the section code.
+   * Load the section code. See also {@link module:Section#requestCode}.
    *
    * @param {CommentForm} [commentForm] Comment form, if it is submitted (or code changes are
    *   viewed).
@@ -1676,7 +1683,10 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Bold/unbold the section's TOC link and update the `title` attribute.
+   * Bold/unbold the section's TOC link according to its watch state and update the `title`
+   * attribute.
+   *
+   * @private
    */
   updateTocLink() {
     if (!cd.settings.modifyToc) return;
@@ -1695,6 +1705,11 @@ export default class Section extends SectionSkeleton {
     }
   }
 
+  /**
+   * Get a link to the section with Unicode sequences decoded.
+   *
+   * @returns {string}
+   */
   getUrl() {
     if (!this.cachedUrl) {
       this.cachedUrl = getUrlWithAnchor(this.anchor);

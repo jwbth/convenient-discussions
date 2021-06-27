@@ -7,9 +7,9 @@
 import cd from './cd';
 
 /**
- * Class representing a list of the comment's subitems. There can be two types of subitems: comment
- * forms and "new replies" notes. They are managed with the class to handle the removal of their
- * parent list properly.
+ * Class representing a list of the comment's subitems. There can be two types of subitems
+ * currently: comment forms and "new replies" notes. They are managed with this class to handle the
+ * removal of their parent list properly.
  */
 export default class CommentSubitemList {
   /**
