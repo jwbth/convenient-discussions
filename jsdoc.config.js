@@ -16,5 +16,6 @@ module.exports = {
   },
   "docdash": {
     "search": true,
+    "collapse": true,
   },
 };
