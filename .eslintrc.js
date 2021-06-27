@@ -21,7 +21,7 @@ module.exports = {
     "require": "readonly",
     "test": "readonly",
   },
-  "ignorePatterns": ["dist/**", "misc/**", "*.json5"],
+  "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
     {
       "files": ["./*.js"],
