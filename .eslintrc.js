@@ -14,7 +14,6 @@ module.exports = {
     "OO": "readonly",
     "Tribute": "readonly",
     "convenientDiscussions": "readonly",
-    "jQuery": "readonly",
     "jest": "readonly",
     "expect": "readonly",
     "mw": "readonly",
@@ -24,7 +23,7 @@ module.exports = {
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
     {
-      "files": ["./*.js"],
+      "files": ["./*.js", "/tribute/**"],
       "rules": {
         "jsdoc/require-jsdoc": "off",
       },
@@ -47,7 +46,15 @@ module.exports = {
     "jsdoc/implements-on-classes": "warn",
     "jsdoc/newline-after-description": "warn",
     "jsdoc/no-undefined-types": "warn",
-    "jsdoc/require-jsdoc": "warn",
+    "jsdoc/require-jsdoc": ["warn", {
+      "require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": true,
+        "ClassDeclaration": true,
+        "FunctionExpression": true,
+        "ClassExpression": true,
+      },
+    }],
     "jsdoc/require-param": "warn",
     // "jsdoc/require-param-description": "warn",
     "jsdoc/require-param-name": "warn",
@@ -70,6 +77,7 @@ module.exports = {
   "settings": {
     "jsdoc": {
       "preferredTypes": [
+        "CdError",
         "Comment",
         "CommentSkeleton",
         "CommentForm",

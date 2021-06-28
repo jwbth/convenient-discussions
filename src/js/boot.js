@@ -4,7 +4,6 @@
  * @module boot
  */
 
-import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
