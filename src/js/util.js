@@ -1,6 +1,6 @@
 /**
- * Utilities module. Some of the utilities are parts of the {@link
- * module:cd~convenientDiscussions.util convenientDiscussions.util} object.
+ * Utilities module. Some of the utilities are parts of the
+ * {@link module:cd~convenientDiscussions.util convenientDiscussions.util} object.
  *
  * @module util
  */
@@ -135,9 +135,9 @@ export function wrapDiffBody(body) {
 }
 
 /**
- * Callback for {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
- * Array#filter} to remove duplicated elements from an array.
+ * Callback for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
+ * to remove duplicated elements from an array.
  *
  * @param {*} item
  * @param {number} i
@@ -273,9 +273,9 @@ export function isUndo(summary) {
 }
 
 /**
- * Callback for {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
- * Array#filter} to keep only defined values in an array.
+ * Callback for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
+ * to keep only defined values in an array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -306,9 +306,9 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
- * Array#flat(1)}. That method is not yet supported by major browsers.
+ * Alternative to
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat Array#flat(1)}.
+ * That method is not yet supported by major browsers.
  *
  * @param {Array} arr
  * @returns {Array}
@@ -387,8 +387,8 @@ function phpCharToUpper(char) {
 
 /**
  * Transform the first letter of a string to upper case, for example: `'wikilink'` → `'Wikilink'`.
- * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see {@link
- * https://phabricator.wikimedia.org/T141723#2513800}.
+ * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see
+ * {@link https://phabricator.wikimedia.org/T141723#2513800}.
  *
  * @param {string} s
  * @returns {string}
@@ -398,20 +398,18 @@ export function firstCharToUpperCase(s) {
 }
 
 /**
- * Get text of the localization messages for the content language.
+ * _For internal use._ Get text of the localization messages for the content language.
  *
  * @param {string[]} messages
  * @returns {string[]}
- * @private
  */
 export function getContentLanguageMessages(messages) {
   return messages.map((name) => cd.g.contentLanguageMessages[name]);
 }
 
 /**
- * {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
- * Array#findIndex} analog that looks for the _last_ index.
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array#findIndex}
+ * analog that looks for the _last_ index.
  *
  * @param {Array} arr
  * @param {Function} callback
@@ -541,8 +539,8 @@ export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = 
 /**
  * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
  *
- * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using {@link
- *   module:util.restoreScrollPosition} if it was previously used for saving the position.
+ * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using
+ *   {@link module:util.restoreScrollPosition} if it was previously used for saving the position.
  */
 export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
   if (fallbackToAbsolute && keptScrollPosition !== null) {
@@ -558,12 +556,11 @@ export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
 }
 
 /**
- * Replace the "anchor" element used for restoring saved relative scroll position with a new element
- * if it coincides with the provided element.
+ * _For internal use._ Replace the "anchor" element used for restoring saved relative scroll
+ * position with a new element if it coincides with the provided element.
  *
  * @param {Element} element
  * @param {Element} newElement
- * @private
  */
 export function replaceAnchorElement(element, newElement) {
   if (anchorElement && element === anchorElement) {
@@ -776,8 +773,8 @@ export function insertText(input, text) {
 }
 
 /**
- * Filter out values of an object that can't be safely passed to worker (see {@link
- * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
+ * _For internal use._ Filter out values of an object that can't be safely passed to worker (see
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
  *
  * @param {object} obj
  * @param {Array} [allowedFuncNames=[]] Names of the properties that should be passed to the worker
@@ -785,7 +782,6 @@ export function insertText(input, text) {
  * @param {Array} [disallowedNames=[]] Names of the properties that should be filtered out without
  *   checking (allows to save time on greedy operations).
  * @returns {object}
- * @private
  */
 export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames = []) {
   const newObj = Object.assign({}, obj);

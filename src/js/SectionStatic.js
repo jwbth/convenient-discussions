@@ -18,8 +18,8 @@ export default {
    *
    * @param {string} headline
    * @param {string} [unwatchHeadline] Section to unwatch together with watching the specified
-   *   section (used when a section is renamed on the fly in {@link module:Comment#update} or {@link
-   *   module:CommentForm#submit}).
+   *   section (used when a section is renamed on the fly in {@link module:Comment#update} or
+   *   {@link module:CommentForm#submit}).
    * @returns {Promise}
    * @throws {CdError}
    * @memberof module:Section
@@ -188,11 +188,11 @@ export default {
   },
 
   /**
-   * Perform extra section-related tasks, including adding the {@link module:Section#isLastSection
-   * isLastSection} property, adding buttons, and binding events.
+   * _For internal use._ Perform extra section-related tasks, including adding the
+   * {@link module:Section#isLastSection isLastSection} property, adding buttons, and binding
+   * events.
    *
    * @memberof module:Section
-   * @private
    */
   adjust() {
     cd.sections.forEach((section, i) => {
@@ -273,11 +273,10 @@ export default {
   },
 
   /**
-   * Remove sections that can't be found on the page anymore from the watched sections list and save
-   * them to the server.
+   * _For internal use._ Remove sections that can't be found on the page anymore from the watched
+   * sections list and save them to the server.
    *
    * @memberof module:Section
-   * @private
    */
   cleanUpWatched() {
     if (!cd.sections) return;

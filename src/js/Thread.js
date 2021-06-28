@@ -677,9 +677,8 @@ export default class Thread {
   }
 
   /**
-   * Calculate the positions and (if needed) add the thread lines to the container.
-   *
-   * @private
+   * _For internal use._ Calculate the positions and (if needed) add the thread lines to the
+   * container.
    */
   static updateLines() {
     if ((isPageLoading() || document.hidden) && isInited) return;

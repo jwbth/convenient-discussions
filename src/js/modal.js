@@ -25,9 +25,7 @@ import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './ap
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
 
 /**
- * Create a OOUI window manager. It is supposed to be reused across the script.
- * 
- * @private
+ * _For internal use._ Create a OOUI window manager. It is supposed to be reused across the script.
  */
 export function createWindowManager() {
   if (cd.g.windowManager) return;
@@ -54,7 +52,7 @@ export function createWindowManager() {
 export async function confirmDialog(message, options = {}) {
   const defaultOptions = {
     message,
-    
+
     // OO.ui.MessageDialog standard
     actions: [
       {
@@ -94,7 +92,7 @@ function isUnsaved(dialog) {
 
 /**
  * OOUI process dialog
- * 
+ *
  * @external OoUiProcessDialog
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
  */
@@ -152,8 +150,8 @@ export async function settingsDialog() {
   if (isPageOverlayOn()) return;
 
   /**
-   * @class Subclass of {@link
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
+   * @class Subclass of
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
    *   used to create a settings dialog.
    * @private
    */
@@ -613,9 +611,9 @@ export async function settingsDialog() {
     });
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Date and time" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Date and time" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -637,9 +635,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Comment form" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Comment form" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -664,9 +662,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Talk page" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Talk page" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -686,9 +684,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Notifications" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Notifications" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -708,9 +706,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Remove data" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Remove data" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -871,8 +869,8 @@ export async function editWatchedSections() {
   if (isPageOverlayOn()) return;
 
   /**
-   * @class Subclass of {@link
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
+   * @class Subclass of
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
    *   used to create an edit watched sections dialog.
    * @private
    */
@@ -1293,14 +1291,13 @@ export async function copyLink(object, e) {
 }
 
 /**
- * Show a modal with content of comment forms that we were unable to restore to the page (because
- * their target comments/sections disappeared, for example).
+ * _For internal use._ Show a modal with content of comment forms that we were unable to restore to
+ * the page (because their target comments/sections disappeared, for example).
  *
  * @param {object[]} content
  * @param {string} [content[].headline]
  * @param {string} content[].comment
  * @param {string} content[].summary
- * @private
  */
 export function rescueCommentFormsContent(content) {
   const text = content
@@ -1334,12 +1331,12 @@ export function rescueCommentFormsContent(content) {
 }
 
 /**
- * Show a message at the top of the page that a section/comment was not found, a link to search in
- * the archive, and optionally a link to the section/comment if it was found automatically.
+ * _For internal use._ Show a message at the top of the page that a section/comment was not found, a
+ * link to search in the archive, and optionally a link to the section/comment if it was found
+ * automatically.
  *
  * @param {string} decodedFragment Decoded fragment.
  * @param {Date} date Comment date, if there is a comment anchor in the fragment.
- * @private
  */
 export async function notFound(decodedFragment, date) {
   let label;

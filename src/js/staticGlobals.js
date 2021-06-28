@@ -18,10 +18,10 @@
 
 export default {
   /**
-   * A replacement for {@link
-   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes
-   * unicode property escapes} while they are not supported in major browsers. {@link
-   * https://github.com/slevithan/xregexp} can be used also.
+   * A replacement for
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
+   * while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
+   * can be used also.
    *
    * @type {string}
    * @memberof module:cd~convenientDiscussions.g

@@ -145,10 +145,10 @@ function sPlain(name) {
  * function would sanitize the value.
  *
  * @param {string} name String name.
- * @param {...*} [params] String parameters (substituted strings, also {@link
- *   module:userRegistry~User User} objects for use in {{gender:}}). The last parameter can be an
- *   object that can have a string property `language`. If `language` is `'content'`, the returned
- *   message will be in the content langage (not the interface language).
+ * @param {...*} [params] String parameters (substituted strings, also
+ *   {@link module:userRegistry~User User} objects for use in {{gender:}}). The last parameter can
+ *   be an object that can have a string property `language`. If `language` is `'content'`, the
+ *   returned message will be in the content langage (not the interface language).
  * @returns {string}
  * @memberof module:cd~convenientDiscussions
  */

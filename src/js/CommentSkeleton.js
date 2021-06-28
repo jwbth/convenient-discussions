@@ -70,42 +70,37 @@ export default class CommentSkeleton {
     this.timestamp = signature.timestampText;
 
     /**
-     * Comment author name.
+     * _For internal use._ Comment author name.
      *
      * @type {string}
-     * @private
      */
     this.authorName = signature.authorName;
 
     /**
-     * Comment signature element.
+     * _For internal use._ Comment signature element.
      *
      * @type {Element|external:Element}
-     * @private
      */
     this.signatureElement = signature.element;
 
     /**
-     * Comment timestamp element.
+     * _For internal use._ Comment timestamp element.
      *
      * @type {Element|external:Element}
-     * @private
      */
     this.timestampElement = signature.timestampElement;
 
     /**
-     * User page (in the "User" namespace) link element.
+     * _For internal use._ User page (in the "User" namespace) link element.
      *
      * @type {Element|external:Element}
-     * @private
      */
     this.authorLink = signature.authorLink;
 
     /**
-     * User talk page (in the "User talk" namespace) link element.
+     * _For internal use._ User talk page (in the "User talk" namespace) link element.
      *
      * @type {Element|external:Element}
-     * @private
      */
     this.authorTalkLink = signature.authorTalkLink;
 
@@ -253,7 +248,7 @@ export default class CommentSkeleton {
   /**
    * Add the necessary attributes to the comment's elements.
    *
-   * @private
+   * @protected
    */
   addAttributes() {
     this.elements.forEach((el) => {
@@ -268,7 +263,7 @@ export default class CommentSkeleton {
    * Set the necessary classes to parent elements of the comment's elements to make a visible tree
    * structure.
    *
-   * @private
+   * @protected
    */
   setLevels() {
     // Make sure the level on the top and on the bottom of the comment are the same and add
@@ -362,10 +357,8 @@ export default class CommentSkeleton {
   }
 
   /**
-   * Set {@link module:Comment#logicalLevel logical levels} to the comments taking into account
-   * `{{outdent}}` templates.
-   *
-   * @private
+   * _For internal use._ Set {@link module:Comment#logicalLevel logical levels} to the comments
+   * taking into account `{{outdent}}` templates.
    */
   static processOutdents() {
     if (cd.g.pageHasOutdents) {

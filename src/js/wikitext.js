@@ -311,8 +311,8 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  * Extract signatures from wikitext.
  *
  * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in {@link module:Comment#adjustCommentCodeData}. See also {@link
- * module:Comment#adjustCommentBeginning}, called before that.
+ * performed in {@link module:Comment#adjustCommentCodeData}. See also
+ * {@link module:Comment#adjustCommentBeginning}, called before that.
  *
  * @param {string} code Code to extract signatures from.
  * @returns {object[]}
@@ -364,11 +364,10 @@ export function extractSignatures(code) {
 /**
  * Decode HTML entities in a string.
  *
- * It should work as fast as possible, so we use {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf
- * String#indexOf}, not {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
- * String#includes}.
+ * It should work as fast as possible, so we use
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf String#indexOf},
+ * not
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes String#includes}.
  *
  * @param {string} s
  * @returns {string}

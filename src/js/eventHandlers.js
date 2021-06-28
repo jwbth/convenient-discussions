@@ -16,9 +16,7 @@ import { setContentColumnGlobals } from './boot';
 const beforeUnloadHandlers = {};
 
 /**
- * Handles the window `resize` event as well as `orientationchange`.
- *
- * @private
+ * _Method for internal use._ Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
   setContentColumnGlobals(true);
@@ -61,10 +59,9 @@ export function removePreventUnloadCondition(name) {
 }
 
 /**
- * Handles the document `keydown` event.
+ * _For internal use._ Handles the document `keydown` event.
  *
  * @param {Event} e
- * @private
  */
 export function handleGlobalKeyDown(e) {
   if (isPageOverlayOn()) return;
@@ -107,10 +104,8 @@ export function handleGlobalKeyDown(e) {
 }
 
 /**
- * Register seen comments, update the navigation panel's first unseen button, and update the current
- * section block.
- *
- * @private
+ * _For internal use._ Register seen comments, update the navigation panel's first unseen button,
+ * and update the current section block.
  */
 export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,

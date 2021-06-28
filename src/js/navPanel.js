@@ -18,15 +18,14 @@ let cachedCommentsBySection;
 
 export default {
   /**
-   * Render the navigation panel. This is done when the page is first loaded, or created using the
-   * script.
-   *
-   * @private
+   * _For internal use._ Render the navigation panel. This is done when the page is first loaded, or
+   * created using the script.
    */
   mount() {
     /**
      * Navigation panel element.
      *
+     * @name $element
      * @type {?(JQuery|undefined)}
      * @memberof module:navPanel
      */
@@ -37,6 +36,7 @@ export default {
     /**
      * Refresh button element.
      *
+     * @name $refreshButton
      * @type {JQuery|undefined}
      * @memberof module:navPanel
      */
@@ -53,6 +53,7 @@ export default {
     /**
      * "Go to the previous new comment" button element.
      *
+     * @name $previousButton
      * @type {JQuery|undefined}
      * @memberof module:navPanel
      */
@@ -69,6 +70,7 @@ export default {
     /**
      * "Go to the next new comment" button element.
      *
+     * @name $nextButton
      * @type {JQuery|undefined}
      * @memberof module:navPanel
      */
@@ -85,6 +87,7 @@ export default {
     /**
      * "Go to the first unseen comment" button element.
      *
+     * @name $firstUnseenButton
      * @type {JQuery|undefined}
      * @memberof module:navPanel
      */
@@ -101,6 +104,7 @@ export default {
     /**
      * "Go to the next comment form out of sight" button element.
      *
+     * @name $commentFormButton
      * @type {JQuery|undefined}
      * @memberof module:navPanel
      */
@@ -116,9 +120,7 @@ export default {
   },
 
   /**
-   * Remove the navigation panel.
-   *
-   * @private
+   * _For internal use._ Remove the navigation panel.
    */
   unmount() {
     this.$element.remove();
@@ -126,8 +128,8 @@ export default {
   },
 
   /**
-   * Check if the navigation panel is mounted. Is equivalent to checking the existence of {@link
-   * module:navPanel.$element}, and for the most of the practical purposes, does the same as the
+   * Check if the navigation panel is mounted. Is equivalent to checking the existence of
+   * {@link module:navPanel.$element}, and for the most of the practical purposes, does the same as the
    * `convenientDiscussions.g.isPageActive` check.
    *
    * @returns {boolean}
@@ -137,10 +139,8 @@ export default {
   },
 
   /**
-   * Reset the navigation panel to the initial state. This is done after page refreshes. (Comment
-   * forms are expected to be restored already.)
-   *
-   * @private
+   * _For internal use._ Reset the navigation panel to the initial state. This is done after page
+   * refreshes. (Comment forms are expected to be restored already.)
    */
   reset() {
     this.$refreshButton.empty();
@@ -165,10 +165,9 @@ export default {
   },
 
   /**
-   * Perform routines at the refresh button click.
+   * _For internal use._ Perform routines at the refresh button click.
    *
    * @param {boolean} markAsRead Whether to mark all comments as read.
-   * @private
    */
   refreshClick(markAsRead) {
     // There was reload confirmation here, but after session restore was introduced, the
@@ -180,8 +179,8 @@ export default {
   },
 
   /**
-   * Generic function for {@link module:navPanel.goToPreviousNewComment} and {@link
-   * module:navPanel.goToNextNewComment}.
+   * Generic function for {@link module:navPanel.goToPreviousNewComment} and
+   * {@link module:navPanel.goToNextNewComment}.
    *
    * @param {string} direction
    * @private
@@ -266,12 +265,12 @@ export default {
   },
 
   /**
-   * Update the refresh button to show the number of comments added to the page since it was loaded.
+   * _For internal use._ Update the refresh button to show the number of comments added to the page
+   * since it was loaded.
    *
    * @param {number} commentCount
    * @param {Map} commentsBySection
    * @param {boolean} areThereInteresting
-   * @private
    */
   updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
     this.$refreshButton.empty();
@@ -340,7 +339,7 @@ export default {
       // When timestamps are relative and the TOC is set to be modified, the tooltip is updated
       // together with the updates of the TOC. When the TOC is not modified, we need to update the
       // tooltip manually every minute. When timestamps are "improved", timestamps are updated in
-      // LiveTimestamp.updateImproved.
+      // `LiveTimestamp.updateImproved`.
       if (cd.settings.timestampFormat === 'relative' && !cd.settings.modifyToc) {
         urbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
@@ -359,20 +358,17 @@ export default {
   },
 
   /**
-   * Update the tooltip of the {@link module:navPanel.$refreshButton refresh button}. This is called
-   * to update timestamps in the text.
-   *
-   * @private
+   * _For internal use._ Update the tooltip of the
+   * {@link module:navPanel.$refreshButton refresh button}. This is called to update timestamps in
+   * the text.
    */
   updateTimestampsInRefreshButtonTooltip() {
     this.updateRefreshButtonTooltip(cachedCommentCount, cachedCommentsBySection);
   },
 
   /**
-   * Update the state of the {@link module:navPanel.$firstUnseenButton "Go to the first unseen
-   * comment"} button.
-   *
-   * @private
+   * _For internal use._ Update the state of the
+   * {@link module:navPanel.$firstUnseenButton "Go to the first unseen comment"} button.
    */
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
@@ -386,10 +382,9 @@ export default {
   },
 
   /**
-   * Update the {@link module:navPanel.$commentFormButton "Go to the next comment form out of
-   * sight"} button visibility.
-   *
-   * @private
+   * _For internal use._ Update the
+   * {@link module:navPanel.$commentFormButton "Go to the next comment form out of sight"} button
+   * visibility.
    */
   updateCommentFormButton() {
     if (cd.g.isAutoScrollInProgress || !this.isMounted()) return;

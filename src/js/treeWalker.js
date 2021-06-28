@@ -7,16 +7,16 @@
 import cd from './cd';
 
 /**
- * Generalization and simplification of the {@link
- * https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the normal
- * and worker contexts.
+ * Generalization and simplification of the
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
+ * normal and worker contexts.
  */
 export class TreeWalker {
   /**
    * Create a tree walker.
    *
-   * @param {Node|external:Node} root Node that limits where the tree walker can go within this document's tree:
-   *   only the root node and its descendants.
+   * @param {Node|external:Node} root Node that limits where the tree walker can go within this
+   *   document's tree: only the root node and its descendants.
    * @param {Function} [acceptNode] Function that returns `true` if the tree walker should accept
    *   the node, and `false` if it should reject.
    * @param {boolean} [onlyElementNodes=false] Walk only on element nodes, ignoring nodes of other
@@ -46,7 +46,7 @@ export class TreeWalker {
    *
    * @param {string} property
    * @returns {?Node}
-   * @private
+   * @protected
    */
   tryMove(property) {
     let node = this.currentNode;

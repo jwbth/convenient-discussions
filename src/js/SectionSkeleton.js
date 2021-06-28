@@ -233,10 +233,8 @@ export default class SectionSkeleton {
   }
 
   /**
-   * Parse the headline of the section and fill the {@link module:Section#headline headline}
-   * property that contains no HTML tags.
-   *
-   * @private
+   * _For internal use._ Parse the headline of the section and fill the
+   * {@link module:Section#headline headline} property that contains no HTML tags.
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
@@ -248,8 +246,8 @@ export default class SectionSkeleton {
     /**
      * Section headline as it appears on the page.
      *
-     * Foreign elements can get there, add the classes of these elements to {@link
-     * module:defaultConfig.foreignElementInHeadlineClasses} to filter them out.
+     * Foreign elements can get there, add the classes of these elements to
+     * {@link module:defaultConfig.foreignElementInHeadlineClasses} to filter them out.
      *
      * @type {string}
      */

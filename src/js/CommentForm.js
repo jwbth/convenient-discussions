@@ -326,8 +326,8 @@ export default class CommentForm {
   checkCode() {
     if (!this.checkCodeRequest) {
       /**
-       * Request to test if a comment or section exists in the code made by {@link
-       * module:CommentForm#checkCode}.
+       * Request to test if a comment or section exists in the code made by
+       * {@link module:CommentForm#checkCode}.
        *
        * @type {external:JQueryPromise|undefined}
        */
@@ -347,11 +347,11 @@ export default class CommentForm {
   }
 
   /**
-   * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
+   * _For internal use._ Set the `target`, `targetSection`, `targetComment`, and `targetPage`
+   * properties.
    *
    * @param {Comment|Section|Page} target
    * @throws {CdError}
-   * @private
    */
   setTargets(target) {
     /**
@@ -677,7 +677,7 @@ export default class CommentForm {
 
     /**
      * OOUI text input widget
-     * 
+     *
      * @external OoUiTextInputWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
      */
@@ -740,7 +740,7 @@ export default class CommentForm {
 
     /**
      * OOUI multiline text input widget
-     * 
+     *
      * @external OoUiMultilineTextInputWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
      */
@@ -938,7 +938,7 @@ export default class CommentForm {
 
     /**
      * OOUI horizontal layout
-     * 
+     *
      * @external OoUiHorizontalLayout
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
      */
@@ -991,7 +991,7 @@ export default class CommentForm {
 
     /**
      * OOUI button widget
-     * 
+     *
      * @external OoUiButtonWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
      */
@@ -1016,7 +1016,7 @@ export default class CommentForm {
 
     /**
      * OOUI popup button widget
-     * 
+     *
      * @external OoUiPopupButtonWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
      */
@@ -1372,9 +1372,7 @@ export default class CommentForm {
   }
 
   /**
-   * Insert the form into the DOM.
-   *
-   * @private
+   * _For internal use._ Insert the form into the DOM.
    */
   addToPage() {
     if (this.mode === 'replyInSection') {
@@ -1894,9 +1892,7 @@ export default class CommentForm {
    * @param {string|JQuery} htmlOrJquery
    * @param {object} [options]
    * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
-   *   {@link
-   *   https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true
-   *   the OOUI Demos}.
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true the OOUI Demos}.
    * @param {string} [options.name] Name added to the class name of the message element.
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.

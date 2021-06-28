@@ -133,8 +133,8 @@ async function checkForUpdates() {
 /**
  * If the revision of the current visit and previous visit are different, process the said
  * revisions. (We need to process the current revision too to get the comments' inner HTML without
- * any elements that may be added by scripts.) The revisions' data will finally processed by {@link
- * module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
+ * any elements that may be added by scripts.) The revisions' data will finally processed by
+ * {@link module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
  *
  * @private
  */
@@ -875,12 +875,11 @@ const updateChecker = {
   relevantNewCommentAnchor: null,
 
   /**
-   * Initialize the update checker.
+   * _For internal use._ Initialize the update checker.
    *
    * @param {Promise} visitsRequest
    * @param {object} passedData
    * @memberof module:updateChecker
-   * @private
    */
   async init(visitsRequest, passedData) {
     if (!cd.g.worker) return;
@@ -910,12 +909,11 @@ const updateChecker = {
   },
 
   /**
-   * Process the current page in a web worker.
+   * _For internal use._ Process the current page in a web worker.
    *
    * @param {number} [revisionToParseId]
    * @returns {Promise.<object>}
    * @memberof module:updateChecker
-   * @private
    */
   async processPage(revisionToParseId) {
     if (revisionData[revisionToParseId]) {
@@ -967,12 +965,12 @@ const updateChecker = {
   },
 
   /**
-   * Update the page title to show the number of comments added to the page since it was loaded.
+   * _For internal use._ Update the page title to show the number of comments added to the page
+   * since it was loaded.
    *
    * @param {number} newCommentsCount
    * @param {boolean} areThereInteresting
    * @memberof module:updateChecker
-   * @private
    */
   updatePageTitle(newCommentsCount, areThereInteresting) {
     const interestingMark = areThereInteresting ? '*' : '';

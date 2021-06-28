@@ -38,8 +38,8 @@ let isProcessDiffFirstRun = true;
 /**
  * Prepare variables.
  *
- * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  * @private
  */
 async function prepare(siteDataRequests) {
@@ -717,8 +717,8 @@ async function addCommentLinks($content) {
 /**
  * The entry function for the comment links adding mechanism.
  *
- * @param {Promise[]} siteDataRequests Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  */
 export default async function commentLinks(siteDataRequests) {
   try {

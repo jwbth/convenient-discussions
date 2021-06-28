@@ -147,10 +147,9 @@ export async function getSettings({
 }
 
 /**
- * Get settings set in common.js that are meant to override native settings.
+ * _For internal use._ Get settings set in common.js that are meant to override native settings.
  *
  * @returns {object}
- * @private
  */
 export function getLocalOverridingSettings() {
   const settings = {};

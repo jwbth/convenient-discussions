@@ -501,11 +501,10 @@ export default class Autocomplete {
   }
 
   /**
-   * Get an autocomplete configuration for the specified type.
+   * _For internal use._ Get an autocomplete configuration for the specified type.
    *
    * @param {string} type
    * @returns {object}
-   * @private
    */
   static getConfig(type) {
     let config;

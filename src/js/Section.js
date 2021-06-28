@@ -126,10 +126,8 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a {@link module:Section#replyButton "Reply in section" button} to the end of the first
-   * chunk of the section.
-   *
-   * @private
+   * _For internal use._ Add a {@link module:Section#replyButton "Reply in section" button} to the
+   * end of the first chunk of the section.
    */
   addReplyButton() {
     const element = elementPrototypes.replyButton.cloneNode(true);
@@ -214,8 +212,8 @@ export default class Section extends SectionSkeleton {
     this.$replyWrapper = $(wrapper);
 
     /**
-     * Reply (button) container, a list element. It is wrapped around the {@link
-     * module:Section#$replyWrapper reply button wrapper}, but can have other elements (and
+     * Reply (button) container, a list element. It is wrapped around the
+     * {@link module:Section#$replyWrapper reply button wrapper}, but can have other elements (and
      * comments) too.
      *
      * @type {JQuery|undefined}
@@ -224,10 +222,8 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Add an {@link module:Section#addSubsectionButton "Add subsection" button} that appears when
-   * hovering over a {@link module:Section#replyButton "Reply in section" button}.
-   *
-   * @private
+   * _For internal use._ Add an {@link module:Section#addSubsectionButton "Add subsection" button}
+   * that appears when hovering over a {@link module:Section#replyButton "Reply in section" button}.
    */
   addAddSubsectionButton() {
     if (this.level !== 2) return;
@@ -475,8 +471,8 @@ export default class Section extends SectionSkeleton {
    */
   move() {
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
      *   used to create a move section dialog.
      * @private
      */
@@ -1274,11 +1270,11 @@ export default class Section extends SectionSkeleton {
      */
 
     /**
-     * ID of the revision that has {@link module:Section#code}. Filled upon running {@link
-     * module:Section#getCode}.
+     * ID of the revision that has {@link module:Section#code}. Filled upon running
+     * {@link module:Section#getCode}.
      *
      * @name revisionId
-     * @type {string|undefined}
+     * @type {number|undefined}
      * @instance
      */
 

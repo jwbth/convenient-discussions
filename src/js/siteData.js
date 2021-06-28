@@ -2,8 +2,8 @@
  * Functions for loading and setting site data, such as MediaWiki messages and configuration, and
  * setting date formats based on it.
  *
- * The code of this module, together with {@link module:timestamp}, is based on parts of {@link
- * https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/ DiscussionTools} code.
+ * The code of this module, together with {@link module:timestamp}, is based on parts of
+ * {@link https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/ DiscussionTools} code.
  *
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
@@ -65,10 +65,10 @@ function getUsedDateTokens(format) {
 }
 
 /**
- * Load messages needed to parse and generate timestamps, as well as some site data.
+ * _For internal use._ Load messages needed to parse and generate timestamps, as well as some site
+ * data.
  *
  * @returns {Promise[]}
- * @private
  */
 export function loadSiteData() {
   setFormats();

@@ -12,8 +12,8 @@ import { makeBackgroundRequest, parseCode, unknownApiErrorText } from './apiWrap
 import { parseTimestamp } from './timestamp';
 
 /**
- * Class representing a page. It contains a few properties and methods compared to {@link
- * module:Comment Comment} and {@link module:Section Section}.
+ * Class representing a page. It contains a few properties and methods compared to
+ * {@link module:Comment Comment} and {@link module:Section Section}.
  *
  * @module Page
  */
@@ -102,8 +102,8 @@ export default class Page {
 
   /**
    * Check if this page can have archives. If the page is an archive page, returns `false`. Relies
-   * on {@link module:defaultConfig.pagesWithoutArchives} and {@link
-   * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * on {@link module:defaultConfig.pagesWithoutArchives} and
+   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-can-have-archives`.
    *
    * @returns {?boolean}
@@ -124,8 +124,8 @@ export default class Page {
   }
 
   /**
-   * Get the archive prefix for the page. If no prefix is found based on {@link
-   * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * Get the archive prefix for the page. If no prefix is found based on
+   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-archive-prefix`, returns the current page's name. If the
    * page is an archive page or can't have archives, returns `null`.
    *
@@ -154,8 +154,8 @@ export default class Page {
 
   /**
    * Get the source page for the page (i.e., the page from which archiving is happening). Returns
-   * the page itself if it is not an archive page. Relies on {@link
-   * module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * the page itself if it is not an archive page. Relies on
+   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-archived-page`.
    *
    * @returns {Page}
@@ -245,8 +245,8 @@ export default class Page {
     const redirectTarget = query.redirects?.[0]?.to || null;
 
     /**
-     * Page ID on the wiki. Filled upon running {@link module:Page#getCode} or {@link
-     * module:Page#edit}. In the latter case, it is useful for newly created pages.
+     * Page ID on the wiki. Filled upon running {@link module:Page#getCode} or
+     * {@link module:Page#edit}. In the latter case, it is useful for newly created pages.
      *
      * @name pageId
      * @type {number|undefined}
@@ -262,17 +262,17 @@ export default class Page {
      */
 
     /**
-     * ID of the revision that has {@link module:Page#code}. Filled upon running {@link
-     * module:Page#getCode}.
+     * ID of the revision that has {@link module:Page#code}. Filled upon running
+     * {@link module:Page#getCode}.
      *
      * @name revisionId
-     * @type {string|undefined}
+     * @type {number|undefined}
      * @instance
      */
 
     /**
-     * Page where {@link module:Page#name} redirects. Filled upon running {@link
-     * module:Page#getCode}.
+     * Page where {@link module:Page#name} redirects. Filled upon running
+     * {@link module:Page#getCode}.
      *
      * @name redirectTarget
      * @type {?(string|undefined)}
@@ -281,8 +281,8 @@ export default class Page {
 
     /**
      * If {@link module:Page#name} redirects to some other page, the value is that page. If not, the
-     * value is the same as {@link module:Page#name}. Filled upon running {@link
-     * module:Page#getCode}.
+     * value is the same as {@link module:Page#name}. Filled upon running
+     * {@link module:Page#getCode}.
      *
      * @name realName
      * @type {string|undefined}
@@ -574,8 +574,8 @@ export default class Page {
     }
 
     /**
-     * Whether new topics go on top on this page. Filled upon running {@link
-     * module:Page#analyzeNewTopicPlacement}.
+     * Whether new topics go on top on this page. Filled upon running
+     * {@link module:Page#analyzeNewTopicPlacement}.
      *
      * @name areNewTopicsOnTop
      * @type {boolean|undefined}

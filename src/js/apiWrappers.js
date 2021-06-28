@@ -1,7 +1,7 @@
 /**
- * Wrappers for MediaWiki action API requests ({@link
- * https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link module:Page Page class}
- * methods for functions regarding concrete page names.
+ * Wrappers for MediaWiki action API requests
+ * ({@link https://www.mediawiki.org/wiki/API:Main_page}). See also the
+ * {@link module:Page Page class} methods for functions regarding concrete page names.
  *
  * @module apiWrappers
  */
@@ -46,7 +46,7 @@ export function makeBackgroundRequest(params, method = 'post') {
 
 /**
  * jQuery promise
- * 
+ *
  * @external JQueryPromise
  * @see https://api.jquery.com/Types/#Promise
  */
@@ -153,12 +153,11 @@ export function getUserInfo(reuse = false) {
 }
 
 /**
- * Generate an error text for an unknown error.
+ * _Method for internal use._ Generate an error text for an unknown error.
  *
  * @param {string} errorCode
  * @param {string} [errorInfo]
  * @returns {Promise.<string>}
- * @private
  */
 export async function unknownApiErrorText(errorCode, errorInfo) {
   let text;
@@ -310,8 +309,8 @@ export async function setLocalOption(name, value) {
 }
 
 /**
- * Set a global preferences' option value. See {@link
- * https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
+ * Set a global preferences' option value. See
+ * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
  *
  * @param {string} name
  * @param {string} value
@@ -380,9 +379,9 @@ export async function getUserGenders(users, requestInBackground = false) {
 }
 
 /**
- * Get a list of 10 user names matching the specified search text. User names are sorted as {@link
- * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a talk page
- * existent are included. Redirects are resolved.
+ * Get a list of 10 user names matching the specified search text. User names are sorted as
+ * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a
+ * talk page existent are included. Redirects are resolved.
  *
  * Reuses the existing request if available.
  *
@@ -436,8 +435,9 @@ export function getRelevantUserNames(text) {
 }
 
 /**
- * Get a list of 10 page names matching the specified search text. Page names are sorted as {@link
- * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not resolved.
+ * Get a list of 10 page names matching the specified search text. Page names are sorted as
+ * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
+ * resolved.
  *
  * Reuses the existing request if available.
  *
@@ -555,7 +555,7 @@ export function getRelevantTemplateNames(text) {
 
 /**
  * Get existence of a list of pages by title.
- * 
+ *
  * @param {string[]} titles Titles to check existence of.
  * @returns {Promise.<object>}
  */

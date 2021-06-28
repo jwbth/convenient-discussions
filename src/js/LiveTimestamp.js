@@ -159,9 +159,7 @@ export default class LiveTimestamp {
   }
 
   /**
-   * Update the timestamps (when the timestamp format is set to "improved").
-   *
-   * @private
+   * _For internal use._ Update the timestamps (when the timestamp format is set to "improved").
    */
   static updateImproved() {
     improvedTimestamps.forEach((timestamp) => {
@@ -174,8 +172,6 @@ export default class LiveTimestamp {
 
   /**
    * Reset all the live timestamps on the page (this is run on page reloads).
-   *
-   * @private
    */
   static reset() {
     updateTimeouts.forEach(clearTimeout);

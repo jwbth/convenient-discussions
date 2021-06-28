@@ -48,9 +48,7 @@ let saveSessionTimeout;
 let saveSessionLastTime;
 
 /**
- * Initiate user settings.
- * 
- * @private
+ * _For internal use._ Initiate user settings.
  */
 export async function initSettings() {
   /**
@@ -184,10 +182,9 @@ export async function initSettings() {
 }
 
 /**
- * Assign the properties related to `convenientDiscussions.g.$contentColumn`.
+ * _For internal use._ Assign the properties related to `convenientDiscussions.g.$contentColumn`.
  *
  * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
- * @private
  */
 export function setContentColumnGlobals(setCssVar) {
   const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
@@ -213,9 +210,8 @@ export function setContentColumnGlobals(setCssVar) {
 }
 
 /**
- * Assign some important skin-specific values to the properties of the global object.
- * 
- * @private
+ * _For internal use._ Assign some important skin-specific values to the properties of the global
+ * object.
  */
 export function memorizeCssValues() {
   cd.g.CONTENT_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
@@ -228,9 +224,7 @@ export function memorizeCssValues() {
 }
 
 /**
- * Set CSS for talk pages.
- *
- * @private
+ * _For internal use._ Set CSS for talk pages.
  */
 export function setTalkPageCssVariables() {
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
@@ -267,10 +261,9 @@ export function setTalkPageCssVariables() {
 }
 
 /**
- * Set a {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance to
+ * _For internal use._ Set a
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance to
  * `convenientDiscussions.g.api` if it's not already set.
- * 
- * @private
  */
 export function createApi() {
   cd.g.api = cd.g.api || new mw.Api({
@@ -793,12 +786,11 @@ function initOouiAndElementPrototypes() {
 }
 
 /**
- * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed on
- * the first run.
+ * _For internal use._ Create various global objects' (`convenientDiscussions`, `$`)
+ * properties and methods. Executed on the first run.
  *
- * @param {Promise[]} siteDataRequests Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
- * @private
+ * @param {Promise[]} siteDataRequests Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  */
 export async function init(siteDataRequests) {
   createApi();
@@ -880,11 +872,10 @@ function isShowLoadingOverlaySettingOff() {
 }
 
 /**
- * Set the loading overlay and assign `true` to `convenientDiscussions.g.isFirstRun` and
- * `convenientDiscussions.g.isPageBeingReloaded`.
+ * _For internal use._ Set the loading overlay and assign `true` to
+ * `convenientDiscussions.g.isFirstRun` and `convenientDiscussions.g.isPageBeingReloaded`.
  *
  * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
- * @private
  */
 export function startLoading(isReload = false) {
   if (isReload) {
@@ -927,10 +918,10 @@ export function startLoading(isReload = false) {
 }
 
 /**
- * Remove the loading overlay and update some state properties of the global object.
+ * _For internal use._ Remove the loading overlay and update some state properties of the global
+ * object.
  *
  * @param {boolean} [updatePageState=true] Update the state properties of the global object.
- * @private
  */
 export function finishLoading(updatePageState = true) {
   if (updatePageState) {
@@ -1044,10 +1035,10 @@ export async function reloadPage(passedData = {}) {
 }
 
 /**
- * Handle firings of the hook `'wikipage.content'` (by using `mw.hook('wikipage.content').fire()`).
+ * _For internal use._ Handle firings of the hook `'wikipage.content'` (by using
+ * `mw.hook('wikipage.content').fire()`).
  *
  * @param {JQuery} $content
- * @private
  */
 export function handleHookFirings($content) {
   if ($content.is('#mw-content-text')) {
@@ -1077,11 +1068,10 @@ function cleanUpSessions(data) {
 }
 
 /**
- * Save comment form data to the local storage. (Session storage doesn't allow to restore when the
- * browser has crashed.)
+ * _For internal use._ Save comment form data to the local storage. (Session storage doesn't allow
+ * to restore when the browser has crashed.)
  *
  * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
- * @private
  */
 export function saveSession(force) {
   const save = () => {
@@ -1211,11 +1201,10 @@ function restoreCommentFormsFromData(commentFormsData) {
 }
 
 /**
- * Return saved comment forms to their places.
+ * _For internal use._ Return saved comment forms to their places.
  *
  * @param {boolean} isPageReloadedExternally Is the page reloaded due to a `'wikipage.content`
  *   firing.
- * @private
  */
 export function restoreCommentForms(isPageReloadedExternally) {
   if (cd.g.isFirstRun || isPageReloadedExternally) {
@@ -1337,11 +1326,10 @@ export function closeNotifications(smooth = true) {
 }
 
 /**
- * Show a popup asking the user if they want to enable the new comment formatting. Save the settings
- * after they make the choice.
- * 
+ * _For internal use._ Show a popup asking the user if they want to enable the new comment
+ * formatting. Save the settings after they make the choice.
+ *
  * @returns {Promise.<boolean>} Did the user enable comment reformatting.
- * @private
  */
 export async function suggestEnableCommentReformatting() {
   if (cd.settings.reformatComments === null) {
@@ -1406,12 +1394,10 @@ export async function suggestEnableCommentReformatting() {
 }
 
 /**
- * Show a popup asking the user if they want to receive desktop notifications, or ask for a
- * permission if it has not been granted but the user has desktop notifications enabled (for
- * example, if they are using a browser different from where they have previously used). Save the
- * settings after they make the choice.
- * 
- * @private
+ * _For internal use._ Show a popup asking the user if they want to receive desktop notifications,
+ * or ask for a permission if it has not been granted but the user has desktop notifications enabled
+ * (for example, if they are using a browser different from where they have previously used). Save
+ * the settings after they make the choice.
  */
 export async function confirmDesktopNotifications() {
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {

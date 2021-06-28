@@ -105,8 +105,7 @@ export default class Comment extends CommentSkeleton {
    * Create a comment object.
    *
    * @param {Parser} parser A relevant instance of {@link module:Parser Parser}.
-   * @param {object} signature Signature object returned by {@link
-   *   module:Parser#findSignatures}.
+   * @param {object} signature Signature object returned by {@link module:Parser#findSignatures}.
    */
   constructor(parser, signature) {
     super(parser, signature);
@@ -286,8 +285,8 @@ export default class Comment extends CommentSkeleton {
       }
 
       /**
-       * A special {@link module:Comment#highlightables highlightable} used to {@link
-       * module:Comment#getLayersMargins determine layers margins}.
+       * A special {@link module:Comment#highlightables highlightable} used to
+       * {@link module:Comment#getLayersMargins determine layers margins}.
        *
        * @type {Element}
        * @private
@@ -491,8 +490,8 @@ export default class Comment extends CommentSkeleton {
     this.menuElement = menuElement;
 
     /**
-     * Comment menu. Used when comment reformatting is enabled; otherwise {@link
-     * module:Comment#$overlayMenu} is used.
+     * Comment menu. Used when comment reformatting is enabled; otherwise
+     * {@link module:Comment#$overlayMenu} is used.
      *
      * @type {JQuery|undefined}
      */
@@ -507,8 +506,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#replyButton reply button} and add it to the comment menu ({@link
-   * module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   * Create a {@link module:Comment#replyButton reply button} and add it to the comment menu
+   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
    *
    * @private
    */
@@ -538,8 +537,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create an {@link module:Comment#editButton edit button} and add it to the comment menu ({@link
-   * module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   * Create an {@link module:Comment#editButton edit button} and add it to the comment menu
+   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
    *
    * @private
    */
@@ -569,8 +568,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#thankButton thank button} and add it to the comment menu ({@link
-   * module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   * Create a {@link module:Comment#thankButton thank button} and add it to the comment menu
+   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
    *
    * @private
    */
@@ -770,9 +769,9 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Filter out floating and hidden elements from the comment's {@link
-   * module:CommentSkeleton#highlightables}, change their attributes, and update the comment's level
-   * and parent elements' level classes.
+   * Filter out floating and hidden elements from the comment's
+   * {@link module:CommentSkeleton#highlightables}, change their attributes, and update the
+   * comment's level and parent elements' level classes.
    *
    * @private
    */
@@ -813,14 +812,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment coordinates and set them as the `positions` comment property. If the comment is
-   * invisible, positions are unset.
+   * _For internal use._ Get the comment coordinates and set them as the `positions` comment
+   * property. If the comment is invisible, positions are unset.
    *
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
    *
    * @param {object} [options={}]
-   * @private
    */
   getPositions(options = {}) {
     if (options.considerFloating === undefined) {
@@ -1375,8 +1373,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Animate the comment's background and marker color to the provided colors. (Called from {@link
-   * module:Comment#animateBack}.)
+   * Animate the comment's background and marker color to the provided colors. (Called from
+   * {@link module:Comment#animateBack}.)
    *
    * @param {string} markerColor
    * @param {string} backgroundColor
@@ -1670,9 +1668,9 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update the comment's properties, remove the edit mark added in {@link
-   * module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to the
-   * original version, or unchanged, in this case).
+   * Update the comment's properties, remove the edit mark added in
+   * {@link module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to
+   * the original version, or unchanged, in this case).
    *
    * @param {string} type Type of the mark: `'changed'` or `'deleted'`.
    */
@@ -1714,14 +1712,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update the comment's content.
+   * _For internal use._ Update the comment's content.
    *
    * @param {object} currentComment Data about the comment in the current revision as delivered by
    *   the worker.
    * @param {object} newComment Data about the comment in the new revision as delivered by the
    *   worker.
    * @returns {boolean} Was the update successful.
-   * @private
    */
   update(currentComment, newComment) {
     const elementNames = Array.from(this.$elements).map((el) => el.tagName);
@@ -1994,10 +1991,10 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Generate a JQuery object containing an edit summary, diff body, and link to the next diff.
+   * _For internal use._ Generate a JQuery object containing an edit summary, diff body, and link to
+   * the next diff.
    *
    * @returns {Promise.<JQuery>}
-   * @private
    */
   async generateDiffView() {
     const edit = await this.findEditThatAdded();
@@ -2425,6 +2422,7 @@ export default class Comment extends CommentSkeleton {
     return this.cached$elements;
   }
 
+  // eslint-disable-next-line jsdoc/require-jsdoc
   set $elements(value) {
     this.cached$elements = value;
     this.elements = value.get();

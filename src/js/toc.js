@@ -44,11 +44,10 @@ class TocItem {
   }
 
   /**
-   * Generate HTML to use it in the TOC for the section. Only a limited number of HTML elements is
-   * allowed in TOC.
+   * _For internal use._ Generate HTML to use it in the TOC for the section. Only a limited number
+   * of HTML elements is allowed in TOC.
    *
    * @param {JQuery} $headline
-   * @private
    */
   replaceText($headline) {
     const html = $headline
@@ -75,12 +74,9 @@ class TocItem {
 
 export default {
   /**
-   * Hide the TOC if the relevant cookie is set. This method duplicates {@link
-   * https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js
-   * the native MediaWiki function} and exists because we may need to hide the TOC earlier than the
-   * native method does it.
-   *
-   * @private
+   * _For internal use._ Hide the TOC if the relevant cookie is set. This method duplicates
+   * {@link https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js the native MediaWiki function}
+   * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   possiblyHide() {
     if (!cd.g.$toc.length) return;
@@ -91,9 +87,7 @@ export default {
   },
 
   /**
-   * Reset the TOC data (executed at each page reload).
-   *
-   * @private
+   * _For internal use._ Reset the TOC data (executed at each page reload).
    */
   reset() {
     tocItems = null;
@@ -128,9 +122,7 @@ export default {
   },
 
   /**
-   * Highlight (bold) watched sections.
-   *
-   * @private
+   * _For internal use._ Highlight (bold) watched sections.
    */
   highlightWatchedSections() {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -147,18 +139,16 @@ export default {
    * web worker so its constructor is lost.)
    *
    * @typedef {object} SectionSkeletonLike
-   * @private
    */
 
   /**
-   * Add links to new, not yet rendered sections (loaded in the background) to the table of
-   * contents.
+   * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
+   * the table of contents.
    *
    * Note that this method may also add the `match` property to the section elements containing a
    * matched `Section` object.
    *
    * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
-   * @private
    */
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -283,16 +273,14 @@ export default {
    * web worker so its constructor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
-   * @private
    */
 
   /**
-   * Add links to new comments (either already displayed or loaded in the background) to the table
-   * of contents.
+   * _For internal use._ Add links to new comments (either already displayed or loaded in the
+   * background) to the table of contents.
    *
    * @param {CommentSkeletonLike[]|Comment[]} commentsBySection
    * @param {object} passedData
-   * @private
    */
   addNewComments(commentsBySection, passedData) {
     const firstComment = commentsBySection.values().next().value?.[0];

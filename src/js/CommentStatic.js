@@ -267,7 +267,6 @@ export default {
    * {@link module:Comment#flash flash} comments that are prescribed to flash.
    *
    * @memberof module:Comment
-   * @private
    */
   registerSeen() {
     if (document.hidden) return;
@@ -305,7 +304,6 @@ export default {
    * web worker so its constructor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
-   * @private
    */
 
   /**
@@ -313,7 +311,6 @@ export default {
    *
    * @param {CommentSkeletonLike[]|Comment[]} comments
    * @returns {Map}
-   * @private
    * @memberof module:Comment
    */
   groupBySection(comments) {
@@ -472,7 +469,6 @@ export default {
    *
    * @param {Event} e
    * @memberof module:Comment
-   * @private
    */
   highlightHovered(e) {
     if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || isPageOverlayOn()) return;
@@ -528,12 +524,11 @@ export default {
   },
 
   /**
-   * Filter out floating and hidden elements from all the comments' {@link
-   * module:CommentSkeleton#highlightables highlightables}, change their attributes, and update the
-   * comments' level and parent elements' level classes.
+   * _For internal use._ Filter out floating and hidden elements from all the comments'
+   * {@link module:CommentSkeleton#highlightables highlightables}, change their attributes, and
+   * update the comments' level and parent elements' level classes.
    *
    * @memberof module:Comment
-   * @private
    */
   reviewHighlightables() {
     cd.comments.forEach((comment) => {
@@ -543,11 +538,10 @@ export default {
   },
 
   /**
-   * Add new comments notifications to threads and sections.
+   * _For internal use._ Add new comments notifications to threads and sections.
    *
    * @param {Map} newComments
    * @memberof module:Comment
-   * @private
    */
   addNewCommentsNotes(newComments) {
     saveRelativeScrollPosition();
@@ -602,11 +596,10 @@ export default {
   },
 
   /**
-   * Reformat the comments (moving the author and date up and links down) if the relevant setting is
-   * enabled.
+   * _For internal use._ Reformat the comments (moving the author and date up and links down) if the
+   * relevant setting is enabled.
    *
    * @memberof module:Comment
-   * @private
    */
   async reformatComments() {
     if (cd.settings.reformatComments) {
@@ -644,10 +637,9 @@ export default {
   },
 
   /**
-   * Change the format of the comment timestamps according to the settings.
+   * _For internal use._ Change the format of the comment timestamps according to the settings.
    *
    * @memberof module:Comment
-   * @private
    */
   reformatTimestamps() {
     if (

@@ -1,7 +1,7 @@
 /**
  * Talk page (DOM, not wikitext) processing module. Its only export, `processPage()`, is executed
- * after {@link module:app the main module} on first run and as part of {@link
- * module:boot.reloadPage} on subsequent runs.
+ * after {@link module:app the main module} on first run and as part of
+ * {@link module:boot.reloadPage} on subsequent runs.
  *
  * @module processPage
  */
@@ -49,8 +49,8 @@ import {
  * comment layers are also made here.
  *
  * @param {PassedData} passedData
- * @param {Promise[]} siteDataRequests Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  * @private
  */
 async function prepare(passedData, siteDataRequests) {
@@ -711,8 +711,8 @@ async function processFragment(passedData) {
 }
 
 /**
- * Highlight new comments and update the navigation panel. A promise obtained from {@link
- * module:options.getVisits} should be provided.
+ * Highlight new comments and update the navigation panel. A promise obtained from
+ * {@link module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
  * @param {PassedData} passedData
@@ -829,11 +829,10 @@ function debugLog() {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
- * @private
  */
 
 /**
- * Process the current web page.
+ * _For internal use._ Process the current web page.
  *
  * @param {PassedData} [passedData={}] Data passed from the previous page state.
  * @param {Promise[]} [siteDataRequests] Array of requests returned by
@@ -844,7 +843,6 @@ function debugLog() {
  * @fires sectionsReady
  * @fires pageReady
  * @fires pageReadyFirstTime
- * @private
  */
 export default async function processPage(passedData = {}, siteDataRequests, cachedScrollY) {
   if (cd.g.isFirstRun) {

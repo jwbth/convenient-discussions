@@ -45,8 +45,7 @@ export default class CommentButton extends Button {
   }
 
   /**
-   * Create a OOUI widget (for a OOUI button) using {@link
-   * module:CommentButton#widgetConstructor}. Used internally.
+   * Create a OOUI widget (for a OOUI button) using {@link module:CommentButton#widgetConstructor}.
    *
    * @private
    */
