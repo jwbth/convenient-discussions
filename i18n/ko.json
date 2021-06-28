@@ -94,7 +94,6 @@
 	"dn-confirm-no": "아니오",
 	"dn-grantpermission": "사이트에 권한을 부여하십시오.",
 	"dn-grantpermission-again": "데스크톱 알림이 켜져 있으나 사이트가 알림 보내기를 허용하지 않습니다. 사이트에 알림을 받을 권한을 부여하시거나, 아니면 이 메시지가 다시 표시되지 않게 하려면 거부하십시오.",
-	"deadanchor-searchinarchive": "보관 문서에서 검색하시겠습니까?",
 	"restore-restored-title": "세션 복구됨",
 	"rd-summary": "편집 요약",
 	"rd-close": "닫기",

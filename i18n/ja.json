@@ -140,8 +140,6 @@
 	"dn-confirm-yes": "はい",
 	"dn-confirm-no": "いいえ",
 	"dn-grantpermission-again": "デスクトップ版の通知は有効に設定してありますが、このサイトからの通知は認めていません。受信するにはサイトに対して権限を承認するか、このメッセージを再表示しないなら受信拒否してしてください。",
-	"deadanchor-section-title": "節が見つかりません",
-	"deadanchor-comment-title": "コメントが見つかりませんでした",
 	"deadanchor-search-gotocomment": "コメントにジャンプ",
 	"restore-restored-text": "未投稿のコメント内容を自動的に復元しました。",
 	"rd-intro": "表示中のフォームのどれかが関係し、当該ページのコメントもしくは節を検知できませんでした。フォームの内容は以下に回復したとおりです。必要に応じて、内容をコピーしてください。",
