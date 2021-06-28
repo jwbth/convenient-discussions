@@ -8,7 +8,6 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Thread from './Thread';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
@@ -23,7 +22,7 @@ const beforeUnloadHandlers = {};
  */
 export function handleWindowResize() {
   setContentColumnGlobals(true);
-  commentLayers.redrawIfNecessary(true);
+  Comment.redrawLayersIfNecessary(true);
   Thread.updateLines();
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {

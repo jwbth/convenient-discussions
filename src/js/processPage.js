@@ -14,7 +14,6 @@ import Parser, { processLink } from './Parser';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import toc from './toc';
@@ -95,7 +94,7 @@ async function prepare(passedData, siteDataRequests) {
     await init(siteDataRequests);
   } else {
     resetCommentAnchors();
-    commentLayers.reset();
+    Comment.resetLayers();
   }
 }
 
@@ -1134,7 +1133,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       }
 
       const onPageMutations = () => {
-        commentLayers.redrawIfNecessary();
+        Comment.redrawLayersIfNecessary();
         Thread.updateLines();
 
         // Could also run handleScroll() here, but not sure, as it will double the execution time

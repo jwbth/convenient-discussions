@@ -13,7 +13,6 @@ import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
@@ -1075,7 +1074,7 @@ export default class Comment extends CommentSkeleton {
    */
   createLayers() {
     this.underlay = elementPrototypes.underlay.cloneNode(true);
-    commentLayers.underlays.push(this.underlay);
+    Comment.underlays.push(this.underlay);
 
     this.overlay = elementPrototypes.overlay.cloneNode(true);
     this.line = this.overlay.firstChild;
@@ -1320,7 +1319,7 @@ export default class Comment extends CommentSkeleton {
     if (!this.underlay) return;
 
     this.$animatedBackground?.add(this.$marker).stop(true, true);
-    commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
+    Comment.underlays.splice(Comment.underlays.indexOf(this.underlay), 1);
 
     this.underlay.remove();
     this.underlay = null;
@@ -1686,7 +1685,7 @@ export default class Comment extends CommentSkeleton {
       case 'deleted':
         this.isDeleted = false;
 
-        // commentLayers.redrawIfNecessary(), that is called on DOM updates, could circumvent this
+        // `Comment.redrawLayersIfNecessary()`, that is called on DOM updates, could circumvent this
         // comment if it has no property signalling that it should be highlighted, so we update its
         // styles manually.
         this.updateLayersStyles();
@@ -3133,7 +3132,7 @@ export default class Comment extends CommentSkeleton {
       }
       this.cachedLayersContainer = container;
 
-      addToArrayIfAbsent(commentLayers.layersContainers, container);
+      addToArrayIfAbsent(Comment.layersContainers, container);
     }
     return this.cachedLayersContainer;
   }

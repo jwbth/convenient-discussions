@@ -9,7 +9,6 @@ import Comment from './Comment';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -508,7 +507,7 @@ function checkForNewChanges(currentComments) {
     // If we configure the layers of deleted comments in Comment#unmarkAsChanged, they will prevent
     // layers before them from being updated due to the "stop at the first three unmoved comments"
     // optimization. So we just do the whole job here.
-    commentLayers.redrawIfNecessary(false, true);
+    Comment.redrawLayersIfNecessary(false, true);
 
     // Thread start and end items may be replaced.
     Thread.init();
@@ -707,7 +706,7 @@ function showDesktopNotification(comments) {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
-      commentLayers.redrawIfNecessary(false, true);
+      Comment.redrawLayersIfNecessary(false, true);
 
       reloadPage({
         commentAnchor: comment.anchor,

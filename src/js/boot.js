@@ -10,7 +10,6 @@ import LiveTimestamp from './LiveTimestamp';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
@@ -976,7 +975,7 @@ export async function reloadPage(passedData = {}) {
   // is we remove the layers containers. And we better do so to avoid comment layers hanging around
   // without their owner comments.
   if (passedData.isPageReloadedExternally) {
-    commentLayers.reset();
+    Comment.resetLayers();
   }
 
   // In case checkboxes were changed programmatically.

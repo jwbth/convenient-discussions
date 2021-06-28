@@ -16,7 +16,7 @@ import {
   unique,
 } from './util';
 import { getPagesExistence } from './apiWrappers';
-import { reloadPage } from './boot';
+import { isPageLoading, reloadPage } from './boot';
 
 /**
  * Add all comment's children, including indirect, into array, if they are in the array of new
@@ -126,6 +126,20 @@ function addNewCommentsNote(comments, parent, type, newCommentIds) {
 
 export default {
   /**
+   * List of the underlays.
+   *
+   * @type {Element[]}
+   */
+   underlays: [],
+
+   /**
+    * List of the containers of the underlays.
+    *
+    * @type {Element[]}
+    */
+   layersContainers: [],
+
+  /**
    * Configure and add layers for a group of comments.
    *
    * @param {Comment[]} comments
@@ -152,8 +166,105 @@ export default {
   },
 
   /**
-   * Mark comments that are currently in the viewport as read, and also {@link module:Comment#flash
-   * flash} comments that are prescribed to flash.
+   * Recalculate positions of the highlighted comments' (usually, new or own) layers and redraw if
+   * they've changed.
+   *
+   * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
+   * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
+   */
+  redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false) {
+    if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
+
+    cd.debug.startTimer('redrawIfNecessary');
+
+    this.layersContainers.forEach((container) => {
+      container.cdCouldHaveMoved = true;
+    });
+
+    const comments = [];
+    const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.scrollY;
+    let notMovedCount = 0;
+    let floatingRects;
+
+    // We go from the end and stop at the first _three_ comments that have not been misplaced. A
+    // quirky reason for this is that the mouse could be over some comment making its underlay to be
+    // repositioned immediately and therefore not appearing as misplaced to this procedure. Three
+    // comments threshold should be more reliable.
+    cd.comments.slice().reverse().some((comment) => {
+      const shouldBeHighlighted = (
+        !comment.isCollapsed &&
+        (
+          comment.isNew ||
+          comment.isOwn ||
+          comment.isTarget ||
+          comment.isHovered ||
+          comment.isDeleted ||
+
+          // Need to generate the gray line to close the gaps between adjacent list item elements.
+          comment.isLineGapped
+        )
+      );
+
+      // Layers that ended up under the bottom of the page content and could be moving the page
+      // bottom down.
+      const isUnderRootBottom = comment.positions && comment.positions.bottom > rootBottom;
+
+      if ((removeUnhighlighted || isUnderRootBottom) && !shouldBeHighlighted && comment.underlay) {
+        comment.removeLayers();
+      } else if (shouldBeHighlighted && !comment.editForm) {
+        floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
+        const isMoved = comment.configureLayers({
+          // If a comment was hidden, then became visible, we need to add the layers.
+          add: true,
+
+          update: false,
+          floatingRects,
+        });
+        if (isMoved === null) {
+          comment.removeLayers();
+        }
+        if (isMoved || redrawAll) {
+          notMovedCount = 0;
+          comments.push(comment);
+        } else if (
+          isMoved === false &&
+
+          // Nested containers shouldn't count, the positions of the layers inside them may be OK,
+          // unlike the layers preceding them.
+          !comment.getLayersContainer().parentNode.parentNode
+            .closest('.cd-commentLayersContainer-parent')
+        ) {
+          notMovedCount++;
+          if (notMovedCount === 3) {
+            return true;
+          }
+        }
+      }
+      return false;
+    });
+
+    // It's faster to update the positions separately in one sequence.
+    comments.forEach((comment) => {
+      comment.updateLayersPositions();
+    });
+
+    cd.debug.stopTimer('redrawIfNecessary');
+  },
+
+  /**
+   * _For internal use._ Empty the underlay registry and the layers container elements. Done on page
+   * reload.
+   */
+  resetLayers() {
+    this.underlays = [];
+    this.layersContainers.forEach((container) => {
+      container.innerHTML = '';
+    });
+  },
+
+  /**
+   * _For internal use._ Mark comments that are currently in the viewport as read, and also
+   * {@link module:Comment#flash flash} comments that are prescribed to flash.
    *
    * @memberof module:Comment
    * @private
