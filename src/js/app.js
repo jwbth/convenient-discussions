@@ -166,8 +166,8 @@ function mws(name, ...params) {
 }
 
 /**
- * When searching for a comment after clicking "OK" in a "Comment not found" dialog, add comment
- * links to the titles.
+ * When on a Special:Search page, searching for a comment after choosing that option from the
+ * "Couldn't find the comment" message, add comment links to the titles.
  *
  * @private
  */
@@ -176,7 +176,7 @@ function addCommentLinksToSpecialSearch() {
   if (commentAnchor) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await loadSiteData();
+        await Promise.all(...loadSiteData());
         $('.mw-search-result-heading').each((i, el) => {
           const href = (
             $(el)
