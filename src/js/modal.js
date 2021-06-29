@@ -1342,10 +1342,10 @@ export async function notFound(decodedFragment, date) {
   let label;
   let sectionName;
   if (date) {
-    label = cd.s('deadanchor-comment-text')
+    label = cd.s('deadanchor-comment-lead')
   } else {
     sectionName = underlinesToSpaces(decodedFragment);
-    label = cd.s('deadanchor-section-text', sectionName);
+    label = cd.s('deadanchor-section-lead', sectionName);
   }
   if (cd.g.PAGE.canHaveArchives()) {
     label += ' ';
@@ -1387,10 +1387,10 @@ export async function notFound(decodedFragment, date) {
       if (results.length === 0) {
         let label;
         if (date) {
-          label = cd.s('deadanchor-comment-text') + ' ' + cd.s('deadanchor-comment-notfound');
+          label = cd.s('deadanchor-comment-lead') + ' ' + cd.s('deadanchor-comment-notfound');
         } else {
           label = (
-            cd.s('deadanchor-section-text', sectionName) +
+            cd.s('deadanchor-section-lead', sectionName) +
             ' ' +
             cd.s('deadanchor-section-notfound')
           );
