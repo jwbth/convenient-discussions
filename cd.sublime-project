@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": [".git", "node_modules", "dist", "docs"],
+			"folder_exclude_patterns": [".git", "node_modules", "dist"],
 		}
 	],
   "settings":

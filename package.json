@@ -6,7 +6,7 @@
     "start": "node buildConfigs && node buildI18n && webpack serve --env dev",
     "configs": "node buildConfigs",
     "deploy": "node --unhandled-rejections=strict deploy",
-    "docs": "rimraf docs && jsdoc -c jsdoc.config.js",
+    "docs": "rimraf dist/docs && jsdoc -c jsdoc.config.js",
     "i18n": "node buildI18n",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions",
     "single": "webpack serve --env single",
