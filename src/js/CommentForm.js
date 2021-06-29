@@ -3288,7 +3288,7 @@ export default class CommentForm {
   async cancel(confirmClose = true) {
     if (isPageOverlayOn() || this.isBeingSubmitted()) return;
 
-    if (confirmClose && !confirmClose()) {
+    if (confirmClose && !this.confirmClose()) {
       focusInput(this.commentInput);
       return;
     }
