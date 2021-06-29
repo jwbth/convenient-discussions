@@ -23,7 +23,7 @@ jobs:
             REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
             SSH_PRIVATE_KEY: ${{ secrets.TOOLFORGE_KEY }}
             ARGS: "-rltgoDzvO --delete"
-            SOURCE: "docs/"
+            SOURCE: "dist/docs/"
             TARGET: "/data/project/convenient-discussions/www/static/docs"
       - name: Take file ownership to the tool
         uses: appleboy/ssh-action@v0.1.2

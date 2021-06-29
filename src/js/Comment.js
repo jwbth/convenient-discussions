@@ -13,7 +13,6 @@ import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
@@ -106,8 +105,7 @@ export default class Comment extends CommentSkeleton {
    * Create a comment object.
    *
    * @param {Parser} parser A relevant instance of {@link module:Parser Parser}.
-   * @param {object} signature Signature object returned by {@link
-   *   module:Parser#findSignatures}.
+   * @param {object} signature Signature object returned by {@link module:Parser#findSignatures}.
    */
   constructor(parser, signature) {
     super(parser, signature);
@@ -124,7 +122,7 @@ export default class Comment extends CommentSkeleton {
     this.author = userRegistry.getUser(this.authorName);
 
     /**
-     * Comment signature element as a jQuery object.
+     * Comment signature element.
      *
      * @type {JQuery}
      */
@@ -174,7 +172,6 @@ export default class Comment extends CommentSkeleton {
      * excluding pages that are visited for the first time.
      *
      * @type {?boolean}
-     * @memberof module:Comment
      */
     this.isNew = null;
 
@@ -184,7 +181,6 @@ export default class Comment extends CommentSkeleton {
      * need to know if the comment is highlighted as new and unseen.
      *
      * @type {?boolean}
-     * @memberof module:Comment
      */
     this.isSeen = null;
 
@@ -253,6 +249,11 @@ export default class Comment extends CommentSkeleton {
     this.subitemList = new CommentSubitemList();
   }
 
+  /**
+   * Set the {@link module:Comment#anchorHighlightable} element.
+   *
+   * @private
+   */
   setAnchorHighlightable() {
     cd.debug.startTimer('anchorHighlightable');
     if (this.highlightables.length > 1) {
@@ -282,6 +283,14 @@ export default class Comment extends CommentSkeleton {
           anchorHighlightableIndex = i;
         }
       }
+
+      /**
+       * A special {@link module:Comment#highlightables highlightable} used to
+       * {@link module:Comment#getLayersMargins determine layers margins}.
+       *
+       * @type {Element}
+       * @private
+       */
       this.anchorHighlightable = firstAndLastHighlightable[anchorHighlightableIndex];
     } else {
       this.anchorHighlightable = this.highlightables[0];
@@ -289,6 +298,19 @@ export default class Comment extends CommentSkeleton {
     cd.debug.stopTimer('anchorHighlightable');
   }
 
+  /**
+   * @typedef {object[]} ReplaceSignatureWithHeaderReturn
+   * @property {string} pageName
+   * @property {Element} link
+   * @private
+   */
+
+  /**
+   * Remove the comment signature, adding a comment header to the top highlightable instead.
+   *
+   * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
+   * @private
+   */
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
@@ -375,6 +397,12 @@ export default class Comment extends CommentSkeleton {
     }
 
     this.headerElement = headerElement;
+
+    /**
+     * Comment header. Used when comment reformatting is enabled.
+     *
+     * @type {JQuery|undefined}
+     */
     this.$header = $(this.headerElement);
 
     // This is usually done in the CommentSkeleton constructor, but if Comment#reviewHighlightables
@@ -449,10 +477,24 @@ export default class Comment extends CommentSkeleton {
     return pagesToCheckExistence;
   }
 
+  /**
+   * Add a menu to the bottom highlightable element of the comment and fill it with buttons. Used
+   * when comment reformatting is enabled; otherwise {@link module:Comment#createLayers} is used.
+   *
+   * @private
+   */
   addMenu() {
     const menuElement = document.createElement('div');
     menuElement.className = 'cd-comment-menu';
+
     this.menuElement = menuElement;
+
+    /**
+     * Comment menu. Used when comment reformatting is enabled; otherwise
+     * {@link module:Comment#$overlayMenu} is used.
+     *
+     * @type {JQuery|undefined}
+     */
     this.$menu = $(this.menuElement);
 
     this.createReplyButton();
@@ -463,6 +505,12 @@ export default class Comment extends CommentSkeleton {
     this.highlightables[this.highlightables.length - 1].appendChild(this.menuElement);
   }
 
+  /**
+   * Create a {@link module:Comment#replyButton reply button} and add it to the comment menu
+   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   *
+   * @private
+   */
   createReplyButton() {
     if (this.isActionable) {
       const action = this.replyButtonClick.bind(this);
@@ -488,6 +536,12 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Create an {@link module:Comment#editButton edit button} and add it to the comment menu
+   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   *
+   * @private
+   */
   createEditButton() {
     if (this.isActionable && (this.isOwn || cd.settings.allowEditOthersComments)) {
       const action = this.editButtonClick.bind(this);
@@ -513,6 +567,12 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Create a {@link module:Comment#thankButton thank button} and add it to the comment menu
+   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   *
+   * @private
+   */
   createThankButton() {
     if (this.author.isRegistered() && this.date && !this.isOwn) {
       if (!thanks) {
@@ -552,21 +612,31 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Create a {@link module:Comment#copyLinkButton copy link button} and add it to the comment menu
+   * ({@link module:Comment#$overlayMenu}).
+   *
+   * @private
+   */
   createCopyLinkButton() {
-    if (this.anchor) {
-      if (!cd.settings.reformatComments) {
-        const element = elementPrototypes.copyLinkButton.cloneNode(true);
-        const widgetConstructor = elementPrototypes.getCopyLinkButton;
-        this.copyLinkButton = new CommentButton({
-          element,
-          action: this.copyLink.bind(this),
-          widgetConstructor,
-        });
-        this.overlayMenu.appendChild(this.copyLinkButton.element);
-      }
+    if (this.anchor && !cd.settings.reformatComments) {
+      const element = elementPrototypes.copyLinkButton.cloneNode(true);
+      const widgetConstructor = elementPrototypes.getCopyLinkButton;
+      this.copyLinkButton = new CommentButton({
+        element,
+        action: this.copyLink.bind(this),
+        widgetConstructor,
+      });
+      this.overlayMenu.appendChild(this.copyLinkButton.element);
     }
   }
 
+  /**
+   * Create a {@link module:Comment#goToParentButton go to parent button} and add it to the comment
+   * header ({@link module:Comment#$header} or {@link module:Comment#$overlayMenu}).
+   *
+   * @private
+   */
   createGoToParentButton() {
     if (this.getParent()) {
       const action = this.goToParentButtonClick.bind(this);
@@ -592,6 +662,12 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Create a {@link module:Comment#goToChildButton go to child button} and add it to the comment
+   * header ({@link module:Comment#$header} or {@link module:Comment#$overlayMenu}).
+   *
+   * @private
+   */
   createGoToChildButton() {
     if (cd.settings.reformatComments) {
       /**
@@ -614,6 +690,11 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Change the format of the comment timestamp according to the settings.
+   *
+   * @private
+   */
   reformatTimestamp() {
     if (!this.date) return;
 
@@ -677,6 +758,7 @@ export default class Comment extends CommentSkeleton {
    * modifications affecting comment parts.
    *
    * @param {Element} element
+   * @private
    */
   bindEvents(element) {
     if (cd.settings.reformatComments) return;
@@ -687,9 +769,11 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Filter out floating and hidden elements from the comment's {@link
-   * module:CommentSkeleton#highlightables}, change their attributes, and update the comment's level
-   * and parent elements' level classes.
+   * Filter out floating and hidden elements from the comment's
+   * {@link module:CommentSkeleton#highlightables}, change their attributes, and update the
+   * comment's level and parent elements' level classes.
+   *
+   * @private
    */
   reviewHighlightables() {
     for (let i = 0; i < this.highlightables.length; i++) {
@@ -728,14 +812,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment coordinates and set them as the `positions` comment property. If the comment is
-   * invisible, positions are unset.
+   * _For internal use._ Get the comment coordinates and set them as the `positions` comment
+   * property. If the comment is invisible, positions are unset.
    *
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
    *
    * @param {object} [options={}]
-   * @private
    */
   getPositions(options = {}) {
     if (options.considerFloating === undefined) {
@@ -819,6 +902,11 @@ export default class Comment extends CommentSkeleton {
     this.positions = { top, bottom, left, right, downplayedBottom };
   }
 
+  /**
+   * Get the left and right margins of the comment layers.
+   *
+   * @returns {number[]}
+   */
   getLayersMargins() {
     cd.debug.startTimer('getLayersMargins');
 
@@ -924,9 +1012,10 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Hide the comment menu (in fact, the comment overlay).
+   * Hide the comment menu (in fact, the comment overlay's inner wrapper).
    *
    * @param {Event} [e]
+   * @private
    */
   hideMenu(e) {
     if (e) {
@@ -935,6 +1024,11 @@ export default class Comment extends CommentSkeleton {
     this.overlayInnerWrapper.style.display = 'none';
   }
 
+  /**
+   * Handle the reply button click.
+   *
+   * @private
+   */
   replyButtonClick() {
     if (this.replyForm) {
       this.replyForm.cancel();
@@ -943,27 +1037,42 @@ export default class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Handle the edit button click.
+   *
+   * @private
+   */
   editButtonClick() {
     this.edit();
   }
 
+  /**
+   * Handle the thank button click.
+   *
+   * @private
+   */
   thankButtonClick() {
     this.thank();
   }
 
+  /**
+   * Handle the "Go to parent" button click.
+   *
+   * @private
+   */
   goToParentButtonClick() {
     this.goToParent();
   }
 
   /**
-   * Create the comment's underlay and overlay.
+   * Create the comment's underlay and overlay with contents.
    *
    * @fires commentLayersCreated
    * @private
    */
   createLayers() {
     this.underlay = elementPrototypes.underlay.cloneNode(true);
-    commentLayers.underlays.push(this.underlay);
+    Comment.underlays.push(this.underlay);
 
     this.overlay = elementPrototypes.overlay.cloneNode(true);
     this.line = this.overlay.firstChild;
@@ -1018,7 +1127,7 @@ export default class Comment extends CommentSkeleton {
     /**
      * Comment's side marker.
      *
-     * @type {?(JQuery|undefined)}
+     * @type {JQuery|undefined}
      */
     this.$marker = $(this.marker);
 
@@ -1047,6 +1156,13 @@ export default class Comment extends CommentSkeleton {
     mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
   }
 
+  /**
+   * Set classes to the underlay, overlay, and other elements according to a type.
+   *
+   * @param {string} type
+   * @param {*} add
+   * @private
+   */
   updateClassesForType(type, add) {
     add = Boolean(add);
     if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) !== add) {
@@ -1066,6 +1182,7 @@ export default class Comment extends CommentSkeleton {
    * Update the styles of the layers according to the comment's properties.
    *
    * @param {boolean} [wereJustCreated=false] Were the layers just created.
+   * @private
    */
   updateLayersStyles(wereJustCreated = false) {
     if (!this.underlay) return;
@@ -1170,6 +1287,8 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Add the (already existent) comment's layers to the DOM.
+   *
+   * @private
    */
   addLayers() {
     if (!this.underlay) return;
@@ -1181,12 +1300,34 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Transfer the `layers(Top|Left|Width|Height)` values to the style of the layers.
+   *
+   * @private
    */
   updateLayersPositions() {
     this.underlay.style.top = this.overlay.style.top = this.layersTop + 'px';
     this.underlay.style.left = this.overlay.style.left = this.layersLeft + 'px';
     this.underlay.style.width = this.overlay.style.width = this.layersWidth + 'px';
     this.underlay.style.height = this.overlay.style.height = this.layersHeight + 'px';
+  }
+
+  /**
+   * Remove the comment's layers.
+   */
+  removeLayers() {
+    if (!this.underlay) return;
+
+    this.$animatedBackground?.add(this.$marker).stop(true, true);
+    Comment.underlays.splice(Comment.underlays.indexOf(this.underlay), 1);
+
+    this.underlay.remove();
+    this.underlay = null;
+    this.$underlay = null;
+
+    this.overlay.remove();
+    this.overlay = null;
+    this.$overlay = null;
+
+    this.isHovered = false;
   }
 
   /**
@@ -1205,7 +1346,9 @@ export default class Comment extends CommentSkeleton {
         });
     }
 
-    this.$animatedBackground?.stop(false, true);
+    // Animation will be directed to wrong properties if we keep it going.
+    this.$animatedBackground?.stop(true, true);
+
     const isMoved = this.configureLayers();
 
     // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
@@ -1222,12 +1365,22 @@ export default class Comment extends CommentSkeleton {
   unhighlightHovered() {
     if (!this.isHovered || cd.settings.reformatComments) return;
 
-    this.$animatedBackground?.stop(false, true);
+    // Animation will be directed to wrong properties if we keep it going.
+    this.$animatedBackground?.stop(true, true);
 
     this.updateClassesForType('hovered', false);
     this.isHovered = false;
   }
 
+  /**
+   * Animate the comment's background and marker color to the provided colors. (Called from
+   * {@link module:Comment#animateBack}.)
+   *
+   * @param {string} markerColor
+   * @param {string} backgroundColor
+   * @param {Function} callback Function to run when the animation is concluded.
+   * @private
+   */
   animateToColors(markerColor, backgroundColor, callback) {
     const generateProperties = (backgroundColor) => {
       const properties = { backgroundColor };
@@ -1262,11 +1415,20 @@ export default class Comment extends CommentSkeleton {
     });
   }
 
+  /**
+   * Animate the comment's background and marker color back from the colors of a given type.
+   *
+   * @param {string} type
+   * @param {Function} callback
+   * @private
+   */
   animateBack(type, callback) {
     this.animateBackBound = null;
 
-    if (!this.underlay) {
-      callback();
+    if (!this.$underlay?.parent().length) {
+      if (callback) {
+        callback();
+      }
       return;
     }
 
@@ -1300,8 +1462,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Change the comment's background color to a color of the provided comment type for the given
-   * number of milliseconds, then smoothly change it back.
+   * Change the comment's background and marker color to a color of the provided comment type for
+   * the given number of milliseconds, then smoothly change it back.
    *
    * @param {string} type
    * @param {number} delay
@@ -1322,14 +1484,14 @@ export default class Comment extends CommentSkeleton {
     }
 
     /**
-     * Comment underlay and menu whose colors are animated in some events.
+     * Comment underlay and menu, whose colors are animated in some events.
      *
-     * @type {?(JQuery|undefined)}
+     * @type {JQuery|undefined}
      */
     this.$animatedBackground = this.$underlay.add(this.$overlayMenu);
 
-    // Reset the animations and colors
-    this.$animatedBackground.add(this.$marker).stop(false, true);
+    // Reset animations and colors
+    this.$animatedBackground.add(this.$marker).stop(true, true);
 
     this.updateClassesForType(type, true);
 
@@ -1506,9 +1668,9 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update the comment's properties, remove the edit mark added in {@link
-   * module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to the
-   * original version, or unchanged, in this case).
+   * Update the comment's properties, remove the edit mark added in
+   * {@link module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to
+   * the original version, or unchanged, in this case).
    *
    * @param {string} type Type of the mark: `'changed'` or `'deleted'`.
    */
@@ -1521,7 +1683,7 @@ export default class Comment extends CommentSkeleton {
       case 'deleted':
         this.isDeleted = false;
 
-        // commentLayers.redrawIfNecessary(), that is called on DOM updates, could circumvent this
+        // `Comment.redrawLayersIfNecessary()`, that is called on DOM updates, could circumvent this
         // comment if it has no property signalling that it should be highlighted, so we update its
         // styles manually.
         this.updateLayersStyles();
@@ -1550,7 +1712,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update the comment's content.
+   * _For internal use._ Update the comment's content.
    *
    * @param {object} currentComment Data about the comment in the current revision as delivered by
    *   the worker.
@@ -1652,7 +1814,7 @@ export default class Comment extends CommentSkeleton {
    * @param {boolean} [smooth=true] Use a smooth animation.
    * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
    *   anchor as a fragment.
-   * @param {boolean} flash Whether to flash the comment as target.
+   * @param {boolean} [flash=true] Whether to flash the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
   scrollTo(smooth = true, pushState = false, flash = true, callback) {
@@ -1713,8 +1875,9 @@ export default class Comment extends CommentSkeleton {
   /**
    * Find the edit that added the comment.
    *
-   * @returns {object}
+   * @returns {Promise.<object>}
    * @throws {CdError}
+   * @private
    */
   async findEditThatAdded() {
     if (this.editThatAdded) {
@@ -1794,21 +1957,11 @@ export default class Comment extends CommentSkeleton {
       matches.push({ revision, wordOverlap, dateProximity });
     }
 
-    let bestMatch;
-    matches.forEach((match) => {
-      if (
-        !bestMatch ||
-        match.wordOverlap > bestMatch.wordOverlap ||
-        (
-          bestMatch &&
-          match.wordOverlap === bestMatch.wordOverlap &&
-          match.dateProximity > bestMatch.dateProximity
-        )
-      ) {
-        bestMatch = match;
-      }
-    });
-
+    const bestMatch = matches.sort((m1, m2) => (
+      m1.wordOverlap === m2.wordOverlap ?
+      m2.dateProximity - m1.dateProximity :
+      m2.wordOverlap - m1.wordOverlap
+    ))[0];
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -1825,7 +1978,7 @@ export default class Comment extends CommentSkeleton {
    * Get a diff link for the comment.
    *
    * @param {boolean} short Whether to return a short diff link.
-   * @returns {string}
+   * @returns {Promise.<string>}
    */
   async getDiffLink(short) {
     const edit = await this.findEditThatAdded();
@@ -1838,10 +1991,10 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Generate a JQuery object containing an edit summary, diff body, and link to the next diff.
+   * _For internal use._ Generate a JQuery object containing an edit summary, diff body, and link to
+   * the next diff.
    *
-   * @returns {JQuery}
-   * @private
+   * @returns {Promise.<JQuery>}
    */
   async generateDiffView() {
     const edit = await this.findEditThatAdded();
@@ -1977,30 +2130,31 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Locate the comment in the page source code and, if no `pageCode` is passed, set the results to
-   * the `inCode` property. Otherwise, return the result.
+   * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
+   * passed, set the results to the `inCode` property. Otherwise, return the result.
    *
-   * @param {string} [pageCode] Page code, if different from the `code` property of {@link
-   *   Comment#getSourcePage()}.
-   * @param {string} [commentData] Comment data for comparison (can be set together with pageCode).
+   * @param {string|boolean} [codeOrUseSectionCode] Code that should have the comment (provided only
+   *   if we need to perform operations on some code that is not the code of a section or page).
+   *   Boolean `true` means to use the (prefetched) section code to locate the comment in.
+   * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
    * @returns {string|undefined}
    * @throws {CdError}
    */
-  locateInCode(pageCode, commentData) {
-    if (!pageCode) {
+  locateInCode(codeOrUseSectionCode, commentData) {
+    let code;
+    if (typeof codeOrUseSectionCode === 'string') {
+      code = codeOrUseSectionCode;
+    } else if (codeOrUseSectionCode === true) {
+      code = this.section.code;
+      this.inCode = null;
+    } else {
+      code = this.getSourcePage().code;
       this.inCode = null;
     }
 
-    // Collect matches
-    const matches = this.searchInCode(pageCode || this.getSourcePage().code, commentData);
-
-    let bestMatch;
-    matches.forEach((match) => {
-      if (!bestMatch || match.score > bestMatch.score) {
-        bestMatch = match;
-      }
-    });
-
+    const isSectionCodeUsed = codeOrUseSectionCode === true;
+    const matches = this.searchInCode(code, commentData, isSectionCodeUsed);
+    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
     if (!bestMatch) {
       throw new CdError({
         type: 'parse',
@@ -2008,8 +2162,10 @@ export default class Comment extends CommentSkeleton {
       });
     }
 
+    bestMatch.isSectionCodeUsed = isSectionCodeUsed;
+
     const inCode = this.adjustCommentCodeData(bestMatch);
-    if (pageCode) {
+    if (typeof codeOrUseSectionCode === 'string') {
       return inCode;
     } else {
       this.inCode = inCode;
@@ -2168,8 +2324,22 @@ export default class Comment extends CommentSkeleton {
    */
   async getCode() {
     try {
-      await this.getSourcePage().getCode();
-      this.locateInCode();
+      let useSectionCode = false;
+      if (this.section && this.section.liveSectionNumber !== null) {
+        try {
+          await this.section.requestCode();
+          useSectionCode = true;
+        } catch (e) {
+          if (e instanceof CdError && e.data.code === 'noSuchSection') {
+            await this.getSourcePage().getCode();
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        await this.getSourcePage().getCode();
+      }
+      this.locateInCode(useSectionCode);
     } catch (e) {
       if (e instanceof CdError) {
         throw new CdError(Object.assign({}, {
@@ -2237,27 +2407,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Remove the comment's layers.
-   */
-  removeLayers() {
-    if (!this.underlay) return;
-
-    this.$animatedBackground?.stop();
-    this.$marker.stop();
-    commentLayers.underlays.splice(commentLayers.underlays.indexOf(this.underlay), 1);
-
-    this.underlay.remove();
-    this.underlay = null;
-    this.$underlay = null;
-
-    this.overlay.remove();
-    this.overlay = null;
-    this.$overlay = null;
-
-    this.isHovered = false;
-  }
-
-  /**
    * Comment elements as a jQuery object.
    *
    * Uses a getter because elements of a comment can be altered after creating an instance, for
@@ -2273,6 +2422,7 @@ export default class Comment extends CommentSkeleton {
     return this.cached$elements;
   }
 
+  // eslint-disable-next-line jsdoc/require-jsdoc
   set $elements(value) {
     this.cached$elements = value;
     this.elements = value.get();
@@ -2594,7 +2744,7 @@ export default class Comment extends CommentSkeleton {
         // Cases where indentation characters on the first line don't denote a comment level but
         // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
         // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
-        // "replaceIndentationChars" in Comment#adjustCommentBeginning).
+        // `replaceIndentationChars()` in Comment#adjustCommentBeginning).
         if (replyIndentationChars.length < data.originalIndentationChars.length) {
           // We better restore the original space or its absence here.
           const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
@@ -2621,10 +2771,11 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {string} pageCode
    * @param {string} commentData
+   * @param {boolean} isSectionCodeUsed
    * @returns {object}
    * @private
    */
-  searchInCode(pageCode, commentData) {
+  searchInCode(pageCode, commentData, isSectionCodeUsed) {
     const signatures = extractSignatures(pageCode);
     // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
     // templates (it may be present and may be not), but it appears on the page.
@@ -2649,14 +2800,20 @@ export default class Comment extends CommentSkeleton {
       signatureEndIndex: match.startIndex + match.dirtyCode.length,
     }));
 
-    // For the reserve method; the main method uses one date.
-    const previousComments = commentData ?
-      commentData.previousComments :
-      cd.comments
-        .slice(Math.max(0, this.id - 2), this.id)
-        .reverse();
+    let id;
+    let previousComments;
+    if (commentData) {
+      id = commentData.id;
 
-    const id = commentData ? commentData.id : this.id;
+      // For the reserve method; the main method uses one date.
+      previousComments = commentData.previousComments;
+    } else {
+      const comments = isSectionCodeUsed ? this.section.comments : cd.comments;
+      id = comments.indexOf(this);
+      previousComments = comments
+        .slice(Math.max(0, id - 2), id)
+        .reverse();
+    }
 
     let followsHeading;
     let sectionHeadline;
@@ -2756,26 +2913,31 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Modify a page code string related to the comment in accordance with an action.
+   * Modify a section or page code string related to the comment in accordance with an action.
    *
    * @param {object} options
-   * @param {string} options.pageCode
-   * @param {string} options.action
-   * @param {string} options.doDelete
-   * @param {string} [options.thisInCode] Should be set if `commentCode` is set.
-   * @param {string} [options.commentForm] `commentCode` or `commentForm` should be set.
-   * @param {string} [options.commentCode] `commentCode` or `commentForm` should be set.
-   * @returns {string}
+   * @param {string} options.action `'reply'` or `'edit'`.
+   * @param {string} [options.commentCode] Comment code. Can be not set if `doDelete` is `true`.
+   * @param {boolean} [options.doDelete] Whether to delete the comment.
+   * @param {string} [options.wholeCode] Code that has the comment (provided together with
+   *   `thisInCode` only if we need to perform operations on some code that is not the code of a
+   *   section or page).
+   * @param {string} [options.thisInCode] Result of {@link module:Comment#locateInCode} called with
+   *   the code in the first parameter.
+   * @returns {string} New code.
    * @throws {CdError}
    */
-  modifyCode({ pageCode, action, doDelete, commentForm, thisInCode, commentCode }) {
+  modifyWholeCode({ action, commentCode, wholeCode, doDelete, thisInCode }) {
     thisInCode = thisInCode || this.inCode;
+    if (!wholeCode) {
+      wholeCode = thisInCode.isSectionCodeUsed ? this.section.code : this.getSourcePage().code;
+    }
 
     let currentIndex;
     if (action === 'reply') {
       currentIndex = thisInCode.endIndex;
 
-      let adjustedCode = hideDistractingCode(pageCode);
+      let adjustedCode = hideDistractingCode(wholeCode);
       if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
         adjustedCode = adjustedCode
           .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentationChars) => (
@@ -2787,18 +2949,17 @@ export default class Comment extends CommentSkeleton {
       if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
         let match;
         while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
-          adjustedCode = (
-            adjustedCode.slice(0, match.index) +
-            hideTemplatesRecursively(adjustedCode.slice(match.index), null, match[1].length).code
-          );
+          const codeBeforeMatch = adjustedCode.slice(0, match.index);
+          const codeAfterMatch = adjustedCode.slice(match.index);
+          const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
+          adjustedCode = codeBeforeMatch + adjustedCam;
         }
       }
 
       const adjustedCodeAfter = adjustedCode.slice(currentIndex);
-
       const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*?\1[ \t\x01\x02]*\n|$/);
       let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
-      let chunkCodeAfter = pageCode.slice(currentIndex, chunkCodeAfterEndIndex);
+      let chunkCodeAfter = wholeCode.slice(currentIndex, chunkCodeAfterEndIndex);
       cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
         const match = chunkCodeAfter.match(regexp);
         if (match) {
@@ -2835,48 +2996,44 @@ export default class Comment extends CommentSkeleton {
         ) +
         ')'
       );
-      let [, adjustedCodeInBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
+      let [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
-      if (adjustedCodeInBetween === undefined) {
-        adjustedCodeInBetween = adjustedChunkCodeAfter;
+      if (adjustedCodeBetween === undefined) {
+        adjustedCodeBetween = adjustedChunkCodeAfter;
       }
 
       // Hotfix for comments inside a table (barnstars, for example).
       if (
         this.isInSingleCommentTable &&
-        adjustedChunkCodeAfter.slice(adjustedCodeInBetween.length).startsWith('|}\n')
+        adjustedChunkCodeAfter.slice(adjustedCodeBetween.length).startsWith('|}\n')
       ) {
-        adjustedCodeInBetween += '|}\n';
+        adjustedCodeBetween += '|}\n';
       }
 
       // If the comment is to be put after a comment with different indentation characters, use
       // these.
       const [, changedIndentationChars] = (
-        adjustedCodeInBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) ||
+        adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) ||
         []
       );
       if (changedIndentationChars) {
         // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used ".slice(0, thisInCode.indentationChars.length + 1)" (due to
-        // "**" as indentation characters in Bsivko's comment).
+        // possible here when we used `.slice(0, thisInCode.indentationChars.length + 1)` (due to
+        // `**` as indentation characters in Bsivko's comment).
         thisInCode.replyIndentationChars = changedIndentationChars
           .slice(0, thisInCode.replyIndentationChars.length)
           .replace(/:$/, cd.config.defaultIndentationChar);
       }
 
-      currentIndex += adjustedCodeInBetween.length;
+      currentIndex += adjustedCodeBetween.length;
     }
 
-    if (!commentCode && commentForm && !doDelete) {
-      commentCode = commentForm.commentTextToCode('submit');
-    }
-
-    let newPageCode;
-    let codeBeforeInsertion;
+    let newWholeCode;
     switch (action) {
       case 'reply': {
-        codeBeforeInsertion = pageCode.slice(0, currentIndex);
-        newPageCode = codeBeforeInsertion + commentCode + pageCode.slice(currentIndex);
+        const codeBefore = wholeCode.slice(0, currentIndex);
+        const codeAfter = wholeCode.slice(currentIndex);
+        newWholeCode = codeBefore + commentCode + codeAfter;
         break;
       }
 
@@ -2885,7 +3042,9 @@ export default class Comment extends CommentSkeleton {
           let startIndex;
           let endIndex;
           if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
-            this.section.locateInCode();
+            if (!this.section.inCode) {
+              this.section.locateInCode();
+            }
             if (extractSignatures(this.section.inCode.code).length > 1) {
               throw new CdError({
                 type: 'parse',
@@ -2898,7 +3057,7 @@ export default class Comment extends CommentSkeleton {
             }
           } else {
             endIndex = thisInCode.signatureEndIndex + 1;
-            const succeedingText = pageCode.slice(thisInCode.endIndex);
+            const succeedingText = wholeCode.slice(thisInCode.endIndex);
 
             const repliesRegexp = new RegExp(
               `^.+\\n+[:*#]{${thisInCode.indentationChars.length + 1},}`
@@ -2915,24 +3074,25 @@ export default class Comment extends CommentSkeleton {
             }
           }
 
-          newPageCode = pageCode.slice(0, startIndex) + pageCode.slice(endIndex);
+          newWholeCode = wholeCode.slice(0, startIndex) + wholeCode.slice(endIndex);
         } else {
           const startIndex = thisInCode.lineStartIndex;
-          codeBeforeInsertion = pageCode.slice(0, startIndex);
-          const codeAfterInsertion = pageCode.slice(thisInCode.signatureEndIndex);
-          newPageCode = codeBeforeInsertion + commentCode + codeAfterInsertion;
+          const codeBefore = wholeCode.slice(0, startIndex);
+          const codeAfter = wholeCode.slice(thisInCode.signatureEndIndex);
+          newWholeCode = codeBefore + commentCode + codeAfter;
         }
         break;
       }
     }
 
-    return { newPageCode, codeBeforeInsertion, commentCode };
+    return newWholeCode;
   }
 
   /**
    * Get and sometimes create the container for the comment's layers.
    *
    * @returns {Element}
+   * @private
    */
   getLayersContainer() {
     if (this.cachedLayersContainer === undefined) {
@@ -2970,7 +3130,7 @@ export default class Comment extends CommentSkeleton {
       }
       this.cachedLayersContainer = container;
 
-      addToArrayIfAbsent(commentLayers.layersContainers, container);
+      addToArrayIfAbsent(Comment.layersContainers, container);
     }
     return this.cachedLayersContainer;
   }
@@ -2979,12 +3139,14 @@ export default class Comment extends CommentSkeleton {
    * @typedef {object} LayersContainerOffset
    * @property {number} top Top offset.
    * @property {number} left Left offset.
+   * @private
    */
 
   /**
    * Get the top and left offset of the layers container.
    *
    * @returns {LayersContainerOffset}
+   * @private
    */
   getLayersContainerOffset() {
     const container = this.getLayersContainer();
@@ -3046,6 +3208,7 @@ export default class Comment extends CommentSkeleton {
    * @param {number} comparedRevisionId
    * @param {object} commentsData
    * @throws {CdError}
+   * @private
    */
   async showDiff(comparedRevisionId, commentsData) {
     if (dealWithLoadingBug('mediawiki.diff.styles')) return;
@@ -3166,6 +3329,7 @@ export default class Comment extends CommentSkeleton {
    * collapsed note is unavailable, return the top invisible collapsed note.
    *
    * @returns {?JQuery}
+   * @private
    */
   getVisibleExpandNote() {
     if (!this.isCollapsed) {
@@ -3180,6 +3344,11 @@ export default class Comment extends CommentSkeleton {
     return $note;
   }
 
+  /**
+   * Get a link to the comment with Unicode sequences decoded.
+   *
+   * @returns {string}
+   */
   getUrl() {
     if (!this.cachedUrl) {
       this.cachedUrl = getUrlWithAnchor(this.anchor);
@@ -3188,6 +3357,20 @@ export default class Comment extends CommentSkeleton {
     return this.cachedUrl;
   }
 
+  /**
+   * @typedef {JQuery[]} CreateSublevelItemReturn
+   * @property {JQuery} 0 Wrapping item.
+   * @property {JQuery} [1] Wrapping list.
+   * @property {JQuery} [2] Outer wrapper.
+   */
+
+  /**
+   * Add an item to the comment's {@link module:CommentSubitemList subitem list}.
+   *
+   * @param {string} name
+   * @param {string} position
+   * @returns {CreateSublevelItemReturn}
+   */
   createSublevelItem(name, position) {
     /*
       There are 3 basic cases that we account for:

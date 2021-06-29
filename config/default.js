@@ -5,8 +5,8 @@
 export default {
   /**
    * Object with the names and texts of the messages required by the script as keys and values. Used
-   * to avoid making additional requests on every script run. Get these messages by running {@link
-   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
+   * to avoid making additional requests on every script run. Get these messages by running
+   * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
    * @type {object}
@@ -24,8 +24,8 @@ export default {
   contribsPage: null,
 
   /**
-   * Timezone. Get by running {@link
-   * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
+   * Timezone. Get by running
+   * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
    * @type {?string}
@@ -51,8 +51,8 @@ export default {
    *
    * Note that this value is used in the script as a "soft" value. I.e., the script can decide
    * (based on the presence of the "Add section" button, existence of comments on the page and
-   * possibly other factors) that the page is not a talk page after all. Use {@link
-   * module:defaultConfig.pageWhitelist} to indicate pages where the script should work in any
+   * possibly other factors) that the page is not a talk page after all. Use
+   * {@link module:defaultConfig.pageWhitelist} to indicate pages where the script should work in any
    * circumstances. (For example, you can specify the entire namespace, e.g., `/^Wikipedia:/`).
    *
    * @type {number[]}
@@ -61,8 +61,8 @@ export default {
   customTalkNamespaces: mw.config.get('wgExtraSignatureNamespaces'),
 
   /**
-   * Pages where the script should run. If `[]`, all pages in the namespaces listed in {@link
-   * module:defaultConfig.customTalkNamespaces} will pass.
+   * Pages where the script should run. If `[]`, all pages in the namespaces listed in
+   * {@link module:defaultConfig.customTalkNamespaces} will pass.
    *
    * **If you add at least one value, {@link module:defaultConfig.customTalkNamespaces} will not be
    * used.** This means you will probably need to specify the namespaces listed in that value here
@@ -93,14 +93,14 @@ export default {
 
   /**
    * If the user namespace uses different aliases based on gender, you may include them here.
-   * Unfortunately, we can't get this using API, see {@link
-   * https://phabricator.wikimedia.org/T204610}.
+   * Unfortunately, we can't get this using API, see
+   * {@link https://phabricator.wikimedia.org/T204610}.
    *
-   * Example (if only the female form differs from the standard name):
-   * <pre class="prettyprint source"><code>{
+   * @example
+   * // If only the female form differs from the standard name)
+   * {
    *   female: 'Участница',
-   * }</code></pre>
-   *
+   * }
    * @type {?UserNamespacesByGender}
    */
   userNamespacesByGender: null,
@@ -126,20 +126,20 @@ export default {
    * multiple purposes:
    * - to identify pages that will be considered inactive, i.e. no replies can be left on them;
    * - to suggest to search in the archive if the section/comment by a given fragment is not found
-   * on the page;
+   *   on the page;
    * - to make diff/thank links work on archive pages.
    *
-   * Each of the array elements can be an object with the defined structure (see {@link
-   * module:defaultConfig~ArchivePathEntry} for details) or a regexp. In the latter case, if a page
-   * name matches the regexp, it will be considered an archive page, and the name of the source page
-   * for that page will be obtained by removing everything that starts with the pattern in the page
-   * name (i.e., the actually used regexp will end with `.*`).
+   * Each of the array elements can be an object with the defined structure (see
+   * {@link module:defaultConfig~ArchivePathEntry} for details) or a regexp. In the latter case, if
+   * a page name matches the regexp, it will be considered an archive page, and the name of the
+   * source page for that page will be obtained by removing everything that starts with the pattern
+   * in the page name (i.e., the actually used regexp will end with `.*`).
    *
    * The entries are applied in the order of their presence in the array. So, if a page name fits
    * two patterns, the one closer to the beginning of the array is used.
    *
-   * Example:
-   * <pre class="prettyprint source"><code>[
+   * @example
+   * [
    *   {
    *     source: 'Wikipedia:Discussion/Geography',
    *     archive: 'Wikipedia:Discussion/Geography/Archives/',
@@ -150,9 +150,7 @@ export default {
    *     replacements: [/[^/]+/],
    *   },
    *   /\/Archive/,
-   * ]</code></pre>
-   *
-   *
+   * ]
    * @type {Array.<ArchivePathEntry|RegExp>}
    * @default []
    */
@@ -195,10 +193,10 @@ export default {
 
   /**
    * Should a new comment at the first level repeat the previous comment's indentation style
-   * (`'mimic'` mode), or should the script use the default indentation character in {@link
-   * module:defaultConfig.defaultIndentationChar} in all cases (`'unify'` mode). Note that if the
-   * last comment of the section uses `#` as the first indentation character, the script will use it
-   * for the comment independent of this value.
+   * (`'mimic'` mode), or should the script use the default indentation character in
+   * {@link module:defaultConfig.defaultIndentationChar} in all cases (`'unify'` mode). Note that if
+   * the last comment of the section uses `#` as the first indentation character, the script will
+   * use it for the comment independent of this value.
    *
    * @type {string}
    */
@@ -250,8 +248,8 @@ export default {
   tagName: null,
 
   /**
-   * Script code name. Used, for example, for the `source` parameter of the thank request: {@link
-   * https://www.mediawiki.org/wiki/Extension:Thanks#API_documentation}.
+   * Script code name. Used, for example, for the `source` parameter of the thank request:
+   * {@link https://www.mediawiki.org/wiki/Extension:Thanks#API_documentation}.
    *
    * @type {string}
    * @default 'convenient-discussions'
@@ -259,8 +257,8 @@ export default {
   scriptCodeName: 'convenient-discussions',
 
   /**
-   * Wikilink to the script's page. Used in the watchlist and, if there is no {@link
-   * module:defaultConfig.tagName tag}, in summary.
+   * Wikilink to the script's page. Used in the watchlist and, if there is no
+   * {@link module:defaultConfig.tagName tag}, in summary.
    *
    * @type {string}
    * @default 'c:User:JWBTH/CD'
@@ -268,9 +266,9 @@ export default {
   scriptPageWikilink: 'c:Special:MyLanguage/User:JWBTH/CD',
 
   /**
-   * Names of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Unsigned}, {@link
-   * https://en.wikipedia.org/wiki/Template:Unsigned_IP}. Please include aliases.
+   * Names of the templates that are analogs of
+   * {@link https://en.wikipedia.org/wiki/Template:Unsigned},
+   * {@link https://en.wikipedia.org/wiki/Template:Unsigned_IP}. Please include aliases.
    *
    * @type {string[]}
    * @default <pre class="prettyprint source"><code>[
@@ -311,9 +309,9 @@ export default {
   ],
 
   /**
-   * Name of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Smalldiv}. Used when the whole comment is wrapped in
-   * `<small></small>` (with some exceptions when that could break the layout).
+   * Name of the templates that are analogs of
+   * {@link https://en.wikipedia.org/wiki/Template:Smalldiv}. Used when the whole comment is wrapped
+   * in `<small></small>` (with some exceptions when that could break the layout).
    *
    * @type {string[]}
    * @default []
@@ -321,9 +319,9 @@ export default {
   smallDivTemplates: [],
 
   /**
-   * Names of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Paragraph_break}. The first string will be used when
-   * posting comments.
+   * Names of the templates that are analogs of
+   * {@link https://en.wikipedia.org/wiki/Template:Paragraph_break}. The first string will be used
+   * when posting comments.
    *
    * @type {string[]}
    * @default []
@@ -331,8 +329,8 @@ export default {
   paragraphTemplates: [],
 
   /**
-   * Names of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Outdent}. The first string *may* be used when
+   * Names of the templates that are analogs of
+   * {@link https://en.wikipedia.org/wiki/Template:Outdent}. The first string _may_ be used when
    * posting comments if this feature is implemented.
    *
    * @type {string[]}
@@ -341,8 +339,15 @@ export default {
   outdentTemplates: [],
 
   /**
-   * Names of the templates that are analogs of {@link
-   * https://en.wikipedia.org/wiki/Template:Clear}.
+   * Name of the class that the outdent templates set to its container element.
+   *
+   * @type {string}
+   */
+  outdentClass: 'outdent-template',
+
+  /**
+   * Names of the templates that are analogs of
+   * {@link https://en.wikipedia.org/wiki/Template:Clear}.
    *
    * @type {string[]}
    */
@@ -356,8 +361,8 @@ export default {
   mentionCharacter: '@',
 
   /**
-   * Should there be a leading space (or other punctuation) before {@link
-   * module:defaultConfig.mentionCharacter the mention character} to trigger autocomplete.
+   * Should there be a leading space (or other punctuation) before
+   * {@link module:defaultConfig.mentionCharacter the mention character} to trigger autocomplete.
    *
    * @type {boolean}
    */
@@ -378,8 +383,9 @@ export default {
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for the way to prevent certain elements from becoming comment
    * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. This value can have a
-   * wikitext counterpart (although it may not be necessary), {@link
-   * module:defaultConfig.templatesToExclude}, for classes that are specified inside templates.
+   * wikitext counterpart (although it may not be necessary),
+   * {@link module:defaultConfig.templatesToExclude}, for classes that are specified inside
+   * templates.
    *
    * When it comes to the wikitext, all lines containing these classes are ignored.
    *
@@ -391,8 +397,8 @@ export default {
   /**
    * Blocks with templates listed here won't be considered legit comment timestamp containers. All
    * lines containing these templates are ignored when searching for timestamps in the wikitext.
-   * This value can have a web page counterpart, {@link
-   * module:defaultConfig.elementsToExcludeClasses}.
+   * This value can have a web page counterpart,
+   * {@link module:defaultConfig.elementsToExcludeClasses}.
    *
    * @type {string[]}
    * @default []
@@ -410,13 +416,16 @@ export default {
 
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of them)
-   * when editing comments. This is in addition to {@link
-   * module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
-   * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
-   * script to work properly.
+   * when editing comments. This is in addition to
+   * {@link module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and
+   * usually end with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the
+   * end for the script to work properly.
    *
-   * Example: '/^<!--[^]*?--> *\n+/` (but comments are cut out of comment beginnings by default).
-   *
+   * @example
+   * [
+   *   // But comments are cut out of comment beginnings by default
+   *   /^<!--[^]*?--> *\n+/,
+   * ]
    * @type {RegExp[]}
    * @default []
    */
@@ -459,12 +468,12 @@ export default {
   foreignElementInHeadlineClasses: [],
 
   /**
-   * Names of the closed discussion templates. They can be single templates like {@link
-   * https://en.wikipedia.org/wiki/Template:Closed} or pair templates like {@link
-   * https://ru.wikipedia.org/wiki/Template:Закрыто} / {@link
-   * https://ru.wikipedia.org/wiki/Template:Конец_закрытой_секции}. Include the closing part of the
-   * pair templates in the second array, and the rest of the templates in the first array. These
-   * templates are ignored when searching for a place to insert a comment in the wikitext.
+   * Names of the closed discussion templates. They can be single templates like
+   * {@link https://en.wikipedia.org/wiki/Template:Closed} or pair templates like
+   * {@link https://ru.wikipedia.org/wiki/Template:Закрыто} /
+   * {@link https://ru.wikipedia.org/wiki/Template:Конец_закрытой_секции}. Include the closing part
+   * of the pair templates in the second array, and the rest of the templates in the first array.
+   * These templates are ignored when searching for a place to insert a comment in the wikitext.
    *
    * @type {Array.<Array.<string>>}
    * @default <pre class="prettyprint source"><code>[
@@ -624,8 +633,8 @@ export default {
   /**
    * Function that makes custom alterations to the comment code after it is processed and before it
    * is submitted. (An example would be adding a closer template to all the closures by a user with
-   * the closer flag which is a requirement in Russian Wikipedia.) See also {@link
-   * module:defaultConfig.preTransformCode}.
+   * the closer flag which is a requirement in Russian Wikipedia.) See also
+   * {@link module:defaultConfig.preTransformCode}.
    *
    * @type {?Function}
    * @kind function
@@ -638,19 +647,19 @@ export default {
 
   /**
    * Function that returns `true` for nodes that are not parts of comments and should terminate the
-   * comment part collecting. These rules often need correspoding rules in {@link
-   * module:defaultConfig.customBadCommentBeginnings}.
+   * comment part collecting. These rules often need correspoding rules in
+   * {@link module:defaultConfig.customBadCommentBeginnings}.
    *
    * The second parameter is a "context", i.e., a collection of classes, functions, and other
    * properties that perform the tasks we need in the current context (window or worker). Examples
    * are the name of the child elements property (the worker context uses `childElements` instead of
-   * `children`) and the document element. Contexts are predefined in the script like {@link
-   * https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885
+   * `children`) and the document element. Contexts are predefined in the script like
+   * {@link https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885
    * this}.
    *
    * @type {?Function}
    * @kind function
-   * @param {Node} node
+   * @param {Node|external:Node} node
    * @param {object} context
    * @returns {boolean}
    * @default null
@@ -698,14 +707,14 @@ export default {
 
   /**
    * Function that returns the code to insert in the beginning of the section moved from another
-   * page *or* an array of two strings to insert in the beginning and ending of the section
+   * page _or_ an array of two strings to insert in the beginning and ending of the section
    * respectively. The strings normally end with `\n`. If `null`, no code will be added.
    *
    * @type {?Function}
    * @kind function
    * @param {string} targetPageWikilink
    * @param {string} signature
-   * @returns {string|Array<string, string>}
+   * @returns {string|Array.<string, string>}
    * @default <pre class="prettyprint source"><code>function (targetPageWikilink, signature) {
    *   return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
    * }</code></pre>

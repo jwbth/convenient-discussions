@@ -9,7 +9,6 @@ import Comment from './Comment';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -134,8 +133,8 @@ async function checkForUpdates() {
 /**
  * If the revision of the current visit and previous visit are different, process the said
  * revisions. (We need to process the current revision too to get the comments' inner HTML without
- * any elements that may be added by scripts.) The revisions' data will finally processed by {@link
- * module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
+ * any elements that may be added by scripts.) The revisions' data will finally processed by
+ * {@link module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
  *
  * @private
  */
@@ -180,46 +179,57 @@ function cleanUpSeenRenderedChanges(data) {
 
 /**
  * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a web
- * worker so its constuctor is lost.)
+ * worker so its constructor is lost.)
  *
  * @typedef {object} SectionSkeletonLike
+ * @private
  */
 
 /**
  * Map sections obtained from a revision to the sections present on the page.
  *
- * @param {SectionSkeletonLike[]} sections
+ * @param {SectionSkeletonLike[]} otherSections
  * @private
  */
-function mapSections(sections) {
+function mapSections(otherSections) {
   cd.debug.startTimer('mapSections');
   // Reset values set in the previous run.
   cd.sections.forEach((section) => {
     delete section.match;
+    delete section.matchScore;
   });
-  sections.forEach((section) => {
-    delete section.match;
+  otherSections.forEach((otherSection) => {
+    delete otherSection.match;
   });
   cd.debug.stopTimer('mapSections');
 
-  sections.forEach((section) => {
-    const { section: matchedSection, score } = Section.search(section, true) || {};
-    if (matchedSection && (!matchedSection.match || score > matchedSection.matchScore)) {
-      if (matchedSection.match) {
-        delete matchedSection.match.match;
+  otherSections.forEach((otherSection) => {
+    const { section, score } = Section.search(otherSection, true) || {};
+    if (section && (!section.match || score > section.matchScore)) {
+      if (section.match) {
+        delete section.match.match;
       }
-      matchedSection.match = section;
-      matchedSection.matchScore = score;
-      section.match = matchedSection;
+      section.match = otherSection;
+      section.matchScore = score;
+      otherSection.match = section;
     }
+  });
+
+  cd.sections.forEach((section) => {
+    section.liveSectionNumber = section.match?.sectionNumber ?? null;
+    section.liveSectionNumberRevisionId = lastCheckedRevisionId;
+    delete section.code;
+    delete section.revisionId;
+    delete section.queryTimestamp;
   });
 }
 
 /**
  * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
- * worker so its constuctor is lost.)
+ * worker so its constructor is lost.)
  *
  * @typedef {object} CommentSkeletonLike
+ * @private
  */
 
 /**
@@ -429,7 +439,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
   delete seenRenderedChanges[articleId];
   saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
 
-  // TODO: Remove in September 2021 (3 months after renaming)
+  // TODO: Remove in October 2021 (3 months after renaming)
   mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 }
 
@@ -459,11 +469,15 @@ function checkForNewChanges(currentComments) {
         // The comment may have already been updated previously.
         if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
           const updateSuccess = comment.update(currentComment, newComment);
+
+          // It is above the Comment#markAsChanged call, because it's used in Comment#flashChanged
+          // called indirectly by Comment#markAsChanged.
+          comment.comparedHtml = newComment.comparedHtml;
+
           const commentsData = [currentComment, newComment];
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
           isChangeMarkUpdated = true;
           events.changed = { updateSuccess };
-          comment.comparedHtml = newComment.comparedHtml;
         }
       } else if (comment.isChanged) {
         comment.update(currentComment, newComment);
@@ -493,7 +507,7 @@ function checkForNewChanges(currentComments) {
     // If we configure the layers of deleted comments in Comment#unmarkAsChanged, they will prevent
     // layers before them from being updated due to the "stop at the first three unmoved comments"
     // optimization. So we just do the whole job here.
-    commentLayers.redrawIfNecessary(false, true);
+    Comment.redrawLayersIfNecessary(false, true);
 
     // Thread start and end items may be replaced.
     Thread.init();
@@ -692,7 +706,7 @@ function showDesktopNotification(comments) {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
-      commentLayers.redrawIfNecessary(false, true);
+      Comment.redrawLayersIfNecessary(false, true);
 
       reloadPage({
         commentAnchor: comment.anchor,
@@ -861,7 +875,7 @@ const updateChecker = {
   relevantNewCommentAnchor: null,
 
   /**
-   * Initialize the update checker.
+   * _For internal use._ Initialize the update checker.
    *
    * @param {Promise} visitsRequest
    * @param {object} passedData
@@ -888,17 +902,17 @@ const updateChecker = {
 
     if (cd.g.previousVisitUnixTime) {
       processRevisionsIfNeeded();
-      if (passedData.didSubmitCommentForm && passedData.commentAnchor) {
+      if (passedData.wasCommentFormSubmitted && passedData.commentAnchor) {
         submittedCommentAnchor = passedData.commentAnchor;
       }
     }
   },
 
   /**
-   * Process the current page in a web worker.
+   * _For internal use._ Process the current page in a web worker.
    *
    * @param {number} [revisionToParseId]
-   * @returns {object}
+   * @returns {Promise.<object>}
    * @memberof module:updateChecker
    */
   async processPage(revisionToParseId) {
@@ -951,7 +965,8 @@ const updateChecker = {
   },
 
   /**
-   * Update the page title to show the number of comments added to the page since it was loaded.
+   * _For internal use._ Update the page title to show the number of comments added to the page
+   * since it was loaded.
    *
    * @param {number} newCommentsCount
    * @param {boolean} areThereInteresting

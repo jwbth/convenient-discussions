@@ -33,13 +33,8 @@ import {
   wrapDiffBody,
 } from './util';
 import { checkboxField } from './ooui';
-import {
-  extractSignatures,
-  generateTagsRegexp,
-  hideSensitiveCode,
-  removeWikiMarkup,
-} from './wikitext';
-import { generateCommentAnchor } from './timestamp';
+import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
+import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
 import { settingsDialog } from './modal';
 
@@ -148,6 +143,23 @@ function listMarkupToTags(code) {
     }));
   parseLines(lines);
   return listToTags(lines);
+}
+
+/**
+ * Extract anchors from comment links in the code.
+ *
+ * @param {string} code
+ * @returns {string[]}
+ * @private
+ */
+function extractCommentAnchors(code) {
+  const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
+  const anchors = [];
+  let match;
+  while ((match = anchorsRegexp.exec(code))) {
+    anchors.push(match[1]);
+  }
+  return anchors;
 }
 
 /** Class representing a comment form. */
@@ -307,17 +319,17 @@ export default class CommentForm {
   }
 
   /**
-   * Test if a comment or section exists in the code.
+   * Test if a comment or section exists in the wikitext.
    *
-   * @returns {JQuery.Promise}
+   * @returns {external:JQueryPromise}
    */
   checkCode() {
     if (!this.checkCodeRequest) {
       /**
-       * Request to test if a comment or section exists in the code made by {@link
-       * module:CommentForm#checkCode}.
+       * Request to test if a comment or section exists in the code made by
+       * {@link module:CommentForm#checkCode}.
        *
-       * @type {JQuery.Promise|undefined}
+       * @type {external:JQueryPromise|undefined}
        */
       this.checkCodeRequest = this.target.getCode(this).catch((e) => {
         if (e instanceof CdError) {
@@ -335,7 +347,8 @@ export default class CommentForm {
   }
 
   /**
-   * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
+   * _For internal use._ Set the `target`, `targetSection`, `targetComment`, and `targetPage`
+   * properties.
    *
    * @param {Comment|Section|Page} target
    * @throws {CdError}
@@ -423,8 +436,8 @@ export default class CommentForm {
       // default, for dialogs, text is inserted into the last opened form, not the current.
       $input.textSelection('register', {
         encapsulateSelection: (options) => {
-          // Seems like the methods are registered for all inputs instead of the one the method for
-          // which is called.
+          // Seems like the methods are registered for all inputs instead of the one the method is
+          // called for.
           CommentForm.getLastActive().encapsulateSelection(options);
         },
         setContents: (value) => {
@@ -663,7 +676,9 @@ export default class CommentForm {
     this.$messageArea = $('<div>').addClass('cd-messageArea');
 
     /**
-     * @typedef {object} OoUiTextInputWidget
+     * OOUI text input widget
+     *
+     * @external OoUiTextInputWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
      */
 
@@ -683,7 +698,7 @@ export default class CommentForm {
       /**
        * Headline input.
        *
-       * @type {OoUiTextInputWidget|undefined}
+       * @type {external:OoUiTextInputWidget|undefined}
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
@@ -724,14 +739,16 @@ export default class CommentForm {
     }
 
     /**
-     * @typedef {object} OoUiMultilineTextInputWidget
+     * OOUI multiline text input widget
+     *
+     * @external OoUiMultilineTextInputWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
      */
 
     /**
      * Comment input.
      *
-     * @type {OoUiMultilineTextInputWidget}
+     * @type {external:OoUiMultilineTextInputWidget}
      */
     this.commentInput = new OO.ui.MultilineTextInputWidget({
       value: dataToRestore ? dataToRestore.comment : '',
@@ -754,7 +771,7 @@ export default class CommentForm {
     /**
      * Edit summary input.
      *
-     * @type {OoUiTextInputWidget}
+     * @type {external:OoUiTextInputWidget}
      */
     this.summaryInput = new OO.ui.TextInputWidget({
       value: dataToRestore ? dataToRestore.summary : '',
@@ -774,22 +791,12 @@ export default class CommentForm {
      */
     this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
 
-    /**
-     * @typedef {object} OoUiFieldLayout
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
-     */
-
-    /**
-     * @typedef {object} OoUiCheckboxInputWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
-     */
-
     if (this.mode === 'edit') {
       /**
        * Minor change checkbox field.
        *
        * @name minorField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -797,7 +804,7 @@ export default class CommentForm {
        * Minor change checkbox.
        *
        * @name minorCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
       [this.minorField, this.minorCheckbox] = checkboxField({
@@ -818,7 +825,7 @@ export default class CommentForm {
      * Watch page checkbox field.
      *
      * @name watchField
-     * @type {OoUiFieldLayout}
+     * @type {external:OoUiFieldLayout}
      * @instance
      */
 
@@ -826,7 +833,7 @@ export default class CommentForm {
      * Watch page checkbox.
      *
      * @name watchCheckbox
-     * @type {OoUiCheckboxInputWidget}
+     * @type {external:OoUiCheckboxInputWidget}
      * @instance
      */
     [this.watchField, this.watchCheckbox] = checkboxField({
@@ -851,7 +858,7 @@ export default class CommentForm {
        * Watch section checkbox field.
        *
        * @name watchSectionField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -859,7 +866,7 @@ export default class CommentForm {
        * Watch section checkbox.
        *
        * @name watchSectionCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
       [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
@@ -876,7 +883,7 @@ export default class CommentForm {
        * Omit signature checkbox field.
        *
        * @name omitSignatureField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -884,7 +891,7 @@ export default class CommentForm {
        * Omit signature checkbox.
        *
        * @name omitSignatureCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
 
@@ -910,7 +917,7 @@ export default class CommentForm {
        * Delete checkbox field.
        *
        * @name deleteField
-       * @type {OoUiFieldLayout|undefined}
+       * @type {external:OoUiFieldLayout|undefined}
        * @instance
        */
 
@@ -918,7 +925,7 @@ export default class CommentForm {
        * Delete checkbox.
        *
        * @name deleteCheckbox
-       * @type {OoUiCheckboxInputWidget|undefined}
+       * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
       [this.deleteField, this.deleteCheckbox] = checkboxField({
@@ -930,14 +937,16 @@ export default class CommentForm {
     }
 
     /**
-     * @typedef {object} OoUiHorizontalLayout
+     * OOUI horizontal layout
+     *
+     * @external OoUiHorizontalLayout
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
      */
 
     /**
      * Checkboxes area.
      *
-     * @type {OoUiHorizontalLayout}
+     * @type {external:OoUiHorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
       classes: ['cd-commentForm-checkboxes'],
@@ -981,14 +990,16 @@ export default class CommentForm {
     this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
 
     /**
-     * @typedef {object} OoUiButtonWidget
+     * OOUI button widget
+     *
+     * @external OoUiButtonWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
      */
 
     /**
      * Toggle advanced section button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
@@ -1004,14 +1015,16 @@ export default class CommentForm {
     }
 
     /**
-     * @typedef {object} OoUiPopupButtonWidget
+     * OOUI popup button widget
+     *
+     * @external OoUiPopupButtonWidget
      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
      */
 
     /**
      * Help button.
      *
-     * @type {OoUiPopupButtonWidget}
+     * @type {external:OoUiPopupButtonWidget}
      */
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
@@ -1051,7 +1064,7 @@ export default class CommentForm {
     /**
      * Cancel button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.cancelButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-cancel'),
@@ -1064,7 +1077,7 @@ export default class CommentForm {
     /**
      * View changes button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
@@ -1075,7 +1088,7 @@ export default class CommentForm {
     /**
      * Preview button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
@@ -1089,7 +1102,7 @@ export default class CommentForm {
     /**
      * Submit button.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
@@ -1200,6 +1213,12 @@ export default class CommentForm {
     }
   }
 
+  /**
+   * Make a parse request with the transclusion code of edit notices and edit intro and add the
+   * result to the message area.
+   *
+   * @private
+   */
   addEditNotices() {
     const title = cd.g.PAGE.title.replace(/\//g, '-');
     let code = (
@@ -1241,6 +1260,11 @@ export default class CommentForm {
     });
   }
 
+  /**
+   * Load the edited comment to the comment form.
+   *
+   * @private
+   */
   loadComment() {
     const currentOperation = this.registerOperation({ type: 'load' });
     this.target.getCode(true).then(
@@ -1282,6 +1306,12 @@ export default class CommentForm {
     );
   }
 
+  /**
+   * Load the content of a preload template (`preload` parameter of the URL or a POST request) to
+   * the comment input.
+   *
+   * @private
+   */
   preloadTemplate() {
     const currentOperation = this.registerOperation({
       type: 'load',
@@ -1342,7 +1372,7 @@ export default class CommentForm {
   }
 
   /**
-   * Insert the form into the DOM.
+   * _For internal use._ Insert the form into the DOM.
    */
   addToPage() {
     if (this.mode === 'replyInSection') {
@@ -1447,6 +1477,8 @@ export default class CommentForm {
 
   /**
    * Add events to form elements.
+   *
+   * @private
    */
   addEvents() {
     const saveSessionEventHandler = () => {
@@ -1634,6 +1666,8 @@ export default class CommentForm {
 
   /**
    * Initialize autocomplete using {@link https://github.com/zurb/tribute Tribute}.
+   *
+   * @private
    */
   initAutocomplete() {
     let commentsInSection = [];
@@ -1708,16 +1742,15 @@ export default class CommentForm {
 
   /**
    * Show or hide the advanced section.
+   *
+   * @private
    */
   toggleAdvanced() {
     if (this.$advanced.is(':hidden')) {
       this.$advanced.show();
       const value = this.summaryInput.getValue();
       const match = value.match(/^.+?\*\/ */);
-
-      // This is needed due to a bug in Firefox 56.
       focusInput(this.summaryInput);
-
       this.summaryInput.selectRange(match ? match[0].length : 0, value.length);
     } else {
       this.$advanced.hide();
@@ -1726,7 +1759,7 @@ export default class CommentForm {
   }
 
   /**
-   * Adjust button labels according to the form width: if the form is to narrow, the labels will
+   * Adjust the button labels according to the form width: if the form is to narrow, the labels will
    * shrink.
    */
   adjustLabels() {
@@ -1859,9 +1892,7 @@ export default class CommentForm {
    * @param {string|JQuery} htmlOrJquery
    * @param {object} [options]
    * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
-   *   {@link
-   *   https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true
-   *   the OOUI Demos}.
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true the OOUI Demos}.
    * @param {string} [options.name] Name added to the class name of the message element.
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in the widget.
@@ -2000,9 +2031,7 @@ export default class CommentForm {
         switch (code) {
           case 'locateComment':
             if (this.targetSection) {
-              editUrl = this.targetSection.editUrl ?
-                this.targetSection.editUrl.toString() :
-                cd.g.PAGE.getUrl({ action: 'edit' });
+              editUrl = this.targetSection.editUrl || cd.g.PAGE.getUrl({ action: 'edit' });
             } else {
               editUrl = cd.g.PAGE.getUrl({
                 action: 'edit',
@@ -2045,7 +2074,7 @@ export default class CommentForm {
         const navigateToEditUrl = async (e) => {
           if (e.ctrlKey || e.shiftKey || e.metaKey) return;
           e.preventDefault();
-          if (await this.confirmClose()) {
+          if (this.confirmClose()){
             this.forget();
             location.assign(editUrl);
           }
@@ -2053,7 +2082,7 @@ export default class CommentForm {
         message = wrap(message, {
           callbacks: {
             'cd-message-reloadPage': async () => {
-              if (await this.confirmClose()) {
+              if (this.confirmClose()) {
                 this.reloadPage();
               }
             },
@@ -2113,21 +2142,18 @@ export default class CommentForm {
    * @private
    */
   addIndentationChars(code, indentationChars) {
-    return (
-      indentationChars +
-      (
-        indentationChars && !/^[:*#;]/.test(code) && cd.config.spaceAfterIndentationChars ?
-        ' ' :
-        ''
-      ) +
-      code
+    const addSpace = (
+      indentationChars &&
+      !/^[:*#;]/.test(code) &&
+      cd.config.spaceAfterIndentationChars
     );
+    return indentationChars + (addSpace ? ' ' : '') + code;
   }
 
   /**
    * Convert the text of the comment in the form to wikitext.
    *
-   * @param {string} action `'submit'` (view changes maps to this too) or `'preview'`.
+   * @param {string} action `'submit'`, `'viewChanges'`, or `'preview'`.
    * @returns {string}
    * @throws {CdError}
    */
@@ -2373,7 +2399,10 @@ export default class CommentForm {
     }
 
     // Add the headline
-    if (this.headlineInput) {
+    if (
+      this.headlineInput &&
+      !(this.mode === 'addSection' && this.submitSection && action === 'submit')
+    ) {
       const headline = this.headlineInput.getValue().trim();
       if (headline) {
         let level;
@@ -2438,7 +2467,7 @@ export default class CommentForm {
     }
 
     // Add the indentation characters
-    if (action === 'submit') {
+    if (action !== 'preview') {
       code = this.addIndentationChars(code, indentationChars);
 
       if (this.mode === 'addSubsection') {
@@ -2462,69 +2491,39 @@ export default class CommentForm {
   }
 
   /**
-   * Prepare the new page code based on the form input.
+   * Add anchor code to comments linked from the comment.
    *
-   * @param {string} pageCode
-   * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {string}
+   * @param {string} wholeCode Code of the section or page.
+   * @param {string[]} commentAnchors
+   * @returns {string} New code of the section or page.
    * @throws {CdError}
    * @private
    */
-  prepareNewPageCode(pageCode, action) {
-    const doDelete = this.deleteCheckbox?.isSelected();
-
-    if (!(this.target instanceof Page)) {
-      this.target.locateInCode();
-    }
-    let { newPageCode, codeBeforeInsertion, commentCode } = this.target.modifyCode({
-      pageCode,
-      action: this.mode,
-      doDelete,
-      commentForm: this,
-    });
-
-    if (action === 'submit' && !doDelete) {
-      // We need this only to generate anchors for the comments above our comment to avoid
-      // collisions.
-      extractSignatures(codeBeforeInsertion, true);
-    }
-
-    // Add anchor code to comments linked from the comment.
-    const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
-    const anchors = [];
-    let match;
-    while ((match = anchorsRegexp.exec(commentCode))) {
-      anchors.push(match[1]);
-    }
-    anchors.forEach((anchor) => {
+  addAnchorsToComments(wholeCode, commentAnchors) {
+    commentAnchors.forEach((anchor) => {
       const comment = Comment.getByAnchor(anchor);
       if (comment) {
-        const commentInCode = comment.locateInCode(newPageCode);
+        const commentInCode = comment.locateInCode(wholeCode);
         const anchorCode = cd.config.getAnchorCode(anchor);
         if (commentInCode.code.includes(anchorCode)) return;
 
-        let commentStart = this.addIndentationChars(
+        let commentCodePart = this.addIndentationChars(
           commentInCode.code,
           commentInCode.indentationChars
         );
-        const commentTextIndex = commentStart.match(/^[:*#]* */)[0].length;
-        commentStart = (
-          commentStart.slice(0, commentTextIndex) +
-          anchorCode +
-          commentStart.slice(commentTextIndex)
-        );
-        const commentCode = (
-          (commentInCode.headingCode || '') +
-          commentStart +
-          commentInCode.signatureDirtyCode
-        );
+        const commentTextIndex = commentCodePart.match(/^[:*#]* */)[0].length;
+        const codeBefore = commentCodePart.slice(0, commentTextIndex);
+        const codeAfter = commentCodePart.slice(commentTextIndex);
+        commentCodePart = codeBefore + anchorCode + codeAfter;
+        const headingCode = commentInCode.headingCode || '';
+        const commentCode = headingCode + commentCodePart + commentInCode.signatureDirtyCode;
 
-        ({ newPageCode } = comment.modifyCode({
-          pageCode: newPageCode,
-          thisInCode: commentInCode,
+        wholeCode = comment.modifyWholeCode({
           action: 'edit',
           commentCode,
-        }));
+          wholeCode,
+          thisInCode: commentInCode,
+        });
       } else if (!$('#' + anchor).length) {
         throw new CdError({
           type: 'parse',
@@ -2534,19 +2533,34 @@ export default class CommentForm {
       }
     });
 
-    return newPageCode;
+    return wholeCode;
   }
 
   /**
-   * Prepare the new page code and handle errors.
+   * Prepare the new section or page code based on the comment form input and handle errors.
    *
    * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {string} newPageCode
+   * @returns {Promise.<string>}
    * @private
    */
-  async tryPrepareNewPageCode(action) {
+  async prepareWholeCode(action) {
+    const commentAnchors = extractCommentAnchors(this.commentInput.getValue());
+
+    this.submitSection = (
+      this.mode === 'addSection' &&
+      !this.isNewTopicOnTop &&
+      this.headlineInput.getValue().trim()
+    );
     try {
-      await this.targetPage.getCode(mw.config.get('wgArticleId') === 0);
+      if (
+        this.targetSection &&
+        this.targetSection.liveSectionNumber !== null &&
+        !commentAnchors.length
+      ) {
+        await this.targetSection.getCode(this);
+      } else {
+        await this.targetPage.getCode(mw.config.get('wgArticleId') === 0);
+      }
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data);
@@ -2560,9 +2574,26 @@ export default class CommentForm {
       return;
     }
 
-    let newPageCode;
+    let wholeCode;
     try {
-      newPageCode = this.prepareNewPageCode(this.targetPage.code, action);
+      if (
+        !(this.target instanceof Page) &&
+
+        // We already located the section when got its code.
+        !(this.target instanceof Section && this.submitSection)
+      ) {
+        this.target.locateInCode(this.submitSection);
+      }
+      if (this.mode === 'replyInSection') {
+        this.target.setLastCommentIndentationChars(this);
+      }
+      wholeCode = this.target.modifyWholeCode({
+        commentCode: this.commentTextToCode(action),
+        action: this.mode,
+        doDelete: this.deleteCheckbox?.isSelected(),
+        commentForm: this,
+      });
+      wholeCode = this.addAnchorsToComments(wholeCode, commentAnchors);
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(e.data);
@@ -2575,30 +2606,35 @@ export default class CommentForm {
       return;
     }
 
-    return newPageCode;
+    return wholeCode;
   }
 
   /**
    * Add an operation to the registry of operations.
    *
    * @param {Operation} operation
+   * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
    * @returns {Operation}
+   * @private
    */
-  registerOperation(operation) {
+  registerOperation(operation, clearMessages = true) {
     this.operations.push(operation);
     operation.isClosed = false;
     if (operation.type !== 'preview' || !operation.isAuto) {
-      this.$messageArea.empty();
+      if (clearMessages) {
+        this.$messageArea.empty();
+      }
       this.pushPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
     }
     return operation;
   }
 
   /**
-   * Mark the operation as closed if it is not. Should be done when the operation has finished
-   * (either successfully or not).
+   * Mark an operation as closed if it is not. Should be done when an operation has finished (either
+   * successfully or not).
    *
    * @param {Operation} operation
+   * @private
    */
   closeOperation(operation) {
     if (operation.isClosed) return;
@@ -2623,6 +2659,7 @@ export default class CommentForm {
    *
    * @param {Operation} operation
    * @returns {boolean}
+   * @private
    */
   closeOperationIfNecessary(operation) {
     if (operation.isClosed) {
@@ -2644,6 +2681,7 @@ export default class CommentForm {
    * Remove the operation from the registry of operations.
    *
    * @param {Operation} operation
+   * @private
    */
   unregisterOperation(operation) {
     removeFromArrayIfPresent(this.operations, operation);
@@ -2670,7 +2708,7 @@ export default class CommentForm {
    *   inputs are empty.
    * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has
    *   `cd.settings.autopreview` as `true`).
-   * @param {boolean} [operation] Operation object when the function is called from within itself,
+   * @param {Operation} [operation] Operation object when the function is called from within itself,
    *   being delayed.
    * @fires previewReady
    */
@@ -2838,8 +2876,8 @@ export default class CommentForm {
 
     const currentOperation = this.registerOperation({ type: 'viewChanges' });
 
-    const newPageCode = await this.tryPrepareNewPageCode('viewChanges');
-    if (newPageCode === undefined) {
+    const code = await this.prepareWholeCode('viewChanges');
+    if (code === undefined) {
       this.closeOperation(currentOperation);
     }
     if (currentOperation.isClosed) return;
@@ -2851,16 +2889,15 @@ export default class CommentForm {
       const options = {
         action: 'compare',
         toslots: 'main',
-        'totext-main': newPageCode,
+        'totext-main': code,
         prop: 'diff',
         formatversion: 2,
       };
-      if (mw.config.get('wgArticleId')) {
-        options.fromrev = this.targetPage.revisionId;
+      if (this.submitSection || !mw.config.get('wgArticleId')) {
+        options.fromslots = 'main';
+        options['fromtext-main'] = this.mode === 'addSection' ? '' : this.targetSection.code;
       } else {
-        // Unexistent pages
-        options.fromslots = 'main',
-        options['fromtext-main'] = '';
+        options.fromrev = this.targetPage.revisionId;
       }
       resp = await cd.g.api.post(options).catch(handleApiReject);
     } catch (e) {
@@ -2948,7 +2985,7 @@ export default class CommentForm {
    *
    * @param {object} options
    * @param {boolean} options.doDelete
-   * @returns {boolean}
+   * @returns {Promise.<boolean>}
    * @private
    */
   async runChecks({ doDelete }) {
@@ -3008,20 +3045,35 @@ export default class CommentForm {
   /**
    * Send a post request to edit the page and handle errors.
    *
-   * @param {object} page
-   * @param {string} newPageCode
+   * @param {string} code
    * @param {Operation} currentOperation
-   * @returns {?object}
+   * @returns {Promise.<object|null>}
    * @private
    */
-  async tryEditPage(page, newPageCode, currentOperation) {
+  async editPage(code, currentOperation) {
     let result;
     try {
+      let sectionParam;
+      let sectionOrPage;
+      let sectionTitleParam;
+      if (this.submitSection) {
+        if (this.mode === 'addSection') {
+          sectionTitleParam = this.headlineInput.getValue().trim();
+          sectionParam = 'new';
+        } else {
+          sectionParam = this.targetSection.liveSectionNumber;
+        }
+        sectionOrPage = this.targetSection;
+      } else {
+        sectionOrPage = this.targetPage;
+      }
       result = await this.targetPage.edit({
-        text: newPageCode,
+        section: sectionParam,
+        sectiontitle: sectionTitleParam,
+        text: code,
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
-        baserevid: page.revisionId,
-        starttimestamp: page.queryTimestamp,
+        baserevid: sectionOrPage?.revisionId,
+        starttimestamp: sectionOrPage?.queryTimestamp,
         minor: this.minorCheckbox?.isSelected(),
         watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
       });
@@ -3040,7 +3092,6 @@ export default class CommentForm {
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
             messageType = 'notice';
-            this.submit();
           }
 
           // FIXME: We don't pass apiData to prevent the message for "missingtitle" to be overriden,
@@ -3053,6 +3104,10 @@ export default class CommentForm {
             logMessage,
             currentOperation,
           });
+
+          if (code === 'editconflict') {
+            this.submit(true);
+          }
         }
       } else {
         this.handleError({
@@ -3068,15 +3123,68 @@ export default class CommentForm {
   }
 
   /**
-   * Submit the form.
+   * Generate a comment anchor to jump to after the page is reloaded, taking possible collisions
+   * into account.
+   *
+   * @param {string} editTimestamp
+   * @returns {string}
    */
-  async submit() {
+  generateFutureCommentAnchor(editTimestamp) {
+    const date = new Date(editTimestamp);
+
+    // Timestamps on the page (and therefore anchors) have no seconds.
+    date.setSeconds(0);
+
+    let commentAbove;
+    if (this.target instanceof Comment) {
+      const descendants = this.target.getChildren(true);
+      commentAbove = descendants[descendants.length - 1] || this.target;
+    } else if (this.target instanceof Section) {
+      const sectionAbove = (
+        (this.mode === 'addSubsection' && this.target.getChildren(true).slice(-1)[0]) ||
+        this.target
+      );
+      cd.sections
+        .slice(0, sectionAbove.id + 1)
+        .reverse()
+        .some((section) => {
+          if (section.commentsInFirstChunk.length) {
+            commentAbove = section.commentsInFirstChunk[section.commentsInFirstChunk.length - 1];
+          }
+          return commentAbove;
+        });
+    } else {
+      commentAbove = this.isNewTopicOnTop ? null : cd.comments[cd.comments.length - 1];
+    }
+
+    resetCommentAnchors();
+    if (commentAbove) {
+      cd.comments
+        .slice(0, commentAbove.id + 1)
+        .filter((comment) => (
+          comment.author === cd.g.USER &&
+          comment.date?.getTime() === date.getTime()
+        ))
+        .forEach((comment) => {
+          registerCommentAnchor(comment.anchor);
+        });
+    }
+
+    return generateCommentAnchor(date, cd.g.USER_NAME, true);
+  }
+
+  /**
+   * Submit the form.
+   *
+   * @param {boolean} [afterEditConflict=false]
+   */
+  async submit(afterEditConflict = false) {
     if (this.operations.some((op) => !op.isClosed && op.type === 'load')) return;
 
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!(await this.runChecks({ doDelete }))) return;
 
-    const currentOperation = this.registerOperation({ type: 'submit' });
+    const currentOperation = this.registerOperation({ type: 'submit' }, !afterEditConflict);
 
     const otherFormsSubmitted = cd.commentForms
       .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
@@ -3089,23 +3197,19 @@ export default class CommentForm {
       return;
     }
 
-    const newPageCode = await this.tryPrepareNewPageCode('submit');
-    if (newPageCode === undefined) {
+    const code = await this.prepareWholeCode('submit');
+    if (code === undefined) {
       this.closeOperation(currentOperation);
       return;
     }
 
-    const editTimestamp = await this.tryEditPage(
-      this.targetPage,
-      newPageCode,
-      currentOperation
-    );
+    const editTimestamp = await this.editPage(code, currentOperation);
     if (!editTimestamp) return;
 
     // Here we use a trick where we pass, in passedData, the name of the section that was set to be
     // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
     // the value quickly enough, so it returns the old value, but we must display the new one.
-    const passedData = { didSubmitCommentForm: true };
+    const passedData = { wasCommentFormSubmitted: true };
 
     // When creating a page
     if (!mw.config.get('wgArticleId')) {
@@ -3152,9 +3256,10 @@ export default class CommentForm {
     }
 
     if (!doDelete) {
+    // Generate an anchor for the comment to jump to.
       passedData.commentAnchor = this.mode === 'edit' ?
         this.target.anchor :
-        generateCommentAnchor(new Date(editTimestamp), cd.g.USER_NAME, true);
+        this.generateFutureCommentAnchor(editTimestamp);
     }
 
     // When the edit takes place on another page that is transcluded in the current one, we must
@@ -3171,7 +3276,7 @@ export default class CommentForm {
    *
    * @returns {boolean}
    */
-  async confirmClose() {
+  confirmClose() {
     return !this.isAltered() || confirm(cd.s('cf-confirm-close'));
   }
 
@@ -3183,7 +3288,7 @@ export default class CommentForm {
   async cancel(confirmClose = true) {
     if (isPageOverlayOn() || this.isBeingSubmitted()) return;
 
-    if (confirmClose && !(await this.confirmClose())) {
+    if (confirmClose && !this.confirmClose()) {
       focusInput(this.commentInput);
       return;
     }
@@ -3466,7 +3571,7 @@ export default class CommentForm {
       this.commentInput.selectRange(caretIndex);
     }
 
-    const lastChar = caretIndex && this.commentInput.getValue().slice(caretIndex - 1, caretIndex);
+    const lastChar = caretIndex && this.commentInput.getValue().substr(caretIndex - 1, 1);
     if (caretIndex && !/\s/.test(lastChar)) {
       insertText(this.commentInput, ' ');
     }
@@ -3526,7 +3631,8 @@ export default class CommentForm {
    * @param {string} [options.post=''] Text to insert after the caret/selection.
    * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
    *   post instead of leaving it alone.
-   * @param {string} [options.selection] Selected text. Use if it is outside of the input.
+   * @param {string} [options.selection] Selected text. Use if the selection is outside of the
+   *   input.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
    */
   encapsulateSelection({
@@ -3559,7 +3665,7 @@ export default class CommentForm {
       selection = selection || '';
     }
 
-    // Wrap text moving the leading and trailing spaces to the sides of the resulting text.
+    // Wrap the text moving the leading and trailing spaces to the sides of the resulting text.
     const [leadingSpace] = selection.match(/^ */);
     const [trailingSpace] = selection.match(/ *$/);
     const middleText = selection || peri;

@@ -73,6 +73,7 @@ function findItemElement(element, level, nextForeignElement) {
  * @param {Element[]} highlightables
  * @param {Element} nextForeignElement
  * @returns {Element}
+ * @private
  */
 function getEndElement(startElement, highlightables, nextForeignElement) {
   let commonAncestor = startElement;
@@ -183,19 +184,41 @@ export default class Thread {
       elementPrototypes = cd.g.THREAD_ELEMENT_PROTOTYPES;
     }
 
+    /**
+     * The root comment of the thread.
+     *
+     * @type {Comment}
+     */
     this.rootComment = rootComment;
 
-    // Logically last comment
     const descendants = rootComment.getChildren(true);
+
+    /**
+     * The last comment of the thread (logically, not visually).
+     *
+     * @type {Comment}
+     */
     this.lastComment = descendants[descendants.length - 1] || rootComment;
 
+    /**
+     * The number of comments in the thread.
+     *
+     * @type {number}
+     */
     this.commentCount = this.lastComment.id - this.rootComment.id + 1;
 
     if (cd.g.pageHasOutdents) {
       // Visually last comment (if there are {{outdent}} templates)
       cd.debug.startTimer('visualLastComment');
       const visualDescendants = rootComment.getChildren(true, true);
+
+      /**
+       * The last comment of the thread _visually_, not logically.
+       *
+       * @type {Comment}
+       */
       this.visualLastComment = visualDescendants[visualDescendants.length - 1] || rootComment;
+
       cd.debug.stopTimer('visualLastComment');
     } else {
       this.visualLastComment = this.lastComment;
@@ -246,17 +269,46 @@ export default class Thread {
     }
 
     if (startElement && endElement && visualEndElement) {
+      /**
+       * The top element of the thread.
+       *
+       * @type {Element}
+       */
       this.startElement = startElement;
+
+      /**
+       * The bottom element of the thread (logically, not visually).
+       *
+       * @type {Element}
+       */
       this.endElement = endElement;
+
+      /**
+       * The bottom element of the thread _visually_, not logically.
+       *
+       * @type {Element}
+       */
       this.visualEndElement = visualEndElement;
     } else {
       throw new CdError();
     }
   }
 
+  /**
+   * Create a thread line with a click area around.
+   *
+   * @private
+   */
   createLine() {
     cd.debug.startTimer('threads createElement create');
+
+    /**
+     * Click area of the thread line.
+     *
+     * @type {Element}
+     */
     this.clickArea = elementPrototypes.clickArea.cloneNode(true);
+
     if (this.rootComment.isStartStretched) {
       this.clickArea.classList.add('cd-thread-clickArea-stretchedStart');
     }
@@ -276,7 +328,13 @@ export default class Thread {
       }
     };
 
+    /**
+     * Thread line.
+     *
+     * @type {Element}
+     */
     this.line = this.clickArea.firstChild;
+
     if (this.endElement !== this.visualEndElement) {
       let areOutdentedCommentsShown = false;
       for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
@@ -296,6 +354,14 @@ export default class Thread {
     cd.debug.stopTimer('threads createElement create');
   }
 
+  /**
+   * Revise the end element of the thread based on {@link module:Comment#subitemList comment
+   * subitems}.
+   *
+   * @param {boolean} isVisual Use the visual thread end.
+   * @returns {Element}
+   * @private
+   */
   getAdjustedEndElement(isVisual) {
     const lastComment = isVisual ? this.visualLastComment : this.lastComment;
     const endElement = isVisual ? this.visualEndElement : this.endElement;
@@ -307,6 +373,12 @@ export default class Thread {
     return adjustedEndElement;
   }
 
+  /**
+   * Get contents of the thread.
+   *
+   * @returns {Node[]}
+   * @private
+   */
   getRangeContents() {
     const range = document.createRange();
     range.setStart(this.startElement, 0);
@@ -364,8 +436,17 @@ export default class Thread {
     return rangeContents;
   }
 
+  /**
+   * Collapse the thread.
+   *
+   * @param {Promise} [getUserGendersPromise]
+   */
   collapse(getUserGendersPromise) {
-    // The range contents can change, at least due to appearance of comment forms.
+    /**
+     * Nodes that are collapsed. These can change, at least due to comment forms showing up.
+     *
+     * @type {Node[]|undefined}
+     */
     this.collapsedRange = this.getRangeContents();
 
     cd.debug.stopTimer('thread collapse traverse');
@@ -386,7 +467,14 @@ export default class Thread {
     cd.debug.stopTimer('thread collapse range');
 
     cd.debug.startTimer('thread collapse traverse comments');
+
+    /**
+     * Is the thread collapsed.
+     *
+     * @type {boolean}
+     */
     this.isCollapsed = true;
+
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
       const comment = cd.comments[i];
       if (comment.thread?.isCollapsed && comment.thread !== this) {
@@ -447,8 +535,21 @@ export default class Thread {
     }
     cd.debug.stopTimer('thread collapse button note');
 
+    /**
+     * Note in place of a collapsed thread that has a button to expand the thread.
+     *
+     * @type {Element|undefined}
+     * @private
+     */
     this.expandNote = expandNote;
+
+    /**
+     * Note in place of a collapsed thread as a jQuery object.
+     *
+     * @type {JQuery|undefined}
+     */
     this.$expandNote = $(this.expandNote);
+
     if (isInited) {
       this.$expandNote.cdScrollIntoView();
     }
@@ -473,6 +574,9 @@ export default class Thread {
     cd.debug.stopTimer('thread collapse end');
   }
 
+  /**
+   * Expand the thread.
+   */
   expand() {
     this.collapsedRange.forEach((el) => {
       const $el = $(el);
@@ -519,10 +623,16 @@ export default class Thread {
     handleScroll();
   }
 
+  /**
+   * Expand the thread if it's collapsed and collapse if it's expanded.
+   */
   toggle() {
     this[this.isCollapsed ? 'expand' : 'collapse']();
   }
 
+  /**
+   * Create threads.
+   */
   static init() {
     cd.debug.startTimer('threads');
     cd.debug.startTimer('threads traverse');
@@ -566,6 +676,10 @@ export default class Thread {
     cd.debug.stopTimer('threads');
   }
 
+  /**
+   * _For internal use._ Calculate the positions and (if needed) add the thread lines to the
+   * container.
+   */
   static updateLines() {
     if ((isPageLoading() || document.hidden) && isInited) return;
 

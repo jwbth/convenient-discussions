@@ -120,6 +120,7 @@ export default {
       /**
        * Add section form.
        *
+       * @name addSectionForm
        * @type {CommentForm|undefined}
        * @memberof module:cd~convenientDiscussions.g
        */

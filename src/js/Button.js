@@ -56,16 +56,16 @@ export default class Button {
     this.element = element;
 
     /**
-     * Button link element (an `'a'` element) which can be the same as the {@link
-     * module:Button#element button element} or its descendant.
+     * Button link element (an `'a'` element) which can be the same as the
+     * {@link module:Button#element button element} or its descendant.
      *
      * @type {Element}
      */
     this.linkElement = linkElement || element;
 
     /**
-     * Button label element which can be which can be the same as the {@link
-     * module:Button#linkElement link element} or its descendant.
+     * Button label element which can be which can be the same as the
+     * {@link module:Button#linkElement link element} or its descendant.
      *
      * @type {Element}
      */
@@ -151,7 +151,7 @@ export default class Button {
   }
 
   /**
-   * Set the actions of the button. It will be executed on click or Enter press.
+   * Set the action of the button. It will be executed on click or Enter press.
    *
    * @param {?Function} action
    * @returns {Button} This button.

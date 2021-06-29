@@ -4,7 +4,7 @@ module.exports = {
   },
   "opts": {
     "template": "node_modules/docdash",
-    "destination": "docs/",
+    "destination": "dist/docs/",
   },
   "plugins": ["plugins/markdown"],
   "templates": {
@@ -16,5 +16,6 @@ module.exports = {
   },
   "docdash": {
     "search": true,
+    "collapse": true,
   },
 };

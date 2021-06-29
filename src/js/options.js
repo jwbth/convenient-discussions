@@ -87,7 +87,7 @@ export function unpackWatchedSections(watchedSectionsString) {
  *   variables (they shouldn't need to be saved to the server).
  * @param {boolean} [options.reuse=false] If `options` is not set, reuse the cached user info
  *   request.
- * @returns {object}
+ * @returns {Promise.<object>}
  */
 export async function getSettings({
   options,
@@ -147,7 +147,7 @@ export async function getSettings({
 }
 
 /**
- * Get settings set in common.js that are meant to override native settings.
+ * _For internal use._ Get settings set in common.js that are meant to override native settings.
  *
  * @returns {object}
  */
@@ -211,7 +211,7 @@ export async function setSettings(settings = cd.settings) {
  * throttled until it is focused, so an indefinite amount of time can pass.
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
- * @returns {GetVisitsReturn}
+ * @returns {Promise.<GetVisitsReturn>}
  */
 export async function getVisits(reuse = false) {
   const promise = cd.g.isPageFirstParsed && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?

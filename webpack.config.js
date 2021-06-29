@@ -213,11 +213,11 @@ module.exports = (env) => {
     plugins,
     devServer: {
       contentBase: path.join(__dirname, 'dist'),
-      port: 80,
+      port: 9000,
       liveReload: false,
 
       // Fixes "GET https://localhost:80/sockjs-node/info?t=... net::ERR_SSL_PROTOCOL_ERROR".
-      public: '127.0.0.1',
+      public: '127.0.0.1:9000',
 
       // Fixes "Invalid Host/Origin header".
       disableHostCheck: true,

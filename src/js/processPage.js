@@ -1,7 +1,7 @@
 /**
  * Talk page (DOM, not wikitext) processing module. Its only export, `processPage()`, is executed
- * after {@link module:app the main module} on first run and as part of {@link
- * module:boot.reloadPage} on subsequent runs.
+ * after {@link module:app the main module} on first run and as part of
+ * {@link module:boot.reloadPage} on subsequent runs.
  *
  * @module processPage
  */
@@ -14,7 +14,6 @@ import Parser, { processLink } from './Parser';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import toc from './toc';
@@ -50,8 +49,8 @@ import {
  * comment layers are also made here.
  *
  * @param {PassedData} passedData
- * @param {Promise[]} siteDataRequests Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  * @private
  */
 async function prepare(passedData, siteDataRequests) {
@@ -95,7 +94,7 @@ async function prepare(passedData, siteDataRequests) {
     await init(siteDataRequests);
   } else {
     resetCommentAnchors();
-    commentLayers.reset();
+    Comment.resetLayers();
   }
 }
 
@@ -141,7 +140,7 @@ function findClosedDiscussions() {
  * @private
  */
 function findOutdents() {
-  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.outdent-template').length);
+  cd.g.pageHasOutdents = Boolean(cd.g.$root.find('.' + cd.config.outdentClass).length);
 }
 
 /**
@@ -712,8 +711,8 @@ async function processFragment(passedData) {
 }
 
 /**
- * Highlight new comments and update the navigation panel. A promise obtained from {@link
- * module:options.getVisits} should be provided.
+ * Highlight new comments and update the navigation panel. A promise obtained from
+ * {@link module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
  * @param {PassedData} passedData
@@ -829,15 +828,15 @@ function debugLog() {
  *   enough time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
- * @property {boolean} [didSubmitCommentForm] Did the user just submit a comment form.
+ * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
  */
 
 /**
- * Process the current web page.
+ * _For internal use._ Process the current web page.
  *
  * @param {PassedData} [passedData={}] Data passed from the previous page state.
- * @param {Promise[]} [siteDataRequests] Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} [siteDataRequests] Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
  * @fires beforeParse
  * @fires commentsReady
@@ -1081,8 +1080,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
       // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning of threads after the addition of comment forms. Should be below the
-      // viewport position restoration, as some elements may get hidden. Should be Should better be
-      // above comment highlighting (processVisits(), Comment.configureAndAddLayers()) to avoid
+      // viewport position restoration, as some elements may get hidden. Should better be above
+      // comment highlighting (`processVisits()`, `Comment.configureAndAddLayers()`) to avoid
       // spending time on comments in collapsed threads.
       Thread.init();
 
@@ -1132,7 +1131,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       }
 
       const onPageMutations = () => {
-        commentLayers.redrawIfNecessary();
+        Comment.redrawLayersIfNecessary();
         Thread.updateLines();
 
         // Could also run handleScroll() here, but not sure, as it will double the execution time

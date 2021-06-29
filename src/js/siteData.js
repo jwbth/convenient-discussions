@@ -1,9 +1,9 @@
 /**
- * Methods for loading site data, such as MediaWiki messages and configuration, and setting date
- * formats based on it.
+ * Functions for loading and setting site data, such as MediaWiki messages and configuration, and
+ * setting date formats based on it.
  *
- * The code of this module, together with {@link module:timestamp}, is based on parts of {@link
- * https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/ DiscussionTools} code.
+ * The code of this module, together with {@link module:timestamp}, is based on parts of
+ * {@link https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/ DiscussionTools} code.
  *
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
@@ -38,6 +38,13 @@ function setFormats() {
   cd.g.USER_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[userLanguage] : null;
 }
 
+/**
+ * Get date tokens used in a format (to load only needed tokens).
+ *
+ * @param {string} format
+ * @returns {string[]}
+ * @private
+ */
 function getUsedDateTokens(format) {
   const tokens = [];
 
@@ -58,7 +65,8 @@ function getUsedDateTokens(format) {
 }
 
 /**
- * Load messages needed to parse and generate timestamps, as well as some site data.
+ * _For internal use._ Load messages needed to parse and generate timestamps, as well as some site
+ * data.
  *
  * @returns {Promise[]}
  */

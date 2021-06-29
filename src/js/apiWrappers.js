@@ -1,7 +1,7 @@
 /**
- * Wrappers for MediaWiki action API requests ({@link
- * https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link module:Page Page class}
- * methods for functions regarding concrete page names.
+ * Wrappers for MediaWiki action API requests
+ * ({@link https://www.mediawiki.org/wiki/API:Main_page}). See also the
+ * {@link module:Page Page class} methods for functions regarding concrete page names.
  *
  * @module apiWrappers
  */
@@ -45,15 +45,22 @@ export function makeBackgroundRequest(params, method = 'post') {
 }
 
 /**
+ * jQuery promise
+ *
+ * @external JQueryPromise
+ * @see https://api.jquery.com/Types/#Promise
+ */
+
+/**
  * Make a parse request with arbitrary code. We assume that if something is parsed, it will be
  * shown, so we automatically load modules.
  *
  * @param {string} code
  * @param {object} [customOptions]
- * @returns {Promise}
+ * @returns {external:JQueryPromise}
  * @throws {CdError}
  */
-export async function parseCode(code, customOptions) {
+export function parseCode(code, customOptions) {
   const defaultOptions = {
     action: 'parse',
     text: code,
@@ -146,12 +153,11 @@ export function getUserInfo(reuse = false) {
 }
 
 /**
- * Generate an error text for an unknown error.
+ * _Method for internal use._ Generate an error text for an unknown error.
  *
  * @param {string} errorCode
  * @param {string} [errorInfo]
- * @returns {string}
- * @private
+ * @returns {Promise.<string>}
  */
 export async function unknownApiErrorText(errorCode, errorInfo) {
   let text;
@@ -174,7 +180,7 @@ export async function unknownApiErrorText(errorCode, errorInfo) {
  * Get page titles for an array of page IDs.
  *
  * @param {number[]} pageIds
- * @returns {object[]}
+ * @returns {Promise.<object[]>}
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
@@ -215,7 +221,7 @@ export async function getPageTitles(pageIds) {
  * Get page IDs for an array of page titles.
  *
  * @param {string[]} pageTitles
- * @returns {object[]}
+ * @returns {Promise.<object[]>}
  * @throws {CdError}
  */
 export async function getPageIds(pageTitles) {
@@ -303,8 +309,8 @@ export async function setLocalOption(name, value) {
 }
 
 /**
- * Set a global preferences' option value. See {@link
- * https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
+ * Set a global preferences' option value. See
+ * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
  *
  * @param {string} name
  * @param {string} value
@@ -373,9 +379,9 @@ export async function getUserGenders(users, requestInBackground = false) {
 }
 
 /**
- * Get a list of 10 user names matching the specified search text. User names are sorted as {@link
- * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a talk page
- * existent are included. Redirects are resolved.
+ * Get a list of 10 user names matching the specified search text. User names are sorted as
+ * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a
+ * talk page existent are included. Redirects are resolved.
  *
  * Reuses the existing request if available.
  *
@@ -429,8 +435,9 @@ export function getRelevantUserNames(text) {
 }
 
 /**
- * Get a list of 10 page names matching the specified search text. Page names are sorted as {@link
- * https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not resolved.
+ * Get a list of 10 page names matching the specified search text. Page names are sorted as
+ * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
+ * resolved.
  *
  * Reuses the existing request if available.
  *
@@ -546,6 +553,12 @@ export function getRelevantTemplateNames(text) {
   return promise;
 }
 
+/**
+ * Get existence of a list of pages by title.
+ *
+ * @param {string[]} titles Titles to check existence of.
+ * @returns {Promise.<object>}
+ */
 export async function getPagesExistence(titles) {
   const results = {};
   const normalized = [];

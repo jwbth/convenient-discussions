@@ -1,6 +1,6 @@
 /**
- * Comment timestamp and also anchor processing utilities. Timestamp formats are set in {@link
- * module:siteData}. Functions related to wikitext parsing go in {@link module:wikitext}.
+ * Comment timestamp and also anchor processing utilities. Timestamp formats are set in
+ * {@link module:siteData}. Functions related to wikitext parsing go in {@link module:wikitext}.
  *
  * Terminology used here (and in other modules):
  * - "date" is a `Date` object,
@@ -70,7 +70,7 @@ export const relativeTimeThresholds = [
 ];
 
 /**
- * Prepare `dayjs` object for further use (add plugins and a locale).
+ * _For internal use._ Prepare `dayjs` object for further use (add plugins and a locale).
  */
 export function initDayjs() {
   const locale = cd.i18n[cd.g.USER_LANGUAGE].dayjsLocale;
@@ -181,7 +181,6 @@ function getTimestampMainPartPattern(format, digits) {
  * This calls `getTimestampMainPartPattern()` with data for the current wiki.
  *
  * @private
- *
  */
 function setLocalTimestampRegexps() {
   const digitsPattern = cd.g.CONTENT_DIGITS ? `[${cd.g.CONTENT_DIGITS}]` : '\\d';
@@ -293,7 +292,7 @@ function setMatchingGroupsForLocalTimestampParser() {
 }
 
 /**
- * Set the global variables related to timestamp parsing.
+ * _For internal use._ Set the global variables related to timestamp parsing.
  */
 export function initTimestampParsingTools() {
   setLocalTimestampRegexps();

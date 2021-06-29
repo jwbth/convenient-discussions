@@ -48,8 +48,8 @@ export default class CommentSkeleton {
     parts = this.parser.wrapNumberedList(parts);
 
     /**
-     * Comment ID. Same as the comment index in {@link module:cd~convenientDiscussions.comments
-     * convenientDiscussions.comments}.
+     * Comment ID. Same as the comment's index in
+     * {@link module:cd~convenientDiscussions.comments convenientDiscussions.comments}.
      *
      * @type {number}
      */
@@ -63,44 +63,44 @@ export default class CommentSkeleton {
     this.date = signature.date || null;
 
     /**
-     * Comment timestamp as present on the page.
+     * Comment timestamp as originally present on the page.
      *
      * @type {string}
      */
     this.timestamp = signature.timestampText;
 
     /**
-     * Comment author name.
+     * _For internal use._ Comment author name.
      *
      * @type {string}
      */
     this.authorName = signature.authorName;
 
     /**
-     * Comment signature element.
+     * _For internal use._ Comment signature element.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.signatureElement = signature.element;
 
     /**
-     * Comment timestamp element.
+     * _For internal use._ Comment timestamp element.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.timestampElement = signature.timestampElement;
 
     /**
-     * User page (in the "User" namespace) link element.
+     * _For internal use._ User page (in the "User" namespace) link element.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.authorLink = signature.authorLink;
 
     /**
-     * User talk page (in the "User talk" namespace) link element.
+     * _For internal use._ User talk page (in the "User talk" namespace) link element.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.authorTalkLink = signature.authorTalkLink;
 
@@ -137,7 +137,7 @@ export default class CommentSkeleton {
     /**
      * Comment's elements.
      *
-     * @type {Element[]}
+     * @type {Element[]|external:Element[]}
      */
     this.elements = this.parts.map((part) => part.node);
 
@@ -156,7 +156,7 @@ export default class CommentSkeleton {
      * Keep in mind that elements may be replaced, and property values will need to be updated. See
      * {@link module:Comment#replaceElement}.
      *
-     * @type {Element[]}
+     * @type {Element[]|external:Element[]}
      */
     this.highlightables = this.elements.filter(isHighlightable);
 
@@ -207,7 +207,7 @@ export default class CommentSkeleton {
     this.section = null;
 
     /**
-     * Is the comment outdented with the {{outdent}} template.
+     * Is the comment outdented with the `{{outdent}}` template.
      *
      * @type {boolean}
      */
@@ -219,6 +219,8 @@ export default class CommentSkeleton {
    * when comments are reformatted, but we do it always to have a uniform parsing result). In the
    * worker context, this will allow to correctly update edited comments (unless
    * Comment#reviewHighlightables alters the highlightables afterwards).
+   *
+   * @private
    */
   wrapHighlightables() {
     [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
@@ -246,7 +248,7 @@ export default class CommentSkeleton {
   /**
    * Add the necessary attributes to the comment's elements.
    *
-   * @private
+   * @protected
    */
   addAttributes() {
     this.elements.forEach((el) => {
@@ -261,7 +263,7 @@ export default class CommentSkeleton {
    * Set the necessary classes to parent elements of the comment's elements to make a visible tree
    * structure.
    *
-   * @private
+   * @protected
    */
   setLevels() {
     // Make sure the level on the top and on the bottom of the comment are the same and add
@@ -281,7 +283,7 @@ export default class CommentSkeleton {
     this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
 
     /**
-     * Comment level that takes into account {{outdent}} templates.
+     * {@link module:Comment#level Comment level} that takes into account `{{outdent}}` templates.
      *
      * @type {number}
      */
@@ -319,7 +321,8 @@ export default class CommentSkeleton {
   /**
    * Get all replies to the comment.
    *
-   * @param {boolean} [indirect=false] Whether to include children of children and so on.
+   * @param {boolean} [indirect=false] Whether to include children of children and so on (return
+   *   descendants, in a word).
    * @param {boolean} [visual=false] Whether to use visual levels instead of logical.
    * @returns {CommentSkeleton[]}
    */
@@ -353,9 +356,13 @@ export default class CommentSkeleton {
     return children;
   }
 
+  /**
+   * _For internal use._ Set {@link module:Comment#logicalLevel logical levels} to the comments
+   * taking into account `{{outdent}}` templates.
+   */
   static processOutdents() {
     if (cd.g.pageHasOutdents) {
-      Array.from(cd.g.rootElement.getElementsByClassName('outdent-template'))
+      Array.from(cd.g.rootElement.getElementsByClassName(cd.config.outdentClass))
         .reverse()
         .forEach((el) => {
           const treeWalker = new ElementsTreeWalker(el);

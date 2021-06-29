@@ -70,14 +70,14 @@ function getPageNameFromUrl(url) {
  * @typedef {object} ProcessLinkReturn
  * @param {string} 1 User name.
  * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`).
+ * @private
  */
 
 /**
- * Get a user name from a link, along with some other data about a page name.
+ * _For internal use._ Get a user name from a link, along with some other data about a page name.
  *
- * @param {Element} element
+ * @param {Element|external:Element} element
  * @returns {?ProcessLinkReturn}
- * @private
  */
 export function processLink(element) {
   const href = element.getAttribute('href');
@@ -132,7 +132,7 @@ export function processLink(element) {
 /**
  * Determine whether the provided element is a cell of a table containing multiple signatures.
  *
- * @param {Element} element
+ * @param {Element|external:Element} element
  * @returns {boolean}
  * @private
  */
@@ -165,7 +165,7 @@ export default class Parser {
     if (!foreignComponentClasses) {
       foreignComponentClasses = ['cd-comment-part', ...cd.config.closedDiscussionClasses];
       if (cd.g.pageHasOutdents) {
-        foreignComponentClasses.push('outdent-template');
+        foreignComponentClasses.push(cd.config.outdentClass);
       }
 
       timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
@@ -179,7 +179,7 @@ export default class Parser {
   /**
    * Create a comment instance.
    *
-   * @param {Element} signature
+   * @param {Element|external:Element} signature
    * @returns {*}
    */
   createComment(signature) {
@@ -189,7 +189,7 @@ export default class Parser {
   /**
    * Create a section instance.
    *
-   * @param {Element} headingElement
+   * @param {Element|external:Element} headingElement
    * @param {Promise} watchedSectionsRequest
    * @returns {*}
    */
@@ -199,18 +199,14 @@ export default class Parser {
 
   /**
    * @typedef {object} Timestamp
-   * @property {Element} element
+   * @property {Element|external:Element} element
    * @property {Date} date
    */
 
   /**
-   * @typedef {Timestamp[]} FindTimestampsReturn
-   */
-
-  /**
-   * Find timestamps under the root element.
+   * _For internal use._ Find timestamps under the root element.
    *
-   * @returns {FindTimestampsReturn}
+   * @returns {Timestamp[]}
    */
   findTimestamps() {
     elementsToExclude = [
@@ -250,7 +246,7 @@ export default class Parser {
   }
 
   /**
-   * Find signatures under the root element given timestamps.
+   * _For internal use._ Find signatures under the root element given timestamps.
    *
    * Characters before the author link, like "—", aren't considered a part of the signature.
    *
@@ -349,7 +345,8 @@ export default class Parser {
                     authorContribsLink = link;
                   } else if (linkType === 'userSubpage') {
                     // A user subpage link after a user link - OK. A user subpage link before a user
-                    // link - not OK. Perhaps part of the comment.
+                    // link - not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps
+                    // part of the comment.
                     if (authorLink) {
                       return false;
                     }
@@ -478,9 +475,9 @@ export default class Parser {
   }
 
   /**
-   * Collect the parts of the comment given a signature element.
+   * _For internal use._ Collect the parts of the comment given a signature element.
    *
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
    */
   collectParts(signatureElement) {
@@ -665,7 +662,10 @@ export default class Parser {
             this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
           ) ||
 
-          (cd.g.pageHasOutdents && this.context.getElementByClassName(node, 'outdent-template')) ||
+          (
+            cd.g.pageHasOutdents &&
+            this.context.getElementByClassName(node, cd.config.outdentClass)
+          ) ||
 
           // Talk page message box
           (
@@ -710,7 +710,7 @@ export default class Parser {
   }
 
   /**
-   * Remove comment parts that are inside of other parts.
+   * _For internal use._ Remove comment parts that are inside of other parts.
    *
    * @param {object[]} parts
    * @returns {object[]}
@@ -735,10 +735,10 @@ export default class Parser {
   }
 
   /**
-   * Wrap text and inline nodes into block elements.
+   * _For internal use._ Wrap text and inline nodes into block elements.
    *
    * @param {object[]} parts
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
    */
   encloseInlineParts(parts, signatureElement) {
@@ -812,7 +812,7 @@ export default class Parser {
   }
 
   /**
-   * Remove unnecessary and incorrect parts from the collection.
+   * _For internal use._ Remove unnecessary and incorrect parts from the collection.
    *
    * @param {object[]} parts
    * @returns {object[]}
@@ -836,10 +836,10 @@ export default class Parser {
   }
 
   /**
-   * Replace list elements with collections of their items if appropriate.
+   * _For internal use._ Replace list elements with collections of their items if appropriate.
    *
    * @param {object[]} parts
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
    */
   replaceListsWithItems(parts, signatureElement) {
@@ -947,7 +947,7 @@ export default class Parser {
   }
 
   /**
-   * Wrap numbered list into a div or dl & dd if the comment starts with numbered list items.
+   * _For internal use._ Wrap numbered list into a div or dl & dd if the comment starts with numbered list items.
    *
    * @param {object[]} parts
    * @returns {object[]}
@@ -995,10 +995,10 @@ export default class Parser {
   }
 
   /**
-   * Get the `.cd-commentLevel` elements up the DOM tree.
+   * _For internal use._ Get the `.cd-commentLevel` elements up the DOM tree.
    *
-   * @param {Element} initialElement
-   * @returns {Element[]}
+   * @param {Element|external:Element} initialElement
+   * @returns {Element[]|external:Element[]}
    */
   getLevelsUpTree(initialElement) {
     const levelElements = [];
@@ -1021,9 +1021,9 @@ export default class Parser {
   }
 
   /**
-   * Get all headings on the page.
+   * _For internal use._ Get all headings on the page.
    *
-   * @returns {Element[]}
+   * @returns {Element[]|external:Element[]}
    */
   findHeadings() {
     // The worker context doesn't support .querySelector(), so we have to use

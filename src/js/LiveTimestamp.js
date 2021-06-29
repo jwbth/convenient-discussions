@@ -16,15 +16,47 @@ let improvedTimestampsInitted = false;
 let improvedTimestamps = [];
 
 /**
- * Class representing an element that has contains automatically updated relative date and time
- * timestamps.
+ * Class representing an element that has contains an automatically updated timestamp with relative
+ * (dependent on the current date and time somehow) date and time.
  */
 export default class LiveTimestamp {
+  /**
+   * Create a live timestamp.
+   *
+   * @param {Element} element Element that has the timestamp.
+   * @param {Date} date Timestamp's date.
+   * @param {boolean} addTimezone Whether to add timezone to the timestamp.
+   * @param {Function} callback Function to run after the timestamp updates.
+   */
   constructor(element, date, addTimezone, callback) {
     cd.debug.startTimer('setDateUpdateTimer');
+
+    /**
+     * Element that has the timestamp.
+     *
+     * @type {Element}
+     */
     this.element = element;
+
+    /**
+     * Timestamp's date.
+     *
+     * @type {Date}
+     */
     this.date = date;
+
+    /**
+     * Whether to add timezone to the timestamp.
+     *
+     * @type {boolean}
+     */
     this.addTimezone = addTimezone;
+
+    /**
+     * Function to run after the timestamp updates.
+     *
+     * @type {Function}
+     */
     this.callback = callback;
 
     if (cd.settings.timestampFormat === 'improved') {
@@ -42,6 +74,12 @@ export default class LiveTimestamp {
     cd.debug.stopTimer('setDateUpdateTimer');
   }
 
+  /**
+   * Set a delay (timeout) until the next timestamp update.
+   *
+   * @param {boolean} update Whether to update the timestamp now.
+   * @private
+   */
   setUpdateTimeout(update = false) {
     if (update) {
       this.update();
@@ -77,6 +115,11 @@ export default class LiveTimestamp {
     }
   }
 
+  /**
+   * Update the timestamp.
+   *
+   * @private
+   */
   update() {
     this.element.textContent = formatDate(this.date, this.addTimezone);
     if (this.callback) {
@@ -84,6 +127,11 @@ export default class LiveTimestamp {
     }
   }
 
+  /**
+   * Initialize improved timestamps (when the timestamp format is set to "improved").
+   *
+   * @private
+   */
   static initImproved() {
     improvedTimestampsInitted = true;
     const msInMin = cd.g.MILLISECONDS_IN_MINUTE;
@@ -110,6 +158,9 @@ export default class LiveTimestamp {
     cd.debug.stopTimer('reformatTimestamps setTimeout');
   }
 
+  /**
+   * _For internal use._ Update the timestamps (when the timestamp format is set to "improved").
+   */
   static updateImproved() {
     improvedTimestamps.forEach((timestamp) => {
       timestamp.update();
@@ -119,6 +170,9 @@ export default class LiveTimestamp {
     }
   }
 
+  /**
+   * Reset all the live timestamps on the page (this is run on page reloads).
+   */
   static reset() {
     updateTimeouts.forEach(clearTimeout);
     updateTimeouts = [];

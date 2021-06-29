@@ -14,7 +14,7 @@ self.Node = {
  * Returns `true` to stop walking through subtree (after founding the required amounts for elements,
  * for instance).
  *
- * @param {Node} base
+ * @param {external:Node} base
  * @param {Function} callback
  * @param {boolean} checkSelf
  * @returns {boolean}

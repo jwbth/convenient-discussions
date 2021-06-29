@@ -222,7 +222,7 @@ class Tribute {
     }
 
     // Check if it is a jQuery collection
-    if (typeof jQuery !== "undefined" && el instanceof jQuery) {
+    if (typeof $ !== "undefined" && el instanceof $) {
       el = el.get();
     }
 
@@ -524,7 +524,7 @@ class Tribute {
     }
 
     // Check if it is a jQuery collection
-    if (typeof jQuery !== "undefined" && el instanceof jQuery) {
+    if (typeof $ !== "undefined" && el instanceof $) {
       el = el.get();
     }
 

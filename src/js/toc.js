@@ -44,8 +44,8 @@ class TocItem {
   }
 
   /**
-   * Generate HTML to use it in the TOC for the section. Only a limited number of HTML elements is
-   * allowed in TOC.
+   * _For internal use._ Generate HTML to use it in the TOC for the section. Only a limited number
+   * of HTML elements is allowed in TOC.
    *
    * @param {JQuery} $headline
    */
@@ -74,10 +74,9 @@ class TocItem {
 
 export default {
   /**
-   * Hide the TOC if the relevant cookie is set. This method duplicates {@link
-   * https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js
-   * the native MediaWiki function} and exists because we may need to hide the TOC earlier than the
-   * native method does it.
+   * _For internal use._ Hide the TOC if the relevant cookie is set. This method duplicates
+   * {@link https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js the native MediaWiki function}
+   * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   possiblyHide() {
     if (!cd.g.$toc.length) return;
@@ -88,7 +87,7 @@ export default {
   },
 
   /**
-   * Reset TOC data (executed at each page reload).
+   * _For internal use._ Reset the TOC data (executed at each page reload).
    */
   reset() {
     tocItems = null;
@@ -123,7 +122,7 @@ export default {
   },
 
   /**
-   * Highlight (bold) watched sections.
+   * _For internal use._ Highlight (bold) watched sections.
    */
   highlightWatchedSections() {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -137,14 +136,14 @@ export default {
 
   /**
    * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a
-   * web worker so its constuctor is lost.)
+   * web worker so its constructor is lost.)
    *
    * @typedef {object} SectionSkeletonLike
    */
 
   /**
-   * Add links to new, not yet rendered sections (loaded in the background) to the table of
-   * contents.
+   * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
+   * the table of contents.
    *
    * Note that this method may also add the `match` property to the section elements containing a
    * matched `Section` object.
@@ -271,14 +270,14 @@ export default {
 
   /**
    * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
-   * web worker so its constuctor is lost.)
+   * web worker so its constructor is lost.)
    *
    * @typedef {object} CommentSkeletonLike
    */
 
   /**
-   * Add links to new comments (either already displayed or loaded in the background) to the table
-   * of contents.
+   * _For internal use._ Add links to new comments (either already displayed or loaded in the
+   * background) to the table of contents.
    *
    * @param {CommentSkeletonLike[]|Comment[]} commentsBySection
    * @param {object} passedData

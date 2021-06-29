@@ -1,6 +1,6 @@
 /**
- * Utilities module. Some of the utilities are parts of the {@link
- * module:cd~convenientDiscussions.util convenientDiscussions.util} object.
+ * Utilities module. Some of the utilities are parts of the
+ * {@link module:cd~convenientDiscussions.util convenientDiscussions.util} object.
  *
  * @module util
  */
@@ -57,7 +57,7 @@ export function wrap(htmlOrJquery, options = {}) {
 }
 
 /**
- * Combine the section headline, summary text and, optionally, summary postfix to create an edit
+ * Combine the section headline, summary text, and, optionally, summary postfix to create an edit
  * summary.
  *
  * @param {object} options
@@ -67,7 +67,6 @@ export function wrap(htmlOrJquery, options = {}) {
  * @param {string} [options.section] Section name.
  * @param {boolean} [options.addPostfix=true] If to add cd.g.SUMMARY_POSTFIX to the summary.
  * @returns {string}
- * @memberof module:cd~convenientDiscussions.util
  */
 export function buildEditSummary(options) {
   if (options.addPostfix === undefined) {
@@ -136,9 +135,9 @@ export function wrapDiffBody(body) {
 }
 
 /**
- * Callback for {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
- * Array#filter} to remove duplicated elements from an array.
+ * Callback for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
+ * to remove duplicated elements from an array.
  *
  * @param {*} item
  * @param {number} i
@@ -170,7 +169,7 @@ export function transparentize(color) {
  * Check if a node is an element with `display: inline` or `display: inline-block` in the default
  * browser styles. As an option, it can also treat text nodes as inline elements.
  *
- * @param {Node} node
+ * @param {Node|external:Node} node
  * @param {boolean} countTextNodesAsInline
  * @returns {?boolean}
  */
@@ -274,7 +273,9 @@ export function isUndo(summary) {
 }
 
 /**
- * Callback for `Array#filter` to keep only defined values in an array.
+ * Callback for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
+ * to keep only defined values in an array.
  *
  * @param {*} el
  * @returns {boolean}
@@ -305,9 +306,9 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat
- * Array#flat(1)}. That method is not yet supported by major browsers.
+ * Alternative to
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat Array#flat(1)}.
+ * That method is not yet supported by major browsers.
  *
  * @param {Array} arr
  * @returns {Array}
@@ -317,7 +318,7 @@ export function flat(arr) {
 }
 
 /**
- * Callback used in the `.catch()` parts of `mw.Api` requests.
+ * Callback used in the `.catch()` parts of API requests.
  *
  * @param {string|Array} code
  * @param {object} data
@@ -375,6 +376,7 @@ export function removeDoubleSpaces(s) {
  *
  * @param {string} char
  * @returns {string}
+ * @private
  */
 function phpCharToUpper(char) {
   if (cd.g.PHP_CHAR_TO_UPPER_JSON[char] === '') {
@@ -385,8 +387,8 @@ function phpCharToUpper(char) {
 
 /**
  * Transform the first letter of a string to upper case, for example: `'wikilink'` → `'Wikilink'`.
- * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see {@link
- * https://phabricator.wikimedia.org/T141723#2513800}.
+ * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see
+ * {@link https://phabricator.wikimedia.org/T141723#2513800}.
  *
  * @param {string} s
  * @returns {string}
@@ -396,7 +398,7 @@ export function firstCharToUpperCase(s) {
 }
 
 /**
- * Get text of the localization messages for the content language.
+ * _For internal use._ Get text of the localization messages for the content language.
  *
  * @param {string[]} messages
  * @returns {string[]}
@@ -406,9 +408,8 @@ export function getContentLanguageMessages(messages) {
 }
 
 /**
- * {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
- * Array#findIndex} analog that looks for the _last_ index.
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array#findIndex}
+ * analog that looks for the _last_ index.
  *
  * @param {Array} arr
  * @param {Function} callback
@@ -538,8 +539,8 @@ export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = 
 /**
  * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
  *
- * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using {@link
- *   module:util.restoreScrollPosition} if it was previously used for saving the position.
+ * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using
+ *   {@link module:util.restoreScrollPosition} if it was previously used for saving the position.
  */
 export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
   if (fallbackToAbsolute && keptScrollPosition !== null) {
@@ -555,8 +556,8 @@ export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
 }
 
 /**
- * Replace the "anchor" element used for restoring saved relative scroll position with a new element
- * if it coincides with the provided element.
+ * _For internal use._ Replace the "anchor" element used for restoring saved relative scroll
+ * position with a new element if it coincides with the provided element.
  *
  * @param {Element} element
  * @param {Element} newElement
@@ -607,13 +608,13 @@ export function restoreScrollPosition(resetTocHeight = true) {
 }
 
 /**
- * Use a {@link
- * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race
- * Promise.race()} workaround to get the state of a native promise. Note that it works _only_ with
- * native promises: it doesn't work with jQuery promises (for example, ones that `mw.Api()` return).
+ * Use a
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race Promise.race()}
+ * workaround to get the state of a native promise. Note that it works _only_ with native promises:
+ * it doesn't work with jQuery promises (for example, ones that `new mw.Api()` returns).
  *
  * @param {Promise} promise
- * @returns {string}
+ * @returns {Promise.<string>}
  */
 export async function nativePromiseState(promise) {
   const obj = {};
@@ -622,11 +623,11 @@ export async function nativePromiseState(promise) {
 }
 
 /**
- * Show a notification suggesting to reload the page if the specified module is in the "loading"
+ * Show a notification suggesting to reload the page if the specified module is in the `loading`
  * state. Also return `true` in such a case.
  *
- * For the details of the bug, see https://phabricator.wikimedia.org/T68598 "mw.loader state of
- * module stuck at "loading" if request was aborted".
+ * For the details of the bug, see {@link https://phabricator.wikimedia.org/T68598} "mw.loader state
+ * of module stuck at "loading" if request was aborted".
  *
  * @param {string} moduleName
  * @returns {boolean}
@@ -758,16 +759,10 @@ export function removeDirMarks(text) {
 }
 
 /**
- * @typedef {object} OoUiTextInputWidget
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
- */
-
-/**
- * Replace the selected text (if any) in an input (input or textarea) with the provided text and
- * keep the undo/redo functionality in browsers that support it (Chrome does, Firefox doesn't:
- * https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
+ * Replace the selected text (if any) in an input (`<input>` or `<textarea>`) with the provided text
+ * and keep the undo/redo functionality.
  *
- * @param {OoUiTextInputWidget} input Input to set replace the selection in.
+ * @param {external:OoUiTextInputWidget} input Input to set replace the selection in.
  * @param {string} text Text to replace the selection with.
  */
 export function insertText(input, text) {
@@ -778,8 +773,8 @@ export function insertText(input, text) {
 }
 
 /**
- * Filter out values of an object that can't be safely passed to worker (see {@link
- * https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
+ * _For internal use._ Filter out values of an object that can't be safely passed to worker (see
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
  *
  * @param {object} obj
  * @param {Array} [allowedFuncNames=[]] Names of the properties that should be passed to the worker
@@ -787,7 +782,6 @@ export function insertText(input, text) {
  * @param {Array} [disallowedNames=[]] Names of the properties that should be filtered out without
  *   checking (allows to save time on greedy operations).
  * @returns {object}
- * @private
  */
 export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames = []) {
   const newObj = Object.assign({}, obj);
@@ -827,7 +821,6 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames
  * @param {string} s1
  * @param {string} s2
  * @returns {number}
- * @private
  */
 export function calculateWordOverlap(s1, s2) {
   const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{2,}`, 'g');
@@ -869,7 +862,7 @@ export function keyCombination(e, keyCode, modificators = []) {
  * Get around the Firefox 56 and probably some other browsers bug where the caret doesn't appear in
  * the input after focusing.
  *
- * @param {OoUiTextInputWidget} input
+ * @param {external:OoUiTextInputWidget} input
  */
 export function focusInput(input) {
   input.$input.get(0).focus();
@@ -924,17 +917,34 @@ export function getVisibilityByRects(...rects) {
   return !rects.some((rect) => rect.left === 0 && rect.height === 0);
 }
 
+/**
+ * Get a decoded URL with anchor.
+ *
+ * @param {string} anchor
+ * @returns {string}
+ */
 export function getUrlWithAnchor(anchor) {
   const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
   return `${cd.g.SERVER}${decodedPageUrl}#${anchor}`;
 }
 
+/**
+ * Handler of the `keydown` event that triggers a `click` event on Enter and Space pressed.
+ *
+ * @param {Event} e
+ */
 export function triggerClickOnEnterAndSpace(e) {
   if (e.keyCode === 13 || e.keyCode === 32) {
     $(this).trigger('click');
   }
 }
 
+/**
+ * Add CSS to the page.
+ *
+ * @param {string} text
+ * @returns {CSSStyleSheet}
+ */
 export function addCss(text) {
   const element = document.createElement('style');
   element.appendChild(document.createTextNode(text));
@@ -942,6 +952,13 @@ export function addCss(text) {
   return element.sheet;
 }
 
+/**
+ * Scroll to a specified position vertically.
+ *
+ * @param {number} y
+ * @param {boolean} [smooth=true]
+ * @param {Function} [callback]
+ */
 export function scrollToY(y, smooth = true, callback) {
   const onComplete = () => {
     cd.g.isAutoScrollInProgress = false;

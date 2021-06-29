@@ -25,7 +25,7 @@ import { getPageIds, getPageTitles, setGlobalOption, setLocalOption } from './ap
 import { getSettings, getWatchedSections, setSettings, setWatchedSections } from './options';
 
 /**
- * Create an OOUI window manager. It is supposed to be reused across the script.
+ * _For internal use._ Create a OOUI window manager. It is supposed to be reused across the script.
  */
 export function createWindowManager() {
   if (cd.g.windowManager) return;
@@ -41,16 +41,18 @@ export function createWindowManager() {
 
 /**
  * Display a OOUI message dialog where user is asked to confirm something. Compared to
- * `OO.ui.confirm`, returns an action string, not a boolean (which helps to differentiate between
- * more than two types of answer and also a window close by pressing Esc).
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
+ * returns an action string, not a boolean (which helps to differentiate between more than two types
+ * of answer and also a window close by pressing Esc).
  *
  * @param {JQuery|string} message
  * @param {object} [options={}]
- * @returns {boolean}
+ * @returns {Promise.<Array>}
  */
 export async function confirmDialog(message, options = {}) {
   const defaultOptions = {
     message,
+
     // OO.ui.MessageDialog standard
     actions: [
       {
@@ -79,7 +81,7 @@ export async function confirmDialog(message, options = {}) {
 /**
  * Check if there are unsaved changes in a process dialog.
  *
- * @param {OoUiProcessDialog} dialog
+ * @param {external:OoUiProcessDialog} dialog
  * @returns {boolean}
  * @private
  */
@@ -89,14 +91,16 @@ function isUnsaved(dialog) {
 }
 
 /**
- * @typedef {object} OoUiProcessDialog
+ * OOUI process dialog
+ *
+ * @external OoUiProcessDialog
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
  */
 
 /**
  * Confirm closing a process dialog.
  *
- * @param {OoUiProcessDialog} dialog
+ * @param {external:OoUiProcessDialog} dialog
  * @param {string} dialogCode
  * @private
  */
@@ -110,7 +114,7 @@ async function confirmCloseDialog(dialog, dialogCode) {
 /**
  * Standard process dialog error handler.
  *
- * @param {OoUiProcessDialog} dialog
+ * @param {external:OoUiProcessDialog} dialog
  * @param {CdError|Error} e
  * @param {string} messageName
  * @param {boolean} recoverable
@@ -146,8 +150,8 @@ export async function settingsDialog() {
   if (isPageOverlayOn()) return;
 
   /**
-   * @class Subclass of {@link
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
+   * @class Subclass of
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
    *   used to create a settings dialog.
    * @private
    */
@@ -607,9 +611,9 @@ export async function settingsDialog() {
     });
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Date and time" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Date and time" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -631,9 +635,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Comment form" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Comment form" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -658,9 +662,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Talk page" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Talk page" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -680,9 +684,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Notifications" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Notifications" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -702,9 +706,9 @@ export async function settingsDialog() {
     };
 
     /**
-     * @class Subclass of {@link
-     *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout} used
-     *   to create the "Remove data" booklet page.
+     * @class Subclass of
+     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout OO.ui.PageLayout}
+     *   used to create the "Remove data" booklet page.
      * @param {string} name
      * @param {object} [config]
      * @private
@@ -835,7 +839,7 @@ export async function settingsDialog() {
 
       mw.storage.remove('convenientDiscussions-commentForms');
       mw.storage.remove('convenientDiscussions-thanks');
-      mw.storage.remove('convenientDiscussions-seenRenderedEdits');
+      mw.storage.remove('convenientDiscussions-seenRenderedChanges');
 
       this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');
@@ -865,8 +869,8 @@ export async function editWatchedSections() {
   if (isPageOverlayOn()) return;
 
   /**
-   * @class Subclass of {@link
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
+   * @class Subclass of
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
    *   used to create an edit watched sections dialog.
    * @private
    */
@@ -1120,7 +1124,7 @@ function copyLinkToClipboardAndNotify(text) {
 }
 
 /**
- * Copy a link to the object or show a copy link dialog.
+ * Show a copy link dialog.
  *
  * @param {Comment|Section} object Comment or section to copy a link to.
  * @param {Event} e
@@ -1287,8 +1291,8 @@ export async function copyLink(object, e) {
 }
 
 /**
- * Show a modal with content of comment forms that we were unable to restore to the page (because
- * their target comments/sections disappeared, for example).
+ * _For internal use._ Show a modal with content of comment forms that we were unable to restore to
+ * the page (because their target comments/sections disappeared, for example).
  *
  * @param {object[]} content
  * @param {string} [content[].headline]
@@ -1327,20 +1331,21 @@ export function rescueCommentFormsContent(content) {
 }
 
 /**
- * Show a message at the top of the page that a section/comment was not found, a link to search in
- * the archive, and optionally a link to the section/comment if it was found automatically.
+ * _For internal use._ Show a message at the top of the page that a section/comment was not found, a
+ * link to search in the archive, and optionally a link to the section/comment if it was found
+ * automatically.
  *
- * @param {string} decodedFragment
- * @param {Date} date
+ * @param {string} decodedFragment Decoded fragment.
+ * @param {Date} date Comment date, if there is a comment anchor in the fragment.
  */
 export async function notFound(decodedFragment, date) {
   let label;
   let sectionName;
   if (date) {
-    label = cd.s('deadanchor-comment-text')
+    label = cd.s('deadanchor-comment-lead')
   } else {
     sectionName = underlinesToSpaces(decodedFragment);
-    label = cd.s('deadanchor-section-text', sectionName);
+    label = cd.s('deadanchor-section-lead', sectionName);
   }
   if (cd.g.PAGE.canHaveArchives()) {
     label += ' ';
@@ -1382,10 +1387,10 @@ export async function notFound(decodedFragment, date) {
       if (results.length === 0) {
         let label;
         if (date) {
-          label = cd.s('deadanchor-comment-text') + ' ' + cd.s('deadanchor-comment-notfound');
+          label = cd.s('deadanchor-comment-lead') + ' ' + cd.s('deadanchor-comment-notfound');
         } else {
           label = (
-            cd.s('deadanchor-section-text', sectionName) +
+            cd.s('deadanchor-section-lead', sectionName) +
             ' ' +
             cd.s('deadanchor-section-notfound')
           );

@@ -8,7 +8,7 @@ import Button from './Button';
 import cd from './cd';
 
 /**
- * Class representing a comment button, be it a simple link or an OOUI button depending on user
+ * Class representing a comment button, be it a simple link or a OOUI button depending on user
  * settings.
  */
 export default class CommentButton extends Button {
@@ -16,7 +16,7 @@ export default class CommentButton extends Button {
    * Create a comment button.
    *
    * @param {object} config Button config, see details at {@link module:Button}.
-   * @param {Function} [config.widgetConstructor] Function that creates an OOUI widget that is the
+   * @param {Function} [config.widgetConstructor] Function that creates a OOUI widget that is the
    *   original source of this button (for OOUI buttons).
    */
   constructor(config) {
@@ -37,7 +37,7 @@ export default class CommentButton extends Button {
     cd.debug.stopTimer('add cd-comment-button');
 
     /**
-     * Constructor for the button's OOUI widget (if that's an OOUI button).
+     * Constructor for the button's OOUI widget (if that's a OOUI button).
      *
      * @type {Function}
      */
@@ -45,23 +45,17 @@ export default class CommentButton extends Button {
   }
 
   /**
-   * Create an OOUI widget (for an OOUI button) using {@link
-   * module:CommentButton#widgetConstructor}. Used internally.
+   * Create a OOUI widget (for a OOUI button) using {@link module:CommentButton#widgetConstructor}.
    *
    * @private
    */
   createWidget() {
     /**
-     * @typedef {object} OoUiButtonWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
-     */
-
-    /**
      * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
      * performance reasons (every other button is just cloned as an element). When their state is
      * changed anyhow, the widget is created.
      *
-     * @type {OoUiButtonWidget}
+     * @type {external:OoUiButtonWidget}
      */
     this.buttonWidget = this.widgetConstructor();
 

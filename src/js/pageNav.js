@@ -20,7 +20,8 @@ let backLinkLocation;
 
 export default {
   /**
-   * Render the page navigation block. This is done when the page is first loaded.
+   * _For internal use._ Render the page navigation block. This is done when the page is first
+   * loaded.
    */
   mount() {
     this.$topElement = $('<div>')
@@ -120,7 +121,7 @@ export default {
           .on('keydown', triggerClickOnEnterAndSpace)
           .on('click', (e) => {
             e.preventDefault();
-            this.jump(0, this.$topLink, '#');
+            this.jump(0, this.$topLink);
           })
           .appendTo(this.$topLink);
       }
@@ -144,7 +145,7 @@ export default {
           .on('keydown', triggerClickOnEnterAndSpace)
           .on('click', (e) => {
             e.preventDefault();
-            this.jump(cd.g.$toc, this.$tocLink, '#toc');
+            this.jump(cd.g.$toc, this.$tocLink);
           })
           .appendTo(this.$tocLink);
       }
@@ -173,7 +174,7 @@ export default {
           .on('keydown', triggerClickOnEnterAndSpace)
           .on('click', (e) => {
             e.preventDefault();
-            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink, '#footer');
+            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
           })
           .appendTo(this.$bottomLink);
       }
@@ -231,7 +232,7 @@ export default {
                 .on('keydown', triggerClickOnEnterAndSpace)
                 .on('click', (e) => {
                   e.preventDefault();
-                  this.jump(sectionInTree.$heading, $item, '#' + sectionInTree.anchor);
+                  this.jump(sectionInTree.$heading, $item);
                 })
                 .appendTo($item);
             }
@@ -247,6 +248,7 @@ export default {
    * Reset the page navigation state partly or completely.
    *
    * @param {string} [part]
+   * @private
    */
   reset(part) {
     if (!part || part === 'top') {
@@ -268,6 +270,8 @@ export default {
 
   /**
    * Reset the current section variable and empty the contents of the current section block.
+   *
+   * @private
    */
   resetSections() {
     $sectionWithBackLink?.detach();
@@ -275,7 +279,15 @@ export default {
     currentSection = null;
   },
 
-  jump($elementOrOffset, $item, url, isBackLink) {
+  /**
+   * Jump to an element or top offset.
+   *
+   * @param {JQuery|number} $elementOrOffset Element or top offset to jump to.
+   * @param {JQuery} $item Navigation item that initiated the jump.
+   * @param {boolean} isBackLink Was the jump initiated by a back link.
+   * @private
+   */
+  jump($elementOrOffset, $item, isBackLink) {
     const offset = $elementOrOffset instanceof $ ?
       $elementOrOffset.offset().top - cd.g.BODY_SCROLL_PADDING_TOP :
       $elementOrOffset;
@@ -289,7 +301,6 @@ export default {
       $sectionWithBackLink = null;
     }
     if (!isBackLink) {
-      const originalUrl = location.href;
       const scrollY = window.scrollY;
       const $backLink = $('<a>')
         .attr('tabindex', 0)
@@ -303,7 +314,7 @@ export default {
           // For links without href
           e.stopPropagation();
 
-          this.jump(scrollY, $item, originalUrl, true);
+          this.jump(scrollY, $item, true);
         });
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')

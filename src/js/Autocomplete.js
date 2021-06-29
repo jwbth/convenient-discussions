@@ -22,14 +22,35 @@ import {
 } from './apiWrappers';
 
 /**
+ * Search for a string in a list of values.
+ *
+ * @param {string} s
+ * @param {string[]} list
+ * @returns {string[]} Matched results.
+ * @private
+ */
+function search(s, list) {
+  const containsRegexp = new RegExp(mw.util.escapeRegExp(s), 'i');
+  const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(s), 'i');
+  return list
+    .filter((item) => containsRegexp.test(item))
+    .sort((item1, item2) => {
+      const item1StartsWith = startsWithRegexp.test(item1);
+      const item2StartsWith = startsWithRegexp.test(item2);
+      if (item1StartsWith && !item2StartsWith) {
+        return -1;
+      } else if (item2StartsWith && !item1StartsWith) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+}
+
+/**
  * Autocomplete class.
  */
 export default class Autocomplete {
-  /**
-   * @typedef {object} OoUiTextInputWidget
-   * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
-   */
-
   /**
    * Create an autocomplete instance. An instance is a set of settings and inputs to which these
    * settings apply.
@@ -37,7 +58,7 @@ export default class Autocomplete {
    * @param {object} options
    * @param {string[]} options.types Which values should be autocompleted. Can contain `'mentions'`,
    *   `'wikilinks'`, `'templates'`, and `'tags'`.
-   * @param {OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
+   * @param {external:OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
@@ -151,7 +172,7 @@ export default class Autocomplete {
           if (this.mentions.byText[text]) {
             callback(prepareValues(this.mentions.byText[text], this.mentions));
           } else {
-            const matches = Autocomplete.search(text, this.mentions.default);
+            const matches = search(text, this.mentions.default);
             let values = matches.slice();
 
             const makeRequest = (
@@ -170,7 +191,7 @@ export default class Autocomplete {
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }
-              values = Autocomplete.search(text, values);
+              values = search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -244,7 +265,7 @@ export default class Autocomplete {
             );
             if (makeRequest) {
               values.push(...this.wikilinks.cache);
-              values = Autocomplete.search(text, values);
+              values = search(text, values);
             }
             if (valid) {
               // Make the typed text always appear on the last, 10th place.
@@ -392,7 +413,7 @@ export default class Autocomplete {
             );
             if (makeRequest) {
               values.push(...this.templates.cache);
-              values = Autocomplete.search(text, values);
+              values = search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -506,11 +527,10 @@ export default class Autocomplete {
   }
 
   /**
-   * Get an autocomplete configuration for the specified type.
+   * _For internal use._ Get an autocomplete configuration for the specified type.
    *
    * @param {string} type
    * @returns {object}
-   * @private
    */
   static getConfig(type) {
     let config;
@@ -705,31 +725,5 @@ export default class Autocomplete {
     }
 
     return config;
-  }
-
-  /**
-   * Search for a string in a list of values.
-   *
-   * @param {string} s
-   * @param {string[]} list
-   * @returns {string[]} Matched results.
-   * @private
-   */
-  static search(s, list) {
-    const containsRegexp = new RegExp(mw.util.escapeRegExp(s), 'i');
-    const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(s), 'i');
-    return list
-      .filter((item) => containsRegexp.test(item))
-      .sort((item1, item2) => {
-        const item1StartsWith = startsWithRegexp.test(item1);
-        const item2StartsWith = startsWithRegexp.test(item2);
-        if (item1StartsWith && !item2StartsWith) {
-          return -1;
-        } else if (item2StartsWith && !item1StartsWith) {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
   }
 }

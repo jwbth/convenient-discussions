@@ -17,7 +17,7 @@ export default class SectionSkeleton {
    * Create a section skeleton instance.
    *
    * @param {Parser} parser
-   * @param {Element} headingElement
+   * @param {Element|external:Element} headingElement
    */
   constructor(parser, headingElement) {
     this.parser = parser;
@@ -25,7 +25,7 @@ export default class SectionSkeleton {
     /**
      * Headline element.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.headlineElement = this.parser.context.getElementByClassName(headingElement, 'mw-headline');
 
@@ -51,6 +51,47 @@ export default class SectionSkeleton {
      * @type {number}
      */
     this.level = levelMatch && Number(levelMatch[1]);
+
+    /**
+     * Sequental number of the section at the time of the page load.
+     *
+     * @type {?number}
+     */
+    this.sectionNumber = null;
+
+    const editSectionElement = headingElement.lastChild;
+    if (editSectionElement.classList.contains('mw-editsection')) {
+       const links = Array.from(editSectionElement.getElementsByTagName('a'));
+
+      // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
+      // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
+      // there's probably no harm in that.
+      const editLink = links.find((link) => link.getAttribute('href')?.includes('action=edit'));
+
+      if (editLink) {
+        const href = cd.g.SERVER + editLink.getAttribute('href');
+
+        /**
+         * URL to edit the section.
+         *
+         * @type {string}
+         */
+        this.editUrl = new URL(href);
+
+        if (this.editUrl) {
+          const sectionNumber = this.editUrl.searchParams.get('section');
+          if (sectionNumber.startsWith('T-')) {
+            this.sourcePageName = this.editUrl.searchParams.get('title');
+            this.sectionNumber = Number(sectionNumber.match(/\d+/)[0]);
+          } else {
+            this.sectionNumber = Number(sectionNumber);
+          }
+          this.editUrl = this.editUrl.href;
+        }
+      } else {
+        console.error('Edit link not found.', this);
+      }
+    }
 
     const treeWalker = new TreeWalker(
       cd.g.rootElement,
@@ -94,7 +135,7 @@ export default class SectionSkeleton {
      * Last element in the first chunk of the section, i.e. all elements up to the first subheading
      * if it is present, or all elements if it is not.
      *
-     * @type {Element}
+     * @type {Element|external:Element}
      */
     this.lastElementInFirstChunk = this.lastElementInFirstChunk || elements[elements.length - 1];
 
@@ -186,13 +227,14 @@ export default class SectionSkeleton {
     /**
      * Section elements.
      *
-     * @type {Element[]}
+     * @type {Element[]|external:Element[]}
      */
     this.elements = elements;
   }
 
   /**
-   * Parse the headline of the section and fill the `headline` property, containing no HTML tags.
+   * _For internal use._ Parse the headline of the section and fill the
+   * {@link module:Section#headline headline} property that contains no HTML tags.
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
@@ -204,8 +246,8 @@ export default class SectionSkeleton {
     /**
      * Section headline as it appears on the page.
      *
-     * Foreign elements can get there, add the classes of these elements to {@link
-     * module:defaultConfig.foreignElementInHeadlineClasses} to filter them out.
+     * Foreign elements can get there, add the classes of these elements to
+     * {@link module:defaultConfig.foreignElementInHeadlineClasses} to filter them out.
      *
      * @type {string}
      */

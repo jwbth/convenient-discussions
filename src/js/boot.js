@@ -4,14 +4,12 @@
  * @module boot
  */
 
-import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
@@ -50,7 +48,7 @@ let saveSessionTimeout;
 let saveSessionLastTime;
 
 /**
- * Initiate user settings.
+ * _For internal use._ Initiate user settings.
  */
 export async function initSettings() {
   /**
@@ -184,7 +182,7 @@ export async function initSettings() {
 }
 
 /**
- * Assign the properties related to `convenientDiscussions.g.$contentColumn`.
+ * _For internal use._ Assign the properties related to `convenientDiscussions.g.$contentColumn`.
  *
  * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
  */
@@ -212,7 +210,8 @@ export function setContentColumnGlobals(setCssVar) {
 }
 
 /**
- * Assign some important skin-specific values to the properties of the global object.
+ * _For internal use._ Assign some important skin-specific values to the properties of the global
+ * object.
  */
 export function memorizeCssValues() {
   cd.g.CONTENT_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
@@ -225,9 +224,7 @@ export function memorizeCssValues() {
 }
 
 /**
- * Set CSS for talk pages.
- *
- * @private
+ * _For internal use._ Set CSS for talk pages.
  */
 export function setTalkPageCssVariables() {
   const contentBackgroundColor = $('#content').css('background-color') || '#fff';
@@ -264,7 +261,8 @@ export function setTalkPageCssVariables() {
 }
 
 /**
- * Set a {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance to
+ * _For internal use._ Set a
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance to
  * `convenientDiscussions.g.api` if it's not already set.
  */
 export function createApi() {
@@ -788,11 +786,11 @@ function initOouiAndElementPrototypes() {
 }
 
 /**
- * Create various global objects' (`convenientDiscussions`, `$`) properties and methods. Executed on
- * the first run.
+ * _For internal use._ Create various global objects' (`convenientDiscussions`, `$`)
+ * properties and methods. Executed on the first run.
  *
- * @param {Promise[]} siteDataRequests Array of requests returned by {@link
- *   module:siteData.loadSiteData}.
+ * @param {Promise[]} siteDataRequests Array of requests returned by
+ *   {@link module:siteData.loadSiteData}.
  */
 export async function init(siteDataRequests) {
   createApi();
@@ -856,7 +854,7 @@ async function updatePageContent(passedData) {
 let $loadingPopup;
 
 /**
- * Check if the "showLoadingOverlay" setting is off. We create a separate function for this because
+ * Check if the `showLoadingOverlay` setting is off. We create a separate function for this because
  * this check has to be performed before the settings object is filled.
  *
  * @returns {boolean}
@@ -874,8 +872,8 @@ function isShowLoadingOverlaySettingOff() {
 }
 
 /**
- * Set the loading overlay and assign `true` to `convenientDiscussions.g.isFirstRun` and
- * `convenientDiscussions.g.isPageBeingReloaded`.
+ * _For internal use._ Set the loading overlay and assign `true` to
+ * `convenientDiscussions.g.isFirstRun` and `convenientDiscussions.g.isPageBeingReloaded`.
  *
  * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
  */
@@ -884,6 +882,7 @@ export function startLoading(isReload = false) {
     /**
      * Is the page being reloaded now.
      *
+     * @name isPageBeingReloaded
      * @type {boolean}
      * @memberof module:cd~convenientDiscussions.g
      */
@@ -893,6 +892,7 @@ export function startLoading(isReload = false) {
      * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
      * script's refresh functionality).
      *
+     * @name isFirstRun
      * @type {boolean}
      * @memberof module:cd~convenientDiscussions.g
      */
@@ -918,7 +918,8 @@ export function startLoading(isReload = false) {
 }
 
 /**
- * Remove the loading overlay and update some state properties of the global object.
+ * _For internal use._ Remove the loading overlay and update some state properties of the global
+ * object.
  *
  * @param {boolean} [updatePageState=true] Update the state properties of the global object.
  */
@@ -934,7 +935,7 @@ export function finishLoading(updatePageState = true) {
 }
 
 /**
- * Is page loading (the loading overlay is on).
+ * Is the page loading (the loading overlay is on).
  *
  * @returns {boolean}
  */
@@ -951,17 +952,22 @@ export function isPageLoading() {
 export async function reloadPage(passedData = {}) {
   if (cd.g.isPageBeingReloaded) return;
 
+  // We shouldn't make the current version of the page dysfunctional at least until a correct
+  // response to the parse request is received. Otherwise, if the request fails, the user will be
+  // left with a dysfunctional page. This is why we reset the live timestamps only after that
+  // request.
+
   // Stop all animations, clear all timeouts.
-  cd.comments
-    .filter((comment) => comment.$animatedBackground)
-    .forEach((comment) => {
-      comment.$animatedBackground.stop();
-      comment.$marker.stop();
-    });
+  cd.comments.forEach((comment) => {
+    comment.$animatedBackground?.add(comment.$marker).stop(true, true);
+  });
+
+  // If the page is reloaded externally, its content is already replaced, so we won't break anything
+  // is we remove the layers containers. And we better do so to avoid comment layers hanging around
+  // without their owner comments.
   if (passedData.isPageReloadedExternally) {
-    commentLayers.reset();
+    Comment.resetLayers();
   }
-  LiveTimestamp.reset();
 
   // In case checkboxes were changed programmatically.
   saveSession();
@@ -986,7 +992,7 @@ export async function reloadPage(passedData = {}) {
     parseData = await cd.g.PAGE.parse(null, false, true);
   } catch (e) {
     finishLoading();
-    if (passedData.didSubmitCommentForm) {
+    if (passedData.wasCommentFormSubmitted) {
       throw e;
     } else {
       mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -994,6 +1000,8 @@ export async function reloadPage(passedData = {}) {
       return;
     }
   }
+
+  LiveTimestamp.reset();
 
   // Detach comment forms to keep events.
   cd.commentForms.forEach((commentForm) => {
@@ -1027,7 +1035,8 @@ export async function reloadPage(passedData = {}) {
 }
 
 /**
- * Handle firings of the hook `'wikipage.content'` (by using `mw.hook('wikipage.content').fire()`).
+ * _For internal use._ Handle firings of the hook `'wikipage.content'` (by using
+ * `mw.hook('wikipage.content').fire()`).
  *
  * @param {JQuery} $content
  */
@@ -1059,8 +1068,8 @@ function cleanUpSessions(data) {
 }
 
 /**
- * Save comment form data to the local storage. (Session storage doesn't allow to restore when the
- * browser has crashed.)
+ * _For internal use._ Save comment form data to the local storage. (Session storage doesn't allow
+ * to restore when the browser has crashed.)
  *
  * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
  */
@@ -1192,7 +1201,7 @@ function restoreCommentFormsFromData(commentFormsData) {
 }
 
 /**
- * Return saved comment forms to their places.
+ * _For internal use._ Return saved comment forms to their places.
  *
  * @param {boolean} isPageReloadedExternally Is the page reloaded due to a `'wikipage.content`
  *   firing.
@@ -1291,9 +1300,9 @@ export function addNotification(params, data = {}) {
 }
 
 /**
- * Get all notifications added to the registry (including already hidden). The {@link
- * https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ Notification} object
- * will be in the `notification` property.
+ * Get all notifications added to the registry (including already hidden). The
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ mw.Notification}
+ * object will be in the `notification` property.
  *
  * @returns {object[]}
  */
@@ -1316,6 +1325,12 @@ export function closeNotifications(smooth = true) {
   notificationsData = [];
 }
 
+/**
+ * _For internal use._ Show a popup asking the user if they want to enable the new comment
+ * formatting. Save the settings after they make the choice.
+ *
+ * @returns {Promise.<boolean>} Did the user enable comment reformatting.
+ */
 export async function suggestEnableCommentReformatting() {
   if (cd.settings.reformatComments === null) {
     const settings = await getSettings({ reuse: true });
@@ -1333,8 +1348,8 @@ export async function suggestEnableCommentReformatting() {
       ];
       const $body = $('<div>');
       const $imgOld = $('<img>')
-        .attr('width', 587)
-        .attr('height', 102)
+        .attr('width', 626)
+        .attr('height', 67)
         .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
         .addClass('cd-rc-img');
       const $arrow = $('<img>')
@@ -1343,12 +1358,14 @@ export async function suggestEnableCommentReformatting() {
         .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
         .addClass('cd-rc-img cd-rc-arrow');
       const $imgNew = $('<img>')
-        .attr('width', 587)
-        .attr('height', 128)
+        .attr('width', 626)
+        .attr('height', 118)
         .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
         .addClass('cd-rc-img');
-      const $p = $('<p>').text(cd.s('rc-suggestion'));
-      $body.append($imgOld, $arrow, $imgNew, $p);
+      const $div = $('<div>')
+        .addClass('cd-rc-text')
+        .html(cd.sParse('rc-suggestion'));
+      $body.append($imgOld, $arrow, $imgNew, $div);
       const action = await confirmDialog($body, {
         size: 'large',
         actions,
@@ -1377,11 +1394,10 @@ export async function suggestEnableCommentReformatting() {
 }
 
 /**
- * Ask the user if they want to receive desktop notifications on first run and ask for a permission
- * if it is default but the user has desktop notifications enabled (for example, if he/she is using
- * a browser different from where he/she has previously used).
- *
- * @private
+ * _For internal use._ Show a popup asking the user if they want to receive desktop notifications,
+ * or ask for a permission if it has not been granted but the user has desktop notifications enabled
+ * (for example, if they are using a browser different from where they have previously used). Save
+ * the settings after they make the choice.
  */
 export async function confirmDesktopNotifications() {
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {

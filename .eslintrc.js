@@ -8,28 +8,26 @@ module.exports = {
   "globals": {
     "$": "readonly",
     "CONFIG_FILE_NAME": "readonly",
-    "DataNode": "readonly",
     "IS_TEST": "readonly",
     "IS_SINGLE": "readonly",
     "LANG_CODE": "readonly",
     "OO": "readonly",
     "Tribute": "readonly",
     "convenientDiscussions": "readonly",
-    "jQuery": "readonly",
     "jest": "readonly",
     "expect": "readonly",
     "mw": "readonly",
     "require": "readonly",
     "test": "readonly",
   },
-  "ignorePatterns": ["dist/**", "misc/**", "*.json5"],
+  "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
     {
-      "files": ["./*.js"],
+      "files": ["./*.js", "/tribute/**"],
       "rules": {
         "jsdoc/require-jsdoc": "off",
-      }
-    }
+      },
+    },
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -48,7 +46,15 @@ module.exports = {
     "jsdoc/implements-on-classes": "warn",
     "jsdoc/newline-after-description": "warn",
     "jsdoc/no-undefined-types": "warn",
-    "jsdoc/require-jsdoc": "warn",
+    "jsdoc/require-jsdoc": ["warn", {
+      "require": {
+        "FunctionDeclaration": true,
+        "MethodDefinition": true,
+        "ClassDeclaration": true,
+        "FunctionExpression": true,
+        "ClassExpression": true,
+      },
+    }],
     "jsdoc/require-param": "warn",
     // "jsdoc/require-param-description": "warn",
     "jsdoc/require-param-name": "warn",
@@ -71,12 +77,11 @@ module.exports = {
   "settings": {
     "jsdoc": {
       "preferredTypes": [
+        "CdError",
         "Comment",
         "CommentSkeleton",
         "CommentForm",
-        "Element",
         "JQuery",
-        "Node",
         "Page",
         "Parser",
         "Section",

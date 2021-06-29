@@ -8,7 +8,6 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Thread from './Thread';
 import cd from './cd';
-import commentLayers from './commentLayers';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
@@ -17,11 +16,11 @@ import { setContentColumnGlobals } from './boot';
 const beforeUnloadHandlers = {};
 
 /**
- * Handles the window `resize` event as well as `orientationchange`.
+ * _Method for internal use._ Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
   setContentColumnGlobals(true);
-  commentLayers.redrawIfNecessary(true);
+  Comment.redrawLayersIfNecessary(true);
   Thread.updateLines();
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
@@ -60,7 +59,7 @@ export function removePreventUnloadCondition(name) {
 }
 
 /**
- * Handles the document `keydown` event.
+ * _For internal use._ Handles the document `keydown` event.
  *
  * @param {Event} e
  */
@@ -105,8 +104,8 @@ export function handleGlobalKeyDown(e) {
 }
 
 /**
- * Register seen comments, update the navigation panel's first unseen button, and update the current
- * section block.
+ * _For internal use._ Register seen comments, update the navigation panel's first unseen button,
+ * and update the current section block.
  */
 export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,

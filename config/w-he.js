@@ -419,7 +419,7 @@ export default {
    *
    * @type {?Function}
    * @kind function
-   * @param {Node} node
+   * @param {Node|external:Node} node
    * @param {object} context
    * @returns {boolean}
    * @default null
