@@ -51,7 +51,6 @@ module.exports = {
         "FunctionDeclaration": true,
         "MethodDefinition": true,
         "ClassDeclaration": true,
-        "FunctionExpression": true,
         "ClassExpression": true,
       },
     }],
