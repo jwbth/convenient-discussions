@@ -19,12 +19,7 @@ import pageNav from './pageNav';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import {
-  addPreventUnloadCondition,
-  handleGlobalKeyDown,
-  handleScroll,
-  handleWindowResize,
-} from './eventHandlers';
-import {
+  addNotFoundMessage,
   confirmDesktopNotifications,
   finishLoading,
   handleHookFirings,
@@ -34,9 +29,14 @@ import {
   saveSession,
   suggestEnableCommentReformatting,
 } from './boot';
+import {
+  addPreventUnloadCondition,
+  handleGlobalKeyDown,
+  handleScroll,
+  handleWindowResize,
+} from './eventHandlers';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getVisits, getWatchedSections, setVisits } from './options';
-import { notFound } from './modal';
 import {
   replaceAnchorElement,
   restoreRelativeScrollPosition,
@@ -705,7 +705,7 @@ async function processFragment(passedData) {
       $(`*[id="${escapedFragment}"]`).length
     );
     if (!isTargetFound) {
-      await notFound(decodedFragment, date);
+      await addNotFoundMessage(decodedFragment, date);
     }
   }
 }

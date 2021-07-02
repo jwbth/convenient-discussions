@@ -6,6 +6,13 @@
 
 let prototype;
 
+function createButtonPrototype() {
+  const prototype = document.createElement('a');
+  prototype.tabIndex = 0;
+  prototype.setAttribute('role', 'button');
+  return prototype;
+}
+
 /**
  * Class representing a generic button.
  */
@@ -38,7 +45,7 @@ export default class Button {
   } = {}) {
     if (!element) {
       if (!prototype) {
-        prototype = Button.createPrototype();
+        prototype = createButtonPrototype();
       }
       element = prototype.cloneNode(true);
     }
@@ -192,12 +199,5 @@ export default class Button {
 
   show() {
     this.element.style.display = '';
-  }
-
-  static createPrototype() {
-    const prototype = document.createElement('a');
-    prototype.tabIndex = 0;
-    prototype.setAttribute('role', 'button');
-    return prototype;
   }
 }

@@ -319,7 +319,7 @@ export async function setLocalOption(name, value) {
 export async function setGlobalOption(name, value) {
   if (!cd.config.useGlobalPreferences) {
     // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
-    // of SettingsDialog#removeData in modal~settingsDialog, removing the option if it existed,
+    // of SettingsDialog#removeData in modal#showSettingsDialog, removing the option if it existed,
     // which may have a benificial effect if cd.config.useGlobalPreferences was true at some stage
     // and a local setting with cd.g.SETTINGS_OPTION_NAME name was created instead of a global one,
     // thus inviting the need to remove it upon removing all data.

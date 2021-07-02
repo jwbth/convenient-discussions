@@ -32,11 +32,11 @@ import {
   wrap,
   wrapDiffBody,
 } from './util';
-import { checkboxField } from './ooui';
+import { createCheckboxField } from './ooui';
 import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
 import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
-import { settingsDialog } from './modal';
+import { showSettingsDialog } from './modal';
 
 let commentFormsCounter = 0;
 
@@ -237,6 +237,8 @@ export default class CommentForm {
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (this.mode === 'addSection') {
+      // This is above `this.createContents()` as that function is time-costly and would delay the
+      // requests made in `this.addEditNotices()`.
       this.addEditNotices();
     }
 
@@ -807,7 +809,7 @@ export default class CommentForm {
        * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
-      [this.minorField, this.minorCheckbox] = checkboxField({
+      [this.minorField, this.minorCheckbox] = createCheckboxField({
         value: 'minor',
         selected: dataToRestore ? dataToRestore.minor : true,
         label: cd.s('cf-minor'),
@@ -836,7 +838,7 @@ export default class CommentForm {
      * @type {external:OoUiCheckboxInputWidget}
      * @instance
      */
-    [this.watchField, this.watchCheckbox] = checkboxField({
+    [this.watchField, this.watchCheckbox] = createCheckboxField({
       value: 'watch',
       selected: dataToRestore ? dataToRestore.watch : watchCheckboxSelected,
       label: cd.s('cf-watch'),
@@ -869,7 +871,7 @@ export default class CommentForm {
        * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
-      [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
+      [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
         value: 'watchSection',
         selected: dataToRestore ? dataToRestore.watchSection : selected,
         label,
@@ -895,7 +897,7 @@ export default class CommentForm {
        * @instance
        */
 
-      [this.omitSignatureField, this.omitSignatureCheckbox] = checkboxField({
+      [this.omitSignatureField, this.omitSignatureCheckbox] = createCheckboxField({
         value: 'omitSignature',
         selected: dataToRestore ? dataToRestore.omitSignature : false,
         label: cd.s('cf-omitsignature'),
@@ -928,7 +930,7 @@ export default class CommentForm {
        * @type {external:OoUiCheckboxInputWidget|undefined}
        * @instance
        */
-      [this.deleteField, this.deleteCheckbox] = checkboxField({
+      [this.deleteField, this.deleteCheckbox] = createCheckboxField({
         value: 'delete',
         selected,
         label: cd.s('cf-delete'),
@@ -1640,7 +1642,7 @@ export default class CommentForm {
 
     this.settingsButton
       .on('click', () => {
-        settingsDialog();
+        showSettingsDialog();
       });
 
     this.cancelButton
