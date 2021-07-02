@@ -51,6 +51,13 @@ export default class CommentButton extends Button {
    */
   createWidget() {
     /**
+     * OOUI button widget
+     *
+     * @external OoUiButtonWidget
+     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
+     */
+
+    /**
      * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
      * performance reasons (every other button is just cloned as an element). When their state is
      * changed anyhow, the widget is created.
@@ -138,6 +145,12 @@ export default class CommentButton extends Button {
     return this;
   }
 
+  /**
+   * Set the action of the button. It will be executed on click or Enter press.
+   *
+   * @param {?Function} action
+   * @returns {Button} This button.
+   */
   setAction(action) {
     // OOUI widgets don't pass the event object to the handler, so we use the traditional method of
     // handling events.

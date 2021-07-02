@@ -120,14 +120,14 @@ export function handleProcessDialogError(dialog, e, messageName, recoverable) {
 
 /**
  * OOUI field layout
- * 
+ *
  * @external OoUiFieldLayout
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
  */
 
 /**
  * OOUI checkbox input widget
- * 
+ *
  * @external OoUiCheckboxInputWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
  */
@@ -175,14 +175,14 @@ export function createCheckboxField({
 
 /**
  * OOUI radio select widget
- * 
+ *
  * @external OoUiRadioSelectWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
  */
 
 /**
  * OOUI radio option widget
- * 
+ *
  * @external OoUiRadioOptionWidget
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioOptionWidget
  */
@@ -219,7 +219,7 @@ export function createRadioField({ label, selected, help, options }) {
 
 /**
  * OOUI action field layout
- * 
+ *
  * @external OoUiActionFieldLayout
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ActionFieldLayout
  */

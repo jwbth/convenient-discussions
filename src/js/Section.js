@@ -905,6 +905,7 @@ export default class Section extends SectionSkeleton {
     return this.cached$elements;
   }
 
+  // eslint-disable-next-line jsdoc/require-jsdoc
   set $elements(value) {
     this.cached$elements = value;
     this.elements = value.get();

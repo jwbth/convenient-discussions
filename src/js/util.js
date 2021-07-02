@@ -759,6 +759,13 @@ export function removeDirMarks(text) {
 }
 
 /**
+ * OOUI text input widget
+ *
+ * @external OoUiTextInputWidget
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+ */
+
+/**
  * Replace the selected text (if any) in an input (`<input>` or `<textarea>`) with the provided text
  * and keep the undo/redo functionality.
  *

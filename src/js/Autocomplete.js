@@ -52,6 +52,13 @@ function search(s, list) {
  */
 export default class Autocomplete {
   /**
+   * OOUI text input widget
+   *
+   * @external OoUiTextInputWidget
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+   */
+
+  /**
    * Create an autocomplete instance. An instance is a set of settings and inputs to which these
    * settings apply.
    *

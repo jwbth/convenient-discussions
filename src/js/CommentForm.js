@@ -677,13 +677,6 @@ export default class CommentForm {
      */
     this.$messageArea = $('<div>').addClass('cd-messageArea');
 
-    /**
-     * OOUI text input widget
-     *
-     * @external OoUiTextInputWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
-     */
-
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.isSectionOpeningCommentEdited
@@ -696,6 +689,13 @@ export default class CommentForm {
       } else {
         this.headlineInputPlaceholder = cd.s('cf-headline-topic');
       }
+
+      /**
+       * OOUI text input widget
+       *
+       * @external OoUiTextInputWidget
+       * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+       */
 
       /**
        * Headline input.
@@ -795,11 +795,25 @@ export default class CommentForm {
 
     if (this.mode === 'edit') {
       /**
+       * OOUI field layout
+       *
+       * @external OoUiFieldLayout
+       * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
+       */
+
+      /**
        * Minor change checkbox field.
        *
        * @name minorField
        * @type {external:OoUiFieldLayout|undefined}
        * @instance
+       */
+
+      /**
+       * OOUI checkbox input widget
+       *
+       * @external OoUiCheckboxInputWidget
+       * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
        */
 
       /**

@@ -13,13 +13,6 @@ import { encodeWikilink } from './wikitext';
 import { isPageOverlayOn, underlinesToSpaces, wrap } from './util';
 
 /**
- * OOUI process dialog
- *
- * @external OoUiProcessDialog
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
- */
-
-/**
  * Show a settings dialog.
  */
 export async function showSettingsDialog() {

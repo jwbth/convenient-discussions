@@ -55,23 +55,26 @@ function setAlarm(interval) {
 
 /**
  * DomHandler's node
- * 
+ *
  * @external Node
- * @see https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L18
+ * @see
+ *   https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L18
  */
 
 /**
  * DomHandler's data node
- * 
+ *
  * @external DataNode
- * @see https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L84
+ * @see
+ *   https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L84
  */
 
 /**
  * DomHandler's element
- * 
+ *
  * @external Element
- * @see https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L200
+ * @see
+ *   https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L200
  */
 
 /**
