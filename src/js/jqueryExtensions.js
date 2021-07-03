@@ -8,17 +8,17 @@ import cd from './cd';
 import { scrollToY } from './util';
 
 /**
- * jQuery. See {@link $.fn} for extensions.
+ * jQuery. See {@link external:$.fn} for extensions.
  *
- * @namespace $
+ * @external $
  * @type {object}
  */
 
 /**
- * (`$.fn`) jQuery extensions.
+ * jQuery extensions.
  *
  * @namespace fn
- * @memberof $
+ * @memberof external:$
  */
 export default {
   /**
@@ -26,7 +26,7 @@ export default {
    * collection.
    *
    * @returns {JQuery}
-   * @memberof $.fn
+   * @memberof external:$.fn
    */
   cdRemoveNonElementNodes: function () {
     return this.filter(function () {
@@ -42,7 +42,7 @@ export default {
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
    * @returns {JQuery}
-   * @memberof $.fn
+   * @memberof external:$.fn
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     let $elements = this.cdRemoveNonElementNodes();
@@ -81,7 +81,7 @@ export default {
    *
    * @param {boolean} partially Return `true` even if only a part of the element is in the viewport.
    * @returns {?boolean}
-   * @memberof $.fn
+   * @memberof external:$.fn
    */
   cdIsInViewport(partially = false) {
     const $elements = this.cdRemoveNonElementNodes();
@@ -121,7 +121,7 @@ export default {
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
    * @returns {JQuery}
-   * @memberof $.fn
+   * @memberof external:$.fn
    */
   cdScrollIntoView(alignment = 'top', smooth = true, callback) {
     if (this.cdIsInViewport()) {
@@ -148,7 +148,7 @@ export default {
    * taken into account. **This function is expensive.**
    *
    * @returns {string}
-   * @memberof $.fn
+   * @memberof external:$.fn
    */
   cdGetText() {
     let text;
@@ -166,7 +166,7 @@ export default {
    * Add a close button to the element.
    *
    * @returns {JQuery}
-   * @memberof $.fn
+   * @memberof external:$.fn
    */
   cdAddCloseButton() {
     if (this.find('.cd-closeButton').length) return this;

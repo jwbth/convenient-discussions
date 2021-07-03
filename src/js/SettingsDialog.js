@@ -21,37 +21,9 @@ import { hideText, unhideText, wrap } from './util';
 import { setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
- * OOUI process dialog
- *
- * @external OoUiProcessDialog
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
- */
-
-/**
- * OOUI process
- *
- * @external OoUiProcess
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Process
- */
-
-/**
- * OOUI radio option widget
- *
- * @external OoUiRadioOptionWidget
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.RadioOptionWidget
- */
-
-/**
- * OOUI page layout
- *
- * @external OoUiPageLayout
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout
- */
-
-/**
  * Class used to create a settings dialog.
  *
- * @augments external:OoUiProcessDialog
+ * @augments external:OO.ui.ProcessDialog
  */
 export default class SettingsDialog extends OO.ui.ProcessDialog {
   static name = 'settingsDialog';
@@ -159,7 +131,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} [data] Dialog opening data
-   * @returns {external:OoUiProcess}
+   * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -176,7 +148,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} data Window opening data
-   * @returns {external:OoUiProcess}
+   * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -209,7 +181,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
    * OOUI native method that returns a process for taking action.
    *
    * @param {string} action Symbolic name of the action.
-   * @returns {external:OoUiProcess}
+   * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getActionProcess
    */
@@ -680,7 +652,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
   /**
    * Handler of the event of change of the desktop notifications radio select.
    *
-   * @param {external:OoUiRadioOptionWidget} option
+   * @param {external:OO.ui.RadioOptionWidget} option
    */
   onDesktopNotificationsSelectChange(option) {
     if (option.data !== 'none' && Notification.permission !== 'granted') {
@@ -727,7 +699,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
 /**
  * Class used to create the "Talk page" booklet page.
  *
- * @augments external:OoUiPageLayout
+ * @augments external:OO.ui.PageLayout
  * @private
  */
 class TalkPagePageLayout extends OO.ui.PageLayout {
@@ -758,7 +730,7 @@ class TalkPagePageLayout extends OO.ui.PageLayout {
 /**
  * Class used to create the "Comment form" booklet page.
  *
- * @augments external:OoUiPageLayout
+ * @augments external:OO.ui.PageLayout
  * @private
  */
 class CommentFormPageLayout extends OO.ui.PageLayout {
@@ -793,7 +765,7 @@ class CommentFormPageLayout extends OO.ui.PageLayout {
 /**
  * Class used to create the "Timestamps" booklet page.
  *
- * @augments external:OoUiPageLayout
+ * @augments external:OO.ui.PageLayout
  * @private
  */
 class TimestampsPageLayout extends OO.ui.PageLayout {
@@ -822,7 +794,7 @@ class TimestampsPageLayout extends OO.ui.PageLayout {
 /**
  * Class used to create the "Notifications" booklet page.
  *
- * @augments external:OoUiPageLayout
+ * @augments external:OO.ui.PageLayout
  * @private
  */
 class NotificationsPageLayout extends OO.ui.PageLayout {
@@ -852,7 +824,7 @@ class NotificationsPageLayout extends OO.ui.PageLayout {
 /**
  * Class used to create the "Remove data" booklet page.
  *
- * @augments external:OoUiPageLayout
+ * @augments external:OO.ui.PageLayout
  * @private
  */
 class RemoveDataPageLayout extends OO.ui.PageLayout {

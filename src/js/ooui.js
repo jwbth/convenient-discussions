@@ -9,6 +9,125 @@ import cd from './cd';
 import { removePreventUnloadCondition } from './eventHandlers';
 
 /**
+ * OOjs namespace.
+ *
+ * @external OO
+ * @see https://doc.wikimedia.org/oojs/master/OO.html
+ */
+
+/**
+ * Namespace for all classes, static methods and static properties of OOUI.
+ *
+ * @namespace ui
+ * @memberof external:OO
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui
+ */
+
+/**
+ * OOUI field layout
+ *
+ * @class FieldLayout
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
+ */
+
+/**
+ * OOUI checkbox input widget
+ *
+ * @class CheckboxInputWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
+ */
+
+/**
+ * OOUI radio select widget
+ *
+ * @class RadioSelectWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
+ */
+
+/**
+ * OOUI radio option widget
+ *
+ * @class RadioOptionWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioOptionWidget
+ */
+
+/**
+ * OOUI action field layout
+ *
+ * @class ActionFieldLayout
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ActionFieldLayout
+ */
+
+/**
+ * OOUI text input widget
+ *
+ * @class TextInputWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
+ */
+
+/**
+ * OOUI process dialog
+ *
+ * @class ProcessDialog
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
+ */
+
+/**
+ * OOUI process
+ *
+ * @class Process
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Process
+ */
+
+/**
+ * OOUI page layout
+ *
+ * @class PageLayout
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout
+ */
+
+/**
+ * OOUI multiline text input widget
+ *
+ * @class MultilineTextInputWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
+ */
+
+/**
+ * OOUI horizontal layout
+ *
+ * @class HorizontalLayout
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
+ */
+
+/**
+ * OOUI button widget
+ *
+ * @class ButtonWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
+ */
+
+/**
+ * OOUI popup button widget
+ *
+ * @class PopupButtonWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
+ */
+
+/**
  * _For internal use._ Create a OOUI window manager. It is supposed to be reused across the script.
  */
 export function createWindowManager() {
@@ -65,7 +184,7 @@ export async function showConfirmDialog(message, options = {}) {
 /**
  * Check if there are unsaved changes in a process dialog.
  *
- * @param {external:OoUiProcessDialog} dialog
+ * @param {external:OO.ui.ProcessDialog} dialog
  * @returns {boolean}
  * @private
  */
@@ -77,7 +196,7 @@ export function isDialogUnsaved(dialog) {
 /**
  * Confirm closing a process dialog.
  *
- * @param {external:OoUiProcessDialog} dialog
+ * @param {external:OO.ui.ProcessDialog} dialog
  * @param {string} dialogCode
  */
 export async function confirmCloseProcessDialog(dialog, dialogCode) {
@@ -90,7 +209,7 @@ export async function confirmCloseProcessDialog(dialog, dialogCode) {
 /**
  * Standard process dialog error handler.
  *
- * @param {external:OoUiProcessDialog} dialog
+ * @param {external:OO.ui.ProcessDialog} dialog
  * @param {CdError|Error} e
  * @param {string} messageName
  * @param {boolean} recoverable
@@ -119,23 +238,9 @@ export function handleProcessDialogError(dialog, e, messageName, recoverable) {
 }
 
 /**
- * OOUI field layout
- *
- * @external OoUiFieldLayout
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
- */
-
-/**
- * OOUI checkbox input widget
- *
- * @external OoUiCheckboxInputWidget
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
- */
-
-/**
  * @typedef {Array} CheckboxFieldReturn
- * @property {external:OoUiFieldLayout} 0
- * @property {external:OoUiCheckboxInputWidget} 1
+ * @property {external:OO.ui.FieldLayout} 0
+ * @property {external:OO.ui.CheckboxInputWidget} 1
  */
 
 /**
@@ -174,24 +279,10 @@ export function createCheckboxField({
 }
 
 /**
- * OOUI radio select widget
- *
- * @external OoUiRadioSelectWidget
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
- */
-
-/**
- * OOUI radio option widget
- *
- * @external OoUiRadioOptionWidget
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioOptionWidget
- */
-
-/**
  * @typedef {Array} RadioFieldReturn
- * @property {external:OoUiFieldLayout} 0
- * @property {external:OoUiRadioSelectWidget} 1
- * @property {external:OoUiRadioOptionWidget} 2
+ * @property {external:OO.ui.FieldLayout} 0
+ * @property {external:OO.ui.RadioSelectWidget} 1
+ * @property {external:OO.ui.RadioOptionWidget} 2
  */
 
 /**
@@ -218,13 +309,6 @@ export function createRadioField({ label, selected, help, options }) {
 }
 
 /**
- * OOUI action field layout
- *
- * @external OoUiActionFieldLayout
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ActionFieldLayout
- */
-
-/**
  * Create an action field for copying text from an input.
  *
  * @param {object} options
@@ -233,7 +317,7 @@ export function createRadioField({ label, selected, help, options }) {
  * @param {object} [options.disabled]
  * @param {object} [options.help]
  * @param {object} options.copyCallback
- * @returns {external:OoUiActionFieldLayout}
+ * @returns {external:OO.ui.ActionFieldLayout}
  */
 export function createCopyActionField({ label, value, disabled = false, help, copyCallback }) {
   const input = new OO.ui.TextInputWidget({ value, disabled });

@@ -18,23 +18,9 @@ import { getPageIds, getPageTitles } from './apiWrappers';
 import { getWatchedSections, setWatchedSections } from './options';
 
 /**
- * OOUI process dialog
- *
- * @external OoUiProcessDialog
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
- */
-
-/**
- * OOUI process
- *
- * @external OoUiProcess
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Process
- */
-
-/**
  * Class used to create an edit watched sections dialog.
  *
- * @augments external:OoUiProcessDialog
+ * @augments external:OO.ui.ProcessDialog
  */
 export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
   static name = 'editWatchedSectionsDialog';
@@ -119,7 +105,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} [data] Dialog opening data
-   * @returns {external:OoUiProcess}
+   * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -136,7 +122,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} data Window opening data
-   * @returns {external:OoUiProcess}
+   * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -202,7 +188,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
    * OOUI native method that returns a process for taking action.
    *
    * @param {string} action Symbolic name of the action.
-   * @returns {external:OoUiProcess}
+   * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getActionProcess
    */

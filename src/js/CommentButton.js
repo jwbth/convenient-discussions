@@ -51,18 +51,11 @@ export default class CommentButton extends Button {
    */
   createWidget() {
     /**
-     * OOUI button widget
-     *
-     * @external OoUiButtonWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
-     */
-
-    /**
      * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
      * performance reasons (every other button is just cloned as an element). When their state is
      * changed anyhow, the widget is created.
      *
-     * @type {external:OoUiButtonWidget}
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.buttonWidget = this.widgetConstructor();
 

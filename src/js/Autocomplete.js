@@ -52,20 +52,13 @@ function search(s, list) {
  */
 export default class Autocomplete {
   /**
-   * OOUI text input widget
-   *
-   * @external OoUiTextInputWidget
-   * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
-   */
-
-  /**
    * Create an autocomplete instance. An instance is a set of settings and inputs to which these
    * settings apply.
    *
    * @param {object} options
    * @param {string[]} options.types Which values should be autocompleted. Can contain `'mentions'`,
    *   `'wikilinks'`, `'templates'`, and `'tags'`.
-   * @param {external:OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
+   * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
