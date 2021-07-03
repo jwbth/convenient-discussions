@@ -8,10 +8,10 @@ import cd from './cd';
 import { addPreventUnloadCondition } from './eventHandlers';
 import { areObjectsEqual, defined } from './util';
 import {
-  confirmCloseProcessDialog,
+  confirmCloseDialog,
   createCheckboxField,
   createRadioField,
-  handleProcessDialogError,
+  handleDialogError,
   isDialogUnsaved,
   tweakUserOoUiClass,
 } from './ooui';
@@ -159,7 +159,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       try {
         [settings] = await Promise.all(this.preparatoryRequests);
       } catch (e) {
-        handleProcessDialogError(this, e, 'error-settings-load', false);
+        handleDialogError(this, e, 'error-settings-load', false);
         return;
       }
       this.settings = Object.assign({}, cd.settings, settings);
@@ -195,7 +195,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
         try {
           await setSettings(settings);
         } catch (e) {
-          handleProcessDialogError(this, e, 'error-settings-save', true);
+          handleDialogError(this, e, 'error-settings-save', true);
           return;
         }
 
@@ -211,7 +211,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       });
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
-        await confirmCloseProcessDialog(this, 'sd');
+        await confirmCloseDialog(this, 'sd');
       });
     } else if (action === 'reset') {
       return new OO.ui.Process(async () => {
@@ -231,13 +231,14 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
    * @param {object} settings Settings according to which to set the control states.
    */
   createFields(settings) {
-    [this.allowEditOthersCommentsField, this.allowEditOthersCommentsCheckbox] = (
-      createCheckboxField({
-        value: 'allowEditOthersComments',
-        selected: settings.allowEditOthersComments,
-        label: cd.s('sd-alloweditotherscomments'),
-      })
-    );
+    [
+      this.allowEditOthersCommentsField,
+      this.allowEditOthersCommentsCheckbox,
+    ] = createCheckboxField({
+      value: 'allowEditOthersComments',
+      selected: settings.allowEditOthersComments,
+      label: cd.s('sd-alloweditotherscomments'),
+    });
 
     [this.alwaysExpandAdvancedField, this.alwaysExpandAdvancedCheckbox] = createCheckboxField({
       value: 'alwaysExpandAdvanced',
@@ -475,13 +476,14 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       help: cd.s('sd-timestampformat-help'),
     });
 
-    [this.useBackgroundHighlightingField, this.useBackgroundHighlightingCheckbox] = (
-      createCheckboxField({
-        value: 'useBackgroundHighlighting',
-        selected: settings.useBackgroundHighlighting,
-        label: cd.s('sd-usebackgroundhighlighting'),
-      })
-    );
+    [
+      this.useBackgroundHighlightingField,
+      this.useBackgroundHighlightingCheckbox,
+    ] = createCheckboxField({
+      value: 'useBackgroundHighlighting',
+      selected: settings.useBackgroundHighlighting,
+      label: cd.s('sd-usebackgroundhighlighting'),
+    });
 
     [this.useLocalTimeField, this.useLocalTimeCheckbox] = createCheckboxField({
       value: 'useLocalTime',
@@ -680,7 +682,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
           setGlobalOption(cd.g.SETTINGS_OPTION_NAME, undefined),
         ]);
       } catch (e) {
-        handleProcessDialogError(this, e, 'sd-error-removedata', false);
+        handleDialogError(this, e, 'sd-error-removedata', false);
         return;
       }
 

@@ -1,5 +1,5 @@
 /**
- * Edit watched sections dialog class.
+ * "Edit watched sections" dialog class.
  *
  * @module EditWatchedSectionsDialog
  */
@@ -7,18 +7,13 @@
 import CdError from './CdError';
 import cd from './cd';
 import { addPreventUnloadCondition } from './eventHandlers';
-import {
-  confirmCloseProcessDialog,
-  handleProcessDialogError,
-  isDialogUnsaved,
-  tweakUserOoUiClass,
-} from './ooui';
+import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
 import { focusInput, unique } from './util';
 import { getPageIds, getPageTitles } from './apiWrappers';
 import { getWatchedSections, setWatchedSections } from './options';
 
 /**
- * Class used to create an edit watched sections dialog.
+ * Class used to create an "Edit watched sections" dialog.
  *
  * @augments external:OO.ui.ProcessDialog
  */
@@ -43,7 +38,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
   static size = 'large';
 
   /**
-   * Create an edit watched sections dialog.
+   * Create an "Edit watched sections" dialog.
    */
   constructor() {
     super();
@@ -69,7 +64,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.ProcessDialog-method-initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    */
-  async initialize(...args) {
+  initialize(...args) {
     super.initialize(...args);
 
     this.pushPending();
@@ -136,7 +131,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
           .filter((pageId) => cd.g.watchedSections[pageId].length);
         pages = await getPageTitles(pageIds);
       } catch (e) {
-        handleProcessDialogError(this, e, 'ewsd-error-processing', false);
+        handleDialogError(this, e, 'ewsd-error-processing', false);
         return;
       }
 
@@ -221,7 +216,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
         try {
           ({ normalized, redirects, pages } = await getPageIds(pageTitles) || {});
         } catch (e) {
-          handleProcessDialogError(this, e, 'ewsd-error-processing', true);
+          handleDialogError(this, e, 'ewsd-error-processing', true);
           return;
         }
 
@@ -280,7 +275,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
       });
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
-        await confirmCloseProcessDialog(this, 'ewsd');
+        await confirmCloseDialog(this, 'ewsd');
       });
     }
     return super.getActionProcess(action);

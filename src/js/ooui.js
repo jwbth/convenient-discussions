@@ -199,7 +199,7 @@ export function isDialogUnsaved(dialog) {
  * @param {external:OO.ui.ProcessDialog} dialog
  * @param {string} dialogCode
  */
-export async function confirmCloseProcessDialog(dialog, dialogCode) {
+export async function confirmCloseDialog(dialog, dialogCode) {
   if (!isDialogUnsaved(dialog) || confirm(cd.s(`${dialogCode}-close-confirm`))) {
     dialog.close({ action: 'close' });
     removePreventUnloadCondition('dialog');
@@ -214,7 +214,7 @@ export async function confirmCloseProcessDialog(dialog, dialogCode) {
  * @param {string} messageName
  * @param {boolean} recoverable
  */
-export function handleProcessDialogError(dialog, e, messageName, recoverable) {
+export function handleDialogError(dialog, e, messageName, recoverable) {
   if (e instanceof CdError) {
     const error = new OO.ui.Error(cd.s(messageName), { recoverable });
     dialog.showErrors(error);
