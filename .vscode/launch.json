@@ -12,7 +12,11 @@
       "webRoot": "${workspaceFolder}/dist",
       "sourceMapPathOverrides": {
         "webpack:///./*": "${workspaceRoot}/*"
-      }
+      },
+      "outFiles": [
+        "${workspaceFolder}/src/**/*.js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

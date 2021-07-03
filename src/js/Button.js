@@ -7,6 +7,19 @@
 let prototype;
 
 /**
+ * Create a button prototype (a skeleton with few properties set).
+ *
+ * @returns {Element}
+ * @private
+ */
+function createButtonPrototype() {
+  const prototype = document.createElement('a');
+  prototype.tabIndex = 0;
+  prototype.setAttribute('role', 'button');
+  return prototype;
+}
+
+/**
  * Class representing a generic button.
  */
 export default class Button {
@@ -38,7 +51,7 @@ export default class Button {
   } = {}) {
     if (!element) {
       if (!prototype) {
-        prototype = Button.createPrototype();
+        prototype = createButtonPrototype();
       }
       element = prototype.cloneNode(true);
     }
@@ -178,26 +191,35 @@ export default class Button {
     return this;
   }
 
+  /**
+   * Check whether the button is disabled.
+   *
+   * @returns {boolean}
+   */
   isDisabled() {
     return this.element.classList.contains('cd-button-disabled');
   }
 
+  /**
+   * Check whether the button is pending.
+   *
+   * @returns {boolean}
+   */
   isPending() {
     return this.element.classList.contains('cd-button-pending');
   }
 
+  /**
+   * Hide the button.
+   */
   hide() {
     this.element.style.display = 'none';
   }
 
+  /**
+   * Show the button.
+   */
   show() {
     this.element.style.display = '';
-  }
-
-  static createPrototype() {
-    const prototype = document.createElement('a');
-    prototype.tabIndex = 0;
-    prototype.setAttribute('role', 'button');
-    return prototype;
   }
 }

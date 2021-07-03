@@ -4,7 +4,6 @@
  * @module Section
  */
 
-import Autocomplete from './Autocomplete';
 import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
@@ -15,7 +14,6 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import toc from './toc';
 import {
-  buildEditSummary,
   calculateWordOverlap,
   dealWithLoadingBug,
   defined,
@@ -24,18 +22,14 @@ import {
   handleApiReject,
   wrap,
 } from './util';
-import { checkboxField } from './ooui';
-import { copyLink } from './modal.js';
 import {
-  encodeWikilink,
   endWithTwoNewlines,
   extractSignatures,
-  findFirstTimestamp,
   hideDistractingCode,
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { reloadPage } from './boot';
+import { showCopyLinkDialog } from './modal.js';
 
 let elementPrototypes;
 
@@ -470,500 +464,12 @@ export default class Section extends SectionSkeleton {
    * Show a move section dialog.
    */
   move() {
-    /**
-     * @class Subclass of
-     *   {@link https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog OO.ui.ProcessDialog}
-     *   used to create a move section dialog.
-     * @private
-     */
-    function MoveSectionDialog() {
-      MoveSectionDialog.parent.call(this);
-    }
-    OO.inheritClass(MoveSectionDialog, OO.ui.ProcessDialog);
-
-    MoveSectionDialog.static.name = 'moveSectionDialog';
-    MoveSectionDialog.static.title = cd.s('msd-title');
-    MoveSectionDialog.static.actions = [
-      {
-        action: 'close',
-        modes: ['move', 'reload'],
-        flags: ['safe', 'close'],
-        disabled: true,
-      },
-      {
-        action: 'move',
-        modes: ['move'],
-        label: cd.s('msd-move'),
-        flags: ['primary', 'progressive'],
-        disabled: true,
-      },
-      {
-        action: 'reload',
-        modes: ['reload'],
-        label: cd.s('msd-reload'),
-        flags: ['primary', 'progressive'],
-      },
-    ];
-
-    MoveSectionDialog.prototype.onTitleInputChange = async function () {
-      let move = true;
-      try {
-        await this.titleInput.getValidity();
-      } catch (e) {
-        move = false;
-      }
-      this.actions.setAbilities({ move });
-    };
-
-    MoveSectionDialog.prototype.loadSourcePage = async function () {
-      try {
-        await section.getSourcePage().getCode(false);
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, code } = e.data;
-          if (type === 'api') {
-            if (code === 'missing') {
-              throw [cd.sParse('msd-error-sourcepagedeleted'), true];
-            } else {
-              throw [cd.sParse('error-api', code), true];
-            }
-          } else if (type === 'network') {
-            throw [cd.sParse('error-network'), true];
-          }
-        } else {
-          throw [cd.sParse('error-javascript'), false];
-        }
-      }
-
-      try {
-        section.locateInCode();
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { code } = e.data;
-          let message;
-          message = code === 'locateSection' ?
-            cd.sParse('error-locatesection') :
-            cd.sParse('error-unknown');
-          throw [message, true];
-        } else {
-          throw [cd.sParse('error-javascript'), false];
-        }
-      }
-
-      return {
-        page: section.getSourcePage(),
-        sectionInCode: section.inCode,
-        sectionWikilink: `${section.getSourcePage().name}#${encodeWikilink(section.headline)}`,
-      };
-    };
-
-    MoveSectionDialog.prototype.loadTargetPage = async function (targetPage) {
-      try {
-        await targetPage.getCode();
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, code } = e.data;
-          if (type === 'api') {
-            if (code === 'invalid') {
-              // Must be filtered before submit.
-              throw [cd.sParse('msd-error-invalidpagename'), false];
-            } else {
-              throw [cd.sParse('error-api', code), true];
-            }
-          } else if (type === 'network') {
-            throw [cd.sParse('error-network'), true];
-          }
-        } else {
-          throw [cd.sParse('error-javascript'), false];
-        }
-      }
-
-      targetPage.analyzeNewTopicPlacement();
-      const sectionWikilink = `${targetPage.realName}#${encodeWikilink(section.headline)}`;
-
-      return {
-        page: targetPage,
-        sectionWikilink,
-      };
-    };
-
-    MoveSectionDialog.prototype.editTargetPage = async function (source, target) {
-      let codeBeginning;
-      let codeEnding;
-      if (cd.config.getMoveTargetPageCode && this.keepLinkCheckbox.isSelected()) {
-        const code = cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.USER_SIGNATURE);
-        if (Array.isArray(code)) {
-          codeBeginning = code[0] + '\n';
-          codeEnding = '\n' + code[1];
-        } else {
-          codeBeginning = code;
-          codeEnding = '';
-        }
-      } else {
-        codeBeginning = '';
-        codeEnding = '';
-      }
-
-      const newSectionCode = endWithTwoNewlines(
-        source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
-        codeBeginning +
-        source.sectionInCode.code.slice(source.sectionInCode.relativeContentStartIndex) +
-        codeEnding
-      );
-
-      let newCode;
-      if (target.page.areNewTopicsOnTop) {
-        // The page has no sections, so we add to the bottom.
-        if (target.page.firstSectionStartIndex === undefined) {
-          target.page.firstSectionStartIndex = target.page.code.length;
-        }
-        newCode = (
-          endWithTwoNewlines(target.page.code.slice(0, target.page.firstSectionStartIndex)) +
-          newSectionCode +
-          target.page.code.slice(target.page.firstSectionStartIndex)
-        );
-      } else {
-        newCode = target.page.code + (target.page.code ? '\n' : '') + newSectionCode;
-      }
-
-      const summaryEnding = this.summaryEndingInput.getValue();
-      const summary = (
-        cd.s('es-move-from', source.sectionWikilink) +
-        (summaryEnding ? cd.mws('colon-separator', { language: 'content' }) + summaryEnding : '')
-      );
-      try {
-        await target.page.edit({
-          text: newCode,
-          summary: buildEditSummary({
-            text: summary,
-            section: section.headline,
-          }),
-          baserevid: target.page.revisionId,
-          starttimestamp: target.page.queryTimestamp,
-        });
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, details } = e.data;
-          if (type === 'network') {
-            throw [
-              cd.sParse('msd-error-editingtargetpage') + ' ' + cd.sParse('error-network'),
-              true,
-            ];
-          } else {
-            let { code, message, logMessage } = details;
-            if (code === 'editconflict') {
-              message += ' ' + cd.sParse('msd-error-editconflict-retry');
-            }
-            console.warn(logMessage);
-            throw [cd.sParse('msd-error-editingtargetpage') + ' ' + message, true];
-          }
-        } else {
-          console.warn(e);
-          throw [
-            cd.sParse('msd-error-editingtargetpage') + ' ' + cd.sParse('error-javascript'),
-            true,
-          ];
-        }
-      }
-    };
-
-    MoveSectionDialog.prototype.editSourcePage = async function (source, target) {
-      const timestamp = findFirstTimestamp(source.sectionInCode.code) || cd.g.SIGN_CODE + '~';
-
-      let newSectionCode;
-      if (cd.config.getMoveSourcePageCode && this.keepLinkCheckbox.isSelected()) {
-        const code = cd.config.getMoveSourcePageCode(
-          target.sectionWikilink,
-          cd.g.USER_SIGNATURE,
-          timestamp
-        );
-        newSectionCode = (
-          source.sectionInCode.code.slice(0, source.sectionInCode.relativeContentStartIndex) +
-          code +
-          '\n'
-        );
-      } else {
-        newSectionCode = '';
-      }
-
-      const newCode = (
-        source.page.code.slice(0, source.sectionInCode.startIndex) +
-        newSectionCode +
-        source.page.code.slice(source.sectionInCode.endIndex)
-      );
-
-      const summaryEnding = this.summaryEndingInput.getValue();
-      const summary = (
-        cd.s('es-move-to', target.sectionWikilink) +
-        (summaryEnding ? cd.mws('colon-separator', { language: 'content' }) + summaryEnding : '')
-      );
-
-      try {
-        await source.page.edit({
-          text: newCode,
-          summary: buildEditSummary({
-            text: summary,
-            section: section.headline,
-          }),
-          baserevid: source.page.revisionId,
-          starttimestamp: source.page.queryTimestamp,
-        });
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, details } = e.data;
-          if (type === 'network') {
-            throw [
-              cd.sParse('msd-error-editingsourcepage') + ' ' + cd.sParse('error-network'),
-              false,
-            ];
-          } else {
-            let { message, logMessage } = details;
-            console.warn(logMessage);
-            throw [cd.sParse('msd-error-editingsourcepage') + ' ' + message, false];
-          }
-        } else {
-          console.warn(e);
-          throw [
-            cd.sParse('msd-error-editingsourcepage') + ' ' + cd.sParse('error-javascript'),
-            false,
-          ];
-        }
-      }
-    };
-
-    MoveSectionDialog.prototype.abort = function (html, recoverable) {
-      const $body = wrap(html, {
-        callbacks: {
-          'cd-message-reloadPage': () => {
-            this.close();
-            reloadPage();
-          },
-        },
-      });
-      const error = new OO.ui.Error($body, { recoverable })
-      this.showErrors(error);
-      this.$errors
-        .find('.oo-ui-buttonElement-button')
-        .on('click', () => {
-          if (recoverable) {
-            cd.g.windowManager.updateWindowSize(this);
-          } else {
-            this.close();
-          }
-        });
-      this.actions.setAbilities({
-        close: true,
-        move: recoverable,
-      });
-      cd.g.windowManager.updateWindowSize(this);
-      this.popPending();
-    };
-
-    MoveSectionDialog.prototype.getBodyHeight = function () {
-      return this.$errorItems ? this.$errors.get(0).scrollHeight : this.$body.get(0).scrollHeight;
-    };
-
-    MoveSectionDialog.prototype.initialize = function () {
-      MoveSectionDialog.parent.prototype.initialize.apply(this, arguments);
-
-      this.pushPending();
-
-      const $loading = $('<div>').text(cd.s('loading-ellipsis'));
-      this.loadingPanel = new OO.ui.PanelLayout({
-        padded: true,
-        expanded: false,
-      });
-      this.loadingPanel.$element.append($loading);
-
-      this.movePanel = new OO.ui.PanelLayout({
-        padded: true,
-        expanded: false,
-      });
-
-      this.reloadPanel = new OO.ui.PanelLayout({
-        padded: true,
-        expanded: false,
-      });
-
-      this.stackLayout = new OO.ui.StackLayout({
-        items: [this.loadingPanel, this.movePanel, this.reloadPanel],
-      });
-      this.$body.append(this.stackLayout.$element);
-    };
-
-    MoveSectionDialog.prototype.getSetupProcess = function (data) {
-      return MoveSectionDialog.parent.prototype.getSetupProcess.call(this, data).next(() => {
-        this.stackLayout.setItem(this.loadingPanel);
-        this.actions.setMode('move');
-      });
-    };
-
-    MoveSectionDialog.prototype.getReadyProcess = function (data) {
-      return MoveSectionDialog.parent.prototype.getReadyProcess.call(this, data).next(async () => {
-        try {
-          await Promise.all(preparationRequests);
-        } catch (e) {
-          this.abort(cd.sParse('cf-error-getpagecode'), false);
-          return;
-        }
-
-        try {
-          section.locateInCode();
-        } catch (e) {
-          if (e instanceof CdError) {
-            const { data } = e.data;
-            const message = data === 'locateSection' ?
-              cd.sParse('error-locatesection') :
-              cd.sParse('error-unknown');
-            this.abort(message, false);
-          } else {
-            this.abort(cd.sParse('error-javascript'), false);
-          }
-          return;
-        }
-        const sectionCode = section.inCode.code;
-
-        this.titleInput = new mw.widgets.TitleInputWidget({
-          $overlay: this.$overlay,
-          excludeCurrentPage: true,
-          showMissing: false,
-          validate: () => {
-            const title = this.titleInput.getMWTitle();
-            const page = title && new Page(title);
-            return page && page.name !== section.getSourcePage().name && page.isProbablyTalkPage();
-          },
-        });
-        this.titleField = new OO.ui.FieldLayout(this.titleInput, {
-          label: cd.s('msd-targetpage'),
-          align: 'top',
-        });
-
-        this.titleInput.connect(this, { 'change': 'onTitleInputChange' });
-        this.titleInput.connect(this, {
-          'enter': () => {
-            if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
-              this.executeAction('move');
-            }
-          },
-        });
-
-        if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
-          [this.keepLinkField, this.keepLinkCheckbox] = checkboxField({
-            value: 'keepLink',
-            selected: true,
-            label: cd.s('msd-keeplink'),
-          });
-        }
-
-        const $sectionCodeNote = $('<div>');
-        const code = sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '');
-        $('<pre>')
-          .addClass('cd-moveSectionDialog-code')
-          .text(code)
-          .appendTo($sectionCodeNote);
-        $('<p>')
-          .addClass('cd-moveSectionDialog-codeNote')
-          .text(cd.s('msd-bottom'))
-          .appendTo($sectionCodeNote);
-
-        this.summaryEndingInput = new OO.ui.TextInputWidget({
-          // TODO: take into account the whole summary length, updating the maximum value
-          // dynamically.
-          maxLength: 250,
-        });
-        this.summaryEndingAutocomplete = new Autocomplete({
-          types: ['mentions', 'wikilinks'],
-          inputs: [this.summaryEndingInput],
-        });
-        this.summaryEndingField = new OO.ui.FieldLayout(this.summaryEndingInput, {
-          label: cd.s('msd-summaryending'),
-          align: 'top',
-        });
-
-        this.movePanel.$element.append([
-          this.titleField.$element,
-          this.keepLinkField?.$element,
-          $sectionCodeNote,
-          this.summaryEndingField.$element,
-        ]);
-
-        this.stackLayout.setItem(this.movePanel);
-        focusInput(this.titleInput);
-        this.actions.setAbilities({ close: true });
-
-        // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
-        // figure out a way to do this out of the box.
-        this.$body.css('overflow', 'hidden');
-        setTimeout(() => {
-          this.$body.css('overflow', '');
-        }, 500);
-
-        cd.g.windowManager.updateWindowSize(this);
-        this.popPending();
-      });
-    };
-
-    MoveSectionDialog.prototype.getActionProcess = function (action) {
-      if (action === 'move') {
-        return new OO.ui.Process(async () => {
-          this.pushPending();
-          this.titleInput.$input.blur();
-
-          let targetPage = new Page(this.titleInput.getMWTitle());
-          // Should be ruled out by making the button disabled.
-          if (
-            targetPage.name === section.getSourcePage().name ||
-            !targetPage.isProbablyTalkPage()
-          ) {
-            this.abort(cd.sParse('msd-error-wrongpage'), false);
-            return;
-          }
-
-          let source;
-          let target;
-          try {
-            [source, target] = await Promise.all([
-              this.loadSourcePage(),
-              this.loadTargetPage(targetPage),
-            ]);
-            await this.editTargetPage(source, target);
-            await this.editSourcePage(source, target);
-          } catch (e) {
-            this.abort(...e);
-            return;
-          }
-
-          this.reloadPanel.$element.append(
-            wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
-          );
-
-          this.stackLayout.setItem(this.reloadPanel);
-          this.actions.setMode('reload');
-          this.popPending();
-        });
-      } else if (action === 'reload') {
-        return new OO.ui.Process(() => {
-          this.close({ action });
-          reloadPage({ sectionAnchor: section.anchor });
-        });
-      } else if (action === 'close') {
-        return new OO.ui.Process(() => {
-          this.close();
-        });
-      }
-      return MoveSectionDialog.parent.prototype.getActionProcess.call(this, action);
-    };
-
     if (dealWithLoadingBug('mediawiki.widgets')) return;
 
-    // Make requests in advance
-    const preparationRequests = [
-      this.getSourcePage().getCode(),
-      mw.loader.using('mediawiki.widgets'),
-    ];
+    const MoveSectionDialog = require('./MoveSectionDialog').default;
 
     const section = this;
-    const dialog = new MoveSectionDialog();
+    const dialog = new MoveSectionDialog(section);
     cd.g.windowManager.addWindows([dialog]);
     cd.g.windowManager.openWindow(dialog);
   }
@@ -1085,7 +591,7 @@ export default class Section extends SectionSkeleton {
    */
   copyLink(e) {
     e.preventDefault();
-    copyLink(this, e);
+    showCopyLinkDialog(this, e);
   }
 
   /**
@@ -1399,6 +905,7 @@ export default class Section extends SectionSkeleton {
     return this.cached$elements;
   }
 
+  // eslint-disable-next-line jsdoc/require-jsdoc
   set $elements(value) {
     this.cached$elements = value;
     this.elements = value.get();

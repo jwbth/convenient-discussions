@@ -17,7 +17,7 @@ import {
   spacesToUnderlines,
 } from './util';
 import { createApi, initSettings } from './boot';
-import { editWatchedSections, settingsDialog } from './modal';
+import { editWatchedSections, showSettingsDialog } from './modal';
 import { generateCommentAnchor, initTimestampParsingTools, parseTimestamp } from './timestamp';
 import { getWatchedSections } from './options';
 import { loadSiteData } from './siteData';
@@ -201,7 +201,9 @@ function addWatchlistMenu() {
     title: cd.s('wl-button-editwatchedsections-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editWatchedSections'],
   });
-  editWatchedSectionsButton.on('click', editWatchedSections);
+  editWatchedSectionsButton.on('click', () => {
+    editWatchedSections();
+  });
   editWatchedSectionsButton.$element.appendTo($menu);
 
   const settingsButton = new OO.ui.ButtonWidget({
@@ -213,7 +215,7 @@ function addWatchlistMenu() {
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-scriptSettings'],
   });
   settingsButton.on('click', () => {
-    settingsDialog();
+    showSettingsDialog();
   });
   settingsButton.$element.appendTo($menu);
 

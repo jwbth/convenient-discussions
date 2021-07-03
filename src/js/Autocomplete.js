@@ -58,7 +58,7 @@ export default class Autocomplete {
    * @param {object} options
    * @param {string[]} options.types Which values should be autocompleted. Can contain `'mentions'`,
    *   `'wikilinks'`, `'templates'`, and `'tags'`.
-   * @param {external:OoUiTextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
+   * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions

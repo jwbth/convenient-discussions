@@ -36,7 +36,6 @@ import {
   wrap,
   wrapDiffBody,
 } from './util';
-import { copyLink } from './modal.js';
 import {
   decodeHtmlEntities,
   extractSignatures,
@@ -49,6 +48,7 @@ import {
 import { formatDate, formatDateNative } from './timestamp';
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
+import { showCopyLinkDialog } from './modal.js';
 
 let elementPrototypes;
 let thanks;
@@ -1868,7 +1868,7 @@ export default class Comment extends CommentSkeleton {
   async copyLink(e) {
     if (this.isLinkBeingCopied) return;
     this.copyLinkButton.setPending(true);
-    await copyLink(this, e);
+    await showCopyLinkDialog(this, e);
     this.copyLinkButton.setPending(false);
   }
 

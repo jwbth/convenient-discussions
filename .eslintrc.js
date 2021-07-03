@@ -23,7 +23,7 @@ module.exports = {
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
     {
-      "files": ["./*.js", "/tribute/**"],
+      "files": ["./*.js", "src/tribute/**"],
       "rules": {
         "jsdoc/require-jsdoc": "off",
       },
@@ -51,7 +51,6 @@ module.exports = {
         "FunctionDeclaration": true,
         "MethodDefinition": true,
         "ClassDeclaration": true,
-        "FunctionExpression": true,
         "ClassExpression": true,
       },
     }],

@@ -32,11 +32,11 @@ import {
   wrap,
   wrapDiffBody,
 } from './util';
-import { checkboxField } from './ooui';
+import { createCheckboxField } from './ooui';
 import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
 import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { parseCode, unknownApiErrorText } from './apiWrappers';
-import { settingsDialog } from './modal';
+import { showSettingsDialog } from './modal';
 
 let commentFormsCounter = 0;
 
@@ -237,6 +237,8 @@ export default class CommentForm {
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
     if (this.mode === 'addSection') {
+      // This is above `this.createContents()` as that function is time-costly and would delay the
+      // requests made in `this.addEditNotices()`.
       this.addEditNotices();
     }
 
@@ -675,13 +677,6 @@ export default class CommentForm {
      */
     this.$messageArea = $('<div>').addClass('cd-messageArea');
 
-    /**
-     * OOUI text input widget
-     *
-     * @external OoUiTextInputWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
-     */
-
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.isSectionOpeningCommentEdited
@@ -698,7 +693,7 @@ export default class CommentForm {
       /**
        * Headline input.
        *
-       * @type {external:OoUiTextInputWidget|undefined}
+       * @type {external:OO.ui.TextInputWidget|undefined}
        */
       this.headlineInput = new OO.ui.TextInputWidget({
         value: dataToRestore ? dataToRestore.headline : '',
@@ -739,16 +734,9 @@ export default class CommentForm {
     }
 
     /**
-     * OOUI multiline text input widget
-     *
-     * @external OoUiMultilineTextInputWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
-     */
-
-    /**
      * Comment input.
      *
-     * @type {external:OoUiMultilineTextInputWidget}
+     * @type {external:OO.ui.MultilineTextInputWidget}
      */
     this.commentInput = new OO.ui.MultilineTextInputWidget({
       value: dataToRestore ? dataToRestore.comment : '',
@@ -771,7 +759,7 @@ export default class CommentForm {
     /**
      * Edit summary input.
      *
-     * @type {external:OoUiTextInputWidget}
+     * @type {external:OO.ui.TextInputWidget}
      */
     this.summaryInput = new OO.ui.TextInputWidget({
       value: dataToRestore ? dataToRestore.summary : '',
@@ -796,7 +784,7 @@ export default class CommentForm {
        * Minor change checkbox field.
        *
        * @name minorField
-       * @type {external:OoUiFieldLayout|undefined}
+       * @type {external:OO.ui.FieldLayout|undefined}
        * @instance
        */
 
@@ -804,10 +792,10 @@ export default class CommentForm {
        * Minor change checkbox.
        *
        * @name minorCheckbox
-       * @type {external:OoUiCheckboxInputWidget|undefined}
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
        * @instance
        */
-      [this.minorField, this.minorCheckbox] = checkboxField({
+      [this.minorField, this.minorCheckbox] = createCheckboxField({
         value: 'minor',
         selected: dataToRestore ? dataToRestore.minor : true,
         label: cd.s('cf-minor'),
@@ -825,7 +813,7 @@ export default class CommentForm {
      * Watch page checkbox field.
      *
      * @name watchField
-     * @type {external:OoUiFieldLayout}
+     * @type {external:OO.ui.FieldLayout}
      * @instance
      */
 
@@ -833,10 +821,10 @@ export default class CommentForm {
      * Watch page checkbox.
      *
      * @name watchCheckbox
-     * @type {external:OoUiCheckboxInputWidget}
+     * @type {external:OO.ui.CheckboxInputWidget}
      * @instance
      */
-    [this.watchField, this.watchCheckbox] = checkboxField({
+    [this.watchField, this.watchCheckbox] = createCheckboxField({
       value: 'watch',
       selected: dataToRestore ? dataToRestore.watch : watchCheckboxSelected,
       label: cd.s('cf-watch'),
@@ -858,7 +846,7 @@ export default class CommentForm {
        * Watch section checkbox field.
        *
        * @name watchSectionField
-       * @type {external:OoUiFieldLayout|undefined}
+       * @type {external:OO.ui.FieldLayout|undefined}
        * @instance
        */
 
@@ -866,10 +854,10 @@ export default class CommentForm {
        * Watch section checkbox.
        *
        * @name watchSectionCheckbox
-       * @type {external:OoUiCheckboxInputWidget|undefined}
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
        * @instance
        */
-      [this.watchSectionField, this.watchSectionCheckbox] = checkboxField({
+      [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
         value: 'watchSection',
         selected: dataToRestore ? dataToRestore.watchSection : selected,
         label,
@@ -883,7 +871,7 @@ export default class CommentForm {
        * Omit signature checkbox field.
        *
        * @name omitSignatureField
-       * @type {external:OoUiFieldLayout|undefined}
+       * @type {external:OO.ui.FieldLayout|undefined}
        * @instance
        */
 
@@ -891,11 +879,11 @@ export default class CommentForm {
        * Omit signature checkbox.
        *
        * @name omitSignatureCheckbox
-       * @type {external:OoUiCheckboxInputWidget|undefined}
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
        * @instance
        */
 
-      [this.omitSignatureField, this.omitSignatureCheckbox] = checkboxField({
+      [this.omitSignatureField, this.omitSignatureCheckbox] = createCheckboxField({
         value: 'omitSignature',
         selected: dataToRestore ? dataToRestore.omitSignature : false,
         label: cd.s('cf-omitsignature'),
@@ -917,7 +905,7 @@ export default class CommentForm {
        * Delete checkbox field.
        *
        * @name deleteField
-       * @type {external:OoUiFieldLayout|undefined}
+       * @type {external:OO.ui.FieldLayout|undefined}
        * @instance
        */
 
@@ -925,10 +913,10 @@ export default class CommentForm {
        * Delete checkbox.
        *
        * @name deleteCheckbox
-       * @type {external:OoUiCheckboxInputWidget|undefined}
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
        * @instance
        */
-      [this.deleteField, this.deleteCheckbox] = checkboxField({
+      [this.deleteField, this.deleteCheckbox] = createCheckboxField({
         value: 'delete',
         selected,
         label: cd.s('cf-delete'),
@@ -937,16 +925,9 @@ export default class CommentForm {
     }
 
     /**
-     * OOUI horizontal layout
-     *
-     * @external OoUiHorizontalLayout
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
-     */
-
-    /**
      * Checkboxes area.
      *
-     * @type {external:OoUiHorizontalLayout}
+     * @type {external:OO.ui.HorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
       classes: ['cd-commentForm-checkboxes'],
@@ -990,16 +971,9 @@ export default class CommentForm {
     this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
 
     /**
-     * OOUI button widget
-     *
-     * @external OoUiButtonWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
-     */
-
-    /**
      * Toggle advanced section button.
      *
-     * @type {external:OoUiButtonWidget}
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
@@ -1015,16 +989,9 @@ export default class CommentForm {
     }
 
     /**
-     * OOUI popup button widget
-     *
-     * @external OoUiPopupButtonWidget
-     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
-     */
-
-    /**
      * Help button.
      *
-     * @type {external:OoUiPopupButtonWidget}
+     * @type {external:OO.ui.PopupButtonWidget}
      */
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
@@ -1064,7 +1031,7 @@ export default class CommentForm {
     /**
      * Cancel button.
      *
-     * @type {external:OoUiButtonWidget}
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.cancelButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-cancel'),
@@ -1077,7 +1044,7 @@ export default class CommentForm {
     /**
      * View changes button.
      *
-     * @type {external:OoUiButtonWidget}
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
@@ -1088,7 +1055,7 @@ export default class CommentForm {
     /**
      * Preview button.
      *
-     * @type {external:OoUiButtonWidget}
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
@@ -1102,7 +1069,7 @@ export default class CommentForm {
     /**
      * Submit button.
      *
-     * @type {external:OoUiButtonWidget}
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
@@ -1640,7 +1607,7 @@ export default class CommentForm {
 
     this.settingsButton
       .on('click', () => {
-        settingsDialog();
+        showSettingsDialog();
       });
 
     this.cancelButton

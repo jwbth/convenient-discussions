@@ -762,7 +762,7 @@ export function removeDirMarks(text) {
  * Replace the selected text (if any) in an input (`<input>` or `<textarea>`) with the provided text
  * and keep the undo/redo functionality.
  *
- * @param {external:OoUiTextInputWidget} input Input to set replace the selection in.
+ * @param {external:OO.ui.TextInputWidget} input Input to set replace the selection in.
  * @param {string} text Text to replace the selection with.
  */
 export function insertText(input, text) {
@@ -862,7 +862,7 @@ export function keyCombination(e, keyCode, modificators = []) {
  * Get around the Firefox 56 and probably some other browsers bug where the caret doesn't appear in
  * the input after focusing.
  *
- * @param {external:OoUiTextInputWidget} input
+ * @param {external:OO.ui.TextInputWidget} input
  */
 export function focusInput(input) {
   input.$input.get(0).focus();

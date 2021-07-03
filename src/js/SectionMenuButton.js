@@ -34,10 +34,16 @@ export default class SectionMenuButton extends Button {
     }
   }
 
+  /**
+   * Hide the button.
+   */
   hide() {
     this.wrapperElement.style.display = 'none';
   }
 
+  /**
+   * Show the button.
+   */
   show() {
     this.wrapperElement.style.display = '';
   }

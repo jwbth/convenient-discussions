@@ -28,19 +28,17 @@ import {
   saveScrollPosition,
   saveToLocalStorage,
   skin$,
+  spacesToUnderlines,
   transparentize,
+  underlinesToSpaces,
   unhideText,
+  wrap,
 } from './util';
-import {
-  confirmDialog,
-  createWindowManager,
-  editWatchedSections,
-  rescueCommentFormsContent,
-  settingsDialog,
-} from './modal';
+import { createWindowManager, showConfirmDialog } from './ooui';
+import { editWatchedSections, rescueCommentFormsContent, showSettingsDialog } from './modal';
+import { formatDateNative, initDayjs, initTimestampParsingTools } from './timestamp';
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
-import { initDayjs, initTimestampParsingTools } from './timestamp';
 import { loadSiteData } from './siteData';
 
 let notificationsData = [];
@@ -322,7 +320,7 @@ function initGlobals() {
   // Useful for testing
   cd.g.processPageInBackground = updateChecker.processPage;
   cd.g.editWatchedSections = editWatchedSections;
-  cd.g.settingsDialog = settingsDialog;
+  cd.g.showSettingsDialog = showSettingsDialog;
 
 
   /* Some static methods for external use */
@@ -1366,7 +1364,7 @@ export async function suggestEnableCommentReformatting() {
         .addClass('cd-rc-text')
         .html(cd.sParse('rc-suggestion'));
       $body.append($imgOld, $arrow, $imgNew, $div);
-      const action = await confirmDialog($body, {
+      const action = await showConfirmDialog($body, {
         size: 'large',
         actions,
       });
@@ -1415,7 +1413,7 @@ export async function confirmDesktopNotifications() {
           action: 'reject',
         },
       ];
-      const action = await confirmDialog(cd.s('dn-confirm'), {
+      const action = await showConfirmDialog(cd.s('dn-confirm'), {
         size: 'medium',
         actions,
       });
@@ -1458,4 +1456,142 @@ export async function confirmDesktopNotifications() {
     await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
     Notification.requestPermission();
   }
+}
+
+/**
+ * _For internal use._ Show a message at the top of the page that a section/comment was not found, a
+ * link to search in the archive, and a link to the section/comment if it was found automatically.
+ *
+ * @param {string} decodedFragment Decoded fragment.
+ * @param {Date} date Comment date, if there is a comment anchor in the fragment.
+ */
+export async function addNotFoundMessage(decodedFragment, date) {
+  let label;
+  let sectionName;
+  if (date) {
+    label = cd.s('deadanchor-comment-lead')
+  } else {
+    sectionName = underlinesToSpaces(decodedFragment);
+    label = cd.s('deadanchor-section-lead', sectionName);
+  }
+  if (cd.g.PAGE.canHaveArchives()) {
+    label += ' ';
+
+    let sectionNameDotDecoded;
+    if (date) {
+      label += cd.s('deadanchor-comment-finding');
+    } else {
+      label += cd.s('deadanchor-section-finding');
+      try {
+        sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'));
+      } catch (e) {
+        sectionNameDotDecoded = sectionName;
+      }
+    }
+
+    const token = date ? formatDateNative(date, cd.g.TIMEZONE) : sectionName.replace(/"/g, '');
+    const archivePrefix = cd.g.PAGE.getArchivePrefix();
+    let searchQuery = `"${token}"`
+    if (sectionName && sectionName !== sectionNameDotDecoded) {
+      const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
+      searchQuery += ` OR "${tokenDotDecoded}"`;
+    }
+    searchQuery += ` prefix:${archivePrefix}`;
+
+    cd.g.api.get({
+      action: 'query',
+      list: 'search',
+      srsearch: searchQuery,
+      srprop: sectionName ? 'sectiontitle' : undefined,
+
+      // List more recent archives first
+      srsort: 'create_timestamp_desc',
+
+      srlimit: '20'
+    }).then((resp) => {
+      const results = resp?.query?.search;
+
+      if (results.length === 0) {
+        let label;
+        if (date) {
+          label = cd.s('deadanchor-comment-lead') + ' ' + cd.s('deadanchor-comment-notfound');
+        } else {
+          label = (
+            cd.s('deadanchor-section-lead', sectionName) +
+            ' ' +
+            cd.s('deadanchor-section-notfound')
+          );
+        }
+        message.setLabel(label);
+      } else {
+        let pageTitle;
+
+        // Will either be sectionName or sectionNameDotDecoded.
+        let sectionNameFound = sectionName;
+
+        if (sectionName) {
+          // Obtain the first exact section title match (which would be from the most recent
+          // archive). This loop iterates over just one item in the vast majority of cases.
+          let sectionName_ = spacesToUnderlines(sectionName);
+          let sectionNameDotDecoded_ = spacesToUnderlines(sectionNameDotDecoded);
+          for (let [, result] of Object.entries(results)) {
+            // sectiontitle in API output has spaces encoded as underscores.
+            if (
+              result.sectiontitle &&
+              [sectionName_, sectionNameDotDecoded_].includes(result.sectiontitle)
+            ) {
+              pageTitle = result.title;
+              sectionNameFound = underlinesToSpaces(result.sectiontitle);
+              break;
+            }
+          }
+        } else {
+          if (results.length === 1) {
+            pageTitle = results[0].title;
+          }
+        }
+
+        let searchUrl = mw.util.getUrl('Special:Search', {
+          search: searchQuery,
+          sort: 'create_timestamp_desc',
+          cdcomment: date && decodedFragment,
+        });
+        searchUrl = cd.g.SERVER + searchUrl;
+
+        let label;
+        if (pageTitle) {
+          if (date) {
+            label = cd.sParse(
+              'deadanchor-comment-exactmatch',
+              pageTitle + '#' + decodedFragment,
+              searchUrl
+            );
+          } else {
+            label = cd.sParse(
+              'deadanchor-section-exactmatch',
+              sectionNameFound,
+              pageTitle + '#' + sectionNameFound,
+              searchUrl
+            );
+          }
+        } else {
+          if (date) {
+            label = cd.sParse('deadanchor-comment-inexactmatch', searchUrl);
+          } else {
+            label = cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
+          }
+        }
+
+        message.setLabel(wrap(label));
+      }
+    });
+  }
+
+  const message = new OO.ui.MessageWidget({
+    type: 'warning',
+    inline: true,
+    label,
+    classes: ['cd-message-notFound'],
+  });
+  cd.g.$root.prepend(message.$element);
 }
