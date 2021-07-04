@@ -19,7 +19,7 @@ import Parser from './Parser';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
-import { getAllTextNodes, parseDOM } from './htmlparser2Extended';
+import { getAllTextNodes, parseDocument } from './htmlparser2Extended';
 import { resetCommentAnchors } from './timestamp';
 
 let firstRun = true;
@@ -387,13 +387,12 @@ function onMessageFromWindow(e) {
     );
     cd.g.IS_IPv6_ADDRESS = restoreFunc(cd.g.IS_IPv6_ADDRESS);
 
-    const dom = parseDOM(message.text, {
+
+    context.document = parseDocument(message.text, {
       withStartIndices: true,
       withEndIndices: true,
       decodeEntities: false,
     });
-
-    context.document = new Document(dom);
     cd.g.rootElement = context.document.childNodes[0];
     cd.g.pageHasOutdents = Boolean(
       cd.g.rootElement.getElementsByClassName(cd.config.outdentClass, 1).length

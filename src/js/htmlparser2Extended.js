@@ -1,4 +1,4 @@
-import { DomUtils, parseDOM } from 'htmlparser2';
+import { DomUtils, parseDocument } from 'htmlparser2';
 
 import cd from './cd';
 import { decodeHtmlEntities } from './wikitext';
@@ -47,11 +47,12 @@ function getAllTextNodes() {
   return nodes;
 }
 
-const dummyDom = parseDOM('<a>a</a>');
-const Element = dummyDom[0].constructor;
-const Text = dummyDom[0].childNodes[0].constructor;
+const dummyDocument = parseDocument('<a>a</a>');
+const Document = dummyDocument.constructor;
+const firstElement = dummyDocument.childNodes[0];
+const Element = firstElement.constructor;
+const Text = firstElement.childNodes[0].constructor;
 const NodeConstructor = Object.getPrototypeOf(Object.getPrototypeOf(Text));
-const Document = dummyDom[0].parent.constructor;
 
 // Note that the Element class already has the "children" property containing all child nodes, which
 // differs from what this property stands for in the browser DOM representation (only child nodes
@@ -370,4 +371,4 @@ Document.prototype.getElementsByClassName = Element.prototype.getElementsByClass
 
 self.Document = Document;
 
-export { getAllTextNodes, parseDOM };
+export { getAllTextNodes, parseDocument };
