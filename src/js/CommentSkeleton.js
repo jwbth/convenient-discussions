@@ -45,7 +45,7 @@ export default class CommentSkeleton {
     parts = this.parser.replaceListsWithItems(parts, signature.element);
 
     // Wrap ol into div or dl & dd if the comment starts with numbered list items.
-    parts = this.parser.wrapNumberedList(parts);
+    parts = this.parser.wrapNumberedList(parts, signature.element);
 
     /**
      * Comment ID. Same as the comment's index in

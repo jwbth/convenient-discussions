@@ -947,47 +947,57 @@ export default class Parser {
   }
 
   /**
-   * _For internal use._ Wrap numbered list into a div or dl & dd if the comment starts with numbered list items.
+   * _For internal use._ Wrap numbered list into a div or dl & dd if the comment starts with
+   * numbered list items.
    *
    * @param {object[]} parts
+   * @param {Element} signatureElement
    * @returns {object[]}
    */
-  wrapNumberedList(parts) {
+  wrapNumberedList(parts, signatureElement) {
     if (parts.length > 1) {
       const parent = parts[0].node.parentNode;
-      if (parent.tagName === 'OL' && parent.querySelectorAll('.cd-signature').length <= 1) {
-        const listItems = parts.filter((part) => part.node.parentNode === parent);
 
-        // Is `#` used as an indentation character instead of `:` or `*`, or is the comments just
-        // starts with a list and ends on a correct level (without `#`)?
-        const isNumberedListUsedAsIndentation = !parts.some((part) => (
-          part.node.parentNode !== parent &&
-          part.node.parentNode.contains(parent)
-        ));
-        let outerWrapper;
-        let innerWrapper;
-        const nextSibling = parent.nextSibling;
-        const parentParent = parent.parentNode;
-        if (isNumberedListUsedAsIndentation) {
-          innerWrapper = this.context.document.createElement('dd');
-          outerWrapper = this.context.document.createElement('dl');
-          outerWrapper.appendChild(innerWrapper);
-        } else {
-          innerWrapper = this.context.document.createElement('div');
-          outerWrapper = innerWrapper;
+      if (parent.tagName === 'OL') {
+        // 0 or 1
+        const currentSignatureCount = Number(parent.contains(signatureElement));
+
+        // A foreign signature can be found with just `.cd-signature` search; example:
+        // https://commons.wikimedia.org/?diff=566673258.
+        if (parent.getElementsByClassName('cd-signature').length - currentSignatureCount === 0) {
+          const listItems = parts.filter((part) => part.node.parentNode === parent);
+
+          // Is `#` used as an indentation character instead of `:` or `*`, or is the comments just
+          // starts with a list and ends on a correct level (without `#`)?
+          const isNumberedListUsedAsIndentation = !parts.some((part) => (
+            part.node.parentNode !== parent &&
+            part.node.parentNode.contains(parent)
+          ));
+          let outerWrapper;
+          let innerWrapper;
+          const nextSibling = parent.nextSibling;
+          const parentParent = parent.parentNode;
+          if (isNumberedListUsedAsIndentation) {
+            innerWrapper = this.context.document.createElement('dd');
+            outerWrapper = this.context.document.createElement('dl');
+            outerWrapper.appendChild(innerWrapper);
+          } else {
+            innerWrapper = this.context.document.createElement('div');
+            outerWrapper = innerWrapper;
+          }
+          innerWrapper.appendChild(parent);
+          parentParent.insertBefore(outerWrapper, nextSibling);
+
+          const newNode = {
+            node: innerWrapper,
+            isTextNode: false,
+            isHeading: false,
+            hasCurrentSignature: true,
+            hasForeignComponents: false,
+            lastStep: 'replaced',
+          };
+          parts.splice(0, listItems.length, newNode);
         }
-        innerWrapper.appendChild(parent);
-        parentParent.insertBefore(outerWrapper, nextSibling);
-
-        const newNode = {
-          node: innerWrapper,
-          isTextNode: false,
-          isHeading: false,
-          hasCurrentSignature: true,
-          hasForeignComponents: false,
-          lastStep: 'replaced',
-        };
-        parts.splice(0, listItems.length, newNode);
       }
     }
 
