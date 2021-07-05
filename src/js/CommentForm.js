@@ -189,8 +189,8 @@ export default class CommentForm {
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.isNewTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
-   * @fires commentFormCreated
    * @fires commentFormModulesReady
+   * @fires commentFormCreated
    */
   constructor({ mode, target, dataToRestore, preloadConfig, isNewTopicOnTop }) {
     /**
@@ -236,17 +236,13 @@ export default class CommentForm {
      */
     this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
 
-    if (this.mode === 'addSection') {
-      // This is above `this.createContents()` as that function is time-costly and would delay the
-      // requests made in `this.addEditNotices()`.
-      this.addEditNotices();
-    }
-
-    this.createContents(dataToRestore);
-    this.addEvents();
-    this.initAutocomplete();
-
-    this.addToPage();
+    /**
+     * Is section opening comment edited.
+     *
+     * @type {boolean}
+     * @private
+     */
+    this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
      * @typedef {object} Operation
@@ -263,6 +259,32 @@ export default class CommentForm {
      * @type {Operation[]}
      */
     this.operations = [];
+
+    if (this.mode === 'addSection') {
+      // This is above `this.createContents()` as that function is time-costly and would delay the
+      // requests made in `this.addEditNotices()`.
+      this.addEditNotices();
+    }
+
+    const moduleNames = cd.config.customCommentFormModules
+      .filter((module) => !module.checkFunc || module.checkFunc())
+      .map((module) => module.name);
+    mw.loader.using(moduleNames).then(() => {
+      /**
+       * All requested custom comment form modules have been loaded and executed. (The comment form
+       * may not be ready yet, use {@link module:CommentForm~commentFormToolbarReady} for that.)
+       *
+       * @event commentFormModulesReady
+       * @type {module:CommentForm}
+       */
+      mw.hook('convenientDiscussions.commentFormModulesReady').fire(this);
+    });
+
+    this.createContents(dataToRestore, moduleNames);
+    this.addEvents();
+    this.initAutocomplete();
+
+    this.addToPage();
 
     cd.commentForms.push(this);
 
@@ -400,19 +422,553 @@ export default class CommentForm {
   }
 
   /**
-   * Add a WikiEditor toolbar to the comment input.
+   * Create the inputs from OOUI widgets.
    *
-   * @param {string[]} moduleNames List of custom comment form modules to await loading of before
-   *   adding the toolbar.
+   * @param {object} dataToRestore
+   * @private
+   */
+  createInputs(dataToRestore) {
+    if (
+      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
+      this.isSectionOpeningCommentEdited
+    ) {
+      const parentSection = this.targetSection?.getParent();
+      if (this.mode === 'addSubsection') {
+        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', this.targetSection.headline);
+      } else if (this.mode === 'edit' && parentSection) {
+        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', parentSection.headline);
+      } else {
+        this.headlineInputPlaceholder = cd.s('cf-headline-topic');
+      }
+
+      /**
+       * Headline input.
+       *
+       * @type {external:OO.ui.TextInputWidget|undefined}
+       */
+      this.headlineInput = new OO.ui.TextInputWidget({
+        value: dataToRestore ? dataToRestore.headline : '',
+        placeholder: this.headlineInputPlaceholder,
+        classes: ['cd-commentForm-headlineInput'],
+        tabIndex: String(this.id) + '11',
+      });
+    }
+
+    let rowNumber = this.headlineInput ? 5 : 3;
+    // Firefox gives a bigger height to a textarea with a specified number of rows than other
+    // browsers.
+    if ($.client.profile().name === 'firefox') {
+      rowNumber -= 1;
+    }
+
+    let commentInputPlaceholder;
+    if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
+      commentInputPlaceholder = cd.s(
+        'cf-comment-placeholder-replytosection',
+        this.targetSection.headline
+      );
+    } else if (this.mode === 'reply') {
+      // If there is a need to make a request to get the user gender, we don't show any
+      // placeholder text at the beginning to avoid drawing the user's attention to the changing
+      // of the text. (But it could be a better idea to set the `showCommentInputPlaceholder`
+      // config variable to `false` to avoid showing any text whatsoever.)
+      this.target.requestAuthorGenderIfNeeded(() => {
+        this.commentInput.$input.attr(
+          'placeholder',
+          removeDoubleSpaces(cd.s(
+            'cf-comment-placeholder-replytocomment',
+            this.target.author.name,
+            this.target.author
+          ))
+        );
+      }, true);
+    }
+
+    /**
+     * Comment input.
+     *
+     * @type {external:OO.ui.MultilineTextInputWidget}
+     */
+    this.commentInput = new OO.ui.MultilineTextInputWidget({
+      value: dataToRestore ? dataToRestore.comment : '',
+      placeholder: commentInputPlaceholder,
+      autosize: true,
+      rows: rowNumber,
+      maxRows: 30,
+      classes: ['cd-commentForm-commentInput'],
+      tabIndex: String(this.id) + '12',
+    });
+    this.commentInput.$input.addClass('ime-position-inside');
+
+    /**
+     * Edit summary input.
+     *
+     * @type {external:OO.ui.TextInputWidget}
+     */
+    this.summaryInput = new OO.ui.TextInputWidget({
+      value: dataToRestore ? dataToRestore.summary : '',
+      maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
+      placeholder: cd.s('cf-summary-placeholder'),
+      classes: ['cd-commentForm-summaryInput'],
+      tabIndex: String(this.id) + '13',
+    });
+    this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
+    mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.SUMMARY_LENGTH_LIMIT);
+    this.updateAutoSummary(!dataToRestore);
+  }
+
+  /**
+   * Create the checkboxes and the horizontal layout containing them from OOUI widgets.
+   *
+   * @param {object} dataToRestore
+   * @private
+   */
+  createCheckboxes(dataToRestore) {
+    if (this.mode === 'edit') {
+      /**
+       * Minor change checkbox field.
+       *
+       * @name minorField
+       * @type {external:OO.ui.FieldLayout|undefined}
+       * @instance
+       */
+
+      /**
+       * Minor change checkbox.
+       *
+       * @name minorCheckbox
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @instance
+       */
+      [this.minorField, this.minorCheckbox] = createCheckboxField({
+        value: 'minor',
+        selected: dataToRestore ? dataToRestore.minor : true,
+        label: cd.s('cf-minor'),
+        tabIndex: String(this.id) + '20',
+      });
+    }
+
+    const watchCheckboxSelected = (
+      (cd.settings.watchOnReply && this.mode !== 'edit') ||
+      $('#ca-unwatch').length ||
+      mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
+    );
+
+    /**
+     * Watch page checkbox field.
+     *
+     * @name watchField
+     * @type {external:OO.ui.FieldLayout}
+     * @instance
+     */
+
+    /**
+     * Watch page checkbox.
+     *
+     * @name watchCheckbox
+     * @type {external:OO.ui.CheckboxInputWidget}
+     * @instance
+     */
+    [this.watchField, this.watchCheckbox] = createCheckboxField({
+      value: 'watch',
+      selected: dataToRestore ? dataToRestore.watch : watchCheckboxSelected,
+      label: cd.s('cf-watch'),
+      tabIndex: String(this.id) + '21',
+    });
+
+    if (this.targetSection || this.mode === 'addSection') {
+      const callItTopic = (
+        this.mode !== 'addSubsection' &&
+        ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
+      );
+      const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
+      const selected = (
+        (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
+        this.targetSection?.isWatched
+      );
+
+      /**
+       * Watch section checkbox field.
+       *
+       * @name watchSectionField
+       * @type {external:OO.ui.FieldLayout|undefined}
+       * @instance
+       */
+
+      /**
+       * Watch section checkbox.
+       *
+       * @name watchSectionCheckbox
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @instance
+       */
+      [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
+        value: 'watchSection',
+        selected: dataToRestore ? dataToRestore.watchSection : selected,
+        label,
+        tabIndex: String(this.id) + '22',
+        title: cd.s('cf-watchsection-tooltip'),
+      });
+    }
+
+    if (['addSection', 'addSubsection'].includes(this.mode)) {
+      /**
+       * Omit signature checkbox field.
+       *
+       * @name omitSignatureField
+       * @type {external:OO.ui.FieldLayout|undefined}
+       * @instance
+       */
+
+      /**
+       * Omit signature checkbox.
+       *
+       * @name omitSignatureCheckbox
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @instance
+       */
+
+      [this.omitSignatureField, this.omitSignatureCheckbox] = createCheckboxField({
+        value: 'omitSignature',
+        selected: dataToRestore ? dataToRestore.omitSignature : false,
+        label: cd.s('cf-omitsignature'),
+        tabIndex: String(this.id) + '25',
+      });
+    }
+
+    if (
+      this.mode === 'edit' &&
+      (
+        this.target.isOpeningSection ?
+        this.targetSection.comments.length === 1 :
+        !this.target.getChildren().length
+      )
+    ) {
+      const selected = dataToRestore ? dataToRestore.delete : false;
+
+      /**
+       * Delete checkbox field.
+       *
+       * @name deleteField
+       * @type {external:OO.ui.FieldLayout|undefined}
+       * @instance
+       */
+
+      /**
+       * Delete checkbox.
+       *
+       * @name deleteCheckbox
+       * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @instance
+       */
+      [this.deleteField, this.deleteCheckbox] = createCheckboxField({
+        value: 'delete',
+        selected,
+        label: cd.s('cf-delete'),
+        tabIndex: String(this.id) + '26',
+      });
+    }
+
+    /**
+     * Checkboxes area.
+     *
+     * @type {external:OO.ui.HorizontalLayout}
+     */
+    this.checkboxesLayout = new OO.ui.HorizontalLayout({
+      classes: ['cd-commentForm-checkboxes'],
+      items: [
+        this.minorField,
+        this.watchField,
+        this.watchSectionField,
+        this.omitSignatureField,
+        this.deleteField,
+      ].filter(defined),
+    });
+  }
+
+  /**
+   * Create the buttons from OOUI widgets.
+   *
+   * @private
+   */
+  createButtons() {
+    const modeToSubmitButtonMessageName = {
+      edit: 'save',
+      addSection: 'addtopic',
+      addSubsection: 'addsubsection',
+    };
+    const submitButtonMessageName = modeToSubmitButtonMessageName[this.mode] || 'reply';
+    this.submitButtonLabelStandard = cd.s(`cf-${submitButtonMessageName}`);
+    this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
+
+    /**
+     * Toggle advanced section button.
+     *
+     * @type {external:OO.ui.ButtonWidget}
+     */
+    this.advancedButton = new OO.ui.ButtonWidget({
+      label: cd.s('cf-advanced'),
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-commentForm-advancedButton'],
+      tabIndex: String(this.id) + '30',
+    });
+
+    if (!cd.g.$popupsOverlay) {
+      cd.g.$popupsOverlay = $('<div>')
+        .addClass('cd-popupsOverlay')
+        .appendTo(document.body);
+    }
+
+    /**
+     * Help button.
+     *
+     * @type {external:OO.ui.PopupButtonWidget}
+     */
+    this.helpPopupButton = new OO.ui.PopupButtonWidget({
+      label: cd.s('cf-help'),
+      framed: false,
+      classes: ['cd-button-ooui'],
+      popup: {
+        head: false,
+        $content: wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
+          tagName: 'div',
+          targetBlank: true,
+        }),
+        padded: true,
+        align: 'center',
+        width: 400,
+      },
+      $overlay: cd.g.$popupsOverlay,
+      tabIndex: String(this.id) + '31',
+    });
+
+    /**
+     * Script settings button.
+     *
+     * @name settingsButton
+     * @type {Promise}
+     * @instance
+     */
+    this.settingsButton = new OO.ui.ButtonWidget({
+      framed: false,
+      icon: 'settings',
+      label: cd.s('cf-settings-tooltip'),
+      invisibleLabel: true,
+      title: cd.s('cf-settings-tooltip'),
+      classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
+      tabIndex: String(this.id) + '32',
+    });
+
+    /**
+     * Cancel button.
+     *
+     * @type {external:OO.ui.ButtonWidget}
+     */
+    this.cancelButton = new OO.ui.ButtonWidget({
+      label: cd.s('cf-cancel'),
+      flags: 'destructive',
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-commentForm-cancelButton'],
+      tabIndex: String(this.id) + '33',
+    });
+
+    /**
+     * View changes button.
+     *
+     * @type {external:OO.ui.ButtonWidget}
+     */
+    this.viewChangesButton = new OO.ui.ButtonWidget({
+      label: cd.s('cf-viewchanges'),
+      classes: ['cd-commentForm-viewChangesButton'],
+      tabIndex: String(this.id) + '34',
+    });
+
+    /**
+     * Preview button.
+     *
+     * @type {external:OO.ui.ButtonWidget}
+     */
+    this.previewButton = new OO.ui.ButtonWidget({
+      label: cd.s('cf-preview'),
+      classes: ['cd-commentForm-previewButton'],
+      tabIndex: String(this.id) + '35',
+    });
+    if (cd.settings.autopreview) {
+      this.previewButton.$element.hide();
+    }
+
+    /**
+     * Submit button.
+     *
+     * @type {external:OO.ui.ButtonWidget}
+     */
+    this.submitButton = new OO.ui.ButtonWidget({
+      label: this.submitButtonLabelStandard,
+      flags: ['progressive', 'primary'],
+      classes: ['cd-commentForm-submitButton'],
+      tabIndex: String(this.id) + '36',
+    });
+  }
+
+  /**
+   * Create the main element, the wrappers for the controls (inputs, checkboxes, buttons), and other
+   * elements.
+   *
+   * @private
+   */
+  createElements() {
+    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+      if (this.mode === 'reply') {
+        /**
+         * Name of the tag of the list that this comment form is an item of. `'dl'`, `'ul'`, `'ol'`,
+         * or `undefined`.
+         *
+         * @type {string|undefined}
+         */
+        this.containerListType = 'dl';
+      } else if (this.mode === 'edit') {
+        this.containerListType = this.target.containerListType;
+      } else if (this.mode === 'replyInSection') {
+        this.containerListType = this.target.$replyContainer.prop('tagName').toLowerCase();
+      }
+    }
+
+    /**
+     * The main form element.
+     *
+     * @type {JQuery}
+     */
+    this.$element = $('<div>').addClass(`cd-commentForm cd-commentForm-${this.mode}`);
+
+    if (this.containerListType === 'ol') {
+      this.$element.addClass('cd-commentForm-inNumberedList');
+    }
+    if (this.isSectionOpeningCommentEdited) {
+      this.$element.addClass('cd-commentForm-sectionOpeningComment');
+    }
+    if (this.mode === 'addSubsection') {
+      this.$element.addClass(`cd-commentForm-addSubsection-${this.target.level}`);
+    }
+
+    /**
+     * The area where service messages are displayed.
+     *
+     * @type {JQuery}
+     */
+    this.$messageArea = $('<div>').addClass('cd-messageArea');
+
+    /**
+     * The area where edit summary preview is displayed.
+     *
+     * @type {JQuery}
+     */
+    this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
+
+    /**
+     * Advanced section container.
+     *
+     * @type {JQuery}
+     */
+    this.$advanced = $('<div>')
+      .addClass('cd-commentForm-advanced')
+      .append([
+        this.summaryInput.$element,
+        this.$summaryPreview,
+        this.checkboxesLayout.$element,
+      ]);
+
+    /**
+     * Start (left on LTR wikis, right on RTL wikis) form buttons container.
+     *
+     * @type {JQuery}
+     */
+    this.$buttonsStart = $('<div>')
+      .addClass('cd-commentForm-buttons-start')
+      .append([
+        this.advancedButton.$element,
+        this.helpPopupButton.$element,
+        this.settingsButton.$element,
+      ]);
+
+    /**
+     * End (right on LTR wikis, left on RTL wikis) form buttons container.
+     *
+     * @type {JQuery}
+     */
+    this.$buttonsEnd = $('<div>')
+      .addClass('cd-commentForm-buttons-end')
+      .append([
+        this.cancelButton.$element,
+        this.viewChangesButton.$element,
+        this.previewButton.$element,
+        this.submitButton.$element,
+      ]);
+
+    /**
+     * Form buttons container.
+     *
+     * @type {JQuery}
+     */
+    this.$buttons = $('<div>')
+      .addClass('cd-commentForm-buttons')
+      .append(this.$buttonsStart, this.$buttonsEnd);
+
+    this.$element.append([
+      this.$messageArea,
+      this.headlineInput?.$element,
+      this.commentInput.$element,
+      this.$advanced,
+      this.$buttons,
+    ]);
+
+    if (this.mode !== 'edit' && !cd.settings.alwaysExpandAdvanced) {
+      this.$advanced.hide();
+    }
+
+    /**
+     * The area where comment previews and changes are displayed.
+     *
+     * @type {JQuery}
+     */
+    this.$previewArea = $('<div>').addClass('cd-previewArea');
+
+    if (cd.settings.autopreview) {
+      this.$previewArea
+        .addClass('cd-previewArea-below')
+        .appendTo(this.$element);
+    } else {
+      this.$previewArea
+        .addClass('cd-previewArea-above')
+        .prependTo(this.$element);
+    }
+
+    if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
+      // Dummy element for forms inside a numbered list so that the number is placed in front of
+      // that area, not in some silly place. Note that in Chrome, the number is placed in front of
+      // the textarea, so we don't need this in that browser.
+      $('<div>')
+        .html('&nbsp;')
+        .addClass('cd-commentForm-dummyElement')
+        .prependTo(this.$element);
+    }
+  }
+
+  /**
+   * Add a WikiEditor toolbar to the comment input if the relevant setting is enabled.
+   *
+   * @param {string[]} requestedModulesNames List of custom comment form modules to await loading of
+   *   before adding the toolbar.
    * @fires commentFormToolbarReady
    * @private
    */
-  addToolbar(moduleNames) {
+  addToolbar(requestedModulesNames) {
+    if (!cd.settings.showToolbar) return;
+
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
       .insertBefore(this.commentInput.$element);
 
-    mw.loader.using(['ext.wikiEditor'].concat(moduleNames)).then(() => {
+    mw.loader.using(['ext.wikiEditor', ...requestedModulesNames]).then(() => {
       $toolbarPlaceholder.remove();
 
       const $input = this.commentInput.$input;
@@ -630,554 +1186,54 @@ export default class CommentForm {
   }
 
   /**
+   * Add the insert buttons block under the comment input.
+   *
+   * @private
+   */
+  addInsertButtons() {
+    if (!cd.settings.insertButtons.length) return;
+
+    /**
+     * Text insert buttons.
+     *
+     * @type {JQuery|undefined}
+     */
+    this.$insertButtons = $('<div>')
+      .addClass('cd-insertButtons')
+      .insertAfter(this.commentInput.$element);
+
+    cd.settings.insertButtons.forEach((button) => {
+      let text;
+      let displayedText;
+      if (Array.isArray(button)) {
+        text = button[0];
+        displayedText = button[1];
+      } else {
+        text = button;
+      }
+      this.addInsertButton(text, displayedText);
+    });
+  }
+
+  /**
    * Create the contents of the form.
    *
    * @param {object} dataToRestore
+   * @param {string[]} requestedModulesNames
    * @private
    */
-  createContents(dataToRestore) {
-    if (!['addSection', 'addSubsection'].includes(this.mode)) {
-      if (this.mode === 'reply') {
-        /**
-         * Name of the tag of the list that this comment form is an item of. `'dl'`, `'ul'`, `'ol'`,
-         * or `undefined`.
-         *
-         * @type {string|undefined}
-         */
-        this.containerListType = 'dl';
-      } else if (this.mode === 'edit') {
-        this.containerListType = this.target.containerListType;
-      } else if (this.mode === 'replyInSection') {
-        this.containerListType = this.target.$replyContainer.prop('tagName').toLowerCase();
-      }
-    }
-
-    this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
-
-    /**
-     * The main form element.
-     *
-     * @type {JQuery}
-     */
-    this.$element = $('<div>').addClass(`cd-commentForm cd-commentForm-${this.mode}`);
-    if (this.containerListType === 'ol') {
-      this.$element.addClass('cd-commentForm-inNumberedList');
-    }
-    if (this.isSectionOpeningCommentEdited) {
-      this.$element.addClass('cd-commentForm-sectionOpeningComment');
-    }
-    if (this.mode === 'addSubsection') {
-      this.$element.addClass(`cd-commentForm-addSubsection-${this.target.level}`);
-    }
-
-    /**
-     * The area where service messages are displayed.
-     *
-     * @type {JQuery}
-     */
-    this.$messageArea = $('<div>').addClass('cd-messageArea');
-
-    if (
-      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
-      this.isSectionOpeningCommentEdited
-    ) {
-      const parentSection = this.targetSection?.getParent();
-      if (this.mode === 'addSubsection') {
-        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', this.targetSection.headline);
-      } else if (this.mode === 'edit' && parentSection) {
-        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', parentSection.headline);
-      } else {
-        this.headlineInputPlaceholder = cd.s('cf-headline-topic');
-      }
-
-      /**
-       * Headline input.
-       *
-       * @type {external:OO.ui.TextInputWidget|undefined}
-       */
-      this.headlineInput = new OO.ui.TextInputWidget({
-        value: dataToRestore ? dataToRestore.headline : '',
-        placeholder: this.headlineInputPlaceholder,
-        classes: ['cd-commentForm-headlineInput'],
-        tabIndex: String(this.id) + '11',
-      });
-    }
-
-    let rowNumber = this.headlineInput ? 5 : 3;
-    // Firefox gives a bigger height to a textarea with a specified number of rows than other
-    // browsers.
-    if ($.client.profile().name === 'firefox') {
-      rowNumber -= 1;
-    }
-
-    let commentInputPlaceholder;
-    if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
-      commentInputPlaceholder = cd.s(
-        'cf-comment-placeholder-replytosection',
-        this.targetSection.headline
-      );
-    } else if (this.mode === 'reply') {
-      // If there is a need to make a request to get the user gender, we don't show any
-      // placeholder text at the beginning to avoid drawing the user's attention to the changing
-      // of the text. (But it could be a better idea to set the `showCommentInputPlaceholder`
-      // config variable to `false` to avoid showing any text whatsoever.)
-      this.target.requestAuthorGenderIfNeeded(() => {
-        this.commentInput.$input.attr(
-          'placeholder',
-          removeDoubleSpaces(cd.s(
-            'cf-comment-placeholder-replytocomment',
-            this.target.author.name,
-            this.target.author
-          ))
-        );
-      }, true);
-    }
-
-    /**
-     * Comment input.
-     *
-     * @type {external:OO.ui.MultilineTextInputWidget}
-     */
-    this.commentInput = new OO.ui.MultilineTextInputWidget({
-      value: dataToRestore ? dataToRestore.comment : '',
-      placeholder: commentInputPlaceholder,
-      autosize: true,
-      rows: rowNumber,
-      maxRows: 30,
-      classes: ['cd-commentForm-commentInput'],
-      tabIndex: String(this.id) + '12',
-    });
-    this.commentInput.$input.addClass('ime-position-inside');
-
-    /**
-     * Advanced section container.
-     *
-     * @type {JQuery}
-     */
-    this.$advanced = $('<div>').addClass('cd-commentForm-advanced');
-
-    /**
-     * Edit summary input.
-     *
-     * @type {external:OO.ui.TextInputWidget}
-     */
-    this.summaryInput = new OO.ui.TextInputWidget({
-      value: dataToRestore ? dataToRestore.summary : '',
-      maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
-      placeholder: cd.s('cf-summary-placeholder'),
-      classes: ['cd-commentForm-summaryInput'],
-      tabIndex: String(this.id) + '13',
-    });
-    this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
-    mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.SUMMARY_LENGTH_LIMIT);
-    this.updateAutoSummary(!dataToRestore);
-
-    /**
-     * The area where edit summary preview is displayed.
-     *
-     * @type {JQuery}
-     */
-    this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
-
-    if (this.mode === 'edit') {
-      /**
-       * Minor change checkbox field.
-       *
-       * @name minorField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @instance
-       */
-
-      /**
-       * Minor change checkbox.
-       *
-       * @name minorCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
-       * @instance
-       */
-      [this.minorField, this.minorCheckbox] = createCheckboxField({
-        value: 'minor',
-        selected: dataToRestore ? dataToRestore.minor : true,
-        label: cd.s('cf-minor'),
-        tabIndex: String(this.id) + '20',
-      });
-    }
-
-    const watchCheckboxSelected = (
-      (cd.settings.watchOnReply && this.mode !== 'edit') ||
-      $('#ca-unwatch').length ||
-      mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
-    );
-
-    /**
-     * Watch page checkbox field.
-     *
-     * @name watchField
-     * @type {external:OO.ui.FieldLayout}
-     * @instance
-     */
-
-    /**
-     * Watch page checkbox.
-     *
-     * @name watchCheckbox
-     * @type {external:OO.ui.CheckboxInputWidget}
-     * @instance
-     */
-    [this.watchField, this.watchCheckbox] = createCheckboxField({
-      value: 'watch',
-      selected: dataToRestore ? dataToRestore.watch : watchCheckboxSelected,
-      label: cd.s('cf-watch'),
-      tabIndex: String(this.id) + '21',
-    });
-
-    if (this.targetSection || this.mode === 'addSection') {
-      const callItTopic = (
-        this.mode !== 'addSubsection' &&
-        ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
-      );
-      const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
-      const selected = (
-        (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
-        this.targetSection?.isWatched
-      );
-
-      /**
-       * Watch section checkbox field.
-       *
-       * @name watchSectionField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @instance
-       */
-
-      /**
-       * Watch section checkbox.
-       *
-       * @name watchSectionCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
-       * @instance
-       */
-      [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
-        value: 'watchSection',
-        selected: dataToRestore ? dataToRestore.watchSection : selected,
-        label,
-        tabIndex: String(this.id) + '22',
-        title: cd.s('cf-watchsection-tooltip'),
-      });
-    }
-
-    if (['addSection', 'addSubsection'].includes(this.mode)) {
-      /**
-       * Omit signature checkbox field.
-       *
-       * @name omitSignatureField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @instance
-       */
-
-      /**
-       * Omit signature checkbox.
-       *
-       * @name omitSignatureCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
-       * @instance
-       */
-
-      [this.omitSignatureField, this.omitSignatureCheckbox] = createCheckboxField({
-        value: 'omitSignature',
-        selected: dataToRestore ? dataToRestore.omitSignature : false,
-        label: cd.s('cf-omitsignature'),
-        tabIndex: String(this.id) + '25',
-      });
-    }
-
-    if (
-      this.mode === 'edit' &&
-      (
-        this.target.isOpeningSection ?
-        this.targetSection.comments.length === 1 :
-        !this.target.getChildren().length
-      )
-    ) {
-      const selected = dataToRestore ? dataToRestore.delete : false;
-
-      /**
-       * Delete checkbox field.
-       *
-       * @name deleteField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @instance
-       */
-
-      /**
-       * Delete checkbox.
-       *
-       * @name deleteCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
-       * @instance
-       */
-      [this.deleteField, this.deleteCheckbox] = createCheckboxField({
-        value: 'delete',
-        selected,
-        label: cd.s('cf-delete'),
-        tabIndex: String(this.id) + '26',
-      });
-    }
-
-    /**
-     * Checkboxes area.
-     *
-     * @type {external:OO.ui.HorizontalLayout}
-     */
-    this.checkboxesLayout = new OO.ui.HorizontalLayout({
-      classes: ['cd-commentForm-checkboxes'],
-      items: [
-        this.minorField,
-        this.watchField,
-        this.watchSectionField,
-        this.omitSignatureField,
-        this.deleteField,
-      ].filter(defined),
-    });
-
-    /**
-     * Form buttons container.
-     *
-     * @type {JQuery}
-     */
-    this.$buttons = $('<div>').addClass('cd-commentForm-buttons');
-
-    /**
-     * Start (left on LTR wikis, right on RTL wikis) form buttons container.
-     *
-     * @type {JQuery}
-     */
-    this.$buttonsStart = $('<div>').addClass('cd-commentForm-buttons-start');
-
-    /**
-     * End (right on LTR wikis, left on RTL wikis) form buttons container.
-     *
-     * @type {JQuery}
-     */
-    this.$buttonsEnd = $('<div>').addClass('cd-commentForm-buttons-end');
-
-    const modeToSubmitButtonMessageName = {
-      edit: 'save',
-      addSection: 'addtopic',
-      addSubsection: 'addsubsection',
-    };
-    const submitButtonMessageName = modeToSubmitButtonMessageName[this.mode] || 'reply';
-    this.submitButtonLabelStandard = cd.s(`cf-${submitButtonMessageName}`);
-    this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
-
-    /**
-     * Toggle advanced section button.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.advancedButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-advanced'),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-commentForm-advancedButton'],
-      tabIndex: String(this.id) + '30',
-    });
-
-    if (!cd.g.$popupsOverlay) {
-      cd.g.$popupsOverlay = $('<div>')
-        .addClass('cd-popupsOverlay')
-        .appendTo(document.body);
-    }
-
-    /**
-     * Help button.
-     *
-     * @type {external:OO.ui.PopupButtonWidget}
-     */
-    this.helpPopupButton = new OO.ui.PopupButtonWidget({
-      label: cd.s('cf-help'),
-      framed: false,
-      classes: ['cd-button-ooui'],
-      popup: {
-        head: false,
-        $content: wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
-          tagName: 'div',
-          targetBlank: true,
-        }),
-        padded: true,
-        align: 'center',
-        width: 400,
-      },
-      $overlay: cd.g.$popupsOverlay,
-      tabIndex: String(this.id) + '31',
-    });
-
-    /**
-     * Script settings button.
-     *
-     * @name settingsButton
-     * @type {Promise}
-     * @instance
-     */
-    this.settingsButton = new OO.ui.ButtonWidget({
-      framed: false,
-      icon: 'settings',
-      label: cd.s('cf-settings-tooltip'),
-      invisibleLabel: true,
-      title: cd.s('cf-settings-tooltip'),
-      classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
-      tabIndex: String(this.id) + '32',
-    });
-
-    /**
-     * Cancel button.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.cancelButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-cancel'),
-      flags: 'destructive',
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-commentForm-cancelButton'],
-      tabIndex: String(this.id) + '33',
-    });
-
-    /**
-     * View changes button.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.viewChangesButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-viewchanges'),
-      classes: ['cd-commentForm-viewChangesButton'],
-      tabIndex: String(this.id) + '34',
-    });
-
-    /**
-     * Preview button.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.previewButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-preview'),
-      classes: ['cd-commentForm-previewButton'],
-      tabIndex: String(this.id) + '35',
-    });
-    if (cd.settings.autopreview) {
-      this.previewButton.$element.hide();
-    }
-
-    /**
-     * Submit button.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.submitButton = new OO.ui.ButtonWidget({
-      label: this.submitButtonLabelStandard,
-      flags: ['progressive', 'primary'],
-      classes: ['cd-commentForm-submitButton'],
-      tabIndex: String(this.id) + '36',
-    });
+  createContents(dataToRestore, requestedModulesNames) {
+    this.createInputs(dataToRestore);
+    this.createCheckboxes(dataToRestore);
+    this.createButtons();
 
     if (this.deleteCheckbox?.isSelected()) {
       this.updateFormOnDeleteCheckboxChange(true);
     }
 
-    this.$advanced.append([
-      this.summaryInput.$element,
-      this.$summaryPreview,
-      this.checkboxesLayout.$element,
-    ]);
-    this.$buttonsStart.append([
-      this.advancedButton.$element,
-      this.helpPopupButton.$element,
-      this.settingsButton.$element,
-    ]);
-    this.$buttonsEnd.append([
-      this.cancelButton.$element,
-      this.viewChangesButton.$element,
-      this.previewButton.$element,
-      this.submitButton.$element,
-    ]);
-    this.$buttons.append(this.$buttonsStart, this.$buttonsEnd);
-    this.$element.append([
-      this.$messageArea,
-      this.headlineInput?.$element,
-      this.commentInput.$element,
-      this.$advanced,
-      this.$buttons,
-    ]);
-
-    if (this.mode !== 'edit' && !cd.settings.alwaysExpandAdvanced) {
-      this.$advanced.hide();
-    }
-
-    /**
-     * The area where comment previews and changes are displayed.
-     *
-     * @type {JQuery}
-     */
-    this.$previewArea = $('<div>').addClass('cd-previewArea');
-
-    if (cd.settings.autopreview) {
-      this.$previewArea
-        .addClass('cd-previewArea-below')
-        .appendTo(this.$element);
-    } else {
-      this.$previewArea
-        .addClass('cd-previewArea-above')
-        .prependTo(this.$element);
-    }
-
-    if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
-      // Dummy element for forms inside a numbered list so that the number is placed in front of
-      // that area, not in some silly place. Note that in Chrome, the number is placed in front of
-      // the textarea, so we don't need this in that browser.
-      $('<div>')
-        .html('&nbsp;')
-        .addClass('cd-commentForm-dummyElement')
-        .prependTo(this.$element);
-    }
-
-    const moduleNames = cd.config.customCommentFormModules
-      .filter((module) => !module.checkFunc || module.checkFunc())
-      .map((module) => module.name);
-    mw.loader.using(moduleNames).then(() => {
-      /**
-       * All requested custom comment form modules have been loaded and executed. (The comment form
-       * may not be ready yet, use {@link module:CommentForm~commentFormToolbarReady} for that.)
-       *
-       * @event commentFormModulesReady
-       * @type {module:CommentForm}
-       */
-      mw.hook('convenientDiscussions.commentFormModulesReady').fire(this);
-    });
-
-    if (cd.settings.showToolbar) {
-      this.addToolbar(moduleNames);
-    }
-
-    if (cd.settings.insertButtons.length) {
-      /**
-       * Text insert buttons.
-       *
-       * @type {JQuery|undefined}
-       */
-      this.$insertButtons = $('<div>')
-        .addClass('cd-insertButtons')
-        .insertAfter(this.commentInput.$element);
-
-      cd.settings.insertButtons.forEach((button) => {
-        let text;
-        let displayedText;
-        if (Array.isArray(button)) {
-          text = button[0];
-          displayedText = button[1];
-        } else {
-          text = button;
-        }
-        this.addInsertButton(text, displayedText);
-      });
-    }
+    this.createElements();
+    this.addToolbar(requestedModulesNames);
+    this.addInsertButtons();
   }
 
   /**
@@ -1186,7 +1242,7 @@ export default class CommentForm {
    *
    * @private
    */
-  addEditNotices() {
+  async addEditNotices() {
     const title = cd.g.PAGE.title.replace(/\//g, '-');
     let code = (
       '<div class="cd-editnotice">' +
@@ -1199,32 +1255,40 @@ export default class CommentForm {
     if (this.preloadConfig?.editIntro) {
       code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
     }
-    parseCode(code, { title: cd.g.PAGE.name }).then((result) => {
-      const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
-      this.$messageArea
-        .append(result.html)
-        .cdAddCloseButton()
-        .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
-        .parent()
-        .remove();
 
-      // We mirror the functionality of the "ext.charinsert" module to keep the undo/redo
-      // functionality.
-      this.$messageArea
-        .find('.mw-charinsert-item')
-        .each((i, el) => {
-          const $el = $(el);
-          const pre = $el.data('mw-charinsert-start');
-          const post = $el.data('mw-charinsert-end');
-          $el
-            .on('click', () => {
-              this.encapsulateSelection({ pre, post });
-            })
-            .data('mw-charinsert-done', true);
-        });
+    let result;
+    try {
+      result = await parseCode(code, { title: cd.g.PAGE.name });
+    } catch (e) {
+      // TODO: Some error message? (But in most cases there are no edit notices anyway, and if the
+      // user is knowingly offline they would be annoying.)
+      return;
+    }
 
-      mw.hook('wikipage.content').fire(this.$messageArea);
-    });
+    const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
+    this.$messageArea
+      .append(result.html)
+      .cdAddCloseButton()
+      .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
+      .parent()
+      .remove();
+
+    // We mirror the functionality of the "ext.charinsert" module to keep the undo/redo
+    // functionality.
+    this.$messageArea
+      .find('.mw-charinsert-item')
+      .each((i, el) => {
+        const $el = $(el);
+        const pre = $el.data('mw-charinsert-start');
+        const post = $el.data('mw-charinsert-end');
+        $el
+          .on('click', () => {
+            this.encapsulateSelection({ pre, post });
+          })
+          .data('mw-charinsert-done', true);
+      });
+
+    mw.hook('wikipage.content').fire(this.$messageArea);
   }
 
   /**
