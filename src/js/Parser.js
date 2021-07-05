@@ -652,6 +652,7 @@ export default class Parser {
           // Seems to be the best option given pages like
           // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
           node.tagName === 'DT' ||
+          (node.tagName === 'DL' && node.firstChild?.tagName === 'DT') ||
 
           isCellOfMultiCommentTable(node) ||
 
