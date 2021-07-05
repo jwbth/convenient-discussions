@@ -9,6 +9,7 @@
 			"Gebu",
 			"HajFunk",
 			"Jack who built the house",
+			"Lorem Ipsum",
 			"Umherirrender",
 			"Wolfdietmann"
 		]
@@ -36,7 +37,9 @@
 	"sm-unwatch-tooltip": "Den Abschnitt von der Beobachtungsliste entfernen",
 	"sm-copylink-tooltip": "Einen Link kopieren.",
 	"comment-timestamp-lessthanminute": "vor unter einer Minute",
+	"comment-author-talk": "Diskussion",
 	"comment-changed": "Der Kommentar hat sich geändert.",
+	"comment-changed-short": "Geändert",
 	"comment-changed-refresh": "Aktualisieren, um die Änderungen zu sehen",
 	"comment-changed-diff": "Unterschied",
 	"comment-changed-diff-error": "Konnte den Unterschied nicht darstellen.",
@@ -142,6 +145,7 @@
 	"cf-error-pagedoesntexist": "Die Seite existiert nicht.",
 	"dn-confirm-yes": "Ja",
 	"dn-confirm-no": "Nein",
+	"deadanchor-section-finding": "Archivierten Abschnitt finden…",
 	"deadanchor-search-gotocomment": "zum Kommentar springen",
 	"rd-comment": "Kommentar",
 	"rd-summary": "Bearbeitungszusammenfassung",
