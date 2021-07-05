@@ -23,7 +23,7 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
   static actions = [
     {
       action: 'close',
-      modes: ['edit', 'saved'],
+      modes: ['edit'],
       flags: ['safe', 'close'],
       disabled: true,
     },
@@ -81,15 +81,8 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
       expanded: false,
     });
 
-    const $watchedSectionsSaved = $('<p>').text(cd.s('ewsd-saved'));
-    this.savedPanel = new OO.ui.PanelLayout({
-      padded: true,
-      expanded: false,
-    });
-    this.savedPanel.$element.append($watchedSectionsSaved);
-
     this.stackLayout = new OO.ui.StackLayout({
-      items: [this.loadingPanel, this.sectionsPanel, this.savedPanel],
+      items: [this.loadingPanel, this.sectionsPanel],
     });
 
     this.$body.append(this.stackLayout.$element);
@@ -268,10 +261,9 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
           return;
         }
 
-        this.stackLayout.setItem(this.savedPanel);
-        this.actions.setMode('saved');
-
         this.popPending();
+        this.close();
+        mw.notify(cd.s('ewsd-saved'));
       });
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
