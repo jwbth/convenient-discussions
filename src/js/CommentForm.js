@@ -5,6 +5,7 @@
  */
 
 import Autocomplete from './Autocomplete';
+import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
@@ -1176,13 +1177,14 @@ export default class CommentForm {
     post = unescape(unhideText(post, hidden));
     displayedText = displayedText ? unescape(displayedText) : pre + post;
 
-    const $a = $('<a>')
-      .text(displayedText)
-      .addClass('cd-insertButtons-item')
-      .on('click', () => {
+    const button = new Button({
+      label: displayedText,
+      classes: ['cd-insertButtons-item'],
+      action: () => {
         this.encapsulateSelection({ pre, post });
-      });
-    this.$insertButtons.append($a, ' ');
+      },
+    })
+    this.$insertButtons.append(button.element, ' ');
   }
 
   /**
