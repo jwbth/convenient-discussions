@@ -343,14 +343,20 @@ export default {
    * @memberof module:Comment
    */
   findInViewport(findClosestDirection) {
+    // Reset the property
+    cd.comments.forEach((comment) => {
+      delete comment.roughPositions;
+    });
+
     const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
     const viewportBottom = viewportTop + window.innerHeight;
 
-    // Visibility in the sense that an element is visible on the page, not necessarily in the
-    // viewport.
+    // Visibility is checked in the sense that an element is visible on the page, not necessarily in
+    // the viewport.
     const isVisible = (comment) => {
-      comment.getPositions();
-      return Boolean(comment.positions);
+      // `roughPositions` property is used only within `findInViewport()`.
+      comment.setRoughPositionsProperty();
+      return Boolean(comment.roughPositions);
     };
     const findVisible = (direction, startIndex = 0) => {
       const comments = reorderArray(cd.comments, startIndex, direction === 'backward');
@@ -367,17 +373,16 @@ export default {
       top: firstVisibleComment,
       bottom: lastVisibleComment,
     };
-    let currentComment = searchArea.top;
+    let c = searchArea.top;
     let foundComment;
 
     const findClosest = (direction, searchArea, reverse = false) => {
       if (direction) {
-        const startIndex = (
+        const isTop = (
           (direction === 'forward' && reverse) ||
           (direction === 'backward' && !reverse)
-        ) ?
-          searchArea.top.id :
-          searchArea.bottom.id;
+        );
+        const startIndex = isTop ? searchArea.top.id : searchArea.bottom.id;
         return findVisible(direction, startIndex);
       }
       return null;
@@ -391,22 +396,24 @@ export default {
     // margin and not practically reachable, unless when there is only few comments. Usually the
     // cycle finishes after a few steps.
     for (let i = 0; i < cd.comments.length; i++) {
-      if (currentComment.isInViewport()) {
-        foundComment = currentComment;
+      if (!c.roughPositions) {
+        c.setRoughPositionsProperty();
+      }
+      if (c.isInViewport(false)) {
+        foundComment = c;
         break;
       }
 
       if (
-        currentComment.positions &&
+        c.roughPositions &&
 
-        // The bottom edge of the viewport is above the first comment.
         (
-          currentComment === firstVisibleComment &&
-          viewportBottom < currentComment.positions.downplayedBottom
-        ) ||
+          // The bottom edge of the viewport is above the first comment.
+          (c === firstVisibleComment && viewportBottom < c.roughPositions.downplayedBottom) ||
 
-        // The top edge of the viewport is below the last comment.
-        (currentComment === lastVisibleComment && viewportTop > currentComment.positions.top)
+          // The top edge of the viewport is below the last comment.
+          (c === lastVisibleComment && viewportTop > c.roughPositions.top)
+        )
       ) {
         foundComment = findClosest(findClosestDirection, searchArea, true);
         break;
@@ -417,19 +424,19 @@ export default {
         break;
       }
 
-      if (!currentComment.positions) {
+      if (!c.roughPositions) {
         // To avoid contriving a sophisticated algorithm for choosing which comment to pick next
         // (and avoid picking any previously picked) we just pick the comment next to the beginning
         // of the search area.
-        currentComment = findVisible('forward', searchArea.top.id + 1);
-        searchArea.top = currentComment;
+        c = findVisible('forward', searchArea.top.id + 1);
+        searchArea.top = c;
         continue;
       }
 
-      if (currentComment === firstVisibleComment) {
-        currentComment = searchArea.bottom;
+      if (c === firstVisibleComment) {
+        c = searchArea.bottom;
       } else {
-        searchArea[viewportTop > currentComment.positions.top ? 'top' : 'bottom'] = currentComment;
+        searchArea[viewportTop > c.roughPositions.top ? 'top' : 'bottom'] = c;
 
         // There's not a single comment in the viewport.
         if (searchArea.bottom.id - searchArea.top.id <= 1) {
@@ -438,8 +445,8 @@ export default {
         }
 
         // Determine the ID of the next comment to check.
-        const higherTop = searchArea.top.positions.top;
-        const lowerBottom = searchArea.bottom.positions.downplayedBottom;
+        const higherTop = searchArea.top.roughPositions.top;
+        const lowerBottom = searchArea.bottom.roughPositions.downplayedBottom;
         const proportion = (
           (viewportTop - higherTop) /
           ((lowerBottom - viewportBottom) + (viewportTop - higherTop))
@@ -456,7 +463,7 @@ export default {
           searchArea.top.id +
           0.5
         );
-        currentComment = cd.comments[index];
+        c = cd.comments[index];
       }
     }
 
@@ -494,13 +501,12 @@ export default {
     cd.comments
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
-        const layersContainerOffset = comment.getLayersContainerOffset();
         if (
           !isObstructingElementHovered &&
-          e.pageY >= comment.layersTop + layersContainerOffset.top &&
-          e.pageY <= comment.layersTop + comment.layersHeight + layersContainerOffset.top &&
-          e.pageX >= comment.layersLeft + layersContainerOffset.left &&
-          e.pageX <= comment.layersLeft + comment.layersWidth + layersContainerOffset.left
+          e.pageY >= comment.positions.top &&
+          e.pageY <= comment.positions.bottom &&
+          e.pageX >= comment.positions.left &&
+          e.pageX <= comment.positions.right
         ) {
           comment.highlightHovered();
         } else {

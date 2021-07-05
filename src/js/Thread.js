@@ -11,6 +11,7 @@ import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   defined,
+  getExtendedRect,
   getFromLocalStorage,
   getVisibilityByRects,
   removeFromArrayIfPresent,
@@ -689,6 +690,7 @@ export default class Thread {
     const elementsToAdd = [];
     const threadsToUpdate = [];
     let lastUpdatedComment;
+    let floatingRects;
     cd.comments
       .slice()
       .reverse()
@@ -707,23 +709,27 @@ export default class Thread {
         let rectTop;
         if (thread.isCollapsed) {
           rectTop = thread.expandNote.getBoundingClientRect();
-          if (comment.level === 0 || thread.expandNote.parentNode.tagName === 'OL') {
-            const [leftMargin, rightMargin] = comment.getLayersMargins();
+          if (
+            getVisibilityByRects(rectTop) &&
+            (comment.level === 0 || thread.expandNote.parentNode.tagName === 'OL')
+          ) {
+            const margins = comment.getMargins();
             lineTop = window.scrollY + rectTop.top;
             lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
-              (window.scrollX + rectTop.left) - (leftMargin + 1) - lineSideMargin :
-              (window.scrollX + rectTop.right) + (rightMargin + 1) - lineWidth - lineSideMargin;
+              (window.scrollX + rectTop.left) - (margins.left + 1) - lineSideMargin :
+              (window.scrollX + rectTop.right) + (margins.right + 1) - lineWidth - lineSideMargin;
           }
         } else {
           if (comment.level === 0) {
             cd.debug.startTimer('threads getBoundingClientRect 0');
-            comment.getPositions();
+            floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
+            comment.setPositionsProperty({ floatingRects });
             if (comment.positions) {
-              const [leftMargin, rightMargin] = comment.getLayersMargins();
+              const margins = comment.getMargins();
               lineTop = comment.positions.top;
               lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
-                comment.positions.left - (leftMargin + 1) - lineSideMargin :
-                comment.positions.right + (rightMargin + 1) - lineWidth - lineSideMargin;
+                comment.positions.left - (margins.left + 1) - lineSideMargin :
+                comment.positions.right + (margins.right + 1) - lineWidth - lineSideMargin;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
@@ -737,15 +743,16 @@ export default class Thread {
               // https://ru.wikipedia.org/wiki/Википедия:Запросы_к_администраторам#202104081533_Macuser.
               thread.startElement.tagName === 'DIV'
             ) {
-              comment.getPositions();
+              floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
+              comment.setPositionsProperty({ floatingRects });
               if (comment.positions) {
-                const [leftMargin, rightMargin] = comment.getLayersMargins();
+                const margins = comment.getMargins();
                 lineTop = window.scrollY + rectTop.top;
                 lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
-                  (window.scrollX + comment.positions.left) - (leftMargin + 1) - lineSideMargin :
+                  (window.scrollX + comment.positions.left) - (margins.left + 1) - lineSideMargin :
                   (
                     (window.scrollX + comment.positions.right) +
-                    rightMargin -
+                    margins.right -
                     lineWidth -
                     lineSideMargin
                   );

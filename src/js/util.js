@@ -910,7 +910,7 @@ export function removeFromArrayIfPresent(arr, el) {
  * Given bounding client rectangle(s), determine whether the element is visible.
  *
  * @param {...object} rects
- * @returns {boolean}
+ * @returns {boolean} `true` if visible, `false` if not.
  */
 export function getVisibilityByRects(...rects) {
   // If the element has 0 as the left position and height, it's probably invisible for some reason.

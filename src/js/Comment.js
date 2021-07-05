@@ -812,44 +812,148 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Get the comment coordinates and set them as the `positions` comment
-   * property. If the comment is invisible, positions are unset.
+   * Set the rough coordinates of the comment (without taking into account floating elements around
+   * the comment) as the `roughPositions` property.
+   *
+   * @private
+   */
+  setRoughPositionsProperty() {
+    this.roughPositions = this.getPositions();
+  }
+
+  /**
+   * Set the coordinates of the comment as the `positions` property. If the comment is invisible,
+   * positions are unset.
    *
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
    *
+   * @param {object} options
+   * @returns {?boolean} Is the comment moved.
+   */
+  setPositionsProperty(options) {
+    const positions = this.getPositions(Object.assign({}, options, { considerFloating: true }));
+
+    if (positions !== false) {
+      this.positions = positions;
+    }
+
+    if (this.positions) {
+      /**
+       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
+       * start of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isStartStretched = false;
+
+      /**
+       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
+       * of the content area.
+       *
+       * @type {boolean|undefined}
+       */
+      this.isEndStretched = false;
+
+      if (this.level === 0) {
+        // 2 instead of 1 for Timeless
+        const leftPosition = this.positions.left - cd.g.CONTENT_START_MARGIN - 2;
+        const rightPosition = this.positions.right + cd.g.CONTENT_START_MARGIN + 2;
+
+        this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
+          leftPosition <= cd.g.CONTENT_COLUMN_START :
+          rightPosition >= cd.g.CONTENT_COLUMN_START;
+        this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
+          rightPosition >= cd.g.CONTENT_COLUMN_END :
+          leftPosition <= cd.g.CONTENT_COLUMN_END;
+      }
+    }
+
+    // `positions` can be an object, `false` (the comment wasn't moved) or `null` (the comment is
+    // invisible).
+    return positions ? true : positions;
+  }
+
+  /**
+   * @typedef Positions
+   * @param {number} top
+   * @param {number} bottom
+   * @param {number} left
+   * @param {number} right
+   * @param {number} downplayedBottom
+   */
+
+  /**
+   * Get the coordinates of the comment.
+   *
    * @param {object} [options={}]
+   * @param {object} [options.floatingRects]
+   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
+   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
+   *   calculated in advance for many elements in one sequence to save time.
+   * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
+   *   Deemed `true` if `floatingRects` is set.
+   * @returns {?(Positions|boolean)} Positions object. If the comment is not visible, returns
+   *   `null`. If `options.considerFloating` is `true` and the comment isn't moved, returns `false`.
+   * @private
    */
   getPositions(options = {}) {
     if (options.considerFloating === undefined) {
-      options.considerFloating = false;
+      options.considerFloating = Boolean(options.floatingRects);
     }
 
-    this.positions = null;
+    if (this.editForm) {
+      return null;
+    }
 
-    if (this.editForm) return;
+    let rectTop = getCommentPartRect(this.highlightables[0]);
+    let rectBottom = this.elements.length === 1 ?
+      rectTop :
+      getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
-    let rectTop = options.rectTop || getCommentPartRect(this.highlightables[0]);
-    let rectBottom = (
-      options.rectBottom ||
-      (
-        this.elements.length === 1 ?
-        rectTop :
-        getCommentPartRect(this.highlightables[this.highlightables.length - 1])
-      )
-    );
+    if (!getVisibilityByRects(rectTop, rectBottom)) {
+      return null;
+    }
 
-    if (!getVisibilityByRects(rectTop, rectBottom)) return;
+    let isMoved;
+    if (this.positions) {
+      const isTopSame = window.scrollY + rectTop.top === this.positions.top;
+
+      const height = rectBottom.bottom - rectTop.top;
+      const cachedHeight = this.positions.bottom - this.positions.top;
+      const isHeightSame = height === cachedHeight;
+
+      const isFirstHighlightableWidthSame = (
+        this.highlightables[0].offsetWidth === this.firstHighlightableWidth
+      );
+
+      isMoved = !isTopSame || !isHeightSame || !isFirstHighlightableWidthSame;
+    } else {
+      isMoved = true;
+    }
+
+    if (!isMoved) {
+      // If floating elements aren't supposed to be taken into account but the comment wasn't
+      // moved, we still return the positions with floating elements taken into account because
+      // that shouldn't hurt.
+      return options.considerFloating ? false : this.positions;
+    }
+
+    // This is to determine if the element was moved in future checks.
+    this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     // Seems like caching this value significantly helps performance at least in Chrome. But need to
-    // be sure the viewport can't jump higher when it is at the bottom point of the page because
-    // some content becomes occupying less space.
+    // be sure the viewport can't jump higher when it is at the bottom point of the page after
+    // some content starts to occupy less space.
     const scrollY = window.scrollY;
 
     const top = scrollY + rectTop.top;
     const bottom = scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
+      // Check if the comment positions intersect the positions of floating elements on the page.
+      // (Only then we would need altering comment styles to get the correct positions which is an
+      // expensive operation.)
       const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
@@ -869,7 +973,7 @@ export default class Comment extends CommentSkeleton {
       // into account.
       if (bottomIntersectsFloating) {
         const initialOverflows = [];
-        this.elements.forEach((el, i) => {
+        this.highlightables.forEach((el, i) => {
           initialOverflows[i] = el.style.overflow;
           el.style.overflow = 'hidden';
         });
@@ -883,7 +987,7 @@ export default class Comment extends CommentSkeleton {
         // to avoid bugs like where there are two floating blocks to the right with different
         // leftmost positions and the layer is more narrow than the comment.
         if (intersectsFloatingCount === 1) {
-          this.elements.forEach((el, i) => {
+          this.highlightables.forEach((el, i) => {
             el.style.overflow = initialOverflows[i];
           });
         }
@@ -899,64 +1003,46 @@ export default class Comment extends CommentSkeleton {
       top + (window.innerHeight - 200) :
       bottom;
 
-    this.positions = { top, bottom, left, right, downplayedBottom };
+    return { top, bottom, left, right, downplayedBottom };
   }
 
   /**
-   * Get the left and right margins of the comment layers.
-   *
-   * @returns {number[]}
+   * @typedef {object} Margins
+   * @property {number} left Left margin.
+   * @property {number} right Right margin.
+   * @private
    */
-  getLayersMargins() {
-    cd.debug.startTimer('getLayersMargins');
+
+  /**
+   * Get the left and right margins of the comment layers or the expand note.
+   *
+   * @returns {?Margins}
+   */
+  getMargins() {
+    cd.debug.startTimer('getMargins');
 
     let positions;
     let anchorElement;
     if (this.isCollapsed) {
       const rect = getCommentPartRect(this.thread.expandNote);
-      positions = {
-        left: window.scrollX + rect.left,
-        right: window.scrollX + rect.right,
-      };
+      positions = getVisibilityByRects(rect) ?
+        {
+          left: window.scrollX + rect.left,
+          right: window.scrollX + rect.right,
+        } :
+        null;
       anchorElement = this.thread.expandNote;
     } else {
       positions = this.positions;
       anchorElement = this.anchorHighlightable;
     }
 
+    if (!positions) {
+      return null;
+    }
+
     let startMargin;
     let endMargin;
-
-    if (this.isStartStretched === undefined) {
-      /**
-       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
-       * start of the content area.
-       *
-       * @type {boolean|undefined}
-       */
-      this.isStartStretched = false;
-
-      /**
-       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
-       * of the content area.
-       *
-       * @type {boolean|undefined}
-       */
-      this.isEndStretched = false;
-
-      if (this.level === 0) {
-        // 2 instead of 1 for Timeless
-        const leftPosition = positions.left - cd.g.CONTENT_START_MARGIN - 2;
-        const rightPosition = positions.right + cd.g.CONTENT_START_MARGIN + 2;
-
-        this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          leftPosition <= cd.g.CONTENT_COLUMN_START :
-          rightPosition >= cd.g.CONTENT_COLUMN_START;
-        this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          rightPosition >= cd.g.CONTENT_COLUMN_END :
-          leftPosition <= cd.g.CONTENT_COLUMN_END;
-      }
-    }
 
     if (this.ahContainerListType === 'ol') {
       // "this.highlightables.length === 1" is a workaround for cases such as
@@ -978,37 +1064,42 @@ export default class Comment extends CommentSkeleton {
     }
     endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
-    const leftMargin = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
-    const rightMargin = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
+    const left = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
+    const right = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
 
-    cd.debug.stopTimer('getLayersMargins');
+    cd.debug.stopTimer('getMargins');
 
-    return [leftMargin, rightMargin];
+    return { left, right };
   }
 
   /**
-   * Calculate the underlay and overlay positions and set them to the instance as properties.
+   * Calculate the underlay and overlay positions and set them to the instance as the
+   * `layersPositions` property.
    *
    * @param {object} [options={}]
+   * @returns {boolean} Is the comment moved.
    * @private
    */
-  calculateLayersPositions(options = {}) {
-    // Getting getBoundingClientRect() is a little costly, so we take the value that has already
-    // been calculated where possible.
+  setLayersPositionsProperty(options = {}) {
+    const isMoved = this.setPositionsProperty(options);
 
-    this.getPositions(Object.assign({}, options, { considerFloating: true }));
+    if (this.positions) {
+      const margins = this.getMargins();
+      const right = this.positions.right + margins.right;
+      const left = this.positions.left - margins.left;
+      const layersContainerOffset = this.getLayersContainerOffset();
 
-    if (!this.positions) return;
+      this.layersPositions = {
+        top: this.positions.top - layersContainerOffset.top,
+        left: this.positions.left - margins.left - layersContainerOffset.left,
+        width: right - left,
+        height: this.positions.bottom - this.positions.top,
+      };
+    } else {
+      this.layersPositions = null;
+    }
 
-    // This is to determine if the element has moved in future checks.
-    this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
-
-    const [leftMargin, rightMargin] = this.getLayersMargins();
-
-    this.layersTop = this.positions.top - options.layersContainerOffset.top;
-    this.layersLeft = this.positions.left - leftMargin - options.layersContainerOffset.left;
-    this.layersWidth = (this.positions.right + rightMargin) - (this.positions.left - leftMargin);
-    this.layersHeight = this.positions.bottom - this.positions.top;
+    return isMoved;
   }
 
   /**
@@ -1148,12 +1239,12 @@ export default class Comment extends CommentSkeleton {
     }
 
     /**
-     * Comment layers have been created.
+     * Comment layer has been created.
      *
-     * @event commentLayersReady
+     * @event commentLayerCreated
      * @type {module:cd~convenientDiscussions}
      */
-    mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
+    mw.hook('convenientDiscussions.commentLayerCreated').fire(this);
   }
 
   /**
@@ -1191,7 +1282,6 @@ export default class Comment extends CommentSkeleton {
     this.updateClassesForType('own', this.isOwn);
     this.updateClassesForType('deleted', this.isDeleted);
 
-
     if (wereJustCreated) {
       if (this.isLineGapped) {
         this.line.classList.add('cd-comment-overlay-line-closingGap');
@@ -1216,9 +1306,12 @@ export default class Comment extends CommentSkeleton {
    *   bugs).
    * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
    *   moved. If set to false, it is expected that the positions will be updated afterwards.
-   * @param {object} [options.floatingRects] `Element#getBoundingClientRect` results for floating
-   *   elements from `convenientDiscussions.g.floatingElements`. It may be calculated in advance for
-   *   many elements in one sequence to save time.
+   * @param {object} [options.floatingRects]
+   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
+   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
+   *   calculated in advance for many elements in one sequence to save time.
+   * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
+   *   Deemed `true` if `floatingRects` is set.
    * @returns {?boolean} Was the comment moved.
    */
   configureLayers(options = {}) {
@@ -1229,43 +1322,9 @@ export default class Comment extends CommentSkeleton {
       options.update = true;
     }
 
-    if (this.editForm) {
+    const isMoved = this.setLayersPositionsProperty(options);
+    if (isMoved === null) {
       return null;
-    }
-
-    // FIXME: it is possible that a floating element that is on above in the DOM is below spacially.
-    // In this case, rectTop and rectBottom will be swapped.
-    options.rectTop = getCommentPartRect(this.highlightables[0]);
-    options.rectBottom = this.elements.length === 1 ?
-      options.rectTop :
-      getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
-
-    if (!getVisibilityByRects(options.rectTop, options.rectBottom)) {
-      this.layersTop = null;
-      this.layersLeft = null;
-      this.layersWidth = null;
-      this.layersHeight = null;
-      return null;
-    }
-
-    options.layersContainerOffset = this.getLayersContainerOffset();
-
-    let isMoved = false;
-    if (this.underlay) {
-      const topChanged = (
-        window.scrollY + options.rectTop.top !==
-        options.layersContainerOffset.top + this.layersTop
-      );
-      const heightChanged = options.rectBottom.bottom - options.rectTop.top !== this.layersHeight;
-      isMoved = (
-        topChanged ||
-        heightChanged ||
-        this.highlightables[0].offsetWidth !== this.firstHighlightableWidth
-      );
-    }
-
-    if (!this.underlay || isMoved) {
-      this.calculateLayersPositions(options);
     }
 
     // Configure the layers only if they were unexistent or the comment position has changed, to
@@ -1304,10 +1363,10 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   updateLayersPositions() {
-    this.underlay.style.top = this.overlay.style.top = this.layersTop + 'px';
-    this.underlay.style.left = this.overlay.style.left = this.layersLeft + 'px';
-    this.underlay.style.width = this.overlay.style.width = this.layersWidth + 'px';
-    this.underlay.style.height = this.overlay.style.height = this.layersHeight + 'px';
+    this.underlay.style.top = this.overlay.style.top = this.layersPositions.top + 'px';
+    this.underlay.style.left = this.overlay.style.left = this.layersPositions.left + 'px';
+    this.underlay.style.width = this.overlay.style.width = this.layersPositions.width + 'px';
+    this.underlay.style.height = this.overlay.style.height = this.layersPositions.height + 'px';
   }
 
   /**
@@ -2389,21 +2448,20 @@ export default class Comment extends CommentSkeleton {
    * positions.
    *
    * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
+   * @param {object} [positions=this.getPositions()] Prefetched positions.
    * @returns {?boolean}
    */
-  isInViewport(partially = false) {
-    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
-    const viewportBottom = viewportTop + window.innerHeight;
-
-    this.getPositions();
-
-    if (!this.positions) {
+  isInViewport(partially = false, positions = this.getPositions()) {
+    if (!positions) {
       return null;
     }
 
+    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportBottom = viewportTop + window.innerHeight;
+
     return partially ?
-      this.positions.downplayedBottom > viewportTop && this.positions.top < viewportBottom :
-      this.positions.top >= viewportTop && this.positions.downplayedBottom <= viewportBottom;
+      positions.downplayedBottom > viewportTop && positions.top < viewportBottom :
+      positions.top >= viewportTop && positions.downplayedBottom <= viewportBottom;
   }
 
   /**
