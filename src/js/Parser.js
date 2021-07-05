@@ -251,15 +251,14 @@ export default class Parser {
   }
 
   /**
-   * _For internal use._ Find signatures under the root element given timestamps.
-   *
-   * Characters before the author link, like "—", aren't considered a part of the signature.
+   * Collect nodes related to signatures starting from timestamp nodes.
    *
    * @param {object[]} timestamps
    * @returns {object[]}
+   * @private
    */
-  findSignatures(timestamps) {
-    const signatures = timestamps
+  timestampsToSignatures(timestamps) {
+    return timestamps
       .map((timestamp) => {
         const date = timestamp.date;
         const timestampElement = timestamp.element;
@@ -440,7 +439,15 @@ export default class Parser {
         };
       })
       .filter(defined);
+  }
 
+  /**
+   * Find outputs of unsigned templates.
+   *
+   * @returns {object[]}
+   */
+  findUnsigneds() {
+    const unsigneds = [];
     if (cd.config.unsignedClass) {
       Array.from(cd.g.rootElement.getElementsByClassName(cd.config.unsignedClass))
         .forEach((element) => {
@@ -458,7 +465,7 @@ export default class Parser {
                 }
                 element.classList.add('cd-signature');
                 const isUnsigned = true;
-                signatures.push({
+                unsigneds.push({
                   element,
                   authorName,
                   isUnsigned,
@@ -472,8 +479,24 @@ export default class Parser {
         });
     }
 
-    // Sort signatures according to their position in the DOM. sig1 and sig2 are expected not to be
-    // the same element.
+    return unsigneds;
+  }
+
+  /**
+   * _For internal use._ Find signatures under the root element given timestamps.
+   *
+   * Characters before the author link, like "—", aren't considered a part of the signature.
+   *
+   * @param {object[]} timestamps
+   * @returns {object[]}
+   */
+  findSignatures(timestamps) {
+    let signatures = this.timestampsToSignatures(timestamps);
+    const unsigneds = this.findUnsigneds();
+    signatures.push(...unsigneds);
+
+    // Sort signatures according to their position in the DOM. `sig1` and `sig2` are expected not to
+    // be the same element.
     signatures.sort((sig1, sig2) => this.context.follows(sig1.element, sig2.element) ? 1 : -1);
 
     return signatures;
