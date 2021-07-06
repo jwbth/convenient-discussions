@@ -1005,39 +1005,32 @@ export default class Section extends SectionSkeleton {
         continue;
       }
 
-      const signatures = extractSignatures(code);
-      let oldestSignature;
-      signatures.forEach((sig) => {
-        if (
-          !oldestSignature ||
-          (!oldestSignature.date && sig.date) ||
-          oldestSignature.date > sig.date
-        ) {
-          oldestSignature = sig;
+      const sigs = extractSignatures(code);
+      let oldestSig;
+      sigs.forEach((sig) => {
+        if (!oldestSig || (!oldestSig.date && sig.date) || oldestSig.date > sig.date) {
+          oldestSig = sig;
         }
       });
-      const hasOldestCommentMatched = oldestSignature ?
+      const hasOldestCommentMatched = oldestSig ?
         Boolean(
           this.oldestComment &&
           (
-            oldestSignature.timestamp === this.oldestComment.timestamp ||
-            oldestSignature.author === this.oldestComment.author
+            oldestSig.timestamp === this.oldestComment.timestamp ||
+            oldestSig.author === this.oldestComment.author
           )
         ) :
 
         // There's no comments neither in the code nor on the page.
         !this.oldestComment;
 
-      let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSignature);
-      if (this.oldestComment && oldestSignature) {
+      let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSig);
+      if (this.oldestComment && oldestSig) {
         // Use the comment text overlap factor due to this error
         // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
         // superficially, without exluding the headline code and other operations performed in
         // Comment#adjustCommentBeginning.
-        const oldestCommentCode = code.slice(
-          oldestSignature.commentStartIndex,
-          oldestSignature.startIndex
-        );
+        const oldestCommentCode = code.slice(oldestSig.commentStartIndex, oldestSig.startIndex);
         oldestCommentWordOverlap = calculateWordOverlap(
           this.oldestComment.getText(),
           removeWikiMarkup(oldestCommentCode)

@@ -206,7 +206,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       });
     } else if (action === 'reload') {
       return new OO.ui.Process(() => {
-        this.close({ action });
+        this.close();
         location.reload();
       });
     } else if (action === 'close') {
@@ -625,11 +625,11 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       .map((value) => {
         const hidden = [];
         value = hideText(value, /\\[+;\\]/g, hidden);
-        let [, text, displayedText] = value.match(/^(.*?)(?:;(.+))?$/) || [];
-        if (!text?.replace(/^ +$/, '')) return;
-        text = unhideText(text, hidden);
-        displayedText = displayedText && unhideText(displayedText, hidden);
-        return [text, displayedText].filter(defined);
+        let [, snippet, label] = value.match(/^(.*?)(?:;(.+))?$/) || [];
+        if (!snippet?.replace(/^ +$/, '')) return;
+        snippet = unhideText(snippet, hidden);
+        label = label && unhideText(label, hidden);
+        return [snippet, label].filter(defined);
       })
       .filter(defined);
   }

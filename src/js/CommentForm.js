@@ -1162,24 +1162,24 @@ export default class CommentForm {
   /**
    * Add an insert button to the block under the comment input.
    *
-   * @param {string} text
-   * @param {string} [displayedText]
+   * @param {string} snippet
+   * @param {string} [label]
    * @private
    */
-  addInsertButton(text, displayedText) {
+  addInsertButton(snippet, label) {
     const hidden = [];
-    text = hideText(text, /\\[+;\\]/g, hidden);
-    let [, pre, post] = text.match(/^(.*?)(?:\+(.*))?$/) || [];
+    snippet = hideText(snippet, /\\[+;\\]/g, hidden);
+    let [, pre, post] = snippet.match(/^(.*?)(?:\+(.*))?$/) || [];
     if (!pre) return;
     post = post || '';
-    const unescape = (text) => text.replace(/\\([+;\\])/g, '$1');
+    const unescape = (snippet) => snippet.replace(/\\([+;\\])/g, '$1');
     pre = unescape(unhideText(pre, hidden));
     post = unescape(unhideText(post, hidden));
-    displayedText = displayedText ? unescape(displayedText) : pre + post;
+    label = label ? unescape(label) : pre + post;
 
     const button = new Button({
-      label: displayedText,
-      classes: ['cd-insertButtons-item'],
+      label: label,
+      classes: ['cd-insertButtons-button'],
       action: () => {
         this.encapsulateSelection({ pre, post });
       },
@@ -1205,15 +1205,15 @@ export default class CommentForm {
       .insertAfter(this.commentInput.$element);
 
     cd.settings.insertButtons.forEach((button) => {
-      let text;
-      let displayedText;
+      let snippet;
+      let label;
       if (Array.isArray(button)) {
-        text = button[0];
-        displayedText = button[1];
+        snippet = button[0];
+        label = button[1];
       } else {
-        text = button;
+        snippet = button;
       }
-      this.addInsertButton(text, displayedText);
+      this.addInsertButton(snippet, label);
     });
   }
 

@@ -185,8 +185,8 @@ export async function initSettings() {
  * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
  */
 export function setContentColumnGlobals(setCssVar) {
-  const property = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
-  cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(property));
+  const prop = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
+  cd.g.CONTENT_START_MARGIN = parseFloat(cd.g.$contentColumn.css(prop));
   if (cd.g.CONTENT_START_MARGIN < cd.g.CONTENT_FONT_SIZE) {
     cd.g.CONTENT_START_MARGIN = cd.g.CONTENT_FONT_SIZE;
   }
@@ -1137,7 +1137,7 @@ function restoreCommentFormsFromData(commentFormsData) {
   let haveRestored = false;
   const rescue = [];
   commentFormsData.commentForms.forEach((data) => {
-    const property = CommentForm.modeToProperty(data.mode);
+    const prop = CommentForm.modeToProperty(data.mode);
     if (data.targetData?.headline) {
       const section = Section.search({
         headline: data.targetData.headline,
@@ -1146,9 +1146,9 @@ function restoreCommentFormsFromData(commentFormsData) {
         anchor: data.targetData.anchor,
         ancestors: data.targetData.ancestors,
       });
-      if (section?.isActionable && !section[`${property}Form`]) {
+      if (section?.isActionable && !section[`${prop}Form`]) {
         try {
-          section[property](data);
+          section[prop](data);
           haveRestored = true;
         } catch (e) {
           console.warn(e);
@@ -1159,9 +1159,9 @@ function restoreCommentFormsFromData(commentFormsData) {
       }
     } else if (data.targetData?.anchor) {
       const comment = Comment.getByAnchor(data.targetData.anchor);
-      if (comment?.isActionable && !comment[`${property}Form`]) {
+      if (comment?.isActionable && !comment[`${prop}Form`]) {
         try {
-          comment[property](data);
+          comment[prop](data);
           haveRestored = true;
         } catch (e) {
           console.warn(e);

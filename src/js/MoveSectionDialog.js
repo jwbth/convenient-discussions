@@ -286,7 +286,7 @@ export default class MoveSectionDialog extends OO.ui.ProcessDialog {
       });
     } else if (action === 'reload') {
       return new OO.ui.Process(() => {
-        this.close({ action });
+        this.close();
         reloadPage({ sectionAnchor: this.section.anchor });
       });
     } else if (action === 'close') {

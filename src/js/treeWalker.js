@@ -29,32 +29,32 @@ export class TreeWalker {
     this.currentNode = startNode;
 
     if (onlyElementNodes) {
-      this.firstChildProperty = 'firstElementChild';
-      this.lastChildProperty = 'lastElementChild';
-      this.previousSiblingProperty = 'previousElementSibling';
-      this.nextSiblingProperty = 'nextElementSibling';
+      this.firstChildProp = 'firstElementChild';
+      this.lastChildProp = 'lastElementChild';
+      this.previousSiblingProp = 'previousElementSibling';
+      this.nextSiblingProp = 'nextElementSibling';
     } else {
-      this.firstChildProperty = 'firstChild';
-      this.lastChildProperty = 'lastChild';
-      this.previousSiblingProperty = 'previousSibling';
-      this.nextSiblingProperty = 'nextSibling';
+      this.firstChildProp = 'firstChild';
+      this.lastChildProp = 'lastChild';
+      this.previousSiblingProp = 'previousSibling';
+      this.nextSiblingProp = 'nextSibling';
     }
   }
 
   /**
    * Try changing the current node to a node specified by the property.
    *
-   * @param {string} property
+   * @param {string} prop
    * @returns {?Node}
    * @protected
    */
-  tryMove(property) {
+  tryMove(prop) {
     let node = this.currentNode;
-    if (node === this.root && !property.includes('Child')) {
+    if (node === this.root && !prop.includes('Child')) {
       return null;
     }
     do {
-      node = node[property];
+      node = node[prop];
     } while (node && this.acceptNode && !this.acceptNode(node));
     if (node) {
       this.currentNode = node;
@@ -77,7 +77,7 @@ export class TreeWalker {
    * @returns {?Node}
    */
   firstChild() {
-    return this.tryMove(this.firstChildProperty);
+    return this.tryMove(this.firstChildProp);
   }
 
   /**
@@ -86,7 +86,7 @@ export class TreeWalker {
    * @returns {?Node}
    */
   lastChild() {
-    return this.tryMove(this.lastChildProperty);
+    return this.tryMove(this.lastChildProp);
   }
 
   /**
@@ -95,7 +95,7 @@ export class TreeWalker {
    * @returns {?Node}
    */
   previousSibling() {
-    return this.tryMove(this.previousSiblingProperty);
+    return this.tryMove(this.previousSiblingProp);
   }
 
   /**
@@ -104,7 +104,7 @@ export class TreeWalker {
    * @returns {?Node}
    */
   nextSibling() {
-    return this.tryMove(this.nextSiblingProperty);
+    return this.tryMove(this.nextSiblingProp);
   }
 
   /**
@@ -115,14 +115,14 @@ export class TreeWalker {
   nextNode() {
     let node = this.currentNode;
     do {
-      if (node[this.firstChildProperty]) {
-        node = node[this.firstChildProperty];
+      if (node[this.firstChildProp]) {
+        node = node[this.firstChildProp];
       } else {
-        while (node && !node[this.nextSiblingProperty] && node.parentNode !== this.root) {
+        while (node && !node[this.nextSiblingProp] && node.parentNode !== this.root) {
           node = node.parentNode;
         }
         if (node) {
-          node = node[this.nextSiblingProperty];
+          node = node[this.nextSiblingProp];
         }
       }
     } while (node && this.acceptNode && !this.acceptNode(node));
@@ -141,10 +141,10 @@ export class TreeWalker {
     let node = this.currentNode;
     if (node === this.root) return;
     do {
-      if (node[this.previousSiblingProperty]) {
-        node = node[this.previousSiblingProperty];
-        while (node[this.lastChildProperty]) {
-          node = node[this.lastChildProperty];
+      if (node[this.previousSiblingProp]) {
+        node = node[this.previousSiblingProp];
+        while (node[this.lastChildProp]) {
+          node = node[this.lastChildProp];
         }
       } else {
         node = node.parentNode;

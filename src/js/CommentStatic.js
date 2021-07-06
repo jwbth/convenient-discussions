@@ -130,14 +130,14 @@ export default {
    *
    * @type {Element[]}
    */
-   underlays: [],
+  underlays: [],
 
-   /**
-    * List of the containers of the underlays.
-    *
-    * @type {Element[]}
-    */
-   layersContainers: [],
+  /**
+   * List of the containers of the underlays.
+   *
+   * @type {Element[]}
+   */
+  layersContainers: [],
 
   /**
    * Configure and add layers for a group of comments.
@@ -166,7 +166,7 @@ export default {
   },
 
   /**
-   * Recalculate positions of the highlighted comments' (usually, new or own) layers and redraw if
+   * Recalculate the offset of the highlighted comments' (usually, new or own) layers and redraw if
    * they've changed.
    *
    * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
@@ -207,7 +207,7 @@ export default {
 
       // Layers that ended up under the bottom of the page content and could be moving the page
       // bottom down.
-      const isUnderRootBottom = comment.positions && comment.positions.bottom > rootBottom;
+      const isUnderRootBottom = comment.offset && comment.offset.bottom > rootBottom;
 
       if ((removeUnhighlighted || isUnderRootBottom) && !shouldBeHighlighted && comment.underlay) {
         comment.removeLayers();
@@ -229,7 +229,7 @@ export default {
         } else if (
           isMoved === false &&
 
-          // Nested containers shouldn't count, the positions of the layers inside them may be OK,
+          // Nested containers shouldn't count, the offset of the layers inside them may be OK,
           // unlike the layers preceding them.
           !comment.getLayersContainer().parentNode.parentNode
             .closest('.cd-commentLayersContainer-parent')
@@ -243,9 +243,9 @@ export default {
       return false;
     });
 
-    // It's faster to update the positions separately in one sequence.
+    // It's faster to update the offset separately in one sequence.
     comments.forEach((comment) => {
-      comment.updateLayersPositions();
+      comment.updateLayersOffset();
     });
 
     cd.debug.stopTimer('redrawIfNecessary');
@@ -343,9 +343,9 @@ export default {
    * @memberof module:Comment
    */
   findInViewport(findClosestDirection) {
-    // Reset the property
+    // Reset the `roughOffset` property. It is used only within this method.
     cd.comments.forEach((comment) => {
-      delete comment.roughPositions;
+      delete comment.roughOffset;
     });
 
     const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
@@ -354,9 +354,8 @@ export default {
     // Visibility is checked in the sense that an element is visible on the page, not necessarily in
     // the viewport.
     const isVisible = (comment) => {
-      // `roughPositions` property is used only within `findInViewport()`.
-      comment.setRoughPositionsProperty();
-      return Boolean(comment.roughPositions);
+      comment.setRoughOffsetProperty();
+      return Boolean(comment.roughOffset);
     };
     const findVisible = (direction, startIndex = 0) => {
       const comments = reorderArray(cd.comments, startIndex, direction === 'backward');
@@ -396,8 +395,8 @@ export default {
     // margin and not practically reachable, unless when there is only few comments. Usually the
     // cycle finishes after a few steps.
     for (let i = 0; i < cd.comments.length; i++) {
-      if (!c.roughPositions) {
-        c.setRoughPositionsProperty();
+      if (!c.roughOffset) {
+        c.setRoughOffsetProperty();
       }
       if (c.isInViewport(false)) {
         foundComment = c;
@@ -405,14 +404,14 @@ export default {
       }
 
       if (
-        c.roughPositions &&
+        c.roughOffset &&
 
         (
           // The bottom edge of the viewport is above the first comment.
-          (c === firstVisibleComment && viewportBottom < c.roughPositions.downplayedBottom) ||
+          (c === firstVisibleComment && viewportBottom < c.roughOffset.downplayedBottom) ||
 
           // The top edge of the viewport is below the last comment.
-          (c === lastVisibleComment && viewportTop > c.roughPositions.top)
+          (c === lastVisibleComment && viewportTop > c.roughOffset.top)
         )
       ) {
         foundComment = findClosest(findClosestDirection, searchArea, true);
@@ -424,7 +423,7 @@ export default {
         break;
       }
 
-      if (!c.roughPositions) {
+      if (!c.roughOffset) {
         // To avoid contriving a sophisticated algorithm for choosing which comment to pick next
         // (and avoid picking any previously picked) we just pick the comment next to the beginning
         // of the search area.
@@ -436,7 +435,7 @@ export default {
       if (c === firstVisibleComment) {
         c = searchArea.bottom;
       } else {
-        searchArea[viewportTop > c.roughPositions.top ? 'top' : 'bottom'] = c;
+        searchArea[viewportTop > c.roughOffset.top ? 'top' : 'bottom'] = c;
 
         // There's not a single comment in the viewport.
         if (searchArea.bottom.id - searchArea.top.id <= 1) {
@@ -445,8 +444,8 @@ export default {
         }
 
         // Determine the ID of the next comment to check.
-        const higherTop = searchArea.top.roughPositions.top;
-        const lowerBottom = searchArea.bottom.roughPositions.downplayedBottom;
+        const higherTop = searchArea.top.roughOffset.top;
+        const lowerBottom = searchArea.bottom.roughOffset.downplayedBottom;
         const proportion = (
           (viewportTop - higherTop) /
           ((lowerBottom - viewportBottom) + (viewportTop - higherTop))
@@ -503,10 +502,10 @@ export default {
       .forEach((comment) => {
         if (
           !isObstructingElementHovered &&
-          e.pageY >= comment.positions.top &&
-          e.pageY <= comment.positions.bottom &&
-          e.pageX >= comment.positions.left &&
-          e.pageX <= comment.positions.right
+          e.pageY >= comment.offset.top &&
+          e.pageY <= comment.offset.bottom &&
+          e.pageX >= comment.offset.left &&
+          e.pageX <= comment.offset.right
         ) {
           comment.highlightHovered();
         } else {

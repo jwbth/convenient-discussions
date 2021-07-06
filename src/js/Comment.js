@@ -405,8 +405,8 @@ export default class Comment extends CommentSkeleton {
      */
     this.$header = $(this.headerElement);
 
-    // This is usually done in the CommentSkeleton constructor, but if Comment#reviewHighlightables
-    // has altered the highlightables, this will save the day.
+    // This is usually done in the `CommentSkeleton` constructor, but if
+    // `Comment#reviewHighlightables` has altered the highlightables, this will save the day.
     [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
       .filter(unique)
       .filter((el) => (
@@ -812,18 +812,33 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * @typedef Offset
+   * @param {number} top
+   * @param {number} bottom
+   * @param {number} left
+   * @param {number} right
+   * @param {number} downplayedBottom
+   */
+
+  /**
    * Set the rough coordinates of the comment (without taking into account floating elements around
-   * the comment) as the `roughPositions` property.
+   * the comment) as the `roughOffset` property.
    *
    * @private
    */
-  setRoughPositionsProperty() {
-    this.roughPositions = this.getPositions();
+  setRoughOffsetProperty() {
+    /**
+     * The comment's rough coordinates set in {@link module:Comment#setRoughOffsetProperty} (without
+     * taking into account floating elements around the comment).
+     *
+     * @type {Offset}
+     */
+    this.roughOffset = this.getOffset();
   }
 
   /**
-   * Set the coordinates of the comment as the `positions` property. If the comment is invisible,
-   * positions are unset.
+   * Set the coordinates of the comment as the `offset` property. If the comment is invisible,
+   * the property is unset.
    *
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
@@ -831,14 +846,19 @@ export default class Comment extends CommentSkeleton {
    * @param {object} options
    * @returns {?boolean} Is the comment moved.
    */
-  setPositionsProperty(options) {
-    const positions = this.getPositions(Object.assign({}, options, { considerFloating: true }));
+  setOffsetProperty(options) {
+    const offset = this.getOffset(Object.assign({}, options, { considerFloating: true }));
 
-    if (positions !== false) {
-      this.positions = positions;
+    if (offset !== false) {
+      /**
+       * The comment's coordinates set in {@link module:Comment#setOffsetProperty}.
+       *
+       * @type {Offset}
+       */
+      this.offset = offset;
     }
 
-    if (this.positions) {
+    if (this.offset) {
       /**
        * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
        * start of the content area.
@@ -857,31 +877,22 @@ export default class Comment extends CommentSkeleton {
 
       if (this.level === 0) {
         // 2 instead of 1 for Timeless
-        const leftPosition = this.positions.left - cd.g.CONTENT_START_MARGIN - 2;
-        const rightPosition = this.positions.right + cd.g.CONTENT_START_MARGIN + 2;
+        const left = this.offset.left - cd.g.CONTENT_START_MARGIN - 2;
+        const right = this.offset.right + cd.g.CONTENT_START_MARGIN + 2;
 
         this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          leftPosition <= cd.g.CONTENT_COLUMN_START :
-          rightPosition >= cd.g.CONTENT_COLUMN_START;
+          left <= cd.g.CONTENT_COLUMN_START :
+          right >= cd.g.CONTENT_COLUMN_START;
         this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          rightPosition >= cd.g.CONTENT_COLUMN_END :
-          leftPosition <= cd.g.CONTENT_COLUMN_END;
+          right >= cd.g.CONTENT_COLUMN_END :
+          left <= cd.g.CONTENT_COLUMN_END;
       }
     }
 
-    // `positions` can be an object, `false` (the comment wasn't moved) or `null` (the comment is
+    // `offset` can be an object, `false` (the comment wasn't moved) or `null` (the comment is
     // invisible).
-    return positions ? true : positions;
+    return offset ? true : offset;
   }
-
-  /**
-   * @typedef Positions
-   * @param {number} top
-   * @param {number} bottom
-   * @param {number} left
-   * @param {number} right
-   * @param {number} downplayedBottom
-   */
 
   /**
    * Get the coordinates of the comment.
@@ -893,11 +904,11 @@ export default class Comment extends CommentSkeleton {
    *   calculated in advance for many elements in one sequence to save time.
    * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
    *   Deemed `true` if `floatingRects` is set.
-   * @returns {?(Positions|boolean)} Positions object. If the comment is not visible, returns
+   * @returns {?(Offset|boolean)} Offset object. If the comment is not visible, returns
    *   `null`. If `options.considerFloating` is `true` and the comment isn't moved, returns `false`.
    * @private
    */
-  getPositions(options = {}) {
+  getOffset(options = {}) {
     if (options.considerFloating === undefined) {
       options.considerFloating = Boolean(options.floatingRects);
     }
@@ -916,44 +927,37 @@ export default class Comment extends CommentSkeleton {
     }
 
     let isMoved;
-    if (this.positions) {
-      const isTopSame = window.scrollY + rectTop.top === this.positions.top;
-
-      const height = rectBottom.bottom - rectTop.top;
-      const cachedHeight = this.positions.bottom - this.positions.top;
-      const isHeightSame = height === cachedHeight;
-
-      const isFirstHighlightableWidthSame = (
-        this.highlightables[0].offsetWidth === this.firstHighlightableWidth
-      );
-
-      isMoved = !isTopSame || !isHeightSame || !isFirstHighlightableWidthSame;
+    if (this.offset) {
+      const isTopSame = window.scrollY + rectTop.top === this.offset.top;
+      const isHeightSame = rectBottom.bottom - rectTop.top === this.offset.bottom - this.offset.top;
+      const isFhWidthSame = this.highlightables[0].offsetWidth === this.firstHighlightableWidth;
+      isMoved = !isTopSame || !isHeightSame || !isFhWidthSame;
     } else {
       isMoved = true;
     }
 
     if (!isMoved) {
-      // If floating elements aren't supposed to be taken into account but the comment wasn't
-      // moved, we still return the positions with floating elements taken into account because
-      // that shouldn't hurt.
-      return options.considerFloating ? false : this.positions;
+      // If floating elements aren't supposed to be taken into account but the comment wasn't moved,
+      // we still return the offset with floating elements taken into account because that shouldn't
+      // hurt.
+      return options.considerFloating ? false : this.offset;
     }
 
     // This is to determine if the element was moved in future checks.
     this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     // Seems like caching this value significantly helps performance at least in Chrome. But need to
-    // be sure the viewport can't jump higher when it is at the bottom point of the page after
-    // some content starts to occupy less space.
+    // be sure the viewport can't jump higher when it is at the bottom point of the page after some
+    // content starts to occupy less space.
     const scrollY = window.scrollY;
 
     const top = scrollY + rectTop.top;
     const bottom = scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
-      // Check if the comment positions intersect the positions of floating elements on the page.
-      // (Only then we would need altering comment styles to get the correct positions which is an
-      // expensive operation.)
+      // Check if the comment offset intersect the offset of floating elements on the page. (Only
+      // then we would need altering comment styles to get the correct offset which is an expensive
+      // operation.)
       const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
       let intersectsFloatingCount = 0;
       let bottomIntersectsFloating = false;
@@ -985,7 +989,7 @@ export default class Comment extends CommentSkeleton {
 
         // If the comment intersects more than one floating block, we better keep `overflow: hidden`
         // to avoid bugs like where there are two floating blocks to the right with different
-        // leftmost positions and the layer is more narrow than the comment.
+        // leftmost offsets and the layer is more narrow than the comment.
         if (intersectsFloatingCount === 1) {
           this.highlightables.forEach((el, i) => {
             el.style.overflow = initialOverflows[i];
@@ -1021,11 +1025,11 @@ export default class Comment extends CommentSkeleton {
   getMargins() {
     cd.debug.startTimer('getMargins');
 
-    let positions;
+    let offset;
     let anchorElement;
     if (this.isCollapsed) {
       const rect = getCommentPartRect(this.thread.expandNote);
-      positions = getVisibilityByRects(rect) ?
+      offset = getVisibilityByRects(rect) ?
         {
           left: window.scrollX + rect.left,
           right: window.scrollX + rect.right,
@@ -1033,11 +1037,11 @@ export default class Comment extends CommentSkeleton {
         null;
       anchorElement = this.thread.expandNote;
     } else {
-      positions = this.positions;
+      offset = this.offset;
       anchorElement = this.anchorHighlightable;
     }
 
-    if (!positions) {
+    if (!offset) {
       return null;
     }
 
@@ -1073,30 +1077,30 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Calculate the underlay and overlay positions and set them to the instance as the
-   * `layersPositions` property.
+   * Calculate the underlay and overlay offset and set it to the instance as the `layersOffset`
+   * property.
    *
    * @param {object} [options={}]
    * @returns {boolean} Is the comment moved.
    * @private
    */
-  setLayersPositionsProperty(options = {}) {
-    const isMoved = this.setPositionsProperty(options);
+  setLayersOffsetProperty(options = {}) {
+    const isMoved = this.setOffsetProperty(options);
 
-    if (this.positions) {
+    if (this.offset) {
       const margins = this.getMargins();
-      const right = this.positions.right + margins.right;
-      const left = this.positions.left - margins.left;
+      const right = this.offset.right + margins.right;
+      const left = this.offset.left - margins.left;
       const layersContainerOffset = this.getLayersContainerOffset();
 
-      this.layersPositions = {
-        top: this.positions.top - layersContainerOffset.top,
-        left: this.positions.left - margins.left - layersContainerOffset.left,
+      this.layersOffset = {
+        top: this.offset.top - layersContainerOffset.top,
+        left: this.offset.left - margins.left - layersContainerOffset.left,
         width: right - left,
-        height: this.positions.bottom - this.positions.top,
+        height: this.offset.bottom - this.offset.top,
       };
     } else {
-      this.layersPositions = null;
+      this.layersOffset = null;
     }
 
     return isMoved;
@@ -1296,16 +1300,16 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add the underlay and overlay if they are missing, update their styles, recalculate their
-   * positions and redraw if the comment has been moved or do nothing if everything is right.
+   * Add the underlay and overlay if they are missing, update their styles, recalculate their offset
+   * and redraw if the comment has been moved or do nothing if everything is right.
    *
    * @param {object} [options={}]
    * @param {boolean} [options.add=true] Add the layers in case they are created. If set to false,
    *   it is expected that the layers created during this procedure, if any, will be added
    *   afterwards (otherwise there would be layers without a parent element which would lead to
    *   bugs).
-   * @param {boolean} [options.update=true] Update the layers' positions in case the comment is
-   *   moved. If set to false, it is expected that the positions will be updated afterwards.
+   * @param {boolean} [options.update=true] Update the layers' offset in case the comment is moved.
+   *   If set to `false`, it is expected that the offset will be updated afterwards.
    * @param {object} [options.floatingRects]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
@@ -1322,7 +1326,7 @@ export default class Comment extends CommentSkeleton {
       options.update = true;
     }
 
-    const isMoved = this.setLayersPositionsProperty(options);
+    const isMoved = this.setLayersOffsetProperty(options);
     if (isMoved === null) {
       return null;
     }
@@ -1332,7 +1336,7 @@ export default class Comment extends CommentSkeleton {
     if (this.underlay) {
       this.updateLayersStyles();
       if (isMoved && options.update) {
-        this.updateLayersPositions();
+        this.updateLayersOffset();
       }
       return isMoved;
     } else {
@@ -1352,7 +1356,7 @@ export default class Comment extends CommentSkeleton {
   addLayers() {
     if (!this.underlay) return;
 
-    this.updateLayersPositions();
+    this.updateLayersOffset();
     this.getLayersContainer().appendChild(this.underlay);
     this.getLayersContainer().appendChild(this.overlay);
   }
@@ -1362,11 +1366,11 @@ export default class Comment extends CommentSkeleton {
    *
    * @private
    */
-  updateLayersPositions() {
-    this.underlay.style.top = this.overlay.style.top = this.layersPositions.top + 'px';
-    this.underlay.style.left = this.overlay.style.left = this.layersPositions.left + 'px';
-    this.underlay.style.width = this.overlay.style.width = this.layersPositions.width + 'px';
-    this.underlay.style.height = this.overlay.style.height = this.layersPositions.height + 'px';
+  updateLayersOffset() {
+    this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
+    this.underlay.style.left = this.overlay.style.left = this.layersOffset.left + 'px';
+    this.underlay.style.width = this.overlay.style.width = this.layersOffset.width + 'px';
+    this.underlay.style.height = this.overlay.style.height = this.layersOffset.height + 'px';
   }
 
   /**
@@ -2445,14 +2449,14 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Determine if the comment is in the viewport. Return `null` if we couldn't get the comment's
-   * positions.
+   * offset.
    *
    * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
-   * @param {object} [positions=this.getPositions()] Prefetched positions.
+   * @param {object} [offset=this.getOffset()] Prefetched offset.
    * @returns {?boolean}
    */
-  isInViewport(partially = false, positions = this.getPositions()) {
-    if (!positions) {
+  isInViewport(partially = false, offset = this.getOffset()) {
+    if (!offset) {
       return null;
     }
 
@@ -2460,8 +2464,8 @@ export default class Comment extends CommentSkeleton {
     const viewportBottom = viewportTop + window.innerHeight;
 
     return partially ?
-      positions.downplayedBottom > viewportTop && positions.top < viewportBottom :
-      positions.top >= viewportTop && positions.downplayedBottom <= viewportBottom;
+      offset.downplayedBottom > viewportTop && offset.top < viewportBottom :
+      offset.top >= viewportTop && offset.downplayedBottom <= viewportBottom;
   }
 
   /**

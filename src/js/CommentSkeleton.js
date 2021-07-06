@@ -332,13 +332,13 @@ export default class CommentSkeleton {
     }
 
     const children = [];
-    const property = visual ? 'level' : 'logicalLevel';
+    const prop = visual ? 'level' : 'logicalLevel';
     cd.comments
       .slice(this.id + 1)
       .some((comment) => {
-        if (comment.section === this.section && comment[property] > this[property]) {
+        if (comment.section === this.section && comment[prop] > this[prop]) {
           if (
-            comment[property] === this[property] + 1 ||
+            comment[prop] === this[prop] + 1 ||
 
             // Allow comments mistakenly indented with more than one level.
             comment.getParent() === this ||

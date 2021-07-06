@@ -174,6 +174,9 @@ function cleanUpCollapsedThreads(data) {
   return newData;
 }
 
+/**
+ * Class used to create a comment thread object.
+ */
 export default class Thread {
   /**
    * Create a comment thread object.
@@ -678,8 +681,7 @@ export default class Thread {
   }
 
   /**
-   * _For internal use._ Calculate the positions and (if needed) add the thread lines to the
-   * container.
+   * _For internal use._ Calculate the offset and (if needed) add the thread lines to the container.
    */
   static updateLines() {
     if ((isPageLoading() || document.hidden) && isInited) return;
@@ -703,9 +705,9 @@ export default class Thread {
         cd.debug.startTimer('threads getBoundingClientRect');
 
         const thread = comment.thread;
-        let lineTop;
-        let lineLeft;
-        let lineHeight;
+        let top;
+        let left;
+        let height;
         let rectTop;
         if (thread.isCollapsed) {
           rectTop = thread.expandNote.getBoundingClientRect();
@@ -713,23 +715,28 @@ export default class Thread {
             getVisibilityByRects(rectTop) &&
             (comment.level === 0 || thread.expandNote.parentNode.tagName === 'OL')
           ) {
-            const margins = comment.getMargins();
-            lineTop = window.scrollY + rectTop.top;
-            lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
-              (window.scrollX + rectTop.left) - (margins.left + 1) - lineSideMargin :
-              (window.scrollX + rectTop.right) + (margins.right + 1) - lineWidth - lineSideMargin;
+            const commentMargins = comment.getMargins();
+            top = window.scrollY + rectTop.top;
+            left = cd.g.CONTENT_DIR === 'ltr' ?
+              (window.scrollX + rectTop.left) - (commentMargins.left + 1) - lineSideMargin :
+              (
+                (window.scrollX + rectTop.right) +
+                (commentMargins.right + 1) -
+                lineWidth -
+                lineSideMargin
+              );
           }
         } else {
           if (comment.level === 0) {
             cd.debug.startTimer('threads getBoundingClientRect 0');
             floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-            comment.setPositionsProperty({ floatingRects });
-            if (comment.positions) {
-              const margins = comment.getMargins();
-              lineTop = comment.positions.top;
-              lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
-                comment.positions.left - (margins.left + 1) - lineSideMargin :
-                comment.positions.right + (margins.right + 1) - lineWidth - lineSideMargin;
+            comment.setOffsetProperty({ floatingRects });
+            if (comment.offset) {
+              const commentMargins = comment.getMargins();
+              top = comment.offset.top;
+              left = cd.g.CONTENT_DIR === 'ltr' ?
+                comment.offset.left - (commentMargins.left + 1) - lineSideMargin :
+                comment.offset.right + (commentMargins.right + 1) - lineWidth - lineSideMargin;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
@@ -744,15 +751,19 @@ export default class Thread {
               thread.startElement.tagName === 'DIV'
             ) {
               floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-              comment.setPositionsProperty({ floatingRects });
-              if (comment.positions) {
-                const margins = comment.getMargins();
-                lineTop = window.scrollY + rectTop.top;
-                lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
-                  (window.scrollX + comment.positions.left) - (margins.left + 1) - lineSideMargin :
+              comment.setOffsetProperty({ floatingRects });
+              if (comment.offset) {
+                const commentMargins = comment.getMargins();
+                top = window.scrollY + rectTop.top;
+                left = cd.g.CONTENT_DIR === 'ltr' ?
                   (
-                    (window.scrollX + comment.positions.right) +
-                    margins.right -
+                    (window.scrollX + comment.offset.left) -
+                    (commentMargins.left + 1) -
+                    lineSideMargin
+                   ) :
+                  (
+                    (window.scrollX + comment.offset.right) +
+                    commentMargins.right -
                     lineWidth -
                     lineSideMargin
                   );
@@ -772,30 +783,32 @@ export default class Thread {
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (!rectTop && lineTop === undefined)) {
+        if (!getVisibilityByRects(...rects) || (!rectTop && top === undefined)) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = null;
+            thread.clickAreaOffset = null;
             thread.line = null;
-            thread.lineLeft = null;
-            thread.lineTop = null;
-            thread.lineHeight = null;
           }
           return false;
         }
 
-        if (lineTop === undefined) {
-          lineTop = window.scrollY + rectTop.top;
-          lineLeft = cd.g.CONTENT_DIR === 'ltr' ?
+        if (top === undefined) {
+          top = window.scrollY + rectTop.top;
+          left = cd.g.CONTENT_DIR === 'ltr' ?
             (window.scrollX + rectTop.left) - lineSideMargin :
             (window.scrollX + rectTop.right) - lineWidth - lineSideMargin;
-          lineHeight = rectBottom.bottom - rectTop.top;
+          height = rectBottom.bottom - rectTop.top;
         } else {
-          lineHeight = rectBottom.bottom - (lineTop - window.scrollY);
+          height = rectBottom.bottom - (top - window.scrollY);
         }
 
-        // Find the top comment that has its positions changed and stop at it.
-        if (lineTop === thread.lineTop && lineHeight === thread.lineHeight) {
+        // Find the top comment that has its offset changed and stop at it.
+        if (
+          thread.clickAreaOffset &&
+          top === thread.clickAreaOffset.top &&
+          height === thread.clickAreaOffset.height
+        ) {
           // Opened/closed "reply in section" comment form will change the 0-level thread line
           // height, so we use only these conditions.
           const stop = (
@@ -809,9 +822,7 @@ export default class Thread {
 
         cd.debug.startTimer('threads createElement');
 
-        thread.lineTop = lineTop;
-        thread.lineLeft = lineLeft;
-        thread.lineHeight = lineHeight;
+        thread.clickAreaOffset = { top, left, height };
 
         if (!thread.line) {
           thread.createLine();
@@ -834,9 +845,9 @@ export default class Thread {
 
     // Faster to update/add all elements in one batch.
     threadsToUpdate.forEach((thread) => {
-      thread.clickArea.style.left = thread.lineLeft + 'px';
-      thread.clickArea.style.top = thread.lineTop + 'px';
-      thread.clickArea.style.height = thread.lineHeight + 'px';
+      thread.clickArea.style.left = thread.clickAreaOffset.left + 'px';
+      thread.clickArea.style.top = thread.clickAreaOffset.top + 'px';
+      thread.clickArea.style.height = thread.clickAreaOffset.height + 'px';
     });
 
     cd.debug.stopTimer('threads update');

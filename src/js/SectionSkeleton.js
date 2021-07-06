@@ -61,7 +61,7 @@ export default class SectionSkeleton {
 
     const editSectionElement = headingElement.lastChild;
     if (editSectionElement.classList.contains('mw-editsection')) {
-       const links = Array.from(editSectionElement.getElementsByTagName('a'));
+      const links = Array.from(editSectionElement.getElementsByTagName('a'));
 
       // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
       // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but

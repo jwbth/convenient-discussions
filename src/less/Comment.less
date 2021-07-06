@@ -3,14 +3,14 @@
   margin-bottom: 0.2307692em;
 }
 
-.cd-comment-header,
-.cd-comment-menu {
-  line-height: 1.6153846;
-}
-
 .cd-comment-menu {
   font-size: 0.9285714em;
   margin-top: 0.3076923em;
+}
+
+.cd-comment-header,
+.cd-comment-menu {
+  line-height: 1.6153846;
 }
 
 .cd-comment-author {
@@ -152,19 +152,19 @@ ol > li.cd-comment-part-last.cd-comment-part-last {
 
 .cd-connectToPreviousItem {
   position: relative;
-}
 
-// Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
-// need to avoid wrapping the contents of almost every comment into a <div>, which would increase
-// the parsing time significantly.
-.cd-connectToPreviousItem::before {
-  content: '';
-  position: absolute;
-  display: block;
-  top: -0.5em;
-  width: 1px;
-  background-color: #c8ccd1;
-  height: 0.5em;
+  // Workaround for close a visual gap to the previous item. The unfortunate reason for it is that
+  // we need to avoid wrapping the contents of almost every comment into a <div>, which would
+  // increase the parsing time significantly.
+  &::before {
+    content: '';
+    position: absolute;
+    display: block;
+    top: -0.5em;
+    width: 1px;
+    background-color: #c8ccd1;
+    height: 0.5em;
+  }
 }
 
 .cd-reformattedComments .cd-connectToPreviousItem::before {
@@ -186,34 +186,34 @@ ol > li.cd-comment-part-last.cd-comment-part-last {
   width: 3px;
   padding-left: var(--cd-thread-line-side-margin);
   padding-right: var(--cd-thread-line-side-margin);
+
+  &-hover {
+    cursor: pointer;
+
+    .cd-thread-line {
+      background-color: #72777d;
+      opacity: 1;
+      transition: opacity 0.2s ease-in;
+
+      &-extended::after {
+        background-image: linear-gradient(to bottom, #72777d, transparent);
+      }
+    }
+  }
 }
 
 .cd-thread-line {
   width: 100%;
   height: 100%;
   opacity: 0;
-}
 
-.cd-thread-clickArea-hover {
-  cursor: pointer;
-
-  .cd-thread-line {
-    background-color: #72777d;
-    opacity: 1;
-    transition: opacity 0.2s ease-in;
-
-    &-extended::after {
-      background-image: linear-gradient(to bottom, #72777d, transparent);
-    }
+  &-extended::after {
+    display: block;
+    content: '';
+    height: 10px;
+    top: 100%;
+    position: relative;
   }
-}
-
-.cd-thread-line-extended::after {
-  display: block;
-  content: '';
-  height: 10px;
-  top: 100%;
-  position: relative;
 }
 
 .sitedir-ltr .cd-beforeChangeMark {
