@@ -120,6 +120,43 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * @typedef {object} MenuItem
+   * @param {Element} link Link element.
+   * @param {Element} wrapper Wrapper element.
+   */
+
+  /**
+   * Add an item to the section menu (to the right from the section headline).
+   *
+   * @param {object} item
+   * @param {string} item.name Link name, reflected in the class name.
+   * @param {string} item.label Item label.
+   * @param {string} [item.href] Value of the item href attribute.
+   * @param {string} [item.tooltip] Tooltip text.
+   * @param {Function} [item.action] Function to execute on click.
+   * @param {boolean} [item.visible=true] Should the item be visible.
+   */
+  addMenuItem({ name, label, href, tooltip, action, visible = true }) {
+    if (!this.closingBracketElement) return;
+
+    cd.debug.startTimer('addMenuItem');
+    this.menu[name] = new SectionMenuButton({
+      name,
+      label,
+      href,
+      tooltip,
+      visible,
+      classes: ['cd-section-menu-button'],
+      action,
+    });
+    this.editSectionElement.insertBefore(
+      this.menu[name].wrapperElement,
+      this.closingBracketElement
+    );
+    cd.debug.stopTimer('addMenuItem');
+  }
+
+  /**
    * _For internal use._ Add a {@link module:Section#replyButton "Reply in section" button} to the
    * end of the first chunk of the section.
    */
@@ -595,27 +632,23 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Locate the section in the source code and set the result to the `inCode` property.
+   * Section elements as a jQuery object.
    *
-   * @param {boolean} useSectionCode Is the section code available to locate the section in instead
-   *   of the page code.
-   * @throws {CdError}
+   * Uses a getter mostly for unification with {@link module:Comment#$elements}.
+   *
+   * @type {JQuery}
    */
-  locateInCode(useSectionCode) {
-    this.inCode = null;
-
-    const matches = this.searchInCode(useSectionCode ? this.code : this.getSourcePage().code);
-    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
-    if (!bestMatch) {
-      throw new CdError({
-        type: 'parse',
-        code: 'locateSection',
-      });
+  get $elements() {
+    if (this.cached$elements === undefined) {
+      this.cached$elements = $(this.elements);
     }
+    return this.cached$elements;
+  }
 
-    bestMatch.isSectionCodeUsed = useSectionCode;
-
-    this.inCode = bestMatch;
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  set $elements(value) {
+    this.cached$elements = value;
+    this.elements = value.get();
   }
 
   /**
@@ -684,25 +717,6 @@ export default class Section extends SectionSkeleton {
     }
 
     return newWholeCode;
-  }
-
-  /**
-   * Get the first upper level section relative to the current section that is watched.
-   *
-   * @param {boolean} [includeCurrent=false] Check the current section too.
-   * @returns {?Section}
-   */
-  getClosestWatchedSection(includeCurrent = false) {
-    for (
-      let otherSection = includeCurrent ? this : this.getParent();
-      otherSection;
-      otherSection = otherSection.getParent()
-    ) {
-      if (otherSection.isWatched) {
-        return otherSection;
-      }
-    }
-    return null;
   }
 
   /**
@@ -852,63 +866,6 @@ export default class Section extends SectionSkeleton {
         throw e;
       }
     }
-  }
-
-  /**
-   * @typedef {object} MenuItem
-   * @param {Element} link Link element.
-   * @param {Element} wrapper Wrapper element.
-   */
-
-  /**
-   * Add an item to the section menu (to the right from the section headline).
-   *
-   * @param {object} item
-   * @param {string} item.name Link name, reflected in the class name.
-   * @param {string} item.label Item label.
-   * @param {string} [item.href] Value of the item href attribute.
-   * @param {string} [item.tooltip] Tooltip text.
-   * @param {Function} [item.action] Function to execute on click.
-   * @param {boolean} [item.visible=true] Should the item be visible.
-   */
-  addMenuItem({ name, label, href, tooltip, action, visible = true }) {
-    if (!this.closingBracketElement) return;
-
-    cd.debug.startTimer('addMenuItem');
-    this.menu[name] = new SectionMenuButton({
-      name,
-      label,
-      href,
-      tooltip,
-      visible,
-      classes: ['cd-section-menu-button'],
-      action,
-    });
-    this.editSectionElement.insertBefore(
-      this.menu[name].wrapperElement,
-      this.closingBracketElement
-    );
-    cd.debug.stopTimer('addMenuItem');
-  }
-
-  /**
-   * Section elements as a jQuery object.
-   *
-   * Uses a getter mostly for unification with {@link module:Comment#$elements}.
-   *
-   * @type {JQuery}
-   */
-  get $elements() {
-    if (this.cached$elements === undefined) {
-      this.cached$elements = $(this.elements);
-    }
-    return this.cached$elements;
-  }
-
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  set $elements(value) {
-    this.cached$elements = value;
-    this.elements = value.get();
   }
 
   /**
@@ -1108,6 +1065,30 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
+   * Locate the section in the source code and set the result to the `inCode` property.
+   *
+   * @param {boolean} useSectionCode Is the section code available to locate the section in instead
+   *   of the page code.
+   * @throws {CdError}
+   */
+  locateInCode(useSectionCode) {
+    this.inCode = null;
+
+    const matches = this.searchInCode(useSectionCode ? this.code : this.getSourcePage().code);
+    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
+    if (!bestMatch) {
+      throw new CdError({
+        type: 'parse',
+        code: 'locateSection',
+      });
+    }
+
+    bestMatch.isSectionCodeUsed = useSectionCode;
+
+    this.inCode = bestMatch;
+  }
+
+  /**
    * Get the wiki page that has the source code of the section (may be different from the current
    * page if the section is transcluded from another page).
    *
@@ -1167,6 +1148,25 @@ export default class Section extends SectionSkeleton {
       });
 
     return children;
+  }
+
+  /**
+   * Get the first upper level section relative to the current section that is watched.
+   *
+   * @param {boolean} [includeCurrent=false] Check the current section too.
+   * @returns {?Section}
+   */
+  getClosestWatchedSection(includeCurrent = false) {
+    for (
+      let otherSection = includeCurrent ? this : this.getParent();
+      otherSection;
+      otherSection = otherSection.getParent()
+    ) {
+      if (otherSection.isWatched) {
+        return otherSection;
+      }
+    }
+    return null;
   }
 
   /**

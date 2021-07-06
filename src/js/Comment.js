@@ -812,6 +812,59 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Hide the comment menu (in fact, the comment overlay's inner wrapper).
+   *
+   * @param {Event} [e]
+   * @private
+   */
+  hideMenu(e) {
+    if (e) {
+      e.preventDefault();
+    }
+    this.overlayInnerWrapper.style.display = 'none';
+  }
+
+  /**
+   * Handle the reply button click.
+   *
+   * @private
+   */
+  replyButtonClick() {
+    if (this.replyForm) {
+      this.replyForm.cancel();
+    } else {
+      this.reply();
+    }
+  }
+
+  /**
+   * Handle the edit button click.
+   *
+   * @private
+   */
+  editButtonClick() {
+    this.edit();
+  }
+
+  /**
+   * Handle the thank button click.
+   *
+   * @private
+   */
+  thankButtonClick() {
+    this.thank();
+  }
+
+  /**
+   * Handle the "Go to parent" button click.
+   *
+   * @private
+   */
+  goToParentButtonClick() {
+    this.goToParent();
+  }
+
+  /**
    * @typedef Offset
    * @param {number} top
    * @param {number} bottom
@@ -1107,59 +1160,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Hide the comment menu (in fact, the comment overlay's inner wrapper).
-   *
-   * @param {Event} [e]
-   * @private
-   */
-  hideMenu(e) {
-    if (e) {
-      e.preventDefault();
-    }
-    this.overlayInnerWrapper.style.display = 'none';
-  }
-
-  /**
-   * Handle the reply button click.
-   *
-   * @private
-   */
-  replyButtonClick() {
-    if (this.replyForm) {
-      this.replyForm.cancel();
-    } else {
-      this.reply();
-    }
-  }
-
-  /**
-   * Handle the edit button click.
-   *
-   * @private
-   */
-  editButtonClick() {
-    this.edit();
-  }
-
-  /**
-   * Handle the thank button click.
-   *
-   * @private
-   */
-  thankButtonClick() {
-    this.thank();
-  }
-
-  /**
-   * Handle the "Go to parent" button click.
-   *
-   * @private
-   */
-  goToParentButtonClick() {
-    this.goToParent();
-  }
-
-  /**
    * Create the comment's underlay and overlay with contents.
    *
    * @fires commentLayersCreated
@@ -1394,6 +1394,81 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get and sometimes create the container for the comment's layers.
+   *
+   * @returns {Element}
+   * @private
+   */
+  getLayersContainer() {
+    if (this.cachedLayersContainer === undefined) {
+      let offsetParent;
+      const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
+      while (treeWalker.parentNode()) {
+        // These elements have "position: relative" for the purpose we know.
+        if (treeWalker.currentNode.classList.contains('cd-connectToPreviousItem')) continue;
+
+        let style = treeWalker.currentNode.conveneintDiscussionsStyle;
+        if (!style) {
+          // window.getComputedStyle is expensive, so we save the result to the node's property.
+          style = window.getComputedStyle(treeWalker.currentNode);
+          treeWalker.currentNode.conveneintDiscussionsStyle = style;
+        }
+        if (['absolute', 'relative'].includes(style.position)) {
+          offsetParent = treeWalker.currentNode;
+        }
+        const backgroundColor = style.backgroundColor;
+        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none' && !offsetParent) {
+          offsetParent = treeWalker.currentNode;
+          offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
+        }
+        if (offsetParent) break;
+      }
+      if (!offsetParent) {
+        offsetParent = document.body;
+      }
+      offsetParent.classList.add('cd-commentLayersContainer-parent');
+      let container = offsetParent.firstElementChild;
+      if (!container.classList.contains('cd-commentLayersContainer')) {
+        container = document.createElement('div');
+        container.classList.add('cd-commentLayersContainer');
+        offsetParent.insertBefore(container, offsetParent.firstChild);
+      }
+      this.cachedLayersContainer = container;
+
+      addToArrayIfAbsent(Comment.layersContainers, container);
+    }
+    return this.cachedLayersContainer;
+  }
+
+  /**
+   * @typedef {object} LayersContainerOffset
+   * @property {number} top Top offset.
+   * @property {number} left Left offset.
+   * @private
+   */
+
+  /**
+   * Get the top and left offset of the layers container.
+   *
+   * @returns {LayersContainerOffset}
+   * @private
+   */
+  getLayersContainerOffset() {
+    const container = this.getLayersContainer();
+    let top = container.cdCachedLayersContainerTop;
+    let left = container.cdCachedLayersContainerLeft;
+    if (top === undefined || container.cdCouldHaveMoved) {
+      const rect = container.getBoundingClientRect();
+      top = rect.top + window.scrollY;
+      left = rect.left + window.scrollX;
+      container.cdCouldHaveMoved = false;
+      container.cdCachedLayersContainerTop = top;
+      container.cdCachedLayersContainerLeft = left;
+    }
+    return { top, left };
+  }
+
+  /**
    * Highlight the comment when it is hovered.
    *
    * @param {Event} e
@@ -1606,6 +1681,127 @@ export default class Comment extends CommentSkeleton {
     } else {
       this.willFlashChangedOnSight = true;
     }
+  }
+
+  /**
+   * Show a diff of changes in the comment between the current revision ID and the provided one.
+   *
+   * @param {number} comparedRevisionId
+   * @param {object} commentsData
+   * @throws {CdError}
+   * @private
+   */
+  async showDiff(comparedRevisionId, commentsData) {
+    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
+
+    let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
+    let revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
+
+    const revisionsRequest = cd.g.api.post({
+      action: 'query',
+      revids: [revisionIdLesser, revisionIdGreater],
+      prop: 'revisions',
+      rvslots: 'main',
+      rvprop: ['ids', 'content'],
+      redirects: !mw.config.get('wgIsRedirect'),
+      formatversion: 2,
+    }).catch(handleApiReject);
+
+    const compareRequest = cd.g.api.post({
+      action: 'compare',
+      fromtitle: this.getSourcePage().name,
+      fromrev: revisionIdLesser,
+      torev: revisionIdGreater,
+      prop: ['diff'],
+      formatversion: 2,
+    }).catch(handleApiReject);
+
+    let [revisionsResp, compareResp] = await Promise.all([
+      revisionsRequest,
+      compareRequest,
+      mw.loader.using('mediawiki.diff.styles'),
+    ]);
+
+    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
+    if (!revisions) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    const lineNumbers = [[], []];
+    revisions.forEach((revision, i) => {
+      const pageCode = revision.slots.main.content;
+      const inCode = this.locateInCode(pageCode, commentsData[i]);
+      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
+      const newlinesInComment = (
+        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
+        []
+      );
+      const startLineNumber = newlinesBeforeComment.length + 1;
+      const endLineNumber = startLineNumber + newlinesInComment.length;
+      for (let j = startLineNumber; j <= endLineNumber; j++) {
+        lineNumbers[i].push(j);
+      }
+    });
+
+    const body = compareResp?.compare?.body;
+    if (body === undefined) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    const $diff = $(wrapDiffBody(body));
+    let currentLineNumbers = [];
+    let cleanDiffBody = '';
+    $diff.find('tr').each((i, tr) => {
+      const $tr = $(tr);
+      const $lineNumbers = $tr.children('.diff-lineno');
+      for (let j = 0; j < $lineNumbers.length; j++) {
+        const match = $lineNumbers.eq(j).text().match(/\d+/);
+        currentLineNumbers[j] = Number((match || [])[0]);
+        if (!currentLineNumbers[j]) {
+          throw new CdError({
+            type: 'parse',
+          });
+        }
+        if (j === 1) return;
+      }
+      if (!$tr.children('.diff-marker').length) return;
+      let addToDiff = false;
+      for (let j = 0; j < 2; j++) {
+        if (!$tr.children().eq(j * 2).hasClass('diff-empty')) {
+          if (lineNumbers[j].includes(currentLineNumbers[j])) {
+            addToDiff = true;
+          }
+          currentLineNumbers[j]++;
+        }
+      }
+      if (addToDiff) {
+        cleanDiffBody += $tr.prop('outerHTML');
+      }
+    });
+    const $cleanDiff = $(wrapDiffBody(cleanDiffBody));
+    if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
+      throw new CdError({
+        type: 'parse',
+        message: cd.sParse('comment-changed-diff-empty'),
+      });
+    }
+
+    const $historyLink = $('<a>')
+      .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
+      .attr('target', '_blank')
+      .text(cd.s('comment-changed-history'));
+    const $below = $('<div>')
+      .addClass('cd-commentDiffView-below')
+      .append($historyLink);
+
+    const $message = $('<div>').append($cleanDiff, $below);
+    OO.ui.alert($message, { size: 'larger' });
   }
 
   /**
@@ -1924,6 +2120,31 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * _For internal use._ Generate a JQuery object containing an edit summary, diff body, and link to
+   * the next diff.
+   *
+   * @returns {Promise.<JQuery>}
+   */
+  async generateDiffView() {
+    const edit = await this.findEditThatAdded();
+    const diffLink = await this.getDiffLink();
+    const $nextDiffLink = $('<a>')
+      .addClass('cd-diffView-nextDiffLink')
+      .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
+      .attr('target', '_blank')
+      .text(cd.mws('nextdiff'));
+    const $above = $('<div>').append($nextDiffLink);
+    if (edit.parsedcomment) {
+      const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
+      $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
+    }
+    const $diffBody = wrapDiffBody(edit.diffBody);
+    return $('<div>')
+      .addClass('cd-diffView-diff')
+      .append($above, $diffBody);
+  }
+
+  /**
    * Copy a link to the comment or open a copy link dialog.
    *
    * @param {Event} e
@@ -2054,31 +2275,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Generate a JQuery object containing an edit summary, diff body, and link to
-   * the next diff.
-   *
-   * @returns {Promise.<JQuery>}
-   */
-  async generateDiffView() {
-    const edit = await this.findEditThatAdded();
-    const diffLink = await this.getDiffLink();
-    const $nextDiffLink = $('<a>')
-      .addClass('cd-diffView-nextDiffLink')
-      .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
-      .attr('target', '_blank')
-      .text(cd.mws('nextdiff'));
-    const $above = $('<div>').append($nextDiffLink);
-    if (edit.parsedcomment) {
-      const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
-      $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
-    }
-    const $diffBody = wrapDiffBody(edit.diffBody);
-    return $('<div>')
-      .addClass('cd-diffView-diff')
-      .append($above, $diffBody);
-  }
-
-  /**
    * Consider the comment thanked (rename the button and set other parameters).
    *
    * @private
@@ -2193,49 +2389,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
-   * passed, set the results to the `inCode` property. Otherwise, return the result.
-   *
-   * @param {string|boolean} [codeOrUseSectionCode] Code that should have the comment (provided only
-   *   if we need to perform operations on some code that is not the code of a section or page).
-   *   Boolean `true` means to use the (prefetched) section code to locate the comment in.
-   * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
-   * @returns {string|undefined}
-   * @throws {CdError}
-   */
-  locateInCode(codeOrUseSectionCode, commentData) {
-    let code;
-    if (typeof codeOrUseSectionCode === 'string') {
-      code = codeOrUseSectionCode;
-    } else if (codeOrUseSectionCode === true) {
-      code = this.section.code;
-      this.inCode = null;
-    } else {
-      code = this.getSourcePage().code;
-      this.inCode = null;
-    }
-
-    const isSectionCodeUsed = codeOrUseSectionCode === true;
-    const matches = this.searchInCode(code, commentData, isSectionCodeUsed);
-    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
-    if (!bestMatch) {
-      throw new CdError({
-        type: 'parse',
-        code: 'locateComment',
-      });
-    }
-
-    bestMatch.isSectionCodeUsed = isSectionCodeUsed;
-
-    const inCode = this.adjustCommentCodeData(bestMatch);
-    if (typeof codeOrUseSectionCode === 'string') {
-      return inCode;
-    } else {
-      this.inCode = inCode;
-    }
-  }
-
-  /**
    * Create a {@link module:Comment#replyForm reply form} for the comment.
    *
    * @param {object|CommentForm} dataToRestore
@@ -2287,100 +2440,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Convert the comment code as present in the `inCode` property to text to set as a value of the
-   * form's comment input.
-   *
-   * @returns {string}
-   */
-  codeToText() {
-    if (!this.inCode) {
-      console.error('The Comment#inCode property should contain an object with the comment code data.');
-      return;
-    }
-    let { code, originalIndentationChars } = this.inCode;
-
-    let hidden;
-    ({ code, hidden } = hideSensitiveCode(code));
-
-    let text = code;
-
-    if (this.level === 0) {
-      // Collapse random line breaks that do not affect text rendering but will transform into <br>
-      // on posting. \x01 and \x02 mean the beginning and ending of sensitive code except for
-      // tables. \x03 and \x04 mean the beginning and ending of a table. Note: This should be kept
-      // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
-      // more comments are there.
-      const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_block.*\\x02) *$`, 'i');
-      const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
-      const currentLineEndingRegexp = new RegExp(
-        `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
-        'i'
-      );
-      const nextLineBeginningRegexp = new RegExp(
-        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
-        'i'
-      );
-      const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-      text = text.replace(
-        /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
-        (s, currentLine, nextLine) => {
-          const newlineOrSpace = (
-            entireLineRegexp.test(currentLine) ||
-            entireLineRegexp.test(nextLine) ||
-            fileRegexp.test(currentLine) ||
-            fileRegexp.test(nextLine) ||
-            entireLineFromStartRegexp.test(currentLine) ||
-            entireLineFromStartRegexp.test(nextLine) ||
-            currentLineEndingRegexp.test(currentLine) ||
-            nextLineBeginningRegexp.test(nextLine)
-          ) ?
-            '\n' :
-            ' ';
-          return currentLine + newlineOrSpace;
-        }
-      );
-    }
-
-    text = text
-      // <br> → \n, except in list elements and <pre>'s created by a space starting the line.
-      .replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
-        s.replace(/<br[ \n]*\/?>\n? */gi, () => '\n')
-      ))
-
-      // Remove indentation characters
-      .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
-        let newChars;
-        if (chars.length >= originalIndentationChars.length) {
-          newChars = chars.slice(originalIndentationChars.length);
-          if (chars.length > originalIndentationChars.length) {
-            newChars += spacing;
-          }
-        } else {
-          newChars = chars + spacing;
-        }
-        return '\n' + newChars;
-      });
-
-    text = unhideText(text, hidden);
-
-    if (cd.config.paragraphTemplates.length) {
-      const paragraphTemplatesPattern = cd.config.paragraphTemplates
-        .map(caseInsensitiveFirstCharPattern)
-        .join('|');
-      const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
-      const regexp = new RegExp(pattern, 'g');
-      const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
-      text = text.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
-    }
-
-    if (this.level !== 0) {
-      text = text.replace(/\n\n+/g, '\n\n');
-    }
-
-    return text.trim();
-  }
-
-  /**
    * Load the comment code.
    *
    * @throws {CdError|Error}
@@ -2415,6 +2474,27 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Determine if the comment is in the viewport. Return `null` if we couldn't get the comment's
+   * offset.
+   *
+   * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
+   * @param {object} [offset=this.getOffset()] Prefetched offset.
+   * @returns {?boolean}
+   */
+  isInViewport(partially = false, offset = this.getOffset()) {
+    if (!offset) {
+      return null;
+    }
+
+    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportBottom = viewportTop + window.innerHeight;
+
+    return partially ?
+      offset.downplayedBottom > viewportTop && offset.top < viewportBottom :
+      offset.top >= viewportTop && offset.downplayedBottom <= viewportBottom;
+  }
+
+  /**
    * Mark the comment as seen, and also {@link module:Comment#flash flash} comments that are set to
    * flash.
    *
@@ -2445,27 +2525,6 @@ export default class Comment extends CommentSkeleton {
         nextComment.registerSeen(registerAllInDirection, flash);
       }
     }
-  }
-
-  /**
-   * Determine if the comment is in the viewport. Return `null` if we couldn't get the comment's
-   * offset.
-   *
-   * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
-   * @param {object} [offset=this.getOffset()] Prefetched offset.
-   * @returns {?boolean}
-   */
-  isInViewport(partially = false, offset = this.getOffset()) {
-    if (!offset) {
-      return null;
-    }
-
-    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
-    const viewportBottom = viewportTop + window.innerHeight;
-
-    return partially ?
-      offset.downplayedBottom > viewportTop && offset.top < viewportBottom :
-      offset.top >= viewportTop && offset.downplayedBottom <= viewportBottom;
   }
 
   /**
@@ -2567,6 +2626,100 @@ export default class Comment extends CommentSkeleton {
     }
 
     return this.cachedText;
+  }
+
+  /**
+   * Convert the comment code as present in the `inCode` property to text to set as a value of the
+   * form's comment input.
+   *
+   * @returns {string}
+   */
+  codeToText() {
+    if (!this.inCode) {
+      console.error('The Comment#inCode property should contain an object with the comment code data.');
+      return;
+    }
+    let { code, originalIndentationChars } = this.inCode;
+
+    let hidden;
+    ({ code, hidden } = hideSensitiveCode(code));
+
+    let text = code;
+
+    if (this.level === 0) {
+      // Collapse random line breaks that do not affect text rendering but will transform into <br>
+      // on posting. \x01 and \x02 mean the beginning and ending of sensitive code except for
+      // tables. \x03 and \x04 mean the beginning and ending of a table. Note: This should be kept
+      // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
+      // more comments are there.
+      const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_block.*\\x02) *$`, 'i');
+      const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
+      const currentLineEndingRegexp = new RegExp(
+        `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
+        'i'
+      );
+      const nextLineBeginningRegexp = new RegExp(
+        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
+        'i'
+      );
+      const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
+      text = text.replace(
+        /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
+        (s, currentLine, nextLine) => {
+          const newlineOrSpace = (
+            entireLineRegexp.test(currentLine) ||
+            entireLineRegexp.test(nextLine) ||
+            fileRegexp.test(currentLine) ||
+            fileRegexp.test(nextLine) ||
+            entireLineFromStartRegexp.test(currentLine) ||
+            entireLineFromStartRegexp.test(nextLine) ||
+            currentLineEndingRegexp.test(currentLine) ||
+            nextLineBeginningRegexp.test(nextLine)
+          ) ?
+            '\n' :
+            ' ';
+          return currentLine + newlineOrSpace;
+        }
+      );
+    }
+
+    text = text
+      // <br> → \n, except in list elements and <pre>'s created by a space starting the line.
+      .replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
+        s.replace(/<br[ \n]*\/?>\n? */gi, () => '\n')
+      ))
+
+      // Remove indentation characters
+      .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
+        let newChars;
+        if (chars.length >= originalIndentationChars.length) {
+          newChars = chars.slice(originalIndentationChars.length);
+          if (chars.length > originalIndentationChars.length) {
+            newChars += spacing;
+          }
+        } else {
+          newChars = chars + spacing;
+        }
+        return '\n' + newChars;
+      });
+
+    text = unhideText(text, hidden);
+
+    if (cd.config.paragraphTemplates.length) {
+      const paragraphTemplatesPattern = cd.config.paragraphTemplates
+        .map(caseInsensitiveFirstCharPattern)
+        .join('|');
+      const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
+      const regexp = new RegExp(pattern, 'g');
+      const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
+      text = text.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
+    }
+
+    if (this.level !== 0) {
+      text = text.replace(/\n\n+/g, '\n\n');
+    }
+
+    return text.trim();
   }
 
   /**
@@ -2975,6 +3128,49 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
+   * passed, set the results to the `inCode` property. Otherwise, return the result.
+   *
+   * @param {string|boolean} [codeOrUseSectionCode] Code that should have the comment (provided only
+   *   if we need to perform operations on some code that is not the code of a section or page).
+   *   Boolean `true` means to use the (prefetched) section code to locate the comment in.
+   * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
+   * @returns {string|undefined}
+   * @throws {CdError}
+   */
+  locateInCode(codeOrUseSectionCode, commentData) {
+    let code;
+    if (typeof codeOrUseSectionCode === 'string') {
+      code = codeOrUseSectionCode;
+    } else if (codeOrUseSectionCode === true) {
+      code = this.section.code;
+      this.inCode = null;
+    } else {
+      code = this.getSourcePage().code;
+      this.inCode = null;
+    }
+
+    const isSectionCodeUsed = codeOrUseSectionCode === true;
+    const matches = this.searchInCode(code, commentData, isSectionCodeUsed);
+    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
+    if (!bestMatch) {
+      throw new CdError({
+        type: 'parse',
+        code: 'locateComment',
+      });
+    }
+
+    bestMatch.isSectionCodeUsed = isSectionCodeUsed;
+
+    const inCode = this.adjustCommentCodeData(bestMatch);
+    if (typeof codeOrUseSectionCode === 'string') {
+      return inCode;
+    } else {
+      this.inCode = inCode;
+    }
+  }
+
+  /**
    * Modify a section or page code string related to the comment in accordance with an action.
    *
    * @param {object} options
@@ -3151,81 +3347,6 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get and sometimes create the container for the comment's layers.
-   *
-   * @returns {Element}
-   * @private
-   */
-  getLayersContainer() {
-    if (this.cachedLayersContainer === undefined) {
-      let offsetParent;
-      const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
-      while (treeWalker.parentNode()) {
-        // These elements have "position: relative" for the purpose we know.
-        if (treeWalker.currentNode.classList.contains('cd-connectToPreviousItem')) continue;
-
-        let style = treeWalker.currentNode.conveneintDiscussionsStyle;
-        if (!style) {
-          // window.getComputedStyle is expensive, so we save the result to the node's property.
-          style = window.getComputedStyle(treeWalker.currentNode);
-          treeWalker.currentNode.conveneintDiscussionsStyle = style;
-        }
-        if (['absolute', 'relative'].includes(style.position)) {
-          offsetParent = treeWalker.currentNode;
-        }
-        const backgroundColor = style.backgroundColor;
-        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none' && !offsetParent) {
-          offsetParent = treeWalker.currentNode;
-          offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
-        }
-        if (offsetParent) break;
-      }
-      if (!offsetParent) {
-        offsetParent = document.body;
-      }
-      offsetParent.classList.add('cd-commentLayersContainer-parent');
-      let container = offsetParent.firstElementChild;
-      if (!container.classList.contains('cd-commentLayersContainer')) {
-        container = document.createElement('div');
-        container.classList.add('cd-commentLayersContainer');
-        offsetParent.insertBefore(container, offsetParent.firstChild);
-      }
-      this.cachedLayersContainer = container;
-
-      addToArrayIfAbsent(Comment.layersContainers, container);
-    }
-    return this.cachedLayersContainer;
-  }
-
-  /**
-   * @typedef {object} LayersContainerOffset
-   * @property {number} top Top offset.
-   * @property {number} left Left offset.
-   * @private
-   */
-
-  /**
-   * Get the top and left offset of the layers container.
-   *
-   * @returns {LayersContainerOffset}
-   * @private
-   */
-  getLayersContainerOffset() {
-    const container = this.getLayersContainer();
-    let top = container.cdCachedLayersContainerTop;
-    let left = container.cdCachedLayersContainerLeft;
-    if (top === undefined || container.cdCouldHaveMoved) {
-      const rect = container.getBoundingClientRect();
-      top = rect.top + window.scrollY;
-      left = rect.left + window.scrollX;
-      container.cdCouldHaveMoved = false;
-      container.cdCachedLayersContainerTop = top;
-      container.cdCachedLayersContainerLeft = left;
-    }
-    return { top, left };
-  }
-
-  /**
    * Request the gender of the comment's author if it is absent and affects the user mention string
    * and do something when it's received.
    *
@@ -3262,127 +3383,6 @@ export default class Comment extends CommentSkeleton {
    */
   getSourcePage() {
     return this.section ? this.section.getSourcePage() : cd.g.PAGE;
-  }
-
-  /**
-   * Show a diff of changes in the comment between the current revision ID and the provided one.
-   *
-   * @param {number} comparedRevisionId
-   * @param {object} commentsData
-   * @throws {CdError}
-   * @private
-   */
-  async showDiff(comparedRevisionId, commentsData) {
-    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
-
-    let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
-    let revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
-
-    const revisionsRequest = cd.g.api.post({
-      action: 'query',
-      revids: [revisionIdLesser, revisionIdGreater],
-      prop: 'revisions',
-      rvslots: 'main',
-      rvprop: ['ids', 'content'],
-      redirects: !mw.config.get('wgIsRedirect'),
-      formatversion: 2,
-    }).catch(handleApiReject);
-
-    const compareRequest = cd.g.api.post({
-      action: 'compare',
-      fromtitle: this.getSourcePage().name,
-      fromrev: revisionIdLesser,
-      torev: revisionIdGreater,
-      prop: ['diff'],
-      formatversion: 2,
-    }).catch(handleApiReject);
-
-    let [revisionsResp, compareResp] = await Promise.all([
-      revisionsRequest,
-      compareRequest,
-      mw.loader.using('mediawiki.diff.styles'),
-    ]);
-
-    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
-    if (!revisions) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    const lineNumbers = [[], []];
-    revisions.forEach((revision, i) => {
-      const pageCode = revision.slots.main.content;
-      const inCode = this.locateInCode(pageCode, commentsData[i]);
-      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
-      const newlinesInComment = (
-        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
-        []
-      );
-      const startLineNumber = newlinesBeforeComment.length + 1;
-      const endLineNumber = startLineNumber + newlinesInComment.length;
-      for (let j = startLineNumber; j <= endLineNumber; j++) {
-        lineNumbers[i].push(j);
-      }
-    });
-
-    const body = compareResp?.compare?.body;
-    if (body === undefined) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    const $diff = $(wrapDiffBody(body));
-    let currentLineNumbers = [];
-    let cleanDiffBody = '';
-    $diff.find('tr').each((i, tr) => {
-      const $tr = $(tr);
-      const $lineNumbers = $tr.children('.diff-lineno');
-      for (let j = 0; j < $lineNumbers.length; j++) {
-        const match = $lineNumbers.eq(j).text().match(/\d+/);
-        currentLineNumbers[j] = Number((match || [])[0]);
-        if (!currentLineNumbers[j]) {
-          throw new CdError({
-            type: 'parse',
-          });
-        }
-        if (j === 1) return;
-      }
-      if (!$tr.children('.diff-marker').length) return;
-      let addToDiff = false;
-      for (let j = 0; j < 2; j++) {
-        if (!$tr.children().eq(j * 2).hasClass('diff-empty')) {
-          if (lineNumbers[j].includes(currentLineNumbers[j])) {
-            addToDiff = true;
-          }
-          currentLineNumbers[j]++;
-        }
-      }
-      if (addToDiff) {
-        cleanDiffBody += $tr.prop('outerHTML');
-      }
-    });
-    const $cleanDiff = $(wrapDiffBody(cleanDiffBody));
-    if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
-      throw new CdError({
-        type: 'parse',
-        message: cd.sParse('comment-changed-diff-empty'),
-      });
-    }
-
-    const $historyLink = $('<a>')
-      .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
-      .attr('target', '_blank')
-      .text(cd.s('comment-changed-history'));
-    const $below = $('<div>')
-      .addClass('cd-commentDiffView-below')
-      .append($historyLink);
-
-    const $message = $('<div>').append($cleanDiff, $below);
-    OO.ui.alert($message, { size: 'larger' });
   }
 
   /**

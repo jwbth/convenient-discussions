@@ -344,34 +344,6 @@ export default class CommentForm {
   }
 
   /**
-   * Test if a comment or section exists in the wikitext.
-   *
-   * @returns {external:JQueryPromise}
-   */
-  checkCode() {
-    if (!this.checkCodeRequest) {
-      /**
-       * Request to test if a comment or section exists in the code made by
-       * {@link module:CommentForm#checkCode}.
-       *
-       * @type {external:JQueryPromise|undefined}
-       */
-      this.checkCodeRequest = this.target.getCode(this).catch((e) => {
-        if (e instanceof CdError) {
-          const options = Object.assign({}, e.data);
-          this.handleError(options);
-        } else {
-          this.handleError({
-            type: 'javascript',
-            logMessage: e,
-          });
-        }
-      });
-    }
-    return this.checkCodeRequest;
-  }
-
-  /**
    * _For internal use._ Set the `target`, `targetSection`, `targetComment`, and `targetPage`
    * properties.
    *
@@ -1239,6 +1211,80 @@ export default class CommentForm {
   }
 
   /**
+   * Load the edited comment to the comment form.
+   *
+   * @private
+   */
+  loadComment() {
+    const currentOperation = this.registerOperation({ type: 'load' });
+    this.target.getCode(true).then(
+      () => {
+        let commentText = this.target.codeToText();
+        if (this.target.inCode.inSmallFont) {
+          commentText = `<small>${commentText}</small>`;
+        }
+        const headline = this.target.inCode.headlineCode;
+
+        this.commentInput.setValue(commentText);
+        this.originalComment = commentText;
+        if (this.headlineInput) {
+          this.headlineInput.setValue(headline);
+          this.originalHeadline = headline;
+        }
+
+        this.closeOperation(currentOperation);
+
+        focusInput(this.commentInput);
+        this.preview();
+      },
+      (e) => {
+        if (e instanceof CdError) {
+          const options = Object.assign({}, e.data, {
+            cancel: true,
+            currentOperation,
+          });
+          this.handleError(options);
+        } else {
+          this.handleError({
+            type: 'javascript',
+            logMessage: e,
+            cancel: true,
+            currentOperation,
+          });
+        }
+      }
+    );
+  }
+
+  /**
+   * Test if a comment or section exists in the wikitext.
+   *
+   * @returns {external:JQueryPromise}
+   */
+  checkCode() {
+    if (!this.checkCodeRequest) {
+      /**
+       * Request to test if a comment or section exists in the code made by
+       * {@link module:CommentForm#checkCode}.
+       *
+       * @type {external:JQueryPromise|undefined}
+       */
+      this.checkCodeRequest = this.target.getCode(this).catch((e) => {
+        if (e instanceof CdError) {
+          const options = Object.assign({}, e.data);
+          this.handleError(options);
+        } else {
+          this.handleError({
+            type: 'javascript',
+            logMessage: e,
+          });
+        }
+      });
+    }
+    return this.checkCodeRequest;
+  }
+
+  /**
    * Make a parse request with the transclusion code of edit notices and edit intro and add the
    * result to the message area.
    *
@@ -1291,52 +1337,6 @@ export default class CommentForm {
       });
 
     mw.hook('wikipage.content').fire(this.$messageArea);
-  }
-
-  /**
-   * Load the edited comment to the comment form.
-   *
-   * @private
-   */
-  loadComment() {
-    const currentOperation = this.registerOperation({ type: 'load' });
-    this.target.getCode(true).then(
-      () => {
-        let commentText = this.target.codeToText();
-        if (this.target.inCode.inSmallFont) {
-          commentText = `<small>${commentText}</small>`;
-        }
-        const headline = this.target.inCode.headlineCode;
-
-        this.commentInput.setValue(commentText);
-        this.originalComment = commentText;
-        if (this.headlineInput) {
-          this.headlineInput.setValue(headline);
-          this.originalHeadline = headline;
-        }
-
-        this.closeOperation(currentOperation);
-
-        focusInput(this.commentInput);
-        this.preview();
-      },
-      (e) => {
-        if (e instanceof CdError) {
-          const options = Object.assign({}, e.data, {
-            cancel: true,
-            currentOperation,
-          });
-          this.handleError(options);
-        } else {
-          this.handleError({
-            type: 'javascript',
-            logMessage: e,
-            cancel: true,
-            currentOperation,
-          });
-        }
-      }
-    );
   }
 
   /**
