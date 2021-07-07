@@ -500,9 +500,9 @@ export function unhideText(text, hidden, type) {
  * Save the scroll position relative to the first element in the viewport looking from the top of
  * the page.
  *
- * @param {?object} [fallbackToAbsolute=null] If an object with the `saveTocHeight` property, then
- *   use {@link module:util.saveScrollPosition} if the viewport is above the bottom of the table of
- *   contents (this allows for better precision).
+ * @param {?object} [fallbackToAbsolute=null] If an object with the `saveTocHeight` property and the
+ *   viewport is above the bottom of the table of contents, then use
+ *   {@link module:util.saveScrollPosition} (this allows for better precision).
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
 export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = window.scrollY) {
@@ -539,8 +539,9 @@ export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = 
 /**
  * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
  *
- * @param {boolean} [fallbackToAbsolute=false] Restore the relative position using
- *   {@link module:util.restoreScrollPosition} if it was previously used for saving the position.
+ * @param {boolean} [fallbackToAbsolute=false] Restore the absolute position using
+ *   {@link module:util.restoreScrollPosition} if {@link module:util.saveScrollPosition} was
+ *   previously used for saving the position.
  */
 export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
   if (fallbackToAbsolute && keptScrollPosition !== null) {

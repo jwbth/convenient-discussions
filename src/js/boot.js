@@ -970,7 +970,9 @@ export async function reloadPage(passedData = {}) {
   // In case checkboxes were changed programmatically.
   saveSession();
 
-  saveScrollPosition();
+  if (!passedData.commentAnchor && !passedData.sectionAnchor) {
+    saveScrollPosition();
+  }
 
   closeNotifications(passedData.closeNotificationsSmoothly ?? true);
 
