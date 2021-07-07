@@ -493,13 +493,13 @@ export default class Thread {
 
     cd.debug.startTimer('thread collapse button');
     cd.debug.startTimer('thread collapse button create');
-    const buttonElement = elementPrototypes.expandButton.cloneNode(true);
+    const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
       action: () => {
         this.expand();
       },
-      element: buttonElement,
-      labelElement: buttonElement.querySelector('.oo-ui-labelElement-label'),
+      element: expandButton,
+      labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
     });
     cd.debug.stopTimer('thread collapse button create');
     const author = this.rootComment.author;

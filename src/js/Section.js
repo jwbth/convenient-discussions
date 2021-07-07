@@ -286,11 +286,11 @@ export default class Section extends SectionSkeleton {
       }
     };
 
-    button.linkElement.firstChild.onmouseenter = () => {
+    button.buttonElement.firstChild.onmouseenter = () => {
       clearTimeout(hideAddSubsectionButtonTimeout);
       hideAddSubsectionButtonTimeout = null;
     };
-    button.linkElement.firstChild.onmouseleave = () => {
+    button.buttonElement.firstChild.onmouseleave = () => {
       deferButtonHide();
     };
 

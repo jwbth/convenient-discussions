@@ -22,7 +22,7 @@ export default class CommentButton extends Button {
   constructor(config) {
     // OOUI button
     if (config.element) {
-      config.linkElement = config.element.firstChild;
+      config.buttonElement = config.element.firstChild;
     }
 
     super(config);
@@ -62,7 +62,7 @@ export default class CommentButton extends Button {
     const element = this.buttonWidget.$element.get(0);
     this.element.parentNode.replaceChild(element, this.element);
     this.element = element;
-    this.linkElement = element.firstChild;
+    this.buttonElement = element.firstChild;
     if (this.action) {
       this.setAction(this.action);
     }

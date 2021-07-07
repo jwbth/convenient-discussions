@@ -265,7 +265,7 @@ export default {
         const subsections = section.getChildren(true);
         const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
         if (targetSection.replyButton) {
-          $(targetSection.replyButton.linkElement)
+          $(targetSection.replyButton.buttonElement)
             .on('mouseenter', section.replyButtonHoverHandler)
             .on('mouseleave', section.replyButtonUnhoverHandler);
         }

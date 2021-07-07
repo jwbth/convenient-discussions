@@ -4,19 +4,24 @@
  * @module Button
  */
 
-let prototype;
+let prototypes = {};
 
 /**
- * Create a button prototype (a skeleton with few properties set).
+ * Get a button prototype (a skeleton with few properties set) without recreating it if it already
+ * exists.
  *
+ * @param {string} tagName Tag name.
  * @returns {Element}
  * @private
  */
-function createButtonPrototype() {
-  const prototype = document.createElement('a');
-  prototype.tabIndex = 0;
-  prototype.setAttribute('role', 'button');
-  return prototype;
+function getButtonPrototype(tagName) {
+  if (!prototypes[tagName]) {
+    const prototype = document.createElement(tagName);
+    prototype.tabIndex = 0;
+    prototype.setAttribute('role', 'button');
+    prototypes[tagName] = prototype;
+  }
+  return prototypes[tagName];
 }
 
 /**
@@ -29,10 +34,11 @@ export default class Button {
    * @param {object} [config]
    * @param {Element} [config.element] Pre-created {@link module:Button#element element} (usually
    *   provided instead of config).
-   * @param {Element} [config.linkElement] Pre-created {@link module:Button#linkElement link
+   * @param {Element} [config.buttonElement] Pre-created {@link module:Button#buttonElement link
    *   element}.
    * @param {Element} [config.labelElement] Pre-created {@link module:Button#labelElement label
    *   element}.
+   * @param {string} [config.tagName='a'] Tag name of the button element.
    * @param {string[]} [config.classes=[]] List of classes to add to the button element.
    * @param {string} [config.href] Value of the `href` parameter to add to the link element.
    * @param {string} [config.label] Label of the button.
@@ -41,44 +47,46 @@ export default class Button {
    */
   constructor({
     element,
-    linkElement,
+    buttonElement,
     labelElement,
+    tagName = 'a',
     classes = [],
+    id,
     href,
     label,
     tooltip,
     action,
   } = {}) {
     if (!element) {
-      if (!prototype) {
-        prototype = createButtonPrototype();
-      }
-      element = prototype.cloneNode(true);
+      element = getButtonPrototype(tagName).cloneNode(true);
     }
 
+    if (id) {
+      element.id = id;
+    }
     if (classes.length) {
       element.classList.add(...classes);
     }
 
     /**
-     * Button element which can be the same as the {@link module:Button#linkElement link element} or
-     * a wrapper around it.
+     * Main element which can be the same as the {@link module:Button#button link element} or a
+     * wrapper around it.
      *
      * @type {Element}
      */
     this.element = element;
 
     /**
-     * Button link element (an `'a'` element) which can be the same as the
-     * {@link module:Button#element button element} or its descendant.
+     * Button element (an `'a'` element by default) which can be the same as the
+     * {@link module:Button#element main element} or its descendant.
      *
      * @type {Element}
      */
-    this.linkElement = linkElement || element;
+    this.buttonElement = buttonElement || element;
 
     /**
      * Button label element which can be which can be the same as the
-     * {@link module:Button#linkElement link element} or its descendant.
+     * {@link module:Button#buttonElement link element} or its descendant.
      *
      * @type {Element}
      */
@@ -107,8 +115,8 @@ export default class Button {
   setDisabled(disabled) {
     disabled = Boolean(disabled);
     this.element.classList.toggle('cd-button-disabled', disabled);
-    this.linkElement.ariaDisabled = disabled;
-    this.linkElement.tabIndex = disabled ? -1 : 0;
+    this.buttonElement.ariaDisabled = disabled;
+    this.buttonElement.tabIndex = disabled ? -1 : 0;
 
     return this;
   }
@@ -134,7 +142,7 @@ export default class Button {
    * @returns {Button} This button.
    */
   setHref(href) {
-    this.linkElement.href = href;
+    this.buttonElement.href = href;
 
     return this;
   }
@@ -158,7 +166,7 @@ export default class Button {
    * @returns {Button} This button.
    */
   setTooltip(tooltip) {
-    this.linkElement.title = tooltip;
+    this.buttonElement.title = tooltip;
 
     return this;
   }
@@ -170,7 +178,7 @@ export default class Button {
    * @returns {Button} This button.
    */
   setAction(action) {
-    this.linkElement.onclick = action ?
+    this.buttonElement.onclick = action ?
       (e) => {
         if (!this.isDisabled()) {
           e.preventDefault();
@@ -178,7 +186,7 @@ export default class Button {
         }
       } :
       action;
-    this.linkElement.onkeydown = action ?
+    this.buttonElement.onkeydown = action ?
       (e) => {
         // Enter, Space
         if (!this.isDisabled() && [13, 32].includes(e.keyCode)) {
@@ -211,15 +219,23 @@ export default class Button {
 
   /**
    * Hide the button.
+   *
+   * @returns {Button} This button.
    */
   hide() {
     this.element.style.display = 'none';
+
+    return this;
   }
 
   /**
    * Show the button.
+   *
+   * @returns {Button} This button.
    */
   show() {
     this.element.style.display = '';
+
+    return this;
   }
 }
