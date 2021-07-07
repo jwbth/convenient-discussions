@@ -100,6 +100,12 @@ export function handleGlobalKeyDown(e) {
     if (keyCombination(e, 70) && !isInputFocused()) {
       navPanel.goToFirstUnseenComment();
     }
+
+    // C
+    if (keyCombination(e, 67) && !isInputFocused()) {
+      e.preventDefault();
+      navPanel.goToNextCommentForm();
+    }
   }
 }
 

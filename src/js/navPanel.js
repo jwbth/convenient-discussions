@@ -119,7 +119,7 @@ export default {
       tagName: 'div',
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-commentFormButton',
-      tooltip: cd.s('navpanel-commentform'),
+      tooltip: `${cd.s('navpanel-commentform')} ${cd.mws('parentheses', 'C')}`,
       action: () => {
         this.goToNextCommentForm();
       },
