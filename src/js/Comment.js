@@ -30,7 +30,6 @@ import {
   isInline,
   isPageOverlayOn,
   saveToLocalStorage,
-  triggerClickOnEnterAndSpace,
   unhideText,
   unique,
   wrap,
@@ -1835,24 +1834,23 @@ export default class Comment extends CommentSkeleton {
         break;
     }
 
-    let $refreshLink;
+    let refreshLink;
     if (!isNewVersionRendered) {
       const passedData = type === 'deleted' ? {} : { commentAnchor: this.anchor };
-      $refreshLink = $('<a>')
-        .attr('tabindex', 0)
-        .text(cd.s('comment-changed-refresh'))
-        .on('keydown', triggerClickOnEnterAndSpace)
-        .on('click', () => {
+      refreshLink = new Button({
+        label: cd.s('comment-changed-refresh'),
+        action: () => {
           reloadPage(passedData);
-        });
+        },
+      })
     }
 
-    let diffButton;
+    let diffLink;
     if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
-      diffButton = new Button({
+      diffLink = new Button({
         label: cd.s('comment-changed-diff'),
         action: async () => {
-          diffButton.setPending(true);
+          diffLink.setPending(true);
           try {
             await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
@@ -1867,7 +1865,7 @@ export default class Comment extends CommentSkeleton {
             }
             mw.notify(wrap(text), { type: 'error' });
           }
-          diffButton.setPending(false);
+          diffLink.setPending(false);
         },
       });
     }
@@ -1876,11 +1874,10 @@ export default class Comment extends CommentSkeleton {
     let diffLinkSeparator;
     if (cd.settings.reformatComments) {
       stringName += '-short';
-      refreshLinkSeparator = cd.sParse('dot-separator');
-      diffLinkSeparator = cd.sParse('dot-separator');
+      refreshLinkSeparator = diffLinkSeparator = cd.sParse('dot-separator');
     } else {
       refreshLinkSeparator = ' ';
-      diffLinkSeparator = $refreshLink ? cd.sParse('dot-separator') : ' ';
+      diffLinkSeparator = refreshLink ? cd.sParse('dot-separator') : ' ';
     }
 
     $(this.highlightables)
@@ -1890,13 +1887,13 @@ export default class Comment extends CommentSkeleton {
     const $changeMark = $('<span>')
       .addClass('cd-changeMark')
       .text(cd.s(stringName));
-    if ($refreshLink) {
-      $changeMark.append(refreshLinkSeparator, $refreshLink);
+    if (refreshLink) {
+      $changeMark.append(refreshLinkSeparator, refreshLink.button);
     } else {
       $changeMark.addClass('cd-changeMark-newVersionRendered');
     }
-    if (diffButton) {
-      $changeMark.append(diffLinkSeparator, diffButton.element);
+    if (diffLink) {
+      $changeMark.append(diffLinkSeparator, diffLink.element);
     }
 
     if (cd.settings.reformatComments) {

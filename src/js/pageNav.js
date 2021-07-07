@@ -5,13 +5,9 @@
  * @module pageNav
  */
 
+import Button from './Button';
 import cd from './cd';
-import {
-  getExtendedRect,
-  getVisibilityByRects,
-  scrollToY,
-  triggerClickOnEnterAndSpace,
-} from './util';
+import { getExtendedRect, getVisibilityByRects, scrollToY } from './util';
 
 let currentSection;
 let $sectionWithBackLink;
@@ -109,21 +105,19 @@ export default {
           .attr('id', 'cd-pageNav-linksOnTop')
           .addClass('cd-pageNav-list')
           .appendTo(this.$topElement);
+        const topLink = new Button({
+          href: '#',
+          classes: ['cd-pageNav-link'],
+          label: cd.s('pagenav-pagetop'),
+          action: () => {
+            this.jump(0, this.$topLink);
+          },
+        });
         this.$topLink = $('<li>')
           .attr('id', 'cd-pageNav-topLink')
           .addClass('cd-pageNav-item')
+          .append(topLink.element)
           .appendTo(this.$linksOnTop);
-        $('<a>')
-          .attr('href', '#')
-          .attr('tabindex', 0)
-          .addClass('cd-pageNav-link')
-          .text(cd.s('pagenav-pagetop'))
-          .on('keydown', triggerClickOnEnterAndSpace)
-          .on('click', (e) => {
-            e.preventDefault();
-            this.jump(0, this.$topLink);
-          })
-          .appendTo(this.$topLink);
       }
     } else {
       if (this.$linksOnTop) {
@@ -133,21 +127,19 @@ export default {
 
     if (this.$linksOnTop) {
       if (cd.g.$toc.length && !this.$tocLink) {
+        const tocLink = new Button({
+          href: '#toc',
+          classes: ['cd-pageNav-link'],
+          label: cd.s('pagenav-toc'),
+          action: () => {
+            this.jump(cd.g.$toc, this.$tocLink);
+          },
+        });
         this.$tocLink = $('<li>')
           .attr('id', 'cd-pageNav-tocLink')
           .addClass('cd-pageNav-item')
+          .append(tocLink.element)
           .appendTo(this.$linksOnTop);
-        $('<a>')
-          .attr('href', '#toc')
-          .attr('tabindex', 0)
-          .addClass('cd-pageNav-link')
-          .text(cd.s('pagenav-toc'))
-          .on('keydown', triggerClickOnEnterAndSpace)
-          .on('click', (e) => {
-            e.preventDefault();
-            this.jump(cd.g.$toc, this.$tocLink);
-          })
-          .appendTo(this.$tocLink);
       }
       if (!this.$currentSection) {
         this.$currentSection = $('<ul>')
@@ -162,21 +154,19 @@ export default {
       backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {
+        const bottomLink = new Button({
+          href: '#footer',
+          classes: ['cd-pageNav-link'],
+          label: cd.s('pagenav-pagebottom'),
+          action: () => {
+            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
+          },
+        });
         this.$bottomLink = $('<li>')
           .attr('id', 'cd-pageNav-bottomLink')
           .addClass('cd-pageNav-item')
+          .append(bottomLink.element)
           .appendTo(this.$bottomElement);
-        $('<a>')
-          .attr('href', '#footer')
-          .attr('tabindex', 0)
-          .addClass('cd-pageNav-link')
-          .text(cd.s('pagenav-pagebottom'))
-          .on('keydown', triggerClickOnEnterAndSpace)
-          .on('click', (e) => {
-            e.preventDefault();
-            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
-          })
-          .appendTo(this.$bottomLink);
       }
     } else {
       if (this.$bottomLink) {
@@ -222,19 +212,18 @@ export default {
             if ($sectionWithBackLink && $sectionWithBackLink.data('section') === sectionInTree) {
               $item = $sectionWithBackLink;
             } else {
+              const button = new Button({
+                href: sectionInTree.getUrl(),
+                classes: ['cd-pageNav-link'],
+                label: sectionInTree.headline,
+                action: () => {
+                  this.jump(sectionInTree.$heading, $item);
+                },
+              });
               $item = $('<li>')
                 .addClass(`cd-pageNav-item cd-pageNav-item-level-${level}`)
                 .data('section', sectionInTree)
-              $('<a>')
-                .attr('href', sectionInTree.getUrl())
-                .addClass('cd-pageNav-link')
-                .text(sectionInTree.headline)
-                .on('keydown', triggerClickOnEnterAndSpace)
-                .on('click', (e) => {
-                  e.preventDefault();
-                  this.jump(sectionInTree.$heading, $item);
-                })
-                .appendTo($item);
+                .append(button.element);
             }
             $item.appendTo(this.$currentSection);
           });
@@ -302,23 +291,19 @@ export default {
     }
     if (!isBackLink) {
       const scrollY = window.scrollY;
-      const $backLink = $('<a>')
-        .attr('tabindex', 0)
-        .addClass('cd-pageNav-backLink')
-        .text(cd.s('pagenav-back'))
-        .on('keydown', triggerClickOnEnterAndSpace)
-        .on('click', (e) => {
-          // For links with href
-          e.preventDefault();
-
-          // For links without href
+      const backLink = new Button({
+        classes: ['cd-pageNav-backLink'],
+        label: cd.s('pagenav-back'),
+        action: (e) => {
+          // When inside links without href
           e.stopPropagation();
 
           this.jump(scrollY, $item, true);
-        });
+        },
+      });
       $backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
-        .append(cd.sParse('dot-separator'), $backLink)
+        .append(cd.sParse('dot-separator'), backLink.element)
         .appendTo($item);
       $backLinkContainer.prev().addClass('cd-pageNav-link-inline');
       if ($item.parent().is('#cd-pageNav-currentSection')) {

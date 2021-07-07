@@ -4,6 +4,7 @@
  * @module navPanel
  */
 
+import Button from './Button';
 import Comment from './Comment';
 import cd from './cd';
 import updateChecker from './updateChecker';
@@ -26,7 +27,7 @@ export default {
      * Navigation panel element.
      *
      * @name $element
-     * @type {?(JQuery|undefined)}
+     * @type {?(Button|undefined)}
      * @memberof module:navPanel
      */
     this.$element = $('<div>')
@@ -34,89 +35,103 @@ export default {
       .appendTo(document.body);
 
     /**
-     * Refresh button element.
+     * Refresh button.
      *
-     * @name $refreshButton
-     * @type {JQuery|undefined}
+     * @name refreshButton
+     * @type {Button|undefined}
      * @memberof module:navPanel
+     * @private
      */
-    this.$refreshButton = $('<div>')
-      .addClass('cd-navPanel-button')
-      .attr('id', 'cd-navPanel-refreshButton')
-      .on('click', (e) => {
+    this.refreshButton = new Button({
+      tagName: 'div',
+      classes: ['cd-navPanel-button'],
+      id: 'cd-navPanel-refreshButton',
+      action: (e) => {
         this.refreshClick(e.ctrlKey);
-      })
-      .appendTo(this.$element);
+      },
+    });
 
     this.updateRefreshButtonTooltip(0);
 
     /**
      * "Go to the previous new comment" button element.
      *
-     * @name $previousButton
-     * @type {JQuery|undefined}
+     * @name previousButton
+     * @type {Button|undefined}
      * @memberof module:navPanel
+     * @private
      */
-    this.$previousButton = $('<div>')
-      .addClass('cd-navPanel-button')
-      .attr('id', 'cd-navPanel-previousButton')
-      .attr('title', `${cd.s('navpanel-previous')} ${cd.mws('parentheses', 'W')}`)
-      .on('click', () => {
+    this.previousButton = new Button({
+      tagName: 'div',
+      classes: ['cd-navPanel-button'],
+      id: 'cd-navPanel-previousButton',
+      tooltip: `${cd.s('navpanel-previous')} ${cd.mws('parentheses', 'W')}`,
+      action: () => {
         this.goToPreviousNewComment();
-      })
-      .hide()
-      .appendTo(this.$element);
+      },
+    }).hide();
 
     /**
      * "Go to the next new comment" button element.
      *
-     * @name $nextButton
-     * @type {JQuery|undefined}
+     * @name nextButton
+     * @type {Button|undefined}
      * @memberof module:navPanel
+     * @private
      */
-    this.$nextButton = $('<div>')
-      .addClass('cd-navPanel-button')
-      .attr('id', 'cd-navPanel-nextButton')
-      .attr('title', `${cd.s('navpanel-next')} ${cd.mws('parentheses', 'S')}`)
-      .on('click', () => {
+    this.nextButton = new Button({
+      tagName: 'div',
+      classes: ['cd-navPanel-button'],
+      id: 'cd-navPanel-nextButton',
+      tooltip: `${cd.s('navpanel-next')} ${cd.mws('parentheses', 'S')}`,
+      action: () => {
         this.goToNextNewComment();
-      })
-      .hide()
-      .appendTo(this.$element);
+      },
+    }).hide();
 
     /**
      * "Go to the first unseen comment" button element.
      *
-     * @name $firstUnseenButton
-     * @type {JQuery|undefined}
+     * @name firstUnseenButton
+     * @type {Button|undefined}
      * @memberof module:navPanel
+     * @private
      */
-    this.$firstUnseenButton = $('<div>')
-      .addClass('cd-navPanel-button')
-      .attr('id', 'cd-navPanel-firstUnseenButton')
-      .attr('title', `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`)
-      .on('click', () => {
+    this.firstUnseenButton = new Button({
+      tagName: 'div',
+      classes: ['cd-navPanel-button'],
+      id: 'cd-navPanel-firstUnseenButton',
+      tooltip: `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`,
+      action: () => {
         this.goToFirstUnseenComment();
-      })
-      .hide()
-      .appendTo(this.$element);
+      },
+    }).hide();
 
     /**
      * "Go to the next comment form out of sight" button element.
      *
-     * @name $commentFormButton
-     * @type {JQuery|undefined}
+     * @name commentFormButton
+     * @type {Button|undefined}
      * @memberof module:navPanel
+     * @private
      */
-    this.$commentFormButton = $('<div>')
-      .addClass('cd-navPanel-button')
-      .attr('id', 'cd-navPanel-commentFormButton')
-      .attr('title', cd.s('navpanel-commentform'))
-      .on('click', () => {
+    this.commentFormButton = new Button({
+      tagName: 'div',
+      classes: ['cd-navPanel-button'],
+      id: 'cd-navPanel-commentFormButton',
+      tooltip: cd.s('navpanel-commentform'),
+      action: () => {
         this.goToNextCommentForm();
-      })
-      .hide()
-      .appendTo(this.$element);
+      },
+    }).hide();
+
+    this.$element.append([
+      this.refreshButton.element,
+      this.previousButton.element,
+      this.nextButton.element,
+      this.firstUnseenButton.element,
+      this.commentFormButton.element,
+    ]);
   },
 
   /**
@@ -143,12 +158,12 @@ export default {
    * refreshes. (Comment forms are expected to be restored already.)
    */
   reset() {
-    this.$refreshButton.empty();
+    this.refreshButton.setLabel('');
     this.updateRefreshButtonTooltip(0);
-    this.$previousButton.hide();
-    this.$nextButton.hide();
-    this.$firstUnseenButton.hide();
-    this.$commentFormButton.hide();
+    this.previousButton.hide();
+    this.nextButton.hide();
+    this.firstUnseenButton.hide();
+    this.commentFormButton.hide();
     clearTimeout(urbtTimeout);
   },
 
@@ -158,8 +173,8 @@ export default {
   fill() {
     if (cd.comments.some((comment) => comment.isNew)) {
       this.updateRefreshButtonTooltip(0);
-      this.$previousButton.show();
-      this.$nextButton.show();
+      this.previousButton.show();
+      this.nextButton.show();
       this.updateFirstUnseenButton();
     }
   },
@@ -273,14 +288,15 @@ export default {
    * @param {boolean} areThereInteresting
    */
   updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
-    this.$refreshButton.empty();
+    this.refreshButton.setLabel('');
     this.updateRefreshButtonTooltip(commentCount, commentsBySection);
     if (commentCount) {
       $('<span>')
         .text(`+${commentCount}`)
-        .appendTo(this.$refreshButton);
+        .appendTo(this.refreshButton.element);
     }
-    this.$refreshButton.toggleClass('cd-navPanel-refreshButton-interesting', areThereInteresting);
+    this.refreshButton.element.classList
+      .toggle('cd-navPanel-refreshButton-interesting', areThereInteresting);
   },
 
   /**
@@ -352,14 +368,14 @@ export default {
       }
     }
 
-    this.$refreshButton.attr('title', tooltipText);
+    this.refreshButton.setTooltip(tooltipText);
 
     cd.debug.stopTimer('updateRefreshButtonTooltip');
   },
 
   /**
    * _For internal use._ Update the tooltip of the
-   * {@link module:navPanel.$refreshButton refresh button}. This is called to update timestamps in
+   * {@link module:navPanel.refreshButton refresh button}. This is called to update timestamps in
    * the text.
    */
   updateTimestampsInRefreshButtonTooltip() {
@@ -368,22 +384,22 @@ export default {
 
   /**
    * _For internal use._ Update the state of the
-   * {@link module:navPanel.$firstUnseenButton "Go to the first unseen comment"} button.
+   * {@link module:navPanel.firstUnseenButton "Go to the first unseen comment"} button.
    */
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
     const unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
     if (unseenCount) {
-      this.$firstUnseenButton.show().text(unseenCount);
+      this.firstUnseenButton.show().setLabel(unseenCount);
     } else {
-      this.$firstUnseenButton.hide();
+      this.firstUnseenButton.hide();
     }
   },
 
   /**
    * _For internal use._ Update the
-   * {@link module:navPanel.$commentFormButton "Go to the next comment form out of sight"} button
+   * {@link module:navPanel.commentFormButton "Go to the next comment form out of sight"} button
    * visibility.
    */
   updateCommentFormButton() {
@@ -391,6 +407,6 @@ export default {
 
     const areThereHidden = cd.commentForms
       .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
-    this.$commentFormButton[areThereHidden ? 'show' : 'hide']();
+    this.commentFormButton[areThereHidden ? 'show' : 'hide']();
   },
 };

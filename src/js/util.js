@@ -929,17 +929,6 @@ export function getUrlWithAnchor(anchor) {
 }
 
 /**
- * Handler of the `keydown` event that triggers a `click` event on Enter and Space pressed.
- *
- * @param {Event} e
- */
-export function triggerClickOnEnterAndSpace(e) {
-  if (e.keyCode === 13 || e.keyCode === 32) {
-    $(this).trigger('click');
-  }
-}
-
-/**
  * Add CSS to the page.
  *
  * @param {string} text
