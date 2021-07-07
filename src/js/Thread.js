@@ -786,9 +786,7 @@ export default class Thread {
         if (!getVisibilityByRects(...rects) || (!rectTop && top === undefined)) {
           if (thread.line) {
             thread.clickArea.remove();
-            thread.clickArea = null;
-            thread.clickAreaOffset = null;
-            thread.line = null;
+            thread.clickArea = thread.clickAreaOffset = thread.line = null;
           }
           return false;
         }

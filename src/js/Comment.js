@@ -864,7 +864,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef Offset
+   * @typedef CommentOffset
    * @param {number} top
    * @param {number} bottom
    * @param {number} left
@@ -883,7 +883,7 @@ export default class Comment extends CommentSkeleton {
      * The comment's rough coordinates set in {@link module:Comment#setRoughOffsetProperty} (without
      * taking into account floating elements around the comment).
      *
-     * @type {Offset}
+     * @type {CommentOffset}
      */
     this.roughOffset = this.getOffset();
   }
@@ -905,7 +905,7 @@ export default class Comment extends CommentSkeleton {
       /**
        * The comment's coordinates set in {@link module:Comment#setOffsetProperty}.
        *
-       * @type {Offset}
+       * @type {?CommentOffset}
        */
       this.offset = offset;
     }
@@ -941,8 +941,8 @@ export default class Comment extends CommentSkeleton {
       }
     }
 
-    // `offset` can be an object, `false` (the comment wasn't moved) or `null` (the comment is
-    // invisible).
+    // `offset` can be an object, `false` (the comment isn't moved), or `null` (the comment is
+    // invisible). We convert it to a Boolean or `null`.
     return offset ? true : offset;
   }
 
@@ -956,7 +956,7 @@ export default class Comment extends CommentSkeleton {
    *   calculated in advance for many elements in one sequence to save time.
    * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
    *   Deemed `true` if `floatingRects` is set.
-   * @returns {?(Offset|boolean)} Offset object. If the comment is not visible, returns
+   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
    *   `null`. If `options.considerFloating` is `true` and the comment isn't moved, returns `false`.
    * @private
    */
@@ -989,13 +989,13 @@ export default class Comment extends CommentSkeleton {
     }
 
     if (!isMoved) {
-      // If floating elements aren't supposed to be taken into account but the comment wasn't moved,
+      // If floating elements aren't supposed to be taken into account but the comment isn't moved,
       // we still return the offset with floating elements taken into account because that shouldn't
-      // hurt.
+      // do any harm.
       return options.considerFloating ? false : this.offset;
     }
 
-    // This is to determine if the element was moved in future checks.
+    // This is to determine if the element is moved in future checks.
     this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     // Seems like caching this value significantly helps performance at least in Chrome. But need to
@@ -1063,7 +1063,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {object} Margins
+   * @typedef {object} CommentMargins
    * @property {number} left Left margin.
    * @property {number} right Right margin.
    * @private
@@ -1072,7 +1072,7 @@ export default class Comment extends CommentSkeleton {
   /**
    * Get the left and right margins of the comment layers or the expand note.
    *
-   * @returns {?Margins}
+   * @returns {?CommentMargins}
    */
   getMargins() {
     cd.debug.startTimer('getMargins');
@@ -1140,15 +1140,12 @@ export default class Comment extends CommentSkeleton {
     const isMoved = this.setOffsetProperty(options);
 
     if (this.offset) {
-      const margins = this.getMargins();
-      const right = this.offset.right + margins.right;
-      const left = this.offset.left - margins.left;
       const layersContainerOffset = this.getLayersContainerOffset();
-
+      const margins = this.getMargins();
       this.layersOffset = {
         top: this.offset.top - layersContainerOffset.top,
         left: this.offset.left - margins.left - layersContainerOffset.left,
-        width: right - left,
+        width: (this.offset.right + margins.right) - (this.offset.left - margins.left),
         height: this.offset.bottom - this.offset.top,
       };
     } else {
@@ -1315,7 +1312,7 @@ export default class Comment extends CommentSkeleton {
    *   calculated in advance for many elements in one sequence to save time.
    * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
    *   Deemed `true` if `floatingRects` is set.
-   * @returns {?boolean} Was the comment moved.
+   * @returns {?boolean} Is the comment moved.
    */
   configureLayers(options = {}) {
     if (options.add === undefined) {
@@ -1488,7 +1485,7 @@ export default class Comment extends CommentSkeleton {
 
     const isMoved = this.configureLayers();
 
-    // Add classes if the comment wasn't moved. If it was moved, the layers are removed and created
+    // Add classes if the comment isn't moved. If it is moved, the layers are removed and created
     // again when the next event fires.
     if (isMoved || !this.underlay) return;
 

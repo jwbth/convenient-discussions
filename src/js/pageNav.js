@@ -245,10 +245,7 @@ export default {
       $sectionWithBackLink?.detach();
 
       this.$topElement.empty();
-      this.$linksOnTop = null;
-      this.$topLink = null;
-      this.$tocLink = null;
-      this.$currentSection = null;
+      this.$linksOnTop = this.$topLink = this.$tocLink = this.$currentSection = null;
       currentSection = null;
     }
     if (!part || part === 'bottom') {
@@ -286,8 +283,7 @@ export default {
       backLinkLocation = null;
       $backLinkContainer.prev().removeClass('cd-pageNav-link-inline');
       $backLinkContainer.remove();
-      $backLinkContainer = null;
-      $sectionWithBackLink = null;
+      $backLinkContainer = $sectionWithBackLink = null;
     }
     if (!isBackLink) {
       const scrollY = window.scrollY;

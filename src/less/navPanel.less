@@ -35,11 +35,6 @@
       align-items: center;
       font-weight: bold;
     }
-
-    > span {
-      // Can't set the attribute to the button as its tooltip may have another direction.
-      direction: ltr;
-    }
   }
 
   &-previousButton {
@@ -89,6 +84,7 @@
   background-position: center center;
   background-repeat: no-repeat;
   cursor: pointer;
+  height: 31px;
 
   &:hover {
     background-color: #eaecf0;
@@ -96,7 +92,6 @@
 
   &:not(:first-child) {
     position: relative;
-    height: 31px;
     margin-top: 1px;
 
     &::before {

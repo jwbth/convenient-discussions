@@ -292,6 +292,9 @@ export default {
     this.updateRefreshButtonTooltip(commentCount, commentsBySection);
     if (commentCount) {
       $('<span>')
+        // Can't set the attribute to the button as its tooltip may have another direction.
+        .attr('dir', 'ltr')
+
         .text(`+${commentCount}`)
         .appendTo(this.refreshButton.element);
     }

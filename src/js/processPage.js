@@ -382,7 +382,7 @@ function adjustDom() {
 }
 
 /**
- * Parse comments and modify related parts of the DOM.
+ * Parse the comments and modify the related parts of the DOM.
  *
  * @param {Parser} parser
  * @private
@@ -425,7 +425,7 @@ function processComments(parser) {
 }
 
 /**
- * Parse sections and modify some parts of them.
+ * Parse the sections and modify some parts of them.
  *
  * @param {Parser} parser
  * @param {Promise} watchedSectionsRequest
