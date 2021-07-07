@@ -2039,6 +2039,9 @@ export default class Comment extends CommentSkeleton {
         this.signatureElement = this.$elements.find('.cd-signature').get(0);
         this.replaceSignatureWithHeader();
         this.addMenu();
+      } else {
+        this.timestampElement = this.$elements.find('.cd-timestamp').get(-1);
+        this.reformatTimestamp();
       }
 
       mw.hook('wikipage.content').fire(this.$elements);
