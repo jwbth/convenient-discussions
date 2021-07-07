@@ -1885,7 +1885,7 @@ export default class Comment extends CommentSkeleton {
       .addClass('cd-changeMark')
       .text(cd.s(stringName));
     if (refreshLink) {
-      $changeMark.append(refreshLinkSeparator, refreshLink.button);
+      $changeMark.append(refreshLinkSeparator, refreshLink.element);
     } else {
       $changeMark.addClass('cd-changeMark-newVersionRendered');
     }
