@@ -77,7 +77,7 @@ export default {
       source: "Wikipedia:Administrators' noticeboard/Edit warring",
       archive: "Wikipedia:Administrators' noticeboard/3RRArchive",
     },
-    /\/Archive/,
+    /\/Archive(?![a-z])/,
   ],
 
   /*pageWhitelist: [
