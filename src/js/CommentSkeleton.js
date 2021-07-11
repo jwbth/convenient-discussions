@@ -337,14 +337,9 @@ export default class CommentSkeleton {
       .slice(this.id + 1)
       .some((comment) => {
         if (comment.section === this.section && comment[prop] > this[prop]) {
-          if (
-            comment[prop] === this[prop] + 1 ||
-
-            // Allow comments mistakenly indented with more than one level.
-            comment.getParent() === this ||
-
-            indirect
-          ) {
+          // `comment.getParent() === this` to allow comments mistakenly indented with more than one
+          // level.
+          if (comment[prop] === this[prop] + 1 || comment.getParent() === this || indirect) {
             children.push(comment);
           }
           return false;
@@ -367,13 +362,16 @@ export default class CommentSkeleton {
         .forEach((el) => {
           const treeWalker = new ElementsTreeWalker(el);
           while (treeWalker.nextNode()) {
+            // `null` and `0` as the attribute value are both bad.
             let commentId = Number(treeWalker.currentNode.getAttribute('data-comment-id'));
-
-            // null and 0 as the attribute value are both bad.
             if (commentId !== 0) {
               const parentComment = cd.comments[commentId - 1];
               const childComment = cd.comments[commentId];
-              const childLogicalLevel = childComment.logicalLevel;
+
+              // Since we traverse templates from the last to the first, `childComment.level` at
+              // this stage is always the same as `childComment.logicalLevel`. The same for
+              // `parentComment`.
+              const childLevel = childComment.level;
 
               // Something is wrong.
               if (childComment.date < parentComment.date) break;
@@ -382,13 +380,13 @@ export default class CommentSkeleton {
               cd.comments.slice(commentId).some((comment) => {
                 if (
                   comment.section !== parentComment.section ||
-                  comment.logicalLevel < childLogicalLevel ||
+                  comment.logicalLevel < childLevel ||
 
                   // If the child comment level is at least 2, we infer that the next comment on
                   // the same level is outdented together with the child comment. If it is 0 or 1,
                   // the next comment is more likely a regular reply.
                   (
-                    comment !== childComment &&
+                    comment.id === childComment.id + 1 &&
                     childComment.level < 2 &&
                     comment.level === childComment.level
                   ) ||
@@ -398,8 +396,8 @@ export default class CommentSkeleton {
                   return true;
                 }
                 comment.logicalLevel = (
-                  (parentComment.logicalLevel + 1) +
-                  (comment.logicalLevel - childLogicalLevel)
+                  (parentComment.level + 1) +
+                  (comment.logicalLevel - childLevel)
                 );
                 return false;
               });
