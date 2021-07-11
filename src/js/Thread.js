@@ -567,7 +567,7 @@ export default class Thread {
     }
 
     if (this.endElement !== this.visualEndElement) {
-      for (let c = this.rootComment; c; c = c.getParent()) {
+      for (let c = this.rootComment; c; c = c.getParent(true)) {
         c.thread?.line.classList.remove('cd-thread-line-extended');
       }
     }

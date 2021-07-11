@@ -299,23 +299,27 @@ export default class CommentSkeleton {
   /**
    * Get the parent comment of the comment.
    *
+   * @param {boolean} [visual=false] Get the visual parent (according to the
+   *   {@link module:Comment#level level} property, not
+   *   {@link module:Comment#logicalLevel logicalLevel}).
    * @returns {?CommentSkeleton}
    */
-  getParent() {
+  getParent(visual = false) {
+    const prop = visual ? 'level' : 'logicalLevel';
     if (this.cachedParent === undefined) {
-      this.cachedParent = (
+      this.cachedParent = {};
+    }
+    if (this.cachedParent[prop] === undefined) {
+      this.cachedParent[prop] = (
         cd.comments
           .slice(0, this.id)
           .reverse()
-          .find((comment) => (
-            comment.section === this.section &&
-            comment.logicalLevel < this.logicalLevel
-          )) ||
+          .find((comment) => comment.section === this.section && comment[prop] < this[prop]) ||
         null
       );
     }
 
-    return this.cachedParent;
+    return this.cachedParent[prop];
   }
 
   /**
