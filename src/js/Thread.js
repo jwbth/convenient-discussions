@@ -636,8 +636,10 @@ export default class Thread {
 
   /**
    * Create threads.
+   *
+   * @param {boolean} [restoreCollapsed=true]
    */
-  static init() {
+  static init(restoreCollapsed = true) {
     cd.debug.startTimer('threads');
     cd.debug.startTimer('threads traverse');
 
@@ -673,7 +675,9 @@ export default class Thread {
     }
     cd.debug.stopTimer('threads append container');
     cd.debug.startTimer('threads restore');
-    restoreCollapsedThreads();
+    if (restoreCollapsed) {
+      restoreCollapsedThreads();
+    }
     cd.debug.stopTimer('threads restore');
     isInited = true;
 

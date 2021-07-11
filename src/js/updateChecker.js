@@ -509,8 +509,8 @@ function checkForNewChanges(currentComments) {
     // optimization. So we just do the whole job here.
     Comment.redrawLayersIfNecessary(false, true);
 
-    // Thread start and end items may be replaced.
-    Thread.init();
+    // Thread start and end elements may be replaced.
+    Thread.init(false);
   }
 
   if (changeList.length) {
