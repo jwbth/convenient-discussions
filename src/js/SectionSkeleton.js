@@ -182,8 +182,7 @@ export default class SectionSkeleton {
       this.comments.forEach((comment) => {
         if (
           !this.oldestComment ||
-          (!this.oldestComment.date && comment.date) ||
-          this.oldestComment.date > comment.date
+          (comment.date && (!this.oldestComment.date || this.oldestComment.date > comment.date))
         ) {
           /**
            * Oldest comment in the section.
