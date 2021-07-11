@@ -79,28 +79,30 @@ function findItemElement(element, level, nextForeignElement) {
 function getEndElement(startElement, highlightables, nextForeignElement) {
   let commonAncestor = startElement;
   const lastHighlightable = highlightables[highlightables.length - 1];
-  let endElement = lastHighlightable;
   do {
     commonAncestor = commonAncestor.parentNode;
   } while (!commonAncestor.contains(lastHighlightable));
+
   cd.debug.startTimer('threads nextForeignElement');
-  let n;
+  let endElement = lastHighlightable;
   for (
-    n = endElement.parentNode;
+    let n = endElement.parentNode;
     n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
     n = n.parentNode
   ) {
     endElement = n;
   }
   cd.debug.stopTimer('threads nextForeignElement');
-  const nextElement = endElement.nextElementSibling;
-  if (
-    nextElement &&
-    nextElement.tagName === 'DL' &&
-    nextElement.classList.contains('cd-section-button-container')
+
+  // "Reply in section", "There are new comments in this thread" button container
+  for (
+    let n = endElement.nextElementSibling;
+    n && n.tagName === 'DL' && n.classList.contains('cd-section-button-container');
+    n = n.nextElementSibling
   ) {
-    endElement = nextElement;
+    endElement = n;
   }
+
   return endElement;
 }
 
@@ -362,19 +364,50 @@ export default class Thread {
    * Revise the end element of the thread based on {@link module:Comment#subitemList comment
    * subitems}.
    *
-   * @param {boolean} isVisual Use the visual thread end.
+   * @param {boolean} visual Use the visual thread end.
    * @returns {Element}
    * @private
    */
-  getAdjustedEndElement(isVisual) {
-    const lastComment = isVisual ? this.visualLastComment : this.lastComment;
-    const endElement = isVisual ? this.visualEndElement : this.endElement;
-    const subitemList = lastComment.subitemList;
-    const $subitem = subitemList.get('newCommentsNote') || subitemList.get('replyForm');
-    const adjustedEndElement = $subitem?.is(':visible') ?
-      findItemElement($subitem.get(0), lastComment.level) :
+  getAdjustedEndElement(visual) {
+    /*
+      In a structure like this:
+
+        Comment
+          Reply
+            Comment form 1
+            Reply
+              Reply
+                Comment form 2
+              New comments note 1
+            New comments note 2
+
+      - we need to calculate the end element accurately. In this case, it is "New comments note 2",
+      despite the fact that it is not a subitem of the last comment. (Subitems of 0-level comments
+      are handled by a different mechanism, see `getEndElement()`.)
+    */
+    const lastComment = visual ? this.visualLastComment : this.lastComment;
+    const endElement = visual ? this.visualEndElement : this.endElement;
+
+    // Catch special cases when a section has no "Reply in section" or "There are new comments in
+    // this thread" button or the thread isn't the last thread starting with a 0-level comment in
+    // the section.
+    let threadHasSectionButton = endElement.classList.contains('cd-section-button-container');
+
+    let $lastSubitem;
+    if (this.rootComment.level >= 1 || !threadHasSectionButton) {
+      const subitemList = this.rootComment.subitemList;
+      const $newCommentsNote = (
+        subitemList.get('newCommentsNote') ||
+        (this.rootComment === lastComment && subitemList.get('replyForm'))
+      );
+      if ($newCommentsNote) {
+        $lastSubitem = $newCommentsNote;
+      }
+    }
+
+    return $lastSubitem?.is(':visible') ?
+      findItemElement($lastSubitem.get(0), lastComment.level) :
       endElement;
-    return adjustedEndElement;
   }
 
   /**
@@ -776,17 +809,17 @@ export default class Thread {
           }
         }
 
-        const elementBottom = thread.isCollapsed ?
-          thread.expandNote :
-          thread.getAdjustedEndElement(true);
+        const elementBottom = thread.expandNote || thread.getAdjustedEndElement(true);
+
         cd.debug.startTimer('threads getBoundingClientRect bottom');
-        const rectBottom = elementBottom.getBoundingClientRect();
+        // Logically, elementBottom should always be defined.
+        const rectBottom = elementBottom?.getBoundingClientRect();
         cd.debug.stopTimer('threads getBoundingClientRect bottom');
 
         cd.debug.stopTimer('threads getBoundingClientRect');
 
         const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (!rectTop && top === undefined)) {
+        if (!getVisibilityByRects(...rects) || (!rectTop && top === undefined) || !elementBottom) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = thread.clickAreaOffset = thread.line = null;
@@ -810,15 +843,14 @@ export default class Thread {
           top === thread.clickAreaOffset.top &&
           height === thread.clickAreaOffset.height
         ) {
-          // Opened/closed "reply in section" comment form will change the 0-level thread line
-          // height, so we use only these conditions.
-          const stop = (
-            comment.level === 0 ||
-            (lastUpdatedComment && comment.section !== lastUpdatedComment.section)
+          // Opened/closed "Reply in section" comment form will change the 0-level thread line
+          // height, so we may go a long way until we finally arrive at a 0-level comment.
+          return (
+            (!lastUpdatedComment || comment.section !== lastUpdatedComment.section) &&
+            (comment.level === 0 || (comment.level === 1 && !comment.getParent()))
           );
+        } else {
           lastUpdatedComment = comment;
-
-          return stop;
         }
 
         cd.debug.startTimer('threads createElement');
@@ -835,8 +867,6 @@ export default class Thread {
         }
 
         cd.debug.stopTimer('threads createElement');
-
-        lastUpdatedComment = comment;
 
         return false;
       });
