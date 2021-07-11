@@ -36,14 +36,14 @@ export default class Page {
     /**
      * Page title, with no namespace name. The word separator is a space, not an underline.
      *
-     * @type {number}
+     * @type {string}
      */
     this.title = title.getMainText();
 
     /**
      * Page name, with a namespace name. The word separator is a space, not an underline.
      *
-     * @type {number}
+     * @type {string}
      */
     this.name = title.getPrefixedText();
 

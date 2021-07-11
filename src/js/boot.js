@@ -374,36 +374,28 @@ function initPatterns() {
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
 
-  const namespaceIds = mw.config.get('wgNamespaceIds');
-  const userNamespacesAliases = Object.keys(namespaceIds)
-    .filter((key) => namespaceIds[key] === 2 || namespaceIds[key] === 3);
-  const userNamespacesAliasesPattern = userNamespacesAliases.map(anySpace).join('|');
-  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNamespacesAliasesPattern}):(.+)`, 'i');
+  const nsIds = mw.config.get('wgNamespaceIds');
+  const userNssAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 2 || nsIds[key] === 3);
+  const userNssAliasesPattern = userNssAliases.map(anySpace).join('|');
+  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
 
-  const userNamespaceAliases = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 2);
-  const userNamespaceAliasesPattern = userNamespaceAliases.map(anySpace).join('|');
-  cd.g.USER_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):([^/]+)$`, 'i');
-  cd.g.USER_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userNamespaceAliasesPattern}):.+?/`, 'i');
+  const userNsAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 2);
+  const userNsAliasesPattern = userNsAliases.map(anySpace).join('|');
+  cd.g.USER_LINK_REGEXP = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
+  cd.g.USER_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
 
-  const userTalkNamespaceAliases = Object.keys(namespaceIds)
-    .filter((key) => namespaceIds[key] === 3);
-  const userTalkNamespaceAliasesPattern = userTalkNamespaceAliases.map(anySpace).join('|');
-  cd.g.USER_TALK_LINK_REGEXP = new RegExp(
-    `^:?(?:${userTalkNamespaceAliasesPattern}):([^/]+)$`,
-    'i'
-  );
-  cd.g.USER_TALK_SUBPAGE_LINK_REGEXP = new RegExp(
-    `^:?(?:${userTalkNamespaceAliasesPattern}):.+?/`,
-    'i'
-  );
+  const userTalkNsAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 3);
+  const userTalkNsAliasesPattern = userTalkNsAliases.map(anySpace).join('|');
+  cd.g.USER_TALK_LINK_REGEXP = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
+  cd.g.USER_TALK_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 
-  const allNamespaces = Object.keys(namespaceIds).filter((ns) => ns);
-  const allNamespacesPattern = allNamespaces.join('|');
-  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^:?(?:${allNamespacesPattern}):`, 'i');
+  const allNss = Object.keys(nsIds).filter((ns) => ns);
+  const allNssPattern = allNss.join('|');
+  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
 
   const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
   cd.g.CAPTURE_USER_NAME_PATTERN = (
-    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNamespacesAliasesPattern})[ _]*:[ _]*|` +
+    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
     `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
@@ -514,9 +506,9 @@ function initPatterns() {
   cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES
     .concat(cd.config.customUnhighlightableElementClasses);
 
-  const fileNamespaces = Object.keys(namespaceIds).filter((key) => namespaceIds[key] === 6);
-  const fileNamespacesPattern = fileNamespaces.map(anySpace).join('|');
-  cd.g.FILE_PREFIX_PATTERN = `(?:${fileNamespacesPattern}):`;
+  const fileNss = Object.keys(nsIds).filter((key) => nsIds[key] === 6);
+  const fileNssPattern = fileNss.map(anySpace).join('|');
+  cd.g.FILE_PREFIX_PATTERN = `(?:${fileNssPattern}):`;
 
   // Actually, only text from "mini" format images should be captured, because in the standard
   // format the text is not displayed. See "img_thumbnail" in
@@ -527,10 +519,9 @@ function initPatterns() {
     'ig'
   );
 
-  const colonNamespaces = Object.keys(namespaceIds)
-    .filter((key) => namespaceIds[key] === 6 || namespaceIds[key] === 14);
-  const colonNamespacesPattern = colonNamespaces.map(anySpace).join('|');
-  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNamespacesPattern}):`, 'i');
+  const colonNss = Object.keys(nsIds).filter((key) => nsIds[key] === 6 || nsIds[key] === 14);
+  const colonNssPattern = colonNss.map(anySpace).join('|');
+  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
 
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`, 'i'))

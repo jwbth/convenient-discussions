@@ -372,7 +372,7 @@ export default {
       top: firstVisibleComment,
       bottom: lastVisibleComment,
     };
-    let c = searchArea.top;
+    let comment = searchArea.top;
     let foundComment;
 
     const findClosest = (direction, searchArea, reverse = false) => {
@@ -395,23 +395,26 @@ export default {
     // margin and not practically reachable, unless when there is only few comments. Usually the
     // cycle finishes after a few steps.
     for (let i = 0; i < cd.comments.length; i++) {
-      if (!c.roughOffset) {
-        c.getOffset({ set: true });
+      if (!comment.roughOffset) {
+        comment.getOffset({ set: true });
       }
-      if (c.isInViewport(false)) {
-        foundComment = c;
+      if (comment.isInViewport(false)) {
+        foundComment = comment;
         break;
       }
 
       if (
-        c.roughOffset &&
+        comment.roughOffset &&
 
         (
           // The bottom edge of the viewport is above the first comment.
-          (c === firstVisibleComment && viewportBottom < c.roughOffset.downplayedBottom) ||
+          (
+            comment === firstVisibleComment &&
+            viewportBottom < comment.roughOffset.downplayedBottom
+          ) ||
 
           // The top edge of the viewport is below the last comment.
-          (c === lastVisibleComment && viewportTop > c.roughOffset.top)
+          (comment === lastVisibleComment && viewportTop > comment.roughOffset.top)
         )
       ) {
         foundComment = findClosest(findClosestDirection, searchArea, true);
@@ -423,19 +426,19 @@ export default {
         break;
       }
 
-      if (!c.roughOffset) {
+      if (!comment.roughOffset) {
         // To avoid contriving a sophisticated algorithm for choosing which comment to pick next
         // (and avoid picking any previously picked) we just pick the comment next to the beginning
         // of the search area.
-        c = findVisible('forward', searchArea.top.id + 1);
-        searchArea.top = c;
+        comment = findVisible('forward', searchArea.top.id + 1);
+        searchArea.top = comment;
         continue;
       }
 
-      if (c === firstVisibleComment) {
-        c = searchArea.bottom;
+      if (comment === firstVisibleComment) {
+        comment = searchArea.bottom;
       } else {
-        searchArea[viewportTop > c.roughOffset.top ? 'top' : 'bottom'] = c;
+        searchArea[viewportTop > comment.roughOffset.top ? 'top' : 'bottom'] = comment;
 
         // There's not a single comment in the viewport.
         if (searchArea.bottom.id - searchArea.top.id <= 1) {
@@ -462,7 +465,7 @@ export default {
           searchArea.top.id +
           0.5
         );
-        c = cd.comments[index];
+        comment = cd.comments[index];
       }
     }
 

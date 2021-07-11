@@ -276,6 +276,8 @@ export default class SectionSkeleton {
   /**
    * Get the chain of ancestors of the section as an array, starting with the parent section.
    *
+   * The returned value is cached, so don't change the array in-place.
+   *
    * @returns {SectionSkeleton[]}
    */
   getAncestors() {

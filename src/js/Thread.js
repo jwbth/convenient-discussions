@@ -68,7 +68,7 @@ function findItemElement(element, level, nextForeignElement) {
 }
 
 /**
- * Get an end element for a comment at the 0th level.
+ * Get a thread's end element for a comment at the 0th level.
  *
  * @param {Element} startElement
  * @param {Element[]} highlightables
@@ -191,39 +191,39 @@ export default class Thread {
     }
 
     /**
-     * The root comment of the thread.
+     * Root comment of the thread.
      *
      * @type {Comment}
+     * @private
      */
     this.rootComment = rootComment;
 
-    const descendants = rootComment.getChildren(true);
-
     /**
-     * The last comment of the thread (logically, not visually).
+     * Last comment of the thread (logically, not visually).
      *
      * @type {Comment}
+     * @private
      */
-    this.lastComment = descendants[descendants.length - 1] || rootComment;
+    this.lastComment = rootComment.getChildren(true).slice(-1)[0] || rootComment;
 
     /**
-     * The number of comments in the thread.
+     * Number of comments in the thread.
      *
      * @type {number}
+     * @private
      */
     this.commentCount = this.lastComment.id - this.rootComment.id + 1;
 
     if (cd.g.pageHasOutdents) {
       // Visually last comment (if there are {{outdent}} templates)
       cd.debug.startTimer('visualLastComment');
-      const visualDescendants = rootComment.getChildren(true, true);
-
       /**
-       * The last comment of the thread _visually_, not logically.
+       * Last comment of the thread _visually_, not logically.
        *
        * @type {Comment}
+       * @private
        */
-      this.visualLastComment = visualDescendants[visualDescendants.length - 1] || rootComment;
+      this.visualLastComment = rootComment.getChildren(true, true).slice(-1)[0] || rootComment;
 
       cd.debug.stopTimer('visualLastComment');
     } else {
@@ -276,23 +276,26 @@ export default class Thread {
 
     if (startElement && endElement && visualEndElement) {
       /**
-       * The top element of the thread.
+       * Top element of the thread.
        *
        * @type {Element}
+       * @private
        */
       this.startElement = startElement;
 
       /**
-       * The bottom element of the thread (logically, not visually).
+       * Bottom element of the thread (logically, not visually).
        *
        * @type {Element}
+       * @private
        */
       this.endElement = endElement;
 
       /**
-       * The bottom element of the thread _visually_, not logically.
+       * Bottom element of the thread _visually_, not logically.
        *
        * @type {Element}
+       * @private
        */
       this.visualEndElement = visualEndElement;
     } else {
@@ -312,6 +315,7 @@ export default class Thread {
      * Click area of the thread line.
      *
      * @type {Element}
+     * @private
      */
     this.clickArea = elementPrototypes.clickArea.cloneNode(true);
 
@@ -338,6 +342,7 @@ export default class Thread {
      * Thread line.
      *
      * @type {Element}
+     * @private
      */
     this.line = this.clickArea.firstChild;
 
@@ -483,6 +488,7 @@ export default class Thread {
      * Nodes that are collapsed. These can change, at least due to comment forms showing up.
      *
      * @type {Node[]|undefined}
+     * @private
      */
     this.collapsedRange = this.getRangeContents();
 
@@ -786,7 +792,7 @@ export default class Thread {
               comment.containerListType === 'ol' ||
 
               // Occurs when a part of a comment that is not in the thread is next to the start
-              // item, for example
+              // element, for example
               // https://ru.wikipedia.org/wiki/Википедия:Запросы_к_администраторам#202104081533_Macuser.
               thread.startElement.tagName === 'DIV'
             ) {

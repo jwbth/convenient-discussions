@@ -221,12 +221,12 @@ export default class Section extends SectionSkeleton {
     if (createList) {
       container = document.createElement('dl');
       container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container';
-      container.appendChild(wrapper);
       lastElement.parentNode.insertBefore(container, lastElement.nextElementSibling);
     } else {
-      lastElement.appendChild(wrapper);
       container = lastElement;
+      container.classList.add('cd-section-button-container');
     }
+    container.appendChild(wrapper);
 
     /**
      * Reply button on the bottom of the first chunk of the section.
