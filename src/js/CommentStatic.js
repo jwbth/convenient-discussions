@@ -354,7 +354,7 @@ export default {
     // Visibility is checked in the sense that an element is visible on the page, not necessarily in
     // the viewport.
     const isVisible = (comment) => {
-      comment.setRoughOffsetProperty();
+      comment.getOffset({ set: true });
       return Boolean(comment.roughOffset);
     };
     const findVisible = (direction, startIndex = 0) => {
@@ -396,7 +396,7 @@ export default {
     // cycle finishes after a few steps.
     for (let i = 0; i < cd.comments.length; i++) {
       if (!c.roughOffset) {
-        c.setRoughOffsetProperty();
+        c.getOffset({ set: true });
       }
       if (c.isInViewport(false)) {
         foundComment = c;

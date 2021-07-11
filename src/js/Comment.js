@@ -873,99 +873,178 @@ export default class Comment extends CommentSkeleton {
    */
 
   /**
-   * Set the rough coordinates of the comment (without taking into account floating elements around
-   * the comment) as the `roughOffset` property.
+   * If `options.set` is `true`, set the offset to the `offset` (if `options.considerFloating` is
+   * `true`) or `roughOffset` (if `options.considerFloating` is `false`) property.
    *
+   * @param {?object} offset
+   * @param {object} options
    * @private
    */
-  setRoughOffsetProperty() {
-    /**
-     * The comment's rough coordinates set in {@link module:Comment#setRoughOffsetProperty} (without
-     * taking into account floating elements around the comment).
-     *
-     * @type {CommentOffset}
-     */
-    this.roughOffset = this.getOffset();
+  setOffsetProperty(offset, options) {
+    if (options.set) {
+      if (options.considerFloating) {
+        /**
+         * The comment's coordinates.
+         *
+         * @type {?CommentOffset}
+         */
+        this.offset = offset;
+      } else {
+        /**
+         * The comment's rough coordinates (without taking into account floating elements around the
+         * comment).
+         *
+         * @type {?CommentOffset}
+         */
+        this.roughOffset = offset;
+      }
+    }
   }
 
   /**
-   * Set the coordinates of the comment as the `offset` property. If the comment is invisible,
-   * the property is unset.
+   * Get the top and bottom rectangles of a comment while taking into account floating elements
+   * around the comment.
    *
-   * Note that comment coordinates are not static, obviously, but we need to recalculate them only
-   * occasionally.
-   *
-   * @param {object} options
-   * @returns {?boolean} Is the comment moved.
+   * @param {number} bottom Bottom coordonate of the comment (calculated without taking floating
+   *   elements into account).
+   * @param {object} rectTop Top rectangle that was got without taking into account floating
+   *   elements around the comment.
+   * @param {object} rectBottom Bottom rectangle that was got without taking into account floating
+   *   elements around the comment.
+   * @param {object[]} [floatingRects=cd.g.floatingElements.map(getExtendedRect)]
+   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
+   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
+   *   calculated in advance for many elements in one sequence to save time.
+   * @returns {object[]}
+   * @private
    */
-  setOffsetProperty(options) {
-    const offset = this.getOffset(Object.assign({}, options, { considerFloating: true }));
+  getAdjustedRects(
+    bottom,
+    rectTop,
+    rectBottom,
+    floatingRects = cd.g.floatingElements.map(getExtendedRect)
+  ) {
+    // Check if the comment offset intersect the offset of floating elements on the page. (Only
+    // then we would need altering comment styles to get the correct offset which is an expensive
+    // operation.)
+    let intersectsFloatingCount = 0;
+    let bottomIntersectsFloating = false;
+    floatingRects.forEach((rect) => {
+      const floatingTop = scrollY + rect.outerTop;
+      const floatingBottom = scrollY + rect.outerBottom;
+      if (bottom > floatingTop && bottom < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
+        bottomIntersectsFloating = true;
+      }
+      if (bottom > floatingTop && top < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
+        intersectsFloatingCount++;
+      }
+    });
 
-    if (offset !== false) {
-      /**
-       * The comment's coordinates set in {@link module:Comment#setOffsetProperty}.
-       *
-       * @type {?CommentOffset}
-       */
-      this.offset = offset;
-    }
+    // We calculate the left and right borders separately - in its case, we need to change the
+    // `overflow` property to get the desired value, otherwise floating elements are not taken
+    // into account.
+    if (bottomIntersectsFloating) {
+      const initialOverflows = [];
+      this.highlightables.forEach((el, i) => {
+        initialOverflows[i] = el.style.overflow;
+        el.style.overflow = 'hidden';
+      });
 
-    if (this.offset) {
-      /**
-       * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
-       * start of the content area.
-       *
-       * @type {boolean|undefined}
-       */
-      this.isStartStretched = false;
+      rectTop = getCommentPartRect(this.highlightables[0]);
+      rectBottom = this.elements.length === 1 ?
+        rectTop :
+        getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
-      /**
-       * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
-       * of the content area.
-       *
-       * @type {boolean|undefined}
-       */
-      this.isEndStretched = false;
-
-      if (this.level === 0) {
-        // 2 instead of 1 for Timeless
-        const left = this.offset.left - cd.g.CONTENT_START_MARGIN - 2;
-        const right = this.offset.right + cd.g.CONTENT_START_MARGIN + 2;
-
-        this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          left <= cd.g.CONTENT_COLUMN_START :
-          right >= cd.g.CONTENT_COLUMN_START;
-        this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
-          right >= cd.g.CONTENT_COLUMN_END :
-          left <= cd.g.CONTENT_COLUMN_END;
+      // If the comment intersects more than one floating block, we better keep `overflow: hidden`
+      // to avoid bugs like where there are two floating blocks to the right with different
+      // leftmost offsets and the layer is more narrow than the comment.
+      if (intersectsFloatingCount === 1) {
+        this.highlightables.forEach((el, i) => {
+          el.style.overflow = initialOverflows[i];
+        });
       }
     }
 
-    // `offset` can be an object, `false` (the comment isn't moved), or `null` (the comment is
-    // invisible). We convert it to a Boolean or `null`.
-    return offset ? true : offset;
+    return [rectTop, rectBottom];
   }
 
   /**
-   * Get the coordinates of the comment.
+   * Set the {@link module:Comment#isStartStretched isStartStretched} and
+   * {@link module:Comment#isEndStretched isEndStretched} properties.
+   *
+   * @param {number} left Left offset.
+   * @param {number} right Right offset.
+   * @private
+   */
+  setStretchedProperties(left, right) {
+    /**
+     * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
+     * start of the content area.
+     *
+     * @type {boolean|undefined}
+     */
+    this.isStartStretched = false;
+
+     /**
+      * Is the end (right on LTR wikis, left on RTL wikis) side of the comment stretched to the end
+      * of the content area.
+      *
+      * @type {boolean|undefined}
+      */
+    this.isEndStretched = false;
+
+    if (this.level === 0) {
+      // 2 instead of 1 for Timeless
+      const leftStretched = left - cd.g.CONTENT_START_MARGIN - 2;
+      const rightStretched = right + cd.g.CONTENT_START_MARGIN + 2;
+
+      this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
+        leftStretched <= cd.g.CONTENT_COLUMN_START :
+        rightStretched >= cd.g.CONTENT_COLUMN_START;
+      this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
+        rightStretched >= cd.g.CONTENT_COLUMN_END :
+        leftStretched <= cd.g.CONTENT_COLUMN_END;
+    }
+  }
+
+  /**
+   * Get the coordinates of the comment. Optionally set them as the `offset` or `roughOffset`
+   * property. Also set the {@link module:Comment#isStartStretched isStartStretched} and
+   * {@link module:Comment#isEndStretched isEndStretched} properties (if `options.considerFloating`
+   * is `true`).
+   *
+   * Note that comment coordinates are not static, obviously, but we need to recalculate them only
+   * occasionally.
    *
    * @param {object} [options={}]
    * @param {object} [options.floatingRects]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.
-   * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
-   *   Deemed `true` if `floatingRects` is set.
+   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
+   *   comment into account. Deemed `true` if `options.floatingRects` is set.
+   * @param {boolean} [options.set=false] Whether to set the offset to the `offset` (if
+   *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
+   *   `false`) property. If `true`, the function will return a boolean value indicating if the
+   *   comment is moved instead of the offset. Setting the `offset` property implies that the layers
+   *   offset will be updated afterwards - otherwise, the next attempt to call this method to update
+   *   the layers offset will return `false` meaning the comment isn't moved, and the layers offset
+   *   will stay wrong.
    * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
-   *   `null`. If `options.considerFloating` is `true` and the comment isn't moved, returns `false`.
+   *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
+   *   moved instead of the offset.
    * @private
    */
   getOffset(options = {}) {
     if (options.considerFloating === undefined) {
       options.considerFloating = Boolean(options.floatingRects);
     }
+    if (options.set === undefined) {
+      options.set = false;
+    }
 
     if (this.editForm) {
+      this.setOffsetProperty(null, options);
       return null;
     }
 
@@ -975,6 +1054,7 @@ export default class Comment extends CommentSkeleton {
       getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
+      this.setOffsetProperty(null, options);
       return null;
     }
 
@@ -992,7 +1072,7 @@ export default class Comment extends CommentSkeleton {
       // If floating elements aren't supposed to be taken into account but the comment isn't moved,
       // we still return the offset with floating elements taken into account because that shouldn't
       // do any harm.
-      return options.considerFloating ? false : this.offset;
+      return options.set ? false : this.offset;
     }
 
     // This is to determine if the element is moved in future checks.
@@ -1007,51 +1087,16 @@ export default class Comment extends CommentSkeleton {
     const bottom = scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
-      // Check if the comment offset intersect the offset of floating elements on the page. (Only
-      // then we would need altering comment styles to get the correct offset which is an expensive
-      // operation.)
-      const floatingRects = options.floatingRects || cd.g.floatingElements.map(getExtendedRect);
-      let intersectsFloatingCount = 0;
-      let bottomIntersectsFloating = false;
-      floatingRects.forEach((rect) => {
-        const floatingTop = scrollY + rect.outerTop;
-        const floatingBottom = scrollY + rect.outerBottom;
-        if (bottom > floatingTop && bottom < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
-          bottomIntersectsFloating = true;
-        }
-        if (bottom > floatingTop && top < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
-          intersectsFloatingCount++;
-        }
-      });
-
-      // We calculate the left and right borders separately - in its case, we need to change the
-      // `overflow` property to get the desired value, otherwise floating elements are not taken
-      // into account.
-      if (bottomIntersectsFloating) {
-        const initialOverflows = [];
-        this.highlightables.forEach((el, i) => {
-          initialOverflows[i] = el.style.overflow;
-          el.style.overflow = 'hidden';
-        });
-
-        rectTop = getCommentPartRect(this.highlightables[0]);
-        rectBottom = this.elements.length === 1 ?
-          rectTop :
-          getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
-
-        // If the comment intersects more than one floating block, we better keep `overflow: hidden`
-        // to avoid bugs like where there are two floating blocks to the right with different
-        // leftmost offsets and the layer is more narrow than the comment.
-        if (intersectsFloatingCount === 1) {
-          this.highlightables.forEach((el, i) => {
-            el.style.overflow = initialOverflows[i];
-          });
-        }
-      }
+      [rectTop, rectBottom] = this
+        .getAdjustedRects(bottom, rectTop, rectBottom, options.floatingRects);
     }
 
     const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
     const right = window.scrollX + Math.max(rectTop.right, rectBottom.right);
+
+    if (options.considerFloating) {
+      this.setStretchedProperties(left, right);
+    }
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
     // scrolling step is 100 pixels.
@@ -1059,7 +1104,10 @@ export default class Comment extends CommentSkeleton {
       top + (window.innerHeight - 200) :
       bottom;
 
-    return { top, bottom, left, right, downplayedBottom };
+    const offset = { top, bottom, left, right, downplayedBottom };
+    this.setOffsetProperty(offset, options);
+
+    return options.set ? true : offset;
   }
 
   /**
@@ -1070,36 +1118,17 @@ export default class Comment extends CommentSkeleton {
    */
 
   /**
-   * Get the left and right margins of the comment layers or the expand note.
+   * Get the left and right margins of the comment layers or the expand note. It is presumed that
+   * either the comment or its expand note is visible.
    *
-   * @returns {?CommentMargins}
+   * @returns {CommentMargins}
    */
   getMargins() {
     cd.debug.startTimer('getMargins');
 
-    let offset;
-    let anchorElement;
-    if (this.isCollapsed) {
-      const rect = getCommentPartRect(this.thread.expandNote);
-      offset = getVisibilityByRects(rect) ?
-        {
-          left: window.scrollX + rect.left,
-          right: window.scrollX + rect.right,
-        } :
-        null;
-      anchorElement = this.thread.expandNote;
-    } else {
-      offset = this.offset;
-      anchorElement = this.anchorHighlightable;
-    }
-
-    if (!offset) {
-      return null;
-    }
+    const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
 
     let startMargin;
-    let endMargin;
-
     if (this.ahContainerListType === 'ol') {
       // "this.highlightables.length === 1" is a workaround for cases such as
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160911_Example.
@@ -1118,7 +1147,9 @@ export default class Comment extends CommentSkeleton {
         startMargin = this.level === 0 ? cd.g.COMMENT_FALLBACK_SIDE_MARGIN : cd.g.CONTENT_FONT_SIZE;
       }
     }
-    endMargin = this.isEndStretched ? cd.g.CONTENT_START_MARGIN : cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
+    const endMargin = this.isEndStretched ?
+      cd.g.CONTENT_START_MARGIN :
+      cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
     const left = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const right = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
@@ -1137,7 +1168,10 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   setLayersOffsetProperty(options = {}) {
-    const isMoved = this.setOffsetProperty(options);
+    const isMoved = this.getOffset(Object.assign({}, options, {
+      considerFloating: true,
+      set: true,
+    }));
 
     if (this.offset) {
       const layersContainerOffset = this.getLayersContainerOffset();
@@ -1311,7 +1345,7 @@ export default class Comment extends CommentSkeleton {
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.
    * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
-   *   Deemed `true` if `floatingRects` is set.
+   *   Deemed `true` if `options.floatingRects` is set.
    * @returns {?boolean} Is the comment moved.
    */
   configureLayers(options = {}) {

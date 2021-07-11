@@ -592,6 +592,18 @@ export default class Thread {
       }
     });
 
+    this.expandNote.remove();
+    this.expandNote = null;
+    this.expandNoteContainer?.remove();
+    this.expandNoteContainer = null;
+
+    if (this.rootComment.isOpeningSection) {
+      const menu = this.rootComment.section.menu;
+      if (menu) {
+        menu.editOpeningComment?.setDisabled(false);
+      }
+    }
+
     this.isCollapsed = false;
     let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
@@ -606,15 +618,6 @@ export default class Thread {
       comment.isCollapsed = false;
       delete comment.collapsedThread;
       comment.configureLayers();
-    }
-    this.expandNote.remove();
-    this.expandNoteContainer?.remove();
-
-    if (this.rootComment.isOpeningSection) {
-      const menu = this.rootComment.section.menu;
-      if (menu) {
-        menu.editOpeningComment?.setDisabled(false);
-      }
     }
 
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
@@ -734,13 +737,13 @@ export default class Thread {
           if (comment.level === 0) {
             cd.debug.startTimer('threads getBoundingClientRect 0');
             floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-            comment.setOffsetProperty({ floatingRects });
-            if (comment.offset) {
+            const offset = comment.getOffset({ floatingRects });
+            if (offset) {
               const commentMargins = comment.getMargins();
-              top = comment.offset.top;
+              top = offset.top;
               left = cd.g.CONTENT_DIR === 'ltr' ?
-                comment.offset.left - (commentMargins.left + 1) - lineSideMargin :
-                comment.offset.right + (commentMargins.right + 1) - lineWidth - lineSideMargin;
+                offset.left - (commentMargins.left + 1) - lineSideMargin :
+                offset.right + (commentMargins.right + 1) - lineWidth - lineSideMargin;
             }
             cd.debug.stopTimer('threads getBoundingClientRect 0');
           } else {
@@ -755,18 +758,14 @@ export default class Thread {
               thread.startElement.tagName === 'DIV'
             ) {
               floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-              comment.setOffsetProperty({ floatingRects });
-              if (comment.offset) {
+              const offset = comment.getOffset({ floatingRects });
+              if (offset) {
                 const commentMargins = comment.getMargins();
                 top = window.scrollY + rectTop.top;
                 left = cd.g.CONTENT_DIR === 'ltr' ?
+                  (window.scrollX + offset.left) - (commentMargins.left + 1) - lineSideMargin :
                   (
-                    (window.scrollX + comment.offset.left) -
-                    (commentMargins.left + 1) -
-                    lineSideMargin
-                   ) :
-                  (
-                    (window.scrollX + comment.offset.right) +
+                    (window.scrollX + offset.right) +
                     commentMargins.right -
                     lineWidth -
                     lineSideMargin
