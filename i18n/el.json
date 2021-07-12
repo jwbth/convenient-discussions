@@ -3,6 +3,7 @@
 		"authors": [
 			"Giannaras99",
 			"Giorgos456",
+			"Jack who built the house",
 			"Norhorn"
 		]
 	},
@@ -22,8 +23,8 @@
 	"sm-unwatch": "παύση παρακολούθησης",
 	"sm-unwatch-tooltip": "Καταργήστε την ενότητα από τη λίστα παρακολούθησης",
 	"sm-copylink": "#",
-	"comment-timestamp-currentyear": "Η ΜΜΜΜ, ω:μμ ΠΜ/ΜΜ",
-	"comment-timestamp-other": "Η ΜΜΜΜ ΕΕΕΕ, ω:μμ ΠΜ/ΜΜ",
+	"comment-timestamp-currentyear": "D MMMM, h:mm A",
+	"comment-timestamp-other": "D MMMM YYYY, h:mm A",
 	"comment-timestamp-lessthanminute": "λιγότερο από ένα λεπτό πριν",
 	"comment-author-talk": "συζήτησης",
 	"comment-author-contribs": "συνεισφορές",

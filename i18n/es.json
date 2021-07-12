@@ -35,7 +35,7 @@
 	"comment-timestamp-today": "[Hoy], h:mm A",
 	"comment-timestamp-yesterday": "[Ayer], h:mm A",
 	"comment-timestamp-currentyear": "D MMMM, h:mm A",
-	"comment-timestamp-other": "D MMMM YYYY, h:mm Un",
+	"comment-timestamp-other": "D MMMM YYYY, h:mm A",
 	"comment-timestamp-lessthanminute": "Menos de hace un minuto",
 	"comment-author-talk": "hablar",
 	"comment-author-contribs": "contribuciones",

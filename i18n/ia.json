@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Jack who built the house",
 			"McDutchie"
 		]
 	},
@@ -32,8 +33,8 @@
 	"sm-copylink-tooltip": "Copiar un ligamine",
 	"comment-timestamp-today": "[Hodie], HH:mm",
 	"comment-timestamp-yesterday": "[Heri], HH:mm",
-	"comment-timestamp-currentyear": "le D de MMMM a HH:mm",
-	"comment-timestamp-other": "le D de MMMM YYYY a HH:mm",
+	"comment-timestamp-currentyear": "[le] D [de] MMMM [a] HH:mm",
+	"comment-timestamp-other": "[le] D [de] MMMM YYYY [a] HH:mm",
 	"comment-timestamp-lessthanminute": "minus de un minuta retro",
 	"comment-author-talk": "discussion",
 	"comment-author-contribs": "contributiones",
