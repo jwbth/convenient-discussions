@@ -13,6 +13,7 @@ import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
+import userRegistry from './userRegistry';
 import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
 import {
   buildEditSummary,
@@ -1721,18 +1722,29 @@ export default class CommentForm {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
     }
 
-    let usersInSection = commentsInSection
-      .map((comment) => comment.author.name)
-      .sort();
+    let pageOwner;
+    if (cd.g.NAMESPACE_NUMBER === 3) {
+      const userName = (cd.g.PAGE.title.match(/^([^/]+)/) || [])[0];
+      if (userName) {
+        pageOwner = userRegistry.getUser(userName);
+      }
+    }
+    let defaultUserNames = commentsInSection
+      .map((comment) => comment.author)
+      .concat(pageOwner)
+      .filter(defined)
+      .sort((u1, u2) => u2.isRegistered() - u1.isRegistered() || (u2.name > u1.name ? -1 : 1))
+      .map((u) => u.name);
     if (this.targetComment && this.mode !== 'edit') {
       for (let с = this.targetComment; с; с = с.getParent()) {
         if (с.author !== cd.g.USER) {
-          usersInSection.unshift(с.author.name);
+          if (!с.author.isRegistered()) break;
+          defaultUserNames.unshift(с.author.name);
           break;
         }
       }
     }
-    usersInSection = usersInSection.filter(unique);
+    defaultUserNames = defaultUserNames.filter(unique);
 
     /**
      * Autocomplete object for the comment input.
@@ -1743,7 +1755,7 @@ export default class CommentForm {
       types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
       inputs: [this.commentInput],
       comments: commentsInSection,
-      defaultUserNames: usersInSection,
+      defaultUserNames,
     });
 
     if (this.headlineInput) {
@@ -1756,7 +1768,7 @@ export default class CommentForm {
         types: ['mentions', 'wikilinks', 'tags'],
         inputs: [this.headlineInput],
         comments: commentsInSection,
-        defaultUserNames: usersInSection,
+        defaultUserNames,
       });
     }
 
@@ -1769,7 +1781,7 @@ export default class CommentForm {
       types: ['mentions', 'wikilinks'],
       inputs: [this.summaryInput],
       comments: commentsInSection,
-      defaultUserNames: usersInSection,
+      defaultUserNames,
     });
   }
 
