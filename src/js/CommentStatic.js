@@ -505,12 +505,14 @@ export default {
     cd.comments
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
+        const layersContainerOffset = comment.getLayersContainerOffset();
+        const layersOffset = comment.layersOffset;
         if (
           !isObstructingElementHovered &&
-          e.pageY >= comment.offset.top &&
-          e.pageY <= comment.offset.bottom &&
-          e.pageX >= comment.offset.left &&
-          e.pageX <= comment.offset.right
+          e.pageY >= layersOffset.top + layersContainerOffset.top &&
+          e.pageY <= layersOffset.top + layersOffset.height + layersContainerOffset.top &&
+          e.pageX >= layersOffset.left + layersContainerOffset.left &&
+          e.pageX <= layersOffset.left + layersOffset.width + layersContainerOffset.left
         ) {
           comment.highlightHovered();
         } else {
