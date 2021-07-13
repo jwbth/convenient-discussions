@@ -9,22 +9,25 @@
   * Autofilling the edit summary with indication of the addressee of the comment
   * Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
 * Creating topics and subsections
+* Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
+* Threads are collapsible
+* Comment timestamps may use local time and arbitrary format, including relative
 * Highlighting and navigating new comments (via the navigation panel or the table of contents)
 * Highlighting own comments
 * Checking for new comments in the background and automatically rendering simple comment edits
 * Watching sections, which affects notifications and highlighting edits on pages that list revisions
 * Desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in)
-* Jumping to a specific comment from the watchlist and other pages that list revisions
 * Moving topics between talk pages
 * Thanking for and copying links to edits that added comments
-* Slightly redesigned discussion threads that make it easier to follow which comment replies to which
+* Jumping to a specific comment from the watchlist and other pages that list revisions
 * Always seeing the current section's name and navigating page parts in one click
 
 The script makes the user forget about:
 * the need to search the code for a place for a comment, count colons, type tildes and other markup;
 * edit conflicts;
 * reading talk pages through diffs;
-* the need to completely reload the page and look for new comments with eyes, or even check the watchlist.
+* the need to completely reload the page and look for new comments with eyes, or even check the watchlist;
+* the need to convert UTC dates to local time.
 
 A limitation of the script is that it works only in modern browsers, i.e., doesn't support Internet Explorer.
 
