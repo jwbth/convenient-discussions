@@ -274,33 +274,33 @@ export default class Thread {
       }
     }
 
-    if (startElement && endElement && visualEndElement) {
-      /**
-       * Top element of the thread.
-       *
-       * @type {Element}
-       * @private
-       */
-      this.startElement = startElement;
-
-      /**
-       * Bottom element of the thread (logically, not visually).
-       *
-       * @type {Element}
-       * @private
-       */
-      this.endElement = endElement;
-
-      /**
-       * Bottom element of the thread _visually_, not logically.
-       *
-       * @type {Element}
-       * @private
-       */
-      this.visualEndElement = visualEndElement;
-    } else {
+    if (!startElement || !endElement || !visualEndElement) {
       throw new CdError();
     }
+
+    /**
+     * Top element of the thread.
+     *
+     * @type {Element}
+     * @private
+     */
+    this.startElement = startElement;
+
+    /**
+     * Bottom element of the thread (logically, not visually).
+     *
+     * @type {Element}
+     * @private
+     */
+    this.endElement = endElement;
+
+    /**
+     * Bottom element of the thread _visually_, not logically.
+     *
+     * @type {Element}
+     * @private
+     */
+    this.visualEndElement = visualEndElement;
   }
 
   /**

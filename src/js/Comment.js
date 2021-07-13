@@ -905,12 +905,12 @@ export default class Comment extends CommentSkeleton {
    * Get the top and bottom rectangles of a comment while taking into account floating elements
    * around the comment.
    *
-   * @param {number} bottom Bottom coordonate of the comment (calculated without taking floating
-   *   elements into account).
    * @param {object} rectTop Top rectangle that was got without taking into account floating
    *   elements around the comment.
    * @param {object} rectBottom Bottom rectangle that was got without taking into account floating
    *   elements around the comment.
+   * @param {number} bottom Bottom coordonate of the comment (calculated without taking floating
+   *   elements into account).
    * @param {object[]} [floatingRects=cd.g.floatingElements.map(getExtendedRect)]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
@@ -919,9 +919,9 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   getAdjustedRects(
-    bottom,
     rectTop,
     rectBottom,
+    bottom,
     floatingRects = cd.g.floatingElements.map(getExtendedRect)
   ) {
     // Check if the comment offset intersect the offset of floating elements on the page. (Only
@@ -1058,11 +1058,19 @@ export default class Comment extends CommentSkeleton {
       return null;
     }
 
+    // Seems like caching this value significantly helps performance at least in Chrome. But need to
+    // be sure the viewport can't jump higher when it is at the bottom point of the page after some
+    // content starts to occupy less space.
+    const scrollY = window.scrollY;
+
     let isMoved;
     if (this.offset) {
-      const isTopSame = window.scrollY + rectTop.top === this.offset.top;
+      const isTopSame = scrollY + rectTop.top === this.offset.top;
       const isHeightSame = rectBottom.bottom - rectTop.top === this.offset.bottom - this.offset.top;
       const isFhWidthSame = this.highlightables[0].offsetWidth === this.firstHighlightableWidth;
+
+      // This value will be `true` wrongly if the comment is around floating elements. But that
+      // doesn't hurt much.
       isMoved = !isTopSame || !isHeightSame || !isFhWidthSame;
     } else {
       isMoved = true;
@@ -1078,21 +1086,17 @@ export default class Comment extends CommentSkeleton {
     // This is to determine if the element is moved in future checks.
     this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
-    // Seems like caching this value significantly helps performance at least in Chrome. But need to
-    // be sure the viewport can't jump higher when it is at the bottom point of the page after some
-    // content starts to occupy less space.
-    const scrollY = window.scrollY;
-
     const top = scrollY + rectTop.top;
     const bottom = scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
       [rectTop, rectBottom] = this
-        .getAdjustedRects(bottom, rectTop, rectBottom, options.floatingRects);
+        .getAdjustedRects(rectTop, rectBottom, bottom, options.floatingRects);
     }
 
-    const left = window.scrollX + Math.min(rectTop.left, rectBottom.left);
-    const right = window.scrollX + Math.max(rectTop.right, rectBottom.right);
+    const scrollX = window.scrollX;
+    const left = scrollX + Math.min(rectTop.left, rectBottom.left);
+    const right = scrollX + Math.max(rectTop.right, rectBottom.right);
 
     if (options.considerFloating) {
       this.setStretchedProperties(left, right);
@@ -1118,15 +1122,14 @@ export default class Comment extends CommentSkeleton {
    */
 
   /**
-   * Get the left and right margins of the comment layers or the expand note. It is presumed that
-   * either the comment or its expand note is visible.
+   * Get the left and right margins of the comment layers or the expand note.
+   * {@link module:Comment#isStartStretched isStartStretched} and
+   * {@link module:Comment#isEndStretched isEndStretched} should have already been set.
    *
    * @returns {CommentMargins}
    */
   getMargins() {
     cd.debug.startTimer('getMargins');
-
-    const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
 
     let startMargin;
     if (this.ahContainerListType === 'ol') {
@@ -1138,8 +1141,9 @@ export default class Comment extends CommentSkeleton {
     } else if (this.isStartStretched) {
       startMargin = cd.g.CONTENT_START_MARGIN;
     } else {
+      const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
       if (
-        ['LI', 'DD'].includes(anchorElement.tagName) &&
+        ['DD', 'LI'].includes(anchorElement.tagName) &&
         anchorElement.parentNode.classList.contains('cd-commentLevel')
       ) {
         startMargin = -1;
@@ -3507,8 +3511,7 @@ export default class Comment extends CommentSkeleton {
       // the comment.
       const children = this.getChildren();
       if (children.length) {
-        const lastChild = children[children.length - 1];
-        const $test = lastChild.$elements
+        const $test = children[children.length - 1].$elements
           .last()
           .closest('.cd-commentLevel')
           .prev();

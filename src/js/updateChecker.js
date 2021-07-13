@@ -504,12 +504,12 @@ function checkForNewChanges(currentComments) {
   });
 
   if (isChangeMarkUpdated) {
-    // If we configure the layers of deleted comments in Comment#unmarkAsChanged, they will prevent
-    // layers before them from being updated due to the "stop at the first three unmoved comments"
-    // optimization. So we just do the whole job here.
+    // If the layers of deleted comments have been configured in Comment#unmarkAsChanged, they will
+    // prevent layers before them from being updated due to the "stop at the first three unmoved
+    // comments" optimization in Comment.redrawLayersIfNecessary. So we just do the whole job here.
     Comment.redrawLayersIfNecessary(false, true);
 
-    // Thread start and end elements may be replaced.
+    // Thread start and end elements may be replaced, so we need to restart threads.
     Thread.init(false);
   }
 
