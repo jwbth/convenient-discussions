@@ -170,9 +170,12 @@ export default {
    * they've changed.
    *
    * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
+   *   This is necessary when the window is resized, because these layers can occupy space at the
+   *   bottom of the page extending it to the bottom.
    * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
+   * @param {object} [floatingRects]
    */
-  redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false) {
+  redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
     if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
 
     cd.debug.startTimer('redrawIfNecessary');
@@ -184,7 +187,6 @@ export default {
     const comments = [];
     const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
-    let floatingRects;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A
     // quirky reason for this is that the mouse could be over some comment making its underlay to be

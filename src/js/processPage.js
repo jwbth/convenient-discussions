@@ -36,14 +36,15 @@ import {
   handleWindowResize,
 } from './eventHandlers';
 import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getVisits, getWatchedSections, setVisits } from './options';
 import {
+  getExtendedRect,
   replaceAnchorElement,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
   wrap,
 } from './util';
 
+import { getVisits, getWatchedSections, setVisits } from './options';
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
@@ -1131,8 +1132,9 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       }
 
       const onPageMutations = () => {
-        Comment.redrawLayersIfNecessary();
-        Thread.updateLines();
+        const floatingRects = cd.g.floatingElements.map(getExtendedRect);
+        Comment.redrawLayersIfNecessary(false, false, floatingRects);
+        Thread.updateLines(floatingRects);
 
         // Could also run handleScroll() here, but not sure, as it will double the execution time
         // with rare effect.

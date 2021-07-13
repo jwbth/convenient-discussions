@@ -310,13 +310,17 @@ export default class CommentSkeleton {
       this.cachedParent = {};
     }
     if (this.cachedParent[prop] === undefined) {
-      this.cachedParent[prop] = (
-        cd.comments
-          .slice(0, this.id)
-          .reverse()
-          .find((comment) => comment.section === this.section && comment[prop] < this[prop]) ||
-        null
-      );
+      // This can run many times during page load, so we better optimize.
+      this.cachedParent[prop] = null;
+      if (this[prop] !== 0) {
+        for (let i = this.id - 1; i >= 0; i--) {
+          const comment = cd.comments[i];
+          if (comment.section === this.section && comment[prop] < this[prop]) {
+            this.cachedParent[prop] = comment;
+            break;
+          }
+        }
+      }
     }
 
     return this.cachedParent[prop];

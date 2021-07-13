@@ -370,7 +370,8 @@ export default class Thread {
    * subitems}.
    *
    * @param {boolean} visual Use the visual thread end.
-   * @returns {Element}
+   * @returns {?Element} Logically, should never return `null`, unless something extraordinary
+   *   happens that makes the return value of `findItemElement()` `null`.
    * @private
    */
   getAdjustedEndElement(visual) {
@@ -411,7 +412,7 @@ export default class Thread {
     }
 
     return $lastSubitem?.is(':visible') ?
-      findItemElement($lastSubitem.get(0), lastComment.level) :
+      findItemElement($lastSubitem.get(0), this.rootComment.level) :
       endElement;
   }
 
@@ -728,104 +729,97 @@ export default class Thread {
 
   /**
    * _For internal use._ Calculate the offset and (if needed) add the thread lines to the container.
+   *
+   * @param {object} [floatingRects]
    */
-  static updateLines() {
+  static updateLines(floatingRects) {
     if ((isPageLoading() || document.hidden) && isInited) return;
 
     cd.debug.startTimer('threads updateLines');
     cd.debug.startTimer('threads calculate');
 
+    const getLeft = (rectOrOffset, commentMargins) => {
+      let offset;
+      if (cd.g.CONTENT_DIR === 'ltr') {
+        offset = rectOrOffset.left;
+        if (commentMargins) {
+          offset -= commentMargins.left + 1;
+        }
+      } else {
+        offset = rectOrOffset.right - lineWidth;
+        if (commentMargins) {
+          offset += commentMargins.right + 1;
+        }
+      }
+      if (rectOrOffset instanceof DOMRect) {
+        offset += scrollX;
+      }
+      return offset - lineSideMargin;
+    };
+    const getTop = (rectOrOffset) => (
+      rectOrOffset instanceof DOMRect ?
+      scrollY + rectOrOffset.top :
+      rectOrOffset.top
+    );
+
     const elementsToAdd = [];
     const threadsToUpdate = [];
-    let lastUpdatedComment;
-    let floatingRects;
+    const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
+    const lineWidth = 3;
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
+
     cd.comments
       .slice()
       .reverse()
       .some((comment) => {
-        if (!comment.thread) return;
-
-        const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
-        const lineWidth = 3;
+        const thread = comment.thread;
+        if (!thread) return;
 
         cd.debug.startTimer('threads getBoundingClientRect');
 
-        const thread = comment.thread;
+        const needCalculateMargins = (
+          comment.level === 0 ||
+          comment.containerListType === 'ol' ||
+
+          // Occurs when a part of a comment that is not in the thread is next to the start
+          // element, for example
+          // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Архив/2021/04#202104081533_Macuser.
+          thread.startElement.tagName === 'DIV'
+        );
+
         let top;
         let left;
-        let height;
         let rectTop;
-        if (thread.isCollapsed) {
-          rectTop = thread.expandNote.getBoundingClientRect();
-          if (
-            getVisibilityByRects(rectTop) &&
-            (comment.level === 0 || thread.expandNote.parentNode.tagName === 'OL')
-          ) {
-            const commentMargins = comment.getMargins();
-            top = window.scrollY + rectTop.top;
-            left = cd.g.CONTENT_DIR === 'ltr' ?
-              (window.scrollX + rectTop.left) - (commentMargins.left + 1) - lineSideMargin :
-              (
-                (window.scrollX + rectTop.right) +
-                (commentMargins.right + 1) -
-                lineWidth -
-                lineSideMargin
-              );
-          }
-        } else {
-          if (comment.level === 0) {
-            cd.debug.startTimer('threads getBoundingClientRect 0');
-            floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-            const offset = comment.getOffset({ floatingRects });
-            if (offset) {
-              const commentMargins = comment.getMargins();
-              top = offset.top;
-              left = cd.g.CONTENT_DIR === 'ltr' ?
-                offset.left - (commentMargins.left + 1) - lineSideMargin :
-                offset.right + (commentMargins.right + 1) - lineWidth - lineSideMargin;
-            }
-            cd.debug.stopTimer('threads getBoundingClientRect 0');
-          } else {
-            cd.debug.startTimer('threads getBoundingClientRect other');
-            rectTop = thread.startElement.getBoundingClientRect();
-            if (
-              comment.containerListType === 'ol' ||
-
-              // Occurs when a part of a comment that is not in the thread is next to the start
-              // element, for example
-              // https://ru.wikipedia.org/wiki/Википедия:Запросы_к_администраторам#202104081533_Macuser.
-              thread.startElement.tagName === 'DIV'
-            ) {
-              floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-              const offset = comment.getOffset({ floatingRects });
-              if (offset) {
-                const commentMargins = comment.getMargins();
-                top = window.scrollY + rectTop.top;
-                left = cd.g.CONTENT_DIR === 'ltr' ?
-                  (window.scrollX + offset.left) - (commentMargins.left + 1) - lineSideMargin :
-                  (
-                    (window.scrollX + offset.right) +
-                    commentMargins.right -
-                    lineWidth -
-                    lineSideMargin
-                  );
-              }
-            }
-            cd.debug.stopTimer('threads getBoundingClientRect other');
-          }
+        let commentMargins;
+        if (!needCalculateMargins || thread.isCollapsed) {
+          const prop = thread.isCollapsed ? 'expandNote' : 'startElement';
+          rectTop = thread[prop].getBoundingClientRect();
+        }
+        floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
+        let rectOrOffset = rectTop || comment.getOffset({ floatingRects });
+        if (needCalculateMargins) {
+          // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that
+          // call.
+          commentMargins = comment.getMargins();
+        }
+        if (rectOrOffset) {
+          top = getTop(rectOrOffset);
+          left = getLeft(rectOrOffset, commentMargins);
         }
 
-        const elementBottom = thread.expandNote || thread.getAdjustedEndElement(true);
-
-        cd.debug.startTimer('threads getBoundingClientRect bottom');
-        // Logically, elementBottom should always be defined.
-        const rectBottom = elementBottom?.getBoundingClientRect();
-        cd.debug.stopTimer('threads getBoundingClientRect bottom');
+        const rectBottom = thread.isCollapsed ?
+          rectTop :
+          thread.getAdjustedEndElement(true)?.getBoundingClientRect();
 
         cd.debug.stopTimer('threads getBoundingClientRect');
 
-        const rects = [rectTop, rectBottom].filter(defined);
-        if (!getVisibilityByRects(...rects) || (!rectTop && top === undefined) || !elementBottom) {
+        if (
+          top === undefined ||
+          !rectBottom ||
+          !getVisibilityByRects(...[rectTop, rectBottom].filter(defined)) ||
+          getLeft(rectBottom, commentMargins) < left
+        ) {
           if (thread.line) {
             thread.clickArea.remove();
             thread.clickArea = thread.clickAreaOffset = thread.line = null;
@@ -833,15 +827,7 @@ export default class Thread {
           return false;
         }
 
-        if (top === undefined) {
-          top = window.scrollY + rectTop.top;
-          left = cd.g.CONTENT_DIR === 'ltr' ?
-            (window.scrollX + rectTop.left) - lineSideMargin :
-            (window.scrollX + rectTop.right) - lineWidth - lineSideMargin;
-          height = rectBottom.bottom - rectTop.top;
-        } else {
-          height = rectBottom.bottom - (top - window.scrollY);
-        }
+        const height = rectBottom.bottom - (top - scrollY);
 
         // Find the top comment that has its offset changed and stop at it.
         if (
@@ -849,14 +835,10 @@ export default class Thread {
           top === thread.clickAreaOffset.top &&
           height === thread.clickAreaOffset.height
         ) {
-          // Opened/closed "Reply in section" comment form will change the 0-level thread line
-          // height, so we may go a long way until we finally arrive at a 0-level comment.
-          return (
-            (!lastUpdatedComment || comment.section !== lastUpdatedComment.section) &&
-            (comment.level === 0 || (comment.level === 1 && !comment.getParent()))
-          );
-        } else {
-          lastUpdatedComment = comment;
+          // Opened/closed "Reply in section" comment form will change a 0-level thread line height,
+          // so we may go a long way until we finally arrive at a 0-level comment (or a comment
+          // without a parent).
+          return !comment.getParent(true);
         }
 
         cd.debug.startTimer('threads createElement');
