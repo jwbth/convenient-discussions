@@ -303,16 +303,16 @@ export function initTimestampParsingTools() {
  * Parse a timestamp, accepting a regexp match and returning a date.
  *
  * @param {Array} match Regexp match data.
- * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker
- *   context) global object.
- * @param {number} [timezoneOffset] User's timezone offset in minutes, if it should be used instead
- *   of the wiki's timezone offset.
+ * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker context)
+ *   global object.
+ * @param {string|number} [timezone=cd.g.TIMEZONE] Timezone standard name or offset in minutes, if
+ *   it should be used instead of the wiki's timezone.
  * @returns {Date}
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
  * @license MIT
  */
-export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
+export function getDateFromTimestampMatch(match, cd, timezone = cd.g.TIMEZONE) {
   cd.debug.startTimer('parse timestamps');
 
   const untransformDigits = (text) => {
@@ -370,15 +370,14 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
   }
 
   cd.debug.startTimer('parse timestamps tz');
-  let date;
-  let timezoneOffsetMs;
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
-  if (timezoneOffset === undefined) {
-    timezoneOffsetMs = cd.g.TIMEZONE === 'UTC' ? 0 : getTimezoneOffset(cd.g.TIMEZONE, unixTime);
+  let timezoneOffset;
+  if (typeof timezone === 'number') {
+    timezoneOffset = timezone * cd.g.MILLISECONDS_IN_MINUTE;
   } else {
-    timezoneOffsetMs = timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE;
+    timezoneOffset = timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime);
   }
-  date = new Date(unixTime - timezoneOffsetMs);
+  const date = new Date(unixTime - timezoneOffset);
   cd.debug.stopTimer('parse timestamps tz');
 
   cd.debug.stopTimer('parse timestamps');
@@ -396,10 +395,10 @@ export function getDateFromTimestampMatch(match, cd, timezoneOffset) {
  * Parse a timestamp and return the date and the match object.
  *
  * @param {string} timestamp
- * @param {number} [timezoneOffset] Timezone offset in minutes.
+ * @param {number} [timezone] Standard timezone name.
  * @returns {?ParseTimestampReturn}
  */
-export function parseTimestamp(timestamp, timezoneOffset) {
+export function parseTimestamp(timestamp, timezone) {
   // Remove left-to-right and right-to-left marks that are sometimes copied from the edit history to
   // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
   timestamp = removeDirMarks(timestamp);
@@ -413,14 +412,12 @@ export function parseTimestamp(timestamp, timezoneOffset) {
     );
   }
 
-  const regexp = timezoneOffset === undefined ?
-    parseTimestampRegexp :
-    parseTimestampRegexpNoTimezone;
+  const regexp = timezone === undefined ? parseTimestampRegexp : parseTimestampRegexpNoTimezone;
   const match = timestamp.match(regexp);
   if (!match) {
     return null;
   }
-  const date = getDateFromTimestampMatch(match, cd, timezoneOffset);
+  const date = getDateFromTimestampMatch(match, cd, timezone);
 
   return { date, match };
 }

@@ -426,15 +426,14 @@ function processWatchlist($content) {
 }
 
 /**
- * Returns the timezone per user preferences
+ * Get the timezone per user preferences.
  *
- * @returns {number} timezone offset in minutes
+ * @returns {?(string|number)} Standard timezone name or offset in minutes.
  * @private
  */
-function getUserTimezoneOffset() {
-  const timezone = mw.user.options.get('timecorrection');
-  const timezoneParts = timezone?.split('|');
-  return timezoneParts && Number(timezoneParts[1]);
+function getUserTimezone() {
+  const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
+  return timezoneParts && timezoneParts[2] || Number(timezoneParts[1]);
 }
 
 /**
@@ -444,8 +443,8 @@ function getUserTimezoneOffset() {
  * @private
  */
 function processContributions($content) {
-  const timezoneOffset = getUserTimezoneOffset();
-  if (timezoneOffset == null || isNaN(timezoneOffset)) return;
+  const timezone = getUserTimezone();
+  if (timezone === null || Number.isNaN(timezone)) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
 
@@ -481,7 +480,7 @@ function processContributions($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+    const { date } = parseTimestamp(dateElement.textContent, timezone) || {};
     if (!date) return;
 
     const anchor = generateCommentAnchor(date, mw.config.get('wgRelevantUserName'));
@@ -513,8 +512,8 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  const timezoneOffset = getUserTimezoneOffset();
-  if (timezoneOffset == null || isNaN(timezoneOffset)) return;
+  const timezone = getUserTimezone();
+  if (timezone === null || Number.isNaN(timezone)) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
@@ -541,7 +540,7 @@ function processHistory($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+    const { date } = parseTimestamp(dateElement.textContent, timezone) || {};
     if (!date) return;
 
     const author = extractAuthor(line);
@@ -600,8 +599,8 @@ function processHistory($content) {
 async function processDiff() {
   if (!isProcessDiffFirstRun) return;
 
-  const timezoneOffset = getUserTimezoneOffset();
-  if (timezoneOffset == null || isNaN(timezoneOffset)) return;
+  const timezone = getUserTimezone();
+  if (timezone === null || Number.isNaN(timezone)) return;
 
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)
@@ -621,7 +620,7 @@ async function processDiff() {
       const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
       if (!dateElement) return;
 
-      const { date } = parseTimestamp(dateElement.textContent, timezoneOffset) || {};
+      const { date } = parseTimestamp(dateElement.textContent, timezone) || {};
       if (!date) return;
 
       const author = extractAuthor(area);
