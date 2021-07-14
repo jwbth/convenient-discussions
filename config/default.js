@@ -214,6 +214,8 @@ export default {
    * Text that is removed from the end of the comment text and transferred to the beginning of the
    * signature text when editing a comment.
    *
+   * End the regexp with `$`.
+   *
    * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
    * this:
    * ```
@@ -221,12 +223,13 @@ export default {
    * ```
    * Here, `''` is not a part of the signature.
    *
-   * End the regexp with `$`.
+   * `(?:\s[-–—―]\xa0[A-Z][A-Za-z]*)?` is for cases like
+   * {@link https://en.wikipedia.org/?diff=1033395227}.
    *
    * @type {RegExp}
-   * @default /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;\w+;|&amp;#\d+;)*\(?'*$/
+   * @default /(?:\s[-–—―]\xa0[A-Z][A-Za-z]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;\w+;|&amp;#\d+;)*\(?'*$/
    */
-  signaturePrefixRegexp: /(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
+  signaturePrefixRegexp: /(?:\s[-–—―]\xa0[A-Z][A-Za-z]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
 
   /**
    * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
