@@ -334,7 +334,7 @@ export default {
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
       const comma = cd.mws('comma-separator');
-      const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '';
+      const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
       commentsBySection.forEach((comments, sectionOrAnchor) => {
         let headline;
         if (typeof sectionOrAnchor === 'string') {

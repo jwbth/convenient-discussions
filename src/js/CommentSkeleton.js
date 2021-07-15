@@ -37,7 +37,7 @@ export default class CommentSkeleton {
     parts = this.parser.encloseInlineParts(parts, signature.element);
 
     // At this point, we can safely remove unnecessary nodes.
-    parts = this.parser.filterParts(parts);
+    parts = this.parser.filterParts(parts, signature.element);
 
     parts.reverse();
 

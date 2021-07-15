@@ -156,7 +156,7 @@ export function encodeWikilink(link) {
  */
 function extractRegularSignatures(adjustedCode, code) {
   const timestampRegexp = new RegExp(
-    `^((.*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["»])(?:\\}\\}|</small>)?).*(?:\n*|$)`,
+    `^((.*)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?!["»])(?:\\}\\}|</small>)?).*(?:\n*|$)`,
     'igm'
   );
 
@@ -174,7 +174,7 @@ function extractRegularSignatures(adjustedCode, code) {
       5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       6 - timestamp
      */
-    `^(((.*)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}})(${cd.g.TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?.*)(?:\n*|$)`,
+    `^(((.*)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}})(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?.*)(?:\n*|$)`,
     'igm'
   );
   const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
@@ -261,10 +261,10 @@ function extractUnsigneds(adjustedCode, code, signatures) {
     while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(adjustedCode))) {
       let author;
       let timestamp;
-      if (cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.test(match[2])) {
+      if (cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP.test(match[2])) {
         timestamp = match[2];
         author = match[3];
-      } else if (cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.test(match[3])) {
+      } else if (cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP.test(match[3])) {
         timestamp = match[3];
         author = match[2];
       } else {
@@ -275,7 +275,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The
       // timezone could be not UTC, but currently the timezone offset is taken from the wiki
       // configuration, so doesn't have effect.
-      if (timestamp && !cd.g.TIMESTAMP_REGEXP.test(timestamp)) {
+      if (timestamp && !cd.g.CONTENT_TIMESTAMP_REGEXP.test(timestamp)) {
         timestamp += ' (UTC)';
 
         // Workaround for "undated" templates

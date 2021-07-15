@@ -13,7 +13,6 @@ import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } fro
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
 let foreignComponentClasses;
-let timezoneRegexp;
 let signatureEndingRegexp;
 let elementsToExclude;
 
@@ -168,8 +167,6 @@ export default class Parser {
         foreignComponentClasses.push(cd.config.outdentClass);
       }
 
-      timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
-
       if (cd.config.signatureEndingRegexp) {
         signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
       }
@@ -209,13 +206,11 @@ export default class Parser {
    * @returns {Timestamp[]}
    */
   findTimestamps() {
-    elementsToExclude = [
-      ...Array.from(cd.g.rootElement.getElementsByTagName('blockquote')),
-      ...flat(
-        cd.config.elementsToExcludeClasses
-          .map((className) => Array.from(cd.g.rootElement.getElementsByClassName(className)))
-      ),
-    ];
+    const blockquotes = Array.from(cd.g.rootElement.getElementsByTagName('blockquote'));
+    const elementsToExcludeByClass = cd.config.elementsToExcludeClasses
+      .map((className) => Array.from(cd.g.rootElement.getElementsByClassName(className)));
+    elementsToExclude = [...blockquotes, ...flat(elementsToExcludeByClass)];
+
     return this.context.getAllTextNodes()
       .map((node) => {
         const text = node.textContent;
@@ -585,24 +580,6 @@ export default class Parser {
       let lastStep;
       const previousPart = parts[parts.length - 1];
 
-      if (!previousPart.isTextNode && !previousPart.hasCurrentSignature) {
-        // A simple check before we go: a timestamp or signature ending at the end of the line means
-        // a foreign signature; nothing more to search for in that case.
-        const text = previousPart.node.textContent;
-        if (
-          // Filter out additions to the end of a comment like:
-          // https://ru.wikipedia.org/w/index.php?diff=107450915
-          // https://ru.wikipedia.org/w/index.php?diff=107487558
-          !isInline(previousPart.node, true) &&
-
-          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text)) &&
-          !elementsToExclude.some((el) => el.contains(previousPart.node))
-        ) {
-          previousPart.hasForeignComponents = true;
-          break;
-        }
-      }
-
       if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
         // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
         // that may be present. This happens with code like this:
@@ -612,11 +589,11 @@ export default class Parser {
         // :: Smth. [signature] <!-- The comment part we are at. -->
 
         // Get the last not inline child of the current node.
-        let previousNode;
+        let parentNode;
         let haveDived = false;
-        while ((previousNode = treeWalker.currentNode) && treeWalker.lastChild()) {
+        while ((parentNode = treeWalker.currentNode) && treeWalker.lastChild()) {
           if (isInline(treeWalker.currentNode, true)) {
-            treeWalker.currentNode = previousNode;
+            treeWalker.currentNode = parentNode;
             break;
           }
           haveDived = true;
@@ -635,33 +612,6 @@ export default class Parser {
 
       const node = treeWalker.currentNode;
       const isTextNode = node.nodeType === Node.TEXT_NODE;
-
-      /*
-        Cases like:
-          === Section title ===
-          Section introduction. Not a comment.
-          # Vote. [signature]
-        Without the following code, the section introduction would be a part of the comment. The
-        same may happen inside a discussion thread (often because one of the users didn't sign).
-       */
-      if (
-        lastStep === 'back' &&
-        ['OL', 'UL'].includes(previousPart.node.tagName) &&
-
-        // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
-        !(
-          ['DL', 'OL', 'UL'].includes(node.tagName) ||
-          (
-            isTextNode &&
-            node.previousSibling &&
-            ['DL', 'OL', 'UL'].includes(node.previousSibling.tagName)
-          )
-        ) &&
-
-        previousPart.node[this.context.childElementsProp][0]?.contains(signatureElement)
-      ) {
-        break;
-      }
 
       let isHeading = null;
       let hasCurrentSignature = null;
@@ -708,13 +658,25 @@ export default class Parser {
 
         // The second parameter of getElementsByClassName() is an optimization for the worker
         // context.
-        const signaturesCount = (
-          node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length
-        );
+        const signaturesCount = node
+          .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
+          .length;
         hasForeignComponents = (
           signaturesCount - Number(hasCurrentSignature) > 0 ||
           (firstForeignComponentAfter && node.contains(firstForeignComponentAfter))
         );
+
+        if (!hasCurrentSignature) {
+          // A trace from `~~~` at the end of the line most likely means an incorrectly signed
+          // comment.
+          if (
+            !isInline(node, true) &&
+            signatureEndingRegexp?.test(node.textContent) &&
+            !elementsToExclude.some((el) => el.contains(node))
+          ) {
+            break;
+          }
+        }
       }
 
       // We save all data related to the nodes on the path to reuse it.
@@ -839,10 +801,13 @@ export default class Parser {
    * _For internal use._ Remove unnecessary and incorrect parts from the collection.
    *
    * @param {object[]} parts
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
    */
-  filterParts(parts) {
+  filterParts(parts, signatureElement) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
+
+    // Empty paragraphs at the beginning
     for (let i = parts.length - 1; i > 0; i--) {
       const node = parts[i].node;
       if (
@@ -853,6 +818,38 @@ export default class Parser {
         parts.splice(i, 1);
       } else {
         break;
+      }
+    }
+
+    /*
+      Cases like:
+        === Section title ===
+        Section introduction. Not a comment.
+        # Vote. [signature]
+      Without the following code, the section introduction would be a part of the comment. The
+      same may happen inside a discussion thread (often because one of the users didn't sign).
+
+      (Do it here, not in Parser#collectParts, because text nodes are filtered out at this stage.)
+    */
+    if (!['DL', 'OL', 'UL', 'DD', 'LI'].includes(parts[parts.length - 1].node.tagName)) {
+      for (let i = parts.length - 1; i >= 1; i--) {
+        const part = parts[i];
+        const nextElement = part.node.nextElementSibling;
+        if (!nextElement) continue;
+
+        const isIntro = (
+          part.lastStep === 'back' &&
+          ['DL', 'OL', 'UL'].includes(nextElement.tagName) &&
+
+          // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
+          !['DL', 'OL', 'UL'].includes(part.node.tagName) &&
+
+          nextElement[this.context.childElementsProp][0]?.contains(signatureElement)
+        );
+
+        if (isIntro) {
+          parts.splice(i);
+        }
       }
     }
 

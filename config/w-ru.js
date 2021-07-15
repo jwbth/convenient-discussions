@@ -262,7 +262,7 @@ export default {
   ],
 
   commentAntipatterns: [
-    /--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
+    /--\xa0?\[\[Участник:DimaBot\|DimaBot\]\]/,
   ],
 
   foreignElementInHeadlineClasses: [

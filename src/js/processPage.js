@@ -1072,7 +1072,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       const commentsToAddLayers = cd.comments.filter((comment) => (
         comment.isOwn ||
 
-        // Need to generate the gray line to close the gaps between adjacent list item elements. Do
+        // Need to generate a gray line to close the gaps between adjacent list item elements. Do
         // it here, not after the comments parsing, to group all operations requiring reflow
         // together for performance reasons.
         comment.isLineGapped

@@ -720,7 +720,7 @@ function initOouiAndElementPrototypes() {
     commentOverlay.appendChild(overlayInnerWrapper);
 
     const overlayGradient = document.createElement('div');
-    overlayGradient.textContent = '\u00A0';
+    overlayGradient.textContent = '\xa0';
     overlayGradient.className = 'cd-comment-overlay-gradient';
     overlayInnerWrapper.appendChild(overlayGradient);
 
@@ -786,7 +786,7 @@ export async function init(siteDataRequests) {
   await Promise.all(siteDataRequests.length ? siteDataRequests : loadSiteData());
   initGlobals();
   await initSettings();
-  initTimestampParsingTools();
+  initTimestampParsingTools('content');
   initPatterns();
   initOouiAndElementPrototypes();
   if (cd.settings.useBackgroundHighlighting) {
@@ -1482,7 +1482,9 @@ export async function addNotFoundMessage(decodedFragment, date) {
       }
     }
 
-    const token = date ? formatDateNative(date, cd.g.TIMEZONE) : sectionName.replace(/"/g, '');
+    const token = date ?
+      formatDateNative(date, cd.g.CONTENT_TIMEZONE) :
+      sectionName.replace(/"/g, '');
     const archivePrefix = cd.g.PAGE.getArchivePrefix();
     let searchQuery = `"${token}"`
     if (sectionName && sectionName !== sectionNameDotDecoded) {

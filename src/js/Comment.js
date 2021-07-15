@@ -298,6 +298,50 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Clean up the signature and elements in front of it.
+   *
+   * @private
+   */
+  cleanUpSignature() {
+    const processNode = (n) => {
+      if (!n) return;
+      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
+        n.textContent = n.textContent
+          .replace(cd.config.signaturePrefixRegexp, '')
+          .replace(cd.config.signaturePrefixRegexp, '');
+      }
+
+      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
+      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
+      if (
+        n.tagName &&
+        n.getAttribute('style') &&
+        n.textContent.length < 30 &&
+        !n.classList.contains('noprint')
+      ) {
+        n.remove();
+      }
+    };
+
+    const previousNode = this.signatureElement.previousSibling;
+    const previousPreviousNode = previousNode?.previousSibling;
+    processNode(previousNode);
+    if (
+      previousNode &&
+      previousPreviousNode &&
+      (!previousNode.parentNode || !previousNode.textContent.trim())
+    ) {
+      const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
+      processNode(previousPreviousNode);
+
+      // Rare cases like https://en.wikipedia.org/?diff=1022471527
+      if (!previousPreviousNode.parentNode) {
+        processNode(previousPreviousPreviousNode);
+      }
+    }
+  }
+
+  /**
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
@@ -429,43 +473,7 @@ export default class Comment extends CommentSkeleton {
 
     cd.debug.startTimer('signature clean up');
 
-    const processNode = (n) => {
-      if (!n) return;
-      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
-        n.textContent = n.textContent
-          .replace(cd.config.signaturePrefixRegexp, '')
-          .replace(cd.config.signaturePrefixRegexp, '');
-      }
-
-      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
-      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
-      if (
-        n.tagName &&
-        n.getAttribute('style') &&
-        n.textContent.length < 30 &&
-        !n.classList.contains('noprint')
-      ) {
-        n.remove();
-      }
-    };
-
-    // Clean up the signature and elements in front of it
-    const previousNode = this.signatureElement.previousSibling;
-    const previousPreviousNode = previousNode?.previousSibling;
-    processNode(previousNode);
-    if (
-      previousNode &&
-      previousPreviousNode &&
-      (!previousNode.parentNode || !previousNode.textContent.trim())
-    ) {
-      const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
-      processNode(previousPreviousNode);
-
-      // Rare cases like https://en.wikipedia.org/?diff=1022471527
-      if (!previousPreviousNode.parentNode) {
-        processNode(previousPreviousPreviousNode);
-      }
-    }
+    this.cleanUpSignature();
 
     cd.debug.stopTimer('signature clean up');
 
@@ -962,6 +970,14 @@ export default class Comment extends CommentSkeleton {
         this.highlightables.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
         });
+      } else {
+        // Prevent issues with this:
+        // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#202107140040_SGrabarczuk_(WMF).
+        this.highlightables.forEach((el, i) => {
+          if (cd.g.floatingElements.some((floatingElement) => el.contains(floatingElement))) {
+            el.style.overflow = initialOverflows[i];
+          }
+        });
       }
     }
 
@@ -1078,8 +1094,12 @@ export default class Comment extends CommentSkeleton {
 
     if (!isMoved) {
       // If floating elements aren't supposed to be taken into account but the comment isn't moved,
-      // we still return the offset with floating elements taken into account because that shouldn't
-      // do any harm.
+      // we still set/return the offset with floating elements taken into account because that
+      // shouldn't do any harm.
+      if (options.set && !options.considerFloating) {
+        this.roughOffset = this.offset;
+      }
+
       return options.set ? false : this.offset;
     }
 
@@ -2060,7 +2080,9 @@ export default class Comment extends CommentSkeleton {
               if (section.isWatched && section.headline !== originalHeadline) {
                 section.watch(true, originalHeadline);
               }
-              section.getTocItem()?.replaceText($html);
+              if (cd.settings.modifyToc) {
+                section.getTocItem()?.replaceText($html);
+              }
             }
           }
         } else {
@@ -2957,7 +2979,7 @@ export default class Comment extends CommentSkeleton {
     // Exclude <small></small> and template wrappers from the strings
     const smallWrappers = [{
       start: /^<small>/,
-      end: /<\/small>[ \u00A0\t]*$/,
+      end: /<\/small>[ \xa0\t]*$/,
     }];
     if (cd.config.smallDivTemplates.length) {
       smallWrappers.push({
@@ -2965,7 +2987,7 @@ export default class Comment extends CommentSkeleton {
           `^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
           'i'
         ),
-        end: /\}\}[ \u00A0\t]*$/,
+        end: /\}\}[ \xa0\t]*$/,
       });
     }
 
@@ -3267,7 +3289,7 @@ export default class Comment extends CommentSkeleton {
         '^([^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
-        cd.g.TIMESTAMP_REGEXP.source +
+        cd.g.CONTENT_TIMESTAMP_REGEXP.source +
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
 

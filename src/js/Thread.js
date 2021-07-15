@@ -774,7 +774,7 @@ export default class Thread {
       .reverse()
       .some((comment) => {
         const thread = comment.thread;
-        if (!thread) return;
+        if (!thread || (comment.isCollapsed && !thread.isCollapsed)) return;
 
         cd.debug.startTimer('threads getBoundingClientRect');
 
