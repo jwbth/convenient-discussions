@@ -814,11 +814,16 @@ export default class Thread {
 
         cd.debug.stopTimer('threads getBoundingClientRect');
 
+        const areTopAndBottomMisaligned = () => {
+          const bottomLeft = getLeft(rectBottom, commentMargins);
+          return cd.g.CONTENT_DIR === 'ltr' ? bottomLeft < left : bottomLeft > left;
+        };
+
         if (
           top === undefined ||
           !rectBottom ||
           !getVisibilityByRects(...[rectTop, rectBottom].filter(defined)) ||
-          getLeft(rectBottom, commentMargins) < left
+          areTopAndBottomMisaligned()
         ) {
           if (thread.line) {
             thread.clickArea.remove();
