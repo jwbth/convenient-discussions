@@ -1086,8 +1086,12 @@ export default class Comment extends CommentSkeleton {
 
     if (!isMoved) {
       // If floating elements aren't supposed to be taken into account but the comment isn't moved,
-      // we still return the offset with floating elements taken into account because that shouldn't
-      // do any harm.
+      // we still set/return the offset with floating elements taken into account because that
+      // shouldn't do any harm.
+      if (options.set && !options.considerFloating) {
+        this.roughOffset = this.offset;
+      }
+
       return options.set ? false : this.offset;
     }
 
