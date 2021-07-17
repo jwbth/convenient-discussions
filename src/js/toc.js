@@ -4,6 +4,7 @@
  * @module toc
  */
 
+import CdError from './CdError';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
@@ -22,16 +23,26 @@ class TocItem {
    * Create a table of contents item object.
    *
    * @param {object} a
+   * @throws {CdError}
    */
   constructor(a) {
-    // We expect that the number and text are the first two children of a <li> element.
-    const textSpan = a.children[1];
+    cd.debug.startTimer('new TocItem');
+    const textSpan = a.querySelector('.toctext');
+    if (!textSpan) {
+      throw new CdError();
+    }
+
     const headline = textSpan.textContent;
     const anchor = a.getAttribute('href').slice(1);
     const li = a.parentNode;
     let [, level] = li.className.match(/\btoclevel-(\d+)/);
     level = Number(level);
-    const number = a.children[0].textContent;
+    const numberSpan = a.querySelector('.tocnumber');
+    if (!numberSpan) {
+      throw new CdError();
+    }
+
+    const number = numberSpan.textContent;
     Object.assign(this, {
       headline,
       anchor,
@@ -41,6 +52,7 @@ class TocItem {
       $link: $(a),
       $text: $(textSpan),
     });
+    cd.debug.stopTimer('new TocItem');
   }
 
   /**
@@ -113,9 +125,19 @@ export default {
     }
 
     if (!tocItems) {
-      // It is executed first time before not rendered (gray) sections are added to the TOC, so we
-      // use a simple algorithm to obtain items.
-      tocItems = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a')).map((a) => new TocItem(a));
+      const links = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a'));
+      try {
+        // It is executed first time before not rendered (gray) sections are added to the TOC, so we
+        // use a simple algorithm to obtain items.
+        tocItems = links.map((a) => new TocItem(a));
+      } catch (e) {
+        console.error('Couldn\'t find an element of a table of contents item.');
+        tocItems = [];
+
+        // Forcibly switch off the setting - we better not touch the TOC if something is broken
+        // there.
+        cd.settings.modifyToc = false;
+      }
     }
 
     return tocItems.find((item) => item.anchor === anchor) || null;
