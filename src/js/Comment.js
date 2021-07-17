@@ -2072,7 +2072,9 @@ export default class Comment extends CommentSkeleton {
               if (section.isWatched && section.headline !== originalHeadline) {
                 section.watch(true, originalHeadline);
               }
-              section.getTocItem()?.replaceText($html);
+              if (cd.settings.modifyToc) {
+                section.getTocItem()?.replaceText($html);
+              }
             }
           }
         } else {
