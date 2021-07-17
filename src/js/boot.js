@@ -366,8 +366,13 @@ function initGlobals() {
  * @private
  */
 function initPatterns() {
-  // Fix the configuration value that might be nullified.
+  // Fix configuration values in wrong format
   cd.config.customTalkNamespaces = cd.config.customTalkNamespaces || [];
+
+  const signatureEndingRegexpLastChar = cd.config.signatureEndingRegexp?.source?.slice(-1);
+  if (signatureEndingRegexpLastChar && signatureEndingRegexpLastChar !== '$') {
+    cd.config.signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
+  }
 
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
 

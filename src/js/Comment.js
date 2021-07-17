@@ -2647,7 +2647,7 @@ export default class Comment extends CommentSkeleton {
       let text = $dummy.cdGetText();
       if (cleanUp) {
         if (cd.config.signatureEndingRegexp) {
-          text = text.replace(new RegExp(cd.config.signatureEndingRegexp.source + '$'), '');
+          text = text.replace(cd.config.signatureEndingRegexp, '');
         }
 
         // FIXME: We use the same regexp to clean both wikitext and render. With the current default
@@ -2791,7 +2791,6 @@ export default class Comment extends CommentSkeleton {
     } else {
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
       [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
-        .filter(defined)
         .filter((regexp) => regexp !== null)
         .forEach((originalRegexp) => {
           const regexp = new RegExp(originalRegexp.source + '$', 'm');

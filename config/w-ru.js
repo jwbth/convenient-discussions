@@ -158,7 +158,7 @@ export default {
 
   signaturePrefixRegexp: /(?:\s*С уважением,)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
 
-  signatureEndingRegexp: / \(обс\.\)/,
+  signatureEndingRegexp: / \(обс\.\)$/,
 
   tagName: 'convenient-discussions',
 

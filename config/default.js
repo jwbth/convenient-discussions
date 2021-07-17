@@ -232,12 +232,15 @@ export default {
   signaturePrefixRegexp: /(?:\s[-–—―]\xa0[A-Z][A-Za-z]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
 
   /**
-   * Unchangable text (usually user talk page link) at the end of Mediawiki:Signature (visible text,
-   * not wikitext). Used to detect comments where the user has forgotten the forth tilde. For
-   * example: `/ \(talk\)/`.
+   * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible
+   * text, not wikitext). Used to detect comments where the user has forgotten the forth tilde.
+   * Don't set if this string is not unique enough (i.e. can be met at the end of regular comments.)
+   *
+   * Should end with `$`.
    *
    * @type {?RegExp}
    * @default null
+   * @example / \(talk\)$/
    */
   signatureEndingRegexp: null,
 

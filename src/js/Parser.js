@@ -13,8 +13,6 @@ import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } fro
 import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
 
 let foreignComponentClasses;
-let timezoneRegexp;
-let signatureEndingRegexp;
 let elementsToExclude;
 
 /**
@@ -166,12 +164,6 @@ export default class Parser {
       foreignComponentClasses = ['cd-comment-part', ...cd.config.closedDiscussionClasses];
       if (cd.g.pageHasOutdents) {
         foreignComponentClasses.push(cd.config.outdentClass);
-      }
-
-      timezoneRegexp = new RegExp(cd.g.TIMEZONE_REGEXP.source + '\\s*$');
-
-      if (cd.config.signatureEndingRegexp) {
-        signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
       }
     }
   }
@@ -585,24 +577,6 @@ export default class Parser {
       let lastStep;
       const previousPart = parts[parts.length - 1];
 
-      if (!previousPart.isTextNode && !previousPart.hasCurrentSignature) {
-        // A simple check before we go: a timestamp or signature ending at the end of the line means
-        // a foreign signature; nothing more to search for in that case.
-        const text = previousPart.node.textContent;
-        if (
-          // Filter out additions to the end of a comment like:
-          // https://ru.wikipedia.org/w/index.php?diff=107450915
-          // https://ru.wikipedia.org/w/index.php?diff=107487558
-          !isInline(previousPart.node, true) &&
-
-          (timezoneRegexp.test(text) || signatureEndingRegexp?.test(text)) &&
-          !elementsToExclude.some((el) => el.contains(previousPart.node))
-        ) {
-          previousPart.hasForeignComponents = true;
-          break;
-        }
-      }
-
       if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
         // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
         // that may be present. This happens with code like this:
@@ -715,6 +689,20 @@ export default class Parser {
           signaturesCount - Number(hasCurrentSignature) > 0 ||
           (firstForeignComponentAfter && node.contains(firstForeignComponentAfter))
         );
+
+        // This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
+        // drop it.
+        if (!hasCurrentSignature) {
+          // A trace from `~~~` at the end of the line most likely means an incorrectly signed
+          // comment.
+          if (
+            !isInline(node, true) &&
+            cd.config.signatureEndingRegexp?.test(node.textContent) &&
+            !elementsToExclude.some((el) => el.contains(node))
+          ) {
+            break;
+          }
+        }
       }
 
       // We save all data related to the nodes on the path to reuse it.
