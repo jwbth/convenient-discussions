@@ -114,9 +114,11 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   }
 }
 
-// Because irregular gaps between numbered list items are annoying.
-li,
-ol > li.cd-comment-part-last.cd-comment-part-last {
+// Because irregular gaps between list items are annoying, especially between numbered list items
+// that contain comments.
+.skin-vector li,
+.skin-vector dd,
+.skin-vector ol > li.cd-comment-part-last.cd-comment-part-last {
   margin-bottom: 0.14285714em;
 }
 
