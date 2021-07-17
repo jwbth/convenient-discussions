@@ -962,6 +962,14 @@ export default class Comment extends CommentSkeleton {
         this.highlightables.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
         });
+      } else {
+        // Prevent issues with comments like this:
+        // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#202107140040_SGrabarczuk_(WMF).
+        this.highlightables.forEach((el, i) => {
+          if (cd.g.floatingElements.some((floatingElement) => el.contains(floatingElement))) {
+            el.style.overflow = initialOverflows[i];
+          }
+        });
       }
     }
 
