@@ -298,6 +298,50 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
+   * Clean up the signature and elements in front of it.
+   *
+   * @private
+   */
+  cleanUpSignature() {
+    const processNode = (n) => {
+      if (!n) return;
+      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
+        n.textContent = n.textContent
+          .replace(cd.config.signaturePrefixRegexp, '')
+          .replace(cd.config.signaturePrefixRegexp, '');
+      }
+
+      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
+      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
+      if (
+        n.tagName &&
+        n.getAttribute('style') &&
+        n.textContent.length < 30 &&
+        !n.classList.contains('noprint')
+      ) {
+        n.remove();
+      }
+    };
+
+    const previousNode = this.signatureElement.previousSibling;
+    const previousPreviousNode = previousNode?.previousSibling;
+    processNode(previousNode);
+    if (
+      previousNode &&
+      previousPreviousNode &&
+      (!previousNode.parentNode || !previousNode.textContent.trim())
+    ) {
+      const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
+      processNode(previousPreviousNode);
+
+      // Rare cases like https://en.wikipedia.org/?diff=1022471527
+      if (!previousPreviousNode.parentNode) {
+        processNode(previousPreviousPreviousNode);
+      }
+    }
+  }
+
+  /**
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
@@ -429,43 +473,7 @@ export default class Comment extends CommentSkeleton {
 
     cd.debug.startTimer('signature clean up');
 
-    const processNode = (n) => {
-      if (!n) return;
-      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
-        n.textContent = n.textContent
-          .replace(cd.config.signaturePrefixRegexp, '')
-          .replace(cd.config.signaturePrefixRegexp, '');
-      }
-
-      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
-      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
-      if (
-        n.tagName &&
-        n.getAttribute('style') &&
-        n.textContent.length < 30 &&
-        !n.classList.contains('noprint')
-      ) {
-        n.remove();
-      }
-    };
-
-    // Clean up the signature and elements in front of it
-    const previousNode = this.signatureElement.previousSibling;
-    const previousPreviousNode = previousNode?.previousSibling;
-    processNode(previousNode);
-    if (
-      previousNode &&
-      previousPreviousNode &&
-      (!previousNode.parentNode || !previousNode.textContent.trim())
-    ) {
-      const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
-      processNode(previousPreviousNode);
-
-      // Rare cases like https://en.wikipedia.org/?diff=1022471527
-      if (!previousPreviousNode.parentNode) {
-        processNode(previousPreviousPreviousNode);
-      }
-    }
+    this.cleanUpSignature();
 
     cd.debug.stopTimer('signature clean up');
 
@@ -2970,7 +2978,7 @@ export default class Comment extends CommentSkeleton {
     // Exclude <small></small> and template wrappers from the strings
     const smallWrappers = [{
       start: /^<small>/,
-      end: /<\/small>[ \u00A0\t]*$/,
+      end: /<\/small>[ \xa0\t]*$/,
     }];
     if (cd.config.smallDivTemplates.length) {
       smallWrappers.push({
@@ -2978,7 +2986,7 @@ export default class Comment extends CommentSkeleton {
           `^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
           'i'
         ),
-        end: /\}\}[ \u00A0\t]*$/,
+        end: /\}\}[ \xa0\t]*$/,
       });
     }
 
@@ -3092,18 +3100,18 @@ export default class Comment extends CommentSkeleton {
     matches.forEach((match) => {
       match.code = pageCode.slice(match.startIndex, match.endIndex);
 
-      match.hasIdMatched = id === match.id;
+      match.doesIdMatch = id === match.id;
 
       if (previousComments.length) {
-        match.hasPreviousCommentsDataMatched = false;
-        match.hasPreviousCommentDataMatched = false;
+        match.doesPreviousCommentsDataMatch = false;
+        match.doesPreviousCommentDataMatch = false;
 
         for (let i = 0; i < previousComments.length; i++) {
           const signature = signatures[match.id - 1 - i];
           if (!signature) break;
 
           // At least one coincided comment is enough if the second is unavailable.
-          match.hasPreviousCommentsDataMatched = (
+          match.doesPreviousCommentsDataMatch = (
             signature.timestamp === previousComments[i].timestamp &&
 
             // Previous comment object may come from the worker, where it has only the authorName
@@ -3120,24 +3128,24 @@ export default class Comment extends CommentSkeleton {
           }
 
           if (i === 0) {
-            match.hasPreviousCommentDataMatched = match.hasPreviousCommentsDataMatched;
+            match.doesPreviousCommentDataMatch = match.doesPreviousCommentsDataMatch;
           }
-          if (!match.hasPreviousCommentsDataMatched) break;
+          if (!match.doesPreviousCommentsDataMatch) break;
         }
       } else {
         // If there is no previous comment both on the page and in the code, it's a match.
-        match.hasPreviousCommentsDataMatched = match.id === 0;
-        match.hasPreviousCommentDataMatched = match.id === 0;
+        match.doesPreviousCommentsDataMatch = match.id === 0;
+        match.doesPreviousCommentDataMatch = match.id === 0;
       }
 
       match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
       Object.assign(match, this.adjustCommentBeginning(match));
       if (followsHeading) {
-        match.hasHeadlineMatched = match.headingMatch ?
+        match.doesHeadlineMatch = match.headingMatch ?
           normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline) :
           -5;
       } else {
-        match.hasHeadlineMatched = !match.headingMatch;
+        match.doesHeadlineMatch = !match.headingMatch;
       }
 
       const commentText = commentData ? commentData.text : this.getText();
@@ -3151,23 +3159,19 @@ export default class Comment extends CommentSkeleton {
           // The reserve method, if for some reason the text is not overlapping: by this and
           // previous two dates and authors. If all dates and authors are the same, that shouldn't
           // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
-          (
-            id !== 0 &&
-            match.hasPreviousCommentsDataMatched &&
-            !match.isPreviousCommentsDataEqual
-          ) ||
+          (id !== 0 && match.doesPreviousCommentsDataMatch && !match.isPreviousCommentsDataEqual) ||
 
           // There are always problems with first comments as there are no previous comments to
           // compare the signatures of and it's harder to tell the match, so we use a bit ugly
           // solution here, although it should be quite reliable: the comment's firstness, matching
           // author, date, and headline. A false negative will take place when the comment is no
           // longer first. Another option is to look for next comments, not for previous.
-          (id === 0 && match.hasPreviousCommentsDataMatched && match.hasHeadlineMatched)
+          (id === 0 && match.doesPreviousCommentsDataMatch && match.doesHeadlineMatch)
         ) * 2 +
         match.wordOverlap +
-        match.hasHeadlineMatched * 1 +
-        match.hasPreviousCommentsDataMatched * 0.5 +
-        match.hasIdMatched * 0.0001
+        match.doesHeadlineMatch * 1 +
+        match.doesPreviousCommentsDataMatch * 0.5 +
+        match.doesIdMatch * 0.0001
       );
     });
     matches = matches.filter((match) => match.score > 2.5);

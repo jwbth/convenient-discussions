@@ -212,13 +212,11 @@ export default class Parser {
    * @returns {Timestamp[]}
    */
   findTimestamps() {
-    elementsToExclude = [
-      ...Array.from(cd.g.rootElement.getElementsByTagName('blockquote')),
-      ...flat(
-        cd.config.elementsToExcludeClasses
-          .map((className) => Array.from(cd.g.rootElement.getElementsByClassName(className)))
-      ),
-    ];
+    const blockquotes = Array.from(cd.g.rootElement.getElementsByTagName('blockquote'));
+    const elementsToExcludeByClass = cd.config.elementsToExcludeClasses
+      .map((className) => Array.from(cd.g.rootElement.getElementsByClassName(className)));
+    elementsToExclude = [...blockquotes, ...flat(elementsToExcludeByClass)];
+
     return this.context.getAllTextNodes()
       .map((node) => {
         const { date, match } = parseTimestamp(node.textContent) || {};

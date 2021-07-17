@@ -886,7 +886,7 @@ export default class Section extends SectionSkeleton {
     let sectionHeadingMatch;
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedPageCode))) {
       const currentHeadline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
-      const hasHeadlineMatched = currentHeadline === headline;
+      const doesHeadlineMatch = currentHeadline === headline;
 
       let numberOfPreviousHeadlinesToCheck = 3;
       const previousHeadlinesInCode = headlines
@@ -896,13 +896,13 @@ export default class Section extends SectionSkeleton {
         .slice(Math.max(0, this.id - numberOfPreviousHeadlinesToCheck), this.id)
         .reverse()
         .map((section) => section.headline);
-      const havePreviousHeadlinesMatched = previousHeadlines
+      const doPreviousHeadlinesMatch = previousHeadlines
         .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
       headlines.push(currentHeadline);
 
       // Matching section index is one of the most unreliable ways to tell matching sections as
       // sections may be added and removed from the page, so we don't rely on it very much.
-      const hasSectionIndexMatched = this.id === sectionIndex;
+      const doesSectionIndexMatch = this.id === sectionIndex;
       sectionIndex++;
 
       // Get the section content
@@ -969,7 +969,7 @@ export default class Section extends SectionSkeleton {
           oldestSig = sig;
         }
       });
-      const hasOldestCommentMatched = oldestSig ?
+      const doesOldestCommentMatch = oldestSig ?
         Boolean(
           this.oldestComment &&
           (
@@ -995,13 +995,13 @@ export default class Section extends SectionSkeleton {
       }
 
       const score = (
-        hasOldestCommentMatched * 1 +
+        doesOldestCommentMatch * 1 +
         oldestCommentWordOverlap +
-        hasHeadlineMatched * 1 +
-        hasSectionIndexMatched * 0.5 +
+        doesHeadlineMatch * 1 +
+        doesSectionIndexMatch * 0.5 +
 
         // Shouldn't give too high a weight to this factor as it is true for every first section.
-        havePreviousHeadlinesMatched * 0.25
+        doPreviousHeadlinesMatch * 0.25
       );
       if (score <= 1) continue;
 
@@ -1041,10 +1041,10 @@ export default class Section extends SectionSkeleton {
       }
 
       matches.push({
-        hasHeadlineMatched,
-        hasOldestCommentMatched,
-        hasSectionIndexMatched,
-        havePreviousHeadlinesMatched,
+        doesHeadlineMatch,
+        doesOldestCommentMatch,
+        doesSectionIndexMatch,
+        doPreviousHeadlinesMatch,
         score,
         startIndex,
         endIndex,

@@ -256,12 +256,12 @@ function mapComments(currentComments, otherComments) {
   const sortCommentsByMatchScore = (target, candidates) => (
     candidates
       .map((candidate) => {
-        const hasParentAnchorMatched = candidate.parent?.anchor === target.parent?.anchor;
-        const hasHeadlineMatched = candidate.section?.headline === target.section?.headline;
+        const doesParentAnchorMatch = candidate.parent?.anchor === target.parent?.anchor;
+        const doesHeadlineMatch = candidate.section?.headline === target.section?.headline;
 
         // Taking matched ID into account makes sense only if the total number of comments
         // coincides.
-        const hasIdMatched = (
+        const doesIdMatch = (
           candidate.id === target.id &&
           currentComments.length === otherComments.length
         );
@@ -274,11 +274,11 @@ function mapComments(currentComments, otherComments) {
           1 :
           calculateWordOverlap(candidate.text, target.text);
         const score = (
-          hasParentAnchorMatched * (candidate.parent?.anchor ? 1 : 0.75) +
-          hasHeadlineMatched * 1 +
+          doesParentAnchorMatch * (candidate.parent?.anchor ? 1 : 0.75) +
+          doesHeadlineMatch * 1 +
           partsMatchedProportion +
           overlap +
-          hasIdMatched * 0.25
+          doesIdMatch * 0.25
         );
         return {
           comment: candidate,

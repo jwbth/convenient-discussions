@@ -147,23 +147,23 @@ export default {
   search({ id, headline, anchor, ancestors, oldestCommentAnchor }, returnScore) {
     const matches = [];
     cd.sections.some((section) => {
-      const hasIdMatched = section.id === id;
-      const hasHeadlineMatched = section.headline === headline;
-      const hasAnchorMatched = section.anchor === anchor;
-      let haveAncestorsMatched;
+      const doesIdMatch = section.id === id;
+      const doesHeadlineMatch = section.headline === headline;
+      const doesAnchorMatch = section.anchor === anchor;
+      let doAncestorsMatch;
       if (ancestors) {
         const sectionAncestors = section.getAncestors().map((section) => section.headline);
-        haveAncestorsMatched = areObjectsEqual(sectionAncestors, ancestors);
+        doAncestorsMatch = areObjectsEqual(sectionAncestors, ancestors);
       } else {
-        haveAncestorsMatched = false;
+        doAncestorsMatch = false;
       }
-      const hasOldestCommentMatched = section.oldestComment?.anchor === oldestCommentAnchor;
+      const doesOldestCommentMatch = section.oldestComment?.anchor === oldestCommentAnchor;
       const score = (
-        hasHeadlineMatched * 1 +
-        haveAncestorsMatched * 1 +
-        hasOldestCommentMatched * 1 +
-        hasAnchorMatched * 0.5 +
-        hasIdMatched * 0.001
+        doesHeadlineMatch * 1 +
+        doAncestorsMatch * 1 +
+        doesOldestCommentMatch * 1 +
+        doesAnchorMatch * 0.5 +
+        doesIdMatch * 0.001
       );
       if (score >= 2) {
         matches.push({ section, score });

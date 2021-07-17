@@ -724,7 +724,7 @@ function initOouiAndElementPrototypes() {
     commentOverlay.appendChild(overlayInnerWrapper);
 
     const overlayGradient = document.createElement('div');
-    overlayGradient.textContent = '\u00A0';
+    overlayGradient.textContent = '\xa0';
     overlayGradient.className = 'cd-comment-overlay-gradient';
     overlayInnerWrapper.appendChild(overlayGradient);
 

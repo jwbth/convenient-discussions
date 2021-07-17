@@ -202,7 +202,7 @@ export default {
           comment.isHovered ||
           comment.isDeleted ||
 
-          // Need to generate the gray line to close the gaps between adjacent list item elements.
+          // Need to generate a gray line to close the gaps between adjacent list item elements.
           comment.isLineGapped
         )
       );

@@ -2287,7 +2287,7 @@ export default class CommentForm {
 
     // Remove spaces from empty lines except when they are a part of the syntax creating <pre>.
     code = code
-      .replace(/^(?:[ \t\xA0\uFEFF]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\uFEFF\xA0]+/gm, ''));
+      .replace(/^(?:[ \t\xa0\ufeff]*\n)+(?! )/gm, (s) => s.replace(/^[ \t\ufeff\xa0]+/gm, ''));
 
     let signature;
     if (this.omitSignatureCheckbox?.isSelected()) {

@@ -96,12 +96,12 @@ export default {
    * Unfortunately, we can't get this using API, see
    * {@link https://phabricator.wikimedia.org/T204610}.
    *
+   * @type {?UserNamespacesByGender}
    * @example
    * // If only the female form differs from the standard name)
    * {
    *   female: 'Участница',
    * }
-   * @type {?UserNamespacesByGender}
    */
   userNamespacesByGender: null,
 
@@ -111,10 +111,10 @@ export default {
    *
    * @typedef {object} ArchivePathEntry
    * @property {string} source Source path. Dynamic parts should be replaced with tokens such as
-   *   `$1`, `$2` etc. Regular expressions for these tokens, if any, should be defined in the
+   *   `$1`, `$2`, etc. Regular expressions for these tokens, if any, should be defined in the
    *   `replacements` array.
    * @property {string} archive Archive prefix. Should use the same tokens as in `source`.
-   * @property {RegExp[]|undefined} replacements Array of replacements for `$1`, `$2` tokens in
+   * @property {RegExp[]} [replacements] Array of replacements for `$1`, `$2` tokens in
    *   `source` and `archive`. Note that the regexp should, if put into the `archive` pattern,
    *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
    *   in "Wikipedia:Discussion/Archive/General/2020/07", it should capture "General", but not
@@ -138,6 +138,8 @@ export default {
    * The entries are applied in the order of their presence in the array. So, if a page name fits
    * two patterns, the one closer to the beginning of the array is used.
    *
+   * @type {Array.<ArchivePathEntry|RegExp>}
+   * @default []
    * @example
    * [
    *   {
@@ -151,8 +153,6 @@ export default {
    *   },
    *   /\/Archive/,
    * ]
-   * @type {Array.<ArchivePathEntry|RegExp>}
-   * @default []
    */
   archivePaths: [],
 
@@ -427,13 +427,13 @@ export default {
    * usually end with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the
    * end for the script to work properly.
    *
+   * @type {RegExp[]}
+   * @default []
    * @example
    * [
    *   // But comments are cut out of comment beginnings by default
    *   /^<!--[^]*?--> *\n+/,
    * ]
-   * @type {RegExp[]}
-   * @default []
    */
   customBadCommentBeginnings: [],
 

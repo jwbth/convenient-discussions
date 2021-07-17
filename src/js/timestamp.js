@@ -69,6 +69,8 @@ export const relativeTimeThresholds = [
   // also too complex.
 ];
 
+let commentAnchors = [];
+
 /**
  * _For internal use._ Prepare `dayjs` object for further use (add plugins and a locale).
  */
@@ -729,8 +731,6 @@ export function generateCommentAnchor(date, author, resolveCollisions = false) {
   }
   return anchor;
 }
-
-let commentAnchors = [];
 
 /**
  * Add a comment anchor to the registry to avoid collisions.

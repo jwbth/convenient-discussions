@@ -364,7 +364,7 @@ Document.prototype.createElement = (name) => {
 };
 
 Document.prototype.createTextNode = (content) => {
-  return new Text(content);
+  return new Text(content || '');
 };
 
 Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
