@@ -65,12 +65,12 @@ async function prepare(siteDataRequests) {
   --cd-parentheses-end: '${cd.mws('parentheses-end')}';
 }`);
 
+  // Used in boot.initSettings().
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
+
   cd.g.PAGE = new Page(cd.g.PAGE_NAME);
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
-
-  initTimestampParsingTools();
 
   serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
@@ -426,25 +426,14 @@ function processWatchlist($content) {
 }
 
 /**
- * Get the timezone per user preferences.
- *
- * @returns {?(string|number)} Standard timezone name or offset in minutes.
- * @private
- */
-function getUserTimezone() {
-  const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
-  return timezoneParts && timezoneParts[2] || Number(timezoneParts[1]);
-}
-
-/**
  * Add comment links to a contributions page.
  *
  * @param {JQuery} $content
  * @private
  */
 function processContributions($content) {
-  const timezone = getUserTimezone();
-  if (timezone === null || Number.isNaN(timezone)) return;
+  initTimestampParsingTools('user');
+  if (!cd.g.UI_TIMEZONE) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
 
@@ -480,7 +469,7 @@ function processContributions($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, timezone) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
     if (!date) return;
 
     const anchor = generateCommentAnchor(date, mw.config.get('wgRelevantUserName'));
@@ -512,8 +501,8 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  const timezone = getUserTimezone();
-  if (timezone === null || Number.isNaN(timezone)) return;
+  initTimestampParsingTools('user');
+  if (!cd.g.UI_TIMEZONE) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
@@ -540,7 +529,7 @@ function processHistory($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, timezone) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
     if (!date) return;
 
     const author = extractAuthor(line);
@@ -599,8 +588,8 @@ function processHistory($content) {
 async function processDiff() {
   if (!isProcessDiffFirstRun) return;
 
-  const timezone = getUserTimezone();
-  if (timezone === null || Number.isNaN(timezone)) return;
+  initTimestampParsingTools('user');
+  if (!cd.g.UI_TIMEZONE) return;
 
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)
@@ -620,7 +609,7 @@ async function processDiff() {
       const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
       if (!dateElement) return;
 
-      const { date } = parseTimestamp(dateElement.textContent, timezone) || {};
+      const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
       if (!date) return;
 
       const author = extractAuthor(area);

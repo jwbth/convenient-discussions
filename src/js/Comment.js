@@ -3278,7 +3278,7 @@ export default class Comment extends CommentSkeleton {
         '^([^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
-        cd.g.TIMESTAMP_REGEXP.source +
+        cd.g.CONTENT_TIMESTAMP_REGEXP.source +
         '.*' +
         (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
 

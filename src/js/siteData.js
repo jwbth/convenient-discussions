@@ -32,10 +32,42 @@ function setFormats() {
 
   const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
   const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
+
+  /**
+   * Format of date in content language, as used by MediaWiki.
+   *
+   * @name CONTENT_DATE_FORMAT
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
   cd.g.CONTENT_DATE_FORMAT = DATE_FORMATS[contentLanguage];
-  cd.g.USER_DATE_FORMAT = DATE_FORMATS[userLanguage];
+
+  /**
+   * Format of date in user (interface) language, as used by MediaWiki.
+   *
+   * @name UI_DATE_FORMAT
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  cd.g.UI_DATE_FORMAT = DATE_FORMATS[userLanguage];
+
+  /**
+   * Regular expression matching a single digit in content language, e.g. `[0-9]`.
+   *
+   * @name CONTENT_DIGITS
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
   cd.g.CONTENT_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[contentLanguage] : null;
-  cd.g.USER_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[userLanguage] : null;
+
+  /**
+   * Regular expression matching a single digit in user (interface) language, e.g. `[0-9]`.
+   *
+   * @name UI_DIGITS
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  cd.g.UI_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[userLanguage] : null;
 }
 
 /**
@@ -79,12 +111,12 @@ export function loadSiteData() {
     'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
   ].concat(...contentDateTokensMessageNames);
 
-  const userDateTokensMessageNames = getUsedDateTokens(cd.g.USER_DATE_FORMAT)
+  const uiDateTokensMessageNames = getUsedDateTokens(cd.g.UI_DATE_FORMAT)
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
     'colon-separator', 'nextdiff', 'timezone-utc'
-  ].concat(...userDateTokensMessageNames);
+  ].concat(...uiDateTokensMessageNames);
 
   // We need this object to pass it to the web worker.
   cd.g.contentLanguageMessages = {};
@@ -150,10 +182,25 @@ export function loadSiteData() {
     requests.push(userLanguageMessagesRequest);
   }
 
+  /**
+   * Contributions page local name.
+   *
+   * @name CONTRIBS_PAGE
+   * @type {string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
   cd.g.CONTRIBS_PAGE = cd.config.contribsPage;
-  cd.g.TIMEZONE = cd.config.timezone;
 
-  if (!cd.g.CONTRIBS_PAGE || cd.g.TIMEZONE == null) {
+  /**
+   * Timezone of the wiki.
+   *
+   * @name CONTENT_TIMEZONE
+   * @type {?string}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  cd.g.CONTENT_TIMEZONE = cd.config.timezone;
+
+  if (!cd.g.CONTRIBS_PAGE || !cd.g.CONTENT_TIMEZONE) {
     const request = cd.g.api.get({
       action: 'query',
       meta: 'siteinfo',
@@ -166,7 +213,7 @@ export function loadSiteData() {
         }
       });
 
-      cd.g.TIMEZONE = resp.query.general.timezone;
+      cd.g.CONTENT_TIMEZONE = resp.query.general.timezone;
     });
     requests.push(request);
   }

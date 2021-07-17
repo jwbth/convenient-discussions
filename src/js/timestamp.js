@@ -18,8 +18,8 @@ import { getTimezoneOffset } from 'date-fns-tz';
 import cd from './cd';
 import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from './util';
 
-let parseTimestampRegexp;
-let parseTimestampRegexpNoTimezone;
+let parseTimestampContentRegexp;
+let parseTimestampUiRegexp;
 let utcString;
 
 export const dateTokenToMessageNames = {
@@ -94,15 +94,19 @@ export function initDayjs() {
  * and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before 1941 are
  * complicated).
  *
- * @param {string} format Date format, as used by MediaWiki.
- * @param {string} digits Regular expression matching a single localized digit, e.g. `[0-9]`.
+ * @param {string} language `'content'` or `'user'`.
  * @returns {string} Pattern to be a part of a regular expression.
  * @private
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
  * @license MIT
  */
-function getTimestampMainPartPattern(format, digits) {
+function getTimestampMainPartPattern(language) {
+  const isContentLanguage = language === 'content';
+  const format = isContentLanguage ? cd.g.CONTENT_DATE_FORMAT : cd.g.UI_DATE_FORMAT;
+  const digits = isContentLanguage ? cd.g.CONTENT_DIGITS : cd.g.UI_DIGITS;
+  const digitsPattern = digits ? `[${digits}]` : '\\d';
+
   const regexpGroup = (regexp) => '(' + regexp + ')';
   const regexpAlternateGroup = (arr) => '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
 
@@ -123,9 +127,13 @@ function getTimestampMainPartPattern(format, digits) {
       case 'D':
       case 'l':
       case 'F':
-      case 'M':
-        s += regexpAlternateGroup(getContentLanguageMessages(dateTokenToMessageNames[code]));
+      case 'M': {
+        const messages = isContentLanguage ?
+          getContentLanguageMessages(dateTokenToMessageNames[code]) :
+          dateTokenToMessageNames[code].map(mw.msg);
+        s += regexpAlternateGroup(messages);
         break;
+      }
       case 'd':
       case 'H':
       case 'i':
@@ -168,7 +176,7 @@ function getTimestampMainPartPattern(format, digits) {
         s += mw.util.escapeRegExp(format[p]);
     }
     if (num !== false) {
-      s += regexpGroup(digits + '{' + num + '}');
+      s += regexpGroup(digitsPattern + '{' + num + '}');
     }
   }
 
@@ -176,62 +184,17 @@ function getTimestampMainPartPattern(format, digits) {
 }
 
 /**
- * Create and set the regexp that matches timestamps in the local date format.
+ * Get codes of date components for the function that parses timestamps in the local date format
+ * based on the result of matching the regexp set by `setTimestampRegexps()`.
  *
- * This calls `getTimestampMainPartPattern()` with data for the current wiki.
- *
- * @private
- */
-function setLocalTimestampRegexps() {
-  const digitsPattern = cd.g.CONTENT_DIGITS ? `[${cd.g.CONTENT_DIGITS}]` : '\\d';
-  const mainPartPattern = getTimestampMainPartPattern(cd.g.CONTENT_DATE_FORMAT, digitsPattern);
-  const utcParsed = mw.message('(content)timezone-utc').parse();
-  const utcPattern = mw.util.escapeRegExp(utcParsed);
-  const timezonePattern = '\\((?:' + utcPattern + '|[A-Z]{1,5}|[+-]\\d{0,4})\\)';
-
-  // "+" to account for RTL and LTR marks replaced with a space.
-  const pattern = mainPartPattern + ' +' + timezonePattern;
-
-  /**
-   * Regular expression for matching timestamps.
-   *
-   * @name TIMESTAMP_REGEXP
-   * @type {RegExp}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  cd.g.TIMESTAMP_REGEXP = new RegExp(pattern);
-
-  /**
-   * Regular expression for matching timestamps with no timezone at the end.
-   *
-   * @name TIMESTAMP_REGEXP_NO_TIMEZONE
-   * @type {RegExp}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE = new RegExp(mainPartPattern);
-
-  /**
-   * Regular expression for matching timezone, with a global flag.
-   *
-   * @name TIMEZONE_REGEXP
-   * @type {RegExp}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  cd.g.TIMEZONE_REGEXP = new RegExp(timezonePattern, 'g');
-}
-
-/**
- * Create and set the function that parses timestamps in the local date format, based on the result
- * of matching the regexp set by `setLocalTimestampRegexps()`.
- *
+ * @param {string} format
+ * @returns {string[]}
  * @private
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
  * @license MIT
  */
-function setMatchingGroupsForLocalTimestampParser() {
-  const format = cd.g.CONTENT_DATE_FORMAT;
-
+function getMatchingGroups(format) {
   const matchingGroups = [];
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
@@ -277,50 +240,119 @@ function setMatchingGroupsForLocalTimestampParser() {
     }
   }
 
-  // We can't use the variables from the scope of the current function and have to accept the global
-  // object as a parameter because we need to use the function in a web worker which can receive
-  // functions only as strings, forgetting their scope.
-
-  /**
-   * Codes of date components for the parser function.
-   *
-   * @name TIMESTAMP_MATCHING_GROUPS
-   * @type {string[]}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  cd.g.TIMESTAMP_MATCHING_GROUPS = matchingGroups;
+  return matchingGroups;
 }
 
 /**
- * _For internal use._ Set the global variables related to timestamp parsing.
+ * _For internal use._ Set the global object properties related to timestamp parsing.
+ *
+ * @param {string} language
  */
-export function initTimestampParsingTools() {
-  setLocalTimestampRegexps();
-  setMatchingGroupsForLocalTimestampParser();
+export function initTimestampParsingTools(language) {
+  if (language === 'content') {
+    const mainPartPattern = getTimestampMainPartPattern('content');
+    const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
+    const timezonePattern = '\\((?:' + utcPattern + '|[A-Z]{1,5}|[+-]\\d{0,4})\\)';
+
+    /**
+     * Regular expression for matching timestamps in content.
+     *
+     * ` +` to account for RTL and LTR marks replaced with a space.
+     *
+     * @name CONTENT_TIMESTAMP_REGEXP
+     * @type {RegExp}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.CONTENT_TIMESTAMP_REGEXP = new RegExp(mainPartPattern + ' +' + timezonePattern);
+
+    /**
+     * Regular expression for matching timestamps in content with no timezone at the end.
+     *
+     * @name CONTENT_TIMESTAMP_NO_TZ_REGEXP
+     * @type {RegExp}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP = new RegExp(mainPartPattern);
+
+    /**
+     * Codes of date (in content language) components for the timestamp parser function.
+     *
+     * @name CONTENT_TIMESTAMP_MATCHING_GROUPS
+     * @type {string[]}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.CONTENT_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.CONTENT_DATE_FORMAT);
+
+    /**
+     * Regular expression for matching timezone, with the global flag.
+     *
+     * @name TIMEZONE_REGEXP
+     * @type {RegExp}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.TIMEZONE_REGEXP = new RegExp(timezonePattern, 'g');
+  } else {
+    /**
+     * Regular expression for matching timestamps in the interface with no timezone at the end.
+     *
+     * @name UI_TIMESTAMP_REGEXP
+     * @type {RegExp}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.UI_TIMESTAMP_REGEXP = new RegExp(getTimestampMainPartPattern('user'));
+
+    /**
+     * Codes of date (in interface language) components for the timestamp parser function.
+     *
+     * @name UI_TIMESTAMP_MATCHING_GROUPS
+     * @type {string[]}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.UI_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.UI_DATE_FORMAT);
+
+    const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
+
+    /**
+     * Timezone per user preferences: standard timezone name or offset in minutes.
+     *
+     * @name UI_TIMEZONE
+     * @type {?(string|number)}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.UI_TIMEZONE = (timezoneParts && timezoneParts[2]) || Number(timezoneParts[1]) || null;
+  }
 }
 
 /**
  * Parse a timestamp, accepting a regexp match and returning a date.
  *
  * @param {Array} match Regexp match data.
- * @param {object} cd `convenientDiscussions` (in the window context) / `cd` (in the worker context)
- *   global object.
- * @param {string|number} [timezone=cd.g.TIMEZONE] Timezone standard name or offset in minutes, if
- *   it should be used instead of the wiki's timezone.
+ * @param {string|number} [timezone] Timezone standard name or offset in minutes. If set, it is
+ *   implied that the timestamp is in the user (interface) language, not in the content language.
  * @returns {Date}
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
  * @license MIT
  */
-export function getDateFromTimestampMatch(match, cd, timezone = cd.g.TIMEZONE) {
+export function getDateFromTimestampMatch(match, timezone) {
   cd.debug.startTimer('parse timestamps');
 
+  let isContentLanguage = timezone === undefined;
+  if (isContentLanguage) {
+    timezone = cd.g.CONTENT_TIMEZONE;
+  }
+
+  const digits = isContentLanguage ? cd.g.CONTENT_DIGITS : cd.g.UI_DIGITS;
+  const matchingGroups = isContentLanguage ?
+    cd.g.CONTENT_TIMESTAMP_MATCHING_GROUPS :
+    cd.g.UI_TIMESTAMP_MATCHING_GROUPS;
+
   const untransformDigits = (text) => {
-    if (!cd.g.CONTENT_DIGITS) {
+    if (!digits) {
       return text;
     }
-    const regexp = new RegExp('[' + cd.g.CONTENT_DIGITS + ']', 'g');
-    return text.replace(regexp, (m) => cd.g.CONTENT_DIGITS.indexOf(m));
+    const regexp = new RegExp('[' + digits + ']', 'g');
+    return text.replace(regexp, (m) => digits.indexOf(m));
   };
 
   let year = 0;
@@ -329,16 +361,22 @@ export function getDateFromTimestampMatch(match, cd, timezone = cd.g.TIMEZONE) {
   let hours = 0;
   let minutes = 0;
 
-  for (let i = 0; i < cd.g.TIMESTAMP_MATCHING_GROUPS.length; i++) {
-    const code = cd.g.TIMESTAMP_MATCHING_GROUPS[i];
+  for (let i = 0; i < matchingGroups.length; i++) {
+    const code = matchingGroups[i];
     const text = match[i + 3];
 
     switch (code) {
       case 'xg':
       case 'F':
-      case 'M':
-        monthIdx = getContentLanguageMessages(dateTokenToMessageNames[code]).indexOf(text);
+      case 'M': {
+        // The worker context doesn't have `mw.msg`, but `isContentLanguage` should be always
+        // `true` there.
+        const messages = isContentLanguage ?
+          getContentLanguageMessages(dateTokenToMessageNames[code]) :
+          dateTokenToMessageNames[code].map(mw.msg);
+        monthIdx = messages.indexOf(text);
         break;
+      }
       case 'd':
       case 'j':
         day = Number(untransformDigits(text));
@@ -392,10 +430,11 @@ export function getDateFromTimestampMatch(match, cd, timezone = cd.g.TIMEZONE) {
  */
 
 /**
- * Parse a timestamp and return the date and the match object.
+ * Parse a timestamp and return a date and a match object.
  *
  * @param {string} timestamp
- * @param {number} [timezone] Standard timezone name.
+ * @param {string|number} [timezone] Standard timezone name or offset in minutes. If set, it is
+ *   implied that the timestamp is in the user (interface) language, not in the content language.
  * @returns {?ParseTimestampReturn}
  */
 export function parseTimestamp(timestamp, timezone) {
@@ -403,21 +442,28 @@ export function parseTimestamp(timestamp, timezone) {
   // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
   timestamp = removeDirMarks(timestamp, true);
 
-  // Creating these regexps every time takes too long (say, 10ms for 1000 runs on an average
+  // Creating these regexps every time takes too long (say, 5ms for 1000 runs on an average
   // machine), so we cache them.
-  if (!parseTimestampRegexp) {
-    parseTimestampRegexp = new RegExp(`^([^]*)(${cd.g.TIMESTAMP_REGEXP.source})(?!["»])`);
-    parseTimestampRegexpNoTimezone = new RegExp(
-      `^([^]*)(${cd.g.TIMESTAMP_REGEXP_NO_TIMEZONE.source})`
+  let regexp;
+  if (timezone === undefined) {
+    parseTimestampContentRegexp = (
+      parseTimestampContentRegexp ||
+      new RegExp(`^([^]*)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?!["»])`)
     );
+    regexp = parseTimestampContentRegexp;
+  } else {
+    parseTimestampUiRegexp = (
+      parseTimestampUiRegexp ||
+      new RegExp(`^([^]*)(${cd.g.UI_TIMESTAMP_REGEXP.source})`)
+    );
+    regexp = parseTimestampUiRegexp;
   }
 
-  const regexp = timezone === undefined ? parseTimestampRegexp : parseTimestampRegexpNoTimezone;
   const match = timestamp.match(regexp);
   if (!match) {
     return null;
   }
-  const date = getDateFromTimestampMatch(match, cd, timezone);
+  const date = getDateFromTimestampMatch(match, timezone);
 
   return { date, match };
 }
@@ -509,7 +555,7 @@ export function formatDateNative(date, timezone) {
   }
 
   let s = '';
-  const format = cd.g.USER_DATE_FORMAT;
+  const format = cd.g.UI_DATE_FORMAT;
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
     if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {

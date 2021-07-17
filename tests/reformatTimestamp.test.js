@@ -7,7 +7,7 @@ cd.settings = {};
 
 cd.g = {};
 cd.g.USER_LANGUAGE = 'en';
-cd.g.USER_DATE_FORMAT = 'H:i, j F Y';
+cd.g.UI_DATE_FORMAT = 'H:i, j F Y';
 cd.mws = () => {
   return 'UTC';
 };
