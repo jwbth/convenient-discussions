@@ -28,7 +28,6 @@ import {
   saveScrollPosition,
   saveToLocalStorage,
   skin$,
-  spacesToUnderlines,
   transparentize,
   underlinesToSpaces,
   unhideText,
@@ -1525,13 +1524,10 @@ export async function addNotFoundMessage(decodedFragment, date) {
         if (sectionName) {
           // Obtain the first exact section title match (which would be from the most recent
           // archive). This loop iterates over just one item in the vast majority of cases.
-          let sectionName_ = spacesToUnderlines(sectionName);
-          let sectionNameDotDecoded_ = spacesToUnderlines(sectionNameDotDecoded);
-          for (let [, result] of Object.entries(results)) {
-            // sectiontitle in API output has spaces encoded as underscores.
+          for (const [, result] of Object.entries(results)) {
             if (
               result.sectiontitle &&
-              [sectionName_, sectionNameDotDecoded_].includes(result.sectiontitle)
+              [sectionName, sectionNameDotDecoded].includes(result.sectiontitle)
             ) {
               pageTitle = result.title;
               sectionNameFound = underlinesToSpaces(result.sectiontitle);
