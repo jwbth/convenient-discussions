@@ -507,6 +507,11 @@ export default {
       .forEach((comment) => {
         const layersContainerOffset = comment.getLayersContainerOffset();
         const layersOffset = comment.layersOffset;
+        if (!layersOffset) {
+          // Something has happened with the comment; it disappeared.
+          comment.removeLayers();
+          return;
+        }
         if (
           !isObstructingElementHovered &&
           e.pageY >= layersOffset.top + layersContainerOffset.top &&
