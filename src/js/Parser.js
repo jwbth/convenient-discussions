@@ -210,20 +210,19 @@ export default class Parser {
     ];
     return this.context.getAllTextNodes()
       .map((node) => {
-        const text = node.textContent;
-        const { date, match } = parseTimestamp(text) || {};
+        const { date, match } = parseTimestamp(node.textContent) || {};
         if (date && !elementsToExclude.some((el) => el.contains(node))) {
-          return { node, date, match, text };
+          return { node, date, match };
         }
       })
       .filter(defined)
       .map((finding) => {
-        const { node, match, date, text } = finding;
+        const { node, match, date } = finding;
         const element = this.context.document.createElement('span');
         element.classList.add('cd-timestamp');
         const textNode = this.context.document.createTextNode(match[2]);
         element.appendChild(textNode);
-        const remainedText = node.textContent.slice(match.index + text.length);
+        const remainedText = node.textContent.slice(match.index + match[0].length);
         let afterNode;
         if (remainedText) {
           afterNode = this.context.document.createTextNode(remainedText);

@@ -372,7 +372,7 @@ export function removeDoubleSpaces(s) {
 }
 
 /**
- * Provide `mw.Title.phpCharToUpper` functionality for the web worker context.
+ * Provide the `mw.Title.phpCharToUpper` functionality in the web worker context.
  *
  * @param {string} char
  * @returns {string}
@@ -752,11 +752,12 @@ export function saveToLocalStorage(name, obj) {
  * the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518) and also appear
  * after →/← in edit summaries.
  *
- * @param {string} text
+ * @param {string} text Text to alter.
+ * @param {boolean} replaceWithSpace Replace direction marks with a space instead of removing.
  * @returns {string}
  */
-export function removeDirMarks(text) {
-  return text.replace(/[\u200E\u200F]/g, '');
+export function removeDirMarks(text, replaceWithSpace) {
+  return text.replace(/[\u200E\u200F]/g, replaceWithSpace ? ' ' : '');
 }
 
 /**
