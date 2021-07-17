@@ -148,6 +148,17 @@ function isCellOfMultiCommentTable(element) {
 }
 
 /**
+ * Check whether the element is a DL with a DT as the first child.
+ *
+ * @param {Element} element
+ * @returns {boolean}
+ * @private
+ */
+function isDlWithDt(element) {
+  return element.tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT';
+}
+
+/**
  * Generalization of a page parser for the window and worker contexts.
  */
 export default class Parser {
@@ -489,28 +500,35 @@ export default class Parser {
   }
 
   /**
-   * _For internal use._ Collect the parts of the comment given a signature element.
+   * Get nodes to start the traversal from.
    *
-   * @param {Element|external:Element} signatureElement
-   * @returns {object[]}
+   * @param {Element} signatureElement
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @returns {Array.<object[], Element>}
+   * @private
    */
-  collectParts(signatureElement) {
-    const treeWalker = new ElementsAndTextTreeWalker(signatureElement);
-    let parts = [];
+  getStartNodes(signatureElement, treeWalker) {
+    const parts = [];
     let firstForeignComponentAfter;
 
-    // The code:
-    // * Smth. [signature]
-    // ** Smth.
-    // *: Smth. [signature]
-    // or
-    // ** Smth. [signature]
-    // ** Smth.
-    // *: Smth. [signature]
-    // produces a DOM where the second line is not a part of the first comment, but there is only
-    // the first comment's signature in the DOM subtree related to the second line. We need to
-    // acknowledge there is a foreign not inline element here to be able to tell comment boundaries
-    // accurately (inline elements in most cases are continuations of the same comment).
+    /*
+      The code:
+
+        * Smth. [signature]
+        ** Smth.
+        *: Smth. [signature]
+
+      or
+
+        ** Smth. [signature]
+        ** Smth.
+        *: Smth. [signature]
+
+      produces a DOM where the second line is not a part of the first comment, but there is only
+      the first comment's signature in the DOM subtree related to the second line. We need to
+      acknowledge there is a foreign not inline element here to be able to tell comment boundaries
+      accurately (inline elements in most cases are continuations of the same comment).
+    */
     while (!firstForeignComponentAfter) {
       while (!treeWalker.currentNode.nextSibling && treeWalker.parentNode());
       if (!treeWalker.nextSibling()) break;
@@ -565,31 +583,95 @@ export default class Parser {
       lastStep: 'start',
     });
 
+    return [parts, firstForeignComponentAfter];
+  }
+
+  /**
+   * Check if an element is eligible to be a comment part.
+   *
+   * @param {Element} element
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @param {Element} lastStep
+   * @returns {boolean}
+   * @private
+   */
+  isElementEligible(element, treeWalker, lastStep) {
+    return !(
+      element === treeWalker.root ||
+      foreignComponentClasses.some((className) => element.classList.contains(className)) ||
+      element.getAttribute('id') === 'toc' ||
+
+      // Seems to be the best option given pages like
+      // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop. DLs with a
+      // single DT that are not parts of comments are filtered out in Parser#filterParts.
+      element.tagName === 'DT' ||
+
+      isCellOfMultiCommentTable(element) ||
+
+      // Horizontal lines sometimes separate different section blocks.
+      (
+        element.tagName === 'HR' &&
+        element.previousElementSibling &&
+        this.context.getElementByClassName(element.previousElementSibling, 'cd-signature')
+      ) ||
+
+      (
+        cd.g.pageHasOutdents &&
+        this.context.getElementByClassName(element, cd.config.outdentClass)
+      ) ||
+
+      // Talk page message box
+      (
+        cd.g.NAMESPACE_NUMBER % 2 === 1 &&
+        element.classList.contains('tmbox') &&
+        lastStep !== 'up'
+      ) ||
+
+      cd.config.checkForCustomForeignComponents?.(element, this.context)
+    );
+  }
+
+  /**
+   * Traverse the DOM, collecting comment parts.
+   *
+   * @param {object[]} parts
+   * @param {Element} signatureElement
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @param {Element} firstForeignComponentAfter
+   * @returns {object[]}
+   * @private
+   */
+  traverseDom(parts, signatureElement, treeWalker, firstForeignComponentAfter) {
     // 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
     for (let i = 0; i < 500; i++) {
-      // lastStep may be:
-      // * "start" (parts added at the beginning)
-      // * "back" (go to the previous sibling)
-      // * "up" (go to the parent element)
-      // * "dive" (recursively go to the last not inline/text child)
-      // * "replaced" (obtained as a result of manipulations after node traversal)
+      /*
+        lastStep may be:
+          * "start" (parts added at the beginning)
+          * "back" (go to the previous sibling)
+          * "up" (go to the parent element)
+          * "dive" (recursively go to the last not inline/text child)
+          * "replaced" (obtained as a result of manipulations after node traversal)
+      */
       let lastStep;
       const previousPart = parts[parts.length - 1];
 
       if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
-        // Here we dive to the bottom of the element subtree to find parts of the _current_ comment
-        // that may be present. This happens with code like this:
-        // :* Smth. [signature]
-        // :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
-        //               signature above. -->
-        // :: Smth. [signature] <!-- The comment part we are at. -->
+        /*
+          Here we dive to the bottom of the element subtree to find parts of the _current_ comment
+          that may be present. This happens with code like this:
+
+            :* Smth. [signature]
+            :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
+                          signature above. -->
+            :: Smth. [signature] <!-- The comment part we are at. -->
+        */
 
         // Get the last not inline child of the current node.
-        let previousNode;
+        let parentNode;
         let haveDived = false;
-        while ((previousNode = treeWalker.currentNode) && treeWalker.lastChild()) {
+        while ((parentNode = treeWalker.currentNode) && treeWalker.lastChild()) {
           if (isInline(treeWalker.currentNode, true)) {
-            treeWalker.currentNode = previousNode;
+            treeWalker.currentNode = parentNode;
             break;
           }
           haveDived = true;
@@ -609,81 +691,20 @@ export default class Parser {
       const node = treeWalker.currentNode;
       const isTextNode = node.nodeType === Node.TEXT_NODE;
 
-      /*
-        Cases like:
-          === Section title ===
-          Section introduction. Not a comment.
-          # Vote. [signature]
-        Without the following code, the section introduction would be a part of the comment. The
-        same may happen inside a discussion thread (often because one of the users didn't sign).
-       */
-      if (
-        lastStep === 'back' &&
-        ['OL', 'UL'].includes(previousPart.node.tagName) &&
-
-        // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
-        !(
-          ['DL', 'OL', 'UL'].includes(node.tagName) ||
-          (
-            isTextNode &&
-            node.previousSibling &&
-            ['DL', 'OL', 'UL'].includes(node.previousSibling.tagName)
-          )
-        ) &&
-
-        previousPart.node[this.context.childElementsProp][0]?.contains(signatureElement)
-      ) {
-        break;
-      }
-
       let isHeading = null;
       let hasCurrentSignature = null;
       let hasForeignComponents = null;
       if (!isTextNode) {
-        if (
-          node === treeWalker.root ||
-          foreignComponentClasses.some((className) => node.classList.contains(className)) ||
-          node.getAttribute('id') === 'toc' ||
-
-          // Seems to be the best option given pages like
-          // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
-          node.tagName === 'DT' ||
-          (node.tagName === 'DL' && node.firstChild?.tagName === 'DT') ||
-
-          isCellOfMultiCommentTable(node) ||
-
-          // Horizontal lines sometimes separate different section blocks.
-          (
-            node.tagName === 'HR' &&
-            node.previousElementSibling &&
-            this.context.getElementByClassName(node.previousElementSibling, 'cd-signature')
-          ) ||
-
-          (
-            cd.g.pageHasOutdents &&
-            this.context.getElementByClassName(node, cd.config.outdentClass)
-          ) ||
-
-          // Talk page message box
-          (
-            cd.g.NAMESPACE_NUMBER % 2 === 1 &&
-            node.classList.contains('tmbox') &&
-            lastStep !== 'up'
-          ) ||
-
-          cd.config.checkForCustomForeignComponents?.(node, this.context)
-        ) {
-          break;
-        }
+        if (!this.isElementEligible(node, treeWalker, lastStep)) break;
 
         isHeading = /^H[1-6]$/.test(node.tagName);
         hasCurrentSignature = node.contains(signatureElement);
 
         // The second parameter of getElementsByClassName() is an optimization for the worker
         // context.
-        const signaturesCount = (
-          node.getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1).length
-        );
+        const signaturesCount = node
+          .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
+          .length;
         hasForeignComponents = (
           signaturesCount - Number(hasCurrentSignature) > 0 ||
           (firstForeignComponentAfter && node.contains(firstForeignComponentAfter))
@@ -716,6 +737,20 @@ export default class Parser {
 
       if (isHeading) break;
     }
+
+    return parts;
+  }
+
+  /**
+   * _For internal use._ Collect the parts of the comment given a signature element.
+   *
+   * @param {Element|external:Element} signatureElement
+   * @returns {object[]}
+   */
+  collectParts(signatureElement) {
+    const treeWalker = new ElementsAndTextTreeWalker(signatureElement);
+    let [parts, firstForeignComponentAfter] = this.getStartNodes(signatureElement, treeWalker);
+    parts = this.traverseDom(parts, signatureElement, treeWalker, firstForeignComponentAfter);
 
     return parts;
   }
@@ -826,10 +861,13 @@ export default class Parser {
    * _For internal use._ Remove unnecessary and incorrect parts from the collection.
    *
    * @param {object[]} parts
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
    */
-  filterParts(parts) {
+  filterParts(parts, signatureElement) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
+
+    // Empty paragraphs at the beginning
     for (let i = parts.length - 1; i > 0; i--) {
       const node = parts[i].node;
       if (
@@ -840,6 +878,44 @@ export default class Parser {
         parts.splice(i, 1);
       } else {
         break;
+      }
+    }
+
+    /*
+      Cases like:
+
+        === Section title ===
+        Section introduction. Not a comment.
+        # Vote. [signature]
+
+      Without the following code, the section introduction would be a part of the comment. The
+      same may happen inside a discussion thread (often because one of the users didn't sign).
+
+      (Do it here, not in Parser#collectParts, because text nodes are filtered out at this stage.)
+    */
+    if (parts.length > 1) {
+      const startNode = parts[parts.length - 1].node;
+      if (!['DL', 'OL', 'UL', 'DD', 'LI'].includes(startNode.tagName) || isDlWithDt(startNode)) {
+        for (let i = parts.length - 1; i >= 1; i--) {
+          const part = parts[i];
+          const node = part.node;
+          const nextElement = node.nextElementSibling;
+          if (!nextElement) continue;
+
+          const isIntro = (
+            part.lastStep === 'back' &&
+            ['DL', 'OL', 'UL'].includes(nextElement.tagName) &&
+
+            // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
+            (!['DL', 'OL', 'UL'].includes(node.tagName) || isDlWithDt(node)) &&
+
+            nextElement[this.context.childElementsProp][0]?.contains(signatureElement)
+          );
+
+          if (isIntro) {
+            parts.splice(i);
+          }
+        }
       }
     }
 
