@@ -60,7 +60,9 @@ mw.loader.using([
 
   const idsToProps = {
     Q5573785: 'unsigned',
+    Q10684709: 'unsigned2',
     Q10825134: 'unsignedIp',
+    Q13108180: 'unsignedIp2',
     Q21997241: 'paragraph',
     Q45130993: 'smallDiv',
     Q6582792: 'blockquotetop',
@@ -118,9 +120,9 @@ mw.loader.using([
   const toLowerCaseFirst = (s) => s.length ? s[0].toLowerCase() + s.slice(1) : '';
 
   config.unsignedTemplates = (
-    (titles.unsigned || titles.unsignedIp) &&
+    (titles.unsigned || titles.unsigned2 || titles.unsignedIp || titles.unsignedIp2) &&
     (titles.unsigned || [])
-      .concat(titles.unsignedIp || [])
+      .concat(titles.unsigned2 || [], titles.unsignedIp || [], titles.unsignedIp2 || [])
       .map(getTitleText)
   );
 
