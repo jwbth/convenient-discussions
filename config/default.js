@@ -24,6 +24,16 @@ export default {
   contribsPage: null,
 
   /**
+   * Aliases of the `subst:` magic word. Get by running
+   * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
+   * in your browser's console while the page of your wiki is open.
+   *
+   * @type {string[]}
+   * @default []
+   */
+  substAliases: [],
+
+  /**
    * Timezone. Get by running
    * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
@@ -34,8 +44,9 @@ export default {
   timezone: null,
 
   /**
-   * Whether to store of the some of the preferences globally. Requires Extension:GlobalPreferences to
-   * be enabled.
+   * Whether to store some of the preferences globally. Requires
+   * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences the GlobalPreferences extension}
+   * to be enabled.
    *
    * @type {?boolean}
    * @default true

@@ -40,6 +40,7 @@ mw.loader.using([
     meta: 'siteinfo',
     siprop: ['specialpagealiases', 'general', 'extensions', 'magicwords'],
   });
+
   const contribsPageAliasesObj = siteInfoResp.query.specialpagealiases
     .find((obj) => obj.realname === 'Contributions');
   if (contribsPageAliasesObj) {
@@ -52,9 +53,11 @@ mw.loader.using([
   config.substAliases = siteInfoResp.query.magicwords
     .find((obj) => obj.name === 'subst')
     ?.aliases
-    .map((alias) => alias.toLowerCase());
+    .map((alias) => alias.toLowerCase())
+    .filter((alias) => alias !== 'subst:');
 
   config.timezone = siteInfoResp.query.general.timezone;
+
   config.useGlobalPreferences = siteInfoResp.query.extensions
     .some((ext) => ext.name === 'GlobalPreferences');
 
@@ -106,7 +109,7 @@ mw.loader.using([
       if (!page.redirects) return;
 
       const prop = Object.keys(titles)
-          .find((prop) => titles[prop][0].getPrefixedText() === page.title);
+        .find((prop) => titles[prop][0].getPrefixedText() === page.title);
 
       // Should always be the case, logically
       if (prop) {

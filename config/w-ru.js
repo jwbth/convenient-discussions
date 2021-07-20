@@ -65,7 +65,6 @@ export default {
   substAliases: [
     'подстановка:',
     'подст:',
-    'subst:',
   ],
 
   timezone: 'UTC',

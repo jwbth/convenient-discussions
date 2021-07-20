@@ -62,9 +62,7 @@ export default {
 
   contribsPage: 'Special:Contributions',
 
-  substAliases: [
-    'subst:',
-  ],
+  substAliases: [],
 
   timezone: 'UTC',
 
