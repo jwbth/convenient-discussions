@@ -373,9 +373,6 @@ export default {
           date = cd.s('navpanel-newcomments-unknowndate');
         }
         let text = names + rtlMarkOrNot + comma;
-        if (cd.settings.timestampFormat === 'default') {
-          text += date;
-        }
 
         // If there are 5 comments or less, show all of them. If there are more, show 4 and "N
         // more". (Because showing 4 and then "1 more" is stupid.)
@@ -391,6 +388,10 @@ export default {
           const textSpan = document.createElement('span');
           textSpan.className = 'toctext';
           li.appendChild(textSpan);
+
+          if (cd.settings.timestampFormat === 'default') {
+            text += date;
+          }
 
           const a = document.createElement('a');
           a.href = `#${comment.anchor}`;
