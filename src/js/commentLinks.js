@@ -18,7 +18,12 @@ import {
 } from './util';
 import { createApi, initSettings } from './boot';
 import { editWatchedSections, showSettingsDialog } from './modal';
-import { generateCommentAnchor, initTimestampParsingTools, parseTimestamp } from './timestamp';
+import {
+  generateCommentAnchor,
+  initDayjs,
+  initTimestampParsingTools,
+  parseTimestamp,
+} from './timestamp';
 import { getWatchedSections } from './options';
 import { loadSiteData } from './siteData';
 
@@ -215,6 +220,7 @@ function addWatchlistMenu() {
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-scriptSettings'],
   });
   settingsButton.on('click', () => {
+    initDayjs();
     showSettingsDialog();
   });
   settingsButton.$element.appendTo($menu);
