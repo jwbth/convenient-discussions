@@ -245,3 +245,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
     mw.notify($text, { autoHide: false });
   }
 });
+
+mw.loader.using('mediawiki.util').then(function () {
+  mw.util.addCSS('.cd-comment-timestamp .localcomments { font-size: unset !important; }');
+});
