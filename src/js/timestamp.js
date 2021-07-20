@@ -84,9 +84,6 @@ export function initDayjs() {
 
   dayjs.extend(utc);
   dayjs.extend(timezone);
-
-  // TODO: remove after testing.
-  cd.g.dayjs = dayjs;
 }
 
 /**
@@ -339,8 +336,6 @@ export function initTimestampParsingTools(language) {
  * @license MIT
  */
 export function getDateFromTimestampMatch(match, timezone) {
-  cd.debug.startTimer('parse timestamps');
-
   let isContentLanguage = timezone === undefined;
   if (isContentLanguage) {
     timezone = cd.g.CONTENT_TIMEZONE;
@@ -411,7 +406,6 @@ export function getDateFromTimestampMatch(match, timezone) {
     }
   }
 
-  cd.debug.startTimer('parse timestamps tz');
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
   let timezoneOffset;
   if (typeof timezone === 'number') {
@@ -420,9 +414,6 @@ export function getDateFromTimestampMatch(match, timezone) {
     timezoneOffset = timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime);
   }
   const date = new Date(unixTime - timezoneOffset);
-  cd.debug.stopTimer('parse timestamps tz');
-
-  cd.debug.stopTimer('parse timestamps');
 
   return date;
 }
@@ -643,7 +634,6 @@ export function formatDateNative(date, timezone) {
  * @returns {string}
  */
 export function formatDateImproved(date) {
-  cd.debug.startTimer('formatDateImproved');
   const useLocalTime = cd.settings.useLocalTime;
 
   let day = useLocalTime ? date.getDate() : date.getUTCDate();
@@ -669,7 +659,6 @@ export function formatDateImproved(date) {
   } else {
     formattedDate = dayjsDate.format(cd.s('comment-timestamp-other'));
   }
-  cd.debug.stopTimer('formatDateImproved');
 
   return formattedDate;
 }

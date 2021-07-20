@@ -139,7 +139,6 @@ export default class Section extends SectionSkeleton {
   addMenuItem({ name, label, href, tooltip, action, visible = true }) {
     if (!this.closingBracketElement) return;
 
-    cd.debug.startTimer('addMenuItem');
     this.menu[name] = new SectionMenuButton({
       name,
       label,
@@ -153,7 +152,6 @@ export default class Section extends SectionSkeleton {
       this.menu[name].wrapperElement,
       this.closingBracketElement
     );
-    cd.debug.stopTimer('addMenuItem');
   }
 
   /**

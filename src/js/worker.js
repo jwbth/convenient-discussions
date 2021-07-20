@@ -205,16 +205,12 @@ function parse() {
       removeDataAttributes(element);
       element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
 
-      cd.debug.startTimer('worker remove IDs');
-
       // Empty comment anchors, in most cases added by the script.
       element.getElementsByTagName('span')
         .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
         .forEach((el) => {
           el.remove();
         });
-
-      cd.debug.stopTimer('worker remove IDs');
 
       if (element.classList.contains('references') || ['STYLE', 'LINK'].includes(element.tagName)) {
         const textNode = hideElement(element, comment);
@@ -307,13 +303,11 @@ function parse() {
   ];
 
   cd.comments.forEach((comment, i) => {
-    cd.debug.startTimer('set children and parent');
     comment.children = comment.getChildren();
     comment.children.forEach((reply) => {
       reply.parent = comment;
       reply.isToMe = comment.isOwn;
     });
-    cd.debug.stopTimer('set children and parent');
 
     comment.previousComments = cd.comments
       .slice(Math.max(0, i - 2), i)

@@ -128,12 +128,10 @@ export function handleScroll() {
 
     if (cd.g.isAutoScrollInProgress) return;
 
-    cd.debug.startTimer('handleScroll');
     if (cd.g.isPageActive) {
       Comment.registerSeen();
       navPanel.updateCommentFormButton();
     }
     pageNav.update();
-    cd.debug.stopTimer('handleScroll');
   }, 300);
 }

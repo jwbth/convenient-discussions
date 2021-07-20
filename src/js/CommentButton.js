@@ -32,9 +32,7 @@ export default class CommentButton extends Button {
       delete this.labelElement;
     }
 
-    cd.debug.startTimer('add cd-comment-button');
     this.element.classList.add('cd-comment-button');
-    cd.debug.stopTimer('add cd-comment-button');
 
     /**
      * Constructor for the button's OOUI widget (if that's a OOUI button).

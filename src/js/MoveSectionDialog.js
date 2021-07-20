@@ -204,8 +204,7 @@ export default class MoveSectionDialog extends OO.ui.ProcessDialog {
         .appendTo($sectionCodeNote);
 
       this.summaryEndingInput = new OO.ui.TextInputWidget({
-        // TODO: take into account the whole summary length, updating the maximum value
-        // dynamically.
+        // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,
       });
       this.summaryEndingAutocomplete = new Autocomplete({

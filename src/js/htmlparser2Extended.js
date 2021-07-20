@@ -275,7 +275,6 @@ Object.defineProperty(Element.prototype, 'classList', {
         },
 
         remove: (...names) => {
-          cd.debug.startTimer('remove class');
           names.forEach((name) => {
             let classAttr = this.getAttribute('class') || '';
             const index = ` ${classAttr} `.indexOf(` ${name} `);
@@ -290,7 +289,6 @@ Object.defineProperty(Element.prototype, 'classList', {
               }
             }
           });
-          cd.debug.stopTimer('remove class');
         },
 
         contains: (name) => {

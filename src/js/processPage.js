@@ -337,7 +337,6 @@ function adjustDom() {
       }
     });
 
-  cd.debug.startTimer('adjustDom separate');
   /*
     A very specific fix for cases when an indented comment starts with a list like this:
 
@@ -379,7 +378,6 @@ function adjustDom() {
       console.debug('Separated a list from a part of the previous comment.');
     }
   });
-  cd.debug.stopTimer('adjustDom separate');
 }
 
 /**
@@ -402,9 +400,7 @@ function processComments(parser) {
     }
   });
 
-  cd.debug.startTimer('reformatTimestamps');
   Comment.reformatTimestamps();
-  cd.debug.stopTimer('reformatTimestamps');
 
   // Faster than doing it for every individual comment.
   cd.g.rootElement
@@ -964,8 +960,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       cd.debug.stopTimer('process sections');
     }
 
-    cd.debug.startTimer('laying out HTML');
     if (passedData.html) {
+      cd.debug.startTimer('laying out HTML');
       if (passedData.wasPageCreated) {
         cd.g.$content
           .empty()
@@ -976,17 +972,14 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           .first()
           .replaceWith(cd.g.$root);
       }
+      cd.debug.stopTimer('laying out HTML');
     }
-    cd.debug.stopTimer('laying out HTML');
 
-    cd.debug.startTimer('add topic buttons');
     if (isPageCommentable) {
       addAddTopicButton();
       connectToAddTopicButtons();
     }
-    cd.debug.stopTimer('add topic buttons');
 
-    cd.debug.startTimer('mount navPanel');
     if (cd.g.isPageActive) {
       if (cd.g.isPageFirstParsed) {
         navPanel.mount();
@@ -998,7 +991,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         navPanel.unmount();
       }
     }
-    cd.debug.stopTimer('mount navPanel');
 
     cd.debug.stopTimer('main code');
 
@@ -1012,21 +1004,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       // hidden elements.
       findFloatingAndHiddenElements();
 
-      cd.debug.startTimer('reviewHighlightables');
       // Should be above all code that deals with comment highlightable elements and comment levels
       // as this may alter that.
       Comment.reviewHighlightables();
-      cd.debug.stopTimer('reviewHighlightables');
 
-      cd.debug.startTimer('reformatComments');
       Comment.reformatComments();
-      cd.debug.stopTimer('reformatComments');
 
       // Restore the initial viewport position in terms of visible elements, which is how the user
       // sees it.
-      cd.debug.startTimer('restore scroll position');
       restoreRelativeScrollPosition();
-      cd.debug.stopTimer('restore scroll position');
     }
 
     if (isPageCommentable) {
@@ -1099,9 +1085,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     }
 
     if (cd.g.isPageFirstParsed) {
-      cd.debug.startTimer('pageNav mount');
       pageNav.mount();
-      cd.debug.stopTimer('pageNav mount');
 
       if (!cd.settings.reformatComments) {
         // The "mouseover" event allows to capture the state when the cursor is not moving but ends
@@ -1124,11 +1108,9 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
       if (cd.settings.reformatComments && cd.comments.length) {
-        cd.debug.startTimer('parse user links');
         // This could theoretically disrupt code that needs to process the whole page content, if it
         // runs later than CD. But typically CD runs relatively late.
         mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
-        cd.debug.stopTimer('parse user links');
       }
 
       const onPageMutations = () => {

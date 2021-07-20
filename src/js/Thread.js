@@ -49,14 +49,11 @@ function findItemElement(element, level, nextForeignElement) {
         // element, not the item element.
         item = level === 0 ? treeWalker.currentNode : previousNode;
 
-        cd.debug.startTimer('threads nextForeignElement');
         // The element can contain parts of a comment that is not in the thread, for example
         // https://ru.wikipedia.org/wiki/Википедия:К_оценке_источников#202104120830_RosssW_2.
         if (nextForeignElement && item.contains(nextForeignElement)) {
-          cd.debug.stopTimer('threads nextForeignElement');
           return null;
         }
-        cd.debug.stopTimer('threads nextForeignElement');
 
         break;
       }
@@ -83,7 +80,6 @@ function getEndElement(startElement, highlightables, nextForeignElement) {
     commonAncestor = commonAncestor.parentNode;
   } while (!commonAncestor.contains(lastHighlightable));
 
-  cd.debug.startTimer('threads nextForeignElement');
   let endElement = lastHighlightable;
   for (
     let n = endElement.parentNode;
@@ -92,7 +88,6 @@ function getEndElement(startElement, highlightables, nextForeignElement) {
   ) {
     endElement = n;
   }
-  cd.debug.stopTimer('threads nextForeignElement');
 
   // "Reply in section", "There are new comments in this thread" button container
   for (
@@ -214,21 +209,16 @@ export default class Thread {
      */
     this.commentCount = this.lastComment.id - this.rootComment.id + 1;
 
-    if (cd.g.pageHasOutdents) {
-      // Visually last comment (if there are {{outdent}} templates)
-      cd.debug.startTimer('visualLastComment');
-      /**
-       * Last comment of the thread _visually_, not logically.
-       *
-       * @type {Comment}
-       * @private
-       */
-      this.visualLastComment = rootComment.getChildren(true, true).slice(-1)[0] || rootComment;
-
-      cd.debug.stopTimer('visualLastComment');
-    } else {
-      this.visualLastComment = this.lastComment;
-    }
+    /**
+     * Last comment of the thread _visually_, not logically (differs from
+     * {@link module:Thread#lastComment} if there are `{{outdent}}` templates in the thread).
+     *
+     * @type {Comment}
+     * @private
+     */
+    this.visualLastComment = cd.g.pageHasOutdents ?
+      rootComment.getChildren(true, true).slice(-1)[0] || rootComment :
+      this.lastComment;
 
     let startElement;
     let visualEndElement;
@@ -295,7 +285,8 @@ export default class Thread {
     this.endElement = endElement;
 
     /**
-     * Bottom element of the thread _visually_, not logically.
+     * Bottom element of the thread _visually_, not logically (differs from
+     * {@link module:Thread#endElement} if there are `{{outdent}}` templates in the thread).
      *
      * @type {Element}
      * @private
@@ -309,8 +300,6 @@ export default class Thread {
    * @private
    */
   createLine() {
-    cd.debug.startTimer('threads createElement create');
-
     /**
      * Click area of the thread line.
      *
@@ -362,7 +351,6 @@ export default class Thread {
         this.line.classList.add('cd-thread-line-extended');
       }
     }
-    cd.debug.stopTimer('threads createElement create');
   }
 
   /**
@@ -447,7 +435,6 @@ export default class Thread {
           <li></li>  <-- ...to here. -->
         </ul>
      */
-    cd.debug.startTimer('thread collapse traverse');
     const rangeContents = [range.startContainer];
 
     // The start container could contain the end container and be different from it in the case with
@@ -493,9 +480,6 @@ export default class Thread {
      */
     this.collapsedRange = this.getRangeContents();
 
-    cd.debug.stopTimer('thread collapse traverse');
-
-    cd.debug.startTimer('thread collapse range');
     this.collapsedRange.forEach((el) => {
       // We use a class here because there can be elements in the comment that are hidden from the
       // beginning and should stay so when reshowing the comment.
@@ -508,9 +492,6 @@ export default class Thread {
       roots.push(this.rootComment);
       $el.data('cd-collapsed-thread-root-comments', roots);
     });
-    cd.debug.stopTimer('thread collapse range');
-
-    cd.debug.startTimer('thread collapse traverse comments');
 
     /**
      * Is the thread collapsed.
@@ -529,10 +510,7 @@ export default class Thread {
       comment.collapsedThread = this;
       comment.removeLayers();
     }
-    cd.debug.stopTimer('thread collapse traverse comments');
 
-    cd.debug.startTimer('thread collapse button');
-    cd.debug.startTimer('thread collapse button create');
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
       action: () => {
@@ -541,7 +519,6 @@ export default class Thread {
       element: expandButton,
       labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
     });
-    cd.debug.stopTimer('thread collapse button create');
     const author = this.rootComment.author;
     const setLabel = (genderless) => {
       let messageName = genderless ? 'thread-expand-genderless' : 'thread-expand';
@@ -549,17 +526,14 @@ export default class Thread {
       button.element.classList.remove('cd-thread-button-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
-      cd.debug.startTimer('thread collapse button gender');
       (getUserGendersPromise || getUserGenders([author])).then(setLabel, () => {
         // Couldn't get the gender, use the genderless version.
         setLabel(true);
       });
-      cd.debug.stopTimer('thread collapse button gender');
     } else {
       setLabel();
     }
 
-    cd.debug.startTimer('thread collapse button note');
     const firstElement = this.collapsedRange[0];
     let tagName = firstElement.tagName;
     if (!['LI', 'DD'].includes(tagName)) {
@@ -577,7 +551,6 @@ export default class Thread {
     } else {
       firstElement.parentNode.insertBefore(expandNote, firstElement);
     }
-    cd.debug.stopTimer('thread collapse button note');
 
     /**
      * Note in place of a collapsed thread that has a button to expand the thread.
@@ -597,7 +570,6 @@ export default class Thread {
     if (isInited) {
       this.$expandNote.cdScrollIntoView();
     }
-    cd.debug.stopTimer('thread collapse button');
 
     if (this.rootComment.isOpeningSection) {
       const menu = this.rootComment.section.menu;
@@ -612,10 +584,8 @@ export default class Thread {
       }
     }
 
-    cd.debug.startTimer('thread collapse end');
     saveCollapsedThreads();
     handleScroll();
-    cd.debug.stopTimer('thread collapse end');
   }
 
   /**
@@ -683,9 +653,6 @@ export default class Thread {
    * @param {boolean} [restoreCollapsed=true]
    */
   static init(restoreCollapsed = true) {
-    cd.debug.startTimer('threads');
-    cd.debug.startTimer('threads traverse');
-
     isInited = false;
     treeWalker = new ElementsTreeWalker();
     cd.comments.forEach((rootComment) => {
@@ -696,35 +663,25 @@ export default class Thread {
       }
     });
 
-    cd.debug.stopTimer('threads traverse');
-
-    cd.debug.startTimer('threads reset');
     if (cd.g.isPageFirstParsed) {
       threadLinesContainer = document.createElement('div');
       threadLinesContainer.className = 'cd-thread-linesContainer';
     } else {
       threadLinesContainer.innerHTML = '';
     }
-    cd.debug.stopTimer('threads reset');
 
     // We might not update lines on initialization as it is a relatively costly operation that can
     // be delayed, but not sure it makes any difference at which point the page is blocked for
     // interactions.
     Thread.updateLines();
 
-    cd.debug.startTimer('threads append container');
     if (cd.g.isPageFirstParsed) {
       document.body.appendChild(threadLinesContainer);
     }
-    cd.debug.stopTimer('threads append container');
-    cd.debug.startTimer('threads restore');
     if (restoreCollapsed) {
       restoreCollapsedThreads();
     }
-    cd.debug.stopTimer('threads restore');
     isInited = true;
-
-    cd.debug.stopTimer('threads');
   }
 
   /**
@@ -734,9 +691,6 @@ export default class Thread {
    */
   static updateLines(floatingRects) {
     if ((isPageLoading() || document.hidden) && isInited) return;
-
-    cd.debug.startTimer('threads updateLines');
-    cd.debug.startTimer('threads calculate');
 
     const getLeft = (rectOrOffset, commentMargins) => {
       let offset;
@@ -776,8 +730,6 @@ export default class Thread {
         const thread = comment.thread;
         if (!thread || (comment.isCollapsed && !thread.isCollapsed)) return;
 
-        cd.debug.startTimer('threads getBoundingClientRect');
-
         const needCalculateMargins = (
           comment.level === 0 ||
           comment.containerListType === 'ol' ||
@@ -797,7 +749,7 @@ export default class Thread {
           rectTop = thread[prop].getBoundingClientRect();
         }
         floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
-        let rectOrOffset = rectTop || comment.getOffset({ floatingRects });
+        const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
         if (needCalculateMargins) {
           // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that
           // call.
@@ -812,13 +764,10 @@ export default class Thread {
           rectTop :
           thread.getAdjustedEndElement(true)?.getBoundingClientRect();
 
-        cd.debug.stopTimer('threads getBoundingClientRect');
-
         const areTopAndBottomMisaligned = () => {
           const bottomLeft = getLeft(rectBottom, commentMargins);
           return cd.g.CONTENT_DIR === 'ltr' ? bottomLeft < left : bottomLeft > left;
         };
-
         if (
           top === undefined ||
           !rectBottom ||
@@ -846,8 +795,6 @@ export default class Thread {
           return !comment.getParent(true);
         }
 
-        cd.debug.startTimer('threads createElement');
-
         thread.clickAreaOffset = { top, left, height };
 
         if (!thread.line) {
@@ -859,13 +806,8 @@ export default class Thread {
           elementsToAdd.push(thread.clickArea);
         }
 
-        cd.debug.stopTimer('threads createElement');
-
         return false;
       });
-
-    cd.debug.stopTimer('threads calculate');
-    cd.debug.startTimer('threads update');
 
     // Faster to update/add all elements in one batch.
     threadsToUpdate.forEach((thread) => {
@@ -874,14 +816,8 @@ export default class Thread {
       thread.clickArea.style.height = thread.clickAreaOffset.height + 'px';
     });
 
-    cd.debug.stopTimer('threads update');
-    cd.debug.startTimer('threads append');
-
     if (elementsToAdd.length) {
       threadLinesContainer.append(...elementsToAdd);
     }
-
-    cd.debug.stopTimer('threads append');
-    cd.debug.stopTimer('threads updateLines');
   }
 }

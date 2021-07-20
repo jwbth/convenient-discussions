@@ -192,7 +192,6 @@ function cleanUpSeenRenderedChanges(data) {
  * @private
  */
 function mapSections(otherSections) {
-  cd.debug.startTimer('mapSections');
   // Reset values set in the previous run.
   cd.sections.forEach((section) => {
     delete section.match;
@@ -201,7 +200,6 @@ function mapSections(otherSections) {
   otherSections.forEach((otherSection) => {
     delete otherSection.match;
   });
-  cd.debug.stopTimer('mapSections');
 
   otherSections.forEach((otherSection) => {
     const { section, score } = Section.search(otherSection, true) || {};
@@ -244,14 +242,12 @@ function mapSections(otherSections) {
  */
 function mapComments(currentComments, otherComments) {
   // Reset values set in the previous run.
-  cd.debug.startTimer('mapComments');
   currentComments.forEach((comment) => {
     delete comment.match;
     delete comment.matchScore;
     delete comment.hasPoorMatch;
     delete comment.parentMatch;
   });
-  cd.debug.stopTimer('mapComments');
 
   const sortCommentsByMatchScore = (target, candidates) => (
     candidates
@@ -439,7 +435,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
   delete seenRenderedChanges[articleId];
   saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
 
-  // TODO: Remove in October 2021 (3 months after renaming)
+  // TODO: Remove in November 2021 (3 months after renaming)
   mw.storage.remove('convenientDiscussions-seenRenderedEdits');
 }
 
@@ -818,9 +814,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
   updateChecker.updatePageTitle(newComments.length, areThereInteresting);
   toc.addNewComments(newCommentsBySection);
 
-  cd.debug.startTimer('addNewCommentsNotes');
   Comment.addNewCommentsNotes(newComments);
-  cd.debug.stopTimer('addNewCommentsNotes');
 
   const commentsToNotifyAbout = interestingNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));

@@ -370,13 +370,8 @@ export default class Parser {
             } else {
               const links = Array.from(node.getElementsByTagName('a')).reverse();
               for (const link of links) {
-                cd.debug.startTimer('link external');
                 // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
-                if (link.classList.contains('external')) {
-                  cd.debug.stopTimer('link external');
-                  continue;
-                }
-                cd.debug.stopTimer('link external');
+                if (link.classList.contains('external')) continue;
 
                 const linkData = processLink(link) || [];
                 processLinkData(linkData, link);

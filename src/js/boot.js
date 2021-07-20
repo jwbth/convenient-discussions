@@ -445,7 +445,7 @@ function initPatterns() {
   const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
   cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
 
-  // TODO: instead of removing only lines containing antipatterns from wikitext, hide entire
+  // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
   // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags? But
   // keep in mind that this code may still be part of comments.
   const commentAntipatternsPatternParts = [];

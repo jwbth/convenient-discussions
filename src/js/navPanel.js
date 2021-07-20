@@ -311,8 +311,6 @@ export default {
    * @private
    */
   updateRefreshButtonTooltip(commentCount, commentsBySection) {
-    cd.debug.startTimer('updateRefreshButtonTooltip');
-
     // If the method was not called after a timeout and the timeout exists, clear it.
     clearTimeout(urbtTimeout);
 
@@ -372,8 +370,6 @@ export default {
     }
 
     this.refreshButton.setTooltip(tooltipText);
-
-    cd.debug.stopTimer('updateRefreshButtonTooltip');
   },
 
   /**

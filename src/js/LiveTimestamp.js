@@ -29,8 +29,6 @@ export default class LiveTimestamp {
    * @param {Function} callback Function to run after the timestamp updates.
    */
   constructor(element, date, addTimezone, callback) {
-    cd.debug.startTimer('setDateUpdateTimer');
-
     /**
      * Element that has the timestamp.
      *
@@ -71,7 +69,6 @@ export default class LiveTimestamp {
     } else if (cd.settings.timestampFormat === 'relative') {
       this.setUpdateTimeout();
     }
-    cd.debug.stopTimer('setDateUpdateTimer');
   }
 
   /**
@@ -96,19 +93,13 @@ export default class LiveTimestamp {
         boundary <= threshold.interval * msInMin;
         boundary += threshold.step * msInMin
       ) {
-        cd.debug.counters['date update timer']++;
         if (difference < boundary) {
-          cd.debug.startTimer('setDateUpdateTimer setTimeout');
           removeFromArrayIfPresent(updateTimeouts, this.updateTimeout);
           this.updateTimeout = setTimeout(() => {
             this.setUpdateTimeout(true);
           }, boundary - difference);
           updateTimeouts.push(this.updateTimeout);
 
-          // TODO: remove after tested.
-          this.updateTimeoutDelay = boundary - difference;
-
-          cd.debug.stopTimer('setDateUpdateTimer setTimeout');
           break;
         }
       }
@@ -149,13 +140,11 @@ export default class LiveTimestamp {
     const nextDayStart = new Date(date.getTime() + msInMin * 60 * 24);
     const nextNextDayStart = new Date(date.getTime() + msInMin * 60 * 24 * 2);
 
-    cd.debug.startTimer('reformatTimestamps setTimeout');
     const ndsDelay = nextDayStart.getTime() - Date.now();
     const ndsTimeout = setTimeout(LiveTimestamp.updateImproved, ndsDelay);
     const nndsDelay = nextNextDayStart.getTime() - Date.now();
     const nndsTimeout = setTimeout(LiveTimestamp.updateImproved, nndsDelay);
     updateTimeouts.push(ndsTimeout, nndsTimeout);
-    cd.debug.stopTimer('reformatTimestamps setTimeout');
   }
 
   /**

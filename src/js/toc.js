@@ -26,7 +26,6 @@ class TocItem {
    * @throws {CdError}
    */
   constructor(a) {
-    cd.debug.startTimer('new TocItem');
     const textSpan = a.querySelector('.toctext');
     if (!textSpan) {
       throw new CdError();
@@ -52,7 +51,6 @@ class TocItem {
       $link: $(a),
       $text: $(textSpan),
     });
-    cd.debug.stopTimer('new TocItem');
   }
 
   /**

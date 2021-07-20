@@ -152,7 +152,6 @@ export default class Comment extends CommentSkeleton {
       }
     };
 
-    cd.debug.startTimer('closest list');
     if (this.level !== 0) {
       /**
        * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
@@ -164,7 +163,6 @@ export default class Comment extends CommentSkeleton {
 
       this.ahContainerListType = getContainerListType(this.anchorHighlightable);
     }
-    cd.debug.stopTimer('closest list');
 
     /**
      * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
@@ -254,7 +252,6 @@ export default class Comment extends CommentSkeleton {
    * @private
    */
   setAnchorHighlightable() {
-    cd.debug.startTimer('anchorHighlightable');
     if (this.highlightables.length > 1) {
       const nestingLevels = [];
       const closestListTypes = [];
@@ -294,7 +291,6 @@ export default class Comment extends CommentSkeleton {
     } else {
       this.anchorHighlightable = this.highlightables[0];
     }
-    cd.debug.stopTimer('anchorHighlightable');
   }
 
   /**
@@ -357,9 +353,6 @@ export default class Comment extends CommentSkeleton {
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
-    cd.debug.startTimer('replaceSignatureWithHeader');
-
-    cd.debug.startTimer('replaceSignatureWithHeader create');
     const headerElement = elementPrototypes.headerElement.cloneNode(true);
 
     const authorWrapper = headerElement.firstChild;
@@ -388,9 +381,7 @@ export default class Comment extends CommentSkeleton {
         link: authorLink,
       });
       authorLink.title = pageName;
-      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
       authorLink.href = mw.util.getUrl(pageName);
-      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
     }
 
     if (this.authorTalkLink) {
@@ -404,9 +395,7 @@ export default class Comment extends CommentSkeleton {
         link: authorTalkLink,
       });
       authorTalkLink.title = pageName;
-      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
       authorTalkLink.href = mw.util.getUrl(pageName);
-      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
     }
 
     bdiElement.textContent = this.author.name;
@@ -414,12 +403,8 @@ export default class Comment extends CommentSkeleton {
     if (cd.settings.showContribsLink) {
       const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
       contribsLink.title = pageName;
-      cd.debug.startTimer('replaceSignatureWithHeader getUrl');
       contribsLink.href = mw.util.getUrl(pageName);
-      cd.debug.stopTimer('replaceSignatureWithHeader getUrl');
     }
-
-    cd.debug.stopTimer('replaceSignatureWithHeader create');
 
     if (this.timestamp) {
       /**
@@ -471,15 +456,9 @@ export default class Comment extends CommentSkeleton {
 
     this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
 
-    cd.debug.startTimer('signature clean up');
-
     this.cleanUpSignature();
 
-    cd.debug.stopTimer('signature clean up');
-
     this.signatureElement.remove();
-
-    cd.debug.stopTimer('replaceSignatureWithHeader');
 
     return pagesToCheckExistence;
   }
@@ -1149,8 +1128,6 @@ export default class Comment extends CommentSkeleton {
    * @returns {CommentMargins}
    */
   getMargins() {
-    cd.debug.startTimer('getMargins');
-
     let startMargin;
     if (this.ahContainerListType === 'ol') {
       // "this.highlightables.length === 1" is a workaround for cases such as
@@ -1177,8 +1154,6 @@ export default class Comment extends CommentSkeleton {
 
     const left = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
     const right = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
-
-    cd.debug.stopTimer('getMargins');
 
     return { left, right };
   }
@@ -3515,8 +3490,6 @@ export default class Comment extends CommentSkeleton {
             Wrapping item element (li) - in cases 1, 2, and 3.
      */
 
-    cd.debug.startTimer('createSublevelItem');
-
     let wrappingItemTag = 'dd';
     let createList = true;
     let outerWrapperTag;
@@ -3574,15 +3547,11 @@ export default class Comment extends CommentSkeleton {
     if (outerWrapperTag) {
       $outerWrapper = $(`<${outerWrapperTag}>`);
 
-      cd.debug.startTimer('createSublevelItem slow selector');
-
       // Why ".cd-commentLevel >": reply to a pseudo-comment added with this diff with a mistake:
       // https://ru.wikipedia.org/?diff=113073013.
       if ($lastOfTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
         $outerWrapper.addClass('cd-connectToPreviousItem');
       }
-
-      cd.debug.stopTimer('createSublevelItem slow selector');
 
       $wrappingList.appendTo($outerWrapper);
     }
@@ -3603,8 +3572,6 @@ export default class Comment extends CommentSkeleton {
     }
 
     this.subitemList.add(name, $wrappingItem);
-
-    cd.debug.stopTimer('createSublevelItem');
 
     return [$wrappingItem, $wrappingList, $outerWrapper];
   }

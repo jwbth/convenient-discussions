@@ -178,8 +178,6 @@ export default {
   redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
     if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
 
-    cd.debug.startTimer('redrawIfNecessary');
-
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
     });
@@ -249,8 +247,6 @@ export default {
     comments.forEach((comment) => {
       comment.updateLayersOffset();
     });
-
-    cd.debug.stopTimer('redrawIfNecessary');
   },
 
   /**
