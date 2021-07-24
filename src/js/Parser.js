@@ -148,14 +148,17 @@ function isCellOfMultiCommentTable(element) {
 }
 
 /**
- * Check whether the element is a DL with a DT as the first child.
+ * Check whether the element is an intro node despite being a list element.
  *
  * @param {Element} element
  * @returns {boolean}
  * @private
  */
-function isDlWithDt(element) {
-  return element.tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT';
+function isIntroList(element) {
+  return (
+    (element.tagName === 'UL' && element.classList.contains('gallery')) ||
+    (element.tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT')
+  );
 }
 
 /**
@@ -888,7 +891,7 @@ export default class Parser {
     */
     if (parts.length > 1) {
       const startNode = parts[parts.length - 1].node;
-      if (!['DL', 'OL', 'UL', 'DD', 'LI'].includes(startNode.tagName) || isDlWithDt(startNode)) {
+      if (!['DL', 'OL', 'UL', 'DD', 'LI'].includes(startNode.tagName) || isIntroList(startNode)) {
         for (let i = parts.length - 1; i >= 1; i--) {
           const part = parts[i];
           const node = part.node;
@@ -900,7 +903,7 @@ export default class Parser {
             ['DL', 'OL', 'UL'].includes(nextElement.tagName) &&
 
             // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
-            (!['DL', 'OL', 'UL'].includes(node.tagName) || isDlWithDt(node)) &&
+            (!['DL', 'OL', 'UL'].includes(node.tagName) || isIntroList(node)) &&
 
             nextElement[this.context.childElementsProp][0]?.contains(signatureElement)
           );
