@@ -32,9 +32,9 @@ import {
   setTalkPageCssVariables,
   startLoading,
 } from './boot';
+import { generateCommentAnchor, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
-import { parseCommentAnchor } from './timestamp';
 import { setVisits } from './options';
 
 let config;
@@ -674,6 +674,13 @@ async function app() {
    * @memberof module:cd~convenientDiscussions
    */
   cd.util = {};
+
+  /**
+   * @see module:timestamp.generateCommentAnchor
+   * @function generateCommentAnchor
+   * @memberof module:cd~convenientDiscussions.util
+   */
+   cd.util.generateCommentAnchor = generateCommentAnchor;
 
   /**
    * @see module:timestamp.parseCommentAnchor
