@@ -71,6 +71,11 @@ async function prepare(passedData, siteDataRequests) {
     cd.g.rootElement = cd.g.$root.get(0);
   }
 
+  // Do it immediately to prevent the issue when any unexpected error prevents this from being
+  // executed and then boot.handleWikipageContentHookFirings is called with #mw-content-text element
+  // for some reason, and the page goes into an infinite reloading loop.
+  cd.g.$root.data('cd-parsed', true);
+
   toc.reset();
 
   /**
@@ -1169,7 +1174,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    cd.g.$root.data('cd-parsed', true);
     if (cd.g.isPageFirstParsed) {
       mw.hook('wikipage.content').add(handleHookFirings);
     }

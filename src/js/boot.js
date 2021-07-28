@@ -844,13 +844,13 @@ async function updatePageContent(passedData) {
   // to go without a safeguard.
   try {
     await processPage(passedData);
+
+    mw.hook('wikipage.content').fire(cd.g.$content);
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
     console.error(e);
     finishLoading();
   }
-
-  mw.hook('wikipage.content').fire(cd.g.$content);
 }
 
 let $loadingPopup;
