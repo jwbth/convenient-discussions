@@ -234,13 +234,13 @@ export default {
    * ```
    * Here, `''` is not a part of the signature.
    *
-   * `(?:\s[-–—―]\xa0[A-Z][A-Za-z-_]*)?` is for cases like
+   * `(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?` is for cases like
    * {@link https://en.wikipedia.org/?diff=1033395227}.
    *
    * @type {RegExp}
-   * @default /(?:\s[-–—―]\xa0[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;\w+;|&amp;#\d+;)*\(?'*$/
+   * @default /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&amp;\w+;|&amp;#\d+;)*\(?'*$/
    */
-  signaturePrefixRegexp: /(?:\s[-–—―]\xa0[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
+  signaturePrefixRegexp: /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
 
   /**
    * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible
