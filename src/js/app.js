@@ -83,19 +83,18 @@ function s(name, ...params) {
     return null;
   }
   const fullName = `convenient-discussions-${name}`;
+  let options = {};
+  let lastParam = params[params.length - 1];
+  if (
+    typeof lastParam === 'object' &&
+
+    // `mw.user`-like object to provide to {{gender:}}
+    !lastParam.options
+  ) {
+    options = lastParam;
+    params.splice(params.length - 1);
+  }
   if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
-    let options = {};
-    let lastParam = params[params.length - 1];
-    if (
-      typeof lastParam === 'object' &&
-
-      // `mw.user`-like object to provide to {{gender:}}
-      !lastParam.options
-    ) {
-      options = lastParam;
-      params.splice(params.length - 1);
-    }
-
     const message = mw.message(fullName, ...params);
     if (options.plain) {
       return message.plain();
