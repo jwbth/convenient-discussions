@@ -1,11 +1,12 @@
 const Comment = require('../src/js/Comment').default;
 const cd = require('../src/js/cd').default;
 const en = require('../i18n/en.json');
+const g = require('../src/js/staticGlobals').default;
 const { formatDateNative, initDayjs } = require('../src/js/timestamp');
 
 cd.settings = {};
 
-cd.g = {};
+cd.g = g;
 cd.g.USER_LANGUAGE = 'en';
 cd.g.UI_DATE_FORMAT = 'H:i, j F Y';
 cd.mws = () => {
@@ -121,19 +122,19 @@ testWithSettings(
 
 testWithSettings(
   ['2021-05-28T10:48:00.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['a few seconds ago', '10:48, 28 May 2021 (UTC)']
+  ['less than a minute ago', '10:48, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-28T10:47:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['a minute ago', '10:47, 28 May 2021 (UTC)']
+  ['1 minute ago', '10:47, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-28T10:46:48.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['a minute ago', '10:46, 28 May 2021 (UTC)']
+  ['1 minute ago', '10:46, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-28T09:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['an hour ago', '09:48, 28 May 2021 (UTC)']
+  ['1 hour ago', '09:48, 28 May 2021 (UTC)']
 );
 testWithSettings(
   ['2021-05-28T10:21:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
@@ -149,9 +150,9 @@ testWithSettings(
 );
 testWithSettings(
   ['2020-05-28T10:48:47.000Z', 'relative', false, false, '2021-05-28T10:48:47.000Z'],
-  ['a year ago', '10:48, 28 May 2020 (UTC)']
+  ['1 year ago', '10:48, 28 May 2020 (UTC)']
 );
 testWithSettings(
   ['2020-05-28T10:48:47.000Z', 'relative', true, true, '2021-05-28T10:48:47.000Z'],
-  ['a year ago', '12:48, 28 May 2020 (UTC+2)\n10:48, 28 May 2020 (UTC)']
+  ['1 year ago', '12:48, 28 May 2020 (UTC+2)\n10:48, 28 May 2020 (UTC)']
 );
