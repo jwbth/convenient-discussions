@@ -792,7 +792,7 @@ export default class Thread {
           // Opened/closed "Reply in section" comment form will change a 0-level thread line height,
           // so we may go a long way until we finally arrive at a 0-level comment (or a comment
           // without a parent).
-          return !comment.getParent(true);
+          return !comment.getParent();
         }
 
         thread.clickAreaOffset = { top, left, height };
