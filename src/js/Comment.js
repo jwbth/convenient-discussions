@@ -19,9 +19,9 @@ import {
   addToArrayIfAbsent,
   areObjectsEqual,
   calculateWordOverlap,
-  caseInsensitiveFirstCharPattern,
   dealWithLoadingBug,
   defined,
+  generatePageNamePattern,
   getExtendedRect,
   getFromLocalStorage,
   getUrlWithAnchor,
@@ -2739,7 +2739,7 @@ export default class Comment extends CommentSkeleton {
 
     if (cd.config.paragraphTemplates.length) {
       const paragraphTemplatesPattern = cd.config.paragraphTemplates
-        .map(caseInsensitiveFirstCharPattern)
+        .map(generatePageNamePattern)
         .join('|');
       const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
       const regexp = new RegExp(pattern, 'g');
@@ -3254,8 +3254,7 @@ export default class Comment extends CommentSkeleton {
       });
       const adjustedChunkCodeAfter = adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
 
-      const maxIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
-      const properPlaceRegexp = new RegExp(
+      const anySignaturePattern = (
         '^([^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
@@ -3266,7 +3265,11 @@ export default class Comment extends CommentSkeleton {
         // "\x01" is from hiding closed discussions and HTML comments. TODO: Line can start with a
         // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
         // need to change `wikitext.hideDistractingCode`.
-        '|(?:^|\\n)\\x01.+)\\n)\\n*(?:' +
+        '|(?:^|\\n)\\x01.+)\\n)\\n*'
+      );
+      const maxIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
+      const endOfThreadPattern = (
+        '(?:' +
 
         // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
         // closed discussions.
@@ -3281,10 +3284,41 @@ export default class Comment extends CommentSkeleton {
         ) +
         ')'
       );
+      const properPlaceRegexp = new RegExp(anySignaturePattern + endOfThreadPattern);
       let [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
 
       if (adjustedCodeBetween === undefined) {
         adjustedCodeBetween = adjustedChunkCodeAfter;
+      }
+
+      if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
+        // If we met an "outdent" template, we insert our comment on the next line after the target
+        // comment. That's the current logic; there could be a better one.
+        const outdentMatch = adjustedChunkCodeAfter
+          .slice(adjustedCodeBetween.length)
+          .match(cd.g.OUTDENT_TEMPLATES_REGEXP);
+        if (outdentMatch) {
+          const [, outdentIntentationChars] = outdentMatch;
+          if (
+            !outdentIntentationChars ||
+            outdentIntentationChars.length <= thisInCode.replyIndentationChars.length
+          ) {
+            const nextLineRegexp = new RegExp(anySignaturePattern);
+
+            // If adjustedChunkCodeAfter matched properPlaceRegexp, should match nextLineRegexp too.
+            const [, newAdjustedCodeBetween] = adjustedChunkCodeAfter.match(nextLineRegexp) || [];
+
+            if (newAdjustedCodeBetween === adjustedCodeBetween) {
+              // Can't insert a reply before an "outdent" template.
+              throw new CdError({
+                type: 'parse',
+                code: 'findPlace',
+              });
+            } else {
+              adjustedCodeBetween = newAdjustedCodeBetween;
+            }
+          }
+        }
       }
 
       // Hotfix for comments inside a table (barnstars, for example).
@@ -3297,10 +3331,8 @@ export default class Comment extends CommentSkeleton {
 
       // If the comment is to be put after a comment with different indentation characters, use
       // these.
-      const [, changedIndentationChars] = (
-        adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) ||
-        []
-      );
+      const changedIndentationCharsMatch = adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/);
+      const [, changedIndentationChars] = changedIndentationCharsMatch || [];
       if (changedIndentationChars) {
         // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
         // possible here when we used `.slice(0, thisInCode.indentationChars.length + 1)` (due to

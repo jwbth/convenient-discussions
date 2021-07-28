@@ -9,7 +9,7 @@ import Page from './Page';
 import cd from './cd';
 import {
   addCss,
-  caseInsensitiveFirstCharPattern,
+  generatePageNamePattern,
   isCommentEdit,
   isProbablyTalkPage,
   isUndo,
@@ -100,8 +100,7 @@ async function prepare(siteDataRequests) {
     .clone()
     .addClass('cd-commentLink-interesting');
 
-  const currentUserNamePattern = caseInsensitiveFirstCharPattern(cd.g.USER_NAME)
-    .replace(/ /g, '[ _]');
+  const currentUserNamePattern = generatePageNamePattern(cd.g.USER_NAME);
   currentUserRegexp = new RegExp(
     `(?:^|[^${cd.g.LETTER_PATTERN}])${currentUserNamePattern}(?![${cd.g.LETTER_PATTERN}])`
   );

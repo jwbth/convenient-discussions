@@ -200,27 +200,30 @@ export function isInline(node, countTextNodesAsInline) {
 }
 
 /**
- * Generate a pattern for use in a regular expression from a string that is case-insensitive for the
- * first character only.
+ * Generate a pattern for use in a regular expression for a page name. The generated pattern is
+ * case-insensitive for the first character only, and has any number of any type of space (` ` or
+ * `_`) in place of spaces. The first character is expected not to be a space.
  *
  * @param {string} s
  * @returns {string}
  */
-export function caseInsensitiveFirstCharPattern(s) {
+export function generatePageNamePattern(s) {
   const firstChar = s[0];
-  return firstChar ?
-    (
-      (
-        // Could be issues, probably not very serious, resulting from the difference of PHP's
-        // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
-        // https://phabricator.wikimedia.org/T141723#2513800.
-        firstChar.toUpperCase() !== firstChar.toLowerCase() ?
-        '[' + firstChar.toUpperCase() + firstChar.toLowerCase() + ']' :
-        mw.util.escapeRegExp(firstChar)
-      ) +
-      mw.util.escapeRegExp(s.slice(1))
-    ) :
-    '';
+  if (!firstChar) {
+    return '';
+  }
+
+  const fcUpperCase = firstChar.toUpperCase();
+  const fcLowerCase = firstChar.toLowerCase();
+
+  // Could be issues, probably not very serious, resulting from the difference of PHP's
+  // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
+  // https://phabricator.wikimedia.org/T141723#2513800.
+  const fcPattern = fcUpperCase !== fcLowerCase ?
+    '[' + fcUpperCase + fcLowerCase + ']' :
+    mw.util.escapeRegExp(firstChar);
+
+  return fcPattern + mw.util.escapeRegExp(s.slice(1)).replace(/[ _]+/g, '[ _]+');
 }
 
 /**

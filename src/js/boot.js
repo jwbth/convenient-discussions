@@ -19,8 +19,8 @@ import userRegistry from './userRegistry';
 import {
   addCss,
   areObjectsEqual,
-  caseInsensitiveFirstCharPattern,
   firstCharToUpperCase,
+  generatePageNamePattern,
   getFromLocalStorage,
   hideText,
   mergeRegexps,
@@ -404,25 +404,29 @@ function initPatterns() {
   );
 
   if (cd.config.unsignedTemplates.length) {
-    const pattern = cd.config.unsignedTemplates.join('|');
+    const pattern = cd.config.unsignedTemplates.map(generatePageNamePattern).join('|');
     cd.g.UNSIGNED_TEMPLATES_PATTERN = (
       `(\\{\\{ *(?:${pattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
     );
-    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'ig');
+    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'g');
+  }
+
+  let clearTemplatesPattern;
+  if (cd.config.clearTemplates.length) {
+    clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
   }
 
   cd.g.KEEP_IN_SECTION_ENDING = cd.config.keepInSectionEnding.slice();
-  if (cd.config.clearTemplates.length) {
-    const pattern = cd.config.clearTemplates.join('|');
-    cd.g.KEEP_IN_SECTION_ENDING.push(new RegExp(`\\n+\\{\\{(?:${pattern})\\}\\}\\s*$`, 'i'));
+  if (clearTemplatesPattern) {
+    const pattern = new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`);
+    cd.g.KEEP_IN_SECTION_ENDING.push(pattern);
   }
 
   cd.g.USER_SIGNATURE = cd.settings.signaturePrefix + cd.g.SIGN_CODE;
 
   const signatureContent = mw.user.options.get('nickname');
-  const authorInSignatureMatch = signatureContent.match(
-    new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'i')
-  );
+  const captureUserNameRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'i');
+  const authorInSignatureMatch = signatureContent.match(captureUserNameRegexp);
   if (authorInSignatureMatch) {
     // Extract signature contents before the user name - in order to cut it out from comment endings
     // when editing.
@@ -459,7 +463,7 @@ function initPatterns() {
       commentAntipatternsPatternParts.push(`class=(['"])[^'"\\n]*(?:\\b${pattern}\\b)[^'"\\n]*\\1`);
     }
     if (cd.config.templatesToExclude.length) {
-      const pattern = cd.config.templatesToExclude.map(caseInsensitiveFirstCharPattern).join('|');
+      const pattern = cd.config.templatesToExclude.map(generatePageNamePattern).join('|');
       commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
     }
     if (cd.config.commentAntipatterns) {
@@ -474,6 +478,7 @@ function initPatterns() {
     .replace('\\$1', '(.*)');
   cd.g.ARTICLE_PATH_REGEXP = new RegExp(articlePathPattern);
 
+  // Template names are not case-sensitive here for code simplicity.
   const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
   const quoteBeginningsPattern = ['<blockquote', '<q']
     .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
@@ -486,24 +491,28 @@ function initPatterns() {
     'ig'
   );
 
+  const outdentTemplatesPattern = cd.config.outdentTemplates.map(generatePageNamePattern).join('|');
+  if (outdentTemplatesPattern) {
+    const pattern = `^([:*]*) *\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`;
+    cd.g.OUTDENT_TEMPLATES_REGEXP = new RegExp(pattern, 'g');
+  }
+
   const closedDiscussionBeginningsPattern = (cd.config.closedDiscussionTemplates?.[0] || [])
-    .map(mw.util.escapeRegExp)
-    .map(anySpace)
+    .map(generatePageNamePattern)
     .join('|');
   const closedDiscussionEndingsPattern = (cd.config.closedDiscussionTemplates?.[1] || [])
-    .map(mw.util.escapeRegExp)
-    .map(anySpace)
+    .map(generatePageNamePattern)
     .join('|');
   if (closedDiscussionBeginningsPattern) {
     if (closedDiscussionEndingsPattern) {
       cd.g.CLOSED_DISCUSSION_PAIR_REGEXP = new RegExp(
         `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`,
-        'ig'
+        'g'
       );
     }
     cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP = new RegExp(
       `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
-      'ig'
+      'g'
     );
   }
 
@@ -530,9 +539,9 @@ function initPatterns() {
   cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`, 'i'))
     .concat(cd.config.customBadCommentBeginnings);
-  if (cd.config.clearTemplates.length) {
-    const pattern = cd.config.clearTemplates.join('|');
-    cd.g.BAD_COMMENT_BEGINNINGS.push(new RegExp(`^\\{\\{(?:${pattern})\\}\\} *\\n+`, 'i'));
+  if (clearTemplatesPattern) {
+    const pattern = new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i');
+    cd.g.BAD_COMMENT_BEGINNINGS.push(pattern);
   }
 
   cd.g.ADD_TOPIC_SELECTOR = [
