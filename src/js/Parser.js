@@ -148,16 +148,23 @@ function isCellOfMultiCommentTable(element) {
 }
 
 /**
- * Check whether the element is an intro node despite being a list element.
+ * Check whether the element is a node that contains introductory text (or other foreign entity,
+ * like a gallery) despite being a list element.
  *
  * @param {Element} element
  * @returns {boolean}
  * @private
  */
 function isIntroList(element) {
+  const tagName = element.tagName;
+  const pesTagName = element.previousElementSibling?.tagName;
   return (
-    (element.tagName === 'UL' && element.classList.contains('gallery')) ||
-    (element.tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT')
+    (tagName === 'UL' && element.classList.contains('gallery')) ||
+    (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
+
+    // Cases like the first comment here:
+    // https://ru.wikipedia.org/wiki/Википедия:Выборы_арбитров/Лето_2021/Форум#Abiyoyo
+    (['DL', 'UL'].includes(tagName) && pesTagName && /^H[1-6]$/.test(pesTagName))
   );
 }
 
