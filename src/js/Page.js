@@ -52,7 +52,7 @@ export default class Page {
      *
      * @type {number}
      */
-    this.namespace = title.getNamespaceId();
+    this.namespaceId = title.getNamespaceId();
   }
 
   /**
@@ -71,7 +71,7 @@ export default class Page {
    * @returns {boolean}
    */
   isProbablyTalkPage() {
-    return isProbablyTalkPage(this.realName || this.name, this.namespace);
+    return isProbablyTalkPage(this.realName || this.name, this.namespaceId);
   }
 
   /**
@@ -570,7 +570,7 @@ export default class Page {
           previousDate = date;
         }
       }
-      areNewTopicsOnTop = difference === 0 ? this.namespace % 2 === 0 : difference > 0;
+      areNewTopicsOnTop = difference === 0 ? this.namespaceId % 2 === 0 : difference > 0;
     }
 
     /**

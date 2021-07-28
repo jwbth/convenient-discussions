@@ -58,16 +58,6 @@ export default class Section extends SectionSkeleton {
         .getElementsByClassName('mw-editsection-bracket')[1];
     }
 
-    /**
-     * Is the section actionable (is in a closed discussion or on an old version page).
-     *
-     * @type {boolean}
-     */
-    this.isActionable = (
-      cd.g.isPageActive &&
-      !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement))
-    );
-
     if (this.closingBracketElement) {
       /**
        * Section menu object.
@@ -101,6 +91,26 @@ export default class Section extends SectionSkeleton {
      * @type {Page}
      */
     this.sourcePage = this.sourcePageName ? new Page(this.sourcePageName) : cd.g.PAGE;
+
+    /**
+     * Is the section actionable (is in a closed discussion or on an old version page).
+     *
+     * @type {boolean}
+     */
+    this.isActionable = (
+      cd.g.isPageActive &&
+      !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement)) &&
+
+      // Transclusions of templates that in turn translude content, like here:
+      // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления
+      !(this.sourcePageName && this.sourcePage.namespaceId === 10)
+    );
+
+    if (!this.isActionable) {
+      this.comments.forEach((comment) => {
+        comment.isActionable = false;
+      });
+    }
 
     delete this.sourcePageName;
 
