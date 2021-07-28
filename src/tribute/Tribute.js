@@ -1,7 +1,10 @@
 /**
  * Tribute.js
  * Native ES6 JavaScript @mention Plugin
- * Improved and adapted for use in the Convenient Discussions script
+ * Improved and adapted for use in the Convenient Discussions script. (There shoudln't be
+ * any hardcode related to CD here _except for_ the use of
+ * `convenientDiscussions.g.PUNCTUATION_REGEXP`. Replace with your code if you want to reuse this
+ * adaptation.)
  *
  * @license
  * The MIT License (MIT)
