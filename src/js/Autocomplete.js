@@ -13,6 +13,7 @@ import {
   handleApiReject,
   insertText,
   removeDoubleSpaces,
+  underlinesToSpaces,
   unique,
 } from './util';
 import {
@@ -507,6 +508,13 @@ export default class Autocomplete {
                 timestamp,
               });
             });
+            cd.sections.forEach((section) => {
+              this.commentLinks.default.push({
+                key: underlinesToSpaces(section.anchor),
+                anchor: underlinesToSpaces(section.anchor),
+                headline: section.headline,
+              });
+            });
           }
 
           text = removeDoubleSpaces(text);
@@ -723,10 +731,12 @@ export default class Autocomplete {
       case 'commentLinks': {
         config = {
           comments: arguments[1] || [],
-          transform: ({ anchor, author, timestamp }) => ({
+          transform: ({ anchor, author, timestamp, headline }) => ({
             start: `[[#${anchor}|`,
             end: ']]',
-            content: cd.s('cf-autocomplete-commentlinktext', author, timestamp),
+            content: timestamp ?
+              cd.s('cf-autocomplete-commentlinks-text', author, timestamp) :
+              headline,
           }),
         };
         break;
