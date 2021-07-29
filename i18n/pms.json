@@ -151,6 +151,7 @@
 	"cf-notice-nochanges": "Gnun-e modìfiche.",
 	"cf-notice-editconflict-retrying": "Neuv tentativ…",
 	"cf-error-getpagecode": "Impossìbil oten-e ël còdes ëd la pàgina.",
+	"cf-error-findplace": "Impossìbil trové ël pòst giust ant ël còdes andoa buteje ël coment.",
 	"cf-error-commentlinks-commentnotfound": "Impossìbil trové ël coment con l'ID $1, lié a parte da sò coment, an sla pàgina.",
 	"cf-error-numberedlist": "A l'é impossìbil buté ël coment an forma për da bin sensa deformé ël marcagi ëd lista numerà.",
 	"cf-error-numberedlist-list": "Gavé le liste dal coment.",

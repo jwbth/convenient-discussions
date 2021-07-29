@@ -100,6 +100,7 @@
 	"cf-reaction-templateinheadline": "请不要在标题中使用模板，这会使指向该段落标题的链接失效。",
 	"cf-notice-editconflict-retrying": "再次尝试中……",
 	"cf-error-getpagecode": "无法获取页面代码。",
+	"cf-error-findplace": "在代码中无法找到可供插入评论的适当位置。",
 	"cf-error-delete-repliestocomment": "无法删除带有回复的评论。",
 	"cf-error-delete-repliesinsection": "无法删除带有回复的段落。",
 	"cf-error-preview": "无法预览评论。",
