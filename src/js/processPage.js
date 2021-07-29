@@ -1117,10 +1117,25 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
         }
 
-        const onPageMutations = () => {
+        let updateThreadLinesHandlerAttached = false;
+        const handlePageMutations = () => {
           const floatingRects = cd.g.floatingElements.map(getExtendedRect);
           Comment.redrawLayersIfNecessary(false, false, floatingRects);
-          Thread.updateLines(floatingRects);
+
+          const updateThreadLines = () => {
+            Thread.updateLines(floatingRects);
+            $(document).off('mousemove', updateThreadLines);
+            updateThreadLinesHandlerAttached = false;
+          };
+
+          if (!updateThreadLinesHandlerAttached) {
+            // Update only on mouse move to prevent short page freezings when there is a comment form
+            // in the beginning of a very long page and the input is changed so that everything below
+            // the form shifts vertically.
+            $(document).on('mousemove', updateThreadLines);
+            updateThreadLinesHandlerAttached = true;
+          }
+
           // Could also run handleScroll() here, but not sure, as it will double the execution time
           // with rare effect.
         };
@@ -1128,13 +1143,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         // Mutation observer doesn't follow all possible comment position changes (for example,
         // initiated with adding new CSS) unfortunately.
         setInterval(() => {
-          onPageMutations();
+          handlePageMutations();
         }, 1000);
+
         const observer = new MutationObserver((records) => {
           const areLayersOnly = records
             .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
           if (areLayersOnly) return;
-          onPageMutations();
+
+          handlePageMutations();
         });
         observer.observe(cd.g.$content.get(0), {
           attributes: true,
