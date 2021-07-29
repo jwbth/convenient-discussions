@@ -136,6 +136,7 @@
 	"cf-reaction-templateinheadline": "Verwenden Sie keine Vorlagen in Überschriften: Diese stören Abschnittsverknüpfungen.",
 	"cf-notice-nochanges": "Keine Änderungen",
 	"cf-error-getpagecode": "Konnte den Seitencode nicht erhalten.",
+	"cf-error-findplace": "Konnte die richtige Stelle im Code zum Einfügen des Kommentars nicht finden.",
 	"cf-error-numberedlist": "Es ist unmöglich, den Kommentar korrekt zu formulieren, ohne die nummerierte Listenauszeichnung zu verzerren.",
 	"cf-error-delete-repliestocomment": "Der Kommentar kann nicht gelöscht werden, weil er Antworten enthält.",
 	"cf-error-delete-repliesinsection": "Der Abschnitt kann nicht gelöscht werden, weil er Antworten enthält.",
