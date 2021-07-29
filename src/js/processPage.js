@@ -22,7 +22,7 @@ import {
   addNotFoundMessage,
   confirmDesktopNotifications,
   finishLoading,
-  handleHookFirings,
+  handleWikipageContentHookFirings,
   init,
   reloadPage,
   restoreCommentForms,
@@ -1189,7 +1189,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     }
 
     if (cd.g.isPageFirstParsed) {
-      mw.hook('wikipage.content').add(handleHookFirings);
+      mw.hook('wikipage.content').add(handleWikipageContentHookFirings);
     }
 
     finishLoading();

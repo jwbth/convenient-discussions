@@ -58,7 +58,7 @@ export default class Autocomplete {
    *
    * @param {object} options
    * @param {string[]} options.types Which values should be autocompleted. Can contain `'mentions'`,
-   *   `'wikilinks'`, `'templates'`, and `'tags'`.
+   *   `'commentLinks'`, `'wikilinks'`, `'templates'`, `'tags'`.
    * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
@@ -228,6 +228,68 @@ export default class Autocomplete {
           }
         },
       },
+
+      commentLinks: {
+        label: cd.s('cf-autocomplete-commentlinks-label'),
+        trigger: '[[#',
+        keepAsEnd: /^\]\]/,
+        selectTemplate,
+        values: async (text, callback) => {
+          if (!this.commentLinks.default) {
+            this.commentLinks.default = [];
+            this.commentLinks.comments.forEach((comment) => {
+              let { anchor, author, timestamp, getText } = comment;
+              getText = getText.bind(comment);
+              let snippet;
+              const snippetMaxLength = 80;
+              if (getText().length > snippetMaxLength) {
+                snippet = getText().slice(0, snippetMaxLength);
+                const wordSeparator = cd.mws('word-separator', { language: 'content' });
+                const spacePos = snippet.lastIndexOf(wordSeparator);
+                if (spacePos !== -1) {
+                  snippet = snippet.slice(0, spacePos);
+                  if (cd.g.PUNCTUATION_REGEXP.test(snippet[snippet.length - 1])) {
+                    snippet += ' ';
+                  }
+                  snippet += cd.s('ellipsis');
+                }
+              } else {
+                snippet = getText();
+              }
+              let authorTimestamp = author.name;
+              if (timestamp) {
+                authorTimestamp += cd.mws('comma-separator', { language: 'content' }) + timestamp;
+              }
+              const colon = cd.mws('colon-separator', { language: 'content' });
+              const key = authorTimestamp + colon + snippet;
+              this.commentLinks.default.push({
+                key,
+                anchor,
+                author: author.name,
+                timestamp,
+              });
+            });
+            cd.sections.forEach((section) => {
+              this.commentLinks.default.push({
+                key: underlinesToSpaces(section.anchor),
+                anchor: underlinesToSpaces(section.anchor),
+                headline: section.headline,
+              });
+            });
+          }
+
+          text = removeDoubleSpaces(text);
+          if (/[#<>[\]|{}]/.test(text)) {
+            callback([]);
+            return;
+          }
+          const matches = this.tribute.search
+            .filter(text, this.commentLinks.default, { extract: (el) => el.key })
+            .map((match) => match.original);
+          callback(prepareValues(matches, this.commentLinks));
+        },
+      },
+
       wikilinks: {
         label: cd.s('cf-autocomplete-wikilinks-label'),
         trigger: '[[',
@@ -303,6 +365,7 @@ export default class Autocomplete {
           }
         },
       },
+
       templates: {
         label: cd.s('cf-autocomplete-templates-label'),
         trigger: '{{',
@@ -451,6 +514,7 @@ export default class Autocomplete {
           }
         },
       },
+
       tags: {
         label: cd.s('cf-autocomplete-tags-label'),
         trigger: '<',
@@ -466,66 +530,6 @@ export default class Autocomplete {
           }
           const matches = this.tags.default.filter((tag) => regexp.test(tag));
           callback(prepareValues(matches, this.tags));
-        },
-      },
-      commentLinks: {
-        label: cd.s('cf-autocomplete-commentlinks-label'),
-        trigger: '[[#',
-        keepAsEnd: /^\]\]/,
-        selectTemplate,
-        values: async (text, callback) => {
-          if (!this.commentLinks.default) {
-            this.commentLinks.default = [];
-            this.commentLinks.comments.forEach((comment) => {
-              let { anchor, author, timestamp, getText } = comment;
-              getText = getText.bind(comment);
-              let snippet;
-              const snippetMaxLength = 80;
-              if (getText().length > snippetMaxLength) {
-                snippet = getText().slice(0, snippetMaxLength);
-                const wordSeparator = cd.mws('word-separator', { language: 'content' });
-                const spacePos = snippet.lastIndexOf(wordSeparator);
-                if (spacePos !== -1) {
-                  snippet = snippet.slice(0, spacePos);
-                  if (cd.g.PUNCTUATION_REGEXP.test(snippet[snippet.length - 1])) {
-                    snippet += ' ';
-                  }
-                  snippet += cd.s('ellipsis');
-                }
-              } else {
-                snippet = getText();
-              }
-              let authorTimestamp = author.name;
-              if (timestamp) {
-                authorTimestamp += cd.mws('comma-separator', { language: 'content' }) + timestamp;
-              }
-              const colon = cd.mws('colon-separator', { language: 'content' });
-              const key = authorTimestamp + colon + snippet;
-              this.commentLinks.default.push({
-                key,
-                anchor,
-                author: author.name,
-                timestamp,
-              });
-            });
-            cd.sections.forEach((section) => {
-              this.commentLinks.default.push({
-                key: underlinesToSpaces(section.anchor),
-                anchor: underlinesToSpaces(section.anchor),
-                headline: section.headline,
-              });
-            });
-          }
-
-          text = removeDoubleSpaces(text);
-          if (/[#<>[\]|{}]/.test(text)) {
-            callback([]);
-            return;
-          }
-          const matches = this.tribute.search
-            .filter(text, this.commentLinks.default, { extract: (el) => el.key })
-            .map((match) => match.original);
-          callback(prepareValues(matches, this.commentLinks));
         },
       },
     };
@@ -575,6 +579,20 @@ export default class Autocomplete {
           removeSelf: (arr) => arr.filter((item) => item !== cd.g.USER_NAME),
         };
         config.default = config.removeSelf(arguments[1] || []);
+        break;
+      }
+
+      case 'commentLinks': {
+        config = {
+          comments: arguments[1] || [],
+          transform: ({ anchor, author, timestamp, headline }) => ({
+            start: `[[#${anchor}|`,
+            end: ']]',
+            content: timestamp ?
+              cd.s('cf-autocomplete-commentlinks-text', author, timestamp) :
+              headline,
+          }),
+        };
         break;
       }
 
@@ -725,20 +743,6 @@ export default class Autocomplete {
           const s2 = typeof item2 === 'string' ? item2 : item2[0];
           return s1 > s2;
         });
-        break;
-      }
-
-      case 'commentLinks': {
-        config = {
-          comments: arguments[1] || [],
-          transform: ({ anchor, author, timestamp, headline }) => ({
-            start: `[[#${anchor}|`,
-            end: ']]',
-            content: timestamp ?
-              cd.s('cf-autocomplete-commentlinks-text', author, timestamp) :
-              headline,
-          }),
-        };
         break;
       }
     }

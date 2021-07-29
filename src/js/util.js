@@ -149,7 +149,7 @@ export function unique(item, i, arr) {
 }
 
 /**
- * Generates a transparent color for the given color to use it in a gradient.
+ * Generate a transparent color for the given color to use it in a gradient.
  *
  * @param {string} color
  * @returns {string}
@@ -229,7 +229,7 @@ export function generatePageNamePattern(s) {
 /**
  * Check if a page is probably a talk page. The namespace number is required.
  *
- * This function exists mostly because we can't be sure the `mediawiki.Title` module is loaded when
+ * This function exists mostly because we can't be sure the `mediawiki.Title` module has loaded when
  * the script has started executing (and can't use the {@link module:Page Page} constructor), and we
  * need to make this check fast. So, in most cases, {@link module:Page#isProbablyTalkPage} should be
  * used.

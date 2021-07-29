@@ -216,7 +216,7 @@ module.exports = (env) => {
       port: 9000,
       liveReload: false,
 
-      // Fixes "GET https://localhost:80/sockjs-node/info?t=... net::ERR_SSL_PROTOCOL_ERROR".
+      // Fixes "GET https://localhost:9000/sockjs-node/info?t=... net::ERR_SSL_PROTOCOL_ERROR".
       public: '127.0.0.1:9000',
 
       // Fixes "Invalid Host/Origin header".

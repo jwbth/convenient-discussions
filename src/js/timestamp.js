@@ -691,7 +691,7 @@ export function formatDateRelative(date) {
  * Generate a comment anchor from a date and author.
  *
  * @param {Date} date
- * @param {string} [author]
+ * @param {string} author
  * @param {boolean} [resolveCollisions=false] If set to `true`, anchors that collide with anchors
  *   already registered via {@link module:timestamp.registerCommentAnchor} will get a `_<number>`
  *   postfix.
@@ -710,7 +710,8 @@ export function generateCommentAnchor(date, author, resolveCollisions = false) {
     zeroPad(day, 2) +
     zeroPad(hours, 2) +
     zeroPad(minutes, 2) +
-    (author ? '_' + spacesToUnderlines(author) : '')
+    '_' +
+    spacesToUnderlines(author)
   );
   if (resolveCollisions && commentAnchors.includes(anchor)) {
     let anchorNum = 2;
@@ -752,7 +753,9 @@ export function resetCommentAnchors() {
  */
 
 /**
- * Extract a date and author from a comment anchor.
+ * Extract a date and author from a comment anchor. Currently doesn't extract the index (if there
+ * are multiple comments with the same timestamp on the page), but it wasn't needed yet in the
+ * script.
  *
  * @param {string} commentAnchor
  * @returns {?ParseCommentAnchorReturn}

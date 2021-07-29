@@ -159,12 +159,13 @@ function isIntroList(element) {
   const tagName = element.tagName;
   const pesTagName = element.previousElementSibling?.tagName;
   return (
-    (tagName === 'UL' && element.classList.contains('gallery')) ||
     (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
 
     // Cases like the first comment here:
     // https://ru.wikipedia.org/wiki/Википедия:Выборы_арбитров/Лето_2021/Форум#Abiyoyo
-    (['DL', 'UL'].includes(tagName) && pesTagName && /^H[1-6]$/.test(pesTagName))
+    (['DL', 'UL'].includes(tagName) && pesTagName && /^H[1-6]$/.test(pesTagName)) ||
+
+    (tagName === 'UL' && element.classList.contains('gallery'))
   );
 }
 
@@ -408,14 +409,14 @@ export default class Parser {
           if (authorName && newNode?.tagName && ['S', 'STRIKE'].includes(newNode.tagName)) break;
         } while (newNode && length < cd.config.signatureScanLimit);
 
+        if (!authorName) return;
+
         if (!signatureNodes.length) {
           signatureNodes = [startElement];
         }
 
         const fseIndex = signatureNodes.indexOf(firstSignatureElement);
         signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
-
-        if (!authorName) return;
 
         const anchor = generateCommentAnchor(timestamp.date, authorName, true);
         registerCommentAnchor(anchor);

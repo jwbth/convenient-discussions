@@ -1044,7 +1044,7 @@ export async function reloadPage(passedData = {}) {
  *
  * @param {JQuery} $content
  */
-export function handleHookFirings($content) {
+export function handleWikipageContentHookFirings($content) {
   if ($content.is('#mw-content-text')) {
     const $root = $content.children('.mw-parser-output');
     if ($root.length && !$root.data('cd-parsed')) {
