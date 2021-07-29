@@ -37,19 +37,15 @@ import TributeSearch from "./TributeSearch";
 
 class Tribute {
   constructor({
-    values = null,
     selectClass = "highlight",
     containerClass = "tribute-container",
     itemClass = "",
     trigger = "@",
-    selectTemplate = null,
-    menuItemTemplate = null,
     lookup = "key",
     fillAttr = "value",
     collection = null,
     menuContainer = null,
     noMatchTemplate = null,
-    requireLeadingSpace = true,
     allowSpaces = false,
     replaceTextSuffix = null,
     positionMenu = true,
@@ -69,111 +65,51 @@ class Tribute {
     this.hasTrailingSpace = false;
     this.dir = dir;
 
-    if (values) {
-      this.collection = [
-        {
-          // symbol that starts the lookup
-          trigger: trigger,
-
-          // class applied to selected item
-          selectClass: selectClass,
-
-          // class applied to the Container
-          containerClass: containerClass,
-
-          // class applied to each item
-          itemClass: itemClass,
-
-          // function called on select that retuns the content to insert
-          selectTemplate: (
-            selectTemplate || Tribute.defaultSelectTemplate
-          ).bind(this),
-
-          // function called that returns content for an item
-          menuItemTemplate: (
-            menuItemTemplate || Tribute.defaultMenuItemTemplate
-          ).bind(this),
-
-          // function called when menu is empty, disables hiding of menu.
-          noMatchTemplate: (t => {
-            if (typeof t === "string") {
-              if (t.trim() === "") return null;
-              return t;
-            }
-            if (typeof t === "function") {
-              return t.bind(this);
-            }
-
-            return (
-              noMatchTemplate ||
-              function() {
-                return "<li>No Match Found!</li>";
-              }.bind(this)
-            );
-          })(noMatchTemplate),
-
-          // column to search against in the object
-          lookup: lookup,
-
-          // column that contains the content to insert by default
-          fillAttr: fillAttr,
-
-          // array of objects or a function returning an array of objects
-          values: values,
-
-          requireLeadingSpace: requireLeadingSpace,
-
-          searchOpts: searchOpts,
-
-          menuItemLimit: menuItemLimit,
-
-          menuShowMinLength: menuShowMinLength
-        }
-      ];
-    } else if (collection) {
-      this.collection = collection.map(item => {
-        return {
-          trigger: item.trigger || trigger,
-          keepAsEnd: item.keepAsEnd || null,
-          replaceEnd: item.replaceEnd === undefined ? true : item.replaceEnd,
-          selectClass: item.selectClass || selectClass,
-          containerClass: item.containerClass || containerClass,
-          itemClass: item.itemClass || itemClass,
-          selectTemplate: (
-            item.selectTemplate || Tribute.defaultSelectTemplate
-          ).bind(this),
-          menuItemTemplate: (
-            item.menuItemTemplate || Tribute.defaultMenuItemTemplate
-          ).bind(this),
-          // function called when menu is empty, disables hiding of menu.
-          noMatchTemplate: (t => {
-            if (typeof t === "string") {
-              if (t.trim() === "") return null;
-              return t;
-            }
-            if (typeof t === "function") {
-              return t.bind(this);
-            }
-
-            return (
-              noMatchTemplate ||
-              function() {
-                return "<li>No Match Found!</li>";
-              }.bind(this)
-            );
-          })(noMatchTemplate),
-          lookup: item.lookup || lookup,
-          fillAttr: item.fillAttr || fillAttr,
-          values: item.values,
-          requireLeadingSpace: item.requireLeadingSpace,
-          searchOpts: item.searchOpts || searchOpts,
-          menuItemLimit: item.menuItemLimit || menuItemLimit,
-          menuShowMinLength: item.menuShowMinLength || menuShowMinLength
-        };
-      });
-    } else {
+    if (!collection) {
       throw new Error("[Tribute] No collection specified.");
     }
+
+    this.collection = collection.map(item => {
+      return {
+        trigger: item.trigger || trigger,
+        keepAsEnd: item.keepAsEnd || null,
+        replaceEnd: item.replaceEnd === undefined ? true : item.replaceEnd,
+        selectClass: item.selectClass || selectClass,
+        containerClass: item.containerClass || containerClass,
+        itemClass: item.itemClass || itemClass,
+        selectTemplate: (
+          item.selectTemplate || Tribute.defaultSelectTemplate
+        ).bind(this),
+        menuItemTemplate: (
+          item.menuItemTemplate || Tribute.defaultMenuItemTemplate
+        ).bind(this),
+        // function called when menu is empty, disables hiding of menu.
+        noMatchTemplate: (t => {
+          if (typeof t === "string") {
+            if (t.trim() === "") return null;
+            return t;
+          }
+          if (typeof t === "function") {
+            return t.bind(this);
+          }
+
+          return (
+            noMatchTemplate ||
+            function() {
+              return "<li>No Match Found!</li>";
+            }.bind(this)
+          );
+        })(noMatchTemplate),
+        lookup: item.lookup || lookup,
+        fillAttr: item.fillAttr || fillAttr,
+        values: item.values,
+        requireLeadingSpace: item.requireLeadingSpace,
+        searchOpts: item.searchOpts || searchOpts,
+        menuItemLimit: item.menuItemLimit || menuItemLimit,
+        menuShowMinLength: item.menuShowMinLength || menuShowMinLength,
+        label: item.label,
+      };
+    });
 
     new TributeRange(this);
     new TributeEvents(this);
@@ -330,10 +266,24 @@ class Tribute {
       ul.innerHTML = "";
       let fragment = document.createDocumentFragment();
 
+      // jwbth: Added this part.
+      if (this.current.collection.label) {
+        let li = document.createElement("li");
+        li.classList.add('tribute-label');
+        li.textContent = this.current.collection.label;
+        fragment.appendChild(li);
+      }
+
       items.forEach((item, index) => {
         let li = document.createElement("li");
         li.setAttribute("data-index", index);
-        li.className = this.current.collection.itemClass;
+
+        // jwbth: Replaced this part.
+        li.classList.add('tribute-item');
+        if (this.current.collection.itemClass) {
+          li.classList.add(this.current.collection.itemClass);
+        }
+
         li.addEventListener("mousemove", e => {
           let [, index] = this._findLiTarget(e.target);
           if (e.movementY !== 0) {

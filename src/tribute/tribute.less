@@ -30,15 +30,20 @@
 
   li {
     padding: 5px 7px;
-    cursor: pointer;
     margin: 0;
+    cursor: default;
 
     &.highlight {
       background-color: rgba(0, 23, 70, 0.086);
     }
-
-    &.no-match {
-      cursor: default;
-    }
   }
+}
+
+// jwbth: Extracted this from ".tribute-container li".
+.tribute-item.tribute-item {
+  cursor: pointer;
+}
+
+.tribute-label {
+  color: #72777d;
 }

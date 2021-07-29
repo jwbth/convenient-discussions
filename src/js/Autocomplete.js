@@ -150,6 +150,7 @@ export default class Autocomplete {
 
     const collectionsByType = {
       mentions: {
+        label: cd.s('cf-autocomplete-mentions-label'),
         trigger: cd.config.mentionCharacter,
         searchOpts: { skip: true },
         requireLeadingSpace: cd.config.mentionRequiresLeadingSpace,
@@ -227,6 +228,7 @@ export default class Autocomplete {
         },
       },
       wikilinks: {
+        label: cd.s('cf-autocomplete-wikilinks-label'),
         trigger: '[[',
         keepAsEnd: /^(?:\||\]\])/,
         searchOpts: { skip: true },
@@ -301,6 +303,7 @@ export default class Autocomplete {
         },
       },
       templates: {
+        label: cd.s('cf-autocomplete-templates-label'),
         trigger: '{{',
         keepAsEnd: /^(?:\||\}\})/,
         searchOpts: { skip: true },
@@ -448,6 +451,7 @@ export default class Autocomplete {
         },
       },
       tags: {
+        label: cd.s('cf-autocomplete-tags-label'),
         trigger: '<',
         keepAsEnd: /^>/,
         replaceEnd: false,
@@ -464,6 +468,7 @@ export default class Autocomplete {
         },
       },
       commentLinks: {
+        label: cd.s('cf-autocomplete-commentlinks-label'),
         trigger: '[[#',
         keepAsEnd: /^\]\]/,
         selectTemplate,

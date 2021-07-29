@@ -92,6 +92,10 @@ class TributeEvents {
           return;
         }
       }
+
+      // jwbth: Added this.
+      if (li.classList.contains('tribute-label')) return;
+
       tribute.selectItemAtIndex(li.getAttribute("data-index"), event);
       tribute.hideMenu();
 
@@ -306,7 +310,8 @@ class TributeEvents {
   }
 
   setActiveLi(index) {
-    let lis = this.tribute.menu.querySelectorAll("li"),
+    // jwbth: Replaced this part.
+    let lis = this.tribute.menu.getElementsByClassName("tribute-item"),
       length = lis.length >>> 0;
 
     if (index) this.tribute.menuSelected = parseInt(index);
