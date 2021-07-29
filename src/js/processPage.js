@@ -1079,74 +1079,71 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
       // Should be below Thread.init() as it may want to scroll to a comment in a collapsed thread.
       processFragment(passedData);
-    }
 
-    if (cd.g.isPageActive) {
-      processVisits(visitsRequest, passedData);
+      if (cd.g.isPageActive) {
+        processVisits(visitsRequest, passedData);
 
-      // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
-      // cd.g.previousVisitUnixTime to be set.
-      updateChecker.init(visitsRequest, passedData);
-    }
-
-    if (cd.g.isPageFirstParsed) {
-      pageNav.mount();
-
-      if (!cd.settings.reformatComments) {
-        // The "mouseover" event allows to capture the state when the cursor is not moving but ends
-        // up above a comment but not above any comment parts (for example, as a result of
-        // scrolling). The benefit may be low compared to the performance cost, but it's unexpected
-        // when the user scrolls a comment and it suddenly stops being highlighted because the
-        // cursor is between neighboring <p>'s.
-        $(document).on('mousemove mouseover', Comment.highlightHovered);
+        // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
+        // cd.g.previousVisitUnixTime to be set.
+        updateChecker.init(visitsRequest, passedData);
       }
 
-      // We need the visibilitychange event because many things may move while the document is
-      // hidden, and the movements are not processed when the document is hidden.
-      $(document).on('scroll visibilitychange', handleScroll);
+      if (cd.g.isPageFirstParsed) {
+        pageNav.mount();
 
-      $(window).on('resize orientationchange', handleWindowResize);
+        if (!cd.settings.reformatComments) {
+          // The "mouseover" event allows to capture the state when the cursor is not moving but ends
+          // up above a comment but not above any comment parts (for example, as a result of
+          // scrolling). The benefit may be low compared to the performance cost, but it's unexpected
+          // when the user scrolls a comment and it suddenly stops being highlighted because the
+          // cursor is between neighboring <p>'s.
+          $(document).on('mousemove mouseover', Comment.highlightHovered);
+        }
 
-      // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
-      // content as opposed to "$('.cd-comment-author-wrapper')".
-      mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
-      mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
+        // We need the visibilitychange event because many things may move while the document is
+        // hidden, and the movements are not processed when the document is hidden.
+        $(document).on('scroll visibilitychange', handleScroll);
 
-      if (cd.settings.reformatComments && cd.comments.length) {
-        // This could theoretically disrupt code that needs to process the whole page content, if it
-        // runs later than CD. But typically CD runs relatively late.
-        mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
+        $(window).on('resize orientationchange', handleWindowResize);
+
+        // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
+        // content as opposed to "$('.cd-comment-author-wrapper')".
+        mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
+        mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
+
+        if (cd.settings.reformatComments && cd.comments.length) {
+          // This could theoretically disrupt code that needs to process the whole page content, if it
+          // runs later than CD. But typically CD runs relatively late.
+          mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
+        }
+
+        const onPageMutations = () => {
+          const floatingRects = cd.g.floatingElements.map(getExtendedRect);
+          Comment.redrawLayersIfNecessary(false, false, floatingRects);
+          Thread.updateLines(floatingRects);
+          // Could also run handleScroll() here, but not sure, as it will double the execution time
+          // with rare effect.
+        };
+
+        // Mutation observer doesn't follow all possible comment position changes (for example,
+        // initiated with adding new CSS) unfortunately.
+        setInterval(() => {
+          onPageMutations();
+        }, 1000);
+        const observer = new MutationObserver((records) => {
+          const areLayersOnly = records
+            .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
+          if (areLayersOnly) return;
+          onPageMutations();
+        });
+        observer.observe(cd.g.$content.get(0), {
+          attributes: true,
+          childList: true,
+          subtree: true,
+        });
+      } else {
+        pageNav.update();
       }
-
-      const onPageMutations = () => {
-        const floatingRects = cd.g.floatingElements.map(getExtendedRect);
-        Comment.redrawLayersIfNecessary(false, false, floatingRects);
-        Thread.updateLines(floatingRects);
-
-        // Could also run handleScroll() here, but not sure, as it will double the execution time
-        // with rare effect.
-      };
-
-      // Mutation observer doesn't follow all possible comment position changes (for example,
-      // initiated with adding new CSS) unfortunately.
-      setInterval(() => {
-        onPageMutations();
-      }, 1000);
-
-      const observer = new MutationObserver((records) => {
-        const areLayersOnly = records
-          .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
-        if (areLayersOnly) return;
-
-        onPageMutations();
-      });
-      observer.observe(cd.g.$content.get(0), {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-    } else {
-      pageNav.update();
     }
 
     if (isPageCommentable) {
