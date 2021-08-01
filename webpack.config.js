@@ -104,14 +104,14 @@ module.exports = (env) => {
         },
       }),
     );
-    if (!dev) {
-      plugins.push(
-        new webpack.SourceMapDevToolPlugin({
-          filename: `[file]${sourceMapExt}`,
-          append: `\n//# sourceMappingURL=${config.protocol}://${config.server}${config.scriptPath}/index.php?title=${config.rootPath}/[url]&action=raw&ctype=application/json`,
-        })
-      );
-    }
+    // if (!dev) {
+    //   plugins.push(
+    //     new webpack.SourceMapDevToolPlugin({
+    //       filename: `[file]${sourceMapExt}`,
+    //       append: `\n//# sourceMappingURL=${config.protocol}://${config.server}${config.scriptPath}/index.php?title=${config.rootPath}/[url]&action=raw&ctype=application/json`,
+    //     })
+    //   );
+    // }
     if (!process.env.CI) {
       plugins.push(progressPlugin);
     }
