@@ -174,8 +174,6 @@
 	"sd-timestampformat-radio-improved": "改进了（“$1“，“$2”）",
 	"sd-timestampformat-radio-relative": "相对（“$1“，“$2”）",
 	"sd-timestampformat-help": "时间戳将会使用你的互动界面语言（而非内容语言）。你总是可以通过鼠标悬停来查看最初的时间戳。",
-	"sd-uselocaltime": "请使用本地时间来展示评论的时间戳。",
-	"sd-uselocaltime-help": "已使用系统时区。",
 	"ewsd-save": "保存",
 	"ewsd-error-processing": "处理监视列表时出现错误。",
 	"ewsd-close-confirm": "被监视的文本段落尚未保存。您是否仍要关闭窗口？",

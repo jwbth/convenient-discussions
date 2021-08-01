@@ -97,8 +97,8 @@ export async function initSettings() {
     timestampFormat: 'default',
     modifyToc: true,
     useBackgroundHighlighting: true,
-    useLocalTime: true,
     useTemplateData: true,
+    useUiTime: true,
     watchOnReply: true,
     watchSectionOnReply: true,
   };
@@ -1496,7 +1496,7 @@ export async function addNotFoundMessage(decodedFragment, date) {
     }
 
     const token = date ?
-      formatDateNative(date, cd.g.CONTENT_TIMEZONE) :
+      formatDateNative(date, false, cd.g.CONTENT_TIMEZONE) :
       sectionName.replace(/"/g, '');
     const archivePrefix = cd.g.PAGE.getArchivePrefix();
     let searchQuery = `"${token}"`

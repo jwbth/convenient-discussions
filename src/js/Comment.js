@@ -51,7 +51,6 @@ import { showCopyLinkDialog } from './modal.js';
 
 let elementPrototypes;
 let thanks;
-let utcString;
 
 /**
  * Remove thanks older than 60 days.
@@ -421,7 +420,7 @@ export default class Comment extends CommentSkeleton {
 
       headerElement.appendChild(this.copyLinkButton.element);
       this.timestampElement = this.copyLinkButton.labelElement;
-      new LiveTimestamp(this.timestampElement, this.date, true);
+      new LiveTimestamp(this.timestampElement, this.date, !cd.settings.hideTimezone);
     }
 
     this.headerElement = headerElement;
@@ -684,57 +683,38 @@ export default class Comment extends CommentSkeleton {
   reformatTimestamp() {
     if (!this.date) return;
 
-    if (!utcString) {
-      utcString = cd.mws('timezone-utc');
-    }
-
-    let offset;
-    const utcPostfix = ` (${utcString})`;
-    let postfix = utcPostfix;
-    if (cd.settings.useLocalTime) {
-      // Not necessarily an integer
-      offset = this.date.getTimezoneOffset() / 60;
-
-      if (offset !== 0) {
-        const sign = offset > 0 ? '-' : '+';
-        postfix = ` (${utcString}${sign}${Math.abs(offset)})`;
-      }
-    }
-
     const areLanguagesEqual = mw.config.get('wgContentLanguage') === cd.g.USER_LANGUAGE;
 
     let newTimestamp;
     let title = '';
     if (
       cd.settings.timestampFormat !== 'default' ||
-      (cd.settings.useLocalTime && offset !== 0) ||
+      (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) ||
       !areLanguagesEqual ||
       cd.settings.hideTimezone
     ) {
-      newTimestamp = formatDate(this.date);
+      newTimestamp = formatDate(this.date, !cd.settings.hideTimezone);
     }
 
-    if (cd.settings.timestampFormat === 'relative') {
-      if (cd.settings.useLocalTime) {
-        title = formatDateNative(this.date) + postfix + '\n';
-      }
-      postfix = '';
+    if (
+      cd.settings.timestampFormat === 'relative' &&
+      cd.settings.useUiTime &&
+      !['UTC', 0].includes(cd.g.UI_TIMEZONE)
+    ) {
+      title = formatDateNative(this.date, true) + '\n';
     }
 
     if (newTimestamp) {
       const utcTimestamp = areLanguagesEqual ?
-        formatDateNative(this.date, 'UTC') + utcPostfix :
+        formatDateNative(this.date, true, 'UTC') :
         this.timestampElement.textContent;
-      title = title + utcTimestamp;
-      if (cd.settings.hideTimezone) {
-        postfix = '';
-      }
-      this.reformattedTimestamp = newTimestamp + postfix;
+      title += utcTimestamp;
+      this.reformattedTimestamp = newTimestamp;
       this.timestampTitle = title;
       if (!cd.settings.reformatComments) {
         this.timestampElement.textContent = this.reformattedTimestamp;
         this.timestampElement.title = this.timestampTitle;
-        new LiveTimestamp(this.timestampElement, this.date, true);
+        new LiveTimestamp(this.timestampElement, this.date, !cd.settings.hideTimezone);
       }
     }
   }

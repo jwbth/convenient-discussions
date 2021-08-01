@@ -21,6 +21,7 @@ import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from '
 let parseTimestampContentRegexp;
 let parseTimestampUiRegexp;
 let utcString;
+let areUiAndLocalTimezoneSame;
 
 export const dateTokenToMessageNames = {
   xg: [
@@ -84,6 +85,9 @@ export function initDayjs() {
 
   dayjs.extend(utc);
   dayjs.extend(timezone);
+
+  // TODO: remove after testing.
+  cd.g.dayjs = dayjs;
 }
 
 /**
@@ -310,18 +314,29 @@ export function initTimestampParsingTools(language) {
      * @memberof module:cd~convenientDiscussions.g
      */
     cd.g.UI_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.UI_DATE_FORMAT);
-
-    const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
-
-    /**
-     * Timezone per user preferences: standard timezone name or offset in minutes.
-     *
-     * @name UI_TIMEZONE
-     * @type {?(string|number)}
-     * @memberof module:cd~convenientDiscussions.g
-     */
-    cd.g.UI_TIMEZONE = (timezoneParts && timezoneParts[2]) || Number(timezoneParts[1]) || null;
   }
+
+  const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
+
+  /**
+   * Timezone per user preferences: standard timezone name or offset in minutes.
+   *
+   * @name UI_TIMEZONE
+   * @type {?(string|number)}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  cd.g.UI_TIMEZONE = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
+
+  /**
+   * Timezone _offset_ in minutes per user preferences.
+   *
+   * @name UI_TIMEZONE_OFFSET
+   * @type {?number}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  cd.g.UI_TIMEZONE_OFFSET = Number(timezoneParts[1]) ?? null;
+
+  areUiAndLocalTimezoneSame = cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
 /**
@@ -411,6 +426,7 @@ export function getDateFromTimestampMatch(match, timezone) {
   if (typeof timezone === 'number') {
     timezoneOffset = timezone * cd.g.MILLISECONDS_IN_MINUTE;
   } else {
+    // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
     timezoneOffset = timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime);
   }
   const date = new Date(unixTime - timezoneOffset);
@@ -464,6 +480,32 @@ export function parseTimestamp(timestamp, timezone) {
 }
 
 /**
+ * Generate a timezone postfix of a timestamp for an offset.
+ *
+ * @param {number} offset Offset in minutes.
+ * @returns {string}
+ */
+function generateTimezonePostfix(offset) {
+  let postfix = '';
+
+  if (!utcString) {
+    utcString = cd.mws('timezone-utc');
+  }
+
+  // Not necessarily an integer
+  offset /= 60;
+
+  const sign = offset > 0 ? '+' : '-';
+  postfix = ` (${utcString}`;
+  if (offset !== 0) {
+    postfix += sign + Math.abs(offset);
+  }
+  postfix += ')';
+
+  return postfix;
+}
+
+/**
  * Convert a date to a string in the format set in the settings.
  *
  * @param {Date} date
@@ -471,32 +513,16 @@ export function parseTimestamp(timestamp, timezone) {
  * @returns {string}
  */
 export function formatDate(date, addTimezone = false) {
-  let s;
+  let timestamp;
   if (cd.settings.timestampFormat === 'default') {
-    s = formatDateNative(date);
+    timestamp = formatDateNative(date, addTimezone);
   } else if (cd.settings.timestampFormat === 'improved') {
-    s = formatDateImproved(date);
+    timestamp = formatDateImproved(date, addTimezone);
   } else if (cd.settings.timestampFormat === 'relative') {
-    s = formatDateRelative(date);
+    timestamp = formatDateRelative(date);
   }
 
-  if (addTimezone && !cd.settings.hideTimezone && cd.settings.timestampFormat !== 'relative') {
-    if (!utcString) {
-      utcString = cd.mws('timezone-utc');
-    }
-    let postfix = ` (${utcString})`;
-    if (cd.settings.useLocalTime) {
-      // Not necessarily an integer
-      const offset = date.getTimezoneOffset() / 60;
-
-      if (offset !== 0) {
-        const sign = offset > 0 ? '-' : '+';
-        postfix = ` (${utcString}${sign}${Math.abs(offset)})`;
-      }
-    }
-    s += postfix;
-  }
-  return s;
+  return timestamp;
 }
 
 /**
@@ -515,38 +541,48 @@ function zeroPad(number, length) {
  * Convert a date to a string in the default timestamp format.
  *
  * @param {Date} date
+ * @param {boolean} [addTimezone=false] Add the timezone postfix (for example, "(UTC+2)").
  * @param {string} [timezone] Use the specified time zone no matter user settings.
  * @returns {string}
  */
-export function formatDateNative(date, timezone) {
+export function formatDateNative(date, addTimezone = false, timezone) {
+  let timezoneOffset;
   let year;
   let monthIdx;
   let day;
   let hours;
   let minutes;
   let dayOfWeek;
-  if (cd.settings.useLocalTime && !timezone) {
-    year = date.getFullYear();
-    monthIdx = date.getMonth();
-    day = date.getDate();
-    hours = date.getHours();
-    minutes = date.getMinutes();
-    dayOfWeek = date.getDay();
+  if (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE) && !timezone) {
+    if (areUiAndLocalTimezoneSame) {
+      timezoneOffset = -date.getTimezoneOffset();
+    } else {
+      timezoneOffset = typeof cd.g.UI_TIMEZONE === 'number' ?
+        cd.g.UI_TIMEZONE :
+
+        // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
+        getTimezoneOffset(cd.g.UI_TIMEZONE, date.getTime()) / cd.g.MILLISECONDS_IN_MINUTE;
+    }
+    date = new Date(date.getTime() + timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE);
   } else if (!timezone || timezone === 'UTC') {
-    year = date.getUTCFullYear();
-    monthIdx = date.getUTCMonth();
-    day = date.getUTCDate();
-    hours = date.getUTCHours();
-    minutes = date.getUTCMinutes();
-    dayOfWeek = date.getUTCDay();
+    timezoneOffset = 0;
   } else {
     const dayjsDate = dayjs(date).tz(timezone);
+    timezoneOffset = dayjsDate.utcOffset();
     year = dayjsDate.year();
     monthIdx = dayjsDate.month();
     day = dayjsDate.date();
     hours = dayjsDate.hour();
     minutes = dayjsDate.minute();
     dayOfWeek = dayjsDate.day();
+  }
+  if (year === undefined) {
+    year = date.getUTCFullYear();
+    monthIdx = date.getUTCMonth();
+    day = date.getUTCDate();
+    hours = date.getUTCHours();
+    minutes = date.getUTCMinutes();
+    dayOfWeek = date.getUTCDay();
   }
 
   let s = '';
@@ -624,6 +660,10 @@ export function formatDateNative(date, timezone) {
     }
   }
 
+  if (addTimezone) {
+    s += generateTimezonePostfix(timezoneOffset);
+  }
+
   return s;
 }
 
@@ -631,33 +671,58 @@ export function formatDateNative(date, timezone) {
  * Format a date in the "improved" format.
  *
  * @param {Date} date
+ * @param {boolean} addTimezone
  * @returns {string}
  */
-export function formatDateImproved(date) {
-  const useLocalTime = cd.settings.useLocalTime;
-
-  let day = useLocalTime ? date.getDate() : date.getUTCDate();
-  let monthIdx = useLocalTime ? date.getMonth() : date.getUTCMonth();
-  let year = useLocalTime ? date.getFullYear() : date.getUTCFullYear();
-
-  const now = new Date();
-  let nowDay = useLocalTime ? now.getDate() : now.getUTCDate();
-  let nowMonthIdx = useLocalTime ? now.getMonth() : now.getUTCMonth();
-  let nowYear = useLocalTime ? now.getFullYear() : now.getUTCFullYear();
-
-  let formattedDate;
+export function formatDateImproved(date, addTimezone = false) {
+  let now = new Date();
   let dayjsDate = dayjs(date);
-  if (!useLocalTime) {
+  let timezoneOffset;
+  if (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
+    if (areUiAndLocalTimezoneSame) {
+      timezoneOffset = -date.getTimezoneOffset();
+    } else {
+      timezoneOffset = typeof cd.g.UI_TIMEZONE === 'number' ?
+        cd.g.UI_TIMEZONE :
+
+        // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
+        getTimezoneOffset(cd.g.UI_TIMEZONE, now.getTime()) / cd.g.MILLISECONDS_IN_MINUTE;
+
+      dayjsDate = dayjsDate.utcOffset(timezoneOffset);
+    }
+    now = new Date(now.getTime() + timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE);
+  } else {
+    timezoneOffset = 0;
     dayjsDate = dayjsDate.utc();
   }
+
+  const day = dayjsDate.date();
+  const monthIdx = dayjsDate.month();
+  const year = dayjsDate.year();
+
+  const nowDay = now.getUTCDate();
+  const nowMonthIdx = now.getUTCMonth();
+  const nowYear = now.getUTCFullYear();
+
+  const yesterday = new Date(now.getTime());
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayDay = yesterday.getUTCDate();
+  const yesterdayMonthIdx = yesterday.getUTCMonth();
+  const yesterdayYear = yesterday.getUTCFullYear();
+
+  let formattedDate;
   if (day === nowDay && monthIdx === nowMonthIdx && year === nowYear) {
     formattedDate = dayjsDate.format(cd.s('comment-timestamp-today'));
-  } else if (day === nowDay - 1 && monthIdx === nowMonthIdx && year === nowYear) {
+  } else if (day === yesterdayDay && monthIdx === yesterdayMonthIdx && year === yesterdayYear) {
     formattedDate = dayjsDate.format(cd.s('comment-timestamp-yesterday'));
   } else if (year === nowYear) {
     formattedDate = dayjsDate.format(cd.s('comment-timestamp-currentyear'));
   } else {
     formattedDate = dayjsDate.format(cd.s('comment-timestamp-other'));
+  }
+
+  if (addTimezone) {
+    formattedDate += generateTimezonePostfix(timezoneOffset);
   }
 
   return formattedDate;

@@ -4,6 +4,8 @@
  * @module LiveTimestamp
  */
 
+import dayjs from 'dayjs';
+
 import cd from './cd';
 import navPanel from './navPanel';
 import { formatDate, relativeTimeThresholds } from './timestamp';
@@ -63,7 +65,7 @@ export default class LiveTimestamp {
         // we only need to initiate the timeouts once.
         LiveTimestamp.initImproved();
       }
-      if (date > yesterdayStart) {
+      if (date.getTime() > yesterdayStart) {
         improvedTimestamps.push(this);
       }
     } else if (cd.settings.timestampFormat === 'relative') {
@@ -125,26 +127,25 @@ export default class LiveTimestamp {
    */
   static initImproved() {
     improvedTimestampsInitted = true;
-    const msInMin = cd.g.MILLISECONDS_IN_MINUTE;
-    let date = new Date();
-    if (cd.settings.useLocalTime) {
-      date.setHours(0);
-      date.setMinutes(0);
-      date.setSeconds(0);
+    let date = dayjs();
+    if (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
+      date = typeof cd.g.UI_TIMEZONE === 'number' ?
+        date.utcOffset(cd.g.UI_TIMEZONE) :
+        date.tz(cd.g.UI_TIMEZONE);
     } else {
-      date.setUTCHours(0);
-      date.setUTCMinutes(0);
-      date.setUTCSeconds(0);
+      date = date.utc();
     }
-    yesterdayStart = new Date(date.getTime() - msInMin * 60 * 24);
-    const nextDayStart = new Date(date.getTime() + msInMin * 60 * 24);
-    const nextNextDayStart = new Date(date.getTime() + msInMin * 60 * 24 * 2);
+    date = date.startOf('day');
+    yesterdayStart = date.subtract(1, 'day').valueOf();
+    const tomorrowStart = date.add(1, 'day').valueOf();
+    const dayAfterTomorrowStart = date.add(2, 'day').valueOf();
 
-    const ndsDelay = nextDayStart.getTime() - Date.now();
-    const ndsTimeout = setTimeout(LiveTimestamp.updateImproved, ndsDelay);
-    const nndsDelay = nextNextDayStart.getTime() - Date.now();
-    const nndsTimeout = setTimeout(LiveTimestamp.updateImproved, nndsDelay);
-    updateTimeouts.push(ndsTimeout, nndsTimeout);
+    const tsDelay = tomorrowStart - Date.now();
+    const tsTimeout = setTimeout(LiveTimestamp.updateImproved, tsDelay);
+    const datsDelay = dayAfterTomorrowStart - Date.now();
+    const datsTimeout = setTimeout(LiveTimestamp.updateImproved, datsDelay);
+    updateTimeouts.push(tsTimeout, datsTimeout);
+    cd.g.delays = [tsDelay, datsDelay];
   }
 
   /**

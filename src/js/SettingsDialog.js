@@ -485,11 +485,10 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       label: cd.s('sd-usebackgroundhighlighting'),
     });
 
-    [this.useLocalTimeField, this.useLocalTimeCheckbox] = createCheckboxField({
-      value: 'useLocalTime',
-      selected: settings.useLocalTime,
-      label: cd.s('sd-uselocaltime'),
-      help: cd.s('sd-uselocaltime-help'),
+    [this.useUiTimeField, this.useUiTimeCheckbox] = createCheckboxField({
+      value: 'useUiTime',
+      selected: settings.useUiTime,
+      label: cd.s('sd-useuitime'),
     });
 
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = createCheckboxField({
@@ -538,7 +537,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
     this.signaturePrefixInput.connect(this, { change: 'updateStates' });
     this.timestampFormatSelect.connect(this, { select: 'updateStates' });
     this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
-    this.useLocalTimeCheckbox.connect(this, { change: 'updateStates' });
+    this.useUiTimeCheckbox.connect(this, { change: 'updateStates' });
     this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
     this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateStates' });
     this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
@@ -602,7 +601,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       signaturePrefix: this.signaturePrefixInput.getValue(),
       timestampFormat: this.timestampFormatSelect.findSelectedItem()?.getData(),
       useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
-      useLocalTime: this.useLocalTimeCheckbox.isSelected(),
+      useUiTime: this.useUiTimeCheckbox.isSelected(),
       useTemplateData: this.useTemplateDataCheckbox.isSelected(),
       watchOnReply: this.watchOnReplyCheckbox.isSelected(),
       watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),
@@ -779,7 +778,7 @@ class TimestampsPageLayout extends OO.ui.PageLayout {
   constructor(dialog) {
     super('timestamps');
     this.$element.append([
-      dialog.useLocalTimeField.$element,
+      dialog.useUiTimeField.$element,
       dialog.hideTimezoneField.$element,
       dialog.timestampFormatField.$element,
     ]);

@@ -270,8 +270,6 @@
 	"sd-timestampformat-radio-improved": "Mejorado (\"$1\", \"$2\")",
 	"sd-timestampformat-radio-relative": "Relativo (\" $1 \", \" $2 \")",
 	"sd-timestampformat-help": "Las marcas de tiempo utilizan el idioma de la interfaz (no el idioma del contenido). Siempre puede ver la marca de tiempo original al mantener el mouse.",
-	"sd-uselocaltime": "Mostrar marcas de tiempo de comentarios en mi hora local",
-	"sd-uselocaltime-help": "Se utiliza la zona horaria del sistema.",
 	"sd-usetemplatedata": "Usar TemplateData en el autocompletado de plantillas",
 	"sd-usetemplatedata-help": "Mantén pulsada la tecla Mayús al seleccionar una plantilla del menú de autocompletado para insertar también los parámetros requeridos y sugeridos de la plantilla.",
 	"sd-watchonreply": "Vigilar la página donde respondo",

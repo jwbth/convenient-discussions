@@ -438,7 +438,7 @@ function processWatchlist($content) {
  */
 function processContributions($content) {
   initTimestampParsingTools('user');
-  if (!cd.g.UI_TIMEZONE) return;
+  if (cd.g.UI_TIMEZONE === null) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
 
@@ -507,7 +507,7 @@ function processContributions($content) {
  */
 function processHistory($content) {
   initTimestampParsingTools('user');
-  if (!cd.g.UI_TIMEZONE) return;
+  if (cd.g.UI_TIMEZONE === null) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
@@ -594,7 +594,7 @@ async function processDiff() {
   if (!isProcessDiffFirstRun) return;
 
   initTimestampParsingTools('user');
-  if (!cd.g.UI_TIMEZONE) return;
+  if (cd.g.UI_TIMEZONE === null) return;
 
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)

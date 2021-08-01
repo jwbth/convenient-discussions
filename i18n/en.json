@@ -224,7 +224,7 @@
   "rd-summary": "Edit summary",
   "rd-close": "Close",
 
-  "rc-suggestion": "<p>The new version of Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of a comment and interact with it easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in your local time by default).</p>",
+  "rc-suggestion": "<p>The new version of Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of a comment and interact with it easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in the timezone set in your wiki preferences by default).</p>",
   "rc-suggestion-yes": "Enable the new formatting",
   "rc-suggestion-no": "Keep the usual formatting",
 
@@ -322,8 +322,7 @@
   "sd-timestampformat-radio-improved": "Improved (\"$1\", \"$2\")",
   "sd-timestampformat-radio-relative": "Relative (\"$1\", \"$2\")",
   "sd-timestampformat-help": "Timestamps use your interface language (not the content language). You can always see the original timestamp on mouse hover.",
-  "sd-uselocaltime": "Show comment timestamps in my local time",
-  "sd-uselocaltime-help": "The system time zone is used.",
+  "sd-useuitime": "Show comment timestamps in the timezone set in my wiki preferences",
   "sd-usetemplatedata": "Use TemplateData in templates autocomplete",
   "sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
   "sd-watchonreply": "Watch pages that I comment on",

@@ -283,8 +283,6 @@
 	"sd-timestampformat-radio-improved": "Vylepšené („ $1 “, „ $2 “)",
 	"sd-timestampformat-radio-relative": "Relatívne („ $1 “, „ $2 “)",
 	"sd-timestampformat-help": "Časové značky používajú jazyk vášho rozhrania (nie jazyk obsahu). Pri umiestnení kurzora myši sa vždy zobrazí pôvodná časová značka.",
-	"sd-uselocaltime": "Zobraziť časové značky komentárov v mojom miestnom čase",
-	"sd-uselocaltime-help": "Používa sa časové pásmo systému.",
 	"sd-usetemplatedata": "Použiť TemplateData pri automatickom vyplňovaní šablón",
 	"sd-usetemplatedata-help": "Podržte Shift pri výbere šablóny z ponuky automatického doplňovania textu pre vloženie požadovanej šablóny a odporúčaných nastavení.",
 	"sd-watchonreply": "Sledovať stránky, ktoré komentujem",

@@ -656,7 +656,7 @@ export default {
    */
   reformatTimestamps() {
     if (
-      (cd.settings.useLocalTime && (new Date()).getTimezoneOffset()) ||
+      (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) ||
       cd.settings.timestampFormat !== 'default' ||
       mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
       cd.settings.hideTimezone
