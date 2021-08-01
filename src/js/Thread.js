@@ -586,6 +586,7 @@ export default class Thread {
 
     saveCollapsedThreads();
     handleScroll();
+    Thread.updateLines();
   }
 
   /**
@@ -638,6 +639,7 @@ export default class Thread {
 
     saveCollapsedThreads();
     handleScroll();
+    Thread.updateLines();
   }
 
   /**
