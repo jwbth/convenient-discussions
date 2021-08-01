@@ -451,32 +451,44 @@ export default class Parser {
     const unsigneds = [];
     if (cd.config.unsignedClass) {
       Array.from(cd.g.rootElement.getElementsByClassName(cd.config.unsignedClass))
-        .forEach((element) => {
+        .filter((element) => {
           // Only templates with no timestamp interest us.
-          if (!this.context.getElementByClassName(element, 'cd-timestamp')) {
-            Array.from(element.getElementsByTagName('a')).some((link) => {
-              const [authorName, linkType] = processLink(link) || {};
-              if (authorName) {
-                let authorLink;
-                let authorTalkLink;
-                if (linkType === 'user') {
-                  authorLink = link;
-                } else if (linkType === 'userTalk') {
-                  authorTalkLink = link;
-                }
-                element.classList.add('cd-signature');
-                const isUnsigned = true;
-                unsigneds.push({
-                  element,
-                  authorName,
-                  isUnsigned,
-                  authorLink,
-                  authorTalkLink,
-                });
-                return true;
-              }
-            });
+          if (this.context.getElementByClassName(element, 'cd-timestamp')) {
+            return false;
           }
+
+          // Cases like https://ru.wikipedia.org/?diff=84883816
+          for (let el = element; el && el !== cd.g.rootElement; el = el.parentNode) {
+            if (el.classList.contains('cd-signature')) {
+              return false;
+            }
+          }
+
+          return true;
+        })
+        .forEach((element) => {
+          Array.from(element.getElementsByTagName('a')).some((link) => {
+            const [authorName, linkType] = processLink(link) || {};
+            if (authorName) {
+              let authorLink;
+              let authorTalkLink;
+              if (linkType === 'user') {
+                authorLink = link;
+              } else if (linkType === 'userTalk') {
+                authorTalkLink = link;
+              }
+              element.classList.add('cd-signature');
+              const isUnsigned = true;
+              unsigneds.push({
+                element,
+                authorName,
+                isUnsigned,
+                authorLink,
+                authorTalkLink,
+              });
+              return true;
+            }
+          });
         });
     }
 
