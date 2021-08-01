@@ -58,17 +58,6 @@ export default class Section extends SectionSkeleton {
         .getElementsByClassName('mw-editsection-bracket')[1];
     }
 
-    if (this.closingBracketElement) {
-      /**
-       * Section menu object.
-       *
-       * @type {object}
-       */
-      this.menu = {};
-
-      this.extendSectionMenu(watchedSectionsRequest);
-    }
-
     /**
      * Automatically updated sequental number of the section.
      *
@@ -113,6 +102,8 @@ export default class Section extends SectionSkeleton {
     }
 
     delete this.sourcePageName;
+
+    this.extendSectionMenu(watchedSectionsRequest);
 
     /**
      * Section headline element as a jQuery object.
@@ -347,6 +338,15 @@ export default class Section extends SectionSkeleton {
    * @private
    */
   extendSectionMenu(watchedSectionsRequest) {
+    if (!this.closingBracketElement) return;
+
+    /**
+     * Section menu object.
+     *
+     * @type {object|undefined}
+     */
+    this.menu = {};
+
     if (this.isActionable) {
       if (
         this.comments.length &&
