@@ -707,6 +707,29 @@ export default class Parser {
       const node = treeWalker.currentNode;
       const isTextNode = node.nodeType === Node.TEXT_NODE;
 
+      // This is partially duplicating the code in Parser#filterParts - see the comment "Cases
+      // like..." there. But these codes cover intersecting but different cases (say, only this code
+      // covers cases when there is only one comment part eventually (a list item, for example) and
+      // only that code covers comments indented with ":").
+      const isIntro = (
+        lastStep === 'back' &&
+        ['OL', 'UL'].includes(previousPart.node.tagName) &&
+
+        // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
+        !(
+          (['DL', 'OL', 'UL'].includes(node.tagName) && !isIntroList(node)) ||
+          (
+            isTextNode &&
+            node.previousSibling &&
+            ['DL', 'OL', 'UL'].includes(node.previousSibling.tagName) &&
+            !isIntroList(node)
+          )
+        ) &&
+
+        previousPart.node[this.context.childElementsProp][0]?.contains(signatureElement)
+      );
+      if (isIntro) break;
+
       let isHeading = null;
       let hasCurrentSignature = null;
       let hasForeignComponents = null;
