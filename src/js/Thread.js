@@ -650,6 +650,16 @@ export default class Thread {
   }
 
   /**
+   * Remove the thread line if present and set the relevant properties to `null`.
+   */
+  removeLine() {
+    if (this.line) {
+      this.clickArea.remove();
+      this.clickArea = this.clickAreaOffset = this.line = null;
+    }
+  }
+
+  /**
    * Create threads.
    *
    * @param {boolean} [restoreCollapsed=true]
@@ -730,7 +740,13 @@ export default class Thread {
       .reverse()
       .some((comment) => {
         const thread = comment.thread;
-        if (!thread || (comment.isCollapsed && !thread.isCollapsed)) return;
+        if (!thread) {
+          return false;
+        }
+        if (comment.isCollapsed && !thread.isCollapsed) {
+          thread.removeLine();
+          return false;
+        }
 
         const needCalculateMargins = (
           comment.level === 0 ||
@@ -776,10 +792,7 @@ export default class Thread {
           !getVisibilityByRects(...[rectTop, rectBottom].filter(defined)) ||
           areTopAndBottomMisaligned()
         ) {
-          if (thread.line) {
-            thread.clickArea.remove();
-            thread.clickArea = thread.clickAreaOffset = thread.line = null;
-          }
+          thread.removeLine();
           return false;
         }
 
