@@ -8,6 +8,8 @@
  * @module staticGlobals
  */
 
+import Page from './Page';
+
 /**
  * Properties of the `convenientDiscussions.g` object (incomplete list). Static (i.e., known from
  * the beginning) ones are declared in {@link module:staticGlobals}.
@@ -15,7 +17,6 @@
  * @namespace g
  * @memberof module:cd~convenientDiscussions
  */
-
 export default {
   /**
    * A replacement for
@@ -289,4 +290,12 @@ export default {
    * @memberof module:cd~convenientDiscussions.g
    */
   SIGN_CODE: '~~'.concat('~~'),
+
+  /**
+   * {@link module:Page Page} class for external use.
+   *
+   * @type {object}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  Page,
 };
