@@ -17,15 +17,11 @@
     default: [
       'convenientDiscussions.js',
       'convenientDiscussions.js.LICENSE.js',
-      'convenientDiscussions.js.map.json',
-      'convenientDiscussions-worker.js.map.json',
       'convenientDiscussions-i18n/',
     ],
     test: [
       'convenientDiscussions-test.js',
       'convenientDiscussions-test.js.LICENSE.js',
-      'convenientDiscussions-test.js.map.json',
-      'convenientDiscussions-worker-test.js.map.json',
     ],
   },
 }
