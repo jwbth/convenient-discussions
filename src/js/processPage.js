@@ -606,8 +606,8 @@ function highlightMentions($content) {
   if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
   const selector = $content.hasClass('cd-comment-part') ?
-    `a[title*=":${cd.g.USER_NAME}"]` :
-    `.cd-comment-part a[title*=":${cd.g.USER_NAME}"]`;
+    `a[title$=":${cd.g.USER_NAME}"], a[title*=":${cd.g.USER_NAME} ("]` :
+    `.cd-comment-part a[title$=":${cd.g.USER_NAME}"], .cd-comment-part a[title*=":${cd.g.USER_NAME} ("]`;
   const excludeSelector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
