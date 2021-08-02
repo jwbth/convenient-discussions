@@ -155,7 +155,7 @@ export default {
 
   indentationCharMode: 'unify',
 
-  signaturePrefixRegexp: /(?:\s*С уважением,)?(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s]|&\w+;|&#\d+;)*\(?'*$/,
+  signaturePrefixRegexp: /(?:\s*С уважением,)?(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&\w+;|&#\d+;)*\(?'*$/,
 
   signatureEndingRegexp: / \(обс\.\)$/,
 
