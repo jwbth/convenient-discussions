@@ -248,7 +248,8 @@ export default class Autocomplete {
                 const spacePos = snippet.lastIndexOf(wordSeparator);
                 if (spacePos !== -1) {
                   snippet = snippet.slice(0, spacePos);
-                  if (cd.g.PUNCTUATION_REGEXP.test(snippet[snippet.length - 1])) {
+                  const lastChar = snippet[snippet.length - 1];
+                  if (cd.g.PUNCTUATION_REGEXP.test(lastChar) && lastChar !== ')') {
                     snippet += ' ';
                   }
                   snippet += cd.s('ellipsis');
