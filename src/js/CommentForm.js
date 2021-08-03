@@ -2591,10 +2591,16 @@ export default class CommentForm {
   async prepareWholeCode(action) {
     const commentAnchors = extractCommentAnchors(this.commentInput.getValue());
 
-    this.submitSection = (
+    /**
+     * Will we try to submit the section code first instead of the whole page code. (Filled upon
+     * submitting or viewing changes.)
+     *
+     * @type {boolean|undefined}
+     */
+    this.submitSection = Boolean(
       this.mode === 'addSection' &&
       !this.isNewTopicOnTop &&
-      this.headlineInput.getValue().trim()
+      this.headlineInput?.getValue().trim()
     );
     try {
       if (
@@ -3067,7 +3073,8 @@ export default class CommentForm {
         condition: (
           !doDelete &&
           /^==[^=]/m.test(this.commentInput.getValue()) &&
-          this.mode !== 'edit'
+          this.mode !== 'edit' &&
+          !this.preloadConfig?.commentTemplate
         ),
         confirmation: () => confirm(cd.s('cf-confirm-secondlevelheading')),
       },
