@@ -267,6 +267,7 @@ function setStrings() {
 /**
  * Function executed after the config and localization strings are ready.
  *
+ * @fires preprocessed
  * @private
  */
 async function go() {
@@ -528,6 +529,15 @@ async function go() {
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
     addCommentLinksToSpecialSearch();
   }
+
+  /**
+   * The page has been preprocessed (not parsed yet, but its type has been checked and some
+   * important properties have been set).
+   *
+   * @event preprocessed
+   * @type {module:cd~convenientDiscussions}
+   */
+  mw.hook('convenientDiscussions.preprocessed').fire(cd);
 }
 
 /**
