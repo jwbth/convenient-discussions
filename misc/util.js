@@ -14,11 +14,18 @@ function wikiUrlencode(s) {
     .replace(/%3A/g, ':');
 }
 
-function getUrl(page) {
-  return (
-    `${config.protocol}://${config.server}` +
-    config.articlePath.replace('$1', wikiUrlencode(page))
-  );
+function getUrl(page, params = {}) {
+  const base = `${config.protocol}://${config.server}`;
+  if (Object.keys(params).length) {
+    params = Object.assign({}, { title: page }, params);
+    const url = new URL(base + config.scriptPath + '/index.php');
+    Object.keys(params).forEach((param) => {
+      url.searchParams.set(param, params[param]);
+    });
+    return url.toString();
+  } else {
+    return base + config.articlePath.replace('$1', wikiUrlencode(page));
+  }
 }
 
 function unique(item, i, arr) {
