@@ -9,6 +9,7 @@ import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
 import Page from './Page';
 import Section from './Section';
+import Worker from './worker-gate';
 import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
@@ -798,6 +799,7 @@ function initOouiAndElementPrototypes() {
  *   {@link module:siteData.loadSiteData}.
  */
 export async function init(siteDataRequests) {
+  cd.g.worker = new Worker();
   createApi();
   await Promise.all(siteDataRequests.length ? siteDataRequests : loadSiteData());
   initGlobals();

@@ -7,7 +7,8 @@
 
 import Button from './Button';
 import cd from './cd';
-import { getExtendedRect, getVisibilityByRects, scrollToY } from './util';
+import { getExtendedRect, getVisibilityByRects } from './util';
+import { scrollToY } from './jqueryExtensions';
 
 let currentSection;
 let $sectionWithBackLink;

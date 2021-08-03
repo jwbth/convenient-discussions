@@ -7,7 +7,6 @@
 import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
-import Worker from './worker-gate';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import debug from './debug';
@@ -425,10 +424,6 @@ async function go() {
           console.warn('The loading overlay stays for more than 10 seconds; removing it.');
         }
       }, 10000);
-
-      // Avoid circular reference that would appear if Worker is used in the boot module (which
-      // worker itself imports at the building stage).
-      cd.g.worker = new Worker();
 
       cd.g.$contentColumn = skin$({
         timeless: '#mw-content',

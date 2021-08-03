@@ -8,8 +8,6 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
-import { handleScroll } from './eventHandlers';
-import { isPageLoading } from './boot';
 
 let anchorElement;
 let anchorElementTop;
@@ -114,7 +112,14 @@ export function buildEditSummary(options) {
  * @memberof module:cd~convenientDiscussions.util
  */
 export function isPageOverlayOn() {
-  return document.body.classList.contains('oo-ui-windowManager-modal-active') || isPageLoading();
+  return (
+    document.body.classList.contains('oo-ui-windowManager-modal-active') ||
+
+    // The following code constitutes boot.isPageLoading, but we avoid using that because importing
+    // it here will increase the size of the worker build dramatically.
+    cd.g.isFirstRun ||
+    cd.g.isPageBeingReloaded
+  );
 }
 
 /**
@@ -944,33 +949,4 @@ export function addCss(text) {
   element.appendChild(document.createTextNode(text));
   document.head.appendChild(element);
   return element.sheet;
-}
-
-/**
- * Scroll to a specified position vertically.
- *
- * @param {number} y
- * @param {boolean} [smooth=true]
- * @param {Function} [callback]
- */
-export function scrollToY(y, smooth = true, callback) {
-  const onComplete = () => {
-    cd.g.isAutoScrollInProgress = false;
-    handleScroll();
-    if (callback) {
-      callback();
-    }
-  };
-
-  if (smooth) {
-    $('body, html').animate({ scrollTop: y }, {
-      complete: function () {
-        if (this !== document.documentElement) return;
-        onComplete();
-      },
-    });
-  } else {
-    window.scrollTo(window.scrollX, y);
-    onComplete();
-  }
 }

@@ -5,7 +5,36 @@
  */
 
 import cd from './cd';
-import { scrollToY } from './util';
+import { handleScroll } from './eventHandlers';
+
+/**
+ * Scroll to a specified position vertically.
+ *
+ * @param {number} y
+ * @param {boolean} [smooth=true]
+ * @param {Function} [callback]
+ */
+ export function scrollToY(y, smooth = true, callback) {
+  const onComplete = () => {
+    cd.g.isAutoScrollInProgress = false;
+    handleScroll();
+    if (callback) {
+      callback();
+    }
+  };
+
+  if (smooth) {
+    $('body, html').animate({ scrollTop: y }, {
+      complete: function () {
+        if (this !== document.documentElement) return;
+        onComplete();
+      },
+    });
+  } else {
+    window.scrollTo(window.scrollX, y);
+    onComplete();
+  }
+}
 
 /**
  * jQuery. See {@link external:$.fn} for extensions.
