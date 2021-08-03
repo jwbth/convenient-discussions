@@ -746,7 +746,13 @@ export default class Parser {
           .length;
         hasForeignComponents = (
           signaturesCount - Number(hasCurrentSignature) > 0 ||
-          (firstForeignComponentAfter && node.contains(firstForeignComponentAfter))
+          (
+            firstForeignComponentAfter &&
+            node.contains(firstForeignComponentAfter) &&
+
+            // Cases like the table added here: https://ru.wikipedia.org/?diff=115822931
+            node.tagName !== 'TABLE'
+          )
         );
 
         // This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
