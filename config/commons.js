@@ -60,7 +60,6 @@ export default {
     'nextdiff': 'Newer edit →',
   },
   'contribsPage': 'Special:Contributions',
-  'substAliases': [],
   'timezone': 'UTC',
   'useGlobalPreferences': true,
   'tagName': 'convenient-discussions',

@@ -50,11 +50,14 @@ mw.loader.using([
       contribsPageAliasesObj.aliases[0]
     );
   }
-  config.substAliases = siteInfoResp.query.magicwords
+  const substAliases = siteInfoResp.query.magicwords
     .find((obj) => obj.name === 'subst')
     ?.aliases
     .map((alias) => alias.toLowerCase())
     .filter((alias) => alias !== 'subst:');
+  if (substAliases.length) {
+    config.substAliases = substAliases;
+  }
 
   config.timezone = siteInfoResp.query.general.timezone;
 

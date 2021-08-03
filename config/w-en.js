@@ -62,8 +62,6 @@ export default {
 
   contribsPage: 'Special:Contributions',
 
-  substAliases: [],
-
   timezone: 'UTC',
 
   archivePaths: [
