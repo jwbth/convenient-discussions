@@ -78,7 +78,7 @@ let commentAnchors = [];
 export function initDayjs() {
   if (dayjs.utc) return;
 
-  const locale = cd.i18n[cd.g.USER_LANGUAGE].dayjsLocale;
+  const locale = cd.i18n[cd.g.USER_LANGUAGE]?.dayjsLocale;
   if (locale) {
     dayjs.locale(locale);
   }
