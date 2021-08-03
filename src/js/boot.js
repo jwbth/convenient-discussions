@@ -265,6 +265,9 @@ export function setTalkPageCssVariables() {
 export function createApi() {
   cd.g.api = cd.g.api || new mw.Api({
     ajax: {
+      // 60 seconds instead of default 30
+      timeout: 60 * 1000,
+
       headers: {
         'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
       },
