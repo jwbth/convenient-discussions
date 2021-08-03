@@ -302,7 +302,10 @@ async function go() {
   cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
   cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
   cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
-  cd.g.USER_NAME = mw.config.get('wgUserName');
+
+  // "<unregistered>" is a workaround for anonymous users (there are such!).
+  cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
+
   cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
   cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';

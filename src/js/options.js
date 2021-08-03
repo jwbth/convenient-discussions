@@ -177,6 +177,8 @@ export function getLocalOverridingSettings() {
  * @param {object} [settings=cd.settings] Settings to save.
  */
 export async function setSettings(settings = cd.settings) {
+  if (cd.g.USER_NAME === '<unregistered>') return;
+
   if (cd.config.useGlobalPreferences) {
     const globalSettings = {};
     const localSettings = {};
@@ -214,17 +216,24 @@ export async function setSettings(settings = cd.settings) {
  * @returns {Promise.<GetVisitsReturn>}
  */
 export async function getVisits(reuse = false) {
-  const promise = cd.g.isPageFirstParsed && mw.user.options.get(cd.g.VISITS_OPTION_NAME) === null ?
-    Promise.resolve({}) :
-    getUserInfo(reuse).then((options) => options.visits);
-  const visits = await promise;
-  const articleId = mw.config.get('wgArticleId');
+  let visits;
   let currentPageVisits;
+  if (cd.g.USER_NAME === '<unregistered>') {
+    visits = [];
+    currentPageVisits = [];
+  } else {
+    const isOptionSet = mw.user.options.get(cd.g.VISITS_OPTION_NAME) !== null;
+    const promise = cd.g.isPageFirstParsed && !isOptionSet ?
+      Promise.resolve({}) :
+      getUserInfo(reuse).then((options) => options.visits);
+    visits = await promise;
+    const articleId = mw.config.get('wgArticleId');
 
-  // This should always true; this check should be performed before.
-  if (articleId) {
-    visits[articleId] = visits[articleId] || [];
-    currentPageVisits = visits[articleId];
+    // This should always true; this check should be performed before.
+    if (articleId) {
+      visits[articleId] = visits[articleId] || [];
+      currentPageVisits = visits[articleId];
+    }
   }
 
   // These variables are not used anywhere in the script but can be helpful for testing purposes.
@@ -261,7 +270,7 @@ function cleanUpVisits(originalVisits) {
  * @param {object} visits
  */
 export async function setVisits(visits) {
-  if (!visits) return;
+  if (!visits || cd.g.USER_NAME === '<unregistered>') return;
 
   const visitsString = packVisits(visits);
   const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
@@ -298,8 +307,8 @@ export async function setVisits(visits) {
  *   response).
  */
 export async function getWatchedSections(reuse = false, passedData = {}) {
-  const isOptionUnset = mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) === null;
-  const promise = cd.g.isPageFirstParsed && isOptionUnset ?
+  const isOptionSet = mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) !== null;
+  const promise = cd.g.isPageFirstParsed && !isOptionSet ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.watchedSections);
   const watchedSections = await promise;

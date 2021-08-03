@@ -1167,7 +1167,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       $(document).on('keydown', handleGlobalKeyDown);
     }
 
-    showPopups = cd.g.isFirstRun && cd.g.isPageActive;
+    showPopups = cd.g.isFirstRun && cd.g.isPageActive && cd.g.USER_NAME !== '<unregistered>';
 
     /**
      * The script has processed the page.
