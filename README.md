@@ -10,8 +10,8 @@
   * Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
 * Creating topics and subsections
 * Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
-* Threads are collapsible
-* Comment timestamps may use local time and arbitrary format, including relative
+* Collapsible threads
+* Comment timestamps in local time and arbitrary format, including relative
 * Highlighting and navigating new comments (via the navigation panel or the table of contents)
 * Highlighting own comments
 * Checking for new comments in the background and automatically rendering simple comment edits
