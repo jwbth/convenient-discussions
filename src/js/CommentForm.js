@@ -3301,10 +3301,16 @@ export default class CommentForm {
     }
 
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {
-      $('#ca-watch').attr('id', 'ca-unwatch');
+      $('#ca-watch')
+        .attr('id', 'ca-unwatch')
+        .find('a')
+        .attr('href', mw.util.getUrl(cd.g.PAGE.name, { action: 'unwatch' }));
     }
     if (!this.watchCheckbox.isSelected() && $('#ca-unwatch').length) {
-      $('#ca-unwatch').attr('id', 'ca-watch');
+      $('#ca-unwatch')
+        .attr('id', 'ca-watch')
+        .find('a')
+        .attr('href', mw.util.getUrl(cd.g.PAGE.name, { action: 'watch' }));
     }
 
     if (!doDelete) {
