@@ -40,6 +40,7 @@ import { formatDateNative, initDayjs, initTimestampParsingTools } from './timest
 import { getLocalOverridingSettings, getSettings, setSettings } from './options';
 import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
+import { removeWikiMarkup } from './wikitext';
 
 let notificationsData = [];
 let saveSessionTimeout;
@@ -1503,12 +1504,21 @@ export async function addNotFoundMessage(decodedFragment, date) {
     const token = date ?
       formatDateNative(date, false, cd.g.CONTENT_TIMEZONE) :
       sectionName.replace(/"/g, '');
-    const archivePrefix = cd.g.PAGE.getArchivePrefix();
     let searchQuery = `"${token}"`
     if (sectionName && sectionName !== sectionNameDotDecoded) {
       const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
       searchQuery += ` OR "${tokenDotDecoded}"`;
     }
+    if (date) {
+      // There can be a time difference between the time we know (taken from the history) and the
+      // time on the page. We take it to be not more than 5 minutes for the time on the page.
+      for (let gap = 1; gap <= 5; gap++) {
+        const adjustedDate = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
+        const adjustedToken = formatDateNative(adjustedDate, false, cd.g.CONTENT_TIMEZONE);
+        searchQuery += ` OR "${adjustedToken}"`;
+      }
+    }
+    const archivePrefix = cd.g.PAGE.getArchivePrefix();
     searchQuery += ` prefix:${archivePrefix}`;
 
     cd.g.api.get({
@@ -1556,8 +1566,15 @@ export async function addNotFoundMessage(decodedFragment, date) {
             }
           }
         } else {
-          if (results.length === 1) {
-            pageTitle = results[0].title;
+          const pageTitles = [];
+          for (const [, result] of Object.entries(results)) {
+            const snippetText = removeWikiMarkup(result.snippet);
+            if (snippetText && snippetText.includes(token)) {
+              pageTitles.push(result.title);
+            }
+          }
+          if (pageTitles.length === 1) {
+            pageTitle = pageTitles[0];
           }
         }
 
