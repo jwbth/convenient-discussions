@@ -1535,15 +1535,26 @@ export async function addNotFoundMessage(decodedFragment, date) {
     }).then((resp) => {
       const results = resp?.query?.search;
 
+      let searchUrl = mw.util.getUrl('Special:Search', {
+        search: searchQuery,
+        sort: 'create_timestamp_desc',
+        cdcomment: date && decodedFragment,
+      });
+      searchUrl = cd.g.SERVER + searchUrl;
+
       if (results.length === 0) {
         let label;
         if (date) {
-          label = cd.s('deadanchor-comment-lead') + ' ' + cd.s('deadanchor-comment-notfound');
-        } else {
+          label = (
+            cd.s('deadanchor-comment-lead') +
+            ' ' +
+            cd.s('deadanchor-comment-notfound', searchUrl)
+          );
+          } else {
           label = (
             cd.s('deadanchor-section-lead', sectionName) +
             ' ' +
-            cd.s('deadanchor-section-notfound')
+            cd.s('deadanchor-section-notfound', searchUrl)
           );
         }
         message.setLabel(label);
@@ -1578,13 +1589,6 @@ export async function addNotFoundMessage(decodedFragment, date) {
             pageTitle = pageTitles[0];
           }
         }
-
-        let searchUrl = mw.util.getUrl('Special:Search', {
-          search: searchQuery,
-          sort: 'create_timestamp_desc',
-          cdcomment: date && decodedFragment,
-        });
-        searchUrl = cd.g.SERVER + searchUrl;
 
         let label;
         if (pageTitle) {
