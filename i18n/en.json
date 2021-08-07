@@ -18,6 +18,7 @@
   "thread-tooltip": "Collapse/expand the thread",
   "thread-expand-genderless": "Expand the thread starting from the comment by $2 ($1 {{plural:$1|comment|comments}})",
   "thread-expand": "Expand the thread starting from the comment by {{gender:$3|}} $2 ($1 {{plural:$1|comment|comments}})",
+  "thread-expand-tooltip": "Hold Ctrl to expand all threads on the page",
   "thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
 
   "sm-editopeningcomment": "edit opening comment",

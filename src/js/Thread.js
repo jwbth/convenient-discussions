@@ -513,8 +513,17 @@ export default class Thread {
 
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
-      action: () => {
-        this.expand();
+      tooltip: cd.s('thread-expand-tooltip'),
+      action: (e) => {
+        if (e.ctrlKey) {
+          cd.comments.slice().reverse().forEach((comment) => {
+            if (comment.thread?.isCollapsed) {
+              comment.thread.expand();
+            }
+          });
+        } else {
+          this.expand();
+        }
       },
       element: expandButton,
       labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
