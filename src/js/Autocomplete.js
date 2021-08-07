@@ -90,7 +90,15 @@ export default class Autocomplete {
       dir: cd.g.CONTENT_DIR,
     });
 
-    inputs.forEach((input) => {
+    /**
+     * Inputs that have the autocomplete attached.
+     *
+     * @type {external:OO.ui.TextInputWidget[]}
+     * @private
+     */
+    this.inputs = inputs;
+
+    this.inputs.forEach((input) => {
       const element = input.$input.get(0);
       this.tribute.attach(element);
       element.cdInput = input;
@@ -105,6 +113,15 @@ export default class Autocomplete {
           this.tribute.menuEvents.windowResizeEvent?.();
         });
       }
+    });
+  }
+
+  /**
+   * Clean up event handlers.
+   */
+  cleanUp() {
+    this.inputs.forEach((input) => {
+      this.tribute.detach(input.$input.get(0));
     });
   }
 
