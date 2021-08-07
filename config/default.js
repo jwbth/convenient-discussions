@@ -234,8 +234,6 @@ export default {
    * ```
    * Here, `''` is not a part of the signature.
    *
-   * The same with `(` at the end because otherwise it would catch sad smile `:(`.
-   *
    * `(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?` is for cases like
    * {@link https://en.wikipedia.org/?diff=1033395227}.
    *
@@ -243,7 +241,7 @@ export default {
    * @default
    * /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&amp;\w+;|&amp;#\d+;)*$/
    */
-  signaturePrefixRegexp: /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&\w+;|&#\d+;)*$/,
+  signaturePrefixRegexp: /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
   /**
    * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible
