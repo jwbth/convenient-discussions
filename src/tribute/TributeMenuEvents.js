@@ -26,9 +26,7 @@ class TributeMenuEvents {
       false
     );
 
-    // fixes IE11 issues with mousedown
-    document.addEventListener("MSPointerDown", this.menuClickEvent, false);
-    document.addEventListener("mousedown", this.menuClickEvent, false);
+    document.addEventListener("click", this.menuClickEvent, false);
     window.addEventListener("resize", this.windowResizeEvent);
 
     // jwbth: Added this line to make the menu change its height if its lower border is off screen.
@@ -46,8 +44,7 @@ class TributeMenuEvents {
   }
 
   unbind() {
-    document.removeEventListener("mousedown", this.menuClickEvent, false);
-    document.removeEventListener("MSPointerDown", this.menuClickEvent, false);
+    document.removeEventListener("click", this.menuClickEvent, false);
     window.removeEventListener("resize", this.windowResizeEvent);
 
     // jwbth: Added this line, see above.
