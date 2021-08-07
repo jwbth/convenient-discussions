@@ -310,7 +310,7 @@ export default class Comment extends CommentSkeleton {
       // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
       if (
         n.tagName &&
-        n.getAttribute('style') &&
+        (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
         n.textContent.length < 30 &&
         !n.classList.contains('noprint')
       ) {
