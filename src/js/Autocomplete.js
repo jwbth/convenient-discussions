@@ -580,12 +580,16 @@ export default class Autocomplete {
           cache: [],
           transform: (item) => {
             const name = item.trim();
+            const user = userRegistry.getUser(name);
             const userNamespace = (
-              cd.config.userNamespacesByGender?.[userRegistry.getUser(name).getGender()] ||
+              cd.config.userNamespacesByGender?.[user.getGender()] ||
               mw.config.get('wgFormattedNamespaces')[2]
             );
+            const pageName = user.isRegistered() ?
+              `${userNamespace}:${name}` :
+              `${cd.g.CONTRIBS_PAGE}/${name}`;
             return {
-              start: `@[[${userNamespace}:${name}|`,
+              start: `@[[${pageName}|`,
               end: ']]',
               content: name,
               ctrlModify: (data) => {
