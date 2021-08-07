@@ -69,6 +69,7 @@
   "cld-diff-error": "Couldn't find",
   "cld-diff-error-network": "Couldn't find (network error)",
   "cld-diff-error-unknown": "Couldn't find (unknown error)",
+  "cld-diff-history": "Edit history",
   "cld-shortdiff": "Short diff link",
   "cld-wikilink": "Wikilink",
   "cld-help-onlycd": "This link will work only for users who have Convenient Discussions installed.",

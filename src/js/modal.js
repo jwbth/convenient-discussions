@@ -108,6 +108,7 @@ export async function showCopyLinkDialog(object, e) {
   let $diff;
   let diffLink;
   let shortDiffLink;
+  let $historyLinkBlock;
   if (isComment) {
     let errorText;
     try {
@@ -121,6 +122,13 @@ export async function showCopyLinkDialog(object, e) {
           errorText = cd.s('cld-diff-error-network');
         } else {
           errorText = cd.s('cld-diff-error');
+          const $historyLink = $('<a>')
+            .attr('href', object.getSourcePage().getUrl({ action: 'history' }))
+            .attr('target', '_blank')
+            .text(cd.s('cld-diff-history'));
+          $historyLinkBlock = $('<div>')
+            .addClass('cd-copyLinkDialog-historyLinkBlock')
+            .append($historyLink);
         }
       } else {
         errorText = cd.s('cld-diff-error-unknown');
@@ -207,6 +215,7 @@ export async function showCopyLinkDialog(object, e) {
     diffField?.$element,
     shortDiffField?.$element,
     $diff,
+    $historyLinkBlock,
     wikilinkField.$element,
     currentPageWikilinkField.$element,
     linkField.$element,
