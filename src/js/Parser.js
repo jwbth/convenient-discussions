@@ -365,6 +365,11 @@ export default class Parser {
                     if (authorTalkLink) {
                       return false;
                     }
+                  } else {
+                    // Cases like https://ru.wikipedia.org/?diff=115909247
+                    if (authorLink || authorTalkLink) {
+                      return false;
+                    }
                   }
                   hasAuthorLinks = true;
                 } else {
