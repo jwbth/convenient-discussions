@@ -298,6 +298,7 @@
   "sd-desktopnotifications-radio-tome": "Notify me about replies to my comments only",
   "sd-desktopnotifications-radio-none": "Don't notify me",
   "sd-desktopnotifications-help": "Desktop notifications inform about events on pages that are open but hidden. To receive them, you must grant a premission to $1.",
+  "sd-enablethreads": "Enable collapsible threads",
   "sd-hidetimezone": "Hide the time zone",
   "sd-insertbuttons": "Text insert buttons",
   "sd-insertbuttons-multiselect-placeholder": "Add a button",

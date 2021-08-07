@@ -1128,10 +1128,10 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
             updateThreadLinesHandlerAttached = false;
           };
 
-          if (!updateThreadLinesHandlerAttached) {
-            // Update only on mouse move to prevent short page freezings when there is a comment form
-            // in the beginning of a very long page and the input is changed so that everything below
-            // the form shifts vertically.
+          if (!updateThreadLinesHandlerAttached && cd.settings.enableThreads) {
+            // Update only on mouse move to prevent short page freezings when there is a comment
+            // form in the beginning of a very long page and the input is changed so that everything
+            // below the form shifts vertically.
             $(document).on('mousemove', updateThreadLines);
             updateThreadLinesHandlerAttached = true;
           }

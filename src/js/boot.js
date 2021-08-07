@@ -86,6 +86,7 @@ export async function initSettings() {
     desktopNotifications: 'unknown',
     defaultCommentLinkType: null,
     defaultSectionLinkType: null,
+    enableThreads: true,
     hideTimezone: false,
     insertButtons: cd.config.defaultInsertButtons || [],
     notifications: 'all',

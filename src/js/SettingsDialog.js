@@ -324,6 +324,12 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       help: cd.s('sd-desktopnotifications-help', location.hostname),
     });
 
+    [this.enableThreadsField, this.enableThreadsCheckbox] = createCheckboxField({
+      value: 'enableThreads',
+      selected: settings.enableThreads,
+      label: cd.s('sd-enablethreads'),
+    });
+
     [this.hideTimezoneField, this.hideTimezoneCheckbox] = createCheckboxField({
       value: 'hideTimezone',
       selected: settings.hideTimezone,
@@ -526,6 +532,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       select: 'updateStates',
       choose: 'onDesktopNotificationsSelectChange',
     });
+    this.enableThreadsCheckbox.connect(this, { change: 'updateStates' });
     this.hideTimezoneCheckbox.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
@@ -589,6 +596,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
         this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
         'unknown'
       ),
+      enableThreads: this.enableThreadsCheckbox.isSelected(),
       hideTimezone: this.hideTimezoneCheckbox.isSelected(),
       insertButtons: this.getInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
@@ -715,6 +723,7 @@ class TalkPagePageLayout extends OO.ui.PageLayout {
       dialog.reformatCommentsField.$element,
       dialog.showContribsLinkField.$element,
       dialog.allowEditOthersCommentsField.$element,
+      dialog.enableThreadsField.$element,
       dialog.modifyTocField.$element,
       dialog.useBackgroundHighlightingField.$element,
     ]);

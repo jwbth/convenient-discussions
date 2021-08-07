@@ -674,6 +674,8 @@ export default class Thread {
    * @param {boolean} [restoreCollapsed=true]
    */
   static init(restoreCollapsed = true) {
+    if (!cd.settings.enableThreads) return;
+
     isInited = false;
     treeWalker = new ElementsTreeWalker();
     cd.comments.forEach((rootComment) => {
@@ -711,7 +713,7 @@ export default class Thread {
    * @param {object} [floatingRects]
    */
   static updateLines(floatingRects) {
-    if ((isPageLoading() || document.hidden) && isInited) return;
+    if (!cd.settings.enableThreads || ((isPageLoading() || document.hidden) && isInited)) return;
 
     const getLeft = (rectOrOffset, commentMargins) => {
       let offset;
