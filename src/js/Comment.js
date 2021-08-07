@@ -361,6 +361,10 @@ export default class Comment extends CommentSkeleton {
     let contribsLink;
     if (cd.settings.showContribsLink) {
       contribsLink = authorTalkLink.nextElementSibling.nextElementSibling;
+      if (!this.author.isRegistered()) {
+        contribsLink.previousSibling.remove();
+        contribsLink.remove();
+      }
     }
 
     if (this.authorLink) {
@@ -374,11 +378,16 @@ export default class Comment extends CommentSkeleton {
       authorLink.innerHTML = '';
       authorLink.appendChild(bdiElement);
     } else {
-      const pageName = 'User:' + this.author.name;
-      pagesToCheckExistence.push({
-        pageName,
-        link: authorLink,
-      });
+      let pageName;
+      if (this.author.isRegistered()) {
+        pageName = 'User:' + this.author.name;
+        pagesToCheckExistence.push({
+          pageName,
+          link: authorLink,
+        });
+      } else {
+        pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
+      }
       authorLink.title = pageName;
       authorLink.href = mw.util.getUrl(pageName);
     }
@@ -399,7 +408,7 @@ export default class Comment extends CommentSkeleton {
 
     bdiElement.textContent = this.author.name;
 
-    if (cd.settings.showContribsLink) {
+    if (cd.settings.showContribsLink && this.author.isRegistered()) {
       const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
       contribsLink.title = pageName;
       contribsLink.href = mw.util.getUrl(pageName);
