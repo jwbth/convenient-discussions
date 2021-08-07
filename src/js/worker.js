@@ -407,4 +407,4 @@ function onMessageFromWindow(e) {
   }
 }
 
-onmessage = onMessageFromWindow;
+self.onmessage = onMessageFromWindow;

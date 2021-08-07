@@ -11,9 +11,9 @@ cd.settings = {};
 cd.g = g;
 cd.g.USER_LANGUAGE = 'en';
 cd.g.UI_DATE_FORMAT = 'H:i, j F Y';
-cd.mws = () => {
-  return 'UTC';
-};
+cd.mws = (name) => ({
+  'timezone-utc': 'UTC',
+}[name]);
 cd.i18n = { en };
 cd.s = (name) => cd.i18n.en[name];
 cd.debug = {
@@ -22,29 +22,41 @@ cd.debug = {
 };
 
 const messages = {
-  april: 'April',
-  august: 'August',
-  december: 'December',
-  february: 'February',
-  january: 'January',
-  july: 'July',
-  june: 'June',
-  march: 'March',
-  may_long: 'May',
-  november: 'November',
-  october: 'October',
-  september: 'September',
+  en: {
+    april: 'April',
+    august: 'August',
+    december: 'December',
+    february: 'February',
+    january: 'January',
+    july: 'July',
+    june: 'June',
+    march: 'March',
+    may_long: 'May',
+    november: 'November',
+    october: 'October',
+    september: 'September',
+  },
+  de: {
+    may_long: 'Mai',
+  },
 };
 
 window.mw = {
   config: {
-    get: () => 'en',
+    values: {
+      wgContentLanguage: 'en',
+      wgUserLanguage: 'en',
+    },
+    get: (name) => mw.config.values[name],
+    set: (name, value) => {
+      mw.config.values[name] = value;
+    },
   },
-  msg: (name) => messages[name],
+  msg: (name) => messages[mw.config.get('wgUserLanguage')][name],
 };
 
 const testWithSettings = (
-  [date, timestampFormat, timezone, useUiTime, hideTimezone, nowDate],
+  [date, timestampFormat, timezone, useUiTime, hideTimezone, nowDate, contentLanguage],
   expectedValue
 ) => {
   const expectedText = expectedValue[0];
@@ -75,7 +87,14 @@ const testWithSettings = (
     cd.settings.timestampFormat = timestampFormat;
     cd.settings.useUiTime = useUiTime;
     cd.settings.hideTimezone = hideTimezone;
+
+    if (contentLanguage) {
+      mw.config.set('wgUserLanguage', contentLanguage);
+    }
     comment.timestampElement.textContent = formatDateNative(dateObj, true, 'UTC');
+    if (contentLanguage) {
+      mw.config.set('wgUserLanguage', 'en');
+    }
 
     const originalDate = new Date();
     if (nowDate) {
@@ -252,4 +271,9 @@ testWithSettings(
 testWithSettings(
   ['2021-05-28T10:48:47.000Z', 'improved', -120, true, false, '2021-05-30T10:48:47.000Z'],
   ['28 May, 8:48 AM (UTC-2)', '10:48, 28 May 2021 (UTC)']
+);
+
+testWithSettings(
+  ['2021-05-28T10:48:47.000Z', 'default', 'Europe/Berlin', true, false, null, 'de'],
+  ['12:48, 28 May 2021 (UTC+2)', '10:48, 28 Mai 2021 (UTC)']
 );

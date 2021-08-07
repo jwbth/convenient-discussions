@@ -689,7 +689,7 @@ export default class Comment extends CommentSkeleton {
     let title = '';
     if (
       cd.settings.timestampFormat !== 'default' ||
-      (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) ||
+      (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
       !areLanguagesEqual ||
       cd.settings.hideTimezone
     ) {
@@ -699,16 +699,14 @@ export default class Comment extends CommentSkeleton {
     if (
       cd.settings.timestampFormat === 'relative' &&
       cd.settings.useUiTime &&
-      !['UTC', 0].includes(cd.g.UI_TIMEZONE)
+      cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE
     ) {
       title = formatDateNative(this.date, true) + '\n';
     }
 
     if (newTimestamp) {
-      const utcTimestamp = areLanguagesEqual ?
-        formatDateNative(this.date, true, 'UTC') :
-        this.timestampElement.textContent;
-      title += utcTimestamp;
+      const originalTimestamp = this.timestampElement.textContent;
+      title += originalTimestamp;
       this.reformattedTimestamp = newTimestamp;
       this.timestampTitle = title;
       if (!cd.settings.reformatComments) {

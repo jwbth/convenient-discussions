@@ -326,6 +326,9 @@ export function initTimestampParsingTools(language) {
    * @memberof module:cd~convenientDiscussions.g
    */
   cd.g.UI_TIMEZONE = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
+  if (cd.g.UI_TIMEZONE === 0) {
+    cd.g.UI_TIMEZONE = 'UTC';
+  }
 
   /**
    * Timezone _offset_ in minutes per user preferences.
