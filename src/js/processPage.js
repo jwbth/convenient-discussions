@@ -1090,12 +1090,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
         // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
         // content as opposed to "$('.cd-comment-author-wrapper')".
-
-        if (cd.settings.reformatComments && cd.comments.length) {
-          // This could theoretically disrupt code that needs to process the whole page content, if it
-          // runs later than CD. But typically CD runs relatively late.
-          mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
-        }
         mw.hook('wikipage.content').add(highlightMentions);
 
         let updateThreadLinesHandlerAttached = false;
@@ -1141,6 +1135,16 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         });
       } else {
         pageNav.update();
+      }
+
+      if (cd.settings.reformatComments && cd.comments.length) {
+        // Hardcode for ruwiki where there is such a hook. The hook for other domains could
+        // theoretically disrupt code that needs to process the whole page content, if it runs later
+        // than CD. But typically CD runs relatively late.
+        const hookName = location.hostname === 'ru.wikipedia.org' ?
+          'global.userlinks' :
+          'wikipage.content';
+        mw.hook(hookName).fire($('.cd-comment-author-wrapper'));
       }
     }
 
