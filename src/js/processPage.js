@@ -32,6 +32,7 @@ import {
 import {
   addPreventUnloadCondition,
   handleGlobalKeyDown,
+  handleHashChange,
   handleScroll,
   handleWindowResize,
 } from './eventHandlers';
@@ -576,27 +577,6 @@ function connectToAddTopicButtons() {
 }
 
 /**
- * Bind a click handler to comment links to make them work as in-script comment links.
- *
- * @param {JQuery} $content
- * @private
- */
-function connectToCommentLinks($content) {
-  if (!$content.is('#mw-content-text, .cd-previewArea')) return;
-
-  $content
-    .find(`a[href^="#"]`)
-    .filter(function () {
-      return /^#\d{12}_.+$/.test($(this).attr('href'));
-    })
-    .on('click', function (e) {
-      e.preventDefault();
-      const anchor = $(this).attr('href').slice(1);
-      Comment.getByAnchor(anchor)?.scrollTo(true, true);
-    });
-}
-
-/**
  * Highlight mentions of the current user.
  *
  * @param {JQuery} $content
@@ -1104,18 +1084,19 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         // hidden, and the movements are not processed when the document is hidden.
         $(document).on('scroll visibilitychange', handleScroll);
 
-        $(window).on('resize orientationchange', handleWindowResize);
+        $(window)
+          .on('resize orientationchange', handleWindowResize)
+          .on('hashchange', handleHashChange);
 
         // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
         // content as opposed to "$('.cd-comment-author-wrapper')".
-        mw.hook('wikipage.content').add(highlightMentions, connectToCommentLinks);
-        mw.hook('convenientDiscussions.previewReady').add(connectToCommentLinks);
 
         if (cd.settings.reformatComments && cd.comments.length) {
           // This could theoretically disrupt code that needs to process the whole page content, if it
           // runs later than CD. But typically CD runs relatively late.
           mw.hook('wikipage.content').fire($('.cd-comment-author-wrapper'));
         }
+        mw.hook('wikipage.content').add(highlightMentions);
 
         let updateThreadLinesHandlerAttached = false;
         const handlePageMutations = () => {

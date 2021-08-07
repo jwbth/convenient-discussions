@@ -135,3 +135,18 @@ export function handleScroll() {
     pageNav.update();
   }, 300);
 }
+
+/**
+ * Handle the `hashchange` event.
+ */
+export function handleHashChange() {
+  if (/^#\d{12}_.+$/.test(location.hash)) {
+    let anchor = location.hash.slice(1);
+    try {
+      anchor = decodeURIComponent(anchor);
+    } catch (e) {
+      console.error(e);
+    }
+    Comment.getByAnchor(anchor)?.scrollTo(true);
+  }
+}
