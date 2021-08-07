@@ -227,20 +227,23 @@ export default {
    *
    * End the regexp with `$`.
    *
-   * `'` is in the end alone so that normal markup in the end of comments doesn't get removed - like
-   * this:
+   * `'` is removed independently in the script so that normal markup at the end of comments doesn't
+   * get removed - like this:
    * ```
    * ''Reply in italics.'' [signature]
    * ```
    * Here, `''` is not a part of the signature.
    *
+   * The same with `(` at the end because otherwise it would catch sad smile `:(`.
+   *
    * `(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?` is for cases like
    * {@link https://en.wikipedia.org/?diff=1033395227}.
    *
    * @type {RegExp}
-   * @default /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&amp;\w+;|&amp;#\d+;)*\(?'*$/
+   * @default
+   * /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&amp;\w+;|&amp;#\d+;)*$/
    */
-  signaturePrefixRegexp: /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&\w+;|&#\d+;)*\(?'*$/,
+  signaturePrefixRegexp: /(?:\s[-–—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-–—―~/→⇒\s\u200e\u200f]|&\w+;|&#\d+;)*$/,
 
   /**
    * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible

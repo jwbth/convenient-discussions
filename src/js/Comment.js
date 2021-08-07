@@ -2921,6 +2921,8 @@ export default class Comment extends CommentSkeleton {
     // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
     // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
     data.code = movePartsToSignature(data.code, [
+      /'+$/,
+      /\($/,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
       cd.config.signaturePrefixRegexp,
