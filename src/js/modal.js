@@ -227,6 +227,7 @@ export async function showCopyLinkDialog(object, e) {
   });
   cd.g.windowManager.addWindows([dialog]);
   const windowInstance = cd.g.windowManager.openWindow(dialog, {
+    title: isComment ? cd.s('cld-title-comment') : cd.s('cld-title-section'),
     message: $message,
     actions: [
       {

@@ -64,6 +64,8 @@
   "section-watch-error-save": "Couldn't save the settings to the server.",
   "section-watch-error-maxsize": "Couldn't update the settings: the size of the watched sections list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">Edit the sections list</span> to fix this.",
 
+  "cld-title-comment": "Copy comment link",
+  "cld-title-section": "Copy section link",
   "cld-summary": "Edit summary",
   "cld-diff": "Diff link",
   "cld-diff-error": "Couldn't find",
