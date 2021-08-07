@@ -245,5 +245,8 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 });
 
 mw.loader.using('mediawiki.util').then(function () {
-  mw.util.addCSS('.cd-comment-timestamp .localcomments { font-size: unset !important; }');
+  mw.util.addCSS(
+    '.cd-comment-timestamp .localcomments { font-size: unset !important; }' +
+    '.mw-parser-output .cd-commentLayersContainer-parent-relative.folda-collapsed { overflow: hidden !important; }'
+  );
 });
