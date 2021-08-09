@@ -23,6 +23,13 @@ export default class SectionSkeleton {
     this.parser = parser;
 
     /**
+     * Heading element.
+     *
+     * @type {Element|external:Element}
+     */
+    this.headingElement = headingElement;
+
+    /**
      * Headline element.
      *
      * @type {Element|external:Element}
@@ -59,40 +66,74 @@ export default class SectionSkeleton {
      */
     this.sectionNumber = null;
 
-    const editSectionElement = headingElement.lastChild;
-    if (editSectionElement.classList.contains('mw-editsection')) {
-      const links = Array.from(editSectionElement.getElementsByTagName('a'));
+    let editSectionElement = headingElement.lastChild;
+    if (!editSectionElement.classList.contains('mw-editsection')) {
+      editSectionElement = this.createSectionMenu();
+    }
+    const menuLinks = Array.from(editSectionElement.getElementsByTagName('a'));
 
-      // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
-      // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
-      // there's probably no harm in that.
-      const editLink = links.find((link) => link.getAttribute('href')?.includes('action=edit'));
+    // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
+    // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
+    // there's probably no harm in that.
+    const editLink = menuLinks.find((link) => link.getAttribute('href')?.includes('action=edit'));
 
-      if (editLink) {
-        const href = cd.g.SERVER + editLink.getAttribute('href');
+    if (editLink) {
+      const href = cd.g.SERVER + editLink.getAttribute('href');
 
-        /**
-         * URL to edit the section.
-         *
-         * @type {string}
-         */
-        this.editUrl = new URL(href);
+      /**
+       * URL to edit the section.
+       *
+       * @type {string}
+       */
+      this.editUrl = new URL(href);
 
-        if (this.editUrl) {
-          const sectionNumber = this.editUrl.searchParams.get('section');
-          if (sectionNumber.startsWith('T-')) {
-            this.sourcePageName = this.editUrl.searchParams.get('title');
-            this.sectionNumber = Number(sectionNumber.match(/\d+/)[0]);
-          } else {
-            this.sectionNumber = Number(sectionNumber);
-          }
-          this.editUrl = this.editUrl.href;
+      if (this.editUrl) {
+        const sectionNumber = this.editUrl.searchParams.get('section');
+        if (sectionNumber.startsWith('T-')) {
+          this.sourcePageName = this.editUrl.searchParams.get('title');
+          this.sectionNumber = Number(sectionNumber.match(/\d+/)[0]);
+        } else {
+          this.sectionNumber = Number(sectionNumber);
         }
-      } else {
-        console.error('Edit link not found.', this);
+        this.editUrl = this.editUrl.href;
       }
     }
 
+    this.setContentProperties();
+
+    /**
+     * Section ID. Same as the section index in {@link module:cd~convenientDiscussions.sections
+     * convenientDiscussions.sections}.
+     *
+     * @type {number}
+     */
+    this.id = cd.sections.length;
+  }
+
+  /**
+   * Create a section menu if it was unexistent (on pages with `__NOEDITSECTION__`).
+   *
+   * @returns {Element|external:Element}
+   */
+  createSectionMenu() {
+    const startBracket = this.parser.context.document.createElement('span');
+    startBracket.setAttribute('class', 'mw-editsection-bracket');
+    startBracket.textContent = '[';
+    const endBracket = this.parser.context.document.createElement('span');
+    endBracket.setAttribute('class', 'mw-editsection-bracket');
+    endBracket.textContent = ']';
+    const editSectionElement = this.parser.context.document.createElement('span');
+    editSectionElement.setAttribute('class', 'mw-editsection');
+    editSectionElement.appendChild(startBracket);
+    editSectionElement.appendChild(endBracket);
+    this.headingElement.appendChild(editSectionElement);
+    return editSectionElement;
+  }
+
+  /**
+   * Set some properties related to the content of the section (contained elements and comments).
+   */
+  setContentProperties() {
     const treeWalker = new TreeWalker(
       cd.g.rootElement,
       (node) => (
@@ -104,7 +145,7 @@ export default class SectionSkeleton {
         !node.classList.contains('cd-section-button-container')
       ),
       true,
-      headingElement
+      this.headingElement
     );
 
     this.headingNestingLevel = 0;
@@ -112,8 +153,8 @@ export default class SectionSkeleton {
       this.headingNestingLevel++;
     }
 
-    treeWalker.currentNode = headingElement;
-    const elements = [headingElement];
+    treeWalker.currentNode = this.headingElement;
+    const elements = [this.headingElement];
     const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
 
     // The last element before the next heading if we start from the heading of this section. That
@@ -195,14 +236,6 @@ export default class SectionSkeleton {
 
       this.comments[0].followsHeading = true;
     }
-
-    /**
-     * Section ID. Same as the section index in {@link module:cd~convenientDiscussions.sections
-     * convenientDiscussions.sections}.
-     *
-     * @type {number}
-     */
-    this.id = cd.sections.length;
 
     /**
      * Comments contained in the section.

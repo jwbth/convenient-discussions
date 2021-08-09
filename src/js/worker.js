@@ -297,6 +297,7 @@ function parse() {
   let sectionDangerousKeys = [
     'cachedAncestors',
     'elements',
+    'headingElement',
     'headlineElement',
     'lastElementInFirstChunk',
     'parser',
