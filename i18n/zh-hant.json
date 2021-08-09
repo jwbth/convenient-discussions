@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Impartial just",
 			"Jack who built the house",
 			"Kly"
 		]
@@ -172,7 +173,8 @@
 	"cf-confirm-secondlevelheading": "意見包含第二層段落的代碼。如果您移動原始碼，最好使用標準編輯來源功能，否則可能會發生非預期的變動。您確定要發布意見嗎？",
 	"cf-confirm-delete": "您確定您要刪除此意見？",
 	"cf-confirm-close": "您確定要關閉表單嗎？更改的內容將會被捨棄。",
-	"cf-autocomplete-commentlinktext": "$1@$2",
+	"cf-autocomplete-mentions-label": "提及一位使用者",
+	"cf-autocomplete-commentlinks-text": "$1@$2",
 	"dn-confirm": "在目前開啟的頁面裡，若有新的意見是發布在您所監視的段落、或是內容有提及到您時，您想要 Convenient Discussions 發送給您桌面通知嗎？您可以在設定裡關閉此功能。",
 	"dn-confirm-yes": "是",
 	"dn-confirm-no": "否",
@@ -182,12 +184,12 @@
 	"deadanchor-section-finding": "正在尋找存檔段落…",
 	"deadanchor-section-exactmatch": "段落「$1」看起來已被存檔。[[$2|查看已存檔段落]]（或是[$3 在存檔中搜尋]）。",
 	"deadanchor-section-inexactmatch": "段落「$1」看起來已被存檔。[$2 在存檔中搜尋]。",
-	"deadanchor-section-notfound": "在存檔中找不到搜尋結果。它可能已被移除或重新命名，或者是您可能遵循了格式錯誤的連結。",
+	"deadanchor-section-notfound": "在存檔中也找不到搜尋結果。它可能已被移除或重新命名，或者是您可能遵循了格式錯誤的連結。",
 	"deadanchor-comment-lead": "此頁面上找不到評論。",
 	"deadanchor-comment-finding": "正在尋找存檔意見…",
 	"deadanchor-comment-exactmatch": "意見似乎已被存檔。[[$1|查看已存檔意見]]（或是[$2 在存檔中搜尋]）。",
 	"deadanchor-comment-inexactmatch": "意見看起來已被存檔。[$1 在存檔中搜尋]。",
-	"deadanchor-comment-notfound": "在存檔中找不到搜尋結果。它可能已被移除或重新簽名。",
+	"deadanchor-comment-notfound": "在存檔中也找不到搜尋結果。它可能已被移除或重新簽名。",
 	"deadanchor-search-gotocomment": "跳至意見",
 	"restore-restored-title": "對談已恢復",
 	"restore-restored-text": "未發送的意見已自動還原。",
@@ -287,8 +289,6 @@
 	"sd-timestampformat-radio-improved": "改進（「$1」，「$2」）",
 	"sd-timestampformat-radio-relative": "相對（「$1」，「$2」）",
 	"sd-timestampformat-help": "時間戳記使用著您的介面語言（不是內容語言）。您可以在滑鼠懸停時看到原始的時間戳記。",
-	"sd-uselocaltime": "以本地時間來顯示意見的時間戳記",
-	"sd-uselocaltime-help": "已使用系統時區。",
 	"sd-usetemplatedata": "在模板自動完成中使用 TemplateData",
 	"sd-usetemplatedata-help": "在挑選來自於自動完成選單的模板時，壓住 Shift 鍵可插入模板的必要參數與建議參數。",
 	"sd-watchonreply": "監視我發表過意見的頁面",

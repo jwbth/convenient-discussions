@@ -165,7 +165,7 @@
 	"cf-confirm-secondlevelheading": "Yorum, ikinci düzey bölümün kodunu içerir. Kaynak kodunu taşıyorsanız, standart kaynak düzenleme işlevini kullanmak daha iyidir, aksi takdirde öngörülemez şekilde değiştirilebilir. Yorum göndermek istediğinizden emin misiniz?",
 	"cf-confirm-delete": "Yorumu silmek istediğinizden emin misiniz?",
 	"cf-confirm-close": "Formu kapatmak istediğinizden emin misiniz? Değişiklikler kaybolacak.",
-	"cf-autocomplete-commentlinktext": "$1 @ $2",
+	"cf-autocomplete-commentlinks-text": "$1 @ $2",
 	"dn-confirm": "Kullanışlı Tartışmalar, size yönlendirildikleri veya izlediğiniz bölümlerde yayınlandıkları takdirde, şu anda açık olan sayfalardaki yeni yorumlarla ilgili masaüstü bildirimleri göndermelerini ister misiniz? Bu özelliği ayarlardan devre dışı bırakabilirsiniz.",
 	"dn-confirm-yes": "Evet",
 	"dn-confirm-no": "Hayır",

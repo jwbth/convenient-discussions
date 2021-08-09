@@ -162,7 +162,7 @@
 	"cf-confirm-secondlevelheading": "El comentario contiene el código de la sección de segundo nivel. Si vas a mover el código fuente, es preferible hacerlo usando la función de editar código. En caso contrario, podría modificarse de forma no contemplada. ¿Seguro que quieres enviar el comentario?",
 	"cf-confirm-delete": "¿Confirmas que quieres eliminar el comentario?",
 	"cf-confirm-close": "¿Confirmas que quieres cerrar el formulario? Se perderá la información introducida.",
-	"cf-autocomplete-commentlinktext": "$1 el $2",
+	"cf-autocomplete-commentlinks-text": "$1 el $2",
 	"dn-confirm": "¿Quieres que Discusiones Prácticas envíe notificaciones de escritorio sobre nuevos comentarios en las páginas que tengas abiertas si van dirigidos a ti, o escritos en secciones que tengas bajo seguimiento? Puedes desactivar esta característica en la configuración.",
 	"dn-confirm-yes": "Sí",
 	"dn-confirm-no": "No",
