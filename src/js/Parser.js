@@ -571,7 +571,7 @@ export default class Parser {
       // The second parameter of getElementsByClassName() is an optimization for the worker context.
       signatureElement.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
-      isCellOfMultiCommentTable(signatureElement.parentNode)
+      !this.isElementEligible(signatureElement.parentNode, treeWalker, 'start')
     ) {
       // Collect inline parts after the signature
       treeWalker.currentNode = signatureElement;
