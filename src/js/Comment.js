@@ -1811,13 +1811,16 @@ export default class Comment extends CommentSkeleton {
     const $historyLink = $('<a>')
       .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
       .attr('target', '_blank')
-      .text(cd.s('comment-changed-history'));
+      .text(cd.s('comment-changed-diff-history'));
     const $below = $('<div>')
       .addClass('cd-commentDiffView-below')
       .append($historyLink);
 
     const $message = $('<div>').append($cleanDiff, $below);
-    OO.ui.alert($message, { size: 'larger' });
+    OO.ui.alert($message, {
+      title: cd.s('comment-changed-diff-title'),
+      size: 'larger',
+    });
   }
 
   /**
