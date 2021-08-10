@@ -7,6 +7,7 @@
 import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
+import { generateCommentAnchor, parseCommentAnchor } from './timestamp';
 import {
   getCommonGender,
   getExtendedRect,
@@ -519,14 +520,29 @@ export default {
    * Get a comment by anchor.
    *
    * @param {string} anchor
+   * @param {boolean} impreciseDate Comment date is inferred from the edit date (but these may be
+   *   different). If `true`, we allow the time on the page to be 1-5 minutes less than the edit
+   *   time.
    * @returns {?Comment}
    * @memberof module:Comment
    */
-  getByAnchor(anchor) {
+  getByAnchor(anchor, impreciseDate) {
     if (!cd.comments || !anchor) {
       return null;
     }
-    return cd.comments.find((comment) => comment.anchor === anchor) || null;
+
+    const findByAnchor = (anchor) => cd.comments.find((comment) => comment.anchor === anchor);
+
+    let comment = findByAnchor(anchor);
+    if (!comment && impreciseDate) {
+      const { date, author } = parseCommentAnchor(anchor) || {};
+      for (let gap = 1; !comment && gap <= 5; gap++) {
+        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
+        comment = findByAnchor(generateCommentAnchor(dateToFind, author));
+      }
+    }
+
+    return comment || null;
   },
 
   /**

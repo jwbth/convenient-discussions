@@ -36,7 +36,6 @@ import {
   handleScroll,
   handleWindowResize,
 } from './eventHandlers';
-import { generateCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import {
   getExtendedRect,
   replaceAnchorElement,
@@ -44,8 +43,9 @@ import {
   saveRelativeScrollPosition,
   wrap,
 } from './util';
-
 import { getVisits, getWatchedSections, setVisits } from './options';
+import { parseCommentAnchor, resetCommentAnchors } from './timestamp';
+
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
@@ -639,19 +639,7 @@ async function processFragment(passedData) {
   let comment;
   if (commentAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
-    comment = Comment.getByAnchor(commentAnchor);
-
-    if (!passedData.commentAnchor && !comment) {
-      let commentAnchorToCheck;
-      // There can be a time difference between the time we know (taken from the watchlist) and the
-      // time on the page. We take it to be not higher than 5 minutes for the watchlist.
-      for (let gap = 1; !comment && gap <= 5; gap++) {
-        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
-        commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
-        comment = Comment.getByAnchor(commentAnchorToCheck);
-      }
-    }
-
+    comment = Comment.getByAnchor(commentAnchor, !passedData.commentAnchor);
     if (comment) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly.

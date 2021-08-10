@@ -147,6 +147,6 @@ export function handleHashChange() {
     } catch (e) {
       console.error(e);
     }
-    Comment.getByAnchor(anchor)?.scrollTo(true);
+    Comment.getByAnchor(anchor, true)?.scrollTo(true);
   }
 }

@@ -622,20 +622,7 @@ async function processDiff() {
 
       const anchor = generateCommentAnchor(date, author);
 
-      let comment = Comment.getByAnchor(anchor);
-      if (!comment) {
-        let commentAnchorToCheck;
-        // There can be a time difference between the time we know (taken from the watchlist or
-        // generated in the script) and the time on the page. We take it to be not higher than 5
-        // minutes for the watchlist time and not higher than 1 minute for the script-generated
-        // time.
-        for (let gap = 1; !comment && gap <= 5; gap++) {
-          const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
-          commentAnchorToCheck = generateCommentAnchor(dateToFind, author);
-          comment = Comment.getByAnchor(commentAnchorToCheck);
-        }
-      }
-
+      let comment = Comment.getByAnchor(anchor, true);
       if (comment) {
         let wrapper;
         if (summary && currentUserRegexp.test(` ${summary} `)) {
