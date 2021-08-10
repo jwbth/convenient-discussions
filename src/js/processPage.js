@@ -699,8 +699,8 @@ async function processVisits(visitsRequest, passedData) {
     return;
   }
 
-  if (cd.g.currentPageVisits.length >= 1) {
-    cd.g.previousVisitUnixTime = Number(cd.g.currentPageVisits[cd.g.currentPageVisits.length - 1]);
+  if (currentPageVisits.length >= 1) {
+    cd.g.previousVisitUnixTime = Number(currentPageVisits[currentPageVisits.length - 1]);
   }
 
   const currentUnixTime = Math.floor(Date.now() / 1000);
@@ -1039,7 +1039,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       Comment.configureAndAddLayers(commentsToAddLayers);
 
       // Should be below the comment form restoration for threads to be expanded correctly and also
-      // to avoid repositioning of threads after the addition of comment forms. Should be below the
+      // to avoid repositioning threads after the addition of comment forms. Should be below the
       // viewport position restoration, as some elements may get hidden. Should better be above
       // comment highlighting (`processVisits()`, `Comment.configureAndAddLayers()`) to avoid
       // spending time on comments in collapsed threads.
@@ -1060,11 +1060,11 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         pageNav.mount();
 
         if (!cd.settings.reformatComments) {
-          // The "mouseover" event allows to capture the state when the cursor is not moving but ends
-          // up above a comment but not above any comment parts (for example, as a result of
-          // scrolling). The benefit may be low compared to the performance cost, but it's unexpected
-          // when the user scrolls a comment and it suddenly stops being highlighted because the
-          // cursor is between neighboring <p>'s.
+          // The "mouseover" event allows to capture the state when the cursor is not moving but
+          // ends up above a comment but not above any comment parts (for example, as a result of
+          // scrolling). The benefit may be low compared to the performance cost, but it's
+          // unexpected when the user scrolls a comment and it suddenly stops being highlighted
+          // because the cursor is between neighboring <p>'s.
           $(document).on('mousemove mouseover', Comment.highlightHovered);
         }
 

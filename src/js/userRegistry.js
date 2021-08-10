@@ -72,6 +72,11 @@ class User {
     return this.cachedIsRegistered;
   }
 
+  /**
+   * Set a gender for the user.
+   *
+   * @param {string} value
+   */
   setGender(value) {
     this.options.set('gender', value);
   }

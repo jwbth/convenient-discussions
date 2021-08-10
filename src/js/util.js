@@ -765,7 +765,7 @@ export function saveToLocalStorage(name, obj) {
  * @returns {string}
  */
 export function removeDirMarks(text, replaceWithSpace) {
-  return text.replace(/[\u200E\u200F]/g, replaceWithSpace ? ' ' : '');
+  return text.replace(/[\u200e\u200f]/g, replaceWithSpace ? ' ' : '');
 }
 
 /**

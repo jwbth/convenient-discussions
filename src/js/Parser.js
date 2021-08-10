@@ -354,9 +354,9 @@ export default class Parser {
                     }
                     authorContribsLink = link;
                   } else if (linkType === 'userSubpage') {
-                    // A user subpage link after a user link - OK. A user subpage link before a user
-                    // link - not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps
-                    // part of the comment.
+                    // A user subpage link after a user link is OK. A user subpage link before a
+                    // user link is not OK (example: https://ru.wikipedia.org/?diff=112885854).
+                    // Perhaps part of the comment.
                     if (authorLink) {
                       return false;
                     }
@@ -1125,7 +1125,7 @@ export default class Parser {
           innerWrapper.appendChild(parent);
           parentParent.insertBefore(outerWrapper, nextSibling);
 
-          const newNode = {
+          const newPart = {
             node: innerWrapper,
             isTextNode: false,
             isHeading: false,
@@ -1133,7 +1133,7 @@ export default class Parser {
             hasForeignComponents: false,
             lastStep: 'replaced',
           };
-          parts.splice(0, listItems.length, newNode);
+          parts.splice(0, listItems.length, newPart);
         }
       }
     }

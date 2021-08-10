@@ -325,7 +325,7 @@ export default {
       .find('.cd-toc-notRenderedCommentList')
       .remove();
 
-    const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200F' : '';
+    const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
     const comma = cd.mws('comma-separator');
     commentsBySection.forEach((comments, sectionOrAnchor) => {
       if (!sectionOrAnchor) return;

@@ -44,7 +44,7 @@ export function hideDistractingCode(code) {
       (s, before, content, after) => before + ' '.repeat(content.length) + after
     )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
-    .replace(/[\u200E\u200F]/g, (s) => ' '.repeat(s.length))
+    .replace(/[\u200e\u200f]/g, (s) => ' '.repeat(s.length))
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
       (s, before, newline, after) => before + ' '.repeat(newline.length) + after

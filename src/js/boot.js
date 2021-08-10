@@ -1297,6 +1297,13 @@ export function restoreCommentForms(isPageReloadedExternally) {
 }
 
 /**
+ * Notification object created by running `mw.notification.notify(...)`.
+ *
+ * @typedef {object} Notification
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
+ */
+
+/**
  * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
  * notifications and close them all at once if needed.
  *

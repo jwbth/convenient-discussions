@@ -35,6 +35,7 @@ export default class LiveTimestamp {
      * Element that has the timestamp.
      *
      * @type {Element}
+     * @private
      */
     this.element = element;
 
@@ -42,6 +43,7 @@ export default class LiveTimestamp {
      * Timestamp's date.
      *
      * @type {Date}
+     * @private
      */
     this.date = date;
 
@@ -49,6 +51,7 @@ export default class LiveTimestamp {
      * Whether to add timezone to the timestamp.
      *
      * @type {boolean}
+     * @private
      */
     this.addTimezone = addTimezone;
 
@@ -56,6 +59,7 @@ export default class LiveTimestamp {
      * Function to run after the timestamp updates.
      *
      * @type {Function}
+     * @private
      */
     this.callback = callback;
 

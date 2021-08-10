@@ -34,7 +34,7 @@ function unique(item, i, arr) {
 
 function replaceEntitiesInI18n(s) {
   return s
-    .replace(/&nbsp;/g, ' ')
+    .replace(/&nbsp;/g, '\xa0')
     .replace(/&#32;/g, ' ')
     .replace(/&rlm;/g, '\u202b')
     .replace(/&lrm;/g, '\u200e');

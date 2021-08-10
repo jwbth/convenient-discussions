@@ -9,7 +9,8 @@
  * @module worker
  */
 
-// Workaround to fix the error when trying to import unique() to CommentSkeleton.
+// Workaround to fix the error when trying to import unique() to CommentSkeleton (only in
+// development mode?).
 import { unique } from './util';
 void unique;
 

@@ -12,8 +12,7 @@ import { makeBackgroundRequest, parseCode, unknownApiErrorText } from './apiWrap
 import { parseTimestamp } from './timestamp';
 
 /**
- * Class representing a page. It contains a few properties and methods compared to
- * {@link module:Comment Comment} and {@link module:Section Section}.
+ * Class representing a wiki page (a page for which the `wgIsArticle` config value is `true`).
  *
  * @module Page
  */

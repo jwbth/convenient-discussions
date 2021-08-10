@@ -465,7 +465,6 @@ export default class Comment extends CommentSkeleton {
     this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
 
     this.cleanUpSignature();
-
     this.signatureElement.remove();
 
     return pagesToCheckExistence;
@@ -1771,7 +1770,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     const $diff = $(wrapDiffBody(body));
-    let currentLineNumbers = [];
+    const currentLineNumbers = [];
     let cleanDiffBody = '';
     $diff.find('tr').each((i, tr) => {
       const $tr = $(tr);

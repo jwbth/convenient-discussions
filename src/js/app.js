@@ -687,7 +687,7 @@ async function app() {
    * @function generateCommentAnchor
    * @memberof module:cd~convenientDiscussions.util
    */
-   cd.util.generateCommentAnchor = generateCommentAnchor;
+  cd.util.generateCommentAnchor = generateCommentAnchor;
 
   /**
    * @see module:timestamp.parseCommentAnchor

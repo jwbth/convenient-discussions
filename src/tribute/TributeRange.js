@@ -269,7 +269,7 @@ class TributeRange {
                     currentTriggerSnippet = currentTriggerSnippet.trim()
                 }
 
-                regex = allowSpaces ? /[^\S ]/g : /[\xA0\s]/g
+                regex = allowSpaces ? /[^\S ]/g : /\s/g
 
                 this.tribute.hasTrailingSpace = regex.test(currentTriggerSnippet)
             }

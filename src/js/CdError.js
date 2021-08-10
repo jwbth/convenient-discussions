@@ -4,6 +4,11 @@
  * @module CdError
  */
 export default class CdError extends Error {
+  /**
+   * Create a custom error.
+   *
+   * @param {object} data
+   */
   constructor(data) {
     let message;
     if (data) {

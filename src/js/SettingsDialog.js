@@ -427,7 +427,6 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       selected: settings.showContribsLink,
       label: cd.s('sd-showcontribslink'),
       classes: ['cd-setting-indented'],
-      disabled: !settings.reformatComments,
     });
 
     [this.showToolbarField, this.showToolbarCheckbox] = createCheckboxField({
@@ -500,7 +499,6 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
     [this.useTemplateDataField, this.useTemplateDataCheckbox] = createCheckboxField({
       value: 'useTemplateData',
       selected: settings.useTemplateData,
-      disabled: !settings.autocompleteTypes.includes('templates'),
       label: cd.s('sd-usetemplatedata'),
       help: cd.s('sd-usetemplatedata-help'),
     });

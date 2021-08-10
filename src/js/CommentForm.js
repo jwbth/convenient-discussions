@@ -3304,13 +3304,13 @@ export default class CommentForm {
       $('#ca-watch')
         .attr('id', 'ca-unwatch')
         .find('a')
-        .attr('href', mw.util.getUrl(cd.g.PAGE.name, { action: 'unwatch' }));
+        .attr('href', cd.g.PAGE.getUrl({ action: 'unwatch' }));
     }
     if (!this.watchCheckbox.isSelected() && $('#ca-unwatch').length) {
       $('#ca-unwatch')
         .attr('id', 'ca-watch')
         .find('a')
-        .attr('href', mw.util.getUrl(cd.g.PAGE.name, { action: 'watch' }));
+        .attr('href', cd.g.PAGE.getUrl({ action: 'watch' }));
     }
 
     if (!doDelete) {
