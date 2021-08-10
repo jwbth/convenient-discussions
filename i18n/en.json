@@ -218,6 +218,7 @@
   "deadanchor-comment-exactmatch": "Looks like the comment has been archived. [[$1|See archived comment]] (or [$2 search in the archive]).",
   "deadanchor-comment-inexactmatch": "Looks like the comment has been archived. [$1 Search in the archive].",
   "deadanchor-comment-notfound": "[$1 Searching for it in the archive] also did not return any results. It may have been removed or re-signed.",
+  "deadanchor-comment-previous": "[[$1|The previous comment from this user by time]].",
   "deadanchor-search-gotocomment": "jump to comment",
 
   "restore-restored-title": "Session restored",

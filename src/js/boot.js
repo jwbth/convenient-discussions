@@ -1472,29 +1472,62 @@ export async function confirmDesktopNotifications() {
 }
 
 /**
+ * Find the previous comment by time by the specified author within a 1-day window.
+ *
+ * @param {string} anchor
+ * @param {Date} date
+ * @param {string} author
+ * @returns {Comment}
+ * @private
+ */
+function findPreviousCommentByTime(anchor, date, author) {
+  return cd.comments
+    .filter((comment) => (
+      comment.author.name === author &&
+      comment.date &&
+      comment.date < date &&
+      comment.date.getTime() > date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24
+    ))
+    .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
+    .slice(-1)[0];
+}
+
+/**
  * _For internal use._ Show a message at the top of the page that a section/comment was not found, a
  * link to search in the archive, and a link to the section/comment if it was found automatically.
  *
  * @param {string} decodedFragment Decoded fragment.
- * @param {Date} date Comment date, if there is a comment anchor in the fragment.
+ * @param {Date} [date] Comment date, if there is a comment anchor in the fragment.
+ * @param {string} [author] Comment author, if there is a comment anchor in the fragment.
  */
-export async function addNotFoundMessage(decodedFragment, date) {
+export async function addNotFoundMessage(decodedFragment, date, author) {
   let label;
+  let previousCommentByTimeText;
   let sectionName;
   if (date) {
-    label = cd.s('deadanchor-comment-lead')
+    label = cd.sParse('deadanchor-comment-lead');
+    const previousCommentByTime = findPreviousCommentByTime(decodedFragment, date, author);
+    if (previousCommentByTime) {
+      previousCommentByTimeText = cd.sParse(
+        'deadanchor-comment-previous',
+        '#' + previousCommentByTime.anchor
+      )
+        // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
+        .replace(cd.g.ARTICLE_PATH_REGEXP, '$1');
+      label += ' ' + previousCommentByTimeText;
+    }
   } else {
     sectionName = underlinesToSpaces(decodedFragment);
-    label = cd.s('deadanchor-section-lead', sectionName);
+    label = cd.sParse('deadanchor-section-lead', sectionName);
   }
   if (cd.g.PAGE.canHaveArchives()) {
     label += ' ';
 
     let sectionNameDotDecoded;
     if (date) {
-      label += cd.s('deadanchor-comment-finding');
+      label += cd.sParse('deadanchor-comment-finding');
     } else {
-      label += cd.s('deadanchor-section-finding');
+      label += cd.sParse('deadanchor-section-finding');
       try {
         sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'));
       } catch (e) {
@@ -1543,21 +1576,19 @@ export async function addNotFoundMessage(decodedFragment, date) {
       searchUrl = cd.g.SERVER + searchUrl;
 
       if (results.length === 0) {
-        let label;
-        if (date) {
-          label = (
-            cd.s('deadanchor-comment-lead') +
+        const label = date ?
+          (
+            cd.sParse('deadanchor-comment-lead') +
             ' ' +
-            cd.s('deadanchor-comment-notfound', searchUrl)
-          );
-          } else {
-          label = (
-            cd.s('deadanchor-section-lead', sectionName) +
+            cd.sParse('deadanchor-comment-notfound', searchUrl) +
+            (previousCommentByTimeText ? ' ' + previousCommentByTimeText : '')
+          ) :
+          (
+            cd.sParse('deadanchor-section-lead', sectionName) +
             ' ' +
-            cd.s('deadanchor-section-notfound', searchUrl)
+            cd.sParse('deadanchor-section-notfound', searchUrl)
           );
-        }
-        message.setLabel(label);
+        message.setLabel(wrap(label));
       } else {
         let pageTitle;
 
@@ -1592,26 +1623,22 @@ export async function addNotFoundMessage(decodedFragment, date) {
 
         let label;
         if (pageTitle) {
-          if (date) {
-            label = cd.sParse(
+          label = date ?
+            cd.sParse(
               'deadanchor-comment-exactmatch',
               pageTitle + '#' + decodedFragment,
               searchUrl
-            );
-          } else {
-            label = cd.sParse(
+            ) :
+            cd.sParse(
               'deadanchor-section-exactmatch',
               sectionNameFound,
               pageTitle + '#' + sectionNameFound,
               searchUrl
             );
-          }
         } else {
-          if (date) {
-            label = cd.sParse('deadanchor-comment-inexactmatch', searchUrl);
-          } else {
-            label = cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
-          }
+          label = date ?
+            cd.sParse('deadanchor-comment-inexactmatch', searchUrl) :
+            cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
         }
 
         message.setLabel(wrap(label));
@@ -1622,7 +1649,7 @@ export async function addNotFoundMessage(decodedFragment, date) {
   const message = new OO.ui.MessageWidget({
     type: 'warning',
     inline: true,
-    label,
+    label: wrap(label),
     classes: ['cd-message-notFound'],
   });
   cd.g.$root.prepend(message.$element);

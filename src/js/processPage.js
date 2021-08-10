@@ -675,7 +675,7 @@ async function processFragment(passedData) {
       $(`*[id="${escapedFragment}"]`).length
     );
     if (!isTargetFound) {
-      await addNotFoundMessage(decodedFragment, date);
+      await addNotFoundMessage(decodedFragment, date, author);
     }
   }
 }
