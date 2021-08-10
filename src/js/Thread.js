@@ -11,11 +11,14 @@ import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   defined,
+  flat,
+  getCommonGender,
   getExtendedRect,
   getFromLocalStorage,
   getVisibilityByRects,
   removeFromArrayIfPresent,
   saveToLocalStorage,
+  unique,
 } from './util';
 import { getUserGenders } from './apiWrappers';
 import { handleScroll } from './eventHandlers';
@@ -143,9 +146,12 @@ function restoreCollapsedThreads() {
   });
   let getUserGendersPromise;
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
-    getUserGendersPromise = getUserGenders(comments.map((comment) => comment.author));
+    const usersInThreads = flat(comments.map((comment) => comment.thread.getUsersInThread()));
+    getUserGendersPromise = getUserGenders(usersInThreads);
   }
-  comments.forEach((comment) => comment.thread.collapse(getUserGendersPromise));
+  comments.forEach((comment) => {
+    comment.thread.collapse(getUserGendersPromise)
+  });
 
   if (mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')) {
     saveToLocalStorage('collapsedThreads', dataAllPages);
@@ -467,6 +473,17 @@ export default class Thread {
   }
 
   /**
+   * Get a list of users in the thread.
+   *
+   * @returns {User[]}
+   */
+  getUsersInThread() {
+    return [this.rootComment, ...this.rootComment.getChildren(true)]
+      .map((comment) => comment.author)
+      .filter(unique);
+  }
+
+  /**
    * Collapse the thread.
    *
    * @param {Promise} [getUserGendersPromise]
@@ -528,14 +545,32 @@ export default class Thread {
       element: expandButton,
       labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
     });
-    const author = this.rootComment.author;
+    const usersInThread = this.getUsersInThread();
+    const userList = usersInThread.map((author) => author.name).join(cd.mws('comma-separator'));
     const setLabel = (genderless) => {
-      let messageName = genderless ? 'thread-expand-genderless' : 'thread-expand';
-      button.setLabel(cd.s(messageName, this.commentCount, author.name, author));
+      let label;
+      if (genderless) {
+        label = cd.s(
+          'thread-expand-label-genderless',
+          this.commentCount,
+          usersInThread.length,
+          userList
+        );
+      } else {
+        const commonGender = getCommonGender(usersInThread);
+        label = cd.s(
+          'thread-expand-label',
+          this.commentCount,
+          usersInThread.length,
+          userList,
+          commonGender
+        );
+      }
+      button.setLabel(label);
       button.element.classList.remove('cd-thread-button-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
-      (getUserGendersPromise || getUserGenders([author])).then(setLabel, () => {
+      (getUserGendersPromise || getUserGenders(usersInThread)).then(setLabel, () => {
         // Couldn't get the gender, use the genderless version.
         setLabel(true);
       });

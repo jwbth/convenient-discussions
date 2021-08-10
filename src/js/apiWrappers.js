@@ -12,7 +12,7 @@ import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
 import { createApi } from './boot';
-import { defined, handleApiReject } from './util';
+import { defined, handleApiReject, unique } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
 
 let cachedUserInfoRequest;
@@ -350,6 +350,7 @@ export async function setGlobalOption(name, value) {
 export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender() && user.isRegistered())
+    .filter(unique)
     .map((user) => user.name);
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextUsers;

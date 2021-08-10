@@ -950,3 +950,23 @@ export function addCss(text) {
   document.head.appendChild(element);
   return element.sheet;
 }
+
+/**
+ * Get the gender that is common for a list of users (`'unknown'` is treated as `'male'`) or
+ * `'unknown'` if there is no such.
+ *
+ * @param {User[]} users
+ * @returns {string}
+ */
+export function getCommonGender(users) {
+  const genders = users.map((user) => user.getGender());
+  let commonGender;
+  if (genders.every((gender) => gender === 'female')) {
+    commonGender = 'female';
+  } else if (genders.every((gender) => gender !== 'female')) {
+    commonGender = 'male';
+  } else {
+    commonGender = 'unknown';
+  }
+  return commonGender;
+}

@@ -24,7 +24,6 @@ import {
   getFromLocalStorage,
   keepWorkerSafeValues,
   saveToLocalStorage,
-  unique,
   wrap,
 } from './util';
 import { getUserGenders } from './apiWrappers';
@@ -794,10 +793,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
   });
 
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
-    const authors = newComments
-      .map((comment) => comment.author)
-      .filter(unique);
-    await getUserGenders(authors, true);
+    await getUserGenders(newComments.map((comment) => comment.author), true);
   }
 
   if (!isPageStillAtRevision(currentRevisionId)) return;

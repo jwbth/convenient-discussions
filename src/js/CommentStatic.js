@@ -8,6 +8,7 @@ import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
 import {
+  getCommonGender,
   getExtendedRect,
   isPageOverlayOn,
   reorderArray,
@@ -61,19 +62,11 @@ function addNewCommentsNote(comments, parent, type, newCommentIds) {
   const authors = commentsWithChildren
     .map((comment) => comment.author)
     .filter(unique);
-  const genders = authors.map((author) => author.getGender());
-  let commonGender;
-  if (genders.every((gender) => gender === 'female')) {
-    commonGender = 'female';
-  } else if (genders.every((gender) => gender !== 'female')) {
-    commonGender = 'male';
-  } else {
-    commonGender = 'unknown';
-  }
-  const userList = authors.map((user) => user.name).join(', ');
+  const authorList = authors.map((author) => author.name).join(cd.mws('comma-separator'));
+  const commonGender = getCommonGender(authors);
   const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
   const button = new OO.ui.ButtonWidget({
-    label: cd.s(stringName, commentsWithChildren.length, authors.length, userList, commonGender),
+    label: cd.s(stringName, commentsWithChildren.length, authors.length, authorList, commonGender),
     framed: false,
     classes: ['cd-button-ooui', 'cd-thread-button'],
   });
