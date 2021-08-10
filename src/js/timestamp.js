@@ -738,7 +738,9 @@ export function formatDateImproved(date, addTimezone = false) {
  * @returns {string}
  */
 export function formatDateRelative(date) {
-  if (date.getTime() > Date.now() - cd.g.MILLISECONDS_IN_MINUTE) {
+  const now = Date.now();
+  const ms = date.getTime();
+  if (ms < now && ms > now - cd.g.MILLISECONDS_IN_MINUTE) {
     return cd.s('comment-timestamp-lessthanminute');
   }
 
