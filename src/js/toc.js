@@ -335,7 +335,7 @@ export default {
       const $sectionLink = typeof sectionOrAnchor === 'string' ?
         cd.g.$toc
           .find(`.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`) :
-        sectionOrAnchor.getTocItem().$link;
+        sectionOrAnchor.getTocItem()?.$link;
 
       // Should never be the case
       if (!$sectionLink?.length) return;
