@@ -2189,9 +2189,9 @@ export default class Comment extends CommentSkeleton {
       return this.editThatAdded;
     }
 
-    // Search for the edit in the range of 2 minutes before to 2 minutes later.
-    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 2).toISOString();
-    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 2).toISOString();
+    // Search for the edit in the range of 0 to 5 minutes later.
+    const rvstart = this.date.toISOString();
+    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 5).toISOString();
     const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
       rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
       rvdir: 'newer',
