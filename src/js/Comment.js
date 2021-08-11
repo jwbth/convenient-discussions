@@ -890,7 +890,7 @@ export default class Comment extends CommentSkeleton {
     bottom,
     floatingRects = cd.g.floatingElements.map(getExtendedRect)
   ) {
-    // Check if the comment offset intersect the offset of floating elements on the page. (Only
+    // Check if the comment offset intersects the offset of floating elements on the page. (Only
     // then we would need altering comment styles to get the correct offset which is an expensive
     // operation.)
     let intersectsFloatingCount = 0;
@@ -924,7 +924,7 @@ export default class Comment extends CommentSkeleton {
       // If the comment intersects more than one floating block, we better keep `overflow: hidden`
       // to avoid bugs like where there are two floating blocks to the right with different
       // leftmost offsets and the layer is more narrow than the comment.
-      if (intersectsFloatingCount === 1) {
+      if (intersectsFloatingCount <= 1) {
         this.highlightables.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
         });
