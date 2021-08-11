@@ -98,11 +98,19 @@ export default {
     [
       'Closed',
       'Closedh',
+      'Discussion top',
+      'Discussion-top',
     ],
     [
       'End closed',
       'Closedf',
       'Ecs',
+      'Discussion bottom',
+      'Discussion-bottom',
     ],
+  ],
+  closedDiscussionClasses: [
+    'archived',
+    'boilerplate',
   ],
 };
