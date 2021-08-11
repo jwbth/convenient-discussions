@@ -172,6 +172,7 @@
   "cf-notice-editconflict-retrying": "Trying again…",
 
   "cf-error-getpagecode": "Couldn't get the page code.",
+  "cf-error-closed": "The discussion is closed.",
   "cf-error-findplace": "Couldn't find the proper place in the code to insert the comment into.",
   "cf-error-commentlinks-commentnotfound": "Couldn't find the comment with ID $1, linked from your comment, on the page.",
   "cf-error-numberedlist": "It's impossible to form the comment correctly without distorting the numbered list markup.",

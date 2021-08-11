@@ -2103,6 +2103,9 @@ export default class CommentForm {
               cd.sParse('cf-error-numberedlist-table')
             );
             break;
+          case 'closed':
+            message = cd.sParse('cf-error-closed');
+            break;
           case 'findPlace':
             message = cd.sParse('cf-error-findplace');
             break;

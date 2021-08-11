@@ -3244,6 +3244,13 @@ export default class Comment extends CommentSkeleton {
       });
       const adjustedChunkCodeAfter = adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
 
+      if (/ +\x02/.test(adjustedChunkCodeAfter)) {
+        throw new CdError({
+          type: 'parse',
+          code: 'closed',
+        });
+      }
+
       const anySignaturePattern = (
         '^([^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
