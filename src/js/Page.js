@@ -61,7 +61,9 @@ export default class Page {
    * @returns {string}
    */
   getUrl(parameters) {
-    return mw.util.getUrl(this.name, parameters);
+    // Use cd.g.PAGE_NAME instead of this.name to show the name in correct gender for pages in user
+    // namespaces at least if we are on one of those pages.
+    return mw.util.getUrl(this === cd.g.PAGE ? cd.g.PAGE_NAME : this.name, parameters);
   }
 
   /**

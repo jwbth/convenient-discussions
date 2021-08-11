@@ -76,7 +76,7 @@ export async function showCopyLinkDialog(object, e) {
 
   const isComment = object instanceof Comment;
   const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
-  const wikilink = `[[${cd.g.PAGE.name}#${anchor}]]`;
+  const wikilink = `[[${cd.g.PAGE_NAME}#${anchor}]]`;
   const link = object.getUrl();
 
   /**

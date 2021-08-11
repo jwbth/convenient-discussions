@@ -646,15 +646,15 @@ function showDesktopNotification(comments) {
           comment.author.name,
           comment.author,
           where,
-          cd.g.PAGE.name
+          cd.g.PAGE_NAME
         );
       } else {
         body = cd.s(
           'notification-insection-desktop',
           comment.author.name,
           comment.author,
-          comment.section?.headline,
-          cd.g.PAGE.name
+          comment.section.headline,
+          cd.g.PAGE_NAME
         );
       }
     } else {
@@ -683,7 +683,7 @@ function showDesktopNotification(comments) {
         'notification-newcomments-desktop',
         filteredComments.length,
         where,
-        cd.g.PAGE.name,
+        cd.g.PAGE_NAME,
         mayBeInteresting
       );
     }
