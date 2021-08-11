@@ -38,8 +38,6 @@ let $wrapperRegularPrototype;
 let $wrapperInterestingPrototype;
 let switchInterestingButton;
 
-let isProcessDiffFirstRun = true;
-
 /**
  * Prepare variables.
  *
@@ -591,11 +589,6 @@ function processHistory($content) {
  * @private
  */
 async function processDiff() {
-  if (!isProcessDiffFirstRun) return;
-
-  initTimestampParsingTools('user');
-  if (cd.g.UI_TIMEZONE === null) return;
-
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)
     .forEach((area) => {
@@ -668,8 +661,6 @@ async function processDiff() {
    * @type {module:cd~convenientDiscussions}
    */
   mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
-
-  isProcessDiffFirstRun = false;
 }
 
 /**
@@ -711,6 +702,9 @@ export default async function commentLinks(siteDataRequests) {
   }
 
   if (cd.g.IS_DIFF_PAGE) {
+    initTimestampParsingTools('user');
+    if (cd.g.UI_TIMEZONE === null) return;
+
     mw.hook('convenientDiscussions.pageReady').add(processDiff);
   } else {
     // Hook on wikipage.content to make the code work with the watchlist auto-update feature.

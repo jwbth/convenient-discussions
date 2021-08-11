@@ -24,6 +24,7 @@ import {
   finishLoading,
   handleWikipageContentHookFirings,
   init,
+  isCurrentRevision,
   reloadPage,
   restoreCommentForms,
   saveSession,
@@ -56,6 +57,11 @@ import { parseCommentAnchor, resetCommentAnchors } from './timestamp';
  * @private
  */
 async function prepare(passedData, siteDataRequests) {
+  // RevisionSlider replaces the #mw-content-text element.
+  if (!cd.g.$content.get(0).parentNode) {
+    cd.g.$content = $('#mw-content-text');
+  }
+
   if (passedData.html) {
     const div = document.createElement('div');
     div.innerHTML = passedData.html;
@@ -858,11 +864,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
-  cd.g.isPageActive = (
-    articleId &&
-    !cd.g.PAGE.isArchivePage() &&
-    mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')
-  );
+  cd.g.isPageActive = articleId && !cd.g.PAGE.isArchivePage() && isCurrentRevision();
 
   let watchedSectionsRequest;
   let visitsRequest;
@@ -954,7 +956,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     }
 
     if (cd.g.isPageActive) {
-      if (cd.g.isPageFirstParsed) {
+      // Can be mounted not only on first parse, if using RevisionSlider, for example.
+      if (!navPanel.isMounted()) {
         navPanel.mount();
       } else {
         navPanel.reset();

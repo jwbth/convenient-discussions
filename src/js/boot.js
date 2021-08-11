@@ -957,6 +957,15 @@ export function isPageLoading() {
 }
 
 /**
+ * Is the displayed revision the current (last known) revision of the page.
+ *
+ * @returns {boolean}
+ */
+export function isCurrentRevision() {
+  return mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId');
+}
+
+/**
  * Reload the page via Ajax.
  *
  * @param {object} [passedData={}] Data passed from the previous page state.
@@ -982,8 +991,11 @@ export async function reloadPage(passedData = {}) {
     Comment.resetLayers();
   }
 
-  // In case checkboxes were changed programmatically.
-  saveSession();
+  // A check in light of the existence of RevisionSlider.
+  if (isCurrentRevision()) {
+    // In case checkboxes were changed programmatically.
+    saveSession();
+  }
 
   if (!passedData.commentAnchor && !passedData.sectionAnchor) {
     saveScrollPosition();
@@ -1002,18 +1014,29 @@ export async function reloadPage(passedData = {}) {
     console.warn(e);
   });
 
-  let parseData;
-  try {
-    parseData = await cd.g.PAGE.parse(null, false, true);
-  } catch (e) {
-    finishLoading();
-    if (passedData.wasCommentFormSubmitted) {
-      throw e;
-    } else {
-      mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-      console.warn(e);
-      return;
+  if (!passedData.isPageReloadedExternally) {
+    let parseData;
+    try {
+      parseData = await cd.g.PAGE.parse(null, false, true);
+    } catch (e) {
+      finishLoading();
+      if (passedData.wasCommentFormSubmitted) {
+        throw e;
+      } else {
+        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
+        console.warn(e);
+        return;
+      }
     }
+
+    passedData.html = parseData.text;
+    mw.config.set({
+      wgRevisionId: parseData.revid,
+      wgCurRevisionId: parseData.revid,
+    });
+    mw.loader.load(parseData.modules);
+    mw.loader.load(parseData.modulestyles);
+    mw.config.set(parseData.jsconfigvars);
   }
 
   LiveTimestamp.reset();
@@ -1024,15 +1047,6 @@ export async function reloadPage(passedData = {}) {
   });
 
   passedData.unseenCommentAnchors = getUnseenCommentAnchors();
-
-  passedData.html = parseData.text;
-  mw.config.set({
-    wgRevisionId: parseData.revid,
-    wgCurRevisionId: parseData.revid,
-  });
-  mw.loader.load(parseData.modules);
-  mw.loader.load(parseData.modulestyles);
-  mw.config.set(parseData.jsconfigvars);
 
   // Remove the fragment
   history.replaceState(history.state, '', location.pathname + location.search);
@@ -1223,7 +1237,7 @@ function restoreCommentFormsFromData(commentFormsData) {
  */
 export function restoreCommentForms(isPageReloadedExternally) {
   if (cd.g.isFirstRun || isPageReloadedExternally) {
-    // This is needed when the page is reload externally.
+    // This is needed when the page is reloaded externally.
     cd.commentForms = [];
 
     const dataAllPages = cleanUpSessions(getFromLocalStorage('commentForms'));
