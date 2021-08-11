@@ -1212,14 +1212,19 @@ export default class Section extends SectionSkeleton {
   /**
    * Get a link to the section with Unicode sequences decoded.
    *
+   * @param {boolean} permanent Get a permanent URL.
    * @returns {string}
    */
-  getUrl() {
-    if (!this.cachedUrl) {
-      this.cachedUrl = getUrlWithAnchor(this.anchor);
-    }
+  getUrl(permanent) {
+    if (permanent) {
+      return getUrlWithAnchor(this.anchor, true);
+    } else {
+      if (!this.cachedUrl) {
+        this.cachedUrl = getUrlWithAnchor(this.anchor);
+      }
 
-    return this.cachedUrl;
+      return this.cachedUrl;
+    }
   }
 }
 

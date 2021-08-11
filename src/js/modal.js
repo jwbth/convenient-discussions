@@ -78,6 +78,7 @@ export async function showCopyLinkDialog(object, e) {
   const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
   const wikilink = `[[${cd.g.PAGE_NAME}#${anchor}]]`;
   const link = object.getUrl();
+  const permanentLink = object.getUrl(true);
 
   /**
    * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
@@ -207,6 +208,13 @@ export async function showCopyLinkDialog(object, e) {
     help: helpOnlyCd,
   });
 
+  const permanentLinkField = createCopyActionField({
+    value: permanentLink,
+    label: cd.s('cld-permanentlink'),
+    copyCallback,
+    help: helpOnlyCd,
+  });
+
   // Workaround, because we don't want the first input to be focused on click almost anywhere in
   // the dialog, which happens because the whole message is wrapped in the <label> element.
   const $dummyInput = $('<input>').addClass('cd-hidden');
@@ -219,6 +227,7 @@ export async function showCopyLinkDialog(object, e) {
     wikilinkField.$element,
     currentPageWikilinkField.$element,
     linkField.$element,
+    permanentLinkField.$element,
   ]);
   $message.children().first().prepend($dummyInput);
 

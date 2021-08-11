@@ -79,6 +79,7 @@
   "cld-help-notonlycd": "An anchor will be added automatically to the linked comment, so the link <em>will</em> work for everybody.",
   "cld-currentpagewikilink": "Wikilink from the same page",
   "cld-link": "Regular link",
+  "cld-permanentlink": "Permanent link",
   "cld-close": "Close",
 
   "copylink-copied": "The link has been copied to the clipboard.",
