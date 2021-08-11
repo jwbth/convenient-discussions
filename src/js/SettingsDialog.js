@@ -643,11 +643,17 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
    * Update the control states.
    */
   updateStates() {
+    this.showContribsLinkCheckbox.setDisabled(!this.reformatCommentsCheckbox.isSelected());
+
     const useTemplateDataCheckboxDisabled = !this.autocompleteTypesMultiselect
       .findItemFromData('templates')
       .isSelected();
     this.useTemplateDataCheckbox.setDisabled(useTemplateDataCheckboxDisabled);
-    this.showContribsLinkCheckbox.setDisabled(!this.reformatCommentsCheckbox.isSelected());
+
+    const hideTimezoneCheckboxDisabled = (
+      this.timestampFormatSelect.findSelectedItem()?.getData() === 'relative'
+    );
+    this.hideTimezoneCheckbox.setDisabled(hideTimezoneCheckboxDisabled);
 
     const settings = this.collectSettings();
     const save = !areObjectsEqual(settings, this.settings, true);
