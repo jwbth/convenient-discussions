@@ -521,7 +521,7 @@ export default {
    *
    * @param {string} anchor
    * @param {boolean} impreciseDate Comment date is inferred from the edit date (but these may be
-   *   different). If `true`, we allow the time on the page to be 1-5 minutes less than the edit
+   *   different). If `true`, we allow the time on the page to be 1-3 minutes less than the edit
    *   time.
    * @returns {?Comment}
    * @memberof module:Comment
@@ -536,7 +536,7 @@ export default {
     let comment = findByAnchor(anchor);
     if (!comment && impreciseDate) {
       const { date, author } = parseCommentAnchor(anchor) || {};
-      for (let gap = 1; !comment && gap <= 5; gap++) {
+      for (let gap = 1; !comment && gap <= 3; gap++) {
         const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
         comment = findByAnchor(generateCommentAnchor(dateToFind, author));
       }
@@ -664,12 +664,7 @@ export default {
    * @memberof module:Comment
    */
   reformatTimestamps() {
-    if (
-      (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
-      cd.settings.timestampFormat !== 'default' ||
-      mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
-      cd.settings.hideTimezone
-    ) {
+    if (cd.g.ARE_TIMESTAMPS_ALTERED) {
       cd.comments.forEach((comment) => {
         comment.reformatTimestamp();
       });
