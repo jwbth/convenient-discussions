@@ -341,7 +341,8 @@ async function go() {
       // method, there won't be "comment" links for edits on pages that list revisions such as the
       // watchlist.
       cd.g.$content.find('.cd-talkPage').length
-    )
+    ) &&
+    !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
   );
   if (mw.config.get('wgIsArticle')) {
     if (!cd.g.isDisabledInQuery && (cd.g.isEnabledInQuery || isPageEligible)) {
