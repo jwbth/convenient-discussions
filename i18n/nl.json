@@ -2,7 +2,8 @@
 	"@metadata": {
 		"authors": [
 			"Dark Loon",
-			"Mainframe98"
+			"Mainframe98",
+			"McDutchie"
 		]
 	},
 	"cm-thank": "Bedanken",
@@ -17,7 +18,7 @@
 	"comment-changed-refresh": "Vernieuw om de wijzigingen te bekijken",
 	"comment-changed-diff": "Wijz",
 	"comment-changed-history": "Bewerkingsgeschiedenis",
-	"section-reply": "Reageren",
+	"section-reply": "Reageren op sectie",
 	"cld-close": "Sluiten",
 	"copylink-copied": "De koppeling is naar het klembord gekopieerd.",
 	"copylink-error": "Kon de koppeling niet kopiëren.",
@@ -75,12 +76,12 @@
 	"navpanel-previous": "Ga naar de vorige nieuwe reactie",
 	"navpanel-next": "Ga naar de volgende nieuwe reactie",
 	"navpanel-firstunseen": "Ga naar de eerste ongelezen reactie",
-	"navpanel-newcomments-count": "$1 nieuwe {{plural:$1|reactie|reacties}}. Klik op de pagina bij te werken",
+	"navpanel-newcomments-count": "$1 nieuwe {{plural:$1|reactie|reacties}}.",
 	"navpanel-newcomments-unknowndate": "onbekende datum",
 	"toc-more": "nog $1",
 	"pagenav-toc": "Inhoudsopgave",
 	"pagenav-back": "Terug",
-	"notification-reload": "<span class=\"cd-notification-reloadPage\">[[$1|De pagina opnieuw laden]]</span>$2.",
+	"notification-reload": "Klik om de pagina opnieuw te laden$1.",
 	"notification-part-onthispage": "op deze pagina",
 	"sd-save": "Opslaan",
 	"sd-reload": "Herladen",
@@ -94,7 +95,7 @@
 	"sd-notificationsblacklist": "Stuur geen meldingen over reacties van deze gebruikers",
 	"sd-notificationsblacklist-multiselect-placeholder": "Een gebruiker toevoegen",
 	"sd-signatureprefix": "Handtekeningsvoorvoegsel",
-	"sd-signatureprefix-help": "Tekst die toegevoegd wordt voor de handtekening.",
+	"sd-signatureprefix-help": "Tekst die vóór de handtekening wordt toegevoegd, <em>met</em> een spatie aan het begin indien nodig.",
 	"ewsd-save": "Opslaan",
 	"msd-title": "Onderwerp verplaatsen",
 	"msd-move": "Hernoemen",
