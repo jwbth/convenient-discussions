@@ -94,4 +94,15 @@ export default {
     'Clr',
     '-',
   ],
+  closedDiscussionTemplates: [
+    [
+      'Closed',
+      'Closedh',
+    ],
+    [
+      'End closed',
+      'Closedf',
+      'Ecs',
+    ],
+  ],
 };
