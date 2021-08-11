@@ -715,10 +715,30 @@ export default class Parser {
       // This is partially duplicating the code in Parser#filterParts - see the comment "Cases
       // like..." there. But these codes cover intersecting but different cases (say, only this code
       // covers cases when there is only one comment part eventually (a list item, for example) and
-      // only that code covers comments indented with ":").
+      // only that code fully covers comments indented with ":").
       const isIntro = (
         lastStep === 'back' &&
-        ['OL', 'UL'].includes(previousPart.node.tagName) &&
+        (
+          ['OL', 'UL'].includes(previousPart.node.tagName) ||
+
+          /*
+            Including DLs is dangerous because comments like this may be broken:
+
+              : Comment beginning.
+              <blockquote>Some quote.</blockquote>
+              : Comment ending. [signature]
+
+            But it's important that we do it some way because of the issue with discussions like
+            https://ru.wikipedia.org/wiki/Обсуждение:Иванов,_Валентин_Дмитриевич#Источники where
+            somebody responds in the middle of someone's comment, which is a not so uncommon
+            pattern.
+           */
+          (
+            previousPart.node.tagName === 'DL' &&
+            previousPart.node.parentNode !== cd.g.rootElement &&
+            previousPart.node.parentNode.parentNode !== cd.g.rootElement
+          )
+        ) &&
 
         // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
         !(
