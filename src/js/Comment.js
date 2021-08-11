@@ -691,16 +691,9 @@ export default class Comment extends CommentSkeleton {
   reformatTimestamp() {
     if (!this.date) return;
 
-    const areLanguagesEqual = mw.config.get('wgContentLanguage') === cd.g.USER_LANGUAGE;
-
     let newTimestamp;
     let title = '';
-    if (
-      cd.settings.timestampFormat !== 'default' ||
-      (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
-      !areLanguagesEqual ||
-      cd.settings.hideTimezone
-    ) {
+    if (cd.g.ARE_TIMESTAMPS_ALTERED) {
       newTimestamp = formatDate(this.date, !cd.settings.hideTimezone);
     }
 
@@ -897,7 +890,7 @@ export default class Comment extends CommentSkeleton {
     bottom,
     floatingRects = cd.g.floatingElements.map(getExtendedRect)
   ) {
-    // Check if the comment offset intersect the offset of floating elements on the page. (Only
+    // Check if the comment offset intersects the offset of floating elements on the page. (Only
     // then we would need altering comment styles to get the correct offset which is an expensive
     // operation.)
     let intersectsFloatingCount = 0;
@@ -931,7 +924,7 @@ export default class Comment extends CommentSkeleton {
       // If the comment intersects more than one floating block, we better keep `overflow: hidden`
       // to avoid bugs like where there are two floating blocks to the right with different
       // leftmost offsets and the layer is more narrow than the comment.
-      if (intersectsFloatingCount === 1) {
+      if (intersectsFloatingCount <= 1) {
         this.highlightables.forEach((el, i) => {
           el.style.overflow = initialOverflows[i];
         });
@@ -2189,9 +2182,11 @@ export default class Comment extends CommentSkeleton {
       return this.editThatAdded;
     }
 
-    // Search for the edit in the range of 0 to 5 minutes later.
-    const rvstart = this.date.toISOString();
-    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 5).toISOString();
+    // Search for the edit in the range of 10 minutes before (in case the comment was edited with
+    // timestamp replaced) to 3 minutes later (rare occasion where the diff timestamp is newer than
+    // the comment timestamp).
+    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString();
+    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString();
     const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
       rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
       rvdir: 'newer',
@@ -2211,8 +2206,14 @@ export default class Comment extends CommentSkeleton {
     }).catch(handleApiReject));
 
     const compareResps = await Promise.all(compareRequests);
+
+    // Only analyze added lines.
     const regexp = /<td colspan="2" class="diff-empty">&#160;<\/td>\s*<td class="diff-marker">\+<\/td>\s*<td class="diff-addedline"><div>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
-    const commentFullText = this.getText(false) + ' ' + this.$signature.get(0).innerText;
+
+    const commentEnding = cd.g.ARE_TIMESTAMPS_ALTERED ?
+      this.timestamp :
+      this.$signature.get(0).innerText;
+    const commentFullText = this.getText(false) + ' ' + commentEnding;
     const matches = [];
     for (let i = 0; i < compareResps.length; i++) {
       const diffBody = compareResps[i]?.compare?.body;
@@ -2239,8 +2240,7 @@ export default class Comment extends CommentSkeleton {
       revision.diffBody = diffBody;
       const timestamp = new Date(revision.timestamp).getTime();
 
-      // Add 30 seconds to get better date proximity results since we don't see the seconds
-      // number.
+      // Add 30 seconds to get better date proximity results since we don't see the seconds number.
       const thisCommentTimestamp = this.date.getTime() + (30 * 1000);
 
       const dateProximity = Math.abs(thisCommentTimestamp - timestamp);
@@ -3465,14 +3465,19 @@ export default class Comment extends CommentSkeleton {
   /**
    * Get a link to the comment with Unicode sequences decoded.
    *
+   * @param {boolean} permanent Get a permanent URL.
    * @returns {string}
    */
-  getUrl() {
-    if (!this.cachedUrl) {
-      this.cachedUrl = getUrlWithAnchor(this.anchor);
-    }
+  getUrl(permanent) {
+    if (permanent) {
+      return getUrlWithAnchor(this.anchor, true);
+    } else {
+      if (!this.cachedUrl) {
+        this.cachedUrl = getUrlWithAnchor(this.anchor);
+      }
 
-    return this.cachedUrl;
+      return this.cachedUrl;
+    }
   }
 
   /**

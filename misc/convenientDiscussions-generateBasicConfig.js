@@ -77,6 +77,8 @@ mw.loader.using([
     Q11102202: 'movedTo',
     Q6537954: 'closed',
     Q12109489: 'closedEnd',
+    Q11317035: 'discussionTop',
+    Q14398501: 'discussionBottom',
     Q5841554: 'outdent',
     Q5411705: 'clear',
   };
@@ -175,10 +177,10 @@ mw.loader.using([
   );
 
   config.closedDiscussionTemplates = (
-    (titles.closed || titles.closedEnd) &&
+    (titles.closed || titles.closedEnd || titles.discussionTop || titles.discussionBottom) &&
     [
-      (titles.closed || []).map(getTitleText),
-      (titles.closedEnd || []).map(getTitleText),
+      (titles.closed || []).concat(titles.discussionTop || []).map(getTitleText),
+      (titles.closedEnd || []).concat(titles.discussionBottom || []).map(getTitleText),
     ]
   );
 

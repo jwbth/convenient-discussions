@@ -79,6 +79,7 @@
   "cld-help-notonlycd": "An anchor will be added automatically to the linked comment, so the link <em>will</em> work for everybody.",
   "cld-currentpagewikilink": "Wikilink from the same page",
   "cld-link": "Regular link",
+  "cld-permanentlink": "Permanent link",
   "cld-close": "Close",
 
   "copylink-copied": "The link has been copied to the clipboard.",
@@ -324,7 +325,7 @@
   "sd-signatureprefix-help": "Text that is added before the signature, <em>including</em> a space at the beginning if needed.",
   "sd-modifytoc": "Modify the table of contents",
   "sd-modifytoc-help": "Show new comments and sections and highlight watched sections.",
-  "sd-usebackgroundhighlighting": "Use background highlighting for new and own comments",
+  "sd-usebackgroundhighlighting": "Use background highlighting (not just colored marker) for new and own comments",
   "sd-timestampformat": "Timestamp format",
   "sd-timestampformat-radio-default": "Default (\"$1\")",
   "sd-timestampformat-radio-improved": "Improved (\"$1\", \"$2\")",

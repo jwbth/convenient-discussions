@@ -22,7 +22,7 @@ import {
 } from './util';
 import { getUserGenders } from './apiWrappers';
 import { handleScroll } from './eventHandlers';
-import { isPageLoading } from './boot';
+import { isCurrentRevision, isPageLoading } from './boot';
 
 let elementPrototypes;
 let isInited;
@@ -110,7 +110,7 @@ function getEndElement(startElement, highlightables, nextForeignElement) {
  * @private
  */
 function saveCollapsedThreads() {
-  if (mw.config.get('wgRevisionId') !== mw.config.get('wgCurRevisionId')) return;
+  if (!isCurrentRevision()) return;
 
   const collapsedThreads = cd.comments
     .filter((comment) => comment.thread?.isCollapsed)
@@ -153,7 +153,7 @@ function restoreCollapsedThreads() {
     comment.thread.collapse(getUserGendersPromise)
   });
 
-  if (mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId')) {
+  if (isCurrentRevision()) {
     saveToLocalStorage('collapsedThreads', dataAllPages);
   }
 }

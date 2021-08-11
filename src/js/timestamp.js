@@ -319,7 +319,8 @@ export function initTimestampParsingTools(language) {
   const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
 
   /**
-   * Timezone per user preferences: standard timezone name or offset in minutes.
+   * Timezone per user preferences: standard timezone name or offset in minutes. `'UTC'` is always
+   * used instead of `0`.
    *
    * @name UI_TIMEZONE
    * @type {?(string|number)}
@@ -340,6 +341,20 @@ export function initTimestampParsingTools(language) {
   cd.g.UI_TIMEZONE_OFFSET = Number(timezoneParts[1]) ?? null;
 
   areUiAndLocalTimezoneSame = cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  /**
+   * Whether comment timestamps are altered somehow.
+   *
+   * @name ARE_TIMESTAMPS_ALTERED
+   * @type {boolean}
+   * @memberof module:cd~convenientDiscussions.g
+   */
+  cd.g.ARE_TIMESTAMPS_ALTERED = (
+    (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
+    cd.settings.timestampFormat !== 'default' ||
+    mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
+    cd.settings.hideTimezone
+  );
 }
 
 /**

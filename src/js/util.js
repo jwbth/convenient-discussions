@@ -931,10 +931,15 @@ export function getVisibilityByRects(...rects) {
  * Get a decoded URL with anchor.
  *
  * @param {string} anchor
+ * @param {boolean} permanent Get a permanent URL.
  * @returns {string}
  */
-export function getUrlWithAnchor(anchor) {
-  const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl());
+export function getUrlWithAnchor(anchor, permanent) {
+  let params = {};
+  if (permanent) {
+    params.oldid = mw.config.get('wgRevisionId');
+  }
+  const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl(params));
   return `${cd.g.SERVER}${decodedPageUrl}#${anchor}`;
 }
 
