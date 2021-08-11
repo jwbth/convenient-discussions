@@ -662,6 +662,8 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
    * @param {external:OO.ui.RadioOptionWidget} option
    */
   onDesktopNotificationsSelectChange(option) {
+    if (typeof Notification === 'undefined') return;
+
     if (option.data !== 'none' && Notification.permission !== 'granted') {
       OO.ui.alert(cd.s('dn-grantpermission'));
       Notification.requestPermission((permission) => {

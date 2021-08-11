@@ -1422,6 +1422,8 @@ export async function suggestEnableCommentReformatting() {
  * the settings after they make the choice.
  */
 export async function confirmDesktopNotifications() {
+  if (typeof Notification === 'undefined') return;
+
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
     // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
     const settings = getSettings({ reuse: true });

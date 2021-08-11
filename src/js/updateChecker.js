@@ -633,82 +633,89 @@ function showDesktopNotification(comments) {
     filteredComments = comments.filter((comment) => comment.isToMe);
   }
 
-  if (!document.hasFocus() && Notification.permission === 'granted' && filteredComments.length) {
-    let body;
-    const comment = filteredComments[0];
-    if (filteredComments.length === 1) {
-      if (comment.isToMe) {
-        const where = comment.section?.headline ?
-          cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
-          '';
-        body = cd.s(
-          'notification-toyou-desktop',
-          comment.author.name,
-          comment.author,
-          where,
-          cd.g.PAGE_NAME
-        );
-      } else {
-        body = cd.s(
-          'notification-insection-desktop',
-          comment.author.name,
-          comment.author,
-          comment.section.headline,
-          cd.g.PAGE_NAME
-        );
-      }
-    } else {
-      const isCommonSection = filteredComments.every((comment) => (
-        comment.watchedSectionHeadline === filteredComments[0].watchedSectionHeadline
-      ));
-      let section;
-      if (isCommonSection) {
-        section = filteredComments[0].watchedSectionHeadline;
-      }
-      const where = section ?
-        cd.mws('word-separator') + cd.s('notification-part-insection', section) :
+  if (
+    typeof Notification === 'undefined' ||
+    Notification.permission !== 'granted' ||
+    !filteredComments.length ||
+    document.hasFocus()
+  ) {
+    return;
+  }
+
+  let body;
+  const comment = filteredComments[0];
+  if (filteredComments.length === 1) {
+    if (comment.isToMe) {
+      const where = comment.section?.headline ?
+        cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
         '';
-      let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
-      if (!mayBeInterestingString.startsWith(cd.mws('comma-separator'))) {
-        mayBeInterestingString = cd.mws('word-separator') + mayBeInterestingString;
-      }
-
-      // "that may be interesting to you" text is not needed when the section is watched and the
-      // user can clearly understand why they are notified.
-      const mayBeInteresting = section && cd.g.currentPageWatchedSections?.includes(section) ?
-        '' :
-        mayBeInterestingString;
-
       body = cd.s(
-        'notification-newcomments-desktop',
-        filteredComments.length,
+        'notification-toyou-desktop',
+        comment.author.name,
+        comment.author,
         where,
-        cd.g.PAGE_NAME,
-        mayBeInteresting
+        cd.g.PAGE_NAME
+      );
+    } else {
+      body = cd.s(
+        'notification-insection-desktop',
+        comment.author.name,
+        comment.author,
+        comment.section.headline,
+        cd.g.PAGE_NAME
       );
     }
+  } else {
+    const isCommonSection = filteredComments.every((comment) => (
+      comment.watchedSectionHeadline === filteredComments[0].watchedSectionHeadline
+    ));
+    let section;
+    if (isCommonSection) {
+      section = filteredComments[0].watchedSectionHeadline;
+    }
+    const where = section ?
+      cd.mws('word-separator') + cd.s('notification-part-insection', section) :
+      '';
+    let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
+    if (!mayBeInterestingString.startsWith(cd.mws('comma-separator'))) {
+      mayBeInterestingString = cd.mws('word-separator') + mayBeInterestingString;
+    }
 
-    const notification = new Notification(mw.config.get('wgSiteName'), {
-      body,
+    // "that may be interesting to you" text is not needed when the section is watched and the
+    // user can clearly understand why they are notified.
+    const mayBeInteresting = section && cd.g.currentPageWatchedSections?.includes(section) ?
+      '' :
+      mayBeInterestingString;
 
-      // We use a tag so that there aren't duplicate notifications when the same page is opened in
-      // two tabs. (Seems it doesn't work? :-/)
-      tag: 'convenient-discussions-' + filteredComments[filteredComments.length - 1].anchor,
-    });
-    notification.onclick = () => {
-      parent.focus();
-
-      // Just in case, old browsers. TODO: delete?
-      window.focus();
-
-      Comment.redrawLayersIfNecessary(false, true);
-
-      reloadPage({
-        commentAnchor: comment.anchor,
-        closeNotificationsSmoothly: false,
-      });
-    };
+    body = cd.s(
+      'notification-newcomments-desktop',
+      filteredComments.length,
+      where,
+      cd.g.PAGE_NAME,
+      mayBeInteresting
+    );
   }
+
+  const notification = new Notification(mw.config.get('wgSiteName'), {
+    body,
+
+    // We use a tag so that there aren't duplicate notifications when the same page is opened in
+    // two tabs. (Seems it doesn't work? :-/)
+    tag: 'convenient-discussions-' + filteredComments[filteredComments.length - 1].anchor,
+  });
+  notification.onclick = () => {
+    parent.focus();
+
+    // Just in case, old browsers. TODO: delete?
+    window.focus();
+
+    Comment.redrawLayersIfNecessary(false, true);
+
+    reloadPage({
+      commentAnchor: comment.anchor,
+      closeNotificationsSmoothly: false,
+    });
+  };
 }
 
 /**
