@@ -26,11 +26,7 @@ export default class Page {
   constructor(nameOrMwTitle) {
     const title = nameOrMwTitle instanceof mw.Title ?
       nameOrMwTitle :
-      mw.Title.newFromText(nameOrMwTitle);
-
-    if (!title) {
-      throw new CdError();
-    }
+      new mw.Title(nameOrMwTitle);
 
     /**
      * Page title, with no namespace name. The word separator is a space, not an underline.
