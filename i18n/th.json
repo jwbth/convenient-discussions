@@ -28,7 +28,7 @@
 	"comment-changed-refresh": "รีเฟรช",
 	"comment-changed-diff": "แตกต่าง",
 	"comment-changed-diff-error": "ไม่สามารถแสดงผลความแตกต่างได้",
-	"comment-changed-history": "ประวัติการแก้ไข",
+	"comment-changed-diff-history": "ประวัติการแก้ไข",
 	"comment-changedsince": "ความเห็นถูกเปลี่ยนแปลงตั้งแต่การเข้าชมล่าสุดของคุณ",
 	"comment-deleted": "ความเห็นนี้ถูกลบหรือลงชื่อซ้ำ",
 	"section-reply": "ตอบกลับส่วน",

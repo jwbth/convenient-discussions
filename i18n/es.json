@@ -20,8 +20,6 @@
 	"cm-edit": "Editar",
 	"cm-reply": "Responder",
 	"thread-tooltip": "Colapsar/expandir el hilo",
-	"thread-expand-genderless": "Expandir el hilo comenzando desde el comentario por $2  ($1 {{plural:$1|comment|comments}})",
-	"thread-expand": "Expandir el hilo que comienza desde el comentario por {{género:$3|}} $2 ($1{{plural:$1|comment|comments}})",
 	"sm-editopeningcomment": "editar comentario de apertura",
 	"sm-editopeningcomment-tooltip": "Editar el comentario que abre la sección",
 	"sm-addsubsection": "añadir sección anidada",

@@ -31,7 +31,7 @@
 	"comment-changed-refresh": "Превчитај",
 	"comment-changed-diff": "Разл",
 	"comment-changed-diff-error": "Не можев да ја прикажам разликата.",
-	"comment-changed-history": "Историја на уредувања",
+	"comment-changed-diff-history": "Историја на уредувања",
 	"comment-changedsince": "Коментарот е изменет од вашата последната посета.",
 	"comment-deleted": "Коментарот е избришан или препотпишан.",
 	"section-reply": "Одговори на одделот",
