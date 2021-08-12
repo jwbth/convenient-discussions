@@ -46,19 +46,21 @@
   }
 }
 
-.sitedir-ltr .cd-comment-button {
-  margin-left: 1em;
+.sitedir-ltr .cd-comment-button,
+.sitedir-rtl.ltr .cd-comment-menu .cd-comment-button {
+  margin: 0 0 0 1em;
 
   &:first-child {
-    margin-left: 0;
+    margin: 0;
   }
 }
 
-.sitedir-rtl .cd-comment-button {
-  margin-right: 1em;
+.sitedir-rtl .cd-comment-button,
+.sitedir-ltr.rtl .cd-comment-menu .cd-comment-button {
+  margin: 0 1em 0 0;
 
   &:first-child {
-    margin-right: 0;
+    margin: 0;
   }
 }
 
