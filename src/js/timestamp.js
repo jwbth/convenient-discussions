@@ -342,19 +342,21 @@ export function initTimestampParsingTools(language) {
 
   areUiAndLocalTimezoneSame = cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-  /**
-   * Whether comment timestamps are altered somehow.
-   *
-   * @name ARE_TIMESTAMPS_ALTERED
-   * @type {boolean}
-   * @memberof module:cd~convenientDiscussions.g
-   */
-  cd.g.ARE_TIMESTAMPS_ALTERED = (
-    (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
-    cd.settings.timestampFormat !== 'default' ||
-    mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
-    cd.settings.hideTimezone
-  );
+  if (language === 'content') {
+    /**
+     * Whether comment timestamps are altered somehow.
+     *
+     * @name ARE_TIMESTAMPS_ALTERED
+     * @type {boolean|undefined}
+     * @memberof module:cd~convenientDiscussions.g
+     */
+    cd.g.ARE_TIMESTAMPS_ALTERED = (
+      (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
+      cd.settings.timestampFormat !== 'default' ||
+      mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
+      cd.settings.hideTimezone
+    );
+  }
 }
 
 /**

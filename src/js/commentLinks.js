@@ -358,10 +358,8 @@ function processWatchlist($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    if (!summary) return;
-
-    summary = removeDirMarks(summary);
-    if (isCommentEdit(summary) || isUndo(summary) || isMoved(summary)) return;
+    summary = summary && removeDirMarks(summary);
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) return;
@@ -457,7 +455,8 @@ function processContributions($content) {
 
     if (line.querySelector('.minoredit')) return;
 
-    const summary = line.querySelector('.comment')?.textContent;
+    let summary = line.querySelector('.comment')?.textContent;
+    summary = summary && removeDirMarks(summary);
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -515,10 +514,8 @@ function processHistory($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    if (!summary) return;
-
-    summary = removeDirMarks(summary);
-    if (isCommentEdit(summary) || isUndo(summary) || isMoved(summary)) return;
+    summary = summary && removeDirMarks(summary);
+    if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
     if (!bytesAddedElement) return;
@@ -589,18 +586,26 @@ function processHistory($content) {
  * @private
  */
 async function processDiff() {
+  if (!cd.g.UI_TIMESTAMP_REGEXP) {
+    initTimestampParsingTools('user');
+  }
+  if (cd.g.UI_TIMEZONE === null) return;
+
   [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)
     .forEach((area) => {
       if (area.querySelector('.minoredit')) return;
 
-      let summary = area.querySelector('.comment')?.textContent;
-      if (!summary) return;
+      area.querySelector('.cd-commentLink')?.remove();
 
-      summary = removeDirMarks(summary);
+      let summary = area.querySelector('.comment')?.textContent;
+      summary = summary && removeDirMarks(summary);
 
       // In diffs, archivation can't be captured by looking at bytes added.
-      if (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary)) {
+      if (
+        summary &&
+        (isCommentEdit(summary) || isUndo(summary) || isMoved(summary) || isArchiving(summary))
+      ) {
         return;
       }
 
@@ -702,9 +707,6 @@ export default async function commentLinks(siteDataRequests) {
   }
 
   if (cd.g.IS_DIFF_PAGE) {
-    initTimestampParsingTools('user');
-    if (cd.g.UI_TIMEZONE === null) return;
-
     mw.hook('convenientDiscussions.pageReady').add(processDiff);
   } else {
     // Hook on wikipage.content to make the code work with the watchlist auto-update feature.
