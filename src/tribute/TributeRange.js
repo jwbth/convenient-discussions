@@ -454,7 +454,7 @@ class TributeRange {
             // jwbth: replaced parseInt with parseFloat: can result in wrongly positioned menu (have
             // seen an example when edited [[:en:Wikipedia:Village pump (proposals)#Allow fair use
             // non-freely licensed photos of politicians]]).
-            style.width = `${(parseFloat(computed.width) - 2)}px`
+            style.width = `${parseFloat(computed.width)}px`
             if (element.scrollHeight > parseFloat(computed.height))
                 style.overflowY = 'scroll'
         } else {
