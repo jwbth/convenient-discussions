@@ -43,7 +43,7 @@
 	"comment-changed-refresh": "Aktualisieren, um die Änderungen zu sehen",
 	"comment-changed-diff": "Unterschied",
 	"comment-changed-diff-error": "Konnte den Unterschied nicht darstellen.",
-	"comment-changed-history": "Bearbeitungsgeschichte",
+	"comment-changed-diff-history": "Bearbeitungsgeschichte",
 	"comment-changedsince": "Der Kommentar hat sich seit deinem letzten Besuch geändert.",
 	"comment-changedsince-short": "Seit deinem letzten Besuch verändert",
 	"comment-deleted": "Der Kommentar wurde gelöscht oder neu signiert.",
