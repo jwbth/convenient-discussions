@@ -19,7 +19,7 @@ export default class SectionMenuButton extends Button {
     super(config);
 
     const wrapperElement = document.createElement('span');
-    wrapperElement.className = `cd-section-menu-button-wrapper cd-section-menu-button-wrapper-${name}`;
+    wrapperElement.className = `cd-section-menu-button-wrapper cd-section-menu-button-wrapper-${config.name}`;
     wrapperElement.appendChild(this.element);
 
     /**
