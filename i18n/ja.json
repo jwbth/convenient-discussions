@@ -149,7 +149,7 @@
 	"deadanchor-section-finding": "アーカイブされたセクションを探しています…",
 	"deadanchor-section-notfound": "[$1 アーカイブも検索しました]が結果は見つかりませんでした。削除されたか、名前が変更されたか、またはリンクの形式が正しくない可能性があります。",
 	"deadanchor-comment-finding": "アーカイブ化されたコメントを探しています…",
-	"deadanchor-comment-notfound": "アーカイブも検索しましたが結果は見つかりませんでした。削除または再署名された可能性があります。",
+	"deadanchor-comment-notfound": "[$1 アーカイブも検索しました]が結果は見つかりませんでした。削除または再署名された可能性があります。",
 	"deadanchor-search-gotocomment": "コメントにジャンプ",
 	"restore-restored-text": "未投稿のコメント内容を自動的に復元しました。",
 	"rd-intro": "表示中のフォームのどれかが関係し、当該ページのコメントもしくは節を検知できませんでした。フォームの内容は以下に回復したとおりです。必要に応じて、内容をコピーしてください。",
