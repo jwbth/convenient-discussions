@@ -80,13 +80,19 @@ const testWithSettings = (
     }
 
     const dateObj = new Date(date);
-    cd.g.UI_TIMEZONE = timezone;
+    cd.g.UI_TIMEZONE = timezone || 'UTC';
     cd.g.UI_TIMEZONE_OFFSET = (
       getTimezoneOffset(timezone, dateObj.getTime()) / cd.g.MILLISECONDS_IN_MINUTE
     );
     cd.settings.timestampFormat = timestampFormat;
     cd.settings.useUiTime = useUiTime;
     cd.settings.hideTimezone = hideTimezone;
+    cd.g.ARE_TIMESTAMPS_ALTERED = (
+      (cd.settings.useUiTime && 'UTC' !== cd.g.UI_TIMEZONE) ||
+      cd.settings.timestampFormat !== 'default' ||
+      mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
+      cd.settings.hideTimezone
+    );
 
     if (contentLanguage) {
       mw.config.set('wgUserLanguage', contentLanguage);
