@@ -247,10 +247,10 @@ class TributeEvents {
         if (this.tribute.isActive && this.tribute.current.filteredItems) {
           e.preventDefault();
           e.stopPropagation();
-          setTimeout(() => {
-            this.tribute.selectItemAtIndex(this.tribute.menuSelected, e);
-            this.tribute.hideMenu();
-          }, 0);
+
+          // jwbth: Removed setTimeout, as for that period filteredItems could reset.
+          this.tribute.selectItemAtIndex(this.tribute.menuSelected, e);
+          this.tribute.hideMenu();
         }
       },
       escape: (e) => {
