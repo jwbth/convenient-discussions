@@ -374,6 +374,7 @@ async function go() {
         'mediawiki.api',
         'mediawiki.cookie',
         'mediawiki.jqueryMsg',
+        'mediawiki.interface.helpers.styles',
         'mediawiki.notification',
         'mediawiki.storage',
         'mediawiki.user',
