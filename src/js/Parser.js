@@ -16,6 +16,13 @@ let foreignComponentClasses;
 let elementsToExclude;
 
 /**
+ * @typedef {object} GetPageNameFromUrlReturn
+ * @param {string} 1 Page name.
+ * @param {string} 2 Domain.
+ * @private
+ */
+
+/**
  * Get a page name from a URL.
  *
  * @param {string} url
@@ -23,51 +30,30 @@ let elementsToExclude;
  * @private
  */
 function getPageNameFromUrl(url) {
-  // Are only WMF wikis guaranteed to have the format we need?
-  if (
-    typeof mw === 'undefined' ||
-    (mw.config.get('wgArticlePath') === '/wiki/$1' && mw.config.get('wgScript') === '/w/index.php')
-  ) {
-    let pageName = url
-      .replace(/^(?:https?:)?\/\/[^/]+/, '')
-      .replace(/^\/wiki\//, '')
-      .replace(/^\/w\/index.php\?title=/, '')
-      .replace(/&action=edit.*/, '')
-      .replace(/#.*/, '')
-      .replace(/_/g, ' ');
-    try {
-      pageName = decodeURIComponent(pageName);
-    } catch (e) {
-      return null;
-    }
-    return pageName;
-  } else {
-    let uri;
-    try {
-      uri = new mw.Uri(url);
-    } catch (e) {
-      return null;
-    }
-    const match = uri.path.match(cd.g.ARTICLE_PATH_REGEXP);
-    if (match) {
-      try {
-        return decodeURIComponent(match[1]);
-      } catch (e) {
-        return null;
-      }
-    }
-    let title = uri.query.title;
-    if (typeof title === 'object') {
-      title = title[title.length - 1];
-    }
-    return title || null;
+  let domain = cd.g.HOSTNAME;
+  let pageName = url
+    .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
+      domain = m1;
+      return '';
+    })
+    .replace(cd.g.STARTS_WITH_ARTICLE_PATH_REGEXP, '')
+    .replace(cd.g.STARTS_WITH_SCRIPT_TITLE, '')
+    .replace(/&action=edit.*/, '')
+    .replace(/#.*/, '')
+    .replace(/_/g, ' ');
+  try {
+    pageName = decodeURIComponent(pageName);
+  } catch (e) {
+    return null;
   }
+  return [pageName, domain];
 }
 
 /**
- * @typedef {object} ProcessLinkReturn
+ * @typedef {string[]} ProcessLinkReturn
  * @param {string} 1 User name.
- * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`).
+ * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`,
+ *   or any of this `Foreign` at the end).
  * @private
  */
 
@@ -82,10 +68,11 @@ export function processLink(element) {
   let userName;
   let linkType = null;
   if (href) {
-    const pageName = getPageNameFromUrl(href);
+    const [pageName, domain] = getPageNameFromUrl(href) || [];
     if (!pageName) {
       return null;
     }
+    const isCurrentDomain = domain === cd.g.HOSTNAME;
     const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
     if (match) {
       userName = match[1];
@@ -107,6 +94,9 @@ export function processLink(element) {
         userName = userName.toUpperCase();
       }
       linkType = 'contribs';
+    }
+    if (!isCurrentDomain) {
+      linkType += 'Foreign';
     }
     if (userName) {
       userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
@@ -338,29 +328,31 @@ export default class Parser {
                   authorName = userName;
                 }
                 if (authorName === userName) {
-                  if (linkType === 'user') {
-                    if (authorLink) {
+                  if (linkType?.startsWith('user')) {
+                    // Only match "userForeign" because of cases like this:
+                    // https://en.wikipedia.org/?diff=1012665097
+                    if (linkType === 'userForeign' && authorLink) {
                       return false;
                     }
                     authorLink = link;
-                  } else if (linkType === 'userTalk') {
-                    if (authorTalkLink) {
+                  } else if (linkType?.startsWith('userTalk')) {
+                    if (linkType === 'userTalkForeign' && authorTalkLink) {
                       return false;
                     }
                     authorTalkLink = link;
-                  } else if (linkType === 'contribs') {
-                    if (authorContribsLink) {
+                  } else if (linkType?.startsWith('contribs')) {
+                    if (linkType === 'contribsForeign' && authorContribsLink) {
                       return false;
                     }
                     authorContribsLink = link;
-                  } else if (linkType === 'userSubpage') {
+                  } else if (linkType?.startsWith('userSubpage')) {
                     // A user subpage link after a user link is OK. A user subpage link before a
                     // user link is not OK (example: https://ru.wikipedia.org/?diff=112885854).
                     // Perhaps part of the comment.
                     if (authorLink) {
                       return false;
                     }
-                  } else if (linkType === 'userTalkSubpage') {
+                  } else if (linkType?.startsWith('userTalkSubpage')) {
                     // Same as with a user page above.
                     if (authorTalkLink) {
                       return false;

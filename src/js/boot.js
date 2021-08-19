@@ -488,6 +488,18 @@ function initPatterns() {
     .replace('\\$1', '(.*)');
   cd.g.ARTICLE_PATH_REGEXP = new RegExp(articlePathPattern);
 
+  const startsWithArticlePathPattern = (
+    '^' +
+    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '')
+  );
+  cd.g.STARTS_WITH_ARTICLE_PATH_REGEXP = new RegExp(startsWithArticlePathPattern);
+
+  const scriptTitlePattern = '^' + mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=');
+  cd.g.STARTS_WITH_SCRIPT_TITLE = new RegExp(scriptTitlePattern);
+
+  // Worker's location object doesn't have the host name set.
+  cd.g.HOSTNAME = location.hostname;
+
   // Template names are not case-sensitive here for code simplicity.
   const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
   const quoteBeginningsPattern = ['<blockquote', '<q']
