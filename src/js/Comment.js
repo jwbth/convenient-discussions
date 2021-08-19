@@ -3167,6 +3167,13 @@ export default class Comment extends CommentSkeleton {
       this.inCode = null;
     }
 
+    if (code === undefined) {
+      throw new CdError({
+        type: 'parse',
+        code: 'noCode',
+      });
+    }
+
     const isSectionCodeUsed = codeOrUseSectionCode === true;
     const matches = this.searchInCode(code, commentData, isSectionCodeUsed);
     const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
