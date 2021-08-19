@@ -114,6 +114,12 @@ Object.defineProperty(Element.prototype, 'textContent', {
 
     return returnValue;
   },
+  set: function (value) {
+    this.childNodes.forEach((node) => {
+      node.remove();
+    });
+    this.appendChild(new Text(value || ''));
+  },
 });
 
 Object.defineProperty(Element.prototype, 'innerHTML', {
