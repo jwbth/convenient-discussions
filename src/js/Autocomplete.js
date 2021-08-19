@@ -266,7 +266,7 @@ export default class Autocomplete {
                 if (spacePos !== -1) {
                   snippet = snippet.slice(0, spacePos);
                   const lastChar = snippet[snippet.length - 1];
-                  if (cd.g.PUNCTUATION_REGEXP.test(lastChar) && lastChar !== ')') {
+                  if (/[.…,;!?:-—–]/.test(lastChar)) {
                     snippet += ' ';
                   }
                   snippet += cd.s('ellipsis');
