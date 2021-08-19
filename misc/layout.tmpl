@@ -30,8 +30,32 @@
         width: 275px;
     }
 
+    nav #nav-search {
+        width: 235px;
+    }
+
     #main {
         width: calc(100% - 275px);
+    }
+
+    @media only screen and (max-width: 680px) {
+        nav {
+            left: -275px;
+        }
+
+        .navicon-button {
+            top: 0;
+            left: 275px;
+            right: unset;
+        }
+
+        #main {
+            width: 100%;
+        }
+
+        footer {
+            margin-left: 0;
+        }
     }
 
     footer {
