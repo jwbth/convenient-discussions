@@ -146,7 +146,7 @@ export default class Page {
         }
       }
     }
-    return String(result || name);
+    return String(result) || name + '/';
   }
 
   /**

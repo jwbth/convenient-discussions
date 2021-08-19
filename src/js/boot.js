@@ -1584,8 +1584,8 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
     }
     if (date) {
       // There can be a time difference between the time we know (taken from the history) and the
-      // time on the page. We take it to be not more than 5 minutes for the time on the page.
-      for (let gap = 1; gap <= 5; gap++) {
+      // time on the page. We take it to be not more than 3 minutes for the time on the page.
+      for (let gap = 1; gap <= 3; gap++) {
         const adjustedDate = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
         const adjustedToken = formatDateNative(adjustedDate, false, cd.g.CONTENT_TIMEZONE);
         searchQuery += ` OR "${adjustedToken}"`;
@@ -1662,21 +1662,19 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
 
         let label;
         if (pageTitle) {
+          const wikilink = pageTitle + '#' + (date ? decodedFragment : sectionNameFound);
           label = date ?
-            cd.sParse(
-              'deadanchor-comment-exactmatch',
-              pageTitle + '#' + decodedFragment,
-              searchUrl
+            (
+              cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
+              (previousCommentByTimeText ? ' ' + previousCommentByTimeText : '')
             ) :
-            cd.sParse(
-              'deadanchor-section-exactmatch',
-              sectionNameFound,
-              pageTitle + '#' + sectionNameFound,
-              searchUrl
-            );
+            cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
         } else {
           label = date ?
-            cd.sParse('deadanchor-comment-inexactmatch', searchUrl) :
+            (
+              cd.sParse('deadanchor-comment-inexactmatch', searchUrl) +
+              (previousCommentByTimeText ? ' ' + previousCommentByTimeText : '')
+            ) :
             cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
         }
 

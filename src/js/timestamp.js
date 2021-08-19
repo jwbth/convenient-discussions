@@ -16,7 +16,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
-import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines } from './util';
+import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines, underlinesToSpaces } from './util';
 
 let parseTimestampContentRegexp;
 let parseTimestampUiRegexp;
@@ -858,7 +858,7 @@ export function parseCommentAnchor(commentAnchor) {
   const day = Number(match[3]);
   const hours = Number(match[4]);
   const minutes = Number(match[5]);
-  const author = match[6];
+  const author = underlinesToSpaces(match[6]);
 
   const date = new Date(Date.UTC(year, month, day, hours, minutes));
 
