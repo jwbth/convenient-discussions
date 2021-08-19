@@ -335,6 +335,7 @@ export default class Page {
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
       page: this.realName || this.name,
 
+      redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
       formatversion: 2,
     };
