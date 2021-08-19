@@ -3244,7 +3244,7 @@ export default class Comment extends CommentSkeleton {
       });
       const adjustedChunkCodeAfter = adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
 
-      if (/ +\x02/.test(adjustedChunkCodeAfter)) {
+      if (/^ +\x02/.test(adjustedChunkCodeAfter)) {
         throw new CdError({
           type: 'parse',
           code: 'closed',
