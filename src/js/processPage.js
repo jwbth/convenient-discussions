@@ -919,7 +919,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     !cd.g.isFirstRun ||
     cd.comments.length ||
     $('#ca-addsection').length ||
-    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE_NAME)
+    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE.name)
   );
 
   const isPageCommentable = cd.g.isPageActive || !articleId;

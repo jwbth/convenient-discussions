@@ -72,7 +72,7 @@ async function prepare(siteDataRequests) {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
 
-  cd.g.PAGE = new Page(cd.g.PAGE_NAME);
+  cd.g.PAGE = new Page(cd.g.PAGE_NAME, false);
   cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   serverName = mw.config.get('wgServerName');

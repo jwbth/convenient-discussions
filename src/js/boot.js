@@ -286,11 +286,7 @@ export function createApi() {
 function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files["phpCharToUpper.json"];
-
-  // We will still use cd.g.PAGE_NAME instead of cd.g.PAGE.name in places where we need to have the
-  // user page name in correct gender.
-  cd.g.PAGE = new Page(cd.g.PAGE_NAME);
-
+  cd.g.PAGE = new Page(cd.g.PAGE_NAME, false);
   cd.g.USER_GENDER = mw.user.options.get('gender');
   cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
 

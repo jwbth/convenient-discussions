@@ -21,9 +21,11 @@ export default class Page {
    * Create a page instance.
    *
    * @param {string|mw.Title} nameOrMwTitle
+   * @param {boolean} [normalizeNamespace=true] Whether to normalize the namespace name for the
+   *   {@link module:Page#name name} property (usually used to keep the gendered namespace name).
    * @throws {CdError}
    */
-  constructor(nameOrMwTitle) {
+  constructor(nameOrMwTitle, normalizeNamespace = true) {
     const title = nameOrMwTitle instanceof mw.Title ?
       nameOrMwTitle :
       new mw.Title(nameOrMwTitle);
@@ -36,11 +38,20 @@ export default class Page {
     this.title = title.getMainText();
 
     /**
+     * Page name, with a canonical namespace name. The word separator is a space, not an underline.
+     *
+     * @type {string}
+     */
+    this.canonicalName = title.getPrefixedText();
+
+    /**
      * Page name, with a namespace name. The word separator is a space, not an underline.
      *
      * @type {string}
      */
-    this.name = title.getPrefixedText();
+    this.name = normalizeNamespace && typeof nameOrMwTitle === 'string' ?
+      this.canonicalName :
+      nameOrMwTitle;
 
     /**
      * Namespace number.
@@ -57,9 +68,7 @@ export default class Page {
    * @returns {string}
    */
   getUrl(parameters) {
-    // Use cd.g.PAGE_NAME instead of this.name to show the name in correct gender for pages in user
-    // namespaces at least if we are on one of those pages.
-    return mw.util.getUrl(this === cd.g.PAGE ? cd.g.PAGE_NAME : this.name, parameters);
+    return mw.util.getUrl(this.name, parameters);
   }
 
   /**
