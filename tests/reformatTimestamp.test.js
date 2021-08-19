@@ -7,7 +7,6 @@ const g = require('../src/js/staticGlobals').default;
 const { formatDateNative, initDayjs } = require('../src/js/timestamp');
 
 cd.settings = {};
-
 cd.g = g;
 cd.g.USER_LANGUAGE = 'en';
 cd.g.UI_DATE_FORMAT = 'H:i, j F Y';

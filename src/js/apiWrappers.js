@@ -159,7 +159,7 @@ export function getUserInfo(reuse = false) {
  * @param {string} [errorInfo]
  * @returns {Promise.<string>}
  */
-export async function unknownApiErrorText(errorCode, errorInfo) {
+export async function generateUnknownApiErrorText(errorCode, errorInfo) {
   let text;
   if (errorCode) {
     text = cd.sParse('error-api', errorCode) + ' ';

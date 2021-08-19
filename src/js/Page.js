@@ -7,8 +7,8 @@
 import CdError from './CdError';
 import cd from './cd';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
+import { generateUnknownApiErrorText, makeBackgroundRequest, parseCode } from './apiWrappers';
 import { handleApiReject, isProbablyTalkPage } from './util';
-import { makeBackgroundRequest, parseCode, unknownApiErrorText } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
 
 /**
@@ -513,7 +513,7 @@ export default class Page {
                 message = (
                   cd.sParse('error-pagenotedited') +
                   ' ' +
-                  (await unknownApiErrorText(code, error.info))
+                  (await generateUnknownApiErrorText(code, error.info))
                 );
               }
             }

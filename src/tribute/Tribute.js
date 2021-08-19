@@ -399,8 +399,7 @@ class Tribute {
 
     textarea.focus();
 
-    // jwbth: Preserve the undo/redo functionality in browsers that support it (Chrome does, Firefox
-    // doesn't: https://bugzilla.mozilla.org/show_bug.cgi?id=1220696).
+    // jwbth: Preserve the undo/redo functionality in browsers that support it.
     const hasInsertedViaCommand = document.execCommand('insertText', false, text);
     if (!hasInsertedViaCommand) {
       var front = textarea.value.substring(0, caretPos);

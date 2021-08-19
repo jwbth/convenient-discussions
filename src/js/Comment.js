@@ -1796,21 +1796,21 @@ export default class Comment extends CommentSkeleton {
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',
-        message: cd.sParse('comment-changed-diff-empty'),
+        message: cd.sParse('comment-diff-empty'),
       });
     }
 
     const $historyLink = $('<a>')
       .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
       .attr('target', '_blank')
-      .text(cd.s('comment-changed-diff-history'));
+      .text(cd.s('comment-diff-history'));
     const $below = $('<div>')
       .addClass('cd-commentDiffView-below')
       .append($historyLink);
 
     const $message = $('<div>').append($cleanDiff, $below);
     OO.ui.alert($message, {
-      title: cd.s('comment-changed-diff-title'),
+      title: cd.s('comment-diff-title'),
       size: 'larger',
     });
   }
@@ -1860,13 +1860,13 @@ export default class Comment extends CommentSkeleton {
     let diffLink;
     if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
       diffLink = new Button({
-        label: cd.s('comment-changed-diff'),
+        label: cd.s('comment-diff'),
         action: async () => {
           diffLink.setPending(true);
           try {
             await this.showDiff(comparedRevisionId, commentsData);
           } catch (e) {
-            let text = cd.sParse('comment-changed-diff-error');
+            let text = cd.sParse('comment-diff-error');
             if (e instanceof CdError) {
               const { type, message } = e.data;
               if (message) {

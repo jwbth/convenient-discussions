@@ -37,7 +37,7 @@ import {
 import { createCheckboxField } from './ooui';
 import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
 import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
-import { parseCode, unknownApiErrorText } from './apiWrappers';
+import { generateUnknownApiErrorText, parseCode } from './apiWrappers';
 import { showSettingsDialog } from './modal';
 
 let commentFormsCounter = 0;
@@ -947,13 +947,10 @@ export default class CommentForm {
 
       const $input = this.commentInput.$input;
 
-      $input.wikiEditor(
-        'addModule',
-        mw.loader.moduleRegistry['ext.wikiEditor']
-          .packageExports['jquery.wikiEditor.toolbar.config.js']
-      );
-      const dialogsConfig = mw.loader.moduleRegistry['ext.wikiEditor']
-        .packageExports['jquery.wikiEditor.dialogs.config.js'];
+      const wikiEditorModule = mw.loader.moduleRegistry['ext.wikiEditor'];
+      const toolbarConfig = wikiEditorModule.packageExports['jquery.wikiEditor.toolbar.config.js'];
+      $input.wikiEditor('addModule', toolbarConfig);
+      const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js'];
       dialogsConfig.replaceIcons($input);
       $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
 
@@ -964,8 +961,8 @@ export default class CommentForm {
         this.commentInput.$element.find('.group-heading').remove();
       }
 
-      // Make the undo/redo functionality work in browsers that support it (Chrome). Also, by
-      // default, for dialogs, text is inserted into the last opened form, not the current.
+      // Make the undo/redo functionality work in browsers that support it. Also, by default, for
+      // dialogs, text is inserted into the last opened form, not the current.
       $input.textSelection('register', {
         encapsulateSelection: (options) => {
           // Seems like the methods are registered for all inputs instead of the one the method is
@@ -1096,7 +1093,7 @@ export default class CommentForm {
       this.$element
         .find('.tool[rel="link"] a, .tool[rel="file"] a')
         .on('click', (e) => {
-          // Fix text inserted in a wrong textarea.
+          // Fix text being inserted in a wrong textarea.
           const rel = e.currentTarget.parentNode.getAttribute('rel');
           const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`);
           if ($dialog.length) {
@@ -2159,7 +2156,7 @@ export default class CommentForm {
                 message = cd.sParse('cf-error-pagedoesntexist');
                 break;
               default:
-                message = await unknownApiErrorText(errorCode, errorInfo);
+                message = await generateUnknownApiErrorText(errorCode, errorInfo);
             }
             break;
           }
@@ -3127,9 +3124,9 @@ export default class CommentForm {
         sectiontitle: sectionTitleParam,
         text: code,
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
+        minor: this.minorCheckbox?.isSelected(),
         baserevid: sectionOrPage?.revisionId,
         starttimestamp: sectionOrPage?.queryTimestamp,
-        minor: this.minorCheckbox?.isSelected(),
         watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
       });
     } catch (e) {
@@ -3708,16 +3705,18 @@ export default class CommentForm {
     const selectionStartPos = Math.min(range.from, range.to);
     const selectionEndPos = Math.max(range.from, range.to);
     const value = this.commentInput.getValue();
-    const leadingNewline = (
-      ownline && !/(^|\n)$/.test(value.slice(0, selectionStartPos)) && !/^\n/.test(peri) ?
-      '\n' :
-      ''
+    const addLeadingNewLine = (
+      ownline &&
+      !/(^|\n)$/.test(value.slice(0, selectionStartPos)) &&
+      !/^\n/.test(peri)
     );
-    const trailingNewline = (
-      ownline && !/^\n/.test(value.slice(selectionEndPos)) && !/\n$/.test(post) ?
-      '\n' :
-      ''
+    const leadingNewline = addLeadingNewLine ? '\n' : '';
+    const addTrailingNewLine = (
+      ownline &&
+      !/^\n/.test(value.slice(selectionEndPos)) &&
+      !/\n$/.test(post)
     );
+    const trailingNewline = addTrailingNewLine ? '\n' : '';
     let periStartPos;
     if (!selection && !replace) {
       periStartPos = selectionStartPos + leadingNewline.length + pre.length;

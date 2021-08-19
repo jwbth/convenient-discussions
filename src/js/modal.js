@@ -37,7 +37,6 @@ export async function editWatchedSections() {
 
   const EditWatchedSectionsDialog = require('./EditWatchedSectionsDialog').default;
 
-  console.log(Date.now(), 'preparatoryRequests');
   createWindowManager();
   const dialog = new EditWatchedSectionsDialog();
   cd.g.windowManager.addWindows([dialog]);
