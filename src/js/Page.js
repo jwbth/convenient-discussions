@@ -430,7 +430,10 @@ export default class Page {
   /**
    * Make an edit API request ({@link https://www.mediawiki.org/wiki/API:Edit}).
    *
-   * @param {object} customOptions
+   * @param {object} customOptions See {@link https://www.mediawiki.org/wiki/API:Edit}. At least
+   *   `text` should be set. `summary` is recommended. `baserevid` and `starttimestamp` are needed
+   *   to avoid edit conflicts. `baserevid` can be taken from {@link module:Page#revisionId};
+   *   `starttimestamp` can be taken from {@link module:Page#queryTimestamp}.
    * @returns {Promise.<number|string>} Unix time of the edit or `'nochange'` if nothing has
    * changed.
    */

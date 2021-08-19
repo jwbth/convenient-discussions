@@ -340,7 +340,7 @@ export function createCopyActionField({ label, value, disabled = false, help, co
 /**
  * Add some properties to the inheritor class that the (ES5)
  * {@link https://www.mediawiki.org/wiki/OOjs/Inheritance OOUI inheritance mechanism} uses. It
- * partly replicates operations made in
+ * partly replicates the operations made in
  * {@link https://doc.wikimedia.org/oojs/master/OO.html#.inheritClass OO.inheritClass}.
  *
  * @param {Function} targetClass Inheritor class.

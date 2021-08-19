@@ -42,6 +42,16 @@ class TocItem {
     }
 
     const number = numberSpan.textContent;
+
+    /**
+     * Link jQuery element.
+     *
+     * @name $link
+     * @type {JQuery}
+     * @memberof module:toc~TocItem
+     * @instance
+     */
+
     Object.assign(this, {
       headline,
       anchor,

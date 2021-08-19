@@ -425,7 +425,8 @@ function processComments(parser) {
   adjustDom();
 
   /**
-   * The script has processed the comments.
+   * The script has processed the comments, except for reformatting them in
+   * {@link module:Comment.reformatComments} if the user opted in for that.
    *
    * @event commentsReady
    * @type {module:cd~convenientDiscussions.comments}

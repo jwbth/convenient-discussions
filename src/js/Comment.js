@@ -3148,6 +3148,9 @@ export default class Comment extends CommentSkeleton {
    * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
    * passed, set the results to the `inCode` property. Otherwise, return the result.
    *
+   * It is expected that the section or page code is loaded (using {@link module:Page#getCode})
+   * before this method is called. Otherwise, the method will throw an error.
+   *
    * @param {string|boolean} [codeOrUseSectionCode] Code that should have the comment (provided only
    *   if we need to perform operations on some code that is not the code of a section or page).
    *   Boolean `true` means to use the (prefetched) section code to locate the comment in.
@@ -3199,13 +3202,15 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {object} options
    * @param {string} options.action `'reply'` or `'edit'`.
-   * @param {string} [options.commentCode] Comment code. Can be not set if `doDelete` is `true`.
+   * @param {string} [options.commentCode] Comment code, including newlines, indentation characters,
+   *   and the signature. Can be not set if `doDelete` is `true`.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
-   * @param {string} [options.wholeCode] Code that has the comment (provided together with
-   *   `thisInCode` only if we need to perform operations on some code that is not the code of a
-   *   section or page).
+   * @param {string} [options.wholeCode] Code that has the comment. Usually not needed; provide it
+   *   together with `thisInCode` only if we need to perform operations on some code that is not the
+   *   code of a section or page).
    * @param {string} [options.thisInCode] Result of {@link module:Comment#locateInCode} called with
-   *   the code in the first parameter.
+   *   the code in the first parameter. Usually not needed; provide it together with `wholeCode`
+   *   only if we need to perform operations on some code that is not the code of a section or page.
    * @returns {string} New code.
    * @throws {CdError}
    */

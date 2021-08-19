@@ -63,7 +63,7 @@ export function wrap(htmlOrJquery, options = {}) {
  * @param {string} [options.optionalText] Optional text added to the end of the summary if there is
  *   enough space. Ignored if there is not.
  * @param {string} [options.section] Section name.
- * @param {boolean} [options.addPostfix=true] If to add cd.g.SUMMARY_POSTFIX to the summary.
+ * @param {boolean} [options.addPostfix=true] Whether to add `cd.g.SUMMARY_POSTFIX` to the summary.
  * @returns {string}
  */
 export function buildEditSummary(options) {
