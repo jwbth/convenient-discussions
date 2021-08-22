@@ -28,10 +28,12 @@
     <style type="text/css">
     html nav {
         width: 275px;
+        padding: 20px 0;
     }
 
     nav #nav-search {
         width: 235px;
+        margin-top: 0;
     }
 
     #main {
@@ -66,8 +68,16 @@
         display: none;
     }
 
-    .description > p {
+    td.description > p {
         line-height: normal;
+    }
+
+    .prettyprint {
+        overflow: visible;
+    }
+
+    .prettyprint .linenums li:last-of-type code {
+        padding-bottom: 15px;
     }
     </style>
     <script src="scripts/nav.js" defer></script>
