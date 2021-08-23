@@ -2705,7 +2705,7 @@ class Comment extends CommentSkeleton {
     text = text
       // <br> → \n, except in list elements and <pre>'s created by a space starting the line.
       .replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
-        s.replace(/<br[ \n]*\/?>\n? */gi, () => '\n')
+        s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => '\n')
       ))
 
       // Remove indentation characters
