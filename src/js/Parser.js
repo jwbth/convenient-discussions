@@ -297,10 +297,13 @@ export default class Parser {
         const treeWalker = new ElementsAndTextTreeWalker(startElement);
         let authorName;
         let authorLink;
+        let authorNotForeignLink;
         let authorTalkLink;
+        let authorTalkNotForeignLink;
 
-        // Used only to make sure there are no two contribs links in a signature.
-        let authorContribsLink;
+        // Used only to make sure there are no two contribs links on the current domain in a
+        // signature.
+        let authorContribsNotForeignLink;
 
         let length = 0;
         let firstSignatureElement;
@@ -328,33 +331,41 @@ export default class Parser {
                   authorName = userName;
                 }
                 if (authorName === userName) {
-                  if (linkType?.startsWith('user')) {
-                    // Only match "userForeign" because of cases like this:
+                  if (['user', 'userForeign'].includes(linkType)) {
+                    // Don't just break on the second user link because of cases like this:
                     // https://en.wikipedia.org/?diff=1012665097
-                    if (linkType === 'userForeign' && authorLink) {
+                    if (authorNotForeignLink) {
                       return false;
+                    }
+                    if (linkType !== 'userForeign') {
+                      authorNotForeignLink = link;
                     }
                     authorLink = link;
-                  } else if (linkType?.startsWith('userTalk')) {
-                    if (linkType === 'userTalkForeign' && authorTalkLink) {
+                  } else if (['userTalk', 'userTalkForeign'].includes(linkType)) {
+                    if (authorTalkNotForeignLink) {
                       return false;
+                    }
+                    if (linkType !== 'userTalkForeign') {
+                      authorTalkNotForeignLink = link;
                     }
                     authorTalkLink = link;
-                  } else if (linkType?.startsWith('contribs')) {
-                    if (linkType === 'contribsForeign' && authorContribsLink) {
+                  } else if (['contribs', 'contribsForeign'].includes(linkType)) {
+                    if (authorContribsNotForeignLink && (authorLink || authorTalkLink)) {
                       return false;
                     }
-                    authorContribsLink = link;
-                  } else if (linkType?.startsWith('userSubpage')) {
+                    if (linkType !== 'contribsForeign') {
+                      authorContribsNotForeignLink = link;
+                    }
+                  } else if (['userSubpage', 'userSubpageForeign'].includes(linkType)) {
                     // A user subpage link after a user link is OK. A user subpage link before a
                     // user link is not OK (example: https://ru.wikipedia.org/?diff=112885854).
                     // Perhaps part of the comment.
-                    if (authorLink) {
+                    if (authorLink || authorTalkLink) {
                       return false;
                     }
-                  } else if (linkType?.startsWith('userTalkSubpage')) {
+                  } else if (['userTalkSubpage', 'userTalkSubpageForeign'].includes(linkType)) {
                     // Same as with a user page above.
-                    if (authorTalkLink) {
+                    if (authorLink || authorTalkLink) {
                       return false;
                     }
                   } else {
