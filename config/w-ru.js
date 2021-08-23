@@ -125,6 +125,8 @@ export default {
     female: 'Участница',
   },
 
+  genderNeutralUserNamespaceAlias: 'У',
+
   archivePaths: [
     {
       source: 'Википедия:Форум/Географический',

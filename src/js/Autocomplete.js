@@ -576,6 +576,7 @@ class Autocomplete {
             const name = item.trim();
             const user = userRegistry.getUser(name);
             const userNamespace = (
+              cd.config.genderNeutralUserNamespaceAlias ||
               cd.config.userNamespacesByGender?.[user.getGender()] ||
               mw.config.get('wgFormattedNamespaces')[2]
             );

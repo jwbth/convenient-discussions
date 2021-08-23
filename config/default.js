@@ -104,9 +104,8 @@ export default {
    */
 
   /**
-   * If the user namespace uses different aliases based on gender, you may include them here.
-   * Unfortunately, we can't get this using API, see
-   * {@link https://phabricator.wikimedia.org/T204610}.
+   * If the user namespace uses different aliases based on gender, include them here. Unfortunately,
+   * we can't get this using API, see {@link https://phabricator.wikimedia.org/T204610}.
    *
    * @type {?UserNamespacesByGender}
    * @example
@@ -116,6 +115,20 @@ export default {
    * }
    */
   userNamespacesByGender: null,
+
+  /**
+   * If the user namespace uses different aliases based on gender, but it has an alias that is
+   * gender-neutral, specify it here.
+   *
+   * @type {?string}
+   * @example
+   * // Russian Wikipedia
+   * 'У'
+   * @example
+   * // Possible option
+   * 'User'
+   */
+  genderNeutralUserNamespaceAlias: null,
 
   /**
    * Object that connects active (source) talk page names with their archive pages prefixes and vice
