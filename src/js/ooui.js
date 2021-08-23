@@ -12,6 +12,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  * OOjs namespace.
  *
  * @external OO
+ * @global
  * @see https://doc.wikimedia.org/oojs/master/OO.html
  */
 
@@ -24,7 +25,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI field layout
+ * OOUI field layout.
  *
  * @class FieldLayout
  * @memberof external:OO.ui
@@ -32,7 +33,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI checkbox input widget
+ * OOUI checkbox input widget.
  *
  * @class CheckboxInputWidget
  * @memberof external:OO.ui
@@ -40,7 +41,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI radio select widget
+ * OOUI radio select widget.
  *
  * @class RadioSelectWidget
  * @memberof external:OO.ui
@@ -48,7 +49,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI radio option widget
+ * OOUI radio option widget.
  *
  * @class RadioOptionWidget
  * @memberof external:OO.ui
@@ -56,7 +57,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI action field layout
+ * OOUI action field layout.
  *
  * @class ActionFieldLayout
  * @memberof external:OO.ui
@@ -64,7 +65,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI text input widget
+ * OOUI text input widget.
  *
  * @class TextInputWidget
  * @memberof external:OO.ui
@@ -72,7 +73,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI process dialog
+ * OOUI process dialog.
  *
  * @class ProcessDialog
  * @memberof external:OO.ui
@@ -80,7 +81,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI process
+ * OOUI process.
  *
  * @class Process
  * @memberof external:OO.ui
@@ -88,7 +89,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI page layout
+ * OOUI page layout.
  *
  * @class PageLayout
  * @memberof external:OO.ui
@@ -96,7 +97,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI multiline text input widget
+ * OOUI multiline text input widget.
  *
  * @class MultilineTextInputWidget
  * @memberof external:OO.ui
@@ -104,7 +105,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI horizontal layout
+ * OOUI horizontal layout.
  *
  * @class HorizontalLayout
  * @memberof external:OO.ui
@@ -112,7 +113,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI button widget
+ * OOUI button widget.
  *
  * @class ButtonWidget
  * @memberof external:OO.ui
@@ -120,7 +121,7 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * OOUI popup button widget
+ * OOUI popup button widget.
  *
  * @class PopupButtonWidget
  * @memberof external:OO.ui
@@ -148,7 +149,7 @@ export function createWindowManager() {
  * returns an action string, not a boolean (which helps to differentiate between more than two types
  * of answer and also a window close by pressing Esc).
  *
- * @param {JQuery|string} message
+ * @param {external:jQuery|string} message
  * @param {object} [options={}]
  * @returns {Promise.<Array>}
  */
@@ -238,9 +239,10 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
 }
 
 /**
- * @typedef {Array} CheckboxFieldReturn
+ * @typedef {Array} CreateCheckboxFieldReturn
  * @property {external:OO.ui.FieldLayout} 0
  * @property {external:OO.ui.CheckboxInputWidget} 1
+ * @global
  */
 
 /**
@@ -254,7 +256,7 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
  * @param {string} [options.tabIndex]
  * @param {string} [options.title]
  * @param {string[]} [options.classes]
- * @returns {CheckboxFieldReturn}
+ * @returns {CreateCheckboxFieldReturn}
  */
 export function createCheckboxField({
   value,
@@ -279,10 +281,11 @@ export function createCheckboxField({
 }
 
 /**
- * @typedef {Array} RadioFieldReturn
+ * @typedef {Array} CreateRadioFieldReturn
  * @property {external:OO.ui.FieldLayout} 0
  * @property {external:OO.ui.RadioSelectWidget} 1
  * @property {external:OO.ui.RadioOptionWidget} 2
+ * @global
  */
 
 /**
@@ -293,7 +296,7 @@ export function createCheckboxField({
  * @param {boolean} [options.selected]
  * @param {string} [options.help]
  * @param {object[]} options.options
- * @returns {RadioFieldReturn}
+ * @returns {CreateRadioFieldReturn}
  */
 export function createRadioField({ label, selected, help, options }) {
   const items = options.map((config) => new OO.ui.RadioOptionWidget(config));

@@ -1,9 +1,3 @@
-/**
- * Comment class.
- *
- * @module Comment
- */
-
 import Button from './Button';
 import CdError from './CdError';
 import CommentButton from './CommentButton';
@@ -96,14 +90,14 @@ function getCommentPartRect(el) {
 /**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
- * @augments module:CommentSkeleton
+ * @augments CommentSkeleton
  */
-export default class Comment extends CommentSkeleton {
+class Comment extends CommentSkeleton {
   /**
    * Create a comment object.
    *
-   * @param {Parser} parser A relevant instance of {@link module:Parser Parser}.
-   * @param {object} signature Signature object returned by {@link module:Parser#findSignatures}.
+   * @param {Parser} parser A relevant instance of Parser.
+   * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
    */
   constructor(parser, signature) {
     super(parser, signature);
@@ -113,16 +107,16 @@ export default class Comment extends CommentSkeleton {
     }
 
     /**
-     * Comment author {@link module:userRegistry~User user object}.
+     * Comment author user object.
      *
-     * @type {User}
+     * @type {module:userRegistry~User}
      */
     this.author = userRegistry.getUser(this.authorName);
 
     /**
      * Comment signature element.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$signature = $(this.signatureElement);
 
@@ -238,7 +232,7 @@ export default class Comment extends CommentSkeleton {
     this.isCollapsed = false;
 
     /**
-     * List of the comment's {@link module:CommentSubitemList subitems}.
+     * List of the comment's {@link CommentSubitemList subitems}.
      *
      * @type {CommentSubitemList}
      */
@@ -246,7 +240,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Set the {@link module:Comment#anchorHighlightable} element.
+   * Set the {@link Comment#anchorHighlightable} element.
    *
    * @private
    */
@@ -280,8 +274,8 @@ export default class Comment extends CommentSkeleton {
       }
 
       /**
-       * A special {@link module:Comment#highlightables highlightable} used to
-       * {@link module:Comment#getLayersMargins determine layers margins}.
+       * A special {@link Comment#highlightables highlightable} used to
+       * {@link Comment#getLayersMargins determine layers margins}.
        *
        * @type {Element}
        * @private
@@ -340,6 +334,7 @@ export default class Comment extends CommentSkeleton {
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
+   * @global
    * @private
    */
 
@@ -437,7 +432,7 @@ export default class Comment extends CommentSkeleton {
     /**
      * Comment header. Used when comment reformatting is enabled.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$header = $(this.headerElement);
 
@@ -472,7 +467,7 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Add a menu to the bottom highlightable element of the comment and fill it with buttons. Used
-   * when comment reformatting is enabled; otherwise {@link module:Comment#createLayers} is used.
+   * when comment reformatting is enabled; otherwise {@link Comment#createLayers} is used.
    *
    * @private
    */
@@ -484,9 +479,9 @@ export default class Comment extends CommentSkeleton {
 
     /**
      * Comment menu. Used when comment reformatting is enabled; otherwise
-     * {@link module:Comment#$overlayMenu} is used.
+     * {@link Comment#$overlayMenu} is used.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$menu = $(this.menuElement);
 
@@ -499,8 +494,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#replyButton reply button} and add it to the comment menu
-   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   * Create a {@link Comment#replyButton reply button} and add it to the comment menu
+   * ({@link Comment#$menu} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -530,8 +525,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create an {@link module:Comment#editButton edit button} and add it to the comment menu
-   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   * Create an {@link Comment#editButton edit button} and add it to the comment menu
+   * ({@link Comment#$menu} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -561,8 +556,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#thankButton thank button} and add it to the comment menu
-   * ({@link module:Comment#$menu} or {@link module:Comment#$overlayMenu}).
+   * Create a {@link Comment#thankButton thank button} and add it to the comment menu
+   * ({@link Comment#$menu} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -606,8 +601,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#copyLinkButton copy link button} and add it to the comment menu
-   * ({@link module:Comment#$overlayMenu}).
+   * Create a {@link Comment#copyLinkButton copy link button} and add it to the comment menu
+   * ({@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -625,8 +620,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#goToParentButton go to parent button} and add it to the comment
-   * header ({@link module:Comment#$header} or {@link module:Comment#$overlayMenu}).
+   * Create a {@link Comment#goToParentButton go to parent button} and add it to the comment header
+   * ({@link Comment#$header} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -656,8 +651,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#goToChildButton go to child button} and add it to the comment
-   * header ({@link module:Comment#$header} or {@link module:Comment#$overlayMenu}).
+   * Create a {@link Comment#goToChildButton go to child button} and add it to the comment header
+   * ({@link Comment#$header} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -735,8 +730,8 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Filter out floating and hidden elements from the comment's
-   * {@link module:CommentSkeleton#highlightables}, change their attributes, and update the
-   * comment's level and parent elements' level classes.
+   * {@link CommentSkeleton#highlightables}, change their attributes, and update the comment's level
+   * and parent elements' level classes.
    *
    * @private
    */
@@ -830,12 +825,13 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef CommentOffset
+   * @typedef {object} CommentOffset
    * @param {number} top
    * @param {number} bottom
    * @param {number} left
    * @param {number} right
    * @param {number} downplayedBottom
+   * @global
    */
 
   /**
@@ -943,8 +939,8 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Set the {@link module:Comment#isStartStretched isStartStretched} and
-   * {@link module:Comment#isEndStretched isEndStretched} properties.
+   * Set the {@link Comment#isStartStretched isStartStretched} and
+   * {@link Comment#isEndStretched isEndStretched} properties.
    *
    * @param {number} left Left offset.
    * @param {number} right Right offset.
@@ -983,9 +979,9 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Get the coordinates of the comment. Optionally set them as the `offset` or `roughOffset`
-   * property. Also set the {@link module:Comment#isStartStretched isStartStretched} and
-   * {@link module:Comment#isEndStretched isEndStretched} properties (if `options.considerFloating`
-   * is `true`).
+   * property. Also set the {@link Comment#isStartStretched isStartStretched} and
+   * {@link Comment#isEndStretched isEndStretched} properties (if `options.considerFloating` is
+   * `true`).
    *
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
@@ -1004,9 +1000,9 @@ export default class Comment extends CommentSkeleton {
    *   offset will be updated afterwards - otherwise, the next attempt to call this method to update
    *   the layers offset will return `false` meaning the comment isn't moved, and the layers offset
    *   will stay wrong.
-   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
-   *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
-   *   moved instead of the offset.
+   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible,
+   *   returns `null`. If `options.set` is `true`, returns a boolean value indicating if the comment
+   *   is moved instead of the offset.
    * @private
    */
   getOffset(options = {}) {
@@ -1096,13 +1092,14 @@ export default class Comment extends CommentSkeleton {
    * @typedef {object} CommentMargins
    * @property {number} left Left margin.
    * @property {number} right Right margin.
+   * @global
    * @private
    */
 
   /**
    * Get the left and right margins of the comment layers or the expand note.
-   * {@link module:Comment#isStartStretched isStartStretched} and
-   * {@link module:Comment#isEndStretched isEndStretched} should have already been set.
+   * {@link Comment#isStartStretched isStartStretched} and
+   * {@link Comment#isEndStretched isEndStretched} should have already been set.
    *
    * @returns {CommentMargins}
    */
@@ -1216,21 +1213,21 @@ export default class Comment extends CommentSkeleton {
     /**
      * Comment's underlay.
      *
-     * @type {?(JQuery|undefined)}
+     * @type {?(external:jQuery|undefined)}
      */
     this.$underlay = $(this.underlay);
 
     /**
      * Comment's overlay.
      *
-     * @type {?(JQuery|undefined)}
+     * @type {?(external:jQuery|undefined)}
      */
     this.$overlay = $(this.overlay);
 
     /**
      * Comment's side marker.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$marker = $(this.marker);
 
@@ -1238,14 +1235,14 @@ export default class Comment extends CommentSkeleton {
       /**
        * Menu element in the comment's overlay.
        *
-       * @type {JQuery|undefined}
+       * @type {external:jQuery|undefined}
        */
       this.$overlayMenu = $(this.overlayMenu);
 
       /**
        * Gradient element in the comment's overlay.
        *
-       * @type {JQuery|undefined}
+       * @type {external:jQuery|undefined}
        */
       this.$overlayGradient = $(this.overlayGradient);
     }
@@ -1254,9 +1251,10 @@ export default class Comment extends CommentSkeleton {
      * Comment layers have been created.
      *
      * @event commentLayersCreated
-     * @type {module:cd~convenientDiscussions}
+     * @param {Comment} comment
+     * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
+    mw.hook('convenientDiscussions.commentLayersCreated').fire(this, cd);
   }
 
   /**
@@ -1312,7 +1310,7 @@ export default class Comment extends CommentSkeleton {
    * and redraw if the comment has been moved or do nothing if everything is right.
    *
    * @param {object} [options={}]
-   * @param {boolean} [options.add=true] Add the layers in case they are created. If set to false,
+   * @param {boolean} [options.add=true] Add the layers in case they are created. If set to `false`,
    *   it is expected that the layers created during this procedure, if any, will be added
    *   afterwards (otherwise there would be layers without a parent element which would lead to
    *   bugs).
@@ -1452,6 +1450,7 @@ export default class Comment extends CommentSkeleton {
    * @typedef {object} LayersContainerOffset
    * @property {number} top Top offset.
    * @property {number} left Left offset.
+   * @global
    * @private
    */
 
@@ -1520,7 +1519,7 @@ export default class Comment extends CommentSkeleton {
 
   /**
    * Animate the comment's background and marker color to the provided colors. (Called from
-   * {@link module:Comment#animateBack}.)
+   * {@link Comment#animateBack}.)
    *
    * @param {string} markerColor
    * @param {string} backgroundColor
@@ -1632,7 +1631,7 @@ export default class Comment extends CommentSkeleton {
     /**
      * Comment underlay and menu, whose colors are animated in some events.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$animatedBackground = this.$underlay.add(this.$overlayMenu);
 
@@ -1705,7 +1704,7 @@ export default class Comment extends CommentSkeleton {
     let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
     let revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
 
-    const revisionsRequest = cd.g.api.post({
+    const revisionsRequest = cd.g.mwApi.post({
       action: 'query',
       revids: [revisionIdLesser, revisionIdGreater],
       prop: 'revisions',
@@ -1715,7 +1714,7 @@ export default class Comment extends CommentSkeleton {
       formatversion: 2,
     }).catch(handleApiReject);
 
-    const compareRequest = cd.g.api.post({
+    const compareRequest = cd.g.mwApi.post({
       action: 'compare',
       fromtitle: this.getSourcePage().name,
       fromrev: revisionIdLesser,
@@ -1858,7 +1857,7 @@ export default class Comment extends CommentSkeleton {
     }
 
     let diffLink;
-    if (type !== 'deleted' && this.getSourcePage().name === cd.g.PAGE.name) {
+    if (type !== 'deleted' && this.getSourcePage().name === cd.page.name) {
       diffLink = new Button({
         label: cd.s('comment-diff'),
         action: async () => {
@@ -1936,9 +1935,9 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update the comment's properties, remove the edit mark added in
-   * {@link module:Comment#markAsChanged} and flash the comment as changed if it has been (reset to
-   * the original version, or unchanged, in this case).
+   * Update the comment's properties, remove the edit mark added in {@link Comment#markAsChanged}
+   * and flash the comment as changed if it has been (reset to the original version, or unchanged,
+   * in this case).
    *
    * @param {string} type Type of the mark: `'changed'` or `'deleted'`.
    */
@@ -2137,7 +2136,7 @@ export default class Comment extends CommentSkeleton {
    * _For internal use._ Generate a JQuery object containing an edit summary, diff body, and link to
    * the next diff.
    *
-   * @returns {Promise.<JQuery>}
+   * @returns {Promise.<external:jQuery>}
    */
   async generateDiffView() {
     const edit = await this.findEditThatAdded();
@@ -2159,7 +2158,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Copy a link to the comment or open a copy link dialog.
+   * Open a copy link dialog (rarely, copy a link to the comment without opening a dialog).
    *
    * @param {Event} e
    */
@@ -2196,7 +2195,7 @@ export default class Comment extends CommentSkeleton {
       rvlimit: 500,
     });
 
-    const compareRequests = revisions.map((revision) => cd.g.api.post({
+    const compareRequests = revisions.map((revision) => cd.g.mwApi.post({
       action: 'compare',
       fromtitle: this.getSourcePage().getArchivedPage().name,
       fromrev: revision.revid,
@@ -2249,7 +2248,7 @@ export default class Comment extends CommentSkeleton {
 
       if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
-          const html = (await parseCode(diffOriginalText, { title: cd.g.PAGE.name })).html;
+          const html = (await parseCode(diffOriginalText, { title: cd.page.name })).html;
           diffOriginalText = $('<div>').append(html).cdGetText();
         } catch (e) {
           throw new CdError({
@@ -2290,7 +2289,7 @@ export default class Comment extends CommentSkeleton {
     if (short) {
       return `${cd.g.SERVER}/?diff=${edit.revid}`;
     } else {
-      const urlEnding = decodeURI(cd.g.PAGE.getArchivedPage().getUrl({ diff: edit.revid }));
+      const urlEnding = decodeURI(cd.page.getArchivedPage().getUrl({ diff: edit.revid }));
       return `${cd.g.SERVER}${urlEnding}`;
     }
   }
@@ -2385,7 +2384,7 @@ export default class Comment extends CommentSkeleton {
     const $content = $('<div>').append($question, $diff);
     if (await OO.ui.confirm($content, { size: 'larger' })) {
       try {
-        await cd.g.api.postWithEditToken(cd.g.api.assertCurrentUser({
+        await cd.g.mwApi.postWithEditToken(cd.g.mwApi.assertCurrentUser({
           action: 'thank',
           rev: edit.revid,
           source: cd.config.scriptCodeName,
@@ -2410,7 +2409,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link module:Comment#replyForm reply form} for the comment.
+   * Create a {@link Comment#replyForm reply form} for the comment.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -2432,7 +2431,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create an {@link module:Comment#editForm edit form} for the comment.
+   * Create an {@link Comment#editForm edit form} for the comment.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -2498,7 +2497,7 @@ export default class Comment extends CommentSkeleton {
    * Determine if the comment is in the viewport. Return `null` if we couldn't get the comment's
    * offset.
    *
-   * @param {boolean} partially Return true even if only a part of the comment is in the viewport.
+   * @param {boolean} partially Return `true` even if only a part of the comment is in the viewport.
    * @param {object} [offset=this.getOffset()] Prefetched offset.
    * @returns {?boolean}
    */
@@ -2516,8 +2515,7 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * Mark the comment as seen, and also {@link module:Comment#flash flash} comments that are set to
-   * flash.
+   * Mark the comment as seen, and also {@link Comment#flash flash} comments that are set to flash.
    *
    * @param {string} [registerAllInDirection] Mark all comments in the forward (`'forward'`) or
    *   backward (`'backward'`) direction from this comment as seen.
@@ -2552,10 +2550,10 @@ export default class Comment extends CommentSkeleton {
    * Comment elements as a jQuery object.
    *
    * Uses a getter because elements of a comment can be altered after creating an instance, for
-   * example with {@link module:Comment#replaceElement}. Using a getter also allows to save a little
-   * time on running `$()`, although that alone is perhaps not enough to create it.
+   * example with {@link Comment#replaceElement}. Using a getter also allows to save a little time
+   * on running `$()`, although that alone is perhaps not enough to create it.
    *
-   * @type {JQuery}
+   * @type {external:jQuery}
    */
   get $elements() {
     if (this.cached$elements === undefined) {
@@ -2574,8 +2572,8 @@ export default class Comment extends CommentSkeleton {
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
    * @param {Element|JQuery} element Element to replace. Provide a native element only if we're in
-   *   the page processing phase (and {@link module:Comment#$elements} has not been requested, hence
-   *   cached yet).
+   *   the page processing phase (and {@link Comment#$elements} has not been requested, hence cached
+   *   yet).
    * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
    */
   replaceElement(element, newElementOrHtml) {
@@ -3148,8 +3146,8 @@ export default class Comment extends CommentSkeleton {
    * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
    * passed, set the results to the `inCode` property. Otherwise, return the result.
    *
-   * It is expected that the section or page code is loaded (using {@link module:Page#getCode})
-   * before this method is called. Otherwise, the method will throw an error.
+   * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
+   * method is called. Otherwise, the method will throw an error.
    *
    * @param {string|boolean} [codeOrUseSectionCode] Code that should have the comment (provided only
    *   if we need to perform operations on some code that is not the code of a section or page).
@@ -3202,15 +3200,15 @@ export default class Comment extends CommentSkeleton {
    *
    * @param {object} options
    * @param {string} options.action `'reply'` or `'edit'`.
-   * @param {string} [options.commentCode] Comment code, including newlines, indentation characters,
-   *   and the signature. Can be not set if `doDelete` is `true`.
+   * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
+   *   characters, and the signature. Can be not set if `doDelete` is `true`.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
    * @param {string} [options.wholeCode] Code that has the comment. Usually not needed; provide it
-   *   together with `thisInCode` only if we need to perform operations on some code that is not the
-   *   code of a section or page).
-   * @param {string} [options.thisInCode] Result of {@link module:Comment#locateInCode} called with
-   *   the code in the first parameter. Usually not needed; provide it together with `wholeCode`
-   *   only if we need to perform operations on some code that is not the code of a section or page.
+   *   together with `thisInCode` only if you need to perform operations on some code that is not
+   *   the code of a section or page).
+   * @param {string} [options.thisInCode] Result of {@link Comment#locateInCode} called with code in
+   *   the first parameter. Usually not needed; provide it together with `wholeCode` only if you
+   *   need to perform operations on some code that is not the code of a section or page.
    * @returns {string} New code.
    * @throws {CdError}
    */
@@ -3450,7 +3448,7 @@ export default class Comment extends CommentSkeleton {
    * @type {Page}
    */
   getSourcePage() {
-    return this.section ? this.section.getSourcePage() : cd.g.PAGE;
+    return this.section ? this.section.getSourcePage() : cd.page;
   }
 
   /**
@@ -3493,14 +3491,15 @@ export default class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {JQuery[]} CreateSublevelItemReturn
-   * @property {JQuery} 0 Wrapping item.
-   * @property {JQuery} [1] Wrapping list.
-   * @property {JQuery} [2] Outer wrapper.
+   * @typedef {external:jQuery[]} CreateSublevelItemReturn
+   * @property {external:jQuery} 0 Wrapping item.
+   * @property {external:jQuery} [1] Wrapping list.
+   * @property {external:jQuery} [2] Outer wrapper.
+   * @global
    */
 
   /**
-   * Add an item to the comment's {@link module:CommentSubitemList subitem list}.
+   * Add an item to the comment's {@link CommentSubitemList subitem list}.
    *
    * @param {string} name
    * @param {string} position
@@ -3624,3 +3623,5 @@ export default class Comment extends CommentSkeleton {
 }
 
 Object.assign(Comment, CommentStatic);
+
+export default Comment;

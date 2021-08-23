@@ -266,7 +266,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name CONTENT_TIMESTAMP_REGEXP
      * @type {RegExp}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.CONTENT_TIMESTAMP_REGEXP = new RegExp(mainPartPattern + ' +' + timezonePattern);
 
@@ -275,7 +275,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name CONTENT_TIMESTAMP_NO_TZ_REGEXP
      * @type {RegExp}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP = new RegExp(mainPartPattern);
 
@@ -284,7 +284,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name CONTENT_TIMESTAMP_MATCHING_GROUPS
      * @type {string[]}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.CONTENT_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.CONTENT_DATE_FORMAT);
 
@@ -293,7 +293,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name TIMEZONE_REGEXP
      * @type {RegExp}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.TIMEZONE_REGEXP = new RegExp(timezonePattern, 'g');
   } else {
@@ -302,7 +302,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name UI_TIMESTAMP_REGEXP
      * @type {RegExp}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.UI_TIMESTAMP_REGEXP = new RegExp(getTimestampMainPartPattern('user'));
 
@@ -311,7 +311,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name UI_TIMESTAMP_MATCHING_GROUPS
      * @type {string[]}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.UI_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.UI_DATE_FORMAT);
   }
@@ -324,7 +324,7 @@ export function initTimestampParsingTools(language) {
    *
    * @name UI_TIMEZONE
    * @type {?(string|number)}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.UI_TIMEZONE = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
   if (cd.g.UI_TIMEZONE === 0) {
@@ -336,7 +336,7 @@ export function initTimestampParsingTools(language) {
    *
    * @name UI_TIMEZONE_OFFSET
    * @type {?number}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.UI_TIMEZONE_OFFSET = Number(timezoneParts[1]) ?? null;
 
@@ -348,7 +348,7 @@ export function initTimestampParsingTools(language) {
      *
      * @name ARE_TIMESTAMPS_ALTERED
      * @type {boolean|undefined}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.ARE_TIMESTAMPS_ALTERED = (
       (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
@@ -458,6 +458,7 @@ export function getDateFromTimestampMatch(match, timezone) {
  * @typedef {object} ParseTimestampReturn
  * @property {Date} date
  * @property {object} match
+ * @global
  */
 
 /**
@@ -837,6 +838,7 @@ export function resetCommentAnchors() {
  * @typedef {object} ParseCommentAnchorReturn
  * @property {Date} date
  * @property {string} author
+ * @global
  */
 
 /**

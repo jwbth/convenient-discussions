@@ -100,6 +100,7 @@ export default {
    * @property {string} male
    * @property {string} female
    * @property {string} unknown
+   * @global
    */
 
   /**
@@ -128,8 +129,9 @@ export default {
    * @property {RegExp[]} [replacements] Array of replacements for `$1`, `$2` tokens in
    *   `source` and `archive`. Note that the regexp should, if put into the `archive` pattern,
    *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
-   *   in "Wikipedia:Discussion/Archive/General/2020/07", it should capture "General", but not
+   *   in "Wikipedia:Village pump/Archive/General/2020/07", it should capture "General", but not
    *   "General/2020/07". So, you shouldn't use `/.+/` here and use, for example, `/[^/]+/` instead.
+   * @global
    */
 
   /**
@@ -141,10 +143,10 @@ export default {
    * - to make diff/thank links work on archive pages.
    *
    * Each of the array elements can be an object with the defined structure (see
-   * {@link module:defaultConfig~ArchivePathEntry} for details) or a regexp. In the latter case, if
-   * a page name matches the regexp, it will be considered an archive page, and the name of the
-   * source page for that page will be obtained by removing everything that starts with the pattern
-   * in the page name (i.e., the actually used regexp will end with `.*`).
+   * {@link ArchivePathEntry} for details) or a regexp. In the latter case, if a page name matches
+   * the regexp, it will be considered an archive page, and the name of the source page for that
+   * page will be obtained by removing everything that starts with the pattern in the page name
+   * (i.e., the actually used regexp will end with `.*`).
    *
    * The entries are applied in the order of their presence in the array. So, if a page name fits
    * two patterns, the one closer to the beginning of the array is used.
@@ -154,12 +156,12 @@ export default {
    * @example
    * [
    *   {
-   *     source: 'Wikipedia:Discussion/Geography',
-   *     archive: 'Wikipedia:Discussion/Geography/Archives/',
+   *     source: 'Wikipedia:Village pump/Geography',
+   *     archive: 'Wikipedia:Village pump/Geography/Archives/',
    *   },
    *   {
-   *     source: 'Wikipedia:Discussion/$1',
-   *     archive: 'Wikipedia:Discussion/Archive/$1/',
+   *     source: 'Wikipedia:Village pump/$1',
+   *     archive: 'Wikipedia:Village pump/Archive/$1/',
    *     replacements: [/[^/]+/],
    *   },
    *   /\/Archive/,
@@ -435,15 +437,15 @@ export default {
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of them)
    * when editing comments. This is in addition to
-   * {@link module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and
-   * usually end with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the
-   * end for the script to work properly.
+   * {@link convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
+   * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
+   * script to work properly.
    *
    * @type {RegExp[]}
    * @default []
    * @example
    * [
-   *   // But comments are cut out of comment beginnings by default
+   *   // But comments are cut out of comment beginnings by default, so you won't need to specify it.
    *   /^<!--[^]*?--> *\n+/,
    * ]
    */
@@ -598,10 +600,11 @@ export default {
    * @property {string} name Latin letters, digits, `-`.
    * @property {string} [type='notice'] For example, `notice`.
    * @property {Function} [checkFunc] If this function returns false, no message is displayed.
+   * @global
    */
 
   /**
-   * Custom {@link module:defaultConfig~Reaction reactions}.
+   * Custom {@link Reaction reactions}.
    *
    * @type {Reaction[]}
    * @default []
@@ -611,13 +614,14 @@ export default {
   /**
    * @typedef {object} Module
    * @property {string} name Name of the module.
-   * @property {Function} [checkFunc] Function that must return true for the module to be loaded (if
-   *   it is present).
+   * @property {Function} [checkFunc] Function that must return `true` for the module to be loaded
+   *   (if it is present).
+   * @global
    */
 
   /**
-   * Load these modules on comment form creation. See {@link module:defaultConfig~Module} for the
-   * object structure. If `checkFunc` is set, the module will be loaded if the condition is met.
+   * Load these modules on comment form creation. See {@link Module} for the object structure. If
+   * `checkFunc` is set, the module will be loaded if the condition is met.
    *
    * @type {Module[]}
    * @default []

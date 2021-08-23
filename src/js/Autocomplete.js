@@ -1,9 +1,3 @@
-/**
- * Autocomplete mechanism.
- *
- * @module Autocomplete
- */
-
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import userRegistry from './userRegistry';
@@ -49,9 +43,9 @@ function search(s, list) {
 }
 
 /**
- * Autocomplete class.
+ * Autocomplete dropdown class.
  */
-export default class Autocomplete {
+class Autocomplete {
   /**
    * Create an autocomplete instance. An instance is a set of settings and inputs to which these
    * settings apply.
@@ -69,7 +63,7 @@ export default class Autocomplete {
     types = types
       // The "mentions" type is needed in any case, as it can be triggered from the toolbar. When it
       // is not, we will suppress it specifically.
-      .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions')
+      .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions');
 
     const collections = this.getCollections(types, comments, defaultUserNames);
 
@@ -398,7 +392,7 @@ export default class Autocomplete {
                 input.setDisabled(true);
                 input.pushPending();
 
-                cd.g.api.get({
+                cd.g.mwApi.get({
                   action: 'templatedata',
                   titles: `Template:${item.original.key}`,
                   redirects: true,
@@ -598,7 +592,7 @@ export default class Autocomplete {
               },
             };
           },
-          removeSelf: (arr) => arr.filter((item) => item !== cd.g.USER_NAME),
+          removeSelf: (arr) => arr.filter((item) => item !== cd.user.name),
         };
         config.default = config.removeSelf(arguments[1] || []);
         break;
@@ -772,3 +766,5 @@ export default class Autocomplete {
     return config;
   }
 }
+
+export default Autocomplete;

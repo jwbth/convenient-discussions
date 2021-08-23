@@ -38,7 +38,7 @@ function setFormats() {
    *
    * @name CONTENT_DATE_FORMAT
    * @type {string}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.CONTENT_DATE_FORMAT = DATE_FORMATS[contentLanguage];
 
@@ -47,7 +47,7 @@ function setFormats() {
    *
    * @name UI_DATE_FORMAT
    * @type {string}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.UI_DATE_FORMAT = DATE_FORMATS[userLanguage];
 
@@ -56,7 +56,7 @@ function setFormats() {
    *
    * @name CONTENT_DIGITS
    * @type {string}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.CONTENT_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[contentLanguage] : null;
 
@@ -65,7 +65,7 @@ function setFormats() {
    *
    * @name UI_DIGITS
    * @type {string}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.UI_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[userLanguage] : null;
 }
@@ -159,7 +159,7 @@ export function loadSiteData() {
     const messagesToRequest = contentLanguageMessageNames.concat(userLanguageMessageNames);
     let nextNames;
     while ((nextNames = messagesToRequest.splice(0, 50)).length) {
-      const request = cd.g.api.loadMessagesIfMissing(nextNames);
+      const request = cd.g.mwApi.loadMessagesIfMissing(nextNames);
       requests.push(request);
       if (requests.length === 1) {
         request.then(() => {
@@ -172,13 +172,13 @@ export function loadSiteData() {
     const contentLanguageMessagesToRequest = contentLanguageMessageNames
       .filter((name) => !cd.g.contentLanguageMessages[name]);
     while ((nextNames = contentLanguageMessagesToRequest.splice(0, 50)).length) {
-      const request = cd.g.api.getMessages(nextNames, {
+      const request = cd.g.mwApi.getMessages(nextNames, {
         amlang: mw.config.get('wgContentLanguage'),
       }).then(setContentLanguageMessages);
       requests.push(request);
     }
 
-    const userLanguageMessagesRequest = cd.g.api.loadMessagesIfMissing(userLanguageMessageNames);
+    const userLanguageMessagesRequest = cd.g.mwApi.loadMessagesIfMissing(userLanguageMessageNames);
     requests.push(userLanguageMessagesRequest);
   }
 
@@ -187,7 +187,7 @@ export function loadSiteData() {
    *
    * @name CONTRIBS_PAGE
    * @type {string}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.CONTRIBS_PAGE = cd.config.contribsPage;
 
@@ -196,12 +196,12 @@ export function loadSiteData() {
    *
    * @name CONTENT_TIMEZONE
    * @type {?string}
-   * @memberof module:cd~convenientDiscussions.g
+   * @memberof convenientDiscussions.g
    */
   cd.g.CONTENT_TIMEZONE = cd.config.timezone;
 
   if (!cd.g.CONTRIBS_PAGE || !cd.g.CONTENT_TIMEZONE) {
-    const request = cd.g.api.get({
+    const request = cd.g.mwApi.get({
       action: 'query',
       meta: 'siteinfo',
       siprop: ['specialpagealiases', 'general'],

@@ -1,9 +1,3 @@
-/**
- * Page class.
- *
- * @module Page
- */
-
 import CdError from './CdError';
 import cd from './cd';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
@@ -13,16 +7,14 @@ import { parseTimestamp } from './timestamp';
 
 /**
  * Class representing a wiki page (a page for which the `wgIsArticle` config value is `true`).
- *
- * @module Page
  */
-export default class Page {
+class Page {
   /**
    * Create a page instance.
    *
    * @param {string|mw.Title} nameOrMwTitle
    * @param {boolean} [normalizeNamespace=true] Whether to normalize the namespace name for the
-   *   {@link module:Page#name name} property (usually used to keep the gendered namespace name).
+   *   {@link Page#name name} property (usually used to keep the gendered namespace name).
    * @throws {CdError}
    */
   constructor(nameOrMwTitle, normalizeNamespace = true) {
@@ -81,15 +73,15 @@ export default class Page {
   }
 
   /**
-   * Check if the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}
-   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
+   * Check if the page is an archive page. Relies on {@link defaultConfig.archivePaths} and/or, for
+   * the current page, elements with the class `cd-archivingInfo` and attribute
    * `data-is-archive-page`.
    *
    * @returns {boolean}
    */
   isArchivePage() {
     let result;
-    if (this === cd.g.PAGE) {
+    if (this === cd.page) {
       result = cd.g.$root.find('.cd-archivingInfo').data('isArchivePage');
     }
     if (result === undefined) {
@@ -108,9 +100,9 @@ export default class Page {
 
   /**
    * Check if this page can have archives. If the page is an archive page, returns `false`. Relies
-   * on {@link module:defaultConfig.pagesWithoutArchives} and
-   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
-   * `cd-archivingInfo` and attribute `data-can-have-archives`.
+   * on {@link defaultConfig.pagesWithoutArchives} and {@link defaultConfig.archivePaths} and/or,
+   * for the current page, elements with the class `cd-archivingInfo` and attribute
+   * `data-can-have-archives`.
    *
    * @returns {?boolean}
    */
@@ -119,7 +111,7 @@ export default class Page {
       return false;
     }
     let result;
-    if (this === cd.g.PAGE) {
+    if (this === cd.page) {
       result = cd.g.$root.find('.cd-archivingInfo').data('canHaveArchives');
     }
     if (result === undefined) {
@@ -131,7 +123,7 @@ export default class Page {
 
   /**
    * Get the archive prefix for the page. If no prefix is found based on
-   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * {@link defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-archive-prefix`, returns the current page's name. If the
    * page is an archive page or can't have archives, returns `null`.
    *
@@ -142,7 +134,7 @@ export default class Page {
       return null;
     }
     let result;
-    if (this === cd.g.PAGE) {
+    if (this === cd.page) {
       result = cd.g.$root.find('.cd-archivingInfo').data('archivePrefix');
     }
     const name = this.realName || this.name;
@@ -160,15 +152,15 @@ export default class Page {
 
   /**
    * Get the source page for the page (i.e., the page from which archiving is happening). Returns
-   * the page itself if it is not an archive page. Relies on
-   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
-   * `cd-archivingInfo` and attribute `data-archived-page`.
+   * the page itself if it is not an archive page. Relies on {@link defaultConfig.archivePaths}
+   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
+   * `data-archived-page`.
    *
    * @returns {Page}
    */
   getArchivedPage() {
     let result;
-    if (this === cd.g.PAGE) {
+    if (this === cd.page) {
       result = cd.g.$root.find('.cd-archivingInfo').data('archivedPage');
     }
     if (!result) {
@@ -196,13 +188,13 @@ export default class Page {
    * @throws {CdError}
    */
   async getCode(tolerateMissing = true) {
-    const resp = await cd.g.api.post({
+    const resp = await cd.g.mwApi.post({
       action: 'query',
       titles: this.name,
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !(this === cd.page && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
       formatversion: 2,
     }).catch(handleApiReject);
@@ -251,56 +243,59 @@ export default class Page {
     const redirectTarget = query.redirects?.[0]?.to || null;
 
     /**
-     * Page ID on the wiki. Filled upon running {@link module:Page#getCode} or
-     * {@link module:Page#edit}. In the latter case, it is useful for newly created pages.
+     * Page ID on the wiki. Filled upon running {@link Page#getCode} or {@link Page#edit}. In the
+     * latter case, it is useful for newly created pages.
      *
      * @name pageId
      * @type {number|undefined}
+     * @memberof Page
      * @instance
      */
 
     /**
-     * Page code. Filled upon running {@link module:Page#getCode}.
+     * Page code. Filled upon running {@link Page#getCode}.
      *
      * @name code
      * @type {string|undefined}
+     * @memberof Page
      * @instance
      */
 
     /**
-     * ID of the revision that has {@link module:Page#code}. Filled upon running
-     * {@link module:Page#getCode}.
+     * ID of the revision that has {@link Page#code}. Filled upon running {@link Page#getCode}.
      *
      * @name revisionId
      * @type {number|undefined}
+     * @memberof Page
      * @instance
      */
 
     /**
-     * Page where {@link module:Page#name} redirects. Filled upon running
-     * {@link module:Page#getCode}.
+     * Page where {@link Page#name} redirects. Filled upon running {@link Page#getCode}.
      *
      * @name redirectTarget
      * @type {?(string|undefined)}
+     * @memberof Page
      * @instance
      */
 
     /**
-     * If {@link module:Page#name} redirects to some other page, the value is that page. If not, the
-     * value is the same as {@link module:Page#name}. Filled upon running
-     * {@link module:Page#getCode}.
+     * If {@link Page#name} redirects to some other page, the value is that page. If not, the value
+     * is the same as {@link Page#name}. Filled upon running {@link Page#getCode}.
      *
      * @name realName
      * @type {string|undefined}
+     * @memberof Page
      * @instance
      */
 
     /**
-     * Time when {@link module:Page#code} was queried (as the server reports it). Filled upon
-     * running {@link module:Page#getCode}.
+     * Time when {@link Page#code} was queried (as the server reports it). Filled upon running
+     * {@link Page#getCode}.
      *
      * @name queryTimestamp
      * @type {string|undefined}
+     * @memberof Page
      * @instance
      */
 
@@ -346,7 +341,7 @@ export default class Page {
       delete options.page;
     }
 
-    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options);
+    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
     request = request.catch(handleApiReject);
 
     const parse = (await request).parse;
@@ -365,7 +360,7 @@ export default class Page {
   }
 
   /**
-   * Get a list of revisions of the page ("redirects" is set to true by default).
+   * Get a list of revisions of the page (the `redirects` parameter is set to `true` by default).
    *
    * @param {object} [customOptions={}]
    * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
@@ -378,12 +373,12 @@ export default class Page {
       titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
-      redirects: !(this === cd.g.PAGE && mw.config.get('wgIsRedirect')),
+      redirects: !(this === cd.page && mw.config.get('wgIsRedirect')),
       formatversion: 2,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options);
+    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
     request = request.catch(handleApiReject);
 
     const revisions = (await request).query?.pages?.[0]?.revisions;
@@ -401,7 +396,8 @@ export default class Page {
    * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
    *
    * @param {object} options
-   * @param {string} options.commentCode Comment code.
+   * @param {string} options.commentCode Comment code, including trailing newlines and the
+   *   signature.
    * @param {CommentForm} options.commentForm Comment form that has the code.
    * @returns {string}
    */
@@ -432,8 +428,8 @@ export default class Page {
    *
    * @param {object} customOptions See {@link https://www.mediawiki.org/wiki/API:Edit}. At least
    *   `text` should be set. `summary` is recommended. `baserevid` and `starttimestamp` are needed
-   *   to avoid edit conflicts. `baserevid` can be taken from {@link module:Page#revisionId};
-   *   `starttimestamp` can be taken from {@link module:Page#queryTimestamp}.
+   *   to avoid edit conflicts. `baserevid` can be taken from {@link Page#revisionId};
+   *   `starttimestamp` can be taken from {@link Page#queryTimestamp}.
    * @returns {Promise.<number|string>} Unix time of the edit or `'nochange'` if nothing has
    * changed.
    */
@@ -445,14 +441,14 @@ export default class Page {
       title: this.realName || this.name,
 
       notminor: !customOptions.minor,
-      tags: cd.g.USER.isRegistered() ? cd.config.tagName : undefined,
+      tags: cd.user.isRegistered() ? cd.config.tagName : undefined,
       formatversion: 2,
     };
-    const options = cd.g.api.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
+    const options = cd.g.mwApi.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
 
     let resp;
     try {
-      resp = await cd.g.api.postWithEditToken(options).catch(handleApiReject);
+      resp = await cd.g.mwApi.postWithEditToken(options).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, apiData } = e.data;
@@ -479,7 +475,7 @@ export default class Page {
 
               case 'abusefilter-warning':
               case 'abusefilter-disallowed': {
-                await cd.g.api.loadMessagesIfMissing([code]);
+                await cd.g.mwApi.loadMessagesIfMissing([code]);
                 const description = mw.message(code, error.abusefilter.description).plain();
                 try {
                   message = (await parseCode(description)).html;
@@ -585,19 +581,21 @@ export default class Page {
 
     /**
      * Whether new topics go on top on this page. Filled upon running
-     * {@link module:Page#analyzeNewTopicPlacement}.
+     * {@link Page#analyzeNewTopicPlacement}.
      *
      * @name areNewTopicsOnTop
      * @type {boolean|undefined}
+     * @memberof Page
      * @instance
      */
 
     /**
      * The start index of the first section, if new topics are on top on this page. Filled upon
-     * running {@link module:Page#analyzeNewTopicPlacement}.
+     * running {@link Page#analyzeNewTopicPlacement}.
      *
      * @name firstSectionStartIndex
      * @type {number|undefined}
+     * @memberof Page
      * @instance
      */
     Object.assign(this, { areNewTopicsOnTop, firstSectionStartIndex });
@@ -607,7 +605,7 @@ export default class Page {
    * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
    */
   async purge() {
-    await cd.g.api.post({
+    await cd.g.mwApi.post({
       action: 'purge',
       titles: this.name,
     }).catch(() => {
@@ -621,7 +619,7 @@ export default class Page {
    * @param {number} revisionId Revision to mark as read (setting all newer revisions unread).
    */
   async markAsRead(revisionId) {
-    await cd.g.api.postWithEditToken({
+    await cd.g.mwApi.postWithEditToken({
       action: 'setnotificationtimestamp',
       titles: this.name,
       newerthanrevid: revisionId,
@@ -629,3 +627,5 @@ export default class Page {
     });
   }
 }
+
+export default Page;

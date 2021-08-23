@@ -1,9 +1,3 @@
-/**
- * "Edit watched sections" dialog class.
- *
- * @module EditWatchedSectionsDialog
- */
-
 import CdError from './CdError';
 import cd from './cd';
 import { addPreventUnloadCondition } from './eventHandlers';
@@ -17,7 +11,7 @@ import { getWatchedSections, setWatchedSections } from './options';
  *
  * @augments external:OO.ui.ProcessDialog
  */
-export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
+class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
   static name = 'editWatchedSectionsDialog';
   static title = cd.s('ewsd-title');
   static actions = [
@@ -275,3 +269,5 @@ export default class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
 }
 
 tweakUserOoUiClass(EditWatchedSectionsDialog, OO.ui.ProcessDialog);
+
+export default EditWatchedSectionsDialog;

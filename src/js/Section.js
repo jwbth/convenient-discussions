@@ -1,9 +1,3 @@
-/**
- * Section class.
- *
- * @module Section
- */
-
 import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
@@ -36,13 +30,13 @@ let elementPrototypes;
 /**
  * Class representing a section.
  *
- * @augments module:SectionSkeleton
+ * @augments SectionSkeleton
  */
-export default class Section extends SectionSkeleton {
+class Section extends SectionSkeleton {
   /**
    * Create a section object.
    *
-   * @param {Parser} parser A relevant instance of {@link module:Parser Parser}.
+   * @param {Parser} parser A relevant instance of Parser.
    * @param {Element} headingElement
    * @param {Promise} watchedSectionsRequest
    * @throws {CdError}
@@ -66,7 +60,7 @@ export default class Section extends SectionSkeleton {
     this.liveSectionNumber = this.sectionNumber;
 
     /**
-     * Revision ID of {@link module:Section#liveSectionNumber}.
+     * Revision ID of {@link Section#liveSectionNumber}.
      *
      * @type {number}
      */
@@ -79,7 +73,7 @@ export default class Section extends SectionSkeleton {
      *
      * @type {Page}
      */
-    this.sourcePage = this.sourcePageName ? new Page(this.sourcePageName) : cd.g.PAGE;
+    this.sourcePage = this.sourcePageName ? new Page(this.sourcePageName) : cd.page;
 
     /**
      * Is the section actionable (is in a closed discussion or on an old version page).
@@ -108,23 +102,17 @@ export default class Section extends SectionSkeleton {
     /**
      * Section headline element as a jQuery object.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$headline = $(this.headlineElement);
 
     /**
      * Section heading as a jQuery element.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$heading = $(headingElement);
   }
-
-  /**
-   * @typedef {object} MenuItem
-   * @param {Element} link Link element.
-   * @param {Element} wrapper Wrapper element.
-   */
 
   /**
    * Add an item to the section menu (to the right from the section headline).
@@ -156,8 +144,8 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * _For internal use._ Add a {@link module:Section#replyButton "Reply in section" button} to the
-   * end of the first chunk of the section.
+   * _For internal use._ Add a {@link Section#replyButton "Reply in section" button} to the end of
+   * the first chunk of the section.
    */
   addReplyButton() {
     const element = elementPrototypes.replyButton.cloneNode(true);
@@ -237,23 +225,23 @@ export default class Section extends SectionSkeleton {
     /**
      * Reply (button) wrapper, an item element.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$replyWrapper = $(wrapper);
 
     /**
      * Reply (button) container, a list element. It is wrapped around the
-     * {@link module:Section#$replyWrapper reply button wrapper}, but can have other elements (and
+     * {@link Section#$replyWrapper reply button wrapper}, but can have other elements (and
      * comments) too.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$replyContainer = $(container);
   }
 
   /**
-   * _For internal use._ Add an {@link module:Section#addSubsectionButton "Add subsection" button}
-   * that appears when hovering over a {@link module:Section#replyButton "Reply in section" button}.
+   * _For internal use._ Add an {@link Section#addSubsectionButton "Add subsection" button} that
+   * appears when hovering over a {@link Section#replyButton "Reply in section" button}.
    */
   addAddSubsectionButton() {
     if (this.level !== 2) return;
@@ -325,7 +313,7 @@ export default class Section extends SectionSkeleton {
     /**
      * Add subsection button container.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$addSubsectionButtonContainer = $(buttonContainer);
   }
@@ -399,7 +387,7 @@ export default class Section extends SectionSkeleton {
           action: this.copyLink.bind(this),
 
           tooltip: cd.s('sm-copylink-tooltip'),
-          href: `${cd.g.PAGE.getUrl()}#${this.anchor}`,
+          href: `${cd.page.getUrl()}#${this.anchor}`,
         });
       }
 
@@ -407,7 +395,8 @@ export default class Section extends SectionSkeleton {
        * Section menu has been extneded.
        *
        * @event sectionMenuExtended
-       * @type {module:cd~convenientDiscussions}
+       * @param {Section} section
+       * @param {object} cd {@link convenientDiscussions} object.
        */
       mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
     }
@@ -445,7 +434,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Create an {@link module:Section#replyForm add reply form}.
+   * Create an {@link Section#replyForm add reply form}.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -476,8 +465,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Create an {@link module:Section#addSubsectionForm add subsection form} form or focus an
-   * existing one.
+   * Create an {@link Section#addSubsectionForm add subsection form} form or focus an existing one.
    *
    * @param {object|CommentForm} dataToRestore
    */
@@ -642,9 +630,9 @@ export default class Section extends SectionSkeleton {
   /**
    * Section elements as a jQuery object.
    *
-   * Uses a getter mostly for unification with {@link module:Comment#$elements}.
+   * Uses a getter mostly for unification with {@link Comment#$elements}.
    *
-   * @type {JQuery}
+   * @type {external:jQuery}
    */
   get $elements() {
     if (this.cached$elements === undefined) {
@@ -702,7 +690,8 @@ export default class Section extends SectionSkeleton {
    *
    * @param {object} options
    * @param {string} options.action `'replyInSection'` or `'addSubsection'`.
-   * @param {string} options.commentCode Comment code.
+   * @param {string} options.commentCode Comment code, including trailing newlines and the
+   *   signature.
    * @returns {object}
    */
   modifyWholeCode({ action, commentCode }) {
@@ -729,12 +718,12 @@ export default class Section extends SectionSkeleton {
 
   /**
    * Request the code of the section by its number using the API and set some properties of the
-   * section (and also the page). {@link module:Section#getCode} is a more general method.
+   * section (and also the page). {@link Section#getCode} is a more general method.
    *
    * @throws {CdError}
    */
   async requestCode() {
-    const resp = await cd.g.api.post({
+    const resp = await cd.g.mwApi.post({
       action: 'query',
       titles: this.getSourcePage().name,
       prop: 'revisions',
@@ -790,28 +779,31 @@ export default class Section extends SectionSkeleton {
     const redirectTarget = query.redirects?.[0]?.to || null;
 
     /**
-     * Section code. Filled upon running {@link module:Section#getCode}.
+     * Section code. Filled upon running {@link Section#getCode}.
      *
      * @name code
      * @type {string|undefined}
+     * @memberof Section
      * @instance
      */
 
     /**
-     * ID of the revision that has {@link module:Section#code}. Filled upon running
-     * {@link module:Section#getCode}.
+     * ID of the revision that has {@link Section#code}. Filled upon running
+     * {@link Section#getCode}.
      *
      * @name revisionId
      * @type {number|undefined}
+     * @memberof Section
      * @instance
      */
 
     /**
-     * Time when {@link module:Section#code} was queried (as the server reports it). Filled upon
-     * running {@link module:Section#getCode}.
+     * Time when {@link Section#code} was queried (as the server reports it). Filled upon running
+     * {@link Section#getCode}.
      *
      * @name queryTimestamp
      * @type {string|undefined}
+     * @memberof Section
      * @instance
      */
     Object.assign(this, {
@@ -823,7 +815,7 @@ export default class Section extends SectionSkeleton {
       queryTimestamp: resp.curtimestamp,
     });
 
-    Object.assign(cd.g.PAGE, {
+    Object.assign(cd.page, {
       pageId: page.pageid,
       redirectTarget,
       realName: redirectTarget || this.name,
@@ -831,7 +823,7 @@ export default class Section extends SectionSkeleton {
   }
 
   /**
-   * Load the section code. See also {@link module:Section#requestCode}.
+   * Load the section code. See also {@link Section#requestCode}.
    *
    * @param {CommentForm} [commentForm] Comment form, if it is submitted (or code changes are
    *   viewed).
@@ -848,7 +840,7 @@ export default class Section extends SectionSkeleton {
              * Whether the wikitext of a section will be submitted to the server instead of a page.
              *
              * @type {?boolean}
-             * @memberof module:CommentForm
+             * @memberof CommentForm
              * @instance
              */
             commentForm.submitSection = true;
@@ -1240,3 +1232,5 @@ export default class Section extends SectionSkeleton {
 }
 
 Object.assign(Section, SectionStatic);
+
+export default Section;

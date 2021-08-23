@@ -1,9 +1,3 @@
-/**
- * Comment thread class.
- *
- * @module Thread
- */
-
 import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
@@ -180,7 +174,7 @@ function cleanUpCollapsedThreads(data) {
 /**
  * Class used to create a comment thread object.
  */
-export default class Thread {
+class Thread {
   /**
    * Create a comment thread object.
    *
@@ -216,8 +210,8 @@ export default class Thread {
     this.commentCount = this.lastComment.id - this.rootComment.id + 1;
 
     /**
-     * Last comment of the thread _visually_, not logically (differs from
-     * {@link module:Thread#lastComment} if there are `{{outdent}}` templates in the thread).
+     * Last comment of the thread _visually_, not logically (differs from {@link Thread#lastComment}
+     * if there are `{{outdent}}` templates in the thread).
      *
      * @type {Comment}
      * @private
@@ -292,7 +286,7 @@ export default class Thread {
 
     /**
      * Bottom element of the thread _visually_, not logically (differs from
-     * {@link module:Thread#endElement} if there are `{{outdent}}` templates in the thread).
+     * {@link Thread#endElement} if there are `{{outdent}}` templates in the thread).
      *
      * @type {Element}
      * @private
@@ -360,8 +354,7 @@ export default class Thread {
   }
 
   /**
-   * Revise the end element of the thread based on {@link module:Comment#subitemList comment
-   * subitems}.
+   * Revise the end element of the thread based on {@link Comment#subitemList comment subitems}.
    *
    * @param {boolean} visual Use the visual thread end.
    * @returns {?Element} Logically, should never return `null`, unless something extraordinary
@@ -475,7 +468,7 @@ export default class Thread {
   /**
    * Get a list of users in the thread.
    *
-   * @returns {User[]}
+   * @returns {module:userRegistry~User[]}
    */
   getUsersInThread() {
     return [this.rootComment, ...this.rootComment.getChildren(true)]
@@ -607,7 +600,7 @@ export default class Thread {
     /**
      * Note in place of a collapsed thread as a jQuery object.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$expandNote = $(this.expandNote);
 
@@ -882,3 +875,5 @@ export default class Thread {
     }
   }
 }
+
+export default Thread;

@@ -1,9 +1,3 @@
-/**
- * Button class.
- *
- * @module Button
- */
-
 let prototypes = {};
 
 /**
@@ -27,17 +21,15 @@ function getButtonPrototype(tagName) {
 /**
  * Class representing a generic button.
  */
-export default class Button {
+class Button {
   /**
    * Create a button.
    *
    * @param {object} [config]
-   * @param {Element} [config.element] Pre-created {@link module:Button#element element} (usually
-   *   provided instead of config).
-   * @param {Element} [config.buttonElement] Pre-created {@link module:Button#buttonElement link
-   *   element}.
-   * @param {Element} [config.labelElement] Pre-created {@link module:Button#labelElement label
-   *   element}.
+   * @param {Element} [config.element] Pre-created {@link Button#element element} (usually provided
+   *   instead of config).
+   * @param {Element} [config.buttonElement] Pre-created {@link Button#buttonElement link element}.
+   * @param {Element} [config.labelElement] Pre-created {@link Button#labelElement label element}.
    * @param {string} [config.tagName='a'] Tag name of the button element.
    * @param {string[]} [config.classes=[]] List of classes to add to the button element.
    * @param {string} [config.href] Value of the `href` parameter to add to the link element.
@@ -69,8 +61,8 @@ export default class Button {
     }
 
     /**
-     * Main element which can be the same as the {@link module:Button#button link element} or a
-     * wrapper around it.
+     * Main element which can be the same as the {@link Button#button link element} or a wrapper
+     * around it.
      *
      * @type {Element}
      */
@@ -78,7 +70,7 @@ export default class Button {
 
     /**
      * Button element (an `'a'` element by default) which can be the same as the
-     * {@link module:Button#element main element} or its descendant.
+     * {@link Button#element main element} or its descendant.
      *
      * @type {Element}
      */
@@ -86,7 +78,7 @@ export default class Button {
 
     /**
      * Button label element which can be which can be the same as the
-     * {@link module:Button#buttonElement link element} or its descendant.
+     * {@link Button#buttonElement link element} or its descendant.
      *
      * @type {Element}
      */
@@ -239,3 +231,5 @@ export default class Button {
     return this;
   }
 }
+
+export default Button;

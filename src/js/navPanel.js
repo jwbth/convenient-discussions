@@ -27,7 +27,7 @@ export default {
      * Navigation panel element.
      *
      * @name $element
-     * @type {?(Button|undefined)}
+     * @type {external:jQuery}
      * @memberof module:navPanel
      */
     this.$element = $('<div>')

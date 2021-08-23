@@ -10,7 +10,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Page from './Page';
-import Parser, { processLink } from './Parser';
+import Parser from './Parser';
 import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
@@ -51,7 +51,7 @@ import { parseCommentAnchor, resetCommentAnchors } from './timestamp';
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
  * comment layers are also made here.
  *
- * @param {PassedData} passedData
+ * @param {import('./commonTypedefs').PassedData} passedData
  * @param {Promise[]} siteDataRequests Array of requests returned by
  *   {@link module:siteData.loadSiteData}.
  * @private
@@ -90,7 +90,7 @@ async function prepare(passedData, siteDataRequests) {
    *
    * @name comments
    * @type {Comment[]}
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions
    */
   cd.comments = [];
 
@@ -99,7 +99,7 @@ async function prepare(passedData, siteDataRequests) {
    *
    * @name sections
    * @type {Section[]}
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions
    */
   cd.sections = [];
 
@@ -426,12 +426,13 @@ function processComments(parser) {
 
   /**
    * The script has processed the comments, except for reformatting them in
-   * {@link module:Comment.reformatComments} if the user opted in for that.
+   * {@link Comment.reformatComments} if the user opted in for that.
    *
    * @event commentsReady
-   * @type {module:cd~convenientDiscussions.comments}
+   * @param {object} comments {@link convenientDiscussions.comments} object.
+   * @param {object} cd {@link convenientDiscussions} object.
    */
-  mw.hook('convenientDiscussions.commentsReady').fire(cd.comments);
+  mw.hook('convenientDiscussions.commentsReady').fire(cd.comments, cd);
 }
 
 /**
@@ -466,9 +467,10 @@ function processSections(parser, watchedSectionsRequest) {
    * The script has processed the sections.
    *
    * @event sectionsReady
-   * @type {module:cd~convenientDiscussions.sections}
+   * @param {object} sections {@link convenientDiscussions.sections} object.
+   * @param {object} cd {@link convenientDiscussions} object.
    */
-  mw.hook('convenientDiscussions.sectionsReady').fire(cd.sections);
+  mw.hook('convenientDiscussions.sectionsReady').fire(cd.sections, cd);
 }
 
 /**
@@ -533,7 +535,7 @@ function connectToAddTopicButtons() {
       } catch (e) {
         return false;
       }
-      if (page.name !== cd.g.PAGE.name) {
+      if (page.name !== cd.page.name) {
         return false;
       }
       return true;
@@ -586,15 +588,15 @@ function connectToAddTopicButtons() {
 /**
  * Highlight mentions of the current user.
  *
- * @param {JQuery} $content
+ * @param {external:jQuery} $content
  * @private
  */
 function highlightMentions($content) {
   if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
   const selector = $content.hasClass('cd-comment-part') ?
-    `a[title$=":${cd.g.USER_NAME}"], a[title*=":${cd.g.USER_NAME} ("]` :
-    `.cd-comment-part a[title$=":${cd.g.USER_NAME}"], .cd-comment-part a[title*=":${cd.g.USER_NAME} ("]`;
+    `a[title$=":${cd.user.name}"], a[title*=":${cd.user.name} ("]` :
+    `.cd-comment-part a[title$=":${cd.user.name}"], .cd-comment-part a[title*=":${cd.user.name} ("]`;
   const excludeSelector = [cd.settings.reformatComments ? 'cd-comment-author' : 'cd-signature']
     .concat(cd.config.elementsToExcludeClasses)
     .map((name) => `.${name}`)
@@ -605,7 +607,7 @@ function highlightMentions($content) {
       return (
         cd.g.USER_LINK_REGEXP.test(this.title) &&
         !this.closest(excludeSelector) &&
-        processLink(this)?.[0] === cd.g.USER_NAME
+        Parser.processLink(this)?.[0] === cd.user.name
       );
     })
     .each((i, link) => {
@@ -692,7 +694,7 @@ async function processFragment(passedData) {
  * {@link module:options.getVisits} should be provided.
  *
  * @param {Promise} visitsRequest
- * @param {PassedData} passedData
+ * @param {import('./commonTypedefs').PassedData} passedData
  * @fires newCommentsHighlighted
  * @private
  */
@@ -767,7 +769,7 @@ async function processVisits(visitsRequest, passedData) {
    * New comments have been highlighted.
    *
    * @event newCommentsHighlighted
-   * @type {module:cd~convenientDiscussions}
+   * @param {object} cd {@link convenientDiscussions} object.
    */
   mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
 }
@@ -791,27 +793,10 @@ function debugLog() {
 }
 
 /**
- * @typedef {object} PassedData
- * @property {string} [html] HTML code of the page content to replace the current content with.
- * @property {string} [commentAnchor] Comment anchor to scroll to.
- * @property {string} [sectionAnchor] Section anchor to scroll to.
- * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
- *   anchor to it if it's specified.
- * @property {boolean} [wasPageCreated] Whether the page was created while it was in the
- *   previous state. Affects navigation panel mounting and certain key press handlers adding.
- * @property {number} [scrollPosition] Page Y offset.
- * @property {object[]} [unseenCommentAnchors] Anchors of unseen comments on this page.
- * @property {string} [justWatchedSection] Section just watched so that there could be not
- *   enough time for it to be saved to the server.
- * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
- *   enough time for it to be saved to the server.
- * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
- */
-
-/**
  * _For internal use._ Process the current web page.
  *
- * @param {PassedData} [passedData={}] Data passed from the previous page state.
+ * @param {import('./commonTypedefs').PassedData} [passedData={}] Data passed from the previous page
+ *   state.
  * @param {Promise[]} [siteDataRequests] Array of requests returned by
  *   {@link module:siteData.loadSiteData}.
  * @param {number} [cachedScrollY] Vertical scroll position (cached value to avoid reflow).
@@ -865,7 +850,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
   // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
   // rare occasion), an active page may become inactive if it becomes identified as an archive page.
-  cd.g.isPageActive = articleId && !cd.g.PAGE.isArchivePage() && isCurrentRevision();
+  cd.g.isPageActive = articleId && !cd.page.isArchivePage() && isCurrentRevision();
 
   let watchedSectionsRequest;
   let visitsRequest;
@@ -881,10 +866,10 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     }
 
     /**
-     * The script is going to parse the page.
+     * The script is going to parse the page for comments, sections, etc.
      *
      * @event beforeParse
-     * @type {module:cd~convenientDiscussions}
+     * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
@@ -920,7 +905,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     !cd.g.isFirstRun ||
     cd.comments.length ||
     $('#ca-addsection').length ||
-    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE.name)
+    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.page.name)
   );
 
   const isPageCommentable = cd.g.isPageActive || !articleId;
@@ -1144,13 +1129,13 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       $(document).on('keydown', handleGlobalKeyDown);
     }
 
-    showPopups = cd.g.isFirstRun && cd.g.isPageActive && cd.g.USER_NAME !== '<unregistered>';
+    showPopups = cd.g.isFirstRun && cd.g.isPageActive && cd.user.name !== '<unregistered>';
 
     /**
      * The script has processed the page.
      *
      * @event pageReady
-     * @type {module:cd~convenientDiscussions}
+     * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.pageReady').fire(cd);
 
@@ -1160,7 +1145,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
        * operations that should run only once.
        *
        * @event pageReadyFirstTime
-       * @type {module:cd~convenientDiscussions}
+       * @param {object} cd {@link convenientDiscussions} object.
        */
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }

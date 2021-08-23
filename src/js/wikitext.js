@@ -311,8 +311,8 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  * Extract signatures from wikitext.
  *
  * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in {@link module:Comment#adjustCommentCodeData}. See also
- * {@link module:Comment#adjustCommentBeginning}, called before that.
+ * performed in {@link Comment#adjustCommentCodeData}. See also
+ * {@link Comment#adjustCommentBeginning}, called before that.
  *
  * @param {string} code Code to extract signatures from.
  * @returns {object[]}
@@ -337,7 +337,7 @@ export function extractSignatures(code) {
     const startIndex = signatureIndex;
     const nextCommentOffset = adjustedCode.slice(startIndex).indexOf('\n') + 1;
     signatures.push({
-      author: cd.g.USER_NAME,
+      author: cd.user.name,
       startIndex,
       nextCommentStartIndex: startIndex + nextCommentOffset,
     });
@@ -394,6 +394,7 @@ export function decodeHtmlEntities(s) {
  * @typedef {object} HideSensitiveCodeReturn
  * @property {string} code
  * @property {string[]} hidden
+ * @global
  */
 
 /**

@@ -1,9 +1,3 @@
-/**
- * Static methods  of the {@link module:Section Section} class.
- *
- * @module SectionStatic
- */
-
 import CdError from './CdError';
 import cd from './cd';
 import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent, wrap } from './util';
@@ -18,11 +12,11 @@ export default {
    *
    * @param {string} headline
    * @param {string} [unwatchHeadline] Section to unwatch together with watching the specified
-   *   section (used when a section is renamed on the fly in {@link module:Comment#update} or
-   *   {@link module:CommentForm#submit}).
+   *   section (used when a section is renamed on the fly in {@link Comment#update} or
+   *   {@link CommentForm#submit}).
    * @returns {Promise}
    * @throws {CdError}
-   * @memberof module:Section
+   * @memberof Section
    */
   watch(headline, unwatchHeadline) {
     const watch = async () => {
@@ -74,7 +68,7 @@ export default {
    * @param {string} headline
    * @returns {Promise}
    * @throws {CdError}
-   * @memberof module:Section
+   * @memberof Section
    */
   unwatch(headline) {
     const unwatch = async () => {
@@ -109,7 +103,7 @@ export default {
    *
    * @param {string} anchor
    * @returns {?Section}
-   * @memberof module:Section
+   * @memberof Section
    */
   getByAnchor(anchor) {
     if (!cd.sections || !anchor) {
@@ -123,7 +117,7 @@ export default {
    *
    * @param {string} headline
    * @returns {Section[]}
-   * @memberof module:Section
+   * @memberof Section
    */
   getByHeadline(headline) {
     return cd.sections.filter((section) => section.headline === headline);
@@ -142,7 +136,7 @@ export default {
    * @param {string} options.oldestCommentAnchor
    * @param {boolean} [returnScore]
    * @returns {?Section}
-   * @memberof module:Section
+   * @memberof Section
    */
   search({ id, headline, anchor, ancestors, oldestCommentAnchor }, returnScore) {
     const matches = [];
@@ -189,10 +183,9 @@ export default {
 
   /**
    * _For internal use._ Perform extra section-related tasks, including adding the
-   * {@link module:Section#isLastSection isLastSection} property, adding buttons, and binding
-   * events.
+   * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
    *
-   * @memberof module:Section
+   * @memberof Section
    */
   adjust() {
     cd.sections.forEach((section, i) => {
@@ -201,7 +194,7 @@ export default {
        *
        * @name isLastSection
        * @type {boolean}
-       * @memberof module:Section
+       * @memberof Section
        * @instance
        */
       section.isLastSection = i === cd.sections.length - 1;
@@ -276,7 +269,7 @@ export default {
    * _For internal use._ Remove sections that can't be found on the page anymore from the watched
    * sections list and save them to the server.
    *
-   * @memberof module:Section
+   * @memberof Section
    */
   cleanUpWatched() {
     if (!cd.sections) return;

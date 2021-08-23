@@ -269,8 +269,8 @@ export default {
   /**
    * Jump to an element or top offset.
    *
-   * @param {JQuery|number} $elementOrOffset Element or top offset to jump to.
-   * @param {JQuery} $item Navigation item that initiated the jump.
+   * @param {external:jQuery|number} $elementOrOffset Element or top offset to jump to.
+   * @param {external:jQuery} $item Navigation item that initiated the jump.
    * @param {boolean} isBackLink Was the jump initiated by a back link.
    * @private
    */

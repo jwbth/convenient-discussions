@@ -178,8 +178,8 @@ export default {
 
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them). This is in addition to {@link module:cd~convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}.
-   * They begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
+   * them). This is in addition to {@link convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They
+   * begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
    *
    * @type {RegExp[]}
    * @default []
@@ -362,8 +362,8 @@ export default {
    */
 
   /**
-   * Load these modules on comment form creation. See {@link module:defaultConfig~Module} for the
-   * object structure. If `checkFunc` is set, the module will be loaded if the condition is met.
+   * Load these modules on comment form creation. See {@link Module} for the object structure. If
+   * `checkFunc` is set, the module will be loaded if the condition is met.
    *
    * @type {Module[]}
    * @default []

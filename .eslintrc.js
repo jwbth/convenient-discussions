@@ -12,7 +12,6 @@ module.exports = {
     "IS_SINGLE": "readonly",
     "LANG_CODE": "readonly",
     "OO": "readonly",
-    "Tribute": "readonly",
     "convenientDiscussions": "readonly",
     "jest": "readonly",
     "expect": "readonly",

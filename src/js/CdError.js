@@ -1,13 +1,15 @@
 /**
  * Custom error class.
- *
- * @module CdError
  */
-export default class CdError extends Error {
+class CdError extends Error {
   /**
    * Create a custom error.
    *
-   * @param {object} data
+   * @param {object} [data]
+   * @param {string} data.type
+   * @param {string} [data.code]
+   * @param {object} [data.apiData]
+   * @param {object} [data.details]
    */
   constructor(data) {
     let message;
@@ -27,3 +29,5 @@ export default class CdError extends Error {
     this.data = data;
   }
 }
+
+export default CdError;

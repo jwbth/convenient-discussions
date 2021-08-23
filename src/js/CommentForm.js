@@ -1,9 +1,3 @@
-/**
- * Comment form class.
- *
- * @module CommentForm
- */
-
 import Autocomplete from './Autocomplete';
 import Button from './Button';
 import CdError from './CdError';
@@ -165,7 +159,7 @@ function extractCommentAnchors(code) {
 }
 
 /** Class representing a comment form. */
-export default class CommentForm {
+class CommentForm {
   /**
    * Object specifying configuration to preload data into the comment form. It is extracted from the
    * "Add section" link/button target.
@@ -177,6 +171,7 @@ export default class CommentForm {
    * @property {string} [summary] Edit summary.
    * @property {string} [noHeadline] Whether to include a headline.
    * @property {string} [omitSignature] Whether to add the user's signature.
+   * @global
    */
 
   /**
@@ -273,13 +268,14 @@ export default class CommentForm {
       .map((module) => module.name);
     mw.loader.using(moduleNames).then(() => {
       /**
-       * All requested custom comment form modules have been loaded and executed. (The comment form
-       * may not be ready yet, use {@link module:CommentForm~commentFormToolbarReady} for that.)
+       * All the requested custom comment form modules have been loaded and executed. (The comment
+       * form may not be ready yet, use {@link event:commentFormToolbarReady} for that.)
        *
        * @event commentFormModulesReady
-       * @type {module:CommentForm}
+       * @param {CommentForm} commentForm
+       * @param {object} cd {@link convenientDiscussions} object.
        */
-      mw.hook('convenientDiscussions.commentFormModulesReady').fire(this);
+      mw.hook('convenientDiscussions.commentFormModulesReady').fire(this, cd);
     });
 
     this.createContents(dataToRestore, moduleNames);
@@ -339,9 +335,10 @@ export default class CommentForm {
      * A comment form has been created.
      *
      * @event commentFormCreated
-     * @type {module:CommentForm}
+     * @param {CommentForm} commentForm
+     * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.commentFormCreated').fire(this);
+    mw.hook('convenientDiscussions.commentFormCreated').fire(this, cd);
   }
 
   /**
@@ -392,7 +389,7 @@ export default class CommentForm {
      *
      * @type {string}
      */
-    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.g.PAGE;
+    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.page;
   }
 
   /**
@@ -504,6 +501,7 @@ export default class CommentForm {
        *
        * @name minorField
        * @type {external:OO.ui.FieldLayout|undefined}
+       * @memberof CommentForm
        * @instance
        */
 
@@ -512,6 +510,7 @@ export default class CommentForm {
        *
        * @name minorCheckbox
        * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @memberof CommentForm
        * @instance
        */
       [this.minorField, this.minorCheckbox] = createCheckboxField({
@@ -533,6 +532,7 @@ export default class CommentForm {
      *
      * @name watchField
      * @type {external:OO.ui.FieldLayout}
+     * @memberof CommentForm
      * @instance
      */
 
@@ -541,6 +541,7 @@ export default class CommentForm {
      *
      * @name watchCheckbox
      * @type {external:OO.ui.CheckboxInputWidget}
+     * @memberof CommentForm
      * @instance
      */
     [this.watchField, this.watchCheckbox] = createCheckboxField({
@@ -566,6 +567,7 @@ export default class CommentForm {
        *
        * @name watchSectionField
        * @type {external:OO.ui.FieldLayout|undefined}
+       * @memberof CommentForm
        * @instance
        */
 
@@ -574,6 +576,7 @@ export default class CommentForm {
        *
        * @name watchSectionCheckbox
        * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @memberof CommentForm
        * @instance
        */
       [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
@@ -591,6 +594,7 @@ export default class CommentForm {
        *
        * @name omitSignatureField
        * @type {external:OO.ui.FieldLayout|undefined}
+       * @memberof CommentForm
        * @instance
        */
 
@@ -599,6 +603,7 @@ export default class CommentForm {
        *
        * @name omitSignatureCheckbox
        * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @memberof CommentForm
        * @instance
        */
 
@@ -625,6 +630,7 @@ export default class CommentForm {
        *
        * @name deleteField
        * @type {external:OO.ui.FieldLayout|undefined}
+       * @memberof CommentForm
        * @instance
        */
 
@@ -633,6 +639,7 @@ export default class CommentForm {
        *
        * @name deleteCheckbox
        * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @memberof CommentForm
        * @instance
        */
       [this.deleteField, this.deleteCheckbox] = createCheckboxField({
@@ -721,6 +728,7 @@ export default class CommentForm {
      *
      * @name settingsButton
      * @type {Promise}
+     * @memberof CommentForm
      * @instance
      */
     this.settingsButton = new OO.ui.ButtonWidget({
@@ -810,7 +818,7 @@ export default class CommentForm {
     /**
      * The main form element.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$element = $('<div>').addClass(`cd-commentForm cd-commentForm-${this.mode}`);
 
@@ -827,21 +835,21 @@ export default class CommentForm {
     /**
      * The area where service messages are displayed.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$messageArea = $('<div>').addClass('cd-messageArea');
 
     /**
      * The area where edit summary preview is displayed.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
 
     /**
      * Advanced section container.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$advanced = $('<div>')
       .addClass('cd-commentForm-advanced')
@@ -854,7 +862,7 @@ export default class CommentForm {
     /**
      * Start (left on LTR wikis, right on RTL wikis) form buttons container.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$buttonsStart = $('<div>')
       .addClass('cd-commentForm-buttons-start')
@@ -867,7 +875,7 @@ export default class CommentForm {
     /**
      * End (right on LTR wikis, left on RTL wikis) form buttons container.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$buttonsEnd = $('<div>')
       .addClass('cd-commentForm-buttons-end')
@@ -881,7 +889,7 @@ export default class CommentForm {
     /**
      * Form buttons container.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$buttons = $('<div>')
       .addClass('cd-commentForm-buttons')
@@ -902,7 +910,7 @@ export default class CommentForm {
     /**
      * The area where comment previews and changes are displayed.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$previewArea = $('<div>').addClass('cd-previewArea');
 
@@ -1119,13 +1127,14 @@ export default class CommentForm {
       $.wikiEditor.instances = Array(5);
 
       /**
-       * The comment form toolbar is ready; all requested custom comment form modules have been
+       * The comment form toolbar is ready; all the requested custom comment form modules have been
        * loaded and executed.
        *
        * @event commentFormToolbarReady
-       * @type {module:CommentForm}
+       * @param {CommentForm} commentForm
+       * @param {object} cd {@link convenientDiscussions} object.
        */
-      mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this);
+      mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this, cd);
     });
   }
 
@@ -1168,7 +1177,7 @@ export default class CommentForm {
     /**
      * Text insert buttons.
      *
-     * @type {JQuery|undefined}
+     * @type {external:jQuery|undefined}
      */
     this.$insertButtons = $('<div>')
       .addClass('cd-insertButtons')
@@ -1257,15 +1266,15 @@ export default class CommentForm {
   /**
    * Test if a comment or section exists in the wikitext.
    *
-   * @returns {external:JQueryPromise}
+   * @returns {external:jQueryPromise}
    */
   checkCode() {
     if (!this.checkCodeRequest) {
       /**
        * Request to test if a comment or section exists in the code made by
-       * {@link module:CommentForm#checkCode}.
+       * {@link CommentForm#checkCode}.
        *
-       * @type {external:JQueryPromise|undefined}
+       * @type {external:jQueryPromise|undefined}
        */
       this.checkCodeRequest = this.target.getCode(this).catch((e) => {
         if (e instanceof CdError) {
@@ -1289,7 +1298,7 @@ export default class CommentForm {
    * @private
    */
   async addEditNotices() {
-    const title = cd.g.PAGE.title.replace(/\//g, '-');
+    const title = cd.page.title.replace(/\//g, '-');
     let code = (
       '<div class="cd-editnotice">' +
       `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}` +
@@ -1304,7 +1313,7 @@ export default class CommentForm {
 
     let result;
     try {
-      result = await parseCode(code, { title: cd.g.PAGE.name });
+      result = await parseCode(code, { title: cd.page.name });
     } catch (e) {
       // TODO: Some error message? (But in most cases there are no edit notices anyway, and if the
       // user is knowingly offline they would be annoying.)
@@ -1440,7 +1449,7 @@ export default class CommentForm {
      * list itself) that wraps the list etc. It is removed to return the DOM to the original state,
      * before the form was created.
      *
-     * @type {JQuery}
+     * @type {external:jQuery}
      */
     this.$outermostElement = $outerWrapper || $wrappingList || $wrappingItem || this.$element;
 
@@ -1721,7 +1730,7 @@ export default class CommentForm {
 
     let pageOwner;
     if (cd.g.NAMESPACE_NUMBER === 3) {
-      const userName = (cd.g.PAGE.title.match(/^([^/]+)/) || [])[0];
+      const userName = (cd.page.title.match(/^([^/]+)/) || [])[0];
       if (userName) {
         pageOwner = userRegistry.getUser(userName);
       }
@@ -1734,7 +1743,7 @@ export default class CommentForm {
       .map((u) => u.name);
     if (this.targetComment && this.mode !== 'edit') {
       for (let с = this.targetComment; с; с = с.getParent()) {
-        if (с.author !== cd.g.USER) {
+        if (с.author !== cd.user) {
           if (!с.author.isRegistered()) break;
           defaultUserNames.unshift(с.author.name);
           break;
@@ -2034,7 +2043,7 @@ export default class CommentForm {
 
   /**
    * Abort the operation the form is undergoing and show an appropriate error message. This is a
-   * wrapper around {@link module:CommentForm#abort}.
+   * wrapper around {@link CommentForm#abort}.
    *
    * @param {object} options
    * @param {string} options.type Type of the error: `'parse'` for parse errors defined in the
@@ -2073,9 +2082,9 @@ export default class CommentForm {
         switch (code) {
           case 'locateComment':
             if (this.targetSection) {
-              editUrl = this.targetSection.editUrl || cd.g.PAGE.getUrl({ action: 'edit' });
+              editUrl = this.targetSection.editUrl || cd.page.getUrl({ action: 'edit' });
             } else {
-              editUrl = cd.g.PAGE.getUrl({
+              editUrl = cd.page.getUrl({
                 action: 'edit',
                 section: 0,
               });
@@ -2083,7 +2092,7 @@ export default class CommentForm {
             message = cd.sParse('error-locatecomment', editUrl);
             break;
           case 'locateSection':
-            editUrl = cd.g.PAGE.getUrl({ action: 'edit' });
+            editUrl = cd.page.getUrl({ action: 'edit' });
             message = cd.sParse('error-locatesection', editUrl);
             break;
           case 'numberedList-list':
@@ -2884,9 +2893,10 @@ export default class CommentForm {
          * A comment preview has been rendered.
          *
          * @event previewReady
-         * @type {JQuery}
+         * @param {external:jQuery} $previewArea {@link CommentForm#$previewArea} object.
+         * @param {object} cd {@link convenientDiscussions} object.
          */
-        mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea);
+        mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea, cd);
 
         if (!isAuto) {
           mw.hook('wikipage.content').fire(this.$previewArea);
@@ -2950,7 +2960,7 @@ export default class CommentForm {
       } else {
         options.fromrev = this.targetPage.revisionId;
       }
-      resp = await cd.g.api.post(options).catch(handleApiReject);
+      resp = await cd.g.mwApi.post(options).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
@@ -3058,7 +3068,7 @@ export default class CommentForm {
         condition: (
           !doDelete &&
           !this.commentInput.getValue().trim() &&
-          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.g.PAGE.name)
+          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.page.name)
         ),
         confirmation: () => confirm(cd.s('cf-confirm-empty')),
       },
@@ -3214,15 +3224,14 @@ export default class CommentForm {
       cd.comments
         .slice(0, commentAbove.id + 1)
         .filter((comment) => (
-          comment.author === cd.g.USER &&
+          comment.author === cd.user &&
           comment.date?.getTime() === date.getTime()
         ))
-        .forEach((comment) => {
-          registerCommentAnchor(comment.anchor);
-        });
+        .map((comment) => comment.anchor)
+        .forEach(registerCommentAnchor);
     }
 
-    return generateCommentAnchor(date, cd.g.USER_NAME, true);
+    return generateCommentAnchor(date, cd.user.name, true);
   }
 
   /**
@@ -3304,13 +3313,13 @@ export default class CommentForm {
       $('#ca-watch')
         .attr('id', 'ca-unwatch')
         .find('a')
-        .attr('href', cd.g.PAGE.getUrl({ action: 'unwatch' }));
+        .attr('href', cd.page.getUrl({ action: 'unwatch' }));
     }
     if (!this.watchCheckbox.isSelected() && $('#ca-unwatch').length) {
       $('#ca-unwatch')
         .attr('id', 'ca-watch')
         .find('a')
-        .attr('href', cd.g.PAGE.getUrl({ action: 'watch' }));
+        .attr('href', cd.page.getUrl({ action: 'watch' }));
     }
 
     if (!doDelete) {
@@ -3322,8 +3331,8 @@ export default class CommentForm {
 
     // When the edit takes place on another page that is transcluded in the current one, we must
     // purge the current page, otherwise we may get an old version without the submitted comment.
-    if (this.targetPage !== cd.g.PAGE) {
-      await cd.g.PAGE.purge();
+    if (this.targetPage !== cd.page) {
+      await cd.page.purge();
     }
 
     this.reloadPage(passedData, currentOperation);
@@ -3382,7 +3391,7 @@ export default class CommentForm {
     this.forget();
 
     /**
-     * Has the comment form been {@link module:CommentForm#destroy destroyed}.
+     * Has the comment form been {@link CommentForm#destroy destroyed}.
      *
      * @type {boolean}
      */
@@ -3747,3 +3756,5 @@ export default class CommentForm {
 }
 
 Object.assign(CommentForm, CommentFormStatic);
+
+export default CommentForm;

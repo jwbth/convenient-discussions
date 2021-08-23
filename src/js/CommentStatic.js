@@ -1,9 +1,3 @@
-/**
- * Static methods of the {@link module:Comment Comment} class.
- *
- * @module CommentStatic
- */
-
 import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
@@ -123,6 +117,7 @@ export default {
    * List of the underlays.
    *
    * @type {Element[]}
+   * @memberof Comment
    */
   underlays: [],
 
@@ -130,6 +125,7 @@ export default {
    * List of the containers of the underlays.
    *
    * @type {Element[]}
+   * @memberof Comment
    */
   layersContainers: [],
 
@@ -137,7 +133,7 @@ export default {
    * Configure and add layers for a group of comments.
    *
    * @param {Comment[]} comments
-   * @memberof module:Comment
+   * @memberof Comment
    */
   configureAndAddLayers(comments) {
     let floatingRects;
@@ -168,6 +164,7 @@ export default {
    *   bottom of the page extending it to the bottom.
    * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
    * @param {object} [floatingRects]
+   * @memberof Comment
    */
   redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
     if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
@@ -246,6 +243,8 @@ export default {
   /**
    * _For internal use._ Empty the underlay registry and the layers container elements. Done on page
    * reload.
+   *
+   * @memberof Comment
    */
   resetLayers() {
     this.underlays = [];
@@ -256,9 +255,9 @@ export default {
 
   /**
    * _For internal use._ Mark comments that are currently in the viewport as read, and also
-   * {@link module:Comment#flash flash} comments that are prescribed to flash.
+   * {@link Comment#flash flash} comments that are prescribed to flash.
    *
-   * @memberof module:Comment
+   * @memberof Comment
    */
   registerSeen() {
     if (document.hidden) return;
@@ -292,18 +291,11 @@ export default {
   },
 
   /**
-   * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
-   * web worker so its constructor is lost.)
+   * Turn a comment array into an object with sections or their anchors as keys.
    *
-   * @typedef {object} CommentSkeletonLike
-   */
-
-  /**
-   * Turn comment array into object with section anchors as keys.
-   *
-   * @param {CommentSkeletonLike[]|Comment[]} comments
+   * @param {import('./commonTypedefs').CommentSkeletonLike[]|Comment[]} comments
    * @returns {Map}
-   * @memberof module:Comment
+   * @memberof Comment
    */
   groupBySection(comments) {
     const commentsBySection = new Map();
@@ -332,7 +324,7 @@ export default {
    * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
    *   comment in the specified direction.
    * @returns {?Comment}
-   * @memberof module:Comment
+   * @memberof Comment
    */
   findInViewport(findClosestDirection) {
     // Reset the `roughOffset` property. It is used only within this method.
@@ -469,13 +461,13 @@ export default {
    * cursor is between comment parts, not over them.
    *
    * @param {Event} e
-   * @memberof module:Comment
+   * @memberof Comment
    */
   highlightHovered(e) {
     if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress || isPageOverlayOn()) return;
 
     const isObstructingElementHovered = (
-      Array.from(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification'))
+      Array.from(cd.g.notificationArea?.querySelectorAll('.mw-notification'))
         .some((notification) => notification.matches(':hover')) ||
 
       cd.g.activeAutocompleteMenu?.matches(':hover') ||
@@ -524,7 +516,7 @@ export default {
    *   different). If `true`, we allow the time on the page to be 1-3 minutes less than the edit
    *   time.
    * @returns {?Comment}
-   * @memberof module:Comment
+   * @memberof Comment
    */
   getByAnchor(anchor, impreciseDate) {
     if (!cd.comments || !anchor) {
@@ -547,10 +539,10 @@ export default {
 
   /**
    * _For internal use._ Filter out floating and hidden elements from all the comments'
-   * {@link module:CommentSkeleton#highlightables highlightables}, change their attributes, and
-   * update the comments' level and parent elements' level classes.
+   * {@link CommentSkeleton#highlightables highlightables}, change their attributes, and update the
+   * comments' level and parent elements' level classes.
    *
-   * @memberof module:Comment
+   * @memberof Comment
    */
   reviewHighlightables() {
     cd.comments.forEach((comment) => {
@@ -563,7 +555,7 @@ export default {
    * _For internal use._ Add new comments notifications to threads and sections.
    *
    * @param {Map} newComments
-   * @memberof module:Comment
+   * @memberof Comment
    */
   addNewCommentsNotes(newComments) {
     saveRelativeScrollPosition();
@@ -621,7 +613,7 @@ export default {
    * _For internal use._ Reformat the comments (moving the author and date up and links down) if the
    * relevant setting is enabled.
    *
-   * @memberof module:Comment
+   * @memberof Comment
    */
   async reformatComments() {
     if (cd.settings.reformatComments) {
@@ -661,7 +653,7 @@ export default {
   /**
    * _For internal use._ Change the format of the comment timestamps according to the settings.
    *
-   * @memberof module:Comment
+   * @memberof Comment
    */
   reformatTimestamps() {
     if (cd.g.ARE_TIMESTAMPS_ALTERED) {

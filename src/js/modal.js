@@ -1,5 +1,5 @@
 /**
- * Modal dialogs. Move section dialog goes in {@link module:Section#move}.
+ * Modal dialogs. Move section dialog goes in {@link Section#move}.
  *
  * @module modal
  */
@@ -75,7 +75,7 @@ export async function showCopyLinkDialog(object, e) {
 
   const isComment = object instanceof Comment;
   const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
-  const wikilink = `[[${cd.g.PAGE.name}#${anchor}]]`;
+  const wikilink = `[[${cd.page.name}#${anchor}]]`;
   const link = object.getUrl();
   const permanentLink = object.getUrl(true);
 
@@ -85,7 +85,7 @@ export async function showCopyLinkDialog(object, e) {
    *
    * @name isLinkBeingCopied
    * @type {boolean}
-   * @memberof module:Comment
+   * @memberof Comment
    * @instance
    */
 
@@ -94,7 +94,7 @@ export async function showCopyLinkDialog(object, e) {
    *
    * @name isLinkBeingCopied
    * @type {boolean}
-   * @memberof module:Section
+   * @memberof Section
    * @instance
    */
   object.isLinkBeingCopied = true;

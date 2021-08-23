@@ -1,7 +1,7 @@
 /**
  * Wrappers for MediaWiki action API requests
- * ({@link https://www.mediawiki.org/wiki/API:Main_page}). See also the
- * {@link module:Page Page class} methods for functions regarding concrete page names.
+ * ({@link https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link Page} class methods
+ * for functions regarding concrete page names.
  *
  * @module apiWrappers
  */
@@ -29,7 +29,7 @@ const autocompleteTimeout = 100;
  */
 export function makeBackgroundRequest(params, method = 'post') {
   return new Promise((resolve, reject) => {
-    cd.g.api[method](params, {
+    cd.g.mwApi[method](params, {
       success: (resp) => {
         if (resp.error) {
           reject(['api', resp]);
@@ -45,9 +45,9 @@ export function makeBackgroundRequest(params, method = 'post') {
 }
 
 /**
- * jQuery promise
+ * jQuery promise.
  *
- * @external JQueryPromise
+ * @external jQueryPromise
  * @see https://api.jquery.com/Types/#Promise
  */
 
@@ -57,7 +57,7 @@ export function makeBackgroundRequest(params, method = 'post') {
  *
  * @param {string} code
  * @param {object} [customOptions]
- * @returns {external:JQueryPromise}
+ * @returns {external:jQueryPromise}
  * @throws {CdError}
  */
 export function parseCode(code, customOptions) {
@@ -72,7 +72,7 @@ export function parseCode(code, customOptions) {
     formatversion: 2,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
-  return cd.g.api.post(options).then(
+  return cd.g.mwApi.post(options).then(
     (resp) => {
       const html = resp.parse?.text;
       if (html) {
@@ -113,7 +113,7 @@ export function getUserInfo(reuse = false) {
   }
 
   createApi();
-  cachedUserInfoRequest = cd.g.api.post({
+  cachedUserInfoRequest = cd.g.mwApi.post({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
@@ -188,7 +188,7 @@ export async function getPageTitles(pageIds) {
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
   while ((nextPageIds = pageIds.splice(0, limit).join('|'))) {
-    const resp = await cd.g.api.post({
+    const resp = await cd.g.mwApi.post({
       action: 'query',
       pageids: nextPageIds,
       formatversion: 2,
@@ -231,7 +231,7 @@ export async function getPageIds(pageTitles) {
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageTitles;
   while ((nextPageTitles = pageTitles.splice(0, limit).join('|'))) {
-    const resp = await cd.g.api.post({
+    const resp = await cd.g.mwApi.post({
       action: 'query',
       titles: nextPageTitles,
       redirects: true,
@@ -280,7 +280,7 @@ async function setOption(name, value, action) {
     });
   }
 
-  const resp = await makeBackgroundRequest(cd.g.api.assertCurrentUser({
+  const resp = await makeBackgroundRequest(cd.g.mwApi.assertCurrentUser({
     action,
     optionname: name,
 
@@ -362,7 +362,7 @@ export async function getUserGenders(users, requestInBackground = false) {
       usprop: 'gender',
       formatversion: 2,
     };
-    const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.api.post(options);
+    const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
     const resp = await request.catch(handleApiReject);
     const users = resp.query?.users;
     if (!users) {
@@ -398,7 +398,7 @@ export function getRelevantUserNames(text) {
           throw new CdError();
         }
 
-        cd.g.api.get({
+        cd.g.mwApi.get({
           action: 'opensearch',
           search: text,
           namespace: 3,
@@ -460,7 +460,7 @@ export function getRelevantPageNames(text) {
           throw new CdError();
         }
 
-        cd.g.api.get({
+        cd.g.mwApi.get({
           action: 'opensearch',
           search: text,
           redirects: 'return',
@@ -517,7 +517,7 @@ export function getRelevantTemplateNames(text) {
           throw new CdError();
         }
 
-        cd.g.api.get({
+        cd.g.mwApi.get({
           action: 'opensearch',
           search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
           redirects: 'return',
@@ -568,7 +568,7 @@ export async function getPagesExistence(titles) {
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPages;
   while ((nextPages = titlesToRequest.splice(0, limit).join('|'))) {
-    const resp = await cd.g.api.post({
+    const resp = await cd.g.mwApi.post({
       action: 'query',
       titles: nextPages,
       formatversion: 2,

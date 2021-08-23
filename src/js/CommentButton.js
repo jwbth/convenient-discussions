@@ -1,21 +1,17 @@
-/**
- * Comment button class.
- *
- * @module CommentButton
- */
-
 import Button from './Button';
 import cd from './cd';
 
 /**
  * Class representing a comment button, be it a simple link or a OOUI button depending on user
  * settings.
+ *
+ * @augments Button
  */
-export default class CommentButton extends Button {
+class CommentButton extends Button {
   /**
    * Create a comment button.
    *
-   * @param {object} config Button config, see details at {@link module:Button}.
+   * @param {object} config Button config, see the details at {@link Button}.
    * @param {Function} [config.widgetConstructor] Function that creates a OOUI widget that is the
    *   original source of this button (for OOUI buttons).
    */
@@ -43,7 +39,7 @@ export default class CommentButton extends Button {
   }
 
   /**
-   * Create a OOUI widget (for a OOUI button) using {@link module:CommentButton#widgetConstructor}.
+   * Create a OOUI widget (for a OOUI button) using {@link CommentButton#widgetConstructor}.
    *
    * @private
    */
@@ -180,3 +176,5 @@ export default class CommentButton extends Button {
       Boolean(this.buttonWidget?.isPending());
   }
 }
+
+export default CommentButton;

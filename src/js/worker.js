@@ -1,7 +1,7 @@
 /**
  * Web worker entry point.
  *
- * Note that currently there may be difficulties in testing the web worker in the "local" mode with
+ * Note that currently there may be difficulties in testing the web worker in the "single" mode with
  * custom config functions such as {@link module:defaultConfig.checkForCustomForeignComponents} due
  * to the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
  * contexts resulting in a lost tie between them.
@@ -381,7 +381,7 @@ function onMessageFromWindow(e) {
     cd.config.checkForCustomForeignComponents = restoreFunc(
       cd.config.checkForCustomForeignComponents
     );
-    cd.g.IS_IPv6_ADDRESS = restoreFunc(cd.g.IS_IPv6_ADDRESS);
+    cd.g.isIPv6Address = restoreFunc(cd.g.isIPv6Address);
 
 
     context.document = parseDocument(message.text, {

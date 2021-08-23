@@ -1,9 +1,3 @@
-/**
- * Section skeleton class.
- *
- * @module SectionSkeleton
- */
-
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
@@ -12,7 +6,7 @@ import { TreeWalker } from './treeWalker';
  * Class containing the main properties of a section. This class is the only one used in the worker
  * context for sections.
  */
-export default class SectionSkeleton {
+class SectionSkeleton {
   /**
    * Create a section skeleton instance.
    *
@@ -102,8 +96,8 @@ export default class SectionSkeleton {
     this.setContentProperties();
 
     /**
-     * Section ID. Same as the section index in {@link module:cd~convenientDiscussions.sections
-     * convenientDiscussions.sections}.
+     * Section ID. Same as the section index in
+     * {@link convenientDiscussions.sections convenientDiscussions.sections}.
      *
      * @type {number}
      */
@@ -266,7 +260,7 @@ export default class SectionSkeleton {
 
   /**
    * _For internal use._ Parse the headline of the section and fill the
-   * {@link module:Section#headline headline} property that contains no HTML tags.
+   * {@link Section#headline headline} property that contains no HTML tags.
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
@@ -324,3 +318,5 @@ export default class SectionSkeleton {
     return this.cachedAncestors;
   }
 }
+
+export default SectionSkeleton;

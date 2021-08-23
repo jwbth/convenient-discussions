@@ -1,9 +1,3 @@
-/**
- * Methods related to comment forms.
- *
- * @module CommentFormStatic
- */
-
 import CommentForm from './CommentForm';
 import cd from './cd';
 import { areObjectsEqual, focusInput } from './util';
@@ -34,7 +28,7 @@ export default {
    * Get default preload configuration for the `addSection` mode.
    *
    * @returns {object}
-   * @memberof module:CommentForm
+   * @memberof CommentForm
    */
   getDefaultPreloadConfig() {
     return {
@@ -54,7 +48,7 @@ export default {
    * @param {string} mode
    * @returns {string}
    * @private
-   * @memberof module:CommentForm
+   * @memberof CommentForm
    */
   modeToProperty(mode) {
     return mode === 'replyInSection' ? 'reply' : mode;
@@ -64,7 +58,7 @@ export default {
    * Get the last active comment form.
    *
    * @returns {?CommentForm}
-   * @memberof module:CommentForm
+   * @memberof CommentForm
    */
   getLastActive() {
     return (
@@ -80,7 +74,7 @@ export default {
    * fields, not checkboxes.
    *
    * @returns {?CommentForm}
-   * @memberof module:CommentForm
+   * @memberof CommentForm
    */
   getLastActiveAltered() {
     return (
@@ -97,7 +91,7 @@ export default {
    *
    * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
    * @param {boolean} [isNewTopicOnTop=false]
-   * @memberof module:CommentForm
+   * @memberof CommentForm
    */
   createAddSectionForm(
     preloadConfig = CommentForm.getDefaultPreloadConfig(),
@@ -122,11 +116,11 @@ export default {
        *
        * @name addSectionForm
        * @type {CommentForm|undefined}
-       * @memberof module:cd~convenientDiscussions.g
+       * @memberof convenientDiscussions.g
        */
       cd.g.addSectionForm = new CommentForm({
         mode: 'addSection',
-        target: cd.g.PAGE,
+        target: cd.page,
         preloadConfig,
         isNewTopicOnTop,
       });

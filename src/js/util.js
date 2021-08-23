@@ -1,6 +1,6 @@
 /**
  * Utilities module. Some of the utilities are parts of the
- * {@link module:cd~convenientDiscussions.util convenientDiscussions.util} object.
+ * {@link convenientDiscussions.api convenientDiscussions.api} object.
  *
  * @module util
  */
@@ -17,7 +17,6 @@ let keptTocHeight = null;
 /**
  * @typedef {object} Callbacks
  * @property {Function} *
- * @memberof module:cd~convenientDiscussions.util
  */
 
 /**
@@ -30,8 +29,7 @@ let keptTocHeight = null;
  * @param {Callbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
  * @param {boolean} [options.targetBlank]
- * @returns {JQuery}
- * @memberof module:cd~convenientDiscussions.util
+ * @returns {external:jQuery}
  */
 export function wrap(htmlOrJquery, options = {}) {
   const $wrapper = $(htmlOrJquery instanceof $ ? htmlOrJquery : $.parseHTML(htmlOrJquery))
@@ -109,7 +107,6 @@ export function buildEditSummary(options) {
  * This runs very frequently.
  *
  * @returns {boolean}
- * @memberof module:cd~convenientDiscussions.util
  */
 export function isPageOverlayOn() {
   return (
@@ -127,7 +124,6 @@ export function isPageOverlayOn() {
  *
  * @param {string} body
  * @returns {string}
- * @memberof module:cd~convenientDiscussions.util
  */
 export function wrapDiffBody(body) {
   return (
@@ -235,9 +231,8 @@ export function generatePageNamePattern(s) {
  * Check if a page is probably a talk page. The namespace number is required.
  *
  * This function exists mostly because we can't be sure the `mediawiki.Title` module has loaded when
- * the script has started executing (and can't use the {@link module:Page Page} constructor), and we
- * need to make this check fast. So, in most cases, {@link module:Page#isProbablyTalkPage} should be
- * used.
+ * the script has started executing (and can't use the {@link Page} constructor), and we need to
+ * make this check fast. So, in most cases, {@link Page#isProbablyTalkPage} should be used.
  *
  * @param {string} pageName
  * @param {number} namespaceNumber
@@ -884,7 +879,7 @@ export function focusInput(input) {
  * `vector-legacy`. If no value for the skin is provided, the `default` value is used.
  *
  * @param {object} selectors
- * @returns {JQuery}
+ * @returns {external:jQuery}
  */
 export function skin$(selectors) {
   return $(selectors[cd.g.SKIN] || selectors.default || selectors.vector);
@@ -939,7 +934,7 @@ export function getUrlWithAnchor(anchor, permanent) {
   if (permanent) {
     params.oldid = mw.config.get('wgRevisionId');
   }
-  const decodedPageUrl = decodeURI(cd.g.PAGE.getUrl(params));
+  const decodedPageUrl = decodeURI(cd.page.getUrl(params));
   return `${cd.g.SERVER}${decodedPageUrl}#${anchor}`;
 }
 

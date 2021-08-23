@@ -1,11 +1,4 @@
-/**
- * Web page (not wikitext) parsing class. Parsing here means "extracting meaningful parts from the
- * page". Functions related to wikitext parsing go in {@link module:wikitext}.
- *
- * Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
- *
- * @module Parser
- */
+// Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
 
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
@@ -19,6 +12,7 @@ let elementsToExclude;
  * @typedef {object} GetPageNameFromUrlReturn
  * @param {string} 1 Page name.
  * @param {string} 2 Domain.
+ * @global
  * @private
  */
 
@@ -26,7 +20,7 @@ let elementsToExclude;
  * Get a page name from a URL.
  *
  * @param {string} url
- * @returns {?string}
+ * @returns {?GetPageNameFromUrlReturn}
  * @private
  */
 function getPageNameFromUrl(url) {
@@ -47,74 +41,6 @@ function getPageNameFromUrl(url) {
     return null;
   }
   return [pageName, domain];
-}
-
-/**
- * @typedef {string[]} ProcessLinkReturn
- * @param {string} 1 User name.
- * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`,
- *   or any of this `Foreign` at the end).
- * @private
- */
-
-/**
- * _For internal use._ Get a user name from a link, along with some other data about a page name.
- *
- * @param {Element|external:Element} element
- * @returns {?ProcessLinkReturn}
- */
-export function processLink(element) {
-  const href = element.getAttribute('href');
-  let userName;
-  let linkType = null;
-  if (href) {
-    const [pageName, domain] = getPageNameFromUrl(href) || [];
-    if (!pageName) {
-      return null;
-    }
-    const isCurrentDomain = domain === cd.g.HOSTNAME;
-    const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
-    if (match) {
-      userName = match[1];
-      if (cd.g.USER_LINK_REGEXP.test(pageName)) {
-        linkType = 'user';
-      } else if (cd.g.USER_TALK_LINK_REGEXP.test(pageName)) {
-        linkType = 'userTalk';
-      } else if (cd.g.USER_SUBPAGE_LINK_REGEXP.test(pageName)) {
-        linkType = 'userSubpage';
-      } else if (cd.g.USER_TALK_SUBPAGE_LINK_REGEXP.test(pageName)) {
-        linkType = 'userTalkSubpage';
-      }
-
-      // Another alternative is a user link to another site where a prefix is specified before a
-      // namespace. Enough to capture a user name from, not enough to make any inferences.
-    } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
-      userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
-      if (cd.g.IS_IPv6_ADDRESS(userName)) {
-        userName = userName.toUpperCase();
-      }
-      linkType = 'contribs';
-    }
-    if (!isCurrentDomain) {
-      linkType += 'Foreign';
-    }
-    if (userName) {
-      userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
-    }
-  } else {
-    if (
-      element.classList.contains('mw-selflink') &&
-      cd.g.NAMESPACE_NUMBER === 3 &&
-      !cd.g.PAGE_NAME.includes('/')
-    ) {
-      // Comments of users that have only the user talk page link in their signature on their talk
-      // page.
-      userName = cd.g.PAGE_TITLE;
-    } else {
-      return null;
-    }
-  }
-  return [userName, linkType];
 }
 
 /**
@@ -160,9 +86,11 @@ function isIntroList(element) {
 }
 
 /**
- * Generalization of a page parser for the window and worker contexts.
+ * Generalization of a web page (not wikitext) parser for the window and worker contexts. Parsing
+ * here means "extracting meaningful parts from the page". Functions related to wikitext parsing go
+ * in {@link module:wikitext}.
  */
-export default class Parser {
+class Parser {
   /**
    * Create a page parser in the provided context.
    *
@@ -205,6 +133,7 @@ export default class Parser {
    * @typedef {object} Timestamp
    * @property {Element|external:Element} element
    * @property {Date} date
+   * @global
    */
 
   /**
@@ -384,7 +313,7 @@ export default class Parser {
             }
 
             if (node.tagName === 'A') {
-              const linkData = processLink(node) || [];
+              const linkData = Parser.processLink(node) || [];
               if (!processLinkData(linkData, node)) break;
             } else {
               const links = Array.from(node.getElementsByTagName('a')).reverse();
@@ -392,7 +321,7 @@ export default class Parser {
                 // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
                 if (link.classList.contains('external')) continue;
 
-                const linkData = processLink(link) || [];
+                const linkData = Parser.processLink(link) || [];
                 processLinkData(linkData, link);
               }
             }
@@ -476,7 +405,7 @@ export default class Parser {
         })
         .forEach((element) => {
           Array.from(element.getElementsByTagName('a')).some((link) => {
-            const [authorName, linkType] = processLink(link) || {};
+            const [authorName, linkType] = Parser.processLink(link) || {};
             if (authorName) {
               let authorLink;
               let authorTalkLink;
@@ -1209,4 +1138,75 @@ export default class Parser {
     headings.sort((heading1, heading2) => this.context.follows(heading1, heading2) ? 1 : -1);
     return headings;
   }
+
+  /**
+   * @typedef {string[]} ProcessLinkReturn
+   * @param {string} 1 User name.
+   * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`,
+   *   or any of this `Foreign` at the end).
+   * @global
+   * @private
+   */
+
+  /**
+   * _For internal use._ Get a user name from a link, along with some other data about a page name.
+   *
+   * @param {Element|external:Element} element
+   * @returns {?ProcessLinkReturn}
+   */
+  static processLink(element) {
+    const href = element.getAttribute('href');
+    let userName;
+    let linkType = null;
+    if (href) {
+      const [pageName, domain] = getPageNameFromUrl(href) || [];
+      if (!pageName) {
+        return null;
+      }
+      const isCurrentDomain = domain === cd.g.HOSTNAME;
+      const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
+      if (match) {
+        userName = match[1];
+        if (cd.g.USER_LINK_REGEXP.test(pageName)) {
+          linkType = 'user';
+        } else if (cd.g.USER_TALK_LINK_REGEXP.test(pageName)) {
+          linkType = 'userTalk';
+        } else if (cd.g.USER_SUBPAGE_LINK_REGEXP.test(pageName)) {
+          linkType = 'userSubpage';
+        } else if (cd.g.USER_TALK_SUBPAGE_LINK_REGEXP.test(pageName)) {
+          linkType = 'userTalkSubpage';
+        }
+
+        // Another alternative is a user link to another site where a prefix is specified before a
+        // namespace. Enough to capture a user name from, not enough to make any inferences.
+      } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
+        userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
+        if (cd.g.isIPv6Address(userName)) {
+          userName = userName.toUpperCase();
+        }
+        linkType = 'contribs';
+      }
+      if (!isCurrentDomain) {
+        linkType += 'Foreign';
+      }
+      if (userName) {
+        userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+      }
+    } else {
+      if (
+        element.classList.contains('mw-selflink') &&
+        cd.g.NAMESPACE_NUMBER === 3 &&
+        !cd.g.PAGE_NAME.includes('/')
+      ) {
+        // Comments of users that have only the user talk page link in their signature on their talk
+        // page.
+        userName = cd.g.PAGE_TITLE;
+      } else {
+        return null;
+      }
+    }
+    return [userName, linkType];
+  }
 }
+
+export default Parser;

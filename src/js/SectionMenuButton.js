@@ -1,15 +1,11 @@
-/**
- * Section menu button class.
- *
- * @module SectionMenuButton
- */
-
 import Button from './Button';
 
 /**
  * Class representing a section menu button.
+ *
+ * @augments Button
  */
-export default class SectionMenuButton extends Button {
+class SectionMenuButton extends Button {
   /**
    * Create a comment button.
    *
@@ -56,3 +52,5 @@ export default class SectionMenuButton extends Button {
     return this;
   }
 }
+
+export default SectionMenuButton;

@@ -1,5 +1,5 @@
 /**
- * User options handling functions.
+ * MediaWiki's user options handling functions.
  *
  * @module options
  */
@@ -10,6 +10,7 @@ import CdError from './CdError';
 import cd from './cd';
 import { addToArrayIfAbsent, firstCharToUpperCase, removeFromArrayIfPresent } from './util';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
+import { settingsScheme } from './boot';
 
 /**
  * Pack the visits object into a string for further compression.
@@ -113,14 +114,14 @@ export async function getSettings({
   }
 
   let settings = {};
-  Object.keys(cd.defaultSettings).forEach((name) => {
-    (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
+  Object.keys(settingsScheme.default).forEach((name) => {
+    (settingsScheme.aliases[name] || []).concat(name).forEach((alias) => {
       // Global settings override those set via personal JS.
       if (
         globalSettings[alias] !== undefined &&
         (
-          typeof globalSettings[alias] === typeof cd.defaultSettings[name] ||
-          cd.defaultSettings[name] === null
+          typeof globalSettings[alias] === typeof settingsScheme.default[name] ||
+          settingsScheme.default[name] === null
         )
       ) {
         settings[name] = globalSettings[alias];
@@ -130,8 +131,8 @@ export async function getSettings({
       if (
         localSettings[alias] !== undefined &&
         (
-          typeof localSettings[alias] === typeof cd.defaultSettings[name] ||
-          cd.defaultSettings[name] === null
+          typeof localSettings[alias] === typeof settingsScheme.default[name] ||
+          settingsScheme.default[name] === null
         )
       ) {
         settings[name] = localSettings[alias];
@@ -153,14 +154,14 @@ export async function getSettings({
  */
 export function getLocalOverridingSettings() {
   const settings = {};
-  Object.keys(cd.defaultSettings).forEach((name) => {
-    (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
+  Object.keys(settingsScheme.default).forEach((name) => {
+    (settingsScheme.aliases[name] || []).concat(name).forEach((alias) => {
       const varLocalAlias = 'cdLocal' + firstCharToUpperCase(alias);
       if (
         varLocalAlias in window &&
         (
-          typeof window[varLocalAlias] === typeof cd.defaultSettings[name] ||
-          cd.defaultSettings[name] === null
+          typeof window[varLocalAlias] === typeof settingsScheme.default[name] ||
+          settingsScheme.default[name] === null
         )
       ) {
         settings[name] = window[varLocalAlias];
@@ -177,13 +178,13 @@ export function getLocalOverridingSettings() {
  * @param {object} [settings=cd.settings] Settings to save.
  */
 export async function setSettings(settings = cd.settings) {
-  if (cd.g.USER_NAME === '<unregistered>') return;
+  if (cd.user.name === '<unregistered>') return;
 
   if (cd.config.useGlobalPreferences) {
     const globalSettings = {};
     const localSettings = {};
     Object.keys(settings).forEach((key) => {
-      if (cd.localSettingNames.includes(key)) {
+      if (settingsScheme.local.includes(key)) {
         localSettings[key] = settings[key];
       } else {
         globalSettings[key] = settings[key];
@@ -203,6 +204,7 @@ export async function setSettings(settings = cd.settings) {
  * @typedef {object} GetVisitsReturn
  * @property {object} visits
  * @property {object} currentPageVisits
+ * @global
  */
 
 /**
@@ -218,7 +220,7 @@ export async function setSettings(settings = cd.settings) {
 export async function getVisits(reuse = false) {
   let visits;
   let currentPageVisits;
-  if (cd.g.USER_NAME === '<unregistered>') {
+  if (cd.user.name === '<unregistered>') {
     visits = [];
     currentPageVisits = [];
   } else {
@@ -270,7 +272,7 @@ function cleanUpVisits(originalVisits) {
  * @param {object} visits
  */
 export async function setVisits(visits) {
-  if (!visits || cd.g.USER_NAME === '<unregistered>') return;
+  if (!visits || cd.user.name === '<unregistered>') return;
 
   const visitsString = packVisits(visits);
   const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);

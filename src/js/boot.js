@@ -37,7 +37,7 @@ import {
 import { createWindowManager, showConfirmDialog } from './ooui';
 import { editWatchedSections, rescueCommentFormsContent, showSettingsDialog } from './modal';
 import { formatDateNative, initDayjs, initTimestampParsingTools } from './timestamp';
-import { getLocalOverridingSettings, getSettings, setSettings } from './options';
+import { getLocalOverridingSettings, getSettings, setSettings, setVisits } from './options';
 import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
 import { removeWikiMarkup } from './wikitext';
@@ -47,29 +47,37 @@ let saveSessionTimeout;
 let saveSessionLastTime;
 
 /**
+ * Settings scheme: default, undocumented, local settings, aliases.
+ */
+export const settingsScheme = {
+  // Settings set for the current wiki only.
+  local: ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'],
+
+  // Settings not shown in the settings dialog.
+  undocumented: [
+    'defaultCommentLinkType',
+    'defaultSectionLinkType',
+    'showLoadingOverlay',
+  ],
+
+  // Aliases for seamless transition when changing a setting name.
+  aliases: {
+    allowEditOthersComments: ['allowEditOthersMsgs'],
+    alwaysExpandAdvanced: ['alwaysExpandSettings'],
+    haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
+    desktopNotifications: ['browserNotifications'],
+    signaturePrefix: ['mySig', 'mySignature'],
+  }
+};
+
+/**
  * _For internal use._ Initiate user settings.
  */
 export async function initSettings() {
-  /**
-   * Script settings of the current user.
-   *
-   * @name settings
-   * @type {object}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.settings = cd.settings || {};
-
   // We fill the settings after the modules are loaded so that the settings set via common.js had
   // less chance not to load.
 
-  /**
-   * Default settings.
-   *
-   * @name defaultSetings
-   * @type {object}
-   * @memberof module:cd~convenientDiscussions
-   */
-  cd.defaultSettings = {
+  settingsScheme.default = {
     allowEditOthersComments: false,
     alwaysExpandAdvanced: false,
 
@@ -78,7 +86,7 @@ export async function initSettings() {
     haveInsertButtonsBeenAltered: false,
 
     // The order should coincide with the order of checkboxes in
-    // `SettingsDialog#autocompleteTypesMultiselect` in modal.js (otherwise the "Save" and "Reset"
+    // `SettingsDialog#autocompleteTypesMultiselect` in modal.js - otherwise the "Save" and "Reset"
     // buttons in the settings dialog won't work properly.
     autocompleteTypes: ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
@@ -106,24 +114,14 @@ export async function initSettings() {
     watchSectionOnReply: true,
   };
 
-  // Settings set for the current wiki only.
-  cd.localSettingNames = ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'];
-
-  // Settings not shown in the settings dialog.
-  cd.internalSettingNames = [
-    'defaultCommentLinkType',
-    'defaultSectionLinkType',
-    'showLoadingOverlay',
-  ];
-
-  // Aliases for seamless transition when changing a setting name.
-  cd.settingAliases = {
-    allowEditOthersComments: ['allowEditOthersMsgs'],
-    alwaysExpandAdvanced: ['alwaysExpandSettings'],
-    haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
-    desktopNotifications: ['browserNotifications'],
-    signaturePrefix: ['mySig', 'mySignature'],
-  };
+  /**
+   * Script settings of the current user.
+   *
+   * @name settings
+   * @type {object}
+   * @memberof convenientDiscussions
+   */
+  cd.settings = cd.settings || {};
 
   const options = {
     [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
@@ -132,14 +130,14 @@ export async function initSettings() {
 
   // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
   // were implemented.
-  Object.keys(cd.defaultSettings).forEach((name) => {
-    (cd.settingAliases[name] || []).concat(name).forEach((alias) => {
+  Object.keys(settingsScheme.default).forEach((name) => {
+    (settingsScheme.aliases[name] || []).concat(name).forEach((alias) => {
       const varAlias = 'cd' + firstCharToUpperCase(alias);
       if (
         varAlias in window &&
         (
-          typeof window[varAlias] === typeof cd.defaultSettings[name] ||
-          cd.defaultSettings[name] === null
+          typeof window[varAlias] === typeof settingsScheme.default[name] ||
+          settingsScheme.default[name] === null
         )
       ) {
         cd.settings[name] = window[varAlias];
@@ -152,7 +150,7 @@ export async function initSettings() {
     omitLocal: true,
   });
   Object.keys(remoteSettings).forEach((name) => {
-    if (!cd.internalSettingNames.includes(name)) {
+    if (!settingsScheme.undocumented.includes(name)) {
       cd.settings[name] = remoteSettings[name];
     }
   });
@@ -169,7 +167,7 @@ export async function initSettings() {
     cd.settings.insertButtons = cd.config.defaultInsertButtons;
   }
 
-  cd.settings = Object.assign({}, cd.defaultSettings, cd.settings);
+  cd.settings = Object.assign({}, settingsScheme.default, cd.settings);
 
   if (!areObjectsEqual(cd.settings, remoteSettings)) {
     setSettings().catch((e) => {
@@ -266,7 +264,7 @@ export function setTalkPageCssVariables() {
  * `convenientDiscussions.g.api` if it's not already set.
  */
 export function createApi() {
-  cd.g.api = cd.g.api || new mw.Api({
+  cd.g.mwApi = cd.g.mwApi || new mw.Api({
     ajax: {
       // 60 seconds instead of default 30
       timeout: 60 * 1000,
@@ -285,10 +283,28 @@ export function createApi() {
  */
 function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
-    .files["phpCharToUpper.json"];
-  cd.g.PAGE = new Page(cd.g.PAGE_NAME, false);
-  cd.g.USER_GENDER = mw.user.options.get('gender');
-  cd.g.USER = userRegistry.getUser(cd.g.USER_NAME);
+    .files['phpCharToUpper.json'];
+
+  /**
+   * Current page's object.
+   *
+   * @name page
+   * @type {Page}
+   * @memberof convenientDiscussions
+   */
+  cd.page = new Page(cd.g.PAGE_NAME, false);
+
+  // TODO: Delete after all addons are updated.
+  cd.g.PAGE = cd.page;
+
+  /**
+   * Current user's object.
+   *
+   * @name user
+   * @type {module:userRegistry~User}
+   * @memberof convenientDiscussions
+   */
+  cd.user = userRegistry.getUser(cd.g.USER_NAME);
 
   // {{gender:}} with at least two pipes in a selection of the affected strings.
   cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
@@ -298,7 +314,7 @@ function initGlobals() {
     cd.sPlain('thread-expand')
   );
 
-  if (cd.config.tagName && cd.g.USER.isRegistered()) {
+  if (cd.config.tagName && cd.user.isRegistered()) {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
   } else {
@@ -309,9 +325,8 @@ function initGlobals() {
     );
   }
 
-  cd.g.IS_IPv6_ADDRESS = mw.util.isIPv6Address;
-
-  cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
+  cd.g.isIPv6Address = mw.util.isIPv6Address;
+  cd.g.notificationArea = document.querySelector('.mw-notification-area');
 
   // Page states
   cd.g.dontHandleScroll = false;
@@ -320,48 +335,56 @@ function initGlobals() {
   cd.g.isPageBeingReloaded = false;
   cd.g.hasPageBeenReloaded = false;
 
-  // Useful for testing
+  // Useful for debugging
   cd.g.processPageInBackground = updateChecker.processPage;
   cd.g.editWatchedSections = editWatchedSections;
   cd.g.showSettingsDialog = showSettingsDialog;
+  cd.g.setVisits = setVisits;
 
 
   /* Some static methods for external use */
 
   /**
-   * @see module:Comment.getByAnchor
+   * @see Comment.getByAnchor
    * @function getCommentByAnchor
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions.api
    */
-  cd.getCommentByAnchor = Comment.getByAnchor;
+  cd.api.getCommentByAnchor = Comment.getByAnchor;
 
   /**
-   * @see module:Section.getByAnchor
+   * @see Section.getByAnchor
    * @function getSectionByAnchor
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions.api
    */
-  cd.getSectionByAnchor = Section.getByAnchor;
+  cd.api.getSectionByAnchor = Section.getByAnchor;
 
   /**
-   * @see module:Section.getByHeadline
+   * @see Section.getByHeadline
    * @function getSectionsByHeadline
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions.api
    */
-  cd.getSectionsByHeadline = Section.getByHeadline;
+  cd.api.getSectionsByHeadline = Section.getByHeadline;
 
   /**
-   * @see module:CommentForm.getLastActive
+   * @see CommentForm.getLastActive
    * @function getLastActiveCommentForm
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions.api
    */
-  cd.getLastActiveCommentForm = CommentForm.getLastActive;
+  cd.api.getLastActiveCommentForm = CommentForm.getLastActive;
 
   /**
-   * @see module:CommentForm.getLastActiveAltered
+   * @see CommentForm.getLastActiveAltered
    * @function getLastActiveAlteredCommentForm
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions.api
    */
-  cd.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered;
+  cd.api.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered;
+
+  /**
+   * @see module:boot.reloadPage
+   * @function reloadPage
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.reloadPage = reloadPage;
 }
 
 /**
@@ -830,7 +853,7 @@ export async function init(siteDataRequests) {
    *
    * @name commentForms
    * @type {CommentForm[]}
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions
    */
   cd.commentForms = [];
 }
@@ -903,7 +926,7 @@ export function startLoading(isReload = false) {
      *
      * @name isPageBeingReloaded
      * @type {boolean}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.isPageBeingReloaded = true;
   } else {
@@ -913,7 +936,7 @@ export function startLoading(isReload = false) {
      *
      * @name isFirstRun
      * @type {boolean}
-     * @memberof module:cd~convenientDiscussions.g
+     * @memberof convenientDiscussions.g
      */
     cd.g.isFirstRun = true;
   }
@@ -974,7 +997,9 @@ export function isCurrentRevision() {
 /**
  * Reload the page via Ajax.
  *
- * @param {object} [passedData={}] Data passed from the previous page state.
+ * @param {import('./commonTypedefs').PassedData} [passedData={}] Data passed from the previous page
+ *   state. See {@link module:commonTypedefs~PassedData} for the list of possible properties.
+ *   `html`, `unseenCommentAnchors` properties are set in this function.
  * @throws {CdError|Error}
  */
 export async function reloadPage(passedData = {}) {
@@ -1023,7 +1048,7 @@ export async function reloadPage(passedData = {}) {
   if (!passedData.isPageReloadedExternally) {
     let parseData;
     try {
-      parseData = await cd.g.PAGE.parse(null, false, true);
+      parseData = await cd.page.parse(null, false, true);
     } catch (e) {
       finishLoading();
       if (passedData.wasCommentFormSubmitted) {
@@ -1073,7 +1098,7 @@ export async function reloadPage(passedData = {}) {
  * _For internal use._ Handle firings of the hook `'wikipage.content'` (by using
  * `mw.hook('wikipage.content').fire()`).
  *
- * @param {JQuery} $content
+ * @param {external:jQuery} $content
  */
 export function handleWikipageContentHookFirings($content) {
   if ($content.is('#mw-content-text')) {
@@ -1210,7 +1235,7 @@ function restoreCommentFormsFromData(commentFormsData) {
     } else if (data.mode === 'addSection') {
       if (!cd.g.addSectionForm) {
         cd.g.addSectionForm = new CommentForm({
-          target: cd.g.PAGE,
+          target: cd.page,
           mode: data.mode,
           dataToRestore: data,
           preloadConfig: data.preloadConfig,
@@ -1325,6 +1350,7 @@ export function restoreCommentForms(isPageReloadedExternally) {
  *
  * @typedef {object} Notification
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
+ * @global
  */
 
 /**
@@ -1553,7 +1579,7 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
     sectionName = underlinesToSpaces(decodedFragment);
     label = cd.sParse('deadanchor-section-lead', sectionName);
   }
-  if (cd.g.PAGE.canHaveArchives()) {
+  if (cd.page.canHaveArchives()) {
     label += ' ';
 
     let sectionNameDotDecoded;
@@ -1585,10 +1611,10 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
         searchQuery += ` OR "${adjustedToken}"`;
       }
     }
-    const archivePrefix = cd.g.PAGE.getArchivePrefix();
+    const archivePrefix = cd.page.getArchivePrefix();
     searchQuery += ` prefix:${archivePrefix}`;
 
-    cd.g.api.get({
+    cd.g.mwApi.get({
       action: 'query',
       list: 'search',
       srsearch: searchQuery,

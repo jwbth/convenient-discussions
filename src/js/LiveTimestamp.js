@@ -1,9 +1,3 @@
-/**
- * Automatically updated relative date and time timestamps class.
- *
- * @module LiveTimestamp
- */
-
 import dayjs from 'dayjs';
 
 import cd from './cd';
@@ -21,7 +15,7 @@ let improvedTimestamps = [];
  * Class representing an element that has contains an automatically updated timestamp with relative
  * (dependent on the current date and time somehow) date and time.
  */
-export default class LiveTimestamp {
+class LiveTimestamp {
   /**
    * Create a live timestamp.
    *
@@ -174,3 +168,5 @@ export default class LiveTimestamp {
     improvedTimestamps = [];
   }
 }
+
+export default LiveTimestamp;

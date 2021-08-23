@@ -2,10 +2,10 @@
  * A number of methods to simplify measuring time that it takes to run certain routines as well as
  * counting the number of times certain instructions run.
  *
- * @module debug
+ * @namespace
+ * @memberof convenientDiscussions
  */
-
-export default {
+const debug = {
 	/**
 	 * Init/reset all properties of the debug object.
 	 */
@@ -14,6 +14,7 @@ export default {
 		 * Total time for every timer.
 		 *
 		 * @type {object}
+		 * @memberof convenientDiscussions.debug
 		 */
 		this.timerTotal = {};
 
@@ -21,6 +22,8 @@ export default {
 		 * Timer start timestamps for every timer.
 		 *
 		 * @type {object}
+		 * @memberof convenientDiscussions.debug
+		 * @private
 		 */
 		this.timerStartTimestamps = {};
 
@@ -28,13 +31,17 @@ export default {
 		 * The number of times a timer has run.
 		 *
 		 * @type {object}
+		 * @memberof convenientDiscussions.debug
 		 */
 		this.timerRunCount = {};
 
 		/**
-		 * Total time for all timer runs, ignoring timer resets (but not full resets).
+		 * Total time for all timer runs, ignoring
+		 * {@link convenientDiscussions.debug.resetTimer timer resets} (but not
+		 * {@link convenientDiscussions.debug.fullResetTimer full resets}).
 		 *
 		 * @type {object}
+		 * @memberof convenientDiscussions.debug
 		 */
 		this.timerAllRunsTotal = {};
 
@@ -44,6 +51,7 @@ export default {
 		 * An array to keep any values sequentially.
 		 *
 		 * @type {Array}
+		 * @memberof convenientDiscussions.debug
 		 */
 		this.array = [];
 
@@ -51,6 +59,7 @@ export default {
 		 * An object to keep any values by key.
 		 *
 		 * @type {Array}
+		 * @memberof convenientDiscussions.debug
 		 */
 		this.object = {};
 	},
@@ -60,6 +69,12 @@ export default {
 	 * assign 0 to it first.
 	 */
 	initCounters() {
+		/**
+		 * An object to keep values of counters.
+		 *
+		 * @type {Proxy|object}
+		 * @memberof convenientDiscussions.debug
+		 */
 		this.counters = typeof Proxy === 'undefined' ?
 			{} :
 			new Proxy({}, { get: (obj, prop) => prop in obj ? obj[prop] : 0 });
@@ -170,7 +185,8 @@ export default {
 
 	/**
 	 * Log the average time one run of the specified timer takes. All runs of the timer are taken into
-	 * account unless a [full reset]{@link module:debug.fullResetTimer} has been performed.
+	 * account unless a {@link convenientDiscussions.debug.fullResetTimer full reset} has been
+	 * performed.
 	 *
 	 * @param {string} label
 	 */
@@ -192,3 +208,5 @@ export default {
 		this.counters[label]++;
 	},
 };
+
+export default debug;

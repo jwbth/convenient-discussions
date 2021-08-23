@@ -68,11 +68,11 @@ async function prepare(siteDataRequests) {
   --cd-parentheses-end: '${cd.mws('parentheses-end')}';
 }`);
 
-  // Used in boot.initSettings().
+  // Used in util.firstCharToUpperCase() via boot.initSettings().
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
-    .files["phpCharToUpper.json"];
+    .files['phpCharToUpper.json'];
 
-  cd.g.PAGE = new Page(cd.g.PAGE_NAME, false);
+  cd.page = new Page(cd.g.PAGE_NAME, false);
 
   serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
@@ -309,7 +309,7 @@ function isInSection(summary, name) {
 /**
  * Add comment links to a watchlist or a recent changes page. Add a watchlist menu to the watchlist.
  *
- * @param {JQuery} $content
+ * @param {external:jQuery} $content
  * @private
  */
 function processWatchlist($content) {
@@ -428,7 +428,7 @@ function processWatchlist($content) {
 /**
  * Add comment links to a contributions page.
  *
- * @param {JQuery} $content
+ * @param {external:jQuery} $content
  * @private
  */
 function processContributions($content) {
@@ -498,7 +498,7 @@ function processContributions($content) {
 /**
  * Add comment links to a history page.
  *
- * @param {JQuery} $content
+ * @param {external:jQuery} $content
  * @private
  */
 function processHistory($content) {
@@ -507,7 +507,7 @@ function processHistory($content) {
 
   const list = $content.get(0).querySelector('#pagehistory');
   const lines = Array.from(list.children);
-  const link = cd.g.PAGE.getUrl();
+  const link = cd.page.getUrl();
 
   lines.forEach((line) => {
     if (line.querySelector('.minoredit')) return;
@@ -662,7 +662,7 @@ async function processDiff() {
    * Comments links have been created.
    *
    * @event commentLinksCreated
-   * @type {module:cd~convenientDiscussions}
+   * @param {object} cd {@link convenientDiscussions} object.
    */
   mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
 }
@@ -670,7 +670,7 @@ async function processDiff() {
 /**
  * Add comment links to the page.
  *
- * @param {JQuery} $content
+ * @param {external:jQuery} $content
  * @private
  */
 async function addCommentLinks($content) {
@@ -684,7 +684,7 @@ async function addCommentLinks($content) {
     processWatchlist($content);
   } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
     processContributions($content);
-  } else if (mw.config.get('wgAction') === 'history' && cd.g.PAGE.isProbablyTalkPage()) {
+  } else if (mw.config.get('wgAction') === 'history' && cd.page.isProbablyTalkPage()) {
     processHistory($content);
   }
 
@@ -692,7 +692,7 @@ async function addCommentLinks($content) {
 }
 
 /**
- * The entry function for the comment links adding mechanism.
+ * _For internal use._ The entry function for the comment links adding mechanism.
  *
  * @param {Promise[]} siteDataRequests Array of requests returned by
  *   {@link module:siteData.loadSiteData}.

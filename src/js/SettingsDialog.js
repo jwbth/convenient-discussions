@@ -1,9 +1,3 @@
-/**
- * Settings dialog class.
- *
- * @module SettingsDialog
- */
-
 import cd from './cd';
 import { addPreventUnloadCondition } from './eventHandlers';
 import { areObjectsEqual, defined } from './util';
@@ -19,13 +13,14 @@ import { formatDateImproved, formatDateNative, formatDateRelative } from './time
 import { getSettings, setSettings } from './options';
 import { hideText, unhideText, wrap } from './util';
 import { setGlobalOption, setLocalOption } from './apiWrappers';
+import { settingsScheme } from './boot';
 
 /**
  * Class used to create a settings dialog.
  *
  * @augments external:OO.ui.ProcessDialog
  */
-export default class SettingsDialog extends OO.ui.ProcessDialog {
+class SettingsDialog extends OO.ui.ProcessDialog {
   static name = 'settingsDialog';
   static title = cd.s('sd-title');
   static actions = [
@@ -217,7 +212,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       return new OO.ui.Process(async () => {
         if (confirm(cd.s('sd-reset-confirm'))) {
           const currentPageName = this.bookletLayout.getCurrentPageName();
-          this.renderControls(cd.defaultSettings);
+          this.renderControls(settingsScheme.default);
           this.bookletLayout.setPage(currentPageName);
         }
       });
@@ -613,7 +608,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
       watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),
     };
     settings.haveInsertButtonsBeenAltered = (
-      JSON.stringify(settings.insertButtons) !== JSON.stringify(cd.defaultSettings.insertButtons)
+      JSON.stringify(settings.insertButtons) !== JSON.stringify(settingsScheme.default.insertButtons)
     );
 
     return settings;
@@ -657,7 +652,7 @@ export default class SettingsDialog extends OO.ui.ProcessDialog {
 
     const settings = this.collectSettings();
     const save = !areObjectsEqual(settings, this.settings, true);
-    const reset = !areObjectsEqual(settings, cd.defaultSettings, true);
+    const reset = !areObjectsEqual(settings, settingsScheme.default, true);
 
     this.actions.setAbilities({ save, reset });
   }
@@ -868,3 +863,5 @@ tweakUserOoUiClass(CommentFormPageLayout, OO.ui.PageLayout);
 tweakUserOoUiClass(TimestampsPageLayout, OO.ui.PageLayout);
 tweakUserOoUiClass(NotificationsPageLayout, OO.ui.PageLayout);
 tweakUserOoUiClass(RemoveDataPageLayout, OO.ui.PageLayout);
+
+export default SettingsDialog;

@@ -1,15 +1,9 @@
 /**
- * Comment subitem list class.
- *
- * @module CommentSubitemList
- */
-
-/**
  * Class representing a list of the comment's subitems. There can be two types of subitems
  * currently: comment forms and "new replies" notes. They are managed with this class to handle the
  * removal of their parent list properly.
  */
-export default class CommentSubitemList {
+class CommentSubitemList {
   /**
    * Create a comment subitem list.
    */
@@ -26,7 +20,7 @@ export default class CommentSubitemList {
    * Add a subitem to the list.
    *
    * @param {string} name
-   * @param {JQuery} $element
+   * @param {external:jQuery} $element
    */
   add(name, $element) {
     this.content[name] = $element;
@@ -64,3 +58,5 @@ export default class CommentSubitemList {
     return this.content[name] || null;
   }
 }
+
+export default CommentSubitemList;

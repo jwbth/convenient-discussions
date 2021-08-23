@@ -91,7 +91,7 @@ async function checkForUpdates() {
   }
 
   try {
-    const revisions = await cd.g.PAGE.getRevisions({
+    const revisions = await cd.page.getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
     }, true);
@@ -134,13 +134,13 @@ async function checkForUpdates() {
 /**
  * If the revision of the current visit and previous visit are different, process the said
  * revisions. (We need to process the current revision too to get the comments' inner HTML without
- * any elements that may be added by scripts.) The revisions' data will finally processed by
- * {@link module:updateChecker~checkForChangesSincePreviousVisit checkForChangesSincePreviousVisit()}.
+ * any elements that may be added by scripts.) The revisions' data will be finally processed by
+ * `checkForChangesSincePreviousVisit()`.
  *
  * @private
  */
 async function processRevisionsIfNeeded() {
-  const revisions = await cd.g.PAGE.getRevisions({
+  const revisions = await cd.page.getRevisions({
     rvprop: ['ids'],
     rvstart: new Date(cd.g.previousVisitUnixTime * 1000).toISOString(),
     rvlimit: 1,
@@ -179,17 +179,9 @@ function cleanUpSeenRenderedChanges(data) {
 }
 
 /**
- * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a web
- * worker so its constructor is lost.)
- *
- * @typedef {object} SectionSkeletonLike
- * @private
- */
-
-/**
  * Map sections obtained from a revision to the sections present on the page.
  *
- * @param {SectionSkeletonLike[]} otherSections
+ * @param {import('./commonTypedefs').SectionSkeletonLike[]} otherSections
  * @private
  */
 function mapSections(otherSections) {
@@ -224,21 +216,13 @@ function mapSections(otherSections) {
 }
 
 /**
- * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a web
- * worker so its constructor is lost.)
- *
- * @typedef {object} CommentSkeletonLike
- * @private
- */
-
-/**
  * Map comments obtained from the current revision to comments obtained from another revision (newer
  * or older) by adding the `match` property to the first ones. The function also adds the
  * `hasPoorMatch` property to comments that have possible matches that are not good enough to
  * confidently state a match.
  *
- * @param {CommentSkeletonLike[]} currentComments
- * @param {CommentSkeletonLike[]} otherComments
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} currentComments
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} otherComments
  * @private
  */
 function mapComments(currentComments, otherComments) {
@@ -343,8 +327,8 @@ function mapComments(currentComments, otherComments) {
  * `headingComparedHtml` properties (the comment may lose its heading because technical comment is
  * added between it and the heading).
  *
- * @param {CommentSkeletonLike[]} olderComment
- * @param {CommentSkeletonLike[]} newerComment
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} olderComment
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} newerComment
  * @returns {boolean}
  * @private
  */
@@ -361,7 +345,7 @@ function hasCommentChanged(olderComment, newerComment) {
 /**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
- * @param {CommentSkeletonLike[]} currentComments
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} currentComments
  * @private
  */
 function checkForChangesSincePreviousVisit(currentComments) {
@@ -428,7 +412,9 @@ function checkForChangesSincePreviousVisit(currentComments) {
      * Existing comments have changed since the previous visit.
      *
      * @event changesSincePreviousVisit
-     * @type {object}
+     * @param {object[]} changeList
+     * @param {Comment} changeList.comment
+     * @param {object} changeList.commentData
      */
     mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
   }
@@ -443,7 +429,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
 /**
  * Check if there are changes made to the currently displayed comments since they were rendered.
  *
- * @param {CommentSkeletonLike[]} currentComments
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} currentComments
  * @private
  */
 function checkForNewChanges(currentComments) {
@@ -515,7 +501,15 @@ function checkForNewChanges(currentComments) {
      * Existing comments have changed (probably edited).
      *
      * @event newChanges
-     * @type {object}
+     * @param {object[]} changeList
+     * @param {Comment} changeList.comment
+     * @param {object} changeList.events
+     * @param {object|undefined} changeList.events.changed
+     * @param {boolean|undefined} changeList.events.changed.updateSuccess Were the changes rendered.
+     * @param {boolean|undefined} changeList.events.unchanged
+     * @param {boolean|undefined} changeList.events.deleted
+     * @param {boolean|undefined} changeList.events.undeleted
+     * @param {object} changeList.commentData
      */
     mw.hook('convenientDiscussions.newChanges').fire(changeList);
   }
@@ -524,7 +518,7 @@ function checkForNewChanges(currentComments) {
 /**
  * Show an ordinary notification (`mediawiki.notification`) to the user.
  *
- * @param {CommentSkeletonLike[]} comments
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments
  * @private
  */
 function showOrdinaryNotification(comments) {
@@ -624,7 +618,7 @@ function showOrdinaryNotification(comments) {
 /**
  * Show a desktop notification to the user.
  *
- * @param {CommentSkeletonLike[]} comments
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments
  * @private
  */
 function showDesktopNotification(comments) {
@@ -656,7 +650,7 @@ function showDesktopNotification(comments) {
         comment.author.name,
         comment.author,
         where,
-        cd.g.PAGE.name
+        cd.page.name
       );
     } else {
       body = cd.s(
@@ -664,7 +658,7 @@ function showDesktopNotification(comments) {
         comment.author.name,
         comment.author,
         comment.section.headline,
-        cd.g.PAGE.name
+        cd.page.name
       );
     }
   } else {
@@ -693,7 +687,7 @@ function showDesktopNotification(comments) {
       'notification-newcomments-desktop',
       filteredComments.length,
       where,
-      cd.g.PAGE.name,
+      cd.page.name,
       mayBeInteresting
     );
   }
@@ -734,9 +728,10 @@ function isPageStillAtRevision(revisionId) {
 /**
  * Process the comments retrieved by a web worker.
  *
- * @param {CommentSkeletonLike[]} comments Comments from the recent revision.
- * @param {CommentSkeletonLike[]} currentComments Comments from the currently shown revision
- *   mapped to the comments from the recent revision.
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments Comments from the recent
+ *   revision.
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} currentComments Comments from the
+ *   currently shown revision mapped to the comments from the recent revision.
  * @param {number} currentRevisionId
  * @private
  */
@@ -922,7 +917,7 @@ const updateChecker = {
     const {
       text,
       revid: revisionId,
-    } = await cd.g.PAGE.parse({ oldid: revisionToParseId }, true) || {};
+    } = await cd.page.parse({ oldid: revisionToParseId }, true) || {};
 
     const disallowedNames = [
       '$content',
@@ -937,7 +932,7 @@ const updateChecker = {
       type: 'parse',
       revisionId,
       text,
-      g: keepWorkerSafeValues(cd.g, ['IS_IPv6_ADDRESS', 'TIMESTAMP_PARSER'], disallowedNames),
+      g: keepWorkerSafeValues(cd.g, ['isIPv6Address'], disallowedNames),
       config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents'], disallowedNames),
     });
 

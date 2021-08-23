@@ -7,6 +7,7 @@
 import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
+import Page from './Page';
 import cd from './cd';
 import commentLinks from './commentLinks';
 import debug from './debug';
@@ -34,7 +35,6 @@ import {
 import { generateCommentAnchor, parseCommentAnchor } from './timestamp';
 import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
-import { setVisits } from './options';
 
 let config;
 if (IS_SINGLE) {
@@ -75,7 +75,7 @@ if (IS_SINGLE) {
  *   the `parse` form, wikilinks are replaced with HTML tags, the code is sanitized. Use this for
  *   strings that have their raw HTML inserted into the page.
  * @returns {?string}
- * @memberof module:cd~convenientDiscussions
+ * @memberof convenientDiscussions
  */
 function s(name, ...params) {
   if (!name) {
@@ -117,7 +117,7 @@ function s(name, ...params) {
  * @param {...*} [params] String parameters (substituted strings, also
  *   {@link module:userRegistry~User User} objects for use in `{{gender:}}`).
  * @returns {?string}
- * @memberof module:cd~convenientDiscussions
+ * @memberof convenientDiscussions
  */
 function sParse(name, ...params) {
   return s(name, ...params, { parse: true });
@@ -128,7 +128,7 @@ function sParse(name, ...params) {
  *
  * @param {string} name String name.
  * @returns {?string}
- * @memberof module:cd~convenientDiscussions
+ * @memberof convenientDiscussions
  */
 function sPlain(name) {
   return s(name, { plain: true });
@@ -148,7 +148,7 @@ function sPlain(name) {
  *   be an object that can have a string property `language`. If `language` is `'content'`, the
  *   returned message will be in the content langage (not the interface language).
  * @returns {string}
- * @memberof module:cd~convenientDiscussions
+ * @memberof convenientDiscussions
  */
 function mws(name, ...params) {
   let options;
@@ -274,11 +274,11 @@ async function go() {
   cd.debug.startTimer('start');
 
   /**
-   * Script configuration. The default configuration is at {@link module:defaultConfig}.
+   * Script configuration. The default configuration is in {@link module:defaultConfig}.
    *
    * @name config
    * @type {object}
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions
    */
   cd.config = Object.assign(defaultConfig, cd.config);
 
@@ -374,8 +374,8 @@ async function go() {
         'mediawiki.Uri',
         'mediawiki.api',
         'mediawiki.cookie',
-        'mediawiki.jqueryMsg',
         'mediawiki.interface.helpers.styles',
+        'mediawiki.jqueryMsg',
         'mediawiki.notification',
         'mediawiki.storage',
         'mediawiki.user',
@@ -538,7 +538,7 @@ async function go() {
    * important properties have been set).
    *
    * @event preprocessed
-   * @type {module:cd~convenientDiscussions}
+   * @param {object} cd {@link convenientDiscussions} object.
    */
   mw.hook('convenientDiscussions.preprocessed').fire(cd);
 }
@@ -647,7 +647,7 @@ async function app() {
    *
    * @name isRunning
    * @type {boolean}
-   * @memberof module:cd~convenientDiscussions
+   * @memberof convenientDiscussions
    */
   cd.isRunning = true;
 
@@ -663,14 +663,7 @@ async function app() {
     cd.config = config;
   }
 
-  /**
-   * @see module:debug
-   * @name debug
-   * @type {object}
-   * @memberof module:cd~convenientDiscussions
-   */
   cd.debug = debug;
-
   cd.g = g;
   cd.s = s;
   cd.sParse = sParse;
@@ -678,61 +671,70 @@ async function app() {
   cd.mws = mws;
 
   /**
-   * Some utilities that we believe should be global for external use.
+   * Script's publicly available API. Here there are some utilities that we believe should be
+   * accessible for external use.
    *
-   * @namespace util
-   * @memberof module:cd~convenientDiscussions
+   * If you need some internal method to be available publicly, contact the script's maintainer (or
+   * just make a relevant pull request).
+   *
+   * @namespace api
+   * @memberof convenientDiscussions
    */
-  cd.util = {};
+  cd.api = {};
+
+  /**
+   * @name Page
+   * @type {object}
+   * @see Page
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.Page = Page;
 
   /**
    * @see module:timestamp.generateCommentAnchor
    * @function generateCommentAnchor
-   * @memberof module:cd~convenientDiscussions.util
+   * @memberof convenientDiscussions.api
    */
-  cd.util.generateCommentAnchor = generateCommentAnchor;
+  cd.api.generateCommentAnchor = generateCommentAnchor;
 
   /**
    * @see module:timestamp.parseCommentAnchor
    * @function parseCommentAnchor
-   * @memberof module:cd~convenientDiscussions.util
+   * @memberof convenientDiscussions.api
    */
-  cd.util.parseCommentAnchor = parseCommentAnchor;
+  cd.api.parseCommentAnchor = parseCommentAnchor;
 
   /**
-   * @see module:options.setVisits
-   * @function setVisits
-   * @memberof module:cd~convenientDiscussions.util
-   */
-  cd.util.setVisits = setVisits;
-
-  /**
-   * @see module:options.buildEditSummary
+   * @see module:util.buildEditSummary
    * @function buildEditSummary
-   * @memberof module:cd~convenientDiscussions.util
+   * @memberof convenientDiscussions.api
    */
-  cd.util.buildEditSummary = buildEditSummary;
+  cd.api.buildEditSummary = buildEditSummary;
 
   /**
-   * @see module:options.isPageOverlayOn
+   * @see module:util.isPageOverlayOn
    * @function isPageOverlayOn
-   * @memberof module:cd~convenientDiscussions.util
+   * @memberof convenientDiscussions.api
    */
-  cd.util.isPageOverlayOn = isPageOverlayOn;
+  cd.api.isPageOverlayOn = isPageOverlayOn;
 
   /**
-   * @see module:options.wrap
+   * @see module:util.wrap
    * @function wrap
-   * @memberof module:cd~convenientDiscussions.util
+   * @memberof convenientDiscussions.api
    */
-  cd.util.wrap = wrap;
+  cd.api.wrap = wrap;
 
   /**
-   * @see module:options.wrapDiffBody
+   * @see module:util.wrapDiffBody
    * @function wrapDiffBody
-   * @memberof module:cd~convenientDiscussions.util
+   * @memberof convenientDiscussions.api
    */
-  cd.util.wrapDiffBody = wrapDiffBody;
+  cd.api.wrapDiffBody = wrapDiffBody;
+
+  // TODO: Delete after all addons are updated.
+  cd.util = cd.api;
+  cd.g.Page = cd.api.Page;
 
   cd.debug.init();
   cd.debug.startTimer('total time');
@@ -742,7 +744,7 @@ async function app() {
    * The script has launched.
    *
    * @event launched
-   * @type {module:cd~convenientDiscussions}
+   * @param {object} cd {@link convenientDiscussions} object.
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
 

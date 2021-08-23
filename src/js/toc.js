@@ -47,7 +47,7 @@ class TocItem {
      * Link jQuery element.
      *
      * @name $link
-     * @type {JQuery}
+     * @type {external:jQuery}
      * @memberof module:toc~TocItem
      * @instance
      */
@@ -67,7 +67,7 @@ class TocItem {
    * _For internal use._ Generate HTML to use it in the TOC for the section. Only a limited number
    * of HTML elements is allowed in TOC.
    *
-   * @param {JQuery} $headline
+   * @param {external:jQuery} $headline
    */
   replaceText($headline) {
     const html = $headline
@@ -165,20 +165,14 @@ export default {
   },
 
   /**
-   * Object with the same basic structure as {@link module:SectionSkeleton} has. (It comes from a
-   * web worker so its constructor is lost.)
-   *
-   * @typedef {object} SectionSkeletonLike
-   */
-
-  /**
    * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
    * the table of contents.
    *
    * Note that this method may also add the `match` property to the section elements containing a
    * matched `Section` object.
    *
-   * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
+   * @param {import('./commonTypedefs').SectionSkeletonLike[]} sections All sections present on the
+   *   new revision of the page.
    */
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
@@ -299,17 +293,10 @@ export default {
   },
 
   /**
-   * Object with the same basic structure as {@link module:CommentSkeleton} has. (It comes from a
-   * web worker so its constructor is lost.)
-   *
-   * @typedef {object} CommentSkeletonLike
-   */
-
-  /**
    * _For internal use._ Add links to new comments (either already displayed or loaded in the
    * background) to the table of contents.
    *
-   * @param {CommentSkeletonLike[]|Comment[]} commentsBySection
+   * @param {import('./commonTypedefs').CommentSkeletonLike[]|Comment[]} commentsBySection
    * @param {object} passedData
    */
   addNewComments(commentsBySection, passedData) {

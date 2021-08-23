@@ -1,9 +1,3 @@
-/**
- * Move section dialog class.
- *
- * @module MoveSectionDialog
- */
-
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import Page from './Page';
@@ -18,7 +12,7 @@ import { reloadPage } from './boot';
  *
  * @augments external:OO.ui.ProcessDialog
  */
-export default class MoveSectionDialog extends OO.ui.ProcessDialog {
+class MoveSectionDialog extends OO.ui.ProcessDialog {
   static name = 'moveSectionDialog';
   static title = cd.s('msd-title');
   static actions = [
@@ -576,3 +570,5 @@ export default class MoveSectionDialog extends OO.ui.ProcessDialog {
 }
 
 tweakUserOoUiClass(MoveSectionDialog, OO.ui.ProcessDialog);
+
+export default MoveSectionDialog;

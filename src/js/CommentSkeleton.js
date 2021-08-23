@@ -1,9 +1,3 @@
-/**
- * Comment skeleton class.
- *
- * @module CommentSkeleton
- */
-
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
@@ -15,12 +9,12 @@ import { unique } from './util';
  *
  * @class
  */
-export default class CommentSkeleton {
+class CommentSkeleton {
   /**
    * Create a comment skeleton instance.
    *
    * @param {Parser} parser
-   * @param {object} signature Signature object returned by {@link module:Parser#findSignatures}.
+   * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
    * @throws {CdError}
    */
   constructor(parser, signature) {
@@ -49,7 +43,7 @@ export default class CommentSkeleton {
 
     /**
      * Comment ID. Same as the comment's index in
-     * {@link module:cd~convenientDiscussions.comments convenientDiscussions.comments}.
+     * {@link convenientDiscussions.comments convenientDiscussions.comments}.
      *
      * @type {number}
      */
@@ -154,7 +148,7 @@ export default class CommentSkeleton {
      * Comment elements that are highlightable.
      *
      * Keep in mind that elements may be replaced, and property values will need to be updated. See
-     * {@link module:Comment#replaceElement}.
+     * {@link Comment#replaceElement}.
      *
      * @type {Element[]|external:Element[]}
      */
@@ -283,7 +277,7 @@ export default class CommentSkeleton {
     this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
 
     /**
-     * {@link module:Comment#level Comment level} that takes into account `{{outdent}}` templates.
+     * {@link Comment#level Comment level} that takes into account `{{outdent}}` templates.
      *
      * @type {number}
      */
@@ -300,8 +294,7 @@ export default class CommentSkeleton {
    * Get the parent comment of the comment.
    *
    * @param {boolean} [visual=false] Get the visual parent (according to the
-   *   {@link module:Comment#level level} property, not
-   *   {@link module:Comment#logicalLevel logicalLevel}).
+   *   {@link Comment#level level} property, not {@link Comment#logicalLevel logicalLevel}).
    * @returns {?CommentSkeleton}
    */
   getParent(visual = false) {
@@ -360,8 +353,8 @@ export default class CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Set {@link module:Comment#logicalLevel logical levels} to the comments
-   * taking into account `{{outdent}}` templates.
+   * _For internal use._ Set {@link Comment#logicalLevel logical levels} to the comments taking into
+   * account `{{outdent}}` templates.
    */
   static processOutdents() {
     if (cd.g.pageHasOutdents) {
@@ -416,3 +409,5 @@ export default class CommentSkeleton {
     }
   }
 }
+
+export default CommentSkeleton;

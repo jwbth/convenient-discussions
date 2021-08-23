@@ -14,7 +14,7 @@ import { handleScroll } from './eventHandlers';
  * @param {boolean} [smooth=true]
  * @param {Function} [callback]
  */
- export function scrollToY(y, smooth = true, callback) {
+export function scrollToY(y, smooth = true, callback) {
   const onComplete = () => {
     cd.g.isAutoScrollInProgress = false;
     handleScroll();
@@ -37,25 +37,26 @@ import { handleScroll } from './eventHandlers';
 }
 
 /**
- * jQuery. See {@link external:$.fn} for extensions.
+ * {@link https://jquery.com/ jQuery}. See {@link external:jQuery.fn} for extensions.
  *
- * @external $
+ * @external jQuery
  * @type {object}
+ * @global
  */
 
 /**
  * jQuery extensions.
  *
  * @namespace fn
- * @memberof external:$
+ * @memberof external:jQuery
  */
 export default {
   /**
    * Remove non-element and also non-displayable (`'STYLE'`, `'LINK'`) nodes from a jQuery
    * collection.
    *
-   * @returns {JQuery}
-   * @memberof external:$.fn
+   * @returns {external:jQuery}
+   * @memberof external:jQuery.fn
    */
   cdRemoveNonElementNodes: function () {
     return this.filter(function () {
@@ -70,8 +71,8 @@ export default {
    *   viewport. Possible values: `'top'`, `'center'`, and `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
-   * @returns {JQuery}
-   * @memberof external:$.fn
+   * @returns {external:jQuery}
+   * @memberof external:jQuery.fn
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     let $elements = this.cdRemoveNonElementNodes();
@@ -110,7 +111,7 @@ export default {
    *
    * @param {boolean} partially Return `true` even if only a part of the element is in the viewport.
    * @returns {?boolean}
-   * @memberof external:$.fn
+   * @memberof external:jQuery.fn
    */
   cdIsInViewport(partially = false) {
     const $elements = this.cdRemoveNonElementNodes();
@@ -149,8 +150,8 @@ export default {
    *   `'top'`, `'center'`, or `'bottom'`.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
-   * @returns {JQuery}
-   * @memberof external:$.fn
+   * @returns {external:jQuery}
+   * @memberof external:jQuery.fn
    */
   cdScrollIntoView(alignment = 'top', smooth = true, callback) {
     if (this.cdIsInViewport()) {
@@ -177,7 +178,7 @@ export default {
    * taken into account. **This function is expensive.**
    *
    * @returns {string}
-   * @memberof external:$.fn
+   * @memberof external:jQuery.fn
    */
   cdGetText() {
     let text;
@@ -194,8 +195,8 @@ export default {
   /**
    * Add a close button to the element.
    *
-   * @returns {JQuery}
-   * @memberof external:$.fn
+   * @returns {external:jQuery}
+   * @memberof external:jQuery.fn
    */
   cdAddCloseButton() {
     if (this.find('.cd-closeButton').length) return this;

@@ -20,7 +20,7 @@ export default {
    * Get the user object for a user with the specified name (either a new one or already existing).
    *
    * @param {string} name
-   * @returns {User}
+   * @returns {module:userRegistry~User}
    */
   getUser(name) {
     if (name.includes('#')) {
@@ -33,7 +33,7 @@ export default {
     }
 
     if (!this.users[name]) {
-      const options = name === cd.g.USER_NAME ? { gender: cd.g.USER_GENDER } : {};
+      const options = name === cd.g.USER_NAME ? { gender: mw.user.options.get('gender') } : {};
       this.users[name] = new User(name, options);
     }
 
@@ -43,7 +43,9 @@ export default {
 
 /**
  * Class representing a user. Is made similar to `mw.user` so that it is possible to pass it to
- * `mw.msg` and have `{{gender:}}` replaced.
+ * `mw.msg()` and have `{{gender:}}` replaced.
+ *
+ * The constructor is not accessible by means of import. Use {@link module:userRegistry.getUser}.
  */
 class User {
   /**

@@ -1,4 +1,7 @@
 /**
+ * Module that returns the {@link convenientDiscussions} object in the relevant context (window or
+ * worker).
+ *
  * @module cd
  */
 
@@ -6,9 +9,10 @@
 const context = typeof window === 'undefined' ? self : window;
 
 /**
- * The main script object, globally available (the modules use the `cd` alias).
+ * The main script object, globally available (the modules use the {@link module:cd cd} alias).
  *
  * @namespace convenientDiscussions
+ * @global
  */
 context.convenientDiscussions = context.convenientDiscussions || {};
 if (typeof context.convenientDiscussions !== 'object') {
