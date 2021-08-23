@@ -1075,6 +1075,9 @@ export default class Section extends SectionSkeleton {
   /**
    * Locate the section in the source code and set the result to the `inCode` property.
    *
+   * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
+   * method is called. Otherwise, the method will throw an error.
+   *
    * @param {boolean} useSectionCode Is the section code available to locate the section in instead
    *   of the page code.
    * @throws {CdError}
@@ -1082,7 +1085,15 @@ export default class Section extends SectionSkeleton {
   locateInCode(useSectionCode) {
     this.inCode = null;
 
-    const matches = this.searchInCode(useSectionCode ? this.code : this.getSourcePage().code);
+    const code = useSectionCode ? this.code : this.getSourcePage().code;
+    if (code === undefined) {
+      throw new CdError({
+        type: 'parse',
+        code: 'noCode',
+      });
+    }
+
+    const matches = this.searchInCode(code);
     const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
     if (!bestMatch) {
       throw new CdError({
