@@ -45,7 +45,7 @@ import {
   wrap,
 } from './util';
 import { getVisits, getWatchedSections, setVisits } from './options';
-import { parseCommentAnchor, resetCommentAnchors } from './timestamp';
+import { isCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
@@ -636,7 +636,7 @@ async function processFragment(passedData) {
     }
     escapedFragment = $.escapeSelector(fragment);
     escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-    if (/^\d{12}_.+$/.test(fragment)) {
+    if (isCommentAnchor(fragment)) {
       commentAnchor = decodedFragment;
     }
   } else {

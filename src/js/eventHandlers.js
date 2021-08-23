@@ -10,6 +10,7 @@ import Thread from './Thread';
 import cd from './cd';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
+import { isCommentAnchor } from './timestamp';
 import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
 import { setContentColumnGlobals } from './boot';
 
@@ -140,8 +141,8 @@ export function handleScroll() {
  * Handle the `hashchange` event.
  */
 export function handleHashChange() {
-  if (/^#\d{12}_.+$/.test(location.hash)) {
-    let anchor = location.hash.slice(1);
+  let anchor = location.hash.slice(1);
+  if (isCommentAnchor(location.hash)) {
     try {
       anchor = decodeURIComponent(anchor);
     } catch (e) {

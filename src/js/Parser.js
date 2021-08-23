@@ -3,7 +3,12 @@
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } from './util';
-import { generateCommentAnchor, parseTimestamp, registerCommentAnchor } from './timestamp';
+import {
+  generateCommentAnchor,
+  isCommentAnchor,
+  parseTimestamp,
+  registerCommentAnchor,
+} from './timestamp';
 
 let foreignComponentClasses;
 let elementsToExclude;
@@ -12,6 +17,7 @@ let elementsToExclude;
  * @typedef {object} GetPageNameFromUrlReturn
  * @param {string} 1 Page name.
  * @param {string} 2 Domain.
+ * @param {string} 3 Fragment.
  * @global
  * @private
  */
@@ -25,6 +31,7 @@ let elementsToExclude;
  */
 function getPageNameFromUrl(url) {
   let domain = cd.g.HOSTNAME;
+  let fragment;
   let pageName = url
     .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
       domain = m1;
@@ -33,14 +40,17 @@ function getPageNameFromUrl(url) {
     .replace(cd.g.STARTS_WITH_ARTICLE_PATH_REGEXP, '')
     .replace(cd.g.STARTS_WITH_SCRIPT_TITLE, '')
     .replace(/&action=edit.*/, '')
-    .replace(/#.*/, '')
+    .replace(/#(.*)/, (s, m1) => {
+      fragment = m1;
+      return '';
+    })
     .replace(/_/g, ' ');
   try {
     pageName = decodeURIComponent(pageName);
   } catch (e) {
     return null;
   }
-  return [pageName, domain];
+  return [pageName, domain, fragment];
 }
 
 /**
@@ -1159,8 +1169,8 @@ class Parser {
     let userName;
     let linkType = null;
     if (href) {
-      const [pageName, domain] = getPageNameFromUrl(href) || [];
-      if (!pageName) {
+      const [pageName, domain, fragment] = getPageNameFromUrl(href) || [];
+      if (!pageName || isCommentAnchor(fragment)) {
         return null;
       }
       const isCurrentDomain = domain === cd.g.HOSTNAME;

@@ -455,6 +455,16 @@ export function getDateFromTimestampMatch(match, timezone) {
 }
 
 /**
+ * Check if a fragment is a comment anchor in the CD format.
+ *
+ * @param {string} fragment
+ * @returns {boolean}
+ */
+export function isCommentAnchor(fragment) {
+  return /^\d{12}_.+$/.test(fragment);
+}
+
+/**
  * @typedef {object} ParseTimestampReturn
  * @property {Date} date
  * @property {object} match
