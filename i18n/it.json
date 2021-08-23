@@ -4,7 +4,8 @@
 			"Ajeje Brazorf",
 			"Beta16",
 			"Lorem Ipsum",
-			"Mpayansilva"
+			"Mpayansilva",
+			"Noretta93"
 		]
 	},
 	"script-name-short": "CD",
@@ -59,6 +60,7 @@
 	"cf-block-preview": "Anteprima",
 	"cf-block-close": "Chiudi",
 	"cf-notice-nochanges": "Nessuna modifica.",
+	"cf-error-closed": "La discussione è chiusa.",
 	"dn-confirm-yes": "Sì",
 	"dn-confirm-no": "No",
 	"deadanchor-comment-lead": "Non è stato possibile trovare il commento sulla pagina.",
