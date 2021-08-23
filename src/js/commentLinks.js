@@ -73,7 +73,6 @@ async function prepare(siteDataRequests) {
     .files["phpCharToUpper.json"];
 
   cd.g.PAGE = new Page(cd.g.PAGE_NAME, false);
-  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
 
   serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator', { language: 'content' }).trim();

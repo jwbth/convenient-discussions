@@ -93,7 +93,7 @@ function s(name, ...params) {
     options = lastParam;
     params.splice(params.length - 1);
   }
-  if (!cd.g.QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
+  if (!cd.g.IS_QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
     const message = mw.message(fullName, ...params);
     if (options.plain) {
       return message.plain();
@@ -314,6 +314,7 @@ async function go() {
   if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
     cd.g.SKIN = 'vector-legacy';
   }
+  cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
 
   // Quite a rough check for mobile browsers, a mix of what is advised at
   // https://stackoverflow.com/a/24600597 (sends to

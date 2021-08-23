@@ -298,8 +298,6 @@ function initGlobals() {
     cd.sPlain('thread-expand')
   );
 
-  cd.g.QQX_MODE = mw.util.getParamValue('uselang') === 'qqx';
-
   if (cd.config.tagName && cd.g.USER.isRegistered()) {
     cd.g.SUMMARY_POSTFIX = '';
     cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
