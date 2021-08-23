@@ -66,6 +66,9 @@ class User {
    * @type {boolean}
    */
   isRegistered() {
+    if (this.name === '<unregistered>') {
+      return false;
+    }
     if (this.cachedIsRegistered === undefined) {
       this.cachedIsRegistered = !mw.util.isIPAddress(this.name);
     }
