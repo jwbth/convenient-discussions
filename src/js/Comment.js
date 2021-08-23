@@ -1251,12 +1251,12 @@ export default class Comment extends CommentSkeleton {
     }
 
     /**
-     * Comment layer has been created.
+     * Comment layers have been created.
      *
-     * @event commentLayerCreated
+     * @event commentLayersCreated
      * @type {module:cd~convenientDiscussions}
      */
-    mw.hook('convenientDiscussions.commentLayerCreated').fire(this);
+    mw.hook('convenientDiscussions.commentLayersCreated').fire(this);
   }
 
   /**
