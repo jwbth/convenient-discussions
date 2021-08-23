@@ -75,7 +75,7 @@ export default {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  COMMENT_NEW_BACKGROUND_COLOR: '#f0ffe5',
+  COMMENT_NEW_BACKGROUND_COLOR: '#edffed',
 
   /**
    * New comments color when they are hovered.
