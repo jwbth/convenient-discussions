@@ -548,7 +548,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           reloadPage();
         },
       },
-    });
+    }).$wrapper;
     const error = new OO.ui.Error($body, { recoverable });
     this.showErrors(error);
     this.$errors

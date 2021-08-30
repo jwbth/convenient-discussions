@@ -5,6 +5,7 @@
  * @module util
  */
 
+import Button from './Button';
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
@@ -15,41 +16,53 @@ let keptScrollPosition = null;
 let keptTocHeight = null;
 
 /**
- * @typedef {object} Callbacks
+ * @typedef {object} WrapCallbacks
  * @property {Function} *
+ * @global
  */
 
 /**
- * Generate a `<span>` (or other element) suitable as an argument for various methods for
- * displaying HTML. Optionally, attach callback functions and `target="_blank"` attribute to links
- * with the provided class names.
+ * @typedef WrapComplexReturn
+ * @param {external:jQuery} $wrapper
+ * @param {Button[]} buttons
+ */
+
+/**
+ * Generate a `<span>` (or other element) suitable as an argument for various methods for displaying
+ * HTML. Optionally, attach callback functions and `target="_blank"` attribute to links with the
+ * provided class names.
  *
  * @param {string|JQuery} htmlOrJquery
  * @param {object} [options={}]
- * @param {Callbacks} [options.callbacks]
+ * @param {WrapCallbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
  * @param {boolean} [options.targetBlank]
- * @returns {external:jQuery}
+ * @returns {external:jQuery|WrapComplexReturn} If `options.callbacks` is supplied,
+ *   returns an array containing a wrapper and an array of buttons. Otherwise, returns a wrapper
+ *   alone.
  */
 export function wrap(htmlOrJquery, options = {}) {
   const $wrapper = $(htmlOrJquery instanceof $ ? htmlOrJquery : $.parseHTML(htmlOrJquery))
     .wrapAll(`<${options.tagName || 'span'}>`)
     .parent();
-  if (options) {
-    if (options.callbacks) {
-      Object.keys(options.callbacks).forEach((className) => {
-        const $linkWrapper = $wrapper.find(`.${className}`);
-        if (!$linkWrapper.find('a').length) {
-          $linkWrapper.wrapInner('<a>');
-        }
-        $linkWrapper.find('a').on('click', options.callbacks[className]);
+  const buttons = [];
+  if (options.callbacks) {
+    Object.keys(options.callbacks).forEach((className) => {
+      const $linkWrapper = $wrapper.find(`.${className}`);
+      if (!$linkWrapper.find('a').length) {
+        $linkWrapper.wrapInner('<a>');
+      }
+      const button = new Button({
+        element: $linkWrapper.find('a').get(0),
+        action: options.callbacks[className],
       });
-    }
-    if (options.targetBlank) {
-      $wrapper.find('a[href]').attr('target', '_blank');
-    }
+      buttons.push(button);
+    });
   }
-  return $wrapper;
+  if (options.targetBlank) {
+    $wrapper.find('a[href]').attr('target', '_blank');
+  }
+  return buttons.length ? { $wrapper, buttons } : $wrapper;
 }
 
 /**
@@ -644,7 +657,7 @@ export function dealWithLoadingBug(moduleName) {
           location.reload();
         },
       },
-    });
+    }).$wrapper;
     mw.notify($body, { type: 'error' });
     return true;
   }

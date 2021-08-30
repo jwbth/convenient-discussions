@@ -2143,7 +2143,7 @@ class CommentForm {
             'cd-message-editSection': navigateToEditUrl,
             'cd-message-editPage': navigateToEditUrl,
           },
-        });
+        }).$wrapper;
         break;
       }
 

@@ -43,7 +43,7 @@ export default {
                   editWatchedSections();
                 },
               },
-            });
+            }).$wrapper;
             mw.notify($body, {
               type: 'error',
               autoHideSeconds: 'long',
