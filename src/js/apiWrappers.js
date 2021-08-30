@@ -12,7 +12,7 @@ import CdError from './CdError';
 import cd from './cd';
 import userRegistry from './userRegistry';
 import { createApi } from './boot';
-import { defined, handleApiReject, unique } from './util';
+import { defined, firstCharToUpperCase, handleApiReject, unique } from './util';
 import { unpackVisits, unpackWatchedSections } from './options';
 
 let cachedUserInfoRequest;
@@ -391,40 +391,57 @@ export async function getUserGenders(users, requestInBackground = false) {
  * @throws {CdError}
  */
 export function getRelevantUserNames(text) {
+  text = firstCharToUpperCase(text);
   const promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
+    setTimeout(async () => {
       try {
         if (promise !== currentAutocompletePromise) {
           throw new CdError();
         }
 
-        cd.g.mwApi.get({
+        // First, try to use the search to get only users that have talk pages. Most legitimate
+        // users do, while spammers don't.
+        const resp = cd.g.mwApi.get({
           action: 'opensearch',
           search: text,
           namespace: 3,
           redirects: 'resolve',
           limit: 10,
           formatversion: 2,
-        }).then(
-          (resp) => {
-            const users = resp[1]
-              ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
-              .filter(defined)
-              .filter((name) => !name.includes('/'));
+        }).catch(handleApiReject);
 
-            if (!users) {
-              throw new CdError({
-                type: 'api',
-                code: 'noData',
-              });
-            }
+        const users = resp[1]
+          ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+          .filter(defined)
+          .filter((name) => !name.includes('/'));
+        if (!users) {
+          throw new CdError({
+            type: 'api',
+            code: 'noData',
+          });
+        }
 
-            resolve(users);
-          },
-          (e) => {
-            handleApiReject(e);
+        if (users.length) {
+          resolve(users);
+        } else {
+          // If we didn't succeed with search, try the entire users database.
+          const resp = cd.g.mwApi.get({
+            action: 'query',
+            list: 'allusers',
+            auprefix: text,
+            formatversion: 2,
+          }).catch(handleApiReject);
+
+          const users = resp?.query?.allusers?.map((user) => user.name);
+          if (!users) {
+            throw new CdError({
+              type: 'api',
+              code: 'noData',
+            });
           }
-        );
+
+          resolve(users);
+        }
       } catch (e) {
         reject(e);
       }
