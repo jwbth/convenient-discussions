@@ -818,7 +818,7 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames
         if (!areObjectsEqual(val, JSON.parse(JSON.stringify(val)))) {
           delete newObj[key];
         }
-      } catch (e) {
+      } catch {
         delete newObj[key];
       }
     } else if (typeof val === 'function') {

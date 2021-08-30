@@ -648,11 +648,10 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Detect the last section comment's indentation characters if needed or a vote / bulleted reply
-   * placeholder.
+   * _For internal use._ Detect the last section comment's indentation characters if needed or a
+   * vote / bulleted reply placeholder.
    *
    * @param {CommentForm} commentForm
-   * @private
    */
   setLastCommentIndentationChars(commentForm) {
     const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
@@ -666,20 +665,18 @@ class Section extends SectionSkeleton {
       ) {
         try {
           lastComment.locateInCode(commentForm.submitSection);
-        } finally {
-          if (
-            lastComment.inCode &&
-            (
-              !lastComment.inCode.indentationChars.startsWith('#') ||
+        } catch {
+          return;
+        }
+        if (
+          !lastComment.inCode.indentationChars.startsWith('#') ||
 
-              // For now we use the workaround with commentForm.containerListType to make sure "#"
-              // is a part of comments organized in a numbered list, not of a numbered list _in_
-              // the target comment.
-              commentForm.containerListType === 'ol'
-            )
-          ) {
-            this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
-          }
+          // For now we use the workaround with commentForm.containerListType to make sure "#"
+          // is a part of comments organized in a numbered list, not of a numbered list _in_
+          // the target comment.
+          commentForm.containerListType === 'ol'
+        ) {
+          this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
         }
       }
     }

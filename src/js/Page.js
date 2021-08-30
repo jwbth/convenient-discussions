@@ -6,13 +6,29 @@ import { handleApiReject, isProbablyTalkPage } from './util';
 import { parseTimestamp } from './timestamp';
 
 /**
- * Class representing a wiki page (a page for which the `wgIsArticle` config value is `true`).
+ * Main MediaWiki object.
+ *
+ * @external mw
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw
+ * @global
+ */
+
+/**
+ * @class Title
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
+ * @memberof external:mw
+ */
+
+/**
+ * Class representing a wiki page (a page for which the
+ * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
+ * config value is `true`).
  */
 class Page {
   /**
    * Create a page instance.
    *
-   * @param {string|mw.Title} nameOrMwTitle
+   * @param {string|external:mw.Title} nameOrMwTitle
    * @param {boolean} [normalizeNamespace=true] Whether to normalize the namespace name for the
    *   {@link Page#name name} property (usually used to keep the gendered namespace name).
    * @throws {CdError}
@@ -479,7 +495,7 @@ class Page {
                 const description = mw.message(code, error.abusefilter.description).plain();
                 try {
                   message = (await parseCode(description)).html;
-                } catch (e) {
+                } catch {
                   console.warn('Couldn\'t parse the error code.');
                 }
                 if (message) {

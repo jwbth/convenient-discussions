@@ -40,7 +40,7 @@ let config;
 if (IS_SINGLE) {
   try {
     config = require(`../../config/${CONFIG_FILE_NAME}`).default;
-  } catch (e) {
+  } catch {
     // Empty
   }
 

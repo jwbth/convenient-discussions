@@ -138,7 +138,7 @@ export default {
         // It is executed first time before not rendered (gray) sections are added to the TOC, so we
         // use a simple algorithm to obtain items.
         tocItems = links.map((a) => new TocItem(a));
-      } catch (e) {
+      } catch {
         console.error('Couldn\'t find an element of a table of contents item.');
         tocItems = [];
 

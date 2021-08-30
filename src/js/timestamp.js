@@ -856,11 +856,11 @@ export function resetCommentAnchors() {
  * are multiple comments with the same timestamp on the page), but it wasn't needed yet in the
  * script.
  *
- * @param {string} commentAnchor
+ * @param {string} anchor
  * @returns {?ParseCommentAnchorReturn}
  */
-export function parseCommentAnchor(commentAnchor) {
-  const match = commentAnchor.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
+export function parseCommentAnchor(anchor) {
+  const match = anchor.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
   if (!match) {
     return null;
   }

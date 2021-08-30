@@ -9,8 +9,7 @@ const testSuffix = (argv.test || process.env.npm_config_test) ? '-test' : '';
 fs.readdirSync('./config/').forEach((filename) => {
   const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || [];
   if (!name || name === 'default') return;
-  const content = fs.readFileSync(`./config/${filename}`)
-    .toString()
+  const content = fs.readFileSync(`./config/${filename}`, 'utf8')
     .trim()
     .replace(/[^]*?export default /, '');
 

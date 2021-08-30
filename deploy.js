@@ -61,7 +61,7 @@ if (process.env.CI) {
   // `ssh -D [port]` command as part of the SSH tunnel to Toolforge.
   config.proxy = 'http://localhost:8080';
 
-  const eventJson = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH));
+  const eventJson = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
 
   // Will be undefined if the event is workflow_dispatch.
   version = eventJson.release?.tag_name;
@@ -161,7 +161,7 @@ function getLastDeployedCommit(revisions) {
 async function prepareEdits() {
   files.forEach((file, i) => {
     let content;
-    content = fs.readFileSync(`./dist/${file}`).toString();
+    content = fs.readFileSync(`./dist/${file}`, 'utf8');
 
     if (!file.includes('i18n/')) {
       const [tildesMatch] = content.match(/~~~~.{0,100}/) || [];

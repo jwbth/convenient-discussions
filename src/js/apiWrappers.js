@@ -167,7 +167,7 @@ export async function generateUnknownApiErrorText(errorCode, errorInfo) {
       try {
         const { html } = await parseCode(errorInfo);
         text += html;
-      } catch (e) {
+      } catch {
         text += errorInfo;
       }
     }
@@ -547,7 +547,6 @@ export function getRelevantTemplateNames(text) {
               ?.filter((name) => !/(\/doc|\.css)$/.test(name))
               .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
               .map((name) => name.replace(regexp, () => text[0]));
-
             if (!templates) {
               throw new CdError({
                 type: 'api',

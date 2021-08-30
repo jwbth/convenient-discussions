@@ -55,7 +55,7 @@ function setAlarm(interval) {
 }
 
 /**
- * DomHandler's node
+ * DomHandler's node.
  *
  * @external Node
  * @see
@@ -63,7 +63,7 @@ function setAlarm(interval) {
  */
 
 /**
- * DomHandler's data node
+ * DomHandler's data node.
  *
  * @external DataNode
  * @see
@@ -71,7 +71,7 @@ function setAlarm(interval) {
  */
 
 /**
- * DomHandler's element
+ * DomHandler's element.
  *
  * @external Element
  * @see

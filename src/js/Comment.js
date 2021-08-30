@@ -1320,8 +1320,8 @@ class Comment extends CommentSkeleton {
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.
-   * @param {boolean} [options.considerFloating] Whether to take floating elements into account.
-   *   Deemed `true` if `options.floatingRects` is set.
+   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
+   *   comment into account. Deemed `true` if `options.floatingRects` is set.
    * @returns {?boolean} Is the comment moved.
    */
   configureLayers(options = {}) {
@@ -2250,7 +2250,7 @@ class Comment extends CommentSkeleton {
         try {
           const html = (await parseCode(diffOriginalText, { title: cd.page.name })).html;
           diffOriginalText = $('<div>').append(html).cdGetText();
-        } catch (e) {
+        } catch {
           throw new CdError({
             type: 'parse',
           });
@@ -3492,9 +3492,9 @@ class Comment extends CommentSkeleton {
 
   /**
    * @typedef {external:jQuery[]} CreateSublevelItemReturn
-   * @property {external:jQuery} 0 Wrapping item.
-   * @property {external:jQuery} [1] Wrapping list.
-   * @property {external:jQuery} [2] Outer wrapper.
+   * @property {external:jQuery} $wrappingItem
+   * @property {external:jQuery} [$wrappingList]
+   * @property {external:jQuery} [$outerWrapper]
    * @global
    */
 
@@ -3618,7 +3618,7 @@ class Comment extends CommentSkeleton {
 
     this.subitemList.add(name, $wrappingItem);
 
-    return [$wrappingItem, $wrappingList, $outerWrapper];
+    return { $wrappingItem, $wrappingList, $outerWrapper };
   }
 }
 

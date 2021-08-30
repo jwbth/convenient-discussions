@@ -102,7 +102,7 @@ export async function getSettings({
   let globalSettings;
   try {
     globalSettings = JSON.parse(options[cd.g.SETTINGS_OPTION_NAME]) || {};
-  } catch (e) {
+  } catch {
     globalSettings = {};
   }
 

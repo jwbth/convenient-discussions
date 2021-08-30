@@ -297,7 +297,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     let move = true;
     try {
       await this.titleInput.getValidity();
-    } catch (e) {
+    } catch {
       move = false;
     }
     this.actions.setAbilities({ move });

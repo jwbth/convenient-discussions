@@ -37,10 +37,11 @@ export function scrollToY(y, smooth = true, callback) {
 }
 
 /**
- * {@link https://jquery.com/ jQuery}. See {@link external:jQuery.fn} for extensions.
+ * jQuery. See {@link external:jQuery.fn} for extensions.
  *
  * @external jQuery
  * @type {object}
+ * @see https://jquery.com/
  * @global
  */
 

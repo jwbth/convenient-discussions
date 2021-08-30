@@ -144,7 +144,7 @@ function restoreCollapsedThreads() {
     getUserGendersPromise = getUserGenders(usersInThreads);
   }
   comments.forEach((comment) => {
-    comment.thread.collapse(getUserGendersPromise)
+    comment.thread.collapse(getUserGendersPromise);
   });
 
   if (isCurrentRevision()) {
@@ -314,15 +314,15 @@ class Thread {
 
     this.clickArea.onmouseenter = () => {
       this.highlightTimeout = setTimeout(() => {
-        this.clickArea.classList.add('cd-thread-clickArea-hover');
+        this.clickArea.classList.add('cd-thread-clickArea-hovered');
       }, 75);
     };
     this.clickArea.onmouseleave = () => {
       clearTimeout(this.highlightTimeout);
-      this.clickArea.classList.remove('cd-thread-clickArea-hover');
+      this.clickArea.classList.remove('cd-thread-clickArea-hovered');
     };
     this.clickArea.onclick = () => {
-      if (this.clickArea.classList.contains('cd-thread-clickArea-hover')) {
+      if (this.clickArea.classList.contains('cd-thread-clickArea-hovered')) {
         this.toggle();
       }
     };
@@ -709,7 +709,7 @@ class Thread {
     cd.comments.forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
-      } catch (e) {
+      } catch {
         // Empty
       }
     });

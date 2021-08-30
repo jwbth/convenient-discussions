@@ -71,7 +71,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIds) {
   });
 
   if (parent instanceof Comment) {
-    const [$wrappingItem] = parent.createSublevelItem('newCommentsNote', 'bottom');
+    const { $wrappingItem } = parent.createSublevelItem('newCommentsNote', 'bottom');
     $wrappingItem
       .addClass('cd-thread-button-container cd-thread-newCommentsNote')
       .append(button.$element);

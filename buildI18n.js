@@ -122,8 +122,10 @@ function buildDateFnsLocales() {
   for (let [, names] of Object.entries(langNames)) {
     if (fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)) {
       // We only need data for the formatDistance function.
-      let indexJsText = fs.readFileSync(`node_modules/date-fns/esm/locale/${names.dirName}/index.js`)
-        .toString();
+      let indexJsText = fs.readFileSync(
+        `node_modules/date-fns/esm/locale/${names.dirName}/index.js`,
+        'utf8'
+      );
       indexJsText = indexJsText.replace(/\n\s+formatLong:[^}]+\}/g, '');
       fs.writeFileSync(`node_modules/date-fns/esm/locale/${names.dirName}/index.js`, indexJsText);
     }
@@ -274,8 +276,7 @@ convenientDiscussions.i18n['${lang}'] = ${jsonText};
 
     let dayjsLocaleText;
     if (langsHavingDayjsLocale.includes(lang)) {
-      dayjsLocaleText = fs.readFileSync(`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`)
-        .toString();
+      dayjsLocaleText = fs.readFileSync(`./${DAYJS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`, 'utf8');
       text += `
 // This assigns a day.js locale object to \`convenientDiscussions.i18n['${lang}'].dayjsLocale\`.
 ${dayjsLocaleText}
@@ -284,8 +285,10 @@ ${dayjsLocaleText}
 
     let dateFnsLocaleText;
     if (langsHavingDateFnsLocale.includes(lang)) {
-      dateFnsLocaleText = fs.readFileSync(`./${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`)
-        .toString();
+      dateFnsLocaleText = fs.readFileSync(
+        `./${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist/${lang}.js`,
+        'utf8'
+      );
       text += `
 // This assigns a date-fns locale object to \`convenientDiscussions.i18n['${lang}'].dateFnsLocale\`.
 ${dateFnsLocaleText}

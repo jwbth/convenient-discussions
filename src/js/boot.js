@@ -1625,7 +1625,7 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
       label += cd.sParse('deadanchor-section-finding');
       try {
         sectionNameDotDecoded = decodeURIComponent(sectionName.replace(/\.([0-9A-F]{2})/g, '%$1'));
-      } catch (e) {
+      } catch {
         sectionNameDotDecoded = sectionName;
       }
     }

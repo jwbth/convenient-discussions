@@ -216,7 +216,7 @@ class Autocomplete {
               let values;
               try {
                 values = await getRelevantUserNames(text);
-              } catch (e) {
+              } catch {
                 return;
               }
 
@@ -504,7 +504,7 @@ class Autocomplete {
               let values;
               try {
                 values = await getRelevantTemplateNames(text);
-              } catch (e) {
+              } catch {
                 return;
               }
 

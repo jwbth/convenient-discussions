@@ -15,9 +15,9 @@ let elementsToExclude;
 
 /**
  * @typedef {object} GetPageNameFromUrlReturn
- * @param {string} 1 Page name.
- * @param {string} 2 Domain.
- * @param {string} 3 Fragment.
+ * @param {string} pageName
+ * @param {string} domain
+ * @param {string} fragment
  * @global
  * @private
  */
@@ -50,7 +50,7 @@ function getPageNameFromUrl(url) {
   } catch (e) {
     return null;
   }
-  return [pageName, domain, fragment];
+  return { pageName, domain, fragment };
 }
 
 /**
@@ -169,8 +169,7 @@ class Parser {
         const { node, match, date } = finding;
         const element = this.context.document.createElement('span');
         element.classList.add('cd-timestamp');
-        const textNode = this.context.document.createTextNode(match[2]);
-        element.appendChild(textNode);
+        element.appendChild(this.context.document.createTextNode(match[2]));
         const remainedText = node.textContent.slice(match.index + match[0].length);
         let afterNode;
         if (remainedText) {
@@ -264,7 +263,7 @@ class Parser {
             if (node.classList.contains('cd-timestamp')) break;
             let hasAuthorLinks = false;
 
-            const processLinkData = ([userName, linkType], link) => {
+            const processLinkData = ({ userName, linkType }, link) => {
               if (userName) {
                 if (!authorName) {
                   authorName = userName;
@@ -323,7 +322,7 @@ class Parser {
             }
 
             if (node.tagName === 'A') {
-              const linkData = Parser.processLink(node) || [];
+              const linkData = Parser.processLink(node) || {};
               if (!processLinkData(linkData, node)) break;
             } else {
               const links = Array.from(node.getElementsByTagName('a')).reverse();
@@ -331,7 +330,7 @@ class Parser {
                 // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
                 if (link.classList.contains('external')) continue;
 
-                const linkData = Parser.processLink(link) || [];
+                const linkData = Parser.processLink(link) || {};
                 processLinkData(linkData, link);
               }
             }
@@ -415,7 +414,7 @@ class Parser {
         })
         .forEach((element) => {
           Array.from(element.getElementsByTagName('a')).some((link) => {
-            const [authorName, linkType] = Parser.processLink(link) || {};
+            const { userName: authorName, linkType } = Parser.processLink(link) || {};
             if (authorName) {
               let authorLink;
               let authorTalkLink;
@@ -1151,9 +1150,9 @@ class Parser {
 
   /**
    * @typedef {string[]} ProcessLinkReturn
-   * @param {string} 1 User name.
-   * @param {?string} 2 Link type (`user`, `userTalk`, `contribs`, `userSubpage`, `userTalkSubpage`,
-   *   or any of this `Foreign` at the end).
+   * @param {string} userName User name.
+   * @param {?string} linkType Link type (`user`, `userTalk`, `contribs`, `userSubpage`,
+   *   `userTalkSubpage`, or any of this `Foreign` at the end).
    * @global
    * @private
    */
@@ -1169,7 +1168,7 @@ class Parser {
     let userName;
     let linkType = null;
     if (href) {
-      const [pageName, domain, fragment] = getPageNameFromUrl(href) || [];
+      const { pageName, domain, fragment } = getPageNameFromUrl(href) || {};
       if (!pageName || isCommentAnchor(fragment)) {
         return null;
       }
@@ -1215,7 +1214,7 @@ class Parser {
         return null;
       }
     }
-    return [userName, linkType];
+    return { userName, linkType };
   }
 }
 

@@ -510,7 +510,7 @@ function connectToAddTopicButtons() {
         // May crash if the current URL contains undecodable "%" in the fragment.
         try {
           query = new mw.Uri(href).query;
-        } catch (e) {
+        } catch {
           return;
         }
         pageName = query.title;
@@ -552,7 +552,7 @@ function connectToAddTopicButtons() {
         // May crash if the current URL contains undecodable "%" in the fragment.
         try {
           query = new mw.Uri(href).query;
-        } catch (e) {
+        } catch {
           return;
         }
         preloadConfig = {
@@ -605,7 +605,7 @@ function highlightMentions($content) {
       return (
         cd.g.USER_LINK_REGEXP.test(this.title) &&
         !this.closest(excludeSelector) &&
-        Parser.processLink(this)?.[0] === cd.user.name
+        Parser.processLink(this)?.userName === cd.user.name
       );
     })
     .each((i, link) => {
@@ -1004,7 +1004,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
     if (isPageCommentable) {
       // Should be below the viewport position restoration as it may rely on elements that are made
-      // invisible during the comment forms restoration. Should be below the navPanel mount/reset
+      // hidden during the comment forms restoration. Should be below the navPanel mount/reset
       // methods as it calls navPanel.updateCommentFormButton() which depends on the navigation
       // panel being mounted.
       restoreCommentForms(passedData.isPageReloadedExternally);
@@ -1017,7 +1017,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           delete uri.query.cdaddtopic;
           history.replaceState(history.state, '', uri.toString());
         }
-      } catch (e) {
+      } catch {
         // Empty
       }
 
@@ -1054,9 +1054,9 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
       // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning threads after the addition of comment forms. Should be below the
-      // viewport position restoration, as some elements may get hidden. Should better be above
-      // comment highlighting (`processVisits()`, `Comment.configureAndAddLayers()`) to avoid
-      // spending time on comments in collapsed threads.
+      // viewport position restoration as it may rely on elements that are made hidden during the
+      // thread initialization. Should better be above comment highlighting (`processVisits()`,
+      // `Comment.configureAndAddLayers()`) to avoid spending time on comments in collapsed threads.
       Thread.init();
 
       // Should be below Thread.init() as it may want to scroll to a comment in a collapsed thread.
@@ -1124,8 +1124,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         }, 1000);
 
         const observer = new MutationObserver((records) => {
-          const areLayersOnly = records
-            .every((record) => /^cd-comment(Underlay|Overlay|Layers)/.test(record.target.className));
+          const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
+          const areLayersOnly = records.every((record) => layerClassRegexp.test(record.target.className));
           if (areLayersOnly) return;
 
           handlePageMutations();
