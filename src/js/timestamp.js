@@ -876,3 +876,37 @@ export function parseCommentAnchor(commentAnchor) {
 
   return { date, author };
 }
+
+/**
+ * Parse a comment ID in the DiscussionTools format.
+ *
+ * @param {string} id Comment ID in the DiscussionTools format.
+ * @returns {?object}
+ */
+export function parseDtCommentId(id) {
+  if (!id.startsWith('c-')) {
+    return null;
+  }
+  const regexp = /^c-(.+?)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(.+))?$/;
+  let [, author, timestamp, parent] = id.match(regexp) || [];
+  if (!author) {
+    return null;
+  }
+  author = underlinesToSpaces(author);
+  const date = new Date(timestamp);
+  let parentAuthor;
+  let parentTimestamp;
+  let parentDate;
+  let sectionAnchorBeginning;
+  if (parent) {
+    [parentAuthor, parentTimestamp] = parent
+      .match(/(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)$/) || [];
+    if (parentAuthor) {
+      parentAuthor = underlinesToSpaces(parentAuthor);
+      parentDate = new Date(parentTimestamp);
+    } else {
+      sectionAnchorBeginning = parent;
+    }
+  }
+  return { author, date, parentAuthor, parentDate, sectionAnchorBeginning };
+}

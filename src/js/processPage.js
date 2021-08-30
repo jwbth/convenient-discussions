@@ -39,13 +39,19 @@ import {
   handleWindowResize,
 } from './eventHandlers';
 import {
+  generateCommentAnchor,
+  isCommentAnchor,
+  parseCommentAnchor,
+  parseDtCommentId,
+  resetCommentAnchors,
+} from './timestamp';
+import {
   getExtendedRect,
   replaceAnchorElement,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
 } from './util';
 import { getVisits, getWatchedSections, setVisits } from './options';
-import { isCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
@@ -627,6 +633,11 @@ async function processFragment(passedData) {
   let escapedFragment;
   let escapedDecodedFragment;
   let commentAnchor;
+  let date;
+  let author;
+  let parentDate;
+  let parentAuthor;
+  let sectionAnchorBeginning;
   if (cd.g.isFirstRun) {
     fragment = location.hash.slice(1);
     try {
@@ -638,24 +649,46 @@ async function processFragment(passedData) {
     escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
     if (isCommentAnchor(fragment)) {
       commentAnchor = decodedFragment;
+    } else {
+      ({
+        date,
+        author,
+        parentDate,
+        parentAuthor,
+        sectionAnchorBeginning,
+      } = parseDtCommentId(decodedFragment) || {});
     }
   } else {
     commentAnchor = passedData.commentAnchor;
   }
 
-  let date;
-  let author;
   let comment;
   if (commentAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getByAnchor(commentAnchor, !passedData.commentAnchor);
-    if (comment) {
-      // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
-      // incorrectly.
-      setTimeout(() => {
-        comment.scrollTo(false, passedData.pushState);
-      });
+  } else if (date) {
+    const comments = cd.comments.filter((comment) => (
+      comment.date.getTime() === date.getTime() &&
+      comment.author.name === author
+    ));
+    comment = comments.length === 1 ?
+      comments[0] :
+      comments.find((comment) => (
+        comment.getParent()?.date.getTime() === parentDate?.getTime() &&
+        comment.getParent()?.author.name === parentAuthor &&
+        (!sectionAnchorBeginning || comment.section?.anchor.startsWith(sectionAnchorBeginning))
+      ));
+    if (!comment) {
+      commentAnchor = generateCommentAnchor(date, author);
     }
+  }
+
+  if (comment) {
+    // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
+    // incorrectly.
+    setTimeout(() => {
+      comment.scrollTo(false, passedData.pushState);
+    });
   }
 
   if (passedData.sectionAnchor) {
