@@ -147,7 +147,7 @@ class Page {
         }
       }
     }
-    return String(result) || name + '/';
+    return result ? String(result) : name + '/';
   }
 
   /**
