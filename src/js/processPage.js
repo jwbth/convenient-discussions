@@ -124,18 +124,10 @@ async function prepare(passedData, siteDataRequests) {
  * @private
  */
 function getAllTextNodes() {
-  const result = document.evaluate(
-    // './/text()' doesn't work in Edge.
-    './/descendant::text()',
-
-    cd.g.rootElement,
-    null,
-    XPathResult.ANY_TYPE,
-    null
-  );
-  const textNodes = [];
+  const treeWalker = document.createTreeWalker(cd.g.rootElement, NodeFilter.SHOW_TEXT);
   let node;
-  while ((node = result.iterateNext())) {
+  const textNodes = [];
+  while ((node = treeWalker.nextNode())) {
     textNodes.push(node);
   }
   return textNodes;
