@@ -23,7 +23,7 @@ export default {
       try {
         await getWatchedSections();
       } catch (e) {
-        mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
+        mw.notify(cd.s('error-settings-load'), { type: 'error' });
         throw e;
       }
 
@@ -49,10 +49,10 @@ export default {
               autoHideSeconds: 'long',
             });
           } else {
-            mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+            mw.notify(cd.s('error-settings-save'), { type: 'error' });
           }
         } else {
-          mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+          mw.notify(cd.s('error-settings-save'), { type: 'error' });
         }
         throw e;
       }
@@ -75,7 +75,7 @@ export default {
       try {
         await getWatchedSections();
       } catch (e) {
-        mw.notify(cd.s('section-watch-error-load'), { type: 'error' });
+        mw.notify(cd.s('error-settings-load'), { type: 'error' });
         throw e;
       }
 
@@ -89,7 +89,7 @@ export default {
       try {
         await setWatchedSections();
       } catch (e) {
-        mw.notify(cd.s('section-watch-error-save'), { type: 'error' });
+        mw.notify(cd.s('error-settings-save'), { type: 'error' });
         throw e;
       }
     };
