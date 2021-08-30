@@ -60,8 +60,9 @@ class SectionSkeleton {
      */
     this.sectionNumber = null;
 
-    let editSectionElement = headingElement.lastChild;
-    if (!editSectionElement.classList.contains('mw-editsection')) {
+    let editSectionElement = this.parser.context
+      .getElementByClassName(headingElement, 'mw-editsection');
+    if (!editSectionElement) {
       editSectionElement = this.createSectionMenu();
     }
     const menuLinks = Array.from(editSectionElement.getElementsByTagName('a'));
