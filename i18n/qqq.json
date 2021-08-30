@@ -379,5 +379,6 @@
 	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Text of the tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
 	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}",
-	"discussiontools-incompatible": "Text of the notification that appears when the user has the DiscussionTools beta feature enabled."
+	"discussiontools-incompatible": "Text of the notification that appears when the user has the commenting features of [[mw:Extension:DiscussionTools|DiscussionTools]] enabled.",
+	"discussiontools-disabled": "Text of the notification that appears when [[mw:Extension:DiscussionTools|DiscussionTools]] has been disabled after a user click."
 }

@@ -388,6 +388,9 @@
   "error-elementhidden": "The element is hidden. Can't scroll to it.",
   "error-purgecache": "Couldn't purge the cache of this page.",
 
+  "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|disable]]</span></b> DiscussionTools to make Convenient Discussions work correctly.",
+  "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">Click to refresh the page</span>.",
+
   "wl-button-switchinteresting-tooltip": "Show only comments in sections that I watch and comments addressed to me. (Note: detection is based on edit summaries, so some edits may be missing)",
   "wl-button-editwatchedsections-tooltip": "Edit the list of sections that I watch",
   "wl-button-settings-tooltip": "Convenient Discussions settings",
@@ -403,6 +406,5 @@
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic on the standard page, not in Convenient Discussions",
-  "copy": "Copy",
-  "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please disable DiscussionTools on [[Special:Preferences#mw-prefsection-betafeatures|the beta features page]] to make Convenient Discussions work correctly."
+  "copy": "Copy"
 }

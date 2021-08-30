@@ -28,6 +28,7 @@ import {
   reloadPage,
   restoreCommentForms,
   saveSession,
+  suggestDisableDiscussionTools,
   suggestEnableCommentReformatting,
 } from './boot';
 import {
@@ -42,7 +43,6 @@ import {
   replaceAnchorElement,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
-  wrap,
 } from './util';
 import { getVisits, getWatchedSections, setVisits } from './options';
 import { isCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
@@ -1178,8 +1178,11 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   debugLog();
 
   if (showPopups) {
-    if (mw.user.options.get('discussiontools-betaenable')) {
-      mw.notify(wrap(cd.sParse('discussiontools-incompatible')), { autoHide: false });
+    if (
+      $('.ext-discussiontools-init-replylink-buttons').length &&
+      !mw.util.getParamValue('dtenable')
+    ) {
+      suggestDisableDiscussionTools();
     }
 
     const didEnableCommentReformatting = await suggestEnableCommentReformatting();

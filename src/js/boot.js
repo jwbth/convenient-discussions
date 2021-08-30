@@ -24,6 +24,7 @@ import {
   firstCharToUpperCase,
   generatePageNamePattern,
   getFromLocalStorage,
+  handleApiReject,
   hideText,
   mergeRegexps,
   restoreScrollPosition,
@@ -1752,4 +1753,37 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
     classes: ['cd-message-notFound'],
   });
   cd.g.$root.prepend(message.$element);
+}
+
+/**
+ * Show a notification informing the user that CD is incompatible with DiscussionTools and
+ * suggesting to disable DiscussionTools.
+ */
+export function suggestDisableDiscussionTools() {
+  const message = cd.sParse('discussiontools-incompatible');
+  const [$message, [disableButton]] = wrap(message, {
+    callbacks: {
+      'cd-notification-disabledt': async () => {
+        disableButton.setPending(true);
+        try {
+          await cd.g.mwApi.saveOption('discussiontools-betaenable', 0).catch(handleApiReject);
+        } catch (e) {
+          mw.notify(wrap(cd.sParse('error-settings-save')));
+          return;
+        } finally {
+          disableButton.setPending(false);
+        }
+        notification.$notification.hide();
+        const message = wrap(cd.sParse('discussiontools-disabled'), {
+          callbacks: {
+            'cd-notification-refresh': () => {
+              location.reload();
+            },
+          }
+        }).$wrapper;
+        mw.notify(message);
+      },
+    },
+  });
+  const notification = mw.notification.notify($message, { autoHide: false });
 }
