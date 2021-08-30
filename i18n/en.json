@@ -215,6 +215,7 @@
   "deadanchor-section-exactmatch": "Looks like the section \"$1\" has been archived. [[$2|See archived section]] (or [$3 search in the archive]).",
   "deadanchor-section-inexactmatch": "Looks like the section \"$1\" has been archived. [$2 Search in the archive].",
   "deadanchor-section-notfound": "[$1 Searching for it in the archive] also did not return any results. It may have been removed or renamed, or you may have followed a malformed link.",
+  "deadanchor-section-similar": "However, a section with the similar name \"[[$1|$2]]\" was found on this page.",
   "deadanchor-comment-lead": "Couldn't find the comment on the page.",
   "deadanchor-comment-finding": "Finding archived comment…",
   "deadanchor-comment-exactmatch": "Looks like the comment has been archived. [[$1|See archived comment]] (or [$2 search in the archive]).",

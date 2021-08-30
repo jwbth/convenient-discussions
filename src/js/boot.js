@@ -20,6 +20,7 @@ import userRegistry from './userRegistry';
 import {
   addCss,
   areObjectsEqual,
+  calculateWordOverlap,
   firstCharToUpperCase,
   generatePageNamePattern,
   getFromLocalStorage,
@@ -1552,6 +1553,24 @@ function findPreviousCommentByTime(anchor, date, author) {
 }
 
 /**
+ * Find a section with a similar name on the page (when the section with the exact name was not
+ * found).
+ *
+ * @param {string} sectionName
+ * @returns {?Section}
+ */
+function findSectionByWords(sectionName) {
+  const matches = cd.sections
+    .map((section) => {
+      const score = calculateWordOverlap(sectionName, section.headline);
+      return { section, score };
+    })
+    .filter((match) => match.score > 0.66);
+  const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
+  return bestMatch ? bestMatch.section : null;
+}
+
+/**
  * _For internal use._ Show a message at the top of the page that a section/comment was not found, a
  * link to search in the archive, and a link to the section/comment if it was found automatically.
  *
@@ -1561,23 +1580,39 @@ function findPreviousCommentByTime(anchor, date, author) {
  */
 export async function addNotFoundMessage(decodedFragment, date, author) {
   let label;
-  let previousCommentByTimeText;
+  let previousCommentByTimeText = '';
   let sectionName;
+  let sectionWithSimilarNameText = '';
   if (date) {
     label = cd.sParse('deadanchor-comment-lead');
     const previousCommentByTime = findPreviousCommentByTime(decodedFragment, date, author);
     if (previousCommentByTime) {
-      previousCommentByTimeText = cd.sParse(
-        'deadanchor-comment-previous',
-        '#' + previousCommentByTime.anchor
+      previousCommentByTimeText = (
+        ' ' +
+        cd.sParse('deadanchor-comment-previous', '#' + previousCommentByTime.anchor)
       )
         // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
         .replace(cd.g.ARTICLE_PATH_REGEXP, '$1');
-      label += ' ' + previousCommentByTimeText;
+      label += previousCommentByTimeText;
     }
   } else {
     sectionName = underlinesToSpaces(decodedFragment);
     label = cd.sParse('deadanchor-section-lead', sectionName);
+    const sectionMatch = findSectionByWords(sectionName);
+    if (sectionMatch) {
+      sectionWithSimilarNameText = (
+        ' ' +
+        cd.sParse('deadanchor-section-similar', '#' + sectionMatch.anchor, sectionMatch.headline)
+      )
+        // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
+        .replace(cd.g.ARTICLE_PATH_REGEXP, '$1');
+
+      // Possible use of a template in the section title. In such a case, it's almost always the
+      // real match, so we show it immediately.
+      if (sectionName.includes('{{')) {
+        label += sectionWithSimilarNameText;
+      }
+    }
   }
   if (cd.page.canHaveArchives()) {
     label += ' ';
@@ -1635,18 +1670,28 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
       searchUrl = cd.g.SERVER + searchUrl;
 
       if (results.length === 0) {
-        const label = date ?
-          (
+        let label;
+        if (date) {
+          label = (
             cd.sParse('deadanchor-comment-lead') +
             ' ' +
             cd.sParse('deadanchor-comment-notfound', searchUrl) +
-            (previousCommentByTimeText ? ' ' + previousCommentByTimeText : '')
-          ) :
-          (
-            cd.sParse('deadanchor-section-lead', sectionName) +
-            ' ' +
-            cd.sParse('deadanchor-section-notfound', searchUrl)
+            previousCommentByTimeText
           );
+        } else {
+          let notFoundText = '';
+
+          // Possible use of a template in the section title.
+          if (!(sectionWithSimilarNameText && sectionName.includes('{{'))) {
+            notFoundText = ' ' + cd.sParse('deadanchor-section-notfound', searchUrl);
+          }
+
+          label = (
+            cd.sParse('deadanchor-section-lead', sectionName) +
+            notFoundText +
+            sectionWithSimilarNameText
+          );
+        }
         message.setLabel(wrap(label));
       } else {
         let pageTitle;
@@ -1686,15 +1731,12 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
           label = date ?
             (
               cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
-              (previousCommentByTimeText ? ' ' + previousCommentByTimeText : '')
+              previousCommentByTimeText
             ) :
             cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
         } else {
           label = date ?
-            (
-              cd.sParse('deadanchor-comment-inexactmatch', searchUrl) +
-              (previousCommentByTimeText ? ' ' + previousCommentByTimeText : '')
-            ) :
+            cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + previousCommentByTimeText :
             cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
         }
 
