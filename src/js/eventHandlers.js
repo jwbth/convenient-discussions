@@ -142,7 +142,7 @@ export function handleScroll() {
  */
 export function handleHashChange() {
   let anchor = location.hash.slice(1);
-  if (isCommentAnchor(location.hash)) {
+  if (isCommentAnchor(anchor)) {
     try {
       anchor = decodeURIComponent(anchor);
     } catch (e) {
