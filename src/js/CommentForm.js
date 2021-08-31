@@ -1224,7 +1224,7 @@ class CommentForm {
    * @private
    */
   loadComment() {
-    const currentOperation = this.registerOperation({ type: 'load' });
+    const currentOperation = this.registerOperation('load');
     this.target.getCode(true).then(
       () => {
         let commentText = this.target.codeToText();
@@ -1354,10 +1354,7 @@ class CommentForm {
    * @private
    */
   preloadTemplate() {
-    const currentOperation = this.registerOperation({
-      type: 'load',
-      affectHeadline: false,
-    });
+    const currentOperation = this.registerOperation('load', { affectHeadline: false });
     const preloadPage = new Page(this.preloadConfig.commentTemplate);
     preloadPage.getCode().then(
       () => {
@@ -2673,12 +2670,14 @@ class CommentForm {
   /**
    * Add an operation to the registry of operations.
    *
-   * @param {CommentFormOperation} operation
+   * @param {string} type
+   * @param {object} [options={}]
    * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
    * @returns {CommentFormOperation}
    * @private
    */
-  registerOperation(operation, clearMessages = true) {
+  registerOperation(type, options = {}, clearMessages = true) {
+    const operation = Object.assign(options, { type });
     this.operations.push(operation);
     operation.isClosed = false;
     if (operation.type !== 'preview' || !operation.isAuto) {
@@ -2791,13 +2790,7 @@ class CommentForm {
       return;
     }
 
-    const currentOperation = (
-      operation ||
-      this.registerOperation({
-        type: 'preview',
-        isAuto,
-      })
-    );
+    const currentOperation = operation || this.registerOperation('preview', { isAuto });
 
     if (isAuto) {
       const isTooEarly = Date.now() - this.lastPreviewTimestamp < 1000;
@@ -2936,7 +2929,7 @@ class CommentForm {
   async viewChanges() {
     if (this.isBeingSubmitted()) return;
 
-    const currentOperation = this.registerOperation({ type: 'viewChanges' });
+    const currentOperation = this.registerOperation('viewChanges');
 
     const code = await this.prepareWholeCode('viewChanges');
     if (code === undefined) {
@@ -3246,7 +3239,7 @@ class CommentForm {
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!(await this.runChecks({ doDelete }))) return;
 
-    const currentOperation = this.registerOperation({ type: 'submit' }, !afterEditConflict);
+    const currentOperation = this.registerOperation('submit', undefined, !afterEditConflict);
 
     const otherFormsSubmitted = cd.commentForms
       .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
