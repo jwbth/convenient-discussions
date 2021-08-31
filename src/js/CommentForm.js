@@ -2944,6 +2944,7 @@ export default class CommentForm {
         action: 'compare',
         toslots: 'main',
         'totext-main': code,
+        topst: true,
         prop: 'diff',
         formatversion: 2,
       };
