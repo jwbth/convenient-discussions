@@ -18,13 +18,12 @@ let keptTocHeight = null;
 /**
  * @typedef {object} WrapCallbacks
  * @property {Function} *
- * @global
  */
 
 /**
- * @typedef WrapComplexReturn
- * @param {external:jQuery} $wrapper
- * @param {Button[]} buttons
+ * @typedef {object} WrapComplexReturn
+ * @property {external:jQuery} $wrapper
+ * @property {Button[]} buttons
  */
 
 /**

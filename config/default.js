@@ -100,7 +100,6 @@ export default {
    * @property {string} male
    * @property {string} female
    * @property {string} unknown
-   * @global
    */
 
   /**
@@ -613,7 +612,6 @@ export default {
    * @property {string} name Latin letters, digits, `-`.
    * @property {string} [type='notice'] For example, `notice`.
    * @property {Function} [checkFunc] If this function returns false, no message is displayed.
-   * @global
    */
 
   /**
@@ -629,7 +627,6 @@ export default {
    * @property {string} name Name of the module.
    * @property {Function} [checkFunc] Function that must return `true` for the module to be loaded
    *   (if it is present).
-   * @global
    */
 
   /**

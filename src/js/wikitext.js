@@ -394,7 +394,6 @@ export function decodeHtmlEntities(s) {
  * @typedef {object} HideSensitiveCodeReturn
  * @property {string} code
  * @property {string[]} hidden
- * @global
  */
 
 /**

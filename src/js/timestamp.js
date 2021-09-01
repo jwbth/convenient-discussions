@@ -468,7 +468,6 @@ export function isCommentAnchor(fragment) {
  * @typedef {object} ParseTimestampReturn
  * @property {Date} date
  * @property {object} match
- * @global
  */
 
 /**
@@ -848,7 +847,6 @@ export function resetCommentAnchors() {
  * @typedef {object} ParseCommentAnchorReturn
  * @property {Date} date
  * @property {string} author
- * @global
  */
 
 /**

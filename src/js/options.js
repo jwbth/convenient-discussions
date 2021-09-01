@@ -204,7 +204,6 @@ export async function setSettings(settings = cd.settings) {
  * @typedef {object} GetVisitsReturn
  * @property {object} visits
  * @property {object} currentPageVisits
- * @global
  */
 
 /**
