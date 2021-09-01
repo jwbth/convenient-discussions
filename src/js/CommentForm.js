@@ -3244,7 +3244,7 @@ class CommentForm {
    * @param {boolean} [afterEditConflict=false]
    */
   async submit(afterEditConflict = false) {
-    if (this.isContentBeingLoaded()) return;
+    if (this.isBeingSubmitted() || this.isContentBeingLoaded()) return;
 
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!this.runChecks({ doDelete })) return;
