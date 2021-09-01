@@ -1761,7 +1761,7 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
  */
 export function suggestDisableDiscussionTools() {
   const message = cd.sParse('discussiontools-incompatible');
-  const [$message, [disableButton]] = wrap(message, {
+  const { $wrapper: $message, buttons: [disableButton] } = wrap(message, {
     callbacks: {
       'cd-notification-disabledt': async () => {
         disableButton.setPending(true);
