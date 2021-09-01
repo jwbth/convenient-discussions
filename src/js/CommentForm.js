@@ -14,13 +14,13 @@ import {
   defined,
   findLastIndex,
   focusInput,
+  getNativePromiseState,
   handleApiReject,
   hideText,
   insertText,
   isInputFocused,
   isPageOverlayOn,
   keyCombination,
-  nativePromiseState,
   removeDoubleSpaces,
   removeFromArrayIfPresent,
   unhideText,
@@ -2753,12 +2753,21 @@ class CommentForm {
   }
 
   /**
-   * Is the form being submitted right now.
+   * Check if the form is being submitted right now.
    *
    * @returns {boolean}
    */
   isBeingSubmitted() {
     return this.operations.some((op) => op.type === 'submit' && !op.isClosed);
+  }
+
+  /**
+   * Check if the content of the form is being loaded right now.
+   *
+   * @returns {boolean}
+   */
+  isContentBeingLoaded() {
+    return this.operations.some((op) => op.type === 'load' && !op.isClosed);
   }
 
   /**
@@ -2774,12 +2783,12 @@ class CommentForm {
    */
   async preview(previewEmpty = true, isAuto = true, operation) {
     if (
-      this.operations.some((op) => !op.isClosed && op.type === 'load') ||
+      this.isContentBeingLoaded() ||
       (
         !(this.target instanceof Page) &&
         !this.target.inCode &&
         this.checkCodeRequest &&
-        (await nativePromiseState(this.checkCodeRequest)) === 'resolved'
+        (await getNativePromiseState(this.checkCodeRequest)) === 'resolved'
       ) ||
       this.isBeingSubmitted() ||
       (isAuto && !cd.settings.autopreview)
@@ -3036,14 +3045,15 @@ class CommentForm {
   }
 
   /**
-   * Run checks before submitting the form.
+   * Check the form content for several conditions before submitting the form. Ask the user to
+   * confirm submitting if one of the conditions is met.
    *
    * @param {object} options
    * @param {boolean} options.doDelete
    * @returns {Promise.<boolean>}
    * @private
    */
-  async runChecks({ doDelete }) {
+  runChecks({ doDelete }) {
     const checks = [
       {
         condition: !doDelete && this.headlineInput?.getValue() === '',
@@ -3089,7 +3099,7 @@ class CommentForm {
     ];
 
     for (const check of checks) {
-      if (check.condition && !(await check.confirmation())) {
+      if (check.condition && !check.confirmation()) {
         focusInput(this.commentInput);
         return false;
       }
@@ -3234,10 +3244,10 @@ class CommentForm {
    * @param {boolean} [afterEditConflict=false]
    */
   async submit(afterEditConflict = false) {
-    if (this.operations.some((op) => !op.isClosed && op.type === 'load')) return;
+    if (this.isContentBeingLoaded()) return;
 
     const doDelete = this.deleteCheckbox?.isSelected();
-    if (!(await this.runChecks({ doDelete }))) return;
+    if (!this.runChecks({ doDelete })) return;
 
     const currentOperation = this.registerOperation('submit', undefined, !afterEditConflict);
 
@@ -3259,6 +3269,8 @@ class CommentForm {
     }
 
     const editTimestamp = await this.editPage(code, currentOperation);
+
+    // The operation is closed inside CommentForm#editPage.
     if (!editTimestamp) return;
 
     // Here we use a trick where we pass, in passedData, the name of the section that was set to be

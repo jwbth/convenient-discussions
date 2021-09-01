@@ -633,7 +633,7 @@ export function restoreScrollPosition(resetTocHeight = true) {
  * @param {Promise} promise
  * @returns {Promise.<string>}
  */
-export async function nativePromiseState(promise) {
+export async function getNativePromiseState(promise) {
   const obj = {};
   return Promise.race([promise, obj])
     .then((value) => value === obj ? 'pending' : 'resolved', () => 'rejected');
