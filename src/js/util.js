@@ -10,10 +10,7 @@ import CdError from './CdError';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
 
-let anchorElement;
-let anchorElementTop;
-let keptScrollPosition = null;
-let keptTocHeight = null;
+const scrollData = { offset: null };
 
 /**
  * @typedef {object} WrapCallbacks
@@ -528,16 +525,26 @@ export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = 
   ) {
     saveScrollPosition(fallbackToAbsolute.saveTocHeight);
   } else {
-    anchorElement = null;
-    anchorElementTop = null;
-    if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+    scrollData.element = null;
+    scrollData.elementTop = null;
+    scrollData.touchesBottom = false;
+
+    scrollData.offsetBottom = (
+      document.documentElement.scrollHeight - (window.scrollY + window.innerHeight)
+    );
+
+    // 100 accounts for various content moves by scripts running on the page (like HotCat that may
+    // add an empty category list).
+    if (scrollData.offsetBottom < 100) {
+      scrollData.touchesBottom = true;
+    } else if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
       const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
       while (true) {
         if (!isInline(treeWalker.currentNode)) {
           const rect = treeWalker.currentNode.getBoundingClientRect();
           if (rect.bottom >= 0 && rect.height !== 0) {
-            anchorElement = treeWalker.currentNode;
-            anchorElementTop = rect.top;
+            scrollData.element = treeWalker.currentNode;
+            scrollData.elementTop = rect.top;
             if (treeWalker.firstChild()) {
               continue;
             } else {
@@ -559,13 +566,18 @@ export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = 
  *   previously used for saving the position.
  */
 export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
-  if (fallbackToAbsolute && keptScrollPosition !== null) {
+  if (fallbackToAbsolute && scrollData.offset !== null) {
     restoreScrollPosition();
   } else {
-    if (anchorElement) {
-      const rect = anchorElement.getBoundingClientRect();
+    if (scrollData.touchesBottom) {
+      const y = (
+        document.documentElement.scrollHeight - window.innerHeight - scrollData.offsetBottom
+      );
+      window.scrollTo(0, y);
+    } else if (scrollData.element) {
+      const rect = scrollData.element.getBoundingClientRect();
       if (getVisibilityByRects(rect)) {
-        window.scrollTo(0, window.scrollY + rect.top - anchorElementTop);
+        window.scrollTo(0, window.scrollY + rect.top - scrollData.elementTop);
       }
     }
   }
@@ -579,8 +591,8 @@ export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
  * @param {Element} newElement
  */
 export function replaceAnchorElement(element, newElement) {
-  if (anchorElement && element === anchorElement) {
-    anchorElement = newElement;
+  if (scrollData.element && element === scrollData.element) {
+    scrollData.element = newElement;
   }
 }
 
@@ -591,9 +603,9 @@ export function replaceAnchorElement(element, newElement) {
  *   when visits are loaded after a page reload.
  */
 export function saveScrollPosition(saveTocHeight = true) {
-  keptScrollPosition = window.scrollY;
-  keptTocHeight = (
-    (saveTocHeight || keptTocHeight) &&
+  scrollData.offset = window.scrollY;
+  scrollData.tocHeight = (
+    (saveTocHeight || scrollData.tocHeight) &&
     cd.g.$toc.length &&
     !cd.g.isTocFloating &&
     window.scrollY !== 0 &&
@@ -610,16 +622,16 @@ export function saveScrollPosition(saveTocHeight = true) {
  *   after page reloads.
  */
 export function restoreScrollPosition(resetTocHeight = true) {
-  if (keptScrollPosition === null) return;
+  if (scrollData.offset === null) return;
 
-  if (keptTocHeight) {
-    keptScrollPosition += (cd.g.$toc.outerHeight() || 0) - keptTocHeight;
+  if (scrollData.tocHeight) {
+    scrollData.offset += (cd.g.$toc.outerHeight() || 0) - scrollData.tocHeight;
   }
-  window.scrollTo(0, keptScrollPosition);
+  window.scrollTo(0, scrollData.offset);
 
-  keptScrollPosition = null;
+  scrollData.offset = null;
   if (resetTocHeight) {
-    keptTocHeight = null;
+    scrollData.tocHeight = null;
   }
 }
 
