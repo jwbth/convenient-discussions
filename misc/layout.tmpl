@@ -81,6 +81,18 @@
     }
     </style>
     <script src="scripts/nav.js" defer></script>
+    <script>
+        document.addEventListener('keydown', (e) => {
+            const activeElement = document.activeElement;
+            const inputs = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'];
+            if (inputs.includes(activeElement.tagName) || activeElement.isContentEditable) return;
+
+            if (e.key === '/') {
+                e.preventDefault();
+                document.getElementById('nav-search').focus();
+            }
+        });
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
