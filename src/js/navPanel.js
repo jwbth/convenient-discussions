@@ -285,9 +285,9 @@ export default {
    *
    * @param {number} commentCount
    * @param {Map} commentsBySection
-   * @param {boolean} areThereInteresting
+   * @param {boolean} areThereRelevant
    */
-  updateRefreshButton(commentCount, commentsBySection, areThereInteresting) {
+  updateRefreshButton(commentCount, commentsBySection, areThereRelevant) {
     this.refreshButton.setLabel('');
     this.updateRefreshButtonTooltip(commentCount, commentsBySection);
     if (commentCount) {
@@ -299,7 +299,7 @@ export default {
         .appendTo(this.refreshButton.element);
     }
     this.refreshButton.element.classList
-      .toggle('cd-navPanel-refreshButton-interesting', areThereInteresting);
+      .toggle('cd-navPanel-refreshButton-relevant', areThereRelevant);
   },
 
   /**

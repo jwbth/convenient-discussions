@@ -35,8 +35,8 @@ let goToCommentToYou;
 let goToCommentWatchedSection;
 let currentUserRegexp;
 let $wrapperRegularPrototype;
-let $wrapperInterestingPrototype;
-let switchInterestingButton;
+let $wrapperRelevantPrototype;
+let switchRelevantButton;
 
 /**
  * Prepare variables.
@@ -93,9 +93,9 @@ async function prepare(siteDataRequests) {
     .addClass('cd-commentLink')
     .append($spanRegularPrototype)
     .prepend(' ');
-  $wrapperInterestingPrototype = $wrapperRegularPrototype
+  $wrapperRelevantPrototype = $wrapperRegularPrototype
     .clone()
-    .addClass('cd-commentLink-interesting');
+    .addClass('cd-commentLink-relevant');
 
   const currentUserNamePattern = generatePageNamePattern(cd.g.USER_NAME);
   currentUserRegexp = new RegExp(
@@ -104,11 +104,11 @@ async function prepare(siteDataRequests) {
 }
 
 /**
- * Show/hide interesting edits.
+ * Show/hide relevant edits.
  *
  * @private
  */
-function switchInteresting() {
+function switchRelevant() {
   // Item grouping switched on. This may be done in the settings or in the URL.
   const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
 
@@ -117,7 +117,7 @@ function switchInteresting() {
     .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
   const $lines = cd.g.$content.find('.mw-changeslist-line:not(.mw-collapsible)');
 
-  if (switchInterestingButton.hasFlag('progressive')) {
+  if (switchRelevantButton.hasFlag('progressive')) {
     // Show all
     // FIXME: Old watchlist (no JS) + ?enhanced=1&urlversion=2
     if (isEnhanced) {
@@ -126,11 +126,11 @@ function switchInteresting() {
         .show();
     } else {
       $lines
-        .not(':has(.cd-commentLink-interesting)')
+        .not(':has(.cd-commentLink-relevant)')
         .show();
     }
     $collapsibles
-      .not(':has(.cd-commentLink-interesting)')
+      .not(':has(.cd-commentLink-relevant)')
       .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
       .show();
     $collapsibles
@@ -138,25 +138,25 @@ function switchInteresting() {
       .find('.mw-enhancedchanges-arrow')
       .click();
   } else {
-    // Show interesting only
+    // Show relevant only
     $collapsibles
       .not('.mw-collapsed')
       .find('.mw-enhancedchanges-arrow')
       .click();
     $collapsibles
-      .has('.cd-commentLink-interesting')
+      .has('.cd-commentLink-relevant')
       .find('.mw-enhancedchanges-arrow')
       .click()
     $collapsibles
-      .not(':has(.cd-commentLink-interesting)')
+      .not(':has(.cd-commentLink-relevant)')
       .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
       .hide();
     $lines
-      .not(':has(.cd-commentLink-interesting)')
+      .not(':has(.cd-commentLink-relevant)')
       .hide();
   }
-  switchInterestingButton
-    .setFlags({ progressive: !switchInterestingButton.hasFlag('progressive') });
+  switchRelevantButton
+    .setFlags({ progressive: !switchRelevantButton.hasFlag('progressive') });
 }
 
 /**
@@ -167,8 +167,8 @@ function switchInteresting() {
 function addWatchlistMenu() {
   // For auto-updating watchlists
   mw.hook('wikipage.content').add(() => {
-    if (switchInterestingButton) {
-      switchInterestingButton.setFlags({ progressive: false });
+    if (switchRelevantButton) {
+      switchRelevantButton.setFlags({ progressive: false });
     }
   });
 
@@ -180,19 +180,19 @@ function addWatchlistMenu() {
     .text(cd.s('script-name-short'))
     .appendTo($menu);
 
-  switchInterestingButton = new OO.ui.ButtonWidget({
+  switchRelevantButton = new OO.ui.ButtonWidget({
     framed: false,
     icon: 'speechBubble',
-    label: cd.s('wl-button-switchinteresting-tooltip'),
+    label: cd.s('wl-button-switchRelevant-tooltip'),
     invisibleLabel: true,
-    title: cd.s('wl-button-switchinteresting-tooltip'),
-    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchInteresting'],
+    title: cd.s('wl-button-switchRelevant-tooltip'),
+    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
     disabled: !cd.g.watchedSections,
   });
-  switchInterestingButton.on('click', () => {
-    switchInteresting();
+  switchRelevantButton.on('click', () => {
+    switchRelevant();
   });
-  switchInterestingButton.$element.appendTo($menu);
+  switchRelevantButton.$element.appendTo($menu);
 
   const editWatchedSectionsButton = new OO.ui.ButtonWidget({
     framed: false,
@@ -382,7 +382,7 @@ function processWatchlist($content) {
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
-      wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+      wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
       let isWatched = false;
@@ -405,7 +405,7 @@ function processWatchlist($content) {
               }
             }
             if (isWatched) {
-              wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+              wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
@@ -477,7 +477,7 @@ function processContributions($content) {
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
-      wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+      wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
       // We have no place to extract the article ID from :-(
@@ -538,7 +538,7 @@ function processHistory($content) {
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
-      wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+      wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
       let isWatched = false;
@@ -555,7 +555,7 @@ function processHistory($content) {
             }
           }
           if (isWatched) {
-            wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+            wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
             wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
           }
         }
@@ -623,7 +623,7 @@ async function processDiff() {
       if (comment) {
         let wrapper;
         if (summary && currentUserRegexp.test(` ${summary} `)) {
-          wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+          wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
@@ -635,7 +635,7 @@ async function processDiff() {
               }
             }
             if (isWatched) {
-              wrapper = $wrapperInterestingPrototype.get(0).cloneNode(true);
+              wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }

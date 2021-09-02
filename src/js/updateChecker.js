@@ -588,19 +588,19 @@ function showOrdinaryNotification(comments) {
           cd.s('notification-part-onthispage')
         )
       );
-      let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
-      if (!mayBeInterestingString.startsWith(',')) {
-        mayBeInterestingString = cd.mws('word-separator') + mayBeInterestingString;
+      let mayBeRelevantString = cd.s('notification-newcomments-maybeinteresting');
+      if (!mayBeRelevantString.startsWith(',')) {
+        mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
       }
 
-      // "that may be interesting to you" text is not needed when the section is watched and the
+      // "that may be relevant to you" text is not needed when the section is watched and the
       // user can clearly understand why they are notified.
-      const mayBeInteresting = section && cd.g.currentPageWatchedSections?.includes(section) ?
+      const mayBeRelevant = section && cd.g.currentPageWatchedSections?.includes(section) ?
         '' :
-        mayBeInterestingString;
+        mayBeRelevantString;
 
       html = (
-        cd.sParse('notification-newcomments', filteredComments.length, where, mayBeInteresting) +
+        cd.sParse('notification-newcomments', filteredComments.length, where, mayBeRelevant) +
         ' ' +
         reloadHtml
       );
@@ -672,23 +672,23 @@ function showDesktopNotification(comments) {
     const where = section ?
       cd.mws('word-separator') + cd.s('notification-part-insection', section) :
       '';
-    let mayBeInterestingString = cd.s('notification-newcomments-maybeinteresting');
-    if (!mayBeInterestingString.startsWith(cd.mws('comma-separator'))) {
-      mayBeInterestingString = cd.mws('word-separator') + mayBeInterestingString;
+    let mayBeRelevantString = cd.s('notification-newcomments-maybeinteresting');
+    if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
+      mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
     }
 
-    // "that may be interesting to you" text is not needed when the section is watched and the
+    // "that may be relevant to you" text is not needed when the section is watched and the
     // user can clearly understand why they are notified.
-    const mayBeInteresting = section && cd.g.currentPageWatchedSections?.includes(section) ?
+    const mayBeRelevant = section && cd.g.currentPageWatchedSections?.includes(section) ?
       '' :
-      mayBeInterestingString;
+      mayBeRelevantString;
 
     body = cd.s(
       'notification-newcomments-desktop',
       filteredComments.length,
       where,
       cd.page.name,
-      mayBeInteresting
+      mayBeRelevant
     );
   }
 
@@ -759,11 +759,11 @@ async function processComments(comments, currentComments, currentRevisionId) {
       return newComment;
     });
 
-  // Extract "interesting" comments (that would make the new comments counter purple and might
-  // invoke notifications). Keep in mind that we should account for the case where comments have
-  // been removed. For example, the counter could be "+1" but then go back to displaying the refresh
-  // icon which means 0 new comments.
-  const interestingNewComments = newComments.filter((comment) => {
+  // Extract relevant comments (that would make the new comments counter purple and might invoke
+  // notifications). Keep in mind that we should account for the case where comments have been
+  // removed. For example, the counter could be "+1" but then go back to displaying the refresh icon
+  // which means 0 new comments.
+  const relevantNewComments = newComments.filter((comment) => {
     if (!cd.settings.notifyCollapsedThreads && comment.logicalLevel !== 0) {
       let parentMatch;
       for (let c = comment; c && !parentMatch; c = c.parent) {
@@ -802,21 +802,21 @@ async function processComments(comments, currentComments, currentRevisionId) {
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
-  if (interestingNewComments[0]) {
-    updateChecker.relevantNewCommentAnchor = interestingNewComments[0].anchor;
+  if (relevantNewComments[0]) {
+    updateChecker.relevantNewCommentAnchor = relevantNewComments[0].anchor;
   } else if (newComments[0]) {
     updateChecker.relevantNewCommentAnchor = newComments[0].anchor;
   }
 
   const newCommentsBySection = Comment.groupBySection(newComments);
-  const areThereInteresting = Boolean(interestingNewComments.length);
-  navPanel.updateRefreshButton(newComments.length, newCommentsBySection, areThereInteresting);
-  updateChecker.updatePageTitle(newComments.length, areThereInteresting);
+  const areThereRelevant = Boolean(relevantNewComments.length);
+  navPanel.updateRefreshButton(newComments.length, newCommentsBySection, areThereRelevant);
+  updateChecker.updatePageTitle(newComments.length, areThereRelevant);
   toc.addNewComments(newCommentsBySection);
 
   Comment.addNewCommentsNotes(newComments);
 
-  const commentsToNotifyAbout = interestingNewComments
+  const commentsToNotifyAbout = relevantNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.anchor === comment.anchor));
   showOrdinaryNotification(commentsToNotifyAbout);
   showDesktopNotification(commentsToNotifyAbout);
@@ -963,12 +963,12 @@ const updateChecker = {
    * since it was loaded.
    *
    * @param {number} newCommentsCount
-   * @param {boolean} areThereInteresting
+   * @param {boolean} areThereRelevant
    * @memberof module:updateChecker
    */
-  updatePageTitle(newCommentsCount, areThereInteresting) {
-    const interestingMark = areThereInteresting ? '*' : '';
-    const s = newCommentsCount ? `(${newCommentsCount}${interestingMark}) ` : '';
+  updatePageTitle(newCommentsCount, areThereRelevant) {
+    const relevantMark = areThereRelevant ? '*' : '';
+    const s = newCommentsCount ? `(${newCommentsCount}${relevantMark}) ` : '';
     document.title = document.title.replace(/^(?:\(\d+\*?\) )?/, s);
   },
 };
