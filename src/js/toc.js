@@ -307,7 +307,7 @@ export default {
 
     const saveTocHeight = Boolean(
       // On first load
-      !cd.g.hasPageBeenReloaded ||
+      !cd.state.hasPageBeenReloaded ||
 
       // When unrendered (in gray) comments are added
       !areCommentsRendered ||

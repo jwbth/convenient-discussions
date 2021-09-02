@@ -109,7 +109,7 @@ async function prepare(passedData, siteDataRequests) {
    */
   cd.sections = [];
 
-  if (cd.g.isFirstRun) {
+  if (cd.state.isFirstRun) {
     await init(siteDataRequests);
   } else {
     resetCommentAnchors();
@@ -630,7 +630,7 @@ async function processFragment(passedData) {
   let parentDate;
   let parentAuthor;
   let sectionAnchorBeginning;
-  if (cd.g.isFirstRun) {
+  if (cd.state.isFirstRun) {
     fragment = location.hash.slice(1);
     try {
       decodedFragment = decodeURIComponent(fragment);
@@ -697,7 +697,7 @@ async function processFragment(passedData) {
     }
   }
 
-  if (cd.g.isFirstRun && cd.g.isPageActive && decodedFragment) {
+  if (cd.state.isFirstRun && cd.state.isPageActive && decodedFragment) {
     const isTargetFound = (
       comment ||
       cd.config.idleFragments.includes(decodedFragment) ||
@@ -832,14 +832,14 @@ function debugLog() {
  * @fires pageReadyFirstTime
  */
 export default async function processPage(passedData = {}, siteDataRequests, cachedScrollY) {
-  if (cd.g.isFirstRun) {
+  if (cd.state.isFirstRun) {
     cd.debug.stopTimer('loading data');
   }
   cd.debug.startTimer('preparations');
 
   await prepare(passedData, siteDataRequests);
 
-  if (cd.g.isFirstRun) {
+  if (cd.state.isFirstRun) {
     saveRelativeScrollPosition(null, cachedScrollY);
   }
 
@@ -863,8 +863,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
            are not eligible to create comment forms on.) Such pages are parsed, the page navigation
            block is added to them.
       3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
-         revision. The "convenientDiscussions.g.isPageActive" property is true when the page is of
-         this level. The navigation panel is added to such pages, new comments are highlighted.
+         revision. The "convenientDiscussions.state.isPageActive" property is true when the page is
+         of this level. The navigation panel is added to such pages, new comments are highlighted.
 
     We need to be accurate regarding which functionality should be turned on on which level. We
     should also make sure we only add this functionality once. The
@@ -872,10 +872,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     page is parsed for the first time.
    */
 
-  // This property isn't static: a 404 page doesn't have an ID and is considered inactive, but if
-  // the user adds a topic to it, it will become active and get an ID. At the same time (on a really
-  // rare occasion), an active page may become inactive if it becomes identified as an archive page.
-  cd.g.isPageActive = articleId && !cd.page.isArchivePage() && isCurrentRevision();
+   /*
+    This property isn't static:
+      1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
+         it, it will become active and get an ID.
+      2. The user may switch to another revision using RevisionSlider.
+      3. On a really rare occasion, an active page may become inactive if it becomes identified as
+         an archive page.
+  */
+  cd.state.isPageActive = articleId && !cd.page.isArchivePage() && isCurrentRevision();
 
   let watchedSectionsRequest;
   let visitsRequest;
@@ -886,7 +891,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       console.warn('Couldn\'t load the settings from the server.', e);
     });
 
-    if (cd.g.isPageActive) {
+    if (cd.state.isPageActive) {
       visitsRequest = getVisits(true);
     }
 
@@ -927,14 +932,14 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   // Reevaluate if this is likely a talk page.
   const isLikelyTalkPage = (
     cd.g.isEnabledInQuery ||
-    !cd.g.isFirstRun ||
+    !cd.state.isFirstRun ||
     cd.comments.length ||
     $('#ca-addsection').length ||
     cd.g.PAGE_WHITELIST_REGEXP?.test(cd.page.name)
   );
 
-  const isPageCommentable = cd.g.isPageActive || !articleId;
-  cd.g.isPageFirstParsed = cd.g.isFirstRun || passedData.wasPageCreated;
+  const isPageCommentable = cd.state.isPageActive || !articleId;
+  cd.state.isPageFirstParsed = cd.state.isFirstRun || passedData.wasPageCreated;
 
   let showPopups;
   if (isLikelyTalkPage) {
@@ -966,7 +971,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       connectToAddTopicButtons();
     }
 
-    if (cd.g.isPageActive) {
+    if (cd.state.isPageActive) {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (!navPanel.isMounted()) {
         navPanel.mount();
@@ -1021,7 +1026,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         // Empty
       }
 
-      if (cd.g.isPageFirstParsed) {
+      if (cd.state.isPageFirstParsed) {
         const alwaysConfirmLeavingPage = (
           mw.user.options.get('editondblclick') ||
           mw.user.options.get('editsectiononrightclick')
@@ -1062,7 +1067,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       // Should be below Thread.init() as it may want to scroll to a comment in a collapsed thread.
       processFragment(passedData);
 
-      if (cd.g.isPageActive) {
+      if (cd.state.isPageActive) {
         processVisits(visitsRequest, passedData);
 
         // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
@@ -1070,7 +1075,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         updateChecker.init(visitsRequest, passedData);
       }
 
-      if (cd.g.isPageFirstParsed) {
+      if (cd.state.isPageFirstParsed) {
         pageNav.mount();
 
         if (!cd.settings.reformatComments) {
@@ -1154,7 +1159,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       $(document).on('keydown', handleGlobalKeyDown);
     }
 
-    showPopups = cd.g.isFirstRun && cd.g.isPageActive && cd.user.name !== '<unregistered>';
+    showPopups = cd.state.isFirstRun && cd.state.isPageActive && cd.user.name !== '<unregistered>';
 
     /**
      * The script has processed the page.
@@ -1164,7 +1169,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
      */
     mw.hook('convenientDiscussions.pageReady').fire(cd);
 
-    if (cd.g.isFirstRun) {
+    if (cd.state.isFirstRun) {
       /**
        * The script has processed the page for the first time since the page load. Use this hook for
        * operations that should run only once.
@@ -1175,7 +1180,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    if (cd.g.isPageFirstParsed) {
+    if (cd.state.isPageFirstParsed) {
       mw.hook('wikipage.content').add(handleWikipageContentHookFirings);
     }
 
@@ -1187,7 +1192,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
     cd.debug.stopTimer('final code and rendering');
   } else {
-    cd.g.isPageActive = false;
+    cd.state.isPageActive = false;
 
     const $disableLink = $('#footer-places-togglecd a');
     if ($disableLink.length) {

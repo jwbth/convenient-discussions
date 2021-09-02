@@ -144,8 +144,8 @@ export default {
 
   /**
    * Check if the navigation panel is mounted. Is equivalent to checking the existence of
-   * {@link module:navPanel.$element}, and for the most of the practical purposes, does the same as the
-   * `convenientDiscussions.g.isPageActive` check.
+   * {@link module:navPanel.$element}, and for the most of the practical purposes, does the same as
+   * the `convenientDiscussions.state.isPageActive` check.
    *
    * @returns {boolean}
    */
@@ -201,7 +201,7 @@ export default {
    * @private
    */
   goToNewCommentInDirection(direction) {
-    if (cd.g.isAutoScrollInProgress) return;
+    if (cd.state.isAutoScrollInProgress) return;
 
     const commentInViewport = Comment.findInViewport(direction);
     if (!commentInViewport) return;
@@ -239,7 +239,7 @@ export default {
    * Scroll to the first unseen comment.
    */
   goToFirstUnseenComment() {
-    if (cd.g.isAutoScrollInProgress) return;
+    if (cd.state.isAutoScrollInProgress) return;
 
     const candidates = cd.comments.filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
@@ -402,7 +402,7 @@ export default {
    * visibility.
    */
   updateCommentFormButton() {
-    if (cd.g.isAutoScrollInProgress || !this.isMounted()) return;
+    if (cd.state.isAutoScrollInProgress || !this.isMounted()) return;
 
     const areThereHidden = cd.commentForms
       .some((commentForm) => !commentForm.$element.cdIsInViewport(true));

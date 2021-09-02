@@ -118,18 +118,18 @@ export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
   // wait before running, otherwise comments may be registered as seen after a press of Page
   // Down/Page Up.
-  if (cd.g.dontHandleScroll || cd.g.isAutoScrollInProgress) return;
+  if (cd.state.dontHandleScroll || cd.state.isAutoScrollInProgress) return;
 
-  cd.g.dontHandleScroll = true;
+  cd.state.dontHandleScroll = true;
 
   // One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than 200ms, but
   // 200ms proved to be not enough, so we try 300ms.
   setTimeout(() => {
-    cd.g.dontHandleScroll = false;
+    cd.state.dontHandleScroll = false;
 
-    if (cd.g.isAutoScrollInProgress) return;
+    if (cd.state.isAutoScrollInProgress) return;
 
-    if (cd.g.isPageActive) {
+    if (cd.state.isPageActive) {
       Comment.registerSeen();
       navPanel.updateCommentFormButton();
     }

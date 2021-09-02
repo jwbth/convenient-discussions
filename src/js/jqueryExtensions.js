@@ -16,7 +16,7 @@ import { handleScroll } from './eventHandlers';
  */
 export function scrollToY(y, smooth = true, callback) {
   const onComplete = () => {
-    cd.g.isAutoScrollInProgress = false;
+    cd.state.isAutoScrollInProgress = false;
     handleScroll();
     if (callback) {
       callback();
@@ -97,7 +97,7 @@ export default {
       top = offsetFirst.top - cd.g.BODY_SCROLL_PADDING_TOP;
     }
 
-    cd.g.isAutoScrollInProgress = true;
+    cd.state.isAutoScrollInProgress = true;
     scrollToY(top, smooth, callback);
 
     return this;

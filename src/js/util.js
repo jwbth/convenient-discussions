@@ -123,8 +123,8 @@ export function isPageOverlayOn() {
 
     // The following code constitutes boot.isPageLoading, but we avoid using that because importing
     // it here will increase the size of the worker build dramatically.
-    cd.g.isFirstRun ||
-    cd.g.isPageBeingReloaded
+    cd.state.isFirstRun ||
+    cd.state.isPageBeingReloaded
   );
 }
 

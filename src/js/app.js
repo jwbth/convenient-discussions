@@ -671,6 +671,14 @@ async function app() {
   cd.mws = mws;
 
   /**
+   * Collection of script state properties.
+   *
+   * @namespace state
+   * @memberof convenientDiscussions
+   */
+  cd.state = {};
+
+  /**
    * Script's publicly available API. Here there are some utilities that we believe should be
    * accessible for external use.
    *

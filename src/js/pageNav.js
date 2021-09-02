@@ -315,7 +315,7 @@ export default {
       }
     }
 
-    cd.g.isAutoScrollInProgress = true;
+    cd.state.isAutoScrollInProgress = true;
     scrollToY(offset);
   },
 };

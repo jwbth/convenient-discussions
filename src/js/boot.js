@@ -330,12 +330,10 @@ function initGlobals() {
   cd.g.isIPv6Address = mw.util.isIPv6Address;
   cd.g.notificationArea = document.querySelector('.mw-notification-area');
 
-  // Page states
-  cd.g.dontHandleScroll = false;
-  cd.g.isAutoScrollInProgress = false;
-  cd.g.activeAutocompleteMenu = null;
-  cd.g.isPageBeingReloaded = false;
-  cd.g.hasPageBeenReloaded = false;
+  cd.state.dontHandleScroll = false;
+  cd.state.isAutoScrollInProgress = false;
+  cd.state.isPageBeingReloaded = false;
+  cd.state.hasPageBeenReloaded = false;
 
   // Useful for debugging
   cd.g.processPageInBackground = updateChecker.processPage;
@@ -917,7 +915,7 @@ function isShowLoadingOverlaySettingOff() {
 
 /**
  * _For internal use._ Set the loading overlay and assign `true` to
- * `convenientDiscussions.g.isFirstRun` and `convenientDiscussions.g.isPageBeingReloaded`.
+ * `convenientDiscussions.state.isFirstRun` and `convenientDiscussions.state.isPageBeingReloaded`.
  *
  * @param {boolean} [isReload=false] Whether the page is reloaded, not loaded the first time.
  */
@@ -928,9 +926,9 @@ export function startLoading(isReload = false) {
      *
      * @name isPageBeingReloaded
      * @type {boolean}
-     * @memberof convenientDiscussions.g
+     * @memberof convenientDiscussions.state
      */
-    cd.g.isPageBeingReloaded = true;
+    cd.state.isPageBeingReloaded = true;
   } else {
     /**
      * Is the page processed for the first time after it was loaded (i.e., not reloaded using the
@@ -938,9 +936,9 @@ export function startLoading(isReload = false) {
      *
      * @name isFirstRun
      * @type {boolean}
-     * @memberof convenientDiscussions.g
+     * @memberof convenientDiscussions.state
      */
-    cd.g.isFirstRun = true;
+    cd.state.isFirstRun = true;
   }
 
   if (isShowLoadingOverlaySettingOff()) return;
@@ -969,9 +967,9 @@ export function startLoading(isReload = false) {
  */
 export function finishLoading(updatePageState = true) {
   if (updatePageState) {
-    cd.g.isFirstRun = false;
-    cd.g.isPageFirstParsed = false;
-    cd.g.isPageBeingReloaded = false;
+    cd.state.isFirstRun = false;
+    cd.state.isPageFirstParsed = false;
+    cd.state.isPageBeingReloaded = false;
   }
 
   if (!$loadingPopup || isShowLoadingOverlaySettingOff()) return;
@@ -984,7 +982,7 @@ export function finishLoading(updatePageState = true) {
  * @returns {boolean}
  */
 export function isPageLoading() {
-  return cd.g.isFirstRun || cd.g.isPageBeingReloaded;
+  return cd.state.isFirstRun || cd.state.isPageBeingReloaded;
 }
 
 /**
@@ -1005,7 +1003,7 @@ export function isCurrentRevision() {
  * @throws {CdError|Error}
  */
 export async function reloadPage(passedData = {}) {
-  if (cd.g.isPageBeingReloaded) return;
+  if (cd.state.isPageBeingReloaded) return;
 
   // We shouldn't make the current version of the page dysfunctional at least until a correct
   // response to the parse request is received. Otherwise, if the request fails, the user will be
@@ -1084,7 +1082,7 @@ export async function reloadPage(passedData = {}) {
   // Remove the fragment
   history.replaceState(history.state, '', location.pathname + location.search);
 
-  cd.g.hasPageBeenReloaded = true;
+  cd.state.hasPageBeenReloaded = true;
 
   updateChecker.updatePageTitle(0, false);
   await updatePageContent(passedData);
@@ -1269,7 +1267,7 @@ function restoreCommentFormsFromData(commentFormsData) {
  *   firing.
  */
 export function restoreCommentForms(isPageReloadedExternally) {
-  if (cd.g.isFirstRun || isPageReloadedExternally) {
+  if (cd.state.isFirstRun || isPageReloadedExternally) {
     // This is needed when the page is reloaded externally.
     cd.commentForms = [];
 

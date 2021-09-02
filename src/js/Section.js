@@ -81,7 +81,7 @@ class Section extends SectionSkeleton {
      * @type {boolean}
      */
     this.isActionable = (
-      cd.g.isPageActive &&
+      cd.state.isPageActive &&
       !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement)) &&
 
       // Transclusions of templates that in turn translude content, like here:

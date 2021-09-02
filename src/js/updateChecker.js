@@ -70,7 +70,7 @@ function removeAlarmViaWorker() {
  * @private
  */
 async function checkForUpdates() {
-  if (!cd.g.isPageActive || cd.g.isPageBeingReloaded) return;
+  if (!cd.state.isPageActive || cd.state.isPageBeingReloaded) return;
 
   // We need a value that wouldn't change during await's.
   const documentHidden = document.hidden;

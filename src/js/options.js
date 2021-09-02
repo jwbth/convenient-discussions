@@ -224,7 +224,7 @@ export async function getVisits(reuse = false) {
     currentPageVisits = [];
   } else {
     const isOptionSet = mw.user.options.get(cd.g.VISITS_OPTION_NAME) !== null;
-    const promise = cd.g.isPageFirstParsed && !isOptionSet ?
+    const promise = cd.state.isPageFirstParsed && !isOptionSet ?
       Promise.resolve({}) :
       getUserInfo(reuse).then((options) => options.visits);
     visits = await promise;
@@ -309,7 +309,7 @@ export async function setVisits(visits) {
  */
 export async function getWatchedSections(reuse = false, passedData = {}) {
   const isOptionSet = mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) !== null;
-  const promise = cd.g.isPageFirstParsed && !isOptionSet ?
+  const promise = cd.state.isPageFirstParsed && !isOptionSet ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.watchedSections);
   const watchedSections = await promise;

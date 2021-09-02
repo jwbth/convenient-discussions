@@ -714,7 +714,7 @@ class Thread {
       }
     });
 
-    if (cd.g.isPageFirstParsed) {
+    if (cd.state.isPageFirstParsed) {
       threadLinesContainer = document.createElement('div');
       threadLinesContainer.className = 'cd-thread-linesContainer';
     } else {
@@ -726,7 +726,7 @@ class Thread {
     // interactions.
     Thread.updateLines();
 
-    if (cd.g.isPageFirstParsed) {
+    if (cd.state.isPageFirstParsed) {
       document.body.appendChild(threadLinesContainer);
     }
     if (restoreCollapsed) {
