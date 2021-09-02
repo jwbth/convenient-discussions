@@ -2096,7 +2096,9 @@ class Comment extends CommentSkeleton {
 
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
-      mw.notify(cd.s('navpanel-firstunseen-hidden'));
+      mw.notify(cd.s('navpanel-firstunseen-hidden'), {
+        title: cd.s('navpanel-firstunseen-hidden-title'),
+      });
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
       const alignment = this.isOpeningSection || this.editForm ? 'top' : 'center';
