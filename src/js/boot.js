@@ -676,7 +676,7 @@ function initOouiAndElementPrototypes() {
       authorWrapper.appendChild(contribsLink);
     }
 
-    headerElement.appendChild(parenthesesEnd);
+    authorWrapper.appendChild(parenthesesEnd);
 
     commentElementPrototypes.headerElement = headerElement;
   }
