@@ -36,9 +36,9 @@
 	"sm-copylink-tooltip": "Bir bağlantıyı kopyala",
 	"comment-changed": "Yorum değişti.",
 	"comment-changed-refresh": "Değişiklikleri görmek için yenileyin",
-	"comment-changed-diff": "Fark",
-	"comment-changed-diff-error": "Fark oluşturulamadı.",
-	"comment-changed-diff-history": "Düzenleme geçmişi",
+	"comment-diff": "Fark",
+	"comment-diff-error": "Fark oluşturulamadı.",
+	"comment-diff-history": "Düzenleme geçmişi",
 	"comment-changedsince": "Yorum, son ziyaretinizden bu yana değişti.",
 	"comment-deleted": "Yorum silindi ya da yeniden imzalandı.",
 	"section-reply": "Bölüme yanıtla",
@@ -48,8 +48,6 @@
 	"section-unwatch-success": "\"$1\" bölümü izleme listenizden kaldırıldı.",
 	"section-unwatch-stillwatched": "<strong>Not:</strong> İzlediğiniz \"$1\" bölümünde yer aldığından bu bölümü hâlâ izliyorsunuz.",
 	"section-watch-pagenotwatched": "<strong>Not:</strong> Bölümü izliyorsunuz, sayfayı değil. İzleme listesi sayfanızda yeni yorumların vurgulanması için sayfayı izleme listesine eklenmesi gerekir.",
-	"section-watch-error-load": "Ayarlar sunucudan yüklenemedi.",
-	"section-watch-error-save": "Ayarlar sunucuya kaydedilemedi.",
 	"section-watch-error-maxsize": "Ayarlar güncellenemedi: İzlenen bölümler listesinin boyutu maksimum boyutu aşıyor. Bunu düzeltmek için <span class=\"cd-notification-editWatchedSections\">bu bölüm listesini düzenleyin</span>.",
 	"cld-summary": "Değişiklik özeti",
 	"cld-diff": "Fark bağlantısı",
@@ -310,6 +308,7 @@
 	"error-diffnotfound-history": "Kendiniz için [$1 revizyon geçmişinde] arayabilirsiniz.",
 	"error-elementhidden": "Öğe gizlidir. Kaydırılamıyor.",
 	"error-purgecache": "Bu sayfanın önbelleği temizlenemedi.",
+	"discussiontools-incompatible": "Uygun Tartışmalar, Tartışma Araçları ile uyumsuzdur. Uygun Tartışmaların düzgün çalışması için Tartışma Araçları'nı [[Special:Preferences#mw-prefsection-betafeatures|beta özellikleri sayfasında]] devre dışı bırakın.",
 	"wl-button-switchinteresting-tooltip": "Yalnızca izlediğim bölümlerdeki yorumları ve bana yönelik yorumları göster. (Not: algılama, düzenleme özetlerine dayanmaktadır, bu nedenle bazı düzenlemeler eksik olabilir)",
 	"wl-button-editwatchedsections-tooltip": "İzlediğim bölümlerin listesini düzenleyin",
 	"wl-button-settings-tooltip": "Kullanışlı Tartışmalar ayarları",
@@ -321,6 +320,5 @@
 	"loading-ellipsis": "Yükleniyor...",
 	"addtopic": "Konu ekle",
 	"addtopicbutton-tooltip": "Kullanışlı Tartışmalarda değil, standart sayfada yeni bir konu oluşturmak için yeni bir sekmede açın",
-	"copy": "Kopyala",
-	"discussiontools-incompatible": "Uygun Tartışmalar, Tartışma Araçları ile uyumsuzdur. Uygun Tartışmaların düzgün çalışması için Tartışma Araçları'nı [[Special:Preferences#mw-prefsection-betafeatures|beta özellikleri sayfasında]] devre dışı bırakın."
+	"copy": "Kopyala"
 }
