@@ -2942,6 +2942,7 @@ export default class CommentForm {
     try {
       const options = {
         action: 'compare',
+        totitle: this.targetPage.name,
         toslots: 'main',
         'totext-main': code,
         topst: true,
