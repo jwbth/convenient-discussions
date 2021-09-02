@@ -2952,8 +2952,10 @@ class CommentForm {
     try {
       const options = {
         action: 'compare',
+        totitle: this.targetPage.name,
         toslots: 'main',
         'totext-main': code,
+        topst: true,
         prop: 'diff',
         formatversion: 2,
       };
