@@ -1799,13 +1799,20 @@ class Comment extends CommentSkeleton {
       });
     }
 
+    const $fullDiffLink = $('<a>')
+      .attr('href', this.getSourcePage().getUrl({
+        oldid: revisionIdLesser,
+        diff: revisionIdGreater,
+      }))
+      .attr('target', '_blank')
+      .text(cd.s('comment-diff-full'));
     const $historyLink = $('<a>')
       .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
       .attr('target', '_blank')
       .text(cd.s('comment-diff-history'));
     const $below = $('<div>')
       .addClass('cd-commentDiffView-below')
-      .append($historyLink);
+      .append($fullDiffLink, cd.sParse('dot-separator'), $historyLink);
 
     const $message = $('<div>').append($cleanDiff, $below);
     OO.ui.alert($message, {
