@@ -29,35 +29,39 @@ class Page {
    * Create a page instance.
    *
    * @param {string|external:mw.Title} nameOrMwTitle
-   * @param {boolean} [normalizeNamespace=true] Whether to normalize the namespace name for the
-   *   {@link Page#name name} property (usually used to keep the gendered namespace name).
+   * @param {boolean} [normalize=true] Whether to normalize the page name for the
+   *   {@link Page#name name} property (usually used to keep the gendered namespace name). Makes
+   *   sense to specify only if `nameOrMwTitle` is a string.
    * @throws {CdError}
    */
-  constructor(nameOrMwTitle, normalizeNamespace = true) {
+  constructor(nameOrMwTitle, normalize = true) {
     const title = nameOrMwTitle instanceof mw.Title ?
       nameOrMwTitle :
       new mw.Title(nameOrMwTitle);
 
     /**
-     * Page title, with no namespace name. The word separator is a space, not an underline.
+     * Page title, with no namespace name, normalized. The word separator is a space, not an
+     * underline.
      *
      * @type {string}
      */
     this.title = title.getMainText();
 
     /**
-     * Page name, with a canonical namespace name. The word separator is a space, not an underline.
+     * Page name, with a namespace name, normalized. The word separator is a space, not an
+     * underline.
      *
      * @type {string}
      */
     this.canonicalName = title.getPrefixedText();
 
     /**
-     * Page name, with a namespace name. The word separator is a space, not an underline.
+     * Page name, with a namespace name, normalized only if the `normalize` parameter is `true` (a
+     * default). The word separator is a space, not an underline.
      *
      * @type {string}
      */
-    this.name = normalizeNamespace && typeof nameOrMwTitle === 'string' ?
+    this.name = nameOrMwTitle instanceof mw.Title || normalize ?
       this.canonicalName :
       nameOrMwTitle;
 
