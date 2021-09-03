@@ -273,63 +273,68 @@ function setStrings() {
 async function go() {
   cd.debug.startTimer('start');
 
-  /**
-   * Script configuration. The default configuration is in {@link module:defaultConfig}.
-   *
-   * @name config
-   * @type {object}
-   * @memberof convenientDiscussions
-   */
-  cd.config = Object.assign(defaultConfig, cd.config);
+  // Avoid setting the global object properties if go() runs the second time (see addFooterLink()).
+  if (!cd.g.SETTINGS_OPTION_NAME) {
+    /**
+     * Script configuration. The default configuration is in {@link module:defaultConfig}.
+     *
+     * @name config
+     * @type {object}
+     * @memberof convenientDiscussions
+     */
+    cd.config = Object.assign(defaultConfig, cd.config);
 
-  setStrings();
+    setStrings();
 
-  // For historical reasons, ru.wikipedia.org has 'cd'.
-  const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
-    'cd' :
-    'convenientDiscussions';
-  cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
-  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
-  cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
+    // For historical reasons, ru.wikipedia.org has 'cd'.
+    const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
+      'cd' :
+      'convenientDiscussions';
+    cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
+    cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
+    cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
 
-  // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-  const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
-  cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${wsonEnding}`;
+    // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
+    const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
+    cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${wsonEnding}`;
 
-  const server = mw.config.get('wgServer');
-  cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
+    const server = mw.config.get('wgServer');
+    cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
 
-  cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
-  cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
-  cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
-  cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
+    cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
+    cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
+    cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
 
-  // "<unregistered>" is a workaround for anonymous users (there are such!).
-  cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
+    // "<unregistered>" is a workaround for anonymous users (there are such!).
+    cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
 
-  cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
-  cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-  cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
-  cd.g.SKIN = mw.config.get('skin');
-  if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
-    cd.g.SKIN = 'vector-legacy';
+    cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
+    cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
+    cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+    cd.g.SKIN = mw.config.get('skin');
+    if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
+      cd.g.SKIN = 'vector-legacy';
+    }
+    cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
+    cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
+
+    // Quite a rough check for mobile browsers, a mix of what is advised at
+    // https://stackoverflow.com/a/24600597 (sends to
+    // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
+    // https://stackoverflow.com/a/14301832.
+    cd.g.IS_MOBILE = (
+      /Mobi|Android/i.test(navigator.userAgent) ||
+      typeof window.orientation !== 'undefined'
+    );
+
+    cd.g.$content = $('#mw-content-text');
   }
-  cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
 
-  // Quite a rough check for mobile browsers, a mix of what is advised at
-  // https://stackoverflow.com/a/24600597 (sends to
-  // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
-  // https://stackoverflow.com/a/14301832.
-  cd.g.IS_MOBILE = (
-    /Mobi|Android/i.test(navigator.userAgent) ||
-    typeof window.orientation !== 'undefined'
-  );
-
-  cd.g.$content = $('#mw-content-text');
-
-  // Process the page as a talk page
+  // Not static: go() may run the second time, see addFooterLink().
   cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
   cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
+
+  // Process the page as a talk page
   const isPageEligible = (
     !mw.config.get('wgIsRedirect') &&
     !cd.g.$content.find('.cd-notTalkPage').length &&
@@ -531,6 +536,10 @@ async function go() {
 
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
     addCommentLinksToSpecialSearch();
+  }
+
+  if (!isPageLoading()) {
+    cd.debug.stopTimer('start');
   }
 
   /**
