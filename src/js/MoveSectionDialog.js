@@ -463,7 +463,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         }
       } else {
         console.warn(e);
-        throw [editingTargetPageMessage + ' ' + cd.sParse('error-javascript'), true];
+        throw [editingTargetPageMessage + ' ' + cd.sParse('error-javascript'), false];
       }
     }
   }
@@ -513,19 +513,22 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         starttimestamp: source.page.queryTimestamp,
       });
     } catch (e) {
+      // Errors when editing the target page are recoverable, because we haven't performed any
+      // actions yet. Errors when editing the source page are not recoverable, because we have
+      // already edited the source page.
       const editingSourcePageMessage = cd.sParse('msd-error-editingsourcepage');
       if (e instanceof CdError) {
         const { type, details } = e.data;
         if (type === 'network') {
-          throw [editingSourcePageMessage + ' ' + cd.sParse('error-network'), false];
+          throw [editingSourcePageMessage + ' ' + cd.sParse('error-network'), false, true];
         } else {
           let { message, logMessage } = details;
           console.warn(logMessage);
-          throw [editingSourcePageMessage + ' ' + message, false];
+          throw [editingSourcePageMessage + ' ' + message, false, true];
         }
       } else {
         console.warn(e);
-        throw [editingSourcePageMessage + ' ' + cd.sParse('error-javascript'), false];
+        throw [editingSourcePageMessage + ' ' + cd.sParse('error-javascript'), false, true];
       }
     }
   }
@@ -535,8 +538,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    *
    * @param {string} html Error HTML code.
    * @param {boolean} recoverable Is the error recoverable.
+   * @param {boolean} [closeDialog=false] Close the dialog after pressing "Close" under the error
+   *   message.
    */
-  abort(html, recoverable) {
+  abort(html, recoverable, closeDialog = false) {
     const $body = wrap(html, {
       callbacks: {
         'cd-message-reloadPage': () => {
@@ -550,10 +555,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     this.$errors
       .find('.oo-ui-buttonElement-button')
       .on('click', () => {
-        if (recoverable) {
-          cd.g.windowManager.updateWindowSize(this);
-        } else {
+        if (closeDialog) {
           this.close();
+        } else {
+          cd.g.windowManager.updateWindowSize(this);
         }
       });
     this.actions.setAbilities({
