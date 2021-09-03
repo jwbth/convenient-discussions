@@ -1079,8 +1079,29 @@ export async function reloadPage(passedData = {}) {
 
   passedData.unseenCommentAnchors = getUnseenCommentAnchors();
 
-  // Remove the fragment
-  history.replaceState(history.state, '', location.pathname + location.search);
+  // Remove fragment and revision parameters, clear elements related to the diff.
+  const uri = new mw.Uri();
+  const query = uri.query;
+  if (uri.fragment || query.diff || query.oldid) {
+    delete query.title;
+    delete query.curid;
+    if (query.diff || query.oldid) {
+      delete query.diff;
+      delete query.diffmode;
+      delete query.oldid;
+
+      // Diff pages
+      cd.g.$content
+        .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+        .remove();
+
+      // Revision navigation
+      $('.mw-revision').remove();
+
+      $('#firstHeading').text(cd.page.name);
+    }
+    history.replaceState(history.state, '', cd.page.getUrl(query));
+  }
 
   cd.state.hasPageBeenReloaded = true;
 
