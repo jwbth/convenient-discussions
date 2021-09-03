@@ -995,6 +995,39 @@ export function isCurrentRevision() {
 }
 
 /**
+ * Remove fragment and revision parameters, clear elements related to the diff.
+ *
+ * @param {import('./commonTypedefs').PassedData} passedData
+ * @private
+ */
+function cleanUpUrlAndDom(passedData) {
+  const uri = new mw.Uri();
+  const query = uri.query;
+  if ((uri.fragment || query.diff || query.oldid) && !passedData.isPageReloadedExternally) {
+    // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
+    delete query.title;
+
+    delete query.curid;
+    if (query.diff || query.oldid) {
+      delete query.diff;
+      delete query.diffmode;
+      delete query.oldid;
+
+      // Diff pages
+      cd.g.$content
+        .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+        .remove();
+
+      // Revision navigation
+      $('.mw-revision').remove();
+
+      $('#firstHeading').text(cd.page.name);
+    }
+    history.replaceState(history.state, '', cd.page.getUrl(query));
+  }
+}
+
+/**
  * Reload the page via Ajax.
  *
  * @param {import('./commonTypedefs').PassedData} [passedData={}] Data passed from the previous page
@@ -1079,29 +1112,7 @@ export async function reloadPage(passedData = {}) {
 
   passedData.unseenCommentAnchors = getUnseenCommentAnchors();
 
-  // Remove fragment and revision parameters, clear elements related to the diff.
-  const uri = new mw.Uri();
-  const query = uri.query;
-  if ((uri.fragment || query.diff || query.oldid) && !passedData.isPageReloadedExternally) {
-    delete query.title;
-    delete query.curid;
-    if (query.diff || query.oldid) {
-      delete query.diff;
-      delete query.diffmode;
-      delete query.oldid;
-
-      // Diff pages
-      cd.g.$content
-        .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
-        .remove();
-
-      // Revision navigation
-      $('.mw-revision').remove();
-
-      $('#firstHeading').text(cd.page.name);
-    }
-    history.replaceState(history.state, '', cd.page.getUrl(query));
-  }
+  cleanUpUrlAndDom(passedData);
 
   cd.state.hasPageBeenReloaded = true;
 
