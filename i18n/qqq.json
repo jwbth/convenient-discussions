@@ -70,8 +70,6 @@
 	"section-unwatch-success": "Text of the notification that appears when removing a section from the in-script watchlist.",
 	"section-unwatch-stillwatched": "Text added to the {{msg-wm|Convenient-discussions-section-unwatch-success}} notification in some cases.",
 	"section-watch-pagenotwatched": "Text added to the {{msg-wm|Convenient-discussions-section-watch-success}} notification in some cases.",
-	"section-watch-error-load": "Text of the error notification that appears when adding or removing a section from the in-script watchlist.",
-	"section-watch-error-save": "Text of the error notification that appears when adding or removing a section from the in-script watchlist.",
 	"section-watch-error-maxsize": "Text of the error notification that appears when adding a section to the in-script watchlist.",
 	"cld-title-comment": "The title of the \"Copy link\" dialog for comments.",
 	"cld-title-section": "The title of the \"Copy link\" dialog for sections.",
@@ -369,6 +367,8 @@
 	"error-diffnotfound-history": "Text added to the {{msg-wm|Convenient-discussions-error-diffnotfound}} message when looking in the revision history can be helpful.",
 	"error-elementhidden": "Text of an error notification.",
 	"error-purgecache": "Text of the error notification that may appear when submitting a comment form on a page that transcludes a section that is altered by the user's action. This error doesn't abort the operation.",
+	"discussiontools-incompatible": "Text of the notification that appears when the user has the commenting features of [[mw:Extension:DiscussionTools|DiscussionTools]] enabled.",
+	"discussiontools-disabled": "Text of the notification that appears when [[mw:Extension:DiscussionTools|DiscussionTools]] has been disabled after a user click.",
 	"wl-button-switchinteresting-tooltip": "Text of the tooltip for the button in the script's block in the watchlist.",
 	"wl-button-editwatchedsections-tooltip": "Text of the tooltip for the button in the script's block in the watchlist.",
 	"wl-button-settings-tooltip": "Text of the tooltip for the button in the script's block in the watchlist.",
@@ -381,7 +381,5 @@
 	"loading-ellipsis": "Text displayed in various OOUI process dialogs while their content is loading.",
 	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Text of the tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
-	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}",
-	"discussiontools-incompatible": "Text of the notification that appears when the user has the commenting features of [[mw:Extension:DiscussionTools|DiscussionTools]] enabled.",
-	"discussiontools-disabled": "Text of the notification that appears when [[mw:Extension:DiscussionTools|DiscussionTools]] has been disabled after a user click."
+	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}"
 }
