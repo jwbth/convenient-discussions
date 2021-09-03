@@ -1082,7 +1082,7 @@ export async function reloadPage(passedData = {}) {
   // Remove fragment and revision parameters, clear elements related to the diff.
   const uri = new mw.Uri();
   const query = uri.query;
-  if (uri.fragment || query.diff || query.oldid) {
+  if ((uri.fragment || query.diff || query.oldid) && !passedData.isPageReloadedExternally) {
     delete query.title;
     delete query.curid;
     if (query.diff || query.oldid) {
