@@ -157,11 +157,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         validate: () => {
           const title = this.titleInput.getMWTitle();
           const page = title && new Page(title);
-          return (
-            page &&
-            page.name !== this.section.getSourcePage().name &&
-            page.isProbablyTalkPage()
-          );
+          return page && page.name !== this.section.getSourcePage().name;
         },
       });
       this.titleField = new OO.ui.FieldLayout(this.titleInput, {
@@ -248,9 +244,9 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         this.titleInput.$input.blur();
 
         let targetPage = new Page(this.titleInput.getMWTitle());
+
         // Should be ruled out by making the button disabled.
-        if (targetPage.name === this.section.getSourcePage().name ||
-          !targetPage.isProbablyTalkPage()) {
+        if (targetPage.name === this.section.getSourcePage().name) {
           this.abort(cd.sParse('msd-error-wrongpage'), false);
           return;
         }
