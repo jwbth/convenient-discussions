@@ -8,8 +8,8 @@ import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
 import Page from './Page';
+import addCommentLinks, { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import cd from './cd';
-import commentLinks from './commentLinks';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
@@ -161,43 +161,6 @@ function mws(name, ...params) {
     name = '(content)' + name;
   }
   return mw.message(name, ...params).parse();
-}
-
-/**
- * When on a Special:Search page, searching for a comment after choosing that option from the
- * "Couldn't find the comment" message, add comment links to the titles.
- *
- * @private
- */
-function addCommentLinksToSpecialSearch() {
-  const [, commentAnchor] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
-  if (commentAnchor) {
-    mw.loader.using('mediawiki.api').then(
-      async () => {
-        await Promise.all(...loadSiteData());
-        $('.mw-search-result-heading').each((i, el) => {
-          const href = (
-            $(el)
-              .find('a')
-              .first()
-              .attr('href') +
-            '#' +
-            commentAnchor
-          );
-          const $a = $('<a>')
-            .attr('href', href)
-            .text(cd.s('deadanchor-search-gotocomment'));
-          const $start = $('<span>').text(cd.mws('parentheses-start'));
-          const $end = $('<span>').text(cd.mws('parentheses-end'));
-          const $span = $('<span>')
-            .addClass("cd-searchCommentLink")
-            .append($start, $a, $end);
-          $(el).append(' ', $span.clone());
-        });
-      },
-      console.error
-    );
-  }
 }
 
 /**
@@ -532,7 +495,7 @@ async function go() {
       'user.options',
     ]).then(
       () => {
-        commentLinks(siteDataRequests);
+        addCommentLinks(siteDataRequests);
 
         // See the comment above: "Additions of CSS...".
         require('../less/global.less');
