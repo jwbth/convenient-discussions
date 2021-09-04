@@ -991,7 +991,10 @@ export function isPageLoading() {
  * @returns {boolean}
  */
 export function isCurrentRevision() {
-  return mw.config.get('wgRevisionId') === mw.config.get('wgCurRevisionId');
+  // RevisionSlider may show a revision newer the revision in `wgCurRevisionId` (when navigating
+  // forward, at least twice, from a revision older than the revision in `wgCurRevisionId` after
+  // some revisions were added). Unfortunately, it doesn't update the `wgCurRevisionId` value.
+  return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
 }
 
 /**
