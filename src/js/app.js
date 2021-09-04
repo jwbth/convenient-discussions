@@ -339,7 +339,9 @@ async function go() {
   cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
+  const isArticle = mw.config.get('wgIsArticle');
   const isPageEligible = (
+    isArticle &&
     !mw.config.get('wgIsRedirect') &&
     !cd.g.$content.find('.cd-notTalkPage').length &&
     (
@@ -354,8 +356,10 @@ async function go() {
     ) &&
     !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
   );
-  if (mw.config.get('wgIsArticle')) {
-    if (!cd.g.isDisabledInQuery && (cd.g.isEnabledInQuery || isPageEligible)) {
+  const willProcessPage = !cd.g.isDisabledInQuery && (cd.g.isEnabledInQuery || isPageEligible);
+  let siteDataRequests = [];
+  if (isArticle) {
+    if (willProcessPage) {
       startLoading();
 
       cd.debug.stopTimer('start');
@@ -366,7 +370,6 @@ async function go() {
       // the background, this request is made and the execution stops at mw.loader.using, which
       // results in overriding the renewed visits setting of one tab by another tab (the visits are
       // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      let siteDataRequests = [];
       if (mw.loader.getState('mediawiki.api') === 'ready') {
         siteDataRequests = loadSiteData();
 
@@ -408,7 +411,7 @@ async function go() {
         // If there is no data to load and, therefore, no period of time within which a reflow
         // (layout thrashing) could happen without impeding performance, we cache the value so that
         // it could be used in util.saveRelativeScrollPosition without causing a reflow.
-        if (siteDataRequests?.every((request) => request.state() === 'resolved')) {
+        if (siteDataRequests.every((request) => request.state() === 'resolved')) {
           cachedScrollY = window.scrollY;
         }
       } else {
@@ -498,13 +501,17 @@ async function go() {
     mw.config.get('wgAction') === 'history' &&
     isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
   );
-  if (isEligibleSpecialPage || isEligibleHistoryPage || cd.g.isDiffPage) {
+  if (willProcessPage || isEligibleSpecialPage || isEligibleHistoryPage) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
-    let siteDataRequests = [];
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequests = loadSiteData();
-      if (!cd.g.isDiffPage) {
+      if (!siteDataRequests.length) {
+        siteDataRequests = loadSiteData();
+      }
+
+      // Loading user info on diff pages could lead to problems with saving visits when many pages
+      // are opened, but not yet focused, simultaneously.
+      if (!willProcessPage) {
         getUserInfo(true).catch((e) => {
           console.warn(e);
         });

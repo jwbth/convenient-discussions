@@ -579,18 +579,25 @@ function processHistory($content) {
 }
 
 /**
- * Add comment link to a diff page.
+ * Add comment link to a diff view.
  *
- * @fires commentLinksCreated
+ * @param {external:jQuery} [$diff]
+ * @fires commentLinksAdded
  * @private
  */
-async function processDiff() {
+async function processDiff($diff) {
+  // Filter out cases when "wikipage.diff" was fired for the diff at the top of the page that is a
+  // diff page. We parse that diff on "convenientDiscussions.pageReady".
+  if ($diff?.parent().is(cd.g.$content)) return;
+
   if (!cd.g.UI_TIMESTAMP_REGEXP) {
     initTimestampParsingTools('user');
   }
   if (cd.g.UI_TIMEZONE === null) return;
 
-  [document.querySelector('.diff-otitle'), document.querySelector('.diff-ntitle')]
+  const $root = $diff || cd.g.$content;
+  const root = $root.get(0);
+  [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)
     .forEach((area) => {
       if (area.querySelector('.minoredit')) return;
@@ -619,15 +626,22 @@ async function processDiff() {
 
       const anchor = generateCommentAnchor(date, author);
 
-      let comment = Comment.getByAnchor(anchor, true);
-      if (comment) {
+      let comment;
+      let page;
+      if ($diff) {
+        const revUrl = new mw.Uri(dateElement.href);
+        page = new Page(revUrl.query.title);
+      } else {
+        comment = Comment.getByAnchor(anchor, true);
+      }
+      if (comment || ($diff && page.isProbablyTalkPage())) {
         let wrapper;
         if (summary && currentUserRegexp.test(` ${summary} `)) {
           wrapper = $wrapperRelevantPrototype.get(0).cloneNode(true);
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
-          if (summary && cd.g.currentPageWatchedSections.length) {
+          if (!$diff && summary && cd.g.currentPageWatchedSections.length) {
             for (let j = 0; j < cd.g.currentPageWatchedSections.length; j++) {
               if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
                 isWatched = true;
@@ -644,12 +658,17 @@ async function processDiff() {
           }
         }
 
-        const href = '#' + anchor;
-        wrapper.lastChild.lastChild.href = href;
-        wrapper.onclick = function (e) {
-          e.preventDefault();
-          comment.scrollTo(false, true);
-        };
+        const linkElement = wrapper.lastChild.lastChild;
+        if ($diff) {
+          linkElement.href = page.getUrl() + '#' + anchor;
+          linkElement.target = '_blank';
+        } else {
+          linkElement.href = '#' + anchor;
+          linkElement.onclick = function (e) {
+            e.preventDefault();
+            comment.scrollTo(false, true);
+          };
+        }
 
         const destination = area.querySelector('#mw-diff-otitle3, #mw-diff-ntitle3');
         if (!destination) return;
@@ -659,21 +678,23 @@ async function processDiff() {
     });
 
   /**
-   * Comments links have been created.
+   * Comments links have been added to the revisions listed on the page.
    *
-   * @event commentLinksCreated
+   * @event commentLinksAdded
+   * @param {external:jQuery} $root Root element of content to which the comment links were added.
    * @param {object} cd {@link convenientDiscussions} object.
    */
-  mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
+  mw.hook('convenientDiscussions.commentLinksAdded').fire($root, cd);
 }
 
 /**
- * Add comment links to the page.
+ * Add comment links to the revisions listed on the page that is a revision list page (not a diff
+ * page, for instance).
  *
  * @param {external:jQuery} $content
  * @private
  */
-async function addCommentLinks($content) {
+async function processRevisionListPage($content) {
   // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
   // wikipage.content for the second time with an element that is not in the DOM,
   // fieldset#mw-watchlist-options (in the mw.rcfilters.ui.FormWrapperWidget#onChangesModelUpdate
@@ -688,7 +709,7 @@ async function addCommentLinks($content) {
     processHistory($content);
   }
 
-  mw.hook('convenientDiscussions.commentLinksCreated').fire(cd);
+  mw.hook('convenientDiscussions.commentLinksAdded').fire($content, cd);
 }
 
 /**
@@ -697,7 +718,7 @@ async function addCommentLinks($content) {
  * @param {Promise[]} siteDataRequests Array of requests returned by
  *   {@link module:siteData.loadSiteData}.
  */
-export default async function commentLinks(siteDataRequests) {
+export default async function addCommentLinks(siteDataRequests) {
   try {
     await prepare(siteDataRequests);
   } catch (e) {
@@ -706,9 +727,14 @@ export default async function commentLinks(siteDataRequests) {
   }
 
   if (cd.g.isDiffPage) {
-    mw.hook('convenientDiscussions.pageReady').add(processDiff);
+    mw.hook('convenientDiscussions.pageReady').add(() => {
+      processDiff();
+    });
   } else {
     // Hook on wikipage.content to make the code work with the watchlist auto-update feature.
-    mw.hook('wikipage.content').add(addCommentLinks);
+    mw.hook('wikipage.content').add(processRevisionListPage);
   }
+
+  // Diffs generated by scripts, like Serhio Magpie's Instant Diffs.
+  mw.hook('wikipage.diff').add(processDiff);
 }
