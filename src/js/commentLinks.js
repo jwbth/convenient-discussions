@@ -705,7 +705,7 @@ export default async function commentLinks(siteDataRequests) {
     return;
   }
 
-  if (cd.g.IS_DIFF_PAGE) {
+  if (cd.g.isDiffPage) {
     mw.hook('convenientDiscussions.pageReady').add(processDiff);
   } else {
     // Hook on wikipage.content to make the code work with the watchlist auto-update feature.

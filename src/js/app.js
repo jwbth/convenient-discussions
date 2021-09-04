@@ -315,7 +315,6 @@ async function go() {
     if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
       cd.g.SKIN = 'vector-legacy';
     }
-    cd.g.IS_DIFF_PAGE = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
     cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
 
     // Quite a rough check for mobile browsers, a mix of what is advised at
@@ -330,7 +329,12 @@ async function go() {
     cd.g.$content = $('#mw-content-text');
   }
 
-  // Not static: go() may run the second time, see addFooterLink().
+  // Not a constant: the diff may be removed from the page (and the URL updated, see
+  // boot~cleanUpUrlAndDom) when it's for the last revision and the page is reloaded using the
+  // script.
+  cd.g.isDiffPage = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
+
+  // Not a constant: go() may run the second time, see addFooterLink().
   cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
   cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
@@ -494,13 +498,13 @@ async function go() {
     mw.config.get('wgAction') === 'history' &&
     isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
   );
-  if (isEligibleSpecialPage || isEligibleHistoryPage || cd.g.IS_DIFF_PAGE) {
+  if (isEligibleSpecialPage || isEligibleHistoryPage || cd.g.isDiffPage) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     let siteDataRequests = [];
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       siteDataRequests = loadSiteData();
-      if (!cd.g.IS_DIFF_PAGE) {
+      if (!cd.g.isDiffPage) {
         getUserInfo(true).catch((e) => {
           console.warn(e);
         });

@@ -1011,10 +1011,14 @@ function cleanUpUrlAndDom(passedData) {
     delete query.title;
 
     delete query.curid;
+    let methodName;
     if (query.diff || query.oldid) {
+      methodName = 'pushState';
+
       delete query.diff;
       delete query.diffmode;
       delete query.oldid;
+      delete query.type;
 
       // Diff pages
       cd.g.$content
@@ -1025,8 +1029,19 @@ function cleanUpUrlAndDom(passedData) {
       $('.mw-revision').remove();
 
       $('#firstHeading').text(cd.page.name);
+
+      // Make the "Back" browser button work.
+      $(window).on('popstate', () => {
+        if (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) {
+          location.reload();
+        }
+      });
+
+      cd.g.isDiffPage = false;
+    } else {
+      methodName = 'replaceState';
     }
-    history.replaceState(history.state, '', cd.page.getUrl(query));
+    history[methodName](history.state, '', cd.page.getUrl(query));
   }
 }
 
