@@ -61,7 +61,7 @@ function getPageNameFromUrl(url) {
  * @private
  */
 function isCellOfMultiCommentTable(element) {
-  if (element.tagName !== 'TD') {
+  if (!['TD', 'TH'].includes(element.tagName)) {
     return false;
   }
   let table;
