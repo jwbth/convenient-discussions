@@ -78,7 +78,12 @@ mw.loader.using([
     Q6537954: 'closed',
     Q12109489: 'closedEnd',
     Q11317035: 'discussionTop',
-    Q14398501: 'discussionBottom',
+    Q6663585: 'discussionBottom',
+    Q10809044: 'archiveTop',
+    Q11000627: 'hiddenArchiveTop',
+    Q13033802: 'hiddenArchiveBottom',
+    Q6854033: 'afdTop',
+    Q6671179: 'afdBottom',
     Q5841554: 'outdent',
     Q5411705: 'clear',
   };
@@ -176,12 +181,23 @@ mw.loader.using([
       .map(getTitleText)
   );
 
+  const closedTitles = [].concat(
+    titles.closed || [],
+    titles.discussionTop || [],
+    titles.archiveTop || [],
+    titles.hiddenArchiveTop || [],
+    titles.afdTop || []
+  );
+  const closedEndTitles = [].concat(
+    titles.closedEnd || [],
+    titles.discussionBottom || [],
+    titles.hiddenArchiveBottom || [],
+    titles.afdBottom || []
+  );
+
   config.closedDiscussionTemplates = (
-    (titles.closed || titles.closedEnd || titles.discussionTop || titles.discussionBottom) &&
-    [
-      (titles.closed || []).concat(titles.discussionTop || []).map(getTitleText),
-      (titles.closedEnd || []).concat(titles.discussionBottom || []).map(getTitleText),
-    ]
+    (closedTitles.length || closedEndTitles.length || undefined) &&
+    [closedTitles.map(getTitleText), closedEndTitles.map(getTitleText),]
   );
 
   const signatureMessage = (await api.getMessages('Signature', {
