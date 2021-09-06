@@ -458,13 +458,18 @@ class Page {
       title: this.realName || this.name,
 
       notminor: !customOptions.minor,
-      tags: cd.user.isRegistered() ? cd.config.tagName : undefined,
+
+      // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
+      tags: cd.user.isRegistered() ? (cd.config.tagName || undefined) : undefined,
     };
     const options = cd.g.mwApi.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
 
     let resp;
     try {
-      resp = await cd.g.mwApi.postWithEditToken(options).catch(handleApiReject);
+      resp = await cd.g.mwApi.postWithEditToken(options, {
+        // Beneficial when sending long unicode texts, which is what we do here.
+        contentType: 'multipart/form-data',
+      }).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, apiData } = e.data;

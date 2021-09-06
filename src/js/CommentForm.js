@@ -2964,7 +2964,10 @@ class CommentForm {
       } else {
         options.fromrev = this.targetPage.revisionId;
       }
-      resp = await cd.g.mwApi.post(options).catch(handleApiReject);
+      resp = await cd.g.mwApi.post(options, {
+        // Beneficial when sending long unicode texts, which is what we do here.
+        contentType: 'multipart/form-data',
+      }).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
