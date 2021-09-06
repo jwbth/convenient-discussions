@@ -6,11 +6,18 @@
 			"McDutchie"
 		]
 	},
+	"script-name": "Handige discussies",
+	"script-name-short": "CD",
+	"cm-gotoparent-tooltip": "Naar de bovenliggende reactie gaan",
+	"cm-gotochild-tooltip": "Teruggaan naar de onderliggende reactie",
+	"cm-copylink-tooltip": "Een koppeling kopiëren",
 	"cm-thank": "Bedanken",
+	"cm-thank-tooltip": "Bedanken voor de bewerking waarmee deze reactie is toegevoegd",
 	"cm-thanked": "Bedankt",
 	"cm-thanked-tooltip": "U hebt al een bedankje verstuurd voor deze reactie",
 	"cm-edit": "Bewerken",
 	"cm-reply": "Reageren",
+	"thread-tooltip": "De draad samen- of uitvouwen",
 	"sm-move": "verplaatsen",
 	"sm-watch": "volgen",
 	"sm-unwatch": "niet volgen",

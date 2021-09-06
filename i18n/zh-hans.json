@@ -163,7 +163,7 @@
 	"notification-toyou-desktop": "$1在页面“$4”{{plural:$3 1||的}}$3回复了您的留言。",
 	"notification-newcomments": "在$2有$1条新留言$3。",
 	"notification-newcomments-desktop": "在页面“$3”的$2有$1条新评论$4。",
-	"notification-newcomments-maybeinteresting": "，对你来说可能很有趣",
+	"notification-newcomments-maybeinteresting": "，可能与您相关",
 	"notification-reload": "点击刷新页面$1",
 	"notification-part-insection": "段落“$1”中",
 	"notification-part-onthispage": "这个页面上",
