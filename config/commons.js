@@ -100,6 +100,12 @@ export default {
       'Closedh',
       'Discussion top',
       'Discussion-top',
+      'Discussion top',
+      'Archive top',
+      'Atop',
+      'DeletionHeader',
+      'Delh',
+      'Rfdh',
     ],
     [
       'End closed',
@@ -107,6 +113,9 @@ export default {
       'Ecs',
       'Discussion bottom',
       'Discussion-bottom',
+      'Archive bottom',
+      'Abot',
+      'DeletionFooter',
     ],
   ],
   closedDiscussionClasses: [
