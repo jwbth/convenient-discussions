@@ -729,7 +729,6 @@ class Section extends SectionSkeleton {
       rvprop: ['ids', 'content'],
       redirects: !mw.config.get('wgIsRedirect'),
       curtimestamp: true,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     const query = resp.query;

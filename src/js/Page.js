@@ -216,7 +216,6 @@ class Page {
       rvprop: ['ids', 'content'],
       redirects: !(this === cd.page && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     const query = resp.query;
@@ -352,7 +351,6 @@ class Page {
 
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
-      formatversion: 2,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
@@ -394,7 +392,6 @@ class Page {
       rvslots: 'main',
       prop: 'revisions',
       redirects: !(this === cd.page && mw.config.get('wgIsRedirect')),
-      formatversion: 2,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
@@ -462,7 +459,6 @@ class Page {
 
       notminor: !customOptions.minor,
       tags: cd.user.isRegistered() ? cd.config.tagName : undefined,
-      formatversion: 2,
     };
     const options = cd.g.mwApi.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
 
@@ -643,7 +639,6 @@ class Page {
       action: 'setnotificationtimestamp',
       titles: this.name,
       newerthanrevid: revisionId,
-      formatversion: 2,
     });
   }
 }

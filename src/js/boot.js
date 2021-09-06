@@ -267,6 +267,10 @@ export function setTalkPageCssVariables() {
  */
 export function createApi() {
   cd.g.mwApi = cd.g.mwApi || new mw.Api({
+    parameters: {
+      formatversion: 2,
+      uselang: cd.g.USER_LANGUAGE,
+    },
     ajax: {
       // 60 seconds instead of default 30
       timeout: 60 * 1000,

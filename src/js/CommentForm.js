@@ -2957,7 +2957,6 @@ class CommentForm {
         'totext-main': code,
         topst: true,
         prop: 'diff',
-        formatversion: 2,
       };
       if (this.submitSection || !mw.config.get('wgArticleId')) {
         options.fromslots = 'main';

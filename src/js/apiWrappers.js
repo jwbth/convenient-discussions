@@ -69,7 +69,6 @@ export function parseCode(code, customOptions) {
     pst: true,
     disabletoc: true,
     disablelimitreport: true,
-    formatversion: 2,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
   return cd.g.mwApi.post(options).then(
@@ -117,7 +116,6 @@ export function getUserInfo(reuse = false) {
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
-    formatversion: 2,
   }).then(
     (resp) => {
       const userinfo = resp.query?.userinfo;
@@ -191,7 +189,6 @@ export async function getPageTitles(pageIds) {
     const resp = await cd.g.mwApi.post({
       action: 'query',
       pageids: nextPageIds,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     if (resp.error) {
@@ -235,7 +232,6 @@ export async function getPageIds(pageTitles) {
       action: 'query',
       titles: nextPageTitles,
       redirects: true,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     if (resp.error) {
@@ -360,7 +356,6 @@ export async function getUserGenders(users, requestInBackground = false) {
       list: 'users',
       ususers: nextUsers,
       usprop: 'gender',
-      formatversion: 2,
     };
     const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
     const resp = await request.catch(handleApiReject);
@@ -407,7 +402,6 @@ export function getRelevantUserNames(text) {
           namespace: 3,
           redirects: 'resolve',
           limit: 10,
-          formatversion: 2,
         }).catch(handleApiReject);
 
         const users = resp[1]
@@ -429,7 +423,6 @@ export function getRelevantUserNames(text) {
             action: 'query',
             list: 'allusers',
             auprefix: text,
-            formatversion: 2,
           }).catch(handleApiReject);
 
           const users = resp?.query?.allusers?.map((user) => user.name);
@@ -482,7 +475,6 @@ export function getRelevantPageNames(text) {
           search: text,
           redirects: 'return',
           limit: 10,
-          formatversion: 2,
         }).then(
           (resp) => {
             const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
@@ -539,7 +531,6 @@ export function getRelevantTemplateNames(text) {
           search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
           redirects: 'return',
           limit: 10,
-          formatversion: 2,
         }).then(
           (resp) => {
             const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
@@ -587,7 +578,6 @@ export async function getPagesExistence(titles) {
     const resp = await cd.g.mwApi.post({
       action: 'query',
       titles: nextPages,
-      formatversion: 2,
     }).catch(handleApiReject);
 
     if (resp.error) {

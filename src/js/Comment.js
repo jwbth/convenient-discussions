@@ -1711,7 +1711,6 @@ class Comment extends CommentSkeleton {
       rvslots: 'main',
       rvprop: ['ids', 'content'],
       redirects: !mw.config.get('wgIsRedirect'),
-      formatversion: 2,
     }).catch(handleApiReject);
 
     const compareRequest = cd.g.mwApi.post({
@@ -1720,7 +1719,6 @@ class Comment extends CommentSkeleton {
       fromrev: revisionIdLesser,
       torev: revisionIdGreater,
       prop: ['diff'],
-      formatversion: 2,
     }).catch(handleApiReject);
 
     let [revisionsResp, compareResp] = await Promise.all([
@@ -2210,7 +2208,6 @@ class Comment extends CommentSkeleton {
       fromrev: revision.revid,
       torelative: 'prev',
       prop: ['diff'],
-      formatversion: 2,
     }).catch(handleApiReject));
 
     const compareResps = await Promise.all(compareRequests);
