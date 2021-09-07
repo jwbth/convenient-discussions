@@ -303,7 +303,10 @@ class Comment extends CommentSkeleton {
       // "noprint" class check is a workaround to avoid removing of templates such as {{citation
       // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
       if (
-        n.tagName &&
+        // <b> tags may be the output of templates like
+        // https://meta.wikimedia.org/wiki/Template:Done.
+        (n.tagName && !['B', 'STRONG'].includes(n.tagName)) &&
+
         (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
         n.textContent.length < 30 &&
         !n.classList.contains('noprint')
