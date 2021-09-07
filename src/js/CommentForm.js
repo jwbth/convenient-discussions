@@ -3294,7 +3294,14 @@ class CommentForm {
           this.isSectionOpeningCommentEdited &&
           this.headlineInput.getValue() !== this.originalHeadline
         );
-        if (this.mode === 'addSection' || this.mode === 'addSubsection' || isHeadlineAltered) {
+
+        if (
+          // TODO: When there is no headline input, extract the headline from `== ==` markup.
+          (this.mode === 'addSection' && this.headlineinput) ||
+
+          this.mode === 'addSubsection' ||
+          isHeadlineAltered
+        ) {
           const headline = removeWikiMarkup(this.headlineInput.getValue());
           passedData.justWatchedSection = headline;
           let originalHeadline;
