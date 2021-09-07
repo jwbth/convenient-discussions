@@ -74,28 +74,6 @@ function isCellOfMultiCommentTable(element) {
 }
 
 /**
- * Check whether the element is a node that contains introductory text (or other foreign entity,
- * like a gallery) despite being a list element.
- *
- * @param {Element} element
- * @returns {boolean}
- * @private
- */
-function isIntroList(element) {
-  const tagName = element.tagName;
-  const pesTagName = element.previousElementSibling?.tagName;
-  return (
-    (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
-
-    // Cases like the first comment here:
-    // https://ru.wikipedia.org/wiki/Википедия:Выборы_арбитров/Лето_2021/Форум#Abiyoyo
-    (['DL', 'UL'].includes(tagName) && pesTagName && /^H[1-6]$/.test(pesTagName)) ||
-
-    (tagName === 'UL' && element.classList.contains('gallery'))
-  );
-}
-
-/**
  * Generalization of a web page (not wikitext) parser for the window and worker contexts. Parsing
  * here means "extracting meaningful parts from the page". Functions related to wikitext parsing go
  * in {@link module:wikitext}.
@@ -260,7 +238,15 @@ class Parser {
           const node = treeWalker.currentNode;
           length += node.textContent.length;
           if (node.tagName) {
-            if (node.classList.contains('cd-timestamp')) break;
+            if (
+              node.classList.contains('cd-timestamp') ||
+
+              // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should
+              // be extremely rare).
+              (['S', 'STRIKE', 'DEL'].includes(node.tagName) && length >= 30)
+            ) {
+              break;
+            }
             let hasAuthorLinks = false;
 
             const processLinkData = ({ userName, linkType }, link) => {
@@ -344,15 +330,21 @@ class Parser {
           newNode = treeWalker.previousSibling();
           if (!newNode && !firstSignatureElement) {
             newNode = treeWalker.parentNode();
-            if (!newNode || !isInline(treeWalker.currentNode)) break;
+            if (!newNode || !isInline(newNode)) break;
             length = 0;
             signatureNodes = [];
           }
 
           // Users may cross out text ended with their signature and sign again
           // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
-          // a part of signature then.
-          if (authorName && newNode?.tagName && ['S', 'STRIKE'].includes(newNode.tagName)) break;
+          // a part of the signature then.
+          if (
+            authorName &&
+            newNode?.tagName &&
+            ['S', 'STRIKE', 'DEL'].includes(newNode.tagName)
+          ) {
+            break;
+          }
         } while (newNode && length < cd.config.signatureScanLimit);
 
         if (!authorName) return;
@@ -594,6 +586,42 @@ class Parser {
   }
 
   /**
+   * Check whether the element is a node that contains introductory text (or other foreign entity,
+   * like a gallery) despite being a list element.
+   *
+   * @param {Element} element
+   * @param {boolean} [checkNextElement=false]
+   * @returns {boolean}
+   * @private
+   */
+  isIntroList(element, checkNextElement = false) {
+    const tagName = element.tagName;
+    if (!['DL', 'UL', 'OL'].includes(tagName)) {
+      return false;
+    }
+    const peTagName = element.previousElementSibling?.tagName;
+    let result = (
+      (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
+
+      // Cases like the first comment here:
+      // https://ru.wikipedia.org/wiki/Википедия:Выборы_арбитров/Лето_2021/Форум#Abiyoyo
+      (['DL', 'UL'].includes(tagName) && peTagName && /^H[1-6]$/.test(peTagName)) ||
+
+      (tagName === 'UL' && element.classList.contains('gallery'))
+    );
+
+    if (checkNextElement && !result) {
+      // Cases like this: https://en.wikipedia.org/?diff=1042059387
+      const nextElement = element.nextElementSibling;
+      if (nextElement) {
+        result = this.getClosestElementsWithText(nextElement).levelsPassed > 1;
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * Traverse the DOM, collecting comment parts.
    *
    * @param {object[]} parts
@@ -683,12 +711,12 @@ class Parser {
 
         // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
         !(
-          (['DL', 'OL', 'UL'].includes(node.tagName) && !isIntroList(node)) ||
+          (['DL', 'OL', 'UL'].includes(node.tagName) && !this.isIntroList(node)) ||
           (
             isTextNode &&
             node.previousSibling &&
             ['DL', 'OL', 'UL'].includes(node.previousSibling.tagName) &&
-            !isIntroList(node)
+            !this.isIntroList(node.previousSibling)
           )
         ) &&
 
@@ -906,7 +934,10 @@ class Parser {
     */
     if (parts.length > 1) {
       const startNode = parts[parts.length - 1].node;
-      if (!['DL', 'OL', 'UL', 'DD', 'LI'].includes(startNode.tagName) || isIntroList(startNode)) {
+      if (
+        !['DL', 'OL', 'UL', 'DD', 'LI'].includes(startNode.tagName) ||
+        this.isIntroList(startNode, true)
+      ) {
         for (let i = parts.length - 1; i >= 1; i--) {
           const part = parts[i];
           const node = part.node;
@@ -918,7 +949,7 @@ class Parser {
             ['DL', 'OL', 'UL'].includes(nextElement.tagName) &&
 
             // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
-            (!['DL', 'OL', 'UL'].includes(node.tagName) || isIntroList(node)) &&
+            (!['DL', 'OL', 'UL'].includes(node.tagName) || this.isIntroList(node, true)) &&
 
             nextElement[this.context.childElementsProp][0]?.contains(signatureElement)
           );
@@ -931,6 +962,66 @@ class Parser {
     }
 
     return parts;
+  }
+
+  /**
+   * With code like this:
+   *
+   *   * Smth. [signature]
+   *   :: Smth. [signature]
+   *
+   * one comment (preceded by :: in this case) creates its own list tree, not a subtree, even though
+   * it's a reply to a reply. So we dive as deep to the bottom of the hierarchy of nested lists as
+   * we can to get the top nodes with comment content (and therefore draw comment layers more
+   * accurately). One of the most complex tree structures is this:
+   *
+   *    * Smth. [signature]
+   *    :* Smth.
+   *    :: Smth. [signature]
+   *
+   *   (seen here:
+   *   https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
+   *   It has a branchy structure that requires a tricky algorithm to be parsed correctly.
+   *
+   * @param {Element|external:Element} element
+   * @returns {object}
+   * @private
+   */
+  getClosestElementsWithText(element) {
+    // We ignore all spaces as an easy way to ignore only whitespace text nodes between element
+    // nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
+    const partTextNoSpaces = element.textContent.replace(/\s+/g, '');
+
+    let current;
+    let children = [element];
+    let levelsPassed = 0;
+    do {
+      current = children;
+      children = current.reduce(
+        (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
+        []
+      );
+      if (['DL', 'UL', 'OL'].includes(current[0].tagName)) {
+        levelsPassed++;
+      }
+    } while (
+      children.length &&
+      children.every((child) => (
+        ['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) ||
+
+        // An inline (e.g., <small>) tag wrapped around block tags can give that.
+        (!child.textContent.trim() && isInline(child))
+      )) &&
+      (
+        children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
+        partTextNoSpaces
+      )
+    );
+
+    return {
+      nodes: current,
+      levelsPassed,
+    };
   }
 
   /**
@@ -978,53 +1069,9 @@ class Parser {
           )
         )
       ) {
-        // We ignore all spaces as an easy way to ignore only whitespace text nodes between element
-        // nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
-        const partTextNoSpaces = part.node.textContent.replace(/\s+/g, '');
-
-        /*
-          With code like this:
-
-            * Smth. [signature]
-            :: Smth. [signature]
-
-          one comment (preceded by :: in this case) creates its own list tree, not a subtree,
-          even though it's a reply to a reply. So we dive to the bottom of the hierarchy of nested
-          lists to get the bottom node (and therefore draw comment layers more neatly). One of the
-          most complex tree structures is this:
-
-            * Smth. [signature]
-            :* Smth.
-            :: Smth. [signature]
-
-          (seen here:
-          https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
-          It has a branchy structure that requires a tricky algorithm to be parsed correctly.
-         */
-        let current;
-        let children = [part.node];
-        do {
-          current = children;
-          children = current.reduce(
-            (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
-            []
-          );
-        } while (
-          children.length &&
-          children.every((child) => (
-            ['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) ||
-
-            // An inline (e.g., <small>) tag wrapped around block tags can give that.
-            (!child.textContent.trim() && isInline(child))
-          )) &&
-          (
-            children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
-            partTextNoSpaces
-          )
-        );
-
-        if (current.length > 1) {
-          const newParts = current.map((el) => ({
+        const commentElements = this.getClosestElementsWithText(part.node).nodes;
+        if (commentElements.length > 1) {
+          const newParts = commentElements.map((el) => ({
             node: el,
             isTextNode: false,
             hasCurrentSignature: el.contains(signatureElement),
@@ -1032,9 +1079,9 @@ class Parser {
             lastStep: 'replaced',
           }));
           parts.splice(i, 1, ...newParts);
-        } else if (current[0] !== part.node) {
+        } else if (commentElements[0] !== part.node) {
           Object.assign(part, {
-            node: current[0],
+            node: commentElements[0],
             lastStep: 'replaced',
           });
         }
