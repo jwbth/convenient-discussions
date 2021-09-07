@@ -76,7 +76,10 @@ export default {
 
     let firstSectionOuterTop;
     if (cd.g.$toc.length) {
-      afterLeadPos = cd.g.$toc.get(0).getBoundingClientRect().top;
+      const rect = cd.g.$toc.get(0).getBoundingClientRect();
+      if (getVisibilityByRects(rect)) {
+        afterLeadPos = rect.top;
+      }
     }
     const scrollY = window.scrollY;
     if (scrollY > cd.g.BODY_SCROLL_PADDING_TOP) {
