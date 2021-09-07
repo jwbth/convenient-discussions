@@ -32,7 +32,7 @@ class Page {
    * @param {boolean} [normalize=true] Whether to normalize the page name for the
    *   {@link Page#name name} property (usually used to keep the gendered namespace name). Makes
    *   sense to specify only if `nameOrMwTitle` is a string.
-   * @throws {CdError}
+   * @throws {CdError} If the string in the first parameter is not a valid title.
    */
   constructor(nameOrMwTitle, normalize = true) {
     const title = nameOrMwTitle instanceof mw.Title ?

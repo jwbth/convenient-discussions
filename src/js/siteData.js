@@ -24,11 +24,10 @@ import { dateTokenToMessageNames } from './timestamp';
  * @private
  */
 function setFormats() {
-  const languageOrFallback = (lang) => (
-    DATE_FORMATS[lang] ?
-    lang :
+  const getFallbackLanguage = (lang) => (
     (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => DATE_FORMATS[fallback])
   );
+  const languageOrFallback = (lang) => DATE_FORMATS[lang] ? lang : getFallbackLanguage(lang);
 
   const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
   const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
@@ -97,10 +96,10 @@ function getUsedDateTokens(format) {
 }
 
 /**
- * _For internal use._ Load messages needed to parse and generate timestamps, as well as some site
+ * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
  * data.
  *
- * @returns {Promise[]}
+ * @returns {Promise[]} There should be at least one promise in the array.
  */
 export function loadSiteData() {
   setFormats();
@@ -118,16 +117,6 @@ export function loadSiteData() {
     'colon-separator', 'nextdiff', 'timezone-utc'
   ].concat(...uiDateTokensMessageNames);
 
-  // We need this object to pass it to the web worker.
-  cd.g.contentLanguageMessages = {};
-
-  const setContentLanguageMessages = (messages) => {
-    Object.keys(messages).forEach((name) => {
-      mw.messages.set('(content)' + name, messages[name]);
-      cd.g.contentLanguageMessages[name] = messages[name];
-    });
-  };
-
   const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
   if (areLanguagesEqual) {
     const userLanguageConfigMessages = {};
@@ -138,6 +127,16 @@ export function loadSiteData() {
       });
     mw.messages.set(userLanguageConfigMessages);
   }
+
+  // We need this object to pass it to the web worker.
+  cd.g.contentLanguageMessages = {};
+
+  const setContentLanguageMessages = (messages) => {
+    Object.keys(messages).forEach((name) => {
+      mw.messages.set('(content)' + name, messages[name]);
+      cd.g.contentLanguageMessages[name] = messages[name];
+    });
+  };
 
   const filterAndSetContentLanguageMessages = (obj) => {
     const messages = {};
@@ -159,13 +158,10 @@ export function loadSiteData() {
     const messagesToRequest = contentLanguageMessageNames.concat(userLanguageMessageNames);
     let nextNames;
     while ((nextNames = messagesToRequest.splice(0, 50)).length) {
-      const request = cd.g.mwApi.loadMessagesIfMissing(nextNames);
+      const request = cd.g.mwApi.loadMessagesIfMissing(nextNames).then(() => {
+        filterAndSetContentLanguageMessages(mw.messages.get());
+      });
       requests.push(request);
-      if (requests.length === 1) {
-        request.then(() => {
-          filterAndSetContentLanguageMessages(mw.messages.get());
-        });
-      }
     }
   } else {
     let nextNames;

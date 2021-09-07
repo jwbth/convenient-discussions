@@ -1,5 +1,7 @@
 /**
- * Custom error class.
+ * Script's custom error class.
+ *
+ * @augments Error
  */
 class CdError extends Error {
   /**

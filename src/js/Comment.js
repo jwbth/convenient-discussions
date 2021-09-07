@@ -1251,7 +1251,7 @@ class Comment extends CommentSkeleton {
     }
 
     /**
-     * Comment layers have been created.
+     * Comment layers have been created for a comment.
      *
      * @event commentLayersCreated
      * @param {Comment} comment

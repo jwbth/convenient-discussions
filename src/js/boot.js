@@ -885,7 +885,6 @@ async function updatePageContent(passedData) {
   // to go without a safeguard.
   try {
     await processPage(passedData);
-
     mw.hook('wikipage.content').fire(cd.g.$content);
   } catch (e) {
     mw.notify(cd.s('error-processpage'), { type: 'error' });
@@ -1124,7 +1123,7 @@ export async function reloadPage(passedData = {}) {
 
   LiveTimestamp.reset();
 
-  // Detach comment forms to keep events.
+  // Detach the comment forms to keep events.
   cd.commentForms.forEach((commentForm) => {
     commentForm.$outermostElement.detach();
   });

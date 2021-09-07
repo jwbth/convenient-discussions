@@ -349,7 +349,7 @@ export default {
 
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
   if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-    const $text = convenientDiscussions.util.wrap('User script <a href="//en.wikipedia.org/wiki/User:Gary/comments_in_local_time.js">comments_in_local_time.js</a> is executed earlier than Convenient Discussions, which prevents the latter from working correctly. Follow the instructions <a href="' + mw.util.getUrl(convenientDiscussions.config.scriptPageWikilink) + '#Compatibility">here</a> to make them compatible.');
+    const $text = convenientDiscussions.api.wrap('User script <a href="//en.wikipedia.org/wiki/User:Gary/comments_in_local_time.js">comments_in_local_time.js</a> is executed earlier than Convenient Discussions, which prevents the latter from working correctly. Follow the instructions <a href="' + mw.util.getUrl(convenientDiscussions.config.scriptPageWikilink) + '#Compatibility">here</a> to make them compatible.');
     mw.notify($text, { autoHide: false });
   }
 });

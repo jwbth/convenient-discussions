@@ -139,9 +139,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       } catch (e) {
         if (e instanceof CdError) {
           const { data } = e.data;
-          const message = data === 'locateSection' ?
-            cd.sParse('error-locatesection') :
-            cd.sParse('error-unknown');
+          const messageName = data === 'locateSection' ? 'error-locatesection' : 'error-unknown';
+          const message = cd.sParse(messageName);
           this.abort(message, false);
         } else {
           this.abort(cd.sParse('error-javascript'), false);
@@ -330,9 +329,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     } catch (e) {
       if (e instanceof CdError) {
         const { code } = e.data;
-        const message = code === 'locateSection' ?
-          cd.sParse('error-locatesection') :
-          cd.sParse('error-unknown');
+        const messageName = code === 'locateSection' ? 'error-locatesection' : 'error-unknown';
+        const message = cd.sParse(messageName);
         throw [message, true];
       } else {
         throw [cd.sParse('error-javascript'), false];

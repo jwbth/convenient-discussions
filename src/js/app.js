@@ -533,13 +533,12 @@ async function go() {
  * @private
  */
 function setLanguages() {
-  const languageOrFallback = (lang) => (
-    I18N_LIST.includes(lang) ?
-    lang :
-    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
+  const getFallbackLanguage = (lang) => (
+    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) ||
+    'en'
   );
+  const languageOrFallback = (lang) => I18N_LIST.includes(lang) ? lang : getFallbackLanguage(lang);
 
-  // This is the only place where mw.config.get('wgUserLanguage') is used.
   cd.g.USER_LANGUAGE = languageOrFallback(mw.config.get('wgUserLanguage'));
 
   // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages

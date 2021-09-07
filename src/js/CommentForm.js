@@ -333,7 +333,7 @@ class CommentForm {
     }
 
     /**
-     * A comment form has been created.
+     * A comment form has been created and added to the page.
      *
      * @event commentFormCreated
      * @param {CommentForm} commentForm

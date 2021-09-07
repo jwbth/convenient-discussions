@@ -26,59 +26,59 @@
     <link type="text/css" rel="stylesheet" href="styles/prettify.css">
     <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
     <style type="text/css">
-    html nav {
-        width: 275px;
-        padding: 20px 0;
-    }
-
-    nav #nav-search {
-        width: 235px;
-        margin-top: 0;
-    }
-
-    #main {
-        width: calc(100% - 275px);
-    }
-
-    @media only screen and (max-width: 680px) {
-        nav {
-            left: -275px;
+        html nav {
+            width: 275px;
+            padding: 20px 0;
         }
 
-        .navicon-button {
-            top: 0;
-            left: 275px;
-            right: unset;
+        nav #nav-search {
+            width: 235px;
+            margin-top: 0;
         }
 
         #main {
-            width: 100%;
+            width: calc(100% - 275px);
+        }
+
+        @media only screen and (max-width: 680px) {
+            nav {
+                left: -275px;
+            }
+
+            .navicon-button {
+                top: 0;
+                left: 275px;
+                right: unset;
+            }
+
+            #main {
+                width: 100%;
+            }
+
+            footer {
+                margin-left: 0;
+            }
         }
 
         footer {
-            margin-left: 0;
+            margin-left: 275px;
         }
-    }
 
-    footer {
-        margin-left: 275px;
-    }
+        nav > ul:first-of-type a[href^="external-"] {
+            display: none;
+        }
 
-    nav > ul:first-of-type a[href^="external-"] {
-        display: none;
-    }
+        td.description > p {
+            line-height: normal;
+        }
 
-    td.description > p {
-        line-height: normal;
-    }
+        .prettyprint {
+            overflow: visible;
+        }
 
-    .prettyprint {
-        overflow: visible;
-    }
-
-    .prettyprint .linenums li:last-of-type code {
-        padding-bottom: 15px;
-    }
+        .prettyprint .linenums li:last-of-type code {
+            padding-bottom: 15px;
+        }
     </style>
     <script src="scripts/nav.js" defer></script>
     <script>

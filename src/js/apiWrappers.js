@@ -55,9 +55,10 @@ export function makeBackgroundRequest(params, method = 'post') {
  * Make a parse request with arbitrary code. We assume that if something is parsed, it will be
  * shown, so we automatically load modules.
  *
+ * @async
  * @param {string} code
  * @param {object} [customOptions]
- * @returns {external:jQueryPromise}
+ * @returns {external:jQueryPromise.<object>}
  * @throws {CdError}
  */
 export function parseCode(code, customOptions) {
@@ -166,8 +167,7 @@ export async function generateUnknownApiErrorText(errorCode, errorInfo) {
     text = cd.sParse('error-api', errorCode) + ' ';
     if (errorInfo) {
       try {
-        const { html } = await parseCode(errorInfo);
-        text += html;
+        text += (await parseCode(errorInfo)).html;
       } catch {
         text += errorInfo;
       }

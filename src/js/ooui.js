@@ -216,13 +216,10 @@ export async function confirmCloseDialog(dialog, dialogCode) {
  * @param {boolean} recoverable
  */
 export function handleDialogError(dialog, e, messageName, recoverable) {
-  if (e instanceof CdError) {
-    const error = new OO.ui.Error(cd.s(messageName), { recoverable });
-    dialog.showErrors(error);
-  } else {
-    const error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
-    dialog.showErrors(error);
-  }
+  const error = e instanceof CdError ?
+    new OO.ui.Error(cd.s(messageName), { recoverable }) :
+    new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
+  dialog.showErrors(error);
   console.warn(e);
   if (!recoverable) {
     dialog.$errors
