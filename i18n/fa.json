@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Ajam",
+			"Darafsh",
 			"Jeeputer",
 			"Reza koulivand"
 		]
@@ -18,7 +19,7 @@
 	"cm-edit": "ویرایش",
 	"cm-reply": "پاسخ",
 	"thread-tooltip": "نمایش/نهفتن ریسه",
-	"thread-expand-label": "گسترش مبحث ($1 {{PLURAL:$1|نظر|نظر توسط {{PLURAL:$2|{{GENDER:$4|}}|{{GENDER:$4|}}}} $3}})",
+	"thread-expand-label": "گسترش مبحث ($1 {{PLURAL:$1|نظر|نظرات توسط {{PLURAL:$2|{{GENDER:$4|}}|{{GENDER:$4|}}}} $3}})",
 	"thread-expand-tooltip": "برای گسترش تمام مبحث‌ها در صفحه، کلید Ctrl را نگه‌دارید",
 	"thread-newcomments": "{{plural:$1|یک پیام جدید|$1 پیام جدید}} در این ریسه از {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. برای تازه‌سازی صفحه کلیک کنید.",
 	"sm-editopeningcomment": "ویرایش نخصتین نظر",
