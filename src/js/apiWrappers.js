@@ -399,7 +399,7 @@ export function getRelevantUserNames(text) {
 
         // First, try to use the search to get only users that have talk pages. Most legitimate
         // users do, while spammers don't.
-        const resp = cd.g.mwApi.get({
+        const resp = await cd.g.mwApi.get({
           action: 'opensearch',
           search: text,
           namespace: 3,
@@ -422,7 +422,7 @@ export function getRelevantUserNames(text) {
           resolve(users);
         } else {
           // If we didn't succeed with search, try the entire users database.
-          const resp = cd.g.mwApi.get({
+          const resp = await cd.g.mwApi.get({
             action: 'query',
             list: 'allusers',
             auprefix: text,
