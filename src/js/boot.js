@@ -272,9 +272,6 @@ export function createApi() {
       uselang: cd.g.USER_LANGUAGE,
     },
     ajax: {
-      // 60 seconds instead of default 30
-      timeout: 60 * 1000,
-
       headers: {
         'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
       },
