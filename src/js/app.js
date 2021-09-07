@@ -292,19 +292,19 @@ async function go() {
     cd.g.$content = $('#mw-content-text');
   }
 
+  const isArticle = mw.config.get('wgIsArticle');
+
   // Not a constant: the diff may be removed from the page (and the URL updated, see
   // boot~cleanUpUrlAndDom) when it's for the last revision and the page is reloaded using the
   // script.
-  cd.g.isDiffPage = mw.config.get('wgIsArticle') && /[?&]diff=[^&]/.test(location.search);
+  cd.g.isDiffPage = isArticle && /[?&]diff=[^&]/.test(location.search);
 
   // Not a constant: go() may run the second time, see addFooterLink().
   cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
   cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
   // Process the page as a talk page
-  const isArticle = mw.config.get('wgIsArticle');
   const isPageEligible = (
-    isArticle &&
     !mw.config.get('wgIsRedirect') &&
     !cd.g.$content.find('.cd-notTalkPage').length &&
     (
@@ -319,7 +319,10 @@ async function go() {
     ) &&
     !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
   );
-  const willProcessPage = !cd.g.isDisabledInQuery && (cd.g.isEnabledInQuery || isPageEligible);
+  const willProcessPage = (
+    !cd.g.isDisabledInQuery &&
+    (cd.g.isEnabledInQuery || (isPageEligible && isArticle))
+  );
   let siteDataRequests = [];
   if (isArticle) {
     if (willProcessPage) {
