@@ -574,10 +574,12 @@ class Parser {
         this.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
 
-      // Talk page message box
+      // Talk page message box. "Ombox" for templates like
+      // https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение (perhaps they need to be "tmbox"
+      // too?)
       (
-        cd.g.NAMESPACE_NUMBER % 2 === 1 &&
-        element.classList.contains('tmbox') &&
+        (cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox')) ||
+        element.classList.contains('ombox') &&
         lastStep !== 'up'
       ) ||
 
