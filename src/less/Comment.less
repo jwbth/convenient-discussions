@@ -187,7 +187,10 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 
 .cd-thread-clickArea {
   position: absolute;
-  z-index: 1;
+
+  // Above page navigation (.cd-pageNav)
+  z-index: 6;
+
   width: 3px;
   padding-left: var(--cd-thread-line-side-margin);
   padding-right: var(--cd-thread-line-side-margin);
