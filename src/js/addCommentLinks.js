@@ -589,8 +589,10 @@ function processHistory($content) {
  */
 async function processDiff($diff) {
   // Filter out cases when "wikipage.diff" was fired for the diff at the top of the page that is a
-  // diff page. We parse that diff on "convenientDiscussions.pageReady".
-  if ($diff?.parent().is(cd.g.$content)) return;
+  // diff page (unless only a diff, and no content, is displayed - if
+  // mw.user.options.get('diffonly') or the diffonly URL parameter is true). We parse that diff on
+  // "convenientDiscussions.pageReady".
+  if (cd.g.isPageProcessed && $diff?.parent().is(cd.g.$content)) return;
 
   if (!cd.g.UI_TIMESTAMP_REGEXP) {
     initTimestampParsingTools('user');
@@ -643,7 +645,7 @@ async function processDiff($diff) {
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
-          if (!$diff && summary && cd.g.currentPageWatchedSections.length) {
+          if (!$diff && summary && cd.g.currentPageWatchedSections?.length) {
             for (let j = 0; j < cd.g.currentPageWatchedSections.length; j++) {
               if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
                 isWatched = true;
@@ -663,7 +665,11 @@ async function processDiff($diff) {
         const linkElement = wrapper.lastChild.lastChild;
         if ($diff) {
           linkElement.href = page.getUrl() + '#' + anchor;
-          linkElement.target = '_blank';
+
+          // Not diff pages with a diff only
+          if (cd.g.isPageProcessed) {
+            linkElement.target = '_blank';
+          }
         } else {
           linkElement.href = '#' + anchor;
           linkElement.onclick = function (e) {

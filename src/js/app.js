@@ -292,12 +292,11 @@ async function go() {
     cd.g.$content = $('#mw-content-text');
   }
 
-  const isArticle = mw.config.get('wgIsArticle');
-
   // Not a constant: the diff may be removed from the page (and the URL updated, see
   // boot~cleanUpUrlAndDom) when it's for the last revision and the page is reloaded using the
-  // script.
-  cd.g.isDiffPage = isArticle && /[?&]diff=[^&]/.test(location.search);
+  // script. wgIsArticle config value is not taken into account: if the "Do not show page content
+  // below diffs" setting is on, wgIsArticle is off.
+  cd.g.isDiffPage = /[?&]diff=[^&]/.test(location.search);
 
   // Not a constant: go() may run the second time, see addFooterLink().
   cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
@@ -319,13 +318,14 @@ async function go() {
     ) &&
     !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
   );
-  const willProcessPage = (
+  cd.g.isPageProcessed = (
+    mw.config.get('wgIsArticle') &&
     !cd.g.isDisabledInQuery &&
-    (cd.g.isEnabledInQuery || (isPageEligible && isArticle))
+    (cd.g.isEnabledInQuery || isPageEligible)
   );
   let siteDataRequests = [];
-  if (isArticle) {
-    if (willProcessPage) {
+  if (mw.config.get('wgIsArticle')) {
+    if (cd.g.isPageProcessed) {
       startLoading();
 
       cd.debug.stopTimer('start');
@@ -467,7 +467,7 @@ async function go() {
     mw.config.get('wgAction') === 'history' &&
     isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
   );
-  if (willProcessPage || isEligibleSpecialPage || isEligibleHistoryPage) {
+  if (cd.g.isPageProcessed || cd.g.isDiffPage || isEligibleSpecialPage || isEligibleHistoryPage) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {
@@ -477,7 +477,7 @@ async function go() {
 
       // Loading user info on diff pages could lead to problems with saving visits when many pages
       // are opened, but not yet focused, simultaneously.
-      if (!willProcessPage) {
+      if (!cd.g.isPageProcessed) {
         getUserInfo(true).catch((e) => {
           console.warn(e);
         });
