@@ -842,7 +842,7 @@ class Section extends SectionSkeleton {
             commentForm.submitSection = true;
           }
         } catch (e) {
-          if (e instanceof CdError && ['noSuchSection', 'locateSection'.includes(e.data.code)]) {
+          if (e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code)) {
             await this.getSourcePage().getCode();
             this.locateInCode(false);
           } else {
