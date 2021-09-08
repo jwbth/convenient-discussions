@@ -72,10 +72,7 @@ export function parseCode(code, customOptions) {
     disablelimitreport: true,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
-  return cd.g.mwApi.post(options, {
-    // Beneficial when sending long unicode texts, which is what we do here.
-    contentType: 'multipart/form-data',
-  }).then(
+  return cd.g.mwApi.post(options).then(
     (resp) => {
       const html = resp.parse?.text;
       if (html) {
