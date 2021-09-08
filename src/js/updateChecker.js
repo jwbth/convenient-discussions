@@ -588,7 +588,7 @@ function showOrdinaryNotification(comments) {
           cd.s('notification-part-onthispage')
         )
       );
-      let mayBeRelevantString = cd.s('notification-newcomments-maybeinteresting');
+      let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
       if (!mayBeRelevantString.startsWith(',')) {
         mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
       }
@@ -672,7 +672,7 @@ function showDesktopNotification(comments) {
     const where = section ?
       cd.mws('word-separator') + cd.s('notification-part-insection', section) :
       '';
-    let mayBeRelevantString = cd.s('notification-newcomments-maybeinteresting');
+    let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
     if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
       mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
     }

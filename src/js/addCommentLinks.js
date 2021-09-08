@@ -185,9 +185,9 @@ function addWatchlistMenu() {
   switchRelevantButton = new OO.ui.ButtonWidget({
     framed: false,
     icon: 'speechBubble',
-    label: cd.s('wl-button-switchRelevant-tooltip'),
+    label: cd.s('wl-button-switchrelevant-tooltip'),
     invisibleLabel: true,
-    title: cd.s('wl-button-switchRelevant-tooltip'),
+    title: cd.s('wl-button-switchrelevant-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
     disabled: !cd.g.watchedSections,
   });

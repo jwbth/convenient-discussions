@@ -263,7 +263,7 @@
   "notification-insection-desktop": "$1 {{gender:$2|replied}} in section \"$3\" on page \"$4\".",
   "notification-newcomments": "$1 new {{plural:$1|comment|comments}}$2$3.",
   "notification-newcomments-desktop": "$1 new {{plural:$1|comment|comments}}$2 on page \"$3\"$4.",
-  "notification-newcomments-maybeinteresting": "that may be relevant to you",
+  "notification-newcomments-mayberelevant": "that may be relevant to you",
   "notification-reload": "Click to reload the page$1.",
   "notification-formdata": "form data will not be lost",
   "notification-part-insection": "in section \"$1\"",
@@ -393,7 +393,7 @@
   "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|disable]]</span></b> DiscussionTools to make Convenient Discussions work correctly.",
   "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">Click to refresh the page</span>.",
 
-  "wl-button-switchinteresting-tooltip": "Show only comments in sections that I watch and comments addressed to me. (Note: detection is based on edit summaries, so some edits may be missing)",
+  "wl-button-switchrelevant-tooltip": "Show only comments in sections that I watch and comments addressed to me. (Note: detection is based on edit summaries, so some edits may be missing)",
   "wl-button-editwatchedsections-tooltip": "Edit the list of sections that I watch",
   "wl-button-settings-tooltip": "Convenient Discussions settings",
 
