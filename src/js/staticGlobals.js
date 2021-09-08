@@ -83,7 +83,7 @@ export default {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  COMMENT_NEW_HOVERED_BACKGROUND_COLOR: '#e8ffd8',
+  COMMENT_NEW_HOVERED_BACKGROUND_COLOR: '#e4ffe4',
 
   /**
    * Marker color for own comments.
