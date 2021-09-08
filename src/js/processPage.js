@@ -172,6 +172,8 @@ function findFloatingAndHiddenElements() {
       if (style.display === 'none') {
         tsSelectorsHidden.push(rule.selectorText);
       }
+    } else if (rule instanceof CSSMediaRule) {
+      Array.from(rule.cssRules).forEach(filterRules);
     }
   };
   Array.from(document.styleSheets)
