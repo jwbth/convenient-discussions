@@ -211,20 +211,18 @@ export default {
           update: false,
           floatingRects,
         });
-        if (isMoved === null) {
-          comment.removeLayers();
-        }
         if (isMoved || redrawAll) {
           notMovedCount = 0;
           comments.push(comment);
+        } else if (isMoved === null) {
+          comment.removeLayers();
         } else if (
-          isMoved === false &&
-
           // Nested containers shouldn't count, the offset of the layers inside them may be OK,
           // unlike the layers preceding them.
           !comment.getLayersContainer().parentNode.parentNode
             .closest('.cd-commentLayersContainer-parent')
         ) {
+          // isMoved === false
           notMovedCount++;
           if (notMovedCount === 3) {
             return true;
