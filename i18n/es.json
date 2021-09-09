@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Ciencia Al Poder",
+			"Danniel07",
 			"Destinid10 2",
 			"Fitoschido",
 			"Jack who built the house",
@@ -190,7 +191,8 @@
 	"navpanel-previous": "Ir al comentario nuevo anterior",
 	"navpanel-next": "Ir al comentario nuevo siguiente",
 	"navpanel-firstunseen": "Ir al primer comentario no visto",
-	"navpanel-firstunseen-hidden": "El comentario esta en un hilo colapsado. No se puede desplazar hasta el; se ha desplazado al hilo en su lugar.",
+	"navpanel-firstunseen-hidden-title": "El comentario está en un hilo colapsado",
+	"navpanel-firstunseen-hidden": "No se puede desplazarse hasta él, desplácese al hilo en su lugar.",
 	"navpanel-commentform": "Ir al siguiente comentario que se encuentra fuera de la visión",
 	"navpanel-newcomments-count": "$1 {{plural:$1|comentario nuevo|comentarios nuevos}}.",
 	"navpanel-newcomments-unknowndate": "fecha desconocida",

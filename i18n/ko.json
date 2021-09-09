@@ -172,6 +172,7 @@
 	"error-pagedeleted": "문서가 삭제되었습니다.",
 	"error-pagenotedited": "문서는 편집되지 않았습니다.",
 	"error-purgecache": "이 문서의 캐시를 새로 고치지 못했습니다.",
+	"discussiontools-disabled": "토론 도구는 성공적으로 비활성화되었습니다. <span class=\"cd-notification-refresh\">페이지를 새로 고치려면 클릭하십시오</span>.",
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "불러오는 중…",
