@@ -467,7 +467,12 @@ async function go() {
     mw.config.get('wgAction') === 'history' &&
     isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
   );
-  if (cd.g.isPageProcessed || cd.g.isDiffPage || isEligibleSpecialPage || isEligibleHistoryPage) {
+  if (
+    cd.g.isPageProcessed ||
+    (cd.g.isDiffPage && isPageEligible) ||
+    isEligibleSpecialPage ||
+    isEligibleHistoryPage
+  ) {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {
