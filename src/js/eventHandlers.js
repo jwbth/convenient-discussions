@@ -56,6 +56,7 @@ export function addPreventUnloadCondition(name, condition) {
 export function removePreventUnloadCondition(name) {
   if (beforeUnloadHandlers[name]) {
     $(window).off('beforeunload', beforeUnloadHandlers[name]);
+    delete beforeUnloadHandlers[name];
   }
 }
 

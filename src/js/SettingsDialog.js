@@ -1,5 +1,5 @@
 import cd from './cd';
-import { addPreventUnloadCondition } from './eventHandlers';
+import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { areObjectsEqual, defined } from './util';
 import {
   confirmCloseDialog,
@@ -193,6 +193,8 @@ class SettingsDialog extends OO.ui.ProcessDialog {
           handleDialogError(this, e, 'error-settings-save', true);
           return;
         }
+
+        removePreventUnloadCondition('dialog');
 
         this.stackLayout.setItem(this.reloadPanel);
         this.actions.setMode('reload');
