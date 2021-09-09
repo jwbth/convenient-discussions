@@ -168,9 +168,10 @@ export class ElementsTreeWalker extends TreeWalker {
    * Create an elements {@link module:treeWalker.TreeWalker tree walker}.
    *
    * @param {Node|external:Node} [startNode]
+   * @param {Node|external:Node} [root=cd.g.rootElement]
    */
-  constructor(startNode) {
-    super(cd.g.rootElement, null, true);
+  constructor(startNode, root = cd.g.rootElement) {
+    super(root, null, true);
     if (startNode) {
       this.currentNode = startNode;
     }
@@ -188,12 +189,10 @@ export class ElementsAndTextTreeWalker extends TreeWalker {
    * Create an elements and text {@link module:treeWalker.TreeWalker tree walker}.
    *
    * @param {Node|external:Node} [startNode]
+   * @param {Node|external:Node} [root=cd.g.rootElement]
    */
-  constructor(startNode) {
-    super(
-      cd.g.rootElement,
-      (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE
-    );
+  constructor(startNode, root = cd.g.rootElement) {
+    super(root, (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
     if (startNode) {
       this.currentNode = startNode;
     }

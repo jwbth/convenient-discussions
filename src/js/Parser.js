@@ -195,18 +195,29 @@ class Parser {
         const isUnsigned = Boolean(unsignedElement);
 
         const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
-        const elementsTreeWalker = new ElementsTreeWalker(timestamp.element);
+        const elementsTreeWalker = new ElementsTreeWalker(
+          timestamp.element,
+          closestNotInlineAncestor
+        );
 
+        // Workaround to exclude cases like https://en.wikipedia.org/?diff=1042059387, where the
+        // last timestamp should be ignored.
+        let metLink = false;
         while (
           elementsTreeWalker.nextNode() &&
-          closestNotInlineAncestor.contains(elementsTreeWalker.currentNode) &&
           (
+            // Optimization
             !cniaChildren.includes(elementsTreeWalker.currentNode) ||
+
             isInline(elementsTreeWalker.currentNode)
           )
         ) {
+          if (elementsTreeWalker.currentNode.tagName === 'A') {
+            metLink = true;
+          }
+
           // Found other timestamp after this timestamp.
-          if (elementsTreeWalker.currentNode.classList.contains('cd-timestamp')) return;
+          if (elementsTreeWalker.currentNode.classList.contains('cd-timestamp') && metLink) return;
         }
 
         const startElement = unsignedElement || timestamp.element;
