@@ -569,7 +569,7 @@ export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
   if (fallbackToAbsolute && scrollData.offset !== null) {
     restoreScrollPosition();
   } else {
-    if (scrollData.touchesBottom) {
+    if (scrollData.touchesBottom && window.scrollY !== 0) {
       const y = (
         document.documentElement.scrollHeight - window.innerHeight - scrollData.offsetBottom
       );
