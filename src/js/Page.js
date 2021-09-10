@@ -1,8 +1,8 @@
 import CdError from './CdError';
 import cd from './cd';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
-import { generateUnknownApiErrorText, makeBackgroundRequest, parseCode } from './apiWrappers';
 import { handleApiReject, isProbablyTalkPage } from './util';
+import { makeBackgroundRequest } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
 
 /**
@@ -461,6 +461,10 @@ class Page {
 
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
       tags: cd.user.isRegistered() ? (cd.config.tagName || undefined) : undefined,
+
+      errorformat: 'html',
+      errorlang: cd.g.USER_LANGUAGE,
+      errorsuselocal: true,
     };
     const options = cd.g.mwApi.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
 
@@ -476,7 +480,7 @@ class Page {
         if (type === 'network') {
           throw e;
         } else {
-          const error = apiData?.error;
+          const error = apiData?.errors[0];
           let message;
           let isRawMessage = false;
           let logMessage;
@@ -484,40 +488,8 @@ class Page {
           if (error) {
             code = error.code;
             switch (code) {
-              case 'spamblacklist': {
-                message = cd.sParse('error-spamblacklist', error.spamblacklist.matches[0]);
-                break;
-              }
-
-              case 'titleblacklist': {
-                message = cd.sParse('error-titleblacklist');
-                break;
-              }
-
-              case 'abusefilter-warning':
-              case 'abusefilter-disallowed': {
-                await cd.g.mwApi.loadMessagesIfMissing([code]);
-                const description = mw.message(code, error.abusefilter.description).plain();
-                try {
-                  message = (await parseCode(description)).html;
-                } catch {
-                  console.warn('Couldn\'t parse the error code.');
-                }
-                if (message) {
-                  isRawMessage = true;
-                } else {
-                  message = cd.sParse('error-abusefilter', error.abusefilter.description);
-                }
-                break;
-              }
-
               case 'editconflict': {
                 message = cd.sParse('error-editconflict');
-                break;
-              }
-
-              case 'blocked': {
-                message = cd.sParse('error-blocked');
                 break;
               }
 
@@ -527,11 +499,8 @@ class Page {
               }
 
               default: {
-                message = (
-                  cd.sParse('error-pagenotedited') +
-                  ' ' +
-                  (await generateUnknownApiErrorText(code, error.info))
-                );
+                message = error.html;
+                isRawMessage = message.includes('<table') || message.includes('<div');
               }
             }
 

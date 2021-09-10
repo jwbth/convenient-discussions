@@ -152,29 +152,6 @@ export function getUserInfo(reuse = false) {
 }
 
 /**
- * _Method for internal use._ Generate an error text for an unknown error.
- *
- * @param {string} errorCode
- * @param {string} [errorInfo]
- * @returns {Promise.<string>}
- */
-export async function generateUnknownApiErrorText(errorCode, errorInfo) {
-  let text;
-  if (errorCode) {
-    text = cd.sParse('error-api', errorCode) + ' ';
-    if (errorInfo) {
-      try {
-        text += (await parseCode(errorInfo)).html;
-      } catch {
-        text += errorInfo;
-      }
-    }
-  }
-
-  return text;
-}
-
-/**
  * Get page titles for an array of page IDs.
  *
  * @param {number[]} pageIds

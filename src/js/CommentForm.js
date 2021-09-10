@@ -31,7 +31,7 @@ import {
 import { createCheckboxField } from './ooui';
 import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
 import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
-import { generateUnknownApiErrorText, parseCode } from './apiWrappers';
+import { parseCode } from './apiWrappers';
 import { showSettingsDialog } from './modal';
 
 let commentFormsCounter = 0;
@@ -2062,7 +2062,7 @@ class CommentForm {
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
    * @param {CommentFormOperation} [options.currentOperation] Operation the form is undergoing.
    */
-  async handleError({
+  handleError({
     type,
     code,
     details,
@@ -2154,16 +2154,13 @@ class CommentForm {
           }
 
           case 'error': {
-            const {
-              code: errorCode,
-              info: errorInfo,
-            } = apiData.error;
-            switch (errorCode) {
+            const error = apiData.errors[0];
+            switch (error.code) {
               case 'missingtitle':
                 message = cd.sParse('cf-error-pagedoesntexist');
                 break;
               default:
-                message = await generateUnknownApiErrorText(errorCode, errorInfo);
+                message = error.html;
             }
             break;
           }
@@ -2957,6 +2954,9 @@ class CommentForm {
         'totext-main': code,
         topst: true,
         prop: 'diff',
+        errorformat: 'html',
+        errorlang: cd.g.USER_LANGUAGE,
+        errorsuselocal: true,
       };
       if (this.submitSection || !mw.config.get('wgArticleId')) {
         options.fromslots = 'main';
