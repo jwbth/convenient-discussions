@@ -18,7 +18,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   static actions = [
     {
       action: 'close',
-      modes: ['move', 'reload'],
+      modes: ['move', 'success'],
       flags: ['safe', 'close'],
       disabled: true,
     },
@@ -28,12 +28,6 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       label: cd.s('msd-move'),
       flags: ['primary', 'progressive'],
       disabled: true,
-    },
-    {
-      action: 'reload',
-      modes: ['reload'],
-      label: cd.s('msd-reload'),
-      flags: ['primary', 'progressive'],
     },
   ];
 
@@ -87,13 +81,13 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       expanded: false,
     });
 
-    this.reloadPanel = new OO.ui.PanelLayout({
+    this.successPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
 
     this.stackLayout = new OO.ui.StackLayout({
-      items: [this.loadingPanel, this.movePanel, this.reloadPanel],
+      items: [this.loadingPanel, this.movePanel, this.successPanel],
     });
     this.$body.append(this.stackLayout.$element);
   }
@@ -264,18 +258,14 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           return;
         }
 
-        this.reloadPanel.$element.append(
-          wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
-        );
+        const $message = wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' });
+        this.successPanel.$element.append($message);
 
-        this.stackLayout.setItem(this.reloadPanel);
-        this.actions.setMode('reload');
-        this.popPending();
-      });
-    } else if (action === 'reload') {
-      return new OO.ui.Process(() => {
-        this.close();
         reloadPage({ sectionAnchor: this.section.anchor });
+
+        this.stackLayout.setItem(this.successPanel);
+        this.actions.setMode('success');
+        this.popPending();
       });
     } else if (action === 'close') {
       return new OO.ui.Process(() => {

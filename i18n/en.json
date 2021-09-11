@@ -348,7 +348,6 @@
 
   "msd-title": "Move topic",
   "msd-move": "Move",
-  "msd-reload": "Reload",
   "msd-targetpage": "Enter the name of the discussion page to move the topic to:",
   "msd-keeplink": "Keep a link to the new location",
   "msd-summaryending": "Edit summary (will be added to the standard one)",
@@ -358,7 +357,7 @@
   "msd-error-editconflict-retry": "Just click \"{{int:ooui-dialog-process-retry}}\".",
   "msd-error-editingtargetpage": "Couldn't edit the target page.",
   "msd-error-editingsourcepage": "Couldn't edit the source page. You will have to edit it manually.",
-  "msd-moved": "The topic has been successfully moved. You may reload the page or go to [[$1|the page where the topic was moved to]].",
+  "msd-moved": "The topic has been successfully moved. You may go to [[$1|the page where the topic was moved to]].",
   "msd-bottom": "The code may be different if the page would be updated while the window is idle.",
 
   "move-sourcepagecode": "''Moved to [[$1]]. $2''",
