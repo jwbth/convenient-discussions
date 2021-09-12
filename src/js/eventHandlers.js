@@ -20,14 +20,18 @@ const beforeUnloadHandlers = {};
  * _Method for internal use._ Handles the window `resize` event as well as `orientationchange`.
  */
 export function handleWindowResize() {
-  setContentColumnGlobals(true);
-  Comment.redrawLayersIfNecessary(true);
-  Thread.updateLines();
+  // Seems like sometimes it doesn't have time to update.
+  setTimeout(() => {
+    setContentColumnGlobals(true);
+    Comment.redrawLayersIfNecessary(true);
+    Thread.updateLines();
+    pageNav.updateWidth();
+  });
+
   navPanel.updateCommentFormButton();
   cd.commentForms.forEach((commentForm) => {
     commentForm.adjustLabels();
   });
-  pageNav.updateWidth();
   handleScroll();
 }
 
