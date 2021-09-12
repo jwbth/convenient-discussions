@@ -167,7 +167,7 @@ export default {
    * @memberof Comment
    */
   redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
-    if (!this.underlays.length || isPageLoading() || (document.hidden && !redrawAll)) return;
+    if (isPageLoading() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
