@@ -1,6 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
+import { getElementRangeContents } from './util';
 
 /**
  * Class containing the main properties of a section. This class is the only one used in the worker
@@ -12,8 +13,9 @@ class SectionSkeleton {
    *
    * @param {Parser} parser
    * @param {Element|external:Element} headingElement
+   * @param {Element|external:Element} nextRelevantHeadingElement
    */
-  constructor(parser, headingElement) {
+  constructor(parser, headingElement, nextRelevantHeadingElement) {
     this.parser = parser;
 
     /**
@@ -94,7 +96,7 @@ class SectionSkeleton {
       }
     }
 
-    this.setContentProperties();
+    this.setContentProperties(nextRelevantHeadingElement);
 
     /**
      * Section ID. Same as the section index in
@@ -127,8 +129,10 @@ class SectionSkeleton {
 
   /**
    * Set some properties related to the content of the section (contained elements and comments).
+   *
+   * @param {Element|external:Element} nextRelevantHeadingElement
    */
-  setContentProperties() {
+  setContentProperties(nextRelevantHeadingElement) {
     const treeWalker = new TreeWalker(
       cd.g.rootElement,
       (node) => (
@@ -148,28 +152,34 @@ class SectionSkeleton {
       this.headingNestingLevel++;
     }
 
-    treeWalker.currentNode = this.headingElement;
-    const elements = [this.headingElement];
-    const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
-
-    // The last element before the next heading if we start from the heading of this section. That
-    // heading which may be a part of the next section of the same level, or the subsection of this
-    // section.
-    let hasSubsections = false;
-    while (treeWalker.nextSibling() && !levelRegexp.test(treeWalker.currentNode.tagName)) {
-      if (
-        this.lastElementInFirstChunk === undefined &&
-        /^H[2-6]$/.test(treeWalker.currentNode.tagName)
-      ) {
-        hasSubsections = true;
-        this.lastElementInFirstChunk = elements[elements.length - 1];
+    // We can't just take all the following elements until the next heading - parts of sections that
+    // include the heading can be inside elements like here:
+    // https://he.wikipedia.org/wiki/Project:חדשות#Desktop_improvements._A_new_change!
+    let elements;
+    if (nextRelevantHeadingElement) {
+      elements = getElementRangeContents(this.headingElement, nextRelevantHeadingElement);
+      elements.pop();
+    } else {
+      let lastElement = cd.g.rootElement.lastElementChild;
+      while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
+        lastElement = lastElement.lastElementChild;
       }
-      elements.push(treeWalker.currentNode);
+      elements = getElementRangeContents(this.headingElement, lastElement);
     }
+    let hasSubsections = false;
+    elements.slice(1).some((el) => {
+      if (this.lastElementInFirstChunk === undefined && /^H[2-6]$/.test(el.tagName)) {
+        hasSubsections = true;
+        this.lastElementInFirstChunk = el;
+        return true;
+      } else {
+        return false;
+      }
+    });
 
     /**
      * Last element in the first chunk of the section, i.e. all elements up to the first subheading
-     * if it is present, or all elements if it is not.
+     * if it is present or just all elements if it is not.
      *
      * @type {Element|external:Element}
      */

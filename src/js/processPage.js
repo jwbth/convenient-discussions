@@ -443,9 +443,15 @@ function processComments(parser) {
  * @private
  */
 function processSections(parser, watchedSectionsRequest) {
-  parser.findHeadings().forEach((heading) => {
+  parser.findHeadings().forEach((heading, i, headings) => {
     try {
-      cd.sections.push(parser.createSection(heading, watchedSectionsRequest));
+      const [, level] = heading.tagName.match(/^H([1-6])$/);
+      const levelRegexp = new RegExp(`^H[1-${level}]$`);
+      const nextRelevantHeading = headings
+        .slice(i + 1)
+        .find((heading) => levelRegexp.test(heading.tagName));
+      const section = parser.createSection(heading, watchedSectionsRequest, nextRelevantHeading);
+      cd.sections.push(section);
     } catch (e) {
       if (!(e instanceof CdError)) {
         console.error(e);

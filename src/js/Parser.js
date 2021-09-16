@@ -111,10 +111,16 @@ class Parser {
    *
    * @param {Element|external:Element} headingElement
    * @param {Promise} watchedSectionsRequest
+   * @param {Element|external:Element} nextRelevantHeadingElement
    * @returns {*}
    */
-  createSection(headingElement, watchedSectionsRequest) {
-    return new this.context.SectionClass(this, headingElement, watchedSectionsRequest);
+  createSection(headingElement, watchedSectionsRequest, nextRelevantHeadingElement) {
+    return new this.context.SectionClass(
+      this,
+      headingElement,
+      watchedSectionsRequest,
+      nextRelevantHeadingElement
+    );
   }
 
   /**

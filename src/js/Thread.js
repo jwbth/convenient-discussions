@@ -7,6 +7,7 @@ import {
   defined,
   flat,
   getCommonGender,
+  getElementRangeContents,
   getExtendedRect,
   getFromLocalStorage,
   getVisibilityByRects,
@@ -404,68 +405,6 @@ class Thread {
   }
 
   /**
-   * Get contents of the thread.
-   *
-   * @returns {Node[]}
-   * @private
-   */
-  getRangeContents() {
-    const range = document.createRange();
-    range.setStart(this.startElement, 0);
-    const rangeEnd = this.getAdjustedEndElement();
-    range.setEnd(rangeEnd, rangeEnd.childNodes.length);
-
-    /*
-      Here we should equally account for all cases of the start and end item relative position.
-
-        <ul>         <!-- Say, may start anywhere from here... -->
-          <li></li>
-          <li>
-            <div></div>
-          </li>
-          <li></li>
-        </ul>
-        <div></div>  <!-- ...to here. And, may end anywhere from here... -->
-        <ul>
-          <li></li>
-          <li>
-            <div></div>
-          </li>
-          <li></li>  <-- ...to here. -->
-        </ul>
-     */
-    const rangeContents = [range.startContainer];
-
-    // The start container could contain the end container and be different from it in the case with
-    // adjusted end items.
-    if (!range.startContainer.contains(range.endContainer)) {
-      treeWalker.currentNode = range.startContainer;
-
-      while (treeWalker.currentNode.parentNode !== range.commonAncestorContainer) {
-        while (treeWalker.nextSibling()) {
-          rangeContents.push(treeWalker.currentNode);
-        }
-        treeWalker.parentNode();
-      }
-      treeWalker.nextSibling();
-      while (!treeWalker.currentNode.contains(range.endContainer)) {
-        rangeContents.push(treeWalker.currentNode);
-        treeWalker.nextSibling();
-      }
-      while (treeWalker.currentNode !== range.endContainer) {
-        treeWalker.firstChild();
-        while (!treeWalker.currentNode.contains(range.endContainer)) {
-          rangeContents.push(treeWalker.currentNode);
-          treeWalker.nextSibling();
-        }
-      }
-      rangeContents.push(range.endContainer);
-    }
-
-    return rangeContents;
-  }
-
-  /**
    * Get a list of users in the thread.
    *
    * @returns {module:userRegistry~User[]}
@@ -488,7 +427,7 @@ class Thread {
      * @type {Node[]|undefined}
      * @private
      */
-    this.collapsedRange = this.getRangeContents();
+    this.collapsedRange = getElementRangeContents(this.startElement, this.getAdjustedEndElement());
 
     this.collapsedRange.forEach((el) => {
       // We use a class here because there can be elements in the comment that are hidden from the

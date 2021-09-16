@@ -994,3 +994,71 @@ export function getCommonGender(users) {
   }
   return commonGender;
 }
+
+/**
+ * Get all nodes between the two specified, including them. This works equally well if they are at
+ * different nesting levels. Descendants of nodes that are already included are not included.
+ *
+ * @param {Element} start
+ * @param {Element} end
+ * @returns {Element[]}
+ * @private
+ */
+export function getElementRangeContents(start, end) {
+  let commonAncestor;
+  for (let el = start; el; el = el.parentNode) {
+    if (el.contains(end)) {
+      commonAncestor = el;
+      break;
+    }
+  }
+
+  /*
+    Here we should equally account for all cases of the start and end item relative position.
+
+      <ul>         <!-- Say, may start anywhere from here... -->
+        <li></li>
+        <li>
+          <div></div>
+        </li>
+        <li></li>
+      </ul>
+      <div></div>  <!-- ...to here. And, may end anywhere from here... -->
+      <ul>
+        <li></li>
+        <li>
+          <div></div>
+        </li>
+        <li></li>  <-- ...to here. -->
+      </ul>
+   */
+  const rangeContents = [start];
+
+  // The start container could contain the end container and be different from it in the case with
+  // adjusted end items.
+  if (!start.contains(end)) {
+    const treeWalker = new ElementsTreeWalker(start);
+
+    while (treeWalker.currentNode.parentNode !== commonAncestor) {
+      while (treeWalker.nextSibling()) {
+        rangeContents.push(treeWalker.currentNode);
+      }
+      treeWalker.parentNode();
+    }
+    treeWalker.nextSibling();
+    while (!treeWalker.currentNode.contains(end)) {
+      rangeContents.push(treeWalker.currentNode);
+      treeWalker.nextSibling();
+    }
+    while (treeWalker.currentNode !== end) {
+      treeWalker.firstChild();
+      while (!treeWalker.currentNode.contains(end)) {
+        rangeContents.push(treeWalker.currentNode);
+        treeWalker.nextSibling();
+      }
+    }
+    rangeContents.push(end);
+  }
+
+  return rangeContents;
+}

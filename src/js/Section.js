@@ -39,10 +39,11 @@ class Section extends SectionSkeleton {
    * @param {Parser} parser A relevant instance of Parser.
    * @param {Element} headingElement
    * @param {Promise} watchedSectionsRequest
+   * @param {Element} nextRelevantHeadingElement
    * @throws {CdError}
    */
-  constructor(parser, headingElement, watchedSectionsRequest) {
-    super(parser, headingElement);
+  constructor(parser, headingElement, watchedSectionsRequest, nextRelevantHeadingElement) {
+    super(parser, headingElement, nextRelevantHeadingElement);
 
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
