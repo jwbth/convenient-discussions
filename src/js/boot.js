@@ -21,6 +21,7 @@ import {
   addCss,
   areObjectsEqual,
   calculateWordOverlap,
+  closeNotifications,
   firstCharToUpperCase,
   generatePageNamePattern,
   getFromLocalStorage,
@@ -44,7 +45,6 @@ import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
 import { removeWikiMarkup } from './wikitext';
 
-let notificationsData = [];
 let saveSessionTimeout;
 let saveSessionLastTime;
 
@@ -1393,54 +1393,6 @@ export function restoreCommentForms(isPageReloadedExternally) {
   }
   saveSession();
   navPanel.updateCommentFormButton();
-}
-
-/**
- * Notification object created by running `mw.notification.notify(...)`.
- *
- * @typedef {object} Notification
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
- * @global
- */
-
-/**
- * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
- * notifications and close them all at once if needed.
- *
- * @param {Array} params Parameters to apply to `mw.notification.notify`.
- * @param {object} [data={}] Additional data related to the notification.
- * @returns {Notification}
- */
-export function addNotification(params, data = {}) {
-  const notification = mw.notification.notify(...params);
-  notificationsData.push(Object.assign(data, { notification }));
-  return notification;
-}
-
-/**
- * Get all notifications added to the registry (including already hidden). The
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ mw.Notification}
- * object will be in the `notification` property.
- *
- * @returns {object[]}
- */
-export function getNotifications() {
-  return notificationsData;
-}
-
-/**
- * Close all notifications added to the registry immediately.
- *
- * @param {boolean} [smooth=true] Use a smooth animation.
- */
-export function closeNotifications(smooth = true) {
-  notificationsData.forEach((data) => {
-    if (!smooth) {
-      data.notification.$notification.hide();
-    }
-    data.notification.close();
-  });
-  notificationsData = [];
 }
 
 /**

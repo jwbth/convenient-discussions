@@ -11,6 +11,7 @@ import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
 
 const scrollData = { offset: null };
+let notificationsData = [];
 
 /**
  * @typedef {object} WrapCallbacks
@@ -1060,4 +1061,54 @@ export function getElementRangeContents(start, end) {
   }
 
   return rangeContents;
+}
+
+/**
+ * Notification object created by running `mw.notification.notify(...)`.
+ *
+ * @typedef {object} Notification
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
+ * @global
+ */
+
+/**
+ * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
+ * notifications and close them all at once if needed. Most notifications are shown using simple
+ * `mw.notify` or `mw.notification.notify`.
+ *
+ * @param {string|external:Query} message Message text.
+ * @param {object} [options]
+ * @param {object} [data={}] Additional data related to the notification.
+ * @returns {Notification}
+ */
+ export function addNotification(message, options, data = {}) {
+  const notification = mw.notification.notify(message, options);
+  notificationsData.push(Object.assign(data, { notification }));
+  return notification;
+}
+
+/**
+ * Get all notifications added to the registry (including already hidden). The
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ mw.Notification}
+ * object will be in the `notification` property.
+ *
+ * @returns {object[]}
+ */
+export function getNotifications() {
+  return notificationsData;
+}
+
+/**
+ * Close all notifications added to the registry immediately.
+ *
+ * @param {boolean} [smooth] Don't use a smooth animation.
+ */
+export function closeNotifications(smooth = true) {
+  notificationsData.forEach((data) => {
+    if (!smooth) {
+      data.notification.$notification.hide();
+    }
+    data.notification.close();
+  });
+  notificationsData = [];
 }

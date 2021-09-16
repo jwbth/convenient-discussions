@@ -8,8 +8,8 @@ import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
 import userRegistry from './userRegistry';
-import { addNotification, finishLoading, reloadPage, saveSession } from './boot';
 import {
+  addNotification,
   buildEditSummary,
   defined,
   findLastIndex,
@@ -29,6 +29,7 @@ import {
   wrapDiffBody,
 } from './util';
 import { createCheckboxField } from './ooui';
+import { finishLoading, reloadPage, saveSession } from './boot';
 import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
 import { generateTagsRegexp, hideSensitiveCode, removeWikiMarkup } from './wikitext';
 import { parseCode } from './apiWrappers';
@@ -2020,13 +2021,10 @@ class CommentForm {
     }
 
     if (cancel) {
-      addNotification([
-        message instanceof $ ? message : wrap(message),
-        {
-          type: 'error',
-          autoHideSeconds: 'long',
-        },
-      ]);
+      addNotification(message instanceof $ ? message : wrap(message), {
+        type: 'error',
+        autoHideSeconds: 'long',
+      });
       this.cancel(false);
     } else {
       if (!(currentOperation && currentOperation.type === 'preview' && currentOperation.isAuto)) {

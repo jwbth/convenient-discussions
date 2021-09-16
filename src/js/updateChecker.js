@@ -14,19 +14,15 @@ import toc from './toc';
 import userRegistry from './userRegistry';
 import {
   addNotification,
-  closeNotifications,
-  getNotifications,
-  isPageLoading,
-  reloadPage,
-} from './boot';
-import {
   calculateWordOverlap,
   getFromLocalStorage,
+  getNotifications,
   keepWorkerSafeValues,
   saveToLocalStorage,
   wrap,
 } from './util';
 import { getUserGenders } from './apiWrappers';
+import { isPageLoading, reloadPage } from './boot';
 
 let lastCheckedRevisionId;
 let commentsNotifiedAbout;
@@ -606,9 +602,12 @@ function showOrdinaryNotification(comments) {
       );
     }
 
-    closeNotifications(false);
     const $body = wrap(html);
-    const notification = addNotification([$body], { comments: filteredComments });
+    const notification = addNotification($body, {
+      tag: 'convenient-discussions-new-comments',
+    }, {
+      comments: filteredComments,
+    });
     notification.$notification.on('click', () => {
       reloadPage({ commentAnchor: filteredComments[0].anchor });
     });
