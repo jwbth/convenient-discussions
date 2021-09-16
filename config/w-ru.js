@@ -467,7 +467,10 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
       }
 
       const $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
-      mw.notify($text, { autoHide: false } );
+      mw.notify($text, {
+        type: 'warn',
+        autoHide: false,
+      });
       mw.cookie.set('cd-hlmConflict', '1', {
         path: '/',
         expires: cd.g.SECONDS_IN_DAY * 30,
@@ -477,7 +480,10 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 
   if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
     const $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
-    mw.notify($text, { autoHide: false });
+    mw.notify($text, {
+      type: 'warn',
+      autoHide: false,
+    });
     mw.cookie.set('cd-ptaConflict', '1', {
       path: '/',
       expires: cd.g.SECONDS_IN_DAY * 30,
@@ -486,7 +492,10 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 
   if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
     const $text = cd.api.wrap('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
-    mw.notify($text, { autoHide: false });
+    mw.notify($text, {
+      type: 'warn',
+      autoHide: false,
+    });
   }
 });
 

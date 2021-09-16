@@ -599,7 +599,7 @@ class Page {
       action: 'purge',
       titles: this.name,
     }).catch(() => {
-      mw.notify(cd.s('error-purgecache'), { type: 'error' });
+      mw.notify(cd.s('error-purgecache'), { type: 'warn' });
     });
   }
 

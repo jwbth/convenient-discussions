@@ -1829,7 +1829,7 @@ export function suggestDisableDiscussionTools() {
             },
           }
         }).$wrapper;
-        mw.notify(message);
+        mw.notify(message, { type: 'warn' });
       },
     },
   });
