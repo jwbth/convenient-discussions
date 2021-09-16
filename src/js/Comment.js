@@ -309,7 +309,9 @@ class Comment extends CommentSkeleton {
 
         (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
         n.textContent.length < 30 &&
-        !n.classList.contains('noprint')
+
+        // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
+        !n.classList.length
       ) {
         n.remove();
       }
