@@ -167,10 +167,10 @@ class SectionSkeleton {
       elements = getElementRangeContents(this.headingElement, lastElement);
     }
     let hasSubsections = false;
-    elements.slice(1).some((el) => {
+    elements.slice(1).some((el, i) => {
       if (this.lastElementInFirstChunk === undefined && /^H[2-6]$/.test(el.tagName)) {
         hasSubsections = true;
-        this.lastElementInFirstChunk = el;
+        this.lastElementInFirstChunk = elements[i];
         return true;
       } else {
         return false;
