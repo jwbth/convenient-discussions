@@ -907,6 +907,9 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
     findClosedDiscussions();
     findOutdents();
+    cd.g.areThereLtrRtlMixes = Boolean(
+      cd.g.rootElement.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr')
+    );
 
     cd.debug.startTimer('process comments');
 

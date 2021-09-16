@@ -29,11 +29,13 @@
   margin: 0.14285714em 0;
 }
 
-.sitedir-ltr .cd-thread-button.cd-thread-button.cd-thread-button {
+.sitedir-ltr .cd-thread-button.cd-thread-button.cd-thread-button,
+.sitedir-rtl .mw-content-ltr .cd-thread-button.cd-thread-button.cd-thread-button {
   margin-left: -1px;
 }
 
-.sitedir-rtl .cd-thread-button.cd-thread-button.cd-thread-button {
+.sitedir-rtl .cd-thread-button.cd-thread-button.cd-thread-button,
+.sitedir-ltr .mw-content-rtl .cd-thread-button.cd-thread-button.cd-thread-button {
   margin-right: -1px;
 }
 
@@ -41,19 +43,25 @@
   visibility: hidden;
 }
 
-.sitedir-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+.sitedir-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button,
+.sitedir-rtl .mw-content-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
   padding-left: 1.2142857em;
+  padding-right: 0;
 
   > .oo-ui-iconElement-icon {
     left: 0;
+    right: auto;
     background-position: 1px 8px;
   }
 }
 
-.sitedir-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+.sitedir-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button,
+.sitedir-ltr .mw-content-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+  padding-left: 0;
   padding-right: 1.2142857em;
 
   > .oo-ui-iconElement-icon {
+    left: auto;
     right: 0;
     background-position: 9px 8px;
   }

@@ -971,10 +971,10 @@ class Comment extends CommentSkeleton {
       const leftStretched = left - cd.g.CONTENT_START_MARGIN - 2;
       const rightStretched = right + cd.g.CONTENT_START_MARGIN + 2;
 
-      this.isStartStretched = cd.g.CONTENT_DIR === 'ltr' ?
+      this.isStartStretched = this.getDir() === 'ltr' ?
         leftStretched <= cd.g.CONTENT_COLUMN_START :
         rightStretched >= cd.g.CONTENT_COLUMN_START;
-      this.isEndStretched = cd.g.CONTENT_DIR === 'ltr' ?
+      this.isEndStretched = this.getDir() === 'ltr' ?
         rightStretched >= cd.g.CONTENT_COLUMN_END :
         leftStretched <= cd.g.CONTENT_COLUMN_END;
     }
@@ -1092,6 +1092,29 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get the comment text direction. It can be different from the text direction of the site's
+   * content language on pages with text marked with the class `mw-content-ltr` or `mw-content-rtl`
+   * inside the content.
+   *
+   * @returns {string}
+   */
+  getDir() {
+    if (!this.cachedDir) {
+      if (cd.g.areThereLtrRtlMixes) {
+        const isLtr = this.elements[0]
+          .closest('.mw-content-ltr, .mw-content-rtl')
+          .classList
+          .contains('mw-content-ltr');
+        this.cachedDir = isLtr ? 'ltr' : 'rtl';
+      } else {
+        this.cachedDir = cd.g.CONTENT_DIR;
+      }
+    }
+
+    return this.cachedDir;
+  }
+
+  /**
    * @typedef {object} CommentMargins
    * @property {number} left Left margin.
    * @property {number} right Right margin.
@@ -1131,8 +1154,8 @@ class Comment extends CommentSkeleton {
       cd.g.CONTENT_START_MARGIN :
       cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
-    const left = cd.g.CONTENT_DIR === 'ltr' ? startMargin : endMargin;
-    const right = cd.g.CONTENT_DIR === 'ltr' ? endMargin : startMargin;
+    const left = this.getDir() === 'ltr' ? startMargin : endMargin;
+    const right = this.getDir() === 'ltr' ? endMargin : startMargin;
 
     return { left, right };
   }
@@ -1413,21 +1436,30 @@ class Comment extends CommentSkeleton {
       let offsetParent;
       const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
       while (treeWalker.parentNode()) {
-        // These elements have "position: relative" for the purpose we know.
-        if (treeWalker.currentNode.classList.contains('cd-connectToPreviousItem')) continue;
+        const node = treeWalker.currentNode;
 
-        let style = treeWalker.currentNode.conveneintDiscussionsStyle;
+        // These elements have "position: relative" for the purpose we know.
+        if (node.classList.contains('cd-connectToPreviousItem')) continue;
+
+        let style = node.conveneintDiscussionsStyle;
         if (!style) {
           // window.getComputedStyle is expensive, so we save the result to the node's property.
-          style = window.getComputedStyle(treeWalker.currentNode);
-          treeWalker.currentNode.conveneintDiscussionsStyle = style;
+          style = window.getComputedStyle(node);
+          node.conveneintDiscussionsStyle = style;
         }
-        if (['absolute', 'relative'].includes(style.position)) {
-          offsetParent = treeWalker.currentNode;
+        const classList = Array.from(node.classList);
+        if (
+          ['absolute', 'relative'].includes(style.position) ||
+          (
+            node !== cd.g.$content.get(0) &&
+            (classList.includes('mw-content-ltr') || classList.includes('mw-content-rtl'))
+          )
+        ) {
+          offsetParent = node;
         }
         const backgroundColor = style.backgroundColor;
         if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none' && !offsetParent) {
-          offsetParent = treeWalker.currentNode;
+          offsetParent = node;
           offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
         }
         if (offsetParent) break;

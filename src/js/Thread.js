@@ -743,9 +743,9 @@ class Thread {
   static updateLines(floatingRects) {
     if (!cd.settings.enableThreads || ((isPageLoading() || document.hidden) && isInited)) return;
 
-    const getLeft = (rectOrOffset, commentMargins) => {
+    const getLeft = (rectOrOffset, commentMargins, dir) => {
       let offset;
-      if (cd.g.CONTENT_DIR === 'ltr') {
+      if (dir === 'ltr') {
         offset = rectOrOffset.left;
         if (commentMargins) {
           offset -= commentMargins.left + 1;
@@ -812,9 +812,10 @@ class Thread {
           // call.
           commentMargins = comment.getMargins();
         }
+        const dir = comment.getDir();
         if (rectOrOffset) {
           top = getTop(rectOrOffset);
-          left = getLeft(rectOrOffset, commentMargins);
+          left = getLeft(rectOrOffset, commentMargins, dir);
         }
 
         const rectBottom = thread.isCollapsed ?
@@ -822,8 +823,8 @@ class Thread {
           thread.getAdjustedEndElement(true)?.getBoundingClientRect();
 
         const areTopAndBottomMisaligned = () => {
-          const bottomLeft = getLeft(rectBottom, commentMargins);
-          return cd.g.CONTENT_DIR === 'ltr' ? bottomLeft < left : bottomLeft > left;
+          const bottomLeft = getLeft(rectBottom, commentMargins, dir);
+          return dir === 'ltr' ? bottomLeft < left : bottomLeft > left;
         };
         if (
           top === undefined ||

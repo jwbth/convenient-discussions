@@ -47,6 +47,7 @@
 }
 
 .sitedir-ltr .cd-comment-button,
+.sitedir-rtl .mw-content-ltr .cd-comment-button,
 .sitedir-rtl.ltr .cd-comment-menu .cd-comment-button {
   margin-left: 1em;
   margin-right: 0;
@@ -58,6 +59,7 @@
 }
 
 .sitedir-rtl .cd-comment-button,
+.sitedir-ltr .mw-content-rtl .cd-comment-button,
 .sitedir-ltr.rtl .cd-comment-menu .cd-comment-button {
   margin-right: 1em;
   margin-left: 0;
@@ -135,8 +137,13 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   margin: 0;
 }
 
+// We use "mw-content-" classes to account for cases with LTR content in RTL wikis and vice versa.
+// For example:
+// https://he.wikipedia.org/w/index.php?title=ויקיפדיה:חדשות&oldid=32116639#Desktop_improvements._A_new_change!
 .sitedir-ltr .cd-commentLevel:not(ol) > li,
-.sitedir-ltr .cd-commentLevel:not(ol) > dd {
+.sitedir-ltr .cd-commentLevel:not(ol) > dd,
+.sitedir-rtl .mw-content-ltr .cd-commentLevel:not(ol) > li,
+.sitedir-rtl .mw-content-ltr .cd-commentLevel:not(ol) > dd {
   padding-left: 1em;
   padding-right: 0;
   margin-left: 1em;
@@ -146,7 +153,9 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 }
 
 .sitedir-rtl .cd-commentLevel:not(ol) > li,
-.sitedir-rtl .cd-commentLevel:not(ol) > dd {
+.sitedir-rtl .cd-commentLevel:not(ol) > dd,
+.sitedir-ltr .mw-content-rtl .cd-commentLevel:not(ol) > li,
+.sitedir-ltr .mw-content-rtl .cd-commentLevel:not(ol) > dd {
   padding-left: 0;
   padding-right: 1em;
   margin-left: 0;
@@ -177,11 +186,15 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   height: 0.75em;
 }
 
-.sitedir-ltr .cd-connectToPreviousItem::before {
+.sitedir-ltr .cd-connectToPreviousItem::before,
+.sitedir-rtl .mw-content-ltr .cd-connectToPreviousItem::before {
   left: -1px;
+  right: auto;
 }
 
-.sitedir-rtl .cd-connectToPreviousItem::before {
+.sitedir-rtl .cd-connectToPreviousItem::before,
+.sitedir-ltr .mw-content-rtl .cd-connectToPreviousItem::before {
+  left: auto;
   right: -1px;
 }
 
@@ -224,12 +237,16 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   }
 }
 
-.sitedir-ltr .cd-beforeChangeMark {
+.sitedir-ltr .cd-beforeChangeMark,
+.sitedir-rtl .mw-content-ltr .cd-beforeChangeMark {
+  margin-left: auto;
   margin-right: 0.75em;
 }
 
-.sitedir-rtl .cd-beforeChangeMark {
+.sitedir-rtl .cd-beforeChangeMark,
+.sitedir-ltr .mw-content-rtl .cd-beforeChangeMark {
   margin-left: 0.75em;
+  margin-right: auto;
 }
 
 .cd-changeMark {
@@ -241,10 +258,14 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   font-size: 100%;
 }
 
-.sitedir-ltr.cd-reformattedComments .cd-changeMark {
+.cd-reformattedComments .mw-content-ltr .cd-changeMark,
+.cd-reformattedComments .mw-content-rtl .mw-content-ltr .cd-changeMark {
   margin-left: 1em;
+  margin-right: auto;
 }
 
-.sitedir-rtl.cd-reformattedComments .cd-changeMark {
+.cd-reformattedComments .mw-content-rtl .cd-changeMark,
+.cd-reformattedComments .mw-content-ltr .mw-content-rtl .cd-changeMark {
+  margin-left: auto;
   margin-right: 1em;
 }
