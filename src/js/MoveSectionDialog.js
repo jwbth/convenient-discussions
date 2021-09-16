@@ -436,22 +436,22 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         starttimestamp: target.page.queryTimestamp,
       });
     } catch (e) {
-      const editingTargetPageMessage = cd.sParse('msd-error-editingtargetpage');
+      const genericMessage = cd.sParse('msd-error-editingtargetpage');
       if (e instanceof CdError) {
         const { type, details } = e.data;
         if (type === 'network') {
-          throw [editingTargetPageMessage + ' ' + cd.sParse('error-network'), true];
+          throw [genericMessage + ' ' + cd.sParse('error-network'), true];
         } else {
           let { code, message, logMessage } = details;
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('msd-error-editconflict-retry');
           }
           console.warn(logMessage);
-          throw [editingTargetPageMessage + ' ' + message, true];
+          throw [genericMessage + ' ' + message, true];
         }
       } else {
         console.warn(e);
-        throw [editingTargetPageMessage + ' ' + cd.sParse('error-javascript'), false];
+        throw [genericMessage + ' ' + cd.sParse('error-javascript'), false];
       }
     }
   }
@@ -504,19 +504,19 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       // Errors when editing the target page are recoverable, because we haven't performed any
       // actions yet. Errors when editing the source page are not recoverable, because we have
       // already edited the source page.
-      const editingSourcePageMessage = cd.sParse('msd-error-editingsourcepage');
+      const genericMessage = cd.sParse('msd-error-editingsourcepage');
       if (e instanceof CdError) {
         const { type, details } = e.data;
         if (type === 'network') {
-          throw [editingSourcePageMessage + ' ' + cd.sParse('error-network'), false, true];
+          throw [genericMessage + ' ' + cd.sParse('error-network'), false, true];
         } else {
           let { message, logMessage } = details;
           console.warn(logMessage);
-          throw [editingSourcePageMessage + ' ' + message, false, true];
+          throw [genericMessage + ' ' + message, false, true];
         }
       } else {
         console.warn(e);
-        throw [editingSourcePageMessage + ' ' + cd.sParse('error-javascript'), false, true];
+        throw [genericMessage + ' ' + cd.sParse('error-javascript'), false, true];
       }
     }
   }
@@ -538,8 +538,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         },
       },
     }).$wrapper;
-    const error = new OO.ui.Error($body, { recoverable });
-    this.showErrors(error);
+    this.showErrors(new OO.ui.Error($body, { recoverable }));
     this.$errors
       .find('.oo-ui-buttonElement-button')
       .on('click', () => {

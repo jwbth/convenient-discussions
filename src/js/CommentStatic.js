@@ -200,7 +200,7 @@ export default {
       // bottom down.
       const isUnderRootBottom = comment.offset && comment.offset.bottom > rootBottom;
 
-      if ((removeUnhighlighted || isUnderRootBottom) && !shouldBeHighlighted && comment.underlay) {
+      if (comment.underlay && !shouldBeHighlighted && (removeUnhighlighted || isUnderRootBottom)) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
         floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);

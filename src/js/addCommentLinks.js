@@ -545,12 +545,8 @@ function processHistory($content) {
     } else {
       let isWatched = false;
       if (summary) {
-        const currentPageWatchedSections = (
-          cd.g.watchedSections?.[mw.config.get('wgArticleId')] ||
-          []
-        );
-        if (currentPageWatchedSections.length) {
-          for (let j = 0; j < currentPageWatchedSections.length; j++) {
+        if (cd.g.currentPageWatchedSections?.length) {
+          for (let j = 0; j < cd.g.currentPageWatchedSections.length; j++) {
             if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
               isWatched = true;
               break;

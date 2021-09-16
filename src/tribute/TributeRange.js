@@ -506,9 +506,7 @@ class TributeRange {
                 parseInt(computed.fontSize) - element.scrollTop
         }
         if (this.tribute.dir === 'rtl') {
-            const offsetRight = document.documentElement.dir === 'rtl' ?
-                windowWidth :
-                div.getBoundingClientRect().right
+            const offsetRight = doc.dir === 'rtl' ? windowWidth : div.getBoundingClientRect().right
             coordinates.right = (windowWidth - right) +
                 (offsetRight - span.getBoundingClientRect().right) + triggerSpan.offsetWidth
         } else {

@@ -38,7 +38,7 @@ const scrollData = { offset: null };
  *   alone.
  */
 export function wrap(htmlOrJquery, options = {}) {
-  const $wrapper = $(htmlOrJquery instanceof $ ? htmlOrJquery : $.parseHTML(htmlOrJquery))
+  const $wrapper = (htmlOrJquery instanceof $ ? htmlOrJquery : $($.parseHTML(htmlOrJquery)))
     .wrapAll(`<${options.tagName || 'span'}>`)
     .parent();
   const buttons = [];
@@ -512,25 +512,24 @@ export function unhideText(text, hidden, type) {
  * Save the scroll position relative to the first element in the viewport looking from the top of
  * the page.
  *
- * @param {?object} [fallbackToAbsolute=null] If an object with the `saveTocHeight` property and the
+ * @param {?object} [switchToAbsolute=null] If an object with the `saveTocHeight` property and the
  *   viewport is above the bottom of the table of contents, then use
  *   {@link module:util.saveScrollPosition} (this allows for better precision).
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
-export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = window.scrollY) {
+export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
   if (
-    fallbackToAbsolute &&
+    switchToAbsolute &&
     cd.g.$toc.length &&
-    cd.g.$toc.offset().top + cd.g.$toc.outerHeight() > window.scrollY
+    cd.g.$toc.offset().top + cd.g.$toc.outerHeight() > scrollY
   ) {
-    saveScrollPosition(fallbackToAbsolute.saveTocHeight);
+    saveScrollPosition(switchToAbsolute.saveTocHeight);
   } else {
     scrollData.element = null;
     scrollData.elementTop = null;
     scrollData.touchesBottom = false;
-
     scrollData.offsetBottom = (
-      document.documentElement.scrollHeight - (window.scrollY + window.innerHeight)
+      document.documentElement.scrollHeight - (scrollY + window.innerHeight)
     );
 
     // 100 accounts for various content moves by scripts running on the page (like HotCat that may
@@ -561,12 +560,12 @@ export function saveRelativeScrollPosition(fallbackToAbsolute = null, scrollY = 
 /**
  * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
  *
- * @param {boolean} [fallbackToAbsolute=false] Restore the absolute position using
+ * @param {boolean} [switchToAbsolute=false] Restore the absolute position using
  *   {@link module:util.restoreScrollPosition} if {@link module:util.saveScrollPosition} was
  *   previously used for saving the position.
  */
-export function restoreRelativeScrollPosition(fallbackToAbsolute = false) {
-  if (fallbackToAbsolute && scrollData.offset !== null) {
+export function restoreRelativeScrollPosition(switchToAbsolute = false) {
+  if (switchToAbsolute && scrollData.offset !== null) {
     restoreScrollPosition();
   } else {
     if (scrollData.touchesBottom && window.scrollY !== 0) {

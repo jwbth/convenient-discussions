@@ -945,8 +945,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.g.isEnabledInQuery ||
     !cd.state.isFirstRun ||
     cd.comments.length ||
-    $('#ca-addsection').length ||
-    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.page.name)
+    cd.g.PAGE_WHITELIST_REGEXP?.test(cd.page.name) ||
+    $('#ca-addsection').length
   );
 
   const isPageCommentable = cd.state.isPageActive || !articleId;
@@ -1203,6 +1203,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
     cd.debug.stopTimer('final code and rendering');
   } else {
+    cd.debug.stopTimer('main code');
+
     cd.state.isPageActive = false;
 
     const $disableLink = $('#footer-places-togglecd a');

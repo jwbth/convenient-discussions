@@ -1350,7 +1350,8 @@ class Comment extends CommentSkeleton {
    *   calculated in advance for many elements in one sequence to save time.
    * @param {boolean} [options.considerFloating] Whether to take floating elements around the
    *   comment into account. Deemed `true` if `options.floatingRects` is set.
-   * @returns {?boolean} Is the comment moved.
+   * @returns {?boolean} Is the comment moved. `null` if we couldn't determine (for example, if the
+   *   element is invisible).
    */
   configureLayers(options = {}) {
     if (options.add === undefined) {

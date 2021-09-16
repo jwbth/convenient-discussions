@@ -280,7 +280,7 @@ export function createApi() {
 }
 
 /**
- * Initialize a number of the global object properties.
+ * Set a number of global object properties.
  *
  * @private
  */
