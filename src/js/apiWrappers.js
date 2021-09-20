@@ -70,6 +70,7 @@ export function parseCode(code, customOptions) {
     pst: true,
     disabletoc: true,
     disablelimitreport: true,
+    disableeditsection: true,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
   return cd.g.mwApi.post(options).then(
