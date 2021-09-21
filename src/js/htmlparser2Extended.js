@@ -136,6 +136,10 @@ Object.defineProperty(Element.prototype, 'outerHTML', {
   },
 });
 
+Element.prototype.hasAttribute = function (name) {
+  return this.attribs[name] !== undefined;
+};
+
 Element.prototype.getAttribute = function (name) {
   let value = this.attribs[name] || null;
   if (value && typeof value === 'string' && value.indexOf('&') !== -1) {

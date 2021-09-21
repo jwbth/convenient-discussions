@@ -940,6 +940,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       getElementByClassName: (node, className) => node.querySelector(`.${className}`),
     });
 
+    parser.removeDtMarkup();
+
     try {
       processComments(parser);
     } catch (e) {
@@ -1230,10 +1232,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   debugLog();
 
   if (showPopups) {
-    if (
-      $('.ext-discussiontools-init-replylink-buttons').length &&
-      !mw.util.getParamValue('dtenable')
-    ) {
+    if (mw.user.options.get('discussiontools-replytool')) {
       suggestDisableDiscussionTools();
     }
 

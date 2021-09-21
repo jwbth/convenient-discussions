@@ -124,6 +124,52 @@ class Parser {
   }
 
   /**
+   * _For internal use._ Remove some of the elements added by the DiscussionTools extension (even if
+   * it is disabled in user preferences) or move them away if the topic subscriptions feature of DT
+   * is enabled (to avoid errors being thrown in DT).
+   *
+   * CD already parses comment links from notifications (which seems to be this markup's purpose for
+   * disabled DT) in {@link module:processPage.processFragment}. Unless the elements prove useful to
+   * CD or other scripts, it's better to get rid of them rather than deal with them one by one while
+   * parsing.
+   */
+  removeDtMarkup() {
+    const isDtTopicSubscriptionsEnabled = (
+      typeof mw !== 'undefined' &&
+
+      // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
+      // Tool doesn't seem to make difference for our purposes here.
+      mw.user.options.get('discussiontools-topicsubscription')
+    );
+    let dtMarkupHavenElement;
+    if (isDtTopicSubscriptionsEnabled) {
+      dtMarkupHavenElement = this.context.document.createElement('span');
+      dtMarkupHavenElement.className = 'cd-dtMarkupHaven';
+      cd.g.rootElement.appendChild(dtMarkupHavenElement);
+    }
+    Array.from(cd.g.rootElement.getElementsByTagName('span'))
+      .filter((el) => (
+        el.hasAttribute('data-mw-comment-start') ||
+        el.hasAttribute('data-mw-comment-end')
+      ))
+      .concat(Array.from(
+        cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')
+      ))
+      .forEach((el, i) => {
+        if (isDtTopicSubscriptionsEnabled) {
+          // DT gets the offset of all these elements upon initialization which can take a lot of
+          // time if the elements aren't put into containers with less children.
+          if (i % 10 === 0) {
+            dtMarkupHavenElement.appendChild(this.context.document.createElement('span'));
+          }
+          dtMarkupHavenElement.lastChild.appendChild(el);
+        } else {
+          el.remove();
+        }
+      });
+  }
+
+  /**
    * @typedef {object} Timestamp
    * @property {Element|external:Element} element
    * @property {Date} date
