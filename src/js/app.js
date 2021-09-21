@@ -447,8 +447,10 @@ async function go() {
     }
   }
 
-  const isRedLink = /[?&]redlink=1/.test(location.search);
-  if (isPageEligible && mw.config.get('wgAction') === 'edit' && isRedLink) {
+  if (
+    isPageEligible &&
+    (mw.config.get('wgAction') !== 'view' || mw.user.options.get('discussiontools-newtopictool'))
+  ) {
     const $addTopicLink = $('#ca-addsection a');
     const href = $addTopicLink.prop('href');
     if (href) {
