@@ -649,23 +649,23 @@ async function processFragment(passedData) {
   let sectionAnchorBeginning;
   if (cd.state.isFirstRun) {
     fragment = location.hash.slice(1);
+    escapedFragment = $.escapeSelector(fragment);
     try {
       decodedFragment = decodeURIComponent(fragment);
+      escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
+      if (isCommentAnchor(fragment)) {
+        commentAnchor = decodedFragment;
+      } else {
+        ({
+          date,
+          author,
+          parentDate,
+          parentAuthor,
+          sectionAnchorBeginning,
+        } = parseDtCommentId(decodedFragment) || {});
+      }
     } catch (e) {
       console.error(e);
-    }
-    escapedFragment = $.escapeSelector(fragment);
-    escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-    if (isCommentAnchor(fragment)) {
-      commentAnchor = decodedFragment;
-    } else {
-      ({
-        date,
-        author,
-        parentDate,
-        parentAuthor,
-        sectionAnchorBeginning,
-      } = parseDtCommentId(decodedFragment) || {});
     }
   } else {
     commentAnchor = passedData.commentAnchor;
