@@ -502,6 +502,20 @@ function addAddTopicButton() {
 }
 
 /**
+ * If the argument is an array, return its last element. Otherwise, return the value. (To process
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Uri-property-query mw.Uri#query}.
+ * If there is no than one parameter with some name, its property becomes an array in
+ * `mw.Uri#query`.)
+ *
+ * @param {string|string[]} value
+ * @returns {string}
+ * @private
+ */
+function getLastElementOrSelf(value) {
+  return Array.isArray(value) ? value[value.length - 1] : value;
+}
+
+/**
  * Bind a click handler to every known "Add new topic" button.
  *
  * @private
@@ -521,12 +535,7 @@ function connectToAddTopicButtons() {
         } catch {
           return;
         }
-        pageName = query.title;
-
-        // There is more than one "title" parameter.
-        if (typeof pageName === 'object') {
-          pageName = pageName[pageName.length - 1];
-        }
+        pageName = getLastElementOrSelf(query.title);
       } else if ($button.is('input')) {
         pageName = $button
           .closest('form')
@@ -564,11 +573,11 @@ function connectToAddTopicButtons() {
           return;
         }
         preloadConfig = {
-          editIntro: query.editintro,
-          commentTemplate: query.preload,
-          headline: query.preloadtitle,
-          summary: query.summary?.replace(/^.+?\*\/ */, ''),
-          noHeadline: Boolean(query.nosummary),
+          editIntro: getLastElementOrSelf(query.editintro),
+          commentTemplate: getLastElementOrSelf(query.preload),
+          headline: getLastElementOrSelf(query.preloadtitle),
+          summary: getLastElementOrSelf(query.summary)?.replace(/^.+?\*\/ */, ''),
+          noHeadline: Boolean(getLastElementOrSelf(query.nosummary)),
           omitSignature: Boolean(query.cdomitsignature),
         };
         isNewTopicOnTop = query.section === '0';
