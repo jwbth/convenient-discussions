@@ -283,21 +283,18 @@ class CommentSkeleton {
      */
     this.logicalLevel = this.level;
 
-    for (let i = 0; i < this.level; i++) {
-      levelElements.forEach((ancestors) => {
-        ancestors[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
-      });
-    }
-
     if (this.level && this.elements.length > 2) {
+      // Get level elements based on this.elements, not this.highlightables.
+      const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
+
       const elementsInHolesIndexes = [];
-      levelElements.forEach((ancestors, i) => {
+      allLevelElements.forEach((ancestors, i) => {
         if (!ancestors.length) {
           elementsInHolesIndexes.push(i);
         }
       });
       elementsInHolesIndexes.forEach((index) => {
-        const levelElement = levelElements
+        const levelElement = allLevelElements
           .slice(0, index)
           .reverse()
           .find((ancestors) => ancestors.length)
@@ -308,6 +305,12 @@ class CommentSkeleton {
           itemElement.appendChild(this.elements[index]);
           levelElement.appendChild(itemElement);
         }
+      });
+    }
+
+    for (let i = 0; i < this.level; i++) {
+      levelElements.forEach((ancestors) => {
+        ancestors[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
       });
     }
   }
