@@ -98,7 +98,7 @@ function hideElement(el, comment) {
     type = 'templateStyles';
   }
 
-  const num = comment.hiddenElementData.push({
+  const num = comment.hiddenElementsData.push({
     type,
     tagName: el.tagName,
     html: el.outerHTML,
@@ -185,7 +185,7 @@ function parse() {
   cd.debug.startTimer('worker: prepare comments and sections');
   CommentSkeleton.processOutdents();
   cd.comments.forEach((comment) => {
-    comment.hiddenElementData = [];
+    comment.hiddenElementsData = [];
     comment.elementHtmls = comment.elements.map((element) => {
       if (/^H[1-6]$/.test(element.tagName)) {
         // Keep only the headline, as other elements contain dynamic identificators.

@@ -54,8 +54,8 @@ import {
 import { getVisits, getWatchedSections, setVisits } from './options';
 
 /**
- * Prepare (initialize or reset) various properties, mostly global ones. DOM preparations related to
- * comment layers are also made here.
+ * Prepare (initialize or reset) various properties, mostly global ones. Some DOM preparations are
+ * also made here.
  *
  * @param {import('./commonTypedefs').PassedData} passedData
  * @param {Promise[]} siteDataRequests Array of requests returned by
@@ -1008,7 +1008,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     findClosedDiscussions();
     findOutdents();
     cd.g.areThereLtrRtlMixes = Boolean(
-      cd.g.rootElement.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr')
+      document.querySelector('.sitedir-ltr .mw-content-rtl, .sitedir-rtl .mw-content-ltr')
     );
 
     cd.debug.startTimer('process comments');

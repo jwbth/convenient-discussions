@@ -2034,18 +2034,18 @@ class Comment extends CommentSkeleton {
     const elementNames = Array.from(this.$elements).map((el) => el.tagName);
 
     // References themselves may be out of the comment's HTML and might be edited.
-    const areThereReferences = newComment.hiddenElementData
+    const areThereReferences = newComment.hiddenElementsData
       .some((data) => data.type === 'reference');
 
     // If a style element is replaced with a link element, we can't replace HTML.
     const areStyleTagsKept = (
-      !newComment.hiddenElementData.length ||
+      !newComment.hiddenElementsData.length ||
       (
-        newComment.hiddenElementData.every((data) => (
+        newComment.hiddenElementsData.every((data) => (
           data.type !== 'templateStyles' ||
           data.tagName === 'STYLE'
         )) ||
-        currentComment.hiddenElementData.every((data) => (
+        currentComment.hiddenElementsData.every((data) => (
           data.type !== 'templateStyles' ||
           data.tagName !== 'STYLE'
         ))
@@ -2062,7 +2062,7 @@ class Comment extends CommentSkeleton {
       newComment.elementHtmls.forEach((html, i) => {
         html = html.replace(
           /\x01(\d+)_\w+\x02/g,
-          (s, num) => newComment.hiddenElementData[num - 1].html
+          (s, num) => newComment.hiddenElementsData[num - 1].html
         );
         if (/^H[1-6]$/.test(elementNames[i])) {
           const $headline = this.$elements.eq(i).find('.mw-headline');
@@ -3535,7 +3535,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {external:jQuery[]} CreateSublevelItemReturn
+   * @typedef {external:jQuery[]} AddSublevelItemReturn
    * @property {external:jQuery} $wrappingItem
    * @property {external:jQuery} [$wrappingList]
    * @property {external:jQuery} [$outerWrapper]
@@ -3547,9 +3547,9 @@ class Comment extends CommentSkeleton {
    *
    * @param {string} name
    * @param {string} position
-   * @returns {CreateSublevelItemReturn}
+   * @returns {AddSublevelItemReturn}
    */
-  createSublevelItem(name, position) {
+  addSublevelItem(name, position) {
     /*
       There are 3 basic cases that we account for:
       1.

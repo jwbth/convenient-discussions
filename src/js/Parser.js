@@ -144,7 +144,7 @@ class Parser {
     let dtMarkupHavenElement;
     if (isDtTopicSubscriptionsEnabled) {
       dtMarkupHavenElement = this.context.document.createElement('span');
-      dtMarkupHavenElement.className = 'cd-dtMarkupHaven';
+      dtMarkupHavenElement.className = 'cd-hidden';
       cd.g.rootElement.appendChild(dtMarkupHavenElement);
     }
     Array.from(cd.g.rootElement.getElementsByTagName('span'))
@@ -1292,7 +1292,6 @@ class Parser {
       if (!pageName || isCommentAnchor(fragment)) {
         return null;
       }
-      const isCurrentDomain = domain === cd.g.HOSTNAME;
       const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
       if (match) {
         userName = match[1];
@@ -1315,7 +1314,7 @@ class Parser {
         }
         linkType = 'contribs';
       }
-      if (!isCurrentDomain) {
+      if (domain !== cd.g.HOSTNAME) {
         linkType += 'Foreign';
       }
       if (userName) {

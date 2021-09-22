@@ -1015,8 +1015,8 @@ function cleanUpUrlAndDom(passedData) {
       methodName = 'pushState';
 
       delete query.diff;
-      delete query.diffmode;
       delete query.oldid;
+      delete query.diffmode;
       delete query.type;
 
       // Diff pages

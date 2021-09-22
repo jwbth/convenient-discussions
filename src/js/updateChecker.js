@@ -378,7 +378,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
           ) {
             const html = oldComment.elementHtmls[0].replace(
               /\x01(\d+)_\w+\x02/g,
-              (s, num) => currentComment.hiddenElementData[num - 1].html
+              (s, num) => currentComment.hiddenElementsData[num - 1].html
             );
             const $dummy = $('<span>').html($(html).html());
             const oldSection = { headlineElement: $dummy.get(0) };

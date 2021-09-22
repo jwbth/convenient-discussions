@@ -1450,7 +1450,7 @@ class CommentForm {
     let $outerWrapper;
     if (this.mode === 'reply') {
       ({ $wrappingItem, $wrappingList, $outerWrapper } = this.target
-        .createSublevelItem('replyForm', 'top'));
+        .addSublevelItem('replyForm', 'top'));
     } else if (this.mode === 'edit') {
       const $lastOfTarget = this.target.$elements.last();
       if ($lastOfTarget.is('dd, li')) {
