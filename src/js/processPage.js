@@ -491,7 +491,7 @@ function processSections(parser, watchedSectionsRequest) {
  * @returns {?object}
  */
 function hideDtNewTopicForm() {
-  if (!mw.user.options.get('discussiontools-newtopictool')) {
+  if (!cd.g.isDtNewTopicToolEnabled) {
     return null;
   }
 
@@ -545,7 +545,7 @@ function hideDtNewTopicForm() {
 function addAddTopicButton() {
   if (
     $('#ca-addsection').length &&
-    !(mw.user.options.get('discussiontools-newtopictool') && !mw.config.get('wgArticleId'))
+    !(cd.g.isDtNewTopicToolEnabled && !mw.config.get('wgArticleId'))
   ) {
     cd.g.addSectionButton = new OO.ui.ButtonWidget({
       label: cd.s('addtopic'),
@@ -1325,10 +1325,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   debugLog();
 
   if (showPopups) {
-    if (
-      mw.user.options.get('discussiontools-betaenable') &&
-      mw.user.options.get('discussiontools-replytool')
-    ) {
+    if (cd.g.isDtReplyToolEnabled) {
       suggestDisableDiscussionTools();
     }
 

@@ -139,7 +139,7 @@ class Parser {
 
       // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
       // Tool doesn't seem to make difference for our purposes here.
-      mw.user.options.get('discussiontools-topicsubscription')
+      cd.g.isDtTopicSubscriptionsEnabled
     );
     let dtMarkupHavenElement;
     if (isDtTopicSubscriptionsEnabled) {

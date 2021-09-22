@@ -302,6 +302,14 @@ async function go() {
   cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
   cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
+  const isDtEnabled = mw.user.options.get('discussiontools-betaenable');
+  cd.g.isDtReplyToolEnabled = isDtEnabled && mw.user.options.get('discussiontools-replytool');
+  cd.g.isDtNewTopicToolEnabled = isDtEnabled && mw.user.options.get('discussiontools-newtopictool');
+  cd.g.isDtTopicSubscriptionEnabled = (
+    isDtEnabled &&
+    mw.user.options.get('discussiontools-topicsubscription')
+  );
+
   // Process the page as a talk page
   const isPageEligible = (
     !mw.config.get('wgIsRedirect') &&
@@ -447,10 +455,7 @@ async function go() {
     }
   }
 
-  if (
-    isPageEligible &&
-    (mw.config.get('wgAction') !== 'view' || mw.user.options.get('discussiontools-newtopictool'))
-  ) {
+  if (isPageEligible && (mw.config.get('wgAction') !== 'view' || cd.g.isDtNewTopicToolEnabled)) {
     const $addTopicLink = $('#ca-addsection a');
     const href = $addTopicLink.prop('href');
     if (href) {
