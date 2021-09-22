@@ -3584,23 +3584,29 @@ class Comment extends CommentSkeleton {
     let outerWrapperTag;
 
     let $lastOfTarget = this.$elements.last();
+    let $existingWrappingList;
 
     if (position === 'bottom') {
-      // The list can be broken, so we need to find the element before the last list of children of
-      // the comment.
-      const children = this.getChildren();
-      if (children.length) {
-        const $test = children[children.length - 1].$elements
+      // The list can be broken, so we need to find the last list containing the children of the
+      // comment.
+      const descendants = this.getChildren(true);
+      if (descendants.length) {
+        const $test = descendants[descendants.length - 1].$elements
           .last()
-          .closest('.cd-commentLevel')
-          .prev();
+          .closest(`.cd-commentLevel-${this.level + 1}`);
+
+        // Logically, the element should always be there, but nevertheless.
         if ($test.length) {
-          $lastOfTarget = $test;
+          $existingWrappingList = $test;
+
+          // Can be empty, but it doesn't matter to us. What matters is that $lastOfTarget is not an
+          // item element.
+          $lastOfTarget = $test.prev();
         }
       }
     }
 
-    let $anchor = $lastOfTarget.next();
+    let $anchor = $existingWrappingList || $lastOfTarget.next();
     const $anchorFirstChild = $anchor.children().first();
     if ($anchor.is('dd, li') && $anchorFirstChild.hasClass('cd-commentLevel')) {
       // A relatively rare case possible when two adjacent lists are merged with
