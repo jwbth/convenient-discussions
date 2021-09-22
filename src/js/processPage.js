@@ -762,6 +762,7 @@ async function processFragment(passedData) {
     comment = Comment.getByAnchor(commentAnchor, !passedData.commentAnchor);
   } else if (date) {
     const comments = cd.comments.filter((comment) => (
+      comment.date &&
       comment.date.getTime() === date.getTime() &&
       comment.author.name === author
     ));
