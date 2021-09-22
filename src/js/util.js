@@ -963,19 +963,6 @@ export function getUrlWithAnchor(anchor, permanent) {
 }
 
 /**
- * Add CSS to the page.
- *
- * @param {string} text
- * @returns {CSSStyleSheet}
- */
-export function addCss(text) {
-  const element = document.createElement('style');
-  element.appendChild(document.createTextNode(text));
-  document.head.appendChild(element);
-  return element.sheet;
-}
-
-/**
  * Get the gender that is common for a list of users (`'unknown'` is treated as `'male'`) or
  * `'unknown'` if there is no such.
  *

@@ -18,7 +18,6 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import {
-  addCss,
   areObjectsEqual,
   calculateWordOverlap,
   closeNotifications,
@@ -236,7 +235,7 @@ export function setTalkPageCssVariables() {
   });
   const sidebarColor = $backgrounded.css('background-color');
 
-  addCss(`:root {
+  mw.loader.addStyleTag(`:root {
   --cd-comment-hovered-background-color: ${cd.g.COMMENT_HOVERED_BACKGROUND_COLOR};
   --cd-comment-target-marker-color: ${cd.g.COMMENT_TARGET_MARKER_COLOR};
   --cd-comment-target-background-color: ${cd.g.COMMENT_TARGET_BACKGROUND_COLOR};

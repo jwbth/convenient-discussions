@@ -8,7 +8,6 @@ import Comment from './Comment';
 import Page from './Page';
 import cd from './cd';
 import {
-  addCss,
   generatePageNamePattern,
   isCommentEdit,
   isProbablyTalkPage,
@@ -63,7 +62,7 @@ async function prepare(siteDataRequests) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
 
-  addCss(`:root {
+  mw.loader.addStyleTag(`:root {
   --cd-parentheses-start: '${cd.mws('parentheses-start')}';
   --cd-parentheses-end: '${cd.mws('parentheses-end')}';
 }`);
