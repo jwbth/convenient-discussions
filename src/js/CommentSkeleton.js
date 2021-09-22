@@ -262,7 +262,7 @@ class CommentSkeleton {
   setLevels() {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
-    const levelElements = this.highlightables.map(this.parser.getLevelsUpTree.bind(this.parser));
+    const levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
 
     // Use the first and last elements, not all elements, to determine the level to deal with cases
     // like
@@ -284,8 +284,30 @@ class CommentSkeleton {
     this.logicalLevel = this.level;
 
     for (let i = 0; i < this.level; i++) {
-      levelElements.forEach((els) => {
-        els[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
+      levelElements.forEach((ancestors) => {
+        ancestors[i]?.classList.add('cd-commentLevel', `cd-commentLevel-${i + 1}`);
+      });
+    }
+
+    if (this.level && this.elements.length > 2) {
+      const elementsInHolesIndexes = [];
+      levelElements.forEach((ancestors, i) => {
+        if (!ancestors.length) {
+          elementsInHolesIndexes.push(i);
+        }
+      });
+      elementsInHolesIndexes.forEach((index) => {
+        const levelElement = levelElements
+          .slice(0, index)
+          .reverse()
+          .find((ancestors) => ancestors.length)
+          .slice(-1)[0];
+        if (levelElement) {
+          const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
+          const itemElement = this.parser.context.document.createElement(tagName);
+          itemElement.appendChild(this.elements[index]);
+          levelElement.appendChild(itemElement);
+        }
       });
     }
   }

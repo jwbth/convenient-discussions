@@ -1222,13 +1222,14 @@ class Parser {
   }
 
   /**
-   * _For internal use._ Get the `.cd-commentLevel` elements up the DOM tree.
+   * _For internal use._ Get list elements up the DOM tree. They will then be assigned the class
+   * `cd-commentLevel`.
    *
    * @param {Element|external:Element} initialElement
    * @returns {Element[]|external:Element[]}
    */
-  getLevelsUpTree(initialElement) {
-    const levelElements = [];
+   getListsUpTree(initialElement) {
+    const listElements = [];
     const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
@@ -1236,15 +1237,15 @@ class Parser {
         if (el.classList.contains('cd-commentLevel')) {
           const match = el.getAttribute('class').match(/cd-commentLevel-(\d+)/);
           if (match) {
-            levelElements.unshift(...Array(Number(match[1])));
+            listElements.unshift(...Array(Number(match[1])));
           }
-          return levelElements;
+          return listElements;
         } else {
-          levelElements.unshift(el);
+          listElements.unshift(el);
         }
       }
     }
-    return levelElements;
+    return listElements;
   }
 
   /**
