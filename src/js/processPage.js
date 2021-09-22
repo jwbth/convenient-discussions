@@ -1325,7 +1325,10 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   debugLog();
 
   if (showPopups) {
-    if (mw.user.options.get('discussiontools-replytool')) {
+    if (
+      mw.user.options.get('discussiontools-betaenable') &&
+      mw.user.options.get('discussiontools-replytool')
+    ) {
       suggestDisableDiscussionTools();
     }
 
