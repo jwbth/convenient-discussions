@@ -112,6 +112,11 @@ async function prepare(passedData, siteDataRequests) {
   if (cd.state.isFirstRun) {
     await init(siteDataRequests);
   } else {
+    cd.g.$addSectionButtonContainer?.remove();
+
+    // Just submitted form. Forms that should stay are detached in boot.reloadPage().
+    $('.cd-commentForm-addSection').remove();
+
     resetCommentAnchors();
     Comment.resetLayers();
   }
@@ -480,12 +485,68 @@ function processSections(parser, watchedSectionsRequest) {
 }
 
 /**
+ * If a DT's comment form is present (for example, on `&action=edit&section=new` pages), remove it
+ * and later replace it with ours, keeping the input.
+ *
+ * @returns {?object}
+ */
+function hideDtNewTopicForm() {
+  if (!mw.user.options.get('discussiontools-newtopictool')) {
+    return null;
+  }
+
+  let headline;
+  let comment;
+  const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic');
+  if ($dtNewTopicForm.length) {
+    const $headline = $dtNewTopicForm
+      .find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]');
+    headline = $headline.val();
+    $headline.val('');
+
+    const $comment = $dtNewTopicForm.find('textarea');
+    comment = $comment.textSelection('getContents');
+    $comment.textSelection('setContents', '');
+
+    // DT's comment form produces errors after opening a CD's comment form because of hard code in
+    // WikiEditor that relies on $('#wpTextbox1'). So we create a dummy textarea high in the code
+    // that would distract WikiEditor from DT's dummy textarea. We can't simply delete DT's dummy
+    // textarea because it can show up unexpectedly right before WikiEditor's code is executed where
+    // it's hard for us to wedge in.
+    const $dummyTextarea = $('<textarea>').attr('id', 'wpTextbox1');
+    const $dummyContainer = $('<div>')
+      .append($dummyTextarea)
+      .addClass('cd-dummyTextareaContainer')
+      .hide();
+    cd.g.$content.prepend($dummyContainer);
+
+    // Don't outright remove the element so that DT has time to save the draft as empty.
+    $dtNewTopicForm.hide();
+
+    // This looks like it regulates adding a new topic form on DT init. This is for future page
+    // updates.
+    mw.config.set('wgDiscussionToolsStartNewTopicTool', false);
+
+    return {
+      headline,
+      comment,
+      didReplaceDtForm: true,
+    };
+  } else {
+    return null;
+  }
+}
+
+/**
  * Add an "Add topic" button to the bottom of the page if there is an "Add topic" tab.
  *
  * @private
  */
 function addAddTopicButton() {
-  if ($('#ca-addsection').length) {
+  if (
+    $('#ca-addsection').length &&
+    !(mw.user.options.get('discussiontools-newtopictool') && !mw.config.get('wgArticleId'))
+  ) {
     cd.g.addSectionButton = new OO.ui.ButtonWidget({
       label: cd.s('addtopic'),
       framed: false,
@@ -497,7 +558,10 @@ function addAddTopicButton() {
     cd.g.$addSectionButtonContainer = $('<div>')
       .addClass('cd-section-button-container cd-addTopicButton-container')
       .append(cd.g.addSectionButton.$element)
-      .appendTo(cd.g.rootElement);
+
+      // If appending to cd.g.rootElement, it can land on a wrong place, like on 404 pages with New
+      // Topic Tool enabled.
+      .appendTo(cd.g.$content);
   }
 }
 
@@ -524,6 +588,15 @@ function connectToAddTopicButtons() {
   $(cd.g.ADD_TOPIC_SELECTOR)
     .filter(function () {
       const $button = $(this);
+      // When DT's new topic tool is enabled
+      if (
+        mw.util.getParamValue('section') === 'new' &&
+        $button.parent().attr('id') !== 'ca-addsection' &&
+        !$button.closest(cd.g.$root).length
+      ) {
+        return false;
+      }
+
       let pageName;
       if ($button.is('a')) {
         const href = $button.attr('href');
@@ -555,7 +628,11 @@ function connectToAddTopicButtons() {
       }
       return true;
     })
-    .off('click.cd')
+
+    // DT may add its handler (as adds to a "Start new discussion" button on 404 pages). DT's "Add
+    // topic" button click handler is trickier, see below.
+    .off('click')
+
     .on('click.cd', function (e) {
       if (e.ctrlKey || e.shiftKey || e.metaKey) return;
 
@@ -598,6 +675,14 @@ function connectToAddTopicButtons() {
       CommentForm.createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
     .attr('title', cd.s('addtopicbutton-tooltip'));
+
+  // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
+  const dtHandler = $._data(document.body).events.click
+    ?.find((event) => event.selector?.includes('data-mw-comment'))
+    ?.handler;
+  if (dtHandler) {
+    $(document.body).off('click', dtHandler);
+  }
 }
 
 /**
@@ -988,6 +1073,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       cd.debug.stopTimer('laying out HTML');
     }
 
+    const dataToRestoreFromDtForm = hideDtNewTopicForm();
+
     if (isPageCommentable) {
       addAddTopicButton();
       connectToAddTopicButtons();
@@ -1039,9 +1126,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       // May crash if the current URL contains undecodable "%" in the fragment.
       try {
         const uri = new mw.Uri();
-        if (Number(uri.query.cdaddtopic)) {
-          CommentForm.createAddSectionForm();
-          delete uri.query.cdaddtopic;
+        const query = uri.query;
+
+        // &action=edit&section=new when DT's New Topic Tool is enabled.
+        if (query.section === 'new' || Number(query.cdaddtopic) || dataToRestoreFromDtForm) {
+          CommentForm.createAddSectionForm(undefined, undefined, dataToRestoreFromDtForm);
+
+          delete query.action;
+          delete query.section;
+          delete query.cdaddtopic;
           history.replaceState(history.state, '', uri.toString());
         }
       } catch {

@@ -91,11 +91,13 @@ export default {
    *
    * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
    * @param {boolean} [isNewTopicOnTop=false]
+   * @param {object} [dataToRestore]
    * @memberof CommentForm
    */
   createAddSectionForm(
     preloadConfig = CommentForm.getDefaultPreloadConfig(),
-    isNewTopicOnTop = false
+    isNewTopicOnTop = false,
+    dataToRestore
   ) {
     const addSectionForm = cd.g.addSectionForm;
     if (addSectionForm) {
@@ -123,6 +125,7 @@ export default {
         target: cd.page,
         preloadConfig,
         isNewTopicOnTop,
+        dataToRestore,
       });
     }
   },

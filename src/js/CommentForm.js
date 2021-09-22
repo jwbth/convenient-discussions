@@ -208,6 +208,13 @@ class CommentForm {
     this.preloadConfig = preloadConfig;
 
     /**
+     * Did this form replace a DiscussionTools reply form (see `processPage~hideDtNewTopicForm()`).
+     *
+     * @type {boolean}
+     */
+    this.didReplaceDtForm = dataToRestore?.didReplaceDtForm ?? false;
+
+    /**
      * When adding a topic, whether it should be on top.
      *
      * @type {boolean|undefined}
@@ -232,7 +239,7 @@ class CommentForm {
      *
      * @type {boolean}
      */
-    this.isSummaryAltered = dataToRestore ? dataToRestore.isSummaryAltered : false;
+    this.isSummaryAltered = dataToRestore?.isSummaryAltered ?? false;
 
     /**
      * Is section opening comment edited.
@@ -285,6 +292,10 @@ class CommentForm {
     this.initAutocomplete();
 
     this.addToPage();
+    if (this.mode === 'addSection') {
+      $('#ca-addsection').addClass('selected');
+      $('#ca-view').removeClass('selected');
+    }
 
     cd.commentForms.push(this);
 
@@ -298,6 +309,10 @@ class CommentForm {
          * @type {Date|undefined}
          */
         this.lastFocused = new Date(dataToRestore.lastFocused);
+      }
+
+      if (dataToRestore.didReplaceDtForm) {
+        focusInput(this.headlineInput || this.commentInput);
       }
 
       // Navigation panel's comment form button is updated in the end of boot.restoreCommentForms,
@@ -420,7 +435,7 @@ class CommentForm {
        * @type {external:OO.ui.TextInputWidget|undefined}
        */
       this.headlineInput = new OO.ui.TextInputWidget({
-        value: dataToRestore ? dataToRestore.headline : '',
+        value: dataToRestore?.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
         tabIndex: String(this.id) + '11',
@@ -463,7 +478,7 @@ class CommentForm {
      * @type {external:OO.ui.MultilineTextInputWidget}
      */
     this.commentInput = new OO.ui.MultilineTextInputWidget({
-      value: dataToRestore ? dataToRestore.comment : '',
+      value: dataToRestore?.comment ?? '',
       placeholder: commentInputPlaceholder,
       autosize: true,
       rows: rowNumber,
@@ -479,7 +494,7 @@ class CommentForm {
      * @type {external:OO.ui.TextInputWidget}
      */
     this.summaryInput = new OO.ui.TextInputWidget({
-      value: dataToRestore ? dataToRestore.summary : '',
+      value: dataToRestore?.summary ?? '',
       maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
       placeholder: cd.s('cf-summary-placeholder'),
       classes: ['cd-commentForm-summaryInput'],
@@ -517,7 +532,7 @@ class CommentForm {
        */
       [this.minorField, this.minorCheckbox] = createCheckboxField({
         value: 'minor',
-        selected: dataToRestore ? dataToRestore.minor : true,
+        selected: dataToRestore?.minor ?? true,
         label: cd.s('cf-minor'),
         tabIndex: String(this.id) + '20',
       });
@@ -548,7 +563,7 @@ class CommentForm {
      */
     [this.watchField, this.watchCheckbox] = createCheckboxField({
       value: 'watch',
-      selected: dataToRestore ? dataToRestore.watch : watchCheckboxSelected,
+      selected: dataToRestore?.watch ?? watchCheckboxSelected,
       label: cd.s('cf-watch'),
       tabIndex: String(this.id) + '21',
     });
@@ -583,7 +598,7 @@ class CommentForm {
        */
       [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
         value: 'watchSection',
-        selected: dataToRestore ? dataToRestore.watchSection : selected,
+        selected: dataToRestore?.watchSection ?? selected,
         label,
         tabIndex: String(this.id) + '22',
         title: cd.s('cf-watchsection-tooltip'),
@@ -611,7 +626,7 @@ class CommentForm {
 
       [this.omitSignatureField, this.omitSignatureCheckbox] = createCheckboxField({
         value: 'omitSignature',
-        selected: dataToRestore ? dataToRestore.omitSignature : false,
+        selected: dataToRestore?.omitSignature ?? false,
         label: cd.s('cf-omitsignature'),
         tabIndex: String(this.id) + '25',
       });
@@ -625,7 +640,7 @@ class CommentForm {
         !this.target.getChildren().length
       )
     ) {
-      const selected = dataToRestore ? dataToRestore.delete : false;
+      const selected = dataToRestore?.delete ?? false;
 
       /**
        * Delete checkbox field.
@@ -954,6 +969,9 @@ class CommentForm {
 
     mw.loader.using(['ext.wikiEditor', ...requestedModulesNames]).then(() => {
       $toolbarPlaceholder.remove();
+      if (this.didReplaceDtForm) {
+        $('.cd-dummyTextareaContainer').remove();
+      }
 
       const $input = this.commentInput.$input;
 
@@ -1424,7 +1442,7 @@ class CommentForm {
 
     // 'addSection'
     if (!mw.config.get('wgArticleId')) {
-      cd.g.$root.empty();
+      cd.g.$root.hide();
     }
 
     let $wrappingItem;
@@ -1482,7 +1500,7 @@ class CommentForm {
         if (this.isNewTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
         } else {
-          this.$element.appendTo(cd.g.$root);
+          this.$element.appendTo(cd.g.$content);
         }
         break;
       }
@@ -1501,7 +1519,7 @@ class CommentForm {
         const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
         let $target;
         let $tested = this.target.$elements.last();
-        const selector = '.cd-section-button-container:not(.cd-addTopicButton-container), .cd-commentForm-reply';
+        const selector = '.cd-section-button-container, .cd-commentForm-reply';
         do {
           $target = $tested;
           $tested = $tested.next();
@@ -3399,7 +3417,18 @@ class CommentForm {
       this.target.subitemList.remove('replyForm');
     } else {
       this.$outermostElement.remove();
+      if (this.mode === 'addSection') {
+        if (!mw.config.get('wgArticleId')) {
+          // In case DT's new topic tool is enabled
+          cd.g.$content.removeClass('ext-discussiontools-init-replylink-open');
+
+          cd.g.$root.show();
+        }
+        $('#ca-addsection').removeClass('selected');
+        $('#ca-view').addClass('selected');
+      }
     }
+
     this.operations
       .filter((op) => !op.isClosed)
       .forEach(this.closeOperation.bind(this));
