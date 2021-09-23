@@ -1780,9 +1780,12 @@ export function suggestDisableDiscussionTools() {
             },
           }
         }).$wrapper;
-        mw.notify(message, { type: 'warn' });
+        mw.notify(message);
       },
     },
   });
-  const notification = mw.notification.notify($message, { autoHide: false });
+  const notification = mw.notification.notify($message, {
+    type: 'warn',
+    autoHide: false,
+  });
 }
