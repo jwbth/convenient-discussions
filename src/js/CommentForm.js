@@ -3424,8 +3424,6 @@ class CommentForm {
 
           cd.g.$root.show();
         }
-        $('#ca-addsection').removeClass('selected');
-        $('#ca-view').addClass('selected');
       }
     }
 
@@ -3451,6 +3449,9 @@ class CommentForm {
   forget() {
     if (this.mode === 'addSection') {
       delete cd.g.addSectionForm;
+
+      $('#ca-addsection').removeClass('selected');
+      $('#ca-view').addClass('selected');
     } else {
       delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     }
