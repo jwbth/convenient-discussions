@@ -82,7 +82,7 @@ let newCommitsCount;
 let newCommitsSubjects;
 let edits = [];
 
-exec('git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n"', parseCmdOutput);
+exec('git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n" --abbrev=8', parseCmdOutput);
 
 function parseCmdOutput(err, stdout, stderr) {
   if (stdout === '') {
@@ -133,7 +133,7 @@ function getLastDeployedCommit(revisions) {
   let lastDeployedCommit;
   let lastDeployedVersion;
   revisions.some((revision) => {
-    [, lastDeployedCommit] = revision.comment.match(/[uU]pdate to ([0-9a-f]{7})(?= @ )/) || [];
+    [, lastDeployedCommit] = revision.comment.match(/[uU]pdate to ([0-9a-f]{8})(?= @ )/) || [];
     [, lastDeployedVersion] = revision.comment.match(/[uU]pdate to (v\d+\.\d+\.\d+\b)/) || [];
     return lastDeployedCommit || lastDeployedVersion;
   });
