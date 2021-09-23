@@ -134,18 +134,18 @@ class Parser {
    * parsing.
    */
   removeDtMarkup() {
-    const isDtTopicSubscriptionsEnabled = (
+    const moveNotRemove = (
       typeof mw !== 'undefined' &&
 
       // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
       // Tool doesn't seem to make difference for our purposes here.
-      cd.g.isDtTopicSubscriptionsEnabled
+      cd.g.isDtTopicSubscriptionEnabled
     );
     let dtMarkupHavenElement;
-    if (isDtTopicSubscriptionsEnabled) {
+    if (moveNotRemove) {
       dtMarkupHavenElement = this.context.document.createElement('span');
       dtMarkupHavenElement.className = 'cd-hidden';
-      cd.g.rootElement.appendChild(dtMarkupHavenElement);
+      cd.g.rootElement.parentNode.appendChild(dtMarkupHavenElement);
     }
     Array.from(cd.g.rootElement.getElementsByTagName('span'))
       .filter((el) => (
@@ -155,8 +155,11 @@ class Parser {
       .concat(Array.from(
         cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')
       ))
+      .concat(
+        Array.from(cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-highlight'))
+      )
       .forEach((el, i) => {
-        if (isDtTopicSubscriptionsEnabled) {
+        if (moveNotRemove) {
           // DT gets the offset of all these elements upon initialization which can take a lot of
           // time if the elements aren't put into containers with less children.
           if (i % 10 === 0) {
