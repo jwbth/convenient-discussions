@@ -8,6 +8,7 @@
 			"Linuxmetel",
 			"MathXplore",
 			"Omotecho",
+			"RYOUMA1117",
 			"RYU N",
 			"つぶあん派"
 		]
@@ -200,7 +201,7 @@
 	"sd-notifycollapsedthreads": "折りたたんだスレッドのコメントの通知を受け取る",
 	"sd-showtoolbar": "編集ツールバーを有効にする",
 	"sd-modifytoc-help": "新規コメントや節を表示、ウォッチ中の節を強調表示。",
-	"sd-usebackgroundhighlighting": "新規の自分のコメントは文字の背景に色を付ける",
+	"sd-usebackgroundhighlighting": "新規および独自のコメントには、（色付きのマーカーだけでなく）背景の強調表示を使用します。",
 	"sd-timestampformat": "タイムスタンプ形式",
 	"sd-watchonreply": "コメントしたページをウォッチ",
 	"sd-watchsectiononreply": "コメントした節をウォッチする",
