@@ -151,7 +151,6 @@
 	"ewsd-save": "저장",
 	"msd-title": "주제 이동",
 	"msd-move": "이동",
-	"msd-reload": "다시 불러오기",
 	"msd-error-wrongpage": "잘못된 페이지입니다.",
 	"msd-error-sourcepagedeleted": "현재 문서는 삭제되었습니다.",
 	"msd-error-editconflict-retry": "\"{{int:ooui-dialog-process-retry}}\"를 클릭하십시오.",
