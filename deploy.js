@@ -18,6 +18,7 @@ const test = Boolean(argv.test || process.env.npm_config_test);
 const noi18n = Boolean(argv.noi18n || process.env.npm_config_noi18n);
 const i18nonly = Boolean(argv.i18nonly || process.env.npm_config_i18nonly);
 const debug = Boolean(argv.debug || process.env.npm_config_debug);
+const dryRun = Boolean(argv['dry-run'] || process.env.npm_config_dry_run);
 
 const warning = (text) => {
   console.log(chalk.yellowBright(text));
@@ -216,6 +217,8 @@ async function prepareEdits() {
     ))
     .join('\n');
   console.log(`Gonna make these edits:\n\n${overview}`);
+
+  if (dryRun) return;
 
   if (process.env.CI) {
     logIn();

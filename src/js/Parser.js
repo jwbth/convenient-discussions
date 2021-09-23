@@ -147,29 +147,31 @@ class Parser {
       dtMarkupHavenElement.className = 'cd-hidden';
       cd.g.rootElement.parentNode.appendChild(dtMarkupHavenElement);
     }
-    Array.from(cd.g.rootElement.getElementsByTagName('span'))
+    let elements = Array.from(cd.g.rootElement.getElementsByTagName('span'))
       .filter((el) => (
         el.hasAttribute('data-mw-comment-start') ||
         el.hasAttribute('data-mw-comment-end')
       ))
       .concat(Array.from(
         cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')
-      ))
-      .concat(
+      ));
+    if (typeof mw !== 'undefined') {
+      elements = elements.concat(
         Array.from(cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-highlight'))
-      )
-      .forEach((el, i) => {
-        if (moveNotRemove) {
-          // DT gets the offset of all these elements upon initialization which can take a lot of
-          // time if the elements aren't put into containers with less children.
-          if (i % 10 === 0) {
-            dtMarkupHavenElement.appendChild(this.context.document.createElement('span'));
-          }
-          dtMarkupHavenElement.lastChild.appendChild(el);
-        } else {
-          el.remove();
+      );
+    }
+    elements.forEach((el, i) => {
+      if (moveNotRemove) {
+        // DT gets the offset of all these elements upon initialization which can take a lot of
+        // time if the elements aren't put into containers with less children.
+        if (i % 10 === 0) {
+          dtMarkupHavenElement.appendChild(this.context.document.createElement('span'));
         }
-      });
+        dtMarkupHavenElement.lastChild.appendChild(el);
+      } else {
+        el.remove();
+      }
+    });
   }
 
   /**
