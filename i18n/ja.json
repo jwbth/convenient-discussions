@@ -238,7 +238,7 @@
 	"error-pagenotedited": "ページは編集できませんでした。",
 	"error-diffnotfound": "このコメントを追加した編集が見つかりませんでした。",
 	"error-diffnotfound-history": "探すには[$1 変更履歴]を自分自身で開いてください。",
-	"wl-button-switchinteresting-tooltip": "ウォッチしている節にあり、私に宛てたコメントのみ表示する。 (注記: 削除は編集要約に依拠するため、編集が表示から漏れる可能性あり)",
+	"wl-button-switchrelevant-tooltip": "ウォッチしている節にあり、私に宛てたコメントのみ表示する。 (注記: 削除は編集要約に依拠するため、編集が表示から漏れる可能性あり)",
 	"wl-button-editwatchedsections-tooltip": "私がウォッチしている節の一覧を編集",
 	"lp-comment": "コメント",
 	"lp-comment-tooltip": "コメントを表示",
