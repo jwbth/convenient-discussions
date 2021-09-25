@@ -3,5 +3,6 @@
   "en.wikipedia.org": "https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript",
   "he.wikipedia.org": "https://he.wikipedia.org/w/index.php?title=%D7%9E%D7%93%D7%99%D7%94_%D7%95%D7%99%D7%A7%D7%99:CD-config.js&action=raw&ctype=text/javascript",
   "ru.wikipedia.org": "https://ru.wikipedia.org/w/load.php?modules=ext.gadget.convenientDiscussions&only=scripts",
+  "meta.wikimedia.org": "https://meta.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript",
   "ru.wikipedia.org-test": "https://ru.wikipedia.org/w/index.php?title=%D0%A3%D1%87%D0%B0%D1%81%D1%82%D0%BD%D0%B8%D0%BA:Jack_who_built_the_house/convenientDiscussions-test.js&action=raw&ctype=text/javascript"
 }
