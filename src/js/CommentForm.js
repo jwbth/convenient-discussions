@@ -1442,7 +1442,7 @@ class CommentForm {
 
     // 'addSection'
     if (!mw.config.get('wgArticleId')) {
-      cd.g.$root.hide();
+      cd.g.$content.children('.noarticletext, .warningbox').hide();
     }
 
     let $wrappingItem;
@@ -3419,10 +3419,13 @@ class CommentForm {
       this.$outermostElement.remove();
       if (this.mode === 'addSection') {
         if (!mw.config.get('wgArticleId')) {
-          // In case DT's new topic tool is enabled
-          cd.g.$content.removeClass('ext-discussiontools-init-replylink-open');
+          cd.g.$content
+            // In case DT's new topic tool is enabled. This should be above .show() so that .show()
+            // did set correct styles.
+            .removeClass('ext-discussiontools-init-replylink-open')
 
-          cd.g.$root.show();
+            .children('.noarticletext, .warningbox')
+            .show();
         }
       }
     }

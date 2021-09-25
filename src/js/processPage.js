@@ -1061,16 +1061,12 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
     if (passedData.html) {
       cd.debug.startTimer('laying out HTML');
-      if (passedData.wasPageCreated) {
-        cd.g.$content
-          .empty()
-          .append(cd.g.$root);
-      } else {
-        cd.g.$content
-          .children('.mw-parser-output')
-          .first()
-          .replaceWith(cd.g.$root);
-      }
+      cd.g.$content
+        // Warning boxes may contain log excerpts on pages that were previously deleted.
+        .children(passedData.wasPageCreated ? '.noarticletext, .warningbox' : '.mw-parser-output')
+
+        .remove();
+      cd.g.$content.prepend(cd.g.$root);
       cd.debug.stopTimer('laying out HTML');
     }
 
