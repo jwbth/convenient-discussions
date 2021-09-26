@@ -36,16 +36,16 @@ ol .cd-section-button {
   content: '\200B\200F';
 }
 
-.sitedir-rtl.ltr .mw-editsection-bracket:first-of-type,
-.sitedir-ltr.rtl .mw-editsection-bracket:last-of-type {
-  margin-right: 0.25em;
-  margin-left: 0;
-}
+.sitedir-rtl.ltr {
+  .mw-editsection-bracket:first-of-type {
+    margin-right: 0.25em;
+    margin-left: 0;
+  }
 
-.sitedir-ltr.rtl .mw-editsection-bracket:first-of-type,
-.sitedir-rtl.ltr .mw-editsection-bracket:last-of-type {
-  margin-left: 0.25em;
-  margin-right: 0;
+  .mw-editsection-bracket:last-of-type {
+    margin-left: 0.25em;
+    margin-right: 0;
+  }
 }
 
 .cd-moveSectionDialog {

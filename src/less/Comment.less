@@ -47,8 +47,7 @@
 }
 
 .sitedir-ltr .cd-comment-button,
-.sitedir-rtl .mw-content-ltr .cd-comment-button,
-.sitedir-rtl.ltr .cd-comment-menu .cd-comment-button {
+.sitedir-rtl .mw-content-ltr .cd-comment-button {
   margin-left: 1em;
   margin-right: 0;
 
@@ -59,8 +58,7 @@
 }
 
 .sitedir-rtl .cd-comment-button,
-.sitedir-ltr .mw-content-rtl .cd-comment-button,
-.sitedir-ltr.rtl .cd-comment-menu .cd-comment-button {
+.sitedir-ltr .mw-content-rtl .cd-comment-button {
   margin-right: 1em;
   margin-left: 0;
 
@@ -68,6 +66,18 @@
     margin-right: 0;
     margin-left: 0;
   }
+}
+
+// Comment buttons should inherit the text direction, not matter the interface language. (Don't
+// specify styles for .mw-content-ltr as they could be expensive.) If the "mw-content-rtl" class
+// would be thrown away one day, then use [dir="rtl"]?
+[dir="rtl"] .cd-comment-menu .cd-comment-button,
+[dir="rtl"] .cd-comment-header .cd-comment-author-wrapper a {
+  unicode-bidi: isolate;
+}
+
+[dir="rtl"] .cd-comment-timestamp {
+  unicode-bidi: plaintext;
 }
 
 .cd-comment-button-goToParent {
