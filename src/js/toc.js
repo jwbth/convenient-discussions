@@ -165,6 +165,40 @@ export default {
   },
 
   /**
+   * Add the number of comments to each section link.
+   */
+  addCommentCount() {
+    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
+
+    cd.sections.forEach((section, i) => {
+      const item = section.getTocItem();
+      if (!item) return;
+
+      const count = section.comments.length;
+      if (!count) return;
+      const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
+
+      const countString = i === 0 ? cd.s('toc-commentcount-full', count) : count;
+      let unseenCountStringInParens;
+      if (unseenCount) {
+        const unseenCountString = i === 0 ?
+          cd.s('toc-commentcount-new-full', unseenCount) :
+          unseenCount;
+        unseenCountStringInParens = ' ' + cd.mws('parentheses', unseenCountString);
+      } else {
+        unseenCountStringInParens = '';
+      }
+
+      const span = document.createElement('span');
+      span.className = 'cd-toc-commentCount';
+      const bdi = document.createElement('bdi');
+      bdi.textContent = countString + unseenCountStringInParens;
+      span.appendChild(bdi);
+      item.$link.append(span);
+    });
+  },
+
+  /**
    * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
    * the table of contents.
    *

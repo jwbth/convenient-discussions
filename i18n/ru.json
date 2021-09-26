@@ -236,6 +236,8 @@
 	"navpanel-newcomments-unknowndate": "неизвестная дата",
 	"navpanel-newcomments-refresh": "Нажмите, чтобы обновить страницу",
 	"navpanel-markasread": "Удерживайте Ctrl, чтобы пометить все показанные сообщения как прочитанные",
+	"toc-commentcount-full": "$1 {{plural:$1|сообщение|сообщения|сообщений}}",
+	"toc-commentcount-new-full": "$1 {{plural:$1|новое|новых}}",
 	"toc-more": "ещё $1",
 	"toc-watched": "Вы следите за этим разделом",
 	"pagenav-pagetop": "Начало страницы",

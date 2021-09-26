@@ -889,6 +889,9 @@ async function processVisits(visitsRequest, passedData) {
     });
 
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
+
+    toc.addCommentCount();
+
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
     toc.addNewComments(Comment.groupBySection(unseenComments), passedData);
   }
