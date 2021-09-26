@@ -976,24 +976,26 @@ class Parser {
   filterParts(parts, signatureElement) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
 
-    // Empty paragraphs, <style> and <link> tags at the beginning. Also {{reflist-talk}} templates
-    // (will need to generalize this, possibly via wiki configuration, if other wikis employ a
-    // differently named class).
+    // <style> and <link> tags at the beginning. Also {{reflist-talk}} templates (will need to
+    // generalize this, possibly via wiki configuration, if other wikis employ a differently named
+    // class).
     for (let i = parts.length - 1; i > 0; i--) {
       const node = parts[i].node;
-      if (
-        (
-          node.tagName === 'P' &&
-          !node.textContent.trim() &&
-          Array.from(node.children).every((child) => child.tagName === 'BR')
-        ) ||
-        node.tagName === 'STYLE' ||
+      if (node.tagName === 'STYLE' ||
         node.tagName === 'LINK' ||
         node.classList.contains('reflist-talk')
       ) {
         parts.splice(i, 1);
       } else {
         break;
+      }
+    }
+
+    // When the first comment part starts with <br>
+    const firstNode = parts[parts.length - 1]?.node;
+    if (firstNode.tagName === 'P') {
+      if (firstNode.firstChild?.tagName === 'BR') {
+        firstNode.parentNode.insertBefore(firstNode.firstChild, firstNode);
       }
     }
 
