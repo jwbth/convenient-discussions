@@ -509,7 +509,7 @@ class CommentForm {
     });
     this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
     mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.SUMMARY_LENGTH_LIMIT);
-    this.updateAutoSummary(!dataToRestore);
+    this.updateAutoSummary(!dataToRestore?.summary);
   }
 
   /**
@@ -976,9 +976,6 @@ class CommentForm {
 
     mw.loader.using(['ext.wikiEditor', ...requestedModulesNames]).then(() => {
       $toolbarPlaceholder.remove();
-      if (this.didReplaceDtForm) {
-        $('.cd-dummyTextareaContainer').remove();
-      }
 
       const $input = this.commentInput.$input;
 

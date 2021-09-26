@@ -509,16 +509,27 @@ function hideDtNewTopicForm() {
     $comment.textSelection('setContents', '');
 
     // DT's comment form produces errors after opening a CD's comment form because of hard code in
-    // WikiEditor that relies on $('#wpTextbox1'). So we create a dummy textarea high in the code
-    // that would distract WikiEditor from DT's dummy textarea. We can't simply delete DT's dummy
-    // textarea because it can show up unexpectedly right before WikiEditor's code is executed where
-    // it's hard for us to wedge in.
-    const $dummyTextarea = $('<textarea>').attr('id', 'wpTextbox1');
-    const $dummyContainer = $('<div>')
-      .append($dummyTextarea)
-      .addClass('cd-dummyTextareaContainer')
-      .hide();
-    cd.g.$content.prepend($dummyContainer);
+    // WikiEditor that relies on $('#wpTextbox1'). We can't simply delete DT's dummy textarea
+    // because it can show up unexpectedly right before WikiEditor's code is executed where it's
+    // hard for us to wedge in.
+    if ($('#wpTextbox1').length) {
+      $('#wpTextbox1').remove();
+    } else {
+      const observer = new MutationObserver((records) => {
+        const isReplyWidgetAdded = (record) => (
+          Array.from(record.addedNodes)
+            .some((node) => node.classList.contains('ext-discussiontools-ui-replyWidget'))
+        );
+        if (records.some(isReplyWidgetAdded)) {
+          $('#wpTextbox1').remove();
+          observer.disconnect();
+        }
+      });
+      observer.observe(cd.g.$content.get(0), {
+        childList: true,
+        subtree: true,
+      });
+    }
 
     // Don't outright remove the element so that DT has time to save the draft as empty.
     $dtNewTopicForm.hide();
