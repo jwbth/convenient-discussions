@@ -170,7 +170,7 @@ export default {
     'Absatz',
   ],
 
-  quoteFormatting: ["{{tq|1=", "}}"],
+  quoteFormatting: ["{{tq|1=", "}}<br>"],
 
   elementsToExcludeClasses: [
     'cd-moveMark',
