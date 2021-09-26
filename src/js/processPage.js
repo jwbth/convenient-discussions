@@ -668,7 +668,7 @@ function connectToAddTopicButtons() {
           noHeadline: Boolean(getLastElementOrSelf(query.nosummary)),
           omitSignature: Boolean(query.cdomitsignature),
         };
-        isNewTopicOnTop = query.section === '0';
+        isNewTopicOnTop = getLastElementOrSelf(query.section) === '0';
       } else {
         // <input>
         const $form = $button.closest('form');
