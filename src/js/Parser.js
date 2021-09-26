@@ -143,9 +143,13 @@ class Parser {
     );
     let dtMarkupHavenElement;
     if (moveNotRemove) {
-      dtMarkupHavenElement = this.context.document.createElement('span');
-      dtMarkupHavenElement.className = 'cd-hidden';
-      cd.g.rootElement.parentNode.appendChild(dtMarkupHavenElement);
+      if (cd.state.isPageFirstParsed) {
+        dtMarkupHavenElement = this.context.document.createElement('span');
+        dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
+        cd.g.$content.append(dtMarkupHavenElement);
+      } else {
+        dtMarkupHavenElement = cd.g.$content.children('.cd-dtMarkupHaven').get(0);
+      }
     }
     let elements = Array.from(cd.g.rootElement.getElementsByTagName('span'))
       .filter((el) => (

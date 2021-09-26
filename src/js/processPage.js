@@ -987,14 +987,17 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
    */
 
    /*
-    This property isn't static:
+    These properties aren't static:
       1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
          it, it will become active and get an ID.
       2. The user may switch to another revision using RevisionSlider.
       3. On a really rare occasion, an active page may become inactive if it becomes identified as
          an archive page.
   */
-  cd.state.isPageActive = articleId && !cd.page.isArchivePage() && isCurrentRevision();
+  cd.state.isPageActive = Boolean(articleId && !cd.page.isArchivePage() && isCurrentRevision());
+
+  const isPageCommentable = cd.state.isPageActive || !articleId;
+  cd.state.isPageFirstParsed = cd.state.isFirstRun || passedData.wasPageCreated;
 
   let watchedSectionsRequest;
   let visitsRequest;
@@ -1056,9 +1059,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.g.PAGE_WHITELIST_REGEXP?.test(cd.page.name) ||
     $('#ca-addsection').length
   );
-
-  const isPageCommentable = cd.state.isPageActive || !articleId;
-  cd.state.isPageFirstParsed = cd.state.isFirstRun || passedData.wasPageCreated;
 
   let showPopups;
   if (isLikelyTalkPage) {
