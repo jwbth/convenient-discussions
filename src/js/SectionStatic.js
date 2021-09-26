@@ -228,9 +228,9 @@ export default {
         }
 
         const isFirstChunkClosed = (
-          section.elements[1] === section.lastElementInFirstChunk &&
-          cd.config.closedDiscussionClasses
-            ?.some((className) => section.lastElementInFirstChunk.classList?.contains(className))
+          section.commentsInFirstChunk[0] &&
+          section.commentsInFirstChunk[0].level === 0 &&
+          section.commentsInFirstChunk.every((comment) => !comment.isActionable)
         );
         const firstContentElement = section.$elements.get(1);
 
