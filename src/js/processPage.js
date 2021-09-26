@@ -685,6 +685,13 @@ function connectToAddTopicButtons() {
       e.preventDefault();
       CommentForm.createAddSectionForm(preloadConfig, isNewTopicOnTop);
     })
+    .filter(function () {
+      const $button = $(this);
+      return (
+        !cd.g.isDtNewTopicToolEnabled &&
+        !($button.is('a') && Number(mw.util.getParamValue('cdaddtopic', $button.attr('href'))))
+      );
+    })
     .attr('title', cd.s('addtopicbutton-tooltip'));
 
   // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
