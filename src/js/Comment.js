@@ -1103,7 +1103,9 @@ class Comment extends CommentSkeleton {
   getDir() {
     if (!this.cachedDir) {
       if (cd.g.areThereLtrRtlMixes) {
-        const isLtr = this.elements[0]
+        // Take the last element because the first one may be the section heading which can have
+        // another direction.
+        const isLtr = this.elements[this.elements.length - 1]
           .closest('.mw-content-ltr, .mw-content-rtl')
           .classList
           .contains('mw-content-ltr');
