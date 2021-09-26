@@ -714,14 +714,18 @@ function showDesktopNotification(comments) {
 }
 
 /**
- * Check if the page is still at the specified revision and the content is not loading.
+ * Check if the page is still at the specified revision and nothing is loading.
  *
  * @param {number} revisionId
  * @returns {boolean}
  * @private
  */
 function isPageStillAtRevision(revisionId) {
-  return revisionId === mw.config.get('wgRevisionId') && !isPageLoading();
+  return (
+    revisionId === mw.config.get('wgRevisionId') &&
+    !isPageLoading() &&
+    !cd.commentForms.some((commentForm) => commentForm.isBeingSubmitted())
+  );
 }
 
 /**
