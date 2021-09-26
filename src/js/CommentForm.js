@@ -297,6 +297,13 @@ class CommentForm {
       $('#ca-view').removeClass('selected');
     }
 
+    if (!cd.user.isRegistered()) {
+      this.showMessage(cd.sParse('error-anoneditwatning'), {
+        type: 'warning',
+        name: 'anonEditWarning',
+      });
+    }
+
     cd.commentForms.push(this);
 
     if (dataToRestore) {

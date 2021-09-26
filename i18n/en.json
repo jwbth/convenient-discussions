@@ -388,6 +388,7 @@
   "error-diffnotfound-history": "You can look for it in the [$1 revision history] for yourself.",
   "error-elementhidden": "The element is hidden. Can't scroll to it.",
   "error-purgecache": "Couldn't purge the cache of this page.",
+  "error-anoneditwatning": "<strong>You are not logged in.</strong> Your IP address will be publicly visible if you make any edits.",
 
   "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|disable]]</span></b> DiscussionTools to make Convenient Discussions work correctly.",
   "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">Click to refresh the page</span>.",
