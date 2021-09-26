@@ -1402,6 +1402,10 @@ class Comment extends CommentSkeleton {
    * @private
    */
   updateLayersOffset() {
+    // The underlay can be absent if called from Comment.redrawLayersIfNecessary with redrawAll set
+    // to true.
+    if (!this.underlay) return;
+
     this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
     this.underlay.style.left = this.overlay.style.left = this.layersOffset.left + 'px';
     this.underlay.style.width = this.overlay.style.width = this.layersOffset.width + 'px';
