@@ -254,8 +254,47 @@ class CommentSkeleton {
   }
 
   /**
+   * Fix indentation holes by leveraging comment parts in them to the level of the comment.
+   *
+   * "Holes" here mean comment parts that are placed outside of list elements while the beginning
+   * and ending of the comment are inside list elements. For example:
+   *
+   * ```
+   * ::: Comment start.
+   * <blockquote>Some quote.</blockquote>
+   * ::: Comment end. ~~~~
+   * ```
+   */
+  fixIndentationHoles() {
+    if (this.level && this.elements.length > 2) {
+      // Get level elements based on this.elements, not this.highlightables.
+      const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
+
+      const elementsInHolesIndexes = [];
+      allLevelElements.slice(1, allLevelElements.length - 1).forEach((ancestors, i) => {
+        if (!ancestors.length) {
+          elementsInHolesIndexes.push(i + 1);
+        }
+      });
+      elementsInHolesIndexes.forEach((index) => {
+        const levelElement = allLevelElements
+          .slice(0, index)
+          .reverse()
+          .find((ancestors) => ancestors.length)
+          ?.slice(-1)[0];
+        if (levelElement) {
+          const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
+          const itemElement = this.parser.context.document.createElement(tagName);
+          itemElement.appendChild(this.elements[index]);
+          levelElement.appendChild(itemElement);
+        }
+      });
+    }
+  }
+
+  /**
    * Set the necessary classes to parent elements of the comment's elements to make a visible tree
-   * structure.
+   * structure. While doing that, {@link Comment#fixIndentationHoles fix indentation holes}.
    *
    * @protected
    */
@@ -283,30 +322,7 @@ class CommentSkeleton {
      */
     this.logicalLevel = this.level;
 
-    if (this.level && this.elements.length > 2) {
-      // Get level elements based on this.elements, not this.highlightables.
-      const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
-
-      const elementsInHolesIndexes = [];
-      allLevelElements.forEach((ancestors, i) => {
-        if (!ancestors.length) {
-          elementsInHolesIndexes.push(i);
-        }
-      });
-      elementsInHolesIndexes.forEach((index) => {
-        const levelElement = allLevelElements
-          .slice(0, index)
-          .reverse()
-          .find((ancestors) => ancestors.length)
-          .slice(-1)[0];
-        if (levelElement) {
-          const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
-          const itemElement = this.parser.context.document.createElement(tagName);
-          itemElement.appendChild(this.elements[index]);
-          levelElement.appendChild(itemElement);
-        }
-      });
-    }
+    this.fixIndentationHoles();
 
     for (let i = 0; i < this.level; i++) {
       levelElements.forEach((ancestors) => {
