@@ -384,13 +384,16 @@ export default {
         'cd-toc-newCommentList' :
         'cd-toc-notRenderedCommentList';
 
+      // Was 6 initially, then became 5, now 4.
+      const itemsLimit = 4;
+
       let moreTooltipText = '';
       comments.forEach((comment, i) => {
         const parent = areCommentsRendered ? comment.getParent() : comment.parent;
         const names = parent?.author && comment.level > 1 ?
           cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
           comment.author.name;
-        const addAsItem = i < 4 || comments.length === 5;
+        const addAsItem = i < itemsLimit - 1 || comments.length === itemsLimit;
         let date;
         let nativeDate;
         if (comment.date) {
@@ -403,8 +406,9 @@ export default {
         }
         let text = names + rtlMarkOrNot + comma;
 
-        // If there are 5 comments or less, show all of them. If there are more, show 4 and "N
-        // more". (Because showing 4 and then "1 more" is stupid.)
+        // If there are `itemsLimit` comments or less, show all of them. If there are more, show
+        // `itemsLimit - 1` and "N more". (Because showing `itemsLimit - 1` and then "1 more" is
+        // stupid.)
         if (addAsItem) {
           const li = document.createElement('li');
           ul.appendChild(li);
@@ -463,11 +467,11 @@ export default {
         }
       });
 
-      if (comments.length > 5) {
+      if (comments.length > itemsLimit) {
         const span = document.createElement('span');
         span.className = 'cd-toc-more';
         span.title = moreTooltipText.trim();
-        span.textContent = cd.s('toc-more', comments.length - 4);
+        span.textContent = cd.s('toc-more', comments.length - (itemsLimit - 1));
 
         const li = document.createElement('li');
         li.appendChild(span);
