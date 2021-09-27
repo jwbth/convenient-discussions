@@ -1133,8 +1133,6 @@ class Parser {
           * The check for DL helps here:
             https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
             (see the original HTML source)
-          * The check for P helps here:
-            https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Правила/2019/12#201910270736_S.m.46
           * The check "['LI', 'DD'].includes(part.node.tagName)" helps in cases like
             https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
             (the whole thread)
@@ -1147,7 +1145,6 @@ class Parser {
               lastPart.node.parentNode.tagName === 'DD' ||
               lastPart.node.tagName === 'DL'
             ) &&
-            !parts.slice(i + 1).some((part) => part.node.tagName === 'P') &&
             !(part.lastStep === 'back' && ['LI', 'DD'].includes(part.node.tagName))
           )
         )
