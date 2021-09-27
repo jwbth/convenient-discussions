@@ -767,7 +767,7 @@ class Comment extends CommentSkeleton {
           delete el.dataset.commentId;
           this.highlightables.splice(i, 1);
           i--;
-          this.setLevels();
+          this.setLevels(false);
           this.setAnchorHighlightable();
 
           // Update this.ahContainerListType here as well?

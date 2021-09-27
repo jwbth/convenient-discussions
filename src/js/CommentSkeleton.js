@@ -122,7 +122,8 @@ class CommentSkeleton {
     this.isUnsigned = signature.isUnsigned;
 
     /**
-     * Comment parts.
+     * Comment parts. They are not guaranteed to match the elements after some point (due to
+     * {@link CommentSkeleton#wrapHighlightables}, {@link CommentSkeleton#fixEndLevel}) calls.
      *
      * @type {object[]}
      */
@@ -135,31 +136,7 @@ class CommentSkeleton {
      */
     this.elements = this.parts.map((part) => part.node);
 
-    const isHighlightable = (el) => (
-      !/^(H[1-6]|STYLE|LINK)$/.test(el.tagName) &&
-      !cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES.some((name) => el.classList.contains(name)) &&
-
-      // Can't access stylesheets from the worker context, so we do it only in
-      // Comment#reviewHighlightables, and here we look at the style attribute only.
-      !/float: *(?:left|right)|display: *none/.test(el.getAttribute('style'))
-    );
-
-    /**
-     * Comment elements that are highlightable.
-     *
-     * Keep in mind that elements may be replaced, and property values will need to be updated. See
-     * {@link Comment#replaceElement}.
-     *
-     * @type {Element[]|external:Element[]}
-     */
-    this.highlightables = this.elements.filter(isHighlightable);
-
-    // There shouldn't be comments without highlightables.
-    if (!this.highlightables.length) {
-      throw new CdError();
-    }
-
-    this.wrapHighlightables();
+    this.setHighlightables();
     this.setLevels();
 
     /**
@@ -209,10 +186,44 @@ class CommentSkeleton {
   }
 
   /**
+   * Set the {@link CommentSkeleton#highlightables} property.
+   * {@link CommentSkeleton#wrapHighlightables Wrap highlightables if required}.
+   *
+   * @private
+   */
+  setHighlightables() {
+    const isHighlightable = (el) => (
+      !/^(H[1-6]|STYLE|LINK)$/.test(el.tagName) &&
+      !cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES.some((name) => el.classList.contains(name)) &&
+
+      // Can't access stylesheets from the worker context, so we do it only in
+      // Comment#reviewHighlightables, and here we look at the style attribute only.
+      !/float: *(?:left|right)|display: *none/.test(el.getAttribute('style'))
+    );
+
+    /**
+     * Comment elements that are highlightable.
+     *
+     * Keep in mind that elements may be replaced, and property values will need to be updated. See
+     * {@link Comment#replaceElement}.
+     *
+     * @type {Element[]|external:Element[]}
+     */
+    this.highlightables = this.elements.filter(isHighlightable);
+
+    // There shouldn't be comments without highlightables.
+    if (!this.highlightables.length) {
+      throw new CdError();
+    }
+
+    this.wrapHighlightables();
+  }
+
+  /**
    * Prevent an inappropriate element from being the first or last highlightable (this is used for
    * when comments are reformatted, but we do it always to have a uniform parsing result). In the
    * worker context, this will allow to correctly update edited comments (unless
-   * Comment#reviewHighlightables alters the highlightables afterwards).
+   * {@link Comment#reviewHighlightables} alters the highlightables afterwards).
    *
    * @private
    */
@@ -293,12 +304,68 @@ class CommentSkeleton {
   }
 
   /**
-   * Set the necessary classes to parent elements of the comment's elements to make a visible tree
-   * structure. While doing that, {@link Comment#fixIndentationHoles fix indentation holes}.
+   * Fix the situation where a comment signature is placed inside the last item of the comment, like
+   * this:
    *
+   * ```
+   * List:
+   * * Item 1.
+   * * Item 2.
+   * * Item 3. ~~~~
+   * ```
+   *
+   * @param {Array.<Element>|Array.<external:Element>} levelElements
+   * @private
+   */
+  fixEndLevel(levelElements) {
+    // Safety measure in case the element would turn out not to be a highlightable in
+    // Comment#reviewHighlightables.
+    if (this.highlightables[0].className) return;
+
+    const lastAncestors = levelElements[levelElements.length - 1];
+    if (levelElements[0].length === lastAncestors.length - 1) {
+      const closestLevelElement = lastAncestors[lastAncestors.length  - 1];
+
+      // Split parent elements until we reach the level element.
+      let parent = this.highlightables[this.highlightables.length - 1];
+      let child;
+      while (parent !== closestLevelElement) {
+        child = parent;
+        parent = parent.parentNode;
+        const clone = parent.cloneNode();
+        let lastChild;
+        while ((lastChild = parent.lastChild) && lastChild !== child) {
+          clone.insertBefore(lastChild, clone.firstChild);
+        }
+        parent.parentNode.insertBefore(clone, parent.nextSibling);
+      }
+
+      let firstItemIndex = this.elements.length - 1;
+      for (let i = this.elements.length - 2; i > 0; i--) {
+        if (closestLevelElement.contains(this.elements[i])) {
+          firstItemIndex = i;
+        } else {
+          break;
+        }
+      }
+      this.elements.splice(
+        firstItemIndex,
+        this.elements.length - firstItemIndex,
+        closestLevelElement
+      );
+
+      this.setHighlightables();
+    }
+  }
+
+  /**
+   * Set the necessary classes to parent elements of the comment's elements to make a visible tree
+   * structure. While doing that, fix some markup.
+   *
+   * @param {boolean} [fixMarkup=true]
    * @protected
    */
-  setLevels() {
+  setLevels(fixMarkup = true) {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
     const levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
@@ -322,7 +389,10 @@ class CommentSkeleton {
      */
     this.logicalLevel = this.level;
 
-    this.fixIndentationHoles();
+    if (fixMarkup) {
+      this.fixIndentationHoles();
+      this.fixEndLevel(levelElements);
+    }
 
     for (let i = 0; i < this.level; i++) {
       levelElements.forEach((ancestors) => {
