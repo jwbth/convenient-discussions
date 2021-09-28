@@ -539,11 +539,17 @@ export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = wi
       scrollData.touchesBottom = true;
     } else if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
       const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-      while (true) {
-        if (!isInline(treeWalker.currentNode)) {
-          const rect = treeWalker.currentNode.getBoundingClientRect();
+      do {
+        const node = treeWalker.currentNode;
+
+        // Ignore elements with non-native classes - they can be floating.
+        if (
+          !isInline(node) &&
+          Array.from(node.classList).every((name) => /^(cd|ext-discussiontools|mw)-/.test(name))
+        ) {
+          const rect = node.getBoundingClientRect();
           if (rect.bottom >= 0 && rect.height !== 0) {
-            scrollData.element = treeWalker.currentNode;
+            scrollData.element = node;
             scrollData.elementTop = rect.top;
             if (treeWalker.firstChild()) {
               continue;
@@ -552,8 +558,7 @@ export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = wi
             }
           }
         }
-        if (!treeWalker.nextSibling()) break;
-      }
+      } while (treeWalker.nextSibling());
     }
   }
 }
