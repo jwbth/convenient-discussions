@@ -745,6 +745,7 @@ async function processFragment(passedData) {
   let escapedFragment;
   let escapedDecodedFragment;
   let commentAnchor;
+  let fragmentContainsCommentAnchor;
   let date;
   let author;
   let parentDate;
@@ -758,6 +759,7 @@ async function processFragment(passedData) {
       escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
       if (isCommentAnchor(fragment)) {
         commentAnchor = decodedFragment;
+        fragmentContainsCommentAnchor = true;
       } else {
         ({
           date,
@@ -766,6 +768,9 @@ async function processFragment(passedData) {
           parentAuthor,
           sectionAnchorBeginning,
         } = parseDtCommentId(decodedFragment) || {});
+        if (date) {
+          fragmentContainsCommentAnchor = true;
+        }
       }
     } catch (e) {
       console.error(e);
@@ -801,6 +806,9 @@ async function processFragment(passedData) {
     // incorrectly.
     setTimeout(() => {
       comment.scrollTo(false, passedData.pushState);
+      if (fragmentContainsCommentAnchor) {
+        history.replaceState(Object.assign({}, history.state, { cdJumpedToComment: true }), '');
+      }
     });
   }
 

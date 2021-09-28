@@ -148,11 +148,15 @@ export function handleScroll() {
 export function handleHashChange() {
   let anchor = location.hash.slice(1);
   if (isCommentAnchor(anchor)) {
+    // Don't jump to the comment if the user pressed Back/Forward in the browser.
+    if (history.state?.cdJumpedToComment) return;
+
     try {
       anchor = decodeURIComponent(anchor);
     } catch (e) {
       console.error(e);
+      return;
     }
-    Comment.getByAnchor(anchor, true)?.scrollTo(true);
+    Comment.getByAnchor(anchor, true)?.scrollTo();
   }
 }
