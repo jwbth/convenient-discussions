@@ -410,16 +410,19 @@ class CommentSkeleton {
    */
   getParent(visual = false) {
     const prop = visual ? 'level' : 'logicalLevel';
-    if (this.cachedParent === undefined) {
-      this.cachedParent = {};
-    }
+    this.cachedParent = this.cachedParent || {};
     if (this.cachedParent[prop] === undefined) {
       // This can run many times during page load, so we better optimize.
       this.cachedParent[prop] = null;
       if (this[prop] !== 0) {
         for (let i = this.id - 1; i >= 0; i--) {
           const comment = cd.comments[i];
-          if (comment.section === this.section && comment[prop] < this[prop]) {
+          if (comment.section !== this.section) break;
+          if (comment[prop] === this[prop] && comment.cachedParent[prop]) {
+            this.cachedParent[prop] = comment.cachedParent[prop];
+            break;
+          }
+          if (comment[prop] < this[prop]) {
             this.cachedParent[prop] = comment;
             break;
           }
@@ -471,22 +474,55 @@ class CommentSkeleton {
     if (cd.g.pageHasOutdents) {
       Array.from(cd.g.rootElement.getElementsByClassName(cd.config.outdentClass))
         .reverse()
-        .forEach((el) => {
-          const treeWalker = new ElementsTreeWalker(el);
+        .forEach((element) => {
+          const treeWalker = new ElementsTreeWalker(element);
           while (treeWalker.nextNode()) {
             // `null` and `0` as the attribute value are both bad.
             let commentId = Number(treeWalker.currentNode.getAttribute('data-comment-id'));
             if (commentId !== 0) {
-              const parentComment = cd.comments[commentId - 1];
               const childComment = cd.comments[commentId];
+
+              // Find an _actual_ parent of the comment in case the previous one is newer than the
+              // child. Example:
+              // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
+              let parentComment;
+
+              for (let i = commentId - 1; i >= 0; i--) {
+                const comment = cd.comments[i];
+                if (comment.section !== childComment.section) break;
+                if (childComment.date >= comment.date) {
+                  parentComment = comment;
+                  break;
+                }
+              }
+              if (!parentComment) break;
+
+              if (parentComment.id !== commentId - 1) {
+                // Explicitly set the parent.
+                childComment.cachedParent = childComment.cachedParent || {};
+                childComment.cachedParent.logicalLevel = parentComment;
+              }
+
+              // Update the width to match our thread style changes.
+              Array.from(element.childNodes).forEach((child) => {
+                const width = child.style?.width;
+                if (width) {
+                  const [, number, unit] = width.match(/^([\d.]+)(.+)$/);
+                  if (number) {
+                    // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
+                    const ems = number * 1.25 + unit;
+                    child.style.width = `calc(${ems} + ${parentComment.level}px)`;
+                  }
+                } else if (!child.children?.length && child.textContent.includes('─')) {
+                  child.textContent = child.textContent
+                    .replace(/(─+)/, (s, lines) => '─'.repeat(Math.round(lines.length * 1.25)));
+                }
+              });
 
               // Since we traverse templates from the last to the first, `childComment.level` at
               // this stage is always the same as `childComment.logicalLevel`. The same for
               // `parentComment`.
               const childLevel = childComment.level;
-
-              // Something is wrong.
-              if (childComment.date < parentComment.date) break;
 
               childComment.isOutdented = true;
               cd.comments.slice(commentId).some((comment) => {
