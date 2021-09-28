@@ -985,7 +985,13 @@ class Parser {
     // class).
     for (let i = parts.length - 1; i > 0; i--) {
       const node = parts[i].node;
-      if (node.tagName === 'STYLE' ||
+      if (
+        (
+          node.tagName === 'P' &&
+          !node.textContent.trim() &&
+          Array.from(node.children).every((child) => child.tagName === 'BR')
+        ) ||
+        node.tagName === 'STYLE' ||
         node.tagName === 'LINK' ||
         node.classList.contains('reflist-talk')
       ) {
