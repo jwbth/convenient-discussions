@@ -338,6 +338,10 @@ export default {
     'Reverted edits',
   ],
 
+  checkForCustomForeignComponents: function (node) {
+    return node.classList.contains('boilerplate-header');
+  },
+
   getMoveSourcePageCode: function (targetPageWikilink, signature) {
     return '{{Moved discussion to|' + targetPageWikilink + '|' + signature + '}}\n';
   },
