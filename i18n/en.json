@@ -249,8 +249,9 @@
   "navpanel-newcomments-refresh": "Click to refresh the page",
   "navpanel-markasread": "Hold Ctrl to mark all shown comments as read",
 
+  "toc-commentcount-new": "+$1",
   "toc-commentcount-full": "$1 {{plural:$1|comment|comments}}",
-  "toc-commentcount-new-full": "$1 {{plural:$1|new}}",
+  "toc-commentcount-new-full": "+$1 {{plural:$1|new}}",
   "toc-more": "…$1 more",
   "toc-watched": "You watch this section",
 

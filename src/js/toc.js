@@ -179,20 +179,18 @@ export default {
       const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
 
       const countString = i === 0 ? cd.s('toc-commentcount-full', count) : count;
-      let unseenCountStringInParens;
+      let unseenCountString;
       if (unseenCount) {
-        const unseenCountString = i === 0 ?
-          cd.s('toc-commentcount-new-full', unseenCount) :
-          unseenCount;
-        unseenCountStringInParens = ' ' + cd.mws('parentheses', unseenCountString);
+        const messageName = i === 0 ? 'toc-commentcount-new-full' : 'toc-commentcount-new';
+        unseenCountString = ' ' + cd.s(messageName, unseenCount);
       } else {
-        unseenCountStringInParens = '';
+        unseenCountString = '';
       }
 
       const span = document.createElement('span');
       span.className = 'cd-toc-commentCount';
       const bdi = document.createElement('bdi');
-      bdi.textContent = countString + unseenCountStringInParens;
+      bdi.textContent = countString + unseenCountString;
       span.appendChild(bdi);
       item.$link.append(span);
     });
