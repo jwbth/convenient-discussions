@@ -138,7 +138,7 @@ class TributeRange {
             myField.selectionEnd = endPos
 
             // jwbth: Made alterations to make the `keepAsEnd` config value work.
-            if (context.collection.keepAsEnd && !originalEvent.shiftKey) {
+            if (context.collection.keepAsEnd) {
                 const [end] = ending.match(context.collection.keepAsEnd) || []
                 if (end) {
                     ending = ending.slice(end.length)
