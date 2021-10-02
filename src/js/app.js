@@ -236,6 +236,8 @@ function setStrings() {
 async function go() {
   cd.debug.startTimer('start');
 
+  const bodyClassList = document.body.classList;
+
   // Avoid setting the global object properties if go() runs the second time (see addFooterLink()).
   if (!cd.g.SETTINGS_OPTION_NAME) {
     /**
@@ -273,9 +275,9 @@ async function go() {
 
     cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
     cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-    cd.g.CONTENT_DIR = document.body.classList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+    cd.g.CONTENT_DIR = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
     cd.g.SKIN = mw.config.get('skin');
-    if (cd.g.SKIN === 'vector' && document.body.classList.contains('skin-vector-legacy')) {
+    if (cd.g.SKIN === 'vector' && bodyClassList.contains('skin-vector-legacy')) {
       cd.g.SKIN = 'vector-legacy';
     }
     cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
@@ -302,13 +304,10 @@ async function go() {
   cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
   cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
 
-  const isDtEnabled = mw.user.options.get('discussiontools-betaenable');
-  cd.g.isDtReplyToolEnabled = isDtEnabled && mw.user.options.get('discussiontools-replytool');
-  cd.g.isDtNewTopicToolEnabled = isDtEnabled && mw.user.options.get('discussiontools-newtopictool');
-  cd.g.isDtTopicSubscriptionEnabled = (
-    isDtEnabled &&
-    mw.user.options.get('discussiontools-topicsubscription')
-  );
+  cd.g.isDtReplyToolEnabled = bodyClassList.contains('ext-discussiontools-replytool-enabled');
+  cd.g.isDtNewTopicToolEnabled = bodyClassList.contains('ext-discussiontools-newtopictool-enabled');
+  cd.g.isDtTopicSubscriptionEnabled = bodyClassList
+    .contains('ext-discussiontools-topicsubscription-enabled');
 
   // Process the page as a talk page
   const isPageEligible = (
