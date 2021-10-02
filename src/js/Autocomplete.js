@@ -713,6 +713,8 @@ class Autocomplete {
             'th',
             'time',
             'tr',
+            'translate',
+            'tvar',
             'u',
             'ul',
             'var',
