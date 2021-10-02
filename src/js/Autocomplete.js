@@ -223,7 +223,6 @@ class Autocomplete {
               // Type "[[Text", then delete and type "<s" quickly.
               if (!this.tribute.current || this.tribute.current.trigger !== '@') return;
 
-              values = this.mentions.removeSelf(values);
               this.mentions.cache = values.slice();
 
               // Make the typed text always appear on the last, 10th place.
@@ -593,9 +592,11 @@ class Autocomplete {
               },
             };
           },
-          removeSelf: (arr) => arr.filter((item) => item !== cd.user.name),
         };
-        config.default = config.removeSelf(arguments[1] || []);
+
+        // Remove self
+        config.default = (arguments[1] || []).filter((item) => item !== cd.user.name);
+
         break;
       }
 
