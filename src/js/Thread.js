@@ -224,19 +224,21 @@ class Thread {
     let startElement;
     let visualEndElement;
     let endElement;
+    const firstNotHeadingElement = this.rootComment.elements
+      .find((el) => !/^H[1-6]$/.test(el.tagName));
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
     const nextForeignElement = cd.comments[this.lastComment.id + 1]?.elements[0];
     if (this.rootComment.level === 0) {
-      startElement = this.rootComment.highlightables[0];
+      startElement = firstNotHeadingElement;
       visualEndElement = getEndElement(startElement, visualHighlightables, nextForeignElement);
       endElement = this.lastComment === this.visualLastComment ?
         visualEndElement :
         getEndElement(startElement, highlightables, nextForeignElement);
     } else {
       startElement = (
-        findItemElement(rootComment.highlightables[0], rootComment.level, nextForeignElement) ||
-        rootComment.highlightables[0]
+        findItemElement(firstNotHeadingElement, rootComment.level, nextForeignElement) ||
+        firstNotHeadingElement
       );
       const lastHighlightable = highlightables[highlightables.length - 1];
 
