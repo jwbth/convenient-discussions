@@ -418,7 +418,7 @@ class CommentSkeleton {
         for (let i = this.id - 1; i >= 0; i--) {
           const comment = cd.comments[i];
           if (comment.section !== this.section) break;
-          if (comment[prop] === this[prop] && comment.cachedParent[prop]) {
+          if (comment[prop] === this[prop] && comment.cachedParent?.[prop]) {
             this.cachedParent[prop] = comment.cachedParent[prop];
             break;
           }
