@@ -905,11 +905,13 @@ async function processVisits(visitsRequest, passedData) {
 
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
 
-    toc.addCommentCount();
-
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
     toc.addNewComments(Comment.groupBySection(unseenComments), passedData);
   }
+
+  // TODO: keep the scrolling position even if adding the comment count moves the content.
+  // (Currently this is done in toc.addNewComments().)
+  toc.addCommentCount();
 
   // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
   // minute to the current time if there is a comment with matched time. (Previously, the comment
@@ -1214,6 +1216,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         // This should be below processVisits() because updateChecker.processRevisionsIfNeeded needs
         // cd.g.previousVisitUnixTime to be set.
         updateChecker.init(visitsRequest, passedData);
+      } else {
+        toc.addCommentCount();
       }
 
       if (cd.state.isPageFirstParsed) {
