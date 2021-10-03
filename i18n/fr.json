@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Adehertogh",
+			"DreZhsh",
 			"Gomoko",
 			"Iniquity",
 			"Jack who built the house",
@@ -334,7 +335,7 @@
 	"msd-error-editconflict-retry": "Cliquez simplement sur « {{int:ooui-dialog-process-retry}} ».",
 	"msd-error-editingtargetpage": "Impossible de modifier la page cible.",
 	"msd-error-editingsourcepage": "Impossible de modifier la page source. Vous devrez la modifier manuellement.",
-	"msd-moved": "Le sujet a bien été déplacé. Vous pouvez recharger la page ou aller sur [[$1|la page où le sujet a été déplacé]].",
+	"msd-moved": "Le sujet a bien été déplacé. Vous pouvez aller sur [[$1|la page où le sujet a été déplacé]].",
 	"msd-bottom": "Le code peut être différent si la page est mise à jour alors que la fenêtre ne fait rien.",
 	"move-sourcepagecode": "''Déplacé vers [[$1]]. $2''",
 	"move-targetpagecode": "''Déplacé depuis [[$1]]. $2''",

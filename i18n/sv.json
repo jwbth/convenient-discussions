@@ -329,7 +329,7 @@
 	"msd-error-editconflict-retry": "Klicka bara på \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Kunde inte redigera målsidan.",
 	"msd-error-editingsourcepage": "Kunde inte redigera källsidan. Du måste redigera den för hand.",
-	"msd-moved": "Ämnet har flyttats. Du får ladda om sidan eller gå till [[$1|sidan dit ämnet flyttades]].",
+	"msd-moved": "Ämnet har flyttats. Du kan gå till [[$1|sidan dit ämnet flyttades]].",
 	"msd-bottom": "Koden kanske ändrar sig om sidan skulle uppdateras medan fönstret inte används.",
 	"move-sourcepagecode": "''Flyttades till [[$1]]. $2''",
 	"move-targetpagecode": "''Flyttades till [[$1]]. $2''",

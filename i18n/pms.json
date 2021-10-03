@@ -325,7 +325,7 @@
 	"msd-error-editconflict-retry": "Sgnaché mach su «{{int:ooui-dialog-process-retry}}».",
 	"msd-error-editingtargetpage": "Impossìbil modifiché la pàgina bërsaj.",
 	"msd-error-editingsourcepage": "Impossìbil modifiché la pàgina sorgiss. A dovrà modifichela a man.",
-	"msd-moved": "L'argoment a l'é stàit tramudà për da bin. A peul torna carié la pàgina o andé a [[$1|la pàgina andoa l'argoment a l'é stàit tramudà]].",
+	"msd-moved": "L'argoment a l'é stàit tramudà për da bin. A peul torna andé a [[$1|la pàgina andoa l'argoment a l'é stàit tramudà]].",
 	"msd-bottom": "Ël còdes a peul esse diferent si la pàgina a l'é agiornà sensa che la fnestra a fasa cheicòs.",
 	"move-sourcepagecode": "''Tramudà a [[$1]]. $2''",
 	"move-targetpagecode": "''Tramudà da [[$1]]. $2''",

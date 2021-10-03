@@ -323,7 +323,7 @@
 	"msd-error-editconflict-retry": "Len kliknite \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Nepodarilo sa upraviť cieľovú stránku.",
 	"msd-error-editingsourcepage": "Nepodarilo sa upraviť zdrojovú stránku. Musíte ju upraviť manuálne.",
-	"msd-moved": "Téma bola úspešne presunutá. Znovu načítajte stránku alebo prejdite na [[$1|stránku na ktorú bola téma presunutá]].",
+	"msd-moved": "Téma bola úspešne presunutá. Môžete prejsť na [[$1|stránku, na ktorú bola téma presunutá]].",
 	"msd-bottom": "Kód môže byť iný ak sa stránka aktualizuje počas toho ako je okno nečinné.",
 	"move-sourcepagecode": "Presunuté do [[$1]]. $2",
 	"move-targetpagecode": "Presunuté z [[$1]]. $2",

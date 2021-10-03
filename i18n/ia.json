@@ -324,7 +324,7 @@
 	"msd-error-editconflict-retry": "Clicca sur \"{{int:ooui-dialog-process-retry}}\".",
 	"msd-error-editingtargetpage": "Impossibile modificar le pagina de destination.",
 	"msd-error-editingsourcepage": "Non poteva modificar le pagina de origine. Modifica lo manualmente.",
-	"msd-moved": "Le topico ha essite displaciate con successo. Tu pote recargar le pagina o ir al [[$1|pagina ubi le topico ha essite displaciate]].",
+	"msd-moved": "Le topico ha essite displaciate con successo. Tu pote ir al [[$1|pagina al qual le topico ha essite displaciate]].",
 	"msd-bottom": "Le codice pote esser differente si le pagina se actualisarea durante que le fenestra es inactive.",
 	"move-sourcepagecode": "''Displaciate a [[$1]]. $2''",
 	"move-targetpagecode": "''Displaciate de [[$1]]. $2''",
