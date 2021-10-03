@@ -699,6 +699,45 @@ export default {
   checkForCustomForeignComponents: null,
 
   /**
+   * Function that runs when the "Reformat comments" setting is enabled before parsing the author
+   * link. May return some data that will eventually supplied to the
+   * {@link module:defaultConfig.afterAuthorLinkParse} function (for example, an element). It
+   * accepts the author link (a link to the author's user page) as it was encountered on the page.
+   *
+   * This function, together with {@link module:defaultConfig.afterAuthorLinkParse}, can be used to
+   * optimize the script's performance with different kinds of "Mark administrators" gadget. See the
+   * example at
+   * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js}.
+   *
+   * @type {?Function}
+   * @kind function
+   * @param {Element} authorLink
+   * @returns {*}
+   * @default null
+   */
+  beforeAuthorLinkParse: null,
+
+  /**
+   * Function that runs when the "Reformat comments" setting is enabled after parsing the author
+   * link. May return (for example, an element). It accepts the author link (a link to the author's
+   * user page) as it was encountered on the page and the return value of
+   * {@link module:defaultConfig.beforeAuthorLinkParse} that could be called previously.
+   *
+   * This function, together with {@link module:defaultConfig.beforeAuthorLinkParse}, can be used to
+   * optimize the script's performance with different kinds of "Mark administrators" gadget. See the
+   * example at
+   * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js}.
+   *
+   * @type {?Function}
+   * @kind function
+   * @param {Element} authorLink
+   * @param {*} data
+   * @returns {Element}
+   * @default null
+   */
+  afterAuthorLinkParse: null,
+
+  /**
    * Function that returns `true` if new topics are placed on top of the page.
    *
    * @type {?Function}

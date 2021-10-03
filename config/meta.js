@@ -87,6 +87,9 @@ export default {
 	'templatesToExclude': [
 		'Moved'
 	],
+	'foreignElementInHeadlineClasses': [
+		'adminMark'
+	],
 	'closedDiscussionTemplates': [
 		[
 			'Closed',
@@ -99,5 +102,14 @@ export default {
 			'Archive bottom'
 		]
 	],
-	'signatureEndingRegexp': / \(talk\)/
+	'signatureEndingRegexp': / \(talk\)/,
+	'beforeAuthorLinkParse': function (authorLink) {
+		// https://meta.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
+		return authorLink.lastElementChild;
+	},
+	'afterAuthorLinkParse': function (authorLink, adminMarkCandidate) {
+		if (adminMarkCandidate?.classList.contains('adminMark')) {
+			authorLink.appendChild(adminMarkCandidate);
+		}
+	}
 };

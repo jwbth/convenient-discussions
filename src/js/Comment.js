@@ -356,9 +356,9 @@ class Comment extends CommentSkeleton {
     const headerElement = elementPrototypes.headerElement.cloneNode(true);
 
     const authorWrapper = headerElement.firstChild;
-    let authorLink = authorWrapper.firstChild;
+    const authorLink = authorWrapper.firstChild;
     const bdiElement = authorLink.firstChild;
-    let authorTalkLink = authorLink.nextElementSibling;
+    const authorTalkLink = authorLink.nextElementSibling;
     let contribsLink;
     if (cd.settings.showContribsLink) {
       contribsLink = authorTalkLink.nextElementSibling.nextElementSibling;
@@ -369,15 +369,19 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.authorLink) {
-      const nextElement = this.authorLink.nextElementSibling;
-      if (nextElement && Array.from(nextElement.classList).includes('userflags-wrapper')) {
-        authorLink.parentNode.insertBefore(nextElement, authorLink.nextSibling);
+      let beforeAuthorLinkParseReturn;
+      if (cd.config.beforeAuthorLinkParse) {
+        beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse(this.authorLink);
       }
+
       authorLink.parentNode.replaceChild(this.authorLink, authorLink);
-      authorLink = this.authorLink;
-      authorLink.classList.add('cd-comment-author');
-      authorLink.innerHTML = '';
-      authorLink.appendChild(bdiElement);
+      this.authorLink.classList.add('cd-comment-author');
+      this.authorLink.innerHTML = '';
+      this.authorLink.appendChild(bdiElement);
+
+      if (cd.config.afterAuthorLinkParse) {
+        cd.config.beforeAuthorLinkParse(this.authorLink, beforeAuthorLinkParseReturn);
+      }
     } else {
       let pageName;
       if (this.author.isRegistered()) {
@@ -395,8 +399,7 @@ class Comment extends CommentSkeleton {
 
     if (this.authorTalkLink) {
       authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
-      authorTalkLink = this.authorTalkLink;
-      authorTalkLink.textContent = cd.s('comment-author-talk');
+      this.authorTalkLink.textContent = cd.s('comment-author-talk');
     } else {
       const pageName = 'User talk:' + this.author.name;
       pagesToCheckExistence.push({

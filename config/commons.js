@@ -94,6 +94,9 @@ export default {
     'Clr',
     '-',
   ],
+  foreignElementInHeadlineClasses: [
+    'adminMark',
+  ],
   closedDiscussionTemplates: [
     [
       'Closed',
@@ -122,4 +125,13 @@ export default {
     'archived',
     'boilerplate',
   ],
+  beforeAuthorLinkParse: function (authorLink) {
+    // https://commons.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
+    return authorLink.lastElementChild;
+  },
+  afterAuthorLinkParse: function (authorLink, adminMarkCandidate) {
+    if (adminMarkCandidate?.classList.contains('adminMark')) {
+      authorLink.appendChild(adminMarkCandidate);
+    }
+  }
 };
