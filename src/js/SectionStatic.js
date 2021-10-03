@@ -207,9 +207,9 @@ export default {
           .slice(i + 1)
           .find((otherSection) => otherSection.level === section.level);
         const isClosed = (
-          section.elements.length === 2 &&
-          cd.config.closedDiscussionClasses
-            ?.some((className) => section.elements[1].classList?.contains(className))
+          section.comments[0] &&
+          section.comments[0].level === 0 &&
+          section.comments.every((comment) => !comment.isActionable)
         );
         if (
           isClosed ||
