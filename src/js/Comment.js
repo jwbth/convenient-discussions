@@ -2315,7 +2315,7 @@ class Comment extends CommentSkeleton {
 
     const bestMatch = matches.sort((m1, m2) => (
       m1.wordOverlap === m2.wordOverlap ?
-      m2.dateProximity - m1.dateProximity :
+      m1.dateProximity - m2.dateProximity :
       m2.wordOverlap - m1.wordOverlap
     ))[0];
     if (!bestMatch) {
