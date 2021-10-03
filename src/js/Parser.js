@@ -100,27 +100,23 @@ class Parser {
    * Create a comment instance.
    *
    * @param {Element|external:Element} signature
+   * @param {object[]} targets
    * @returns {*}
    */
-  createComment(signature) {
-    return new this.context.CommentClass(this, signature);
+  createComment(signature, targets) {
+    return new this.context.CommentClass(this, signature, targets);
   }
 
   /**
    * Create a section instance.
    *
-   * @param {Element|external:Element} headingElement
+   * @param {object} heading
+   * @param {object[]} targets
    * @param {Promise} watchedSectionsRequest
-   * @param {Element|external:Element} nextRelevantHeadingElement
    * @returns {*}
    */
-  createSection(headingElement, watchedSectionsRequest, nextRelevantHeadingElement) {
-    return new this.context.SectionClass(
-      this,
-      headingElement,
-      watchedSectionsRequest,
-      nextRelevantHeadingElement
-    );
+  createSection(heading, targets, watchedSectionsRequest) {
+    return new this.context.SectionClass(this, heading, targets, watchedSectionsRequest);
   }
 
   /**
@@ -517,12 +513,7 @@ class Parser {
     let signatures = this.timestampsToSignatures(timestamps);
     const unsigneds = this.findUnsigneds();
     signatures.push(...unsigneds);
-
-    // Sort signatures according to their position in the DOM. `sig1` and `sig2` are expected not to
-    // be the same element.
-    signatures.sort((sig1, sig2) => this.context.follows(sig1.element, sig2.element) ? 1 : -1);
-
-    return signatures;
+    return signatures.map((sig) => Object.assign({ type: 'signature' }, sig));
   }
 
   /**
@@ -699,13 +690,20 @@ class Parser {
    * Traverse the DOM, collecting comment parts.
    *
    * @param {object[]} parts
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @param {Element} firstForeignComponentAfter
+   * @param {Element|external:Element} firstForeignComponentAfter
+   * @param {Element|external:Element} precedingHeadingElement
    * @returns {object[]}
    * @private
    */
-  traverseDom(parts, signatureElement, treeWalker, firstForeignComponentAfter) {
+  traverseDom(
+    parts,
+    signatureElement,
+    treeWalker,
+    firstForeignComponentAfter,
+    precedingHeadingElement
+  ) {
     // 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
     for (let i = 0; i < 500; i++) {
       /*
@@ -732,19 +730,19 @@ class Parser {
 
         // Get the last not inline child of the current node.
         let parentNode;
-        let haveDived = false;
         while ((parentNode = treeWalker.currentNode) && treeWalker.lastChild()) {
+          while (
+            treeWalker.currentNode.nodeType === Node.TEXT_NODE &&
+            !treeWalker.currentNode.textContent.trim() &&
+            treeWalker.previousSibling()
+          );
           if (isInline(treeWalker.currentNode, true)) {
             treeWalker.currentNode = parentNode;
             break;
           }
-          haveDived = true;
-        }
-        if (haveDived) {
           lastStep = 'dive';
-        } else {
-          break;
         }
+        if (lastStep !== 'dive') break;
       } else if (treeWalker.previousSibling()) {
         lastStep = 'back';
       } else {
@@ -820,6 +818,14 @@ class Parser {
 
             // Cases like the table added here: https://ru.wikipedia.org/?diff=115822931
             node.tagName !== 'TABLE'
+          ) ||
+
+          // A heading can be wrapped into an element, like at
+          // https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
+          (
+            precedingHeadingElement &&
+            node !== precedingHeadingElement &&
+            node.contains(precedingHeadingElement)
           )
         );
 
@@ -858,12 +864,19 @@ class Parser {
    * _For internal use._ Collect the parts of the comment given a signature element.
    *
    * @param {Element|external:Element} signatureElement
+   * @param {Element|external:Element} precedingHeadingElement
    * @returns {object[]}
    */
-  collectParts(signatureElement) {
+  collectParts(signatureElement, precedingHeadingElement) {
     const treeWalker = new ElementsAndTextTreeWalker(signatureElement);
     let [parts, firstForeignComponentAfter] = this.getStartNodes(signatureElement, treeWalker);
-    parts = this.traverseDom(parts, signatureElement, treeWalker, firstForeignComponentAfter);
+    parts = this.traverseDom(
+      parts,
+      signatureElement,
+      treeWalker,
+      firstForeignComponentAfter,
+      precedingHeadingElement
+    );
 
     return parts;
   }
@@ -1265,21 +1278,22 @@ class Parser {
   /**
    * _For internal use._ Get all headings on the page.
    *
-   * @returns {Element[]|external:Element[]}
+   * @returns {object[]}
    */
   findHeadings() {
     // The worker context doesn't support .querySelector(), so we have to use
     // .getElementsByTagName().
-    const headings = [
+    return [
       ...cd.g.rootElement.getElementsByTagName('h1'),
       ...cd.g.rootElement.getElementsByTagName('h2'),
       ...cd.g.rootElement.getElementsByTagName('h3'),
       ...cd.g.rootElement.getElementsByTagName('h4'),
       ...cd.g.rootElement.getElementsByTagName('h5'),
       ...cd.g.rootElement.getElementsByTagName('h6'),
-    ];
-    headings.sort((heading1, heading2) => this.context.follows(heading1, heading2) ? 1 : -1);
-    return headings;
+    ].map((element) => ({
+      type: 'heading',
+      element,
+    }));
   }
 
   /**

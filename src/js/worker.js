@@ -155,31 +155,40 @@ function parse() {
 
   cd.debug.startTimer('worker: parse comments');
   const parser = new Parser(context);
+
   parser.removeDtMarkup();
+  const headings = parser.findHeadings();
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);
+  const targets = headings
+    .concat(signatures)
+    .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
 
-  signatures.forEach((signature) => {
-    try {
-      cd.comments.push(parser.createComment(signature));
-    } catch (e) {
-      if (!(e instanceof CdError)) {
-        console.error(e);
+  targets
+    .filter((target) => target.type === 'signature')
+    .forEach((signature) => {
+      try {
+        cd.comments.push(parser.createComment(signature, targets));
+      } catch (e) {
+        if (!(e instanceof CdError)) {
+          console.error(e);
+        }
       }
-    }
-  });
+    });
   cd.debug.stopTimer('worker: parse comments');
 
   cd.debug.startTimer('worker: parse sections');
-  parser.findHeadings().forEach((heading) => {
-    try {
-      cd.sections.push(parser.createSection(heading));
-    } catch (e) {
-      if (!(e instanceof CdError)) {
-        console.error(e);
+  targets
+    .filter((target) => target.type === 'heading')
+    .forEach((heading) => {
+      try {
+        cd.sections.push(parser.createSection(heading, targets));
+      } catch (e) {
+        if (!(e instanceof CdError)) {
+          console.error(e);
+        }
       }
-    }
-  });
+    });
   cd.debug.stopTimer('worker: parse sections');
 
   cd.debug.startTimer('worker: prepare comments and sections');
@@ -298,9 +307,9 @@ function parse() {
   ];
   let sectionDangerousKeys = [
     'cachedAncestors',
-    'elements',
     'headingElement',
     'headlineElement',
+    'lastElement',
     'lastElementInFirstChunk',
     'parser',
   ];

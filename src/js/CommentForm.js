@@ -1522,7 +1522,7 @@ class CommentForm {
         const level = this.target.level;
         const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
         let $target;
-        let $tested = this.target.$elements.last();
+        let $tested = $(this.target.lastElement);
         const selector = '.cd-section-button-container, .cd-commentForm-reply';
         do {
           $target = $tested;

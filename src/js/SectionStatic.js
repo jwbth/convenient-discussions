@@ -227,20 +227,23 @@ export default {
           section.addAddSubsectionButton();
         }
 
+        // The same for the "Reply" button, but as this button is added to the end of the first
+        // chunk, we look at just the next section, not necessarily of the same level.
         const isFirstChunkClosed = (
           section.commentsInFirstChunk[0] &&
           section.commentsInFirstChunk[0].level === 0 &&
           section.commentsInFirstChunk.every((comment) => !comment.isActionable)
         );
-        const firstContentElement = section.$elements.get(1);
-
-        // The same for the "Reply" button, but as this button is added to the end of the first
-        // chunk, we look at just the next section, not necessarily of the same level.
         if (
-          // The first element is a heading of a subsection.
-          (!firstContentElement || !/^H[1-6]$/.test(firstContentElement.tagName)) &&
-
           !isFirstChunkClosed &&
+
+          // The subsection heading doesn't directly follow the section heading.
+          !(
+            section.lastElement !== section.lastElementInFirstChunk &&
+            section.lastElementInFirstChunk === section.$heading.get(0)
+          ) &&
+
+          // May mean complex formatting, so we better keep out.
           (
             !cd.sections[i + 1] ||
             cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel

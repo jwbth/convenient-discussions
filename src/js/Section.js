@@ -36,18 +36,18 @@ class Section extends SectionSkeleton {
   /**
    * Create a section object.
    *
-   * @param {Parser} parser A relevant instance of Parser.
-   * @param {Element} headingElement
+   * @param {Parser} parser
+   * @param {Element} heading
+   * @param {object[]} targets
    * @param {Promise} watchedSectionsRequest
-   * @param {Element} nextRelevantHeadingElement
    * @throws {CdError}
    */
-  constructor(parser, headingElement, watchedSectionsRequest, nextRelevantHeadingElement) {
-    super(parser, headingElement, nextRelevantHeadingElement);
+  constructor(parser, heading, targets, watchedSectionsRequest) {
+    super(parser, heading, targets);
 
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
-    this.editSectionElement = headingElement.querySelector('.mw-editsection');
+    this.editSectionElement = this.headingElement.querySelector('.mw-editsection');
     if (this.editSectionElement) {
       this.closingBracketElement = this.editSectionElement
         .getElementsByClassName('mw-editsection-bracket')[1];
@@ -83,7 +83,7 @@ class Section extends SectionSkeleton {
      */
     this.isActionable = (
       cd.state.isPageActive &&
-      !cd.g.closedDiscussionElements.some((el) => el.contains(headingElement)) &&
+      !cd.g.closedDiscussionElements.some((el) => el.contains(this.headingElement)) &&
 
       // Transclusions of templates that in turn translude content, like here:
       // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления
@@ -112,7 +112,7 @@ class Section extends SectionSkeleton {
      *
      * @type {external:jQuery}
      */
-    this.$heading = $(headingElement);
+    this.$heading = $(this.headingElement);
   }
 
   /**
@@ -262,8 +262,7 @@ class Section extends SectionSkeleton {
     buttonContainer.style.display = 'none';
     buttonContainer.appendChild(button.element);
 
-    const lastElement = this.elements[this.elements.length - 1];
-    lastElement.parentNode.insertBefore(buttonContainer, lastElement.nextElementSibling);
+    this.lastElement.parentNode.insertBefore(buttonContainer, this.lastElement.nextElementSibling);
 
     let hideAddSubsectionButtonTimeout;
     const deferButtonHide = () => {
@@ -626,26 +625,6 @@ class Section extends SectionSkeleton {
   copyLink(e) {
     e.preventDefault();
     showCopyLinkDialog(this, e);
-  }
-
-  /**
-   * Section elements as a jQuery object.
-   *
-   * Uses a getter mostly for unification with {@link Comment#$elements}.
-   *
-   * @type {external:jQuery}
-   */
-  get $elements() {
-    if (this.cached$elements === undefined) {
-      this.cached$elements = $(this.elements);
-    }
-    return this.cached$elements;
-  }
-
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  set $elements(value) {
-    this.cached$elements = value;
-    this.elements = value.get();
   }
 
   /**

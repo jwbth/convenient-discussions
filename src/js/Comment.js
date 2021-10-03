@@ -96,11 +96,12 @@ class Comment extends CommentSkeleton {
   /**
    * Create a comment object.
    *
-   * @param {Parser} parser A relevant instance of Parser.
+   * @param {Parser} parser
    * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
+   * @param {object[]} targets
    */
-  constructor(parser, signature) {
-    super(parser, signature);
+  constructor(parser, signature, targets) {
+    super(parser, signature, targets);
 
     if (!elementPrototypes) {
       elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;

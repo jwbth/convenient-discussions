@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
-import { getElementRangeContents } from './util';
+import { defined } from './util';
 
 /**
  * Class containing the main properties of a section. This class is the only one used in the worker
@@ -12,10 +12,10 @@ class SectionSkeleton {
    * Create a section skeleton instance.
    *
    * @param {Parser} parser
-   * @param {Element|external:Element} headingElement
-   * @param {Element|external:Element} nextRelevantHeadingElement
+   * @param {object} heading
+   * @param {object[]} targets
    */
-  constructor(parser, headingElement, nextRelevantHeadingElement) {
+  constructor(parser, heading, targets) {
     this.parser = parser;
 
     /**
@@ -23,14 +23,15 @@ class SectionSkeleton {
      *
      * @type {Element|external:Element}
      */
-    this.headingElement = headingElement;
+    this.headingElement = heading.element;
 
     /**
      * Headline element.
      *
      * @type {Element|external:Element}
      */
-    this.headlineElement = this.parser.context.getElementByClassName(headingElement, 'mw-headline');
+    this.headlineElement = this.parser.context
+      .getElementByClassName(this.headingElement, 'mw-headline');
 
     if (!this.headlineElement) {
       throw new CdError();
@@ -45,7 +46,7 @@ class SectionSkeleton {
 
     this.parseHeadline();
 
-    const levelMatch = headingElement.tagName.match(/^H([1-6])$/);
+    const levelMatch = this.headingElement.tagName.match(/^H([1-6])$/);
 
     /**
      * Section level. A level is a number representing the number of `=` characters in the section
@@ -63,7 +64,7 @@ class SectionSkeleton {
     this.sectionNumber = null;
 
     let editSectionElement = this.parser.context
-      .getElementByClassName(headingElement, 'mw-editsection');
+      .getElementByClassName(this.headingElement, 'mw-editsection');
     if (!editSectionElement) {
       editSectionElement = this.createSectionMenu();
     }
@@ -96,7 +97,7 @@ class SectionSkeleton {
       }
     }
 
-    this.setContentProperties(nextRelevantHeadingElement);
+    this.setContentProperties(heading, targets);
 
     /**
      * Section ID. Same as the section index in
@@ -130,9 +131,11 @@ class SectionSkeleton {
   /**
    * Set some properties related to the content of the section (contained elements and comments).
    *
-   * @param {Element|external:Element} nextRelevantHeadingElement
+   * @param {object} heading
+   * @param {object[]} targets
+   * @private
    */
-  setContentProperties(nextRelevantHeadingElement) {
+  setContentProperties(heading, targets) {
     const treeWalker = new TreeWalker(
       cd.g.rootElement,
       (node) => (
@@ -152,30 +155,35 @@ class SectionSkeleton {
       this.headingNestingLevel++;
     }
 
-    // We can't just take all the following elements until the next heading - parts of sections that
-    // include the heading can be inside elements like here:
-    // https://he.wikipedia.org/wiki/Project:חדשות#Desktop_improvements._A_new_change!
-    let elements;
-    if (nextRelevantHeadingElement) {
-      elements = getElementRangeContents(this.headingElement, nextRelevantHeadingElement);
-      elements.pop();
-    } else {
-      let lastElement = cd.g.rootElement.lastElementChild;
-      while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
-        lastElement = lastElement.lastElementChild;
-      }
-      elements = getElementRangeContents(this.headingElement, lastElement);
+    const headingIndex = targets.indexOf(heading);
+    let nextHeadingIndex = targets
+      .findIndex((target, i) => i > headingIndex && target.type === 'heading');
+    if (nextHeadingIndex === -1) {
+      nextHeadingIndex = undefined;
     }
-    let hasSubsections = false;
-    elements.slice(1).some((el, i) => {
-      if (this.lastElementInFirstChunk === undefined && /^H[2-6]$/.test(el.tagName)) {
-        hasSubsections = true;
-        this.lastElementInFirstChunk = elements[i];
-        return true;
-      } else {
-        return false;
-      }
-    });
+    const nextHeadingElement = targets[nextHeadingIndex]?.element;
+
+    const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
+
+    // Next not descendant heading element index
+    let nndheIndex = targets
+      .findIndex((target, i) => (
+        i > headingIndex &&
+        target.type === 'heading' &&
+        levelRegexp.test(target.element.tagName)
+      ));
+
+    if (nndheIndex === -1) {
+      nndheIndex = undefined;
+    }
+    const nextNotDescendantHeadingElement = targets[nndheIndex]?.element;
+
+    /**
+     * Last element in the section.
+     *
+     * @type {Element|external:Element}
+     */
+    this.lastElement = this.getLastElement(nextNotDescendantHeadingElement, treeWalker);
 
     /**
      * Last element in the first chunk of the section, i.e. all elements up to the first subheading
@@ -183,64 +191,33 @@ class SectionSkeleton {
      *
      * @type {Element|external:Element}
      */
-    this.lastElementInFirstChunk = this.lastElementInFirstChunk || elements[elements.length - 1];
+    this.lastElementInFirstChunk = nextHeadingElement === nextNotDescendantHeadingElement ?
+      this.lastElement :
+      this.getLastElement(nextHeadingElement, treeWalker);
 
-    // We only need the first and the last comment parts to determine comments in the section.
-    let firstCommentPart;
-    let lastCommentPart;
-    if (elements[1]) {
-      treeWalker.currentNode = elements[elements.length - 1];
-      while (treeWalker.lastChild());
-      const lastNode = treeWalker.currentNode;
+    const targetsToComments = (targets) => (
+      targets
+        .filter((target) => target.type === 'signature')
+        .map((target) => target.comment)
+        .filter(defined)
+    );
 
-      treeWalker.currentNode = elements[1];
-      do {
-        if (treeWalker.currentNode.classList.contains('cd-comment-part')) {
-          firstCommentPart = treeWalker.currentNode;
-        }
-      } while (!firstCommentPart && treeWalker.currentNode !== lastNode && treeWalker.nextNode());
+    this.comments = targetsToComments(targets.slice(headingIndex, nndheIndex));
+    this.commentsInFirstChunk = targetsToComments(targets.slice(headingIndex, nextHeadingIndex));
 
-      treeWalker.currentNode = lastNode;
-      do {
-        if (treeWalker.currentNode.classList.contains('cd-comment-part')) {
-          lastCommentPart = treeWalker.currentNode;
-        }
-      } while (
-        !lastCommentPart &&
-        treeWalker.currentNode !== elements[1] &&
-        treeWalker.previousNode()
-      );
-    }
-
-    if (firstCommentPart) {
-      const firstCommentPartId = Number(firstCommentPart.getAttribute('data-comment-id'));
-      const lastCommentPartId = Number(lastCommentPart.getAttribute('data-comment-id'));
-
-      this.comments = cd.comments.slice(firstCommentPartId, lastCommentPartId + 1);
-      if (hasSubsections) {
-        const endIndex = this.comments.findIndex((comment) => !(
-          this.parser.context.follows(this.lastElementInFirstChunk, comment.elements[0]) ||
-          this.lastElementInFirstChunk.contains(comment.elements[0])
-        ));
-        this.commentsInFirstChunk = this.comments.slice(0, endIndex || 0);
+    this.comments.forEach((comment) => {
+      if (
+        !this.oldestComment ||
+        (comment.date && (!this.oldestComment.date || this.oldestComment.date > comment.date))
+      ) {
+        /**
+         * Oldest comment in the section.
+         *
+         * @type {CommentSkeleton}
+         */
+        this.oldestComment = comment;
       }
-
-      this.comments.forEach((comment) => {
-        if (
-          !this.oldestComment ||
-          (comment.date && (!this.oldestComment.date || this.oldestComment.date > comment.date))
-        ) {
-          /**
-           * Oldest comment in the section.
-           *
-           * @type {CommentSkeleton}
-           */
-          this.oldestComment = comment;
-        }
-      });
-
-      this.comments[0].followsHeading = true;
-    }
+    });
 
     /**
      * Comments contained in the section.
@@ -260,13 +237,30 @@ class SectionSkeleton {
     this.commentsInFirstChunk.forEach((comment) => {
       comment.section = this;
     });
+  }
 
-    /**
-     * Section elements.
-     *
-     * @type {Element[]|external:Element[]}
-     */
-    this.elements = elements;
+  /**
+   * Get the last element in the section based on the next section's heading element.
+   *
+   * @param {Element|external:Element|undefined} nextHeadingElement
+   * @param {TreeWalker} treeWalker
+   * @returns {Element|external:Element}
+   */
+  getLastElement(nextHeadingElement, treeWalker) {
+    let lastElement;
+    if (nextHeadingElement) {
+      treeWalker.currentNode = nextHeadingElement;
+      while (!treeWalker.previousSibling()) {
+        if (!treeWalker.parentNode()) break;
+      }
+      lastElement = treeWalker.currentNode;
+    } else {
+      lastElement = cd.g.rootElement.lastElementChild;
+    }
+    while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
+      lastElement = lastElement.lastElementChild;
+    }
+    return lastElement;
   }
 
   /**

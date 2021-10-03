@@ -400,22 +400,22 @@ function adjustDom() {
 /**
  * Parse the comments and modify the related parts of the DOM.
  *
+ * @param {object[]} targets
  * @param {Parser} parser
  * @private
  */
-function processComments(parser) {
-  const timestamps = parser.findTimestamps();
-  const signatures = parser.findSignatures(timestamps);
-
-  signatures.forEach((signature) => {
-    try {
-      cd.comments.push(parser.createComment(signature));
-    } catch (e) {
-      if (!(e instanceof CdError)) {
-        console.error(e);
+function processComments(targets, parser) {
+  targets
+    .filter((target) => target.type === 'signature')
+    .forEach((signature) => {
+      try {
+        cd.comments.push(parser.createComment(signature, targets));
+      } catch (e) {
+        if (!(e instanceof CdError)) {
+          console.error(e);
+        }
       }
-    }
-  });
+    });
 
   Comment.reformatTimestamps();
 
@@ -443,26 +443,24 @@ function processComments(parser) {
 /**
  * Parse the sections and modify some parts of them.
  *
+ * @param {object[]} targets
  * @param {Parser} parser
  * @param {Promise} watchedSectionsRequest
  * @private
  */
-function processSections(parser, watchedSectionsRequest) {
-  parser.findHeadings().forEach((heading, i, headings) => {
-    try {
-      const [, level] = heading.tagName.match(/^H([1-6])$/);
-      const levelRegexp = new RegExp(`^H[1-${level}]$`);
-      const nextRelevantHeading = headings
-        .slice(i + 1)
-        .find((heading) => levelRegexp.test(heading.tagName));
-      const section = parser.createSection(heading, watchedSectionsRequest, nextRelevantHeading);
-      cd.sections.push(section);
-    } catch (e) {
-      if (!(e instanceof CdError)) {
-        console.error(e);
+function processSections(targets, parser, watchedSectionsRequest) {
+  targets
+    .filter((target) => target.type === 'heading')
+    .forEach((heading) => {
+      try {
+        const section = parser.createSection(heading, targets, watchedSectionsRequest);
+        cd.sections.push(section);
+      } catch (e) {
+        if (!(e instanceof CdError)) {
+          console.error(e);
+        }
       }
-    }
-  });
+    });
 
   Section.adjust();
 
@@ -821,7 +819,7 @@ async function processFragment(passedData) {
 
       // setTimeout for Firefox, as above
       setTimeout(() => {
-        section.$elements.first().cdScrollTo('top', false);
+        section.$heading.cdScrollTo('top', false);
       });
     }
   }
@@ -1021,6 +1019,8 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
   let watchedSectionsRequest;
   let visitsRequest;
+  let headings;
+  let targets;
   let parser;
   if (articleId) {
     watchedSectionsRequest = getWatchedSections(true, passedData);
@@ -1061,9 +1061,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     });
 
     parser.removeDtMarkup();
+    headings = parser.findHeadings();
+    const timestamps = parser.findTimestamps();
+    const signatures = parser.findSignatures(timestamps);
+    targets = headings
+      .concat(signatures)
+      .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
 
     try {
-      processComments(parser);
+      processComments(targets, parser);
     } catch (e) {
       console.error(e);
     }
@@ -1085,7 +1091,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     if (articleId) {
       cd.debug.startTimer('process sections');
 
-      processSections(parser, watchedSectionsRequest);
+      processSections(targets, parser, watchedSectionsRequest);
 
       cd.debug.stopTimer('process sections');
     }

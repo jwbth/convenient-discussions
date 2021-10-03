@@ -15,13 +15,28 @@ class CommentSkeleton {
    *
    * @param {Parser} parser
    * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
+   * @param {object[]} targets
    * @throws {CdError}
    */
-  constructor(parser, signature) {
+  constructor(parser, signature, targets) {
     this.parser = parser;
 
+    const signatureIndex = targets.indexOf(signature);
+
+    /**
+     * Is the comment preceded by a heading.
+     *
+     * @type {boolean}
+     */
+    this.followsHeading = targets[signatureIndex - 1]?.type === 'heading';
+
+    let precedingHeadingElement;
+    if (this.followsHeading) {
+      precedingHeadingElement = targets[signatureIndex - 1].element;
+    }
+
     // Identify all comment nodes and save a path to them.
-    let parts = this.parser.collectParts(signature.element);
+    let parts = this.parser.collectParts(signature.element, precedingHeadingElement);
 
     // Remove parts contained by other parts.
     parts = this.parser.removeNestedParts(parts);
@@ -139,14 +154,6 @@ class CommentSkeleton {
     this.setHighlightables();
     this.setLevels();
 
-    /**
-     * Is the comment preceded by a heading. Set to `true` in the {@link SectionSkeleton}
-     * constructor if that's the case.
-     *
-     * @type {boolean}
-     */
-    this.followsHeading = false;
-
     if (this.parts[0].isHeading && this.level !== 0) {
       this.parts.shift();
       this.elements.shift();
@@ -183,6 +190,8 @@ class CommentSkeleton {
      * @type {boolean}
      */
     this.isOutdented = false;
+
+    signature.comment = this;
   }
 
   /**
