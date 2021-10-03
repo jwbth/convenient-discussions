@@ -7,14 +7,7 @@
 import Comment from './Comment';
 import Page from './Page';
 import cd from './cd';
-import {
-  generatePageNamePattern,
-  isCommentEdit,
-  isProbablyTalkPage,
-  isUndo,
-  removeDirMarks,
-  spacesToUnderlines,
-} from './util';
+import userRegistry from './userRegistry';
 import { createApi, initSettings } from './boot';
 import { editWatchedSections, showSettingsDialog } from './modal';
 import {
@@ -23,6 +16,14 @@ import {
   initTimestampParsingTools,
   parseTimestamp,
 } from './timestamp';
+import {
+  generatePageNamePattern,
+  isCommentEdit,
+  isProbablyTalkPage,
+  isUndo,
+  removeDirMarks,
+  spacesToUnderlines,
+} from './util';
 import { getWatchedSections } from './options';
 import { loadSiteData } from './siteData';
 
@@ -72,6 +73,7 @@ async function prepare(siteDataRequests) {
     .files['phpCharToUpper.json'];
 
   cd.page = new Page(cd.g.PAGE_NAME, false);
+  cd.user = userRegistry.getUser(cd.g.USER_NAME);
 
   serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
