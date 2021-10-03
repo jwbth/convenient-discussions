@@ -159,6 +159,9 @@ class Section extends SectionSkeleton {
 
     const lastElement = this.lastElementInFirstChunk;
 
+    // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
+    if (['TR', 'TD', 'TH'].includes(lastElement.tagName)) return;
+
     // Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
     // the comment form in the <ol> tag.
     const isVotePlaceholder = (
