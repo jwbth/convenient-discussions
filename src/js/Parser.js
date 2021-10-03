@@ -687,6 +687,22 @@ class Parser {
   }
 
   /**
+   * Check whether the element is a list at the end of a comment (not an independent comment).
+   *
+   * @param {Element|external:Element} element
+   * @param {Element|external:Element} signatureElement
+   * @private
+   */
+  isListAtCommentEnd(element, signatureElement) {
+    // Don't confuse the comment with a list at the end of the comment.
+    (
+      ['UL', 'OL'].includes(element.tagName) &&
+      element[this.context.childElementsProp].length > 1 &&
+      !element[this.context.childElementsProp][0].contains(signatureElement)
+    )
+  }
+
+  /**
    * Traverse the DOM, collecting comment parts.
    *
    * @param {object[]} parts
@@ -792,7 +808,7 @@ class Parser {
           )
         ) &&
 
-        previousPart.node[this.context.childElementsProp][0]?.contains(signatureElement)
+        !this.isListAtCommentEnd(previousPart.node, signatureElement)
       );
       if (isIntro) break;
 
@@ -1053,7 +1069,7 @@ class Parser {
             // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
             (!['DL', 'OL', 'UL'].includes(node.tagName) || this.isIntroList(node, true)) &&
 
-            nextElement[this.context.childElementsProp][0]?.contains(signatureElement)
+            !this.isListAtCommentEnd(nextElement, signatureElement)
           );
 
           if (isIntro) {
