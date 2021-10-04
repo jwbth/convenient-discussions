@@ -3317,7 +3317,7 @@ class CommentForm {
 
         if (
           // TODO: When there is no headline input, extract the headline from `== ==` markup.
-          (this.mode === 'addSection' && this.headlineinput) ||
+          (this.mode === 'addSection' && this.headlineInput) ||
 
           this.mode === 'addSubsection' ||
           isHeadlineAltered
