@@ -753,7 +753,7 @@ export function addCommentLinksToSpecialSearch() {
   if (commentAnchor) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await Promise.all(...loadSiteData());
+        await Promise.all(loadSiteData());
         $('.mw-search-result-heading').each((i, el) => {
           const originalHref = $(el)
             .find('a')
