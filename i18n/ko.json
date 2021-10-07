@@ -117,6 +117,7 @@
 	"navpanel-newcomments-unknowndate": "알 수 없는 날짜",
 	"navpanel-newcomments-refresh": "문서를 새로 고치려면 클릭",
 	"navpanel-markasread": "보이는 모든 댓글을 읽은 것으로 표시하려면 Ctrl을 계속 누르고 계십시오",
+	"toc-commentcount-new": "+$1",
 	"pagenav-pagetop": "페이지 맨 위로",
 	"pagenav-toc": "목차",
 	"pagenav-pagebottom": "페이지 맨 아래로",
