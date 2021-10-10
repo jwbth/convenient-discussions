@@ -263,3 +263,15 @@ span.cd-show {
 .cd-message-notFound {
   margin: 0.5em 0;
 }
+
+// Reset the default. There can be navboxes in discussion threads.
+li .mw-collapsible-toggle,
+.mw-content-ltr li .mw-collapsible-toggle,
+.mw-content-rtl .mw-content-ltr li .mw-collapsible-toggle {
+  float: right;
+}
+
+.mw-content-rtl li .mw-collapsible-toggle,
+.mw-content-ltr .mw-content-rtl li .mw-collapsible-toggle {
+  float: left;
+}
