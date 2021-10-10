@@ -187,8 +187,8 @@
   "cf-error-formconflict": "There already is an \"Add topic\" form of a different type open on the page. Close that form to open this one.",
   "cf-error-othersubmitted": "Can't submit the form because another form is being submitted right now.",
 
-  "cf-confirm-noheadline-topic": "You didn't enter the topic subject/headline.",
-  "cf-confirm-noheadline-subsection": "You didn't enter the section subject/headline.",
+  "cf-confirm-noheadline-topic": "You didn't enter the topic subject. The comment will be added to the previous section, without a headline.",
+  "cf-confirm-noheadline-subsection": "You didn't enter the section subject. The comment will be added to the previous section, without a headline.",
   "cf-confirm-noheadline-question": "Are you sure you want to post the comment?",
   "cf-confirm-empty": "Are you sure you want to post an empty comment?",
   "cf-confirm-long": "This comment is longer than $1 characters. Are you sure you want to post it?",
