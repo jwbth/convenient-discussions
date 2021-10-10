@@ -62,6 +62,9 @@ export default {
 	'contribsPage': 'Special:Contributions',
 	'timezone': 'UTC',
 	'useGlobalPreferences': true,
+	'archivePaths': [/\/Archive/],
+	'signatureEndingRegexp': / \(talk\)$/,
+	'tagName': 'convenient-discussions',
 	'unsignedTemplates': [
 		'Unsigned',
 		'Unsigned3',
@@ -84,6 +87,7 @@ export default {
 		'Clear',
 		'Br'
 	],
+	'quoteFormatting': ["{{tq|1=", "}}<br>"],
 	'templatesToExclude': [
 		'Moved'
 	],
@@ -102,7 +106,6 @@ export default {
 			'Archive bottom'
 		]
 	],
-	'signatureEndingRegexp': / \(talk\)/,
 	'beforeAuthorLinkParse': function (authorLink) {
 		// https://meta.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
 		return authorLink.lastElementChild;

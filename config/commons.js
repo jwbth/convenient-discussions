@@ -62,6 +62,8 @@ export default {
   'contribsPage': 'Special:Contributions',
   'timezone': 'UTC',
   'useGlobalPreferences': true,
+  'archivePaths': [/\/Archive/],
+  'signatureEndingRegexp': / \(talk\)$/,
   'tagName': 'convenient-discussions',
   'unsignedTemplates': [
     'Unsigned',
@@ -94,6 +96,7 @@ export default {
     'Clr',
     '-',
   ],
+  'quoteFormatting': ["{{tq|1=", "}}<br>"],
   foreignElementInHeadlineClasses: [
     'adminMark',
   ],
