@@ -74,7 +74,9 @@ class Section extends SectionSkeleton {
      *
      * @type {Page}
      */
-    this.sourcePage = this.sourcePageName ? new Page(this.sourcePageName) : cd.page;
+    this.sourcePage = this.sourcePageName && this.sourcePageName !== cd.page.name ?
+      new Page(this.sourcePageName) :
+      cd.page;
 
     /**
      * Is the section actionable (is in a closed discussion or on an old version page).

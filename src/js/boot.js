@@ -294,7 +294,7 @@ function initGlobals() {
    * @type {Page}
    * @memberof convenientDiscussions
    */
-  cd.page = new Page(cd.g.PAGE_NAME, false);
+  cd.page = cd.page || new Page(cd.g.PAGE_NAME, false);
 
   // TODO: Delete after all addons are updated.
   cd.g.PAGE = cd.page;
