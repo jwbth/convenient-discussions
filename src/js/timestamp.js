@@ -897,8 +897,8 @@ export function parseDtCommentId(id) {
   let parentDate;
   let sectionAnchorBeginning;
   if (parent) {
-    [parentAuthor, parentTimestamp] = parent
-      .match(/(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)$/) || [];
+    const regexp = /(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)$/;
+    [, parentAuthor, parentTimestamp] = parent.match(regexp) || [];
     if (parentAuthor) {
       parentAuthor = underlinesToSpaces(parentAuthor);
       parentDate = new Date(parentTimestamp);
