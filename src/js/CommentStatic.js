@@ -339,8 +339,15 @@ export default {
       comment.getOffset({ set: true });
       return Boolean(comment.roughOffset);
     };
-    const findVisible = (direction, startIndex = 0) => {
-      const comments = reorderArray(cd.comments, startIndex, direction === 'backward');
+    const findVisible = (direction, startIndex = 0, endIndex) => {
+      let comments = reorderArray(cd.comments, startIndex, direction === 'backward');
+      if (endIndex !== undefined) {
+        comments = comments.filter((comment) => (
+          direction === 'forward' ?
+          comment.id < endIndex && comment.id >= startIndex :
+          comment.id > endIndex && comment.id <= startIndex
+        ));
+      }
       return comments.find(isVisible) || null;
     };
 
@@ -359,10 +366,7 @@ export default {
 
     const findClosest = (direction, searchArea, reverse = false) => {
       if (direction) {
-        const isTop = (
-          (direction === 'forward' && reverse) ||
-          (direction === 'backward' && !reverse)
-        );
+        const isTop = direction === 'forward' ? reverse : !reverse;
         const startIndex = isTop ? searchArea.top.id : searchArea.bottom.id;
         return findVisible(direction, startIndex);
       }
@@ -379,7 +383,18 @@ export default {
     for (let i = 0; i < cd.comments.length; i++) {
       if (!comment.roughOffset) {
         comment.getOffset({ set: true });
+        if (!comment.roughOffset) {
+          comment = (
+            findVisible('forward', comment.id, searchArea.bottom.id) ||
+            findVisible('backward', comment.id, searchArea.top.id)
+          );
+          if (!comment) {
+            foundComment = findClosest(findClosestDirection, searchArea);
+            break;
+          }
+        }
       }
+
       if (comment.isInViewport(false)) {
         foundComment = comment;
         break;
@@ -403,18 +418,11 @@ export default {
         break;
       }
 
+      // Should usually be the case only if there is one comment on the page. But the proportion
+      // below fails in rare cases too (see the console.warn call).
       if (searchArea.top === searchArea.bottom) {
         foundComment = findClosest(findClosestDirection, searchArea);
         break;
-      }
-
-      if (!comment.roughOffset) {
-        // To avoid contriving a sophisticated algorithm for choosing which comment to pick next
-        // (and avoid picking any previously picked) we just pick the comment next to the beginning
-        // of the search area.
-        comment = findVisible('forward', searchArea.top.id + 1);
-        searchArea.top = comment;
-        continue;
       }
 
       if (comment === firstVisibleComment) {
@@ -437,7 +445,7 @@ export default {
         );
         if (proportion < 0 || proportion >= 1) {
           console.warn(
-            'The proportion shouldn\'t be more than 0 or less or equal to 1.',
+            'The proportion shouldn\'t be less than 0 or greater or equal to 1.',
             'proportion', proportion,
             'searchArea', searchArea
           );
