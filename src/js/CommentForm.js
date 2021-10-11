@@ -2330,8 +2330,10 @@ class CommentForm {
       code += '\n';
     }
 
+    const filePatternEnd = `\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`;
+
     if (this.willCommentBeIndented) {
-      // Remove spaces in the beginning of the lines.
+      // Remove spaces at the beginning of lines.
       code = code.replace(/^ +/gm, '');
 
       // Remove paragraphs if the wiki has no paragraph template.
@@ -2339,20 +2341,30 @@ class CommentForm {
         code = code.replace(/^\n/gm, '');
       }
 
-      // Replace list markup (`:*#;`) with respective tags where otherwise layout will be broken.
+      // Replace list markup (`:*#;`) with respective tags if otherwise layout will be broken.
       if (/^[:*#;]/m.test(code) && areThereTagsAroundListMarkup) {
         code = listMarkupToTags(code);
       }
 
-      // Add intentation characters to the lines with the list and table markup.
-      code = code.replace(/(\n+)([:*#;\x03])/g, (s, newlines, nextLine) => {
-        // Many newlines will be replaced with a paragraph template below. If there is no
-        // paragraph template, there wouldn't be multiple newlines, as they would've been removed
-        // above.
+      const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
+      const addNewlinesAndIndentationChars = (s, newlines, nextLine) => {
+        // Many newlines will be replaced with a paragraph template below. It could help visual
+        // formatting. If there is no paragraph template, there wouldn't be multiple newlines, as
+        // they would've been removed above.
         const newlinesToAdd = newlines.length > 1 ? '\n\n\n' : '\n';
+        const line = (/^[:*#;]/.test(nextLine) ? '' : spaceOrNot) + nextLine;
 
-        return newlinesToAdd + restLinesIndentationChars + nextLine;
-      });
+        return newlinesToAdd + restLinesIndentationChars + line;
+      };
+
+      // Add indentation characters to lines with the list and table markup.
+      code = code.replace(/(\n+)([:*#;\x03])/g, addNewlinesAndIndentationChars);
+
+      // Add indentation characters to lines wholly occupied by the file markup. File markup is
+      // tricky because, depending on the alignment and line breaks, the result can be very
+      // different. The safest way to fight that is to use indentation.
+      const fileRegexp = new RegExp('(\\n+)(' + filePatternEnd + ')', 'gmi');
+      code = code.replace(fileRegexp, addNewlinesAndIndentationChars);
 
       if (/^[:*#;]/m.test(code) || code.includes('\x03')) {
         if (restLinesIndentationChars === '#') {
@@ -2370,9 +2382,8 @@ class CommentForm {
           });
         }
 
-        // Add intentation characters to the lines following the lines with the list and table
+        // Add indentation characters to the lines following the lines with the list and table
         // markup.
-        const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
         code = code.replace(/^([:*#;\x03].+)(\n+)(?!:)/mg, (s, previousLine, newlines) => {
           // Many newlines will be replaced with a paragraph template below. If there is no
           // paragraph template, there wouldn't be multiple newlines, as they would've been removed
@@ -2407,8 +2418,8 @@ class CommentForm {
     // and \x02 mean the beginning and ending of sensitive code except for tables. \x03 and \x04
     // mean the beginning and ending of a table. Note: This should be kept coordinated with the
     // reverse transformation code in Comment#codeToText.
-    const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_(block|template).*\\x02) *$`, 'i');
-    const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
+    const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template).*\x02) *$/);
+    const fileRegexp = new RegExp('^' + filePatternEnd, 'i');
     const currentLineEndingRegexp = new RegExp(
       `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
       'i'
@@ -2418,7 +2429,6 @@ class CommentForm {
       'i'
     );
     const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-
     const newlinesRegexp = this.willCommentBeIndented ?
       /^(.+)\n(?!:)(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
@@ -2442,7 +2452,7 @@ class CommentForm {
           (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
         ) ||
         fileRegexp.test(currentLine) ||
-        (!this.willCommentBeIndented && fileRegexp.test(nextLine)) ||
+        fileRegexp.test(nextLine) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
