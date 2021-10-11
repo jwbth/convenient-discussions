@@ -1469,7 +1469,11 @@ class Comment extends CommentSkeleton {
   getLayersContainer() {
     if (this.cachedLayersContainer === undefined) {
       let offsetParent;
-      const treeWalker = new TreeWalker(document.body, null, true, this.elements[0]);
+
+      // Use the last element, as in Comment#getDir().
+      const lastElement = this.elements[this.elements.length - 1];
+      const treeWalker = new TreeWalker(document.body, null, true, lastElement);
+
       while (treeWalker.parentNode()) {
         const node = treeWalker.currentNode;
 
