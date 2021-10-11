@@ -330,7 +330,7 @@ function initGlobals() {
   cd.g.isIPv6Address = mw.util.isIPv6Address;
   cd.g.notificationArea = document.querySelector('.mw-notification-area');
 
-  cd.state.dontHandleScroll = false;
+  cd.state.isScrollHandlingPrevented = false;
   cd.state.isAutoScrollInProgress = false;
   cd.state.isPageBeingReloaded = false;
   cd.state.hasPageBeenReloaded = false;

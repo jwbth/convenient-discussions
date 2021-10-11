@@ -99,6 +99,7 @@ const debug = {
    */
   stopTimer(label) {
     if (this.timerStartTimestamps[label] === undefined) return;
+
     const interval = Date.now() - this.timerStartTimestamps[label];
     this.timerTotal[label] += interval;
     delete this.timerStartTimestamps[label];

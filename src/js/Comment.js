@@ -479,8 +479,7 @@ class Comment extends CommentSkeleton {
         wrapper.appendChild(origEl);
 
         this.addAttributes();
-        origEl.classList
-          .remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+        origEl.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
         delete origEl.dataset.commentId;
       });
 
@@ -501,7 +500,6 @@ class Comment extends CommentSkeleton {
   addMenu() {
     const menuElement = document.createElement('div');
     menuElement.className = 'cd-comment-menu';
-
     this.menuElement = menuElement;
 
     /**
@@ -2623,9 +2621,9 @@ class Comment extends CommentSkeleton {
       this.flashChanged();
     }
 
-    const makesSenseToRegister = cd.comments
+    const makesSenseToRegisterFurther = cd.comments
       .some((comment) => comment.isSeen || comment.willFlashChangedOnSight);
-    if (registerAllInDirection && makesSenseToRegister) {
+    if (registerAllInDirection && makesSenseToRegisterFurther) {
       const change = registerAllInDirection === 'backward' ? -1 : 1;
       const nextComment = cd.comments[this.id + change];
       if (nextComment && nextComment.isInViewport() !== false) {
@@ -3399,10 +3397,10 @@ class Comment extends CommentSkeleton {
           .slice(adjustedCodeBetween.length)
           .match(cd.g.OUTDENT_TEMPLATES_REGEXP);
         if (outdentMatch) {
-          const [, outdentIntentationChars] = outdentMatch;
+          const [, outdentIndentationChars] = outdentMatch;
           if (
-            !outdentIntentationChars ||
-            outdentIntentationChars.length <= thisInCode.replyIndentationChars.length
+            !outdentIndentationChars ||
+            outdentIndentationChars.length <= thisInCode.replyIndentationChars.length
           ) {
             const nextLineRegexp = new RegExp(anySignaturePattern);
 

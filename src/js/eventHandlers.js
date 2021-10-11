@@ -123,14 +123,14 @@ export function handleScroll() {
   // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
   // wait before running, otherwise comments may be registered as seen after a press of Page
   // Down/Page Up.
-  if (cd.state.dontHandleScroll || cd.state.isAutoScrollInProgress) return;
+  if (cd.state.isScrollHandlingPrevented || cd.state.isAutoScrollInProgress) return;
 
-  cd.state.dontHandleScroll = true;
+  cd.state.isScrollHandlingPrevented = true;
 
   // One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than 200ms, but
   // 200ms proved to be not enough, so we try 300ms.
   setTimeout(() => {
-    cd.state.dontHandleScroll = false;
+    cd.state.isScrollHandlingPrevented = false;
 
     if (cd.state.isAutoScrollInProgress) return;
 
@@ -148,7 +148,8 @@ export function handleScroll() {
 export function handleHashChange() {
   let anchor = location.hash.slice(1);
   if (isCommentAnchor(anchor)) {
-    // Don't jump to the comment if the user pressed Back/Forward in the browser.
+    // Don't jump to the comment if the user pressed Back/Forward in the browser or if
+    // history.pushState() is caled from Comment#scrollTo().
     if (history.state?.cdJumpedToComment) return;
 
     try {

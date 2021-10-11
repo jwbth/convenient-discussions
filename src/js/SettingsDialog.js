@@ -207,11 +207,11 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         location.reload();
       });
     } else if (action === 'close') {
-      return new OO.ui.Process(async () => {
-        await confirmCloseDialog(this, 'sd');
+      return new OO.ui.Process(() => {
+        confirmCloseDialog(this, 'sd');
       });
     } else if (action === 'reset') {
-      return new OO.ui.Process(async () => {
+      return new OO.ui.Process(() => {
         if (confirm(cd.s('sd-reset-confirm'))) {
           const currentPageName = this.bookletLayout.getCurrentPageName();
           this.renderControls(settingsScheme.default);

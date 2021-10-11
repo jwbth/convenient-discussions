@@ -248,9 +248,8 @@ function changeElementType(element, newType) {
  * @private
  */
 function mergeAdjacentCommentLevels() {
-  const levels = (
-    cd.g.rootElement.querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
-  );
+  const levels = cd.g.rootElement
+    .querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)');
   if (!levels.length) return;
 
   const isOrHasCommentLevel = (el) => (
@@ -1250,7 +1249,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         // content as opposed to "$('.cd-comment-author-wrapper')".
         mw.hook('wikipage.content').add(highlightMentions);
 
-        let updateThreadLinesHandlerAttached = false;
+        let isUpdateThreadLinesHandlerAttached = false;
         const handlePageMutations = () => {
           const floatingRects = cd.g.floatingElements.map(getExtendedRect);
           Comment.redrawLayersIfNecessary(false, false, floatingRects);
@@ -1258,15 +1257,15 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           const updateThreadLines = () => {
             Thread.updateLines(floatingRects);
             $(document).off('mousemove', updateThreadLines);
-            updateThreadLinesHandlerAttached = false;
+            isUpdateThreadLinesHandlerAttached = false;
           };
 
-          if (!updateThreadLinesHandlerAttached && cd.settings.enableThreads) {
+          if (!isUpdateThreadLinesHandlerAttached && cd.settings.enableThreads) {
             // Update only on mouse move to prevent short page freezings when there is a comment
             // form in the beginning of a very long page and the input is changed so that everything
             // below the form shifts vertically.
             $(document).on('mousemove', updateThreadLines);
-            updateThreadLinesHandlerAttached = true;
+            isUpdateThreadLinesHandlerAttached = true;
           }
 
           // Could also run handleScroll() here, but not sure, as it will double the execution time
@@ -1311,7 +1310,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       $(document).on('keydown', handleGlobalKeyDown);
     }
 
-    showPopups = cd.state.isFirstRun && cd.state.isPageActive && cd.user.name !== '<unregistered>';
+    showPopups = cd.state.isFirstRun && cd.state.isPageActive && cd.user.isRegistered();
 
     /**
      * The script has processed the page.

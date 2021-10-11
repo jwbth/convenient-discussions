@@ -181,10 +181,10 @@ export function transparentize(color) {
  * browser styles. As an option, it can also treat text nodes as inline elements.
  *
  * @param {Node|external:Node} node
- * @param {boolean} countTextNodesAsInline
+ * @param {boolean} [countTextNodesAsInline=false]
  * @returns {?boolean}
  */
-export function isInline(node, countTextNodesAsInline) {
+export function isInline(node, countTextNodesAsInline = false) {
   if (countTextNodesAsInline && node.nodeType === Node.TEXT_NODE) {
     return true;
   }
@@ -1005,7 +1005,7 @@ export function getCommonGender(users) {
  * @param {object} [data={}] Additional data related to the notification.
  * @returns {Notification}
  */
- export function addNotification(message, options, data = {}) {
+export function addNotification(message, options, data = {}) {
   const notification = mw.notification.notify(message, options);
   notificationsData.push(Object.assign(data, { notification }));
   return notification;

@@ -1134,6 +1134,7 @@ class Section extends SectionSkeleton {
           if (indirect || section.level === this.level + 1 || !haveMetDirect) {
             children.push(section);
           }
+          return false;
         } else {
           return true;
         }

@@ -394,7 +394,6 @@ function onMessageFromWindow(e) {
     );
     cd.g.isIPv6Address = restoreFunc(cd.g.isIPv6Address);
 
-
     context.document = parseDocument(message.text, {
       withStartIndices: true,
       withEndIndices: true,

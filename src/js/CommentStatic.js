@@ -462,7 +462,13 @@ export default {
    * @memberof Comment
    */
   highlightHovered(e) {
-    if (cd.state.dontHandleScroll || cd.state.isAutoScrollInProgress || isPageOverlayOn()) return;
+    if (
+      cd.state.isScrollHandlingPrevented ||
+      cd.state.isAutoScrollInProgress ||
+      isPageOverlayOn()
+    ) {
+      return;
+    }
 
     const isObstructingElementHovered = (
       Array.from(cd.g.notificationArea?.querySelectorAll('.mw-notification'))
@@ -485,10 +491,10 @@ export default {
     cd.comments
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
-        const layersContainerOffset = comment.getLayersContainerOffset();
         const layersOffset = comment.layersOffset;
-        if (!layersOffset) {
-          // Something has happened with the comment; it disappeared.
+        const layersContainerOffset = comment.getLayersContainerOffset();
+        if (!layersOffset || !layersContainerOffset) {
+          // Something has happened with the comment (or the layers container); it disappeared.
           comment.removeLayers();
           return;
         }

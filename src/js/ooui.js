@@ -200,7 +200,7 @@ export function isDialogUnsaved(dialog) {
  * @param {external:OO.ui.ProcessDialog} dialog
  * @param {string} dialogCode
  */
-export async function confirmCloseDialog(dialog, dialogCode) {
+export function confirmCloseDialog(dialog, dialogCode) {
   if (!isDialogUnsaved(dialog) || confirm(cd.s(`${dialogCode}-close-confirm`))) {
     dialog.close({ action: 'close' });
     removePreventUnloadCondition('dialog');

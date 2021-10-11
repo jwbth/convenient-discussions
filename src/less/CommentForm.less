@@ -1,7 +1,7 @@
 .flow-root() {
   display: flow-root;
 
-  // Hack for Edge
+  // Hack for old Edge
   -ms-display: grid;
 }
 
@@ -88,7 +88,7 @@
 }
 
 // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
-// content for which case the .sitedir-ltr and .sitedir-rtl classes are used).
+// content for which case the .sitedir-ltr/rtl classes are used).
 .ltr .cd-commentForm {
   // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
   // direction.

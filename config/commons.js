@@ -1,5 +1,5 @@
 export default {
-  'messages': {
+  messages: {
     'sun': 'Sun',
     'mon': 'Mon',
     'tue': 'Tue',
@@ -59,13 +59,13 @@ export default {
     'colon-separator': ': ',
     'nextdiff': 'Newer edit →',
   },
-  'contribsPage': 'Special:Contributions',
-  'timezone': 'UTC',
-  'useGlobalPreferences': true,
-  'archivePaths': [/\/Archive/],
-  'signatureEndingRegexp': / \(talk\)$/,
-  'tagName': 'convenient-discussions',
-  'unsignedTemplates': [
+  contribsPage: 'Special:Contributions',
+  timezone: 'UTC',
+  useGlobalPreferences: true,
+  archivePaths: [/\/Archive/],
+  signatureEndingRegexp: / \(talk\)$/,
+  tagName: 'convenient-discussions',
+  unsignedTemplates: [
     'Unsigned',
     'Non firmato',
     'Non signé',
@@ -78,11 +78,11 @@ export default {
     'UnsignedIP2',
     'Unsignedip2',
   ],
-  'paragraphTemplates': [
+  paragraphTemplates: [
     'pb',
     'Paragraph break',
   ],
-  'outdentTemplates': [
+  outdentTemplates: [
     'outdent',
     'Od',
     'Unindent',
@@ -91,7 +91,7 @@ export default {
     'Quitar sangría',
     'OD',
   ],
-  'clearTemplates': [
+  clearTemplates: [
     'Clear',
     'Clr',
     '-',

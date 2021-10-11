@@ -2258,9 +2258,9 @@ class CommentForm {
      *
      * @type {boolean|undefined}
      */
-    this.willCommentBeIndented = (
+    this.willCommentBeIndented = Boolean(
       ['reply', 'replyInSection'].includes(this.mode) ||
-      this.mode === 'edit' && Boolean(indentationChars)
+      (this.mode === 'edit' && indentationChars)
     );
 
     let restLinesIndentationChars;

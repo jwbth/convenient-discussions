@@ -178,7 +178,7 @@ export function getLocalOverridingSettings() {
  * @param {object} [settings=cd.settings] Settings to save.
  */
 export async function setSettings(settings = cd.settings) {
-  if (cd.user.name === '<unregistered>') return;
+  if (!cd.user.isRegistered()) return;
 
   if (cd.config.useGlobalPreferences) {
     const globalSettings = {};
@@ -271,7 +271,7 @@ function cleanUpVisits(originalVisits) {
  * @param {object} visits
  */
 export async function setVisits(visits) {
-  if (!visits || cd.user.name === '<unregistered>') return;
+  if (!visits || !cd.user.isRegistered()) return;
 
   const visitsString = packVisits(visits);
   const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);

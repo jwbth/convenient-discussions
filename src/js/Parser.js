@@ -914,11 +914,12 @@ class Parser {
 
         // The second parameter of getElementsByClassName() is an optimization for the worker
         // context.
-        const signaturesCount = node
+        const signatureCount = node
           .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
           .length;
+
         hasForeignComponents = (
-          signaturesCount - Number(hasCurrentSignature) > 0 ||
+          signatureCount - Number(hasCurrentSignature) > 0 ||
           (
             firstForeignComponentAfter &&
             node.contains(firstForeignComponentAfter) &&
@@ -1340,7 +1341,7 @@ class Parser {
    * @param {Element|external:Element} initialElement
    * @returns {Element[]|external:Element[]}
    */
-   getListsUpTree(initialElement) {
+  getListsUpTree(initialElement) {
     const listElements = [];
     const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
