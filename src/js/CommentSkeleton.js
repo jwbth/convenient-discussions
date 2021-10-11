@@ -284,28 +284,36 @@ class CommentSkeleton {
    * <blockquote>Some quote.</blockquote>
    * ::: Comment end. ~~~~
    * ```
+   *
+   * @private
    */
   fixIndentationHoles() {
     if (this.level && this.elements.length > 2) {
       // Get level elements based on this.elements, not this.highlightables.
       const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
 
-      const elementsInHolesIndexes = [];
+      const groups = [];
       allLevelElements.slice(1, allLevelElements.length - 1).forEach((ancestors, i) => {
         if (!ancestors.length) {
-          elementsInHolesIndexes.push(i + 1);
+          const lastGroup = groups[groups.length - 1];
+          if (!lastGroup || lastGroup[lastGroup.length - 1] !== i) {
+            groups.push([]);
+          }
+          groups[groups.length - 1].push(i + 1);
         }
       });
-      elementsInHolesIndexes.forEach((index) => {
+      groups.forEach((indexes) => {
         const levelElement = allLevelElements
-          .slice(0, index)
+          .slice(0, indexes[0])
           .reverse()
           .find((ancestors) => ancestors.length)
           ?.slice(-1)[0];
         if (levelElement) {
           const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
           const itemElement = this.parser.context.document.createElement(tagName);
-          itemElement.appendChild(this.elements[index]);
+          indexes.forEach((index) => {
+            itemElement.appendChild(this.elements[index]);
+          });
           levelElement.appendChild(itemElement);
         }
       });
