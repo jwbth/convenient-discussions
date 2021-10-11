@@ -1279,18 +1279,23 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           handlePageMutations();
         }, 1000);
 
-        const observer = new MutationObserver((records) => {
-          const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
-          const areLayersOnly = records.every((record) => layerClassRegexp.test(record.target.className));
-          if (areLayersOnly) return;
+        // Don't create the mutation observer just yet - let most DOM changes by the script to be
+        // made first, so that it doesn't run in vain many times.
+        setTimeout(() => {
+          const observer = new MutationObserver((records) => {
+            const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
+            const areLayersOnly = records
+              .every((record) => layerClassRegexp.test(record.target.className));
+            if (areLayersOnly) return;
 
-          handlePageMutations();
-        });
-        observer.observe(cd.g.$content.get(0), {
-          attributes: true,
-          childList: true,
-          subtree: true,
-        });
+            handlePageMutations();
+          });
+          observer.observe(cd.g.$content.get(0), {
+            attributes: true,
+            childList: true,
+            subtree: true,
+          });
+        }, 300);
       } else {
         pageNav.update();
       }
