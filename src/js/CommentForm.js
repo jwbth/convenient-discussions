@@ -2775,7 +2775,10 @@ class CommentForm {
    * @returns {boolean}
    */
   isBeingSubmitted() {
-    return this.operations.some((op) => op.type === 'submit' && !op.isClosed);
+    return (
+      this.operations.some((op) => op.type === 'submit' && !op.isClosed) ||
+      this.areChecksRunning
+    );
   }
 
   /**
@@ -3270,8 +3273,16 @@ class CommentForm {
   async submit(afterEditConflict = false) {
     if (this.isBeingSubmitted() || this.isContentBeingLoaded()) return;
 
+    this.areChecksRunning = true;
     const doDelete = this.deleteCheckbox?.isSelected();
-    if (!this.runChecks({ doDelete })) return;
+    if (!this.runChecks({ doDelete })) {
+      setTimeout(() => {
+        // If Ctrl+Enter is pressed while the caret in the headline or summary input, without
+        // setTimeout, the checked would be run twice.
+        this.areChecksRunning = false;
+      });
+      return;
+    }
 
     const currentOperation = this.registerOperation('submit', undefined, !afterEditConflict);
 
