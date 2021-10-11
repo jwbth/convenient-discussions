@@ -24,7 +24,6 @@ import {
 import { getUserGenders } from './apiWrappers';
 import { isPageLoading, reloadPage } from './boot';
 
-let lastCheckedRevisionId;
 let commentsNotifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
@@ -93,12 +92,18 @@ async function checkForUpdates() {
     }, true);
 
     const currentRevisionId = mw.config.get('wgRevisionId');
-    if (revisions.length && revisions[0].revid > (lastCheckedRevisionId || currentRevisionId)) {
+    if (
+      revisions.length &&
+      revisions[0].revid > (updateChecker.lastCheckedRevisionId || currentRevisionId)
+    ) {
       const { revisionId, comments, sections } = await updateChecker.processPage();
-      lastCheckedRevisionId = revisionId;
-
       if (isPageStillAtRevision(currentRevisionId)) {
         const { comments: currentComments } = await updateChecker.processPage(currentRevisionId);
+
+        // We set the property here, not after the first "await", so that we are sure that
+        // updateChecker.lastCheckedRevisionId corresponds to the versions of comments that are
+        // currently rendered.
+        updateChecker.lastCheckedRevisionId = revisionId;
 
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
@@ -204,7 +209,7 @@ function mapSections(otherSections) {
 
   cd.sections.forEach((section) => {
     section.liveSectionNumber = section.match?.sectionNumber ?? null;
-    section.liveSectionNumberRevisionId = lastCheckedRevisionId;
+    section.liveSectionNumberRevisionId = updateChecker.lastCheckedRevisionId;
     delete section.code;
     delete section.revisionId;
     delete section.queryTimestamp;
@@ -454,7 +459,12 @@ function checkForNewChanges(currentComments) {
           comment.comparedHtml = newComment.comparedHtml;
 
           const commentsData = [currentComment, newComment];
-          comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
+          comment.markAsChanged(
+            'changed',
+            updateSuccess,
+            updateChecker.lastCheckedRevisionId,
+            commentsData
+          );
           isChangeMarkUpdated = true;
           events.changed = { updateSuccess };
         }
@@ -863,6 +873,8 @@ async function onMessageFromWorker(e) {
 }
 
 const updateChecker = {
+  lastCheckedRevisionId: null,
+
   /**
    * Anchor of the comment that should be jumped to after reloading the page.
    *
@@ -950,7 +962,7 @@ const updateChecker = {
       const revisionId = Number(key);
       if (
         revisionId !== message.revisionId &&
-        revisionId !== lastCheckedRevisionId &&
+        revisionId !== updateChecker.lastCheckedRevisionId &&
         revisionId !== previousVisitRevisionId &&
         revisionId !== mw.config.get('wgRevisionId')
       ) {

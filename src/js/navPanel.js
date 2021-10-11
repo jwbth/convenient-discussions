@@ -19,6 +19,22 @@ let cachedCommentsBySection;
 
 export default {
   /**
+   * The number of new, shown but unseen comments on the page.
+   *
+   * @type {?number}
+   * @private
+   */
+  unseenCommentCount: null,
+
+  /**
+   * The number of new, not yet shown comments on the page.
+   *
+   * @type {number}
+   * @private
+   */
+  hiddenNewCommentCount: 0,
+
+  /**
    * _For internal use._ Render the navigation panel. This is done when the page is first loaded, or
    * created using the script.
    */
@@ -300,6 +316,8 @@ export default {
     }
     this.refreshButton.element.classList
       .toggle('cd-navPanel-refreshButton-relevant', areThereRelevant);
+
+    this.hiddenNewCommentCount = commentCount;
   },
 
   /**
@@ -383,9 +401,9 @@ export default {
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
-    const unseenCount = cd.comments.filter((comment) => comment.isSeen === false).length;
-    if (unseenCount) {
-      this.firstUnseenButton.show().setLabel(unseenCount);
+    this.unseenCommentCount = cd.comments.filter((comment) => comment.isSeen === false).length;
+    if (this.unseenCommentCount) {
+      this.firstUnseenButton.show().setLabel(this.unseenCommentCount);
     } else {
       this.firstUnseenButton.hide();
     }

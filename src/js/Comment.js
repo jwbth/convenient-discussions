@@ -7,6 +7,8 @@ import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
+import navPanel from './navPanel';
+import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import {
@@ -85,6 +87,22 @@ function getCommentPartRect(el) {
     rect = el.getBoundingClientRect();
   }
   return rect;
+}
+
+/**
+ * If every changed comment on the page has been seen and there is no new comments on the page that
+ * are not displayed, mark the page as read.
+ *
+ * @private
+ */
+function maybeMarkPageAsRead() {
+  if (
+    !navPanel.hiddenNewCommentCount &&
+    cd.comments.every((comment) => !comment.willFlashChangedOnSight) &&
+    updateChecker.lastCheckedRevisionId
+  ) {
+    cd.page.markAsRead(updateChecker.lastCheckedRevisionId);
+  }
 }
 
 /**
@@ -1718,6 +1736,8 @@ class Comment extends CommentSkeleton {
    * storage.
    */
   flashChanged() {
+    this.willFlashChangedOnSight = false;
+
     // Use the "changed" type, not "new", to get the "cd-comment-underlay-changed" class that helps
     // to set background if the user has switched off background highlighting for new comments.
     this.flash('changed', 1000);
@@ -1732,16 +1752,17 @@ class Comment extends CommentSkeleton {
       };
       saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
     }
+
+    maybeMarkPageAsRead();
   }
 
   /**
    * Flash the comment as changed when it appears in sight.
    */
   flashChangedOnSight() {
+    this.willFlashChangedOnSight = true;
     if (!document.hidden && this.isInViewport()) {
       this.flashChanged();
-    } else {
-      this.willFlashChangedOnSight = true;
     }
   }
 
@@ -2024,8 +2045,10 @@ class Comment extends CommentSkeleton {
       .remove();
 
     if (type === 'changed') {
+      // The change was reverted and the user hasn't seen the change - no need to flash the comment.
       if (this.willFlashChangedOnSight) {
         this.willFlashChangedOnSight = false;
+        maybeMarkPageAsRead();
       } else {
         const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
         const articleId = mw.config.get('wgArticleId');
@@ -2593,7 +2616,6 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.willFlashChangedOnSight && isInVewport) {
-      this.willFlashChangedOnSight = false;
       this.flashChanged();
     }
 
