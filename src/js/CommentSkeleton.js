@@ -584,21 +584,24 @@ class CommentSkeleton {
                 childComment.cachedParent.logicalLevel = parentComment;
               }
 
-              // Update the width to match our thread style changes.
-              Array.from(element.childNodes).forEach((child) => {
-                const width = child.style?.width;
-                if (width) {
-                  const [, number, unit] = width.match(/^([\d.]+)(.+)$/);
-                  if (number) {
-                    // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
-                    const ems = number * 1.25 + unit;
-                    child.style.width = `calc(${ems} + ${parentComment.level}px)`;
+              // Update the width to match our thread style changes. Don't run in the worker.
+              if (!self.cdIsWorker) {
+                Array.from(element.childNodes).forEach((child) => {
+                  const width = child.style?.width;
+                  if (width) {
+                    const [, number, unit] = width.match(/^([\d.]+)(.+)$/);
+                    if (number) {
+                      // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default
+                      // margin.
+                      const ems = number * 1.25 + unit;
+                      child.style.width = `calc(${ems} + ${parentComment.level}px)`;
+                    }
+                  } else if (!child.children?.length && child.textContent.includes('─')) {
+                    child.textContent = child.textContent
+                      .replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)));
                   }
-                } else if (!child.children?.length && child.textContent.includes('─')) {
-                  child.textContent = child.textContent
-                    .replace(/(─+)/, (s, lines) => '─'.repeat(Math.round(lines.length * 1.25)));
-                }
-              });
+                });
+              }
 
               // Since we traverse templates from the last to the first, `childComment.level` at
               // this stage is always the same as `childComment.logicalLevel`. The same for

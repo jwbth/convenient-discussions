@@ -38,6 +38,7 @@ const context = {
 let alarmTimeout;
 
 self.cd = cd;
+self.cdIsWorker = true;
 cd.debug = debug;
 cd.debug.init();
 
