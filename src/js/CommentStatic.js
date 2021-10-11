@@ -298,15 +298,7 @@ export default {
   groupBySection(comments) {
     const commentsBySection = new Map();
     comments.forEach((comment) => {
-      let sectionOrAnchor;
-      if (comment instanceof Comment) {
-        sectionOrAnchor = comment.section;
-      } else if (comment.section) {
-        sectionOrAnchor = comment.section.match || comment.section.anchor;
-      } else {
-        sectionOrAnchor = null;
-      }
-
+      const sectionOrAnchor = comment.section ? comment.section : null;
       if (!commentsBySection.get(sectionOrAnchor)) {
         commentsBySection.set(sectionOrAnchor, []);
       }

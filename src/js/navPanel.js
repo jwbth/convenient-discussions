@@ -333,13 +333,8 @@ export default {
       const bullet = removeWikiMarkup(cd.s('bullet'));
       const comma = cd.mws('comma-separator');
       const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
-      commentsBySection.forEach((comments, sectionOrAnchor) => {
-        let headline;
-        if (typeof sectionOrAnchor === 'string') {
-          headline = comments[0].section.headline;
-        } else if (sectionOrAnchor !== null) {
-          headline = sectionOrAnchor.headline;
-        }
+      commentsBySection.forEach((comments, section) => {
+        const headline = section?.headline;
         tooltipText += headline ? `\n\n${headline}` : '\n';
         comments.forEach((comment) => {
           tooltipText += `\n`;

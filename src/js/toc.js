@@ -16,6 +16,34 @@ import { restoreRelativeScrollPosition, saveRelativeScrollPosition } from './uti
 let tocItems;
 
 /**
+ * Generate a string containing new comment count to insert after the section headline in the table
+ * of contents.
+ *
+ * @param {number} count
+ * @param {number} unseenCount
+ * @param {boolean} full
+ * @param {Element} $target
+ * @private
+ */
+function addCommentCountString(count, unseenCount, full, $target) {
+  const countString = full ? cd.s('toc-commentcount-full', count) : count;
+  let unseenCountString;
+  if (unseenCount) {
+    const messageName = full ? 'toc-commentcount-new-full' : 'toc-commentcount-new';
+    unseenCountString = ' ' + cd.s(messageName, unseenCount);
+  } else {
+    unseenCountString = '';
+  }
+
+  const span = document.createElement('span');
+  span.className = 'cd-toc-commentCount';
+  const bdi = document.createElement('bdi');
+  bdi.textContent = countString + unseenCountString;
+  span.appendChild(bdi);
+  $target.append(span);
+}
+
+/**
  * Class representing a table of contents item.
  */
 class TocItem {
@@ -178,21 +206,7 @@ export default {
       if (!count) return;
       const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
 
-      const countString = i === 0 ? cd.s('toc-commentcount-full', count) : count;
-      let unseenCountString;
-      if (unseenCount) {
-        const messageName = i === 0 ? 'toc-commentcount-new-full' : 'toc-commentcount-new';
-        unseenCountString = ' ' + cd.s(messageName, unseenCount);
-      } else {
-        unseenCountString = '';
-      }
-
-      const span = document.createElement('span');
-      span.className = 'cd-toc-commentCount';
-      const bdi = document.createElement('bdi');
-      bdi.textContent = countString + unseenCountString;
-      span.appendChild(bdi);
-      item.$link.append(span);
+      addCommentCountString(count, unseenCount, i === 0, item.$link);
     });
   },
 
@@ -328,7 +342,7 @@ export default {
    * _For internal use._ Add links to new comments (either already displayed or loaded in the
    * background) to the table of contents.
    *
-   * @param {import('./commonTypedefs').CommentSkeletonLike[]|Comment[]} commentsBySection
+   * @param {Map} commentsBySection
    * @param {object} passedData
    */
   addNewComments(commentsBySection, passedData) {
@@ -356,18 +370,37 @@ export default {
 
     const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
     const comma = cd.mws('comma-separator');
-    commentsBySection.forEach((comments, sectionOrAnchor) => {
-      if (!sectionOrAnchor) return;
+    commentsBySection.forEach((comments, section) => {
+      if (!section) return;
 
       // There could be a collision of hrefs between the existing section and not yet rendered
       // section, so we compose the selector carefully.
-      const $sectionLink = typeof sectionOrAnchor === 'string' ?
-        cd.g.$toc
-          .find(`.cd-toc-notRenderedSection a[href="#${$.escapeSelector(sectionOrAnchor)}"]`) :
-        sectionOrAnchor.getTocItem()?.$link;
+      let $sectionLink;
+      if (areCommentsRendered) {
+        $sectionLink = section.getTocItem()?.$link;
+      } else {
+        if (section.match) {
+          $sectionLink = section.match.getTocItem()?.$link;
+        } else {
+          const anchor = $.escapeSelector(section.anchor);
+          $sectionLink = cd.g.$toc.find(`.cd-toc-notRenderedSection a[href="#${anchor}"]`);
+        }
+      }
 
       // Should never be the case
       if (!$sectionLink?.length) return;
+
+      if (!areCommentsRendered) {
+        const count = section.comments.length;
+        let unseenCount = comments.length;
+        if (section.match) {
+          unseenCount += section.match.comments
+            .filter((comment) => comment.isSeen === false)
+            .length;
+          $sectionLink.children('.cd-toc-commentCount').remove();
+        }
+        addCommentCountString(count, unseenCount, section.id === 0, $sectionLink);
+      }
 
       let $target = $sectionLink;
       const $next = $sectionLink.next('.cd-toc-newCommentList');
