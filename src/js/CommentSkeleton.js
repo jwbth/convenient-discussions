@@ -274,6 +274,67 @@ class CommentSkeleton {
   }
 
   /**
+   * Finally review comment parts to make sure all "dives" (when the tree walker goes as deep as
+   * possible through a tree after going back) are for actual comment parts and not for parts of
+   * other comments.
+   *
+   * @returns {boolean} Are elements changed.
+   * @private
+   */
+  reviewDives() {
+    let areElementsChanged = false;
+
+    // Parts can be dissynchronized with elements at this stage, so we just use this.parts for
+    // reference.
+    if (this.elements.length > 1 && this.parts.some((part) => part.step === 'dive')) {
+      // Get level elements based on this.elements, not this.highlightables.
+      const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
+
+      const lastAncestors = allLevelElements[allLevelElements.length - 1];
+      if (allLevelElements[0].length > lastAncestors.length) {
+        let firstWrongElementIndex;
+        let lastLowerLevelElement;
+        for (let i = allLevelElements.length - 2; i >= 0; i--) {
+          if (allLevelElements[i].length > lastAncestors.length) {
+            firstWrongElementIndex = i;
+            lastLowerLevelElement = this.elements[i];
+            break;
+          }
+        }
+
+        /*
+          Situation like this:
+
+            :::: Comment ended with a bare timestamp. 00:00, 1 January 2020 (UTC)
+            Other comment. [signature]
+
+          or this:
+
+            :::: Comment ended with no timestamp. But still clearly a comment.
+            :: Other comment. [signature]
+
+          But! not this:
+
+            :::: Comment start.
+            Comment end. [signature]
+
+          as in such cases it is most likely one comment, not two.
+        */
+        if (
+          lastAncestors.length > 0 ||
+          lastLowerLevelElement.lastElementChild?.classList.contains('cd-timestamp')
+        ) {
+          this.elements.splice(0, firstWrongElementIndex + 1);
+          this.setHighlightables();
+          areElementsChanged = true;
+        }
+      }
+    }
+
+    return areElementsChanged;
+  }
+
+  /**
    * Fix indentation holes by leveraging comment parts in them to the level of the comment.
    *
    * "Holes" here mean comment parts that are placed outside of list elements while the beginning
@@ -370,7 +431,6 @@ class CommentSkeleton {
         this.elements.length - firstItemIndex,
         closestLevelElement
       );
-
       this.setHighlightables();
     }
   }
@@ -385,7 +445,7 @@ class CommentSkeleton {
   setLevels(fixMarkup = true) {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
-    const levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
+    let levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
 
     // Use the first and last elements, not all elements, to determine the level to deal with cases
     // like
@@ -407,6 +467,10 @@ class CommentSkeleton {
     this.logicalLevel = this.level;
 
     if (fixMarkup) {
+      let areElementsChanged = this.reviewDives();
+      if (areElementsChanged) {
+        levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
+      }
       this.fixIndentationHoles();
       this.fixEndLevel(levelElements);
     }

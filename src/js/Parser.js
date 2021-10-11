@@ -54,26 +54,6 @@ function getPageNameFromUrl(url) {
 }
 
 /**
- * Determine whether the provided element is a cell of a table containing multiple signatures.
- *
- * @param {Element|external:Element} element
- * @returns {boolean}
- * @private
- */
-function isCellOfMultiCommentTable(element) {
-  if (!['TD', 'TH'].includes(element.tagName)) {
-    return false;
-  }
-  let table;
-  for (let n = element; !table && n !== cd.g.rootElement; n = n.parentNode) {
-    if (n.tagName === 'TABLE') {
-      table = n;
-    }
-  }
-  return !table || table.getElementsByClassName('cd-signature', 2).length > 1;
-}
-
-/**
  * Generalization of a web page (not wikitext) parser for the window and worker contexts. Parsing
  * here means "extracting meaningful parts from the page". Functions related to wikitext parsing go
  * in {@link module:wikitext}.
@@ -89,7 +69,9 @@ class Parser {
     this.context = context;
 
     if (!foreignComponentClasses) {
-      foreignComponentClasses = ['cd-comment-part', ...cd.config.closedDiscussionClasses];
+      // "Ombox" for templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение
+      // (perhaps they need to be "tmbox" too?).
+      foreignComponentClasses = ['cd-comment-part', 'ombox', ...cd.config.closedDiscussionClasses];
       if (cd.g.pageHasOutdents) {
         foreignComponentClasses.push(cd.config.outdentClass);
       }
@@ -519,7 +501,7 @@ class Parser {
   /**
    * Get nodes to start the traversal from.
    *
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @param {ElementsAndTextTreeWalker} treeWalker
    * @returns {Array.<object[], Element>}
    * @private
@@ -579,7 +561,7 @@ class Parser {
             isHeading: false,
             hasCurrentSignature: false,
             hasForeignComponents: false,
-            lastStep: 'start',
+            step: 'start',
           });
         } else {
           break;
@@ -597,25 +579,54 @@ class Parser {
       isHeading: false,
       hasCurrentSignature: true,
       hasForeignComponents: false,
-      lastStep: 'start',
+      step: 'start',
     });
 
     return [parts, firstForeignComponentAfter];
   }
 
   /**
-   * Check if an element is eligible to be a comment part.
+   * Determine whether the provided element is a cell of a table containing multiple signatures.
    *
-   * @param {Element} element
-   * @param {ElementsAndTextTreeWalker} treeWalker
-   * @param {Element} lastStep
+   * @param {Element|external:Element} element
    * @returns {boolean}
    * @private
    */
-  isElementEligible(element, treeWalker, lastStep) {
+  isCellOfMultiCommentTable(element) {
+    if (!['TD', 'TH'].includes(element.tagName)) {
+      return false;
+    }
+    let table;
+    for (let n = element; !table && n !== cd.g.rootElement; n = n.parentNode) {
+      if (n.tagName === 'TABLE') {
+        table = n;
+      }
+    }
+    return !table || table.getElementsByClassName('cd-signature', 2).length > 1;
+  }
+
+  /**
+   * Check if an element is eligible to be a comment part.
+   *
+   * @param {Element|external:Element} element
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @param {string} step
+   * @returns {boolean}
+   * @private
+   */
+  isElementEligible(element, treeWalker, step) {
     return !(
       element === treeWalker.root ||
-      foreignComponentClasses.some((className) => element.classList.contains(className)) ||
+      (
+        step !== 'up' &&
+        (
+          foreignComponentClasses.some((name) => element.classList.contains(name)) ||
+
+          // Talk page message box
+          (cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox'))
+        )
+      ) ||
+
       element.getAttribute('id') === 'toc' ||
 
       // Seems to be the best option given pages like
@@ -623,7 +634,7 @@ class Parser {
       // single DT that are not parts of comments are filtered out in Parser#filterParts.
       element.tagName === 'DT' ||
 
-      isCellOfMultiCommentTable(element) ||
+      this.isCellOfMultiCommentTable(element) ||
 
       // Horizontal lines sometimes separate different section blocks.
       (
@@ -637,15 +648,6 @@ class Parser {
         this.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
 
-      // Talk page message box. "Ombox" for templates like
-      // https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение (perhaps they need to be "tmbox"
-      // too?)
-      (
-        (cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox')) ||
-        element.classList.contains('ombox') &&
-        lastStep !== 'up'
-      ) ||
-
       cd.config.checkForCustomForeignComponents?.(element, this.context)
     );
   }
@@ -654,52 +656,174 @@ class Parser {
    * Check whether the element is a node that contains introductory text (or other foreign entity,
    * like a gallery) despite being a list element.
    *
-   * @param {Element} element
-   * @param {boolean} [checkNextElement=false]
+   * @param {Element|external:Element} element
+   * @param {boolean} checkNextElement
+   * @param {boolean} [lastPartNode]
    * @returns {boolean}
    * @private
    */
-  isIntroList(element, checkNextElement = false) {
+  isIntroList(element, checkNextElement, lastPartNode) {
     const tagName = element.tagName;
     if (!['DL', 'UL', 'OL'].includes(tagName)) {
       return false;
     }
-    const peTagName = element.previousElementSibling?.tagName;
+    const previousElement = element.previousElementSibling;
+    const nextElement = element.nextElementSibling;
     let result = (
       (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
 
-      // Cases like the first comment here:
-      // https://ru.wikipedia.org/wiki/Википедия:Выборы_арбитров/Лето_2021/Форум#Abiyoyo
-      (['DL', 'UL'].includes(tagName) && peTagName && /^H[1-6]$/.test(peTagName)) ||
+      // Cases like the first comment at
+      // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Форум/Кандидаты#Abiyoyo.
+      // But don't affect cases like the first comment at
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#List_inside_a_comment.
+      //
+      (
+        ['DL', 'UL'].includes(tagName) &&
+        previousElement &&
+        /^H[1-6]$/.test(previousElement.tagName) &&
+        nextElement &&
+        !['DL', 'OL'].includes(nextElement.tagName) &&
+
+        // Helps at https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Общий/2019/11#201911201924_Vcohen
+        !this.isPartOfList(lastPartNode, true) &&
+
+        // Helps at
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110060209_Jack_who_built_the_house
+        !this.context.getElementByClassName(element, 'cd-signature')
+      ) ||
 
       (tagName === 'UL' && element.classList.contains('gallery'))
     );
 
-    if (checkNextElement && !result) {
-      // Cases like this: https://en.wikipedia.org/?diff=1042059387
-      const nextElement = element.nextElementSibling;
-      if (nextElement) {
-        result = this.getClosestElementsWithText(nextElement).levelsPassed > 1;
-      }
+    if (checkNextElement && !result && nextElement) {
+      // Cases like https://en.wikipedia.org/?diff=1042059387 where, due to use of `::` in reply to
+      // a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the SPECIFICO's
+      // comment. (Currently, to test this, you will need to remove timestamps from the SPECIFICO's
+      // comment.)
+      const elementLevelsPassed = this.getTopElementsWithText(element).levelsPassed;
+      const nextElementLevelsPassed = this.getTopElementsWithText(nextElement).levelsPassed;
+      result = (
+        nextElementLevelsPassed > elementLevelsPassed ||
+
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Joint_statements
+        (
+          elementLevelsPassed === 1 &&
+          nextElementLevelsPassed === elementLevelsPassed &&
+          element[this.context.childElementsProp].length > 1 &&
+          element.tagName !== nextElement.tagName
+        )
+      );
     }
 
     return result;
   }
 
   /**
-   * Check whether the element is a list at the end of a comment (not an independent comment).
+   * Given a comment part (a node), tell if it is a part of a list.
    *
-   * @param {Element|external:Element} element
-   * @param {Element|external:Element} signatureElement
-   * @private
+   * @param {Element|external:Element} node
+   * @param {boolean} definitionList
+   * @returns {boolean}
    */
-  isListAtCommentEnd(element, signatureElement) {
-    // Don't confuse the comment with a list at the end of the comment.
-    (
-      ['UL', 'OL'].includes(element.tagName) &&
-      element[this.context.childElementsProp].length > 1 &&
-      !element[this.context.childElementsProp][0].contains(signatureElement)
-    )
+  isPartOfList(node, definitionList) {
+    /*
+      * The checks for DD help in cases like
+        https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
+        * A complex case where it messes up things:
+        https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel
+      * The check for DL helps in cases like
+        https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
+        (see the original HTML source)
+     */
+    const tagNames = ['DD', 'DL'];
+    if (!definitionList) {
+      tagNames.push('LI', 'UL');
+    }
+    return node && (tagNames.includes(node.tagName) || tagNames.includes(node.parentNode.tagName));
+  }
+
+  /**
+   * Identify cases like:
+   *
+   * ```
+   * === Section title ===
+   * Section introduction. Not a comment.
+   * # Vote. [signature]
+   * ```
+   *
+   * and similar. Without treatment of such cases, the section introduction would be considered a
+   * part of the comment. The same may happen inside a discussion thread (often because one of the
+   * users didn't sign).
+   *
+   * @param {object} options
+   * @param {string} options.step
+   * @param {number} options.stage
+   * @param {Element|external:Element} options.node
+   * @param {Element|external:Element} options.nextNode
+   * @param {Element|external:Element} options.signatureElement
+   * @param {Element|external:Element} [options.lastPartNode]
+   * @param {Element|external:Element} [options.previousPart]
+   * @returns {boolean}
+   */
+  isIntro({ step, stage, node, nextNode, signatureElement, lastPartNode, previousPart }) {
+    // Only the first stage code covers cases when there is only one comment part eventually (a list
+    // item, for example), and only the second stage code fully covers comments indented with ":").
+
+    return (
+      step === 'back' &&
+      (!previousPart || previousPart.step === 'up') &&
+      (
+        ['UL', 'OL'].includes(nextNode.tagName) ||
+
+        /*
+          Including DLs at stage 1 is dangerous because comments like this may be broken:
+
+            : Comment beginning.
+            <blockquote>Some quote.</blockquote>
+            : Comment ending. [signature]
+
+          But it's important that we do it some way because of the issue with discussions like
+          https://ru.wikipedia.org/wiki/Обсуждение:Иванов,_Валентин_Дмитриевич#Источники where
+          somebody responds in the middle of someone's comment, which is a not so uncommon
+          pattern.
+         */
+        (
+          nextNode.tagName === 'DL' &&
+          (
+            stage === 2 ||
+            (
+              nextNode.parentNode !== cd.g.rootElement &&
+              nextNode.parentNode.parentNode !== cd.g.rootElement
+            )
+          )
+        )
+      ) &&
+
+      // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602#202002071806_G2ii2g.
+      // Supplying `true` as the second parameter to this.isIntroList() at stage 1 is costly so we
+      // do it only at stage 2.
+      !(
+        (
+          ['DL', 'UL', 'OL'].includes(node.tagName) &&
+          !this.isIntroList(node, stage === 2, lastPartNode)
+        ) ||
+        (
+          // Note: Text nodes are filtered out as of stage 2.
+          node.nodeType === Node.TEXT_NODE &&
+          node.previousSibling &&
+          ['DL', 'UL', 'OL'].includes(node.previousSibling.tagName) &&
+          !this.isIntroList(node.previousSibling, false, lastPartNode)
+        ) ||
+        (lastPartNode && !this.isPartOfList(lastPartNode, false))
+      ) &&
+
+      // Don't confuse the comment with a list at the end of the comment.
+      !(
+        ['UL', 'OL'].includes(nextNode.tagName) &&
+        nextNode[this.context.childElementsProp].length > 1 &&
+        !nextNode[this.context.childElementsProp][0].contains(signatureElement)
+      )
+    );
   }
 
   /**
@@ -723,14 +847,14 @@ class Parser {
     // 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
     for (let i = 0; i < 500; i++) {
       /*
-        lastStep may be:
+        `step` may be:
           * "start" (parts added at the beginning)
           * "back" (go to the previous sibling)
           * "up" (go to the parent element)
           * "dive" (recursively go to the last not inline/text child)
           * "replaced" (obtained as a result of manipulations after node traversal)
       */
-      let lastStep;
+      let step;
       const previousPart = parts[parts.length - 1];
 
       if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
@@ -756,67 +880,34 @@ class Parser {
             treeWalker.currentNode = parentNode;
             break;
           }
-          lastStep = 'dive';
+          step = 'dive';
         }
-        if (lastStep !== 'dive') break;
+        if (step !== 'dive') break;
       } else if (treeWalker.previousSibling()) {
-        lastStep = 'back';
+        step = 'back';
       } else {
         if (!treeWalker.parentNode()) break;
-        lastStep = 'up';
+        step = 'up';
       }
 
       const node = treeWalker.currentNode;
-      const isTextNode = node.nodeType === Node.TEXT_NODE;
 
-      // This is partially duplicating the code in Parser#filterParts - see the comment "Cases
-      // like..." there. But these codes cover intersecting but different cases (say, only this code
-      // covers cases when there is only one comment part eventually (a list item, for example) and
-      // only that code fully covers comments indented with ":").
-      const isIntro = (
-        lastStep === 'back' &&
-        (
-          ['OL', 'UL'].includes(previousPart.node.tagName) ||
-
-          /*
-            Including DLs is dangerous because comments like this may be broken:
-
-              : Comment beginning.
-              <blockquote>Some quote.</blockquote>
-              : Comment ending. [signature]
-
-            But it's important that we do it some way because of the issue with discussions like
-            https://ru.wikipedia.org/wiki/Обсуждение:Иванов,_Валентин_Дмитриевич#Источники where
-            somebody responds in the middle of someone's comment, which is a not so uncommon
-            pattern.
-           */
-          (
-            previousPart.node.tagName === 'DL' &&
-            previousPart.node.parentNode !== cd.g.rootElement &&
-            previousPart.node.parentNode.parentNode !== cd.g.rootElement
-          )
-        ) &&
-
-        // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
-        !(
-          (['DL', 'OL', 'UL'].includes(node.tagName) && !this.isIntroList(node)) ||
-          (
-            isTextNode &&
-            node.previousSibling &&
-            ['DL', 'OL', 'UL'].includes(node.previousSibling.tagName) &&
-            !this.isIntroList(node.previousSibling)
-          )
-        ) &&
-
-        !this.isListAtCommentEnd(previousPart.node, signatureElement)
-      );
+      const isIntro = this.isIntro({
+        step,
+        stage: 1,
+        node,
+        nextNode: previousPart.node,
+        signatureElement,
+        previousPart,
+      });
       if (isIntro) break;
 
+      const isTextNode = node.nodeType === Node.TEXT_NODE;
       let isHeading = null;
       let hasCurrentSignature = null;
       let hasForeignComponents = null;
       if (!isTextNode) {
-        if (!this.isElementEligible(node, treeWalker, lastStep)) break;
+        if (!this.isElementEligible(node, treeWalker, step)) break;
 
         isHeading = /^H[1-6]$/.test(node.tagName);
         hasCurrentSignature = node.contains(signatureElement);
@@ -832,7 +923,7 @@ class Parser {
             firstForeignComponentAfter &&
             node.contains(firstForeignComponentAfter) &&
 
-            // Cases like the table added here: https://ru.wikipedia.org/?diff=115822931
+            // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
             node.tagName !== 'TABLE'
           ) ||
 
@@ -851,7 +942,7 @@ class Parser {
           // A trace from `~~~` at the end of the line most likely means an incorrectly signed
           // comment.
           if (
-            !isInline(node, true) &&
+            !isInline(node) &&
             cd.config.signatureEndingRegexp?.test(node.textContent) &&
             !elementsToExclude.some((el) => el.contains(node))
           ) {
@@ -861,14 +952,7 @@ class Parser {
       }
 
       // We save all data related to the nodes on the path to reuse it.
-      parts.push({
-        node,
-        isTextNode,
-        isHeading,
-        hasCurrentSignature,
-        hasForeignComponents,
-        lastStep,
-      });
+      parts.push({ node, isTextNode, isHeading, hasCurrentSignature, hasForeignComponents, step });
 
       if (isHeading) break;
     }
@@ -906,10 +990,10 @@ class Parser {
   removeNestedParts(parts) {
     for (let i = parts.length - 1; i >= 0; i--) {
       const part = parts[i];
-      if (part.lastStep === 'up' && !part.hasForeignComponents) {
+      if (part.step === 'up' && !part.hasForeignComponents) {
         let nextDiveElementIndex = 0;
         for (let j = i - 1; j > 0; j--) {
-          if (parts[j].lastStep === 'dive') {
+          if (parts[j].step === 'dive') {
             nextDiveElementIndex = j;
             break;
           }
@@ -937,7 +1021,7 @@ class Parser {
       const part = parts[i];
       if (
         part &&
-        (start === null || (['back', 'start'].includes(part.lastStep))) &&
+        (start === null || (['back', 'start'].includes(part.step))) &&
         !part.hasForeignComponents &&
         !part.isHeading
       ) {
@@ -945,7 +1029,7 @@ class Parser {
           // Don't enclose nodes whose parent is an inline element.
           if (isInline(part.node.parentNode)) {
             for (let j = i + 1; j < parts.length; j++) {
-              if (parts[j].lastStep === 'up') {
+              if (parts[j].step === 'up') {
                 i = j - 1;
                 continue;
               }
@@ -985,15 +1069,15 @@ class Parser {
         wrapper.appendChild(parts[j].node);
       }
       parent.insertBefore(wrapper, nextSibling);
-      const newNode = {
+      const newPart = {
         node: wrapper,
         isTextNode: false,
         isHeading: false,
         hasCurrentSignature: wrapper.contains(signatureElement),
         hasForeignComponents: false,
-        lastStep: 'replaced',
+        step: 'replaced',
       };
-      parts.splice(sequence.start, sequence.end - sequence.start + 1, newNode);
+      parts.splice(sequence.start, sequence.end - sequence.start + 1, newPart);
     }
 
     return parts;
@@ -1009,9 +1093,9 @@ class Parser {
   filterParts(parts, signatureElement) {
     parts = parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
 
-    // <style> and <link> tags at the beginning. Also {{reflist-talk}} templates (will need to
-    // generalize this, possibly via wiki configuration, if other wikis employ a differently named
-    // class).
+    // "style" and "link" tags at the beginning. Also "references" tags and {{reflist-talk}}
+    // templates (will need to generalize this, possibly via wiki configuration, if other wikis
+    // employ a differently named class).
     for (let i = parts.length - 1; i > 0; i--) {
       const node = parts[i].node;
       if (
@@ -1022,7 +1106,7 @@ class Parser {
         ) ||
         node.tagName === 'STYLE' ||
         node.tagName === 'LINK' ||
-        node.classList.contains('reflist-talk')
+        Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
       ) {
         parts.splice(i, 1);
       } else {
@@ -1038,43 +1122,35 @@ class Parser {
       }
     }
 
-    /*
-      Cases like:
-
-        === Section title ===
-        Section introduction. Not a comment.
-        # Vote. [signature]
-
-      Without the following code, the section introduction would be a part of the comment. The
-      same may happen inside a discussion thread (often because one of the users didn't sign).
-
-      (Do it here, not in Parser#collectParts, because text nodes are filtered out at this stage.)
-    */
     if (parts.length > 1) {
-      const startNode = parts[parts.length - 1].node;
-      if (
-        !['DL', 'OL', 'UL', 'DD', 'LI'].includes(startNode.tagName) ||
-        this.isIntroList(startNode, true)
-      ) {
-        for (let i = parts.length - 1; i >= 1; i--) {
-          const part = parts[i];
-          const node = part.node;
-          const nextElement = node.nextElementSibling;
-          if (!nextElement) continue;
+      let startNode;
+      for (let i = parts.length - 1; i >= 1; i--) {
+        const part = parts[i];
+        if (part.isHeading) continue;
 
-          const isIntro = (
-            part.lastStep === 'back' &&
-            ['DL', 'OL', 'UL'].includes(nextElement.tagName) &&
-
-            // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602
-            (!['DL', 'OL', 'UL'].includes(node.tagName) || this.isIntroList(node, true)) &&
-
-            !this.isListAtCommentEnd(nextElement, signatureElement)
-          );
-
-          if (isIntro) {
-            parts.splice(i);
+        if (!startNode) {
+          startNode = part.node;
+          if (
+            ['DL', 'UL', 'OL', 'DD', 'LI'].includes(startNode.tagName) &&
+            !this.isIntroList(startNode, true, parts[0].node)
+          ) {
+            break;
           }
+        }
+
+        const nextElement = part.node.nextElementSibling;
+        if (!nextElement) continue;
+
+        const isIntro = this.isIntro({
+          step: part.step,
+          stage: 2,
+          node: part.node,
+          nextNode: nextElement,
+          signatureElement,
+          lastPartNode: parts[0].node,
+        });
+        if (isIntro) {
+          parts.splice(i);
         }
       }
     }
@@ -1085,27 +1161,30 @@ class Parser {
   /**
    * With code like this:
    *
+   * ```
    *   * Smth. [signature]
    *   :: Smth. [signature]
+   * ```
    *
    * one comment (preceded by :: in this case) creates its own list tree, not a subtree, even though
    * it's a reply to a reply. So we dive as deep to the bottom of the hierarchy of nested lists as
    * we can to get the top nodes with comment content (and therefore draw comment layers more
    * accurately). One of the most complex tree structures is this:
    *
+   * ```
    *    * Smth. [signature]
    *    :* Smth.
    *    :: Smth. [signature]
+   * ```
    *
-   *   (seen here:
-   *   https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
-   *   It has a branchy structure that requires a tricky algorithm to be parsed correctly.
+   * (seen here:
+   * https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
+   * It has a branchy structure that requires a tricky algorithm to be parsed correctly.
    *
    * @param {Element|external:Element} element
    * @returns {object}
-   * @private
    */
-  getClosestElementsWithText(element) {
+  getTopElementsWithText(element) {
     // We ignore all spaces as an easy way to ignore only whitespace text nodes between element
     // nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
     const partTextNoSpaces = element.textContent.replace(/\s+/g, '');
@@ -1150,7 +1229,7 @@ class Parser {
    * @returns {object[]}
    */
   replaceListsWithItems(parts, signatureElement) {
-    const lastPart = parts[parts.length - 1];
+    const lastPartNode = parts[parts.length - 1].node;
     for (let i = parts.length - 1; i >= 0; i--) {
       const part = parts[i];
       if (
@@ -1160,44 +1239,34 @@ class Parser {
 
         !(part.node.tagName === 'UL' && part.node.classList.contains('gallery')) &&
 
-        /*
-          * The checks for DD helps here:
-            https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
-            * A complex case where it messes up things:
-              https://commons.wikimedia.org/wiki/Commons:Translators'_noticeboard/Archive/2020#202011151417_Ameisenigel
-          * The check for DL helps here:
-            https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
-            (see the original HTML source)
-          * The check "['LI', 'DD'].includes(part.node.tagName)" helps in cases like
-            https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
-            (the whole thread)
-         */
         (
-          (part.lastStep === 'up' && (!parts[i - 1] || parts[i - 1].lastStep !== 'back')) ||
+          // Lists that are parts of a comment.
+          (part.step === 'up' && (!parts[i - 1] || parts[i - 1].step !== 'back')) ||
+
           (
-            (
-              lastPart.node.tagName === 'DD' ||
-              lastPart.node.parentNode.tagName === 'DD' ||
-              lastPart.node.tagName === 'DL'
-            ) &&
-            !(part.lastStep === 'back' && ['LI', 'DD'].includes(part.node.tagName))
+            this.isPartOfList(lastPartNode, true) &&
+
+            // Helps in cases like
+            // https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
+            // (the whole thread).
+            !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName))
           )
         )
       ) {
-        const commentElements = this.getClosestElementsWithText(part.node).nodes;
+        const commentElements = this.getTopElementsWithText(part.node).nodes;
         if (commentElements.length > 1) {
           const newParts = commentElements.map((el) => ({
             node: el,
             isTextNode: false,
             hasCurrentSignature: el.contains(signatureElement),
             hasForeignComponents: false,
-            lastStep: 'replaced',
+            step: 'replaced',
           }));
           parts.splice(i, 1, ...newParts);
         } else if (commentElements[0] !== part.node) {
           Object.assign(part, {
             node: commentElements[0],
-            lastStep: 'replaced',
+            step: 'replaced',
           });
         }
       }
@@ -1211,7 +1280,7 @@ class Parser {
    * numbered list items.
    *
    * @param {object[]} parts
-   * @param {Element} signatureElement
+   * @param {Element|external:Element} signatureElement
    * @returns {object[]}
    */
   wrapNumberedList(parts, signatureElement) {
@@ -1254,7 +1323,7 @@ class Parser {
             isHeading: false,
             hasCurrentSignature: true,
             hasForeignComponents: false,
-            lastStep: 'replaced',
+            step: 'replaced',
           };
           parts.splice(0, listItems.length, newPart);
         }
