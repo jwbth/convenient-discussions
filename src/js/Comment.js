@@ -2733,10 +2733,10 @@ class Comment extends CommentSkeleton {
       // tables. \x03 and \x04 mean the beginning and ending of a table. Note: This should be kept
       // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
       // more comments are there.
-      const entireLineRegexp = new RegExp(`^(?:\\x01\\d+_(block|template).*\\x02) *$`, 'i');
+      const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template).*\x02) *$/);
       const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
       const currentLineEndingRegexp = new RegExp(
-        `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
+        `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04|<br[ \\n]*\\/?>) *$`,
         'i'
       );
       const nextLineBeginningRegexp = new RegExp(
@@ -2767,8 +2767,14 @@ class Comment extends CommentSkeleton {
     text = text
       // <br> → \n, except in list elements and <pre>'s created by a space starting the line.
       .replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
-        s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => '\n')
+        s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => '\x01\n')
       ))
+
+      // Templates occupying a whole line with <br> at the end get a special treatment too.
+      .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
+
+      // Replace a temporary marker.
+      .replace(/\x01\n/g, '\n')
 
       // Remove indentation characters
       .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {

@@ -2421,7 +2421,7 @@ class CommentForm {
     const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template).*\x02) *$/);
     const fileRegexp = new RegExp('^' + filePatternEnd, 'i');
     const currentLineEndingRegexp = new RegExp(
-      `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04) *$`,
+      `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04|<br[ \\n]*\\/?>) *$`,
       'i'
     );
     const nextLineBeginningRegexp = new RegExp(
