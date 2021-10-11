@@ -1173,17 +1173,21 @@ class Comment extends CommentSkeleton {
    * property.
    *
    * @param {object} [options={}]
-   * @returns {boolean} Is the comment moved.
+   * @returns {?boolean} Is the comment moved. `null` if it is invisible.
    * @private
    */
   setLayersOffsetProperty(options = {}) {
+    const layersContainerOffset = this.getLayersContainerOffset();
+    if (!layersContainerOffset) {
+      return null;
+    }
+
     const isMoved = this.getOffset(Object.assign({}, options, {
       considerFloating: true,
       set: true,
     }));
 
     if (this.offset) {
-      const layersContainerOffset = this.getLayersContainerOffset();
       const margins = this.getMargins();
       this.layersOffset = {
         top: this.offset.top - layersContainerOffset.top,
@@ -1505,7 +1509,7 @@ class Comment extends CommentSkeleton {
   /**
    * Get the top and left offset of the layers container.
    *
-   * @returns {LayersContainerOffset}
+   * @returns {?LayersContainerOffset}
    * @private
    */
   getLayersContainerOffset() {
@@ -1514,6 +1518,9 @@ class Comment extends CommentSkeleton {
     let left = container.cdCachedLayersContainerLeft;
     if (top === undefined || container.cdCouldHaveMoved) {
       const rect = container.getBoundingClientRect();
+      if (!getVisibilityByRects(rect)) {
+        return null;
+      }
       top = rect.top + window.scrollY;
       left = rect.left + window.scrollX;
       container.cdCouldHaveMoved = false;
