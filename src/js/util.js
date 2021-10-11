@@ -539,7 +539,7 @@ export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = wi
       scrollData.touchesBottom = true;
     } else if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
       const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-      do {
+      while (true) {
         const node = treeWalker.currentNode;
 
         // Ignore elements with non-native classes - they can be floating.
@@ -558,7 +558,8 @@ export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = wi
             }
           }
         }
-      } while (treeWalker.nextSibling());
+        if (!treeWalker.nextSibling()) break;
+      }
     }
   }
 }
