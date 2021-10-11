@@ -173,6 +173,8 @@ export default {
 
   tagName: 'convenient-discussions',
 
+  hookToFireWithAuthorWrappers: 'global.userlinks',
+
   unsignedTemplates: [
     'Без подписи',
     'Не подписался',

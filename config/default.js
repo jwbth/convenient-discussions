@@ -298,6 +298,19 @@ export default {
   scriptPageWikilink: 'c:Special:MyLanguage/User:JWBTH/CD',
 
   /**
+   * Name of the hook to fire with author link wrappers after reformatting comments. Used to run
+   * scripts such as "Mark administrators" and "Mark blocked users" for those links.
+   *
+   * It's advisable to create a distinct hook for parsing userlinks, such as `'global.userlinks'`.
+   * Using the `'wikipage.content'` hook could theoretically disrupt code that needs to process the
+   * whole page content if it runs later than CD. But typically CD runs relatively late.
+   *
+   * @type {string}
+   * @default 'wikipage.content'
+   */
+  hookToFireWithAuthorWrappers: 'wikipage.content',
+
+  /**
    * Names of the templates that are analogs of
    * {@link https://en.wikipedia.org/wiki/Template:Unsigned},
    * {@link https://en.wikipedia.org/wiki/Template:Unsigned_IP}. Please include aliases.

@@ -1301,13 +1301,9 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       }
 
       if (cd.settings.reformatComments && cd.comments.length) {
-        // Hardcode for ruwiki where there is such a hook. The hook for other domains could
-        // theoretically disrupt code that needs to process the whole page content, if it runs later
-        // than CD. But typically CD runs relatively late.
-        const hookName = location.hostname === 'ru.wikipedia.org' ?
-          'global.userlinks' :
-          'wikipage.content';
-        mw.hook(hookName).fire($('.cd-comment-author-wrapper'));
+        // Using the "wikipage.content" hook could theoretically disrupt code that needs to process
+        // the whole page content, if it runs later than CD. But typically CD runs relatively late.
+        mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
       }
     }
 
