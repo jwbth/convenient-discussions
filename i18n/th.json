@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Patsagorn Y."
+			"Patsagorn Y.",
+			"Thas Tayapongsak"
 		]
 	},
 	"cm-gotoparent-tooltip": "ไปยังความเห็นที่ถูกการตอบกลับนี้ตอบกลับ",
@@ -39,16 +40,20 @@
 	"section-unwatch-stillwatched": "<strong>หมายเหตุ:</strong> ในทางปฏิบัติคุณจะยังเฝ้าดูหน้านี้อยู่เช่นเดิม เนื่องจากคุณเฝ้าดูส่วน \"$1\" ซึ่งอยู่ในหน้าเดียวกันนี้ด้วย",
 	"section-watch-pagenotwatched": "<strong>หมายเหตุ:</strong> คุณกำลังเฝ้าดูเพียงส่วนไม่ใช่ทั้งหน้าในขณะนี้ หากต้องการการเน้นในรายการเฝ้าดูของคุณ กรุณาเพิ่มหน้าเข้าไปยังรายการเฝ้าดูด้วย",
 	"section-watch-error-maxsize": "ไม่สามารถอัปเดตการตั้งค่าได้: ขนาดของรายการส่วนเกินขีดจำกัดสูงสุดแล้ว <span class=\"cd-notification-editWatchedSections\">แก้ไขรายการส่วน/span>เพื่อแก้ไข",
-	"cld-summary": "ความย่อ",
+	"cld-title-comment": "คัดลอกลิงก์ของความคิดเห็น",
+	"cld-title-section": "คัดลอกลิงก์ของส่วนย่อย",
+	"cld-summary": "ความย่อการแก้ไข",
 	"cld-diff": "ลิงก์ความแตกต่าง",
 	"cld-diff-error": "ไม่การแก้ไข",
 	"cld-diff-error-network": "ไม่สามารถเข้าถึงการแก้ไข (ข้อผิดพลาดเครือข่าย)",
 	"cld-diff-error-unknown": "ไม่สามารถเข้าถึงการแก้ไข (ข้อผิดพลาดที่ไม่ทราบสาเหตุ)",
+	"cld-diff-history": "ประวัติการแก้ไข",
 	"cld-shortdiff": "ลิงก์ความแตกต่างแบบสั้น",
 	"cld-wikilink": "ลิงก์วิกิ",
 	"cld-help-onlycd": "ลิงก์นี้จะทำงานเฉพาะในผู้ใช้ที่ติดตั้ง Convenient Discussions เท่านั้น",
 	"cld-currentpagewikilink": "ลิงก์วิกิ จากหน้าเดียวกัน",
 	"cld-link": "ลิงก์ปกติ",
+	"cld-permanentlink": "ลิงก์ถาวร",
 	"cld-close": "ปิด",
 	"copylink-copied": "ลิงก์ถูกคัดลอกไปยังคลิปบอร์ดแล้ว",
 	"copylink-error": "ไม่สามารถคัดลูกลิงก์",
@@ -76,7 +81,7 @@
 	"es-new-subsection": "เพิ่มส่วนย่อยใหม่",
 	"es-move-from": "ย้ายมาจาก [[$1]]",
 	"es-move-to": "ย้ายไปที่",
-	"cf-headline-topic": "แก้ไขหัวเรื่อง",
+	"cf-headline-topic": "หัวเรื่อง",
 	"cf-headline-subsection": "หัวเรื่องของส่วนย่อยของ \"$1\"",
 	"cf-comment-placeholder-replytosection": "ตอบกลับ \"$1\"",
 	"cf-comment-placeholder-replytocomment": "กำลังตอบกลับ $1",
@@ -99,5 +104,11 @@
 	"cf-cancel": "ยกเลิก",
 	"cf-cancel-short": "ยกเลิก",
 	"cf-advanced": "ขั้นสูง",
-	"cf-settings-tooltip": "การตั้งค่า Convenient Discussions"
+	"cf-settings-tooltip": "การตั้งค่า Convenient Discussions",
+	"cf-underline-placeholder": "ข้อความขีดเส้นใต้",
+	"cf-minor": "การแก้ไขเล็กน้อย",
+	"cf-watch": "เฝ้าดูหน้านี้",
+	"cf-watchsection-topic": "เฝ้าดูหัวข้อนี้",
+	"cf-watchsection-subsection": "เฝ้าดูส่วนย่อยนี้",
+	"error-anoneditwatning": "<strong>คุณไม่ได้อยู่ในระบบ</strong> เลขที่อยู่ IP ของคุณจะเป็นสาธารณะหากทำการแก้ไขใด ๆ"
 }
