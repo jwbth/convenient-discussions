@@ -3,7 +3,8 @@
 		"authors": [
 			"Dark Loon",
 			"Mainframe98",
-			"McDutchie"
+			"McDutchie",
+			"Robin van der Vliet"
 		]
 	},
 	"script-name": "Handige discussies",
@@ -41,6 +42,7 @@
 	"es-reply-to": "Reactie op {{gender:$2|}} $1",
 	"es-addition": "toevoeging",
 	"es-new-topic": "nieuw onderwerp",
+	"cf-headline-topic": "Onderwerp",
 	"cf-comment-placeholder-replytosection": "Reageren op \"$1\"",
 	"cf-comment-placeholder-replytocomment": "Reageren op {{gender:$2|}} $1",
 	"cf-summary-placeholder": "Bewerkingssamenvatting",
@@ -95,6 +97,8 @@
 	"navpanel-firstunseen-hidden": "Kan er niet naar toe scrollen; in plaats daarvan naar de thread gescrolld.",
 	"navpanel-newcomments-count": "$1 nieuwe {{plural:$1|reactie|reacties}}.",
 	"navpanel-newcomments-unknowndate": "onbekende datum",
+	"toc-commentcount-new": "+$1",
+	"toc-commentcount-new-full": "+$1 {{plural:$1|nieuw}}",
 	"toc-more": "nog $1",
 	"pagenav-toc": "Inhoudsopgave",
 	"pagenav-back": "Terug",
