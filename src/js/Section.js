@@ -519,7 +519,7 @@ class Section extends SectionSkeleton {
    * @private
    */
   updateWatchMenuItems() {
-    if (this.menu) {
+    if (this.menu && this.isActionable) {
       this.menu.unwatch[this.isWatched ? 'show' : 'hide']();
       this.menu.watch[this.isWatched ? 'hide' : 'show']();
     }
