@@ -971,6 +971,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   await prepare(passedData, siteDataRequests);
 
   if (cd.state.isFirstRun) {
+    findFloatingAndHiddenElements();
     saveRelativeScrollPosition(null, cachedScrollY);
   }
 
@@ -1133,10 +1134,12 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     cd.debug.startTimer('final code and rendering');
 
     if (articleId) {
-      // Should be below updating content on reload, as it requires the "sheet" property of "style"
-      // elements. Should be above reviewing highlightables, as the reviewing relies on floating and
-      // hidden elements.
-      findFloatingAndHiddenElements();
+      if (!cd.state.isFirstRun) {
+        // Should be below updating content on reload, as it requires the "sheet" property of "style"
+        // elements. Should be above reviewing highlightables, as the reviewing relies on floating and
+        // hidden elements.
+        findFloatingAndHiddenElements();
+      }
 
       // Should be above all code that deals with comment highlightable elements and comment levels
       // as this may alter that.

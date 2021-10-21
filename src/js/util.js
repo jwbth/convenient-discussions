@@ -542,11 +542,7 @@ export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = wi
       while (true) {
         const node = treeWalker.currentNode;
 
-        // Ignore elements with non-native classes - they can be floating.
-        if (
-          !isInline(node) &&
-          Array.from(node.classList).every((name) => /^(cd|ext-discussiontools|mw)-/.test(name))
-        ) {
+        if (!isInline(node) && !cd.g.floatingElements.includes(node)) {
           const rect = node.getBoundingClientRect();
           if (rect.bottom >= 0 && rect.height !== 0) {
             scrollData.element = node;
