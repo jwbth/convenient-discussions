@@ -375,11 +375,12 @@ class Comment extends CommentSkeleton {
 
     const authorWrapper = headerElement.firstChild;
     const authorLink = authorWrapper.firstChild;
+    const authorLinksWrapper = authorLink.nextElementSibling;
     const bdiElement = authorLink.firstChild;
-    const authorTalkLink = authorLink.nextElementSibling;
+    const authorTalkLink = authorLinksWrapper.firstElementChild;
     let contribsLink;
     if (cd.settings.showContribsLink) {
-      contribsLink = authorTalkLink.nextElementSibling.nextElementSibling;
+      contribsLink = authorLinksWrapper.lastElementChild;
       if (!this.author.isRegistered()) {
         contribsLink.previousSibling.remove();
         contribsLink.remove();

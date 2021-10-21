@@ -649,32 +649,31 @@ function initOouiAndElementPrototypes() {
 
     const authorWrapper = document.createElement('span');
     authorWrapper.className = 'cd-comment-author-wrapper';
-    headerElement.appendChild(authorWrapper);
+    headerElement.append(authorWrapper);
 
     const authorLink = document.createElement('a');
     authorLink.className = 'cd-comment-author mw-userlink';
-    authorWrapper.appendChild(authorLink);
+    authorWrapper.append(authorLink);
 
     const bdiElement = document.createElement('bdi');
-    authorLink.appendChild(bdiElement);
+    authorLink.append(bdiElement);
 
-    const parenthesesStart = document.createTextNode(' ' + cd.mws('parentheses-start'));
-    const parenthesesEnd = document.createTextNode(cd.mws('parentheses-end'));
+    const authorLinksWrapper = document.createElement('span');
+    authorLinksWrapper.className = 'cd-comment-author-links';
 
     const authorTalkLink = document.createElement('a');
     authorTalkLink.textContent = cd.s('comment-author-talk');
-    authorWrapper.appendChild(parenthesesStart);
-    authorWrapper.appendChild(authorTalkLink);
+    authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
 
     if (cd.settings.showContribsLink) {
       const contribsLink = document.createElement('a');
       contribsLink.textContent = cd.s('comment-author-contribs');
       const separator = commentElementPrototypes.separator.cloneNode(true);
-      authorWrapper.appendChild(separator);
-      authorWrapper.appendChild(contribsLink);
+      authorLinksWrapper.append(separator, contribsLink);
     }
 
-    authorWrapper.appendChild(parenthesesEnd);
+    authorLinksWrapper.append(cd.mws('parentheses-end'));
+    authorWrapper.append(' ', authorLinksWrapper);
 
     commentElementPrototypes.headerElement = headerElement;
   }
