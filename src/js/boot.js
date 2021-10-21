@@ -1472,9 +1472,11 @@ export async function confirmDesktopNotifications() {
   if (typeof Notification === 'undefined') return;
 
   if (cd.settings.desktopNotifications === 'unknown' && Notification.permission !== 'denied') {
-    // Avoid using the setting kept in `mw.user.options`, as it may be outdated.
-    const settings = getSettings({ reuse: true });
-    if (['unknown', undefined].includes(settings.reformatComments)) {
+    // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
+    // the previous settings request, as the settings might be changed in
+    // suggestEnableCommentReformatting().
+    const settings = await getSettings();
+    if (['unknown', undefined].includes(settings.desktopNotifications)) {
       const actions = [
         {
           label: cd.s('dn-confirm-yes'),
