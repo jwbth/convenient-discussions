@@ -1339,9 +1339,10 @@ class Parser {
    * `cd-commentLevel`.
    *
    * @param {Element|external:Element} initialElement
+   * @param {boolean} [includeFirstMatch=false]
    * @returns {Element[]|external:Element[]}
    */
-  getListsUpTree(initialElement) {
+  getListsUpTree(initialElement, includeFirstMatch = false) {
     const listElements = [];
     const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {
@@ -1350,7 +1351,11 @@ class Parser {
         if (el.classList.contains('cd-commentLevel')) {
           const match = el.getAttribute('class').match(/cd-commentLevel-(\d+)/);
           if (match) {
-            listElements.unshift(...Array(Number(match[1])));
+            const elementsToAdd = Array(Number(match[1]));
+            if (includeFirstMatch) {
+              elementsToAdd[elementsToAdd.length - 1] = el;
+            }
+            listElements.unshift(...elementsToAdd);
           }
           return listElements;
         } else {

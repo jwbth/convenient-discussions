@@ -351,7 +351,7 @@ class CommentSkeleton {
   fixIndentationHoles() {
     if (this.level && this.elements.length > 2) {
       // Get level elements based on this.elements, not this.highlightables.
-      const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
+      const allLevelElements = this.elements.map((el) => this.parser.getListsUpTree(el, true));
 
       const groups = [];
       allLevelElements.slice(1, allLevelElements.length - 1).forEach((ancestors, i) => {

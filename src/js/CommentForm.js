@@ -987,7 +987,7 @@ class CommentForm {
       $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
 
       this.commentInput.$element
-        .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="gallery"], .tool[rel="reference"], .option[rel="heading-2"]')
+        .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]')
         .remove();
       if (!['addSection', 'addSubsection'].includes(this.mode)) {
         this.commentInput.$element.find('.group-heading').remove();
@@ -2227,6 +2227,8 @@ class CommentForm {
    * @throws {CdError}
    */
   commentTextToCode(action) {
+    // TODO: Split this spaghetti into meaningful parts :-)
+
     let indentationChars;
 
     switch (this.mode) {
@@ -2331,6 +2333,7 @@ class CommentForm {
     }
 
     const filePatternEnd = `\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`;
+    const galleryRegexp = /^\x01\d+_gallery\x02$/m;
 
     if (this.willCommentBeIndented) {
       // Remove spaces at the beginning of lines.
@@ -2366,7 +2369,12 @@ class CommentForm {
       const fileRegexp = new RegExp('(\\n+)(' + filePatternEnd + ')', 'gmi');
       code = code.replace(fileRegexp, addNewlinesAndIndentationChars);
 
-      if (/^[:*#;]/m.test(code) || code.includes('\x03')) {
+      // Add newlines before and after gallery (yes, even if the comment starts with it).
+      code = code
+        .replace(/(^|[^\n])(\x01\d+_gallery\x02)/g, (s, before, m) => before + '\n' + m)
+        .replace(/\x01\d+_gallery\x02(?=(?:$|[^\n]))/g, (s) => s + '\n');
+
+      if (/^[:*#;]/m.test(code) || code.includes('\x03') || galleryRegexp.test(code)) {
         if (restLinesIndentationChars === '#') {
           throw new CdError({
             type: 'parse',
@@ -2382,9 +2390,10 @@ class CommentForm {
           });
         }
 
-        // Add indentation characters to the lines following the lines with the list and table
-        // markup.
-        code = code.replace(/^([:*#;\x03].+)(\n+)(?!:)/mg, (s, previousLine, newlines) => {
+        // Add indentation characters to the lines following the lines with the list, table, and
+        // gallery markup.
+        const followingLinesRegexp = /^((?:[:*#;\x03].+|\x01\d+_gallery\x02))(\n+)(?![:#])/mg;
+        code = code.replace(followingLinesRegexp, (s, previousLine, newlines) => {
           // Many newlines will be replaced with a paragraph template below. If there is no
           // paragraph template, there wouldn't be multiple newlines, as they would've been removed
           // above.
@@ -2453,6 +2462,8 @@ class CommentForm {
         ) ||
         fileRegexp.test(currentLine) ||
         fileRegexp.test(nextLine) ||
+        galleryRegexp.test(currentLine) ||
+        galleryRegexp.test(nextLine) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
@@ -2462,7 +2473,10 @@ class CommentForm {
       ) ?
         '' :
         lineBreak;
-      const newlineOrNot = this.willCommentBeIndented ? '' : '\n';
+
+      // Current line can match galleryRegexp only if the comment will not be indented.
+      const newlineOrNot = this.willCommentBeIndented && !galleryRegexp.test(nextLine) ? '' : '\n';
+
       return currentLine + lineBreakOrNot + newlineOrNot;
     });
 
