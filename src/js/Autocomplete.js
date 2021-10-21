@@ -328,10 +328,7 @@ class Autocomplete {
               (text.match(spacesRegexp) || []).length <= 9 &&
 
               // Forbidden characters
-              !/[#<>[\]|{}]/.test(text)
-            );
-            const makeRequest = (
-              valid &&
+              !/[#<>[\]|{}]/.test(text) &&
 
               // Interwikis
               !(
@@ -339,18 +336,17 @@ class Autocomplete {
                 !cd.g.ALL_NAMESPACES_REGEXP.test(text)
               )
             );
-            if (makeRequest) {
+            if (valid) {
               values.push(...this.wikilinks.cache);
               values = search(text, values);
-            }
-            if (valid) {
+
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
             }
 
             callback(prepareValues(values, this.wikilinks));
 
-            if (makeRequest) {
+            if (valid) {
               let values;
               try {
                 values = await getRelevantPageNames(text);
