@@ -78,6 +78,10 @@ class Section extends SectionSkeleton {
       new Page(this.sourcePageName) :
       cd.page;
 
+    // Transclusions of templates that in turn translude content, like here:
+    // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления
+    const isTranscludedFromTemplate = this.sourcePageName && this.sourcePage.namespaceId === 10;
+
     /**
      * Is the section actionable (is in a closed discussion or on an old version page).
      *
@@ -86,13 +90,10 @@ class Section extends SectionSkeleton {
     this.isActionable = (
       cd.state.isPageActive &&
       !cd.g.closedDiscussionElements.some((el) => el.contains(this.headingElement)) &&
-
-      // Transclusions of templates that in turn translude content, like here:
-      // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления
-      !(this.sourcePageName && this.sourcePage.namespaceId === 10)
+      !isTranscludedFromTemplate
     );
 
-    if (!this.isActionable) {
+    if (isTranscludedFromTemplate) {
       this.comments.forEach((comment) => {
         comment.isActionable = false;
       });
