@@ -1728,7 +1728,7 @@ class Comment extends CommentSkeleton {
 
     // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
     // their personal CSS.
-    this.flash('target', 2000, () => {
+    this.flash('target', 1750, () => {
       this.isTarget = false;
     });
   }
