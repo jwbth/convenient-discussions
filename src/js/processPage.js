@@ -701,6 +701,26 @@ function connectToAddTopicButtons() {
 }
 
 /**
+ * Remove the `id` attribute from comment links, so that comment links reach their target using
+ * {@link eventHandlers.handleHashChange handling of the hashchange event}, not using direct
+ * scrolling.
+ *
+ * @param {JQuery} $content
+ * @private
+ */
+function inactivateCommentLinks($content) {
+  if (!$content.is('#mw-content-text')) return;
+
+  $content
+    .find('span[id]')
+    .filter(function () {
+      return /^\d{12}_.+$/.test($(this).attr('id'));
+    })
+    .removeAttr('id');
+}
+
+
+/**
  * Highlight mentions of the current user.
  *
  * @param {external:jQuery} $content
@@ -1250,7 +1270,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
         // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
         // content as opposed to "$('.cd-comment-author-wrapper')".
-        mw.hook('wikipage.content').add(highlightMentions);
+        mw.hook('wikipage.content').add(highlightMentions, inactivateCommentLinks);
 
         let isUpdateThreadLinesHandlerAttached = false;
         const handlePageMutations = () => {
