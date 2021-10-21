@@ -96,7 +96,10 @@ export default {
     'Clr',
     '-',
   ],
-  'quoteFormatting': ["{{tq|1=", "}}<br>"],
+  quoteFormatting: ["{{tq|1=", "}}<br>"],
+  elementsToExcludeClasses: [
+    'collapsibleheader',
+  ],
   foreignElementInHeadlineClasses: [
     'adminMark',
   ],
@@ -109,6 +112,7 @@ export default {
       'Discussion top',
       'Archive top',
       'Atop',
+      'Hidden begin',
       'DeletionHeader',
       'Delh',
       'Rfdh',
@@ -121,12 +125,14 @@ export default {
       'Discussion-bottom',
       'Archive bottom',
       'Abot',
+      'Hidden end',
       'DeletionFooter',
     ],
   ],
   closedDiscussionClasses: [
-    'archived',
     'boilerplate',
+    'collapsibletemplate',
+    'delh',
   ],
   beforeAuthorLinkParse: function (authorLink) {
     // https://commons.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js

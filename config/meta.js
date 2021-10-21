@@ -88,6 +88,9 @@ export default {
     'Br',
   ],
   quoteFormatting: ["{{tq|1=", "}}<br>"],
+  elementsToExcludeClasses: [
+    'NavHead',
+  ],
   templatesToExclude: [
     'Moved',
   ],
@@ -100,11 +103,24 @@ export default {
       'Discussion top',
       'Dt',
       'Archive top',
+      'Hidden archive top',
+      'Hat',
+      'Hidden begin',
     ],
     [
       'Discussion bottom',
       'Archive bottom',
+      'Hidden archive bottom',
+      'Hab',
+      'HideF',
+      'Hidef',
     ],
+  ],
+  closedDiscussionClasses: [
+    'boilerplate',
+    'NavFrame',
+    'NavContent',
+    'mw-collapsed',
   ],
   beforeAuthorLinkParse: function (authorLink) {
     // https://meta.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js

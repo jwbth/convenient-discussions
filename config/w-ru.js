@@ -292,6 +292,9 @@ export default {
       'Close',
       'Закрыто/сворачивать',
       'Closed/c',
+      'Начало скрытого блока',
+      'Hidden begin',
+      'Hidden block start',
     ],
     [
       'Конец закрытой секции',
@@ -305,11 +308,18 @@ export default {
       'Конец закрытой секции/сворачивать',
       'Ecs/c',
       'Рано',
+      'Конец скрытого блока',
+      'Hidden end',
+      'Oq-',
+      'Сворачиваемый блок-конец',
+      'Hidden block end',
     ],
   ],
 
   closedDiscussionClasses: [
     'ruwiki-closedDiscussion',
+    'NavFrame',
+    'NavContent',
   ],
 
   customUnhighlightableElementClasses: [
