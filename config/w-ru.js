@@ -395,7 +395,7 @@ export default {
 
   beforeAuthorLinkParse: function (authorLink) {
     // https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
-    const nextElement = this.authorLink.nextElementSibling;
+    const nextElement = authorLink.nextElementSibling;
     if (nextElement && nextElement.classList.contains('userflags-wrapper')) {
       authorLink.parentNode.insertBefore(nextElement, authorLink.nextSibling);
     }
