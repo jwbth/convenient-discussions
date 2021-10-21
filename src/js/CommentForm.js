@@ -2442,7 +2442,7 @@ class CommentForm {
     );
     const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
     const newlinesRegexp = this.willCommentBeIndented ?
-      /^(.+)\n(?!:)(?=(.*))/gm :
+      /^(.+)\n(?![:#])(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
     code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
       const spaceOrNot = cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(nextLine) ?
