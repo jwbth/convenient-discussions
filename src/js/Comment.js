@@ -336,7 +336,22 @@ class Comment extends CommentSkeleton {
       }
     };
 
-    const previousNode = this.signatureElement.previousSibling;
+    let previousNode = this.signatureElement.previousSibling;
+
+    // Cases like https://ru.wikipedia.org/?diff=117350706
+    if (!previousNode) {
+      const parentNode = this.signatureElement.parentNode;
+      const parentPreviousNode = parentNode.previousSibling;
+      if (parentPreviousNode && isInline(parentPreviousNode, true)) {
+        const parentPreviousElementNode = parentNode.previousElementSibling;
+
+        // Make sure we don't erase some blockquote with little content.
+        if (!parentPreviousElementNode || isInline(parentPreviousElementNode)) {
+          previousNode = parentPreviousNode;
+        }
+      }
+    }
+
     const previousPreviousNode = previousNode?.previousSibling;
     processNode(previousNode);
     if (
