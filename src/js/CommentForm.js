@@ -2236,7 +2236,10 @@ class CommentForm {
         indentationChars = this.target.inCode.replyIndentationChars;
         break;
       case 'edit':
-        indentationChars = this.target.inCode.indentationChars;
+        // Using originalIndentationChars, not indentationChars, makes a difference with comments
+        // like at
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#List_inside_a_comment.
+        indentationChars = this.target.inCode.originalIndentationChars;
         break;
       case 'replyInSection':
         indentationChars = cd.config.defaultIndentationChar;
