@@ -2865,8 +2865,14 @@ class Comment extends CommentSkeleton {
       // to see the bug happening if we don't check for `this.isOpeningSection`.
       lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
     } else {
+      // Dirty workaround to tell if there are foreign timestamps inside the comment.
+      const areThereForeignTimestamps = this.elements.some((el) => {
+        const timestamp = el.querySelector('.cd-timestamp');
+        return timestamp && !timestamp.closest('.cd-signature');
+      });
+
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
-      [cd.config.signatureEndingRegexp, cd.g.TIMEZONE_REGEXP]
+      [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.TIMEZONE_REGEXP]
         .filter((regexp) => regexp !== null)
         .forEach((originalRegexp) => {
           const regexp = new RegExp(originalRegexp.source + '$', 'm');
