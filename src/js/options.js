@@ -80,10 +80,10 @@ export function unpackWatchedSections(watchedSectionsString) {
 }
 
 /**
- * Request the settings from the server.
+ * Request the settings from the server, or extract the settings from the existing options strings.
  *
  * @param {object} [options={}]
- * @param {object} [options.options] Options object.
+ * @param {object} [options.options] Object containing strings with the local and global settings.
  * @param {boolean} [options.omitLocal=false] Whether to omit variables set via `cdLocal...`
  *   variables (they shouldn't need to be saved to the server).
  * @param {boolean} [options.reuse=false] If `options` is not set, reuse the cached user info
@@ -95,7 +95,7 @@ export async function getSettings({
   omitLocal = false,
   reuse = false,
 } = {}) {
-  if (!options) {
+  if (!options || !options[cd.g.SETTINGS_OPTION_NAME]) {
     ({ options } = await getUserInfo(reuse));
   }
 
