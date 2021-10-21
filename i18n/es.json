@@ -7,6 +7,7 @@
 			"Fitoschido",
 			"Jack who built the house",
 			"Jackiezelaya",
+			"Jakeukalane",
 			"Juan t2905",
 			"Rodney Araujo"
 		]
@@ -227,7 +228,7 @@
 	"sd-reset-confirm": "¿Confirmas que quieres restablecer las configuraciones? (Pulsa en «{{int:convenient-discussions-sd-save}}» después de restablecerlas.)",
 	"sd-removedata": "Eliminar todos los datos del script",
 	"sd-removedata-description": "Elimina los datos que ha recolectado Discusiones Prácticas: la configuración, última visita a páginas de discusión, secciones en seguimiento y borradores de comentarios sin enviar.",
-	"sd-removedata-help": "Ten en cuenta que se eliminará todo para el wiki actual, excepto la configuración global. Si has usado Discusiones Prácticas en otros wikis y quieres borrar los datos en ellos también, tendrás que borrarlo en esos wikis. Consulta [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|la página de inicio del guión]] para detalles sobre qué, por qué y cómo se guardan los datos, así como instrucciones acerca de cómo borrar cada dato individualmente.",
+	"sd-removedata-help": "Ten en cuenta que se eliminará todo en la wiki actual, excepto la configuración global. Si has usado Discusiones Prácticas en otras wikis y quieres borrar sus datos también, tendrás que borrarlo en esas wikis. Consulta [[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|la página de inicio del guión]] para detalles sobre qué, por qué y cómo se guardan los datos, así como instrucciones acerca de cómo borrar cada dato individualmente.",
 	"sd-removedata-confirm": "Esto eliminará permanentemente las configuraciones, últimas visitas a páginas de discusión, secciones vigiladas, y borradores de comentarios sin enviar. ¿Quieres proceder?",
 	"sd-dataremoved": "Se han borrado con éxito los datos.",
 	"sd-error-removedata": "No ha sido posible borrar los datos del servidor.",
