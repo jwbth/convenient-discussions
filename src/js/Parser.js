@@ -618,13 +618,10 @@ class Parser {
     return !(
       element === treeWalker.root ||
       (
-        step !== 'up' &&
-        (
-          foreignComponentClasses.some((name) => element.classList.contains(name)) ||
+        foreignComponentClasses.some((name) => element.classList.contains(name)) ||
 
-          // Talk page message box
-          (cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox'))
-        )
+        // Talk page message box
+        (step !== 'up' && cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox'))
       ) ||
 
       element.getAttribute('id') === 'toc' ||
@@ -650,6 +647,16 @@ class Parser {
 
       cd.config.checkForCustomForeignComponents?.(element, this.context)
     );
+  }
+
+  /**
+   * Check whether the element is a gallery created by the `<gallery` tag.
+   *
+   * @param {Element|external:Element} element
+   * @returns {boolean}
+   */
+  isGallery(element) {
+    return element.tagName === 'UL' && element.classList.contains('gallery');
   }
 
   /**
@@ -688,14 +695,16 @@ class Parser {
         !this.isPartOfList(lastPartNode, true) &&
 
         // Helps at
-        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110060209_Jack_who_built_the_house
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061810_Example
         !this.context.getElementByClassName(element, 'cd-signature')
       ) ||
 
-      (tagName === 'UL' && element.classList.contains('gallery'))
+      this.isGallery(element)
     );
 
-    if (checkNextElement && !result && nextElement) {
+    // "tagName !== 'OL'" helps in cases like
+    // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005161120_Example.
+    if (checkNextElement && !result && nextElement && tagName !== 'OL') {
       // Cases like https://en.wikipedia.org/?diff=1042059387 where, due to use of `::` in reply to
       // a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the SPECIFICO's
       // comment. (Currently, to test this, you will need to remove timestamps from the SPECIFICO's
@@ -710,7 +719,7 @@ class Parser {
           elementLevelsPassed === 1 &&
           nextElementLevelsPassed === elementLevelsPassed &&
           element[this.context.childElementsProp].length > 1 &&
-          element.tagName !== nextElement.tagName
+          tagName !== nextElement.tagName
         )
       );
     }
@@ -1233,27 +1242,57 @@ class Parser {
     const lastPartNode = parts[parts.length - 1].node;
     for (let i = parts.length - 1; i >= 0; i--) {
       const part = parts[i];
-      if (
+      const isCommentLevel = (
         // 'DD', 'LI' are in this list too for this kind of structures:
         // https://ru.wikipedia.org/w/index.php?diff=103584477.
         ['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
 
-        !(part.node.tagName === 'UL' && part.node.classList.contains('gallery')) &&
+        !this.isGallery(part.node) &&
+
+        // Exclude lists that are parts of the comment, like
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list.
+        !(
+          part.step === 'up' &&
+          parts[i + 1] &&
+          ['replaced', 'start'].includes(parts[i + 1].step) &&
+          this.isPartOfList(lastPartNode, true) &&
+
+          // But don't affect things like
+          // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#201901151200_Example
+          !(parts[i + 1].step === 'replaced' && ['DD', 'LI'].includes(parts[i + 1].node.tagName))
+        ) &&
 
         (
-          // Lists that are parts of a comment.
+          // Exclude lists that are parts of the comment.
           (part.step === 'up' && (!parts[i - 1] || parts[i - 1].step !== 'back')) ||
 
           (
             this.isPartOfList(lastPartNode, true) &&
 
-            // Helps in cases like
+            // Cases like
             // https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
             // (the whole thread).
-            !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName))
+            !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName)) &&
+
+            // Cases like
+            // https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel
+            !(
+              i !== 0 &&
+              ['UL', 'OL'].includes(part.node.tagName) &&
+              part.node.previousElementSibling?.tagName === 'DL'
+            )
+          ) ||
+
+          // Cases like
+          // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061830_Example
+          (
+            part.node.tagName === 'UL' &&
+            part.node[this.context.childElementsProp].length === 1 &&
+            this.isPartOfList(lastPartNode, false)
           )
         )
-      ) {
+      );
+      if (isCommentLevel) {
         const commentElements = this.getTopElementsWithText(part.node).nodes;
         if (commentElements.length > 1) {
           const newParts = commentElements.map((el) => ({
@@ -1381,10 +1420,49 @@ class Parser {
       ...cd.g.rootElement.getElementsByTagName('h4'),
       ...cd.g.rootElement.getElementsByTagName('h5'),
       ...cd.g.rootElement.getElementsByTagName('h6'),
-    ].map((element) => ({
-      type: 'heading',
-      element,
-    }));
+    ]
+      .filter((el) => el.getAttribute('id') !== 'mw-toc-heading')
+      .map((element) => ({
+        type: 'heading',
+        element,
+      }));
+  }
+
+  /**
+   * Turn a structure like this
+   * ```
+   * <dd>
+   *   <div>Comment. [signature]</div>
+   *   <ul>...</ul>
+   * </dd>
+   * ```
+   * into a structure like this
+   * ```
+   * <dd>
+   *   <div>Comment. [signature]</div>
+   * </dd>
+   * <dd>
+   *   <ul>...</ul>
+   * </dd>
+   * ```
+   * by splitting the parent node of the given node, moving all the following nodes into the second
+   * node resulting from the split. If there is no following nodes, don't perform the split.
+   *
+   * @param {Element|external:Element} node Reference node.
+   * @returns {Array.<Element|external:Element, (Element|external:Element|undefined)>} The parent
+   *   nodes resultant from the split (at least one).
+   */
+  splitParentAfterNode(node) {
+    const parent = node.parentNode;
+    const clone = parent.cloneNode();
+    let lastChild;
+    while ((lastChild = parent.lastChild) && lastChild !== node) {
+      clone.insertBefore(lastChild, clone.firstChild);
+    }
+    if (clone[this.context.childElementsProp].length > 0) {
+      parent.parentNode.insertBefore(clone, parent.nextSibling);
+    }
+    return [parent, clone];
   }
 
   /**

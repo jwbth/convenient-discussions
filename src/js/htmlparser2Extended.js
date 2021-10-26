@@ -352,6 +352,12 @@ Element.prototype.getElementsByTagName = function (name) {
   return DomUtils.getElementsByTagName(name, this);
 };
 
+Element.prototype.cloneNode = function () {
+  const clone = document.createElement(this.tagName);
+  clone.attribs = Object.assign({}, this.attribs);
+  return clone;
+};
+
 Object.defineProperty(Text.prototype, 'textContent', {
   get: function () {
     return decodeHtmlEntities(this.data);

@@ -39,18 +39,18 @@ import {
   handleWindowResize,
 } from './eventHandlers';
 import {
+  changeElementType,
+  getExtendedRect,
+  restoreRelativeScrollPosition,
+  saveRelativeScrollPosition,
+} from './util';
+import {
   generateCommentAnchor,
   isCommentAnchor,
   parseCommentAnchor,
   parseDtCommentId,
   resetCommentAnchors,
 } from './timestamp';
-import {
-  getExtendedRect,
-  replaceAnchorElement,
-  restoreRelativeScrollPosition,
-  saveRelativeScrollPosition,
-} from './util';
 import { getVisits, getWatchedSections, setVisits } from './options';
 
 /**
@@ -208,40 +208,6 @@ function findFloatingAndHiddenElements() {
 }
 
 /**
- * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
- * attributes, and some bound events to a new node, and also reassign references in some variables
- * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
- * that.
- *
- * @param {Element} element
- * @param {string} newType
- * @returns {Element}
- * @private
- */
-function changeElementType(element, newType) {
-  const newElement = document.createElement(newType);
-  while (element.firstChild) {
-    newElement.appendChild(element.firstChild);
-  }
-  Array.from(element.attributes).forEach((attribute) => {
-    newElement.setAttribute(attribute.name, attribute.value);
-  });
-
-  // If this element is a part of a comment, replace it in the Comment object instance.
-  let commentId = element.getAttribute('data-comment-id');
-  if (commentId !== null) {
-    commentId = Number(commentId);
-    cd.comments[commentId].replaceElement(element, newElement);
-  } else {
-    element.parentNode.replaceChild(newElement, element);
-  }
-
-  replaceAnchorElement(element, newElement);
-
-  return newElement;
-}
-
-/**
  * Combine two adjacent `.cd-commentLevel` elements into one, recursively going deeper in terms of
  * the nesting level.
  *
@@ -308,9 +274,9 @@ function mergeAdjacentCommentLevels() {
                 // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
                 // but other can be on the loose.) Instead, wrap the text node into an element to
                 // prevent it from being ignored when searching next time for adjacent .commentLevel
-                // elements. This could be seen only as an additional precaution, since it doesn't fix
-                // the source of the problem: the fact that a bare text node is (probably) a part of
-                // the reply. It shouldn't be happening.
+                // elements. This could be seen only as an additional precaution, since it doesn't
+                // fix the source of the problem: the fact that a bare text node is (probably) a
+                // part of the reply. It shouldn't be happening.
                 firstMoved = null;
                 const newChild = document.createElement('span');
                 newChild.appendChild(child);
@@ -334,6 +300,45 @@ function mergeAdjacentCommentLevels() {
 }
 
 /**
+ * Add the `'cd-connectToPreviousItem'` class to some item elements to visually connect threads
+ * broken by some intervention.
+ *
+ * @private
+ */
+function connectBrokenThreads() {
+  const items = [];
+
+  cd.g.rootElement
+    .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
+    .forEach((el) => {
+      if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
+        items.push(el);
+      }
+    });
+
+  // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
+  cd.g.rootElement
+    .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
+    .forEach((el) => {
+      const possibleItem = el.parentNode.nextElementSibling;
+      if (possibleItem?.firstElementChild?.classList.contains('cd-commentLevel')) {
+        items.push(possibleItem);
+      }
+    });
+
+  // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Image_breaking_a_thread
+  cd.g.rootElement
+    .querySelectorAll('.cd-commentLevel + .thumb + .cd-commentLevel > li')
+    .forEach((el) => {
+      items.push(el);
+    });
+
+  items.forEach((item) => {
+    item.classList.add('cd-connectToPreviousItem');
+  });
+}
+
+/**
  * Perform some DOM-related tasks after parsing comments.
  *
  * @private
@@ -345,13 +350,7 @@ function adjustDom() {
     console.warn('.cd-commentLevel adjacencies have left.');
   }
 
-  cd.g.rootElement
-    .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
-    .forEach((el) => {
-      if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
-        el.classList.add('cd-connectToPreviousItem');
-      }
-    });
+  connectBrokenThreads();
 
   /*
     A very specific fix for cases when an indented comment starts with a list like this:
@@ -377,21 +376,19 @@ function adjustDom() {
    */
   cd.comments.slice(1).forEach((comment, i) => {
     const previousComment = cd.comments[i];
-    const previousCommentLastElement = previousComment
-      .elements[previousComment.elements.length - 1];
-    const potentialItem = previousCommentLastElement.nextElementSibling?.firstElementChild;
-    if (
-      ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
-      comment.level === previousComment.level &&
-      previousCommentLastElement.tagName === 'DIV' &&
-      potentialItem === comment.elements[0] &&
-      potentialItem.tagName === 'LI'
-    ) {
-      const parentElement = previousCommentLastElement.parentNode;
-      const copyElement = document.createElement(parentElement.tagName);
-      copyElement.appendChild(previousCommentLastElement.nextElementSibling);
-      parentElement.parentNode.insertBefore(copyElement, parentElement.nextElementSibling);
-      console.debug('Separated a list from a part of the previous comment.');
+    if (comment.level === previousComment.level) {
+      const previousCommentLastElement = previousComment
+        .elements[previousComment.elements.length - 1];
+      const potentialElement = previousCommentLastElement.nextElementSibling;
+      if (
+        ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
+        previousCommentLastElement.tagName === 'DIV' &&
+        potentialElement === comment.elements[0] &&
+        potentialElement.tagName === 'DIV'
+      ) {
+        previousComment.parser.splitParentAfterNode(potentialElement.previousSibling);
+        console.debug('Separated a list from a part of the previous comment.', comment.elements[0]);
+      }
     }
   });
 }
@@ -422,7 +419,7 @@ function processComments(targets, parser) {
   cd.g.rootElement
     .querySelectorAll('table.cd-comment-part .cd-signature')
     .forEach((signature) => {
-      const commentId = signature.closest('.cd-comment-part').dataset.commentId;
+      const commentId = signature.closest('.cd-comment-part').dataset.cdCommentId;
       cd.comments[commentId].isInSingleCommentTable = true;
     });
 
@@ -1078,6 +1075,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       ),
       getAllTextNodes,
       getElementByClassName: (node, className) => node.querySelector(`.${className}`),
+      cloneNode: (node) => node.cloneNode(),
     });
 
     parser.removeDtMarkup();

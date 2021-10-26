@@ -592,10 +592,44 @@ export function restoreRelativeScrollPosition(switchToAbsolute = false) {
  * @param {Element} element
  * @param {Element} newElement
  */
-export function replaceAnchorElement(element, newElement) {
+function replaceAnchorElement(element, newElement) {
   if (scrollData.element && element === scrollData.element) {
     scrollData.element = newElement;
   }
+}
+
+/**
+ * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
+ * attributes, and some bound events to a new node, and also reassign references in some variables
+ * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
+ * that.
+ *
+ * @param {Element} element
+ * @param {string} newType
+ * @returns {Element}
+ * @private
+ */
+export function changeElementType(element, newType) {
+  const newElement = document.createElement(newType);
+  while (element.firstChild) {
+    newElement.appendChild(element.firstChild);
+  }
+  Array.from(element.attributes).forEach((attribute) => {
+    newElement.setAttribute(attribute.name, attribute.value);
+  });
+
+  // If this element is a part of a comment, replace it in the Comment object instance.
+  let commentId = element.getAttribute('data-cd-comment-id');
+  if (commentId !== null) {
+    commentId = Number(commentId);
+    cd.comments[commentId].replaceElement(element, newElement);
+  } else {
+    element.parentNode.replaceChild(newElement, element);
+  }
+
+  replaceAnchorElement(element, newElement);
+
+  return newElement;
 }
 
 /**

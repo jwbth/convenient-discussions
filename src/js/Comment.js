@@ -496,7 +496,7 @@ class Comment extends CommentSkeleton {
 
         this.addAttributes();
         origEl.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-        delete origEl.dataset.commentId;
+        delete origEl.dataset.cdCommentId;
       });
 
     this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
@@ -2150,7 +2150,7 @@ class Comment extends CommentSkeleton {
         $(el).text(`[${currentAutonumber}]`);
         currentAutonumber++;
       });
-      this.$elements.attr('data-comment-id', this.id);
+      this.$elements.attr('data-cd-comment-id', this.id);
 
       if (cd.settings.reformatComments) {
         this.signatureElement = this.$elements.find('.cd-signature').get(0);

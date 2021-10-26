@@ -267,7 +267,7 @@ class CommentSkeleton {
   addAttributes() {
     this.elements.forEach((el) => {
       el.classList.add('cd-comment-part');
-      el.setAttribute('data-comment-id', String(this.id));
+      el.setAttribute('data-cd-comment-id', String(this.id));
     });
     this.highlightables[0].classList.add('cd-comment-part-first');
     this.highlightables[this.highlightables.length - 1].classList.add('cd-comment-part-last');
@@ -406,16 +406,8 @@ class CommentSkeleton {
 
       // Split parent elements until we reach the level element.
       let parent = this.highlightables[this.highlightables.length - 1];
-      let child;
       while (parent !== closestLevelElement) {
-        child = parent;
-        parent = parent.parentNode;
-        const clone = parent.cloneNode();
-        let lastChild;
-        while ((lastChild = parent.lastChild) && lastChild !== child) {
-          clone.insertBefore(lastChild, clone.firstChild);
-        }
-        parent.parentNode.insertBefore(clone, parent.nextSibling);
+        parent = this.parser.splitParentAfterNode(parent)[0];
       }
 
       let firstItemIndex = this.elements.length - 1;
@@ -559,7 +551,7 @@ class CommentSkeleton {
           const treeWalker = new ElementsTreeWalker(element);
           while (treeWalker.nextNode()) {
             // `null` and `0` as the attribute value are both bad.
-            let commentId = Number(treeWalker.currentNode.getAttribute('data-comment-id'));
+            let commentId = Number(treeWalker.currentNode.getAttribute('data-cd-comment-id'));
             if (commentId !== 0) {
               const childComment = cd.comments[commentId];
 
