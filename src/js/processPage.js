@@ -1299,8 +1299,10 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           handlePageMutations();
         }, 1000);
 
-        // Don't create the mutation observer just yet - let most DOM changes by the script to be
-        // made first, so that it doesn't run in vain many times.
+        // Create the mutation observer in the next event cycle - let most DOM changes by CD and
+        // scripts attached to the hooks to be made first to reduce the number of times it runs in
+        // vain. But if we set a long delay, users will see comment backgrounds mispositioned for
+        // some time.
         setTimeout(() => {
           const observer = new MutationObserver((records) => {
             const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
@@ -1315,7 +1317,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
             childList: true,
             subtree: true,
           });
-        }, 300);
+        });
       } else {
         pageNav.update();
       }
