@@ -3689,13 +3689,7 @@ class Comment extends CommentSkeleton {
       wrappingItemTag = $anchor.is('ul') ? 'li' : 'dd';
       $anchor.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
     } else if ($lastOfTarget.is('li')) {
-      // We can't use Comment#containerListType as it contains the type for the _first_
-      // (highlightable) element.
-      const parentListType = $lastOfTarget.cdGetContainerListType();
-
-      // We need to avoid a number appearing next to the form in numbered lists, so we have <div> in
-      // those cases. Which is unsemantic, yes :-(
-      outerWrapperTag = parentListType === 'ol' ? 'div' : 'li';
+      outerWrapperTag = 'li';
     } else if ($lastOfTarget.is('dd')) {
       outerWrapperTag = 'dd';
     }
@@ -3723,6 +3717,13 @@ class Comment extends CommentSkeleton {
 
     if ($outerWrapper) {
       $outerWrapper.insertAfter($lastOfTarget);
+
+      if ($lastOfTarget.closest('dl, ul, ol').is('ol')) {
+        $outerWrapper.addClass('cd-skip');
+        const $next = $outerWrapper.next();
+        const index = [...$outerWrapper.parent().children(':not(.cd-skip)')].indexOf($next.get(0));
+        $next.attr('value', index + 1);
+      }
     } else if ($wrappingList) {
       $wrappingList.insertAfter($lastOfTarget);
     } else {
