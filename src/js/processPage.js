@@ -512,7 +512,7 @@ function hideDtNewTopicForm() {
       const observer = new MutationObserver((records) => {
         const isReplyWidgetAdded = (record) => (
           Array.from(record.addedNodes)
-            .some((node) => node.classList.contains('ext-discussiontools-ui-replyWidget'))
+            .some((node) => node.classList?.contains('ext-discussiontools-ui-replyWidget'))
         );
         if (records.some(isReplyWidgetAdded)) {
           $('#wpTextbox1').remove();
