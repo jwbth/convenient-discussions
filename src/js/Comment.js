@@ -2794,7 +2794,7 @@ class Comment extends CommentSkeleton {
       // tables. \x03 and \x04 mean the beginning and ending of a table. Note: This should be kept
       // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
       // more comments are there.
-      const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template).*\x02) *$/);
+      const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
       const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
       const currentLineEndingRegexp = new RegExp(
         `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04|<br[ \\n]*\\/?>) *$`,
@@ -2975,7 +2975,7 @@ class Comment extends CommentSkeleton {
               ::# Item 2.
               :: End of the comment. [signature]
 
-            The first is incorrect, and we need to add additional indentation for that case.
+            The first is incorrect, and we need to add additional indentation in that case.
            */
           if (adjustedChars.length < this.level) {
             adjustedChars += ':';

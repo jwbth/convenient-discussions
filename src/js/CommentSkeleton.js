@@ -250,7 +250,7 @@ class CommentSkeleton {
         el.getAttribute('style')
       ))
       .forEach((el) => {
-        const wrapper = this.parser.context.document.createElement('div');
+        const wrapper = document.createElement('div');
         wrapper.className = 'cd-comment-replacedPart';
         el.parentNode.insertBefore(wrapper, el);
         this.elements.splice(this.elements.indexOf(el), 1, wrapper);
@@ -371,7 +371,7 @@ class CommentSkeleton {
           ?.slice(-1)[0];
         if (levelElement) {
           const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
-          const itemElement = this.parser.context.document.createElement(tagName);
+          const itemElement = document.createElement(tagName);
           indexes.forEach((index) => {
             itemElement.appendChild(this.elements[index]);
           });

@@ -122,7 +122,7 @@ class Parser {
     let dtMarkupHavenElement;
     if (moveNotRemove) {
       if (cd.state.isPageFirstParsed) {
-        dtMarkupHavenElement = this.context.document.createElement('span');
+        dtMarkupHavenElement = document.createElement('span');
         dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
         cd.g.$content.append(dtMarkupHavenElement);
       } else {
@@ -147,7 +147,7 @@ class Parser {
         // DT gets the offset of all these elements upon initialization which can take a lot of
         // time if the elements aren't put into containers with less children.
         if (i % 10 === 0) {
-          dtMarkupHavenElement.appendChild(this.context.document.createElement('span'));
+          dtMarkupHavenElement.appendChild(document.createElement('span'));
         }
         dtMarkupHavenElement.lastChild.appendChild(el);
       } else {
@@ -184,13 +184,13 @@ class Parser {
       .filter(defined)
       .map((finding) => {
         const { node, match, date } = finding;
-        const element = this.context.document.createElement('span');
+        const element = document.createElement('span');
         element.classList.add('cd-timestamp');
-        element.appendChild(this.context.document.createTextNode(match[2]));
+        element.appendChild(document.createTextNode(match[2]));
         const remainedText = node.textContent.slice(match.index + match[0].length);
         let afterNode;
         if (remainedText) {
-          afterNode = this.context.document.createTextNode(remainedText);
+          afterNode = document.createTextNode(remainedText);
         }
         node.textContent = match[1];
         node.parentNode.insertBefore(element, node.nextSibling);
@@ -410,7 +410,7 @@ class Parser {
         registerCommentAnchor(anchor);
         const signatureContainer = signatureNodes[0].parentNode;
         const startElementNextSibling = signatureNodes[0].nextSibling;
-        const element = this.context.document.createElement('span');
+        const element = document.createElement('span');
         element.classList.add('cd-signature');
         signatureNodes.reverse().forEach(element.appendChild.bind(element));
         signatureContainer.insertBefore(element, startElementNextSibling);
@@ -1072,7 +1072,7 @@ class Parser {
 
     for (let i = sequencesToBeEnclosed.length - 1; i >= 0; i--) {
       const sequence = sequencesToBeEnclosed[i];
-      const wrapper = this.context.document.createElement('div');
+      const wrapper = document.createElement('div');
       const nextSibling = parts[sequence.start].node.nextSibling;
       const parent = parts[sequence.start].node.parentNode;
       for (let j = sequence.end; j >= sequence.start; j--) {
@@ -1350,11 +1350,11 @@ class Parser {
           const nextSibling = parent.nextSibling;
           const parentParent = parent.parentNode;
           if (isNumberedListUsedAsIndentation) {
-            innerWrapper = this.context.document.createElement('dd');
-            outerWrapper = this.context.document.createElement('dl');
+            innerWrapper = document.createElement('dd');
+            outerWrapper = document.createElement('dl');
             outerWrapper.appendChild(innerWrapper);
           } else {
-            innerWrapper = this.context.document.createElement('div');
+            innerWrapper = document.createElement('div');
             outerWrapper = innerWrapper;
           }
           innerWrapper.appendChild(parent);

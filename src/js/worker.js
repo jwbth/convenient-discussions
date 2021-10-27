@@ -104,7 +104,7 @@ function hideElement(el, comment) {
     tagName: el.tagName,
     html: el.outerHTML,
   });
-  const textNode = context.document.createTextNode(`\x01${num}_${type}\x02`);
+  const textNode = document.createTextNode(`\x01${num}_${type}\x02`);
   el.parentNode.insertBefore(textNode, el);
   el.remove();
 
@@ -394,12 +394,12 @@ function onMessageFromWindow(e) {
     );
     cd.g.isIPv6Address = restoreFunc(cd.g.isIPv6Address);
 
-    context.document = parseDocument(message.text, {
+    self.document = parseDocument(message.text, {
       withStartIndices: true,
       withEndIndices: true,
       decodeEntities: false,
     });
-    cd.g.rootElement = context.document.childNodes[0];
+    cd.g.rootElement = document.childNodes[0];
     cd.g.pageHasOutdents = Boolean(
       cd.g.rootElement.getElementsByClassName(cd.config.outdentClass, 1).length
     );

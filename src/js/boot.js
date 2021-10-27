@@ -1227,6 +1227,7 @@ export function saveSession(force) {
     saveSessionLastTime = Date.now();
   };
 
+  // Don't save more often than once per 5 seconds.
   const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
   clearTimeout(saveSessionTimeout);
   if (force) {

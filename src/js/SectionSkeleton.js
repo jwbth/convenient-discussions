@@ -114,13 +114,13 @@ class SectionSkeleton {
    * @returns {Element|external:Element}
    */
   createSectionMenu() {
-    const startBracket = this.parser.context.document.createElement('span');
+    const startBracket = document.createElement('span');
     startBracket.setAttribute('class', 'mw-editsection-bracket');
     startBracket.textContent = '[';
-    const endBracket = this.parser.context.document.createElement('span');
+    const endBracket = document.createElement('span');
     endBracket.setAttribute('class', 'mw-editsection-bracket');
     endBracket.textContent = ']';
-    const editSectionElement = this.parser.context.document.createElement('span');
+    const editSectionElement = document.createElement('span');
     editSectionElement.setAttribute('class', 'mw-editsection');
     editSectionElement.appendChild(startBracket);
     editSectionElement.appendChild(endBracket);

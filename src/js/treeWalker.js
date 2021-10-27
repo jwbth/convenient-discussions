@@ -18,7 +18,7 @@ export class TreeWalker {
    * @param {Node|external:Node} root Node that limits where the tree walker can go within this
    *   document's tree: only the root node and its descendants.
    * @param {Function} [acceptNode] Function that returns `true` if the tree walker should accept
-   *   the node, and `false` if it should reject.
+   *   the node and `false` if it should reject.
    * @param {boolean} [onlyElementNodes=false] Walk only on element nodes, ignoring nodes of other
    *   types.
    * @param {Node|external:Node} [startNode=root] Node to set as a current node.

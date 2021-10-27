@@ -341,6 +341,31 @@ class Section extends SectionSkeleton {
      */
     this.menu = {};
 
+    const addCopyLinkMenuItem = () => {
+      if (this.headline) {
+        // We put this instruction here to make it always appear after the "watch" item.
+        this.addMenuItem({
+          name: 'copyLink',
+          label: cd.s('sm-copylink'),
+
+          // We need the event object to be passed to the function.
+          action: this.copyLink.bind(this),
+
+          tooltip: cd.s('sm-copylink-tooltip'),
+          href: `${cd.page.getUrl()}#${this.anchor}`,
+        });
+      }
+
+      /**
+       * Section menu has been extneded.
+       *
+       * @event sectionMenuExtended
+       * @param {Section} section
+       * @param {object} cd {@link convenientDiscussions} object.
+       */
+      mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+    }
+
     if (this.isActionable) {
       if (
         this.comments.length &&
@@ -380,34 +405,7 @@ class Section extends SectionSkeleton {
           },
         });
       }
-    }
 
-    const addCopyLinkMenuItem = () => {
-      if (this.headline) {
-        // We put this instruction here to make it always appear after the "watch" item.
-        this.addMenuItem({
-          name: 'copyLink',
-          label: cd.s('sm-copylink'),
-
-          // We need the event object to be passed to the function.
-          action: this.copyLink.bind(this),
-
-          tooltip: cd.s('sm-copylink-tooltip'),
-          href: `${cd.page.getUrl()}#${this.anchor}`,
-        });
-      }
-
-      /**
-       * Section menu has been extneded.
-       *
-       * @event sectionMenuExtended
-       * @param {Section} section
-       * @param {object} cd {@link convenientDiscussions} object.
-       */
-      mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
-    }
-
-    if (this.isActionable) {
       watchedSectionsRequest
         .then(
           () => {

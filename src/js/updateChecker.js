@@ -510,11 +510,11 @@ function checkForNewChanges(currentComments) {
      * @param {object[]} changeList
      * @param {Comment} changeList.comment
      * @param {object} changeList.events
-     * @param {object|undefined} changeList.events.changed
-     * @param {boolean|undefined} changeList.events.changed.updateSuccess Were the changes rendered.
-     * @param {boolean|undefined} changeList.events.unchanged
-     * @param {boolean|undefined} changeList.events.deleted
-     * @param {boolean|undefined} changeList.events.undeleted
+     * @param {object} [changeList.events.changed]
+     * @param {boolean} [changeList.events.changed.updateSuccess] Were the changes rendered.
+     * @param {boolean} [changeList.events.unchanged]
+     * @param {boolean} [changeList.events.deleted]
+     * @param {boolean} [changeList.events.undeleted]
      * @param {object} changeList.commentData
      */
     mw.hook('convenientDiscussions.newChanges').fire(changeList);

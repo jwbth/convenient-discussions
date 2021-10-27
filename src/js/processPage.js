@@ -531,7 +531,7 @@ function hideDtNewTopicForm() {
     $dtNewTopicForm.hide();
 
     // This looks like it regulates adding a new topic form on DT init. This is for future page
-    // updates.
+    // refreshes.
     mw.config.set('wgDiscussionToolsStartNewTopicTool', false);
 
     return {
@@ -1071,7 +1071,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       CommentClass: Comment,
       SectionClass: Section,
       childElementsProp: 'children',
-      document,
       follows: (el1, el2) => Boolean(
         el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
       ),
