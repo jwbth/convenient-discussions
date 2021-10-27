@@ -1,11 +1,12 @@
 import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
+import { TreeWalker } from './treeWalker';
 import { generateCommentAnchor, parseCommentAnchor } from './timestamp';
 import {
   getCommonGender,
   getExtendedRect,
-  isPageOverlayOn,
+  getHigherNodeAndOffsetInSelection,
   reorderArray,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
@@ -462,14 +463,6 @@ export default {
    * @memberof Comment
    */
   highlightHovered(e) {
-    if (
-      cd.state.isScrollHandlingPrevented ||
-      cd.state.isAutoScrollInProgress ||
-      isPageOverlayOn()
-    ) {
-      return;
-    }
-
     const isObstructingElementHovered = (
       Array.from(cd.g.notificationArea?.querySelectorAll('.mw-notification'))
         .some((notification) => notification.matches(':hover')) ||
@@ -666,4 +659,39 @@ export default {
       });
     }
   },
+
+  resetSelectedComment() {
+    const comment = cd.comments.find((comment) => comment.isSelected);
+    if (comment) {
+      comment.isSelected = false;
+      comment.replyButton.setLabel(cd.s('cm-reply'));
+    }
+  },
+
+  getSelectedComment() {
+    const selection = window.getSelection();
+    const selectionText = selection.toString().trim();
+    let comment;
+    if (selectionText) {
+      const { higherNode } = getHigherNodeAndOffsetInSelection(selection);
+      const treeWalker = new TreeWalker(cd.g.rootElement, null, false, higherNode);
+      let commentId;
+      do {
+        commentId = treeWalker.currentNode.dataset?.cdCommentId;
+      } while (commentId === undefined && treeWalker.parentNode());
+      if (commentId !== undefined) {
+        comment = cd.comments[commentId];
+        Comment.resetSelectedComment();
+        if (comment && comment.isActionable && !comment.replyForm) {
+          comment.isSelected = true;
+          comment.replyButton.setLabel(cd.s('cm-quote'));
+        }
+      } else {
+        Comment.resetSelectedComment();
+      }
+    } else {
+      Comment.resetSelectedComment();
+    }
+    return comment || null;
+  }
 };

@@ -1192,43 +1192,46 @@ class Parser {
    * It has a branchy structure that requires a tricky algorithm to be parsed correctly.
    *
    * @param {Element|external:Element} element
+   * @param {boolean} [onlyChildrenWithoutCommentLevel=false]
    * @returns {object}
    */
-  getTopElementsWithText(element) {
+  getTopElementsWithText(element, onlyChildrenWithoutCommentLevel = false) {
     // We ignore all spaces as an easy way to ignore only whitespace text nodes between element
     // nodes (this is a bad idea if we deal with inline nodes, but here we deal with lists).
     const partTextNoSpaces = element.textContent.replace(/\s+/g, '');
 
-    let current;
+    let nodes;
     let children = [element];
     let levelsPassed = 0;
     do {
-      current = children;
-      children = current.reduce(
+      nodes = children;
+      children = nodes.reduce(
         (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
         []
       );
-      if (['DL', 'UL', 'OL'].includes(current[0].tagName)) {
+      if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {
         levelsPassed++;
       }
     } while (
       children.length &&
       children.every((child) => (
-        ['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) ||
+        (
+          ['DL', 'UL', 'OL', 'DD', 'LI'].includes(child.tagName) &&
+          (
+            !onlyChildrenWithoutCommentLevel ||
+            ['DD', 'LI'].includes(child.tagName) ||
+            child.classList.contains('cd-commentLevel')
+          )
+        ) ||
 
-        // An inline (e.g., <small>) tag wrapped around block tags can give that.
+        // An inline (e.g., <small>) tag wrapped around block tags can give that (due to some errors
+        // in the markup).
         (!child.textContent.trim() && isInline(child))
       )) &&
-      (
-        children.map((child) => child.textContent).join('').replace(/\s+/g, '') ===
-        partTextNoSpaces
-      )
+      children.map((child) => child.textContent).join('').replace(/\s+/g, '') === partTextNoSpaces
     );
 
-    return {
-      nodes: current,
-      levelsPassed,
-    };
+    return { nodes, levelsPassed };
   }
 
   /**

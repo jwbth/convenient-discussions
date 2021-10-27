@@ -14,6 +14,7 @@
   "cm-thanked-tooltip": "You have already thanked the user for this comment",
   "cm-edit": "Edit",
   "cm-reply": "Reply",
+  "cm-quote": "Quote",
 
   "thread-tooltip": "Collapse/expand the thread",
   "thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|}} $3)",

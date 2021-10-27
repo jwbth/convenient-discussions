@@ -20,6 +20,7 @@ import {
   generatePageNamePattern,
   getExtendedRect,
   getFromLocalStorage,
+  getHigherNodeAndOffsetInSelection,
   getUrlWithAnchor,
   getVisibilityByRects,
   handleApiReject,
@@ -32,6 +33,7 @@ import {
   wrapDiffBody,
 } from './util';
 import {
+  brsToNewlines,
   decodeHtmlEntities,
   extractSignatures,
   hideDistractingCode,
@@ -1173,7 +1175,7 @@ class Comment extends CommentSkeleton {
     let startMargin;
     if (this.ahContainerListType === 'ol') {
       // "this.highlightables.length === 1" is a workaround for cases such as
-      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160911_Example.
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160930_Example.
       startMargin = this.highlightables.length === 1 ?
         cd.g.CONTENT_FONT_SIZE * 3.2 :
         cd.g.CONTENT_FONT_SIZE * 2.2 - 1;
@@ -2518,6 +2520,21 @@ class Comment extends CommentSkeleton {
    */
   reply(dataToRestore) {
     if (!this.replyForm) {
+      let isSelectionRelevant = false;
+      if (!dataToRestore) {
+        const comment = Comment.getSelectedComment();
+        isSelectionRelevant = comment === this;
+        if (isSelectionRelevant) {
+          dataToRestore = { focus: false };
+          const menu = this.$menu.get(0);
+          const selection = window.getSelection();
+          const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
+          if (cd.settings.reformatComments && selection.containsNode(menu, true)) {
+            selection.setBaseAndExtent(higherNode, higherOffset, menu, 0);
+          }
+        }
+      }
+
       /**
        * Reply form related to the comment.
        *
@@ -2530,6 +2547,10 @@ class Comment extends CommentSkeleton {
           target: this,
           dataToRestore,
         });
+
+      if (isSelectionRelevant) {
+        this.replyForm.quote();
+      }
     }
   }
 
@@ -2804,12 +2825,7 @@ class Comment extends CommentSkeleton {
       );
     }
 
-    text = text
-      // <br> → \n, except in list elements and <pre>'s created by a space starting the line.
-      .replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
-        s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => '\x01\n')
-      ))
-
+    text = brsToNewlines(text, '\x01\n')
       // Templates occupying a whole line with <br> at the end get a special treatment too.
       .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
 

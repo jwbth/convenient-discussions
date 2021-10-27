@@ -15,6 +15,8 @@ import {
   findLastIndex,
   focusInput,
   getNativePromiseState,
+  getWikitextFromPaste,
+  getWikitextFromSelection,
   handleApiReject,
   hideText,
   insertText,
@@ -208,13 +210,6 @@ class CommentForm {
     this.preloadConfig = preloadConfig;
 
     /**
-     * Did this form replace a DiscussionTools reply form (see `processPage~hideDtNewTopicForm()`).
-     *
-     * @type {boolean}
-     */
-    this.didReplaceDtForm = dataToRestore?.didReplaceDtForm ?? false;
-
-    /**
      * When adding a topic, whether it should be on top.
      *
      * @type {boolean|undefined}
@@ -318,7 +313,7 @@ class CommentForm {
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
 
-      if (dataToRestore.didReplaceDtForm) {
+      if (dataToRestore.focus) {
         focusInput(this.headlineInput || this.commentInput);
       }
 
@@ -1624,26 +1619,38 @@ class CommentForm {
       .on('change', preview)
       .on('change', saveSessionEventHandler);
 
-    this.commentInput.$input.get(0).addEventListener('tribute-replaced', (e) => {
-      if (e.detail.instance.trigger === cd.config.mentionCharacter) {
-        if (this.mode === 'edit') {
-          const $message = wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true });
-          this.showMessage($message, {
-            type: 'notice',
-            name: 'mentionEdit',
-          });
+    this.commentInput.$input
+      .on('paste', async (e) => {
+        const clipboardData = e.originalEvent.clipboardData;
+        if (clipboardData.types.includes('text/html')) {
+          e.preventDefault();
+          const text = await getWikitextFromPaste(
+            clipboardData.getData('text/html'),
+            this.commentInput
+          );
+          insertText(this.commentInput, text);
         }
-        if (this.omitSignatureCheckbox?.isSelected()) {
-          const $message = wrap(cd.sParse('cf-reaction-mention-nosignature'), {
-            targetBlank: true,
-          });
-          this.showMessage($message, {
-            type: 'notice',
-            name: 'mentionNoSignature',
-          });
+      })
+      .on('tribute-replaced', (e) => {
+        if (e.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
+          if (this.mode === 'edit') {
+            const $message = wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true });
+            this.showMessage($message, {
+              type: 'notice',
+              name: 'mentionEdit',
+            });
+          }
+          if (this.omitSignatureCheckbox?.isSelected()) {
+            const $message = wrap(cd.sParse('cf-reaction-mention-nosignature'), {
+              targetBlank: true,
+            });
+            this.showMessage($message, {
+              type: 'notice',
+              name: 'mentionNoSignature',
+            });
+          }
         }
-      }
-    });
+      });
 
     this.summaryInput
       .on('change', () => {
@@ -3746,15 +3753,18 @@ class CommentForm {
    * @param {boolean} [allowEmptySelection=true] Insert markup (with a placeholder text) even if the
    *   selection is empty.
    */
-  quote(allowEmptySelection = true) {
-    let selection = isInputFocused() ?
-      document.activeElement.value
-        .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd) :
-      window.getSelection().toString();
-    selection = selection.trim();
+  async quote(allowEmptySelection = true) {
+    let selectionText;
+    if (isInputFocused()) {
+      selectionText = document.activeElement.value
+        .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd);
+    } else {
+      selectionText = await getWikitextFromSelection(this.commentInput);
+    }
+    selectionText = selectionText.trim();
 
     // With just "Q" pressed, empty selection doesn't count.
-    if (selection || allowEmptySelection) {
+    if (selectionText || allowEmptySelection) {
       const isCommentInputFocused = this.commentInput.$input.is(':focus');
       const range = this.commentInput.getRange();
       const caretIndex = range.to;
@@ -3767,11 +3777,19 @@ class CommentForm {
         rangeStart = rangeEnd = caretIndex;
       }
 
+      let quoteFormatting = cd.config.quoteFormatting;
+      if ($.isPlainObject(quoteFormatting)) {
+        quoteFormatting = selectionText.includes('\n') ?
+          quoteFormatting.multiline || quoteFormatting.singleline :
+          quoteFormatting.singleline || quoteFormatting.multiline;
+      }
+      const [pre, post] = quoteFormatting;
+
       this.encapsulateSelection({
-        pre: cd.config.quoteFormatting[0],
+        pre,
         peri: cd.s('cf-quote-placeholder'),
-        post: cd.config.quoteFormatting[1],
-        selection,
+        post,
+        selection: selectionText,
         ownline: true,
       });
     }

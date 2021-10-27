@@ -35,7 +35,9 @@ import {
   addPreventUnloadCondition,
   handleGlobalKeyDown,
   handleHashChange,
+  handleMouseMove,
   handleScroll,
+  handleSelectionChange,
   handleWindowResize,
 } from './eventHandlers';
 import {
@@ -535,7 +537,7 @@ function hideDtNewTopicForm() {
     return {
       headline,
       comment,
-      didReplaceDtForm: true,
+      focus: true,
     };
   } else {
     return null;
@@ -1255,12 +1257,14 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
           // scrolling). The benefit may be low compared to the performance cost, but it's
           // unexpected when the user scrolls a comment and it suddenly stops being highlighted
           // because the cursor is between neighboring <p>'s.
-          $(document).on('mousemove mouseover', Comment.highlightHovered);
+          $(document).on('mousemove mouseover', handleMouseMove);
         }
 
         // We need the visibilitychange event because many things may move while the document is
         // hidden, and the movements are not processed when the document is hidden.
-        $(document).on('scroll visibilitychange', handleScroll);
+        $(document)
+          .on('scroll visibilitychange', handleScroll)
+          .on('selectionchange', handleSelectionChange);
 
         $(window)
           .on('resize orientationchange', handleWindowResize)

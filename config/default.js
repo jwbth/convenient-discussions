@@ -414,12 +414,20 @@ export default {
   mentionRequiresLeadingSpace: true,
 
   /**
+   * Object specifying quote formatting for singleline and multiline quotes.
+   *
+   * @typedef {object} QuoteFormatting
+   * @property {string[]} singleline Starting and ending strings for singleline quotes.
+   * @property {string[]} multiline Starting and ending strings for multiline quotes.
+   */
+
+  /**
    * Array of two strings to insert before and after the selection when quote function is activated
    * (by the toolbar button or Ctrl+Alt+Q / Q). If you add template markup, you might want to use
    * `1=` before the parameter content to allow the `=` character inside a quotation, for example
    * `['{{tq|1=', '}}']`.
    *
-   * @type {string[]}
+   * @type {string[]|QuoteFormatting}
    * @default ["> ''", "''\n"]
    */
   quoteFormatting: ["> ''", "''"],

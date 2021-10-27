@@ -7,8 +7,10 @@
 
 import Button from './Button';
 import CdError from './CdError';
+import Parser from './Parser';
 import cd from './cd';
 import { ElementsTreeWalker } from './treeWalker';
+import { brsToNewlines, hideSensitiveCode } from './wikitext';
 
 const scrollData = { offset: null };
 let notificationsData = [];
@@ -1066,4 +1068,149 @@ export function closeNotifications(smooth = true) {
     data.notification.close();
   });
   notificationsData = [];
+}
+
+async function domToWikitext(div, input) {
+  // Get all styles from classes applied. If HTML is retrieved from a paste, this is not needed
+  // (styles are added to elements themselves in the text/html format), but won't hurt.
+  div.className = 'cd-hidden';
+  cd.g.rootElement.appendChild(div);
+
+  const removeElement = (el) => el.remove();
+  const replaceWithChildren = (el) => {
+    if (['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName)) {
+      el.after('\n');
+    }
+    el.replaceWith(...el.childNodes);
+  };
+
+  [...div.querySelectorAll('*')]
+    .filter((el) => window.getComputedStyle(el).userSelect === 'none')
+    .forEach(removeElement);
+
+  // Should run after removing elements with "user-select: none", to remove their wrappers that now
+  // have not content.
+  [...div.querySelectorAll('*')]
+    // Need to keep non-breaking spaces.
+    .filter((el) => (
+      (!['BR', 'HR'].includes(el.tagName) || el.classList.contains('Apple-interchange-newline')) &&
+      !el.textContent.replace(/[ \n]+/g, ''))
+    )
+
+    .forEach(removeElement);
+
+  [...div.querySelectorAll('style')].forEach(removeElement);
+
+  // <syntaxhighlight>
+  [...div.querySelectorAll('.mw-highlight')].forEach((el) => {
+    const syntaxhighlight = changeElementType(el.firstElementChild, 'syntaxhighlight');
+    const [, lang] = el.className.match(/\bmw-highlight-lang-(\w+)\b/) || [];
+    if (lang) {
+      syntaxhighlight.setAttribute('lang', lang);
+    }
+  });
+
+  const topElements = new Parser({ childElementsProp: 'children' })
+    .getTopElementsWithText(div, true).nodes;
+  if (topElements[0] !== div) {
+    div.innerHTML = '';
+    div.append(...topElements);
+  }
+
+  [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
+
+  const allowedTags = cd.g.ALLOWED_TAGS.concat('a', 'center', 'big', 'strike', 'tt');
+  [...div.querySelectorAll('*')].forEach((el) => {
+    if (!allowedTags.includes(el.tagName.toLowerCase())) {
+      replaceWithChildren(el);
+      return;
+    }
+
+    [...el.attributes]
+      .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
+      .forEach((attr) => {
+        el.removeAttribute(attr.name);
+      });
+  });
+
+  [...div.children]
+    // DDs out of DLs are likely comment parts that should not create `:` markup. (Bare LIs don't
+    // create `*` markup in the API.)
+    .filter((el) => el.tagName === 'DD')
+
+    .forEach(replaceWithChildren);
+
+  const allElements = [...div.querySelectorAll('*')];
+  let wikitext;
+  const parseHtml = !(
+    !div.childElementCount ||
+    (allElements.length === 1 && ['P', 'LI', 'DD'].includes(allElements[0].tagName))
+  )
+  if (parseHtml) {
+    input.pushPending();
+    input.setDisabled(true);
+    try {
+      wikitext = await $.post('/api/rest_v1/transform/html/to/wikitext', {
+        html: div.innerHTML,
+        scrub_wikitext: true,
+      });
+      wikitext = wikitext
+        .trim()
+        .replace(/(?:^ .*(?:\n|$))+/gm, (s) => {
+          s = s
+            .replace(/^ /gm, '')
+            .replace(/[^\n]$/, '$0\n');
+          return '<syntaxhighlight>\n' + s + '</syntaxhighlight>';
+        })
+        .replace(
+          /(<syntaxhighlight[^>]*>)\s*<nowiki>(.*?)<\/nowiki>\s*(<\/syntaxhighlight>)/g,
+          '$1$2$3'
+        );
+      let hidden;
+      ({ code: wikitext, hidden } = hideSensitiveCode(wikitext));
+      wikitext = brsToNewlines(wikitext);
+      wikitext = unhideText(wikitext, hidden);
+    } catch {
+      // Empty
+    }
+    input.popPending();
+    input.setDisabled(false);
+  }
+
+  div.remove();
+
+  return wikitext ?? div.innerText;
+}
+
+export async function getWikitextFromSelection(input) {
+  const contents = window.getSelection().getRangeAt(0).cloneContents();
+  const div = document.createElement('div');
+  div.appendChild(contents);
+  return await domToWikitext(div, input);
+}
+
+export async function getWikitextFromPaste(originalHtml, input) {
+  let html = originalHtml
+    .replace(/^[\s\S]*<!-- *StartFragment *-->/, '')
+    .replace(/<!-- *EndFragment *-->[\s\S]*$/, '');
+  const div = document.createElement('div');
+  div.innerHTML = html;
+  [...div.querySelectorAll('[style]')].forEach((el) => {
+    el.removeAttribute('style');
+  });
+  return await domToWikitext(div, input);
+}
+
+export function getHigherNodeAndOffsetInSelection(selection) {
+  if (!selection.anchorNode) {
+    return null;
+  }
+
+  const isAnchorHigher = (
+    selection.anchorNode.compareDocumentPosition(selection.focusNode) &
+    Node.DOCUMENT_POSITION_FOLLOWING
+  );
+  const higherNode = isAnchorHigher ? selection.anchorNode : selection.focusNode;
+  const higherOffset = isAnchorHigher ? selection.anchorOffset : selection.focusOffset;
+  return { higherNode, higherOffset };
 }

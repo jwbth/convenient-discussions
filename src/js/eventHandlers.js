@@ -15,6 +15,13 @@ import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
 import { setContentColumnGlobals } from './boot';
 
 const beforeUnloadHandlers = {};
+const postponements = {};
+
+export function handleMouseMove(e) {
+  if (postponements.scroll || cd.state.isAutoScrollInProgress || isPageOverlayOn()) return;
+
+  Comment.highlightHovered(e);
+}
 
 /**
  * _Method for internal use._ Handles the window `resize` event as well as `orientationchange`.
@@ -83,6 +90,12 @@ export function handleGlobalKeyDown(e) {
     if (lastActiveCommentForm) {
       e.preventDefault();
       lastActiveCommentForm.quote(e.ctrlKey);
+    } else {
+      const comment = Comment.getSelectedComment();
+      if (comment?.isActionable) {
+        e.preventDefault();
+        comment.reply();
+      }
     }
   }
 
@@ -115,23 +128,25 @@ export function handleGlobalKeyDown(e) {
   }
 }
 
+function waitBeforeHandling(name, callback, delay) {
+  if (postponements[name]) return;
+
+  postponements[name] = true;
+  setTimeout(() => {
+    postponements[name] = false;
+    callback();
+  }, delay);
+}
+
 /**
  * _For internal use._ Register seen comments, update the navigation panel's first unseen button,
  * and update the current section block.
  */
 export function handleScroll() {
-  // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
-  // wait before running, otherwise comments may be registered as seen after a press of Page
-  // Down/Page Up.
-  if (cd.state.isScrollHandlingPrevented || cd.state.isAutoScrollInProgress) return;
+  // Scroll will be handled when the autoscroll is finished.
+  if (cd.state.isAutoScrollInProgress) return;
 
-  cd.state.isScrollHandlingPrevented = true;
-
-  // One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than 200ms, but
-  // 200ms proved to be not enough, so we try 300ms.
-  setTimeout(() => {
-    cd.state.isScrollHandlingPrevented = false;
-
+  const actuallyHandle = () => {
     if (cd.state.isAutoScrollInProgress) return;
 
     if (cd.state.isPageActive) {
@@ -139,7 +154,13 @@ export function handleScroll() {
       navPanel.updateCommentFormButton();
     }
     pageNav.update();
-  }, 300);
+  };
+
+  // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
+  // wait before running, otherwise comments may be registered as seen after a press of Page
+  // Down/Page Up. One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than
+  // 200ms, but 200ms proved to be not enough, so we try 300ms.
+  waitBeforeHandling('scroll', actuallyHandle, 300);
 }
 
 /**
@@ -160,4 +181,8 @@ export function handleHashChange() {
     }
     Comment.getByAnchor(anchor, true)?.scrollTo();
   }
+}
+
+export function handleSelectionChange() {
+  waitBeforeHandling('selectionChange', Comment.getSelectedComment, 200);
 }

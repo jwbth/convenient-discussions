@@ -489,3 +489,17 @@ export function hideSensitiveCode(code) {
 export function endWithTwoNewlines(code) {
   return code.replace(/([^\n])\n?$/, '$1\n\n');
 }
+
+/**
+ * Replace `<br>`s with `\n`, except in list elements and `<pre>`'s created by a space starting a
+ * line.
+ *
+ * @param {string} code
+ * @param {string} replacement
+ * @returns {string}
+ */
+export function brsToNewlines(code, replacement = '\n') {
+  return code.replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
+    s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => replacement)
+  ));
+}
