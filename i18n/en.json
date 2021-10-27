@@ -220,7 +220,7 @@
   "deadanchor-comment-finding": "Finding archived comment…",
   "deadanchor-comment-exactmatch": "Looks like the comment has been archived. [[$1|See archived comment]] (or [$2 search in the archive]).",
   "deadanchor-comment-inexactmatch": "Looks like the comment has been archived. [$1 Search in the archive].",
-  "deadanchor-comment-notfound": "[$1 Searching for it in the archive] also did not return any results. It may be signed with other date or may have been removed.",
+  "deadanchor-comment-notfound": "[$1 Searching for it in the archive] also did not return any results. It may be signed with other date or removed.",
   "deadanchor-comment-previous": "[[$1|The previous comment from this user by time]].",
   "deadanchor-search-gotocomment": "jump to comment",
 
@@ -233,7 +233,7 @@
   "rd-summary": "Edit summary",
   "rd-close": "Close",
 
-  "rc-suggestion": "<p>The new version of Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in the timezone set in your wiki preferences by default).</p>",
+  "rc-suggestion": "<p>Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in the timezone set in your wiki preferences by default).</p>",
   "rc-suggestion-yes": "Enable the new formatting",
   "rc-suggestion-no": "Keep the usual formatting",
 
@@ -242,7 +242,7 @@
   "navpanel-next": "Go to the next new comment",
   "navpanel-firstunseen": "Go to the first unseen comment",
   "navpanel-firstunseen-hidden-title": "The comment is in a collapsed thread",
-  "navpanel-firstunseen-hidden": "Can't scroll to it; scrolled to the thread instead.",
+  "navpanel-firstunseen-hidden": "Can't scroll to it. Scrolled to the thread instead.",
   "navpanel-commentform": "Go to the next comment form out of sight",
   "navpanel-newcomments-count": "$1 new {{plural:$1|comment|comments}}.",
   "navpanel-newcomments-names": "$1 → $2",
