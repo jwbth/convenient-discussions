@@ -15,15 +15,12 @@ import { parseTimestamp } from './timestamp';
  * Generate a regular expression that searches for specified tags in the text (opening, closing, and
  * content between them).
  *
- * @param {Array} tags
+ * @param {string[]} tags
  * @returns {RegExp}
  */
 export function generateTagsRegexp(tags) {
   const tagsJoined = tags.join('|');
-  return new RegExp(
-    `(<(?:${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *)>)([^]*?)(<\\/(?:${tagsJoined})(?: [\\w ]+)? *>)`,
-    'g'
-  );
+  return new RegExp(`(<(${tagsJoined})(?: [\\w ]+(?:=[^<>]+?)?| *)>)([^]*?)(</\\2>)`, 'ig');
 }
 
 /**
@@ -41,7 +38,7 @@ export function hideDistractingCode(code) {
   return code
     .replace(
       generateTagsRegexp(['nowiki', 'syntaxhighlight', 'source', 'pre']),
-      (s, before, content, after) => before + ' '.repeat(content.length) + after
+      (s, before, tagName, content, after) => before + ' '.repeat(content.length) + after
     )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
     .replace(/[\u200e\u200f]/g, (s) => ' '.repeat(s.length))
