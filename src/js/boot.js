@@ -27,6 +27,7 @@ import {
   handleApiReject,
   hideText,
   mergeRegexps,
+  postpone,
   restoreScrollPosition,
   saveScrollPosition,
   saveToLocalStorage,
@@ -43,9 +44,6 @@ import { getLocalOverridingSettings, getSettings, setSettings, setVisits } from 
 import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
 import { removeWikiMarkup } from './wikitext';
-
-let saveSessionTimeout;
-let saveSessionLastTime;
 
 /**
  * Settings scheme: default, undocumented, local settings, aliases.
@@ -1223,17 +1221,13 @@ export function saveSession(force) {
     const dataAllPages = getFromLocalStorage('commentForms');
     dataAllPages[mw.config.get('wgPageName')] = data;
     saveToLocalStorage('commentForms', dataAllPages);
-
-    saveSessionLastTime = Date.now();
   };
 
   // Don't save more often than once per 5 seconds.
-  const timeSinceLastSave = Date.now() - (saveSessionLastTime || 0);
-  clearTimeout(saveSessionTimeout);
   if (force) {
     save();
   } else {
-    saveSessionTimeout = setTimeout(save, Math.max(0, 5000 - timeSinceLastSave));
+    postpone('saveSession', save, 5000);
   }
 }
 
