@@ -3508,7 +3508,7 @@ class CommentForm {
       delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     }
     removeFromArrayIfPresent(cd.commentForms, this);
-    saveSession();
+    saveSession(true);
     navPanel.updateCommentFormButton();
     this.autocomplete.cleanUp();
   }
