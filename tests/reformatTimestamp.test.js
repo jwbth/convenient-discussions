@@ -125,10 +125,6 @@ function testWithSettings(
 
 initDayjs();
 
-test('Timezone set to Europe/Berlin', () => {
-  expect(new Date().getTimezoneOffset()).toBe(-120);
-});
-
 testWithSettings(
   ['2021-05-28T10:48:47.000Z', 'default', 'Europe/Berlin', false, false],
   [undefined, undefined]
