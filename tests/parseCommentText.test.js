@@ -1,0 +1,224 @@
+const CommentTextParser = require('../src/js/CommentTextParser').default;
+const cd = require('../src/js/cd').default;
+
+const defaultConfig = {
+  defaultIndentationChar: ':',
+  indentationCharMode: 'mimic',
+  paragraphTemplates: ['pb', 'Paragraph break'],
+  smallDivTemplates: ['smalldiv'],
+  spaceAfterIndentationChars: true,
+};
+Object.assign(cd, {
+  g: {
+    FILE_PREFIX_PATTERN: '(?:file|image):',
+    QUOTE_REGEXP: /(<blockquote|<q)([^]*?)(<\/blockquote>|<\/q>)/gi,
+    PNIE_PATTERN: '(?:BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL)',
+    USER_SIGNATURE: ' ~~~~',
+  },
+  config: defaultConfig,
+});
+
+function testWithData(label, code, expected, commentForm, action = 'submit', config) {
+  test(label, () => {
+    if (config) {
+      cd.config = Object.assign({}, cd.config, config);
+    }
+
+    const parser = new CommentTextParser(commentForm, action);
+    try {
+      if (expected instanceof Error) {
+        expect(() => {
+          parser.parse(code);
+        }).toThrow(expected);
+      } else {
+        expect(parser.parse(code))[typeof expected === 'string' ? 'toEqual' : 'toMatch'](expected);
+      }
+    } finally {
+      if (config) {
+        cd.config = defaultConfig;
+      }
+    }
+  });
+}
+
+
+/* Forms for test cases */
+
+const firstLevelReplyForm = {
+  mode: 'reply',
+  target: {
+    inCode: {
+      originalIndentationChars: ':',
+      replyIndentationChars: '::',
+    },
+  },
+};
+
+const firstCommentReplyForm = {
+  mode: 'reply',
+  target: {
+    inCode: {
+      originalIndentationChars: '',
+      replyIndentationChars: ':',
+      headingLevel: 2,
+    },
+  },
+};
+
+const existingSignature = ' [[User:Example|Example]] 00:00, 1 October 2021 (UTC)';
+const firstLevelEditForm = {
+  mode: 'edit',
+  target: {
+    inCode: {
+      originalIndentationChars: ':',
+      replyIndentationChars: '::',
+      code: 'Text.',
+      signatureCode: existingSignature,
+    },
+  },
+};
+
+const firstCommentEditForm = {
+  mode: 'edit',
+  isSectionOpeningCommentEdited: true,
+  headlineInput: {
+    getValue: () => 'Headline',
+  },
+  target: {
+    inCode: {
+      originalIndentationChars: '',
+      replyIndentationChars: ':',
+      code: '\nText.',
+      signatureCode: existingSignature,
+      headingLevel: 2,
+    },
+  },
+};
+
+const replyInSectionForm = {
+  mode: 'replyInSection',
+  target: {
+    inCode: {
+      lastCommentIndentationChars: ':',
+    },
+  },
+};
+
+const voteForm = {
+  mode: 'replyInSection',
+  target: {
+    inCode: {
+      lastCommentIndentationChars: '#',
+    },
+  },
+};
+
+const addSectionForm = {
+  mode: 'addSection',
+  submitSection: true,
+  headlineInput: {
+    getValue: () => 'Headline',
+  },
+};
+
+const addSectionFormNoHeadline = {
+  mode: 'addSection',
+  submitSection: false,
+  headlineInput: {
+    getValue: () => '',
+  },
+};
+
+const addSectionFormOmitSignature = {
+  mode: 'addSection',
+  submitSection: true,
+  headlineInput: {
+    getValue: () => 'Headline',
+  },
+  omitSignatureCheckbox: {
+    isSelected: () => true,
+  },
+};
+
+const addSubsectionForm = {
+  mode: 'addSubsection',
+  target: {
+    level: 2,
+  },
+  headlineInput: {
+    getValue: () => 'Headline',
+  },
+};
+
+
+/* Test cases */
+
+describe('Basic cases', () => {
+  testWithData('Reply to 0-level comment', 'Text.', ': Text. ~~~~\n', firstCommentReplyForm);
+  testWithData('Reply to 1-level comment', 'Text.', ':: Text. ~~~~\n', firstLevelReplyForm);
+  testWithData('Reply to 1-level comment, preview', 'Text.', ': Text.<span class="cd-commentForm-signature"> ~~~~</span>\n', firstLevelReplyForm, 'preview');
+  testWithData('Edit 1-level comment', 'Text.', ': Text.' + existingSignature, firstLevelEditForm);
+  testWithData('Edit 0-level comment', 'Text.', '== Headline ==\n\nText.' + existingSignature, firstCommentEditForm);
+  testWithData('Reply in section', 'Text.', ': Text. ~~~~\n', replyInSectionForm);
+  testWithData('Vote', 'Text.', '# Text. ~~~~\n', voteForm);
+  testWithData('Add section', 'Text.', 'Text. ~~~~\n', addSectionForm);
+  testWithData('Add section, view changes', 'Text.', '== Headline ==\n\nText. ~~~~\n', addSectionForm, 'viewChanges');
+  testWithData('Add section, omit signature', 'Text.', 'Text.\n', addSectionFormOmitSignature);
+  testWithData('Add section, no headline', 'Text.', 'Text. ~~~~\n', addSectionFormNoHeadline);
+  testWithData('Add subsection', 'Text.', '=== Headline ===\nText. ~~~~\n', addSubsectionForm);
+});
+
+describe('Tricky markup', () => {
+  testWithData('Bulleted list', 'List:\n* Item 1.\n* Item 2.\n* Item 3.\nEnd.', ': List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Definition list', 'List:\n: Item 1.\n: Item 2.\n: Item 3.\nEnd.', ': List:\n:: Item 1.\n:: Item 2.\n:: Item 3.\n: End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Numbered list', 'List:\n# Item 1.\n# Item 2.\n# Item 3.\nEnd.', ': List:\n:# Item 1.\n:# Item 2.\n:# Item 3.\n: End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Bulleted list (add newline)', 'List:\n* Item 1.\n* Item 2.\n* Item 3.', ': List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: ~~~~\n', firstCommentReplyForm);
+  testWithData('Table', 'Table:\n{|\n| Text.\n|}\nEnd.', ': Table:\n: {|\n| Text.\n|}\n: End. ~~~~\n', firstCommentReplyForm);
+  testWithData('File markup', 'Start.\n[[File:Example.png]]\nEnd.', ': Start.\n: [[File:Example.png]]\n: End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Whole comment is a gallery tag', '<gallery>\nGallery.\n</gallery>', /: ?\n<gallery>\nGallery\.\n<\/gallery>\n: ~~~~\n/, firstCommentReplyForm);
+  testWithData('Line break', 'Start.\nEnd.', ': Start.<br>End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Line break, comment not indented', 'Start.\nEnd.', 'Start.<br>\nEnd. ~~~~\n', addSectionForm);
+  testWithData('Paragraph', 'Start.\n\nEnd.', ': Start.{{pb}}End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Paragraph, comment not indented', 'Start.\n\nEnd.', 'Start.\n\nEnd. ~~~~\n', addSectionForm);
+  testWithData('Many newlines', 'Start.\n\n\n\n\nEnd.', ': Start.{{pb}}End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Many newlines, comment not indented', 'Start.\n\n\n\n\nEnd.', 'Start.\n\n\n\n\nEnd. ~~~~\n', addSectionForm);
+  testWithData('Remove spaces', '  Start.  \n   \n  End.  ', /: Start\.\s*\{\{pb\}\}End\. ~~~~\n/, firstCommentReplyForm);
+  testWithData('Add section, last line starts with a space', 'Text.\n pre syntax.', 'Text.\n pre syntax.\n~~~~\n', addSectionForm);
+  testWithData('Add section, last line starts with a heading', 'Text.\n=== Heading ===', /Text\.(<br>)?\n=== Heading ===\n~~~~\n/, addSectionForm);
+  testWithData('Add section, horizontal line', 'Text.\n----\nEnd.', /Text\.(<br>)?\n----\nEnd. ~~~~\n/, addSectionForm);
+  testWithData('Extra tildes are removed', 'Text. ~~~~', ': Text. ~~~~\n', firstCommentReplyForm);
+  testWithData('Table in a vote', 'Table:\n{|\n| Text.\n|}\nEnd.', new Error('parse/numberedList-table'), voteForm);
+  testWithData('List in a vote', 'List:\n* Item 1.\n** Subitem 1.\n* Item 2.\nEnd.', '# List:<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>End. ~~~~\n', voteForm);
+});
+
+describe('Tags and templates', () => {
+  testWithData('Inline tag', 'Text.\n<span>Text.</span>', ': Text.<br><span>Text.</span> ~~~~\n', firstCommentReplyForm);
+  testWithData('Block tag', 'Text.\n<blockquote>Text.</blockquote>', ': Text.<blockquote>Text.</blockquote> ~~~~\n', firstCommentReplyForm);
+  testWithData('Whole comment in <small>', '<small>Text.</small>', ': {{smalldiv|1=Text. ~~~~}}\n', firstCommentReplyForm);
+  testWithData('Whole comment in <small>, horizontal lines', '<small>[[Link|Label]]\n|\n<nowiki>|</nowiki>\nEnd.</small>', ': {{smalldiv|1=[[Link|Label]]<br>{{!}}<br><nowiki>|</nowiki><br>End. ~~~~}}\n', firstCommentReplyForm);
+  testWithData('Whole comment in <small>, add section', '<small>Text.</small>', '<small>Text.</small> ~~~~\n', addSectionForm);
+  testWithData('Template', 'Quote:\n{{quote|Text.}}\nEnd.', ': Quote:{{quote|Text.}}End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Template, add section', '{{Template 1}}\n{{Template 2}}\nEnd.', '{{Template 1}}\n{{Template 2}}\nEnd. ~~~~\n', addSectionForm);
+  testWithData('Newlines in a template', '{{tq|1=\nLine 1.\n\nLine 2.\nLine 3.\n}}<br>Text.', ': {{tq|1=Line 1.{{pb}}Line 2.<br>Line 3.}}<br>Text. ~~~~\n', firstCommentReplyForm);
+  testWithData('Newlines in a template, add section', '{{tq|1=\n\nLine 1.\n\nLine 2.\nLine 3.\n}}<br>Text.', '{{tq|1=\n\nLine 1.\n\nLine 2.<br>\nLine 3.\n}}<br>Text. ~~~~\n', addSectionForm);
+  testWithData('List in a tag', 'Quoted list:\n<blockquote>\n* Item 1.\n** Subitem 1.\n* Item 2.\n</blockquote>\nEnd.', ': Quoted list:<blockquote><ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul></blockquote>End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Definition list in a tag', 'Quoted list:\n<blockquote>\n: Item 1.\n:: Subitem 1.\n: Item 2.\n</blockquote>\nEnd.', ': Quoted list:<blockquote><dl><dd>Item 1.<dl><dd>Subitem 1.</dd></dl></dd><dd>Item 2.</dd></dl></blockquote>End. ~~~~\n', firstCommentReplyForm);
+  testWithData('List in a template', 'Quoted list:\n{{quote|1=\n* Item 1.\n** Subitem 1.\n* Item 2.\n}}\nEnd.', ': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Gallery tag', 'Start.\n<gallery>\nGallery.\n</gallery>\nEnd.', ': Start.\n<gallery>\nGallery.\n</gallery>\n: End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Gallery tag in a vote', 'Start.\n<gallery>\nGallery.\n</gallery>\nEnd.', new Error('parse/numberedList'), voteForm);
+  testWithData('<syntaxhighlight>', 'Text.\n<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>', ': Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight> ~~~~\n', firstCommentReplyForm);
+  testWithData('<nowiki>', 'Text.\n<nowiki>  {{template}}  </nowiki>', ': Text.<br><nowiki>  {{template}}  </nowiki> ~~~~\n', firstCommentReplyForm);
+});
+
+describe('Alternative config', () => {
+  testWithData('Paragraph (no template)', 'Start.\n\nEnd.', ': Start.<br>End. ~~~~\n', firstCommentReplyForm, undefined, { paragraphTemplates: [] });
+  testWithData('Whole comment in <small> (no template)', '<small>Text.</small>', ': <small>Text. ~~~~</small>\n', firstCommentReplyForm, undefined, { smallDivTemplates: [] });
+  testWithData('Asterisk as indentation char, no space after', 'Text.', '*Text. ~~~~\n', replyInSectionForm, undefined, {
+    defaultIndentationChar: '*',
+    spaceAfterIndentationChars: false,
+    indentationCharMode: 'unify',
+  });
+  testWithData('Mimic indentation', 'Text.', ': Text. ~~~~\n', replyInSectionForm, undefined, { defaultIndentationChar: '*' });
+  testWithData('Colon as indentation because of a table', '{|\n| Text.\n|}', ': {|\n| Text.\n|} ~~~~\n', firstCommentReplyForm, undefined, { defaultIndentationChar: '*' });
+  testWithData('Colon as indentation because of a list', '* Item 1.\n* Item 2.\n* Item 3.\nEnd.', ':* Item 1.\n:* Item 2.\n:* Item 3.\n: End. ~~~~\n', firstCommentReplyForm, undefined, { defaultIndentationChar: '*' });
+});
