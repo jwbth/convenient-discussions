@@ -54,16 +54,23 @@ window.mw = {
   msg: (name) => messages[mw.config.get('wgUserLanguage')][name],
 };
 
-const testWithSettings = (
+function spacePad(text, length) {
+  return text + ' '.repeat(Math.max(0, length - text.length));
+}
+
+function testWithSettings(
   [date, timestampFormat, timezone, useUiTime, hideTimezone, nowDate, contentLanguage],
   expectedValue
-) => {
+) {
   const expectedText = expectedValue[0];
-  const label = (
-    `reformatTimestamp, format "${timestampFormat}", timezone "${timezone}"` +
+  const conditions = (
+    `${timestampFormat}, ${timezone}` +
     (useUiTime ? ', UI time' : '') +
-    (hideTimezone ? ', hide timezone' : '') +
-    ':   ' +
+    (hideTimezone ? ', hide timezone' : '')
+  );
+  const label = (
+    spacePad(conditions, 60) +
+    ' ' +
     (expectedText ? `"${expectedText}"` : expectedText)
   );
   test(label, () => {
@@ -114,7 +121,7 @@ const testWithSettings = (
       }
     }
   });
-};
+}
 
 initDayjs();
 
