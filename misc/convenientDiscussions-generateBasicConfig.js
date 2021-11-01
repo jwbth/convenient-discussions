@@ -82,8 +82,6 @@ mw.loader.using([
     Q10809044: 'archiveTop',
     Q11000627: 'hiddenArchiveTop',
     Q13033802: 'hiddenArchiveBottom',
-    Q5851882: 'hiddenBegin',
-    Q6147580: 'hiddenEnd',
     Q6854033: 'afdTop',
     Q6671179: 'afdBottom',
     Q5841554: 'outdent',
@@ -188,14 +186,12 @@ mw.loader.using([
     titles.discussionTop || [],
     titles.archiveTop || [],
     titles.hiddenArchiveTop || [],
-    titles.hiddenBegin || [],
     titles.afdTop || []
   );
   const closedEndTitles = [].concat(
     titles.closedEnd || [],
     titles.discussionBottom || [],
     titles.hiddenArchiveBottom || [],
-    titles.hiddenEnd || [],
     titles.afdBottom || []
   );
 

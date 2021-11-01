@@ -112,7 +112,6 @@ export default {
       'Discussion top',
       'Archive top',
       'Atop',
-      'Hidden begin',
       'DeletionHeader',
       'Delh',
       'Rfdh',
@@ -125,13 +124,11 @@ export default {
       'Discussion-bottom',
       'Archive bottom',
       'Abot',
-      'Hidden end',
       'DeletionFooter',
     ],
   ],
   closedDiscussionClasses: [
     'boilerplate',
-    'collapsibletemplate',
     'delh',
   ],
   beforeAuthorLinkParse: function (authorLink) {

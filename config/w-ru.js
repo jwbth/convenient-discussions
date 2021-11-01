@@ -318,7 +318,6 @@ export default {
 
   closedDiscussionClasses: [
     'ruwiki-closedDiscussion',
-    'NavFrame',
     'NavContent',
   ],
 

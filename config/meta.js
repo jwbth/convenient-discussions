@@ -105,15 +105,12 @@ export default {
       'Archive top',
       'Hidden archive top',
       'Hat',
-      'Hidden begin',
     ],
     [
       'Discussion bottom',
       'Archive bottom',
       'Hidden archive bottom',
       'Hab',
-      'HideF',
-      'Hidef',
     ],
   ],
   closedDiscussionClasses: [
