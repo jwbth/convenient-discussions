@@ -1620,12 +1620,12 @@ class CommentForm {
       .on('change', saveSessionEventHandler);
 
     this.commentInput.$input
-      .on('paste', async (e) => {
-        const clipboardData = e.originalEvent.clipboardData;
-        if (clipboardData.types.includes('text/html')) {
+      .on('paste drop', async (e) => {
+        const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
+        if (data.types.includes('text/html')) {
           e.preventDefault();
           const text = await getWikitextFromPaste(
-            clipboardData.getData('text/html'),
+            data.getData('text/html'),
             this.commentInput
           );
           insertText(this.commentInput, text);
