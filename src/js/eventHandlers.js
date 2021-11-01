@@ -11,14 +11,13 @@ import cd from './cd';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import { isCommentAnchor } from './timestamp';
-import { isInputFocused, isPageOverlayOn, keyCombination } from './util';
+import { isInputFocused, isPageOverlayOn, isPostponed, keyCombination, postpone } from './util';
 import { setContentColumnGlobals } from './boot';
 
 const beforeUnloadHandlers = {};
-const postponements = {};
 
 export function handleMouseMove(e) {
-  if (postponements.scroll || cd.state.isAutoScrollInProgress || isPageOverlayOn()) return;
+  if (isPostponed('scroll') || cd.state.isAutoScrollInProgress || isPageOverlayOn()) return;
 
   Comment.highlightHovered(e);
 }
@@ -128,16 +127,6 @@ export function handleGlobalKeyDown(e) {
   }
 }
 
-function waitBeforeHandling(name, callback, delay) {
-  if (postponements[name]) return;
-
-  postponements[name] = true;
-  setTimeout(() => {
-    postponements[name] = false;
-    callback();
-  }, delay);
-}
-
 /**
  * _For internal use._ Register seen comments, update the navigation panel's first unseen button,
  * and update the current section block.
@@ -160,7 +149,7 @@ export function handleScroll() {
   // wait before running, otherwise comments may be registered as seen after a press of Page
   // Down/Page Up. One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than
   // 200ms, but 200ms proved to be not enough, so we try 300ms.
-  waitBeforeHandling('scroll', actuallyHandle, 300);
+  postpone('scroll', actuallyHandle, 300);
 }
 
 /**
@@ -184,5 +173,5 @@ export function handleHashChange() {
 }
 
 export function handleSelectionChange() {
-  waitBeforeHandling('selectionChange', Comment.getSelectedComment, 200);
+  postpone('selectionChange', Comment.getSelectedComment, 200);
 }

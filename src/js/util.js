@@ -13,6 +13,7 @@ import { ElementsTreeWalker } from './treeWalker';
 import { brsToNewlines, hideSensitiveCode } from './wikitext';
 
 const scrollData = { offset: null };
+const postponements = {};
 let notificationsData = [];
 
 /**
@@ -1213,4 +1214,32 @@ export function getHigherNodeAndOffsetInSelection(selection) {
   const higherNode = isAnchorHigher ? selection.anchorNode : selection.focusNode;
   const higherOffset = isAnchorHigher ? selection.anchorOffset : selection.focusOffset;
   return { higherNode, higherOffset };
+}
+
+/**
+ * Postpone the execution of some function. If it is already postponed, don't create a second
+ * postponement.
+ *
+ * @param {string} label
+ * @param {Function} callback
+ * @param {number} delay
+ */
+export function postpone(label, callback, delay) {
+  if (postponements[label]) return;
+
+  postponements[label] = true;
+  setTimeout(() => {
+    postponements[label] = false;
+    callback();
+  }, delay);
+}
+
+/**
+ * Check whether some task is postponed.
+ *
+ * @param {string} label
+ * @returns {boolean}
+ */
+export function isPostponed(label) {
+  return postponements[label];
 }
