@@ -3,6 +3,7 @@ module.exports = {
     "browser": true,
     "es6": true,
     "node": true,
+    "jest": true,
   },
   "extends": "eslint:recommended",
   "globals": {
@@ -17,12 +18,11 @@ module.exports = {
     "expect": "readonly",
     "mw": "readonly",
     "require": "readonly",
-    "test": "readonly",
   },
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
     {
-      "files": ["./*.js", "src/tribute/**"],
+      "files": ["./*.js", "src/tribute/**", "*.test.js"],
       "rules": {
         "jsdoc/require-jsdoc": "off",
       },
