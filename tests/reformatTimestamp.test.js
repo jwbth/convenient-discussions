@@ -106,9 +106,12 @@ const testWithSettings = (
       jest.useFakeTimers('modern');
       jest.setSystemTime(new Date(nowDate));
     }
-    expect(adaptedReformatTimestamp(date)).toEqual(expectedValue);
-    if (nowDate) {
-      jest.setSystemTime(originalDate);
+    try {
+      expect(adaptedReformatTimestamp(date)).toEqual(expectedValue);
+    } finally {
+      if (nowDate) {
+        jest.setSystemTime(originalDate);
+      }
     }
   });
 };
