@@ -2958,7 +2958,7 @@ class Comment extends CommentSkeleton {
         let startIndexShift = s.length;
 
         // We could just throw an error here, but instead will try to fix the markup.
-        if (!before && code.includes('\n') && adjustedChars.endsWith('#')) {
+        if (!before && /\n[:*]#/.test(code) && adjustedChars.endsWith('#')) {
           adjustedChars = adjustedChars.slice(0, -1);
           originalIndentationChars = adjustedChars;
 
@@ -2975,7 +2975,11 @@ class Comment extends CommentSkeleton {
               ::# Item 2.
               :: End of the comment. [signature]
 
-            The first is incorrect, and we need to add additional indentation in that case.
+            The first is incorrect, and we need to add additional indentation in that case. Example:
+            https://en.wikipedia.org/wiki/Wikipedia_talk:No_Nazis/Archive_1#202101051013_Hob_Gadling.
+            But make sure replying to
+            https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#No_intro_text,_empty_line_before_the_first_vote
+            works correctly.
            */
           if (adjustedChars.length < this.level) {
             adjustedChars += ':';
