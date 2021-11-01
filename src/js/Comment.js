@@ -3737,7 +3737,12 @@ class Comment extends CommentSkeleton {
       if ($lastOfTarget.closest('dl, ul, ol').is('ol')) {
         $outerWrapper.addClass('cd-skip');
         const $next = $outerWrapper.next();
-        const index = [...$outerWrapper.parent().children(':not(.cd-skip)')].indexOf($next.get(0));
+
+        // Layout bug where not all children are LIs:
+        // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Евгений_Юрьев#Против
+        const index = [...$outerWrapper.parent().children('li:not(.cd-skip)')]
+          .indexOf($next.get(0));
+
         $next.attr('value', index + 1);
       }
     } else if ($wrappingList) {
