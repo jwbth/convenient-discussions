@@ -177,7 +177,6 @@
   "cf-error-findplace": "Couldn't find a proper place in the code to insert the comment into.",
   "cf-error-commentlinks-commentnotfound": "Couldn't find the comment with ID $1, linked from your comment, on the page.",
   "cf-error-numberedlist": "It's impossible to form the comment correctly without distorting the numbered list markup.",
-  "cf-error-numberedlist-list": "Remove lists from the comment.",
   "cf-error-numberedlist-table": "Remove tables from the comment.",
   "cf-error-delete-repliestocomment": "Can't delete the comment because it has replies.",
   "cf-error-delete-repliesinsection": "Can't delete the section because it has replies.",

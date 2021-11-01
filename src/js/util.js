@@ -472,12 +472,13 @@ export function mergeRegexps(arr) {
  * @param {RegExp} regexp
  * @param {string[]} hidden
  * @param {string} type Should consist only of alphanumeric characters.
+ * @param {boolean} [useGroups=false] Use groups in the regexp as the `preText` and `textToHide`
+ *   parameters.
  * @returns {string}
  */
-export function hideText(text, regexp, hidden, type) {
+export function hideText(text, regexp, hidden, type, useGroups = false) {
   return text.replace(regexp, (s, preText, textToHide) => {
-    // If there are no groups, the offset is the second argument.
-    if (typeof preText === 'number') {
+    if (!useGroups) {
       preText = null;
       textToHide = null;
     }
@@ -1192,8 +1193,8 @@ export async function getWikitextFromSelection(input) {
 
 export async function getWikitextFromPaste(originalHtml, input) {
   let html = originalHtml
-    .replace(/^[\s\S]*<!-- *StartFragment *-->/, '')
-    .replace(/<!-- *EndFragment *-->[\s\S]*$/, '');
+    .replace(/^[^]*<!-- *StartFragment *-->/, '')
+    .replace(/<!-- *EndFragment *-->[^]*$/, '');
   const div = document.createElement('div');
   div.innerHTML = html;
   [...div.querySelectorAll('[style]')].forEach((el) => {

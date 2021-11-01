@@ -402,9 +402,10 @@ export function decodeHtmlEntities(s) {
  * @param {number} [markerLength] Instead of putting markers in place of templates, fill the space
  *   that the first met template occupies with spaces, and put the specified number of marker
  *   characters at the first positions.
+ * @param {Function} [handler] Function that processes the template code.
  * @returns {HideSensitiveCodeReturn}
  */
-export function hideTemplatesRecursively(code, hidden, markerLength) {
+export function hideTemplatesRecursively(code, hidden, markerLength, handler) {
   let pos = 0;
   const stack = [];
   do {
@@ -428,7 +429,10 @@ export function hideTemplatesRecursively(code, hidden, markerLength) {
         right = code.length;
       }
       right += 2;
-      const template = code.substring(left, right);
+      let template = code.substring(left, right);
+      if (handler) {
+        template = handler(template);
+      }
       const replacement = markerLength === undefined ?
         '\x01' + hidden.push(template) + '_template\x02' :
         ('\x01'.repeat(markerLength) + ' '.repeat(template.length - markerLength - 1) + '\x02');
@@ -444,35 +448,30 @@ export function hideTemplatesRecursively(code, hidden, markerLength) {
  * Replace code, that should not be modified when processing it, with placeholders.
  *
  * @param {string} code
+ * @param {Function} [templateHandler]
  * @returns {HideSensitiveCodeReturn}
  */
-export function hideSensitiveCode(code) {
+export function hideSensitiveCode(code, templateHandler) {
   let hidden = [];
 
-  const hide = (regexp, type) => {
-    code = hideText(code, regexp, hidden, type);
+  const hide = (regexp, type, useGroups) => {
+    code = hideText(code, regexp, hidden, type, useGroups);
   };
   const hideTags = (args, type) => {
-    args.forEach((arg) => {
-      hide(new RegExp(`<${arg}(?: [^>]+)?>[\\s\\S]+?<\\/${arg}>`, 'gi'), type);
-    });
+    hide(generateTagsRegexp(args, false), type);
   };
 
   // Taken from
   // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
   const hideTemplates = () => {
-    // Simple regexp for hiding templates that have no nested ones.
-    hide(/\{\{(?:[^{]\{?)+?\}\}/g, 'template');
-    ({code, hidden} = hideTemplatesRecursively(code, hidden));
+    ({code, hidden} = hideTemplatesRecursively(code, hidden, undefined, templateHandler));
   };
 
   hideTags(['pre', 'source', 'syntaxhighlight'], 'block');
   hideTags(['gallery', 'poem'], 'gallery');
   hideTags(['nowiki'], 'inline');
   hideTemplates();
-
-  // Tables
-  hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table');
+  hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true);
 
   return { code, hidden };
 }
