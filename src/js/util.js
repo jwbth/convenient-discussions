@@ -523,11 +523,8 @@ export function unhideText(text, hidden, type) {
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
 export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
-  if (
-    switchToAbsolute &&
-    cd.g.$toc.length &&
-    cd.g.$toc.offset().top + cd.g.$toc.outerHeight() > scrollY
-  ) {
+  // The viewport has the TOC bottom or is above it.
+  if (switchToAbsolute && cd.g.$toc.length && scrollY < getTocBottomPosition()) {
     saveScrollPosition(switchToAbsolute.saveTocHeight);
   } else {
     scrollData.element = null;
@@ -637,6 +634,16 @@ export function changeElementType(element, newType) {
 }
 
 /**
+ * Get the bottom offset of the table of contents.
+ *
+ * @returns {number}
+ * @private
+ */
+ function getTocBottomPosition() {
+  return cd.g.$toc.offset().top + cd.g.$toc.outerHeight();
+}
+
+/**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
  *
  * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
@@ -649,7 +656,9 @@ export function saveScrollPosition(saveTocHeight = true) {
     cd.g.$toc.length &&
     !cd.g.isTocFloating &&
     window.scrollY !== 0 &&
-    window.scrollY + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
+
+    // There is some content below the TOC in the viewport.
+    getTocBottomPosition() < window.scrollY + window.innerHeight
   ) ?
     cd.g.$toc.outerHeight() :
     null;
@@ -1072,6 +1081,14 @@ export function closeNotifications(smooth = true) {
   notificationsData = [];
 }
 
+/**
+ * Convert a fragment of DOM into wikitext.
+ *
+ * @param {Element} div
+ * @param {external:OO.ui.TextInputWidget} input
+ * @returns {Promise.<string>}
+ * @private
+ */
 async function domToWikitext(div, input) {
   // Get all styles from classes applied. If HTML is retrieved from a paste, this is not needed
   // (styles are added to elements themselves in the text/html format), but won't hurt.
@@ -1184,6 +1201,12 @@ async function domToWikitext(div, input) {
   return wikitext ?? div.innerText;
 }
 
+/**
+ * Given a selection, get its content as wikitext.
+ *
+ * @param {external:OO.ui.TextInputWidget} input
+ * @returns {string}
+ */
 export async function getWikitextFromSelection(input) {
   const contents = window.getSelection().getRangeAt(0).cloneContents();
   const div = document.createElement('div');
@@ -1191,6 +1214,13 @@ export async function getWikitextFromSelection(input) {
   return await domToWikitext(div, input);
 }
 
+/**
+ * Given the HTML of a paste, get its content as wikitext.
+ *
+ * @param {string} originalHtml
+ * @param {external:OO.ui.TextInputWidget} input
+ * @returns {string}
+ */
 export async function getWikitextFromPaste(originalHtml, input) {
   let html = originalHtml
     .replace(/^[^]*<!-- *StartFragment *-->/, '')
@@ -1203,6 +1233,14 @@ export async function getWikitextFromPaste(originalHtml, input) {
   return await domToWikitext(div, input);
 }
 
+/**
+ * Given a {@link https://developer.mozilla.org/en-US/docs/Web/API/Selection selection}, get a
+ * node and offset that are higher in the document, regardless if they belong to an anchor node or
+ * focus node.
+ *
+ * @param {Selection} selection
+ * @returns {object}
+ */
 export function getHigherNodeAndOffsetInSelection(selection) {
   if (!selection.anchorNode) {
     return null;
