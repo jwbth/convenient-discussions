@@ -517,55 +517,74 @@ export function unhideText(text, hidden, type) {
  * Save the scroll position relative to the first element in the viewport looking from the top of
  * the page.
  *
+ * @param {?object} [switchToAbsolute=null] If an object with the `saveTocHeight` property and the
+ *   viewport is above the bottom of the table of contents, then use
+ *   {@link module:util.saveScrollPosition} (this allows for better precision).
  * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
  */
-export function saveRelativeScrollPosition(scrollY = window.scrollY) {
-  scrollData.element = null;
-  scrollData.elementTop = null;
-  scrollData.touchesBottom = false;
-  scrollData.offsetBottom = (
-    document.documentElement.scrollHeight - (scrollY + window.innerHeight)
-  );
+export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
+  if (
+    switchToAbsolute &&
+    cd.g.$toc.length &&
+    cd.g.$toc.offset().top + cd.g.$toc.outerHeight() > scrollY
+  ) {
+    saveScrollPosition(switchToAbsolute.saveTocHeight);
+  } else {
+    scrollData.element = null;
+    scrollData.elementTop = null;
+    scrollData.touchesBottom = false;
+    scrollData.offsetBottom = (
+      document.documentElement.scrollHeight - (scrollY + window.innerHeight)
+    );
 
-  // 100 accounts for various content moves by scripts running on the page (like HotCat that may
-  // add an empty category list).
-  if (scrollData.offsetBottom < 100) {
-    scrollData.touchesBottom = true;
-  } else if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-    const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-    while (true) {
-      const node = treeWalker.currentNode;
+    // 100 accounts for various content moves by scripts running on the page (like HotCat that may
+    // add an empty category list).
+    if (scrollData.offsetBottom < 100) {
+      scrollData.touchesBottom = true;
+    } else if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
+      const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
+      while (true) {
+        const node = treeWalker.currentNode;
 
-      if (!isInline(node) && !cd.g.floatingElements.includes(node)) {
-        const rect = node.getBoundingClientRect();
-        if (rect.bottom >= 0 && rect.height !== 0) {
-          scrollData.element = node;
-          scrollData.elementTop = rect.top;
-          if (treeWalker.firstChild()) {
-            continue;
-          } else {
-            break;
+        if (!isInline(node) && !cd.g.floatingElements.includes(node)) {
+          const rect = node.getBoundingClientRect();
+          if (rect.bottom >= 0 && rect.height !== 0) {
+            scrollData.element = node;
+            scrollData.elementTop = rect.top;
+            if (treeWalker.firstChild()) {
+              continue;
+            } else {
+              break;
+            }
           }
         }
+        if (!treeWalker.nextSibling()) break;
       }
-      if (!treeWalker.nextSibling()) break;
     }
   }
 }
 
 /**
  * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
+ *
+ * @param {boolean} [switchToAbsolute=false] Restore the absolute position using
+ *   {@link module:util.restoreScrollPosition} if {@link module:util.saveScrollPosition} was
+ *   previously used for saving the position.
  */
-export function restoreRelativeScrollPosition() {
-  if (scrollData.touchesBottom && window.scrollY !== 0) {
-    const y = (
-      document.documentElement.scrollHeight - window.innerHeight - scrollData.offsetBottom
-    );
-    window.scrollTo(0, y);
-  } else if (scrollData.element) {
-    const rect = scrollData.element.getBoundingClientRect();
-    if (getVisibilityByRects(rect)) {
-      window.scrollTo(0, window.scrollY + rect.top - scrollData.elementTop);
+export function restoreRelativeScrollPosition(switchToAbsolute = false) {
+  if (switchToAbsolute && scrollData.offset !== null) {
+    restoreScrollPosition();
+  } else {
+    if (scrollData.touchesBottom && window.scrollY !== 0) {
+      const y = (
+        document.documentElement.scrollHeight - window.innerHeight - scrollData.offsetBottom
+      );
+      window.scrollTo(0, y);
+    } else if (scrollData.element) {
+      const rect = scrollData.element.getBoundingClientRect();
+      if (getVisibilityByRects(rect)) {
+        window.scrollTo(0, window.scrollY + rect.top - scrollData.elementTop);
+      }
     }
   }
 }
@@ -619,15 +638,17 @@ export function changeElementType(element, newType) {
 
 /**
  * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
+ *
+ * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
+ *   when visits are loaded after a page reload.
  */
-export function saveScrollPosition() {
+export function saveScrollPosition(saveTocHeight = true) {
   scrollData.offset = window.scrollY;
   scrollData.tocHeight = (
+    (saveTocHeight || scrollData.tocHeight) &&
     cd.g.$toc.length &&
     !cd.g.isTocFloating &&
     window.scrollY !== 0 &&
-
-    // There is some content below the TOC in the viewport.
     window.scrollY + window.innerHeight > cd.g.$toc.offset().top + cd.g.$toc.outerHeight()
   ) ?
     cd.g.$toc.outerHeight() :
@@ -636,8 +657,11 @@ export function saveScrollPosition() {
 
 /**
  * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
+ *
+ * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
+ *   after page reloads.
  */
-export function restoreScrollPosition() {
+export function restoreScrollPosition(resetTocHeight = true) {
   if (scrollData.offset === null) return;
 
   if (scrollData.tocHeight) {
@@ -646,7 +670,9 @@ export function restoreScrollPosition() {
   window.scrollTo(0, scrollData.offset);
 
   scrollData.offset = null;
-  scrollData.tocHeight = null;
+  if (resetTocHeight) {
+    scrollData.tocHeight = null;
+  }
 }
 
 /**

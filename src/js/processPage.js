@@ -922,7 +922,7 @@ async function processVisits(visitsRequest, passedData) {
     Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
 
     const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
-    toc.addNewComments(Comment.groupBySection(unseenComments));
+    toc.addNewComments(Comment.groupBySection(unseenComments), passedData);
   }
 
   // TODO: keep the scrolling position even if adding the comment count moves the content.
@@ -991,7 +991,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
 
   if (cd.state.isFirstRun) {
     findFloatingAndHiddenElements();
-    saveRelativeScrollPosition(cachedScrollY);
+    saveRelativeScrollPosition(null, cachedScrollY);
   }
 
   cd.debug.stopTimer('preparations');
