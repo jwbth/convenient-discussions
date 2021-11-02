@@ -223,7 +223,7 @@ export default {
   addNewSections(sections) {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
-    saveRelativeScrollPosition({ saveTocHeight: true });
+    saveRelativeScrollPosition();
 
     cd.g.$toc
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
@@ -335,7 +335,7 @@ export default {
       currentTree.splice(section.tocLevel);
     });
 
-    restoreRelativeScrollPosition(true);
+    restoreRelativeScrollPosition();
   },
 
   /**
@@ -343,26 +343,14 @@ export default {
    * background) to the table of contents.
    *
    * @param {Map} commentsBySection
-   * @param {object} passedData
    */
-  addNewComments(commentsBySection, passedData) {
+  addNewComments(commentsBySection) {
     const firstComment = commentsBySection.values().next().value?.[0];
     if (!cd.settings.modifyToc || !cd.g.$toc.length || !firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
 
-    const saveTocHeight = Boolean(
-      // On first load
-      !cd.state.hasPageBeenReloaded ||
-
-      // When unrendered (in gray) comments are added
-      !areCommentsRendered ||
-
-      // When the comment or section is opened by a link from the TOC
-      passedData.commentAnchor ||
-      passedData.sectionAnchor
-    );
-    saveRelativeScrollPosition({ saveTocHeight });
+    saveRelativeScrollPosition();
 
     cd.g.$toc
       .find('.cd-toc-notRenderedCommentList')
@@ -512,6 +500,6 @@ export default {
       target.parentNode.insertBefore(ul, target.nextSibling);
     });
 
-    restoreRelativeScrollPosition(true);
+    restoreRelativeScrollPosition();
   },
 };
