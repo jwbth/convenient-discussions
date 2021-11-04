@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
-import { ElementsTreeWalker } from './treeWalker';
-import { unique } from './util';
+import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
+import { isInline, unique } from './util';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -35,26 +35,33 @@ class CommentSkeleton {
       precedingHeadingElement = targets[signatureIndex - 1].element;
     }
 
+    /**
+     * _For internal use._ Comment signature element.
+     *
+     * @type {Element|external:Element}
+     */
+    this.signatureElement = signature.element;
+
     // Identify all comment nodes and save a path to them.
-    let parts = this.parser.collectParts(signature.element, precedingHeadingElement);
+    this.collectParts(precedingHeadingElement);
 
     // Remove parts contained by other parts.
-    parts = this.parser.removeNestedParts(parts);
+    this.removeNestedParts();
 
     // We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
     // can't get a bounding client rectangle for text nodes, can't specify margins for them etc.).
-    parts = this.parser.encloseInlineParts(parts, signature.element);
+    this.encloseInlineParts();
 
     // At this point, we can safely remove unnecessary nodes.
-    parts = this.parser.filterParts(parts, signature.element);
+    this.filterParts();
 
-    parts.reverse();
+    this.parts.reverse();
 
     // dd, li instead of dl, ul, ol where appropriate.
-    parts = this.parser.replaceListsWithItems(parts, signature.element);
+    this.replaceListsWithItems();
 
     // Wrap ol into div or dl & dd if the comment starts with numbered list items.
-    parts = this.parser.wrapNumberedList(parts, signature.element);
+    this.wrapNumberedList();
 
     /**
      * Comment ID. Same as the comment's index in
@@ -84,13 +91,6 @@ class CommentSkeleton {
      * @type {string}
      */
     this.authorName = signature.authorName;
-
-    /**
-     * _For internal use._ Comment signature element.
-     *
-     * @type {Element|external:Element}
-     */
-    this.signatureElement = signature.element;
 
     /**
      * _For internal use._ Comment timestamp element.
@@ -135,14 +135,6 @@ class CommentSkeleton {
      * @type {boolean}
      */
     this.isUnsigned = signature.isUnsigned;
-
-    /**
-     * Comment parts. They are not guaranteed to match the elements after some point (due to
-     * {@link CommentSkeleton#wrapHighlightables}, {@link CommentSkeleton#fixEndLevel}) calls.
-     *
-     * @type {object[]}
-     */
-    this.parts = parts;
 
     /**
      * Comment's elements.
@@ -192,6 +184,788 @@ class CommentSkeleton {
     this.isOutdented = false;
 
     signature.comment = this;
+  }
+
+  /**
+   * Get nodes to start the traversal from.
+   *
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @returns {Array.<object[], Element>}
+   * @private
+   */
+   getStartNodes(treeWalker) {
+    const parts = [];
+    let firstForeignComponentAfter;
+
+    /*
+      The code:
+
+        * Smth. [signature]
+        ** Smth.
+        *: Smth. [signature]
+
+      or
+
+        ** Smth. [signature]
+        ** Smth.
+        *: Smth. [signature]
+
+      produces a DOM where the second line is not a part of the first comment, but there is only
+      the first comment's signature in the DOM subtree related to the second line. We need to
+      acknowledge there is a foreign not inline element here to be able to tell comment boundaries
+      accurately (inline elements in most cases are continuations of the same comment).
+    */
+    while (!firstForeignComponentAfter) {
+      while (!treeWalker.currentNode.nextSibling && treeWalker.parentNode());
+      if (!treeWalker.nextSibling()) break;
+      if (!isInline(treeWalker.currentNode, true)) {
+        firstForeignComponentAfter = treeWalker.currentNode;
+      }
+    }
+
+    // As an optimization, avoid adding every text node of the comment to the array of its parts if
+    // possible. Add their common container instead.
+    if (
+      (
+        firstForeignComponentAfter &&
+        this.signatureElement.parentNode.contains(firstForeignComponentAfter)
+      ) ||
+
+      // Cases when the comment has no wrapper that contains only that comment (for example,
+      // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
+      // The second parameter of getElementsByClassName() is an optimization for the worker context.
+      this.signatureElement.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
+
+      !this.isElementEligible(this.signatureElement.parentNode, treeWalker, 'start')
+    ) {
+      // Collect inline parts after the signature
+      treeWalker.currentNode = this.signatureElement;
+      while (treeWalker.nextSibling()) {
+        if (isInline(treeWalker.currentNode, true)) {
+          parts.push({
+            node: treeWalker.currentNode,
+            isTextNode: treeWalker.currentNode.nodeType === Node.TEXT_NODE,
+            isHeading: false,
+            hasCurrentSignature: false,
+            hasForeignComponents: false,
+            step: 'start',
+          });
+        } else {
+          break;
+        }
+      }
+      parts.reverse();
+
+      treeWalker.currentNode = this.signatureElement;
+    } else {
+      treeWalker.currentNode = this.signatureElement.parentNode;
+    }
+    parts.push({
+      node: treeWalker.currentNode,
+      isTextNode: false,
+      isHeading: false,
+      hasCurrentSignature: true,
+      hasForeignComponents: false,
+      step: 'start',
+    });
+
+    return [parts, firstForeignComponentAfter];
+  }
+
+  /**
+   * Determine whether the provided element is a cell of a table containing multiple signatures.
+   *
+   * @param {Element|external:Element} element
+   * @returns {boolean}
+   * @private
+   */
+  isCellOfMultiCommentTable(element) {
+    if (!['TD', 'TH'].includes(element.tagName)) {
+      return false;
+    }
+    let table;
+    for (let n = element; !table && n !== cd.g.rootElement; n = n.parentNode) {
+      if (n.tagName === 'TABLE') {
+        table = n;
+      }
+    }
+    return !table || table.getElementsByClassName('cd-signature', 2).length > 1;
+  }
+
+  /**
+   * Check if an element is eligible to be a comment part.
+   *
+   * @param {Element|external:Element} element
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @param {string} step
+   * @returns {boolean}
+   * @private
+   */
+  isElementEligible(element, treeWalker, step) {
+    return !(
+      element === treeWalker.root ||
+      (
+        this.parser.foreignComponentClasses.some((name) => element.classList.contains(name)) ||
+
+        // Talk page message box
+        (step !== 'up' && cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox'))
+      ) ||
+
+      element.getAttribute('id') === 'toc' ||
+
+      // Seems to be the best option given pages like
+      // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop. DLs with a
+      // single DT that are not parts of comments are filtered out in Parser#filterParts.
+      element.tagName === 'DT' ||
+
+      this.isCellOfMultiCommentTable(element) ||
+
+      // Horizontal lines sometimes separate different section blocks.
+      (
+        element.tagName === 'HR' &&
+        element.previousElementSibling &&
+        this.context.getElementByClassName(element.previousElementSibling, 'cd-signature')
+      ) ||
+
+      (
+        cd.g.pageHasOutdents &&
+        this.context.getElementByClassName(element, cd.config.outdentClass)
+      ) ||
+
+      cd.config.checkForCustomForeignComponents?.(element, this.context)
+    );
+  }
+
+  /**
+   * Check whether the element is a gallery created by the `<gallery` tag.
+   *
+   * @param {Element|external:Element} element
+   * @returns {boolean}
+   */
+  isGallery(element) {
+    return element.tagName === 'UL' && element.classList.contains('gallery');
+  }
+
+  /**
+   * Check whether the element is a node that contains introductory text (or other foreign entity,
+   * like a gallery) despite being a list element.
+   *
+   * @param {Element|external:Element} element
+   * @param {boolean} checkNextElement
+   * @param {boolean} [lastPartNode]
+   * @returns {boolean}
+   * @private
+   */
+  isIntroList(element, checkNextElement, lastPartNode) {
+    const tagName = element.tagName;
+    if (!['DL', 'UL', 'OL'].includes(tagName)) {
+      return false;
+    }
+    const previousElement = element.previousElementSibling;
+    const nextElement = element.nextElementSibling;
+    let result = (
+      (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
+
+      // Cases like the first comment at
+      // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Форум/Кандидаты#Abiyoyo.
+      // But don't affect cases like the first comment at
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#List_inside_a_comment.
+      //
+      (
+        ['DL', 'UL'].includes(tagName) &&
+        previousElement &&
+        /^H[1-6]$/.test(previousElement.tagName) &&
+        nextElement &&
+        !['DL', 'OL'].includes(nextElement.tagName) &&
+
+        // Helps at https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Общий/2019/11#201911201924_Vcohen
+        !this.isPartOfList(lastPartNode, true) &&
+
+        // Helps at
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061810_Example
+        !this.context.getElementByClassName(element, 'cd-signature')
+      ) ||
+
+      this.isGallery(element)
+    );
+
+    // "tagName !== 'OL'" helps in cases like
+    // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005161120_Example.
+    if (checkNextElement && !result && nextElement && tagName !== 'OL') {
+      // Cases like https://en.wikipedia.org/?diff=1042059387 where, due to use of `::` in reply to
+      // a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the SPECIFICO's
+      // comment. (Currently, to test this, you will need to remove timestamps from the SPECIFICO's
+      // comment.)
+      const elementLevelsPassed = this.getTopElementsWithText(element).levelsPassed;
+      const nextElementLevelsPassed = this.getTopElementsWithText(nextElement).levelsPassed;
+      result = (
+        nextElementLevelsPassed > elementLevelsPassed ||
+
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Joint_statements
+        (
+          elementLevelsPassed === 1 &&
+          nextElementLevelsPassed === elementLevelsPassed &&
+          element[this.context.childElementsProp].length > 1 &&
+          tagName !== nextElement.tagName
+        )
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * Given a comment part (a node), tell if it is a part of a list.
+   *
+   * @param {Element|external:Element} node
+   * @param {boolean} definitionList
+   * @returns {boolean}
+   */
+  isPartOfList(node, definitionList) {
+    /*
+      * The checks for DD help in cases like
+        https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
+        * A complex case where it messes up things:
+        https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel
+      * The check for DL helps in cases like
+        https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
+        (see the original HTML source)
+     */
+    const tagNames = ['DD', 'DL'];
+    if (!definitionList) {
+      tagNames.push('LI', 'UL');
+    }
+    return node && (tagNames.includes(node.tagName) || tagNames.includes(node.parentNode.tagName));
+  }
+
+  /**
+   * Identify cases like:
+   *
+   * ```
+   * === Section title ===
+   * Section introduction. Not a comment.
+   * # Vote. [signature]
+   * ```
+   *
+   * and similar. Without treatment of such cases, the section introduction would be considered a
+   * part of the comment. The same may happen inside a discussion thread (often because one of the
+   * users didn't sign).
+   *
+   * @param {object} options
+   * @param {string} options.step
+   * @param {number} options.stage
+   * @param {Element|external:Element} options.node
+   * @param {Element|external:Element} options.nextNode
+   * @param {Element|external:Element} [options.lastPartNode]
+   * @param {Element|external:Element} [options.previousPart]
+   * @returns {boolean}
+   */
+  isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
+    // Only the first stage code covers cases when there is only one comment part eventually (a list
+    // item, for example), and only the second stage code fully covers comments indented with ":").
+
+    return (
+      step === 'back' &&
+      (!previousPart || previousPart.step === 'up') &&
+      (
+        ['UL', 'OL'].includes(nextNode.tagName) ||
+
+        /*
+          Including DLs at stage 1 is dangerous because comments like this may be broken:
+
+            : Comment beginning.
+            <blockquote>Some quote.</blockquote>
+            : Comment ending. [signature]
+
+          But it's important that we do it some way because of the issue with discussions like
+          https://ru.wikipedia.org/wiki/Обсуждение:Иванов,_Валентин_Дмитриевич#Источники where
+          somebody responds in the middle of someone's comment, which is a not so uncommon
+          pattern.
+         */
+        (
+          nextNode.tagName === 'DL' &&
+          (
+            stage === 2 ||
+            (
+              nextNode.parentNode !== cd.g.rootElement &&
+              nextNode.parentNode.parentNode !== cd.g.rootElement
+            )
+          )
+        )
+      ) &&
+
+      // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602#202002071806_G2ii2g.
+      // Supplying `true` as the second parameter to this.isIntroList() at stage 1 is costly so we
+      // do it only at stage 2.
+      !(
+        (
+          ['DL', 'UL', 'OL'].includes(node.tagName) &&
+          !this.isIntroList(node, stage === 2, lastPartNode)
+        ) ||
+        (
+          // Note: Text nodes are filtered out as of stage 2.
+          node.nodeType === Node.TEXT_NODE &&
+          node.previousSibling &&
+          ['DL', 'UL', 'OL'].includes(node.previousSibling.tagName) &&
+          !this.isIntroList(node.previousSibling, false, lastPartNode)
+        ) ||
+        (lastPartNode && !this.isPartOfList(lastPartNode, false))
+      ) &&
+
+      // Don't confuse the comment with a list at the end of the comment.
+      !(
+        ['UL', 'OL'].includes(nextNode.tagName) &&
+        nextNode[this.parser.context.childElementsProp].length > 1 &&
+        !nextNode[this.parser.context.childElementsProp][0].contains(this.signatureElement)
+      )
+    );
+  }
+
+  /**
+   * Traverse the DOM, collecting comment parts.
+   *
+   * @param {object[]} parts
+   * @param {ElementsAndTextTreeWalker} treeWalker
+   * @param {Element|external:Element} firstForeignComponentAfter
+   * @param {Element|external:Element} precedingHeadingElement
+   * @returns {object[]}
+   * @private
+   */
+  traverseDom(parts, treeWalker, firstForeignComponentAfter, precedingHeadingElement) {
+    // 500 seems to be a safe enough value in case of any weird reasons for an infinite loop.
+    for (let i = 0; i < 500; i++) {
+      /*
+        `step` may be:
+          * "start" (parts added at the beginning)
+          * "back" (go to the previous sibling)
+          * "up" (go to the parent element)
+          * "dive" (recursively go to the last not inline/text child)
+          * "replaced" (obtained as a result of manipulations after node traversal)
+      */
+      let step;
+      const previousPart = parts[parts.length - 1];
+
+      if (!previousPart.hasCurrentSignature && previousPart.hasForeignComponents) {
+        /*
+          Here we dive to the bottom of the element subtree to find parts of the _current_ comment
+          that may be present. This happens with code like this:
+
+            :* Smth. [signature]
+            :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
+                          signature above. -->
+            :: Smth. [signature] <!-- The comment part we are at. -->
+        */
+
+        // Get the last not inline child of the current node.
+        let parentNode;
+        while ((parentNode = treeWalker.currentNode) && treeWalker.lastChild()) {
+          while (
+            treeWalker.currentNode.nodeType === Node.TEXT_NODE &&
+            !treeWalker.currentNode.textContent.trim() &&
+            treeWalker.previousSibling()
+          );
+          if (isInline(treeWalker.currentNode, true)) {
+            treeWalker.currentNode = parentNode;
+            break;
+          }
+          step = 'dive';
+        }
+        if (step !== 'dive') break;
+      } else if (treeWalker.previousSibling()) {
+        step = 'back';
+      } else {
+        if (!treeWalker.parentNode()) break;
+        step = 'up';
+      }
+
+      const node = treeWalker.currentNode;
+
+      const isIntro = this.isIntro({
+        step,
+        stage: 1,
+        node,
+        nextNode: previousPart.node,
+        previousPart,
+      });
+      if (isIntro) break;
+
+      const isTextNode = node.nodeType === Node.TEXT_NODE;
+      let isHeading = null;
+      let hasCurrentSignature = null;
+      let hasForeignComponents = null;
+      if (!isTextNode) {
+        if (!this.isElementEligible(node, treeWalker, step)) break;
+
+        isHeading = /^H[1-6]$/.test(node.tagName);
+        hasCurrentSignature = node.contains(this.signatureElement);
+
+        // The second parameter of getElementsByClassName() is an optimization for the worker
+        // context.
+        const signatureCount = node
+          .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
+          .length;
+
+        hasForeignComponents = (
+          signatureCount - Number(hasCurrentSignature) > 0 ||
+          (
+            firstForeignComponentAfter &&
+            node.contains(firstForeignComponentAfter) &&
+
+            // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
+            node.tagName !== 'TABLE'
+          ) ||
+
+          // A heading can be wrapped into an element, like at
+          // https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
+          (
+            precedingHeadingElement &&
+            node !== precedingHeadingElement &&
+            node.contains(precedingHeadingElement)
+          )
+        );
+
+        // This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
+        // drop it.
+        if (!hasCurrentSignature) {
+          // A trace from `~~~` at the end of the line most likely means an incorrectly signed
+          // comment.
+          if (
+            !isInline(node) &&
+            cd.config.signatureEndingRegexp?.test(node.textContent) &&
+            !this.parser.elementsToExclude.some((el) => el.contains(node))
+          ) {
+            break;
+          }
+        }
+      }
+
+      // We save all data related to the nodes on the path to reuse it.
+      parts.push({ node, isTextNode, isHeading, hasCurrentSignature, hasForeignComponents, step });
+
+      if (isHeading) break;
+    }
+
+    return parts;
+  }
+
+  /**
+   * _For internal use._ Collect the parts of the comment given a signature element.
+   *
+   * @param {Element|external:Element} precedingHeadingElement
+   */
+  collectParts(precedingHeadingElement) {
+    const treeWalker = new ElementsAndTextTreeWalker(this.signatureElement);
+    let [parts, firstForeignComponentAfter] = this.getStartNodes(treeWalker);
+    parts = this.traverseDom(
+      parts,
+      treeWalker,
+      firstForeignComponentAfter,
+      precedingHeadingElement
+    );
+
+    /**
+     * Comment parts. They are not guaranteed to match the elements after some point (due to
+     * {@link CommentSkeleton#wrapHighlightables}, {@link CommentSkeleton#fixEndLevel}) calls.
+     *
+     * @type {object[]}
+     */
+    this.parts = parts;
+  }
+
+  /**
+   * _For internal use._ Remove comment parts that are inside of other parts.
+   */
+  removeNestedParts() {
+    for (let i = this.parts.length - 1; i >= 0; i--) {
+      const part = this.parts[i];
+      if (part.step === 'up' && !part.hasForeignComponents) {
+        let nextDiveElementIndex = 0;
+        for (let j = i - 1; j > 0; j--) {
+          if (this.parts[j].step === 'dive') {
+            nextDiveElementIndex = j;
+            break;
+          }
+        }
+        this.parts.splice(nextDiveElementIndex, i - nextDiveElementIndex);
+        i = nextDiveElementIndex;
+      }
+    }
+  }
+
+  /**
+   * _For internal use._ Wrap text and inline nodes into block elements.
+   *
+   * @returns {object[]}
+   */
+  encloseInlineParts() {
+    const sequencesToBeEnclosed = [];
+    let start = null;
+    let encloseThis = false;
+    for (let i = 0; i <= this.parts.length; i++) {
+      const part = this.parts[i];
+      if (
+        part &&
+        (start === null || (['back', 'start'].includes(part.step))) &&
+        !part.hasForeignComponents &&
+        !part.isHeading
+      ) {
+        if (start === null) {
+          // Don't enclose nodes whose parent is an inline element.
+          if (isInline(part.node.parentNode)) {
+            for (let j = i + 1; j < this.parts.length; j++) {
+              if (this.parts[j].step === 'up') {
+                i = j - 1;
+                continue;
+              }
+            }
+            break;
+          } else {
+            start = i;
+          }
+        }
+
+        // We should only enclose if there is need: there is at least one inline or non-empty text
+        // node in the sequence.
+        if (
+          !encloseThis &&
+          ((part.isTextNode && part.node.textContent.trim()) || isInline(part.node))
+        ) {
+          encloseThis = true;
+        }
+      } else {
+        if (start !== null) {
+          if (encloseThis) {
+            const end = i - 1;
+            sequencesToBeEnclosed.push({ start, end });
+          }
+          start = null;
+          encloseThis = false;
+        }
+      }
+    }
+
+    for (let i = sequencesToBeEnclosed.length - 1; i >= 0; i--) {
+      const sequence = sequencesToBeEnclosed[i];
+      const wrapper = document.createElement('div');
+      const nextSibling = this.parts[sequence.start].node.nextSibling;
+      const parent = this.parts[sequence.start].node.parentNode;
+      for (let j = sequence.end; j >= sequence.start; j--) {
+        wrapper.appendChild(this.parts[j].node);
+      }
+      parent.insertBefore(wrapper, nextSibling);
+      const newPart = {
+        node: wrapper,
+        isTextNode: false,
+        isHeading: false,
+        hasCurrentSignature: wrapper.contains(this.signatureElement),
+        hasForeignComponents: false,
+        step: 'replaced',
+      };
+      this.parts.splice(sequence.start, sequence.end - sequence.start + 1, newPart);
+    }
+
+    return this.parts;
+  }
+
+  /**
+   * _For internal use._ Remove unnecessary and incorrect parts from the collection.
+   */
+  filterParts() {
+    this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
+
+    // "style" and "link" tags at the beginning. Also "references" tags and {{reflist-talk}}
+    // templates (will need to generalize this, possibly via wiki configuration, if other wikis
+    // employ a differently named class).
+    for (let i = this.parts.length - 1; i > 0; i--) {
+      const node = this.parts[i].node;
+      if (
+        (
+          node.tagName === 'P' &&
+          !node.textContent.trim() &&
+          Array.from(node.children).every((child) => child.tagName === 'BR')
+        ) ||
+        node.tagName === 'STYLE' ||
+        node.tagName === 'LINK' ||
+        Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
+      ) {
+        this.parts.splice(i, 1);
+      } else {
+        break;
+      }
+    }
+
+    // When the first comment part starts with <br>
+    const firstNode = this.parts[this.parts.length - 1]?.node;
+    if (firstNode.tagName === 'P') {
+      if (firstNode.firstChild?.tagName === 'BR') {
+        firstNode.parentNode.insertBefore(firstNode.firstChild, firstNode);
+      }
+    }
+
+    if (this.parts.length > 1) {
+      let startNode;
+      for (let i = this.parts.length - 1; i >= 1; i--) {
+        const part = this.parts[i];
+        if (part.isHeading) continue;
+
+        if (!startNode) {
+          startNode = part.node;
+          if (
+            ['DL', 'UL', 'OL', 'DD', 'LI'].includes(startNode.tagName) &&
+            !this.isIntroList(startNode, true, this.parts[0].node)
+          ) {
+            break;
+          }
+        }
+
+        const nextElement = part.node.nextElementSibling;
+        if (!nextElement) continue;
+
+        const isIntro = this.isIntro({
+          step: part.step,
+          stage: 2,
+          node: part.node,
+          nextNode: nextElement,
+          lastPartNode: this.parts[0].node,
+        });
+        if (isIntro) {
+          this.parts.splice(i);
+        }
+      }
+    }
+  }
+
+  /**
+   * _For internal use._ Replace list elements with collections of their items if appropriate.
+   */
+   replaceListsWithItems() {
+    const lastPartNode = this.parts[this.parts.length - 1].node;
+    for (let i = this.parts.length - 1; i >= 0; i--) {
+      const part = this.parts[i];
+      const isCommentLevel = (
+        // 'DD', 'LI' are in this list too for this kind of structures:
+        // https://ru.wikipedia.org/w/index.php?diff=103584477.
+        ['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
+
+        !this.isGallery(part.node) &&
+
+        // Exclude lists that are parts of the comment, like
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list.
+        !(
+          part.step === 'up' &&
+          this.parts[i + 1] &&
+          ['replaced', 'start'].includes(this.parts[i + 1].step) &&
+          this.isPartOfList(lastPartNode, true) &&
+
+          // But don't affect things like
+          // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#201901151200_Example
+          !(
+            this.parts[i + 1].step === 'replaced' &&
+            ['DD', 'LI'].includes(this.parts[i + 1].node.tagName)
+          )
+        ) &&
+
+        (
+          // Exclude lists that are parts of the comment.
+          (part.step === 'up' && (!this.parts[i - 1] || this.parts[i - 1].step !== 'back')) ||
+
+          (
+            this.isPartOfList(lastPartNode, true) &&
+
+            // Cases like
+            // https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
+            // (the whole thread).
+            !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName)) &&
+
+            // Cases like
+            // https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel
+            !(
+              i !== 0 &&
+              ['UL', 'OL'].includes(part.node.tagName) &&
+              part.node.previousElementSibling?.tagName === 'DL'
+            )
+          ) ||
+
+          // Cases like
+          // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061830_Example
+          (
+            part.node.tagName === 'UL' &&
+            part.node[this.parser.context.childElementsProp].length === 1 &&
+            this.isPartOfList(lastPartNode, false)
+          )
+        )
+      );
+      if (isCommentLevel) {
+        const commentElements = this.parser.getTopElementsWithText(part.node).nodes;
+        if (commentElements.length > 1) {
+          const newParts = commentElements.map((el) => ({
+            node: el,
+            isTextNode: false,
+            hasCurrentSignature: el.contains(this.signatureElement),
+            hasForeignComponents: false,
+            step: 'replaced',
+          }));
+          this.parts.splice(i, 1, ...newParts);
+        } else if (commentElements[0] !== part.node) {
+          Object.assign(part, {
+            node: commentElements[0],
+            step: 'replaced',
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * _For internal use._ Wrap numbered list into a div or dl & dd if the comment starts with
+   * numbered list items.
+   */
+  wrapNumberedList() {
+    if (this.parts.length > 1) {
+      const parent = this.parts[0].node.parentNode;
+
+      if (parent.tagName === 'OL') {
+        // 0 or 1
+        const currentSignatureCount = Number(parent.contains(this.signatureElement));
+
+        // A foreign signature can be found with just `.cd-signature` search; example:
+        // https://commons.wikimedia.org/?diff=566673258.
+        if (parent.getElementsByClassName('cd-signature').length - currentSignatureCount === 0) {
+          const listItems = this.parts.filter((part) => part.node.parentNode === parent);
+
+          // Is `#` used as an indentation character instead of `:` or `*`, or is the comments just
+          // starts with a list and ends on a correct level (without `#`)?
+          const isNumberedListUsedAsIndentation = !this.parts.some((part) => (
+            part.node.parentNode !== parent &&
+            part.node.parentNode.contains(parent)
+          ));
+          let outerWrapper;
+          let innerWrapper;
+          const nextSibling = parent.nextSibling;
+          const parentParent = parent.parentNode;
+          if (isNumberedListUsedAsIndentation) {
+            innerWrapper = document.createElement('dd');
+            outerWrapper = document.createElement('dl');
+            outerWrapper.appendChild(innerWrapper);
+          } else {
+            innerWrapper = document.createElement('div');
+            outerWrapper = innerWrapper;
+          }
+          innerWrapper.appendChild(parent);
+          parentParent.insertBefore(outerWrapper, nextSibling);
+
+          const newPart = {
+            node: innerWrapper,
+            isTextNode: false,
+            isHeading: false,
+            hasCurrentSignature: true,
+            hasForeignComponents: false,
+            step: 'replaced',
+          };
+          this.parts.splice(0, listItems.length, newPart);
+        }
+      }
+    }
   }
 
   /**
@@ -274,6 +1048,38 @@ class CommentSkeleton {
   }
 
   /**
+   * _For internal use._ Get list elements up the DOM tree. They will then be assigned the class
+   * `cd-commentLevel`.
+   *
+   * @param {Element|external:Element} initialElement
+   * @param {boolean} [includeFirstMatch=false]
+   * @returns {Element[]|external:Element[]}
+   */
+   getListsUpTree(initialElement, includeFirstMatch = false) {
+    const listElements = [];
+    const treeWalker = new ElementsTreeWalker(initialElement);
+    while (treeWalker.parentNode()) {
+      const el = treeWalker.currentNode;
+      if (['DL', 'UL', 'OL'].includes(el.tagName)) {
+        if (el.classList.contains('cd-commentLevel')) {
+          const match = el.getAttribute('class').match(/cd-commentLevel-(\d+)/);
+          if (match) {
+            const elementsToAdd = Array(Number(match[1]));
+            if (includeFirstMatch) {
+              elementsToAdd[elementsToAdd.length - 1] = el;
+            }
+            listElements.unshift(...elementsToAdd);
+          }
+          return listElements;
+        } else {
+          listElements.unshift(el);
+        }
+      }
+    }
+    return listElements;
+  }
+
+  /**
    * Finally review comment parts to make sure all "dives" (when the tree walker goes as deep as
    * possible through a tree after going back) are for actual comment parts and not for parts of
    * other comments.
@@ -288,7 +1094,7 @@ class CommentSkeleton {
     // reference.
     if (this.elements.length > 1 && this.parts.some((part) => part.step === 'dive')) {
       // Get level elements based on this.elements, not this.highlightables.
-      const allLevelElements = this.elements.map(this.parser.getListsUpTree.bind(this.parser));
+      const allLevelElements = this.elements.map(this.getListsUpTree.bind(this));
 
       const lastAncestors = allLevelElements[allLevelElements.length - 1];
       if (allLevelElements[0].length > lastAncestors.length) {
@@ -351,7 +1157,7 @@ class CommentSkeleton {
   fixIndentationHoles() {
     if (this.level && this.elements.length > 2) {
       // Get level elements based on this.elements, not this.highlightables.
-      const allLevelElements = this.elements.map((el) => this.parser.getListsUpTree(el, true));
+      const allLevelElements = this.elements.map((el) => this.getListsUpTree(el, true));
 
       const groups = [];
       allLevelElements.slice(1, allLevelElements.length - 1).forEach((ancestors, i) => {
@@ -437,7 +1243,7 @@ class CommentSkeleton {
   setLevels(fixMarkup = true) {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
-    let levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
+    let levelElements = this.highlightables.map(this.getListsUpTree.bind(this));
 
     // Use the first and last elements, not all elements, to determine the level to deal with cases
     // like
@@ -461,7 +1267,7 @@ class CommentSkeleton {
     if (fixMarkup) {
       let areElementsChanged = this.reviewDives();
       if (areElementsChanged) {
-        levelElements = this.highlightables.map(this.parser.getListsUpTree.bind(this.parser));
+        levelElements = this.highlightables.map(this.getListsUpTree.bind(this));
       }
       this.fixIndentationHoles();
       this.fixEndLevel(levelElements);
