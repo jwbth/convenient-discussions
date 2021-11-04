@@ -155,7 +155,7 @@ export async function showCopyLinkDialog(object, e) {
       return;
     }
 
-    await mw.loader.using('mediawiki.diff.styles');
+    await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
   }
 
   // Undocumented feature allowing to copy a link of a default type without opening a dialog.

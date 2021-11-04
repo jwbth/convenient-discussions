@@ -1820,7 +1820,7 @@ class Comment extends CommentSkeleton {
     let [revisionsResp, compareResp] = await Promise.all([
       revisionsRequest,
       compareRequest,
-      mw.loader.using('mediawiki.diff.styles'),
+      mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
     ]);
 
     const revisions = revisionsResp.query?.pages?.[0]?.revisions;
@@ -2472,7 +2472,7 @@ class Comment extends CommentSkeleton {
       ([edit] = await Promise.all([
         this.findEditThatAdded(),
         genderRequest,
-        mw.loader.using('mediawiki.diff.styles'),
+        mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
       ].filter(defined)));
     } catch (e) {
       this.thankFail(e);
