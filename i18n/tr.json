@@ -144,7 +144,6 @@
 	"cf-error-findplace": "Yorum eklemek için kodda uygun yer bulunamadı.",
 	"cf-error-commentlinks-commentnotfound": "Sayfada, yorumunuzdan bağlantı verilen kimliği $1 olan yorumu bulunamadı.",
 	"cf-error-numberedlist": "Numaralı liste işaretlemesini bozmadan yorumu doğru şekilde oluşturmak imkansızdır.",
-	"cf-error-numberedlist-list": "Listeleri yorumdan kaldırın.",
 	"cf-error-numberedlist-table": "Yorumdan tabloları kaldırın.",
 	"cf-error-delete-repliestocomment": "Yanıtları olduğu için yorum silinemiyor.",
 	"cf-error-delete-repliesinsection": "Yanıt olduğu için bölüm silinemiyor.",

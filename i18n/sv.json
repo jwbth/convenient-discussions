@@ -164,7 +164,6 @@
 	"cf-error-findplace": "Kunde inte hitta den rätt ställe i koden att sätta in kommentaren i.",
 	"cf-error-commentlinks-commentnotfound": "Kunde inte hitta kommentaren med ID $1, som länkats from din kommentar, på sidan",
 	"cf-error-numberedlist": "Det är går inte att formatera kommentaren korrekt utan att förstöra den numrerade listans formatering.",
-	"cf-error-numberedlist-list": "Ta bort listor från kommentarer.",
 	"cf-error-numberedlist-table": "Ta bort tabeller från kommentarer.",
 	"cf-error-delete-repliestocomment": "Kan inte radera kommentaren för den har svar.",
 	"cf-error-delete-repliesinsection": "Kan inte radera avsnittet för den har svar.",
