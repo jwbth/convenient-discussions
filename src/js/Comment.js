@@ -2312,7 +2312,7 @@ class Comment extends CommentSkeleton {
     const compareResps = await Promise.all(compareRequests);
 
     // Only analyze added lines except for headings.
-    const regexp = /<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*><div[^>]*>(?!=)(.+?)<\/div><\/td>\s*<\/tr>/g;
+    const regexp = /<td [^>]*class="[^"]*\bdiff-empty\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-marker\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*>\s*<div[^>]*>(?!=)(.+?)<\/div>\s*<\/td>/g;
 
     const commentEnding = cd.g.ARE_TIMESTAMPS_ALTERED ?
       this.timestamp :
