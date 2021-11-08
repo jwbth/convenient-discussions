@@ -3,6 +3,7 @@
 		"authors": [
 			"Avengium",
 			"Biancailin",
+			"Bruno44101",
 			"Ciencia Al Poder",
 			"Danniel07",
 			"Destinid10 2",
@@ -25,6 +26,7 @@
 	"cm-thanked-tooltip": "Ya has dado las gracias al usuario por este comentario",
 	"cm-edit": "Editar",
 	"cm-reply": "Responder",
+	"cm-quote": "Citar",
 	"thread-tooltip": "Colapsar/expandir el hilo",
 	"sm-editopeningcomment": "editar comentario de apertura",
 	"sm-editopeningcomment-tooltip": "Editar el comentario que inicia la sección",
@@ -268,6 +270,7 @@
 	"sd-desktopnotifications-radio-tome": "Notificarme solo de respuestas a mis comentarios",
 	"sd-desktopnotifications-radio-none": "No notificarme",
 	"sd-desktopnotifications-help": "Las notificaciones de escritorio informan sobre eventos en páginas abiertas que están ocultas (en pestañas inactivas o ventanas minimizadas). Para recibirlas, debes otorgar el permiso a $1",
+	"sd-enablethreads": "Permitir colapsar hilos",
 	"sd-hidetimezone": "Ocultar la zona horaria",
 	"sd-insertbuttons": "Botones de inserción de texto",
 	"sd-insertbuttons-multiselect-placeholder": "Añadir un botón",
