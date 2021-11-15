@@ -67,6 +67,8 @@
 
   "cld-title-comment": "Copy comment link",
   "cld-title-section": "Copy section link",
+  "cld-select-anchor": "Anchor link",
+  "cld-select-diff": "Diff link",
   "cld-summary": "Edit summary",
   "cld-diff": "Diff link",
   "cld-diff-error": "Couldn't find",
@@ -74,6 +76,7 @@
   "cld-diff-error-unknown": "Couldn't find (unknown error)",
   "cld-diff-history": "Edit history",
   "cld-shortdiff": "Short diff link",
+  "cld-diffwikilink": "Diff wikilink",
   "cld-wikilink": "Wikilink",
   "cld-help-onlycd": "This link will work only for users who have Convenient Discussions installed.",
   "cld-help-notonlycd": "An anchor will be added automatically to the linked comment, so the link <em>will</em> work for everybody.",

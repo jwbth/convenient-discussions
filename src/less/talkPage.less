@@ -280,3 +280,14 @@ li .mw-collapsible-toggle,
 .cd-skip {
   list-style-type: none;
 }
+
+.cd-copyLinkDialog-linkTypeSelect {
+  display: flex;
+  justify-content: center;
+  margin: 0.5em 0;
+}
+
+// T295107
+.oo-ui-buttonSelectWidget.oo-ui-widget-enabled .oo-ui-buttonElement.oo-ui-widget-disabled.cd-copyLinkDialog-diffButton > .oo-ui-buttonElement-button {
+  z-index: 0;
+}

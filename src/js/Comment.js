@@ -2386,16 +2386,19 @@ class Comment extends CommentSkeleton {
   /**
    * Get a diff link for the comment.
    *
-   * @param {boolean} short Whether to return a short diff link.
+   * @param {string} [format='standard'] Format to get the link in: `'standard'`, `'short'`, or
+   *   `'wikilink'`.
    * @returns {Promise.<string>}
    */
-  async getDiffLink(short) {
+  async getDiffLink(format = 'standard') {
     const edit = await this.findEditThatAdded();
-    if (short) {
-      return `${cd.g.SERVER}/?diff=${edit.revid}`;
-    } else {
+    if (format === 'standard') {
       const urlEnding = decodeURI(cd.page.getArchivedPage().getUrl({ diff: edit.revid }));
       return `${cd.g.SERVER}${urlEnding}`;
+    } else if (format === 'short') {
+      return `${cd.g.SERVER}/?diff=${edit.revid}`;
+    } else {
+      return `[[Special:Diff/${edit.revid}]]`;
     }
   }
 

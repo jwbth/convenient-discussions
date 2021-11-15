@@ -43,6 +43,89 @@ export async function editWatchedSections() {
   cd.g.windowManager.openWindow(dialog);
 }
 
+async function createDiffPanel(comment, dialog) {
+  let $diff;
+  let diffLink;
+  let shortDiffLink;
+  let diffWikilink;
+  let $historyLinkBlock;
+  let errorText;
+  try {
+    diffLink = await comment.getDiffLink('standard');
+    shortDiffLink = await comment.getDiffLink('short');
+    diffWikilink = await comment.getDiffLink('wikilink');
+    $diff = await comment.generateDiffView();
+  } catch (e) {
+    if (e instanceof CdError) {
+      const { type } = e.data;
+      if (type === 'network') {
+        errorText = cd.s('cld-diff-error-network');
+      } else {
+        errorText = cd.s('cld-diff-error');
+        const $historyLink = $('<a>')
+          .attr('href', comment.getSourcePage().getUrl({ action: 'history' }))
+          .attr('target', '_blank')
+          .text(cd.s('cld-diff-history'));
+        $historyLinkBlock = $('<div>')
+          .addClass('cd-copyLinkDialog-historyLinkBlock')
+          .append($historyLink);
+      }
+    } else {
+      errorText = cd.s('cld-diff-error-unknown');
+      console.warn(e);
+    }
+  }
+
+  const copyCallback = (value) => {
+    copyLink(value);
+    dialog.close();
+  };
+
+  const diffField = createCopyActionField({
+    value: diffLink,
+    disabled: !diffLink,
+    label: cd.s('cld-diff'),
+    copyCallback,
+  });
+
+  const shortDiffField = createCopyActionField({
+    value: shortDiffLink,
+    disabled: !shortDiffLink,
+    label: cd.s('cld-shortdiff'),
+    copyCallback,
+  });
+
+  const diffWikilinkField = createCopyActionField({
+    value: diffWikilink,
+    disabled: !diffWikilink,
+    label: cd.s('cld-diffwikilink'),
+    copyCallback,
+  });
+
+  const $diffPanelContent = $('<div>').append([
+    diffField.$element,
+    shortDiffField.$element,
+    diffWikilinkField.$element,
+    $diff,
+    $historyLinkBlock,
+  ]);
+
+  dialog.diffPanel = new OO.ui.PanelLayout({
+    $content: $diffPanelContent,
+    padded: false,
+    expanded: false,
+    scrollable: true,
+  });
+
+  if (dealWithLoadingBug('mediawiki.diff.styles')) return;
+
+  await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
+
+  dialog.stackLayout.addItems([dialog.diffPanel]);
+  dialog.diffOptionWidget.setDisabled(Boolean(errorText));
+  dialog.diffOptionWidget.setTitle(errorText || '');
+}
+
 /**
  * Copy a link and notify whether the operation was successful.
  *
@@ -99,65 +182,6 @@ export async function showCopyLinkDialog(object, e) {
    */
   object.isLinkBeingCopied = true;
 
-  const copyCallback = (value) => {
-    copyLink(value);
-    dialog.close();
-  };
-  let diffField;
-  let shortDiffField;
-  let $diff;
-  let diffLink;
-  let shortDiffLink;
-  let $historyLinkBlock;
-  if (isComment) {
-    let errorText;
-    try {
-      diffLink = await object.getDiffLink();
-      shortDiffLink = await object.getDiffLink(true);
-      $diff = await object.generateDiffView();
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type } = e.data;
-        if (type === 'network') {
-          errorText = cd.s('cld-diff-error-network');
-        } else {
-          errorText = cd.s('cld-diff-error');
-          const $historyLink = $('<a>')
-            .attr('href', object.getSourcePage().getUrl({ action: 'history' }))
-            .attr('target', '_blank')
-            .text(cd.s('cld-diff-history'));
-          $historyLinkBlock = $('<div>')
-            .addClass('cd-copyLinkDialog-historyLinkBlock')
-            .append($historyLink);
-        }
-      } else {
-        errorText = cd.s('cld-diff-error-unknown');
-        console.warn(e);
-      }
-    }
-
-    diffField = createCopyActionField({
-      value: diffLink || errorText,
-      disabled: !diffLink,
-      label: cd.s('cld-diff'),
-      copyCallback,
-    });
-
-    shortDiffField = createCopyActionField({
-      value: shortDiffLink || errorText,
-      disabled: !shortDiffLink,
-      label: cd.s('cld-shortdiff'),
-      copyCallback,
-    });
-
-    if (dealWithLoadingBug('mediawiki.diff.styles')) {
-      object.isLinkBeingCopied = false;
-      return;
-    }
-
-    await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
-  }
-
   // Undocumented feature allowing to copy a link of a default type without opening a dialog.
   const relevantSetting = isComment ?
     cd.settings.defaultCommentLinkType :
@@ -170,17 +194,47 @@ export async function showCopyLinkDialog(object, e) {
       case 'link':
         copyLink(link);
         break;
-      case 'diff':
-        copyLink(diffLink);
-        break;
     }
     object.isLinkBeingCopied = false;
     return;
   }
 
+  const dialog = new OO.ui.MessageDialog({
+    classes: ['cd-copyLinkDialog'],
+  });
+
+  if (isComment) {
+    dialog.anchorOptionWidget = new OO.ui.ButtonOptionWidget({
+      data: 'anchor',
+      label: cd.s('cld-select-anchor'),
+      selected: true,
+    });
+    dialog.diffOptionWidget = new OO.ui.ButtonOptionWidget({
+      data: 'diff',
+      label: cd.s('cld-select-diff'),
+      disabled: true,
+      title: cd.s('loading-ellipsis'),
+      classes: ['cd-copyLinkDialog-diffButton'],
+    });
+    dialog.buttonSelectWidget = new OO.ui.ButtonSelectWidget({
+      items: [dialog.anchorOptionWidget, dialog.diffOptionWidget],
+      classes: ['cd-copyLinkDialog-linkTypeSelect'],
+    }).on('choose', (item) => {
+      const panel = item === dialog.anchorOptionWidget ? dialog.anchorPanel : dialog.diffPanel;
+      dialog.stackLayout.setItem(panel);
+      dialog.updateSize();
+    });
+  }
+
+  const copyCallback = (value) => {
+    copyLink(value);
+    dialog.close();
+  };
+
+  // Doesn't apply to DT anchors.
   let helpOnlyCd;
   let helpNotOnlyCd;
-  if (isComment) {
+  if (isComment && anchor === object.anchor) {
     helpOnlyCd = cd.s('cld-help-onlycd');
     helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
   }
@@ -218,21 +272,30 @@ export async function showCopyLinkDialog(object, e) {
   // the dialog, which happens because the whole message is wrapped in the <label> element.
   const $dummyInput = $('<input>').addClass('cd-hidden');
 
-  const $message = $('<div>').append([
-    diffField?.$element,
-    shortDiffField?.$element,
-    $diff,
-    $historyLinkBlock,
+  const $anchorPanelContent = $('<div>').append([
     wikilinkField.$element,
     currentPageWikilinkField.$element,
     linkField.$element,
     permanentLinkField.$element,
   ]);
-  $message.children().first().prepend($dummyInput);
+  $anchorPanelContent.children().first().prepend($dummyInput);
 
-  const dialog = new OO.ui.MessageDialog({
-    classes: ['cd-copyLinkDialog'],
+  dialog.anchorPanel = new OO.ui.PanelLayout({
+    $content: $anchorPanelContent,
+    padded: false,
+    expanded: false,
+    scrollable: true,
   });
+
+  dialog.stackLayout = new OO.ui.StackLayout({
+		items: [dialog.anchorPanel],
+    expanded: false,
+	});
+
+  const $message = $('<div>').append([
+    dialog.buttonSelectWidget?.$element,
+    dialog.stackLayout.$element,
+  ]);
   cd.g.windowManager.addWindows([dialog]);
   const windowInstance = cd.g.windowManager.openWindow(dialog, {
     title: isComment ? cd.s('cld-title-comment') : cd.s('cld-title-section'),
@@ -248,6 +311,10 @@ export async function showCopyLinkDialog(object, e) {
   windowInstance.closed.then(() => {
     object.isLinkBeingCopied = false;
   });
+
+  if (isComment) {
+    createDiffPanel(object, dialog);
+  }
 }
 
 /**
