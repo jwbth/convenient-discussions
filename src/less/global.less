@@ -34,3 +34,9 @@ a:not([href]) {
 .rtl .cd-setting-indented {
   margin-right: 2em;
 }
+
+.oo-ui-windowManager-modal > .oo-ui-dialog {
+  // Make the value in other skins the same as in Vector. The default 5 is too low and causes modal
+  // windows to be obstructed by interface elements created by CD.
+  z-index: 101;
+}
