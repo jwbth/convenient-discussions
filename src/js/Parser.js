@@ -92,21 +92,22 @@ class Parser {
   /**
    * _For internal use._ Remove some of the elements added by the DiscussionTools extension (even if
    * it is disabled in user preferences) or move them away if the topic subscriptions feature of DT
-   * is enabled (to avoid errors being thrown in DT).
+   * is enabled (to avoid errors being thrown in DT). Prior to that, extract data from them.
    *
    * CD already parses comment links from notifications (which seems to be this markup's purpose for
    * disabled DT) in {@link module:processPage.processFragment}. Unless the elements prove useful to
    * CD or other scripts, it's better to get rid of them rather than deal with them one by one while
    * parsing.
    */
-  removeDtMarkup() {
-    const moveNotRemove = (
-      typeof mw !== 'undefined' &&
+  processAndRemoveDtMarkup() {
+    if (!self.cdIsWorker) {
+      cd.g.dtCommentIds = [];
+    }
 
-      // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
-      // Tool doesn't seem to make difference for our purposes here.
-      cd.g.isDtTopicSubscriptionEnabled
-    );
+    // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
+    // Tool doesn't seem to make difference for our purposes here.
+    const moveNotRemove = !self.cdIsWorker && cd.g.isDtTopicSubscriptionEnabled;
+
     let dtMarkupHavenElement;
     if (moveNotRemove) {
       if (cd.state.isPageFirstParsed) {
@@ -125,12 +126,15 @@ class Parser {
       .concat(Array.from(
         cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')
       ));
-    if (typeof mw !== 'undefined') {
+    if (!self.cdIsWorker) {
       elements = elements.concat(
         Array.from(cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-highlight'))
       );
     }
     elements.forEach((el, i) => {
+      if (!self.cdIsWorker && el.hasAttribute('data-mw-comment-start') && el.id?.startsWith('c-')) {
+        cd.g.dtCommentIds.push(el.id);
+      }
       if (moveNotRemove) {
         // DT gets the offset of all these elements upon initialization which can take a lot of
         // time if the elements aren't put into containers with less children.

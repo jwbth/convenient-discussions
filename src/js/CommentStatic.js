@@ -2,7 +2,7 @@ import Comment from './Comment';
 import cd from './cd';
 import navPanel from './navPanel';
 import { TreeWalker } from './treeWalker';
-import { generateCommentAnchor, parseCommentAnchor } from './timestamp';
+import { generateCommentAnchor, parseCommentAnchor, parseDtCommentId } from './timestamp';
 import {
   getCommonGender,
   getExtendedRect,
@@ -532,6 +532,37 @@ export default {
     }
 
     return comment || null;
+  },
+
+  getByDtId(id) {
+    const data = parseDtCommentId(id);
+    if (!data) {
+      return null;
+    }
+
+    let comments = cd.comments.filter((comment) => (
+      comment.date &&
+      comment.date.getTime() === data.date.getTime() &&
+      comment.author.name === data.author
+    ));
+
+    let comment;
+    if (comments.length === 1) {
+      comment = comments[0];
+    } else if (comments.length > 1) {
+      comments = comments.filter((comment) => (
+        comment.getParent()?.date.getTime() === data.parentDate?.getTime() &&
+        comment.getParent()?.author.name === data.parentAuthor &&
+        (
+          !data.sectionAnchorBeginning ||
+          comment.section?.anchor.startsWith(data.sectionAnchorBeginning)
+        )
+      ));
+      comment = comments.length === 1 ? comments[0] : comments[data.index || 0];
+    }
+
+    data.comment = comment;
+    return data;
   },
 
   /**

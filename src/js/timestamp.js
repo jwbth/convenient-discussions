@@ -811,11 +811,11 @@ export function generateCommentAnchor(date, author, resolveCollisions = false) {
     spacesToUnderlines(author)
   );
   if (resolveCollisions && commentAnchors.includes(anchor)) {
-    let anchorNum = 2;
+    let index = 2;
     const base = anchor;
     do {
-      anchor = `${base}_${anchorNum}`;
-      anchorNum++;
+      anchor = `${base}_${index}`;
+      index++;
     } while (commentAnchors.includes(anchor));
   }
   return anchor;
@@ -895,10 +895,11 @@ export function parseDtCommentId(id) {
   let parentAuthor;
   let parentTimestamp;
   let parentDate;
+  let index;
   let sectionAnchorBeginning;
   if (parent) {
-    const regexp = /(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)$/;
-    [, parentAuthor, parentTimestamp] = parent.match(regexp) || [];
+    const regexp = /(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(\d+))?$/;
+    [, parentAuthor, parentTimestamp, index] = parent.match(regexp) || [];
     if (parentAuthor) {
       parentAuthor = underlinesToSpaces(parentAuthor);
       parentDate = new Date(parentTimestamp);
@@ -906,5 +907,5 @@ export function parseDtCommentId(id) {
       sectionAnchorBeginning = parent;
     }
   }
-  return { author, date, parentAuthor, parentDate, sectionAnchorBeginning };
+  return { author, date, parentAuthor, parentDate, sectionAnchorBeginning, index };
 }

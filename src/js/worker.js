@@ -157,7 +157,7 @@ function parse() {
   cd.debug.startTimer('worker: parse comments');
   const parser = new Parser(context);
 
-  parser.removeDtMarkup();
+  parser.processAndRemoveDtMarkup();
   const headings = parser.findHeadings();
   const timestamps = parser.findTimestamps();
   const signatures = parser.findSignatures(timestamps);

@@ -349,6 +349,13 @@ function initGlobals() {
   cd.api.getCommentByAnchor = Comment.getByAnchor;
 
   /**
+   * @see Comment.getByDtId
+   * @function getCommentByDtId
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.getCommentByDtId = Comment.getByDtId;
+
+  /**
    * @see Section.getByAnchor
    * @function getSectionByAnchor
    * @memberof convenientDiscussions.api

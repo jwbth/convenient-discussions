@@ -46,13 +46,7 @@ import {
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
 } from './util';
-import {
-  generateCommentAnchor,
-  isCommentAnchor,
-  parseCommentAnchor,
-  parseDtCommentId,
-  resetCommentAnchors,
-} from './timestamp';
+import { isCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
 import { getVisits, getWatchedSections, setVisits } from './options';
 
 /**
@@ -415,6 +409,13 @@ function processComments(targets, parser) {
       }
     });
 
+  cd.g.dtCommentIds.forEach((id) => {
+    const { comment } = Comment.getByDtId(id) || {};
+    if (comment) {
+      comment.dtId = id;
+    }
+  });
+
   Comment.reformatTimestamps();
 
   // Faster than doing it for every individual comment.
@@ -764,9 +765,6 @@ async function processFragment(passedData) {
   let fragmentContainsCommentAnchor;
   let date;
   let author;
-  let parentDate;
-  let parentAuthor;
-  let sectionAnchorBeginning;
   if (cd.state.isFirstRun) {
     fragment = location.hash.slice(1);
     escapedFragment = $.escapeSelector(fragment);
@@ -776,17 +774,6 @@ async function processFragment(passedData) {
       if (isCommentAnchor(fragment)) {
         commentAnchor = decodedFragment;
         fragmentContainsCommentAnchor = true;
-      } else {
-        ({
-          date,
-          author,
-          parentDate,
-          parentAuthor,
-          sectionAnchorBeginning,
-        } = parseDtCommentId(decodedFragment) || {});
-        if (date) {
-          fragmentContainsCommentAnchor = true;
-        }
       }
     } catch (e) {
       console.error(e);
@@ -799,21 +786,10 @@ async function processFragment(passedData) {
   if (commentAnchor) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getByAnchor(commentAnchor, !passedData.commentAnchor);
-  } else if (date) {
-    const comments = cd.comments.filter((comment) => (
-      comment.date &&
-      comment.date.getTime() === date.getTime() &&
-      comment.author.name === author
-    ));
-    comment = comments.length === 1 ?
-      comments[0] :
-      comments.find((comment) => (
-        comment.getParent()?.date.getTime() === parentDate?.getTime() &&
-        comment.getParent()?.author.name === parentAuthor &&
-        (!sectionAnchorBeginning || comment.section?.anchor.startsWith(sectionAnchorBeginning))
-      ));
-    if (!comment) {
-      commentAnchor = generateCommentAnchor(date, author);
+  } else if (decodedFragment) {
+    ({ comment, date, author } = Comment.getByDtId(decodedFragment) || {});
+    if (comment) {
+      fragmentContainsCommentAnchor = true;
     }
   }
 
@@ -1079,7 +1055,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
       cloneNode: (node) => node.cloneNode(),
     });
 
-    parser.removeDtMarkup();
+    parser.processAndRemoveDtMarkup();
     headings = parser.findHeadings();
     const timestamps = parser.findTimestamps();
     const signatures = parser.findSignatures(timestamps);
