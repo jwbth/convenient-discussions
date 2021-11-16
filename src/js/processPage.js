@@ -26,11 +26,11 @@ import {
   handleWikipageContentHookFirings,
   init,
   isCurrentRevision,
+  maybeSuggestDisableDiscussionTools,
+  maybeSuggestEnableCommentReformatting,
   reloadPage,
   restoreCommentForms,
   saveSession,
-  suggestDisableDiscussionTools,
-  suggestEnableCommentReformatting,
 } from './boot';
 import {
   addPreventUnloadCondition,
@@ -1366,11 +1366,9 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   debugLog();
 
   if (showPopups) {
-    if (cd.g.isDtReplyToolEnabled) {
-      suggestDisableDiscussionTools();
-    }
+    maybeSuggestDisableDiscussionTools();
 
-    const didEnableCommentReformatting = await suggestEnableCommentReformatting();
+    const didEnableCommentReformatting = await maybeSuggestEnableCommentReformatting();
     await confirmDesktopNotifications();
     if (didEnableCommentReformatting) {
       reloadPage();

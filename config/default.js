@@ -143,7 +143,6 @@ export default {
    *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
    *   in "Wikipedia:Village pump/Archive/General/2020/07", it should capture "General", but not
    *   "General/2020/07". So, you shouldn't use `/.+/` here and use, for example, `/[^/]+/` instead.
-   * @global
    */
 
   /**
@@ -154,7 +153,7 @@ export default {
    *   on the page;
    * - to make diff/thank links work on archive pages.
    *
-   * Each of the array elements can be an object with the defined structure (see
+   * Each of the array elements can be an object with defined structure (see
    * {@link ArchivePathEntry} for details) or a regexp. In the latter case, if a page name matches
    * the regexp, it will be considered an archive page, and the name of the source page for that
    * page will be obtained by removing everything that starts with the pattern in the page name

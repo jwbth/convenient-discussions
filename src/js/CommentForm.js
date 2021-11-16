@@ -1577,61 +1577,45 @@ class CommentForm {
       }
     });
 
-    if (this.minorCheckbox) {
-      this.minorCheckbox
-        .on('change', saveSessionEventHandler);
-    }
-
+    this.minorCheckbox
+      ?.on('change', saveSessionEventHandler);
     this.watchCheckbox
       .on('change', saveSessionEventHandler);
-    if (this.watchSectionCheckbox) {
-      this.watchSectionCheckbox
-        .on('change', saveSessionEventHandler);
-    }
-
-    if (this.omitSignatureCheckbox) {
-      this.omitSignatureCheckbox
-        .on('change', () => {
-          this.preview(false);
-        })
-        .on('change', saveSessionEventHandler);
-    }
-
-    if (this.deleteCheckbox) {
-      this.deleteCheckbox
-        .on('change', (selected) => {
-          this.updateAutoSummary(true, true);
-          this.updateFormOnDeleteCheckboxChange(selected);
-        })
-        .on('change', preview)
-        .on('change', saveSessionEventHandler);
-    }
+    this.subscribeCheckbox
+      ?.on('change', saveSessionEventHandler);
+    this.omitSignatureCheckbox
+      ?.on('change', () => {
+        this.preview(false);
+      })
+      .on('change', saveSessionEventHandler);
+    this.deleteCheckbox
+      ?.on('change', (selected) => {
+        this.updateAutoSummary(true, true);
+        this.updateFormOnDeleteCheckboxChange(selected);
+      })
+      .on('change', preview)
+      .on('change', saveSessionEventHandler);
 
     this.advancedButton
       .on('click', () => {
         this.toggleAdvanced();
       });
-
     this.settingsButton
       .on('click', () => {
         showSettingsDialog();
       });
-
     this.cancelButton
       .on('click', () => {
         this.cancel();
       });
-
     this.viewChangesButton
       .on('click', () => {
         this.viewChanges();
       });
-
     this.previewButton
       .on('click', () => {
         this.preview(true, false);
       });
-
     this.submitButton
       .on('click', () => {
         this.submit();
@@ -2920,8 +2904,8 @@ class CommentForm {
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!this.runChecks({ doDelete })) {
       setTimeout(() => {
-        // If Ctrl+Enter is pressed while the caret in the headline or summary input, without
-        // setTimeout, the checked would be run twice.
+        // If Ctrl+Enter is pressed when the caret in the headline or summary input, then without
+        // setTimeout, the check would run twice.
         this.areChecksRunning = false;
       });
       return;

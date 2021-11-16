@@ -169,7 +169,7 @@
 	"cf-reaction-templateinheadline": "Не используйте шаблоны в заголовках — они ломают ссылки на разделы.",
 	"cf-reaction-signature": "Вводить <kbd>$1</kbd> не нужно — подпись подставится автоматически.",
 	"cf-reaction-pre": "Теги <code><nowiki><pre></nowiki></code> ломают разметку обсуждений — используйте <code><nowiki><syntaxhighlight></nowiki></code>.",
-	"cf-reaction-mention-edit": "Так как вы <em>редактируете</em> сообщение, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|уведомление об упоминании]] (пинг) не будет отправлено. Чтобы отправить уведомление, вы можете дать ссылку на участника(-цу) в описании правки.",
+	"cf-reaction-mention-edit": "Так как вы <em>редактируете</em> сообщение, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|уведомление об упоминании]] (пинг) не будет отправлено. Чтобы уведомление отправилось, вы можете дать ссылку на участника(-цу) в описании правки.",
 	"cf-reaction-mention-nosignature": "Так как вы указали не включать подпись в ваше сообщение, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|уведомление об упоминании]] (пинг) не будет отправлено. Чтобы отправить уведомление, вы можете дать ссылку на участника(-цу) в описании правки.",
 	"cf-notice-nochanges": "Изменений нет.",
 	"cf-notice-editconflict-retrying": "Пробуем ещё раз…",

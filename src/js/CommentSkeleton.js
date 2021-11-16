@@ -200,7 +200,7 @@ class CommentSkeleton {
    * @returns {Array.<object[], Element>}
    * @private
    */
-   getStartNodes(treeWalker) {
+  getStartNodes(treeWalker) {
     const parts = [];
     let firstForeignComponentAfter;
 
@@ -845,7 +845,7 @@ class CommentSkeleton {
   /**
    * _For internal use._ Replace list elements with collections of their items if appropriate.
    */
-   replaceListsWithItems() {
+  replaceListsWithItems() {
     const lastPartNode = this.parts[this.parts.length - 1].node;
     for (let i = this.parts.length - 1; i >= 0; i--) {
       const part = this.parts[i];
@@ -1062,7 +1062,7 @@ class CommentSkeleton {
    * @param {boolean} [includeFirstMatch=false]
    * @returns {Element[]|external:Element[]}
    */
-   getListsUpTree(initialElement, includeFirstMatch = false) {
+  getListsUpTree(initialElement, includeFirstMatch = false) {
     const listElements = [];
     const treeWalker = new ElementsTreeWalker(initialElement);
     while (treeWalker.parentNode()) {

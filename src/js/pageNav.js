@@ -1,6 +1,7 @@
 /**
- * The block displaying the current section tree according to the scroll position, along with the
- * page top and table of contents links. The bottom block also displays the page bottom link.
+ * Singleton related to the block displaying the current section tree according to the scroll
+ * position, along with the page top and table of contents links. The bottom block also displays the
+ * page bottom link.
  *
  * @module pageNav
  */

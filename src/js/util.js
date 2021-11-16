@@ -524,7 +524,7 @@ export function unhideText(text, hidden, type) {
  */
 export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
   // The viewport has the TOC bottom or is above it.
-  if (switchToAbsolute && cd.g.$toc.length && scrollY < getTocBottomPosition()) {
+  if (switchToAbsolute && cd.g.$toc.length && scrollY < getTocBottomOffset()) {
     saveScrollPosition(switchToAbsolute.saveTocHeight);
   } else {
     scrollData.element = null;
@@ -639,7 +639,7 @@ export function changeElementType(element, newType) {
  * @returns {number}
  * @private
  */
- function getTocBottomPosition() {
+function getTocBottomOffset() {
   return cd.g.$toc.offset().top + cd.g.$toc.outerHeight();
 }
 
@@ -658,7 +658,7 @@ export function saveScrollPosition(saveTocHeight = true) {
     window.scrollY !== 0 &&
 
     // There is some content below the TOC in the viewport.
-    getTocBottomPosition() < window.scrollY + window.innerHeight
+    getTocBottomOffset() < window.scrollY + window.innerHeight
   ) ?
     cd.g.$toc.outerHeight() :
     null;
@@ -1256,20 +1256,20 @@ export function getHigherNodeAndOffsetInSelection(selection) {
 }
 
 /**
- * Postpone the execution of some function. If it is already postponed, don't create a second
- * postponement.
+ * Basic throttling implementation. Postpones the execution of some function. If it is already
+ * postponed, don't create a second postponement.
  *
  * @param {string} label
- * @param {Function} callback
+ * @param {Function} func
  * @param {number} delay
  */
-export function postpone(label, callback, delay) {
+export function postpone(label, func, delay) {
   if (postponements[label]) return;
 
   postponements[label] = true;
   setTimeout(() => {
     postponements[label] = false;
-    callback();
+    func();
   }, delay);
 }
 

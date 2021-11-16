@@ -161,9 +161,10 @@ export function getUserInfo(reuse = false) {
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
+  const idsToRequest = pageIds.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
-  while ((nextPageIds = pageIds.splice(0, limit).join('|'))) {
+  while ((nextPageIds = idsToRequest.splice(0, limit).join('|'))) {
     const resp = await cd.g.mwApi.post({
       action: 'query',
       pageids: nextPageIds,
@@ -178,15 +179,15 @@ export async function getPageTitles(pageIds) {
     }
 
     const query = resp.query;
-    const pagesToAdd = query?.pages;
-    if (!pagesToAdd) {
+    const nextPages = query?.pages;
+    if (!nextPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    pages.push(...pagesToAdd);
+    pages.push(...nextPages);
   }
 
   return pages;
@@ -195,20 +196,21 @@ export async function getPageTitles(pageIds) {
 /**
  * Get page IDs for an array of page titles.
  *
- * @param {string[]} pageTitles
+ * @param {string[]} titles
  * @returns {Promise.<object[]>}
  * @throws {CdError}
  */
-export async function getPageIds(pageTitles) {
+export async function getPageIds(titles) {
   const normalized = [];
   const redirects = [];
   const pages = [];
+  const titlesToRequest = titles.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextPageTitles;
-  while ((nextPageTitles = pageTitles.splice(0, limit).join('|'))) {
+  let nextTitles;
+  while ((nextTitles = titlesToRequest.splice(0, limit).join('|'))) {
     const resp = await cd.g.mwApi.post({
       action: 'query',
-      titles: nextPageTitles,
+      titles: nextTitles,
       redirects: true,
     }).catch(handleApiReject);
 
@@ -221,8 +223,8 @@ export async function getPageIds(pageTitles) {
     }
 
     const query = resp.query;
-    const pagesToAdd = query?.pages;
-    if (!pagesToAdd) {
+    const nextPages = query?.pages;
+    if (!nextPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
@@ -231,7 +233,7 @@ export async function getPageIds(pageTitles) {
 
     normalized.push(...query.normalized || []);
     redirects.push(...query.redirects || []);
-    pages.push(...pagesToAdd);
+    pages.push(...nextPages);
   }
 
   return { normalized, redirects, pages };
@@ -305,7 +307,7 @@ export async function setGlobalOption(name, value) {
     await setOption(name, value, 'globalpreferences');
   } catch (e) {
     // The site doesn't support global preferences.
-    if (e instanceof CdError && e.data.apiData && e.data.apiData.error.code === 'badvalue') {
+    if (e instanceof CdError && e.data.apiData?.error.code === 'badvalue') {
       await setLocalOption(name, value);
     } else {
       throw e;
@@ -336,6 +338,7 @@ export async function getUserGenders(users, requestInBackground = false) {
       usprop: 'gender',
     };
     const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
+
     const resp = await request.catch(handleApiReject);
     const users = resp.query?.users;
     if (!users) {
@@ -344,6 +347,7 @@ export async function getUserGenders(users, requestInBackground = false) {
         code: 'noData',
       });
     }
+
     users
       .filter((user) => user.gender)
       .forEach((user) => {
@@ -551,11 +555,11 @@ export async function getPagesExistence(titles) {
   const pages = [];
   const titlesToRequest = titles.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextPages;
-  while ((nextPages = titlesToRequest.splice(0, limit).join('|'))) {
+  let nextTitles;
+  while ((nextTitles = titlesToRequest.splice(0, limit).join('|'))) {
     const resp = await cd.g.mwApi.post({
       action: 'query',
-      titles: nextPages,
+      titles: nextTitles,
     }).catch(handleApiReject);
 
     if (resp.error) {
@@ -567,8 +571,8 @@ export async function getPagesExistence(titles) {
     }
 
     const query = resp.query;
-    const pagesToAdd = query?.pages;
-    if (!pagesToAdd) {
+    const nextPages = query?.pages;
+    if (!nextPages) {
       throw new CdError({
         type: 'api',
         code: 'noData',
@@ -576,7 +580,7 @@ export async function getPagesExistence(titles) {
     }
 
     normalized.push(...query.normalized || []);
-    pages.push(...pagesToAdd);
+    pages.push(...nextPages);
   }
 
   const normalizedToOriginal = {};

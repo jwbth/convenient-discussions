@@ -1,5 +1,6 @@
 /**
- * Navigation panel and new comments-related functions and configuration.
+ * Singleton related to the navigation panel. It also contains new comments-related functions and
+ * configuration.
  *
  * @module navPanel
  */

@@ -16,7 +16,12 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
-import { getContentLanguageMessages, removeDirMarks, spacesToUnderlines, underlinesToSpaces } from './util';
+import {
+  getContentLanguageMessages,
+  removeDirMarks,
+  spacesToUnderlines,
+  underlinesToSpaces,
+} from './util';
 
 let parseTimestampContentRegexp;
 let parseTimestampUiRegexp;

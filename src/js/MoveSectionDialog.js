@@ -53,7 +53,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getBodyHeight
    */
   getBodyHeight() {
-    return this.$errorItems ? this.$errors.get(0).scrollHeight : this.$body.get(0).scrollHeight;
+    return this.$errorItems ? this.$errors.prop('scrollHeight') : this.$body.prop('scrollHeight');
   }
 
   /**
@@ -217,7 +217,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         this.$body.css('overflow', '');
       }, 500);
 
-      cd.g.windowManager.updateWindowSize(this);
+      this.updateSize();
       this.popPending();
     });
   }
@@ -545,14 +545,16 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         if (closeDialog) {
           this.close();
         } else {
-          cd.g.windowManager.updateWindowSize(this);
+          this.updateSize();
         }
       });
+
     this.actions.setAbilities({
       close: true,
       move: recoverable,
     });
-    cd.g.windowManager.updateWindowSize(this);
+
+    this.updateSize();
     this.popPending();
   }
 }

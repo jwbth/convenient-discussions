@@ -46,6 +46,8 @@ import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
 import { removeWikiMarkup } from './wikitext';
 
+let $loadingPopup;
+
 /**
  * Settings scheme: default, undocumented, local settings, aliases.
  */
@@ -898,8 +900,6 @@ async function updatePageContent(passedData) {
   }
 }
 
-let $loadingPopup;
-
 /**
  * Check if the `showLoadingOverlay` setting is off. We create a separate function for this because
  * this check has to be performed before the settings object is filled.
@@ -1003,7 +1003,7 @@ export function isCurrentRevision() {
 }
 
 /**
- * Remove fragment and revision parameters, clear elements related to the diff.
+ * Remove fragment and revision parameters from the URL, remove DOM elements related to the diff.
  *
  * @param {import('./commonTypedefs').PassedData} passedData
  * @private
@@ -1403,7 +1403,7 @@ export function restoreCommentForms(isPageReloadedExternally) {
  *
  * @returns {Promise.<boolean>} Did the user enable comment reformatting.
  */
-export async function suggestEnableCommentReformatting() {
+export async function maybeSuggestEnableCommentReformatting() {
   if (cd.settings.reformatComments === null) {
     const settings = await getSettings({ reuse: true });
     if ([null, undefined].includes(settings.reformatComments)) {
@@ -1423,19 +1423,19 @@ export async function suggestEnableCommentReformatting() {
         .attr('width', 626)
         .attr('height', 67)
         .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
-        .addClass('cd-rc-img');
+        .addClass('cd-rcnotice-img');
       const $arrow = $('<img>')
         .attr('width', 30)
         .attr('height', 30)
         .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
-        .addClass('cd-rc-img cd-rc-arrow');
+        .addClass('cd-rcnotice-img cd-rcnotice-arrow');
       const $imgNew = $('<img>')
         .attr('width', 626)
         .attr('height', 118)
         .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
-        .addClass('cd-rc-img');
+        .addClass('cd-rcnotice-img');
       const $div = $('<div>')
-        .addClass('cd-rc-text')
+        .addClass('cd-rcnotice-text')
         .html(cd.sParse('rc-suggestion'));
       $body.append($imgOld, $arrow, $imgNew, $div);
       const action = await showConfirmDialog($body, {
@@ -1564,7 +1564,7 @@ function findPreviousCommentByTime(anchor, date, author) {
  * @param {string} sectionName
  * @returns {?Section}
  */
-function findSectionByWords(sectionName) {
+function findSectionByHeadlineParts(sectionName) {
   const matches = cd.sections
     .map((section) => {
       const score = calculateWordOverlap(sectionName, section.headline);
@@ -1603,7 +1603,7 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
   } else {
     sectionName = underlinesToSpaces(decodedFragment);
     label = cd.sParse('deadanchor-section-lead', sectionName);
-    const sectionMatch = findSectionByWords(sectionName);
+    const sectionMatch = findSectionByHeadlineParts(sectionName);
     if (sectionMatch) {
       sectionWithSimilarNameText = (
         ' ' +
@@ -1763,7 +1763,9 @@ export async function addNotFoundMessage(decodedFragment, date, author) {
  * Show a notification informing the user that CD is incompatible with DiscussionTools and
  * suggesting to disable DiscussionTools.
  */
-export function suggestDisableDiscussionTools() {
+export function maybeSuggestDisableDiscussionTools() {
+  if (!cd.g.isDtReplyToolEnabled) return;
+
   const message = cd.sParse('discussiontools-incompatible');
   const { $wrapper: $message, buttons: [disableButton] } = wrap(message, {
     callbacks: {

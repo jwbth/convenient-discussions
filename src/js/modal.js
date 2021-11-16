@@ -361,7 +361,10 @@ export function rescueCommentFormsContent(content) {
   cd.g.windowManager.openWindow(dialog, {
     message: field.$element,
     actions: [
-      { label: cd.s('rd-close'), action: 'close' },
+      {
+        label: cd.s('rd-close'),
+        action: 'close',
+      },
     ],
     size: 'large',
   });
