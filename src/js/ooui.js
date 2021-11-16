@@ -216,22 +216,33 @@ export function confirmCloseDialog(dialog, dialogCode) {
  * @param {boolean} recoverable
  */
 export function handleDialogError(dialog, e, messageName, recoverable) {
-  const error = e instanceof CdError ?
-    new OO.ui.Error(cd.s(messageName), { recoverable }) :
-    new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
+  let error;
+  if (e instanceof CdError) {
+    const { type } = e.data;
+    let message = cd.s(messageName);
+    if (type === 'network') {
+      message += ' ' + cd.s('error-network');
+    }
+    error = new OO.ui.Error(message, { recoverable });
+  } else {
+    error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
+  }
+
   dialog.showErrors(error);
   console.warn(e);
-  if (!recoverable) {
-    dialog.$errors
-      .find('.oo-ui-buttonElement-button')
-      .on('click', () => {
+  dialog.$errors
+    .find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
+    .on('click', () => {
+      if (recoverable) {
+        dialog.updateSize();
+      } else {
         dialog.close();
-      });
-  }
+      }
+    });
 
   dialog.actions.setAbilities({ close: true });
 
-  cd.g.windowManager.updateWindowSize(dialog);
+  dialog.updateSize();
   dialog.popPending();
 }
 

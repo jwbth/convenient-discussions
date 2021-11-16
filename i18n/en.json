@@ -375,7 +375,7 @@
   "error-reloadpage": "Couldn't reload the page.",
   "error-reloadpage-saved": "The page was saved, but couldn't reload it.",
   "error-api": "API error: $1.",
-  "error-network": "Network error.",
+  "error-network": "Check your internet connection.",
   "error-nodata": "The server response lacks the requested data.",
   "error-unknown": "Unknown error.",
   "error-javascript": "A JavaScript error occurred. See the details in the JavaScript console (F12 → Console).",
