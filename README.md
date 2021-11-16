@@ -15,12 +15,14 @@
 * Highlighting and navigating new comments (via the navigation panel or the table of contents)
 * Highlighting own comments
 * Checking for new comments in the background and automatically rendering simple comment edits
-* Watching sections, which affects notifications and highlighting edits on pages that list revisions
-* Desktop notifications about replies to the user's comments and comments in watched sections on open pages (opt-in)
+* Subscribing to topics, which affects notifications and highlighting topics in several places (based on [DiscussionTools](https://www.mediawiki.org/wiki/Help:DiscussionTools#Topic_subscriptions))
+* Desktop notifications about replies to the user's comments and comments in topics the user subscribed to on open pages (opt-in)
 * Moving topics between talk pages
-* Thanking for and copying links to edits that added comments
+* Thanking for edits that added comments
+* Copying links to comments
 * Jumping to a specific comment from the watchlist and other pages that list revisions
 * Always seeing the current section's name and navigating page parts in one click
+* Searching for comments and sections in the archive
 
 The script makes the user forget about:
 * the need to search the code for a place for a comment, count colons, type tildes and other markup;
