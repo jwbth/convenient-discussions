@@ -152,15 +152,18 @@ export function encodeWikilink(link) {
  * @private
  */
 function extractRegularSignatures(adjustedCode, code) {
+  const ending = `(?:\\n*|$)`;
+  const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`;
   const timestampRegexp = new RegExp(
-    `^((.*)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?!["»])(?:\\}\\}|</small>)?).*(?:\n*|$)`,
+    `^((.*?)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})${afterTimestamp}).*${ending}`,
     'igm'
   );
 
-  // ".*" helps to get the last author link. But after that we make another capture to make sure we
-  // take the first link to the comment author. 251 is not arbitrary: it's 255 (maximum allowed
-  // signature length) minus '[[u:a'.length plus ' '.length (the space before the timestamp).
-  const signatureScanLimitWikitext = 251;
+  // After capturing the first signature with ".*?" we make another capture (with authorLinkRegexp)
+  // to make sure we take the first link to the same author as the author in the last link. 251 is
+  // not arbitrary: it's 255 (maximum allowed signature length) minus '[[u:a'.length plus ' '.length
+  // (the space before the timestamp).
+  const signatureScanLimit = 251;
   const signatureRegexp = new RegExp(
     /*
       Captures:
@@ -171,17 +174,18 @@ function extractRegularSignatures(adjustedCode, code) {
       5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       6 - timestamp
      */
-    `^(((.*)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimitWikitext}})(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?:\\}\\}|</small>)?.*)(?:\n*|$)`,
-    'igm'
+    `^(((.*?)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimit}})(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})${afterTimestamp}.*)${ending}`,
+    'im'
   );
+  const lastAuthorLinkRegexp = new RegExp(`^.*${cd.g.CAPTURE_USER_NAME_PATTERN}`, 'i');
   const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
 
   let signatures = [];
   let timestampMatch;
   while ((timestampMatch = timestampRegexp.exec(adjustedCode))) {
     const line = timestampMatch[0];
-    signatureRegexp.lastIndex = 0;
-    const authorTimestampMatch = signatureRegexp.exec(line);
+    const lineStartIndex = timestampMatch.index;
+    const authorTimestampMatch = line.match(signatureRegexp);
 
     let author;
     let timestamp;
@@ -190,49 +194,49 @@ function extractRegularSignatures(adjustedCode, code) {
     let nextCommentStartIndex;
     let dirtyCode;
     if (authorTimestampMatch) {
-      author = userRegistry.getUser(decodeHtmlEntities(authorTimestampMatch[4]));
-
-      const timestampStartIndex = timestampMatch.index + authorTimestampMatch[2].length;
+      const timestampStartIndex = lineStartIndex + authorTimestampMatch[2].length;
       const timestampEndIndex = timestampStartIndex + authorTimestampMatch[6].length;
       timestamp = code.slice(timestampStartIndex, timestampEndIndex);
 
-      startIndex = timestampMatch.index + authorTimestampMatch[3].length;
-      endIndex = timestampMatch.index + authorTimestampMatch[1].length;
+      startIndex = lineStartIndex + authorTimestampMatch[3].length;
+      endIndex = lineStartIndex + authorTimestampMatch[1].length;
       dirtyCode = code.slice(startIndex, endIndex);
 
-      nextCommentStartIndex = timestampMatch.index + authorTimestampMatch[0].length;
+      nextCommentStartIndex = lineStartIndex + authorTimestampMatch[0].length;
 
       // Find the first link to this author in the preceding text.
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
-      let commentEndingStartIndex = (
-        timestampStartIndex -
-        timestampMatch.index -
-        signatureScanLimitWikitext
-      );
+      let commentEndingStartIndex = timestampStartIndex - lineStartIndex - signatureScanLimit;
       commentEndingStartIndex = Math.max(0, commentEndingStartIndex);
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
+
+      // Should always match logically.
+      const [, lastAuthorLink] = commentEnding.match(lastAuthorLinkRegexp);
+      author = userRegistry.getUser(decodeHtmlEntities(lastAuthorLink));
+
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
         // Slash can be present in authorLinkMatch[2]. It often indicates a link to a page in the
         // author's userspace that is not part of the signature (while some such links are, and we
         // don't want to eliminate those cases).
         if (authorLinkMatch[2]) continue;
+
         const testAuthor = userRegistry.getUser(decodeHtmlEntities(authorLinkMatch[1]));
         if (testAuthor === author) {
-          startIndex = timestampMatch.index + commentEndingStartIndex + authorLinkMatch.index;
+          startIndex = lineStartIndex + commentEndingStartIndex + authorLinkMatch.index;
           dirtyCode = code.slice(startIndex, endIndex);
           break;
         }
       }
     } else {
-      startIndex = timestampMatch.index + timestampMatch[2].length;
-      endIndex = timestampMatch.index + timestampMatch[1].length;
+      startIndex = lineStartIndex + timestampMatch[2].length;
+      endIndex = lineStartIndex + timestampMatch[1].length;
       dirtyCode = code.slice(startIndex, endIndex);
 
       const timestampEndIndex = startIndex + timestampMatch[3].length;
       timestamp = code.slice(startIndex, timestampEndIndex);
 
-      nextCommentStartIndex = timestampMatch.index + timestampMatch[0].length;
+      nextCommentStartIndex = lineStartIndex + timestampMatch[0].length;
     }
 
     signatures.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });

@@ -42,7 +42,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
-import { formatDate, formatDateNative } from './timestamp';
+import { formatTimestamp } from './timestamp';
 import { getUserGenders, parseCode } from './apiWrappers';
 import { reloadPage } from './boot';
 import { showCopyLinkDialog } from './modal.js';
@@ -380,7 +380,8 @@ class Comment extends CommentSkeleton {
    */
 
   /**
-   * Remove the comment signature, adding a comment header to the top highlightable instead.
+   * Add a comment header to the top highlightable element. Remove the comment signature unless
+   * there is more than one of them.
    *
    * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
    * @private
@@ -503,8 +504,10 @@ class Comment extends CommentSkeleton {
 
     this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
 
-    this.cleanUpSignature();
-    this.signatureElement.remove();
+    if (!this.extraSignatures.length) {
+      this.cleanUpSignature();
+      this.signatureElement.remove();
+    }
 
     return pagesToCheckExistence;
   }
@@ -722,36 +725,28 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Change the format of the comment timestamp according to the settings.
+   * Change the format of the comment timestamp according to the settings. Do the same with extra
+   * timestamps in the comment.
    *
    * @private
    */
   reformatTimestamp() {
     if (!this.date) return;
 
-    let newTimestamp;
-    let title = '';
-    if (cd.g.ARE_TIMESTAMPS_ALTERED) {
-      newTimestamp = formatDate(this.date, !cd.settings.hideTimezone);
-    }
-
-    if (
-      cd.settings.timestampFormat === 'relative' &&
-      cd.settings.useUiTime &&
-      cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE
-    ) {
-      title = formatDateNative(this.date, true) + '\n';
-    }
-
-    if (newTimestamp) {
-      const originalTimestamp = this.timestampElement.textContent;
-      title += originalTimestamp;
-      this.reformattedTimestamp = newTimestamp;
+    const { timestamp, title } = formatTimestamp(this.date, this.timestampElement.textContent);
+    if (timestamp) {
+      this.reformattedTimestamp = timestamp;
       this.timestampTitle = title;
-      if (!cd.settings.reformatComments) {
-        this.timestampElement.textContent = this.reformattedTimestamp;
-        this.timestampElement.title = this.timestampTitle;
+      if (!cd.settings.reformatComments || this.extraSignatures.length) {
+        this.timestampElement.textContent = timestamp;
+        this.timestampElement.title = title;
         new LiveTimestamp(this.timestampElement, this.date, !cd.settings.hideTimezone);
+        this.extraSignatures.forEach((sig) => {
+          const { timestamp, title } = formatTimestamp(sig.date, sig.timestampText);
+          sig.timestampElement.textContent = timestamp;
+          sig.timestampElement.title = title;
+          new LiveTimestamp(sig.timestampElement, sig.date, !cd.settings.hideTimezone);
+        });
       }
     }
   }
@@ -2159,7 +2154,7 @@ class Comment extends CommentSkeleton {
         this.replaceSignatureWithHeader();
         this.addMenu();
       } else {
-        this.timestampElement = this.$elements.find('.cd-timestamp').get(-1);
+        this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp').get(0);
         this.reformatTimestamp();
       }
 

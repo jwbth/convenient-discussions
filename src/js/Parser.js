@@ -227,50 +227,32 @@ class Parser {
         const timestampElement = timestamp.element;
         const timestampText = timestamp.element.textContent;
         let unsignedElement;
+        let isExtraSignature = false;
 
-        // If the closest not inline timestamp element ancestor has more than one signature, we
-        // choose the last signature to consider it the signature of the comment author. There is no
-        // point for us to parse them as distinct comments as a reply posted using our script will
-        // go below all of them anyway.
-        let closestNotInlineAncestor;
-        for (let el = timestamp.element; !closestNotInlineAncestor; el = el.parentNode) {
+        // If the closest block-level timestamp element ancestor has more than one signature, we
+        // choose the first signature to consider it the signature of the comment author while
+        // keeping the last. There is no point for us to parse them as distinct comments as a reply
+        // posted using our script will go below all of them anyway.
+        let closestBlockAncestor;
+        for (let el = timestamp.element; !closestBlockAncestor; el = el.parentNode) {
           if (isInline(el)) {
             // Simultaneously check if we are inside an unsigned template.
             if (el.classList.contains(cd.config.unsignedClass)) {
               unsignedElement = el;
             }
           } else {
-            closestNotInlineAncestor = el;
+            closestBlockAncestor = el;
           }
         }
+        const elementsTreeWalker = new ElementsTreeWalker(timestamp.element, closestBlockAncestor);
+        while (elementsTreeWalker.previousNode()) {
+          if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
+            isExtraSignature = true;
+            break;
+          }
+        }
+
         const isUnsigned = Boolean(unsignedElement);
-
-        const cniaChildren = Array.from(closestNotInlineAncestor[this.context.childElementsProp]);
-        const elementsTreeWalker = new ElementsTreeWalker(
-          timestamp.element,
-          closestNotInlineAncestor
-        );
-
-        // Workaround to exclude cases like https://en.wikipedia.org/?diff=1042059387, where the
-        // last timestamp should be ignored.
-        let metLink = false;
-        while (
-          elementsTreeWalker.nextNode() &&
-          (
-            // Optimization
-            !cniaChildren.includes(elementsTreeWalker.currentNode) ||
-
-            isInline(elementsTreeWalker.currentNode)
-          )
-        ) {
-          if (elementsTreeWalker.currentNode.tagName === 'A') {
-            metLink = true;
-          }
-
-          // Found other timestamp after this timestamp.
-          if (elementsTreeWalker.currentNode.classList.contains('cd-timestamp') && metLink) return;
-        }
-
         const startElement = unsignedElement || timestamp.element;
         const treeWalker = new ElementsAndTextTreeWalker(startElement);
         let authorName;
@@ -437,6 +419,7 @@ class Parser {
           authorName,
           anchor,
           isUnsigned,
+          isExtraSignature,
         };
       })
       .filter(defined);
@@ -507,7 +490,23 @@ class Parser {
     let signatures = this.timestampsToSignatures(timestamps);
     const unsigneds = this.findUnsigneds();
     signatures.push(...unsigneds);
-    return signatures.map((sig) => Object.assign({ type: 'signature' }, sig));
+
+    // Move extra signatures (additional signatures for a comment, if there is more than one) to an
+    // array which then assign to a relevant signature (the one which goes first).
+    let extraSignatures = [];
+    return signatures
+      .slice()
+      .reverse()
+      .map((sig) => {
+        if (sig.isExtraSignature) {
+          extraSignatures.push(sig);
+        } else {
+          sig.extraSignatures = extraSignatures;
+          extraSignatures = [];
+        }
+        return Object.assign({ type: 'signature' }, sig);
+      })
+      .filter((sig) => !sig.isExtraSignature);
   }
 
   /**

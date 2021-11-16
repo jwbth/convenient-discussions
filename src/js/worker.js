@@ -300,6 +300,7 @@ function parse() {
     'authorTalkLink',
     'cachedParent',
     'elements',
+    'extraSignatures',
     'highlightables',
     'parser',
     'parts',

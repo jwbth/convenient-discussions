@@ -784,6 +784,26 @@ export function formatDateRelative(date) {
   });
 }
 
+export function formatTimestamp(date, originalTimestamp) {
+  let timestamp;
+  let title = '';
+  if (cd.g.ARE_TIMESTAMPS_ALTERED) {
+    timestamp = formatDate(date, !cd.settings.hideTimezone);
+  }
+
+  if (
+    cd.settings.timestampFormat === 'relative' &&
+    cd.settings.useUiTime &&
+    cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE
+  ) {
+    title = formatDateNative(date, true) + '\n';
+  }
+
+  title += originalTimestamp;
+
+  return { timestamp, title };
+}
+
 /**
  * Generate a comment anchor from a date and author.
  *

@@ -100,6 +100,13 @@ class CommentSkeleton {
     this.timestampElement = signature.timestampElement;
 
     /**
+     * Additional signatures in this comment (that go after the "official" signature).
+     *
+     * @type {object[]}
+     */
+    this.extraSignatures = signature.extraSignatures;
+
+    /**
      * _For internal use._ User page (in the "User" namespace) link element.
      *
      * @type {Element|external:Element}
