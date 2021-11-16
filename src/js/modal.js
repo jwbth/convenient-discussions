@@ -157,7 +157,10 @@ export async function showCopyLinkDialog(object, e) {
   if (object.isLinkBeingCopied) return;
 
   const isComment = object instanceof Comment;
-  const anchor = encodeWikilink(isComment ? object.anchor : underlinesToSpaces(object.anchor));
+  const anchor = isComment ?
+    object.dtId || object.anchor :
+    encodeWikilink(underlinesToSpaces(object.anchor));
+
   const wikilink = `[[${cd.page.name}#${anchor}]]`;
   const link = object.getUrl();
   const permanentLink = object.getUrl(true);

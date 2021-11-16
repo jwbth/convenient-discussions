@@ -1200,15 +1200,7 @@ class Section extends SectionSkeleton {
    * @returns {string}
    */
   getUrl(permanent) {
-    if (permanent) {
-      return getUrlWithAnchor(this.anchor, true);
-    } else {
-      if (!this.cachedUrl) {
-        this.cachedUrl = getUrlWithAnchor(this.anchor);
-      }
-
-      return this.cachedUrl;
-    }
+    return getUrlWithAnchor(this.anchor, permanent);
   }
 }
 
