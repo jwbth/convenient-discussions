@@ -213,6 +213,66 @@ class Parser {
       });
   }
 
+  processLinkData(link, authorData) {
+    const { userName, linkType } = Parser.processLink(link) || {};
+    if (userName) {
+      if (!authorData.name) {
+        authorData.name = userName;
+      }
+      if (authorData.name === userName) {
+        if (['user', 'userForeign'].includes(linkType)) {
+          // Don't just break on the second user link because of cases like this:
+          // https://en.wikipedia.org/?diff=1012665097
+          if (authorData.notForeignLink) {
+            return false;
+          }
+          if (linkType !== 'userForeign') {
+            authorData.notForeignLink = link;
+          }
+          authorData.link = link;
+        } else if (['userTalk', 'userTalkForeign'].includes(linkType)) {
+          if (authorData.talkNotForeignLink) {
+            return false;
+          }
+          if (linkType !== 'userTalkForeign') {
+            authorData.talkNotForeignLink = link;
+          }
+          authorData.talkLink = link;
+        } else if (['contribs', 'contribsForeign'].includes(linkType)) {
+          // authorData.contribsNotForeignLink is used only to make sure there are no two contribs
+          // links on the current domain in a signature.
+          if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
+            return false;
+          }
+          if (linkType !== 'contribsForeign') {
+            authorData.contribsNotForeignLink = link;
+          }
+        } else if (['userSubpage', 'userSubpageForeign'].includes(linkType)) {
+          // A user subpage link after a user link is OK. A user subpage link before a user link is
+          // not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps part of the
+          // comment.
+          if (authorData.link || authorData.talkLink) {
+            return false;
+          }
+        } else if (['userTalkSubpage', 'userTalkSubpageForeign'].includes(linkType)) {
+          // Same as with a user page above.
+          if (authorData.link || authorData.talkLink) {
+            return false;
+          }
+        } else {
+          // Cases like https://ru.wikipedia.org/?diff=115909247
+          if (authorData.link || authorData.talkLink) {
+            return false;
+          }
+        }
+        authorData.isLastLinkAuthorLink = true;
+      } else {
+        // Don't return false here in case the user mentioned a redirect to their user page here.
+      }
+    }
+    return true;
+  }
+
   /**
    * Collect nodes related to signatures starting from timestamp nodes.
    *
@@ -255,15 +315,7 @@ class Parser {
         const isUnsigned = Boolean(unsignedElement);
         const startElement = unsignedElement || timestamp.element;
         const treeWalker = new ElementsAndTextTreeWalker(startElement);
-        let authorName;
-        let authorLink;
-        let authorNotForeignLink;
-        let authorTalkLink;
-        let authorTalkNotForeignLink;
-
-        // Used only to make sure there are no two contribs links on the current domain in a
-        // signature.
-        let authorContribsNotForeignLink;
+        const authorData = {};
 
         let length = 0;
         let firstSignatureElement;
@@ -291,81 +343,21 @@ class Parser {
             ) {
               break;
             }
-            let hasAuthorLinks = false;
-
-            const processLinkData = ({ userName, linkType }, link) => {
-              if (userName) {
-                if (!authorName) {
-                  authorName = userName;
-                }
-                if (authorName === userName) {
-                  if (['user', 'userForeign'].includes(linkType)) {
-                    // Don't just break on the second user link because of cases like this:
-                    // https://en.wikipedia.org/?diff=1012665097
-                    if (authorNotForeignLink) {
-                      return false;
-                    }
-                    if (linkType !== 'userForeign') {
-                      authorNotForeignLink = link;
-                    }
-                    authorLink = link;
-                  } else if (['userTalk', 'userTalkForeign'].includes(linkType)) {
-                    if (authorTalkNotForeignLink) {
-                      return false;
-                    }
-                    if (linkType !== 'userTalkForeign') {
-                      authorTalkNotForeignLink = link;
-                    }
-                    authorTalkLink = link;
-                  } else if (['contribs', 'contribsForeign'].includes(linkType)) {
-                    if (authorContribsNotForeignLink && (authorLink || authorTalkLink)) {
-                      return false;
-                    }
-                    if (linkType !== 'contribsForeign') {
-                      authorContribsNotForeignLink = link;
-                    }
-                  } else if (['userSubpage', 'userSubpageForeign'].includes(linkType)) {
-                    // A user subpage link after a user link is OK. A user subpage link before a
-                    // user link is not OK (example: https://ru.wikipedia.org/?diff=112885854).
-                    // Perhaps part of the comment.
-                    if (authorLink || authorTalkLink) {
-                      return false;
-                    }
-                  } else if (['userTalkSubpage', 'userTalkSubpageForeign'].includes(linkType)) {
-                    // Same as with a user page above.
-                    if (authorLink || authorTalkLink) {
-                      return false;
-                    }
-                  } else {
-                    // Cases like https://ru.wikipedia.org/?diff=115909247
-                    if (authorLink || authorTalkLink) {
-                      return false;
-                    }
-                  }
-                  hasAuthorLinks = true;
-                } else {
-                  // Don't return false here in case the user mentioned a redirect to their user
-                  // page here.
-                }
-              }
-              return true;
-            }
+            authorData.isLastLinkAuthorLink = false;
 
             if (node.tagName === 'A') {
-              const linkData = Parser.processLink(node) || {};
-              if (!processLinkData(linkData, node)) break;
+              if (!this.processLinkData(node, authorData)) break;
             } else {
               const links = Array.from(node.getElementsByTagName('a')).reverse();
               for (const link of links) {
                 // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
                 if (link.classList.contains('external')) continue;
 
-                const linkData = Parser.processLink(link) || {};
-                processLinkData(linkData, link);
+                this.processLinkData(link, authorData);
               }
             }
 
-            if (hasAuthorLinks) {
+            if (authorData.isLastLinkAuthorLink) {
               firstSignatureElement = node;
             }
           }
@@ -383,7 +375,7 @@ class Parser {
           // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
           // a part of the signature then.
           if (
-            authorName &&
+            authorData.name &&
             newNode?.tagName &&
             ['S', 'STRIKE', 'DEL'].includes(newNode.tagName)
           ) {
@@ -391,7 +383,7 @@ class Parser {
           }
         } while (newNode && length < cd.config.signatureScanLimit);
 
-        if (!authorName) return;
+        if (!authorData.name) return;
 
         if (!signatureNodes.length) {
           signatureNodes = [startElement];
@@ -400,7 +392,7 @@ class Parser {
         const fseIndex = signatureNodes.indexOf(firstSignatureElement);
         signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
 
-        const anchor = generateCommentAnchor(timestamp.date, authorName, true);
+        const anchor = generateCommentAnchor(timestamp.date, authorData.name, true);
         registerCommentAnchor(anchor);
         const signatureContainer = signatureNodes[0].parentNode;
         const startElementNextSibling = signatureNodes[0].nextSibling;
@@ -414,9 +406,9 @@ class Parser {
           timestampElement,
           timestampText,
           date,
-          authorLink,
-          authorTalkLink,
-          authorName,
+          authorLink: authorData.link,
+          authorTalkLink: authorData.talkLink,
+          authorName: authorData.name,
           anchor,
           isUnsigned,
           isExtraSignature,
