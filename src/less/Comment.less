@@ -115,7 +115,8 @@
   margin-top: 0.5em;
 }
 
-.cd-comment-part-last {
+// Override ".skin-vector dd"
+.cd-comment-part-last.cd-comment-part-last {
   margin-bottom: 0.5em;
 }
 
@@ -181,38 +182,36 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   border-right: 1px solid #c8ccd1;
 }
 
-.cd-connectToPreviousItem {
+// Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
+// need to avoid wrapping the contents of almost every comment in a <div> (so that its reply comment
+// form is not included in the comment) which would increase the parsing time significantly.
+.cd-connectToPreviousItem::before {
+  content: "";
   position: relative;
-
-  // Workaround for close a visual gap to the previous item. The unfortunate reason for it is that
-  // we need to avoid wrapping the contents of almost every comment into a <div>, which would
-  // increase the parsing time significantly.
-  &::before {
-    content: '';
-    position: absolute;
-    display: block;
-    top: -0.5em;
-    width: 1px;
-    background-color: #c8ccd1;
-    height: 0.5em;
-  }
+  display: block;
+  top: -0.5em;
+  height: 0.5em;
+  margin-bottom: -1em;
+  width: 1px;
+  background-color: #c8ccd1;
 }
 
 .cd-reformattedComments .cd-connectToPreviousItem::before {
   top: -0.75em;
   height: 0.75em;
+  margin-bottom: -1.5em;
 }
 
 .sitedir-ltr .cd-connectToPreviousItem::before,
 .sitedir-rtl .mw-content-ltr .cd-connectToPreviousItem::before {
-  left: -1px;
+  left: calc(-1em - 1px);
   right: auto;
 }
 
 .sitedir-rtl .cd-connectToPreviousItem::before,
 .sitedir-ltr .mw-content-rtl .cd-connectToPreviousItem::before {
   left: auto;
-  right: -1px;
+  right: calc(-1em - 1px);
 }
 
 .cd-thread-clickArea {
