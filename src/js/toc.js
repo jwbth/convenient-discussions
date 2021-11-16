@@ -180,13 +180,13 @@ export default {
   },
 
   /**
-   * _For internal use._ Highlight (bold) watched sections.
+   * _For internal use._ Highlight (bold) sections that the user is subscribed to.
    */
-  highlightWatchedSections() {
+  highlightSubscriptions() {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
     cd.sections
-      .filter((section) => section.isWatched)
+      .filter((section) => section.isSubscribedTo)
       .forEach((section) => {
         section.updateTocLink();
       });
@@ -289,10 +289,6 @@ export default {
           });
         };
         li.appendChild(a);
-        if (cd.g.currentPageWatchedSections?.includes(headline)) {
-          a.className = 'cd-toc-watched';
-          a.title = cd.s('toc-watched');
-        }
 
         let number;
         if (currentLevelMatch) {

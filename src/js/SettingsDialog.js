@@ -55,9 +55,12 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
   /**
    * Create a settings dialog.
+   *
+   * @param {string} [initialPageName]
    */
-  constructor() {
-    super();
+  constructor(initialPageName) {
+    super({ classes: ['cd-settingsDialog'] });
+    this.initialPageName = initialPageName;
     this.preparatoryRequests = [
       getSettings({ omitLocal: true }),
       mw.loader.using('mediawiki.widgets.UsersMultiselectWidget'),
@@ -162,10 +165,9 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       this.renderControls(this.settings);
 
       this.stackLayout.setItem(this.settingsPanel);
-      this.bookletLayout.setPage('talkPage');
+      this.bookletLayout.setPage(this.initialPageName || 'talkPage');
       this.actions.setAbilities({ close: true });
 
-      cd.g.windowManager.updateWindowSize(this);
       this.popPending();
 
       addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
@@ -500,15 +502,22 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       help: cd.s('sd-usetemplatedata-help'),
     });
 
+    [this.useTopicSubscriptionField, this.useTopicSubscriptionCheckbox] = createCheckboxField({
+      value: 'useTopicSubscription',
+      selected: settings.useTopicSubscription,
+      label: wrap(cd.sParse('sd-usetopicsubscription'), { targetBlank: true }),
+      help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
+    });
+
     [this.watchOnReplyField, this.watchOnReplyCheckbox] = createCheckboxField({
       value: 'watchOnReply',
       selected: settings.watchOnReply,
       label: cd.s('sd-watchonreply'),
     });
 
-    [this.watchSectionOnReplyField, this.watchSectionOnReplyCheckbox] = createCheckboxField({
-      value: 'watchSectionOnReply',
-      selected: settings.watchSectionOnReply,
+    [this.subscribeOnReplyField, this.subscribeOnReplyCheckbox] = createCheckboxField({
+      value: 'subscribeOnReply',
+      selected: settings.subscribeOnReply,
       label: cd.s('sd-watchsectiononreply'),
       help: cd.s('sd-watchsectiononreply-help'),
     });
@@ -541,7 +550,8 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
     this.useUiTimeCheckbox.connect(this, { change: 'updateStates' });
     this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
-    this.watchSectionOnReplyCheckbox.connect(this, { change: 'updateStates' });
+    this.useTopicSubscriptionCheckbox.connect(this, { change: 'updateStates' });
+    this.subscribeOnReplyCheckbox.connect(this, { change: 'updateStates' });
     this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
   }
 
@@ -603,14 +613,17 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       showToolbar: this.showToolbarCheckbox.isSelected(),
       signaturePrefix: this.signaturePrefixInput.getValue(),
       timestampFormat: this.timestampFormatSelect.findSelectedItem()?.getData(),
+      topicSubscriptionSeenNotice: this.settings.topicSubscriptionSeenNotice,
       useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
       useUiTime: this.useUiTimeCheckbox.isSelected(),
       useTemplateData: this.useTemplateDataCheckbox.isSelected(),
+      useTopicSubscription: this.useTopicSubscriptionCheckbox.isSelected(),
       watchOnReply: this.watchOnReplyCheckbox.isSelected(),
-      watchSectionOnReply: this.watchSectionOnReplyCheckbox.isSelected(),
+      subscribeOnReply: this.subscribeOnReplyCheckbox.isSelected(),
     };
     settings.haveInsertButtonsBeenAltered = (
-      JSON.stringify(settings.insertButtons) !== JSON.stringify(settingsScheme.default.insertButtons)
+      JSON.stringify(settings.insertButtons) !==
+      JSON.stringify(settingsScheme.default.insertButtons)
     );
 
     return settings;
@@ -688,7 +701,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         await Promise.all([
           setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, undefined),
           setLocalOption(cd.g.VISITS_OPTION_NAME, undefined),
-          setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_NAME, undefined),
+          setLocalOption(cd.g.SUBSCRIPTIONS_OPTION_NAME, undefined),
           setGlobalOption(cd.g.SETTINGS_OPTION_NAME, undefined),
         ]);
       } catch (e) {
@@ -757,7 +770,7 @@ class CommentFormPageLayout extends OO.ui.PageLayout {
     this.$element.append([
       dialog.autopreviewField.$element,
       dialog.watchOnReplyField.$element,
-      dialog.watchSectionOnReplyField.$element,
+      dialog.subscribeOnReplyField.$element,
       dialog.showToolbarField.$element,
       dialog.alwaysExpandAdvancedField.$element,
       dialog.autocompleteTypesField.$element,
@@ -819,6 +832,7 @@ class NotificationsPageLayout extends OO.ui.PageLayout {
   constructor(dialog) {
     super('notifications');
     this.$element.append([
+      dialog.useTopicSubscriptionField.$element,
       dialog.notificationsField.$element,
       dialog.desktopNotificationsField.$element,
       dialog.notifyCollapsedThreadsField.$element,

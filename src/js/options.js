@@ -8,7 +8,8 @@ import lzString from 'lz-string';
 
 import CdError from './CdError';
 import cd from './cd';
-import { addToArrayIfAbsent, firstCharToUpperCase, removeFromArrayIfPresent } from './util';
+import subscriptions from './subscriptions';
+import { firstCharToUpperCase } from './util';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 import { settingsScheme } from './boot';
 
@@ -43,27 +44,28 @@ export function unpackVisits(visitsString) {
 }
 
 /**
- * Pack the watched sections object into a string for further compression.
+ * Pack the subscriptions object into a string for further compression.
  *
- * @param {object} watchedSections
+ * @param {object} registry
  * @returns {string}
  */
-export function packWatchedSections(watchedSections) {
-  return Object.keys(watchedSections).filter((pageId) => watchedSections[pageId].length)
-    .map((key) => ` ${key} ${watchedSections[key].join('\n')}\n`)
+export function packSubscriptions(registry) {
+  return Object.keys(registry)
+    .filter((pageId) => Object.keys(registry[pageId]).length)
+    .map((key) => ` ${key} ${Object.keys(registry[key]).join('\n')}\n`)
     .join('')
     .trim();
 }
 
 /**
- * Unpack the watched sections string into a visits object.
+ * Unpack the subscriptions string into a visits object.
  *
- * @param {string} watchedSectionsString
+ * @param {string} s
  * @returns {object}
  */
-export function unpackWatchedSections(watchedSectionsString) {
-  const watchedSections = {};
-  const pages = watchedSectionsString.split(/(?:^|\n )(\d+) /).slice(1);
+export function unpackSubscriptions(s) {
+  const registry = {};
+  const pages = s.split(/(?:^|\n )(\d+) /).slice(1);
   let pageId;
   for (
     let i = 0, isPageId = true;
@@ -73,10 +75,11 @@ export function unpackWatchedSections(watchedSectionsString) {
     if (isPageId) {
       pageId = pages[i];
     } else {
-      watchedSections[pageId] = pages[i].split('\n');
+      const pagesArr = pages[i].split('\n');
+      registry[pageId] = subscriptions.itemsToKeys(pagesArr);
     }
   }
-  return watchedSections;
+  return registry;
 }
 
 /**
@@ -273,10 +276,10 @@ function cleanUpVisits(originalVisits) {
 export async function setVisits(visits) {
   if (!visits || !cd.user.isRegistered()) return;
 
-  const visitsString = packVisits(visits);
-  const visitsStringCompressed = lzString.compressToEncodedURIComponent(visitsString);
+  const s = packVisits(visits);
+  const compressed = lzString.compressToEncodedURIComponent(s);
   try {
-    await setLocalOption(cd.g.VISITS_OPTION_NAME, visitsStringCompressed);
+    await setLocalOption(cd.g.VISITS_OPTION_NAME, compressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
@@ -292,52 +295,31 @@ export async function setVisits(visits) {
 }
 
 /**
- * Request the watched sections from the server and assign them to
- * `convenientDiscussions.g.watchedSections`.
+ * Request the legacy subscriptions from the server.
  *
  * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
- * can be critical for determining watched sections.
+ * can be critical for determining subscriptions.
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
- * @param {object} [passedData={}]
- * @param {string} [passedData.justWatchedSection] Name of the section that was watched within
- *   seconds before making this request (it could be not enough time for it to appear in the
- *   response).
- * @param {string} [passedData.justUnwatchedSection] Name of the section that was unwatched within
- *   seconds before making this request (it could be not enough time for it to appear in the
- *   response).
+ * @returns {Promise.<object>}
  */
-export async function getWatchedSections(reuse = false, passedData = {}) {
-  const isOptionSet = mw.user.options.get(cd.g.WATCHED_SECTIONS_OPTION_NAME) !== null;
+export async function getLegacySubscriptions(reuse = false) {
+  const isOptionSet = mw.user.options.get(cd.g.SUBSCRIPTIONS_OPTION_NAME) !== null;
   const promise = cd.state.isPageFirstParsed && !isOptionSet ?
     Promise.resolve({}) :
-    getUserInfo(reuse).then((options) => options.watchedSections);
-  const watchedSections = await promise;
+    getUserInfo(reuse).then((options) => options.subscriptions);
+  const registry = await promise;
 
-  const articleId = mw.config.get('wgArticleId');
-  let currentPageWatchedSections;
-  if (articleId) {
-    watchedSections[articleId] = watchedSections[articleId] || [];
-    currentPageWatchedSections = watchedSections[articleId];
-
-    // Manually add/remove a section that was added/removed at the same moment the page was
-    // reloaded the last time, so when we requested watched sections from server, this section
-    // wasn't there yet most probably.
-    addToArrayIfAbsent(currentPageWatchedSections, passedData.justWatchedSection);
-    removeFromArrayIfPresent(currentPageWatchedSections, passedData.justUnwatchedSection);
-  }
-
-  cd.g.watchedSections = watchedSections;
-  cd.g.currentPageWatchedSections = currentPageWatchedSections;
+  return registry;
 }
 
 /**
- * Save the watched sections kept in `convenientDiscussions.g.watchedSections` to the server.
+ * Save the watched sections to the server.
+ *
+ * @param {Promise.<object>} registry
  */
-export async function setWatchedSections() {
-  const watchedSectionsString = packWatchedSections(cd.g.watchedSections);
-  const watchedSectionsStringCompressed = (
-    lzString.compressToEncodedURIComponent(watchedSectionsString)
-  );
-  await setLocalOption(cd.g.WATCHED_SECTIONS_OPTION_NAME, watchedSectionsStringCompressed);
+export async function setLegacySubscriptions(registry) {
+  const s = packSubscriptions(registry);
+  const compressed = lzString.compressToEncodedURIComponent(s);
+  await setLocalOption(cd.g.SUBSCRIPTIONS_OPTION_NAME, compressed);
 }

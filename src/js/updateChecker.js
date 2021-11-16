@@ -370,40 +370,21 @@ function checkForChangesSincePreviousVisit(currentComments) {
         const comment = Comment.getByAnchor(currentComment.anchor);
         if (!comment) return;
 
-        const commentsData = [oldComment, currentComment];
+        // Different indexes to supply one object both to the event and Comment#markAsChanged.
+        const commentsData = {
+          old: oldComment,
+          current: currentComment,
+          0: oldComment,
+          1: currentComment,
+        };
+
         comment.markAsChanged('changedSince', true, previousVisitRevisionId, commentsData);
 
         if (comment.isOpeningSection) {
-          const section = comment.section;
-          if (
-            section &&
-            !section.isWatched &&
-            /^H[1-6]$/.test(currentComment.elementNames[0]) &&
-            oldComment.elementNames[0] === currentComment.elementNames[0]
-          ) {
-            const html = oldComment.elementHtmls[0].replace(
-              /\x01(\d+)_\w+\x02/g,
-              (s, num) => currentComment.hiddenElementsData[num - 1].html
-            );
-            const $dummy = $('<span>').html($(html).html());
-            const oldSection = { headlineElement: $dummy.get(0) };
-            Section.prototype.parseHeadline.call(oldSection);
-            const newHeadline = section.headline;
-            if (
-              newHeadline &&
-              oldSection.headline !== newHeadline &&
-              cd.g.originalThisPageWatchedSections?.includes(oldSection.headline)
-            ) {
-              section.watch(true, oldSection.headline);
-            }
-          }
+          comment.section?.resubscribeToRenamed(currentComment, oldComment);
         }
 
-        const commentData = {
-          old: oldComment,
-          current: currentComment,
-        };
-        changeList.push({ comment, commentData });
+        changeList.push({ comment, commentsData });
       }
     }
   });
@@ -415,7 +396,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
      * @event changesSincePreviousVisit
      * @param {object[]} changeList
      * @param {Comment} changeList.comment
-     * @param {object} changeList.commentData
+     * @param {object} changeList.commentsData
      */
     mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
   }
@@ -440,6 +421,15 @@ function checkForNewChanges(currentComments) {
     const newComment = currentComment.match;
     let comment;
     const events = {};
+
+    // Different indexes to supply one object both to the event and Comment#markAsChanged.
+    const commentsData = {
+      current: currentComment,
+      new: newComment,
+      0: currentComment,
+      1: newComment,
+    };
+
     if (newComment) {
       comment = Comment.getByAnchor(currentComment.anchor);
       if (!comment) return;
@@ -458,7 +448,6 @@ function checkForNewChanges(currentComments) {
           // called indirectly by Comment#markAsChanged.
           comment.comparedHtml = newComment.comparedHtml;
 
-          const commentsData = [currentComment, newComment];
           comment.markAsChanged(
             'changed',
             updateSuccess,
@@ -484,11 +473,7 @@ function checkForNewChanges(currentComments) {
     }
 
     if (Object.keys(events).length) {
-      const commentData = {
-        current: currentComment,
-        new: newComment,
-      };
-      changeList.push({ comment, events, commentData });
+      changeList.push({ comment, events, commentsData });
     }
   });
 
@@ -515,7 +500,7 @@ function checkForNewChanges(currentComments) {
      * @param {boolean} [changeList.events.unchanged]
      * @param {boolean} [changeList.events.deleted]
      * @param {boolean} [changeList.events.undeleted]
-     * @param {object} changeList.commentData
+     * @param {object} changeList.commentsData
      */
     mw.hook('convenientDiscussions.newChanges').fire(changeList);
   }
@@ -555,10 +540,10 @@ function showOrdinaryNotification(comments) {
     if (filteredComments.length === 1) {
       const comment = filteredComments[0];
       if (comment.isToMe) {
-        const where = comment.watchedSectionHeadline ?
+        const where = comment.sectionSubscribedTo ?
           (
             cd.mws('word-separator') +
-            cd.s('notification-part-insection', comment.watchedSectionHeadline)
+            cd.s('notification-part-insection', comment.sectionSubscribedTo.headline)
           ) :
           cd.mws('word-separator') + cd.s('notification-part-onthispage');
         html = (
@@ -572,7 +557,7 @@ function showOrdinaryNotification(comments) {
             'notification-insection',
             comment.author.name,
             comment.author,
-            comment.watchedSectionHeadline
+            comment.sectionSubscribedTo.headline
           ) +
           ' ' +
           reloadHtml
@@ -580,17 +565,17 @@ function showOrdinaryNotification(comments) {
       }
     } else {
       const isCommonSection = filteredComments.every((comment) => (
-        comment.watchedSectionHeadline === filteredComments[0].watchedSectionHeadline
+        comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
       ));
       let section;
       if (isCommonSection) {
-        section = filteredComments[0].watchedSectionHeadline;
+        section = filteredComments[0].sectionSubscribedTo;
       }
       const where = (
         cd.mws('word-separator') +
         (
           section ?
-          cd.s('notification-part-insection', section) :
+          cd.s('notification-part-insection', section.headline) :
           cd.s('notification-part-onthispage')
         )
       );
@@ -599,11 +584,9 @@ function showOrdinaryNotification(comments) {
         mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
       }
 
-      // "that may be relevant to you" text is not needed when the section is watched and the
-      // user can clearly understand why they are notified.
-      const mayBeRelevant = section && cd.g.currentPageWatchedSections?.includes(section) ?
-        '' :
-        mayBeRelevantString;
+      // "that may be relevant to you" text is not needed when the section is watched and the user
+      // can clearly understand why they are notified.
+      const mayBeRelevant = section ? '' : mayBeRelevantString;
 
       html = (
         cd.sParse('notification-newcomments', filteredComments.length, where, mayBeRelevant) +
@@ -671,26 +654,24 @@ function showDesktopNotification(comments) {
       );
     }
   } else {
-    const isCommonSection = filteredComments.every((comment) => (
-      comment.watchedSectionHeadline === filteredComments[0].watchedSectionHeadline
-    ));
     let section;
+    const isCommonSection = filteredComments.every((comment) => (
+      comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
+    ));
     if (isCommonSection) {
-      section = filteredComments[0].watchedSectionHeadline;
+      section = filteredComments[0].sectionSubscribedTo;
     }
     const where = section ?
-      cd.mws('word-separator') + cd.s('notification-part-insection', section) :
+      cd.mws('word-separator') + cd.s('notification-part-insection', section.headline) :
       '';
     let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
     if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
       mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
     }
 
-    // "that may be relevant to you" text is not needed when the section is watched and the
-    // user can clearly understand why they are notified.
-    const mayBeRelevant = section && cd.g.currentPageWatchedSections?.includes(section) ?
-      '' :
-      mayBeRelevantString;
+    // "that may be relevant to you" text is not needed when the section is watched and the user can
+    // clearly understand why they are notified.
+    const mayBeRelevant = section ? '' : mayBeRelevantString;
 
     body = cd.s(
       'notification-newcomments-desktop',
@@ -741,10 +722,10 @@ function isPageStillAtRevision(revisionId) {
 /**
  * Process the comments retrieved by a web worker.
  *
- * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments Comments from the recent
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments Comments in the recent
  *   revision.
- * @param {import('./commonTypedefs').CommentSkeletonLike[]} currentComments Comments from the
- *   currently shown revision mapped to the comments from the recent revision.
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} currentComments Comments in the
+ *   currently shown revision mapped to the comments in the recent revision.
  * @param {number} currentRevisionId
  * @private
  */
@@ -792,16 +773,13 @@ async function processComments(comments, currentComments, currentRevisionId) {
     if (comment.isToMe) {
       return true;
     }
-    if (!cd.g.currentPageWatchedSections) {
-      return false;
-    }
     if (comment.section) {
-      // Is this section watched by means of an upper level section?
+      // Is this section subscribed to by means of an upper level section?
       const section = comment.section.match;
       if (section) {
-        const closestWatchedSection = section.getClosestWatchedSection(true);
-        if (closestWatchedSection) {
-          comment.watchedSectionHeadline = closestWatchedSection.headline;
+        const closestSectionSubscribedTo = section.getClosestSectionSubscribedTo(true);
+        if (closestSectionSubscribedTo) {
+          comment.sectionSubscribedTo = closestSectionSubscribedTo;
           return true;
         }
       }
@@ -940,7 +918,6 @@ const updateChecker = {
       '$toc',
       'rootElement',
       'visits',
-      'watchedSections',
     ];
 
     const message = await runWorkerTask({

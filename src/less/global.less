@@ -40,3 +40,9 @@ a:not([href]) {
   // windows to be obstructed by interface elements created by CD.
   z-index: 101;
 }
+
+.cd-settingsDialog {
+  // The standard is 101. It should be bigger than the z-index for alerts, as an alert can link to
+  // the settings dialog.
+  z-index: 102;
+}

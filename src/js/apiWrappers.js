@@ -13,7 +13,7 @@ import cd from './cd';
 import userRegistry from './userRegistry';
 import { createApi } from './boot';
 import { defined, firstCharToUpperCase, handleApiReject, unique } from './util';
-import { unpackVisits, unpackWatchedSections } from './options';
+import { unpackSubscriptions, unpackVisits } from './options';
 
 let cachedUserInfoRequest;
 let currentAutocompletePromise;
@@ -136,15 +136,15 @@ export function getUserInfo(reuse = false) {
         '';
       const visits = unpackVisits(visitsString);
 
-      const watchedSectionsCompressed = options[cd.g.WATCHED_SECTIONS_OPTION_NAME];
-      const watchedSectionsString = watchedSectionsCompressed ?
-        lzString.decompressFromEncodedURIComponent(watchedSectionsCompressed) :
+      const subscriptionsCompressed = options[cd.g.SUBSCRIPTIONS_OPTION_NAME];
+      const subscriptionsString = subscriptionsCompressed ?
+        lzString.decompressFromEncodedURIComponent(subscriptionsCompressed) :
         '';
-      const watchedSections = unpackWatchedSections(watchedSectionsString);
+      const subscriptions = unpackSubscriptions(subscriptionsString);
 
       cd.g.USER_RIGHTS = rights;
 
-      return { options, visits, watchedSections, rights };
+      return { options, visits, subscriptions, rights };
     },
     handleApiReject
   );
@@ -591,4 +591,52 @@ export async function getPagesExistence(titles) {
   });
 
   return results;
+}
+
+export async function getDtSubscriptions(ids) {
+  const subscriptions = {};
+
+  // cd.g.USER_RIGHTS is rarely set on first page load.
+  const isHigherApiLimit = cd.g.USER_RIGHTS ?
+    cd.g.USER_RIGHTS.includes('apihighlimits') :
+    mw.config.get('wgUserGroups').includes('sysop');
+
+  const idsToRequest = ids.slice();
+  const limit = isHigherApiLimit ? 500 : 50;
+  let nextIds;
+  while ((nextIds = idsToRequest.splice(0, limit).join('|'))) {
+    const resp = await cd.g.mwApi.post({
+      action: 'discussiontoolsgetsubscriptions',
+      commentname: nextIds,
+    }).catch(handleApiReject);
+
+    if (resp.error) {
+      throw new CdError({
+        type: 'api',
+        code: 'error',
+        apiData: resp,
+      });
+    }
+
+    const nextSubscriptions = resp.subscriptions;
+    if (!nextSubscriptions) {
+      throw new CdError({
+        type: 'api',
+        code: 'noData',
+      });
+    }
+
+    Object.assign(subscriptions, nextSubscriptions);
+  }
+
+  return subscriptions;
+}
+
+export async function dtSubscribe(subscribeId, anchor, subscribe) {
+  return await cd.g.mwApi.postWithEditToken({
+    action: 'discussiontoolssubscribe',
+    page: `${cd.page.name}#${anchor}`,
+    commentname: subscribeId,
+    subscribe,
+  }).catch(handleApiReject);
 }

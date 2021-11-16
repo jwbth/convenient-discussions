@@ -929,3 +929,9 @@ export function parseDtCommentId(id) {
   }
   return { author, date, parentAuthor, parentDate, sectionAnchorBeginning, index };
 }
+
+export function generateDtSubscriptionId(name, timestamp) {
+  const date = new Date(timestamp);
+  date.setSeconds(0);
+  return `h-${spacesToUnderlines(name)}-${date.toISOString()}`;
+}

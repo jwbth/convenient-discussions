@@ -1,18 +1,18 @@
 import CdError from './CdError';
 import cd from './cd';
+import subscriptions from './subscriptions';
 import { addPreventUnloadCondition } from './eventHandlers';
 import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
 import { focusInput, unique } from './util';
 import { getPageIds, getPageTitles } from './apiWrappers';
-import { getWatchedSections, setWatchedSections } from './options';
 
 /**
- * Class used to create an "Edit watched sections" dialog.
+ * Class used to create an "Edit subscriptions" dialog.
  *
  * @augments external:OO.ui.ProcessDialog
  */
-class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
-  static name = 'editWatchedSectionsDialog';
+class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
+  static name = 'editSubscriptionsDialog';
   static title = cd.s('ewsd-title');
   static actions = [
     {
@@ -32,11 +32,13 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
   static size = 'large';
 
   /**
-   * Create an "Edit watched sections" dialog.
+   * Create an "Edit subscriptions" dialog.
    */
   constructor() {
     super();
-    this.watchedSectionsRequest = getWatchedSections();
+    if (cd.settings.useTopicSubscription) return;
+
+    subscriptions.load();
   }
 
   /**
@@ -47,7 +49,7 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getBodyHeight
    */
   getBodyHeight() {
-    return this.$errorItems ? this.$errors.get(0).scrollHeight : this.$body.get(0).scrollHeight;
+    return this.$errorItems ? this.$errors.prop('scrollHeight') : this.$body.prop('scrollHeight');
   }
 
   /**
@@ -113,10 +115,8 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
     return super.getReadyProcess(data).next(async () => {
       let pages;
       try {
-        await this.watchedSectionsRequest;
-        const pageIds = Object.keys(cd.g.watchedSections)
-          .filter((pageId) => cd.g.watchedSections[pageId].length);
-        pages = await getPageTitles(pageIds);
+        await subscriptions.loadRequest;
+        pages = await getPageTitles(subscriptions.getPageIds());
       } catch (e) {
         handleDialogError(this, e, 'ewsd-error-processing', false);
         return;
@@ -131,7 +131,7 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
         .filter((page) => page.title)
 
         .map((page) => (
-          cd.g.watchedSections[page.pageid]
+          subscriptions.getForPageId(page.pageid)
             .map((section) => `${page.title}#${section}`)
             .join('\n')
         ))
@@ -140,7 +140,7 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
       this.input = new OO.ui.MultilineTextInputWidget({
         value,
         rows: 30,
-        classes: ['cd-editWatchedSections-input'],
+        classes: ['cd-editSubscriptions-input'],
       });
       this.input.on('change', (newValue) => {
         this.actions.setAbilities({ save: newValue !== value });
@@ -159,7 +159,7 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
         this.$body.css('overflow', '');
       }, 500);
 
-      cd.g.windowManager.updateWindowSize(this);
+      this.updateSize();
       this.popPending();
 
       addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
@@ -176,89 +176,7 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
    */
   getActionProcess(action) {
     if (action === 'save') {
-      return new OO.ui.Process(async () => {
-        this.pushPending();
-
-        const sections = {};
-        const pageTitles = [];
-        this.input
-          .getValue()
-          .split('\n')
-          .forEach((section) => {
-            const match = section.match(/^(.+?)#(.+)$/);
-            if (match) {
-              const pageTitle = match[1].trim();
-              const sectionTitle = match[2].trim();
-              if (!sections[pageTitle]) {
-                sections[pageTitle] = [];
-                pageTitles.push(pageTitle);
-              }
-              sections[pageTitle].push(sectionTitle);
-            }
-          });
-
-        let normalized;
-        let redirects;
-        let pages;
-        try {
-          ({ normalized, redirects, pages } = await getPageIds(pageTitles) || {});
-        } catch (e) {
-          handleDialogError(this, e, 'ewsd-error-processing', true);
-          return;
-        }
-
-        // Correct to normalized titles && redirect targets, add to the collection.
-        normalized
-          .concat(redirects)
-          .filter((page) => sections[page.from])
-          .forEach((page) => {
-            if (!sections[page.to]) {
-              sections[page.to] = [];
-            }
-            sections[page.to].push(...sections[page.from]);
-            delete sections[page.from];
-          });
-
-        const titleToId = {};
-        pages
-          .filter((page) => page.pageid !== undefined)
-          .forEach((page) => {
-            titleToId[page.title] = page.pageid;
-          });
-
-        cd.g.watchedSections = {};
-        Object.keys(sections)
-          .filter((key) => titleToId[key])
-          .forEach((key) => {
-            cd.g.watchedSections[titleToId[key]] = sections[key].filter(unique);
-          });
-
-        try {
-          await setWatchedSections();
-        } catch (e) {
-          if (e instanceof CdError) {
-            const { type, code, apiData } = e.data;
-            if (type === 'internal' && code === 'sizeLimit') {
-              const error = new OO.ui.Error(cd.s('ewsd-error-maxsize'), { recoverable: false });
-              this.showErrors(error);
-            } else {
-              const error = new OO.ui.Error(cd.s('ewsd-error-processing'), { recoverable: true });
-              this.showErrors(error);
-            }
-            console.warn(type, code, apiData);
-          } else {
-            const error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
-            this.showErrors(error);
-            console.warn(e);
-          }
-          this.popPending();
-          return;
-        }
-
-        this.popPending();
-        this.close();
-        mw.notify(cd.s('ewsd-saved'));
-      });
+      return new OO.ui.Process(this.save.bind(this));
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
         await confirmCloseDialog(this, 'ewsd');
@@ -266,8 +184,88 @@ class EditWatchedSectionsDialog extends OO.ui.ProcessDialog {
     }
     return super.getActionProcess(action);
   }
+
+  async save() {
+    this.updateSize();
+    this.pushPending();
+
+    const sections = {};
+    const pageTitles = [];
+    this.input
+      .getValue()
+      .split('\n')
+      .forEach((section) => {
+        const match = section.match(/^(.+?)#(.+)$/);
+        if (match) {
+          const pageTitle = match[1].trim();
+          const sectionTitle = match[2].trim();
+          if (!sections[pageTitle]) {
+            sections[pageTitle] = [];
+            pageTitles.push(pageTitle);
+          }
+          sections[pageTitle].push(sectionTitle);
+        }
+      });
+
+    let normalized;
+    let redirects;
+    let pages;
+    try {
+      ({ normalized, redirects, pages } = await getPageIds(pageTitles) || {});
+    } catch (e) {
+      handleDialogError(this, e, 'ewsd-error-processing', true);
+      return;
+    }
+
+    // Correct to normalized titles && redirect targets, add to the collection.
+    normalized
+      .concat(redirects)
+      .filter((page) => sections[page.from])
+      .forEach((page) => {
+        if (!sections[page.to]) {
+          sections[page.to] = [];
+        }
+        sections[page.to].push(...sections[page.from]);
+        delete sections[page.from];
+      });
+
+    const titleToId = {};
+    pages
+      .filter((page) => page.pageid !== undefined)
+      .forEach((page) => {
+        titleToId[page.title] = page.pageid;
+      });
+
+    const registry = {};
+    Object.keys(sections)
+      .filter((key) => titleToId[key])
+      .forEach((key) => {
+        registry[titleToId[key]] = subscriptions.itemsToKeys(sections[key].filter(unique));
+      });
+
+    try {
+      subscriptions.saveLegacy(registry);
+    } catch (e) {
+      if (e instanceof CdError) {
+        const { type, code } = e.data;
+        if (type === 'internal' && code === 'sizeLimit') {
+          handleDialogError(this, e, 'ewsd-error-maxsize', false);
+        } else {
+          handleDialogError(this, e, 'ewsd-error-processing', true);
+        }
+      } else {
+        handleDialogError(this, e);
+      }
+      this.actions.setAbilities({ save: true });
+      return;
+    }
+
+    this.popPending();
+    this.close();
+    mw.notify(cd.s('ewsd-saved'));
+  }
 }
 
-tweakUserOoUiClass(EditWatchedSectionsDialog, OO.ui.ProcessDialog);
+tweakUserOoUiClass(EditSubscriptionsDialog, OO.ui.ProcessDialog);
 
-export default EditWatchedSectionsDialog;
+export default EditSubscriptionsDialog;

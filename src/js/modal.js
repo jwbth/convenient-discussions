@@ -14,14 +14,21 @@ import { isPageOverlayOn, underlinesToSpaces, wrap } from './util';
 
 /**
  * Show a settings dialog.
+ *
+ * @param {string} [initalPageName]
  */
-export async function showSettingsDialog() {
-  if (isPageOverlayOn() || dealWithLoadingBug('mediawiki.widgets.UsersMultiselectWidget')) return;
+export async function showSettingsDialog(initalPageName) {
+  if (
+    $('.cd-settingsDialog').length ||
+    dealWithLoadingBug('mediawiki.widgets.UsersMultiselectWidget')
+  ) {
+    return;
+  }
 
   const SettingsDialog = require('./SettingsDialog').default;
 
   createWindowManager();
-  const dialog = new SettingsDialog();
+  const dialog = new SettingsDialog(initalPageName);
   cd.g.windowManager.addWindows([dialog]);
   cd.g.windowManager.openWindow(dialog);
 
@@ -30,15 +37,15 @@ export async function showSettingsDialog() {
 }
 
 /**
- * Show an edit watched sections dialog.
+ * Show an edit subscriptions dialog.
  */
-export async function editWatchedSections() {
+export async function editSubscriptions() {
   if (isPageOverlayOn()) return;
 
-  const EditWatchedSectionsDialog = require('./EditWatchedSectionsDialog').default;
+  const EditSubscriptionsDialog = require('./EditSubscriptionsDialog').default;
 
   createWindowManager();
-  const dialog = new EditWatchedSectionsDialog();
+  const dialog = new EditSubscriptionsDialog();
   cd.g.windowManager.addWindows([dialog]);
   cd.g.windowManager.openWindow(dialog);
 }

@@ -1924,7 +1924,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
    *   see the diff.
-   * @param {string} [commentsData] Data of the comments as of the current revision and the revision
+   * @param {object} [commentsData] Data of the comments as of the current revision and the revision
    *   to compare with.
    */
   markAsChanged(type, isNewVersionRendered, comparedRevisionId, commentsData) {
@@ -2137,8 +2137,12 @@ class Comment extends CommentSkeleton {
             if (section) {
               const originalHeadline = section.headline;
               section.parseHeadline();
-              if (section.isWatched && section.headline !== originalHeadline) {
-                section.watch(true, originalHeadline);
+              if (
+                !cd.settings.useTopicSubscription &&
+                section.isSubscribedTo &&
+                section.headline !== originalHeadline
+              ) {
+                section.subscribe(true, originalHeadline);
               }
               if (cd.settings.modifyToc) {
                 section.getTocItem()?.replaceText($html);

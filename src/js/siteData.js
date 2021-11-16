@@ -114,7 +114,15 @@ export function loadSiteData() {
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'nextdiff', 'timezone-utc'
+    'colon-separator', 'nextdiff', 'timezone-utc',
+    'discussiontools-topicsubscription-button-subscribe',
+    'discussiontools-topicsubscription-button-subscribe-tooltip',
+    'discussiontools-topicsubscription-button-unsubscribe',
+    'discussiontools-topicsubscription-button-unsubscribe-tooltip',
+    'discussiontools-topicsubscription-notify-subscribed-title',
+    'discussiontools-topicsubscription-notify-subscribed-body',
+    'discussiontools-topicsubscription-notify-unsubscribed-title',
+    'discussiontools-topicsubscription-notify-unsubscribed-body',
   ].concat(...uiDateTokensMessageNames);
 
   const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');

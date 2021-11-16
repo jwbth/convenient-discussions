@@ -1,103 +1,7 @@
-import CdError from './CdError';
 import cd from './cd';
-import { addToArrayIfAbsent, areObjectsEqual, removeFromArrayIfPresent, wrap } from './util';
-import { editWatchedSections } from './modal';
-import { getWatchedSections, setWatchedSections } from './options';
-
-let watchPromise = Promise.resolve();
+import { areObjectsEqual } from './util';
 
 export default {
-  /**
-   * Add a section present on the current page to the watched sections list.
-   *
-   * @param {string} headline
-   * @param {string} [unwatchHeadline] Section to unwatch together with watching the specified
-   *   section (used when a section is renamed on the fly in {@link Comment#update} or
-   *   {@link CommentForm#submit}).
-   * @returns {Promise}
-   * @throws {CdError}
-   * @memberof Section
-   */
-  watch(headline, unwatchHeadline) {
-    const watch = async () => {
-      try {
-        await getWatchedSections();
-      } catch (e) {
-        mw.notify(cd.s('error-settings-load'), { type: 'error' });
-        throw e;
-      }
-
-      // The section could be added to the watchlist in another tab.
-      addToArrayIfAbsent(cd.g.currentPageWatchedSections, headline);
-      removeFromArrayIfPresent(cd.g.currentPageWatchedSections, unwatchHeadline);
-
-      try {
-        await setWatchedSections();
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { type, code } = e.data;
-          if (type === 'internal' && code === 'sizeLimit') {
-            const $body = wrap(cd.sParse('section-watch-error-maxsize'), {
-              callbacks: {
-                'cd-notification-editWatchedSections': () => {
-                  editWatchedSections();
-                },
-              },
-            }).$wrapper;
-            mw.notify($body, {
-              type: 'error',
-              autoHideSeconds: 'long',
-            });
-          } else {
-            mw.notify(cd.s('error-settings-save'), { type: 'error' });
-          }
-        } else {
-          mw.notify(cd.s('error-settings-save'), { type: 'error' });
-        }
-        throw e;
-      }
-    };
-
-    watchPromise = watchPromise.then(watch, watch);
-    return watchPromise;
-  },
-
-  /**
-   * Add a section present on the current page to the watched sections list.
-   *
-   * @param {string} headline
-   * @returns {Promise}
-   * @throws {CdError}
-   * @memberof Section
-   */
-  unwatch(headline) {
-    const unwatch = async () => {
-      try {
-        await getWatchedSections();
-      } catch (e) {
-        mw.notify(cd.s('error-settings-load'), { type: 'error' });
-        throw e;
-      }
-
-      // The section could be removed from the watchlist in another tab.
-      removeFromArrayIfPresent(cd.g.currentPageWatchedSections, headline);
-
-      if (!cd.g.currentPageWatchedSections.length) {
-        delete cd.g.watchedSections[mw.config.get('wgArticleId')];
-      }
-
-      try {
-        await setWatchedSections();
-      } catch (e) {
-        mw.notify(cd.s('error-settings-save'), { type: 'error' });
-        throw e;
-      }
-    };
-
-    watchPromise = watchPromise.then(unwatch, unwatch);
-    return watchPromise;
-  },
-
   /**
    * Get a section by anchor.
    *
@@ -121,6 +25,17 @@ export default {
    */
   getByHeadline(headline) {
     return cd.sections.filter((section) => section.headline === headline);
+  },
+
+  /**
+   * Get sections by {@link Section#subscribeId subscribe ID}.
+   *
+   * @param {string} subscribeId
+   * @returns {Section[]}
+   * @memberof Section
+   */
+  getBySubscribeId(subscribeId) {
+    return cd.sections.filter((section) => section.subscribeId === subscribeId);
   },
 
   /**
@@ -268,22 +183,9 @@ export default {
       });
   },
 
-  /**
-   * _For internal use._ Remove sections that can't be found on the page anymore from the watched
-   * sections list and save them to the server.
-   *
-   * @memberof Section
-   */
-  cleanUpWatched() {
-    if (!cd.sections) return;
-
-    const initialSectionCount = cd.g.currentPageWatchedSections.length;
-    cd.g.originalThisPageWatchedSections = cd.g.currentPageWatchedSections.slice();
-    cd.g.currentPageWatchedSections = cd.g.currentPageWatchedSections
-      .filter((headline) => cd.sections.some((section) => section.headline === headline));
-    cd.g.watchedSections[mw.config.get('wgArticleId')] = cd.g.currentPageWatchedSections;
-    if (cd.g.currentPageWatchedSections.length !== initialSectionCount) {
-      setWatchedSections();
-    }
-  },
+  addSubscribeMenuItems() {
+    cd.sections.forEach((section) => {
+      section.addSubscribeMenuItem();
+    });
+  }
 };

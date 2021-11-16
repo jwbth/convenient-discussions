@@ -7,9 +7,9 @@
 import Comment from './Comment';
 import Page from './Page';
 import cd from './cd';
-import userRegistry from './userRegistry';
-import { createApi, initSettings } from './boot';
-import { editWatchedSections, showSettingsDialog } from './modal';
+import subscriptions from './subscriptions';
+import { createApi, initGlobals, initSettings } from './boot';
+import { editSubscriptions, showSettingsDialog } from './modal';
 import {
   generateCommentAnchor,
   initDayjs,
@@ -24,7 +24,6 @@ import {
   removeDirMarks,
   spacesToUnderlines,
 } from './util';
-import { getWatchedSections } from './options';
 import { loadSiteData } from './siteData';
 
 let serverName;
@@ -47,33 +46,33 @@ let switchRelevantButton;
  */
 async function prepare(siteDataRequests) {
   createApi();
-
-  // Loading the watched sections is not critical, as opposed to messages, so we catch the possible
-  // error, not letting it be caught by the try/catch block.
-  const watchedSectionsRequest = getWatchedSections(true).catch((e) => {
-    console.warn('Couldn\'t load the settings from the server.', e);
-  });
-  if (!siteDataRequests.length) {
-    siteDataRequests = loadSiteData();
-  }
-
-  try {
-    await Promise.all([watchedSectionsRequest, ...siteDataRequests]);
-  } catch (e) {
-    throw ['Couldn\'t load the messages required for the script.', e];
-  }
+  initGlobals();
+  await initSettings();
 
   mw.loader.addStyleTag(`:root {
   --cd-parentheses-start: '${cd.mws('parentheses-start')}';
   --cd-parentheses-end: '${cd.mws('parentheses-end')}';
 }`);
 
-  // Used in util.firstCharToUpperCase() via boot.initSettings().
-  cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
-    .files['phpCharToUpper.json'];
+  const requests = [];
+  if (!cd.settings.useTopicSubscription) {
+    // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
+    // error, not letting it be caught by the try/catch block.
+    subscriptions.load(true).catch((e) => {
+      console.warn('Couldn\'t load the settings from the server.', e);
+    });
+    requests.push(subscriptions.loadRequest);
+  }
+  if (!siteDataRequests.length) {
+    siteDataRequests = loadSiteData();
+  }
+  requests.push(...siteDataRequests);
 
-  cd.page = cd.page || new Page(cd.g.PAGE_NAME, false);
-  cd.user = userRegistry.getUser(cd.g.USER_NAME);
+  try {
+    await Promise.all(requests);
+  } catch (e) {
+    throw ['Couldn\'t load the messages required for the script.', e];
+  }
 
   serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
@@ -183,32 +182,41 @@ function addWatchlistMenu() {
     .text(cd.s('script-name-short'))
     .appendTo($menu);
 
-  switchRelevantButton = new OO.ui.ButtonWidget({
-    framed: false,
-    icon: 'speechBubble',
-    label: cd.s('wl-button-switchrelevant-tooltip'),
-    invisibleLabel: true,
-    title: cd.s('wl-button-switchrelevant-tooltip'),
-    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
-    disabled: !cd.g.watchedSections,
-  });
-  switchRelevantButton.on('click', () => {
-    switchRelevant();
-  });
-  switchRelevantButton.$element.appendTo($menu);
+  if (!cd.settings.useTopicSubscription) {
+    switchRelevantButton = new OO.ui.ButtonWidget({
+      framed: false,
+      icon: 'speechBubble',
+      label: cd.s('wl-button-switchrelevant-tooltip'),
+      invisibleLabel: true,
+      title: cd.s('wl-button-switchrelevant-tooltip'),
+      classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
+      disabled: !subscriptions.areLoaded(),
+    });
+    switchRelevantButton.on('click', () => {
+      switchRelevant();
+    });
+    switchRelevantButton.$element.appendTo($menu);
+  }
 
-  const editWatchedSectionsButton = new OO.ui.ButtonWidget({
+  const editSubscriptionsButtonConfig = {
     framed: false,
     icon: 'listBullet',
     label: cd.s('wl-button-editwatchedsections-tooltip'),
     invisibleLabel: true,
     title: cd.s('wl-button-editwatchedsections-tooltip'),
-    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editWatchedSections'],
-  });
-  editWatchedSectionsButton.on('click', () => {
-    editWatchedSections();
-  });
-  editWatchedSectionsButton.$element.appendTo($menu);
+    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editSubscriptions'],
+  };
+  if (cd.settings.useTopicSubscription) {
+    editSubscriptionsButtonConfig.href = (new Page('Special:TopicSubscriptions')).getUrl();
+    editSubscriptionsButtonConfig.target = '_blank';
+  }
+  const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
+  if (!cd.settings.useTopicSubscription) {
+    editSubscriptionsButton.on('click', () => {
+      editSubscriptions();
+    });
+  }
+  editSubscriptionsButton.$element.appendTo($menu);
 
   const settingsButton = new OO.ui.ButtonWidget({
     framed: false,
@@ -291,7 +299,7 @@ function isArchiving(summary) {
 }
 
 /**
- * Check by an edit summary if it is an edit in a section this given name.
+ * Check by an edit summary if it is an edit in a section with given name.
  *
  * @param {string} summary
  * @param {string} name
@@ -320,8 +328,6 @@ function processWatchlist($content) {
     mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' &&
     !cd.g.$content.find('.cd-watchlistMenu').length
   ) {
-    initSettings();
-
     if (mw.user.options.get('wlenhancedfilters-disable')) {
       addWatchlistMenu();
     } else {
@@ -330,13 +336,15 @@ function processWatchlist($content) {
       });
     }
 
-    $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
-      try {
-        await getWatchedSections();
-      } catch (e) {
-        console.warn('Couldn\'t load the settings from the server.', e);
-      }
-    });
+    if (!cd.settings.useTopicSubscription) {
+      $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
+        try {
+          await subscriptions.load();
+        } catch (e) {
+          console.warn('Couldn\'t load the settings from the server.', e);
+        }
+      });
+    }
   }
 
   // There are 2 ^ 3 = 8 (!) different watchlist modes:
@@ -393,20 +401,16 @@ function processWatchlist($content) {
         const curLink = (
           // Expanded watchlist
           line.querySelector('.mw-changeslist-diff-cur') ||
+
           // Non-expanded watchlist
           line.querySelector('.mw-changeslist-history')
         );
         const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const currentPageWatchedSections = cd.g.watchedSections?.[curId] || [];
-          if (currentPageWatchedSections.length) {
-            for (let j = 0; j < currentPageWatchedSections.length; j++) {
-              if (isInSection(summary, currentPageWatchedSections[j])) {
-                isWatched = true;
-                break;
-              }
-            }
+          const watchedSectionHeadlines = subscriptions.getForPageId(curId) || [];
+          if (watchedSectionHeadlines.length) {
+            isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
             if (isWatched) {
               wrapper = wrapperRelevantPrototype.cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
@@ -546,13 +550,9 @@ function processHistory($content) {
     } else {
       let isWatched = false;
       if (summary) {
-        if (cd.g.currentPageWatchedSections?.length) {
-          for (let j = 0; j < cd.g.currentPageWatchedSections.length; j++) {
-            if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
-              isWatched = true;
-              break;
-            }
-          }
+        const watchedSectionHeadlines = subscriptions.getForCurrentPage();
+        if (watchedSectionHeadlines.length) {
+          isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
           if (isWatched) {
             wrapper = wrapperRelevantPrototype.cloneNode(true);
             wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
@@ -642,13 +642,9 @@ async function processDiff($diff) {
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
-          if (!$diff && summary && cd.g.currentPageWatchedSections?.length) {
-            for (let j = 0; j < cd.g.currentPageWatchedSections.length; j++) {
-              if (isInSection(summary, cd.g.currentPageWatchedSections[j])) {
-                isWatched = true;
-                break;
-              }
-            }
+          const watchedSectionHeadlines = subscriptions.getForCurrentPage();
+          if (!$diff && summary && watchedSectionHeadlines.length) {
+            isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
             if (isWatched) {
               wrapper = wrapperRelevantPrototype.cloneNode(true);
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;

@@ -14,6 +14,7 @@ import cd from './cd';
 import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import processPage from './processPage';
+import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
@@ -38,7 +39,7 @@ import {
   wrap,
 } from './util';
 import { createWindowManager, showConfirmDialog } from './ooui';
-import { editWatchedSections, rescueCommentFormsContent, showSettingsDialog } from './modal';
+import { editSubscriptions, rescueCommentFormsContent, showSettingsDialog } from './modal';
 import { formatDateNative, initDayjs, initTimestampParsingTools } from './timestamp';
 import { getLocalOverridingSettings, getSettings, setSettings, setVisits } from './options';
 import { getUserInfo } from './apiWrappers';
@@ -66,7 +67,8 @@ export const settingsScheme = {
     haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
     desktopNotifications: ['browserNotifications'],
     signaturePrefix: ['mySig', 'mySignature'],
-  }
+    subscribeOnReply: ['watchSectionOnReply'],
+  },
 };
 
 /**
@@ -105,12 +107,14 @@ export async function initSettings() {
     showToolbar: true,
     signaturePrefix: cd.config.defaultSignaturePrefix,
     timestampFormat: 'default',
+    topicSubscriptionSeenNotice: false,
     modifyToc: true,
     useBackgroundHighlighting: true,
     useTemplateData: true,
+    useTopicSubscription: false,
     useUiTime: true,
     watchOnReply: true,
-    watchSectionOnReply: true,
+    subscribeOnReply: true,
   };
 
   /**
@@ -278,10 +282,8 @@ export function createApi() {
 
 /**
  * Set a number of global object properties.
- *
- * @private
  */
-function initGlobals() {
+export function initGlobals() {
   cd.g.PHP_CHAR_TO_UPPER_JSON = mw.loader.moduleRegistry['mediawiki.Title'].script
     .files['phpCharToUpper.json'];
 
@@ -334,7 +336,8 @@ function initGlobals() {
 
   // Useful for debugging
   cd.g.processPageInBackground = updateChecker.processPage;
-  cd.g.editWatchedSections = editWatchedSections;
+  cd.g.editSubscriptions = editSubscriptions;
+  cd.g.subscriptions = subscriptions;
   cd.g.showSettingsDialog = showSettingsDialog;
   cd.g.setVisits = setVisits;
 
@@ -1213,7 +1216,7 @@ export function saveSession(force) {
           summary: commentForm.summaryInput.getValue(),
           minor: commentForm.minorCheckbox?.isSelected(),
           watch: commentForm.watchCheckbox?.isSelected(),
-          watchSection: commentForm.watchSectionCheckbox?.isSelected(),
+          subscribe: commentForm.subscribeCheckbox?.isSelected(),
           omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
           delete: commentForm.deleteCheckbox?.isSelected(),
           originalHeadline: commentForm.originalHeadline,

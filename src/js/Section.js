@@ -6,6 +6,7 @@ import SectionMenuButton from './SectionMenuButton';
 import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
+import subscriptions from './subscriptions';
 import toc from './toc';
 import {
   calculateWordOverlap,
@@ -39,10 +40,9 @@ class Section extends SectionSkeleton {
    * @param {Parser} parser
    * @param {Element} heading
    * @param {object[]} targets
-   * @param {Promise} watchedSectionsRequest
    * @throws {CdError}
    */
-  constructor(parser, heading, targets, watchedSectionsRequest) {
+  constructor(parser, heading, targets) {
     super(parser, heading, targets);
 
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
@@ -101,7 +101,8 @@ class Section extends SectionSkeleton {
 
     delete this.sourcePageName;
 
-    this.extendSectionMenu(watchedSectionsRequest);
+    this.extendSectionMenu();
+    this.extractSubscribeId();
 
     /**
      * Section headline element as a jQuery object.
@@ -128,8 +129,9 @@ class Section extends SectionSkeleton {
    * @param {string} [item.tooltip] Tooltip text.
    * @param {Function} [item.action] Function to execute on click.
    * @param {boolean} [item.visible=true] Should the item be visible.
+   * @param {Element} [item.target] Element before which the item should be added.
    */
-  addMenuItem({ name, label, href, tooltip, action, visible = true }) {
+  addMenuItem({ name, label, href, tooltip, action, visible = true, target }) {
     if (!this.closingBracketElement) return;
 
     this.menu[name] = new SectionMenuButton({
@@ -143,7 +145,7 @@ class Section extends SectionSkeleton {
     });
     this.editSectionElement.insertBefore(
       this.menu[name].wrapperElement,
-      this.closingBracketElement
+      target || this.closingBracketElement
     );
   }
 
@@ -327,11 +329,10 @@ class Section extends SectionSkeleton {
   /**
    * Add section menu items.
    *
-   * @param {Promise} [watchedSectionsRequest]
    * @fires sectionMenuExtended
    * @private
    */
-  extendSectionMenu(watchedSectionsRequest) {
+  extendSectionMenu() {
     if (!this.closingBracketElement) return;
 
     /**
@@ -340,31 +341,6 @@ class Section extends SectionSkeleton {
      * @type {object|undefined}
      */
     this.menu = {};
-
-    const addCopyLinkMenuItem = () => {
-      if (this.headline) {
-        // We put this instruction here to make it always appear after the "watch" item.
-        this.addMenuItem({
-          name: 'copyLink',
-          label: cd.s('sm-copylink'),
-
-          // We need the event object to be passed to the function.
-          action: this.copyLink.bind(this),
-
-          tooltip: cd.s('sm-copylink-tooltip'),
-          href: `${cd.page.getUrl()}#${this.anchor}`,
-        });
-      }
-
-      /**
-       * Section menu has been extneded.
-       *
-       * @event sectionMenuExtended
-       * @param {Section} section
-       * @param {object} cd {@link convenientDiscussions} object.
-       */
-      mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
-    }
 
     if (this.isActionable) {
       if (
@@ -405,35 +381,82 @@ class Section extends SectionSkeleton {
           },
         });
       }
+    }
 
-      watchedSectionsRequest
-        .then(
-          () => {
-            this.isWatched = cd.g.currentPageWatchedSections.includes(this.headline);
-            this.addMenuItem({
-              name: 'unwatch',
-              label: cd.s('sm-unwatch'),
-              tooltip: cd.s('sm-unwatch-tooltip'),
-              action: () => {
-                this.unwatch();
-              },
-              visible: this.isWatched,
-            });
-            this.addMenuItem({
-              name: 'watch',
-              label: cd.s('sm-watch'),
-              tooltip: cd.s('sm-watch-tooltip'),
-              action: () => {
-                this.watch();
-              },
-              visible: !this.isWatched,
-            });
-          },
-          () => {}
-        )
-        .then(addCopyLinkMenuItem, addCopyLinkMenuItem);
+    if (this.headline) {
+      this.addMenuItem({
+        name: 'copyLink',
+        label: cd.s('sm-copylink'),
+
+        // We need the event object to be passed to the function.
+        action: this.copyLink.bind(this),
+
+        tooltip: cd.s('sm-copylink-tooltip'),
+        href: `${cd.page.getUrl()}#${this.anchor}`,
+      });
+    }
+  }
+
+  addSubscribeMenuItem() {
+    if (!this.subscribeId) return;
+
+    this.isSubscribedTo = subscriptions.getState(this.subscribeId);
+    this.addMenuItem({
+      name: 'subscribe',
+      label: cd.mws('discussiontools-topicsubscription-button-subscribe'),
+      tooltip: cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'),
+      action: () => {
+        this.subscribe();
+      },
+      visible: !this.isSubscribedTo,
+      target: this.menu.copyLink?.wrapperElement,
+    });
+    this.addMenuItem({
+      name: 'unsubscribe',
+      label: cd.mws('discussiontools-topicsubscription-button-unsubscribe'),
+      tooltip: cd.mws('discussiontools-topicsubscription-button-unsubscribe-tooltip'),
+      action: () => {
+        this.unsubscribe();
+      },
+      visible: this.isSubscribedTo,
+      target: this.menu.copyLink?.wrapperElement,
+    });
+
+    /**
+     * Section menu has been extended.
+     *
+     * @event sectionMenuExtended
+     * @param {Section} section
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+  }
+
+  extractSubscribeId() {
+    if (!cd.settings.useTopicSubscription) {
+      this.subscribeId = this.headline;
+      return;
+    }
+
+    if (cd.g.isDtTopicSubscriptionEnabled) {
+      this.subscribeId = this.headingElement
+        .getElementsByClassName('ext-discussiontools-init-section-subscribe-link')[0]
+        ?.dataset
+        .mwCommentName;
     } else {
-      addCopyLinkMenuItem();
+      let n = this.headlineElement;
+      let subscribeIdNode;
+      while ((n = n.nextSibling)) {
+        if (n.nodeType === Node.COMMENT_NODE) {
+          subscribeIdNode = n;
+          break;
+        }
+      }
+
+      if (subscribeIdNode) {
+        const [, subscribeId] = subscribeIdNode.textContent.match('__DTSUBSCRIBE__(.+)') || [];
+        this.subscribeId = subscribeId;
+      }
     }
   }
 
@@ -512,31 +535,31 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Update the watch/unwatch section links visibility.
+   * Update the subscribe/unsubscribe section links visibility.
    *
    * @private
    */
-  updateWatchMenuItems() {
+  updateSubscribeMenuItems() {
     if (this.menu && this.isActionable) {
-      this.menu.unwatch[this.isWatched ? 'show' : 'hide']();
-      this.menu.watch[this.isWatched ? 'hide' : 'show']();
+      this.menu.unsubscribe[this.isSubscribedTo ? 'show' : 'hide']();
+      this.menu.subscribe[this.isSubscribedTo ? 'hide' : 'show']();
     }
   }
 
   /**
-   * Add the section to the watched sections list.
+   * Add the section to the subscription list.
    *
    * @param {boolean} [silent=false] Don't show a notification or change UI unless there is an
    *   error.
-   * @param {string} [renamedFrom] If the section was renamed, the previous section headline. It is
-   *   unwatched together with watching the current headline if there is no other coinciding
-   *   headlines on the page.
+   * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
+   *   section was renamed, the previous section headline. It is unwatched together with watching
+   *   the current headline if there is no other coinciding headlines on the page.
    */
-  watch(silent = false, renamedFrom) {
-    const sections = Section.getByHeadline(this.headline);
+  subscribe(silent = false, renamedFrom) {
+    const sections = Section.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (!silent) {
-      const buttons = sections.map((section) => section.menu?.watch).filter(defined);
+      const buttons = sections.map((section) => section.menu?.subscribe).filter(defined);
       buttons.forEach((button) => {
         button.setPending(true);
       });
@@ -547,45 +570,44 @@ class Section extends SectionSkeleton {
       };
     }
 
-    let unwatchHeadline;
-    if (renamedFrom && !Section.getByHeadline(renamedFrom).length) {
-      unwatchHeadline = renamedFrom;
+    let unsubscribeHeadline;
+    if (renamedFrom && !Section.getBySubscribeId(renamedFrom).length) {
+      unsubscribeHeadline = renamedFrom;
     }
 
-    Section.watch(this.headline, unwatchHeadline)
-      .then(finallyCallback, finallyCallback)
-      .then(
-        () => {
-          sections.forEach((section) => {
-            section.isWatched = true;
-            section.updateWatchMenuItems();
-            section.updateTocLink();
-          });
-          if (!silent) {
-            let text = cd.sParse('section-watch-success', this.headline);
-            let autoHideSeconds;
-            if ($('#ca-watch').length) {
-              text += ' ' + cd.sParse('section-watch-pagenotwatched');
-              autoHideSeconds = 'long';
-            }
-            mw.notify(wrap(text), { autoHideSeconds });
+    subscriptions.subscribe(this.subscribeId, this.anchor, unsubscribeHeadline)
+      .then(() => {
+        sections.forEach((section) => {
+          section.isSubscribedTo = true;
+          section.updateSubscribeMenuItems();
+          section.updateTocLink();
+        });
+        if (!silent) {
+          let title = cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
+          let body = cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
+          let autoHideSeconds;
+          if ($('#ca-watch').length && !cd.settings.useTopicSubscription) {
+            body += ' ' + cd.sParse('section-watch-pagenotwatched');
+            autoHideSeconds = 'long';
           }
-        },
-        () => {}
-      );
+          mw.notify(wrap(body), { title, autoHideSeconds });
+        }
+        subscriptions.maybeShowNotice();
+      })
+      .then(finallyCallback, finallyCallback);
   }
 
   /**
-   * Remove the section from the watched sections list.
+   * Remove the section from the subscription list.
    *
    * @param {boolean} [silent=false] Don't show a notification or change UI unless there is an
    *   error.
    */
-  unwatch(silent = false) {
-    const sections = Section.getByHeadline(this.headline);
+  unsubscribe(silent = false) {
+    const sections = Section.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (!silent) {
-      const buttons = sections.map((section) => section.menu?.unwatch).filter(defined);
+      const buttons = sections.map((section) => section.menu?.unsubscribe).filter(defined);
       buttons.forEach((button) => {
         button.setPending(true);
       });
@@ -596,29 +618,57 @@ class Section extends SectionSkeleton {
       };
     }
 
-    Section.unwatch(this.headline)
-      .then(finallyCallback, finallyCallback)
-      .then(
-        () => {
-          sections.forEach((section) => {
-            section.isWatched = false;
-            section.updateWatchMenuItems();
-            section.updateTocLink();
-          });
+    subscriptions.unsubscribe(this.subscribeId)
+      .then(() => {
+        sections.forEach((section) => {
+          section.isSubscribedTo = false;
+          section.updateSubscribeMenuItems();
+          section.updateTocLink();
+        });
 
-          const watchedAncestorHeadline = this.getClosestWatchedSection()?.headline;
-          if (!silent || watchedAncestorHeadline) {
-            let text = cd.sParse('section-unwatch-success', this.headline);
-            let autoHideSeconds;
-            if (watchedAncestorHeadline) {
-              text += ' ' + cd.sParse('section-unwatch-stillwatched', watchedAncestorHeadline);
-              autoHideSeconds = 'long';
-            }
-            mw.notify(wrap(text), { autoHideSeconds });
+        const ancestorSubscribedTo = this.getClosestSectionSubscribedTo();
+        if (!silent || ancestorSubscribedTo) {
+          let title = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
+          let body = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
+          let autoHideSeconds;
+          if (ancestorSubscribedTo) {
+            body += (
+              ' ' +
+              cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline)
+            );
+            autoHideSeconds = 'long';
           }
-        },
-        () => {}
-      );
+          mw.notify(wrap(body), { title, autoHideSeconds });
+        }
+      })
+      .then(finallyCallback, finallyCallback);
+  }
+
+  resubscribeToRenamed(currentCommentData, oldCommentData) {
+    if (
+      cd.settings.useTopicSubscription ||
+      this.isSubscribedTo ||
+      !/^H[1-6]$/.test(currentCommentData.elementNames[0]) ||
+      oldCommentData.elementNames[0] !== currentCommentData.elementNames[0]
+    ) {
+      return;
+    }
+
+    const html = oldCommentData.elementHtmls[0].replace(
+      /\x01(\d+)_\w+\x02/g,
+      (s, num) => currentCommentData.hiddenElementsData[num - 1].html
+    );
+    const $dummy = $('<span>').html($(html).html());
+    const oldSection = { headlineElement: $dummy.get(0) };
+    Section.prototype.parseHeadline.call(oldSection);
+    const newHeadline = this.headline;
+    if (
+      newHeadline &&
+      oldSection.headline !== newHeadline &&
+      subscriptions.getOriginalState(oldSection.headline)
+    ) {
+      this.subscribe(true, oldSection.headline);
+    }
   }
 
   /**
@@ -1143,18 +1193,18 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the first upper level section relative to the current section that is watched.
+   * Get the first upper level section relative to the current section that is subscribed to.
    *
    * @param {boolean} [includeCurrent=false] Check the current section too.
    * @returns {?Section}
    */
-  getClosestWatchedSection(includeCurrent = false) {
+  getClosestSectionSubscribedTo(includeCurrent = false) {
     for (
       let otherSection = includeCurrent ? this : this.getParent();
       otherSection;
       otherSection = otherSection.getParent()
     ) {
-      if (otherSection.isWatched) {
+      if (otherSection.isSubscribedTo) {
         return otherSection;
       }
     }
@@ -1182,13 +1232,13 @@ class Section extends SectionSkeleton {
     const tocItem = this.getTocItem();
     if (!tocItem) return;
 
-    if (this.isWatched) {
+    if (this.isSubscribedTo) {
       tocItem.$link
-        .addClass('cd-toc-watched')
+        .addClass('cd-toc-subscribedTo')
         .attr('title', cd.s('toc-watched'));
     } else {
       tocItem.$link
-        .removeClass('cd-toc-watched')
+        .removeClass('cd-toc-subscribedTo')
         .removeAttr('title');
     }
   }

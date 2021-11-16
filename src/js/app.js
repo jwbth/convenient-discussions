@@ -260,8 +260,12 @@ async function go() {
     cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
 
     // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-    const wsonEnding = location.hostname === 'ru.wikipedia.org' ? 'watchedTopics' : 'watchedSections';
-    cd.g.WATCHED_SECTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${wsonEnding}`;
+    const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
+      'watchedTopics' :
+      'watchedSections';
+    cd.g.SUBSCRIPTIONS_OPTION_NAME = (
+      `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`
+    );
 
     const server = mw.config.get('wgServer');
     cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;

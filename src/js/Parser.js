@@ -82,11 +82,10 @@ class Parser {
    *
    * @param {object} heading
    * @param {object[]} targets
-   * @param {Promise} watchedSectionsRequest
    * @returns {*}
    */
-  createSection(heading, targets, watchedSectionsRequest) {
-    return new this.context.SectionClass(this, heading, targets, watchedSectionsRequest);
+  createSection(heading, targets) {
+    return new this.context.SectionClass(this, heading, targets);
   }
 
   /**
@@ -146,6 +145,11 @@ class Parser {
         el.remove();
       }
     });
+    if (!self.cdIsWorker && !moveNotRemove) {
+      [...cd.g.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
+        el.removeAttribute('data-mw-comment');
+      });
+    }
   }
 
   /**

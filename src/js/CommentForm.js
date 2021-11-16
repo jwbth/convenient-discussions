@@ -8,6 +8,7 @@ import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import navPanel from './navPanel';
+import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import {
   addNotification,
@@ -33,7 +34,12 @@ import {
 } from './util';
 import { createCheckboxField } from './ooui';
 import { finishLoading, reloadPage, saveSession } from './boot';
-import { generateCommentAnchor, registerCommentAnchor, resetCommentAnchors } from './timestamp';
+import {
+  generateCommentAnchor,
+  generateDtSubscriptionId,
+  registerCommentAnchor,
+  resetCommentAnchors,
+} from './timestamp';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { parseCode } from './apiWrappers';
 import { showSettingsDialog } from './modal';
@@ -467,36 +473,40 @@ class CommentForm {
     });
 
     if (this.targetSection || this.mode === 'addSection') {
-      const callItTopic = (
-        this.mode !== 'addSubsection' &&
-        ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
-      );
-      const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
       const selected = (
-        (cd.settings.watchSectionOnReply && this.mode !== 'edit') ||
-        this.targetSection?.isWatched
+        (cd.settings.subscribeOnReply && this.mode !== 'edit') ||
+        this.targetSection?.isSubscribedTo
       );
 
+      const callItTopic = (
+        cd.settings.useTopicSubscription ||
+        (
+          this.mode !== 'addSubsection' &&
+          ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
+        )
+      );
+      const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
+
       /**
-       * Watch section checkbox field.
+       * Subscribe checkbox field.
        *
-       * @name watchSectionField
+       * @name subscribeField
        * @type {external:OO.ui.FieldLayout|undefined}
        * @memberof CommentForm
        * @instance
        */
 
       /**
-       * Watch section checkbox.
+       * Subscribe checkbox.
        *
-       * @name watchSectionCheckbox
+       * @name subscribeCheckbox
        * @type {external:OO.ui.CheckboxInputWidget|undefined}
        * @memberof CommentForm
        * @instance
        */
-      [this.watchSectionField, this.watchSectionCheckbox] = createCheckboxField({
-        value: 'watchSection',
-        selected: dataToRestore?.watchSection ?? selected,
+      [this.subscribeField, this.subscribeCheckbox] = createCheckboxField({
+        value: 'subscribe',
+        selected: dataToRestore?.subscribe ?? selected,
         label,
         tabIndex: String(this.id) + '22',
         title: cd.s('cf-watchsection-tooltip'),
@@ -575,7 +585,7 @@ class CommentForm {
       items: [
         this.minorField,
         this.watchField,
-        this.watchSectionField,
+        this.subscribeField,
         this.omitSignatureField,
         this.deleteField,
       ].filter(defined),
@@ -1806,7 +1816,7 @@ class CommentForm {
 
       this.minorCheckbox?.setDisabled(true);
       this.watchCheckbox.setDisabled(true);
-      this.watchSectionCheckbox?.setDisabled(true);
+      this.subscribeCheckbox?.setDisabled(true);
       this.omitSignatureCheckbox?.setDisabled(true);
       this.deleteCheckbox?.setDisabled(true);
     }
@@ -1846,7 +1856,7 @@ class CommentForm {
 
       this.minorCheckbox?.setDisabled(false);
       this.watchCheckbox.setDisabled(false);
-      this.watchSectionCheckbox?.setDisabled(false);
+      this.subscribeCheckbox?.setDisabled(false);
       this.omitSignatureCheckbox?.setDisabled(false);
       this.deleteCheckbox?.setDisabled(false);
 
@@ -2186,7 +2196,7 @@ class CommentForm {
    * Prepare the new section or page code based on the comment form input and handle errors.
    *
    * @param {string} action `'submit'` or `'viewChanges'`.
-   * @returns {Promise.<string>}
+   * @returns {Promise.<object|undefined>}
    * @private
    */
   async prepareWholeCode(action) {
@@ -2227,6 +2237,7 @@ class CommentForm {
     }
 
     let wholeCode;
+    let commentCode;
     try {
       if (
         !(this.target instanceof Page) &&
@@ -2239,8 +2250,9 @@ class CommentForm {
       if (this.mode === 'replyInSection') {
         this.target.setLastCommentIndentationChars(this);
       }
+      commentCode = this.commentTextToCode(action);
       wholeCode = this.target.modifyWholeCode({
-        commentCode: this.commentTextToCode(action),
+        commentCode,
         action: this.mode,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
@@ -2258,7 +2270,7 @@ class CommentForm {
       return;
     }
 
-    return wholeCode;
+    return { wholeCode, commentCode };
   }
 
   /**
@@ -2537,7 +2549,7 @@ class CommentForm {
 
     const currentOperation = this.registerOperation('viewChanges');
 
-    const code = await this.prepareWholeCode('viewChanges');
+    const { wholeCode: code } = await this.prepareWholeCode('viewChanges') || {};
     if (code === undefined) {
       this.closeOperation(currentOperation);
     }
@@ -2792,6 +2804,60 @@ class CommentForm {
     return result;
   }
 
+  updateSubscribtionStatus(editTimestamp, commentCode, passedData) {
+    if (this.subscribeCheckbox.isSelected()) {
+      // Add the created section to the subscription list or change the headline for legacy
+      // subscriptions.
+      if (
+        this.mode === 'addSection' ||
+        (
+          !cd.settings.useTopicSubscription &&
+          (this.mode === 'addSubsection' || this.isSectionOpeningCommentEdited)
+        )
+      ) {
+        let subscribeId;
+        let originalHeadline;
+        let isHeadlineAltered;
+        if (cd.settings.useTopicSubscription) {
+          subscribeId = generateDtSubscriptionId(cd.user.name, editTimestamp);
+        } else {
+          let rawHeadline;
+          if (this.headlineInput) {
+            rawHeadline = this.headlineInput.getValue().trim();
+          }
+          if (!this.isSectionOpeningCommentEdited && !rawHeadline) {
+            [, rawHeadline] = commentCode.match(/^==(.*?)==[ \t]*$/m) || [];
+          }
+          subscribeId = rawHeadline && removeWikiMarkup(rawHeadline);
+          if (this.isSectionOpeningCommentEdited) {
+            originalHeadline = removeWikiMarkup(this.originalHeadline);
+            isHeadlineAltered = subscribeId !== originalHeadline;
+          }
+        }
+
+        if (subscribeId !== undefined) {
+          passedData.justSubscribedToSection = subscribeId;
+          if (isHeadlineAltered) {
+            passedData.justUnsubscribedFromSection = originalHeadline;
+          }
+          subscriptions.subscribe(subscribeId, originalHeadline);
+        }
+      } else {
+        const section = this.targetSection;
+        if (section && !section.isSubscribedTo) {
+          section.subscribe(true);
+          passedData.justSubscribedToSection = section.subscribeId;
+        }
+      }
+    } else {
+      const section = this.targetSection;
+      if (section?.isSubscribedTo) {
+        section.unsubscribe(true);
+        passedData.justUnsubscribedFromSection = section.subscribeId;
+      }
+    }
+  }
+
   /**
    * Generate a comment anchor to jump to after the page is reloaded, taking possible collisions
    * into account.
@@ -2874,7 +2940,10 @@ class CommentForm {
       return;
     }
 
-    const code = await this.prepareWholeCode('submit');
+    const {
+      wholeCode: code,
+      commentCode,
+    } = await this.prepareWholeCode('submit') || {};
     if (code === undefined) {
       this.closeOperation(currentOperation);
       return;
@@ -2896,42 +2965,8 @@ class CommentForm {
       passedData.wasPageCreated = true;
     }
 
-    if (this.watchSectionCheckbox) {
-      if (this.watchSectionCheckbox.isSelected()) {
-        const isHeadlineAltered = (
-          this.isSectionOpeningCommentEdited &&
-          this.headlineInput.getValue() !== this.originalHeadline
-        );
-
-        if (
-          // TODO: When there is no headline input, extract the headline from `== ==` markup.
-          (this.mode === 'addSection' && this.headlineInput) ||
-
-          this.mode === 'addSubsection' ||
-          isHeadlineAltered
-        ) {
-          const headline = removeWikiMarkup(this.headlineInput.getValue());
-          passedData.justWatchedSection = headline;
-          let originalHeadline;
-          if (isHeadlineAltered) {
-            originalHeadline = removeWikiMarkup(this.originalHeadline);
-            passedData.justUnwatchedSection = originalHeadline;
-          }
-          Section.watch(headline, originalHeadline).catch(() => {});
-        } else {
-          const section = this.targetSection;
-          if (section && !section.isWatched) {
-            section.watch(true);
-            passedData.justWatchedSection = section.headline;
-          }
-        }
-      } else {
-        const section = this.targetSection;
-        if (section?.isWatched) {
-          section.unwatch(true);
-          passedData.justUnwatchedSection = section.headline;
-        }
-      }
+    if (this.subscribeCheckbox) {
+      this.updateSubscribtionStatus(editTimestamp, commentCode, passedData);
     }
 
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {

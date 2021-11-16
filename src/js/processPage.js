@@ -16,6 +16,7 @@ import Thread from './Thread';
 import cd from './cd';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
+import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import {
@@ -46,8 +47,8 @@ import {
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
 } from './util';
+import { getVisits, setVisits } from './options';
 import { isCommentAnchor, parseCommentAnchor, resetCommentAnchors } from './timestamp';
-import { getVisits, getWatchedSections, setVisits } from './options';
 
 /**
  * Prepare (initialize or reset) various properties, mostly global ones. Some DOM preparations are
@@ -444,15 +445,14 @@ function processComments(targets, parser) {
  *
  * @param {object[]} targets
  * @param {Parser} parser
- * @param {Promise} watchedSectionsRequest
  * @private
  */
-function processSections(targets, parser, watchedSectionsRequest) {
+function processSections(targets, parser) {
   targets
     .filter((target) => target.type === 'heading')
     .forEach((heading) => {
       try {
-        const section = parser.createSection(heading, targets, watchedSectionsRequest);
+        const section = parser.createSection(heading, targets);
         cd.sections.push(section);
       } catch (e) {
         if (!(e instanceof CdError)) {
@@ -461,14 +461,19 @@ function processSections(targets, parser, watchedSectionsRequest) {
       }
     });
 
+  if (cd.settings.useTopicSubscription) {
+    subscriptions.load();
+  }
+
   Section.adjust();
 
   // Dependent on sections being set
   Comment.processOutdents();
 
-  watchedSectionsRequest.then(() => {
-    Section.cleanUpWatched();
-    toc.highlightWatchedSections();
+  subscriptions.loadRequest.then(() => {
+    Section.addSubscribeMenuItems();
+    subscriptions.cleanUp();
+    toc.highlightSubscriptions();
   });
 
   /**
@@ -1012,16 +1017,14 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
   const isPageCommentable = cd.state.isPageActive || !articleId;
   cd.state.isPageFirstParsed = cd.state.isFirstRun || passedData.wasPageCreated;
 
-  let watchedSectionsRequest;
   let visitsRequest;
   let headings;
   let targets;
   let parser;
   if (articleId) {
-    watchedSectionsRequest = getWatchedSections(true, passedData);
-    watchedSectionsRequest.catch((e) => {
-      console.warn('Couldn\'t load the settings from the server.', e);
-    });
+    if (!cd.settings.useTopicSubscription) {
+      subscriptions.load();
+    }
 
     if (cd.state.isPageActive) {
       visitsRequest = getVisits(true);
@@ -1086,7 +1089,7 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
     if (articleId) {
       cd.debug.startTimer('process sections');
 
-      processSections(targets, parser, watchedSectionsRequest);
+      processSections(targets, parser);
 
       cd.debug.stopTimer('process sections');
     }
