@@ -793,7 +793,7 @@ class CommentSkeleton {
         ) ||
         node.tagName === 'STYLE' ||
         node.tagName === 'LINK' ||
-        [...node.classList].some((name => ['references', 'reflist-talk'].includes(name)))
+        Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
       ) {
         this.parts.splice(i, 1);
       } else {
