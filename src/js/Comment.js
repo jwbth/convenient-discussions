@@ -1231,6 +1231,17 @@ class Comment extends CommentSkeleton {
     return isMoved;
   }
 
+  deferHideMenu(e) {
+    // Ignore other than left button clicks.
+    if (e.which !== 1) return;
+
+    this.hideMenuTimeout = setTimeout(this.hideMenu.bind(this), 1500);
+  }
+
+  dontHideMenu() {
+    clearTimeout(this.hideMenuTimeout);
+  }
+
   /**
    * Create the comment's underlay and overlay with contents.
    *
@@ -1253,20 +1264,11 @@ class Comment extends CommentSkeleton {
       // Hide the overlay on right click. It can block clicking the author page link.
       this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
 
-      let mouseUpTimeout;
-      const deferHideMenu = (e) => {
-        // Ignore other than left button clicks.
-        if (e.which !== 1) return;
-
-        mouseUpTimeout = setTimeout(this.hideMenu.bind(this), 1500);
-      };
-      const dontHideMenu = () => {
-        clearTimeout(mouseUpTimeout);
-      };
-
       // Hide the overlay on long click/tap.
-      this.overlayInnerWrapper.onmousedown = deferHideMenu;
-      this.overlayInnerWrapper.onmouseup = dontHideMenu;
+      this.overlayInnerWrapper.onmousedown = (e) => {
+        this.deferHideMenu(e);
+      };
+      this.overlayInnerWrapper.onmouseup = this.dontHideMenu.bind(this);
 
       this.createGoToParentButton();
       this.createCopyLinkButton();
@@ -1460,6 +1462,8 @@ class Comment extends CommentSkeleton {
     this.$animatedBackground?.add(this.$marker).stop(true, true);
     Comment.underlays.splice(Comment.underlays.indexOf(this.underlay), 1);
 
+    this.dontHideMenu();
+
     this.underlay.remove();
     this.underlay = null;
     this.$underlay = null;
@@ -1600,6 +1604,8 @@ class Comment extends CommentSkeleton {
 
     // Animation will be directed to wrong properties if we keep it going.
     this.$animatedBackground?.stop(true, true);
+
+    this.dontHideMenu();
 
     this.updateClassesForType('hovered', false);
     this.isHovered = false;
