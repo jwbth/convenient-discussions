@@ -162,7 +162,6 @@
 	"cf-error-findplace": "مکان مناسب در کد برای درج نظر در آن پیدا نشد.",
 	"cf-error-commentlinks-commentnotfound": "ناتوان در یافتن نظر با شناسهٔ $1 در صفحه که از نظر شما پیوند دارد.",
 	"cf-error-numberedlist": "شکل‌دهی صحیح نظر بدون خارج‌شدن نشانه‌گذاری فهرست شماره‌دار از حالت طبیعی ممکن نیست.",
-	"cf-error-numberedlist-list": "حذف فهرست‌ها از نظر.",
 	"cf-error-numberedlist-table": "حذف جدول‌هااز نظر.",
 	"cf-error-delete-repliestocomment": "نمی‌توان نظر را حذف کرد؛ زیرا دارای پاسخ است.",
 	"cf-error-delete-repliesinsection": "نمی‌توان بخش را حذف کرد؛ زیرا دارای پاسخ است.",

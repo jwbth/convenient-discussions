@@ -172,7 +172,6 @@
 	"cf-error-findplace": "לא ניתן למצוא מיקום נכון בקוד להכנסת התגובה.",
 	"cf-error-commentlinks-commentnotfound": "אין אפשרות למצוא פוסט בעל מספר מזהה $1, המקושר מהפוסט שלכם, במסגרת הדף הנוכחי.",
 	"cf-error-numberedlist": "לא ניתן להציג את התגובה בצורה נכונה מבלי להרוס את הרשימה הממוספרת.",
-	"cf-error-numberedlist-list": "הורדת רשימות מהתגובות.",
 	"cf-error-numberedlist-table": "הורדת טבלאות מהתגובות.",
 	"cf-error-delete-repliestocomment": "לא ניתן למחוק את הפוסט מכיוון שיש לו תגובות.",
 	"cf-error-delete-repliesinsection": "לא ניתן למחוק את הנושא מכיוון שיש לו תגובות.",

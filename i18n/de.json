@@ -170,7 +170,6 @@
 	"cf-error-findplace": "Konnte die richtige Stelle im Code zum Einfügen des Kommentars nicht finden.",
 	"cf-error-commentlinks-commentnotfound": "Der Kommentar mit ID „$1“, auf den dein Kommentar per Link verweist, konnte auf dieser Seite nicht gefunden werden.",
 	"cf-error-numberedlist": "Es ist unmöglich, den Kommentar korrekt zu formulieren, ohne die nummerierte Listenauszeichnung zu verzerren.",
-	"cf-error-numberedlist-list": "Entferne Listen aus dem Kommentar.",
 	"cf-error-numberedlist-table": "Entferne Tabellen aus dem Kommentar.",
 	"cf-error-delete-repliestocomment": "Der Kommentar kann nicht gelöscht werden, weil er Antworten enthält.",
 	"cf-error-delete-repliesinsection": "Der Abschnitt kann nicht gelöscht werden, weil er Antworten enthält.",

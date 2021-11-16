@@ -121,7 +121,6 @@
 	"cf-error-findplace": "コードにコメントを挿入する正しい位置が見つかりませんでした。",
 	"cf-error-commentlinks-commentnotfound": "ご自分のコメントにリンクしたID $1のコメントが見つかりませんでした。",
 	"cf-error-numberedlist": "番号付き箇条書きが崩れてしまうため、 コメントに正しい書式を加えられません。",
-	"cf-error-numberedlist-list": "コメントから一覧を除去。",
 	"cf-error-numberedlist-table": "コメントから表組みを除去。",
 	"cf-error-delete-repliestocomment": "返信がついたためコメントを削除できません。",
 	"cf-error-delete-repliesinsection": "返信がついたため節を削除できません。",
