@@ -789,11 +789,11 @@ class CommentSkeleton {
         (
           node.tagName === 'P' &&
           !node.textContent.trim() &&
-          Array.from(node.children).every((child) => child.tagName === 'BR')
+          [...node.children].every((child) => child.tagName === 'BR')
         ) ||
         node.tagName === 'STYLE' ||
         node.tagName === 'LINK' ||
-        Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
+        [...node.classList].some((name => ['references', 'reflist-talk'].includes(name)))
       ) {
         this.parts.splice(i, 1);
       } else {
@@ -1358,7 +1358,7 @@ class CommentSkeleton {
    */
   static processOutdents() {
     if (cd.g.pageHasOutdents) {
-      Array.from(cd.g.rootElement.getElementsByClassName(cd.config.outdentClass))
+      [...cd.g.rootElement.getElementsByClassName(cd.config.outdentClass)]
         .reverse()
         .forEach((element) => {
           const treeWalker = new ElementsTreeWalker(element);
@@ -1391,7 +1391,7 @@ class CommentSkeleton {
 
               // Update the width to match our thread style changes. Don't run in the worker.
               if (!self.cdIsWorker) {
-                Array.from(element.childNodes).forEach((child) => {
+                [...element.childNodes].forEach((child) => {
                   const width = child.style?.width;
                   if (width) {
                     const [, number, unit] = width.match(/^([\d.]+)(.+)$/);

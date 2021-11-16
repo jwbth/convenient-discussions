@@ -68,7 +68,7 @@ class SectionSkeleton {
     if (!editSectionElement) {
       editSectionElement = this.createSectionMenu();
     }
-    const menuLinks = Array.from(editSectionElement.getElementsByTagName('a'));
+    const menuLinks = [...editSectionElement.getElementsByTagName('a')];
 
     // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
     // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
@@ -269,7 +269,7 @@ class SectionSkeleton {
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
-    const nodes = Array.from(this.headlineElement.childNodes).filter((node) => (
+    const nodes = [...this.headlineElement.childNodes].filter((node) => (
       node.nodeType !== Node.ELEMENT_NODE ||
       !classesToFilter.some((className) => node.classList.contains(className))
     ));

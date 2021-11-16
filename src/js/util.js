@@ -615,7 +615,7 @@ export function changeElementType(element, newType) {
   while (element.firstChild) {
     newElement.appendChild(element.firstChild);
   }
-  Array.from(element.attributes).forEach((attribute) => {
+  [...element.attributes].forEach((attribute) => {
     newElement.setAttribute(attribute.name, attribute.value);
   });
 

@@ -103,11 +103,11 @@ class TocItem {
       .find('*')
       .each((i, el) => {
         if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
-          Array.from(el.attributes).forEach((attr) => {
+          [...el.attributes].forEach((attr) => {
             el.removeAttribute(attr.name);
           });
         } else {
-          Array.from(el.childNodes).forEach((child) => {
+          [...el.childNodes].forEach((child) => {
             el.parentNode.insertBefore(child, el);
           });
           el.remove();
@@ -161,7 +161,7 @@ export default {
     }
 
     if (!tocItems) {
-      const links = Array.from(cd.g.$toc.get(0).querySelectorAll('li > a'));
+      const links = [...cd.g.$toc.get(0).querySelectorAll('li > a')];
       try {
         // It is executed first time before not rendered (gray) sections are added to the TOC, so we
         // use a simple algorithm to obtain items.

@@ -205,10 +205,10 @@ function parse() {
 
           // Use Array.from, as childNodes is a live collection, and when element is removed or
           // moved, indexes will change.
-          Array.from(element.childNodes).forEach((el) => {
+          [...element.childNodes].forEach((el) => {
             el.remove();
           });
-          Array.from(headlineElement.childNodes).forEach(element.appendChild.bind(element));
+          [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
         }
       }
 

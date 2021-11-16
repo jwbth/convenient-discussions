@@ -489,7 +489,7 @@ class Comment extends CommentSkeleton {
       .filter((el) => (
         cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
         (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
-        Array.from(el.classList).some((name) => !name.startsWith('cd-'))
+        [...el.classList].some((name) => !name.startsWith('cd-'))
       ))
       .forEach((el) => {
         const wrapper = document.createElement('div');
@@ -776,7 +776,7 @@ class Comment extends CommentSkeleton {
   reviewHighlightables() {
     for (let i = 0; i < this.highlightables.length; i++) {
       const el = this.highlightables[i];
-      const areThereClassedElements = Array.from(el.classList)
+      const areThereClassedElements = [...el.classList]
         .some((name) => !name.startsWith('cd-') || name === 'cd-comment-replacedPart');
       if (areThereClassedElements) {
         const isReplacement = i === 0 && el.classList.contains('cd-comment-replacedPart');
@@ -1501,7 +1501,7 @@ class Comment extends CommentSkeleton {
           style = window.getComputedStyle(node);
           node.conveneintDiscussionsStyle = style;
         }
-        const classList = Array.from(node.classList);
+        const classList = [...node.classList];
         if (
           ['absolute', 'relative'].includes(style.position) ||
           (
@@ -2092,7 +2092,7 @@ class Comment extends CommentSkeleton {
    * @returns {boolean} Was the update successful.
    */
   update(currentComment, newComment) {
-    const elementNames = Array.from(this.$elements).map((el) => el.tagName);
+    const elementNames = [...this.$elements].map((el) => el.tagName);
 
     // References themselves may be out of the comment's HTML and might be edited.
     const areThereReferences = newComment.hiddenElementsData
@@ -2723,7 +2723,7 @@ class Comment extends CommentSkeleton {
     const nativeElement = element instanceof $ ? element.get(0) : element;
     let newElement;
     if (typeof newElementOrHtml === 'string') {
-      const index = Array.from(nativeElement.parentNode.children).indexOf(nativeElement);
+      const index = [...nativeElement.parentNode.children].indexOf(nativeElement);
       const parentNode = nativeElement.parentNode;
       nativeElement.outerHTML = newElementOrHtml;
       newElement = parentNode.children[index];

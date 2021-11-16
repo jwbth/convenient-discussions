@@ -446,7 +446,7 @@ function processContributions($content) {
 
   // Empty contributions list
   if (!list) return;
-  const lines = Array.from(list.children);
+  const lines = [...list.children];
 
   lines.forEach((line) => {
     const linkElement = line.querySelector('.mw-contributions-title');
@@ -513,7 +513,7 @@ function processHistory($content) {
   if (cd.g.UI_TIMEZONE === null) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
-  const lines = Array.from(list.children);
+  const lines = [...list.children];
   const link = cd.page.getUrl();
 
   lines.forEach((line) => {

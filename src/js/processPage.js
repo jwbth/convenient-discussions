@@ -175,16 +175,16 @@ function findFloatingAndHiddenElements() {
         tsSelectorsHidden.push(rule.selectorText);
       }
     } else if (rule instanceof CSSMediaRule) {
-      Array.from(rule.cssRules).forEach(filterRules);
+      [...rule.cssRules].forEach(filterRules);
     }
   };
-  Array.from(document.styleSheets)
+  [...document.styleSheets]
     .filter((sheet) => sheet.href?.includes('site.styles'))
     .forEach((el) => {
-      Array.from(el.cssRules).forEach(filterRules);
+      [...el.cssRules].forEach(filterRules);
     });
-  Array.from(cd.g.rootElement.querySelectorAll('style')).forEach((el) => {
-    Array.from(el.sheet.cssRules).forEach(filterRules);
+  [...cd.g.rootElement.querySelectorAll('style')].forEach((el) => {
+    [...el.sheet.cssRules].forEach(filterRules);
   });
 
   // Describe all floating elements on the page in order to calculate the correct border
@@ -195,12 +195,12 @@ function findFloatingAndHiddenElements() {
   // Can't use jQuery here anyway, as .find() doesn't take into account ancestor elements, such as
   // .mw-parser-output, in selectors. Remove all known elements that never intersect comments from
   // the collection.
-  cd.g.floatingElements = Array.from(cd.g.rootElement.querySelectorAll(floatingElementSelector))
+  cd.g.floatingElements = [...cd.g.rootElement.querySelectorAll(floatingElementSelector)]
     .filter((el) => !el.classList.contains('cd-ignoreFloating'));
 
   const hiddenElementSelector = [...tsSelectorsHidden].join(', ');
   cd.g.hiddenElements = hiddenElementSelector ?
-    Array.from(cd.g.rootElement.querySelectorAll(hiddenElementSelector)) :
+    [...cd.g.rootElement.querySelectorAll(hiddenElementSelector)] :
     [];
 }
 
@@ -220,7 +220,7 @@ function mergeAdjacentCommentLevels() {
     el.querySelector('.cd-commentLevel:not(ol)')
   );
 
-  Array.from(levels).forEach((bottomElement) => {
+  [...levels].forEach((bottomElement) => {
     const topElement = bottomElement.previousElementSibling;
 
     // If the previous element was removed in this cycle. (Or it could be absent for some other
@@ -519,7 +519,7 @@ function hideDtNewTopicForm() {
     } else {
       const observer = new MutationObserver((records) => {
         const isReplyWidgetAdded = (record) => (
-          Array.from(record.addedNodes)
+          [...record.addedNodes]
             .some((node) => node.classList?.contains('ext-discussiontools-ui-replyWidget'))
         );
         if (records.some(isReplyWidgetAdded)) {

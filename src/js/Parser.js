@@ -117,17 +117,17 @@ class Parser {
         dtMarkupHavenElement = cd.g.$content.children('.cd-dtMarkupHaven').get(0);
       }
     }
-    let elements = Array.from(cd.g.rootElement.getElementsByTagName('span'))
+    let elements = [...cd.g.rootElement.getElementsByTagName('span')]
       .filter((el) => (
         el.hasAttribute('data-mw-comment-start') ||
         el.hasAttribute('data-mw-comment-end')
       ))
-      .concat(Array.from(
-        cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')
-      ));
+      .concat(
+        [...cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
+      );
     if (!self.cdIsWorker) {
       elements = elements.concat(
-        Array.from(cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-highlight'))
+        [...cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
       );
     }
     elements.forEach((el, i) => {
@@ -169,9 +169,9 @@ class Parser {
       this.foreignComponentClasses.push(cd.config.outdentClass);
     }
 
-    const blockquotes = Array.from(cd.g.rootElement.getElementsByTagName('blockquote'));
+    const blockquotes = [...cd.g.rootElement.getElementsByTagName('blockquote')];
     const elementsToExcludeByClass = cd.config.elementsToExcludeClasses
-      .map((className) => Array.from(cd.g.rootElement.getElementsByClassName(className)));
+      .map((className) => [...cd.g.rootElement.getElementsByClassName(className)]);
     this.elementsToExclude = [...blockquotes, ...flat(elementsToExcludeByClass)];
   }
 
@@ -352,7 +352,7 @@ class Parser {
             if (node.tagName === 'A') {
               if (!this.processLinkData(node, authorData)) break;
             } else {
-              const links = Array.from(node.getElementsByTagName('a')).reverse();
+              const links = [...node.getElementsByTagName('a')].reverse();
               for (const link of links) {
                 // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
                 if (link.classList.contains('external')) continue;
@@ -429,7 +429,7 @@ class Parser {
   findUnsigneds() {
     const unsigneds = [];
     if (cd.config.unsignedClass) {
-      Array.from(cd.g.rootElement.getElementsByClassName(cd.config.unsignedClass))
+      [...cd.g.rootElement.getElementsByClassName(cd.config.unsignedClass)]
         .filter((element) => {
           // Only templates with no timestamp interest us.
           if (this.context.getElementByClassName(element, 'cd-timestamp')) {
@@ -446,7 +446,7 @@ class Parser {
           return true;
         })
         .forEach((element) => {
-          Array.from(element.getElementsByTagName('a')).some((link) => {
+          [...element.getElementsByTagName('a')].some((link) => {
             const { userName: authorName, linkType } = Parser.processLink(link) || {};
             if (authorName) {
               let authorLink;
@@ -543,7 +543,7 @@ class Parser {
     do {
       nodes = children;
       children = nodes.reduce(
-        (arr, element) => arr.concat(Array.from(element[this.context.childElementsProp])),
+        (arr, element) => arr.concat([...element[this.context.childElementsProp]]),
         []
       );
       if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {

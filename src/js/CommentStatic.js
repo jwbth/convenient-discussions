@@ -464,7 +464,7 @@ export default {
    */
   highlightHovered(e) {
     const isObstructingElementHovered = (
-      Array.from(cd.g.notificationArea?.querySelectorAll('.mw-notification'))
+      [...(cd.g.notificationArea?.querySelectorAll('.mw-notification') || [])]
         .some((notification) => notification.matches(':hover')) ||
 
       cd.g.activeAutocompleteMenu?.matches(':hover') ||

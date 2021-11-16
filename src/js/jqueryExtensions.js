@@ -184,7 +184,7 @@ export default {
   cdGetText() {
     let text;
     const dummyElement = document.createElement('div');
-    Array.from(this.get(0).childNodes).forEach((node) => {
+    [...this.get(0).childNodes].forEach((node) => {
       dummyElement.appendChild(node.cloneNode(true));
     });
     document.body.appendChild(dummyElement);
