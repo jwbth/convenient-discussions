@@ -331,12 +331,12 @@ class CommentSkeleton {
       (
         element.tagName === 'HR' &&
         element.previousElementSibling &&
-        this.context.getElementByClassName(element.previousElementSibling, 'cd-signature')
+        this.parser.context.getElementByClassName(element.previousElementSibling, 'cd-signature')
       ) ||
 
       (
         cd.g.pageHasOutdents &&
-        this.context.getElementByClassName(element, cd.config.outdentClass)
+        this.parser.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
 
       cd.config.checkForCustomForeignComponents?.(element, this.context)
@@ -390,7 +390,7 @@ class CommentSkeleton {
 
         // Helps at
         // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061810_Example
-        !this.context.getElementByClassName(element, 'cd-signature')
+        !this.parser.context.getElementByClassName(element, 'cd-signature')
       ) ||
 
       this.isGallery(element)
@@ -403,8 +403,8 @@ class CommentSkeleton {
       // a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the SPECIFICO's
       // comment. (Currently, to test this, you will need to remove timestamps from the SPECIFICO's
       // comment.)
-      const elementLevelsPassed = this.getTopElementsWithText(element).levelsPassed;
-      const nextElementLevelsPassed = this.getTopElementsWithText(nextElement).levelsPassed;
+      const elementLevelsPassed = this.parser.getTopElementsWithText(element).levelsPassed;
+      const nextElementLevelsPassed = this.parser.getTopElementsWithText(nextElement).levelsPassed;
       result = (
         nextElementLevelsPassed > elementLevelsPassed ||
 
@@ -412,7 +412,7 @@ class CommentSkeleton {
         (
           elementLevelsPassed === 1 &&
           nextElementLevelsPassed === elementLevelsPassed &&
-          element[this.context.childElementsProp].length > 1 &&
+          element[this.parser.context.childElementsProp].length > 1 &&
           tagName !== nextElement.tagName
         )
       );
