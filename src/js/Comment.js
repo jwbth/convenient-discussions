@@ -2530,11 +2530,23 @@ class Comment extends CommentSkeleton {
         isSelectionRelevant = comment === this;
         if (isSelectionRelevant) {
           dataToRestore = { focus: false };
-          const menu = this.$menu.get(0);
+
+          let endBoundary;
+          if (cd.settings.reformatComments) {
+            endBoundary = this.$menu.get(0);
+          } else {
+            endBoundary = document.createElement('span');
+            this.$elements.last().append(endBoundary);
+          }
+
           const selection = window.getSelection();
           const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
-          if (cd.settings.reformatComments && selection.containsNode(menu, true)) {
-            selection.setBaseAndExtent(higherNode, higherOffset, menu, 0);
+          if (selection.containsNode(endBoundary, true)) {
+            selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
+          }
+
+          if (!cd.settings.reformatComments) {
+            endBoundary.remove();
           }
         }
       }

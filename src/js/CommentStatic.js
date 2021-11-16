@@ -715,6 +715,7 @@ export default {
         Comment.resetSelectedComment();
         if (comment && comment.isActionable && !comment.replyForm) {
           comment.isSelected = true;
+          comment.configureLayers();
           comment.replyButton.setLabel(cd.s('cm-quote'));
         }
       } else {
