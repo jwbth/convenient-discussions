@@ -139,8 +139,11 @@ export function isPageOverlayOn() {
  * @returns {string}
  */
 export function wrapDiffBody(body) {
+  const className = mw.user.options.get('editfont') === 'monospace' ?
+    'diff diff-editfont-monospace' :
+    'diff';
   return (
-    '<table class="diff">' +
+    `<table class="${className}">` +
     '<col class="diff-marker"><col class="diff-content">' +
     '<col class="diff-marker"><col class="diff-content">' +
     body +
