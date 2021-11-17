@@ -153,22 +153,25 @@ export function handleScroll() {
 }
 
 /**
- * Handle the `hashchange` event.
+ * Handle the `hashchange` event, including clicks on links pointing to comment anchors.
  */
 export function handleHashChange() {
-  let anchor = location.hash.slice(1);
-  if (isCommentAnchor(anchor)) {
+  let fragment = location.hash.slice(1);
+  if (fragment.startsWith('c-') || isCommentAnchor(fragment)) {
     // Don't jump to the comment if the user pressed Back/Forward in the browser or if
-    // history.pushState() is caled from Comment#scrollTo().
+    // history.pushState() is called from Comment#scrollTo().
     if (history.state?.cdJumpedToComment) return;
 
     try {
-      anchor = decodeURIComponent(anchor);
+      fragment = decodeURIComponent(fragment);
     } catch (e) {
       console.error(e);
       return;
     }
-    Comment.getByAnchor(anchor, true)?.scrollTo();
+    const comment = fragment.startsWith('c-') ?
+      Comment.getByDtId(fragment) :
+      Comment.getByAnchor(fragment, true);
+    comment?.scrollTo();
   }
 }
 

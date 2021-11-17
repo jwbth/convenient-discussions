@@ -534,7 +534,7 @@ export default {
     return comment || null;
   },
 
-  getByDtId(id) {
+  getByDtId(id, returnComponents = false) {
     const data = parseDtCommentId(id);
     if (!data) {
       return null;
@@ -561,8 +561,12 @@ export default {
       comment = comments.length === 1 ? comments[0] : comments[data.index || 0];
     }
 
-    data.comment = comment;
-    return data;
+    if (returnComponents) {
+      data.comment = comment;
+      return data;
+    } else {
+      return comment;
+    }
   },
 
   /**

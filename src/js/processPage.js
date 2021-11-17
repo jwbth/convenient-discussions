@@ -411,7 +411,7 @@ function processComments(targets, parser) {
     });
 
   cd.g.dtCommentIds.forEach((id) => {
-    const { comment } = Comment.getByDtId(id) || {};
+    const comment = Comment.getByDtId(id);
     if (comment) {
       comment.dtId = id;
     }
@@ -792,7 +792,7 @@ async function processFragment(passedData) {
     ({ date, author } = parseCommentAnchor(commentAnchor) || {});
     comment = Comment.getByAnchor(commentAnchor, !passedData.commentAnchor);
   } else if (decodedFragment) {
-    ({ comment, date, author } = Comment.getByDtId(decodedFragment) || {});
+    ({ comment, date, author } = Comment.getByDtId(decodedFragment, true) || {});
     if (comment) {
       fragmentContainsCommentAnchor = true;
     }
