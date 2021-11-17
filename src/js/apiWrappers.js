@@ -59,7 +59,6 @@ export function makeBackgroundRequest(params, method = 'post') {
  * @param {string} code
  * @param {object} [customOptions]
  * @returns {external:jQueryPromise.<object>}
- * @throws {CdError}
  */
 export function parseCode(code, customOptions) {
   const defaultOptions = {
@@ -75,25 +74,10 @@ export function parseCode(code, customOptions) {
   const options = Object.assign({}, defaultOptions, customOptions);
   return cd.g.mwApi.post(options).then(
     (resp) => {
-      const html = resp.parse?.text;
-      if (html) {
-        mw.loader.load(resp.parse.modules);
-        mw.loader.load(resp.parse.modulestyles);
-      } else {
-        throw new CdError({
-          type: 'api',
-          code: 'noData',
-        });
-      }
-
+      const html = resp.parse.text;
+      mw.loader.load(resp.parse.modules);
+      mw.loader.load(resp.parse.modulestyles);
       const parsedSummary = resp.parse.parsedsummary;
-      if (customOptions?.summary && !parsedSummary) {
-        throw new CdError({
-          type: 'api',
-          code: 'noData',
-        });
-      }
-
       return { html, parsedSummary };
     },
     handleApiReject
@@ -106,7 +90,6 @@ export function parseCode(code, customOptions) {
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
  * @returns {Promise} Promise for an object containing the full options object, visits, watched
  *   sections, and rights.
- * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {
   if (reuse && cachedUserInfoRequest) {
@@ -120,15 +103,9 @@ export function getUserInfo(reuse = false) {
     uiprop: ['options', 'rights'],
   }).then(
     (resp) => {
-      const userinfo = resp.query?.userinfo;
-      const options = userinfo?.options;
-      const rights = userinfo?.rights;
-      if (!options || !rights) {
-        throw new CdError({
-          type: 'api',
-          code: 'noData',
-        });
-      }
+      const userinfo = resp.query.userinfo;
+      const options = userinfo.options;
+      const rights = userinfo.rights;
 
       const visitsCompressed = options[cd.g.VISITS_OPTION_NAME];
       const visitsString = visitsCompressed ?
@@ -157,37 +134,19 @@ export function getUserInfo(reuse = false) {
  *
  * @param {number[]} pageIds
  * @returns {Promise.<object[]>}
- * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
-  const idsToRequest = pageIds.slice();
+  const pageIdsToRequest = pageIds.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
-  while ((nextPageIds = idsToRequest.splice(0, limit).join('|'))) {
+  while ((nextPageIds = pageIdsToRequest.splice(0, limit).join('|'))) {
     const resp = await cd.g.mwApi.post({
       action: 'query',
       pageids: nextPageIds,
     }).catch(handleApiReject);
 
-    if (resp.error) {
-      throw new CdError({
-        type: 'api',
-        code: 'error',
-        apiData: resp,
-      });
-    }
-
-    const query = resp.query;
-    const nextPages = query?.pages;
-    if (!nextPages) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    pages.push(...nextPages);
+    pages.push(...resp.query.pages);
   }
 
   return pages;
@@ -198,7 +157,6 @@ export async function getPageTitles(pageIds) {
  *
  * @param {string[]} titles
  * @returns {Promise.<object[]>}
- * @throws {CdError}
  */
 export async function getPageIds(titles) {
   const normalized = [];
@@ -214,26 +172,10 @@ export async function getPageIds(titles) {
       redirects: true,
     }).catch(handleApiReject);
 
-    if (resp.error) {
-      throw new CdError({
-        type: 'api',
-        code: 'error',
-        apiData: resp,
-      });
-    }
-
     const query = resp.query;
-    const nextPages = query?.pages;
-    if (!nextPages) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
     normalized.push(...query.normalized || []);
     redirects.push(...query.redirects || []);
-    pages.push(...nextPages);
+    pages.push(...query.pages);
   }
 
   return { normalized, redirects, pages };
@@ -245,6 +187,7 @@ export async function getPageIds(titles) {
  * @param {string} name
  * @param {string} value
  * @param {string} action
+ * @throws {CdError}
  * @private
  */
 async function setOption(name, value, action) {
@@ -278,7 +221,6 @@ async function setOption(name, value, action) {
  *
  * @param {string} name
  * @param {string} value
- * @throws {CdError}
  */
 export async function setLocalOption(name, value) {
   await setOption(name, value, 'options');
@@ -321,7 +263,6 @@ export async function setGlobalOption(name, value) {
  * @param {User[]} users
  * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
- * @throws {CdError}
  */
 export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
@@ -340,15 +281,8 @@ export async function getUserGenders(users, requestInBackground = false) {
     const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
 
     const resp = await request.catch(handleApiReject);
-    const users = resp.query?.users;
-    if (!users) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
 
-    users
+    resp.query.users
       .filter((user) => user.gender)
       .forEach((user) => {
         userRegistry.getUser(user.name).setGender(user.gender);
@@ -390,12 +324,6 @@ export function getRelevantUserNames(text) {
           ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
           .filter(defined)
           .filter((name) => !name.includes('/'));
-        if (!users) {
-          throw new CdError({
-            type: 'api',
-            code: 'noData',
-          });
-        }
 
         if (users.length) {
           resolve(users);
@@ -407,14 +335,7 @@ export function getRelevantUserNames(text) {
             auprefix: text,
           }).catch(handleApiReject);
 
-          const users = resp?.query?.allusers?.map((user) => user.name);
-          if (!users) {
-            throw new CdError({
-              type: 'api',
-              code: 'noData',
-            });
-          }
-
+          const users = resp.query.allusers.map((user) => user.name);
           resolve(users);
         }
       } catch (e) {
@@ -466,13 +387,6 @@ export function getRelevantPageNames(text) {
                 .replace(/^/, colonPrefix ? ':' : '')
             ));
 
-            if (!pages) {
-              throw new CdError({
-                type: 'api',
-                code: 'noData',
-              });
-            }
-
             resolve(pages);
           },
           (e) => {
@@ -520,12 +434,6 @@ export function getRelevantTemplateNames(text) {
               ?.filter((name) => !/(\/doc|\.css)$/.test(name))
               .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
               .map((name) => name.replace(regexp, () => text[0]));
-            if (!templates) {
-              throw new CdError({
-                type: 'api',
-                code: 'noData',
-              });
-            }
 
             resolve(templates);
           },
@@ -562,25 +470,9 @@ export async function getPagesExistence(titles) {
       titles: nextTitles,
     }).catch(handleApiReject);
 
-    if (resp.error) {
-      throw new CdError({
-        type: 'api',
-        code: 'error',
-        apiData: resp,
-      });
-    }
-
     const query = resp.query;
-    const nextPages = query?.pages;
-    if (!nextPages) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
     normalized.push(...query.normalized || []);
-    pages.push(...nextPages);
+    pages.push(...query.pages);
   }
 
   const normalizedToOriginal = {};
@@ -614,22 +506,7 @@ export async function getDtSubscriptions(ids) {
       commentname: nextIds,
     }).catch(handleApiReject);
 
-    if (resp.error) {
-      throw new CdError({
-        type: 'api',
-        code: 'error',
-        apiData: resp,
-      });
-    }
-
     const nextSubscriptions = resp.subscriptions;
-    if (!nextSubscriptions) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
     Object.assign(subscriptions, nextSubscriptions);
   }
 
