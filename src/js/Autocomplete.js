@@ -248,12 +248,11 @@ class Autocomplete {
           if (!this.commentLinks.default) {
             this.commentLinks.default = [];
             this.commentLinks.comments.forEach((comment) => {
-              let { anchor, author, timestamp, getText } = comment;
-              getText = getText.bind(comment);
+              let { anchor, dtId, author, timestamp } = comment;
               let snippet;
               const snippetMaxLength = 80;
-              if (getText().length > snippetMaxLength) {
-                snippet = getText().slice(0, snippetMaxLength);
+              if (comment.getText().length > snippetMaxLength) {
+                snippet = comment.getText().slice(0, snippetMaxLength);
                 const wordSeparator = cd.mws('word-separator', { language: 'content' });
                 const spacePos = snippet.lastIndexOf(wordSeparator);
                 if (spacePos !== -1) {
@@ -265,7 +264,7 @@ class Autocomplete {
                   snippet += cd.s('ellipsis');
                 }
               } else {
-                snippet = getText();
+                snippet = comment.getText();
               }
               let authorTimestamp = author.name;
               if (timestamp) {
@@ -275,7 +274,7 @@ class Autocomplete {
               const key = authorTimestamp + colon + snippet;
               this.commentLinks.default.push({
                 key,
-                anchor,
+                anchor: dtId || anchor,
                 author: author.name,
                 timestamp,
               });
