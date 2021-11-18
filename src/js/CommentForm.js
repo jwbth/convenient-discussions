@@ -22,6 +22,7 @@ import {
   handleApiReject,
   hideText,
   insertText,
+  isCmdMofidicatorPressed,
   isInputFocused,
   isPageOverlayOn,
   keyCombination,
@@ -349,7 +350,7 @@ class CommentForm {
     let rowNumber = this.headlineInput ? 5 : 3;
     // Firefox gives a bigger height to a textarea with a specified number of rows than other
     // browsers.
-    if ($.client.profile().name === 'firefox') {
+    if (cd.g.CLIENT_PROFILE.name === 'firefox') {
       rowNumber -= 1;
     }
 
@@ -636,10 +637,13 @@ class CommentForm {
       classes: ['cd-button-ooui'],
       popup: {
         head: false,
-        $content: wrap(cd.sParse('cf-help-content', cd.config.mentionCharacter), {
-          tagName: 'div',
-          targetBlank: true,
-        }),
+        $content: wrap(
+          cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.CMD_MODIFICATOR),
+          {
+            tagName: 'div',
+            targetBlank: true,
+          }
+        ),
         padded: true,
         align: 'center',
         width: 400,
@@ -849,7 +853,7 @@ class CommentForm {
         .prependTo(this.$element);
     }
 
-    if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
+    if (this.containerListType === 'ol' && cd.g.CLIENT_PROFILE.layout !== 'webkit') {
       // Dummy element for forms inside a numbered list so that the number is placed in front of
       // that area, not in some silly place. Note that in Chrome, the number is placed in front of
       // the textarea, so we don't need this in that browser.
@@ -1004,7 +1008,7 @@ class CommentForm {
           'convenient-discussions': {
             tools: {
               mention: {
-                label: cd.s('cf-mention-tooltip'),
+                label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFICATOR),
                 type: 'button',
                 icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
                 action: {
@@ -1020,7 +1024,7 @@ class CommentForm {
         .find('.tool-button[rel="mention"]')
         .off('click')
         .on('click', (e) => {
-          this.mention(e.ctrlKey);
+          this.mention(isCmdMofidicatorPressed(e));
         });
 
       this.$element

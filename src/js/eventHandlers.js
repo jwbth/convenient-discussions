@@ -10,8 +10,15 @@ import Thread from './Thread';
 import cd from './cd';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
+import {
+  isCmdMofidicatorPressed,
+  isInputFocused,
+  isPageOverlayOn,
+  isPostponed,
+  keyCombination,
+  postpone,
+} from './util';
 import { isCommentAnchor } from './timestamp';
-import { isInputFocused, isPageOverlayOn, isPostponed, keyCombination, postpone } from './util';
 import { setContentColumnGlobals } from './boot';
 
 const beforeUnloadHandlers = {};
@@ -88,7 +95,7 @@ export function handleGlobalKeyDown(e) {
     const lastActiveCommentForm = CommentForm.getLastActive();
     if (lastActiveCommentForm) {
       e.preventDefault();
-      lastActiveCommentForm.quote(e.ctrlKey);
+      lastActiveCommentForm.quote(isCmdMofidicatorPressed(e));
     } else {
       const comment = Comment.getSelectedComment();
       if (comment?.isActionable) {

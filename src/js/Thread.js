@@ -10,6 +10,7 @@ import {
   getExtendedRect,
   getFromLocalStorage,
   getVisibilityByRects,
+  isCmdMofidicatorPressed,
   removeFromArrayIfPresent,
   saveToLocalStorage,
   unique,
@@ -531,9 +532,9 @@ class Thread {
 
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
-      tooltip: cd.s('thread-expand-tooltip'),
+      tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFICATOR),
       action: (e) => {
-        if (e.ctrlKey) {
+        if (isCmdMofidicatorPressed(e)) {
           cd.comments.slice().reverse().forEach((comment) => {
             if (comment.thread?.isCollapsed) {
               comment.thread.expand();

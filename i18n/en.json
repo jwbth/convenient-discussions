@@ -19,7 +19,7 @@
   "thread-tooltip": "Collapse/expand the thread",
   "thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|}} $3)",
   "thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3)",
-  "thread-expand-tooltip": "Hold Ctrl to expand all threads on the page",
+  "thread-expand-tooltip": "Hold $1 to expand all threads on the page",
   "thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
 
   "sm-editopeningcomment": "edit opening comment",
@@ -135,7 +135,7 @@
   "cf-settings-tooltip": "Convenient Discussions settings",
   "cf-help": "?",
   "cf-help-short": "?",
-  "cf-help-content": "<ul>\n<li>Type <code>$1</code> and choose a user to [[mw:Special:MyLanguage/Help:Notifications/Mention|mention]] them.</li>\n<li>Hold <b>Ctrl</b> while choosing a user to add punctuation after the name.</li>\n<li>Type <code><nowiki>[[#</nowiki></code> to link a comment in the current section.</li>\n<li>Hold <b>Shift</b> while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).</li>\n<li>Hold <b>Alt</b> while choosing an autocomplete item to use the text after the caret as displayed text.</li>\n<li class=\"cd-helpPopup-hideForReformattedComments\">If the comment menu obstructs a link behind it, make a long click/tap on it—it will disappear.</li>\n</ul>\n<p>Hotkeys:</p>\n<ul>\n<li><b>Ctrl+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>Ctrl+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Script documentation]]</p>",
+  "cf-help-content": "<ul>\n<li>Type <code>$1</code> and choose a user to [[mw:Special:MyLanguage/Help:Notifications/Mention|mention]] them.</li>\n<li>Hold <b>$2</b> while choosing a user to add punctuation after the name.</li>\n<li>Type <code><nowiki>[[#</nowiki></code> to link a comment in the current section.</li>\n<li>Hold <b>Shift</b> while choosing an autocomplete item to change the displayed text (for example, <code><nowiki>[[Article|</nowiki><var>text</var><nowiki>]]</nowiki></code>).</li>\n<li>Hold <b>Alt</b> while choosing an autocomplete item to use the text after the caret as displayed text.</li>\n<li class=\"cd-helpPopup-hideForReformattedComments\">If the comment menu obstructs a link behind it, make a long click/tap on it—it will disappear.</li>\n</ul>\n<p>Hotkeys:</p>\n<ul>\n<li><b>$2+Enter</b> — post</li>\n<li><b>Esc</b> — cancel</li>\n<li><b>Q</b> (<b>$2+Alt+Q</b>) — quote the selected text</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Script documentation]]</p>",
   "cf-strikethrough-tooltip": "Strikethrough",
   "cf-strikethrough-placeholder": "Struckthrough text",
   "cf-code-tooltip": "Code",
@@ -144,7 +144,7 @@
   "cf-codeblock-placeholder": "Code block",
   "cf-quote-tooltip": "Quote the selected text",
   "cf-quote-placeholder": "Quoted text",
-  "cf-mention-tooltip": "Mention a user. Hold Ctrl to mention the comment's addressee if available",
+  "cf-mention-tooltip": "Mention a user. Hold $1 to mention the comment's addressee if available",
   "cf-underline-tooltip": "Underline",
   "cf-underline-placeholder": "Underlined text",
 
@@ -246,7 +246,7 @@
   "navpanel-newcomments-names": "$1 → $2",
   "navpanel-newcomments-unknowndate": "unknown date",
   "navpanel-newcomments-refresh": "Click to refresh the page",
-  "navpanel-markasread": "Hold Ctrl to mark all shown comments as read",
+  "navpanel-markasread": "Hold $1 to mark all shown comments as read",
 
   "toc-commentcount-new": "+$1",
   "toc-commentcount-full": "$1 {{plural:$1|comment|comments}}",

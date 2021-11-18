@@ -9,7 +9,7 @@ import Button from './Button';
 import Comment from './Comment';
 import cd from './cd';
 import updateChecker from './updateChecker';
-import { focusInput, reorderArray } from './util';
+import { focusInput, isCmdMofidicatorPressed, reorderArray } from './util';
 import { formatDate } from './timestamp';
 import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
@@ -64,7 +64,7 @@ export default {
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-refreshButton',
       action: (e) => {
-        this.refreshClick(e.ctrlKey);
+        this.refreshClick(isCmdMofidicatorPressed(e));
       },
     });
 
@@ -347,7 +347,7 @@ export default {
         cd.mws('parentheses', 'R')
       );
       if (areThereNew) {
-        tooltipText += '\n' + cd.s('navpanel-markasread');
+        tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFICATOR);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
       const comma = cd.mws('comma-separator');
@@ -379,7 +379,7 @@ export default {
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
       if (areThereNew) {
-        tooltipText += '\n' + cd.s('navpanel-markasread');
+        tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFICATOR);
       }
     }
 

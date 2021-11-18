@@ -1285,3 +1285,9 @@ export function postpone(label, func, delay) {
 export function isPostponed(label) {
   return postponements[label];
 }
+
+export function isCmdMofidicatorPressed(e) {
+  // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
+  // platform.
+  return cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;
+}

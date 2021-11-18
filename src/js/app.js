@@ -500,6 +500,7 @@ async function go() {
     }
 
     mw.loader.using([
+      'jquery.client',
       'mediawiki.Title',
       'mediawiki.api',
       'mediawiki.jqueryMsg',
