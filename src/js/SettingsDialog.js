@@ -306,7 +306,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     ] = createRadioField({
       options: [
         {
-          label: cd.s('sd-desktopnotifications-radio-all'),
+          label: cd.s('sd-desktopnotifications-radio-all', mw.user),
           data: 'all',
         },
         {
@@ -355,7 +355,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       value: 'modifyToc',
       selected: settings.modifyToc,
       label: cd.s('sd-modifytoc'),
-      help: cd.s('sd-modifytoc-help'),
+      help: cd.s('sd-modifytoc-help', mw.user),
     });
 
     [
@@ -367,7 +367,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     ] = createRadioField({
       options: [
         {
-          label: cd.s('sd-notifications-radio-all'),
+          label: cd.s('sd-notifications-radio-all', mw.user),
           data: 'all',
         },
         {
@@ -505,7 +505,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     [this.useTopicSubscriptionField, this.useTopicSubscriptionCheckbox] = createCheckboxField({
       value: 'useTopicSubscription',
       selected: settings.useTopicSubscription,
-      label: wrap(cd.sParse('sd-usetopicsubscription'), { targetBlank: true }),
+      label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
       help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
     });
 

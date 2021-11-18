@@ -186,9 +186,9 @@ function addWatchlistMenu() {
     switchRelevantButton = new OO.ui.ButtonWidget({
       framed: false,
       icon: 'speechBubble',
-      label: cd.s('wl-button-switchrelevant-tooltip'),
+      label: cd.s('wl-button-switchrelevant-tooltip', mw.user),
       invisibleLabel: true,
-      title: cd.s('wl-button-switchrelevant-tooltip'),
+      title: cd.s('wl-button-switchrelevant-tooltip', mw.user),
       classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
       disabled: !subscriptions.areLoaded(),
     });
@@ -201,9 +201,9 @@ function addWatchlistMenu() {
   const editSubscriptionsButtonConfig = {
     framed: false,
     icon: 'listBullet',
-    label: cd.s('wl-button-editwatchedsections-tooltip'),
+    label: cd.s('wl-button-editwatchedsections-tooltip', mw.user),
     invisibleLabel: true,
-    title: cd.s('wl-button-editwatchedsections-tooltip'),
+    title: cd.s('wl-button-editwatchedsections-tooltip', mw.user),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editSubscriptions'],
   };
   if (cd.settings.useTopicSubscription) {
