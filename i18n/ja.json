@@ -179,7 +179,7 @@
 	"sd-reset": "設定を更新（すべての節が対象）",
 	"sd-reset-confirm": "ほんとうに設定をリセットしてよいですか？ （リセット後、「{{int:convenient-discussions-sd-save}}」を押します。）",
 	"sd-removedata-description": "Convenient Discussions が収集したデータを除去します：設定、トークページの最終訪問、ウォッチリストに載せた節、未送信のコメント下書き",
-	"sd-removedata-help": "削除される対象は表示中のウィキのみで、グローバル設定は対象外です。他のウィキで Convenient Discussions を利用していてデータの除去をご希望の場合は、個別に処理が必要です。それぞれのデータを個別に削除する方法は[[c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|スクリプトのホームページ]]をご参照いただくと、合わせてスクリプトが保存する対象と選定基準および手法の詳細を説明しています。",
+	"sd-removedata-help": "削除される対象は表示中のウィキのみで、グローバル設定は対象外です。他のウィキで Convenient Discussions を利用していてデータの除去をご希望の場合は、個別に処理が必要です。それぞれのデータを個別に削除する方法は[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|スクリプトのホームページ]]をご参照いただくと、合わせてスクリプトが保存する対象と選定基準および手法の詳細を説明しています。",
 	"sd-removedata-confirm": "これにより、あなたの設定、トークページの最終訪問、ウォッチリストに入れた節、未送信のコメントの下書きは完全に削除されます。ほんとうに処理してよいですか？",
 	"sd-error-removedata": "サーバからデータを削除できませんでした。",
 	"sd-alloweditotherscomments": "他の利用者のコメントを編集するためリンクを表示",
