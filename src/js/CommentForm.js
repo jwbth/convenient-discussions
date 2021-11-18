@@ -1004,18 +1004,15 @@ class CommentForm {
       });
       $input.wikiEditor('addToToolbar', {
         section: 'main',
-        groups: {
-          'convenient-discussions': {
-            tools: {
-              mention: {
-                label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFICATOR),
-                type: 'button',
-                icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
-                action: {
-                  type: 'callback',
-                  execute: () => {},
-                },
-              },
+        group: 'insert',
+        tools: {
+          mention: {
+            label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFICATOR),
+            type: 'button',
+            icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
+            action: {
+              type: 'callback',
+              execute: () => {},
             },
           },
         },
