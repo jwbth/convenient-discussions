@@ -60,7 +60,10 @@ export default {
     'nextdiff': 'Следующая правка →',
   },
 
-  contribsPage: 'Служебная:Вклад',
+  specialPageAliases: {
+    'Contributions': 'Вклад',
+    'Diff': 'Изменения',
+  },
 
   substAliases: [
     'подстановка:',

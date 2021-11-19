@@ -186,14 +186,7 @@ export function loadSiteData() {
     requests.push(userLanguageMessagesRequest);
   }
 
-  /**
-   * Contributions page local name.
-   *
-   * @name CONTRIBS_PAGE
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
-  cd.g.CONTRIBS_PAGE = cd.config.contribsPage;
+  cd.g.SPECIAL_PAGE_ALIASES = Object.assign({}, cd.config.specialPageAliases);
 
   /**
    * Timezone of the wiki.
@@ -204,19 +197,21 @@ export function loadSiteData() {
    */
   cd.g.CONTENT_TIMEZONE = cd.config.timezone;
 
-  if (!cd.g.CONTRIBS_PAGE || !cd.g.CONTENT_TIMEZONE) {
+  if (
+    !cd.g.SPECIAL_PAGE_ALIASES.Contributions ||
+    !cd.g.SPECIAL_PAGE_ALIASES.Diff ||
+    !cd.g.CONTENT_TIMEZONE
+  ) {
     const request = cd.g.mwApi.get({
       action: 'query',
       meta: 'siteinfo',
       siprop: ['specialpagealiases', 'general'],
     }).then((resp) => {
-      resp.query.specialpagealiases.some((alias) => {
-        if (alias.realname === 'Contributions') {
-          cd.g.CONTRIBS_PAGE = mw.config.get('wgFormattedNamespaces')[-1] + ':' + alias.aliases[0];
-          return true;
-        }
-      });
-
+      resp.query.specialpagealiases
+        .filter((alias) => ['Contributions', 'Diff'].includes(alias.realname))
+        .forEach((alias) => {
+          cd.g.SPECIAL_PAGE_ALIASES[alias.realname] = alias.aliases[0];
+        });
       cd.g.CONTENT_TIMEZONE = resp.query.general.timezone;
     });
     requests.push(request);

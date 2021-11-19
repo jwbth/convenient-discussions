@@ -2403,7 +2403,12 @@ class Comment extends CommentSkeleton {
     } else if (format === 'short') {
       return `${cd.g.SERVER}/?diff=${edit.revid}`;
     } else {
-      return `[[Special:Diff/${edit.revid}]]`;
+      const specialPageName = (
+        mw.config.get('wgFormattedNamespaces')[-1] +
+        ':' +
+        cd.g.SPECIAL_PAGE_ALIASES.Diff
+      );
+      return `[[${specialPageName}/${edit.revid}]]`;
     }
   }
 

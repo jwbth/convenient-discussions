@@ -59,7 +59,10 @@ export default {
     'colon-separator': ': ',
     'nextdiff': 'Newer edit →',
   },
-  contribsPage: 'Special:Contributions',
+  specialPageAliases: {
+    'Contributions': 'Contributions',
+    'Diff': 'Diff',
+  },
   timezone: 'UTC',
   useGlobalPreferences: true,
   archivePaths: [/\/Archive/],

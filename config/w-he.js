@@ -65,7 +65,10 @@ export default {
     'colon-separator': ':',
   },
 
-  contribsPage: 'מיוחד:תרומות',
+  specialPageAliases: {
+    'Contributions': 'תרומות',
+    'Diff': 'הבדלים',
+  },
 
   timezone: 'Asia/Tel_Aviv',
 

@@ -41,15 +41,15 @@ mw.loader.using([
     siprop: ['specialpagealiases', 'general', 'extensions', 'magicwords'],
   });
 
-  const contribsPageAliasesObj = siteInfoResp.query.specialpagealiases
-    .find((obj) => obj.realname === 'Contributions');
-  if (contribsPageAliasesObj) {
-    config.contribsPage = (
-      mw.config.get('wgFormattedNamespaces')[-1] +
-      ':' +
-      contribsPageAliasesObj.aliases[0]
-    );
+  const specialPageAliases = siteInfoResp.query.specialpagealiases
+    .filter((obj) => ['Contributions', 'Diff'].includes(obj.realname));
+  if (specialPageAliases.length) {
+    config.specialPageAliases = Object.assign(
+      {},
+      ...specialPageAliases.map((page) => ({ [page.realname]: page.aliases[0] }))
+    )
   }
+
   const substAliases = siteInfoResp.query.magicwords
     .find((obj) => obj.name === 'subst')
     ?.aliases

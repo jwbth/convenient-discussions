@@ -413,6 +413,19 @@ function initPatterns() {
     cd.config.signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
   }
 
+  /**
+   * Contributions page local name.
+   *
+   * @name CONTRIBS_PAGE
+   * @type {string}
+   * @memberof convenientDiscussions.g
+   */
+  cd.g.CONTRIBS_PAGE = (
+    mw.config.get('wgFormattedNamespaces')[-1] +
+    ':' +
+    cd.g.SPECIAL_PAGE_ALIASES.Contributions
+  );
+
   cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');

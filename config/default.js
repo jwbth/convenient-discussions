@@ -15,16 +15,17 @@ export default {
   messages: {},
 
   /**
-   * Contributions page wikilink as it appears in IP users' signatures (for example,
-   * `Special:Contributions` for English Wikipedia).
+   * Localized aliases of several special pages. Get by running
+   * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
+   * in your browser's console while the page of your wiki is open.
    *
-   * @type {?string}
-   * @default null
+   * @type {object}
+   * @default []
    */
-  contribsPage: null,
+  specialPageAliases: {},
 
   /**
-   * Aliases of the `subst:` magic word. Get by running
+   * Localized aliases of the `subst:` magic word. Get by running
    * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
