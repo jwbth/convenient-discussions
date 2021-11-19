@@ -1300,6 +1300,10 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
             subtree: true,
           });
         });
+
+        if (isPageCommentable) {
+          $(document).on('keydown', handleGlobalKeyDown);
+        }
       } else {
         pageNav.update();
       }
@@ -1309,10 +1313,6 @@ export default async function processPage(passedData = {}, siteDataRequests, cac
         // the whole page content, if it runs later than CD. But typically CD runs relatively late.
         mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
       }
-    }
-
-    if (isPageCommentable) {
-      $(document).on('keydown', handleGlobalKeyDown);
     }
 
     showPopups = cd.state.isFirstRun && cd.state.isPageActive && cd.user.isRegistered();
