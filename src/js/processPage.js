@@ -410,13 +410,6 @@ function processComments(targets, parser) {
       }
     });
 
-  cd.g.dtCommentIds.forEach((id) => {
-    const comment = Comment.getByDtId(id);
-    if (comment) {
-      comment.dtId = id;
-    }
-  });
-
   Comment.reformatTimestamps();
 
   // Faster than doing it for every individual comment.
@@ -469,6 +462,15 @@ function processSections(targets, parser) {
 
   // Dependent on sections being set
   Comment.processOutdents();
+
+  // This runs after extracting sections because Comment#getParent needs sections to be set on
+  // comments.
+  cd.g.dtCommentIds.forEach((id) => {
+    const comment = Comment.getByDtId(id);
+    if (comment) {
+      comment.dtId = id;
+    }
+  });
 
   subscriptions.loadRequest.then(() => {
     Section.addSubscribeMenuItems();

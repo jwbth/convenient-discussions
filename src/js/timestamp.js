@@ -929,7 +929,8 @@ export function parseDtCommentId(id) {
       parentAuthor = underlinesToSpaces(parentAuthor);
       parentDate = new Date(parentTimestamp);
     } else {
-      sectionAnchorBeginning = parent;
+      // Doesn't account for cases when the section headline ends with "-[number]"
+      [, sectionAnchorBeginning, index] = parent.match(/^(.+?)(?:-(\d+))?$/);
     }
   }
   return { author, date, parentAuthor, parentDate, sectionAnchorBeginning, index };

@@ -1288,7 +1288,8 @@ class CommentSkeleton {
   }
 
   /**
-   * Get the parent comment of the comment.
+   * Get the parent comment of the comment. This shouldn't run before sections are set on comments
+   * which is done in the {@link SectionSkeleton SectionSkeleton} constructor.
    *
    * @param {boolean} [visual=false] Get the visual parent (according to the
    *   {@link Comment#level level} property, not {@link Comment#logicalLevel logicalLevel}).
