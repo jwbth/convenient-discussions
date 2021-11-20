@@ -895,6 +895,20 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames
   return newObj;
 }
 
+function calculateArrayOverlap(arr1, arr2) {
+  let total = arr2.length;
+  let overlap = 0;
+  arr1.forEach((el1) => {
+    if (arr2.includes(el1)) {
+      overlap++;
+    } else {
+      total++;
+    }
+  });
+
+  return overlap / total;
+}
+
 /**
  * Calculates the proportion of the number of words (minimum 2 characters long) present in both
  * strings to the total words count.
@@ -911,17 +925,7 @@ export function calculateWordOverlap(s1, s2) {
     return 0;
   }
 
-  let total = words2.length;
-  let overlap = 0;
-  words1.forEach((word1) => {
-    if (words2.some((word2) => word2 === word1)) {
-      overlap++;
-    } else {
-      total++;
-    }
-  });
-
-  return overlap / total;
+  return calculateArrayOverlap(words1, words2);
 }
 
 /**

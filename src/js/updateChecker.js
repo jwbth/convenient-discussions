@@ -216,6 +216,49 @@ function mapSections(otherSections) {
   });
 }
 
+function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
+  return candidates
+    .map((candidate) => {
+      const doesParentAnchorMatch = candidate.parent?.anchor === target.parent?.anchor;
+      const doesHeadlineMatch = candidate.section?.headline === target.section?.headline;
+
+      // Taking matched ID into account makes sense only if the total number of comments coincides.
+      const doesIdMatch = candidate.id === target.id && isTotalCountEqual;
+
+      const partsMatchedCount = candidate.elementHtmls
+        .filter((html, i) => html === target.elementHtmls[i])
+        .length;
+      const partsMatchedProportion = (
+        partsMatchedCount /
+        Math.max(candidate.elementHtmls.length, target.elementHtmls.length)
+      );
+      const overlap = partsMatchedProportion === 1 ?
+        1 :
+        calculateWordOverlap(candidate.text, target.text);
+      const score = (
+        doesParentAnchorMatch * (candidate.parent?.anchor ? 1 : 0.75) +
+        doesHeadlineMatch * 1 +
+        partsMatchedProportion +
+        overlap +
+        doesIdMatch * 0.25
+      );
+      return {
+        comment: candidate,
+        score,
+      };
+    })
+    .filter((match) => match.score > 1.66)
+    .sort((match1, match2) => {
+      if (match2.score > match1.score) {
+        return 1;
+      } else if (match2.score < match1.score) {
+        return -1;
+      } else {
+        return 0;
+      }
+    });
+}
+
 /**
  * Map comments obtained from the current revision to comments obtained from another revision (newer
  * or older) by adding the `match` property to the first ones. The function also adds the
@@ -235,56 +278,13 @@ function mapComments(currentComments, otherComments) {
     delete comment.parentMatch;
   });
 
-  const sortCommentsByMatchScore = (target, candidates) => (
-    candidates
-      .map((candidate) => {
-        const doesParentAnchorMatch = candidate.parent?.anchor === target.parent?.anchor;
-        const doesHeadlineMatch = candidate.section?.headline === target.section?.headline;
-
-        // Taking matched ID into account makes sense only if the total number of comments
-        // coincides.
-        const doesIdMatch = (
-          candidate.id === target.id &&
-          currentComments.length === otherComments.length
-        );
-
-        const partsMatchedCount = candidate.elementHtmls
-          .filter((html, i) => html === target.elementHtmls[i])
-          .length;
-        const partsMatchedProportion = partsMatchedCount / candidate.elementHtmls.length;
-        const overlap = partsMatchedProportion === 1 ?
-          1 :
-          calculateWordOverlap(candidate.text, target.text);
-        const score = (
-          doesParentAnchorMatch * (candidate.parent?.anchor ? 1 : 0.75) +
-          doesHeadlineMatch * 1 +
-          partsMatchedProportion +
-          overlap +
-          doesIdMatch * 0.25
-        );
-        return {
-          comment: candidate,
-          score,
-        };
-      })
-      .filter((match) => match.score > 1.66)
-      .sort((match1, match2) => {
-        if (match2.score > match1.score) {
-          return 1;
-        } else if (match2.score < match1.score) {
-          return -1;
-        } else {
-          return 0;
-        }
-      })
-  );
-
-  // We choose to traverse "other" (newer/older) comments in the top cycle, not current. This way,
-  // if there are multiple match candidates for an "other" comment, we choose the match between
-  // them. This is better than choosing a match for a current comment between "other" comments,
-  // because if we determined a match for a current comment and then see a better match for the
-  // "other" comment determined as a match, we would have to set the "other" comment as a match to
-  // the new current comment, and the initial current comment would lose its match.
+  // We choose to traverse "other" (newer/older) comments in the top cycle, and current comments in
+  // the bottom cycle, not vice versa. This way, if there are multiple match candidates for an
+  // "other" comment, we choose the match between them. This is better than choosing a match for a
+  // current comment between "other" comments, because if we determined a match for a current
+  // comment and then see a better match for the "other" comment determined as a match, we would
+  // have to set the "other" comment as a match to the new current comment, and the initial current
+  // comment would lose its match. (...But is there any actual difference after all?..)
   otherComments.forEach((otherComment) => {
     const ccFiltered = currentComments.filter((currentComment) => (
       currentComment.authorName === otherComment.authorName &&
@@ -292,18 +292,20 @@ function mapComments(currentComments, otherComments) {
       otherComment.date &&
       currentComment.date.getTime() === otherComment.date.getTime()
     ));
+    const isTotalCountEqual = currentComments.length === otherComments.length;
     if (ccFiltered.length === 1) {
-      if (ccFiltered[0].match) {
-        const candidates = [otherComment, ccFiltered[0].match];
-        ccFiltered[0].match = sortCommentsByMatchScore(ccFiltered[0], candidates)[0].comment;
-      } else {
-        ccFiltered[0].match = otherComment;
-      }
+      ccFiltered[0].match = ccFiltered[0].match ?
+        sortCommentsByMatchScore(
+          [ccFiltered[0].match, otherComment],
+          ccFiltered[0],
+          isTotalCountEqual
+        )[0].comment :
+        otherComment;
     } else if (ccFiltered.length > 1) {
       let found;
-      sortCommentsByMatchScore(otherComment, ccFiltered).forEach((match) => {
-        // If the current comment already has a match (from a previous iteration of otherComments
-        // cycle), compare their scores.
+      sortCommentsByMatchScore(ccFiltered, otherComment, isTotalCountEqual).forEach((match) => {
+        // If the current comment already has a match (from a previous iteration of the
+        // otherComments cycle), compare their scores.
         if (!found && (!match.comment.match || match.comment.matchScore < match.score)) {
           match.comment.match = otherComment;
           match.comment.matchScore = match.score;
