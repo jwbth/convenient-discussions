@@ -186,7 +186,7 @@ export default {
     if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
 
     cd.sections
-      .filter((section) => section.isSubscribedTo)
+      .filter((section) => section.subscriptionState)
       .forEach((section) => {
         section.updateTocLink();
       });

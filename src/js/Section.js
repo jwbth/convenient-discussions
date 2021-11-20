@@ -400,7 +400,7 @@ class Section extends SectionSkeleton {
   addSubscribeMenuItem() {
     if (!this.subscribeId) return;
 
-    this.isSubscribedTo = subscriptions.getState(this.subscribeId);
+    this.subscriptionState = subscriptions.getState(this.subscribeId);
     this.addMenuItem({
       name: 'subscribe',
       label: cd.mws('discussiontools-topicsubscription-button-subscribe'),
@@ -408,7 +408,7 @@ class Section extends SectionSkeleton {
       action: () => {
         this.subscribe();
       },
-      visible: !this.isSubscribedTo,
+      visible: !this.subscriptionState,
       target: this.menu.copyLink?.wrapperElement,
     });
     this.addMenuItem({
@@ -418,7 +418,7 @@ class Section extends SectionSkeleton {
       action: () => {
         this.unsubscribe();
       },
-      visible: this.isSubscribedTo,
+      visible: this.subscriptionState,
       target: this.menu.copyLink?.wrapperElement,
     });
 
@@ -541,8 +541,8 @@ class Section extends SectionSkeleton {
    */
   updateSubscribeMenuItems() {
     if (this.menu && this.isActionable) {
-      this.menu.unsubscribe[this.isSubscribedTo ? 'show' : 'hide']();
-      this.menu.subscribe[this.isSubscribedTo ? 'hide' : 'show']();
+      this.menu.unsubscribe[this.subscriptionState ? 'show' : 'hide']();
+      this.menu.subscribe[this.subscriptionState ? 'hide' : 'show']();
     }
   }
 
@@ -578,7 +578,7 @@ class Section extends SectionSkeleton {
     subscriptions.subscribe(this.subscribeId, this.anchor, unsubscribeHeadline)
       .then(() => {
         sections.forEach((section) => {
-          section.isSubscribedTo = true;
+          section.subscriptionState = true;
           section.updateSubscribeMenuItems();
           section.updateTocLink();
         });
@@ -621,7 +621,7 @@ class Section extends SectionSkeleton {
     subscriptions.unsubscribe(this.subscribeId)
       .then(() => {
         sections.forEach((section) => {
-          section.isSubscribedTo = false;
+          section.subscriptionState = false;
           section.updateSubscribeMenuItems();
           section.updateTocLink();
         });
@@ -647,7 +647,7 @@ class Section extends SectionSkeleton {
   resubscribeToRenamed(currentCommentData, oldCommentData) {
     if (
       cd.settings.useTopicSubscription ||
-      this.isSubscribedTo ||
+      this.subscriptionState ||
       !/^H[1-6]$/.test(currentCommentData.elementNames[0]) ||
       oldCommentData.elementNames[0] !== currentCommentData.elementNames[0]
     ) {
@@ -1204,7 +1204,7 @@ class Section extends SectionSkeleton {
       otherSection;
       otherSection = otherSection.getParent()
     ) {
-      if (otherSection.isSubscribedTo) {
+      if (otherSection.subscriptionState) {
         return otherSection;
       }
     }
@@ -1232,7 +1232,7 @@ class Section extends SectionSkeleton {
     const tocItem = this.getTocItem();
     if (!tocItem) return;
 
-    if (this.isSubscribedTo) {
+    if (this.subscriptionState) {
       tocItem.$link
         .addClass('cd-toc-subscribedTo')
         .attr('title', cd.s('toc-watched'));

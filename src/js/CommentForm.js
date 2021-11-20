@@ -476,7 +476,7 @@ class CommentForm {
     if (this.targetSection || this.mode === 'addSection') {
       const selected = (
         (cd.settings.subscribeOnReply && this.mode !== 'edit') ||
-        this.targetSection?.isSubscribedTo
+        this.targetSection?.subscriptionState
       );
 
       const callItTopic = (
@@ -2829,14 +2829,14 @@ class CommentForm {
         }
       } else {
         const section = this.targetSection;
-        if (section && !section.isSubscribedTo) {
+        if (section && !section.subscriptionState) {
           section.subscribe(true);
           passedData.justSubscribedToSection = section.subscribeId;
         }
       }
     } else {
       const section = this.targetSection;
-      if (section?.isSubscribedTo) {
+      if (section?.subscriptionState) {
         section.unsubscribe(true);
         passedData.justUnsubscribedFromSection = section.subscribeId;
       }

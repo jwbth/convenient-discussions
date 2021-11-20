@@ -2145,7 +2145,7 @@ class Comment extends CommentSkeleton {
               section.parseHeadline();
               if (
                 !cd.settings.useTopicSubscription &&
-                section.isSubscribedTo &&
+                section.subscriptionState &&
                 section.headline !== originalHeadline
               ) {
                 section.subscribe(true, originalHeadline);
