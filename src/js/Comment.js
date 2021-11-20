@@ -466,6 +466,7 @@ class Comment extends CommentSkeleton {
         tooltip: this.timestampTitle,
         classes: ['cd-comment-button-label', 'cd-comment-timestamp'],
         action: this.copyLink.bind(this),
+        href: this.dtId && '#' + this.dtId,
       });
 
       headerElement.appendChild(this.copyLinkButton.element);
@@ -656,10 +657,15 @@ class Comment extends CommentSkeleton {
     if (this.anchor && !cd.settings.reformatComments) {
       const element = elementPrototypes.copyLinkButton.cloneNode(true);
       const widgetConstructor = elementPrototypes.getCopyLinkButton;
+      let href;
+      if (this.dtId) {
+        href = '#' + this.dtId;
+      }
       this.copyLinkButton = new CommentButton({
         element,
         action: this.copyLink.bind(this),
         widgetConstructor,
+        href,
       });
       this.overlayMenu.appendChild(this.copyLinkButton.element);
     }

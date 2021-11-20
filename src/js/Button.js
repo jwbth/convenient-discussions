@@ -1,3 +1,5 @@
+import { isCmdMofidicatorPressed } from './util';
+
 let prototypes = {};
 
 /**
@@ -163,6 +165,16 @@ class Button {
     return this;
   }
 
+  maybeRunAction(action, e) {
+    if (
+      !this.isDisabled() &&
+      ((!isCmdMofidicatorPressed(e) && !e.shiftKey) || !this.buttonElement.href)
+    ) {
+      e.preventDefault();
+      action(e);
+    }
+  }
+
   /**
    * Set the action of the button. It will be executed on click or Enter press.
    *
@@ -172,18 +184,14 @@ class Button {
   setAction(action) {
     this.buttonElement.onclick = action ?
       (e) => {
-        if (!this.isDisabled()) {
-          e.preventDefault();
-          action(e);
-        }
+        this.maybeRunAction(action, e);
       } :
       action;
     this.buttonElement.onkeydown = action ?
       (e) => {
         // Enter, Space
-        if (!this.isDisabled() && [13, 32].includes(e.keyCode)) {
-          e.preventDefault();
-          action(e);
+        if ([13, 32].includes(e.keyCode)) {
+          this.maybeRunAction(action, e);
         }
       } :
       action;

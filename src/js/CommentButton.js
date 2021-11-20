@@ -2,6 +2,16 @@ import Button from './Button';
 import cd from './cd';
 
 /**
+ * Stop propagation of the event.
+ *
+ * @param {Event} e
+ * @private
+ */
+function stopPropagation(e) {
+  e.stopPropagation();
+}
+
+/**
  * Class representing a comment button, be it a simple link or a OOUI button depending on user
  * settings.
  *
@@ -22,6 +32,11 @@ class CommentButton extends Button {
     }
 
     super(config);
+
+    // Don't hide the menu on right button click.
+    if (config.href) {
+      this.buttonElement.oncontextmenu = stopPropagation;
+    }
 
     if (config.element) {
       // Not used
@@ -44,6 +59,8 @@ class CommentButton extends Button {
    * @private
    */
   createWidget() {
+    const originalHref = this.buttonElement.getAttribute('href');
+
     /**
      * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
      * performance reasons (every other button is just cloned as an element). When their state is
@@ -59,6 +76,12 @@ class CommentButton extends Button {
     this.buttonElement = element.firstChild;
     if (this.action) {
       this.setAction(this.action);
+    }
+    if (originalHref) {
+      this.buttonWidget.setHref(originalHref);
+
+      // Don't hide the menu on right button click.
+      this.buttonElement.oncontextmenu = stopPropagation;
     }
   }
 
