@@ -1793,6 +1793,56 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  scrubDiff(body, revisions, commentsData) {
+    const lineNumbers = [[], []];
+    revisions.forEach((revision, i) => {
+      const pageCode = revision.slots.main.content;
+      const inCode = this.locateInCode(pageCode, commentsData[i]);
+      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
+      const newlinesInComment = (
+        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
+        []
+      );
+      const startLineNumber = newlinesBeforeComment.length + 1;
+      const endLineNumber = startLineNumber + newlinesInComment.length;
+      for (let j = startLineNumber; j <= endLineNumber; j++) {
+        lineNumbers[i].push(j);
+      }
+    });
+
+    const $diff = $(wrapDiffBody(body));
+    const currentLineNumbers = [];
+    let cleanDiffBody = '';
+    $diff.find('tr').each((i, tr) => {
+      const $tr = $(tr);
+      const $lineNumbers = $tr.children('.diff-lineno');
+      for (let j = 0; j < $lineNumbers.length; j++) {
+        const match = $lineNumbers.eq(j).text().match(/\d+/);
+        currentLineNumbers[j] = Number((match || [])[0]);
+        if (!currentLineNumbers[j]) {
+          throw new CdError({
+            type: 'parse',
+          });
+        }
+        if (j === 1) return;
+      }
+      if (!$tr.children('.diff-marker').length) return;
+      let addToDiff = false;
+      for (let j = 0; j < 2; j++) {
+        if (!$tr.children().eq(j * 2).hasClass('diff-empty')) {
+          if (lineNumbers[j].includes(currentLineNumbers[j])) {
+            addToDiff = true;
+          }
+          currentLineNumbers[j]++;
+        }
+      }
+      if (addToDiff) {
+        cleanDiffBody += $tr.prop('outerHTML');
+      }
+    });
+    return $(wrapDiffBody(cleanDiffBody));
+  }
+
   /**
    * Show a diff of changes in the comment between the current revision ID and the provided one.
    *
@@ -1831,68 +1881,15 @@ class Comment extends CommentSkeleton {
     ]);
 
     const revisions = revisionsResp.query?.pages?.[0]?.revisions;
-    if (!revisions) {
-      throw new CdError({
-        type: 'api',
-        code: 'noData',
-      });
-    }
-
-    const lineNumbers = [[], []];
-    revisions.forEach((revision, i) => {
-      const pageCode = revision.slots.main.content;
-      const inCode = this.locateInCode(pageCode, commentsData[i]);
-      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
-      const newlinesInComment = (
-        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
-        []
-      );
-      const startLineNumber = newlinesBeforeComment.length + 1;
-      const endLineNumber = startLineNumber + newlinesInComment.length;
-      for (let j = startLineNumber; j <= endLineNumber; j++) {
-        lineNumbers[i].push(j);
-      }
-    });
-
     const body = compareResp?.compare?.body;
-    if (body === undefined) {
+    if (!revisions || body === undefined) {
       throw new CdError({
         type: 'api',
         code: 'noData',
       });
     }
 
-    const $diff = $(wrapDiffBody(body));
-    const currentLineNumbers = [];
-    let cleanDiffBody = '';
-    $diff.find('tr').each((i, tr) => {
-      const $tr = $(tr);
-      const $lineNumbers = $tr.children('.diff-lineno');
-      for (let j = 0; j < $lineNumbers.length; j++) {
-        const match = $lineNumbers.eq(j).text().match(/\d+/);
-        currentLineNumbers[j] = Number((match || [])[0]);
-        if (!currentLineNumbers[j]) {
-          throw new CdError({
-            type: 'parse',
-          });
-        }
-        if (j === 1) return;
-      }
-      if (!$tr.children('.diff-marker').length) return;
-      let addToDiff = false;
-      for (let j = 0; j < 2; j++) {
-        if (!$tr.children().eq(j * 2).hasClass('diff-empty')) {
-          if (lineNumbers[j].includes(currentLineNumbers[j])) {
-            addToDiff = true;
-          }
-          currentLineNumbers[j]++;
-        }
-      }
-      if (addToDiff) {
-        cleanDiffBody += $tr.prop('outerHTML');
-      }
-    });
-    const $cleanDiff = $(wrapDiffBody(cleanDiffBody));
+    const $cleanDiff = this.scrubDiff(body, revisions, commentsData);
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',
@@ -2295,42 +2292,7 @@ class Comment extends CommentSkeleton {
     this.copyLinkButton.setPending(false);
   }
 
-  /**
-   * Find the edit that added the comment.
-   *
-   * @returns {Promise.<object>}
-   * @throws {CdError}
-   * @private
-   */
-  async findEditThatAdded() {
-    if (this.editThatAdded) {
-      return this.editThatAdded;
-    }
-
-    // Search for the edit in the range of 10 minutes before (in case the comment was edited with
-    // timestamp replaced) to 3 minutes later (rare occasion where the diff timestamp is newer than
-    // the comment timestamp).
-    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString();
-    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString();
-    const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
-      rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
-      rvdir: 'newer',
-      rvstart,
-      rvend,
-      rvuser: this.author.name,
-      rvlimit: 500,
-    });
-
-    const compareRequests = revisions.map((revision) => cd.g.mwApi.post({
-      action: 'compare',
-      fromtitle: this.getSourcePage().getArchivedPage().name,
-      fromrev: revision.revid,
-      torelative: 'prev',
-      prop: ['diff'],
-    }).catch(handleApiReject));
-
-    const compareResps = await Promise.all(compareRequests);
-
+  async findDiffMatches(compareBodies, revisions) {
     // Only analyze added lines except for headings.
     const regexp = /<td [^>]*class="[^"]*\bdiff-empty\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-marker\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*>\s*<div[^>]*>(?!=)(.+?)<\/div>\s*<\/td>/g;
 
@@ -2339,8 +2301,8 @@ class Comment extends CommentSkeleton {
       this.$signature.get(0).innerText;
     const commentFullText = this.getText(false) + ' ' + commentEnding;
     const matches = [];
-    for (let i = 0; i < compareResps.length; i++) {
-      const diffBody = compareResps[i]?.compare?.body;
+    for (let i = 0; i < compareBodies.length; i++) {
+      const diffBody = compareBodies[i];
       if (!diffBody) continue;
 
       const revision = revisions[i];
@@ -2385,6 +2347,48 @@ class Comment extends CommentSkeleton {
 
       matches.push({ revision, wordOverlap, dateProximity });
     }
+
+    return matches;
+  }
+
+  /**
+   * Find the edit that added the comment.
+   *
+   * @returns {Promise.<object>}
+   * @throws {CdError}
+   * @private
+   */
+  async findEditThatAdded() {
+    if (this.editThatAdded) {
+      return this.editThatAdded;
+    }
+
+    // Search for the edit in the range of 10 minutes before (in case the comment was edited with
+    // timestamp replaced) to 3 minutes later (rare occasion where the diff timestamp is newer than
+    // the comment timestamp).
+    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString();
+    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString();
+    const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
+      rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
+      rvdir: 'newer',
+      rvstart,
+      rvend,
+      rvuser: this.author.name,
+      rvlimit: 500,
+    });
+
+    const compareRequests = revisions.map((revision) => cd.g.mwApi.post({
+      action: 'compare',
+      fromtitle: this.getSourcePage().getArchivedPage().name,
+      fromrev: revision.revid,
+      torelative: 'prev',
+      prop: ['diff'],
+    }).catch(handleApiReject));
+
+    const compareResps = await Promise.all(compareRequests);
+    const compareBodies = compareResps.map((resp) => resp.compare.body);
+
+    const matches = await this.findDiffMatches(compareBodies, revisions);
 
     const bestMatch = matches.sort((m1, m2) => (
       m1.wordOverlap === m2.wordOverlap ?
