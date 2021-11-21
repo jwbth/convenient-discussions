@@ -1906,6 +1906,10 @@ class Comment extends CommentSkeleton {
         diff: revisionIdGreater,
       }))
       .attr('target', '_blank')
+
+      // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
+      .attr('data-instantdiffs-link', 'link')
+
       .text(cd.s('comment-diff-full'));
     const $historyLink = $('<a>')
       .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
@@ -1916,6 +1920,7 @@ class Comment extends CommentSkeleton {
       .append($fullDiffLink, cd.sParse('dot-separator'), $historyLink);
 
     const $message = $('<div>').append($cleanDiff, $below);
+    mw.hook('wikipage.content').fire($message);
     OO.ui.alert($message, {
       title: cd.s('comment-diff-title'),
       size: 'larger',
@@ -2262,6 +2267,10 @@ class Comment extends CommentSkeleton {
       .addClass('cd-diffView-nextDiffLink')
       .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
       .attr('target', '_blank')
+
+      // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
+      .attr('data-instantdiffs-link', 'link')
+
       .text(cd.mws('nextdiff'));
     const $above = $('<div>').append($nextDiffLink);
     if (edit.parsedcomment) {
