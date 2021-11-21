@@ -178,6 +178,7 @@ class Section extends SectionSkeleton {
     let tag;
     let createList = false;
     const tagName = lastElement.tagName;
+    const lastComment = this.commentsInFirstChunk[this.commentsInFirstChunk.length - 1];
     if (lastElement.classList.contains('cd-commentLevel') || isVotePlaceholder) {
       if (
         tagName === 'UL' ||
@@ -189,8 +190,7 @@ class Section extends SectionSkeleton {
           // item.
           (
             isVotePlaceholder ||
-            lastElement.querySelectorAll('ol > li').length === 1 ||
-            lastElement.querySelectorAll('ol > li > .cd-signature').length > 1
+            lastElement !== lastComment?.elements[lastComment.elements.length - 1]
           )
         )
       ) {
