@@ -586,9 +586,13 @@ class Section extends SectionSkeleton {
           let title = cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
           let body = cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
           let autoHideSeconds;
-          if ($('#ca-watch').length && !cd.settings.useTopicSubscription) {
-            body += ' ' + cd.sParse('section-watch-pagenotwatched');
-            autoHideSeconds = 'long';
+          if (!cd.settings.useTopicSubscription) {
+            body += ' ' + cd.sParse('section-watch-openpages');
+
+            if ($('#ca-watch').length) {
+              body += ' ' + cd.sParse('section-watch-pagenotwatched');
+              autoHideSeconds = 'long';
+            }
           }
           mw.notify(wrap(body), { title, autoHideSeconds });
         }
