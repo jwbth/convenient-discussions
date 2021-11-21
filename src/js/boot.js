@@ -38,13 +38,17 @@ import {
   unhideText,
   wrap,
 } from './util';
-import { createWindowManager, showConfirmDialog } from './ooui';
-import { editSubscriptions, rescueCommentFormsContent, showSettingsDialog } from './modal';
 import { formatDateNative, initDayjs, initTimestampParsingTools } from './timestamp';
 import { getLocalOverridingSettings, getSettings, setSettings, setVisits } from './options';
 import { getUserInfo } from './apiWrappers';
 import { loadSiteData } from './siteData';
 import { removeWikiMarkup } from './wikitext';
+import {
+  rescueCommentFormsContent,
+  showEditSubscriptionsDialog,
+  showSettingsDialog,
+} from './modal';
+import { showConfirmDialog } from './ooui';
 
 let $loadingPopup;
 
@@ -341,7 +345,7 @@ export function initGlobals() {
 
   // Useful for debugging
   cd.g.processPageInBackground = updateChecker.processPage;
-  cd.g.editSubscriptions = editSubscriptions;
+  cd.g.editSubscriptions = showEditSubscriptionsDialog;
   cd.g.subscriptions = subscriptions;
   cd.g.showSettingsDialog = showSettingsDialog;
   cd.g.setVisits = setVisits;
@@ -656,8 +660,6 @@ function initPatterns() {
  * @private
  */
 function initOouiAndElementPrototypes() {
-  createWindowManager();
-
   // OOUI button prototypes. Creating every button using the constructor takes 15 times longer than
   // cloning which is critical when creating really many of them.
 

@@ -1295,3 +1295,24 @@ export function isCmdMofidicatorPressed(e) {
   // platform.
   return cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;
 }
+
+/**
+ * Copy text and notify whether the operation was successful.
+ *
+ * @param {string} text Text to copy.
+ * @private
+ */
+export function copyText(text, { success, fail }) {
+  const $textarea = $('<textarea>')
+    .val(text)
+    .appendTo(document.body)
+    .select();
+  const successful = document.execCommand('copy');
+  $textarea.remove();
+
+  if (text && successful) {
+    mw.notify(success);
+  } else {
+    mw.notify(fail, { type: 'error' });
+  }
+}

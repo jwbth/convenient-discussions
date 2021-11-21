@@ -8,7 +8,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { dtSubscribe, getDtSubscriptions } from './apiWrappers';
-import { editSubscriptions, showSettingsDialog } from './modal';
+import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 import { getLegacySubscriptions, getSettings, setLegacySubscriptions, setSettings } from './options';
 import { unique, wrap } from './util';
 
@@ -134,7 +134,7 @@ export default {
               callbacks: {
                 // Class name is kept for compatibility with strings.
                 'cd-notification-editWatchedSections': () => {
-                  editSubscriptions();
+                  showEditSubscriptionsDialog();
                 },
               },
             }).$wrapper;

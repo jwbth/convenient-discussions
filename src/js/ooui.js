@@ -8,6 +8,8 @@ import CdError from './CdError';
 import cd from './cd';
 import { removePreventUnloadCondition } from './eventHandlers';
 
+let windowManager;
+
 /**
  * OOjs namespace.
  *
@@ -129,18 +131,30 @@ import { removePreventUnloadCondition } from './eventHandlers';
  */
 
 /**
- * _For internal use._ Create a OOUI window manager. It is supposed to be reused across the script.
+ * OOUI window manager.
+ *
+ * @class WindowManager
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowManager
  */
-export function createWindowManager() {
-  if (cd.g.windowManager) return;
 
-  cd.g.windowManager = new OO.ui.WindowManager().on('closing', async (win, closed) => {
-    // We don't have windows that can be reused.
-    await closed;
-    cd.g.windowManager.clearWindows();
-  });
+/**
+ * Create a OOUI window manager or return an existing one.
+ *
+ * @returns {external:OO.ui.WindowManager}
+ */
+export function getWindowManager() {
+  if (!windowManager) {
+    windowManager = new OO.ui.WindowManager().on('closing', async (win, closed) => {
+      // We don't have windows that can be reused.
+      await closed;
+      windowManager.clearWindows();
+    });
 
-  $(document.body).append(cd.g.windowManager.$element);
+    $(document.body).append(windowManager.$element);
+  }
+
+  return windowManager;
 }
 
 /**

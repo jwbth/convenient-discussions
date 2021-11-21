@@ -9,7 +9,6 @@ import Page from './Page';
 import cd from './cd';
 import subscriptions from './subscriptions';
 import { createApi, initGlobals, initSettings } from './boot';
-import { editSubscriptions, showSettingsDialog } from './modal';
 import {
   generateCommentAnchor,
   initDayjs,
@@ -25,6 +24,7 @@ import {
   spacesToUnderlines,
 } from './util';
 import { loadSiteData } from './siteData';
+import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 
 let serverName;
 let colon;
@@ -213,7 +213,7 @@ function addWatchlistMenu() {
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
   if (!cd.settings.useTopicSubscription) {
     editSubscriptionsButton.on('click', () => {
-      editSubscriptions();
+      showEditSubscriptionsDialog();
     });
   }
   editSubscriptionsButton.$element.appendTo($menu);
