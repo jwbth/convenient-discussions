@@ -154,11 +154,11 @@
 	"error-blocked": "Dir oder Är IP-Adress sidd fir Ännerunge gespaart. D'Säit gouf net geännert.",
 	"error-pagedeleted": "D'Säit gouf geläscht.",
 	"error-pagenotedited": "D'Säit gouf net geännert.",
-	"wl-button-editwatchedsections-tooltip": "Abschnitter änneren déi ech iwwerwaachen",
+	"wl-button-editwatchedsections-tooltip": "Lëscht vun den Themen op déi ech abonéiert sinn änneren",
 	"lp-comment": "Bemierkung",
 	"lp-comment-tooltip": "Op d'Bemierkung goen",
 	"lp-comment-toyou": "d'Bemierkung ass un Iech adresséiert",
-	"lp-comment-watchedsection": "Dir iwwerwaacht dësen Abschnitt",
+	"lp-comment-watchedsection": "Dir sidd op dësen Abschnitt abonéiert",
 	"loading-ellipsis": "Lueden...",
 	"copy": "Kopéieren"
 }
