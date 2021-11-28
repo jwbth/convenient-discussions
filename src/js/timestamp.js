@@ -340,7 +340,13 @@ export function initTimestampParsingTools(language) {
    */
   cd.g.UI_TIMEZONE_OFFSET = Number(timezoneParts[1]) ?? null;
 
-  areUiAndLocalTimezoneSame = cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone;
+  try {
+    areUiAndLocalTimezoneSame = (
+      cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
+  } catch {
+    // Empty
+  }
 
   if (language === 'content') {
     /**
