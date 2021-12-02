@@ -348,7 +348,7 @@
 	"error-reloadpage": "Impossible de recharger la page.",
 	"error-reloadpage-saved": "La page a été enregistrée, mais n’a pas pu être rechargée.",
 	"error-api": "Erreur de l’API : $1.",
-	"error-network": "Erreur réseau.",
+	"error-network": "Vérifiez votre connexion Internet.",
 	"error-nodata": "La réponse du serveur ne contient pas les données demandées.",
 	"error-unknown": "Erreur inconnue.",
 	"error-javascript": "Une erreur JavaScript s’est produite. Voyez les détails dans la console JavaScript (F12 → Console).",
