@@ -3,6 +3,7 @@
 		"authors": [
 			"Ahmetlii",
 			"BaRaN6161 TURK",
+			"DDPAT",
 			"Erdemkose",
 			"Hedda",
 			"Jack who built the house",
@@ -167,7 +168,7 @@
 	"restore-restored-title": "Oturum geri yüklendi",
 	"restore-restored-text": "Gönderilmeyen yorum formları otomatik olarak kurtarıldı.",
 	"rd-intro": "Sayfada, açılan formlardan bazılarının ilişkili olduğu yorumlar veya bölümler bulunamadı. Aşağıda bu formların geri yüklenen içeriği yer almaktadır. Gerekirse kopyalayın.",
-	"rd-headline": "Konu/başlık",
+	"rd-headline": "Konu",
 	"rd-comment": "Yorum",
 	"rd-summary": "Değişiklik özeti",
 	"rd-close": "Kapat",
