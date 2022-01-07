@@ -224,8 +224,12 @@ export function memorizeCssValues() {
   cd.g.CONTENT_LINE_HEIGHT = parseFloat(cd.g.$content.css('line-height'));
   cd.g.CONTENT_FONT_SIZE = parseFloat(cd.g.$content.css('font-size'));
 
-  // For the Timeless skin
-  cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
+  // Timeless, new Vector
+  cd.g.BODY_SCROLL_PADDING_TOP = (
+    parseFloat($(document.body).css('scroll-padding-top')) ||
+    parseFloat($(document.documentElement).css('scroll-padding-top')) ||
+    0
+  );
 
   setContentColumnGlobals();
 }

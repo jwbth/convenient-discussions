@@ -5,6 +5,13 @@
 }
 
 // Skin fixes for talk pages
+.skin-vector:not(.skin-vector-legacy) {
+  // Conflicts with the page navigation
+  .mw-header {
+    z-index: 2;
+  }
+}
+
 .skin-monobook {
   --cd-link-color: #002bb8;
 
@@ -85,6 +92,19 @@
     width: 14px;
     margin: 0;
   }
+
+  .cd-pageNav {
+    z-index: 5;
+  }
+
+  #cd-navPanel {
+    z-index: 6;
+  }
+
+  .cd-thread-clickArea {
+    // Above the page navigation (.cd-pageNav)
+    z-index: 6;
+  }
 }
 
 .skin-timeless {
@@ -97,10 +117,6 @@
 
   .cd-loadingPopup {
     width: 15em;
-  }
-
-  #cd-pageNav-top {
-    margin-top: 53px;
   }
 
   .cd-pageNav {
