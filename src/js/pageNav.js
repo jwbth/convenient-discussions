@@ -25,6 +25,9 @@ export default {
       .attr('id', 'cd-pageNav-top')
       .addClass('cd-pageNav')
       .appendTo(document.body);
+    if (cd.g.BODY_SCROLL_PADDING_TOP) {
+      this.$topElement.css('margin-top', `${cd.g.BODY_SCROLL_PADDING_TOP}px`);
+    }
     this.$bottomElement = $('<ul>')
       .attr('id', 'cd-pageNav-bottom')
       .addClass('cd-pageNav cd-pageNav-list')
@@ -40,14 +43,17 @@ export default {
   updateWidth() {
     if (cd.g.$contentColumn.length) {
       const left = cd.g.$contentColumn.offset().left;
+      const padding = 18;
       let width = $(document.body).hasClass('ltr') ?
-        left - 18 :
-        $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - 18;
-      if (['vector', 'minerva'].includes(cd.g.SKIN)) {
+        left - padding :
+        $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - padding;
+      if (cd.g.SKIN === 'minerva') {
         width -= cd.g.CONTENT_START_MARGIN;
+      } else if (cd.g.SKIN === 'vector') {
+        width = Math.min(width, $('#p-search').offset().left - 24 - padding);
       }
 
-      // Some skins when the viewport narrowed
+      // Some skins when the viewport is narrowed
       if (width <= 100) {
         this.$topElement.hide();
         this.$bottomElement.hide();
@@ -71,7 +77,7 @@ export default {
       return;
     }
 
-    // The top position of TOC or the first section
+    // The top position of the TOC or the first section
     let afterLeadPos;
 
     let firstSectionOuterTop;
