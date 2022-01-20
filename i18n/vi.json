@@ -295,7 +295,7 @@
 	"sd-signatureprefix": "Tiền tố chữ ký",
 	"sd-signatureprefix-help": "Văn bản được thêm vào trước chữ ký, <em>bao gồm</em> khoảng trắng ở đầu nếu cần.",
 	"sd-modifytoc": "Sửa đổi mục lục",
-	"sd-modifytoc-help": "Hiển thị số lượng bình luận, bình luận mới và các đề mục mới và đánh dấu các chủ đề tôi đã theo dõi.",
+	"sd-modifytoc-help": "Hiển thị số lượng bình luận, bình luận mới và các đề mục mới và đánh dấu các chủ đề tôi đang theo dõi.",
 	"sd-usebackgroundhighlighting": "Sử dụng màu nền cho các bình luận mới và của bạn",
 	"sd-timestampformat": "Định dạng mốc thời gian",
 	"sd-timestampformat-radio-default": "Mặc định (\"$1\")",
@@ -357,7 +357,7 @@
 	"error-elementhidden": "Phần tử bị ẩn. Không thể cuộn đến nó.",
 	"error-purgecache": "Không thể tẩy bộ nhớ đệm của trang.",
 	"error-anoneditwatning": "<strong>Bạn chưa đăng nhập.</strong> Để được ghi danh với một tên người dùng thay vì địa chỉ IP, bạn có thể đăng nhập hoặc mở tài khoản mới.",
-	"discussiontools-incompatible": "Công cụ Thảo luận tiện lợi không tương thích với Công cụ thảo luận. Xin hãy <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|tắt]]</span></b> Công cụ thảo luận để Thảo luận tiện lợi hoạt động đúng.",
+	"discussiontools-incompatible": "Công cụ Thảo luận tiện lợi không tương thích với Công cụ thảo luận. Xin hãy <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|tắt]]</span></b> Công cụ thảo luận hoặc một số tính năng dễ bị xung đột như \"Nút trả lời tức thì\" và \"Nút thêm đề tài tức thì\" để Thảo luận tiện lợi hoạt động đúng.",
 	"discussiontools-disabled": "Công cụ thảo luận đã được tắt. <span class=\"cd-notification-refresh\">Nhấn để tải lại trang</span>.",
 	"wl-button-switchrelevant-tooltip": "Chỉ hiển thị bình luận trong các chủ đề mà tôi đang theo dõi và các bình luận được gửi cho tôi. (Lưu ý: chức năng này dựa trên tóm lược sửa đổi, do đó, một số sửa đổi có thể bị thiếu)",
 	"wl-button-editwatchedsections-tooltip": "Sửa danh sách các chủ đề mà tôi đang theo dõi",
@@ -370,6 +370,6 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Đang tải…",
 	"addtopic": "Thêm đề tài",
-	"addtopicbutton-tooltip": "Mở trong tab mới để tạo chủ đề mới trên trang thông thường, không phải trong Thảo luận tiện lợi",
+	"addtopicbutton-tooltip": "{{int:Tooltip-ca-addsection}}. Nhấp chuột phải vào đây rồi chọn \"Mở trong tab mới\" để tạo chủ đề mới trên trang thông thường nhưng không dùng Thảo luận tiện lợi",
 	"copy": "Sao chép"
 }
