@@ -365,7 +365,7 @@
 	"error-pagedeleted": "La page a été supprimée.",
 	"error-pagenotedited": "La page n’a pas été modifiée.",
 	"error-diffnotfound": "Impossible de trouver la modification qui a ajouté ce commentaire.",
-	"error-diffnotfound-history": "Vous pouvez la chercher dans l’[$1 historique des révisions] par vous-même.",
+	"error-diffnotfound-history": "Vous pouvez la chercher par vous-même dans l’[$1 historique des versions].",
 	"error-elementhidden": "L’élément est caché. Impossible de défiler jusqu’à lui.",
 	"error-purgecache": "Impossible de purger le cache de cette page.",
 	"error-anoneditwatning": "<strong>Vous n’êtes pas connecté.</strong> Votre adresse IP sera visible publiquement si vous effectuez des modifications.",
