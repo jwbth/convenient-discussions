@@ -8,8 +8,13 @@
 import CdError from './CdError';
 import cd from './cd';
 import { dtSubscribe, getDtSubscriptions } from './apiWrappers';
+import {
+  getLegacySubscriptions,
+  getSettings,
+  setLegacySubscriptions,
+  setSettings,
+} from './options';
 import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
-import { getLegacySubscriptions, getSettings, setLegacySubscriptions, setSettings } from './options';
 import { unique, wrap } from './util';
 
 let subscribeLegacyPromise = Promise.resolve();
@@ -194,21 +199,17 @@ export default {
   subscribe(subscribeId, anchor, unsubscribeHeadline) {
     if (subscribeId === undefined) return;
 
-    if (this.useTopicSubscription) {
-      return this.dtSubscribe(subscribeId, anchor, true);
-    } else {
-      return this.subscribeLegacy(subscribeId, unsubscribeHeadline);
-    }
+    return this.useTopicSubscription ?
+      this.dtSubscribe(subscribeId, anchor, true) :
+      this.subscribeLegacy(subscribeId, unsubscribeHeadline);
   },
 
   unsubscribe(subscribeId) {
     if (subscribeId === undefined) return;
 
-    if (this.useTopicSubscription) {
-      return this.dtSubscribe(subscribeId, false);
-    } else {
-      return this.unsubscribeLegacy(subscribeId);
-    }
+    return this.useTopicSubscription ?
+      this.dtSubscribe(subscribeId, false) :
+      this.unsubscribeLegacy(subscribeId);
   },
 
   getPageIds() {

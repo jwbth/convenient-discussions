@@ -453,8 +453,8 @@ class Page {
    *   `text` should be set. `summary` is recommended. `baserevid` and `starttimestamp` are needed
    *   to avoid edit conflicts. `baserevid` can be taken from {@link Page#revisionId};
    *   `starttimestamp` can be taken from {@link Page#queryTimestamp}.
-   * @returns {Promise.<number|string>} Unix time of the edit or `'nochange'` if nothing has
-   * changed.
+   * @returns {Promise.<string>} Timestamp of the edit in the ISO format or `'nochange'` if nothing
+   *   has changed.
    */
   async edit(customOptions) {
     const defaultOptions = {

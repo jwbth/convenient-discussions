@@ -895,6 +895,13 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames
   return newObj;
 }
 
+/**
+ * Calculate the share of elements of the first array that are included in the second array.
+ *
+ * @param {Array} arr1
+ * @param {Array} arr2
+ * @returns {number}
+ */
 function calculateArrayOverlap(arr1, arr2) {
   let total = arr2.length;
   let overlap = 0;
@@ -1289,6 +1296,13 @@ export function isPostponed(label) {
   return postponements[label];
 }
 
+/**
+ * Whether a command modificator is pressed. On Mac, this means the Cmd key. On Windows, this means
+ * the Ctrl key.
+ *
+ * @param {Event} e
+ * @returns {boolean}
+ */
 export function isCmdMofidicatorPressed(e) {
   // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
   // platform.

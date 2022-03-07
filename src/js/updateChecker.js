@@ -216,6 +216,13 @@ function mapSections(otherSections) {
   });
 }
 
+/**
+ *
+ * @param {import('./commonTypedefs').CommentSkeletonLike[]} candidates
+ * @param {import('./commonTypedefs').CommentSkeletonLike} target
+ * @param {boolean} isTotalCountEqual
+ * @returns {import('./commonTypedefs').CommentSkeletonLike[]}
+ */
 function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
   return candidates
     .map((candidate) => {

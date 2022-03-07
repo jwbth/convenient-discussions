@@ -185,6 +185,9 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     return super.getActionProcess(action);
   }
 
+  /**
+   * Save the subscriptions list.
+   */
   async save() {
     this.updateSize();
     this.pushPending();

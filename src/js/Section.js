@@ -397,6 +397,9 @@ class Section extends SectionSkeleton {
     }
   }
 
+  /**
+   * Add "subscribe"/"unsubscribe" items to the section menu.
+   */
   addSubscribeMenuItem() {
     if (!this.subscribeId) return;
 
@@ -432,8 +435,16 @@ class Section extends SectionSkeleton {
     mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
   }
 
+  /**
+   * Extract the section {@link Section#subscribeId subscribe ID}.
+   */
   extractSubscribeId() {
     if (!cd.settings.useTopicSubscription) {
+      /**
+       * The section subscribe ID in the DiscussionTools format.
+       *
+       * @type {string}
+       */
       this.subscribeId = this.headline;
       return;
     }
@@ -648,6 +659,12 @@ class Section extends SectionSkeleton {
       .then(finallyCallback, finallyCallback);
   }
 
+  /**
+   * Resubscribe to a renamed section if legacy topic subscriptions are used.
+   *
+   * @param {object} currentCommentData
+   * @param {object} oldCommentData
+   */
   resubscribeToRenamed(currentCommentData, oldCommentData) {
     if (
       cd.settings.useTopicSubscription ||

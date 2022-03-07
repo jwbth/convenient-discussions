@@ -2789,7 +2789,14 @@ class CommentForm {
     return result;
   }
 
-  updateSubscribtionStatus(editTimestamp, commentCode, passedData) {
+  /**
+   * Subscribe and unsubscribe from topics
+   *
+   * @param {string} editTimestamp
+   * @param {string} commentCode
+   * @param {object} passedData
+   */
+  updateSubscriptionStatus(editTimestamp, commentCode, passedData) {
     if (this.subscribeCheckbox.isSelected()) {
       // Add the created section to the subscription list or change the headline for legacy
       // subscriptions.
@@ -2950,8 +2957,8 @@ class CommentForm {
       passedData.wasPageCreated = true;
     }
 
-    if (this.subscribeCheckbox) {
-      this.updateSubscribtionStatus(editTimestamp, commentCode, passedData);
+    if (this.subscribeCheckbox && editTimestamp !== 'nochange') {
+      this.updateSubscriptionStatus(editTimestamp, commentCode, passedData);
     }
 
     if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {

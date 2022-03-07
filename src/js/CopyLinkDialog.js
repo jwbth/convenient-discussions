@@ -20,6 +20,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 
   /**
    * Create an "Copy link" dialog.
+   *
+   * @param {Comment|Section} object
+   * @param {object} content
    */
   constructor(object, content) {
     super({
@@ -33,6 +36,14 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     this.copyCallback = this.copyCallback.bind(this);
   }
 
+  /**
+   * OOUI native method that initializes window contents.
+   *
+   * @param {...*} [args]
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.MessageDialog-method-initialize
+   * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   */
   initialize(...args) {
     super.initialize(...args);
 
@@ -75,6 +86,16 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     }
   }
 
+  /**
+   * OOUI native method that returns a "setup" process which is used to set up a window for use in a
+   * particular context, based on the `data` argument.
+   *
+   * @param {object} [data] Dialog opening data
+   * @returns {external:OO.ui.Process}
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
+   * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
       this.title.setLabel(this.isComment ? cd.s('cld-title-comment') : cd.s('cld-title-section'));
@@ -88,11 +109,19 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     });
   }
 
+  /**
+   * Callback for clicking of the "Copy" button next to an input field.
+   *
+   * @param {string} value Input value.
+   */
   copyCallback(value) {
     copyText(value, this.content.copyMessages);
     this.close();
   }
 
+  /**
+   * Create the "Diff" panel in the dialog.
+   */
   async createDiffPanel() {
     let errorText;
     try {
@@ -132,6 +161,11 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     this.diffOptionWidget.setTitle(errorText || '');
   }
 
+  /**
+   * Create the content of the "Anchor" panel in the dialog.
+   *
+   * @returns {JQuery}
+   */
   createAnchorPanelContent() {
     // Doesn't apply to DT anchors.
     let helpOnlyCd;
@@ -186,6 +220,11 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     return $anchorPanelContent;
   }
 
+  /**
+   * Create the content of the "Diff" panel in the dialog.
+   *
+   * @returns {JQuery}
+   */
   createDiffPanelContent() {
     const standardField = createCopyActionField({
       value: this.content.diffStandard,

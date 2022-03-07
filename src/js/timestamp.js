@@ -795,6 +795,13 @@ export function formatDateRelative(date) {
   });
 }
 
+/**
+ * Format a timestamp and produce its title text.
+ *
+ * @param {Date} date
+ * @param {string} originalTimestamp
+ * @returns {object}
+ */
 export function formatTimestamp(date, originalTimestamp) {
   let timestamp;
   let title = '';
@@ -942,6 +949,13 @@ export function parseDtCommentId(id) {
   return { author, date, parentAuthor, parentDate, sectionAnchorBeginning, index };
 }
 
+/**
+ * Generate a section ID in the DiscussionTools format.
+ *
+ * @param {string} name
+ * @param {string} timestamp
+ * @returns {string}
+ */
 export function generateDtSubscriptionId(name, timestamp) {
   const date = new Date(timestamp);
   date.setSeconds(0);

@@ -222,6 +222,14 @@ class Parser {
       });
   }
 
+  /**
+   * Given a link node, enrich the author data and return a boolean denoting whether the node is a part of the
+   * signature.
+   *
+   * @param {Element|external:Element} link
+   * @param {object} authorData
+   * @returns {boolean}
+   */
   processLinkData(link, authorData) {
     const { userName, linkType } = Parser.processLink(link) || {};
     if (userName) {
