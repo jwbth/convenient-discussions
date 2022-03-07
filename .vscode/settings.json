@@ -1,3 +1,12 @@
 {
-  "editor.wordWrapColumn": 100
+  "editor.rulers": [
+    100
+  ],
+  "editor.wordWrapColumn": 100,
+  "editor.tabSize": 2,
+  "files.trimTrailingWhitespace": true,
+  "javascript.preferences.quoteStyle": "single",
+  "vs-docblockr.alignTags": false,
+  "vs-docblockr.columnSpacing": 1,
+  "vs-docblockr.newLinesBetweenTags": false
 }
