@@ -105,7 +105,12 @@ class Parser {
 
     // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
     // Tool doesn't seem to make difference for our purposes here.
-    const moveNotRemove = !self.cdIsWorker && cd.g.isDtTopicSubscriptionEnabled;
+    const moveNotRemove = !self.cdIsWorker && (
+      cd.g.isDtTopicSubscriptionEnabled ||
+
+      // DT enabled by default. Don't know how to capture that another way.
+      mw.loader.getState('ext.discussionTools.init') === 'ready'
+    );
 
     let dtMarkupHavenElement;
     if (moveNotRemove) {
