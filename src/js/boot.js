@@ -242,7 +242,7 @@ export function setTalkPageCssVariables() {
 
   const $backgrounded = skin$({
     timeless: '#mw-content-container',
-    vector: '.mw-page-container',
+    'vector-2022': '.mw-page-container',
     default: 'body',
   });
   const sidebarColor = $backgrounded.css('background-color');

@@ -50,7 +50,7 @@ export default {
         $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - padding;
       if (cd.g.SKIN === 'minerva') {
         width -= cd.g.CONTENT_START_MARGIN;
-      } else if (cd.g.SKIN === 'vector') {
+      } else if (cd.g.SKIN === 'vector-2022') {
         width = Math.min(width, $('#p-search').offset().left - 24 - padding);
       }
 

@@ -281,9 +281,6 @@ async function go() {
     cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
     cd.g.CONTENT_DIR = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
     cd.g.SKIN = mw.config.get('skin');
-    if (cd.g.SKIN === 'vector' && bodyClassList.contains('skin-vector-legacy')) {
-      cd.g.SKIN = 'vector-legacy';
-    }
     cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
 
     // Quite a rough check for mobile browsers, a mix of what is advised at
