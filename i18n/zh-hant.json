@@ -3,7 +3,8 @@
 		"authors": [
 			"Impartial just",
 			"Jack who built the house",
-			"Kly"
+			"Kly",
+			"Winston Sung"
 		]
 	},
 	"script-name": "Convenient Discussions",
@@ -38,7 +39,7 @@
 	"comment-author-talk": "討論",
 	"comment-author-contribs": "貢獻",
 	"comment-changed": "意見已更改。",
-	"comment-changed-short": "已更改",
+	"comment-changed-short": "已變更",
 	"comment-changed-refresh": "重新整理來查看更改",
 	"comment-diff": "差異",
 	"comment-diff-error": "無法呈現出差異。",
@@ -229,7 +230,7 @@
 	"toc-more": "…更多 $1 個",
 	"toc-watched": "您已訂閱此意見",
 	"pagenav-pagetop": "頁面頂端",
-	"pagenav-toc": "目錄",
+	"pagenav-toc": "目次",
 	"pagenav-pagebottom": "頁面底部",
 	"pagenav-back": "返回",
 	"notification-toyou": "$1$3{{gender:$2|回覆了}}您的意見。",
