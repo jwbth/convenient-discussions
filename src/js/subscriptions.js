@@ -302,6 +302,7 @@ export default {
     OO.ui.alert($body, { size: 'large' });
     cd.settings.topicSubscriptionSeenNotice = settings.topicSubscriptionSeenNotice = true;
     setSettings(settings);
+    this.seenNotice = true;
   },
 
   itemsToKeys(arr) {
