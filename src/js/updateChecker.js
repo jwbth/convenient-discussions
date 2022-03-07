@@ -24,14 +24,14 @@ import {
 import { getUserGenders } from './apiWrappers';
 import { isPageLoading, reloadPage } from './boot';
 
+const revisionData = {};
+const resolvers = {};
+
 let commentsNotifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
 let submittedCommentAnchor;
 let resolverCount = 0;
-
-const revisionData = {};
-const resolvers = {};
 
 /**
  * Tell the worker to wake the script up after a given interval.

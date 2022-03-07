@@ -170,17 +170,18 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       help: helpOnlyCd,
     });
 
-    // Workaround, because we don't want the first input to be focused on click almost anywhere in
-    // the dialog, which happens because the whole message is wrapped in the <label> element.
-    const $dummyInput = $('<input>').addClass('cd-hidden');
-
     const $anchorPanelContent = $('<div>').append([
       wikilinkField.$element,
       currentPageWikilinkField.$element,
       linkField.$element,
       permanentLinkField.$element,
     ]);
-    $anchorPanelContent.children().first().prepend($dummyInput);
+
+    // Workaround, because we don't want the first input to be focused on click almost anywhere in
+    // the dialog, which happens because the whole message is wrapped in the <label> element.
+    $('<input>')
+      .addClass('cd-hidden')
+      .prependTo($anchorPanelContent.children().first());
 
     return $anchorPanelContent;
   }

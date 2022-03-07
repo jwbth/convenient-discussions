@@ -631,8 +631,10 @@ export default {
    * @property {RegExp} pattern Pattern to match.
    * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.
-   * @property {string} [type='notice'] For example, `notice`.
-   * @property {Function} [checkFunc] If this function returns false, no message is displayed.
+   * @property {string} [type='notice'] One of
+   *   {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.MessageWidget-cfg-type OO.ui.MessageWidget}'s
+   *   types: '`'notice'`, `'error'`, `'warning'`, `'success'`.
+   * @property {Function} [checkFunc] If this function returns `false`, no message is displayed.
    */
 
   /**

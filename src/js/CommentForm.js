@@ -1865,7 +1865,7 @@ class CommentForm {
    *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true the OOUI Demos}.
    * @param {string} [options.name] Name added to the class name of the message element.
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
-   *   need to be wrapped in the widget.
+   *   need to be wrapped in a widget.
    */
   showMessage(htmlOrJquery, { type = 'notice', name, isRaw = false } = {}) {
     if (this.isDestroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {

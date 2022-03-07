@@ -119,7 +119,7 @@ function buildDateFnsLocales() {
     names.localeName = names.dirName.replace(/-/g, '');
   });
 
-  for (let [, names] of Object.entries(langNames)) {
+  for (const [, names] of Object.entries(langNames)) {
     if (fs.existsSync(`node_modules/date-fns/locale/${names.dirName}/index.js`)) {
       // We only need data for the formatDistance function.
       let indexJsText = fs.readFileSync(
@@ -135,7 +135,7 @@ function buildDateFnsLocales() {
   // exist.
   const locales = require('date-fns/locale');
   const langsHavingLocale = [];
-  for (let [lang, names] of Object.entries(langNames)) {
+  for (const [lang, names] of Object.entries(langNames)) {
     // The English locale is built-in.
     if (lang !== 'en' && locales[names.localeName]) {
       langsHavingLocale.push(lang);
@@ -261,7 +261,7 @@ if (Object.keys(i18n).length) {
   const langsHavingDateFnsLocale = buildDateFnsLocales();
 
   // Create i18n files that combine translations with dayjs locales.
-  for (let [lang, json] of Object.entries(i18nWithFallbacks)) {
+  for (const [lang, json] of Object.entries(i18nWithFallbacks)) {
     let jsonText = replaceEntities(JSON.stringify(json, null, '\t'));
 
     if (lang === 'en') {
